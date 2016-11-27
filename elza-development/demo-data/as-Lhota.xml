@@ -1,0 +1,1224 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns2:xml-import xmlns:ns2="http://v1_0_0.import.elza.tacr.cz">
+  <fund rule-set-code="ZP2015" institution-code="215000010">
+    <name>Místní národní výbor Lhota</name>
+    <root-level>
+      <position>1</position>
+      <uuid>e11611b9-e597-49e9-9c6d-1812043c2766</uuid>
+      <sub-level-list>
+        <level>
+          <position>1</position>
+          <uuid>83511515-9ebb-48ab-8adf-8bb316dafc3c</uuid>
+          <sub-level-list>
+            <level>
+              <position>1</position>
+              <uuid>c42b8fdd-5a25-4465-9467-436489b2caf1</uuid>
+              <desc-item-list>
+                <desc-item-unit-date calendar-type-code="GREGORIAN" desc-item-type-code="ZP2015_UNIT_DATE">
+                  <position>1</position>
+                  <value-from>1945-12-20T00:00:00+01:00</value-from>
+                  <value-from-estimated>false</value-from-estimated>
+                  <value-to>1949-08-02T23:59:59+02:00</value-to>
+                  <value-to-estimated>false</value-to-estimated>
+                  <format>D-D</format>
+                </desc-item-unit-date>
+                <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                  <position>1</position>
+                  <value>Kniha zápisů ze schůzí pléna a rady MNV, veřejných schůzí, společných schůzí s JZD a schůzí komisí</value>
+                </desc-item-text>
+                <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_ITEM">
+                  <position>1</position>
+                </desc-item-enum>
+                <desc-item-enum desc-item-type-code="ZP2015_UNIT_TYPE" desc-item-spec-code="ZP2015_UNIT_TYPE_UKN">
+                  <position>1</position>
+                </desc-item-enum>
+              </desc-item-list>
+            </level>
+            <level>
+              <position>2</position>
+              <uuid>f40ca3da-bb7f-46f4-bec3-b3e28f37a493</uuid>
+              <desc-item-list>
+                <desc-item-unit-date calendar-type-code="GREGORIAN" desc-item-type-code="ZP2015_UNIT_DATE">
+                  <position>1</position>
+                  <value-from>1949-08-22T00:00:00+02:00</value-from>
+                  <value-from-estimated>false</value-from-estimated>
+                  <value-to>1954-05-10T23:59:59+01:00</value-to>
+                  <value-to-estimated>false</value-to-estimated>
+                  <format>D-D</format>
+                </desc-item-unit-date>
+                <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_ITEM">
+                  <position>1</position>
+                </desc-item-enum>
+                <desc-item-enum desc-item-type-code="ZP2015_UNIT_TYPE" desc-item-spec-code="ZP2015_UNIT_TYPE_UKN">
+                  <position>1</position>
+                </desc-item-enum>
+                <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                  <position>1</position>
+                  <value>Kniha zápisů ze schůzí pléna a rady MNV a veřejných schůzí</value>
+                </desc-item-text>
+              </desc-item-list>
+            </level>
+            <level>
+              <position>3</position>
+              <uuid>83185fd2-a21f-40a8-8ee0-cc4d6d98d418</uuid>
+              <desc-item-list>
+                <desc-item-enum desc-item-type-code="ZP2015_UNIT_TYPE" desc-item-spec-code="ZP2015_UNIT_TYPE_UKN">
+                  <position>1</position>
+                </desc-item-enum>
+                <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_ITEM">
+                  <position>1</position>
+                </desc-item-enum>
+                <desc-item-unit-date calendar-type-code="GREGORIAN" desc-item-type-code="ZP2015_UNIT_DATE">
+                  <position>1</position>
+                  <value-from>1954-05-24T00:00:00+01:00</value-from>
+                  <value-from-estimated>false</value-from-estimated>
+                  <value-to>1960-04-22T23:59:59+01:00</value-to>
+                  <value-to-estimated>false</value-to-estimated>
+                  <format>D-D</format>
+                </desc-item-unit-date>
+                <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                  <position>1</position>
+                  <value>Kniha zápisů ze schůzí pléna MNV</value>
+                </desc-item-text>
+              </desc-item-list>
+            </level>
+            <level>
+              <position>4</position>
+              <uuid>8020c51c-a8fc-47cd-8e2f-d69f34bd5eeb</uuid>
+              <desc-item-list>
+                <desc-item-unit-date calendar-type-code="GREGORIAN" desc-item-type-code="ZP2015_UNIT_DATE">
+                  <position>1</position>
+                  <value-from>1960-06-25T00:00:00+01:00</value-from>
+                  <value-from-estimated>false</value-from-estimated>
+                  <value-to>1971-10-28T23:59:59+01:00</value-to>
+                  <value-to-estimated>false</value-to-estimated>
+                  <format>D-D</format>
+                </desc-item-unit-date>
+                <desc-item-enum desc-item-type-code="ZP2015_UNIT_TYPE" desc-item-spec-code="ZP2015_UNIT_TYPE_UKN">
+                  <position>1</position>
+                </desc-item-enum>
+                <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                  <position>1</position>
+                  <value>Kniha zápisů ze schůzí pléna MNV</value>
+                </desc-item-text>
+                <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_ITEM">
+                  <position>1</position>
+                </desc-item-enum>
+              </desc-item-list>
+            </level>
+            <level>
+              <position>5</position>
+              <uuid>27b4232f-fb58-488f-bb7e-1a1fca8954d4</uuid>
+              <desc-item-list>
+                <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_ITEM">
+                  <position>1</position>
+                </desc-item-enum>
+                <desc-item-unit-date calendar-type-code="GREGORIAN" desc-item-type-code="ZP2015_UNIT_DATE">
+                  <position>1</position>
+                  <value-from>1971-12-15T00:00:00+01:00</value-from>
+                  <value-from-estimated>false</value-from-estimated>
+                  <value-to>1980-04-24T23:59:59+02:00</value-to>
+                  <value-to-estimated>false</value-to-estimated>
+                  <format>D-D</format>
+                </desc-item-unit-date>
+                <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                  <position>1</position>
+                  <value>Kniha zápisů ze schůzí pléna MNV přímý zdroj akvizice: kopie pořízená v roce 1992, originál zničen při požáru</value>
+                </desc-item-text>
+                <desc-item-enum desc-item-type-code="ZP2015_UNIT_TYPE" desc-item-spec-code="ZP2015_UNIT_TYPE_UKN">
+                  <position>1</position>
+                </desc-item-enum>
+              </desc-item-list>
+            </level>
+            <level>
+              <position>6</position>
+              <uuid>1f3c0bc0-7deb-468f-a925-44febb026c5e</uuid>
+              <desc-item-list>
+                <desc-item-packet-ref packet-id="5" desc-item-type-code="ZP2015_STORAGE_ID">
+                  <position>1</position>
+                </desc-item-packet-ref>
+                <desc-item-unit-date calendar-type-code="GREGORIAN" desc-item-type-code="ZP2015_UNIT_DATE">
+                  <position>1</position>
+                  <value-from>1954-01-01T00:00:00+01:00</value-from>
+                  <value-from-estimated>false</value-from-estimated>
+                  <value-to>1964-12-31T23:59:59+01:00</value-to>
+                  <value-to-estimated>false</value-to-estimated>
+                  <format>Y-Y</format>
+                </desc-item-unit-date>
+                <desc-item-enum desc-item-type-code="ZP2015_FOLDER_TYPE" desc-item-spec-code="ZP2015_FOLDER_UNITS">
+                  <position>1</position>
+                </desc-item-enum>
+                <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_FOLDER">
+                  <position>1</position>
+                </desc-item-enum>
+                <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                  <position>1</position>
+                  <value>Zápisy ze schůzí rady MNV (neúplné)</value>
+                </desc-item-text>
+              </desc-item-list>
+            </level>
+            <level>
+              <position>7</position>
+              <uuid>87da917c-f9b7-4092-96d9-a53dc0f32c9e</uuid>
+              <desc-item-list>
+                <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_ITEM">
+                  <position>1</position>
+                </desc-item-enum>
+                <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                  <position>1</position>
+                  <value>Kniha zápisů ze schůzí rady MNV</value>
+                </desc-item-text>
+                <desc-item-enum desc-item-type-code="ZP2015_UNIT_TYPE" desc-item-spec-code="ZP2015_UNIT_TYPE_UKN">
+                  <position>1</position>
+                </desc-item-enum>
+                <desc-item-unit-date calendar-type-code="GREGORIAN" desc-item-type-code="ZP2015_UNIT_DATE">
+                  <position>1</position>
+                  <value-from>1964-07-09T00:00:00+01:00</value-from>
+                  <value-from-estimated>false</value-from-estimated>
+                  <value-to>1969-04-22T23:59:59+01:00</value-to>
+                  <value-to-estimated>false</value-to-estimated>
+                  <format>D-D</format>
+                </desc-item-unit-date>
+              </desc-item-list>
+            </level>
+            <level>
+              <position>8</position>
+              <uuid>c9457ef3-b644-4a6e-9b41-303b380b7aaa</uuid>
+              <desc-item-list>
+                <desc-item-packet-ref packet-id="5" desc-item-type-code="ZP2015_STORAGE_ID">
+                  <position>1</position>
+                </desc-item-packet-ref>
+                <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_FOLDER">
+                  <position>1</position>
+                </desc-item-enum>
+                <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                  <position>1</position>
+                  <value>Zápisy ze schůzí rady MNV (neúplné)</value>
+                </desc-item-text>
+                <desc-item-enum desc-item-type-code="ZP2015_FOLDER_TYPE" desc-item-spec-code="ZP2015_FOLDER_UNITS">
+                  <position>1</position>
+                </desc-item-enum>
+                <desc-item-unit-date calendar-type-code="GREGORIAN" desc-item-type-code="ZP2015_UNIT_DATE">
+                  <position>1</position>
+                  <value-from>1969-01-01T00:00:00+01:00</value-from>
+                  <value-from-estimated>false</value-from-estimated>
+                  <value-to>1980-12-31T23:59:59+01:00</value-to>
+                  <value-to-estimated>false</value-to-estimated>
+                  <format>Y-Y</format>
+                </desc-item-unit-date>
+              </desc-item-list>
+            </level>
+            <level>
+              <position>9</position>
+              <uuid>50d5e80c-5355-48a6-b664-ca5d11e27ab9</uuid>
+              <desc-item-list>
+                <desc-item-enum desc-item-type-code="ZP2015_UNIT_TYPE" desc-item-spec-code="ZP2015_UNIT_TYPE_UKN">
+                  <position>1</position>
+                </desc-item-enum>
+                <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_ITEM">
+                  <position>1</position>
+                </desc-item-enum>
+                <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                  <position>1</position>
+                  <value>Zápisy ze schůzí finanční komise</value>
+                </desc-item-text>
+                <desc-item-unit-date calendar-type-code="GREGORIAN" desc-item-type-code="ZP2015_UNIT_DATE">
+                  <position>1</position>
+                  <value-from>1946-01-05T00:00:00+01:00</value-from>
+                  <value-from-estimated>false</value-from-estimated>
+                  <value-to>1950-05-15T23:59:59+01:00</value-to>
+                  <value-to-estimated>false</value-to-estimated>
+                  <format>D-D</format>
+                </desc-item-unit-date>
+              </desc-item-list>
+            </level>
+          </sub-level-list>
+          <desc-item-list>
+            <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_SERIES">
+              <position>1</position>
+            </desc-item-enum>
+            <desc-item-text desc-item-type-code="ZP2015_TITLE">
+              <position>1</position>
+              <value>Orgány národního výboru</value>
+            </desc-item-text>
+          </desc-item-list>
+        </level>
+        <level>
+          <position>2</position>
+          <uuid>65a9db71-49bd-4ca4-b15a-5996b90f57fd</uuid>
+          <sub-level-list>
+            <level>
+              <position>1</position>
+              <uuid>bcfe9cec-de42-4aee-a6b2-6ed73ffe581a</uuid>
+              <sub-level-list>
+                <level>
+                  <position>1</position>
+                  <uuid>c7974b11-17a9-48f0-8fb8-9d8f464c704a</uuid>
+                  <sub-level-list>
+                    <level>
+                      <position>1</position>
+                      <uuid>a6253746-897c-4620-8f25-eefc745c76b1</uuid>
+                      <desc-item-list>
+                        <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_ITEM">
+                          <position>1</position>
+                        </desc-item-enum>
+                        <desc-item-unit-date calendar-type-code="GREGORIAN" desc-item-type-code="ZP2015_UNIT_DATE">
+                          <position>1</position>
+                          <value-from>1924-05-21T00:00:00+01:00</value-from>
+                          <value-from-estimated>false</value-from-estimated>
+                          <value-to>1948-12-31T23:59:59+01:00</value-to>
+                          <value-to-estimated>false</value-to-estimated>
+                          <format>D-D</format>
+                        </desc-item-unit-date>
+                        <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                          <position>1</position>
+                          <value>Výkaz domovských listů. Vedeno 21. 5. 1924 - 30 .10. 1938 a 20. 12. 1945 - 31. 12. 1948</value>
+                        </desc-item-text>
+                        <desc-item-enum desc-item-type-code="ZP2015_UNIT_TYPE" desc-item-spec-code="ZP2015_UNIT_TYPE_UKN">
+                          <position>1</position>
+                        </desc-item-enum>
+                      </desc-item-list>
+                    </level>
+                    <level>
+                      <position>2</position>
+                      <uuid>b968f88d-3448-46a4-bc65-6be6f8621da9</uuid>
+                      <desc-item-list>
+                        <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_ITEM">
+                          <position>1</position>
+                        </desc-item-enum>
+                        <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                          <position>1</position>
+                          <value>JEP - soupis parcel</value>
+                        </desc-item-text>
+                        <desc-item-unit-date calendar-type-code="GREGORIAN" desc-item-type-code="ZP2015_UNIT_DATE">
+                          <position>1</position>
+                          <value-from>1957-01-01T00:00:00+01:00</value-from>
+                          <value-from-estimated>false</value-from-estimated>
+                          <value-to>1957-12-31T23:59:59+01:00</value-to>
+                          <value-to-estimated>false</value-to-estimated>
+                          <format>Y</format>
+                        </desc-item-unit-date>
+                        <desc-item-enum desc-item-type-code="ZP2015_UNIT_TYPE" desc-item-spec-code="ZP2015_UNIT_TYPE_UKN">
+                          <position>1</position>
+                        </desc-item-enum>
+                      </desc-item-list>
+                    </level>
+                    <level>
+                      <position>3</position>
+                      <uuid>6b1c0aba-d2e6-4ad4-9a45-70fd2e53a1c5</uuid>
+                      <desc-item-list>
+                        <desc-item-enum desc-item-type-code="ZP2015_UNIT_TYPE" desc-item-spec-code="ZP2015_UNIT_TYPE_UKN">
+                          <position>1</position>
+                        </desc-item-enum>
+                        <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_ITEM">
+                          <position>1</position>
+                        </desc-item-enum>
+                        <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                          <position>1</position>
+                          <value>JEP - soupis parcel</value>
+                        </desc-item-text>
+                        <desc-item-unit-date calendar-type-code="GREGORIAN" desc-item-type-code="ZP2015_UNIT_DATE">
+                          <position>1</position>
+                          <value-from>1958-01-01T00:00:00+01:00</value-from>
+                          <value-from-estimated>false</value-from-estimated>
+                          <value-to>1958-12-31T23:59:59+01:00</value-to>
+                          <value-to-estimated>false</value-to-estimated>
+                          <format>Y</format>
+                        </desc-item-unit-date>
+                      </desc-item-list>
+                    </level>
+                    <level>
+                      <position>4</position>
+                      <uuid>c89b0ed5-9431-4a26-9e4b-cd2af978f595</uuid>
+                      <desc-item-list>
+                        <desc-item-enum desc-item-type-code="ZP2015_UNIT_TYPE" desc-item-spec-code="ZP2015_UNIT_TYPE_UKN">
+                          <position>1</position>
+                        </desc-item-enum>
+                        <desc-item-unit-date calendar-type-code="GREGORIAN" desc-item-type-code="ZP2015_UNIT_DATE">
+                          <position>1</position>
+                          <value-from>1977-01-01T00:00:00+01:00</value-from>
+                          <value-from-estimated>false</value-from-estimated>
+                          <value-to>1977-12-31T23:59:59+01:00</value-to>
+                          <value-to-estimated>false</value-to-estimated>
+                          <format>Y</format>
+                        </desc-item-unit-date>
+                        <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_ITEM">
+                          <position>1</position>
+                        </desc-item-enum>
+                        <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                          <position>1</position>
+                          <value>Soupis domů a soupis parcel v k. ú. Lhota</value>
+                        </desc-item-text>
+                      </desc-item-list>
+                    </level>
+                  </sub-level-list>
+                  <desc-item-list>
+                    <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_SERIES">
+                      <position>1</position>
+                    </desc-item-enum>
+                    <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                      <position>1</position>
+                      <value>Evidenční knihy</value>
+                    </desc-item-text>
+                  </desc-item-list>
+                </level>
+                <level>
+                  <position>2</position>
+                  <uuid>35001654-b05d-4767-9596-810a388a331b</uuid>
+                  <sub-level-list>
+                    <level>
+                      <position>1</position>
+                      <uuid>2c86d068-ea7a-4a99-bc40-8fd74f793f15</uuid>
+                      <desc-item-list>
+                        <desc-item-enum desc-item-type-code="ZP2015_UNIT_TYPE" desc-item-spec-code="ZP2015_UNIT_TYPE_UKN">
+                          <position>1</position>
+                        </desc-item-enum>
+                        <desc-item-unit-date calendar-type-code="GREGORIAN" desc-item-type-code="ZP2015_UNIT_DATE">
+                          <position>1</position>
+                          <value-from>1946-01-01T00:00:00+01:00</value-from>
+                          <value-from-estimated>false</value-from-estimated>
+                          <value-to>1946-12-31T23:59:59+01:00</value-to>
+                          <value-to-estimated>false</value-to-estimated>
+                          <format>Y</format>
+                        </desc-item-unit-date>
+                        <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_ITEM">
+                          <position>1</position>
+                        </desc-item-enum>
+                        <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                          <position>1</position>
+                          <value>Hlavní kniha</value>
+                        </desc-item-text>
+                      </desc-item-list>
+                    </level>
+                    <level>
+                      <position>2</position>
+                      <uuid>2f6e1c62-572d-414f-960c-a6e94539c81a</uuid>
+                      <desc-item-list>
+                        <desc-item-enum desc-item-type-code="ZP2015_UNIT_TYPE" desc-item-spec-code="ZP2015_UNIT_TYPE_UKN">
+                          <position>1</position>
+                        </desc-item-enum>
+                        <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_ITEM">
+                          <position>1</position>
+                        </desc-item-enum>
+                        <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                          <position>1</position>
+                          <value>Hlavní kniha</value>
+                        </desc-item-text>
+                        <desc-item-unit-date calendar-type-code="GREGORIAN" desc-item-type-code="ZP2015_UNIT_DATE">
+                          <position>1</position>
+                          <value-from>1947-01-01T00:00:00+01:00</value-from>
+                          <value-from-estimated>false</value-from-estimated>
+                          <value-to>1947-12-31T23:59:59+01:00</value-to>
+                          <value-to-estimated>false</value-to-estimated>
+                          <format>Y</format>
+                        </desc-item-unit-date>
+                      </desc-item-list>
+                    </level>
+                  </sub-level-list>
+                  <desc-item-list>
+                    <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_SERIES">
+                      <position>1</position>
+                    </desc-item-enum>
+                    <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                      <position>1</position>
+                      <value>Účetní knihy</value>
+                    </desc-item-text>
+                  </desc-item-list>
+                </level>
+                <level>
+                  <position>3</position>
+                  <uuid>3531d6d2-4360-40e3-892a-271186a6ed26</uuid>
+                  <sub-level-list>
+                    <level>
+                      <position>1</position>
+                      <uuid>bddb3b45-7075-459e-b32c-13c900aeb8f2</uuid>
+                      <desc-item-list>
+                        <desc-item-unit-date calendar-type-code="GREGORIAN" desc-item-type-code="ZP2015_UNIT_DATE">
+                          <position>1</position>
+                          <value-from>1950-01-01T00:00:00+01:00</value-from>
+                          <value-from-estimated>false</value-from-estimated>
+                          <value-to>1978-12-31T23:59:59+01:00</value-to>
+                          <value-to-estimated>false</value-to-estimated>
+                          <format>Y-Y</format>
+                        </desc-item-unit-date>
+                        <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_ITEM">
+                          <position>1</position>
+                        </desc-item-enum>
+                        <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                          <position>1</position>
+                          <value>Pamětní kniha obce (obsahuje též 9 vlepených fotografií a 3 plakáty)</value>
+                        </desc-item-text>
+                        <desc-item-enum desc-item-type-code="ZP2015_UNIT_TYPE" desc-item-spec-code="ZP2015_UNIT_TYPE_UKN">
+                          <position>1</position>
+                        </desc-item-enum>
+                      </desc-item-list>
+                    </level>
+                  </sub-level-list>
+                  <desc-item-list>
+                    <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_SERIES">
+                      <position>1</position>
+                    </desc-item-enum>
+                    <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                      <position>1</position>
+                      <value>Pamětní knihy</value>
+                    </desc-item-text>
+                  </desc-item-list>
+                </level>
+              </sub-level-list>
+              <desc-item-list>
+                <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_SERIES">
+                  <position>1</position>
+                </desc-item-enum>
+                <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                  <position>1</position>
+                  <value>Úřední knihy</value>
+                </desc-item-text>
+              </desc-item-list>
+            </level>
+            <level>
+              <position>2</position>
+              <uuid>529e4a4b-eabe-4630-8061-45cb498b168c</uuid>
+              <sub-level-list>
+                <level>
+                  <position>1</position>
+                  <uuid>6d779d48-656a-4938-99d6-506fe3b75347</uuid>
+                  <sub-level-list>
+                    <level>
+                      <position>1</position>
+                      <uuid>3f1344f9-5640-4541-b933-019e884e09ff</uuid>
+                      <desc-item-list>
+                        <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                          <position>1</position>
+                          <value>Podací protokol</value>
+                        </desc-item-text>
+                        <desc-item-enum desc-item-type-code="ZP2015_UNIT_TYPE" desc-item-spec-code="ZP2015_UNIT_TYPE_PPR">
+                          <position>1</position>
+                        </desc-item-enum>
+                        <desc-item-unit-date calendar-type-code="GREGORIAN" desc-item-type-code="ZP2015_UNIT_DATE">
+                          <position>1</position>
+                          <value-from>1947-01-05T00:00:00+01:00</value-from>
+                          <value-from-estimated>false</value-from-estimated>
+                          <value-to>1950-05-15T23:59:59+01:00</value-to>
+                          <value-to-estimated>false</value-to-estimated>
+                          <format>D-D</format>
+                        </desc-item-unit-date>
+                        <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_ITEM">
+                          <position>1</position>
+                        </desc-item-enum>
+                      </desc-item-list>
+                    </level>
+                    <level>
+                      <position>2</position>
+                      <uuid>1bcf3771-3e77-4016-a319-a8bba642eb3f</uuid>
+                      <desc-item-list>
+                        <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                          <position>1</position>
+                          <value>Podací protokol (ve formě kartotéky)</value>
+                        </desc-item-text>
+                        <desc-item-unit-date calendar-type-code="GREGORIAN" desc-item-type-code="ZP2015_UNIT_DATE">
+                          <position>1</position>
+                          <value-from>1950-06-05T00:00:00+01:00</value-from>
+                          <value-from-estimated>false</value-from-estimated>
+                          <value-to>1955-05-15T23:59:59+01:00</value-to>
+                          <value-to-estimated>false</value-to-estimated>
+                          <format>D-D</format>
+                        </desc-item-unit-date>
+                        <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_ITEM">
+                          <position>1</position>
+                        </desc-item-enum>
+                        <desc-item-enum desc-item-type-code="ZP2015_UNIT_TYPE" desc-item-spec-code="ZP2015_UNIT_TYPE_KTT">
+                          <position>1</position>
+                        </desc-item-enum>
+                      </desc-item-list>
+                    </level>
+                    <level>
+                      <position>3</position>
+                      <uuid>b63b2a3f-b069-411c-9362-5d03ba7b3d68</uuid>
+                      <desc-item-list>
+                        <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_ITEM">
+                          <position>1</position>
+                        </desc-item-enum>
+                        <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                          <position>1</position>
+                          <value>Podací protokol</value>
+                        </desc-item-text>
+                        <desc-item-unit-date calendar-type-code="GREGORIAN" desc-item-type-code="ZP2015_UNIT_DATE">
+                          <position>1</position>
+                          <value-from>1955-06-05T00:00:00+01:00</value-from>
+                          <value-from-estimated>false</value-from-estimated>
+                          <value-to>1961-05-06T23:59:59+01:00</value-to>
+                          <value-to-estimated>false</value-to-estimated>
+                          <format>D-D</format>
+                        </desc-item-unit-date>
+                        <desc-item-enum desc-item-type-code="ZP2015_UNIT_TYPE" desc-item-spec-code="ZP2015_UNIT_TYPE_PPR">
+                          <position>1</position>
+                        </desc-item-enum>
+                      </desc-item-list>
+                    </level>
+                  </sub-level-list>
+                  <desc-item-list>
+                    <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_SERIES">
+                      <position>1</position>
+                    </desc-item-enum>
+                    <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                      <position>1</position>
+                      <value>Registraturní pomůcky</value>
+                    </desc-item-text>
+                  </desc-item-list>
+                </level>
+                <level>
+                  <position>2</position>
+                  <uuid>700b303e-aa65-44d1-9178-8fa252e533f5</uuid>
+                  <sub-level-list>
+                    <level>
+                      <position>1</position>
+                      <uuid>c30c346f-83a5-4b1c-afa4-7cb879432913</uuid>
+                      <sub-level-list>
+                        <level>
+                          <position>1</position>
+                          <uuid>a6a46ee5-9d67-48a4-9e5f-5e9445e188eb</uuid>
+                          <desc-item-list>
+                            <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_ITEM">
+                              <position>1</position>
+                            </desc-item-enum>
+                            <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                              <position>1</position>
+                              <value>Přesun obce z okresu Svijany-sever do okresu Kostelec</value>
+                            </desc-item-text>
+                            <desc-item-unit-date calendar-type-code="GREGORIAN" desc-item-type-code="ZP2015_UNIT_DATE">
+                              <position>1</position>
+                              <value-from>1960-01-01T00:00:00+01:00</value-from>
+                              <value-from-estimated>false</value-from-estimated>
+                              <value-to>1960-12-31T23:59:59+01:00</value-to>
+                              <value-to-estimated>false</value-to-estimated>
+                              <format>Y</format>
+                            </desc-item-unit-date>
+                          </desc-item-list>
+                        </level>
+                        <level>
+                          <position>2</position>
+                          <uuid>04e67dad-1297-4240-a0ed-aa3318311de1</uuid>
+                          <desc-item-list>
+                            <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                              <position>1</position>
+                              <value>Popis hranic katastru obce Lhota</value>
+                            </desc-item-text>
+                            <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_ITEM">
+                              <position>1</position>
+                            </desc-item-enum>
+                            <desc-item-unit-date calendar-type-code="GREGORIAN" desc-item-type-code="ZP2015_UNIT_DATE">
+                              <position>1</position>
+                              <value-from>1958-01-01T00:00:00+01:00</value-from>
+                              <value-from-estimated>false</value-from-estimated>
+                              <value-to>1958-12-31T23:59:59+01:00</value-to>
+                              <value-to-estimated>false</value-to-estimated>
+                              <format>Y</format>
+                            </desc-item-unit-date>
+                          </desc-item-list>
+                        </level>
+                      </sub-level-list>
+                      <desc-item-list>
+                        <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_SERIES">
+                          <position>1</position>
+                        </desc-item-enum>
+                        <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                          <position>1</position>
+                          <value>Statutární záležitosti organizace</value>
+                        </desc-item-text>
+                      </desc-item-list>
+                    </level>
+                    <level>
+                      <position>2</position>
+                      <uuid>26fdbb73-16b1-4cfd-a0ff-a3f8634856c1</uuid>
+                      <sub-level-list>
+                        <level>
+                          <position>1</position>
+                          <uuid>ce14efec-8acd-4e97-ad03-4d14fa523b55</uuid>
+                          <sub-level-list>
+                            <level>
+                              <position>1</position>
+                              <uuid>924ddc5c-4765-4a57-853d-ad36a2b22b83</uuid>
+                              <desc-item-list>
+                                <desc-item-unit-date calendar-type-code="GREGORIAN" desc-item-type-code="ZP2015_UNIT_DATE">
+                                  <position>1</position>
+                                  <value-from>1946-01-01T00:00:00+01:00</value-from>
+                                  <value-from-estimated>false</value-from-estimated>
+                                  <value-to>1956-12-31T23:59:59+01:00</value-to>
+                                  <value-to-estimated>false</value-to-estimated>
+                                  <format>Y-Y</format>
+                                </desc-item-unit-date>
+                                <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_FOLDER">
+                                  <position>1</position>
+                                </desc-item-enum>
+                                <desc-item-enum desc-item-type-code="ZP2015_FOLDER_TYPE" desc-item-spec-code="ZP2015_FOLDER_UNITS">
+                                  <position>1</position>
+                                </desc-item-enum>
+                                <desc-item-packet-ref packet-id="59" desc-item-type-code="ZP2015_STORAGE_ID">
+                                  <position>1</position>
+                                </desc-item-packet-ref>
+                              </desc-item-list>
+                            </level>
+                            <level>
+                              <position>2</position>
+                              <uuid>b6406be4-e51f-4ada-a471-d191b064cc94</uuid>
+                              <desc-item-list>
+                                <desc-item-packet-ref packet-id="60" desc-item-type-code="ZP2015_STORAGE_ID">
+                                  <position>1</position>
+                                </desc-item-packet-ref>
+                                <desc-item-unit-date calendar-type-code="GREGORIAN" desc-item-type-code="ZP2015_UNIT_DATE">
+                                  <position>1</position>
+                                  <value-from>1957-01-01T00:00:00+01:00</value-from>
+                                  <value-from-estimated>false</value-from-estimated>
+                                  <value-to>1976-12-31T23:59:59+01:00</value-to>
+                                  <value-to-estimated>false</value-to-estimated>
+                                  <format>Y-Y</format>
+                                </desc-item-unit-date>
+                                <desc-item-enum desc-item-type-code="ZP2015_FOLDER_TYPE" desc-item-spec-code="ZP2015_FOLDER_UNITS">
+                                  <position>1</position>
+                                </desc-item-enum>
+                                <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_FOLDER">
+                                  <position>1</position>
+                                </desc-item-enum>
+                              </desc-item-list>
+                            </level>
+                          </sub-level-list>
+                          <desc-item-list>
+                            <desc-item-unit-date calendar-type-code="GREGORIAN" desc-item-type-code="ZP2015_UNIT_DATE">
+                              <position>1</position>
+                              <value-from>1946-01-01T00:00:00+01:00</value-from>
+                              <value-from-estimated>false</value-from-estimated>
+                              <value-to>1976-12-31T23:59:59+01:00</value-to>
+                              <value-to-estimated>false</value-to-estimated>
+                              <format>Y-Y</format>
+                            </desc-item-unit-date>
+                            <desc-item-enum desc-item-type-code="ZP2015_FOLDER_TYPE" desc-item-spec-code="ZP2015_FOLDER_LOGICAL">
+                              <position>1</position>
+                            </desc-item-enum>
+                            <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                              <position>1</position>
+                              <value>Volby do NS, KNV, ONV a místního národního výboru (vyhlášky o stanovení volebních obvodů, schválení obvodní a okrskové volební komise, vyhlášky o zřízení volební komise, návrhy kandidátů do MNV, seznamy voličů, zápisy o hlasování, sliby poslanců, doplňovací volby)</value>
+                            </desc-item-text>
+                            <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_FOLDER">
+                              <position>1</position>
+                            </desc-item-enum>
+                          </desc-item-list>
+                        </level>
+                      </sub-level-list>
+                      <desc-item-list>
+                        <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                          <position>1</position>
+                          <value>Volby</value>
+                        </desc-item-text>
+                        <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_SERIES">
+                          <position>1</position>
+                        </desc-item-enum>
+                      </desc-item-list>
+                    </level>
+                  </sub-level-list>
+                  <desc-item-list>
+                    <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_SERIES">
+                      <position>1</position>
+                    </desc-item-enum>
+                    <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                      <position>1</position>
+                      <value>Spisy</value>
+                    </desc-item-text>
+                  </desc-item-list>
+                </level>
+              </sub-level-list>
+              <desc-item-list>
+                <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_SERIES">
+                  <position>1</position>
+                </desc-item-enum>
+                <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                  <position>1</position>
+                  <value>Spisový materiál</value>
+                </desc-item-text>
+              </desc-item-list>
+            </level>
+            <level>
+              <position>3</position>
+              <uuid>38f15774-cf2f-4781-8815-84af2d6825b0</uuid>
+              <sub-level-list>
+                <level>
+                  <position>1</position>
+                  <uuid>6492e893-6fec-4c9d-8998-61223ace8bb3</uuid>
+                  <sub-level-list>
+                    <level>
+                      <position>1</position>
+                      <uuid>783a549b-acfe-4d7a-95d0-75fed33f500f</uuid>
+                      <sub-level-list>
+                        <level>
+                          <position>1</position>
+                          <uuid>2729d7f9-74c0-41e6-85e3-851d89902b3d</uuid>
+                          <desc-item-list>
+                            <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_PART">
+                              <position>1</position>
+                            </desc-item-enum>
+                            <desc-item-text desc-item-type-code="ZP2015_SIZE">
+                              <position>1</position>
+                              <value>šířka: 390mm, výška: 640mm</value>
+                            </desc-item-text>
+                            <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                              <position>1</position>
+                              <value>1. list</value>
+                            </desc-item-text>
+                          </desc-item-list>
+                        </level>
+                        <level>
+                          <position>2</position>
+                          <uuid>41a9f0f7-8c5a-4790-9c50-3aab6a4d8d1e</uuid>
+                          <desc-item-list>
+                            <desc-item-text desc-item-type-code="ZP2015_SIZE">
+                              <position>1</position>
+                              <value>šířka: 790mm, výška: 640mm</value>
+                            </desc-item-text>
+                            <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                              <position>1</position>
+                              <value>2. list</value>
+                            </desc-item-text>
+                            <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_PART">
+                              <position>1</position>
+                            </desc-item-enum>
+                          </desc-item-list>
+                        </level>
+                        <level>
+                          <position>3</position>
+                          <uuid>4be6e12b-0544-4a76-9cc4-b087d285fc92</uuid>
+                          <desc-item-list>
+                            <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_PART">
+                              <position>1</position>
+                            </desc-item-enum>
+                            <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                              <position>1</position>
+                              <value>3. list</value>
+                            </desc-item-text>
+                            <desc-item-text desc-item-type-code="ZP2015_SIZE">
+                              <position>1</position>
+                              <value>šířka: 790mm, výška: 640mm</value>
+                            </desc-item-text>
+                          </desc-item-list>
+                        </level>
+                        <level>
+                          <position>4</position>
+                          <uuid>0f569e9a-51bf-41e9-883b-717aab79f919</uuid>
+                          <desc-item-list>
+                            <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                              <position>1</position>
+                              <value>4. list</value>
+                            </desc-item-text>
+                            <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_PART">
+                              <position>1</position>
+                            </desc-item-enum>
+                            <desc-item-text desc-item-type-code="ZP2015_SIZE">
+                              <position>1</position>
+                              <value>šířka: 790mm, výška: 640mm</value>
+                            </desc-item-text>
+                            <desc-item-text desc-item-type-code="ZP2015_UNIT_CURRENT_STATUS">
+                              <position>1</position>
+                              <value>poškozen vlhkostí</value>
+                            </desc-item-text>
+                          </desc-item-list>
+                        </level>
+                        <level>
+                          <position>5</position>
+                          <uuid>3394dbdf-4eed-451d-9d3c-055040dc039d</uuid>
+                          <desc-item-list>
+                            <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                              <position>1</position>
+                              <value>5. list</value>
+                            </desc-item-text>
+                            <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_PART">
+                              <position>1</position>
+                            </desc-item-enum>
+                            <desc-item-text desc-item-type-code="ZP2015_SIZE">
+                              <position>1</position>
+                              <value>šířka: 790mm, výška: 640mm</value>
+                            </desc-item-text>
+                          </desc-item-list>
+                        </level>
+                      </sub-level-list>
+                      <desc-item-list>
+                        <desc-item-unit-date calendar-type-code="GREGORIAN" desc-item-type-code="ZP2015_UNIT_DATE">
+                          <position>1</position>
+                          <value-from>1948-01-01T00:00:00+01:00</value-from>
+                          <value-from-estimated>false</value-from-estimated>
+                          <value-to>1948-12-31T23:59:59+01:00</value-to>
+                          <value-to-estimated>false</value-to-estimated>
+                          <format>Y</format>
+                        </desc-item-unit-date>
+                        <desc-item-enum desc-item-type-code="ZP2015_LANGUAGE" desc-item-spec-code="ZP2015_LANGUAGE_43">
+                          <position>1</position>
+                        </desc-item-enum>
+                        <desc-item-enum desc-item-type-code="ZP2015_UNIT_TYPE" desc-item-spec-code="ZP2015_UNIT_TYPE_MAP">
+                          <position>1</position>
+                        </desc-item-enum>
+                        <desc-item-text desc-item-type-code="ZP2015_ITEM_MAT">
+                          <position>1</position>
+                          <value>Technika záznamu: litografie(grafický plán byl zakreslen do původní katastrální mapy obce) Nosič záznamu: tvrdý papír Adjustace: podlepeno plátnem Barevnost: kolorováno, předěly zakresleny barevnými tužkami</value>
+                        </desc-item-text>
+                        <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_ITEM">
+                          <position>1</position>
+                        </desc-item-enum>
+                        <desc-item-record-ref record-id="101" desc-item-type-code="ZP2015_ENTITY_ROLE" desc-item-spec-code="ZP2015_ENTITY_ROLE_19">
+                          <position>1</position>
+                        </desc-item-record-ref>
+                        <desc-item-text desc-item-type-code="ZP2015_SIZE">
+                          <position>1</position>
+                          <value>množství: 5 listů</value>
+                        </desc-item-text>
+                        <desc-item-record-ref record-id="106" desc-item-type-code="ZP2015_ENTITY_ROLE" desc-item-spec-code="ZP2015_ENTITY_ROLE_61">
+                          <position>3</position>
+                        </desc-item-record-ref>
+                        <desc-item-record-ref record-id="105" desc-item-type-code="ZP2015_ENTITY_ROLE" desc-item-spec-code="ZP2015_ENTITY_ROLE_1">
+                          <position>2</position>
+                        </desc-item-record-ref>
+                        <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                          <position>1</position>
+                          <value>Grafický předělový plán pro obec Lhota</value>
+                        </desc-item-text>
+                        <desc-item-text desc-item-type-code="ZP2015_STORAGE_COND">
+                          <position>1</position>
+                          <value>originál</value>
+                        </desc-item-text>
+                      </desc-item-list>
+                    </level>
+                  </sub-level-list>
+                  <desc-item-list>
+                    <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_SERIES">
+                      <position>1</position>
+                    </desc-item-enum>
+                    <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                      <position>1</position>
+                      <value>Ostatní dokumentace</value>
+                    </desc-item-text>
+                  </desc-item-list>
+                </level>
+                <level>
+                  <position>2</position>
+                  <uuid>837ab41c-e12b-4f26-b3d0-7bb1257f6a5e</uuid>
+                  <sub-level-list>
+                    <level>
+                      <position>1</position>
+                      <uuid>44b47598-77f5-4607-b54a-f83eed1a0d44</uuid>
+                      <desc-item-list>
+                        <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                          <position>1</position>
+                          <value>Členové místní rolnické komise předávají direkty o vlastnictví půdy zemědělcům v obci Lhota</value>
+                        </desc-item-text>
+                        <desc-item-text desc-item-type-code="ZP2015_ITEM_MAT">
+                          <position>1</position>
+                          <value>Nosič záznamu: papír Adjustace: nalepeno na pevný karton Barevnost: černobílý snímek</value>
+                        </desc-item-text>
+                        <desc-item-enum desc-item-type-code="ZP2015_UNIT_TYPE" desc-item-spec-code="ZP2015_UNIT_TYPE_FSN">
+                          <position>1</position>
+                        </desc-item-enum>
+                        <desc-item-record-ref record-id="107" desc-item-type-code="ZP2015_ENTITY_ROLE" desc-item-spec-code="ZP2015_ENTITY_ROLE_56">
+                          <position>2</position>
+                        </desc-item-record-ref>
+                        <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_ITEM">
+                          <position>1</position>
+                        </desc-item-enum>
+                        <desc-item-unit-date calendar-type-code="GREGORIAN" desc-item-type-code="ZP2015_UNIT_DATE">
+                          <position>1</position>
+                          <value-from>1946-04-28T00:00:00+01:00</value-from>
+                          <value-from-estimated>false</value-from-estimated>
+                          <value-to>1946-04-28T23:59:59+01:00</value-to>
+                          <value-to-estimated>false</value-to-estimated>
+                          <format>D</format>
+                        </desc-item-unit-date>
+                        <desc-item-text desc-item-type-code="ZP2015_STORAGE_COND">
+                          <position>1</position>
+                          <value>Originál</value>
+                        </desc-item-text>
+                        <desc-item-text desc-item-type-code="ZP2015_SIZE">
+                          <position>1</position>
+                          <value>Šířka: 130mm, Výška: 90mm</value>
+                        </desc-item-text>
+                        <desc-item-text desc-item-type-code="ZP2015_ORIENTATION">
+                          <position>1</position>
+                          <value>orientováno na severovýchod</value>
+                        </desc-item-text>
+                        <desc-item-record-ref record-id="101" desc-item-type-code="ZP2015_ENTITY_ROLE" desc-item-spec-code="ZP2015_ENTITY_ROLE_21">
+                          <position>3</position>
+                        </desc-item-record-ref>
+                        <desc-item-coordinates desc-item-type-code="ZP2015_POSITION">
+                          <position>1</position>
+                          <value>POINT (12 12)</value>
+                        </desc-item-coordinates>
+                        <desc-item-record-ref record-id="108" desc-item-type-code="ZP2015_ENTITY_ROLE" desc-item-spec-code="ZP2015_ENTITY_ROLE_1">
+                          <position>1</position>
+                        </desc-item-record-ref>
+                      </desc-item-list>
+                    </level>
+                    <level>
+                      <position>2</position>
+                      <uuid>52327382-0338-4789-a05c-464ac492a2f4</uuid>
+                      <desc-item-list>
+                        <desc-item-integer desc-item-type-code="ZP2015_UNIT_COUNT">
+                          <position>1</position>
+                          <value>6</value>
+                        </desc-item-integer>
+                        <desc-item-enum desc-item-type-code="ZP2015_UNIT_TYPE" desc-item-spec-code="ZP2015_UNIT_TYPE_FSN">
+                          <position>1</position>
+                        </desc-item-enum>
+                        <desc-item-enum desc-item-type-code="ZP2015_FOLDER_TYPE" desc-item-spec-code="ZP2015_FOLDER_SINGLE_TYPE">
+                          <position>1</position>
+                        </desc-item-enum>
+                        <desc-item-unit-date calendar-type-code="GREGORIAN" desc-item-type-code="ZP2015_UNIT_DATE">
+                          <position>1</position>
+                          <value-from>1959-01-01T00:00:00+01:00</value-from>
+                          <value-from-estimated>false</value-from-estimated>
+                          <value-to>1959-12-31T23:59:59+01:00</value-to>
+                          <value-to-estimated>false</value-to-estimated>
+                          <format>Y</format>
+                        </desc-item-unit-date>
+                        <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                          <position>1</position>
+                          <value>Demolice usedlosti čp. 45</value>
+                        </desc-item-text>
+                        <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_FOLDER">
+                          <position>1</position>
+                        </desc-item-enum>
+                      </desc-item-list>
+                    </level>
+                  </sub-level-list>
+                  <desc-item-list>
+                    <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_SERIES">
+                      <position>1</position>
+                    </desc-item-enum>
+                    <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                      <position>1</position>
+                      <value>Fotografie</value>
+                    </desc-item-text>
+                  </desc-item-list>
+                </level>
+                <level>
+                  <position>3</position>
+                  <uuid>1f8fb338-a002-49e2-bd62-ff8fd57650fa</uuid>
+                  <sub-level-list>
+                    <level>
+                      <position>1</position>
+                      <uuid>fae16702-351e-4560-9550-fddfac19c370</uuid>
+                      <desc-item-list>
+                        <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                          <position>1</position>
+                          <value>Prapor obce podepsaný prezidentem A. Zápotockým při návštěvě obce</value>
+                        </desc-item-text>
+                        <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_ITEM">
+                          <position>1</position>
+                        </desc-item-enum>
+                        <desc-item-unit-date calendar-type-code="GREGORIAN" desc-item-type-code="ZP2015_UNIT_DATE">
+                          <position>1</position>
+                          <value-from>1948-01-01T00:00:00+01:00</value-from>
+                          <value-from-estimated>false</value-from-estimated>
+                          <value-to>1948-12-31T23:59:59+01:00</value-to>
+                          <value-to-estimated>false</value-to-estimated>
+                          <format>Y</format>
+                        </desc-item-unit-date>
+                        <desc-item-enum desc-item-type-code="ZP2015_UNIT_TYPE" desc-item-spec-code="ZP2015_UNIT_TYPE_JIN">
+                          <position>1</position>
+                        </desc-item-enum>
+                      </desc-item-list>
+                    </level>
+                  </sub-level-list>
+                  <desc-item-list>
+                    <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_SERIES">
+                      <position>1</position>
+                    </desc-item-enum>
+                    <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                      <position>1</position>
+                      <value>Jiné</value>
+                    </desc-item-text>
+                  </desc-item-list>
+                </level>
+              </sub-level-list>
+              <desc-item-list>
+                <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_SERIES">
+                  <position>1</position>
+                </desc-item-enum>
+                <desc-item-text desc-item-type-code="ZP2015_TITLE">
+                  <position>1</position>
+                  <value>Ostatní</value>
+                </desc-item-text>
+              </desc-item-list>
+            </level>
+          </sub-level-list>
+          <desc-item-list>
+            <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_SERIES">
+              <position>1</position>
+            </desc-item-enum>
+            <desc-item-text desc-item-type-code="ZP2015_TITLE">
+              <position>1</position>
+              <value>Úřad národního výboru</value>
+            </desc-item-text>
+          </desc-item-list>
+        </level>
+      </sub-level-list>
+      <desc-item-list>
+        <desc-item-party-ref party-id="81" desc-item-type-code="ZP2015_ORIGINATOR">
+          <position>1</position>
+        </desc-item-party-ref>
+        <desc-item-text desc-item-type-code="ZP2015_UNIT_SOURCE">
+          <position>1</position>
+          <value>První kontakt MNV s příslušnými orgány ohledně spisové služby proběhl již v roce 1953. Tehdy se na MNV dostavila zástupkyně ONV ve Svijanech-sever Anna Novotná ke skartaci spisů. Podle dochovaného zápisu byly vyřazeny do stoupy nepotřebné dokumenty do roku 1950. Konkrétně jsou v zápise uvedeny pouze Úřední listy, zásobovací agenda kromě posledních kmenových listů, zásobovací zpravodaje a korespondence do roku 1950 (celkem zhruba 80 kg papíru). K další prohlídce spisů MNV Lhota došlo 21. dubna 1959 již za účasti okresního archiváře Františka Soukala. Nalezeny byly spisy zásobovací agendy, které byly vyřazeny do sběru (zhruba 2 kg). Pro archiv byly vybrány následující dokumenty: „starý podací protokol“ (s tím, že nový je veden od roku 1955), tři balíky spisů do roku 1956, dvě knihy zápisů ze schůzí MNV (dnes ozn. 1//1, 1//2). Zda byly vybrané archiválie ihned převezeny okresním archivářem do archivu, není jasné, ale patrně se tak nestalo. Nový evidenční list JAF byl totiž založen až 22. 12. 1960. Na EL byly v té době evidovány dvě knihy z let 1946–1954 (nepochybně se jednalo o knihy zápisů ze schůzí) a tři balíky z let 1952–1956. V době založení EL JAF archivu patrně nebyl předán „starý podací protokol“. //1//5: kopie pořízená v roce 1992, originál byl zničen při požáru (viz též: III. Archivní charakteristika archivního souboru, Způsob uspořádání).</value>
+        </desc-item-text>
+        <desc-item-enum desc-item-type-code="ZP2015_LEVEL_TYPE" desc-item-spec-code="ZP2015_LEVEL_ROOT">
+          <position>1</position>
+        </desc-item-enum>
+        <desc-item-text desc-item-type-code="ZP2015_UNIT_HIST">
+          <position>1</position>
+          <value>Písemnosti původce byly uloženy do roku 1950 patrně v budově čp. 17, resp. u jednotlivých funkcionářů jak bylo v té době obvyklé. Z dochovaných archiválií nelze zjistit, kde se úřadovna nacházela později. Z nich není ani jasné, podle jakého systému byly ukládány dokumenty MNV. Lze usuzovat, že praxe byla stejná jako u srovnatelných MNV, u nichž rovněž nefungovala spisová služba ani žádný systém ukládání dokumentů. Přesto se v některých případech používalo podací razítko Rada MNV v Lhotě, Došlo dne (viz protokol o vyřazení archiválií z evidencí NAD). Podacím razítkem však nejsou označeny všechny dochované archiválie a výběr byl zpočátku spíše nahodilý, od roku 1964 se již podací razítko objevuje téměř na všech došlých dokumentech.</value>
+        </desc-item-text>
+        <desc-item-string desc-item-type-code="ZP2015_NAD">
+          <position>1</position>
+          <value>102</value>
+        </desc-item-string>
+      </desc-item-list>
+      <record-list>
+        <record>101</record>
+      </record-list>
+    </root-level>
+  </fund>
+  <record-list>
+    <record record-id="101" register-type-code="PUBLIC_ADMINISTRATION" local="true">
+      <preferred-name>Místní národní výbor Lhota</preferred-name>
+      <characteristics>20.6.1945</characteristics>
+      <variant-name-list>
+        <variant-name party-name-form-type-code="1">
+          <main-part>Místní narodní výbor ve Lhotě</main-part>
+          <valid-from>
+            <text-date>12. st</text-date>
+          </valid-from>
+          <valid-to>
+            <text-date>13. st</text-date>
+          </valid-to>
+        </variant-name>
+      </variant-name-list>
+    </record>
+    <record record-id="102" register-type-code="PUBLIC_ADMINISTRATION" local="true">
+      <preferred-name>Obecní úřad ve Lhotě</preferred-name>
+      <characteristics></characteristics>
+    </record>
+    <record record-id="105" register-type-code="PERSON_INDIVIDUAL" local="true">
+      <preferred-name>Wölks</preferred-name>
+      <characteristics></characteristics>
+    </record>
+    <record record-id="106" register-type-code="GEO_UNIT" local="true">
+      <preferred-name>Lhota (Česko)</preferred-name>
+      <characteristics>Lhota</characteristics>
+    </record>
+    <record record-id="107" register-type-code="GEO_UNIT" local="true">
+      <preferred-name>Kostelec (Česko)</preferred-name>
+      <characteristics>Kostelec</characteristics>
+    </record>
+    <record record-id="108" register-type-code="PERSON_INDIVIDUAL" local="true">
+      <preferred-name>Syrový Jan</preferred-name>
+      <characteristics></characteristics>
+    </record>
+  </record-list>
+  <party-list>
+    <party-group party-id="81" record-id="101">
+      <preferred-name party-name-form-type-code="1">
+        <main-part>Místní národní výbor Lhota</main-part>
+        <valid-from>
+          <specific-date-from>1945-01-01T00:00:00+01:00</specific-date-from>
+          <specific-date-to>1945-12-31T23:59:59+01:00</specific-date-to>
+        </valid-from>
+        <valid-to>
+          <specific-date-from>1980-01-01T00:00:00+01:00</specific-date-from>
+          <specific-date-to>1980-12-31T23:59:59+01:00</specific-date-to>
+        </valid-to>
+      </preferred-name>
+      <variant-name-list>
+        <variant-name party-name-form-type-code="1">
+          <main-part>Místní narodní výbor ve Lhotě</main-part>
+          <valid-from>
+            <text-date>12. st</text-date>
+          </valid-from>
+          <valid-to>
+            <text-date>14. st</text-date>
+          </valid-to>
+        </variant-name>
+      </variant-name-list>
+      <history>Místní národní výbor (dále též MNV) Lhota vykonával správu obce od roku 1945 do konce června roku 1980. Obec Lhota patřila do r. 1949 do soudního, resp. politického okresu Zlato. Národní výbory (dále též NV) byly zřízeny po druhé světové válce jako správní orgány obcí a vyšších územně správních celků (okresy, země, od r. 1949 kraje). Nahradily tak od r. 1850 fungující obecní úřady, resp. úřady vyšších územně správních celků. Právní základ jejich existence byl položen ústavním dekretem presidenta republiky ze dne 4. prosince 1944 o národních výborech a prozatímním Národním shromáždění, na nějž navazovalo vládní nařízení č. 4/1945 Sb., o volbě a pravomoci národních výborů. Poté následovaly stovky dalších norem, které určovaly podmínky a pravidla pro fungování národních výborů, jejich složek, zřizovaných organizací atd. Éra národních výborů byla uzavřena v roce 1990, kdy došlo ke znovuobnovení obecních úřadů, resp. zřízení dalších úřadů pro správu vyšších územně správních celků. Shora uvedené vládní nařízení č. 4/1945 Sb., o volbě a pravomoci národních výborů, částečně pozměněné vládním nařízením č. 44/1945 Sb., o rozsahu působnosti národních výborů, určovalo, že se v každé obci měl ustavit místní národní výbor. Vnitřní složení, pravomoci, hospodaření, vedení a podepisování některých druhů dokumentů určovala Směrnice ministerstva vnitra č. 6 ze dne 19. května 1945 uveřejněná v Úředním listu republiky Československé a navazující Prozatímní organizační řád místních národních výborů z roku 1947. Tyto dokumenty rozlišovaly národní výbory na volený sbor složený z členů národního výboru, jeho složky (rada, předseda, referenti, komise) a úřad národního výboru. Národní výbory byly definovány jako orgány zastupitelské a orgány veřejné správy, které v obvodu své působnosti spravují všechny veřejné záležitosti, pokud nejsou spravovány jiným veřejným orgánem. Ve věcech státní správy byly národní výbory podřízeny vládě a zároveň byla uplatněna podřízenost národního výboru nižšího stupně národnímu výboru vyššího stupně. Stanovení vnitřní organizace a způsobu, jakým mají národní výbory vykonávat svou působnost, byly v pravomoci ministra vnitra. Dnem ustavení místní správní komise, resp. místního národního výboru zaniklo obecní zastupitelstvo, obecní úřad se stal úřadem místního národního výboru a prováděl veškerá jeho rozhodnutí a opatření. Z „Protokolní knihy N. V: v Lhotě“, tj. zápisů ze schůzí vedených od 20. června 1945, vyplývá, že samosprávný orgán rovnou fungoval v podobě národního výboru. Pracoval v desetičlenném složení a jako předseda se podepisoval Antonín Míšek, jako místopředseda Jan Herian. K 5. lednu 1946 jsou doloženy komise bezpečnostní, bytová, finanční, kulturní, rolnická a školská. Datum zřízení stavební komise se nepodařilo zjistit. Složení místních národních výborů bylo upraveno na základě výsledků voleb do Ústavodárného národního shromáždění podle § 1 a § 11, odst. 2 vládního nařízení č. 120/1946 Sb., o obnovení národních výborů na podkladě výsledků voleb do Ústavodárného národního shromáždění, ze dne 27. května 1946. V r. 1946 bylo v Lhotě usídleno 119 osob s volebním právem, tj. počtem dostatečným k ustavení národního výboru. K tomu oficiálně došlo 7. července 1946, kdy byl jako předseda MNV ve funkci potvrzen dosavadní předseda Antonín Míšek, místopředsedou se stal Josef Černý. Národní výbor byl dvanáctičlenný a skládal se z pěti členů strany lidové, pěti komunistů a dvou sociálních demokratů. Při MNV byly ustaveny komise: rolnická, bytová, finanční, osvětová, mimořádná vyživovací, stavební, bezpečnostní a sociální. Při schůzi MNV konané dne 24. dubna 1947 byl na základě dopisu Okresního národního výboru (dále též ONV) Zlato zproštěn funkce předseda Antonín Míšek a vedení obce se dočasně ujal Josef Suda. Až do vydání ústavního zákona č. 150/1948 Sb., z 9. května 1948, jímž byla schválena ústava Československé republiky, měly dosavadní právní normy týkající se národních výborů prozatímní charakter. V Ústavě 9. května byly NV definovány jako „nositelé a vykonavatelé státní moci v obcích, okresích a krajích“ a jejich existence byla právně zakotvena jako nedílná součást státního zřízení ČSR. Zcela novým prvkem bylo zavedení principu volitelnosti NV (od r. 1954); do té doby byli jejich členové jmenováni příslušným ONV na návrh Národní fronty. V Lhotě proběhla po zásahu Místního akčního výboru Národní fronty nová volba a MNV od 12. května 1948 pracoval v částečně obnoveném složení. Předsedou se stal Jaroslav Černý, místopředsedou Jan Michalec, zčásti byly obměněny i komise a byla nově ustavena vyživovací komise. Na základě reformy provedené zákonem č. 280/1948 Sb., o krajském zřízení se Lhota stala od 1. ledna 1949 součástí nově vymezeného kraje Plzeňského. Zároveň byla vládním nařízením č. 3/1949 Sb., o územní organisaci okresů v českých zemích, provedena územní reorganizace okresů. Od 1. února 1949 pak byla obec součástí nově vymezeného okresu Zlato. V souvislosti s realizací zákona č. 268/1949 Sb., o matrikách byla v jednotlivých okresech Plzeňského kraje určena sídla matričních obvodů a stanoven jejich územní rozsah. Lhota byla od 1. ledna 1950 natrvalo zahrnuta do matričního obvodu Zlato. Podle návrhu MAV NF došlo na základě § 27 odst. 1, vládního nařízení č. 14/1950 Sb., o organisaci místních národních výborů, k reorganizaci MNV. Z dochovaného jmenování členů z 1. července 1950 vysvítá, že na návrh akčního výboru se členy MNV stalo 14 kandidátů. Dosavadní předseda Jaroslav Černý z důvodu odchodu na jiné působiště rezignoval na práci v MNV a místo něj nastoupil do čela MNV Jan Michalec st. Funkci místopředsedy zaujal Václav Flajšman. Ze zápisu ze schůze rady konané 16. dubna 1951 vyplývá, že předseda MNV současně zastával funkci referenta pro vnitřní věci a bezpečnost, místopředseda byl současně zemědělským referentem a MNV měl i referenty: zásobovacího-vyživovacího, kulturního a sociálního a finančního. Zápisy dokládají existenci dvou komisí: trestní a zemědělské. Vládním nařízením č. 119/1951 Sb., o tajemnících místních národních výborů, byla upravena působnost tajemníků MNV jako jejich plně uvolněných funkcionářů. Ustanovit a odvolat je mohlo plénum na návrh ONV. Tajemník byl výkonným orgánem MNV a za svou činnost odpovídal jeho předsedovi a radě, řídil se jejich pokyny a současně byl odpovědný radě, předsedovi a tajemníkovi nadřízeného ONV, kteří rovněž usměrňovali jeho práci. Zúčastňoval se všech schůzí pléna a rady a působil také jako politický a odborný poradce i pomocník MNV, a to zejména v oboru zemědělské výroby; podrobnější popis jeho působnosti je uveden v ustanoveních písm. a) – f) odst. 1 § 3 výše uvedeného vládního nařízení. U MNV Lhota není známo, kdo vykonával funkci tajemníka jako první. Nelze vyloučit, že jím byl F. (?) Loukota, uváděný jako „místní tajemník“ od 3. března 1952. Od zápisu z jednání rady MNV konaného 2. ledna 1952 vystupoval jako předseda MNV Martin Štěrba. Do existence národních výborů významně zasáhl ústavní zákon č. 12/1954 Sb., o národních výborech a na něj navazující zákony a vládní nařízení č. 13/1954 Sb., o národních výborech, č. 14/1954 Sb., o volbách do národních výborů, č. 16/1954 Sb., o změnách územních obvodů některých národních výborů a č. 23/1954 Sb., o organisaci výkonných orgánů národních výborů. Dosavadní struktura národních výborů zůstala těmito normami v podstatě nedotčena, pouze v sídlech krajských národních výborů vznikly městské národní výbory. Poměrně zásadně však byla změněna vnitřní organizace větších národních výborů (obce nad 6000 obyvatel) zrušením referentského systému, jehož místo zaujaly jednotlivé odbory národních výborů, v jejichž čele již nestáli členové rady, nýbrž úředníci. Podle § 3, odst. 5 zákona č. 13/1954 Sb., o národních výborech, se volil do místních národních výborů jeden člen nejméně na 100 obyvatel a nejvýše na 200 obyvatel podle velikosti obce. V obcích do 900 obyvatel se volilo devět členů. Místní národní výbory se měly scházet ke svým zasedáním nejméně jedenkrát za měsíc (§10). Rada národního výboru se skládala z předsedy NV, jeho náměstka, popř. náměstků, tajemníka a ostatních členů rady. Všichni členové rady byli voleni národním výborem na jeho prvním zasedání. Národní výbor mohl svou radu i její jednotlivé členy kdykoli odvolat. Podle zákona č. 14/1954 Sb., o volbách do národních výborů, byly 16. května 1954 uskutečněny první volby členů národních výborů všemi občany, majícími volební právo. Volební období bylo stanoveno na tři roky. Předsedou MNV Lhota byl při ustavujícím plenárním zasedání konaném 25. května 1954 z devíti poslanců zvolen Josef Hyneš. Ten se však kvůli pracovním povinnostem až v Litvínově nemohl naplno věnovat výkonu funkce, proto došlo na jeho odvolání a na místo předsedy byl 16. prosince 1954 zvolen Jan Michálek. Funkci tajemníka vykonával Jaroslav Jirmář. Při MNV fungovaly komise finanční, školská a zemědělská. Následující volby se konaly dne 19. května 1957 v souladu se zákonem č. 11/1957 Sb., kterým se mění a doplňuje zákon o volbách do národních výborů. Tímto zákonem byl pozměněn a doplněn zák. č. 14/1954 Sb., o volbách do národních výborů, jehož úplné znění bylo vyhlášeno ministrem spravedlnosti dne 16. března 1957 vyhláškou č. 12/1957 Sb., o úplném znění zákona o volbách do národních výborů. Ve Lhotě byli při ustavujícím plenárním zasedání konaném dne 31. května 1957 v rámci desetičlenného MNV zvoleni: předseda Jan Michálek, tajemník Rudolf Hruška a členové rady Jakub Herian a Václav Štěpánek. Na ustavení komisí došlo v následujících dnech. Byly zřízeny komise finanční, bytová a pro výstavbu, školská a osvětová, trestní a zemědělská. S účinností od 1. července 1960 došlo na základě zákona č. 36/1960 Sb., o územním členění státu, k reorganizaci okresů. Lhota byla zařazena do nově ustaveného okresu Plzeň-sever. Zároveň došlo k reorganizaci krajů a sloučením Plzeňského a Karlovarského kraje vznikl kraj Západočeský. Další volby do MNV (zároveň též do Národního shromáždění, krajského národního výboru, ONV a MěstNV) se konaly na území celého státu dne 12. června 1960 podle nového územního uspořádání. V souladu se zákonem č. 39/1960 Sb., o volbách do národních výborů, se do národních výborů poprvé volili poslanci (dříve členové). Působnost MNV byla upravena zákonem č. 65/1960 Sb., o národních výborech, ze dne 25. května 1960. Zároveň bylo Ústavou Československé socialistické republiky volební období prodlouženo z původních tří na čtyři roky (ústava byla publikována pod č. 100/1960 Sb., prodloužení volebního období se týká čl. 86, odst. 3). Do MNV Lhota bylo navrženo a zvoleno devět kandidátů na místa poslanců. Z nich byli při ustavujícím plenárním zasedání 25. června 1960 zvoleni: jako staronový předseda Jan Michálek a jako tajemník Miloslav Michalec. Na jaře 1961 se však předseda MNV Jan Michálek stal předsedou sloučených JZD a pro pracovní zaneprázdnění a přetížení požádal o uvolnění z funkce předsedy MNV. Místo něj byl do uvedené funkce k 1. dubnu 1961 zvolen dosavadní člen rady Rudolf Hruška. Při MNV fungovaly komise bezpečnostní, finanční plánovací, pro výstavbu a bytová, školská a kulturní, trestní a zemědělská. Na základě požadavku obyvatel obce Lhota vycházejícího z hospodářských poměrů (sloučení JZD Lhota s JZD Sytno, Sulislav, Svinná a Vranov) došlo s platností od 1. července 1961 k vydělení obce Lhota z území okresu Svijany-sever a jejímu začlenění do okresu Kostelec. V r. 1962 pak proběhly doplňovací volby a po ustavujícím plenárním zasedání konaném dne 28. 4. 1962 předsedal MNV Miroslav Hájek. Ve zcela změněném obsazení fungovaly i komise bezpečnostní, finanční, výstavby, společná školská, kulturní a sociálního zabezpečení a zemědělská. Z voleb uskutečněných v červnu 1964 vzešel z voleb třináctičlenný MNV a od veřejného plenárního zasedání uskutečněného 9. července 1964 zahájil činnost pod vedením staronového předsedy Miroslava Hájka a tajemníka Miloslava Michalce. Při MNV byly následně ustaveny čtyři komise: pro veřejný pořádek, pro rozvoj služeb a společenské potřeby, finanční a zemědělská. V roce 1968 došlo ústavním zákonem č. 83/1968 Sb., o skončení volebního období národních výborů, Národního shromáždění a Slovenské národní rady ke kodifikaci změny v tom smyslu, že volby budou provedeny nejpozději do konce roku 1969. Ústavní zákon č. 117/1969 Sb., o prodloužení volebního období národních výborů, národních rad a Federálního shromáždění, Nejvyššího soudu, krajských, okresních a vojenských soudů pak prodloužil stávající volební období do 31. prosince 1971. Ústavním zákonem č. 43/1971, kterým se mění čl. 86 Ústavy a čl. 30 a 103 ústavního zákona o československé federaci pak bylo volební období trvale stanoveno na pět let. Z podzimních voleb realizovaných ve dnech 26. a 27. listopadu 1971 bylo do MNV zvoleno jedenáct poslanců. Ustavující plenární zasedání MNV pak proběhlo 15. prosince 1971 a z řad nových poslanců byl opětovně zvolen staronový předseda Miroslav Hájek. Tajemníkem se znovu stal Miloslav Michalec. Jedinou ustavenou komisí se stala KOVP. Po volbách uskutečněných v říjnu 1976 zasedal od ustavující schůze konané dne 12. listopadu 1976 ve dvanáctičlenném MNV jako předseda dosavadní tajemník Miloslav Michalec. Místopředsedou byl zvolen Rudolf Hruška a tajemníkem Svatoslav Kracík. Ustaveny byly dvě komise: KOVP a pro výstavbu a služby. V rámci dalších územních změn obcí v okrese Kostelec se na konci roku 1979 začala projednávat mj. i otázka sloučení obce Lhota s městskou obcí Zlato. Integrace byla schválena usnesením 19. plenárního zasedání ONV v Kostelci ze dne 27. června 1980. Od 1. července 1980 byla Lhota sloučena s obcí Zlato, pro kterou byl stanoven název Zlato. Lhota se stala částí obce Zlato a její zájmy od té doby hájil občanský výbor, případně ze vsi zvolení poslanci. Toto územněsprávní uspořádání trvalo do konce roku 1991. Dne 1. ledna 1992 byla ve Lhotě obnovena obecní samospráva, která trvá doposud.</history>
+      <source-informations>Státní okresní archiv Kostelec, fond Okresní národní výbor Svijany-sever, inv. č. 203, sign. I/20g, kart. č. 30, Seznamy členů MNV 1945-1949. Státní okresní archiv Kostelec, fond Okresní národní výbor Svijany-sever, inv. č. 323, sign. I/20b, kart. č. 27, Členové MNV 1945-1949, R-Z. Státní okresní archiv Kostelec, fond Okresní národní výbor Svijany-sever, inv. č. 543, sign. 603, kart. č. 706, Přehled o sloučení obcí. Státní okresní archiv Kostelec, fond Okresní národní výbor Svijany-sever, inv. č. 328, sign. I/20g, kart. č. 32, Evidence členů MNV 1946-1953, obce N-Z. Státní okresní archiv Kostelec, fond Okresní národní výbor Svijany-sever, inv. č. 425, sign. 54, kart. č. 287, Reorganizace MNV 1950-1952, R-Z. Státní okresní archiv Kostelec, fond Okresní národní výbor Svijany-sever, inv. č. 487, sign. 603, kart. č. 513, Volby – zápisy o hlasování jednotlivých MNV 1954. Státní okresní archiv Kostelec, fond Okresní národní výbor Svijany-sever, inv. č. 487, sign. 603, kart. č. 519, Volby – zápisy o sčítání hlasů 1954-1957. Státní okresní archiv Kostelec, fond Okresní národní výbor Kostelec, sign. 603, Volby, 1960, 1971. Státní okresní archiv Kostelec, fond Okresní národní výbor Kostelec, sign. 604/1, Slučování obcí a změny hranic obcí 1952-1989. Seznam matričních obvodů v českých krajích. Praha : Ministerstvo vnitra, 1950. Volby do ústavodárného Národního shromáždění dne 26. května 1946, část II. Volební výsledky podle obcí, sešit 2. Volební kraj V-VII Plzeň, Karlovy Vary, Ústí nad Labem, in: Zprávy Státního úřadu statistického, řada B, číslo 4–6, ročník XXVII. (1946) číslo 26–28. HLEDÍKOVÁ, Zdeňka, JANÁK, Jan, DOBEŠ, Jan. Dějiny správy v českých zemích : od počátků státu po současnost. Praha : Nakladatelství Lidové noviny, 2005. ISBN 80-7106-709-1. SCHELLE, Karel. Vývoj české veřejné správy. Ostrava:KEY Publishing s.r.o., 2008. ISBN 978-80-87071-92-2.</source-informations>
+      <relation-list>
+        <relation class-type-code="R" relation-type-code="12">
+          <from-date>
+            <specific-date-from>1945-01-01T00:00:00+01:00</specific-date-from>
+            <specific-date-to>1945-12-31T23:59:59+01:00</specific-date-to>
+          </from-date>
+          <to-date>
+            <specific-date-from>1980-01-01T00:00:00+01:00</specific-date-from>
+            <specific-date-to>1980-12-31T23:59:59+01:00</specific-date-to>
+          </to-date>
+          <date-note></date-note>
+          <note>adresa Lhota čp. 17</note>
+          <source></source>
+          <role-type-list>
+            <role-type role-type-code="1" record-id="102"/>
+            <role-type role-type-code="105" record-id="106"/>
+            <role-type role-type-code="112" record-id="106"/>
+          </role-type-list>
+        </relation>
+        <relation class-type-code="R" relation-type-code="13">
+          <date-note></date-note>
+          <note></note>
+          <source></source>
+          <role-type-list>
+            <role-type role-type-code="1" record-id="102"/>
+            <role-type role-type-code="105" record-id="106"/>
+            <role-type role-type-code="112" record-id="106"/>
+          </role-type-list>
+        </relation>
+        <relation class-type-code="E" relation-type-code="5">
+          <from-date>
+            <specific-date-from>1980-07-01T00:00:00+02:00</specific-date-from>
+            <specific-date-to>1980-07-01T23:59:59+02:00</specific-date-to>
+          </from-date>
+          <date-note></date-note>
+          <note>schválilo 19. plenární zasedání ONV v Kostelci 27. června 1980</note>
+          <source></source>
+          <role-type-list>
+            <role-type role-type-code="1" record-id="102"/>
+            <role-type role-type-code="105" record-id="106"/>
+            <role-type role-type-code="112" record-id="106"/>
+          </role-type-list>
+        </relation>
+        <relation class-type-code="B" relation-type-code="1">
+          <from-date>
+            <specific-date-from>1945-06-20T00:00:00+02:00</specific-date-from>
+            <specific-date-to>1945-06-20T23:59:59+02:00</specific-date-to>
+          </from-date>
+          <date-note></date-note>
+          <note>den začátku úřadování</note>
+          <source></source>
+          <role-type-list>
+            <role-type role-type-code="1" record-id="102"/>
+            <role-type role-type-code="105" record-id="106"/>
+            <role-type role-type-code="112" record-id="106"/>
+          </role-type-list>
+        </relation>
+      </relation-list>
+      <scope>1</scope>
+      <organization></organization>
+      <party-group-id-list>
+        <party-group-id id="ko3002898988">
+          <source>INTERPI</source>
+          <valid-from>
+            <text-date>5. st</text-date>
+          </valid-from>
+          <valid-to>
+            <text-date>7. st</text-date>
+          </valid-to>
+        </party-group-id>
+      </party-group-id-list>
+    </party-group>
+  </party-list>
+  <packet-list>
+    <packet packet-type-code="BOX" storage-number="5" state="OPEN"/>
+    <packet packet-type-code="BOX" storage-number="59" state="OPEN"/>
+    <packet packet-type-code="BOX" storage-number="60" state="OPEN"/>
+  </packet-list>
+</ns2:xml-import>
