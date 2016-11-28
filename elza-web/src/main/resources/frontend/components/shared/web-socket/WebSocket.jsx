@@ -11,6 +11,7 @@ import './WebSocket.less';
 class WebSocket extends AbstractReactComponent {
 
     render() {
+        const {webSocket} = this.props;
         const {loading} = this.props.webSocket;
 
         let content;

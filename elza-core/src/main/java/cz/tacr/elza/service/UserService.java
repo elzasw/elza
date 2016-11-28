@@ -1,5 +1,8 @@
 package cz.tacr.elza.service;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ParParty;
@@ -41,6 +44,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -83,12 +87,25 @@ public class UserService {
     @Value("${elza.security.salt:kdFss=+4Df_%}")
     private String SALT;
 
+    private Object synchObj = new Object();
+
     private ShaPasswordEncoder encoder = new ShaPasswordEncoder(256);
 
-    /**
-     * Seznam session id, pro které se má přepočítat oprávnění
-     */
-    private Set<String> reCalcSessionIds = new HashSet<>();
+    /** Cache pro nakešování oprávnění uživatele. */
+    private LoadingCache<Integer, Collection<UserPermission>> userPermissionsCache;
+
+    public UserService() {
+        LoadingCache<Integer, Collection<UserPermission>> userPermissionsCache = CacheBuilder.newBuilder()
+                .maximumSize(150)
+                .expireAfterAccess(10, TimeUnit.MINUTES)
+                .build(new CacheLoader<Integer, Collection<UserPermission>>() {
+                    @Override
+                    public Collection<UserPermission> load(final Integer userId) throws Exception {
+                        final UsrUser user = getUser(userId);
+                        return calcUserPermission(user);
+                    }
+                });
+    }
 
     private void changePermission(final @NotNull UsrUser user,
                                   final @NotNull UsrGroup group,
@@ -214,7 +231,7 @@ public class UserService {
         List<SessionInformation> infoSessions = sessionRegistry.getAllSessions(user.getUsername(), false);
         for (SessionInformation infoSession : infoSessions) {
             String sessionId = infoSession.getSessionId();
-            reCalcSessionIds.add(sessionId);
+//            reCalcSessionIds.add(sessionId);
         }
     }
 
@@ -498,18 +515,20 @@ public class UserService {
      * @return detail přihlášeného uživatele (null pokud není nikdo přihlášený)
      */
     public UserDetail getLoggedUserDetail() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null) {
-            return null;
+        synchronized (synchObj) {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null) {
+                return null;
+            }
+            UserDetail details = (UserDetail) auth.getDetails();
+    //        if (reCalcSessionIds.contains(sessionId)) {
+    //            reCalcSessionIds.remove(sessionId);
+                UsrUser user = userRepository.findByUsername(details.getUsername());
+                details.getUserPermission().clear();
+                details.getUserPermission().addAll(calcUserPermission(user));
+    //        }
+            return details;
         }
-        UserDetail details = (UserDetail) auth.getDetails();
-//        if (reCalcSessionIds.contains(sessionId)) {
-//            reCalcSessionIds.remove(sessionId);
-            UsrUser user = userRepository.findByUsername(details.getUsername());
-            details.getUserPermission().clear();
-            details.getUserPermission().addAll(calcUserPermission(user));
-//        }
-        return details;
     }
 
     /**

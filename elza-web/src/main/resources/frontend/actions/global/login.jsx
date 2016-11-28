@@ -2,6 +2,7 @@ import * as types from 'actions/constants/ActionTypes.js';
 import {WebApi} from 'actions/index.jsx';
 import {userDetailChange, userDetailClear} from 'actions/user/userDetail.jsx'
 import {routerNavigate} from "actions/router.jsx"
+import {stompDisconnect, stompConnect} from "websocket"
 
 export function loginFail(callback) {
     return {
@@ -12,6 +13,11 @@ export function loginFail(callback) {
 
 export function loginSuccess() {
     return (dispatch, getState) => {
+        // Reconnect websocketu - jinak by házelo AccessDenied, protože websocket byl inicializován s jiným přihlášením
+        stompDisconnect();
+        stompConnect();
+
+        // ---
         let state = getState();
         WebApi.getUserDetail()
             .then(userDetail => {

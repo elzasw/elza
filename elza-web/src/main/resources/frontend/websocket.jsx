@@ -196,6 +196,8 @@ function stompSuccessCallback(frame) {
  * @param error {string} text chyby
  */
 function stompFailureCallback(error) {
+    console.error("Websocket - failure", error);
+
     const {body, headers} = error;
     if (error.command === "ERROR" && body && headers) {
         stompDisconnect();
