@@ -16,6 +16,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -49,6 +50,7 @@ import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.ParRelationTypeRoleType;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.UIPartyGroup;
+import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
@@ -76,6 +78,12 @@ import cz.tacr.elza.packageimport.xml.RelationType;
 import cz.tacr.elza.packageimport.xml.RelationTypeRoleType;
 import cz.tacr.elza.packageimport.xml.RelationTypeRoleTypes;
 import cz.tacr.elza.packageimport.xml.RelationTypes;
+import cz.tacr.elza.packageimport.xml.Setting;
+import cz.tacr.elza.packageimport.xml.SettingBase;
+import cz.tacr.elza.packageimport.xml.SettingFundViews;
+import cz.tacr.elza.packageimport.xml.SettingRecord;
+import cz.tacr.elza.packageimport.xml.SettingTypeGroups;
+import cz.tacr.elza.packageimport.xml.Settings;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.repository.Packaging;
@@ -89,10 +97,13 @@ import cz.tacr.elza.repository.RegistryRoleRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
+import cz.tacr.elza.repository.SettingsRepository;
 import cz.tacr.elza.repository.UIPartyGroupRepository;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Maps;
@@ -169,6 +180,9 @@ import cz.tacr.elza.utils.AppContext;
 @Service
 public class PackageService {
 
+    @Value("${elza.package.testing:false}")
+    private Boolean testing;
+
     /**
      * hlavní soubor v zipu
      */
@@ -229,6 +243,7 @@ public class PackageService {
     public static final String RELATION_TYPE_ROLE_TYPE_XML = "par_relation_type_role_type.xml";
     public static final String REGISTRY_ROLE_XML = "par_registry_role.xml";
     public static final String REGISTER_TYPE_XML = "reg_register_type.xml";
+    public static final String SETTING_XML = "ui_setting.xml";
 
     /**
      * Složka templatů
@@ -349,6 +364,9 @@ public class PackageService {
     @Autowired
     private RegistryRoleRepository registryRoleRepository;
 
+    @Autowired
+    private SettingsRepository settingsRepository;
+
     private List<RulTemplate> newRultemplates = null;
 
     /**
@@ -424,8 +442,6 @@ public class PackageService {
             RelationRoleTypes relationRoleTypes = convertXmlStreamToObject(RelationRoleTypes.class, mapEntry.get(RELATION_ROLE_TYPE_XML));
             List<ParRelationRoleType> parRelationRoleTypes = processRelationRoleTypes(relationRoleTypes, rulPackage);
 
-            entityManager.flush();
-
             PartyNameFormTypes partyNameFormTypes = convertXmlStreamToObject(PartyNameFormTypes.class, mapEntry.get(PARTY_NAME_FORM_TYPE_XML));
             processPartyNameFormTypes(partyNameFormTypes, rulPackage);
 
@@ -457,6 +473,14 @@ public class PackageService {
             processRegistryRoles(registryRoles, rulPackage, parRelationRoleTypes, regRegisterTypes);
 
             // END OSOBY -----------------------------------------------------------------------------------------------
+
+            // NASTAVENÍ -----------------------------------------------------------------------------------------------
+
+            Settings settings = convertXmlStreamToObject(Settings.class, mapEntry.get(SETTING_XML));
+
+            processSettings(settings, rulPackage);
+
+            // END NASTAVENÍ -------------------------------------------------------------------------------------------
 
             entityManager.flush();
 
@@ -521,6 +545,65 @@ public class PackageService {
             }
         }
 
+    }
+
+    /**
+     * Zpracování nastavení.
+     */
+    private void processSettings(final Settings settings, final RulPackage rulPackage) {
+        List<UISettings> uiSettings = settingsRepository.findByRulPackage(rulPackage);
+        List<UISettings> uiSettingsAll = settingsRepository.findAll();
+        List<UISettings> uiSettingsNew = new ArrayList<>();
+        List<RulPackage> rulPackages = packageRepository.findAll();
+        rulPackages.add(rulPackage);
+
+        if (settings != null && !CollectionUtils.isEmpty(settings.getSettings())) {
+            for (Setting setting : settings.getSettings()) {
+                UISettings uiSetting = findEntity(uiSettingsAll,
+                        setting.getSettingsType(), setting.getEntityType(), setting.getEntityId(),
+                        UISettings::getSettingsType, UISettings::getEntityType, UISettings::getEntityId);
+                if (uiSetting == null) {
+                    uiSetting = new UISettings();
+                } else if(!uiSetting.getRulPackage().equals(rulPackage)) {
+                    throw new SystemException(PackageCode.OTHER_PACKAGE).set("code", uiSetting.getRulPackage().getCode());
+                }
+                convertUISettings(rulPackage, setting, uiSetting, rulPackages);
+                uiSettingsNew.add(uiSetting);
+            }
+        }
+
+        uiSettingsNew = settingsRepository.save(uiSettingsNew);
+
+        List<UISettings> uiSettingsDelete = new ArrayList<>(uiSettings);
+        uiSettingsDelete.removeAll(uiSettingsNew);
+        settingsRepository.delete(uiSettingsDelete);
+    }
+
+    /**
+     * Konverze VO -> DO.
+     */
+    private void convertUISettings(final RulPackage rulPackage, final Setting setting, final UISettings uiSetting, final List<RulPackage> rulPackages) {
+        uiSetting.setRulPackage(rulPackage);
+        uiSetting.setSettingsType(setting.getSettingsType());
+        uiSetting.setEntityType(setting.getEntityType());
+
+        if (setting instanceof SettingFundViews) {
+            String code = ((SettingFundViews) setting).getCode();
+            setPackageToSetting(rulPackages, code, uiSetting);
+        } else if(setting instanceof SettingTypeGroups) {
+            String code = ((SettingTypeGroups) setting).getCode();
+            setPackageToSetting(rulPackages, code, uiSetting);
+        }
+
+        uiSetting.setValue(setting.getValue());
+    }
+
+    private void setPackageToSetting(final List<RulPackage> rulPackages, final String code, final UISettings uiSetting) {
+        RulPackage entity = findEntity(rulPackages, code, RulPackage::getCode);
+        if (entity == null) {
+            throw new BusinessException(PackageCode.CODE_NOT_FOUND).set("code", code).set("file", SETTING_XML);
+        }
+        uiSetting.setEntityId(entity.getPackageId());
     }
 
     /**
@@ -1093,7 +1176,7 @@ public class PackageService {
                                 @NotNull final S find,
                                 @NotNull final Function<T, S> function) {
         for (T item : list) {
-            if (function.apply(item).equals(find)) {
+            if (Objects.equals(function.apply(item), find)) {
                 return item;
             }
         }
@@ -1119,7 +1202,37 @@ public class PackageService {
                                 @NotNull final Function<T, S1> functionA,
                                 @NotNull final Function<T, S2> functionB) {
         for (T item : list) {
-            if (functionA.apply(item).equals(findA) && functionB.apply(item).equals(findB)) {
+            if (Objects.equals(functionA.apply(item), findA)
+                    && Objects.equals(functionB.apply(item), findB)) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Generická metoda pro vyhledání v seznamu entit podle definované metody.
+     *
+     * @param list      seznam prohledávaných entit
+     * @param findA     co hledán v entitě - první podmínka
+     * @param findB     co hledán v entitě - druhá podmínka
+     * @param findC     co hledán v entitě - třetí podmínka
+     * @param functionA metoda, jakou hledám v entitě - první
+     * @param functionB metoda, jakou hledám v entitě - druhá
+     * @param functionC metoda, jakou hledám v entitě - třetí
+     * @return nalezená entita
+     */
+    private <T, S1, S2, S3> T findEntity(@NotNull final List<T> list,
+                                     @NotNull final S1 findA,
+                                     @NotNull final S2 findB,
+                                     @NotNull final S3 findC,
+                                     @NotNull final Function<T, S1> functionA,
+                                     @NotNull final Function<T, S2> functionB,
+                                     @NotNull final Function<T, S3> functionC) {
+        for (T item : list) {
+            if (Objects.equals(functionA.apply(item), findA)
+                    && Objects.equals(functionB.apply(item), findB)
+                    && Objects.equals(functionC.apply(item), findC)) {
                 return item;
             }
         }
@@ -2017,7 +2130,7 @@ public class PackageService {
         if (rulPackage == null) {
             rulPackage = new RulPackage();
         } else {
-            if (rulPackage.getVersion().equals(packageInfo.getVersion())) {
+            if (BooleanUtils.isNotTrue(getTesting()) && rulPackage.getVersion().equals(packageInfo.getVersion())) {
                 throw new BusinessException(PackageCode.VERSION_APPLIED).set("code", rulPackage.getCode())
                         .set("version", rulPackage.getVersion());
             }
@@ -2046,7 +2159,7 @@ public class PackageService {
                 T xml = (T) unmarshaller.unmarshal(xmlStream);
                 return xml;
             } catch (Exception e) {
-                throw new IllegalStateException("Chyba při mapování XML souboru pro třídu " + classObject.toString(), e);
+                throw new SystemException(e, PackageCode.PARSE_ERROR).set("class", classObject.toString());
             }
         }
         return null;
@@ -2157,6 +2270,8 @@ public class PackageService {
 
             relationRoleTypeRepository.deleteByRulPackage(rulPackage);
 
+            settingsRepository.deleteByRulPackage(rulPackage);
+
             packageRepository.delete(rulPackage);
 
             entityManager.flush();
@@ -2242,6 +2357,7 @@ public class PackageService {
             exportPartyRelationClassTypes(rulPackage, zos);
             exportPartyNameFormTypes(rulPackage, zos);
             exportRelationRoleTypes(rulPackage, zos);
+            exportSettings(rulPackage, zos);
 
             file.deleteOnExit();
         } catch (Exception e) {
@@ -2276,13 +2392,44 @@ public class PackageService {
 
     }
 
+    /**
+     * Přidání nastavení do zip souboru.
+     *
+     * @param rulPackage balíček
+     * @param zos        stream zip souboru
+     */
+    private void exportSettings(final RulPackage rulPackage, final ZipOutputStream zos) {
+        export(rulPackage, zos, settingsRepository, Settings.class, Setting.class,
+                (settingList, settings) -> settings.setSettings(settingList),
+                (uiSetting, setting) -> setting.setValue(uiSetting.getValue()),
+                uiSettings -> {
+                    // factory
+                    Setting entity;
+                    if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.FUND_VIEW)
+                            && Objects.equals(uiSettings.getEntityType(), UISettings.EntityType.RULE)) {
+                        entity = new SettingFundViews();
+                    } else if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.TYPE_GROUPS)
+                            && Objects.equals(uiSettings.getEntityType(), UISettings.EntityType.RULE)) {
+                        entity = new SettingTypeGroups();
+                    } else if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.RECORD)) {
+                        entity = new SettingRecord();
+                    } else {
+                        entity = new SettingBase();
+                    }
+                    entity.setSettingsType(uiSettings.getSettingsType());
+                    entity.setEntityType(uiSettings.getEntityType());
+                    entity.setEntityId(uiSettings.getEntityId());
+                    return entity;
+                }, SETTING_XML);
+    }
+
     private void exportRelationRoleTypes(final RulPackage rulPackage, final ZipOutputStream zos) {
         export(rulPackage, zos, relationRoleTypeRepository, RelationRoleTypes.class, RelationRoleType.class,
                 (relationRoleTypeList, relationRoleTypes) -> relationRoleTypes.setRelationRoleTypes(relationRoleTypeList),
                 (parRelationRoleType, relationRoleType) -> {
                     relationRoleType.setCode(parRelationRoleType.getCode());
                     relationRoleType.setName(parRelationRoleType.getName());
-                }, RELATION_ROLE_TYPE_XML);
+                }, null, RELATION_ROLE_TYPE_XML);
     }
 
     private void exportPartyNameFormTypes(final RulPackage rulPackage, final ZipOutputStream zos) {
@@ -2291,7 +2438,7 @@ public class PackageService {
                 (parPartyNameFormType, partyNameFormType) -> {
                     partyNameFormType.setCode(parPartyNameFormType.getCode());
                     partyNameFormType.setName(parPartyNameFormType.getName());
-                }, PARTY_NAME_FORM_TYPE_XML);
+                }, null, PARTY_NAME_FORM_TYPE_XML);
     }
 
     private void exportPartyRelationClassTypes(final RulPackage rulPackage, final ZipOutputStream zos) {
@@ -2301,7 +2448,7 @@ public class PackageService {
                     relationClassType.setCode(parRelationClassType.getCode());
                     relationClassType.setName(parRelationClassType.getName());
                     relationClassType.setRepeatability(parRelationClassType.getRepeatability().name());
-                }, RELATION_CLASS_TYPE_XML);
+                }, null, RELATION_CLASS_TYPE_XML);
     }
 
     private void exportComplementTypes(final RulPackage rulPackage, final ZipOutputStream zos) {
@@ -2311,7 +2458,7 @@ public class PackageService {
                     complementType.setCode(parComplementType.getCode());
                     complementType.setName(parComplementType.getName());
                     complementType.setViewOrder(parComplementType.getViewOrder());
-                }, COMPLEMENT_TYPE_XML);
+                }, null, COMPLEMENT_TYPE_XML);
     }
 
     private void exportUIPartyGroups(final RulPackage rulPackage, final ZipOutputStream zos) {
@@ -2324,7 +2471,7 @@ public class PackageService {
                     partyGroup.setPartyType(uiPartyGroup.getPartyType() == null ? null : uiPartyGroup.getPartyType().getCode());
                     partyGroup.setContentDefinition(uiPartyGroup.getContentDefinition());
                     partyGroup.setType(uiPartyGroup.getType().name());
-                }, PARTY_GROUP_XML);
+                }, null, PARTY_GROUP_XML);
     }
 
     @FunctionalInterface
@@ -2347,6 +2494,7 @@ public class PackageService {
      * @param clazz      třída VO
      * @param setter     setter metoda pro naplnění VO
      * @param convertor  metoda pro konverzi DO na VO
+     * @param factory    factory metoda - používá se u abstraktních tříd
      * @param fileName   název souboru
      */
     private <R extends Packaging<E>, E, TS, T> void export(final RulPackage rulPackage,
@@ -2356,6 +2504,7 @@ public class PackageService {
                                                            final Class<T> clazz,
                                                            final Setter<List<T>, TS> setter,
                                                            final Convertor<E, T> convertor,
+                                                           final Function<E, T> factory,
                                                            final String fileName) {
         try {
             TS entities = clazzs.newInstance();
@@ -2367,9 +2516,14 @@ public class PackageService {
             setter.apply(entityList, entities);
 
             for (E entity : dbEntities) {
-                T partyTypeComplementType = clazz.newInstance();
-                convertor.apply(entity, partyTypeComplementType);
-                entityList.add(partyTypeComplementType);
+                T instance;
+                if (factory == null) {
+                    instance = clazz.newInstance();
+                } else {
+                    instance = factory.apply(entity);
+                }
+                convertor.apply(entity, instance);
+                entityList.add(instance);
             }
 
             addObjectToZipFile(entities, zos, fileName);
@@ -2958,5 +3112,13 @@ public class PackageService {
         File xmlFile = convertObjectToXmlFile(data);
         addToZipFile(fileName, xmlFile, zos);
         xmlFile.delete();
+    }
+
+    public Boolean getTesting() {
+        return testing;
+    }
+
+    public void setTesting(final Boolean testing) {
+        this.testing = testing;
     }
 }

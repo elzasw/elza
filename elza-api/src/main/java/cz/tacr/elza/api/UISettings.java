@@ -51,7 +51,12 @@ public interface UISettings<U extends UsrUser> {
         /**
          * Vazba na typ atributu.
          */
-        ITEM_TYPE;
+        ITEM_TYPE,
+
+        /**
+         * Vazba na pravidla.
+         */
+        RULE
 
     }
 
@@ -72,7 +77,22 @@ public interface UISettings<U extends UsrUser> {
         /**
          * Připnutí sekcí osob
          */
-        PARTY_PIN(EntityType.NONE);
+        PARTY_PIN(EntityType.NONE),
+
+        /**
+         * Zobrazení popisků archivních souborů.
+         */
+        FUND_VIEW(EntityType.RULE),
+
+        /**
+         * Zobrazení skupin typů atributů v archivním souboru.
+         */
+        TYPE_GROUPS(EntityType.RULE),
+
+        /**
+         * Výchozí nastavení pro rejstříky.
+         */
+        RECORD;
 
         /**
          * Typ oprávnění
