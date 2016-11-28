@@ -44,6 +44,10 @@ public class UISettings implements cz.tacr.elza.api.UISettings<UsrUser> {
     @Column(nullable = true)
     private String value;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
+    @JoinColumn(name = "packageId")
+    private RulPackage rulPackage;
+
     @Override
     public Integer getSettingsId() {
         return settingsId;
@@ -102,5 +106,13 @@ public class UISettings implements cz.tacr.elza.api.UISettings<UsrUser> {
     @Override
     public void setValue(final String value) {
         this.value = value;
+    }
+
+    public RulPackage getRulPackage() {
+        return rulPackage;
+    }
+
+    public void setRulPackage(final RulPackage rulPackage) {
+        this.rulPackage = rulPackage;
     }
 }

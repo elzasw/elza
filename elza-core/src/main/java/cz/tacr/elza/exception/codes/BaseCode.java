@@ -21,6 +21,11 @@ public enum BaseCode implements ErrorCode {
     /**
      * Chyba optimistických zámků - při ukládání změněné entity.
      */
-    OPTIMISTIC_LOCKING_ERROR;
+    OPTIMISTIC_LOCKING_ERROR,
+
+    /**
+     * Chyba při převodu JSON objektu.
+     */
+    JSON_PARSE
 
 }
