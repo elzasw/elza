@@ -17,4 +17,8 @@ public class ItemPartyRef extends AbstractItem {
     public String serializeValue() {
         return getValue(Party.class).serialize();
     }
+
+    public Party getParty() {
+        return getValue(Party.class);
+    }
 }
