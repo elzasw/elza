@@ -17,4 +17,8 @@ public class ItemRecordRef extends AbstractItem {
     public String serializeValue() {
         return getValue(Record.class).serialize();
     }
+
+    public Record getRecord() {
+        return getValue(Record.class);
+    }
 }

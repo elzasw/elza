@@ -165,7 +165,7 @@ function partyAddSubmit(callback, dispatch, submitType, data) {
     const {prefferedName, ...other} = data;
     const newName = normalizeNameObject(prefferedName);
     const party = {
-        '@type': PARTY_CLASS_BY_TYPE[data.partyType.code],
+        '@class': PARTY_CLASS_BY_TYPE[data.partyType.code],
         ...other,
         record: {
             '@class': "cz.tacr.elza.controller.vo.RegRecordVO",

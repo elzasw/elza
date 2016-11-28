@@ -12,7 +12,7 @@ import cz.tacr.elza.api.RulItemSpec;
  * @author Martin Šlapa
  * @since 8.1.2016
  */
-@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public class RulDescItemSpecVO {
 
     /**

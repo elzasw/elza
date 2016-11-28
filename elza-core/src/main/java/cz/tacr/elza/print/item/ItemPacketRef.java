@@ -17,4 +17,8 @@ public class ItemPacketRef extends AbstractItem {
     public String serializeValue() {
         return getValue(Packet.class).serialize();
     }
+
+    public Packet getPacket() {
+        return getValue(Packet.class);
+    }
 }
