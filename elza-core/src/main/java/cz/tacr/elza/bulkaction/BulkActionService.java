@@ -42,6 +42,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
@@ -662,6 +663,9 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * @return hromadná akce
      */
     public List<RulAction> getBulkActionByCodes(final List<String> codes) {
+        if (CollectionUtils.isEmpty(codes)) {
+            return Collections.EMPTY_LIST;
+        }
         return actionRepository.findByFilename(codes.stream().map(code -> code + ".yaml").collect(Collectors.toList()));
     }
 
