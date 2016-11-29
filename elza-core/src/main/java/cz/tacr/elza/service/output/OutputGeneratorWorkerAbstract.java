@@ -1,42 +1,43 @@
 package cz.tacr.elza.service.output;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Paths;
-import java.util.concurrent.Callable;
-
-import cz.tacr.elza.exception.ProcessException;
-import cz.tacr.elza.repository.OutputDefinitionRepository;
-import org.apache.commons.io.IOUtils;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.orm.hibernate4.SessionFactoryUtils;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
-import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.util.Assert;
-
+import com.google.common.collect.Sets;
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.RulTemplate;
+import cz.tacr.elza.exception.ProcessException;
 import cz.tacr.elza.print.Output;
+import cz.tacr.elza.repository.NodeOutputRepository;
+import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
+import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DmsService;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.util.Assert;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
@@ -58,6 +59,9 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
     @Autowired
     private OutputDefinitionRepository outputDefinitionRepository;
     @Autowired
+    private NodeOutputRepository nodeOutputRepository;
+
+    @Autowired
     private OutputGeneratorService outputGeneratorService;
 
     @Autowired
@@ -66,6 +70,9 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
     @Autowired
     @Qualifier("transactionManager")
     protected PlatformTransactionManager txManager;
+
+    @Autowired
+    private ArrangementService arrangementService;
 
     protected Thread generatorThread;
 
@@ -90,9 +97,50 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
     }
 
     @Override
-    @Transactional
     public OutputGeneratorWorkerAbstract call() throws Exception {
-        generateOutput();
+        (new TransactionTemplate(txManager)).execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(final TransactionStatus status) {
+                generateOutput();
+            }
+        });
+
+        (new TransactionTemplate(txManager)).execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(final TransactionStatus status) {
+                try {
+                    ArrOutput arrOutput = outputRepository.findOne(arrOutputId);
+                    ArrOutputDefinition arrOutputDefinition = outputDefinitionRepository.findByOutputId(arrOutput.getOutputId());
+                    List<ArrNodeOutput> nodesList = nodeOutputRepository.findByOutputDefinition(arrOutputDefinition);
+                    ArrOutputDefinition.OutputState outputState;
+                    if (change != null) {
+                        Map<ArrChange, Boolean> arrChangeBooleanMap = arrangementService.detectChangeNodes(
+                                nodesList.stream().
+                                        map(ArrNodeOutput::getNode).
+                                        collect(Collectors.toSet()),
+                                Sets.newHashSet(change), false, true);
+
+                        if (arrChangeBooleanMap.containsKey(change) && arrChangeBooleanMap.get(change)) {
+                            outputState = ArrOutputDefinition.OutputState.OUTDATED;
+                        } else {
+                            outputState = ArrOutputDefinition.OutputState.FINISHED;
+                        }
+                        arrOutputDefinition.setError(null);
+                    } else {
+                        outputState = ArrOutputDefinition.OutputState.OPEN;
+                    }
+
+                    arrOutputDefinition.setState(outputState);
+                    outputDefinitionRepository.save(arrOutputDefinition);
+
+                    outputGeneratorService.publishOutputStateEvent(arrOutputDefinition, null);
+
+                    logger.info("Generování výstupu pro arr_output id=" + arrOutputId + " dokončeno úspěšně.", arrOutputId);
+                } catch (Throwable ex) {
+                    throw new ProcessException(arrOutputId, ex);
+                }
+            }
+        });
         return this;
     }
 

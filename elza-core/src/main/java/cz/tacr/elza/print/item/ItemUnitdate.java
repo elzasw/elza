@@ -23,8 +23,12 @@ public class ItemUnitdate extends AbstractItem {
         return value.serialize();
     }
 
-	@Override
-	public Object getValue() {
-		return value;
-	}
+    @Override
+    public Object getValue() {
+        return value;
+    }
+
+    public UnitDate getUnitDate() {
+        return value;
+    }
 }

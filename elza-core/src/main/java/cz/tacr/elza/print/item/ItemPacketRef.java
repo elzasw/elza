@@ -29,4 +29,8 @@ public class ItemPacketRef extends AbstractItem {
     public Packet getPacket() {
     	return packet;
     }
+
+    public Packet getPacket() {
+        return getValue(Packet.class);
+    }
 }

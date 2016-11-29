@@ -25,7 +25,7 @@ public interface ItemTypeActionRepository extends JpaRepository<RulItemTypeActio
     List<RulItemTypeAction> findByAction(RulAction rulAction);
 
     @Query("SELECT i FROM rul_item_type_action i JOIN i.itemType it WHERE it.code = :code")
-    RulItemTypeAction findOneByItemTypeCode(@Param("code") String code);
+    List<RulItemTypeAction> findOneByItemTypeCode(@Param("code") String code);
 
     @Query("SELECT i FROM rul_item_type_action i JOIN i.itemType it WHERE it.code = :code AND i.action = :action")
     RulItemTypeAction findOneByItemTypeCodeAndAction(@Param("code") String code, @Param("action") RulAction action);

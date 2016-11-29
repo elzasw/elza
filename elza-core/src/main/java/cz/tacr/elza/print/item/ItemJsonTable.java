@@ -21,8 +21,12 @@ public class ItemJsonTable extends AbstractItem {
         return value.toString();
     }
 
-	@Override
-	public Object getValue() {
-		return value;
-	}
+    @Override
+    public Object getValue() {
+        return value;
+    }
+
+    public ElzaTable getElzaTable() {
+        return value;
+    }
 }

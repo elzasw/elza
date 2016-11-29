@@ -28,4 +28,8 @@ public class ItemCoordinates extends AbstractItem {
     	return value;
     }
 
+    public Geometry getGeometry() {
+        return value;
+    }
+
 }
