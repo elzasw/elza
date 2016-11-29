@@ -115,7 +115,7 @@ elza:
             - code: ZP2015_UNIT_HIST
               width: 0
             - code: ZP2015_UNIT_ARR
-              width: 2
+              width: 0
             - code: ZP2015_UNIT_CONTENT
               width: 0
             - code: ZP2015_UNIT_SOURCE
@@ -123,7 +123,7 @@ elza:
             - code: ZP2015_FUTURE_UNITS
               width: 0
             - code: ZP2015_UNIT_ACCESS
-              width: 0
+              width: 1
             - code: ZP2015_UNIT_INFO_RIGHTS
               width: 1
             - code: ZP2015_UNIT_COPY_RIGHTS
@@ -133,18 +133,30 @@ elza:
             - code: ZP2015_COPY_SOURCE
               width: 1
             - code: ZP2015_RELATED_UNITS
-              width: 1
+              width: 0
             - code: ZP2015_EXISTING_COPY
               width: 1
             - code: ZP2015_INTERNAL_NOTE
               width: 0
             - code: ZP2015_NOTE
               width: 0
-            - code: ZP2015_ARRANGE_RULES
+            - code: ZP2015_ARRANGER
               width: 1
+            - code: ZP2015_ARRANGE_RULES
+              width: 0
             - code: ZP2015_4_OTHER
               width: 1
-
+        GROUP5:
+          name: Rozšířený popis archiválií
+          types:
+            - code: ZP2015_POSITION
+              width: 2
+            - code: ZP2015_ORIENTATION
+              width: 1
+            - code: ZP2015_ITEM_MAT
+              width: 0
+            - code: ZP2015_ENTITY_ROLE
+              width: 3
 spring:
   app:
       buildType: DEV

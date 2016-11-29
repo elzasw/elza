@@ -5,17 +5,27 @@ import org.apache.commons.lang.StringUtils;
 import cz.tacr.elza.print.NodeId;
 
 /**
- * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
- *         Date: 22.6.16
+ * @author Martin Lebeda
+ * @author Petr Pytelka
+ * 
  */
 public class ItemString extends AbstractItem {
+	
+	String value;
 
     public ItemString(final NodeId nodeId, final String value) {
-        super(nodeId, value);
+        super(nodeId);
+        
+        this.value = value;
     }
 
     @Override
     public String serializeValue() {
-        return StringUtils.trim(getValue(String.class));
+        return StringUtils.trim(value);
     }
+
+	@Override
+	public Object getValue() {
+		return value;
+	}
 }

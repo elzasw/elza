@@ -8,17 +8,25 @@ import cz.tacr.elza.print.NodeId;
  *         Date: 22.6.16
  */
 public class ItemJsonTable extends AbstractItem {
+	
+	ElzaTable value;
 
     public ItemJsonTable(final NodeId nodeId, final ElzaTable value) {
-        super(nodeId, value);
+        super(nodeId);
+        this.value = value;
     }
 
     @Override
     public String serializeValue() {
-        return getValue(ElzaTable.class).toString();
+        return value.toString();
+    }
+
+    @Override
+    public Object getValue() {
+        return value;
     }
 
     public ElzaTable getElzaTable() {
-        return getValue(ElzaTable.class);
+        return value;
     }
 }

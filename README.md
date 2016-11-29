@@ -18,7 +18,7 @@ git clone https://open_marbes@bitbucket.org/tacr/elza-core-marbes-consulting.git
 ### Sestavení vč dokumentace
 Příkaz:
 ```
-mvn -Pjdoc,skiptest package
+mvn -Pjdoc,skiptest -Dmaven.javadoc.skip=false package
 ```
 Ve složce /target/apidocs se nachází Javadoc dokumentace, otevřete index.html.
 Pro sestavení dokumentace včetně UML diagramů modelu použijte profil jdocuml (je potřeba mít nainstalován Graphviz a v PATH spustitelný dot).

@@ -3,17 +3,27 @@ package cz.tacr.elza.print.item;
 import cz.tacr.elza.print.NodeId;
 
 /**
- * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
- *         Date: 22.6.16
+ * @author Martin Lebeda
+ * @author Petr Pytelka
+ * 
  */
 public class ItemUnitId extends AbstractItem {
+	
+	String value;
 
     public ItemUnitId(final NodeId nodeId, final String value) {
-        super(nodeId, value);
+        super(nodeId);
+        
+        this.value = value;
     }
 
     @Override
     public String serializeValue() {
-        return getValue(String.class);
+        return value;
     }
+
+	@Override
+	public Object getValue() {
+		return value;
+	}
 }
