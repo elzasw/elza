@@ -215,16 +215,18 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
     /**
      * Podívá se do fronty úkolů a pokusí se předat poolu vláken task. Pokud je poolem odmítnut, tak se vrací do fronty.
      */
-    private synchronized void runNextOutput() {
-        if (CollectionUtils.isNotEmpty(outputQueue)) {
-            OutputGeneratorWorkerAbstract task = outputQueue.poll();
-            try {
-                ListenableFuture future = taskExecutor.submitListenable(task);
-                //noinspection unchecked
-                future.addCallback(this);
-            } catch (RejectedExecutionException e) {
-                // pokud je pool plný, vracím do fronty
-                outputQueue.add(task);
+    private void runNextOutput() {
+        synchronized (lock) {
+            if (CollectionUtils.isNotEmpty(outputQueue)) {
+                OutputGeneratorWorkerAbstract task = outputQueue.poll();
+                try {
+                    ListenableFuture future = taskExecutor.submitListenable(task);
+                    //noinspection unchecked
+                    future.addCallback(this);
+                } catch (RejectedExecutionException e) {
+                    // pokud je pool plný, vracím do fronty
+                    outputQueue.add(task);
+                }
             }
         }
     }
