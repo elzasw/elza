@@ -1,14 +1,20 @@
 package cz.tacr.elza.config;
 
 
-import java.util.List;
-import java.util.Map;
-
+import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.packageimport.xml.SettingFundViews;
+import cz.tacr.elza.repository.SettingsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -18,7 +24,6 @@ import org.springframework.util.Assert;
  * @since 10.12.2015
  */
 @Component
-@ConfigurationProperties(prefix = "elza")
 public class ConfigView {
 
     public static final String FA_PREFIX = "fa-";
@@ -26,12 +31,19 @@ public class ConfigView {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+    @Autowired
+    private SettingsRepository settingsRepository;
+
+    @Autowired
+    private PackageService packageService;
+
     /**
      * Nastavení zobrazení v UI.
      */
     private Map<String, Map<String, ViewTitles>> fundView;
 
     public ViewTitles getViewTitles(final String code, final Integer fundId) {
+        Map<String, Map<String, ViewTitles>> fundView = getFundView();
         Assert.notNull(code);
         Assert.notNull(fundId);
 
@@ -61,11 +73,59 @@ public class ConfigView {
     }
 
     public Map<String, Map<String, ViewTitles>> getFundView() {
+        if (fundView == null) {
+            List<UISettings> uiSettingsList = settingsRepository.findByUserAndSettingsTypeAndEntityType(null, UISettings.SettingsType.FUND_VIEW, UISettings.EntityType.RULE);
+            fundView = new HashMap<>();
+            if (uiSettingsList.size() > 0) {
+                uiSettingsList.forEach(uiSettings -> {
+                    SettingFundViews setting = (SettingFundViews) packageService.convertSetting(uiSettings);
+                    Map<String, ViewTitles> viewByCode = fundView.get(setting.getCode());
+                    if (viewByCode == null) {
+                        viewByCode = new HashMap<>();
+                        fundView.put(setting.getCode(), viewByCode);
+                    }
+                    List<SettingFundViews.Item> items = setting.getItems();
+                    for (SettingFundViews.Item item : items) {
+
+                        ViewTitles vt = convertViewTitles(item);
+                        if (item instanceof SettingFundViews.Default) {
+                            viewByCode.put(DEFAULT, vt);
+                        } else if (item instanceof SettingFundViews.Fund) {
+                            Integer fundId = ((SettingFundViews.Fund) item).getFundId();
+                            viewByCode.put(FA_PREFIX + fundId, vt);
+                        } else {
+                            throw new IllegalStateException("Nedefinovaný stav pro třídu:" + item.getClass().getSimpleName());
+                        }
+                    }
+                });
+            }
+        }
         return fundView;
     }
 
-    public void setFundView(final Map<String, Map<String, ViewTitles>> fundView) {
-        this.fundView = fundView;
+    private ViewTitles convertViewTitles(final SettingFundViews.Item item) {
+        ViewTitles tv = new ViewTitles();
+        tv.setAccordionLeft(item.getAccordionLeft() == null ? null : item.getAccordionLeft().getValues());
+        tv.setAccordionRight(item.getAccordionRight() == null ? null : item.getAccordionRight().getValues());
+        tv.setTreeItem(item.getTree() == null ? null : item.getTree().getValues());
+        Map<String, Map<String, ConfigViewTitlesHierarchy>> heararchyMap = new HashMap<>();
+        tv.setHierarchy(heararchyMap);
+        if (!CollectionUtils.isEmpty(item.getHierarchyLevels())) {
+            for (SettingFundViews.HierarchyLevel hierarchyLevel : item.getHierarchyLevels()) {
+                Map<String, ConfigViewTitlesHierarchy> hierarchyLevelMap = new HashMap<>();
+                heararchyMap.put(hierarchyLevel.getCode(), hierarchyLevelMap);
+                if (!CollectionUtils.isEmpty(hierarchyLevel.getHierarchyItems())) {
+                    for (SettingFundViews.HierarchyItem hierarchyItem : hierarchyLevel.getHierarchyItems()) {
+                        ConfigViewTitlesHierarchy hierarchy = new ConfigViewTitlesHierarchy();
+                        hierarchy.setIcon(hierarchyItem.getIcon());
+                        hierarchy.setSeparatorFirst(hierarchyItem.getSeparatorFirst());
+                        hierarchy.setSeparatorOther(hierarchyItem.getSeparatorOther());
+                        hierarchyLevelMap.put(hierarchyItem.getCode(), hierarchy);
+                    }
+                }
+            }
+        }
+        return tv;
     }
 
     public static class ConfigViewTitlesHierarchy {
