@@ -11,6 +11,7 @@ import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrGroupUser;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.GroupRepository;
@@ -25,7 +26,6 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,8 +33,9 @@ import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
-import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
@@ -44,6 +45,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -95,7 +97,7 @@ public class UserService {
     private LoadingCache<Integer, Collection<UserPermission>> userPermissionsCache;
 
     public UserService() {
-        LoadingCache<Integer, Collection<UserPermission>> userPermissionsCache = CacheBuilder.newBuilder()
+        userPermissionsCache = CacheBuilder.newBuilder()
                 .maximumSize(150)
                 .expireAfterAccess(10, TimeUnit.MINUTES)
                 .build(new CacheLoader<Integer, Collection<UserPermission>>() {
@@ -218,7 +220,7 @@ public class UserService {
                                      @NotNull final List<UsrPermission> permissions) {
         List<UsrPermission> permissionsDB = permissionRepository.findByUserOrderByPermissionIdAsc(user);
         changePermission(user, null, permissions, permissionsDB);
-        recalcUserPermission(user);
+        invalidateCache(user);
         changeUserEvent(user);
     }
 
@@ -227,12 +229,13 @@ public class UserService {
      *
      * @param user uživatel, kterému přepočítáváme práva
      */
-    public void recalcUserPermission(@NotNull final UsrUser user) {
-        List<SessionInformation> infoSessions = sessionRegistry.getAllSessions(user.getUsername(), false);
-        for (SessionInformation infoSession : infoSessions) {
-            String sessionId = infoSession.getSessionId();
-//            reCalcSessionIds.add(sessionId);
-        }
+    public void invalidateCache(@NotNull final UsrUser user) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                userPermissionsCache.invalidate(user.getUserId());
+            }
+        });
     }
 
     /**
@@ -258,7 +261,7 @@ public class UserService {
 
                 groupUserRepository.save(item);
             }
-            recalcUserPermission(user);
+            invalidateCache(user);
         }
 
         changeUsersEvent(users);
@@ -281,7 +284,7 @@ public class UserService {
         }
 
         groupUserRepository.delete(item);
-        recalcUserPermission(user);
+        invalidateCache(user);
         changeUserEvent(user);
         changeGroupEvent(group);
     }
@@ -521,14 +524,15 @@ public class UserService {
                 return null;
             }
             UserDetail details = (UserDetail) auth.getDetails();
-    //        if (reCalcSessionIds.contains(sessionId)) {
-    //            reCalcSessionIds.remove(sessionId);
-                UsrUser user = userRepository.findByUsername(details.getUsername());
-                if (user != null) { // pokud je null, jedná se o virtuální admin účet, který má nastaveno oprávnění ADMIN
+            UsrUser user = userRepository.findByUsername(details.getUsername());
+            if (user != null) { // pokud je null, jedná se o virtuální admin účet, který má nastaveno oprávnění ADMIN
+                try {
                     details.getUserPermission().clear();
-                    details.getUserPermission().addAll(calcUserPermission(user));
+                    details.getUserPermission().addAll(userPermissionsCache.get(user.getUserId()));
+                } catch (ExecutionException e) {
+                    throw new SystemException(e);
                 }
-    //        }
+            }
             return details;
         }
     }
