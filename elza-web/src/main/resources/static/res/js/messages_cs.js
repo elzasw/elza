@@ -490,6 +490,7 @@ var messages = {
     "arr.packet.changeNumbers.packetType.empty": "Typy budou zachovány",
     "arr.packet.changeNumbers.packetType.notEmpty": "Typy budou změněny na \"{0}\"",
 
+    "subNodeForm.descItemGroup.default": "Ostatní",
     "subNodeForm.deleteDescItem": "Odstranit hodnotu",
     "subNodeForm.deleteDescItemType": "Odstranit prvek popisu včetně všech hodnot",
     "subNodeForm.validate.spec.required": "Specifikace musí být uvedena",
