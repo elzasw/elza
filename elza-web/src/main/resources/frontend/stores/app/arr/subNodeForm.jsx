@@ -183,7 +183,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                 case 'FILE_REF':
                     loc.descItem.value = action.value.id;
                     loc.descItem.file = action.value;
-                    loc.descItem.file['@type'] = '.ArrFileVO';
+                    loc.descItem.file['@class'] = '.ArrFileVO';
                     break;
                 case 'PACKET_REF':
                     loc.descItem.value = action.value.id;

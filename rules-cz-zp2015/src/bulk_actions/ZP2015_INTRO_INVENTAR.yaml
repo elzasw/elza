@@ -19,7 +19,7 @@ action:
         input_types:
             - ZP2015_UNIT_HIST
         output_type: ZP2015_UNIT_HIST
-        
+
     # ZP4.3.3 Způsob uspořádání jednotky popisu
     - TEXT_AGGREGATION    
         input_types:
@@ -31,7 +31,7 @@ action:
         input_types:
             - ZP2015_FUTURE_UNITS
         output_type: ZP2015_FUTURE_UNITS
-        
+
     # ZP4.4.4 Fyzický stav jednotky popisu a technické požadavky
     - TEXT_AGGREGATION
         input_types:
@@ -44,28 +44,77 @@ action:
         input_types:
             - ZP2015_RELATED_UNITS
         output_type: ZP2015_RELATED_UNITS
-
+        
+	# 4.7.1 Zpracovatel jednotky popisu
+	# ZP2015_ARRANGER - doposud neimplementovano
+    - COPY
+        input_types:
+            - ZP2015_ARRANGER
+        distinct: true
+        output_type: ZP2015_ARRANGER
+	
     # 4.7.2 Pravidla zpracování jednotky popisu
     - TEXT_AGGREGATION    
         input_types:
             - ZP2015_ARRANGE_RULES
         output_type: ZP2015_ARRANGE_RULES
 
-    # 4.7.3 Datum podpisu
+    # 4.7.3 Datum popisu
     - TEXT_AGGREGATION    
         input_types:
-            - ZP2015_SIGNATURE_DATE
-        output_type: ZP2015_SIGNATURE_DATE
-
-    # Agregace původce
+            - ZP2015_DESCRIPTION_DATE
+        output_type: ZP2015_DESCRIPTION_DATE
+ 
+   # Agregace původce
     - COPY
         input_types:
             - ZP2015_ORIGINATOR
+        distinct: true
         output_type: ZP2015_ORIGINATOR
-
-    # Agregace jazyků - zatim nefunkcni
-    #- COPY
-    #    input_types:
-    #        - ZP2015_LANGUAGE
-    #    output_type: ZP2015_LANGUAGE
  
+    # Agregace jazyků - zatim nefunkcni
+    - COPY
+        input_types:
+            - ZP2015_LANGUAGE
+        distinct: true
+        output_type: ZP2015_LANGUAGE
+
+    # Počet JP v pomůcce        
+    - NODE_COUNT
+        output_type: ZP2015_UNIT_COUNT_SUM
+
+    - UNIT_COUNT
+        output_type: ZP2015_UNIT_COUNT_TABLE
+        output_table_column1: NAME
+        output_table_column1_type: TEXT
+        output_table_column2: COUNT
+        output_table_column2_type: INTEGER
+        # typ pro typ archiválie
+        UNIT_TYPE: ZP2015_UNIT_TYPE
+
+        # typ a specifikace jednotlivosti
+        ITEM: ZP2015_LEVEL_TYPE ZP2015_LEVEL_ITEM
+
+        # typ a specifikace série
+        SERIES: ZP2015_LEVEL_TYPE ZP2015_LEVEL_SERIES
+
+        # typ a specifikace kartotéky a typ počtu zásuvek
+        KTT: ZP2015_UNIT_TYPE ZP2015_UNIT_TYPE_KTT
+        KTT_count: ZP2015_UNIT_COUNT
+
+        # typ a specifikace logické složky
+        FOLDER_LOGICAL: ZP2015_FOLDER_TYPE ZP2015_FOLDER_LOGICAL
+
+        # typ a specifikace množstevní EJ
+        FOLDER_UNITS: ZP2015_FOLDER_TYPE ZP2015_FOLDER_UNITS
+
+        # typ a specifikace složky s typem EJ a typ počtu ej
+        FOLDER_SINGLE_TYPE: ZP2015_FOLDER_TYPE ZP2015_FOLDER_SINGLE_TYPE
+        FOLDER_SINGLE_TYPE_count: ZP2015_UNIT_COUNT
+
+        # typ a specifikace množstevní EJ a typ pro ukládací číslo
+        FOLDER_UNITS: ZP2015_FOLDER_TYPE ZP2015_FOLDER_UNITS
+        STORAGE: ZP2015_STORAGE_ID
+
+        # typ pro extra EJ
+        EXTRA_UNITS: ZP2015_EXTRA_UNITS

@@ -1,5 +1,8 @@
 package cz.tacr.elza.print;
 
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.StringJoiner;
 
 import org.apache.commons.lang.StringUtils;
@@ -20,6 +23,7 @@ public class Packet implements Comparable<Packet> {
     private String typeShortcut;
     private String storageNumber;
     private String state;
+    private Set<Node> nodes;
 
     /**
      * Metoda pro získání hodnoty do fieldu v Jasper.
@@ -88,6 +92,24 @@ public class Packet implements Comparable<Packet> {
 
     public void setTypeShortcut(final String typeShortcut) {
         this.typeShortcut = typeShortcut;
+    }
+
+    public Set<Node> getNodes() {
+        if (nodes == null) {
+            return Collections.emptySet();
+        }
+        return nodes;
+    }
+
+    public void setNodes(final Set<Node> nodes) {
+        this.nodes = nodes;
+    }
+
+    public void addNode(final Node node) {
+        if (nodes == null) {
+            nodes = new LinkedHashSet<>();
+        }
+        nodes.add(node);
     }
 
     @Override

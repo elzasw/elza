@@ -454,7 +454,7 @@ public class ClientFactoryVO {
     public List<ParRelationVO> createPartyRelations(final ParParty party) {
         List<ParRelation> relations = relationRepository.findByParty(party);
         if (CollectionUtils.isEmpty(relations)) {
-            return null;
+            return Collections.EMPTY_LIST;
         }
         relations.sort(new ParRelation.ParRelationComparator());
 

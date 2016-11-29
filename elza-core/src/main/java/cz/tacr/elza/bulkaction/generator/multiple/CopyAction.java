@@ -1,5 +1,6 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
+import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.CopyActionResult;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -69,7 +70,7 @@ public class CopyAction extends Action {
     }
 
     @Override
-    public void apply(final ArrNode node, final List<ArrDescItem> items, final Map<ArrNode, List<ArrDescItem>> parentNodeDescItems) {
+    public void apply(final ArrNode node, final List<ArrDescItem> items, final LevelWithItems parentLevelWithItems) {
         for (ArrItem item : items) {
             // pouze hledaný typ
             if (inputItemTypes.contains(item.getItemType())) {

@@ -15,7 +15,7 @@ import java.util.List;
  * @since 19.07.2016
  */
 @Repository
-public interface SettingsRepository extends JpaRepository<UISettings, Integer> {
+public interface SettingsRepository extends JpaRepository<UISettings, Integer>, Packaging<UISettings> {
 
     List<UISettings> findByUser(UsrUser user);
 

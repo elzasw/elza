@@ -1,5 +1,6 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
+import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrNode;
@@ -62,9 +63,9 @@ public abstract class Action implements InitializingBean {
      *
      * @param node
      * @param items                 hodnoty atributy uzlu
-     * @param parentNodeDescItems   hodnoty atributu nadřízených uzlů
+     * @param parentLevelWithItems   hodnoty atributu nadřízených uzlů
      */
-    abstract public void apply(final ArrNode node, final List<ArrDescItem> items, final Map<ArrNode, List<ArrDescItem>> parentNodeDescItems);
+    abstract public void apply(final ArrNode node, final List<ArrDescItem> items, final LevelWithItems parentLevelWithItems);
 
     /**
      * Má se vykonat aplikování?

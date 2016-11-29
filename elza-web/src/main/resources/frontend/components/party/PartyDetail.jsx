@@ -212,9 +212,10 @@ class PartyDetail extends AbstractReactComponent {
         // Not defined shortcuts
     };
 
-    handleToggleActive = (index) => {
-        if (!this.state.visibilitySettingsValue[index]) {
-            this.setState({activeIndexes:{...this.state.activeIndexes, [index]: !this.state.activeIndexes[index]}})
+    handleToggleActive = (identificator) => {
+        this.setState({activeIndexes:{...this.state.activeIndexes, [identificator]: !this.state.activeIndexes[identificator]}});
+        if (this.state.visibilitySettingsValue[identificator]) {
+            this.handlePinToggle(identificator)
         }
     };
 
@@ -248,8 +249,8 @@ class PartyDetail extends AbstractReactComponent {
     };
 
     render() {
-        const {userDetail, partyDetail, fields: {sourceInformation, creators}} = this.props;
-        const fields = this.props.fields;
+        const {userDetail, partyDetail, fields} = this.props;
+        const {sourceInformation, creators} = fields;
         const party = partyDetail.data;
         const {activeIndexes, visibilitySettingsValue} = this.state;
         if (!party) {
@@ -307,7 +308,7 @@ class PartyDetail extends AbstractReactComponent {
                                     <label>{i18n("party.detail.creators")}{canEdit && <NoFocusButton bsStyle="default" onClick={() => creators.addField({})}><Icon glyph="fa-plus" /></NoFocusButton>}</label>
                                     {creators.map((creator, index) => <div key={index + "-" + creator.id} className="value-group">
                                         <PartyField {...creator} />
-                                        {canEdit && <NoFocusButton bsStyle="default" onClick={() => {
+                                        {canEdit && <NoFocusButton bsStyle="action" onClick={() => {
                                             if (confirm(i18n('party.detail.creator.delete'))) {
                                                 creators.removeField(index)
                                             }

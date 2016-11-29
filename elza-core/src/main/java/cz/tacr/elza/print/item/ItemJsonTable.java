@@ -17,4 +17,8 @@ public class ItemJsonTable extends AbstractItem {
     public String serializeValue() {
         return getValue(ElzaTable.class).toString();
     }
+
+    public ElzaTable getElzaTable() {
+        return getValue(ElzaTable.class);
+    }
 }

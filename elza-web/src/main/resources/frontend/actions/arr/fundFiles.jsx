@@ -81,7 +81,7 @@ export function fundFilesCreate(fundId, data, callback = null) {
         }
         formData.append("file", data.file[0]);
         formData.append("fundId", fundId);
-        formData.append("@type", ".ArrFileVO");
+        formData.append("@class", ".ArrFileVO");
 
         savingApiWrapper(dispatch, WebApi.createFundFile(formData)
             .then((json) => {
@@ -98,7 +98,7 @@ export function fundFilesReplace(fileId, file) {
 
         formData.append("file", file);
         formData.append("id", fileId);
-        formData.append("@type", ".ArrFileVO");
+        formData.append("@class", ".ArrFileVO");
 
         savingApiWrapper(dispatch, WebApi.updateFundFile(fileId, formData))
     }

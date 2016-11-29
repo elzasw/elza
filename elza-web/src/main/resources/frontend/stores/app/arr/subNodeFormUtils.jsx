@@ -444,7 +444,7 @@ export function updateFormData(state, data, refTypesMap) {
 
 export function createDescItem(descItemType, refType, addedByUser) {
     var result = {
-        '@type': getItemType(refType.dataType),
+        '@class': getItemClass(refType.dataType),
         prevValue: null,
         hasFocus: false,
         touched: false,
@@ -468,12 +468,12 @@ export function createDescItem(descItemType, refType, addedByUser) {
         case "JSON_TABLE":
             result.value = { rows: [{ values: {} }] };
         break;
-    }
+    };
 
     return result;
 }
 
-export function getItemType(dataType) {
+export function getItemClass(dataType) {
     switch (dataType.code) {
         case 'TEXT':
             return '.ArrItemTextVO';

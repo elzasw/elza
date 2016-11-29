@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.domain.ParRelationType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,4 +16,5 @@ import cz.tacr.elza.domain.ParPartyTypeRelation;
 @Repository
 public interface PartyTypeRelationRepository extends JpaRepository<ParPartyTypeRelation, Integer>, Packaging<ParPartyTypeRelation> {
 
+    void deleteByRelationType(ParRelationType parRelationType);
 }

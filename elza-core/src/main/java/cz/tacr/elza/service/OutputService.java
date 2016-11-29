@@ -1822,10 +1822,10 @@ public class OutputService {
      */
     private void checkCalculatingAttribute(final ArrOutputDefinition outputDefinition,
                                            final RulItemType itemType) {
-        RulItemTypeAction itemTypeAction = itemTypeActionRepository.findOneByItemTypeCode(itemType.getCode());
-        if (itemTypeAction != null) {
+        List<RulItemTypeAction> itemTypeActionList = itemTypeActionRepository.findOneByItemTypeCode(itemType.getCode());
+        if (itemTypeActionList != null && !itemTypeActionList.isEmpty()) {
             ArrItemSettings itemSettings = itemSettingsRepository.findOneByOutputDefinitionAndItemType(outputDefinition, itemType);
-            if (itemSettings == null || itemSettings.getBlockActionResult() == false) {
+            if (itemSettings == null || !itemSettings.getBlockActionResult()) {
                 throw new IllegalStateException("Tento atribut je počítán automaticky a nemůže být ručně editován");
             }
         }

@@ -4,37 +4,11 @@ import {connect} from 'react-redux'
 import {FormControl} from 'react-bootstrap'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {i18n, AbstractReactComponent, NoFocusButton, Icon, RelationForm} from 'components/index.jsx'
+import {isNotBlankObject} from 'components/Utils.jsx'
 import {indexById} from 'stores/app/utils.jsx'
-import {relationCreate, relationUpdate, relationDelete} from 'actions/party/party.jsx'
+import {relationCreate, relationUpdate, relationDelete, RELATION_CLASS_TYPE_REPEATABILITY, USE_UNITDATE_ENUM, RELATION_CLASS_RELATION_CODE, normalizeDatation} from 'actions/party/party.jsx'
 
-const RELATION_CLASS_TYPE_REPEATABILITY = {
-    UNIQUE: "UNIQUE",
-    MULTIPLE: "MULTIPLE",
-};
-
-const USE_UNITDATE_ENUM = {
-    NONE: 'NONE',
-    ONE: 'ONE',
-    INTERVAL: 'INTERVAL',
-};
-
-const RELATION_CLASS_RELATION_CODE = "R";
-
-
-const removeUndefined = (obj) => {
-    for (let key in obj ) {
-        if (obj.hasOwnProperty(key)) {
-            if (obj[key] === undefined || obj[key] === null) {
-                delete obj[key];
-            }
-        }
-    }
-    return obj;
-};
-const isNotBlankObject = (obj) => {
-    const newObj = removeUndefined(obj);
-    return Object.keys(newObj).length > 0
-};
+import './PartyDetailRelations.less'
 
 class PartyDetailRelations extends AbstractReactComponent {
 
@@ -51,8 +25,8 @@ class PartyDetailRelations extends AbstractReactComponent {
             ...relation,
             relationTypeId: relationType.id,
             partyId: party.id,
-            from: isNotBlankObject(relation.from) ? relation.from : null,
-            to: isNotBlankObject(relation.to) ? relation.to : null,
+            from: isNotBlankObject(relation.from) ? normalizeDatation(relation.from) : null,
+            to: isNotBlankObject(relation.to) ? normalizeDatation(relation.to) : null,
         }));
         this.dispatch(modalDialogHide());
     };
@@ -64,8 +38,8 @@ class PartyDetailRelations extends AbstractReactComponent {
             ...newRelation,
             relationTypeId: relationType.id,
             partyId: party.id,
-            from: isNotBlankObject(newRelation.from) ? newRelation.from : null,
-            to: isNotBlankObject(newRelation.to) ? newRelation.to : null,
+            from: isNotBlankObject(newRelation.from) ? normalizeDatation(newRelation.from) : null,
+            to: isNotBlankObject(newRelation.to) ? normalizeDatation(newRelation.to) : null,
         }));
         this.dispatch(modalDialogHide());
     };
@@ -96,18 +70,24 @@ class PartyDetailRelations extends AbstractReactComponent {
             addButton = <NoFocusButton bsStyle="default" onClick={this.handleRelationAdd}><Icon glyph="fa-plus" /></NoFocusButton>;
         }
 
-        return <div>
+        return <div className="party-detail-relations">
             <div>
                 <label>{label}</label>
                 {addButton}
             </div>
-            {relations.map((relation, index) => <div key={relation.id} className="value-group relation-group">
-                <div className="value">
-                    {(relationType.useUnitdate == USE_UNITDATE_ENUM.INTERVAL || relationType.useUnitdate == USE_UNITDATE_ENUM.ONE) && relation.from && relation.from.value && <div>
-                        <div>{relationType.relationClassType.code !== RELATION_CLASS_RELATION_CODE && relationType.relationClassType.name + ": "}{relation.from.value}</div>
-                        <div>{relation.dateNote}</div>
+            {relations.map((relation, index) => <div key={relation.id} className="value-group relation-group flex">
+                <div className="flex-1">
+                    {(relationType.useUnitdate == USE_UNITDATE_ENUM.INTERVAL || relationType.useUnitdate == USE_UNITDATE_ENUM.ONE) && relation.from && relation.from.value && <div className="flex flex-1 no-wrap-group">
+                        {relationType.relationClassType.code !== RELATION_CLASS_RELATION_CODE && <div className="item">{relationType.relationClassType.name}: </div>}
+                            {relation.from.value && <div className="item">{relation.from.value}</div>}
+                            {relation.from.textDate && <div className="item">{relation.from.textDate}</div>}
+                            {relation.from.note && <div className="note">{relation.from.note}</div>}
                     </div>}
-                    {relationType.useUnitdate == USE_UNITDATE_ENUM.INTERVAL && relation.to && relation.to.value && <div>{relation.to.value}</div>}
+                    {relationType.useUnitdate == USE_UNITDATE_ENUM.INTERVAL && relation.to && relation.to.value && <div className="flex flex-1 no-wrap-group">
+                        {relation.to.value && <div className="item">{relation.to.value}</div>}
+                        {relation.to.textDate && <div className="item">{relation.to.textDate}</div>}
+                        {relation.to.note && <div className="note">{relation.to.note}</div>}
+                    </div>}
                     {relation.relationEntities && relation.relationEntities.map(entity => <div key={entity.id}>
                         <label>{entity.roleType.name}:</label> {entity.record.record}<small>{entity.record.note}</small>
                     </div>)}

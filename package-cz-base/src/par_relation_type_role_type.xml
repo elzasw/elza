@@ -127,6 +127,10 @@
         <repeatable>false</repeatable>
         <view-order>10</view-order>
     </relation-type-role-type>
+    <relation-type-role-type relation-type="3" role-type="49">
+        <repeatable>false</repeatable>
+        <view-order>11</view-order>
+    </relation-type-role-type>
     <relation-type-role-type relation-type="4" role-type="4">
         <repeatable>true</repeatable>
         <view-order>1</view-order>
@@ -166,6 +170,10 @@
     <relation-type-role-type relation-type="4" role-type="46">
         <repeatable>false</repeatable>
         <view-order>10</view-order>
+    </relation-type-role-type>
+    <relation-type-role-type relation-type="4" role-type="49">
+        <repeatable>false</repeatable>
+        <view-order>11</view-order>
     </relation-type-role-type>
     <relation-type-role-type relation-type="5" role-type="2">
         <repeatable>true</repeatable>

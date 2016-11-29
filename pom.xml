@@ -14,7 +14,7 @@
     <version>0.9-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>ELZA</name>
-    <url>http://www.marbes.cz</url>
+    <url>http://elza.tacr.cz</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -24,15 +24,16 @@
     </properties>
 
     <modules>
+        <module>distrib</module>
         <module>elza-api</module>
         <module>elza-ws-api</module>
         <module>elza-core</module>
         <module>elza-web</module>
-        <module>elza-war</module>
         <module>elza-doc</module>
         <module>package-cz-base</module>
         <module>rules-cz-zp2015</module>
         <module>rules-simple-dev</module>
+        <module>package-config</module>
     </modules>
 
     <dependencyManagement>
@@ -378,10 +379,11 @@
             <id>OSGEO GeoTools repo</id>
             <url>http://download.osgeo.org/webdav/geotools</url>
         </repository>
-<!--        <repository>
+        <repository>
             <id>Hibernate Spatial repo</id>
-            <url>http://www.hibernatespatial.org/repository</url>
-        </repository>-->
+            <url>http://nexus.e-is.pro/nexus/content/groups/public/</url>
+            <!-- Dočasné nové repo hibernate spatial -->
+        </repository>
         <repository>
             <id>Geo solutions</id>
             <url>http://maven.geo-solutions.it</url>

@@ -7,7 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
  * @author Petr Compel <petr.compel@marbes.cz>
  * @since 13.3.2016
  */
-@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public class DmsFileVO {
     private Integer id;
 

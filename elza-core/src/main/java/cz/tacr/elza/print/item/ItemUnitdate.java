@@ -17,4 +17,8 @@ public class ItemUnitdate extends AbstractItem {
     public String serializeValue() {
         return getValue(UnitDate.class).serialize();
     }
+
+    public UnitDate getUnitDate() {
+        return getValue(UnitDate.class);
+    }
 }

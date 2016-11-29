@@ -57,9 +57,6 @@ public class ParRelation extends AbstractVersionableEntity implements cz.tacr.el
     private ParUnitdate to;
 
     @Column(length = StringLength.LENGTH_1000)
-    private String dateNote;
-
-    @Column(length = StringLength.LENGTH_1000)
     private String note;
 
     @Column
@@ -111,16 +108,6 @@ public class ParRelation extends AbstractVersionableEntity implements cz.tacr.el
     @Override
     public void setTo(final ParUnitdate to) {
         this.to = to;
-    }
-
-    @Override
-    public String getDateNote() {
-        return dateNote;
-    }
-
-    @Override
-    public void setDateNote(final String dateNote) {
-        this.dateNote = dateNote;
     }
 
     @Override

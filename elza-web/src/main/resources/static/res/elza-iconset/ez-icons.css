@@ -1,10 +1,10 @@
 @font-face {
   font-family: 'Elza-iconset';
-  src:  url('fonts/Elza-iconset.eot?vwb4gv');
-  src:  url('fonts/Elza-iconset.eot?vwb4gv#iefix') format('embedded-opentype'),
-    url('fonts/Elza-iconset.ttf?vwb4gv') format('truetype'),
-    url('fonts/Elza-iconset.woff?vwb4gv') format('woff'),
-    url('fonts/Elza-iconset.svg?vwb4gv#Elza-iconset') format('svg');
+  src:  url('fonts/Elza-iconset.eot?c4l86t');
+  src:  url('fonts/Elza-iconset.eot?c4l86t#iefix') format('embedded-opentype'),
+    url('fonts/Elza-iconset.ttf?c4l86t') format('truetype'),
+    url('fonts/Elza-iconset.woff?c4l86t') format('woff'),
+    url('fonts/Elza-iconset.svg?c4l86t#Elza-iconset') format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -24,6 +24,21 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.ez-move-after2:before {
+  content: "\e902";
+}
+.ez-move-before:before {
+  content: "\e900";
+}
+.ez-move-after:before {
+  content: "\e901";
+}
+.ez-move-before2:before {
+  content: "\e903";
+}
+.ez-move-under:before {
+  content: "\e9003";
+}
 .ez-item-part-o:before {
   content: "\a9002";
 }

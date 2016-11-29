@@ -21,6 +21,16 @@ public enum PackageCode implements ErrorCode {
     /**
      * Verze balíčku byla již aplikována.
      */
-    VERSION_APPLIED;
+    VERSION_APPLIED,
+
+    /**
+     * Chyba při parsování XML souboru.
+     */
+    PARSE_ERROR,
+
+    /**
+     * Entita existuje již v jiném balíčku.
+     */
+    OTHER_PACKAGE
 
 }

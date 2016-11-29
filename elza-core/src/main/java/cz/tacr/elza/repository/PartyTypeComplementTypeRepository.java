@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.domain.ParComplementType;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import cz.tacr.elza.domain.ParPartyTypeComplementType;
@@ -13,4 +14,5 @@ import cz.tacr.elza.domain.ParPartyTypeComplementType;
  */
 public interface PartyTypeComplementTypeRepository extends JpaRepository<ParPartyTypeComplementType, Integer>, Packaging<ParPartyTypeComplementType> {
 
+    void deleteByComplementType(ParComplementType parComplementType);
 }

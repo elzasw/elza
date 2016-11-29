@@ -36,6 +36,7 @@ export default class NodeRegister extends AbstractReactComponent {
     };
 
     handleCreateRecord = () => {
+        this.refs.registryAutocomplete.closeMenu();
         this.props.onCreateRecord();
     };
 
@@ -74,6 +75,7 @@ export default class NodeRegister extends AbstractReactComponent {
         return <div className='link-value'>
             <Autocomplete
                 key={'registry-autocomplete'}
+                ref="registryAutocomplete"
                 {...decorateValue(this, item.hasFocus, item.error.value, closed)}
                 customFilter
                 className='autocomplete-record'
