@@ -524,8 +524,10 @@ public class UserService {
     //        if (reCalcSessionIds.contains(sessionId)) {
     //            reCalcSessionIds.remove(sessionId);
                 UsrUser user = userRepository.findByUsername(details.getUsername());
-                details.getUserPermission().clear();
-                details.getUserPermission().addAll(calcUserPermission(user));
+                if (user != null) { // pokud je null, jedná se o virtuální admin účet, který má nastaveno oprávnění ADMIN
+                    details.getUserPermission().clear();
+                    details.getUserPermission().addAll(calcUserPermission(user));
+                }
     //        }
             return details;
         }
