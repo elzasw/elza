@@ -71,18 +71,14 @@ public abstract class AbstractItem implements Item {
     }
     
     /**
-     * Method to return real pure value object
-     * @return
+     * Method to return real value object
+     * @return return value object
      */
     abstract public Object getValue();
 
     @Override
     public <T> T getValue(final Class<T> type) {
         return type.cast(getValue());
-    }
-
-    public Object getValue() {
-        return value;
     }
 
     @Override
