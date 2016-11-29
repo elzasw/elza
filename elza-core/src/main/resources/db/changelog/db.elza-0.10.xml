@@ -38,4 +38,36 @@
 
         <dropTable tableName="reg_external_source"/>
     </changeSet>
+
+    <changeSet id="1480407643" author="vanek">
+        <createTable tableName="par_interpi_relation">
+            <column name="interpi_relation_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="relation_type_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_par_relation_type" referencedTableName="par_relation_type" referencedColumnNames="relation_type_id" />
+            </column>
+            <column name="class" type="char(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="par_interpi_role_type">
+            <column name="interpi_role_type_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="interpi_relation_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_par_interpi_relation" referencedTableName="par_interpi_relation" referencedColumnNames="interpi_relation_id"/>
+            </column>
+            <column name="role_type_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_par_relation_role_type" referencedTableName="par_relation_role_type" referencedColumnNames="role_type_id"/>
+            </column>
+            <column name="name" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
 </databaseChangeLog>
