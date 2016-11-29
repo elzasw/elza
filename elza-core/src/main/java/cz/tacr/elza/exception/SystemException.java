@@ -22,4 +22,8 @@ public class SystemException extends AbstractException {
     public SystemException(final Throwable cause) {
         super(cause, BaseCode.SYSTEM_ERROR);
     }
+
+    public SystemException(final Throwable e, final ErrorCode parseError) {
+        super(e, parseError);
+    }
 }

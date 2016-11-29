@@ -25,4 +25,15 @@
         </update>
     </changeSet>
 
+    <changeSet id="20161126213500" author="slapa">
+        <addColumn tableName="ui_settings">
+            <column name="package_id" type="int" />
+        </addColumn>
+        <addForeignKeyConstraint constraintName="fk_ui_settings_package"
+                                 baseTableName="ui_settings"
+                                 baseColumnNames="package_id"
+                                 referencedTableName="rul_package"
+                                 referencedColumnNames="package_id"
+                                 onDelete="NO ACTION" />
+    </changeSet>
 </databaseChangeLog>
