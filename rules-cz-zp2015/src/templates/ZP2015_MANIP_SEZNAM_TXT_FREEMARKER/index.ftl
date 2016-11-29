@@ -7,7 +7,7 @@ ${output.fund.internalCode}
 ************************************
 <#assign node = output.getNode(output.fund.rootNodeId) >
 <#list node.getItems(["ZP2015_ORIGINATOR"]) as originatorObj>
-<#assign originator = originatorObj.value>
+<#assign originator = originatorObj.getParty()>
 <#if (originator.preferredName.serialize())??>
 <#assign prefName = originator.preferredName >
 
@@ -34,7 +34,7 @@ Zdroje informací:
 Dějiny jednotek popisu:
 
 <#items as item>
-${item.value}
+${item.serializedValue}
 </#items>
 </#list>
 
@@ -43,7 +43,7 @@ ${item.value}
 Přímý zdroj akvizice:
 
 <#items as item>
-${item.value}
+${item.serializedValue}
 </#items>
 </#list>
 

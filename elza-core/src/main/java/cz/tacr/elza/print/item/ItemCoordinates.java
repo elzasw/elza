@@ -19,4 +19,8 @@ public class ItemCoordinates extends AbstractItem {
     public String serializeValue() {
         return new WKTWriter().writeFormatted(getValue(Geometry.class));
     }
+
+    public Geometry getGeometry() {
+        return getValue(Geometry.class);
+    }
 }
