@@ -30,31 +30,29 @@ class AddDescItemTypeForm extends AbstractReactComponent {
 
     static ITEM_TYPE_POSSIBLE = 'POSSIBLE';
 
+    constructor(props) {
+        super(props);
+
+        // Desc item types - vybrání myší - senzam položek nad autocompletem
+        var flatDescItemTypes = [];
+        this.props.descItemTypes.forEach(node => {
+            flatDescItemTypes = [
+                ...flatDescItemTypes, ...node.children
+            ]
+        });
+
+        this.state = {
+            flatDescItemTypes
+        }
+    }
+
     onChange = (value) => {
         console.log("a", value);
     };
 
-    renderItem(item, isHighlighted, isSelected) {
-        var cls = 'item';
-
-        cls += ' type-' + item.type.toLowerCase();
-
-        if (isHighlighted) {
-            cls += ' focus'
-        }
-        if (isSelected) {
-            cls += ' active'
-        }
-
-        return (
-                <div className={cls} key={item.id} >
-                    <div className="name" title={item.name}>{item.name}</div>
-                </div>
-        )
-    }
-
     render() {
         const {fields: {descItemTypeId}, handleSubmit, onClose, descItemTypes} = this.props;
+        const {flatDescItemTypes} = this.state;
 
         var submitForm = submitReduxForm.bind(this, AddDescItemTypeForm.validate);
 
@@ -69,7 +67,7 @@ class AddDescItemTypeForm extends AbstractReactComponent {
         return <Form onSubmit={handleSubmit(submitForm)}>
                 <Modal.Body>
                     <div>
-                        {descItemTypes.map(i => {
+                        {flatDescItemTypes.map(i => {
                             if (i.type == AddDescItemTypeForm.ITEM_TYPE_POSSIBLE) {
                                 return <a className="add-link btn btn-link" key={i.id} onClick={() => {
                                     this.props.onSubmit2({descItemTypeId: i});
@@ -79,12 +77,14 @@ class AddDescItemTypeForm extends AbstractReactComponent {
                     </div>
                     <div className="autocomplete-desc-item-type">
                         <Autocomplete
+                            tree
                             label={i18n('subNodeForm.descItemType')}
                             {...descItemTypeId}
                             {...decorateFormField(descItemTypeId)}
-                            //value={descItemTypeValue}
                             items={descItemTypes}
-                            renderItem={this.renderItem}
+                            getItemRenderClass={item => item.groupItem ? null : ' type-' + item.type.toLowerCase()}
+                            alwaysExpanded
+                            allowSelectItem={(id, item) => !item.groupItem}
                             onBlurValidation={false}
                         />
                     </div>

@@ -1179,7 +1179,7 @@ public class ClientFactoryVO {
             ItemTypeGroupVO itemTypeGroupVO = itemTypeGroupVOMap.get(group.getCode());
 
             if (itemTypeGroupVO == null) {
-                itemTypeGroupVO = new ItemTypeGroupVO(group.getCode());
+                itemTypeGroupVO = new ItemTypeGroupVO(group.getCode(), group.getName());
                 itemTypeGroupVOMap.put(group.getCode(), itemTypeGroupVO);
             }
 

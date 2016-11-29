@@ -3,8 +3,52 @@
  */
 import {indexById} from 'stores/app/utils.jsx'
 import React from 'react';
-import ReactDOM from 'react-dom';
 import {getSetFromIdsList} from 'stores/app/utils.jsx'
+import {i18n} from 'components';
+
+/**
+ * Načtení stromového uspořádání - kořenové jsou item group a pod nimi item types. Do stromu se vkládají jen položky, které ještě nejsou použivté v descItemGroups.
+ * Metoda slouží pro vytvoření dat pro přidání do formuláře pořádání (JP a Output).
+ * @param descItemGroups již použité položky (pod skupinami)
+ * @param infoTypesMapInput infor types
+ * @param refTypesMapInput ref types
+ * @param infoGroups info group
+ * @return {Array} strom
+ */
+export function getDescItemsAddTree(descItemGroups, infoTypesMapInput, refTypesMapInput, infoGroups) {
+    // Pro přidání chceme jen ty, které zatím ještě nemáme
+    var infoTypesMap = {...infoTypesMapInput};
+    descItemGroups.forEach(group => {
+        group.descItemTypes.forEach(descItemType => {
+            delete infoTypesMap[descItemType.id];
+        })
+    })
+
+    // Sestavení seznamu včetně skupin
+    var descItemTypes = [];
+    infoGroups.forEach(infoGroup => {
+        const itemTypes = [];
+        infoGroup.types.forEach(infoType => {
+            if (infoTypesMap[infoType.id]) {    // ještě ji na formuláři nemáme
+                itemTypes.push({
+                    ...refTypesMapInput[infoType.id],
+                    ...infoType,
+                });
+            }
+        });
+
+        if (itemTypes.length > 0) { // nějaké položky máme, přidáme skupinu i s položkami
+            descItemTypes.push({
+                groupItem: true,
+                id: infoGroup.code,
+                name: infoGroup.code === "DEFAULT" ? i18n("subNodeForm.descItemGroup.default") : infoGroup.name,
+                children: itemTypes
+            });
+        }
+    });
+
+    return descItemTypes;
+}
 
 export function getFundFromFundAndVersion(fund, version) {
     var fundVersionClosed = version.lockDate != null;
