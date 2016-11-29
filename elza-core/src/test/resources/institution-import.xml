@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <ns2:xml-import xmlns:ns2="http://v1_0_0.import.elza.tacr.cz">
   <record-list>
-    <record record-id="recordId-0" register-type-code="PERSON_INDIVIDUAL" external-source-code="externalSourceCode 1341799512" external-id="externalId 0" local="false">
+    <record record-id="recordId-0" register-type-code="PERSON_INDIVIDUAL" external-system-code="externalSourceCode 1341799512" external-id="externalId 0" local="false">
       <preferred-name>record 0</preferred-name>
       <characteristics>characteristics 0</characteristics>
       <note>comment 0</note>
@@ -22,7 +22,7 @@
         </coordinate-list>
       </record-coordinates>
     </record>
-    <record record-id="recordId-1" register-type-code="FAMILY_BRANCH" external-source-code="externalSourceCode 1097950573" external-id="externalId 1" local="false">
+    <record record-id="recordId-1" register-type-code="FAMILY_BRANCH" external-system-code="externalSourceCode 1097950573" external-id="externalId 1" local="false">
       <preferred-name>record 1</preferred-name>
       <characteristics>characteristics 1</characteristics>
       <note>comment 1</note>
@@ -43,7 +43,7 @@
         </coordinate-list>
       </record-coordinates>
 <!--       <sub-record-list> -->
-<!--         <record record-id="recordId-1-1" register-type-code="FAMILY_BRANCH" external-source-code="externalSourceCode 226261935" external-id="externalId 1" local="false"> -->
+<!--         <record record-id="recordId-1-1" register-type-code="FAMILY_BRANCH" external-system-code="externalSourceCode 226261935" external-id="externalId 1" local="false"> -->
 <!--           <preferred-name>record 1</preferred-name> -->
 <!--           <characteristics>characteristics 1</characteristics> -->
 <!--           <note>comment 1</note> -->
@@ -64,7 +64,7 @@
 <!--             </coordinate-list> -->
 <!--           </record-coordinates> -->
 <!--           <sub-record-list> -->
-<!--             <record record-id="recordId-1-1-1" register-type-code="FAMILY_BRANCH" external-source-code="externalSourceCode 747662184" external-id="externalId 1" local="true"> -->
+<!--             <record record-id="recordId-1-1-1" register-type-code="FAMILY_BRANCH" external-system-code="externalSourceCode 747662184" external-id="externalId 1" local="true"> -->
 <!--               <preferred-name>record 1</preferred-name> -->
 <!--               <characteristics>characteristics 1</characteristics> -->
 <!--               <note>comment 1</note> -->
@@ -89,7 +89,7 @@
 <!--         </record> -->
 <!--       </sub-record-list> -->
     </record>
-    <record record-id="recordId-2" register-type-code="EVENT_EVENT" external-source-code="externalSourceCode 1015647040" external-id="externalId 2" local="false">
+    <record record-id="recordId-2" register-type-code="EVENT_EVENT" external-system-code="externalSourceCode 1015647040" external-id="externalId 2" local="false">
       <preferred-name>record 2</preferred-name>
       <characteristics>characteristics 2</characteristics>
       <note>comment 2</note>
@@ -110,7 +110,7 @@
         </coordinate-list>
       </record-coordinates>
 <!--       <sub-record-list> -->
-<!--         <record record-id="recordId-2-1" register-type-code="GEO_WATERS" external-source-code="externalSourceCode 537051127" external-id="externalId 1" local="false"> -->
+<!--         <record record-id="recordId-2-1" register-type-code="GEO_WATERS" external-system-code="externalSourceCode 537051127" external-id="externalId 1" local="false"> -->
 <!--           <preferred-name>record 2-1</preferred-name> -->
 <!--           <characteristics>characteristics 1</characteristics> -->
 <!--           <note>comment 1</note> -->
@@ -131,7 +131,7 @@
 <!--             </coordinate-list> -->
 <!--           </record-coordinates> -->
 <!--           <sub-record-list> -->
-<!--             <record record-id="recordId-2-1-1" register-type-code="GEO_WATERS" external-source-code="externalSourceCode 2142619247" external-id="externalId 1" local="true"> -->
+<!--             <record record-id="recordId-2-1-1" register-type-code="GEO_WATERS" external-system-code="externalSourceCode 2142619247" external-id="externalId 1" local="true"> -->
 <!--               <preferred-name>record 2-1-1</preferred-name> -->
 <!--               <characteristics>characteristics 1</characteristics> -->
 <!--               <note>comment 1</note> -->
@@ -156,7 +156,7 @@
 <!--         </record> -->
 <!--       </sub-record-list> -->
     </record>
-    <record record-id="recordId-3" register-type-code="ORGANIZATION" external-source-code="externalSourceCode 1097950573" external-id="externalId 1" local="false">
+    <record record-id="recordId-3" register-type-code="ORGANIZATION" external-system-code="externalSourceCode 1097950573" external-id="externalId 1" local="false">
       <preferred-name>record 3</preferred-name>
       <characteristics>characteristics 1</characteristics>
       <note>comment 1</note>
@@ -177,7 +177,7 @@
         </coordinate-list>
       </record-coordinates>
 <!--       <sub-record-list> -->
-<!--         <record record-id="recordId-3-1" register-type-code="ORGANIZATION" external-source-code="externalSourceCode 226261935" external-id="externalId 1" local="false"> -->
+<!--         <record record-id="recordId-3-1" register-type-code="ORGANIZATION" external-system-code="externalSourceCode 226261935" external-id="externalId 1" local="false"> -->
 <!--           <preferred-name>record 3-1</preferred-name> -->
 <!--           <characteristics>characteristics 1</characteristics> -->
 <!--           <note>comment 1</note> -->
@@ -198,7 +198,7 @@
 <!--             </coordinate-list> -->
 <!--           </record-coordinates> -->
 <!--           <sub-record-list> -->
-<!--             <record record-id="recordId-3-1-1" register-type-code="BRANCH" external-source-code="externalSourceCode 747662184" external-id="externalId 1" local="true"> -->
+<!--             <record record-id="recordId-3-1-1" register-type-code="BRANCH" external-system-code="externalSourceCode 747662184" external-id="externalId 1" local="true"> -->
 <!--               <preferred-name>record 3</preferred-name> -->
 <!--               <characteristics>characteristics 1</characteristics> -->
 <!--               <note>comment 1</note> -->

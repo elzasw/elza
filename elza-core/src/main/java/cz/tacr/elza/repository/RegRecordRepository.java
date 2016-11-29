@@ -39,8 +39,8 @@ public interface RegRecordRepository extends ElzaJpaRepository<RegRecord, Intege
 
 
     @Query("SELECT r FROM reg_record r WHERE r.externalId = ?1 "
-            + "and r.externalSource.code = ?2")
-    RegRecord findRegRecordByExternalIdAndExternalSourceCode(String externalId, String externalSourceCode);
+            + "and r.externalSystem.code = ?2")
+    RegRecord findRegRecordByExternalIdAndExternalSystemCode(String externalId, String externalSystemCode);
 
 
     /**

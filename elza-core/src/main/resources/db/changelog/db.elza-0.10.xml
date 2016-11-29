@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <changeSet id="1479997033" author="vanek">
+        <createTable tableName="sys_external_system">
+            <column name="external_system_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="code" type="varchar(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="name" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="url" type="varchar(1000)"/>
+            <column name="username" type="varchar(50)"/>
+            <column name="password" type="varchar(50)"/>
+        </createTable>
+
+        <createTable tableName="reg_external_system">
+            <column name="external_system_id" type="int">
+                <constraints primaryKey="true" nullable="false" foreignKeyName="fk_sys_external_system" referencedTableName="sys_external_system" referencedColumnNames="external_system_id"/>
+            </column>
+            <column name="type" type="varchar(10)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addColumn tableName="reg_record">
+            <column name="external_system_id" type="int">
+                <constraints nullable="true" foreignKeyName="fk_reg_external_system" referencedTableName="reg_external_system" referencedColumnNames="external_system_id"/>
+            </column>
+        </addColumn>
+        <dropColumn tableName="reg_record" columnName="external_source_id"/>
+
+        <dropTable tableName="reg_external_source"/>
+    </changeSet>
+
+    <changeSet id="1480407643" author="vanek">
+        <createTable tableName="par_interpi_relation">
+            <column name="interpi_relation_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="relation_type_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_par_relation_type" referencedTableName="par_relation_type" referencedColumnNames="relation_type_id" />
+            </column>
+            <column name="class" type="char(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="par_interpi_role_type">
+            <column name="interpi_role_type_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="interpi_relation_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_par_interpi_relation" referencedTableName="par_interpi_relation" referencedColumnNames="interpi_relation_id"/>
+            </column>
+            <column name="role_type_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_par_relation_role_type" referencedTableName="par_relation_role_type" referencedColumnNames="role_type_id"/>
+            </column>
+            <column name="name" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

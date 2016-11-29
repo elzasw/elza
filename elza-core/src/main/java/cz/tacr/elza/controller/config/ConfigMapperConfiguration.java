@@ -56,7 +56,7 @@ import cz.tacr.elza.controller.vo.ParRelationTypeVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.ParUnitdateVO;
 import cz.tacr.elza.controller.vo.RegCoordinatesVO;
-import cz.tacr.elza.controller.vo.RegExternalSourceVO;
+import cz.tacr.elza.controller.vo.RegExternalSystemVO;
 import cz.tacr.elza.controller.vo.RegRecordSimple;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
@@ -151,7 +151,7 @@ import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.domain.RegCoordinates;
-import cz.tacr.elza.domain.RegExternalSource;
+import cz.tacr.elza.domain.RegExternalSystem;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegScope;
@@ -728,7 +728,7 @@ public class ConfigMapperConfiguration {
                 }).byDefault().register();
         mapperFactory.classMap(RegRecord.class, RegRecordSimple.class).field("recordId", "id").byDefault().register();
 
-        mapperFactory.classMap(RegExternalSource.class, RegExternalSourceVO.class).byDefault().register();
+        mapperFactory.classMap(RegExternalSystem.class, RegExternalSystemVO.class).byDefault().register();
 
 
         mapperFactory.classMap(RegRegisterType.class, RegRegisterTypeVO.class).customize(
