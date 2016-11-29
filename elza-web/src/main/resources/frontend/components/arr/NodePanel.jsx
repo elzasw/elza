@@ -20,7 +20,7 @@ import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
 import {fundNodeSubNodeFulltextSearch, fundSubNodesNext, fundSubNodesPrev, fundSubNodesNextPage, fundSubNodesPrevPage} from 'actions/arr/node.jsx'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
 import {indexById} from 'stores/app/utils.jsx'
-import {createFundRoot, isFundRootId} from './ArrUtils.jsx'
+import {getDescItemsAddTree, createFundRoot, isFundRootId} from './ArrUtils.jsx'
 import {propsEquals} from 'components/Utils.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils.jsx'
@@ -305,44 +305,33 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     handleAddDescItemType() {
         const {node: {subNodeForm, selectedSubNodeId, routingKey}, versionId} = this.props;
 
-        const formData = subNodeForm.formData
+        const formData = subNodeForm.formData;
+        const descItemTypes = getDescItemsAddTree(formData.descItemGroups, subNodeForm.infoTypesMap, subNodeForm.refTypesMap, subNodeForm.infoGroups);
 
-        // Pro přidání chceme jen ty, které zatím ještě nemáme
-        var infoTypesMap = {...subNodeForm.infoTypesMap};
-        formData.descItemGroups.forEach(group => {
-            group.descItemTypes.forEach(descItemType => {
-                delete infoTypesMap[descItemType.id];
-            })
-        })
-        var descItemTypes = [];
-        Object.keys(infoTypesMap).forEach(function (key) {
-            descItemTypes.push({
-                ...subNodeForm.refTypesMap[key],
-                ...infoTypesMap[key],
-            });
-        });
+        // Zatím zakomentováno, možná se bude ještě nějak řadit - zatím není jasné podle čeho řadit - podle uvedení v yaml nebo jinak?
+        // function typeId(type) {
+        //     switch (type) {
+        //         case "REQUIRED":
+        //             return 0;
+        //         case "RECOMMENDED":
+        //             return 1;
+        //         case "POSSIBLE":
+        //             return 2;
+        //         case "IMPOSSIBLE":
+        //             return 99;
+        //         default:
+        //             return 3;
+        //     }
+        // }
+        //
+        // // Seřazení podle position
+        // descItemTypes.sort((a, b) => typeId(a.type) - typeId(b.type));
 
-        function typeId(type) {
-            switch (type) {
-                case "REQUIRED":
-                    return 0;
-                case "RECOMMENDED":
-                    return 1;
-                case "POSSIBLE":
-                    return 2;
-                case "IMPOSSIBLE":
-                    return 99;
-                default:
-                    return 3;
-            }
-        }
-
-        // Seřazení podle position
-        descItemTypes.sort((a, b) => typeId(a.type) - typeId(b.type));
         var submit = (data) => {
             this.dispatch(modalDialogHide());
             this.dispatch(nodeFormActions.fundSubNodeFormDescItemTypeAdd(versionId, routingKey, data.descItemTypeId.id));
         };
+
         // Modální dialog
         const form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit}/>;
         this.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), form));

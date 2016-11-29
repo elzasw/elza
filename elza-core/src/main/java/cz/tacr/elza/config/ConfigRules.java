@@ -2,25 +2,16 @@ package cz.tacr.elza.config;
 
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.repository.FundVersionRepository;
 
 
 /**
@@ -36,7 +27,7 @@ public class ConfigRules {
     public static final String FA_PREFIX = "fa-";
     public static final String DEFAULT = "default";
 
-    private Group defaultGroup = new Group("DEFAULT");
+    private Group defaultGroup = new Group("DEFAULT", null);
 
     @Valid
     private Map<String, Map<String, Map<String, TypesGroupConf>>> typeGroups;
@@ -91,7 +82,7 @@ public class ConfigRules {
                         if (typeInfos != null) {
                             for (TypeInfo typeInfo : typeInfos) {
                                 if (typeInfo.getCode().equals(typeCode)) {
-                                    return new Group(entry.getKey());
+                                    return new Group(entry.getKey(), entry.getValue().getName());
                                 }
                             }
                         }
@@ -156,9 +147,11 @@ public class ConfigRules {
     public static class Group {
 
         private String code;
+        private String name;
 
-        public Group(final String code) {
+        public Group(final String code, final String name) {
             this.code = code;
+            this.name = name;
         }
 
         public String getCode() {
@@ -168,10 +161,19 @@ public class ConfigRules {
         public void setCode(final String code) {
             this.code = code;
         }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(final String name) {
+            this.name = name;
+        }
     }
 
     public static class TypesGroupConf {
         private List<TypeInfo> types;
+        private String name;
 
         public List<TypeInfo> getTypes() {
             return types;
@@ -179,6 +181,14 @@ public class ConfigRules {
 
         public void setTypes(final List<TypeInfo> types) {
             this.types = types;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(final String name) {
+            this.name = name;
         }
     }
 

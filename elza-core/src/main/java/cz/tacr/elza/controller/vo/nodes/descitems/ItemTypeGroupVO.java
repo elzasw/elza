@@ -34,8 +34,9 @@ public class ItemTypeGroupVO {
     public ItemTypeGroupVO() {
     }
 
-    public ItemTypeGroupVO(final String code) {
+    public ItemTypeGroupVO(final String code, final String name) {
         this.code = code;
+        this.name = name;
     }
 
     public String getCode() {
