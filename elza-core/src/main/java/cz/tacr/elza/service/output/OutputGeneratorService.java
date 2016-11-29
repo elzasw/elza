@@ -76,6 +76,11 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
 
     private Queue<OutputGeneratorWorkerAbstract> outputQueue = new LinkedList<>(); // fronta outputů ke zpracování
 
+    /**
+     * Synchronizační objekt pro zamykání - pro frontu (outputQueue).
+     */
+    private final Object lock = new Object();
+
     @Autowired
     private ArrangementService arrangementService;
 
@@ -141,8 +146,10 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
         ArrOutputResult outputResult = outputResultRepository.findByOutputDefinition(arrOutput.getOutputDefinition());
         Assert.isNull(outputResult, "Tento výstup byl již vygenerován.");
 
-        if (outputQueue.stream().anyMatch(i -> arrOutput.getOutputId().equals(i.getArrOutputId()))) {
-            throw new IllegalStateException("Tento výstup je již ve frontě generování");
+        synchronized (lock) {
+            if (outputQueue.stream().anyMatch(i -> arrOutput.getOutputId().equals(i.getArrOutputId()))) {
+                throw new IllegalStateException("Tento výstup je již ve frontě generování");
+            }
         }
 
         ArrOutputDefinition outputDefinition = arrOutput.getOutputDefinition();
@@ -196,7 +203,10 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
 
         setStateAndSave(outputDefinition, OutputState.GENERATING);
         publishOutputStateEvent(outputDefinition, null);
-        outputQueue.add(createWorker(arrOutput, userId));
+        OutputGeneratorWorkerAbstract worker = createWorker(arrOutput, userId);
+        synchronized (lock) {
+            outputQueue.add(worker);
+        }
         runNextOutput(); // zkusí sputit frontu
         return null;
     }
@@ -205,7 +215,7 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
     /**
      * Podívá se do fronty úkolů a pokusí se předat poolu vláken task. Pokud je poolem odmítnut, tak se vrací do fronty.
      */
-    private void runNextOutput() {
+    private synchronized void runNextOutput() {
         if (CollectionUtils.isNotEmpty(outputQueue)) {
             OutputGeneratorWorkerAbstract task = outputQueue.poll();
             try {
@@ -259,70 +269,51 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
     @Override
     public void onFailure(final Throwable ex) {
         logger.error("Generování výstupu  dokončeno s chybou.", ex);
-        if (ex instanceof ProcessException) {
-            final ProcessException pe = (ProcessException) ex;
-            if (pe.getId() != null) {
-                (new TransactionTemplate(txManager)).execute(new TransactionCallbackWithoutResult() {
-                    @Override
-                    protected void doInTransactionWithoutResult(final TransactionStatus status) {
-                        final ArrOutputDefinition outputDefinition = outputDefinitionRepository.findByOutputId(pe.getId());
-                        final StringBuilder stringBuffer = new StringBuilder();
-                        stringBuffer.append(ex.getLocalizedMessage()).append("\n");
-                        Throwable cause = ex.getCause();
-                        while (cause != null && stringBuffer.length() < 1000) {
-                            stringBuffer.append(cause.getLocalizedMessage()).append("\n");
-                            cause = cause.getCause();
-                        }
-                        outputDefinition.setError(stringBuffer.length() > 1000 ? stringBuffer.substring(0, 1000) : stringBuffer.toString());
-                        outputDefinition.setState(OutputState.OPEN);
-                        outputDefinitionRepository.save(outputDefinition);
-                        publishOutputStateEvent(outputDefinition, OutputGeneratorService.OUTPUT_WEBSOCKET_ERROR_STATE);
-                    }
-                });
+        try {
+            if (ex instanceof ProcessException) {
+                final ProcessException pe = (ProcessException) ex;
+                Integer outputId = pe.getId();
+                saveFailStatus(outputId, ex);
             } else {
-                logger.error("Nepodařilo se uložit chybu k výstupu. ID není definováno.");
+                logger.error("Výjimka není typu ProcessException, takže nebylo možné rozeznat, ke kterému výstupu patří.");
             }
+        } finally {
+            runNextOutput();
         }
-        runNextOutput();
+    }
+
+    /**
+     * Uložení chybového stavu k outputu.
+     *
+     * @param outputId identifikátor výstupu
+     * @param ex zachycená výjimka
+     */
+    private void saveFailStatus(final Integer outputId, final Throwable ex) {
+        if (outputId == null) {
+            throw new IllegalStateException("Nepodařilo se uložit chybu k výstupu. ID není definováno.");
+        }
+
+        (new TransactionTemplate(txManager)).execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(final TransactionStatus status) {
+                final ArrOutputDefinition outputDefinition = outputDefinitionRepository.findByOutputId(outputId);
+                final StringBuilder stringBuffer = new StringBuilder();
+                stringBuffer.append(ex.getLocalizedMessage()).append("\n");
+                Throwable cause = ex.getCause();
+                while (cause != null && stringBuffer.length() < 1000) {
+                    stringBuffer.append(cause.getLocalizedMessage()).append("\n");
+                    cause = cause.getCause();
+                }
+                outputDefinition.setError(stringBuffer.length() > 1000 ? stringBuffer.substring(0, 1000) : stringBuffer.toString());
+                outputDefinition.setState(OutputState.OPEN);
+                outputDefinitionRepository.save(outputDefinition);
+                publishOutputStateEvent(outputDefinition, OutputGeneratorService.OUTPUT_WEBSOCKET_ERROR_STATE);
+            }
+        });
     }
 
     @Override
     public void onSuccess(final OutputGeneratorWorkerAbstract result) {
-        (new TransactionTemplate(txManager)).execute(new TransactionCallbackWithoutResult() {
-            @Override
-            protected void doInTransactionWithoutResult(final TransactionStatus status) {
-                final Integer arrOutputId = result.getArrOutputId();
-                ArrOutput arrOutput = outputRepository.findOne(arrOutputId);
-                ArrOutputDefinition arrOutputDefinition = outputDefinitionRepository.findByOutputId(arrOutput.getOutputId());
-                List<ArrNodeOutput> nodesList = nodeOutputRepository.findByOutputDefinition(arrOutputDefinition);
-                final ArrChange change = result.getChange();
-
-                OutputState outputState;
-                if (change != null) {
-                    Map<ArrChange, Boolean> arrChangeBooleanMap = arrangementService.detectChangeNodes(
-                            nodesList.stream().
-                                    map(ArrNodeOutput::getNode).
-                                    collect(Collectors.toSet()),
-                            Sets.newHashSet(change), false, true);
-
-                    if (arrChangeBooleanMap.containsKey(change) && arrChangeBooleanMap.get(change)) {
-                        outputState = OutputState.OUTDATED;
-                    } else {
-                        outputState = OutputState.FINISHED;
-                    }
-                    arrOutputDefinition.setError(null);
-                } else {
-                    outputState = OutputState.OPEN;
-                }
-
-                setStateAndSave(arrOutputDefinition, outputState);
-
-                publishOutputStateEvent(arrOutputDefinition, null);
-
-                logger.info("Generování výstupu pro arr_output id=" + arrOutputId + " dokončeno úspěšně.", arrOutputId);
-
-                runNextOutput();
-            }
-        });
+        runNextOutput();
     }
 }
