@@ -5,7 +5,7 @@ import {FormControl} from 'react-bootstrap'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {i18n, AbstractReactComponent, NoFocusButton, Icon, RelationClassForm, RelationForm} from 'components/index.jsx'
 import {indexById} from 'stores/app/utils.jsx'
-import {relationCreate, relationUpdate, relationDelete, RELATION_CLASS_TYPE_REPEATABILITY, USE_UNITDATE_ENUM, RELATION_CLASS_RELATION_CODE, normalizeDatation} from 'actions/party/party.jsx'
+import {relationCreate, relationUpdate, relationDelete, RELATION_CLASS_TYPE_REPEATABILITY, USE_UNITDATE_ENUM, RELATION_CLASS_CODES, normalizeDatation} from 'actions/party/party.jsx'
 import {getMapFromList} from 'stores/app/utils.jsx'
 import {isNotBlankObject} from 'components/Utils.jsx'
 
@@ -114,7 +114,7 @@ class PartyDetailRelations extends AbstractReactComponent {
             {relationsArray.map((relation, index) => <div key={relation.id} className="value-group relation-group flex">
                 <div className="flex-1">
                     {(allowedRelationTypesMap[relation.relationTypeId].useUnitdate == USE_UNITDATE_ENUM.INTERVAL || allowedRelationTypesMap[relation.relationTypeId].useUnitdate == USE_UNITDATE_ENUM.ONE) && relation.from &&  relation.from.value && <div className="flex flex-1 no-wrap-group">
-                        <div className="item">{relationClassType.code !== RELATION_CLASS_RELATION_CODE && allowedRelationTypesMap[relation.relationTypeId].name + ": "}</div>
+                        <div className="item">{relationClassType.code !== RELATION_CLASS_CODES.RELATION && allowedRelationTypesMap[relation.relationTypeId].name + ": "}</div>
                         {relation.from.value && <div className="item">{relation.from.value}</div>}
                         {relation.from.textDate && <div className="item">{relation.from.textDate}</div>}
                             {relation.from.note && <div className="note">{relation.from.note}</div>}

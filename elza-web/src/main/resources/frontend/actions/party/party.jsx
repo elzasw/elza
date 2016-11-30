@@ -33,7 +33,11 @@ export const USE_UNITDATE_ENUM = {
     INTERVAL: 'INTERVAL',
 };
 
-export const RELATION_CLASS_RELATION_CODE = "R";
+export const RELATION_CLASS_CODES = {
+    RELATION: "R",
+    BIRTH: "B",
+    EXTINCTION: "E"
+};
 
 /**
  * Načtení seznamu osob dle filtru
