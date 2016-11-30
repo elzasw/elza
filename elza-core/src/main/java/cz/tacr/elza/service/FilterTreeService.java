@@ -255,11 +255,16 @@ public class FilterTreeService {
             }
         }
         Map<Integer, ArrNode> filterIdsMap = ElzaTools
-                .createEntityMap(nodeRepository.findAll(filteredIds), n -> n.getNodeId());
+                .createEntityMap(nodeRepository.findAll(filteredIds), ArrNode::getNodeId);
 
         Map<Integer, TreeNodeClient> parentIdsMap = ElzaTools.createEntityMap(
                 levelTreeCacheService.getNodesByIds(parentIds, version.getFundVersionId()),
-                n -> n.getId()
+                TreeNodeClient::getId
+        );
+
+        Map<Integer, TreeNodeClient> idsMap = ElzaTools.createEntityMap(
+                levelTreeCacheService.getNodesByIds(filteredIds, version.getFundVersionId()),
+                TreeNodeClient::getId
         );
 
         for (Integer filteredId : filteredIds) {
@@ -284,10 +289,10 @@ public class FilterTreeService {
                 }
             }
 
-
             //najdeme objekt uzlu a jeho rodiče, abychom získali jejich verzi
             TreeNode treeNode = versionCache.get(filteredId);
             TreeNode treeParentNode = treeNode.getParent();
+            TreeNodeClient treeNodeClient = idsMap.get(filteredId);
 
             ArrNode arrNode = filterIdsMap.get(treeNode.getId());
             ArrNodeVO arrNodeVo = new ArrNodeVO(arrNode.getNodeId(), arrNode.getVersion());
@@ -296,7 +301,7 @@ public class FilterTreeService {
                 arrParentNodeVo = parentIdsMap.get(treeParentNode.getId());
             }
 
-            result.add(new FilterNode(arrNodeVo, arrParentNodeVo, nodeValuesMap));
+            result.add(new FilterNode(arrNodeVo, arrParentNodeVo, nodeValuesMap, treeNodeClient.getReferenceMark()));
         }
 
         return result;

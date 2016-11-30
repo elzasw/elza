@@ -138,15 +138,14 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
     }
 
     referenceMarkCellRenderer(row, rowIndex, col, colIndex, colFocus, cellFocus) {
-        const colValue = row[col.dataName]
+        const referenceMark = row.referenceMark;
 
         let itemValue;
-        if (colValue && colValue.referenceMark) {
-            itemValue = createReferenceMarkStringFromArray(colValue.referenceMark);
+        if (referenceMark && referenceMark.length > 0) {
+            itemValue = createReferenceMarkStringFromArray(referenceMark);
         } else {
-            itemValue = createReferenceMarkStringFromArray(["2", "||", "1", "|", "1"]);
+            itemValue = "";
         }
-        console.log(itemValue)
 
         return <div className='cell-value-wrapper'>{itemValue}</div>
     }
