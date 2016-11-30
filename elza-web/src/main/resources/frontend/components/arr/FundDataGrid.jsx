@@ -49,13 +49,16 @@ import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
-import {getSpecsIds, hasDescItemTypeValue, createFundRoot} from 'components/arr/ArrUtils.jsx'
+import {
+    createReferenceMarkStringFromArray,
+    getSpecsIds,
+    hasDescItemTypeValue,
+    createFundRoot
+} from 'components/arr/ArrUtils.jsx'
 import {getMapFromList, getSetFromIdsList} from 'stores/app/utils.jsx'
 import {propsEquals} from 'components/Utils.jsx'
-
+import {COL_DEFAULT_WIDTH, COL_REFERENCE_MARK} from "./FundDataGridConst";
 require('./FundDataGrid.less')
-
-const COL_DEFAULT_WIDTH = 164
 
 var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
     constructor(props) {
@@ -98,7 +101,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         this.dispatch(fundDataGridFetchDataIfNeeded(versionId, fundDataGrid.pageIndex, fundDataGrid.pageSize))
         this.dispatch(refRuleSetFetchIfNeeded())
         if (ruleSet.fetched && descItemTypes.fetched && fund.activeVersion) {
-            var initData = { visibleColumns: [] }
+            var initData = {visibleColumns: []}
             var ruleMap = getMapFromList(ruleSet.items);
             var rule = ruleMap[fund.activeVersion.ruleSetId];
             var codeSet = getSetFromIdsList(rule.defaultItemTypeCodes);
@@ -134,6 +137,20 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         }
     }
 
+    referenceMarkCellRenderer(row, rowIndex, col, colIndex, colFocus, cellFocus) {
+        const colValue = row[col.dataName]
+
+        let itemValue;
+        if (colValue && colValue.referenceMark) {
+            itemValue = createReferenceMarkStringFromArray(colValue.referenceMark);
+        } else {
+            itemValue = createReferenceMarkStringFromArray(["2", "||", "1", "|", "1"]);
+        }
+        console.log(itemValue)
+
+        return <div className='cell-value-wrapper'>{itemValue}</div>
+    }
+
     cellRenderer(row, rowIndex, col, colIndex, colFocus, cellFocus) {
         const colValue = row[col.dataName]
 
@@ -148,10 +165,11 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                                 case "B":
                                     itemValue = value.geomType + ": " + value.value
                                     itemValue = <span><Button disabled>{value.geomType}</Button> {value.value}</span>
-                                break
+                                    break
                                 default:
-                                    itemValue = <span><Button disabled>{value.geomType}</Button> {i18n('subNodeForm.countOfCoordinates', value.value)}</span>
-                                break
+                                    itemValue = <span><Button
+                                        disabled>{value.geomType}</Button> {i18n('subNodeForm.countOfCoordinates', value.value)}</span>
+                                    break
                             }
                             break
                         case 'UNITDATE':
@@ -168,14 +186,15 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
 
                 if (col.refType.useSpecification) {
                     var spec = null
-                    for (var a=0; a<col.refType.descItemSpecs.length; a++) {
+                    for (var a = 0; a < col.refType.descItemSpecs.length; a++) {
                         if (col.refType.descItemSpecs[a].code === value.specCode) {
                             spec = col.refType.descItemSpecs[a]
                             break
                         }
                     }
 
-                    return <div className='cell-value-wrapper'>{hasDescItemTypeValue(col.dataType) ? spec.name + ': ' + itemValue : spec.name}</div>
+                    return <div
+                        className='cell-value-wrapper'>{hasDescItemTypeValue(col.dataType) ? spec.name + ': ' + itemValue : spec.name}</div>
                 } else {
                     return <div className='cell-value-wrapper'>{itemValue}</div>
                 }
@@ -189,22 +208,27 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
 
     supportBulkModifications(refType, dataType) {
         const {closed} = this.props
-        return !closed;
-/*
-        let result
 
-        switch (dataType.code) {
-            case 'TEXT':
-            case 'STRING':
-            case 'FORMATTED_TEXT':
-            case 'UNITID':
-                result = true
-                break
-            default:
-                result = false
-                break
+        if (refType.id === COL_REFERENCE_MARK) {
+            return false;
         }
-        return result*/
+
+        return !closed;
+        /*
+         let result
+
+         switch (dataType.code) {
+         case 'TEXT':
+         case 'STRING':
+         case 'FORMATTED_TEXT':
+         case 'UNITID':
+         result = true
+         break
+         default:
+         result = false
+         break
+         }
+         return result*/
     }
 
     headerColRenderer(col) {
@@ -222,8 +246,11 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         return (
             <div className={cls} title={col.refType.name}>
                 <div className="title">{col.refType.shortcut}</div>
-                {showBulkModifications && !readMode && <Button onClick={this.handleBulkModifications.bind(this, col.refType, col.dataType)} title={i18n('arr.fund.bulkModifications.action')}><Icon glyph='fa-pencil'/></Button>}
-                <Button onClick={this.handleFilterSettings.bind(this, col.refType, col.dataType)} title={i18n('arr.fund.filterSettings.action')}><Icon glyph='fa-filter'/></Button>
+                {showBulkModifications && !readMode &&
+                <Button onClick={this.handleBulkModifications.bind(this, col.refType, col.dataType)}
+                        title={i18n('arr.fund.bulkModifications.action')}><Icon glyph='fa-pencil'/></Button>}
+                <Button onClick={this.handleFilterSettings.bind(this, col.refType, col.dataType)}
+                        title={i18n('arr.fund.filterSettings.action')}><Icon glyph='fa-filter'/></Button>
             </div>
         )
     }
@@ -257,7 +284,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         }
 
         var eqProps2 = [
-            'isFetchingFilter', 'fetchedFilter', 'isFetchingData', 'fetchedData', 'pageSize', 'pageIndex',  'closed', 'readMode',
+            'isFetchingFilter', 'fetchedFilter', 'isFetchingData', 'fetchedData', 'pageSize', 'pageIndex', 'closed', 'readMode',
             'items', 'itemsCount', 'filter', 'visibleColumns', 'initialised', 'columnsOrder', 'columnInfos', 'selectedIds'
         ]
         if (!propsEquals(this.props.fundDataGrid, nextProps.fundDataGrid, eqProps2)) {
@@ -285,6 +312,23 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         const columnsOrder = this.getColumnsOrder(fundDataGrid, refTypesMap)
 
         var cols = []
+
+        // Sloupec s číslem JP
+        const refMarkColInfo = fundDataGrid.columnInfos[COL_REFERENCE_MARK];
+        cols.push({
+            id: COL_REFERENCE_MARK,
+            refType: {
+                id: COL_REFERENCE_MARK,
+                code: COL_REFERENCE_MARK,
+                shortcut: i18n("arr.fund.title.referendeMark"),
+            },
+            title: i18n("arr.fund.title.referendeMark"),
+            width: refMarkColInfo ? refMarkColInfo.width : COL_DEFAULT_WIDTH,
+            headerColRenderer: this.headerColRenderer,
+            cellRenderer: this.referenceMarkCellRenderer
+        });
+
+        // Vybrané sloupce
         columnsOrder.forEach(id => {
             const refType = refTypesMap[id]
             if (fundDataGrid.visibleColumns[id]) {  // je vidět
@@ -392,7 +436,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
             var nodes;
             switch (data.itemsArea) {
                 case 'all':
-                    nodes = fundDataGrid.items.map(i => ({id: i.node.id, version: i.node.version}) )
+                    nodes = fundDataGrid.items.map(i => ({id: i.node.id, version: i.node.version}))
                     break
                 case 'selected': {
                     const set = getSetFromIdsList(fundDataGrid.selectedIds)
@@ -453,13 +497,18 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
 
         var menu = (
             <ul className="dropdown-menu">
-                <MenuItem onClick={this.handleSelectInNewTab.bind(this, row)}>{i18n('arr.fund.bulkModifications.action.openInNewTab')}</MenuItem>
-                <MenuItem onClick={this.handleSelectInTab.bind(this, row)}>{i18n('arr.fund.bulkModifications.action.open')}</MenuItem>
-                <MenuItem onClick={() => {this.dispatch(contextMenuHide());this.handleEdit(row, rowIndex, col, colIndex)}}>{i18n('global.action.update')}</MenuItem>
+                <MenuItem
+                    onClick={this.handleSelectInNewTab.bind(this, row)}>{i18n('arr.fund.bulkModifications.action.openInNewTab')}</MenuItem>
+                <MenuItem
+                    onClick={this.handleSelectInTab.bind(this, row)}>{i18n('arr.fund.bulkModifications.action.open')}</MenuItem>
+                <MenuItem onClick={() => {
+                    this.dispatch(contextMenuHide());
+                    this.handleEdit(row, rowIndex, col, colIndex)
+                }}>{i18n('global.action.update')}</MenuItem>
             </ul>
         );
 
-        this.dispatch(contextMenuShow(this, menu, {x: e.clientX, y:e.clientY}));
+        this.dispatch(contextMenuShow(this, menu, {x: e.clientX, y: e.clientY}));
     }
 
     handleEdit(row, rowIndex, col, colIndex) {
@@ -484,7 +533,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                 closed={closed}
                 position={{x: cellRect.left, y: cellRect.top}}
             />,
-        'fund-data-grid-cell-edit', this.handleEditClose));
+            'fund-data-grid-cell-edit', this.handleEditClose));
     }
 
     handleEditClose() {
@@ -493,7 +542,9 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         this.dispatch(nodeFormActions.fundSubNodeFormHandleClose(versionId, 'DATA_GRID'))
 
         this.setState({},
-            ()=>{ ReactDOM.findDOMNode(this.refs.dataGrid).focus() }
+            ()=> {
+                ReactDOM.findDOMNode(this.refs.dataGrid).focus()
+            }
         )
     }
 
@@ -564,13 +615,13 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         const {versionId} = this.props
         this.dispatch(fundDataFulltextExtended(versionId))
     }
-    
+
     render() {
         const {fundId, fund, fundDataGrid, versionId, rulDataTypes, descItemTypes, packetTypes, dispatch, readMode} = this.props;
         const {cols} = this.state;
 
         if (!descItemTypes.fetched || !packetTypes.fetched || !rulDataTypes.fetched) {
-        // if (!fundDataGrid.fetchedFilter || !descItemTypes.fetched || !packetTypes.fetched || !rulDataTypes.fetched) {
+            // if (!fundDataGrid.fetchedFilter || !descItemTypes.fetched || !packetTypes.fetched || !rulDataTypes.fetched) {
             return <Loading/>
         }
 
@@ -597,15 +648,19 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                     <div className='actions-container'>
                         <div className="actions-search">
                             {search}
-                            <Button onClick={this.handleToggleExtendedSearch} title={i18n(fundDataGrid.searchExtended ? 'arr.fund.simpleSearch' : 'arr.fund.extendedSearch')}><Icon glyph={fundDataGrid.searchExtended ? 'fa-search-minus' : 'fa-search-plus'}/></Button>
+                            <Button onClick={this.handleToggleExtendedSearch}
+                                    title={i18n(fundDataGrid.searchExtended ? 'arr.fund.simpleSearch' : 'arr.fund.extendedSearch')}><Icon
+                                glyph={fundDataGrid.searchExtended ? 'fa-search-minus' : 'fa-search-plus'}/></Button>
                         </div>
                         <div className="actions-buttons">
                             <Button
                                 disabled={!(fundDataGrid.rowsDirty || fundDataGrid.filterDirty)}
                                 onClick={this.handleFilterUpdateData}
                             ><Icon glyph='fa-refresh'/>{i18n('arr.fund.filterSettings.updateData.action')}</Button>
-                            <Button onClick={this.handleFilterClearAll}><Icon glyph='fa-trash'/>{i18n('arr.fund.filterSettings.clearAll.action')}</Button>
-                            <Button onClick={this.handleColumnSettings} title={i18n('arr.fund.columnSettings.action')}><Icon glyph='fa-columns'/></Button>
+                            <Button onClick={this.handleFilterClearAll}><Icon
+                                glyph='fa-trash'/>{i18n('arr.fund.filterSettings.clearAll.action')}</Button>
+                            <Button onClick={this.handleColumnSettings}
+                                    title={i18n('arr.fund.columnSettings.action')}><Icon glyph='fa-columns'/></Button>
                         </div>
                     </div>
                     <div className='grid-container'>
@@ -629,8 +684,12 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                             itemsCount={fundDataGrid.itemsCount}
                             pageSize={fundDataGrid.pageSize}
                             pageIndex={fundDataGrid.pageIndex}
-                            onSetPageIndex={pageIndex => {dispatch(fundDataGridSetPageIndex(versionId, pageIndex))}}
-                            onChangePageSize={pageSize => {dispatch(fundDataGridSetPageSize(versionId, pageSize))}}
+                            onSetPageIndex={pageIndex => {
+                                dispatch(fundDataGridSetPageIndex(versionId, pageIndex))
+                            }}
+                            onChangePageSize={pageSize => {
+                                dispatch(fundDataGridSetPageSize(versionId, pageSize))
+                            }}
                         />
                     </div>
                 </div>

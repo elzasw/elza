@@ -334,7 +334,20 @@ export function createReferenceMark(node, elProps) {
  * @param node {Object} jednotka popisu
  */
 export function createReferenceMarkString(node) {
-    return node && node.referenceMark && node.referenceMark.join(" ");
+    if (node && node.referenceMark) {
+        return createReferenceMarkStringFromArray(node.referenceMark);
+    } else {
+        return 0;
+    }
+}
+
+/**
+ * Vytvoření referenčního označení - textově.
+ *
+ * @param referenceMark {Array} pole reference mark
+ */
+export function createReferenceMarkStringFromArray(referenceMark) {
+    return referenceMark.join(" ");
 }
 
 /**

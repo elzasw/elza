@@ -29,6 +29,7 @@ var messages = {
     "global.action.cancel": "Storno",
     "global.action.close": "Zavřít",
     "global.action.store": "Ok",
+    "global.action.select": "Vybrat",
     "global.action.storeAndViewDetail": "Ok a přechod na detail",
     "global.action.show.more": "Zobrazit více",
     "global.action.import": "Importovat",
@@ -359,6 +360,8 @@ var messages = {
     "arr.fund.filterSettings.condition.coordinates.near.20000": "20 km",
     "arr.fund.filterSettings.condition.coordinates.near.50000": "50 km",
     "arr.fund.filterSettings.condition.coordinates.near.100000": "100 km",
+    "arr.fund.title.referendeMark": "Číslo JP",
+    "arr.fund.filterSettings.action.clear": "Zrušit filtr",
 
     "arr.fund.jsonTable.cell.title": "Tabulka {0}x{1}",
 
