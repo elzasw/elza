@@ -138,21 +138,26 @@ class AddPartyForm extends AbstractReactComponent {
      */
     getPreselectRecordTypeId = (recordTypes) => {
         const items = recordTypes.item;
-
+        let res = null;
+        let stop = false;
         const loop = (item) => {
             if (item.addRecord) {
-                return item;
-            }
-
-            if (item.children && item.children.length > 0) {
+                if (res != null) {
+                    res = null;
+                    stop = true;
+                } else {
+                    res = item;
+                }
+            } else if (item.children && item.children.length > 0) {
                 for (let child of item.children) {
-                    const found = loop(child);
-                    if (found) {
-                        return found;
+                    loop(child);
+                    if (stop) {
+                        return;
                     }
                 }
+            } else {
+                res = null
             }
-            return null;
         };
 
         let found;

@@ -4,15 +4,6 @@ elza:
       user: app
       pass: app
 
-  treenode:
-      title: ZP2015_TITLE
-      defaultTitle: <Není nastaveno>
-
-  #třídy rejstříků a osob, které jsou defaultně zobrazovanány
-  record:
-      scopeCodes:
-        - GLOBAL
-
 spring:
   app:
       buildType: DEV
