@@ -114,29 +114,41 @@ export function partyDelete(partyId) {
 
 
 export function relationCreate(relation) {
-    return dispatch => {
+    return (dispatch, getState) => {
         return savingApiWrapper(dispatch, WebApi.createRelation(relation))
             .then(() => {
                 dispatch(modalDialogHide());
                 dispatch(partyDetailInvalidate());
+                const {app:{partyList}} = getState();
+                if (partyList.filteredRows && indexById(partyList.filteredRows, relation.partyId) !== null) {
+                    dispatch(partyListInvalidate())
+                }
             });
     };
 }
 
 export function relationDelete(relationId) {
-    return dispatch => {
+    return (dispatch, getState) => {
         WebApi.deleteRelation(relationId).then(() => {
             dispatch(partyDetailInvalidate());
+            const {app:{partyList, partyDetail}} = getState();
+            if (partyList.filteredRows && indexById(partyList.filteredRows, partyDetail.id) !== null) {
+                dispatch(partyListInvalidate())
+            }
         });
     }
 }
 
 export function relationUpdate(relation) {
-    return dispatch => {
+    return (dispatch, getState) => {
         return savingApiWrapper(dispatch, WebApi.updateRelation(relation))
             .then(() => {
                 dispatch(modalDialogHide());
                 dispatch(partyDetailInvalidate());
+                const {app:{partyList}} = getState();
+                if (partyList.filteredRows && indexById(partyList.filteredRows, relation.partyId) !== null) {
+                    dispatch(partyListInvalidate())
+                }
             });
     };
 }
