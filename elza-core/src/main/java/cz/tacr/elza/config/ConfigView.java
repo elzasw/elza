@@ -105,6 +105,8 @@ public class ConfigView {
 
     private ViewTitles convertViewTitles(final SettingFundViews.Item item) {
         ViewTitles tv = new ViewTitles();
+
+        tv.setDefaultTitle(item.getTitle());
         tv.setAccordionLeft(item.getAccordionLeft() == null ? null : item.getAccordionLeft().getValues());
         tv.setAccordionRight(item.getAccordionRight() == null ? null : item.getAccordionRight().getValues());
         tv.setTreeItem(item.getTree() == null ? null : item.getTree().getValues());
@@ -162,6 +164,8 @@ public class ConfigView {
     }
 
     public static class ViewTitles {
+
+        private String defaultTitle;
 
         private List<String> treeItem;
 
@@ -223,6 +227,14 @@ public class ConfigView {
 
         public void setHierarchy(final Map<String, Map<String, ConfigViewTitlesHierarchy>> hierarchy) {
             this.hierarchy = hierarchy;
+        }
+
+        public String getDefaultTitle() {
+            return defaultTitle;
+        }
+
+        public void setDefaultTitle(final String defaultTitle) {
+            this.defaultTitle = defaultTitle;
         }
     }
 }
