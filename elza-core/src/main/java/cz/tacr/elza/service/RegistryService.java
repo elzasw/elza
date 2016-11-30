@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -133,8 +134,18 @@ public class RegistryService {
     /**
      * Id tříd rejstříků nastavené v konfiguraci elzy.
      */
-    private Set<Integer> defaultScopeIds;
+    private Set<Integer> defaultScopeIds = null;
 
+    public Set<Integer> getDefaultScopeIds() {
+        if (defaultScopeIds == null) {
+            List<String> scopeCodes = getScopeCodes();
+            if (CollectionUtils.isNotEmpty(scopeCodes)) {
+                List<RegScope> foundCodes = scopeRepository.findByCodes(scopeCodes);
+                defaultScopeIds = foundCodes.stream().map(RegScope::getScopeId).collect(Collectors.toSet());
+            }
+        }
+        return defaultScopeIds;
+    }
 
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (record, charateristics, comment),
@@ -556,7 +567,7 @@ public class RegistryService {
      */
     public Set<Integer> getScopeIdsByFund(@Nullable final ArrFund fund){
         if(fund == null){
-            return defaultScopeIds;
+            return getDefaultScopeIds();
         }else{
             return scopeRepository.findIdsByFund(fund);
         }
@@ -740,16 +751,6 @@ public class RegistryService {
         }
         return scopeCodes;
     }
-
-    @PostConstruct
-    public void initScopeIds() throws Exception {
-        List<String> scopeCodes = getScopeCodes();
-        if (CollectionUtils.isNotEmpty(scopeCodes)) {
-            List<RegScope> foundCodes = scopeRepository.findByCodes(scopeCodes);
-            defaultScopeIds = foundCodes.stream().map(s -> s.getScopeId()).collect(Collectors.toSet());
-        }
-    }
-
 
     public List<RegScope> findDefaultScopes() {
         List<String> scopeCodes = getScopeCodes();
