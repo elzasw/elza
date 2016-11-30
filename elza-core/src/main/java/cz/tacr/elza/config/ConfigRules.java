@@ -1,10 +1,13 @@
 package cz.tacr.elza.config;
 
 
+import com.google.common.eventbus.Subscribe;
+import cz.tacr.elza.EventBusListener;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingTypeGroups;
 import cz.tacr.elza.repository.SettingsRepository;
+import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -25,6 +28,7 @@ import java.util.stream.Collectors;
  * @since 10.12.2015
  */
 @Component
+@EventBusListener
 public class ConfigRules {
 
     public static final String FA_PREFIX = "fa-";
@@ -39,6 +43,13 @@ public class ConfigRules {
     private PackageService packageService;
 
     private Map<String, Map<String, Map<String, TypesGroupConf>>> typeGroups;
+
+    @Subscribe
+    public synchronized void invalidateCache(final CacheInvalidateEvent cacheInvalidateEvent) {
+        if (cacheInvalidateEvent.contains(CacheInvalidateEvent.Type.RULE)) {
+            typeGroups = null;
+        }
+    }
 
     public synchronized Map<String, Map<String, Map<String, TypesGroupConf>>> getTypeGroups() {
         if (typeGroups == null) {
