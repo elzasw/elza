@@ -102,6 +102,7 @@ import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.SettingsRepository;
 import cz.tacr.elza.repository.UIPartyGroupRepository;
 import cz.tacr.elza.service.AdminService;
+import cz.tacr.elza.service.CacheService;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -374,7 +375,7 @@ public class PackageService {
     private SettingsRepository settingsRepository;
 
     @Autowired
-    private AdminService adminService;
+    private CacheService cacheService;
 
     private List<RulTemplate> newRultemplates = null;
 
@@ -506,7 +507,7 @@ public class PackageService {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
                 @Override
                 public void afterCommit() {
-                    adminService.resetCache(CacheInvalidateEvent.Type.ALL);
+                    cacheService.resetCache(CacheInvalidateEvent.Type.ALL);
                 }
             });
 
@@ -2305,7 +2306,7 @@ public class PackageService {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
                 @Override
                 public void afterCommit() {
-                    adminService.resetCache(CacheInvalidateEvent.Type.ALL);
+                    cacheService.resetCache(CacheInvalidateEvent.Type.ALL);
                 }
             });
 
