@@ -1,4 +1,5 @@
 @import "~variables.less";
+@import "./ReferenceMark.less";
 
 @rowHeight: 16px;
 
@@ -29,25 +30,7 @@
             display: block;
         }
 
-        .level {
-            height: 16px;
-            line-height: 16px;
-            max-width: 14px;
-            min-width: 14px;
-            color: @tree-node-reference-mark;
-            font-size: 0.8em;
-            text-align: center;
-            vertical-align: middle;
-            overflow: hidden;
-            padding: 0 2px;
-        }
-
-        .separator {
-            color: @tree-node-separator-border;
-            min-width: 6px;
-            max-width: 6px;
-            text-align: center;
-        }
+        .referenceMark;
 
         .exp-col {
             flex-grow: 1;
@@ -87,10 +70,6 @@
                 background: @tree-node-label-active-bg;
                 cursor: pointer;
             }
-        }
-
-        .level.small {
-            font-size: 0.5em;
         }
 
         .active {
