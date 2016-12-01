@@ -364,8 +364,9 @@ function getFundTree(fund, area) {
  * @param {String} area oblast stromu
  * @param {versionId} id verze
  * @param {expandedIds} seznam rozbalených uzlů
+ * @param selectedIdInfo buď id nebo pole id (id, které je aktuálně vybrané nebo null, toto id bude také načtené a strom zobrazený s touto položkou)
  */
-export function fundTreeFetchIfNeeded(area, versionId, expandedIds, selectedId) {
+export function fundTreeFetchIfNeeded(area, versionId, expandedIds, selectedIdInfo) {
     return (dispatch, getState) => {
         var state = getState();
 
@@ -381,17 +382,28 @@ export function fundTreeFetchIfNeeded(area, versionId, expandedIds, selectedId) 
         }
 
         var fetch = false;
-
         var includeIds = [];
-        if (selectedId != null && typeof selectedId !== 'undefined') {
-            includeIds.push(selectedId);
-
-            var isInView = indexById(fundTree.nodes, selectedId);
-            if (isInView == null) {
-                if (!fundTree.fetchingIncludeIds[selectedId]) {
-                    fetch = true;
-                }
+        let selectedIds;
+        if (fundTree.multipleSelection) {
+            selectedIds = Object.keys(fundTree.selectedIds);
+        } else {
+            if (typeof fundTree.selectedId !== "undefined" && fundTree.selectedId !== null) {
+                selectedIds = [fundTree.selectedId];
+            } else {
+                selectedIds = [];
             }
+        }
+        if (selectedIds.length > 0) {
+            selectedIds.forEach(selectedId => {
+                includeIds.push(selectedId);
+
+                var isInView = indexById(fundTree.nodes, selectedId);
+                if (isInView == null) {
+                    if (!fundTree.fetchingIncludeIds[selectedId]) {
+                        fetch = true;
+                    }
+                }
+            });
         }
 
         if (!fundTree.fetched && !fundTree.isFetching) {

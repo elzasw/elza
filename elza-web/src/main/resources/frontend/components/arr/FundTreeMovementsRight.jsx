@@ -22,17 +22,17 @@ var FundTreeMovementsRight = class FundTreeMovementsRight extends AbstractReactC
     }
 
     componentDidMount() {
-        const {versionId, expandedIds, selectedId} = this.props;
-        this.requestFundTreeData(versionId, expandedIds, selectedId);
+        const {versionId, expandedIds} = this.props;
+        this.requestFundTreeData(versionId, expandedIds);
     }
 
     componentWillReceiveProps(nextProps) {
-        const {versionId, expandedIds, selectedId} = nextProps;
-        this.requestFundTreeData(versionId, expandedIds, selectedId);
+        const {versionId, expandedIds} = nextProps;
+        this.requestFundTreeData(versionId, expandedIds);
     }
 
-    requestFundTreeData(versionId, expandedIds, selectedId) {
-        this.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_MOVEMENTS_RIGHT, versionId, expandedIds, selectedId));
+    requestFundTreeData(versionId, expandedIds) {
+        this.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_MOVEMENTS_RIGHT, versionId, expandedIds));
     }
 
     handleFulltextChange(value) {

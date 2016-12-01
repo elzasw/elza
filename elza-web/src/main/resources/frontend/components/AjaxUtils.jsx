@@ -123,6 +123,17 @@ function resolveException(status, statusText, data) {
             validation: true,
             data: data
         };
+    } else if (status == 400) {
+        result = {
+            createToaster: true,
+            type: "BAD_REQUEST",
+            code: "BAD_REQUEST",
+            // properties: data.properties,
+            message: statusText,
+            devMessage: statusText,
+            status: status,
+            statusText: statusText
+        };
     } else if (status == 401) {
         result = {
             type: 'unauthorized',

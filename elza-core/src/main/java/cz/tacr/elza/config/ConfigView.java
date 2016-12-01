@@ -1,10 +1,13 @@
 package cz.tacr.elza.config;
 
 
+import com.google.common.eventbus.Subscribe;
+import cz.tacr.elza.EventBusListener;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingFundViews;
 import cz.tacr.elza.repository.SettingsRepository;
+import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +27,7 @@ import java.util.Map;
  * @since 10.12.2015
  */
 @Component
+@EventBusListener
 public class ConfigView {
 
     public static final String FA_PREFIX = "fa-";
@@ -41,6 +45,13 @@ public class ConfigView {
      * Nastavení zobrazení v UI.
      */
     private Map<String, Map<String, ViewTitles>> fundView;
+
+    @Subscribe
+    public synchronized void invalidateCache(final CacheInvalidateEvent cacheInvalidateEvent) {
+        if (cacheInvalidateEvent.contains(CacheInvalidateEvent.Type.VIEW)) {
+            fundView = null;
+        }
+    }
 
     public ViewTitles getViewTitles(final String code, final Integer fundId) {
         Map<String, Map<String, ViewTitles>> fundView = getFundView();

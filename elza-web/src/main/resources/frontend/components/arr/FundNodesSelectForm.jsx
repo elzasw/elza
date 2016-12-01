@@ -1,10 +1,8 @@
-
 import React from 'react';
 import {connect} from 'react-redux'
 import {i18n, FundTreeLazy, AbstractReactComponent} from 'components/index.jsx';
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Modal, Button, Input, Form} from 'react-bootstrap';
-import * as types from 'actions/constants/ActionTypes.js';
 import {
     fundTreeFulltextChange,
     fundTreeFulltextSearch,
@@ -19,17 +17,16 @@ import {
     fundTreeConfigure
 } from 'actions/arr/fundTree.jsx'
 import {getMapFromList} from 'stores/app/utils.jsx'
-import './FundNodesSelectForm.less';
+import FundNodesSelect from "./FundNodesSelect";
 
 /**
- * Formulář vybrání uzlů v konkrétní verzi souboru - výběr uzlů na základě konfigurace - např. single nebo multiple select.
+ * Dialogový formulář vybrání uzlů v konkrétní verzi souboru - výběr uzlů na základě konfigurace - např. single nebo multiple select.
  * Implicitně pokud se neuvede, je výběr multiselect libovolných položek ve stromu.
  */
 class FundNodesSelectForm extends AbstractReactComponent {
 
     static propTypes = {
-        multipleSelection: React.PropTypes.bool,
-        multipleSelectionOneLevel: React.PropTypes.bool,
+        ...FundNodesSelect.propTypes
     };
 
     static defaultProps = {
@@ -38,133 +35,45 @@ class FundNodesSelectForm extends AbstractReactComponent {
     };
 
     state = {
-        nodes: {}
-    };
-
-    componentDidMount() {
-        const fund = this.getActiveFund(this.props);
-        const fundTreeNodes = fund.fundTreeNodes;
-        const versionId = fund.versionId;
-
-        const {multipleSelection, multipleSelectionOneLevel} = this.props;
-        this.props.dispatch(fundTreeConfigure(types.FUND_TREE_AREA_NODES, versionId, multipleSelection, multipleSelectionOneLevel));
-
-        this.requestFundTreeData(versionId, fundTreeNodes.expandedIds, fundTreeNodes.selectedIds);
-    }
-
-    componentWillReceiveProps(nextProps){
-        const fund = this.getActiveFund(nextProps);
-        const fundTreeNodes = fund.fundTreeNodes;
-        const versionId = fund.versionId;
-        this.requestFundTreeData(versionId, fundTreeNodes.expandedIds, fundTreeNodes.selectedIds);
-    };
-
-    requestFundTreeData = (versionId, expandedIds, selectedIds) => {
-        var selectedId = null;
-        if (Object.keys(selectedIds).length == 1) {
-            selectedId = Object.keys(selectedIds)[0];
-        }
-
-        this.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_NODES, versionId, expandedIds, selectedId));
-    };
-
-    handleNodeClick = (node, ensureItemVisible, e) => {
-        const fund = this.getActiveFund(this.props);
-        e.shiftKey && this.unFocus();
-        this.dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_NODES, fund.versionId, node.id, e.ctrlKey, e.shiftKey, null, ensureItemVisible));
-    };
-
-    unFocus() {
-        if (document.selection) {
-            document.selection.empty();
-        } else {
-            window.getSelection().removeAllRanges()
-        }
-    }    
-
-    handleFulltextChange = (value) => {
-        const fund = this.getActiveFund(this.props);
-        this.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_NODES, fund.versionId, value));
-    };
-
-    handleFulltextSearch = () => {
-        const fund = this.getActiveFund(this.props);
-        this.dispatch(fundTreeFulltextSearch(types.FUND_TREE_AREA_NODES, fund.versionId));
-    };
-
-    handleFulltextPrevItem = () => {
-        const fund = this.getActiveFund(this.props);
-        this.dispatch(fundTreeFulltextPrevItem(types.FUND_TREE_AREA_NODES, fund.versionId));
-    };
-
-    handleFulltextNextItem = () => {
-        const fund = this.getActiveFund(this.props);
-        this.dispatch(fundTreeFulltextNextItem(types.FUND_TREE_AREA_NODES, fund.versionId));
+        selectedNodes: [],
+        selectedNodesIds: []
     };
 
     handleSubmit = () => {
         const {multipleSelection, onSubmitForm} = this.props;
-        const fund = this.getActiveFund(this.props);
-        const fundTreeNodes = fund.fundTreeNodes;
+        const {selectedNodes, selectedNodesIds} = this.state;
 
         if (multipleSelection) {
-            const nodesMap = getMapFromList(fundTreeNodes.nodes);
-            const nodes = Object.keys(fundTreeNodes.selectedIds).map(id => nodesMap[id]);
-
-            onSubmitForm(Object.keys(fundTreeNodes.selectedIds), nodes);
+            onSubmitForm(selectedNodesIds, selectedNodes);
         } else {
-            const nodesMap = getMapFromList(fundTreeNodes.nodes);
-            const node = nodesMap[fundTreeNodes.selectedId];
-
-            onSubmitForm(fundTreeNodes.selectedId, node);
+            onSubmitForm(selectedNodesIds[0], selectedNodes[0]);
         }
     };
 
-    getActiveFund = (props) => {
-        var arrRegion = props.arrRegion;
-        var activeFund = null;
-        if (arrRegion.activeIndex != null) {
-            activeFund = arrRegion.funds[arrRegion.activeIndex];
-        }
-        return activeFund
-    };
-
-    handleCollapse = () => {
-        const fund = this.getActiveFund(this.props);
-        this.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_NODES,fund.versionId, fund))
-    };
+    handleChange = (ids, nodes) => {
+        this.setState({
+            selectedNodes: nodes,
+            selectedNodesIds: ids
+        });
+    }
 
     render() {
-        const {multipleSelection, onClose} = this.props;
-        const fund = this.getActiveFund(this.props);
-        const fundTreeNodes = fund.fundTreeNodes;
-        const versionId = fund.versionId;
+        const {multipleSelection, multipleSelectionOneLevel, onClose} = this.props;
+        const {selectedNodes} = this.state;
 
-        let someSelected;
-        if (multipleSelection) {
-            someSelected = Object.keys(fundTreeNodes.selectedIds).length > 0;
-        } else {
-            someSelected = fundTreeNodes.selectedId !== null;
-        }
+        let someSelected = selectedNodes.length > 0;
 
         return (
             <div className="add-nodes-form-container">
                 <Modal.Body>
-                    <FundTreeLazy
-                        ref='tree'
-                        {...fundTreeNodes}
-                        cutLongLabels={true}
-                        onOpenCloseNode={(node, expand) => {expand ? this.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_NODES, node)) : this.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_NODES, versionId, node))}}
-                        onNodeClick={this.handleNodeClick}
-                        onFulltextChange={this.handleFulltextChange}
-                        onFulltextSearch={this.handleFulltextSearch}
-                        onFulltextPrevItem={this.handleFulltextPrevItem}
-                        onFulltextNextItem={this.handleFulltextNextItem}
-                        onCollapse={this.handleCollapse}
-                    />
+                    <FundNodesSelect
+                        multipleSelection={multipleSelection}
+                        multipleSelectionOneLevel={multipleSelectionOneLevel}
+                        onChange={this.handleChange}
+                        />
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button disabled={!someSelected} onClick={this.handleSubmit}>{i18n('global.action.store')}</Button>
+                    <Button disabled={!someSelected} onClick={this.handleSubmit}>{i18n('global.action.select')}</Button>
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
@@ -172,12 +81,5 @@ class FundNodesSelectForm extends AbstractReactComponent {
     }
 }
 
-function mapStateToProps(state) {
-    const {arrRegion} = state;
-    return {
-        arrRegion,
-    }
-}
-
-export default connect(mapStateToProps)(FundNodesSelectForm);
+export default connect()(FundNodesSelectForm);
 

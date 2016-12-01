@@ -30,6 +30,7 @@ var messages = {
     "global.action.cancel": "Storno",
     "global.action.close": "Zavřít",
     "global.action.store": "Ok",
+    "global.action.select": "Vybrat",
     "global.action.storeAndViewDetail": "Ok a přechod na detail",
     "global.action.show.more": "Zobrazit více",
     "global.action.import": "Importovat",
@@ -124,6 +125,8 @@ var messages = {
     "ribbon.action.admin.fulltext": "Fulltext",
     "ribbon.action.admin.resetLocalStorage": "Smazat lokální cache",
     "ribbon.action.admin.resetLocalStorage.title": "Smaže historii posledně otevřených položek a uvede zobrazení aplikace do výchozího stavu",
+    "ribbon.action.admin.resetServerCache": "Smazat serverovou cache",
+    "ribbon.action.admin.resetServerCache.title": "Smaže všechny cache na serveru",
     "ribbon.action.party.import": "Import osob",
     "ribbon.action.arr.fund.import": "Import",
     "ribbon.action.arr.fund.export": "Export",
@@ -360,6 +363,8 @@ var messages = {
     "arr.fund.filterSettings.condition.coordinates.near.20000": "20 km",
     "arr.fund.filterSettings.condition.coordinates.near.50000": "50 km",
     "arr.fund.filterSettings.condition.coordinates.near.100000": "100 km",
+    "arr.fund.title.referendeMark": "Číslo JP",
+    "arr.fund.filterSettings.action.clear": "Zrušit filtr",
 
     "arr.fund.jsonTable.cell.title": "Tabulka {0}x{1}",
 
@@ -757,6 +762,7 @@ var messages = {
     "admin.group.permission.action.delete": "Odebrat oprávnění skupiny",
     "admin.group.permission.action.add": "Přiřadit oprávnění pro skupinu",
 
+    "admin.resetServerCache.success": "Serverové cache byly resetovány",
     "admin.fulltext.action.reindex": "Reindexovat",
     "admin.fulltext.message.reindexing": "Probíhá reindexace...",
     "admin.fulltext.message.success": "Reindexace fulltextu dokončena",

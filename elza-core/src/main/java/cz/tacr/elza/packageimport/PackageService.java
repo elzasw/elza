@@ -101,6 +101,8 @@ import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.SettingsRepository;
 import cz.tacr.elza.repository.UIPartyGroupRepository;
+import cz.tacr.elza.service.AdminService;
+import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -171,6 +173,8 @@ import cz.tacr.elza.service.eventnotification.events.ActionEvent;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.OutputGeneratorService;
 import cz.tacr.elza.utils.AppContext;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 
 /**
@@ -369,6 +373,9 @@ public class PackageService {
     @Autowired
     private SettingsRepository settingsRepository;
 
+    @Autowired
+    private AdminService adminService;
+
     private List<RulTemplate> newRultemplates = null;
 
     /**
@@ -495,6 +502,13 @@ public class PackageService {
             if (newRultemplates != null) {
                 cleanBackupTemplates(dirTemplates, newRultemplates);
             }
+
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                @Override
+                public void afterCommit() {
+                    adminService.resetCache(CacheInvalidateEvent.Type.ALL);
+                }
+            });
 
             eventNotificationService.publishEvent(new ActionEvent(EventType.PACKAGE));
 
@@ -2287,6 +2301,13 @@ public class PackageService {
             cleanBackupFiles(dirRules);
 
             bulkActionConfigManager.load();
+
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                @Override
+                public void afterCommit() {
+                    adminService.resetCache(CacheInvalidateEvent.Type.ALL);
+                }
+            });
 
             eventNotificationService.publishEvent(new ActionEvent(EventType.PACKAGE));
 

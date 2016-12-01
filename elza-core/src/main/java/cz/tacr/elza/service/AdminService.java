@@ -5,8 +5,10 @@ import java.util.concurrent.Future;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import com.google.common.eventbus.EventBus;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.api.UsrPermission;
+import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import org.hibernate.search.MassIndexer;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
@@ -30,6 +32,9 @@ public class AdminService {
 
     @Autowired
     private IndexerProgressMonitor indexerProgressMonitor;
+
+    @Autowired
+    private EventBus eventBus;
 
     private Future<?> indexerStatus;
 
@@ -60,5 +65,28 @@ public class AdminService {
         }
 
         return false;
+    }
+
+    /**
+     * Resetuje všechny (navázané) cache v jádru.
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
+    public void resetAllCache() {
+        resetCache(CacheInvalidateEvent.Type.ALL);
+    }
+
+    /**
+     * Provede reset požadovaných cache.
+     *
+     * @param types typy cache, které se mají invalidovat
+     */
+    public void resetCache(final CacheInvalidateEvent.Type ...types) {
+        CacheInvalidateEvent cacheInvalidateEvent;
+        if (types == null) {
+            cacheInvalidateEvent = new CacheInvalidateEvent();
+        } else {
+            cacheInvalidateEvent = new CacheInvalidateEvent(types);
+        }
+        eventBus.post(cacheInvalidateEvent);
     }
 }

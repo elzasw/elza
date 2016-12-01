@@ -29,4 +29,9 @@ public class AdminController {
     public boolean reindexStatus() {
         return adminService.isIndexingRunning();
     }
+
+    @RequestMapping(value = "/cache/reset", method = RequestMethod.GET)
+    public void resetAllCache() {
+        adminService.resetAllCache();
+    }
 }

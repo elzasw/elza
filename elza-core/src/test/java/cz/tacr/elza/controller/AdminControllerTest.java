@@ -26,4 +26,9 @@ public class AdminControllerTest extends AbstractControllerTest {
         Assert.notNull(status);
     }
 
+    @Test
+    public void cacheReset() {
+        get(CACHE_RESET);
+    }
+
 }

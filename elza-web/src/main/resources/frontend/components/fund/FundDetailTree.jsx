@@ -30,14 +30,14 @@ var FundDetailTree = class FundDetailTree extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        const {versionId, expandedIds, selectedId} = this.props;
-        this.requestFundTreeData(versionId, expandedIds, selectedId);
+        const {versionId, expandedIds} = this.props;
+        this.requestFundTreeData(versionId, expandedIds);
         this.trySetFocus(this.props)
     }
 
     componentWillReceiveProps(nextProps) {
-        const {versionId, expandedIds, selectedId} = nextProps;
-        this.requestFundTreeData(versionId, expandedIds, selectedId);
+        const {versionId, expandedIds} = nextProps;
+        this.requestFundTreeData(versionId, expandedIds);
         this.trySetFocus(nextProps)
     }
 
@@ -71,8 +71,8 @@ return true
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
-    requestFundTreeData(versionId, expandedIds, selectedId) {
-        this.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, versionId, expandedIds, selectedId));
+    requestFundTreeData(versionId, expandedIds) {
+        this.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, versionId, expandedIds));
     }
 
     /**

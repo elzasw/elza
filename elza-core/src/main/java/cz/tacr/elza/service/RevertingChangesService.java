@@ -15,7 +15,10 @@ import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.ErrorCode;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.service.eventnotification.events.EventFunds;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
@@ -815,6 +818,11 @@ public class RevertingChangesService {
      */
     private String createDescriptionNode(final ChangeResult changeResult, final Change change, final HashMap<Map.Entry<Integer, Integer>, String> changeNodeMap) {
         String description;
+
+        if (change.getType() == null) {
+            throw new IllegalStateException("Záznam nemá vyplněný typ změny a nelze jej revertovat.");
+        }
+
         switch (change.getType()) {
 
             case BULK_ACTION: {
