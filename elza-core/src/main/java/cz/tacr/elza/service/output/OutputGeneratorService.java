@@ -137,12 +137,14 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
      * @param arrOutput definice outputu s definicí výstupu
      * @param userId    ID uživatele pod kterým bude vytvořená změna arrChange související s generováním
      * @param fund      AS výstupu
+     * @param forced    ignorovat validační varování?
+     * return stav provedení vygenerování výstupu
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
-    public String generateOutput(final ArrOutput arrOutput,
+    public StatusGenerate generateOutput(final ArrOutput arrOutput,
                                final Integer userId,
                                @AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
-                                 final boolean forced) {
+                               final boolean forced) {
         ArrOutputResult outputResult = outputResultRepository.findByOutputDefinition(arrOutput.getOutputDefinition());
         Assert.isNull(outputResult, "Tento výstup byl již vygenerován.");
 
@@ -153,48 +155,12 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
         }
 
         ArrOutputDefinition outputDefinition = arrOutput.getOutputDefinition();
-
+        StatusGenerate statusGenerate = StatusGenerate.OK;
         if (!forced) {
-
-            // -- kontrola spuštění doporučených akcí
-            Set<RulAction> recommendedActions = bulkActionService.getRecommendedActions(outputDefinition.getOutputType());
-            ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(fund.getFundId());
-
-            bulkActionService.checkOutdatedActions(fundVersion.getFundVersionId());
-
-            Set<ArrNode> nodesForOutput = new HashSet<>(outputService.getNodesForOutput(arrOutput));
-            List<ArrBulkActionRun> finishedAction = bulkActionService.findBulkActionsByNodes(fundVersion, nodesForOutput, ArrBulkActionRun.State.FINISHED);
-
-            Map<RulAction, ArrChange> lastChangeAction = new HashMap<>();
-            for (RulAction recommendedAction : recommendedActions) {
-                boolean found = false;
-                for (ArrBulkActionRun bulkActionRun : finishedAction) {
-                    String bulkActionFilename = bulkActionRun.getBulkActionCode() + ".yaml";
-                    if (bulkActionFilename.equalsIgnoreCase(recommendedAction.getFilename())) {
-                        found = true;
-                        ArrChange arrChange = lastChangeAction.get(recommendedAction);
-                        if (arrChange == null) {
-                            lastChangeAction.put(recommendedAction, bulkActionRun.getChange());
-                        } else {
-                            if (bulkActionRun.getChange().getChangeDate().isAfter(arrChange.getChangeDate())) {
-                                lastChangeAction.put(recommendedAction, bulkActionRun.getChange());
-                            }
-                        }
-                    }
-                }
-                if (!found) {
-                    return "Nebyly spuštěny všechny doporučené akce";
-                }
+            statusGenerate = checkGenerateOutput(arrOutput, fund, outputDefinition);
+            if (statusGenerate != StatusGenerate.OK) {
+                return statusGenerate;
             }
-            // -- !kontrola spuštění doporučených akcí
-
-            Map<ArrChange, Boolean> changeBooleanMap = arrangementService.detectChangeNodes(nodesForOutput, new HashSet<>(lastChangeAction.values()), false, true);
-            for (Map.Entry<ArrChange, Boolean> entry : changeBooleanMap.entrySet()) {
-                if (BooleanUtils.isTrue(entry.getValue())) {
-                    return "Byly detekovány změny v Pořádání";
-                }
-            }
-
         }
 
         if (outputDefinition.getTemplate() == null) {
@@ -208,7 +174,52 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
             outputQueue.add(worker);
         }
         runNextOutput(); // zkusí sputit frontu
-        return null;
+        return statusGenerate;
+    }
+
+    public StatusGenerate checkGenerateOutput(final ArrOutput arrOutput,
+                                      final @AuthParam(type = AuthParam.Type.FUND) ArrFund fund,
+                                      final ArrOutputDefinition outputDefinition) {
+        // -- kontrola spuštění doporučených akcí
+        Set<RulAction> recommendedActions = bulkActionService.getRecommendedActions(outputDefinition.getOutputType());
+        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(fund.getFundId());
+
+        bulkActionService.checkOutdatedActions(fundVersion.getFundVersionId());
+
+        Set<ArrNode> nodesForOutput = new HashSet<>(outputService.getNodesForOutput(arrOutput));
+        List<ArrBulkActionRun> finishedAction = bulkActionService.findBulkActionsByNodes(fundVersion, nodesForOutput, ArrBulkActionRun.State.FINISHED);
+
+        Map<RulAction, ArrChange> lastChangeAction = new HashMap<>();
+        for (RulAction recommendedAction : recommendedActions) {
+            boolean found = false;
+            for (ArrBulkActionRun bulkActionRun : finishedAction) {
+                String bulkActionFilename = bulkActionRun.getBulkActionCode() + ".yaml";
+                if (bulkActionFilename.equalsIgnoreCase(recommendedAction.getFilename())) {
+                    found = true;
+                    ArrChange arrChange = lastChangeAction.get(recommendedAction);
+                    if (arrChange == null) {
+                        lastChangeAction.put(recommendedAction, bulkActionRun.getChange());
+                    } else {
+                        if (bulkActionRun.getChange().getChangeDate().isAfter(arrChange.getChangeDate())) {
+                            lastChangeAction.put(recommendedAction, bulkActionRun.getChange());
+                        }
+                    }
+                }
+            }
+            if (!found) {
+                return StatusGenerate.RECOMMENDED_ACTION_NOT_RUN;
+            }
+        }
+        // -- !kontrola spuštění doporučených akcí
+
+        Map<ArrChange, Boolean> changeBooleanMap = arrangementService.detectChangeNodes(nodesForOutput, new HashSet<>(lastChangeAction.values()), false, true);
+        for (Map.Entry<ArrChange, Boolean> entry : changeBooleanMap.entrySet()) {
+            if (BooleanUtils.isTrue(entry.getValue())) {
+                return StatusGenerate.DETECT_CHANGE;
+            }
+        }
+
+        return StatusGenerate.OK;
     }
 
 
@@ -216,15 +227,18 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
      * Podívá se do fronty úkolů a pokusí se předat poolu vláken task. Pokud je poolem odmítnut, tak se vrací do fronty.
      */
     private void runNextOutput() {
+        OutputGeneratorWorkerAbstract task;
         synchronized (lock) {
-            if (CollectionUtils.isNotEmpty(outputQueue)) {
-                OutputGeneratorWorkerAbstract task = outputQueue.poll();
-                try {
-                    ListenableFuture future = taskExecutor.submitListenable(task);
-                    //noinspection unchecked
-                    future.addCallback(this);
-                } catch (RejectedExecutionException e) {
-                    // pokud je pool plný, vracím do fronty
+            task = outputQueue.poll();
+        }
+        if (task != null) {
+            try {
+                ListenableFuture future = taskExecutor.submitListenable(task);
+                //noinspection unchecked
+                future.addCallback(this);
+            } catch (RejectedExecutionException e) {
+                // pokud je pool plný, vracím do fronty
+                synchronized (lock) {
                     outputQueue.add(task);
                 }
             }

@@ -250,8 +250,21 @@ export function fundOutputDetailClear(versionId) {
 export function fundOutputGenerate(outputId) {
     return (dispatch, getState) => {
         WebApi.outputGenerate(outputId).then(data => {
-            if(data && data.message && confirm(data.message + ", chcete i přesto pokračovat?")) {
-                WebApi.outputGenerate(outputId, true);
+            if(data && data.status != 'OK') {
+                var message = null;
+                switch (data.status) {
+                    case 'DETECT_CHANGE': {
+                        message = 'ribbon.action.arr.output.generate.detectChange';
+                        break;
+                    }
+                    case 'RECOMMENDED_ACTION_NOT_RUN': {
+                        message = 'ribbon.action.arr.output.generate.recommendedAction';
+                        break;
+                    }
+                }
+                if(confirm(i18n("ribbon.action.arr.output.generate.continue", i18n(message)))) {
+                    WebApi.outputGenerate(outputId, true);
+                }
             }
         });
     }
