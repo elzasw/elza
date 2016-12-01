@@ -544,7 +544,9 @@ export default class Autocomplete extends AbstractReactComponent {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        this.setMenuPositions();
+        if (prevState.items !== this.state.items || prevState.isOpen !== this.state.isOpen) {   // pokud nastala změna zobrazení (zobrazení menu) nebo se změnil počet položek (fulltextové hledání), musíme správně napozicovat
+            this.setMenuPositions();
+        }
 
         if (this.state.isOpen && this._performAutoCompleteOnUpdate) {
             this._performAutoCompleteOnUpdate = false

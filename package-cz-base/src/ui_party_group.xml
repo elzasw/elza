@@ -4,91 +4,313 @@
         <name>Charakteristika</name>
         <view-order>2</view-order>
         <type>GENERAL</type>
-        <content-definition>{"characteristics":{"name":"Charakteristika","desc":"Zadejte charakteristiku osoby...","type":"text","definition":"characteristics","width":0},"scope":{"name":"Funkce","desc":"Zadejte funkce korporace","type":"text","definition":"scope","width":0}}
-        </content-definition>
+        <content-definitions>
+            <content-definition code="characteristics">
+                <name>Charakteristika</name>
+                <desc>Zadejte charakteristiku osoby...</desc>
+                <type>text</type>
+                <definition>characteristics</definition>
+                <width>0</width>
+            </content-definition>
+            <content-definition code="scope">
+                <name>Funkce</name>
+                <desc>Zadejte funkce korporace</desc>
+                <type>text</type>
+                <definition>scope</definition>
+                <width>0</width>
+            </content-definition>
+        </content-definitions>
     </party-group>
     <party-group code="GROUP_PARTY_GENERAL" party-type="GROUP_PARTY">
         <name>Normy</name>
         <view-order>3</view-order>
         <type>GENERAL</type>
-        <content-definition>{"foundingNorm":{"name":"Konstituční norma","desc":"Zadejte","type":"text","definition":"foundingNorm","width":2},"scopeNorm":{"name":"Normy působnosti","desc":"Zadejte","type":"text","definition":"scopeNorm","width":2},"organization":{"name":"Vnitřní struktury","desc":"Zadejte ","type":"text","definition":"organization","width":0}}
-</content-definition>
+        <content-definitions>
+            <content-definition code="foundingNorm">
+                <name>Konstituční norma</name>
+                <desc>Zadejte</desc>
+                <type>text</type>
+                <definition>foundingNorm</definition>
+                <width>2</width>
+            </content-definition>
+            <content-definition code="scopeNorm">
+                <name>Normy působnosti</name>
+                <desc>Zadejte</desc>
+                <type>text</type>
+                <definition>scopeNorm</definition>
+                <width>2</width>
+            </content-definition>
+            <content-definition code="organization">
+                <name>Vnitřní struktury</name>
+                <desc>Zadejte </desc>
+                <type>text</type>
+                <definition>organization</definition>
+                <width>0</width>
+            </content-definition>
+        </content-definitions>
     </party-group>
     <party-group code="RELATION-01" party-type="PERSON">
         <name>Vztahy</name>
         <view-order>5</view-order>
         <type>GENERAL</type>
-        <content-definition>{
-          "rel5":{"name":"rodinné vztahy","desc":"Rodinné vztahy","type":"relation","definition":"5","width":0},
-          "rel6":{"name":"uzavření/ukončení manželství","desc":"...","type":"relation","definition":"6","width":0},
-          "rel7":{"name":"aktivity osoby","desc":"..","type":"relation","definition":"7","width":0},
-          "rel8":{"name":"studium","desc":"..","type":"relation","definition":"8","width":0},
-          "rel9":{"name":"zaměstnání","desc":"..","type":"relation","definition":"9","width":0},
-          "rel10":{"name":"změna identity / entita reprezentující tutéž osobu","desc":"..","type":"relation","definition":"10","width":0},
-          "rel11":{"name":"ocenění","desc":"..","type":"relation","definition":"11","width":0},
-          "rel12":{"name":"ostatní vztahy a události","desc":"..","type":"relation","definition":"12","width":0}
-        }
-       </content-definition>
+        <content-definitions>
+            <content-definition code="rel5">
+                <name>rodinné vztahy</name>
+                <desc>Rodinné vztahy</desc>
+                <type>relation</type>
+                <definition>5</definition>
+                <width>0</width>
+            </content-definition>
+            <content-definition code="rel6">
+                <name>uzavření/ukončení manželství</name>
+                <desc>...</desc>
+                <type>relation</type>
+                <definition>6</definition>
+                <width>0</width>
+            </content-definition>
+            <content-definition code="rel7">
+                <name>aktivity osoby</name>
+                <desc>..</desc>
+                <type>relation</type>
+                <definition>7</definition>
+                <width>0</width>
+            </content-definition>
+            <content-definition code="rel8">
+                <name>studium</name>
+                <desc>..</desc>
+                <type>relation</type>
+                <definition>8</definition>
+                <width>0</width>
+            </content-definition>
+            <content-definition code="rel9">
+                <name>zaměstnání</name>
+                <desc>..</desc>
+                <type>relation</type>
+                <definition>9</definition>
+                <width>0</width>
+            </content-definition>
+            <content-definition code="rel10">
+                <name>změna identity / entita reprezentující tutéž osobu</name>
+                <desc>..</desc>
+                <type>relation</type>
+                <definition>10</definition>
+                <width>0</width>
+            </content-definition>
+            <content-definition code="rel11">
+                <name>ocenění</name>
+                <desc>..</desc>
+                <type>relation</type>
+                <definition>11</definition>
+                <width>0</width>
+            </content-definition>
+            <content-definition code="rel12">
+                <name>ostatní vztahy a události</name>
+                <desc>..</desc>
+                <type>relation</type>
+                <definition>12</definition>
+                <width>0</width>
+            </content-definition>
+       </content-definitions>
     </party-group>
     <party-group code="RELATION-02" party-type="DYNASTY">
         <name>Vztahy</name>
         <view-order>5</view-order>
         <type>GENERAL</type>
-        <content-definition>{
-          "rel5":{"name":"rodinné vztahy","desc":"Rodinné vztahy","type":"relation","definition":"5","width":0},
-          "rel11":{"name":"ocenění","desc":"..","type":"relation","definition":"11","width":0},
-          "rel12":{"name":"ostatní vztahy a události","desc":"..","type":"relation","definition":"12","width":0}
-        }
-      </content-definition>
+        <content-definitions>
+            <content-definition code="rel5">
+                <name>rodinné vztahy</name>
+                <desc>Rodinné vztahy</desc>
+                <type>relation</type>
+                <definition>5</definition>
+                <width>0</width>
+            </content-definition>
+            <content-definition code="rel11">
+                <name>ocenění</name>
+                <desc>..</desc>
+                <type>relation</type>
+                <definition>11</definition>
+                <width>0</width>
+            </content-definition>
+            <content-definition code="rel12">
+                <name>ostatní vztahy a události</name>
+                <desc>..</desc>
+                <type>relation</type>
+                <definition>12</definition>
+                <width>0</width>
+            </content-definition>
+      </content-definitions>
     </party-group>
     <party-group code="FOOTER">
         <name>Zdroje informací, autoři</name>
         <view-order>6</view-order>
         <type>CONCLUSION</type>
-        <content-definition></content-definition>
+        <content-definitions></content-definitions>
     </party-group>
     <party-group code="HEADER">
         <name>Formy jména</name>
         <view-order>1</view-order>
         <type>IDENT</type>
-        <content-definition></content-definition>
+        <content-definitions></content-definitions>
     </party-group>
     <party-group code="HISTORY">
         <name>Životopisné údaje / Historie</name>
         <view-order>4</view-order>
         <type>GENERAL</type>
-        <content-definition>{"birth":{"name":"Vznik","desc":"Vyplňte vznik","type":"relation-class","definition":"B","width":0},"death":{"name":"Zánik","desc":"Vyplňte zánik","type":"relation-class","definition":"E","width":0},"history":{"name":"Historie","desc":"Zadejte historii osoby","type":"textarea","definition":"history","width":2},"genealogy":{"name":"Genealogie ","desc":"Zadejte historii rodu","type":"textarea","definition":"genealogy","width":0}}
-        </content-definition>
+        <content-definitions>
+            <content-definition code="birth">
+                <name>Vznik</name>
+                <desc>Vyplňte vznik</desc>
+                <type>relation-class</type>
+                <definition>B</definition>
+                <width>0</width>
+            </content-definition>
+            <content-definition code="death">
+                <name>Zánik</name>
+                <desc>Vyplňte zánik</desc>
+                <type>relation-class</type>
+                <definition>E</definition>
+                <width>0</width>
+            </content-definition>
+            <content-definition code="history">
+                <name>Historie</name>
+                <desc>Zadejte historii osoby</desc>
+                <type>textarea</type>
+                <definition>history</definition>
+                <width>2</width>
+            </content-definition>
+            <content-definition code="genealogy">
+                <name>Genealogie</name>
+                <desc>Zadejte historii rodu</desc>
+                <type>textarea</type>
+                <definition>genealogy</definition>
+                <width>0</width>
+            </content-definition>
+        </content-definitions>
     </party-group>
     <party-group code="RELATION-03" party-type="GROUP_PARTY">
         <name>Vztahy</name>
         <view-order>5</view-order>
         <type>GENERAL</type>
-        <content-definition>{
-          "rel11":{"name":"ocenění","desc":"..","type":"relation","definition":"11","width":0},
-          "rel12":{"name":"ostatní vztahy a události","desc":"..","type":"relation","definition":"12","width":0},
-          "rel13":{"name":"členství v korporaci","desc":"..","type":"relation","definition":"13","width":0},
-          "rel14":{"name":"nadřízenost jiné korporaci","desc":"..","type":"relation","definition":"14","width":0},
-          "rel15":{"name":"podřízenost jiné korporaci","desc":"..","type":"relation","definition":"15","width":0},
-          "rel16":{"name":"sídlo","desc":"..","type":"relation","definition":"16","width":0},
-          "rel17":{"name":"geografická působnost","desc":"..","type":"relation","definition":"17","width":0},
-          "rel18":{"name":"vlastnictví korporace","desc":"..","type":"relation","definition":"18","width":0},
-          "rel19":{"name":"pojmenování","desc":"..","type":"relation","definition":"19","width":0},
-          "rel20":{"name":"organizační začlenění","desc":"..","type":"relation","definition":"20","width":0}
-        }
-        </content-definition>
+        <content-definitions>
+            <content-definition code="rel11">
+                <name>ocenění</name>
+                <desc>..</desc>
+                <type>relation</type>
+                <definition>11</definition>
+                <width>0</width>
+            </content-definition>
+            <content-definition code="rel12">
+                <name>ostatní vztahy a události</name>
+                <desc>..</desc>
+                <type>relation</type>
+                <definition>12</definition>
+                <width>0</width>
+            </content-definition>
+            <content-definition code="rel13">
+                <name>členství v korporaci</name>
+                <desc>..</desc>
+                <type>relation</type>
+                <definition>13</definition>
+                <width>0</width>
+            </content-definition>
+            <content-definition code="rel14">
+                <name>nadřízenost jiné korporaci</name>
+                <desc>..</desc>
+                <type>relation</type>
+                <definition>14</definition>
+                <width>0</width>
+            </content-definition>
+            <content-definition code="rel15">
+                <name>podřízenost jiné korporaci</name>
+                <desc>..</desc>
+                <type>relation</type>
+                <definition>15</definition>
+                <width>0</width>
+            </content-definition>
+            <content-definition code="rel16">
+                <name>sídlo</name>
+                <desc>..</desc>
+                <type>relation</type>
+                <definition>16</definition>
+                <width>0</width>
+            </content-definition>
+            <content-definition code="rel17">
+                <name>geografická působnost</name>
+                <desc>..</desc>
+                <type>relation</type>
+                <definition>17</definition>
+                <width>0</width>
+            </content-definition>
+            <content-definition code="rel18">
+                <name>vlastnictví korporace</name>
+                <desc>..</desc>
+                <type>relation</type>
+                <definition>18</definition>
+                <width>0</width>
+            </content-definition>
+            <content-definition code="rel19">
+                <name>pojmenování</name>
+                <desc>..</desc>
+                <type>relation</type>
+                <definition>19</definition>
+                <width>0</width>
+            </content-definition>
+            <content-definition code="rel20">
+                <name>organizační začlenění</name>
+                <desc>..</desc>
+                <type>relation</type>
+                <definition>20</definition>
+                <width>0</width>
+            </content-definition>
+        </content-definitions>
     </party-group>
     <party-group code="RELATION-04" party-type="EVENT">
         <name>Vztahy</name>
         <view-order>5</view-order>
         <type>GENERAL</type>
-        <content-definition>{
-          "rel11":{"name":"ocenění","desc":"..","type":"relation","definition":"11","width":0},
-          "rel12":{"name":"ostatní vztahy a události","desc":"..","type":"relation","definition":"12","width":0},
-          "rel19":{"name":"pojmenování","desc":"..","type":"relation","definition":"19","width":0},
-          "rel20":{"name":"organizační začlenění","desc":"..","type":"relation","definition":"20","width":0},
-          "rel21":{"name":"souborná událost","desc":"..","type":"relation","definition":"21","width":0},
-          "rel22":{"name":"místo konání","desc":"..","type":"relation","definition":"22","width":0}
-}</content-definition>
+        <content-definitions>
+            <content-definition code="rel11">
+                <name>ocenění</name>
+                <desc>..</desc>
+                <type>relation</type>
+                <definition>11</definition>
+                <width>0</width>
+            </content-definition>
+            <content-definition code="rel12">
+                <name>ostatní vztahy a události</name>
+                <desc>..</desc>
+                <type>relation</type>
+                <definition>12</definition>
+                <width>0</width>
+            </content-definition>
+            <content-definition code="rel19">
+                <name>pojmenování</name>
+                <desc>..</desc>
+                <type>relation</type>
+                <definition>19</definition>
+                <width>0</width>
+            </content-definition>
+            <content-definition code="rel20">
+                <name>organizační začlenění</name>
+                <desc>..</desc>
+                <type>relation</type>
+                <definition>20</definition>
+                <width>0</width>
+            </content-definition>
+            <content-definition code="rel21">
+                <name>souborná událost</name>
+                <desc>..</desc>
+                <type>relation</type>
+                <definition>21</definition>
+                <width>0</width>
+            </content-definition>
+            <content-definition code="rel22">
+                <name>místo konání</name>
+                <desc>..</desc>
+                <type>relation</type>
+                <definition>22</definition>
+                <width>0</width>
+            </content-definition>
+        </content-definitions>
     </party-group>
 </party-groups>

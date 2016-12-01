@@ -50,7 +50,7 @@ import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
 import {
-    createReferenceMarkStringFromArray,
+    createReferenceMarkFromArray,
     getSpecsIds,
     hasDescItemTypeValue,
     createFundRoot
@@ -142,7 +142,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
 
         let itemValue;
         if (referenceMark && referenceMark.length > 0) {
-            itemValue = createReferenceMarkStringFromArray(referenceMark);
+            itemValue = createReferenceMarkFromArray(referenceMark);
         } else {
             itemValue = "";
         }
