@@ -55,7 +55,7 @@ var messages = {
 
     "search.input.search": "Vyhledat...",
     "search.not.found": "nenalezeno",
-    "search.found": "(0})",
+    "search.found": "({0})",
     "search.found.more": "({0}/{1})",
 
     "global.validation.required": "Pole je povinné",
