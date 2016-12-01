@@ -22,12 +22,12 @@ import javax.annotation.Nullable;
 
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -117,6 +117,12 @@ public class LevelTreeCacheService {
      */
     private CapacityMap<Integer, Map<Integer, TreeNode>> versionCache = new CapacityMap<Integer, Map<Integer, TreeNode>>();
 
+    @Subscribe
+    public synchronized void invalidateCache(final CacheInvalidateEvent cacheInvalidateEvent) {
+        if (cacheInvalidateEvent.contains(CacheInvalidateEvent.Type.LEVEL_TREE)) {
+            versionCache = new CapacityMap<>();
+        }
+    }
 
     /**
      * Vytvoří plochý seznam stromu podle otevřených uzlů v dané verzi.

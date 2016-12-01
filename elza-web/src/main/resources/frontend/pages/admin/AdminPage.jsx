@@ -17,7 +17,9 @@ import {ButtonGroup, Button} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {developerSet} from 'actions/global/developer.jsx'
 import {resetLocalStorage} from 'actions/store/storeEx.jsx'
+import {WebApi} from 'actions/index.jsx';
 import * as perms from 'actions/user/Permission.jsx';
+import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 
 const AdminPage = class AdminPage extends AbstractReactComponent {
     constructor(props) {
@@ -36,6 +38,14 @@ const AdminPage = class AdminPage extends AbstractReactComponent {
         }
     }
 
+    handleResetServerCache = () => {
+        if (confirm(i18n('global.title.processAction'))) {
+            WebApi.resetServerCache().then(() => {
+                this.dispatch(addToastrSuccess(i18n('admin.resetServerCache.success')));
+            });
+        }
+    };
+
     buildRibbon() {
         const {userDetail} = this.props
 
@@ -53,7 +63,12 @@ const AdminPage = class AdminPage extends AbstractReactComponent {
             <Button key="resetLocalStorage" onClick={this.handleResetLocalStorage} title={i18n('ribbon.action.admin.resetLocalStorage.title')}><Icon glyph="fa-refresh"/>
                 <div><span className="btnText">{i18n('ribbon.action.admin.resetLocalStorage')}</span></div>
             </Button>
-        )
+        );
+        altActions.push(
+            <Button key="resetServerCache" onClick={this.handleResetServerCache} title={i18n('ribbon.action.admin.resetServerCache.title')}><Icon glyph="fa-refresh"/>
+                <div><span className="btnText">{i18n('ribbon.action.admin.resetServerCache')}</span></div>
+            </Button>
+        );
 
         let altSection;
         if (altActions.length > 0) {

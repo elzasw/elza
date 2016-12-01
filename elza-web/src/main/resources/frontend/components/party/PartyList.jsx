@@ -4,7 +4,7 @@ import {ListBox, AbstractReactComponent, SearchWithGoto, i18n, ArrPanel, Loading
 import FormInput from 'components/form/FormInput.jsx';
 import {AppActions} from 'stores/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
-import {partyListFetchIfNeeded, partyListFilter, partyDetailFetchIfNeeded, partyArrReset, PARTY_TYPE_CODES} from 'actions/party/party.jsx'
+import {partyListFetchIfNeeded, partyListFilter, partyDetailFetchIfNeeded, partyArrReset, PARTY_TYPE_CODES, RELATION_CLASS_CODES} from 'actions/party/party.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {WebApi} from 'actions/index.jsx';
 
@@ -14,6 +14,14 @@ import './PartyList.less';
  * Komponenta list osob
  */
 class PartyList extends AbstractReactComponent {
+
+    state = {
+        relationTypesForClass: {
+            [RELATION_CLASS_CODES.BIRTH]: [],
+            [RELATION_CLASS_CODES.EXTINCTION]: []
+        },
+        initialized: false
+    };
 
     componentDidMount() {
         this.fetchIfNeeded();
@@ -28,6 +36,16 @@ class PartyList extends AbstractReactComponent {
     fetchIfNeeded = (props = this.props) => {
         const {partyList: {filter}} = props;
         this.dispatch(partyListFetchIfNeeded(filter))
+        if(!this.state.initialized && props.partyTypes) {
+            const a = [].concat.apply(...props.partyTypes.map(i => i.relationTypes));
+            this.setState({
+                relationTypesForClass: {
+                    [RELATION_CLASS_CODES.BIRTH]: a.filter(i => i.relationClassType && i.relationClassType.code == RELATION_CLASS_CODES.BIRTH).map(i => i.id).filter((i, index, self) => index == self.indexOf(i)),
+                    [RELATION_CLASS_CODES.EXTINCTION]: a.filter(i => i.relationClassType && i.relationClassType.code == RELATION_CLASS_CODES.EXTINCTION).map(i => i.id).filter((i, index, self) => index == self.indexOf(i))
+                },
+                initialized: true
+            });
+        }
     };
 
     trySetFocus = (props = this.props) => {
@@ -86,8 +104,45 @@ class PartyList extends AbstractReactComponent {
         }
     };
 
+    getDatationRelationString = (array, firstChar) => {
+        let datation = "";
+        let first = true;
+        for (let birth of array) {
+            if (first) {
+                datation += firstChar;
+                first = false;
+            } else {
+                datation += ',';
+            }
+
+            if (birth.from && birth.to) {
+                datation += birth.from.value + "..." + birth.to.value;
+            } else {
+                if (birth.from) {
+                    datation += birth.from.value
+                } else if (birth.to) {
+                    datation += birth.to.value;
+                }
+            }
+        }
+        return datation
+    };
+
     renderListItem = (item) => {
+        const {relationTypesForClass} = this.state;
+
         let icon = PartyList.partyIconByPartyTypeCode(item.partyType.code);
+        const birth = this.getDatationRelationString(item.relations.filter(i => (relationTypesForClass[RELATION_CLASS_CODES.BIRTH].indexOf(i.relationTypeId) !== -1) && ((i.from && i.from.value) || (i.to && i.to.value))),'*');
+        const extinction = this.getDatationRelationString(item.relations.filter(i => (relationTypesForClass[RELATION_CLASS_CODES.EXTINCTION].indexOf(i.relationTypeId) !== -1) && ((i.from && i.from.value) || (i.to && i.to.value))),'†');
+        let datation = null;
+        if (birth != "" && extinction != "") {
+            datation = birth + ", " + extinction
+        } else if (birth != "") {
+            datation = birth;
+        } else if (extinction != "") {
+            datation = extinction;
+        }
+        console.log(item.record.record,datation);
 
         return <div className='search-result-row' onClick={this.handlePartyDetail.bind(this, item)}>
             <div>
@@ -95,7 +150,7 @@ class PartyList extends AbstractReactComponent {
                 <span className="name">{item.record.record}</span>
             </div>
             <div>
-                <span className="date">{/** TODO Dodat datum **/}</span>
+                <span className="date">{datation}</span>
                 {item.record.externalId && item.record.externalSource && item.record.externalSource.name && <span className="description">{item.record.externalSource.name + ':' + item.record.externalId}</span>}
                 {item.record.externalId && (!item.record.externalSource || item.record.externalSource.name) && <span className="description">{'UNKNOWN:' + item.record.externalId}</span>}
                 {!item.record.externalId && <span className="description">{item.id}</span>}

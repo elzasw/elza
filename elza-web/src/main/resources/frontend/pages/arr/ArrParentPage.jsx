@@ -160,7 +160,7 @@ export default class ArrParentPage extends AbstractReactComponent {
     }
 
     requestFundTreeData(activeFund) {
-        this.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_MAIN, activeFund.versionId, activeFund.fundTree.expandedIds, activeFund.fundTree.selectedId));
+        this.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_MAIN, activeFund.versionId, activeFund.fundTree.expandedIds));
     }
 
     getActiveFund(props) {

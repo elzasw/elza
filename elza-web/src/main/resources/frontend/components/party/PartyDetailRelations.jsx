@@ -6,7 +6,7 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {i18n, AbstractReactComponent, NoFocusButton, Icon, RelationForm} from 'components/index.jsx'
 import {isNotBlankObject} from 'components/Utils.jsx'
 import {indexById} from 'stores/app/utils.jsx'
-import {relationCreate, relationUpdate, relationDelete, RELATION_CLASS_TYPE_REPEATABILITY, USE_UNITDATE_ENUM, RELATION_CLASS_RELATION_CODE, normalizeDatation} from 'actions/party/party.jsx'
+import {relationCreate, relationUpdate, relationDelete, RELATION_CLASS_TYPE_REPEATABILITY, USE_UNITDATE_ENUM, RELATION_CLASS_CODES, normalizeDatation} from 'actions/party/party.jsx'
 
 import './PartyDetailRelations.less'
 
@@ -78,7 +78,7 @@ class PartyDetailRelations extends AbstractReactComponent {
             {relations.map((relation, index) => <div key={relation.id} className="value-group relation-group flex">
                 <div className="flex-1">
                     {(relationType.useUnitdate == USE_UNITDATE_ENUM.INTERVAL || relationType.useUnitdate == USE_UNITDATE_ENUM.ONE) && relation.from && relation.from.value && <div className="flex flex-1 no-wrap-group">
-                        {relationType.relationClassType.code !== RELATION_CLASS_RELATION_CODE && <div className="item">{relationType.relationClassType.name}: </div>}
+                        {relationType.relationClassType.code !== RELATION_CLASS_CODES && <div className="item">{relationType.relationClassType.name}: </div>}
                             {relation.from.value && <div className="item">{relation.from.value}</div>}
                             {relation.from.textDate && <div className="item">{relation.from.textDate}</div>}
                             {relation.from.note && <div className="note">{relation.from.note}</div>}

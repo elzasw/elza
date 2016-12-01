@@ -279,6 +279,10 @@ class WebApi {
         return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/fund/policy/' + fundVersionId, {});
     }
 
+    resetServerCache() {
+        return AjaxUtils.ajaxGet(WebApi.adminUrl + '/cache/reset', {});
+    }
+
     /// Registry
     createRecord(record, characteristics, registerTypeId, parentId, scopeId) {
         return AjaxUtils.ajaxPost(WebApi.registryUrl + '/', null, {
