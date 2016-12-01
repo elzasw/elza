@@ -1009,7 +1009,7 @@ public class PackageService {
         parComplementType.setName(partyGroup.getName());
         parComplementType.setViewOrder(partyGroup.getViewOrder());
         parComplementType.setType(UIPartyGroupTypeEnum.valueOf(partyGroup.getType()));
-        parComplementType.setContentDefinition(partyGroup.getContentDefinition());
+        parComplementType.setContentDefinition(partyGroup.getContentDefinitionsString());
         if (partyGroup.getPartyType() != null) {
             ParPartyType parPartyType = findEntity(parPartyTypes, partyGroup.getPartyType(), ParPartyType::getCode);
             if (parPartyType == null) {
@@ -2515,7 +2515,7 @@ public class PackageService {
                     partyGroup.setName(uiPartyGroup.getName());
                     partyGroup.setViewOrder(uiPartyGroup.getViewOrder());
                     partyGroup.setPartyType(uiPartyGroup.getPartyType() == null ? null : uiPartyGroup.getPartyType().getCode());
-                    partyGroup.setContentDefinition(uiPartyGroup.getContentDefinition());
+                    partyGroup.setContentDefinitionsString(uiPartyGroup.getContentDefinition());
                     partyGroup.setType(uiPartyGroup.getType().name());
                 }, null, PARTY_GROUP_XML);
     }
