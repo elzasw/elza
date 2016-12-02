@@ -123,6 +123,9 @@ export function relationCreate(relation) {
                 if (partyList.filteredRows && indexById(partyList.filteredRows, relation.partyId) !== null) {
                     dispatch(partyListInvalidate())
                 }
+            })
+            .catch(error => {
+                dispatch(clearPartyDetail());
             });
     };
 }

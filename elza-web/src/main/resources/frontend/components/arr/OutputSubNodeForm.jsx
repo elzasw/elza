@@ -51,6 +51,7 @@ class OutputSubNodeForm extends AbstractReactComponent {
             <div className="output-item-form-container">
                 <SubNodeForm
                     ref="subNodeForm"
+                    typePrefix="output"
                     versionId={versionId}
                     fundId={fundId}
                     routingKey={null}
