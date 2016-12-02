@@ -49,7 +49,7 @@ const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
 
         // TODO: sjednoceni od Pavla - ELZA-591
         this.dispatch(fundSubNodeRegisterValueFocus(versionId, selectedSubNodeId, routingKey, index));
-        this.dispatch(fundSubNodeRegisterValueChange(versionId, selectedSubNodeId, routingKey, index, data.id));
+        this.dispatch(fundSubNodeRegisterValueChange(versionId, selectedSubNodeId, routingKey, index, data));
         this.dispatch(fundSubNodeRegisterValueBlur(versionId, selectedSubNodeId, routingKey, index));
 
         // Akce po vytvoření

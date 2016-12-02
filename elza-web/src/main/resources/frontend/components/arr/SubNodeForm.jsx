@@ -687,9 +687,8 @@ class SubNodeForm extends AbstractReactComponent {
     }
 
     handleJsonTableDownload(objectId) {
-        const {versionId} = this.props;
-
-        window.open(UrlFactory.exportArrDescItemCsvExport(objectId, versionId));
+        const {versionId, typePrefix} = this.props;
+        window.open(UrlFactory.exportItemCsvExport(objectId, versionId, typePrefix));
     }
 
     /**

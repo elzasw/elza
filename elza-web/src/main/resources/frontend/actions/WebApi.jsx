@@ -30,8 +30,8 @@ class UrlFactory {
         return window.location.origin + WebApi.kmlUrl + '/export/descCoordinates/' + versionId + '/' + objectId;
     }
 
-    static exportArrDescItemCsvExport(objectId, versionId) {
-        return window.location.origin + WebApi.arrangementUrl + '/descItems/' + versionId + '/csv/export?descItemObjectId=' + objectId
+    static exportItemCsvExport(objectId, versionId, typePrefix) {
+        return window.location.origin + WebApi.arrangementUrl + '/' + typePrefix + 'Items/' + versionId + '/csv/export?descItemObjectId=' + objectId
     }
 
     static downloadDmsFile(id) {

@@ -215,6 +215,7 @@ export default function registryRegion(state = initialState, action = {}) {
         case types.REGISTRY_VARIANT_RECORD_INTERNAL_DELETED:
         case types.REGISTRY_RECORD_NOTE_UPDATED:
         case types.REGISTRY_RECORD_DETAIL_CHANGE:
+        case types.REGISTRY_RECORD_DETAIL_CLEAR:
         case types.REGISTRY_RECORD_DETAIL_RECEIVE:
         case types.REGISTRY_RECORD_DETAIL_REQUEST: {
             return {
