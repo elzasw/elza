@@ -95,6 +95,9 @@ export default function partyRegion(state = initialState, action) {
         case types.PARTY_DETAIL_CLEAR:
             return {
                 ...state,
+                dirty: false,
+                isFetchingDetail: false,
+                fetchedDetail: false,
                 selectedPartyData: null,
                 selectedPartyID: null,
             };
