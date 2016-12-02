@@ -19,6 +19,9 @@ import {createFund} from 'actions/arr/fund.jsx'
 import {storeLoadData, storeLoad} from 'actions/store/store.jsx'
 import {setInputFocus, dateToString} from 'components/Utils.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
+
+import TooltipTrigger from "./TooltipTrigger"
+
 const HomePage = class HomePage extends AbstractReactComponent {
     constructor(props) {
         super(props);
@@ -224,8 +227,57 @@ const HomePage = class HomePage extends AbstractReactComponent {
     render() {
         const {splitter} = this.props;
 
+        const tt = <div>
+            ZACATEK a alsjdaslk dasklj dalsj dlasj asdklj askldj aslkdj aslka alsjdaslk dasklj dalsj dlasj asdklj askldj aslkdj aslka alsjdaslk dasklj dalsj dlasj asdklj askldj aslkdj aslka alsjdaslk dasklj dalsj dlasj asdklj askldj aslkdj aslka alsjdaslk dasklj dalsj dlasj asdklj askldj aslkdj aslka alsjdaslk dasklj dalsj dlasj asdklj askldj aslkdj aslka alsjdaslk dasklj dalsj dlasj asdklj askldj aslkdj aslka alsjdaslk dasklj dalsj dlasj asdklj askldj aslkdj aslka alsjdaslk dasklj dalsj dlasj asdklj askldj aslkdj aslka alsjdaslk dasklj dalsj dlasj asdklj askldj aslkdj aslka alsjdaslk dasklj dalsj dlasj asdklj askldj aslkdj aslk
+            <b>Formát datace</b><br />
+            Století: 20. st. <i>nebo</i> 20.st. <i>nebo</i> 20st<br />
+            Rok: 1968<br />
+            Měsíc.rok: 8.1968<br />
+            Datum: 21.8.1698<br />
+            Datum a čas: 21.8.1968 8:23 <i>nebo</i> 21.8.1968 8:23:31<br />
+            <b>Intervaly</b><br />
+            Jednotlivá hodnota: 1968<br />
+            Interval: 21.8.1968 0:00-27.6.1989<br />
+            <b>Odhad</b><br />
+            Definuje se uzavřením hodnoty do kulatých nebo hranatých závorek: [16.8.1977]<br />
+            Při použití znaku "/" pro oddělení intervalu jsou od i do chápány jako odhad.
+            <b>Formát datace</b><br />
+            Století: 20. st. <i>nebo</i> 20.st. <i>nebo</i> 20st<br />
+            Rok: 1968<br />
+            Měsíc.rok: 8.1968<br />
+            Datum: 21.8.1698<br />
+            Datum a čas: 21.8.1968 8:23 <i>nebo</i> 21.8.1968 8:23:31<br />
+            <b>Intervaly</b><br />
+            Jednotlivá hodnota: 1968<br />
+            Interval: 21.8.1968 0:00-27.6.1989<br />
+            <b>Odhad</b><br />
+            Definuje se uzavřením hodnoty do kulatých nebo hranatých závorek: [16.8.1977]<br />
+            Při použití znaku "/" pro oddělení intervalu jsou od i do chápány jako odhad. KONEC
+            </div>
+
         let centerPanel = (
             <div className='splitter-home'>
+
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+                <TooltipTrigger
+                    content={tt}
+                    holdOnHover={true}
+                    position="right,left"
+                    >
+                    <button>xxxxxxxx</button>
+                </TooltipTrigger>
+
                 {this.renderHistory()}
             </div>
         )
