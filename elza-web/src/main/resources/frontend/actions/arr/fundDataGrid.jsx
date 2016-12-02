@@ -244,7 +244,7 @@ export function fundDataGridFetchDataIfNeeded(versionId, pageIndex, pageSize) {
                     if (newDataKey === dataKey) {   // ještě je pořád v tom stavu, pro jaký se načítala data
                         var items = nodes.map(node => {
                             const {valuesMap, ...nodeRest} = node
-                            return {id: nodeRest.node.id, ...nodeRest, ...node.valuesMap}
+                            return {id: nodeRest.node.id, ...nodeRest, ...node.valuesMap, referenceMark: node.referenceMark}
                         })
                         dispatch(_dataReceive(versionId, items))
                     }

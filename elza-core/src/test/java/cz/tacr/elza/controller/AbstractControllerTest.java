@@ -128,6 +128,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     // ADMIN
     protected static final String REINDEX = ADMIN_CONTROLLER_URL + "/reindex";
     protected static final String REINDEX_STATUS = ADMIN_CONTROLLER_URL + "/reindexStatus";
+    protected static final String CACHE_RESET = ADMIN_CONTROLLER_URL + "/cache/reset";
 
     // ARRANGEMENT
     protected static final String CREATE_FUND = ARRANGEMENT_CONTROLLER_URL + "/funds";

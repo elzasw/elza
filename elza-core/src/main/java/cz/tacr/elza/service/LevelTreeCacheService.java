@@ -22,12 +22,12 @@ import javax.annotation.Nullable;
 
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -111,16 +111,18 @@ public class LevelTreeCacheService {
     @Autowired
     private PolicyService policyService;
 
-    @Value("${elza.treenode.defaultTitle}")
-    private String defaultNodeTitle = "";
-
-
     /**
      * Cache stromu pro danou verzi. (id verze -> nodeid uzlu -> uzel).
      * Maximální počet záznamů v cache {@link #MAX_CACHE_SIZE}.
      */
     private CapacityMap<Integer, Map<Integer, TreeNode>> versionCache = new CapacityMap<Integer, Map<Integer, TreeNode>>();
 
+    @Subscribe
+    public synchronized void invalidateCache(final CacheInvalidateEvent cacheInvalidateEvent) {
+        if (cacheInvalidateEvent.contains(CacheInvalidateEvent.Type.LEVEL_TREE)) {
+            versionCache = new CapacityMap<>();
+        }
+    }
 
     /**
      * Vytvoří plochý seznam stromu podle otevřených uzlů v dané verzi.
@@ -857,7 +859,8 @@ public class LevelTreeCacheService {
         return descItemTypeCodes;
     }
 
-    private String createTitle(final List<String> codes, final Map<String, TitleValues> descItemCodeToValueMap, final boolean useDefaultTitle, final boolean isIconTitle) {
+    private String createTitle(final List<String> codes, final Map<String, TitleValues> descItemCodeToValueMap,
+                               final boolean useDefaultTitle, final boolean isIconTitle, final String defaultNodeTitle) {
         List<String> titles = new ArrayList<String>();
 
         if (codes != null) {
@@ -895,17 +898,20 @@ public class LevelTreeCacheService {
 
     private void fillValues(final Map<String, TitleValues> descItemCodeToValueMap, final ViewTitles viewTitles,
             final TreeNodeClient treeNodeClient) {
+        String defaultTitle = viewTitles.getDefaultTitle();
+        defaultTitle = StringUtils.isEmpty(defaultTitle) ? "JP <" + treeNodeClient.getId() + ">" : defaultTitle;
+
         if (descItemCodeToValueMap != null) {
-            treeNodeClient.setAccordionLeft(createTitle(viewTitles.getAccordionLeft(), descItemCodeToValueMap, true, false));
-            treeNodeClient.setAccordionRight(createTitle(viewTitles.getAccordionRight(), descItemCodeToValueMap, false, false));
-            treeNodeClient.setName(createTitle(viewTitles.getTreeItem(), descItemCodeToValueMap, true, false));
+            treeNodeClient.setAccordionLeft(createTitle(viewTitles.getAccordionLeft(), descItemCodeToValueMap, true, false, defaultTitle));
+            treeNodeClient.setAccordionRight(createTitle(viewTitles.getAccordionRight(), descItemCodeToValueMap, false, false, defaultTitle));
+            treeNodeClient.setName(createTitle(viewTitles.getTreeItem(), descItemCodeToValueMap, true, false, defaultTitle));
 
             if (viewTitles.getHierarchy() != null) {
                 Set<String> keySet = viewTitles.getHierarchy().keySet();
                 if (keySet.size() > 0) {
                     List<String> codes = new ArrayList<String>(1);
                     codes.add(keySet.iterator().next());
-                    String iconCode = createTitle(codes, descItemCodeToValueMap, false, true);
+                    String iconCode = createTitle(codes, descItemCodeToValueMap, false, true, defaultTitle);
                     Collection<Map<String, ConfigView.ConfigViewTitlesHierarchy>> hierarchyList = viewTitles
                             .getHierarchy().values();
                     Map<String, ConfigView.ConfigViewTitlesHierarchy> hierarchyType = hierarchyList.iterator().next();
@@ -916,8 +922,8 @@ public class LevelTreeCacheService {
                 }
             }
         } else {
-            treeNodeClient.setAccordionLeft(defaultNodeTitle);
-            treeNodeClient.setName(defaultNodeTitle);
+            treeNodeClient.setAccordionLeft(defaultTitle);
+            treeNodeClient.setName(defaultTitle);
         }
     }
 

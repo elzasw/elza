@@ -15,7 +15,10 @@ import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.ErrorCode;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.service.eventnotification.events.EventFunds;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
@@ -91,9 +94,6 @@ public class RevertingChangesService {
 
     @Autowired
     private DescriptionItemService descriptionItemService;
-
-    @Value("${elza.treenode.defaultTitle}")
-    private String defaultNodeTitle = "";
 
     /**
      * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.
@@ -705,7 +705,7 @@ public class RevertingChangesService {
         }
 
         ConfigView.ViewTitles viewTitles = configView.getViewTitles(fundVersion.getRuleSet().getCode(), fundVersion.getFund().getFundId());
-        Set<String> descItemTypeCodes = new LinkedHashSet<>(viewTitles.getTreeItem());
+        Set<String> descItemTypeCodes = viewTitles.getTreeItem() == null ? Collections.emptySet() : new LinkedHashSet<>(viewTitles.getTreeItem());
 
         Set<RulItemType> descItemTypes = new HashSet<>();
         if (!descItemTypeCodes.isEmpty()) {
@@ -721,7 +721,7 @@ public class RevertingChangesService {
 
         }
 
-        HashMap<Map.Entry<Integer, Integer>, String> changeNodeMap = createNodeLabels(changeIdNodeIdMap, descItemTypes);
+        HashMap<Map.Entry<Integer, Integer>, String> changeNodeMap = createNodeLabels(changeIdNodeIdMap, descItemTypes, fundVersion.getRuleSet().getCode(), fundVersion.getFund().getFundId());
 
         Map<Integer, UsrUser> users = userService.findUserMap(userIds);
 
@@ -775,10 +775,12 @@ public class RevertingChangesService {
      *
      * @param changeIdNodeIdMap mapa změny/JP
      * @param itemTypes         seznam typů atributů
-     * @return mapa popisků
+     * @param code
+     *@param fundId @return mapa popisků
      */
     private HashMap<Map.Entry<Integer, Integer>, String> createNodeLabels(final HashMap<Integer, Integer> changeIdNodeIdMap,
-                                                                          final Set<RulItemType> itemTypes) {
+                                                                          final Set<RulItemType> itemTypes,
+                                                                          final String code, final Integer fundId) {
         HashMap<Map.Entry<Integer, Integer>, String> result = new HashMap<>();
 
         for (Map.Entry<Integer, Integer> entry : changeIdNodeIdMap.entrySet()) {
@@ -796,7 +798,10 @@ public class RevertingChangesService {
                 }
                 result.put(entry, String.join(" ", titles));
             } else {
-                result.put(entry, defaultNodeTitle);
+                ConfigView.ViewTitles viewTitles = configView.getViewTitles(code, fundId);
+                String defaultTitle = viewTitles.getDefaultTitle();
+                defaultTitle = org.apache.commons.lang.StringUtils.isEmpty(defaultTitle) ? "JP <" + entry.getValue() + ">" : defaultTitle;
+                result.put(entry, defaultTitle);
             }
         }
 
@@ -813,6 +818,11 @@ public class RevertingChangesService {
      */
     private String createDescriptionNode(final ChangeResult changeResult, final Change change, final HashMap<Map.Entry<Integer, Integer>, String> changeNodeMap) {
         String description;
+
+        if (change.getType() == null) {
+            throw new IllegalStateException("Záznam nemá vyplněný typ změny a nelze jej revertovat.");
+        }
+
         switch (change.getType()) {
 
             case BULK_ACTION: {

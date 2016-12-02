@@ -5,8 +5,10 @@ import java.util.concurrent.Future;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import com.google.common.eventbus.EventBus;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.api.UsrPermission;
+import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import org.hibernate.search.MassIndexer;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;

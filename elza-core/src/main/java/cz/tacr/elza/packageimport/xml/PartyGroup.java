@@ -1,10 +1,21 @@
 package cz.tacr.elza.packageimport.xml;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -16,6 +27,8 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "party-group")
 public class PartyGroup {
+
+    private static final ObjectMapper objectMapper = Jackson2ObjectMapperBuilder.json().build();
 
     @XmlAttribute(name = "code", required = true)
     private String code;
@@ -32,8 +45,9 @@ public class PartyGroup {
     @XmlElement(name = "type", required = true)
     private String type;
 
-    @XmlElement(name = "content-definition")
-    private String contentDefinition;
+    @XmlJavaTypeAdapter(ContentDefinitionAdapter.class)
+    @XmlElement(name = "content-definitions")
+    private Map<String, ContentDefinition> contentDefinitions;
 
     public String getCode() {
         return code;
@@ -75,11 +89,28 @@ public class PartyGroup {
         this.type = type;
     }
 
-    public String getContentDefinition() {
-        return contentDefinition;
+    public Map<String, ContentDefinition> getContentDefinitions() {
+        return contentDefinitions;
     }
 
-    public void setContentDefinition(final String contentDefinition) {
-        this.contentDefinition = contentDefinition;
+    public void setContentDefinitions(final Map<String, ContentDefinition> contentDefinitions) {
+        this.contentDefinitions = contentDefinitions;
+    }
+
+    public String getContentDefinitionsString() {
+        try {
+            return objectMapper.writeValueAsString(contentDefinitions);
+        } catch (JsonProcessingException e) {
+            throw new SystemException(e, BaseCode.JSON_PARSE);
+        }
+    }
+
+    public void setContentDefinitionsString(final String contentDefinitions) {
+        try {
+            TypeReference<HashMap<String,ContentDefinition>> typeRef = new TypeReference<HashMap<String,ContentDefinition>>() {};
+            setContentDefinitions(objectMapper.readValue(contentDefinitions, typeRef));
+        } catch (IOException e) {
+            throw new SystemException(e, BaseCode.JSON_PARSE);
+        }
     }
 }

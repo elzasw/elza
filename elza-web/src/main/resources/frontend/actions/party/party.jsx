@@ -33,7 +33,11 @@ export const USE_UNITDATE_ENUM = {
     INTERVAL: 'INTERVAL',
 };
 
-export const RELATION_CLASS_RELATION_CODE = "R";
+export const RELATION_CLASS_CODES = {
+    RELATION: "R",
+    BIRTH: "B",
+    EXTINCTION: "E"
+};
 
 /**
  * Načtení seznamu osob dle filtru
@@ -110,29 +114,41 @@ export function partyDelete(partyId) {
 
 
 export function relationCreate(relation) {
-    return dispatch => {
+    return (dispatch, getState) => {
         return savingApiWrapper(dispatch, WebApi.createRelation(relation))
             .then(() => {
                 dispatch(modalDialogHide());
                 dispatch(partyDetailInvalidate());
+                const {app:{partyList}} = getState();
+                if (partyList.filteredRows && indexById(partyList.filteredRows, relation.partyId) !== null) {
+                    dispatch(partyListInvalidate())
+                }
             });
     };
 }
 
 export function relationDelete(relationId) {
-    return dispatch => {
+    return (dispatch, getState) => {
         WebApi.deleteRelation(relationId).then(() => {
             dispatch(partyDetailInvalidate());
+            const {app:{partyList, partyDetail}} = getState();
+            if (partyList.filteredRows && indexById(partyList.filteredRows, partyDetail.id) !== null) {
+                dispatch(partyListInvalidate())
+            }
         });
     }
 }
 
 export function relationUpdate(relation) {
-    return dispatch => {
+    return (dispatch, getState) => {
         return savingApiWrapper(dispatch, WebApi.updateRelation(relation))
             .then(() => {
                 dispatch(modalDialogHide());
                 dispatch(partyDetailInvalidate());
+                const {app:{partyList}} = getState();
+                if (partyList.filteredRows && indexById(partyList.filteredRows, relation.partyId) !== null) {
+                    dispatch(partyListInvalidate())
+                }
             });
     };
 }
