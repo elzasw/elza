@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,10 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 
+import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.packageimport.xml.SettingRecord;
+import cz.tacr.elza.repository.SettingsRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.springframework.beans.factory.BeanFactory;
@@ -64,7 +69,6 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 21.12.2015
  */
-@ConfigurationProperties(prefix = "elza.record")
 @Service
 public class RegistryService {
 
@@ -116,6 +120,12 @@ public class RegistryService {
     @Autowired
     private BeanFactory beanFactory;
 
+    @Autowired
+    private SettingsRepository settingsRepository;
+
+    @Autowired
+    private PackageService packageService;
+
     /**
      * Kody tříd rejstříků nastavené v konfiguraci elzy.
      */
@@ -124,8 +134,18 @@ public class RegistryService {
     /**
      * Id tříd rejstříků nastavené v konfiguraci elzy.
      */
-    private Set<Integer> defaultScopeIds;
+    private Set<Integer> defaultScopeIds = null;
 
+    public Set<Integer> getDefaultScopeIds() {
+        if (defaultScopeIds == null) {
+            List<String> scopeCodes = getScopeCodes();
+            if (CollectionUtils.isNotEmpty(scopeCodes)) {
+                List<RegScope> foundCodes = scopeRepository.findByCodes(scopeCodes);
+                defaultScopeIds = foundCodes.stream().map(RegScope::getScopeId).collect(Collectors.toSet());
+            }
+        }
+        return defaultScopeIds;
+    }
 
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (record, charateristics, comment),
@@ -547,7 +567,7 @@ public class RegistryService {
      */
     public Set<Integer> getScopeIdsByFund(@Nullable final ArrFund fund){
         if(fund == null){
-            return defaultScopeIds;
+            return getDefaultScopeIds();
         }else{
             return scopeRepository.findIdsByFund(fund);
         }
@@ -715,23 +735,25 @@ public class RegistryService {
     }
 
     public List<String> getScopeCodes() {
+        if (scopeCodes == null) {
+            List<UISettings> uiSettingsList = settingsRepository.findByUserAndSettingsTypeAndEntityType(null, UISettings.SettingsType.RECORD, null);
+            if (uiSettingsList.size() > 0) {
+                uiSettingsList.forEach(uiSettings -> {
+                    SettingRecord setting = (SettingRecord) packageService.convertSetting(uiSettings);
+                    SettingRecord.ScopeCode scopeCode = setting.getScopeCode();
+                    if (scopeCode != null) {
+                        scopeCodes = scopeCode.getValues();
+                    } else {
+                        scopeCodes = new ArrayList<>();
+                    }
+                });
+            }
+        }
         return scopeCodes;
     }
 
-    public void setScopeCodes(final List<String> scopeCodes) {
-        this.scopeCodes = scopeCodes;
-    }
-
-    @PostConstruct
-    public void initScopeIds() throws Exception {
-        if (CollectionUtils.isNotEmpty(scopeCodes)) {
-            List<RegScope> foundCodes = scopeRepository.findByCodes(scopeCodes);
-            defaultScopeIds = foundCodes.stream().map(s -> s.getScopeId()).collect(Collectors.toSet());
-        }
-    }
-
-
     public List<RegScope> findDefaultScopes() {
+        List<String> scopeCodes = getScopeCodes();
         List<RegScope> defaultScopes;
         if (CollectionUtils.isEmpty(scopeCodes)) {
             defaultScopes = Collections.EMPTY_LIST;

@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller;
 
+import cz.tacr.elza.service.CacheService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -20,6 +21,9 @@ public class AdminController {
     @Autowired
     private AdminService adminService;
 
+    @Autowired
+    private CacheService cacheService;
+
     @RequestMapping(value = "/reindex", method = RequestMethod.GET)
     public void reindex() {
         adminService.reindex();
@@ -28,5 +32,10 @@ public class AdminController {
     @RequestMapping(value = "/reindexStatus", method = RequestMethod.GET)
     public boolean reindexStatus() {
         return adminService.isIndexingRunning();
+    }
+
+    @RequestMapping(value = "/cache/reset", method = RequestMethod.GET)
+    public void resetAllCache() {
+        cacheService.resetAllCache();
     }
 }

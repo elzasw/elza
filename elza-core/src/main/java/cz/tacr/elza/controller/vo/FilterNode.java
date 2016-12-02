@@ -24,13 +24,17 @@ public class FilterNode {
      */
     private Map<Integer, DescItemValues> valuesMap;
 
+    private String[] referenceMark;
+
     public FilterNode() {
     }
 
-    public FilterNode(final ArrNodeVO node, final TreeNodeClient parentNode, final Map<Integer, DescItemValues> valuesMap) {
+    public FilterNode(final ArrNodeVO node, final TreeNodeClient parentNode, final Map<Integer, DescItemValues> valuesMap,
+                      final String[] referenceMark) {
         this.node = node;
         this.parentNode = parentNode;
         this.valuesMap = valuesMap;
+        this.referenceMark = referenceMark;
     }
 
     public ArrNodeVO getNode() {
@@ -55,5 +59,13 @@ public class FilterNode {
 
     public void setValuesMap(final Map<Integer, DescItemValues> valuesMap) {
         this.valuesMap = valuesMap;
+    }
+
+    public String[] getReferenceMark() {
+        return referenceMark;
+    }
+
+    public void setReferenceMark(final String[] referenceMark) {
+        this.referenceMark = referenceMark;
     }
 }

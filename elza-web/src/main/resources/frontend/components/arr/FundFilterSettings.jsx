@@ -2,23 +2,27 @@
  * Formulář nastavení filtru na sloupečku.
  */
 
-require ('./FundFilterSettings.less')
+require('./FundFilterSettings.less')
 
 import React from 'react';
-import ReactDOM from 'react-dom';
-import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
 import {FilterableListBox, AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
-import DescItemUnitdate from './nodeForm/DescItemUnitdate.jsx'
 import DescItemCoordinates from './nodeForm/DescItemCoordinates.jsx'
 import {Modal, Button} from 'react-bootstrap';
 import {WebApi} from 'actions/index.jsx';
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx'
 import {FILTER_NULL_VALUE} from 'actions/arr/fundDataGrid.jsx'
-import {normalizeInt, normalizeDouble, validateInt, validateDouble, validateCoordinatePoint} from 'components/validate.jsx';
+import {
+    normalizeInt,
+    normalizeDouble,
+    validateInt,
+    validateDouble,
+    validateCoordinatePoint
+} from 'components/validate.jsx';
 import {getMapFromList} from 'stores/app/utils.jsx'
 import {objectFromWKT, wktFromTypeAndData} from 'components/Utils.jsx';
-
+import {COL_REFERENCE_MARK} from "./FundDataGridConst";
+import FundNodesSelect from "./FundNodesSelect";
 const FundFilterCondition = require('./FundFilterCondition')
 const SimpleCheckListBox = require('./SimpleCheckListBox')
 
@@ -38,7 +42,8 @@ const renderTextFields = (fields) => {
 
         return (
             <div key={index} className='value-container'>
-                <FormInput {...decorate} type="text" value={field.value} onChange={(e) => field.onChange(e.target.value)} />
+                <FormInput {...decorate} type="text" value={field.value}
+                           onChange={(e) => field.onChange(e.target.value)}/>
             </div>
         )
     })
@@ -59,10 +64,13 @@ const renderCoordinatesFields = (fields) => {
                     <DescItemCoordinates
                         onChange={fields[0].onChange}
                         descItem={descItem}
-                        onFocus={()=>{}}
-                        onBlur={()=>{}}
-                        />
-                    {false && <FormInput type="text" value={fields[0].value} onChange={(e) => fields[0].onChange(e.target.value)} />}
+                        onFocus={()=> {
+                        }}
+                        onBlur={()=> {
+                        }}
+                    />
+                    {false && <FormInput type="text" value={fields[0].value}
+                                         onChange={(e) => fields[0].onChange(e.target.value)}/>}
                 </div>
             )
         case 2:
@@ -77,16 +85,20 @@ const renderCoordinatesFields = (fields) => {
                     <DescItemCoordinates
                         onChange={fields[0].onChange}
                         descItem={descItem}
-                        onFocus={()=>{}}
-                        onBlur={()=>{}}
+                        onFocus={()=> {
+                        }}
+                        onBlur={()=> {
+                        }}
                     />
                 </div>
             )
             vals.push(
                 <div key={1} className='value-container'>
-                    <FormInput componentClass="select" defaultValue={10000} value={fields[1].value} onChange={(e) => fields[1].onChange(e.target.value)}>
+                    <FormInput componentClass="select" defaultValue={10000} value={fields[1].value}
+                               onChange={(e) => fields[1].onChange(e.target.value)}>
                         {[100, 500, 1000, 10000, 20000, 50000, 100000].map(l => {
-                            return <option key={l} value={l}>{i18n('arr.fund.filterSettings.condition.coordinates.near.' + l)}</option>
+                            return <option key={l}
+                                           value={l}>{i18n('arr.fund.filterSettings.condition.coordinates.near.' + l)}</option>
                         })}
                     </FormInput>
                 </div>
@@ -104,8 +116,10 @@ const renderUnitdateFields = (calendarTypes, fields) => {
             vals.push(
                 <div key={0} className='value-container'>
                     <FormInput componentClass="select"
-                        value={typeof fields[0].value !== 'undefined' ? fields[0].value : 1}
-                        onChange={(e) => {fields[0].onChange(e.target.value);}}
+                               value={typeof fields[0].value !== 'undefined' ? fields[0].value : 1}
+                               onChange={(e) => {
+                                   fields[0].onChange(e.target.value);
+                               }}
                     >
                         {calendarTypes.items.map(calendarType => (
                             <option key={calendarType.id} value={calendarType.id}>{calendarType.name}</option>
@@ -116,12 +130,14 @@ const renderUnitdateFields = (calendarTypes, fields) => {
             vals.push(
                 <div key={1} className='value-container'>
                     <FormInput type="text"
-                        value={fields[1].value}
-                        onChange={(e) => {fields[1].onChange(e.target.value);}}
-                   />
+                               value={fields[1].value}
+                               onChange={(e) => {
+                                   fields[1].onChange(e.target.value);
+                               }}
+                    />
                 </div>
             )
-        return vals
+            return vals
     }
 }
 
@@ -143,6 +159,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
             conditionSelectedCode: 'NONE',
             conditionValues: [],
             conditionHasErrors: false,
+            refMarkSelectedNode: null
         }
 
         const {filter} = props
@@ -162,7 +179,10 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
     }
 
     componentDidMount() {
-        this.callValueSearch('')
+        const {refType} = this.props;
+        if (refType.id !== COL_REFERENCE_MARK) {
+            this.callValueSearch('')
+        }
     }
 
     handleValueSearch(text) {
@@ -203,7 +223,10 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
 
                     // TODO [stanekpa] Toto zde nebude, když se na server přidělá podpora na vracení a hledání NULL hodnot - problé je ale v locales (řetězec arr.fund.filterSettings.value.empty), měly by se doplnit i na server
                     if (valueSearchText == '' || i18n('arr.fund.filterSettings.value.empty').toLowerCase().indexOf(valueSearchText) !== -1) {   // u prázdného hledání a případně u hledání prázdné hodnoty doplňujeme null položku
-                        valueItems = [{id: FILTER_NULL_VALUE, name: i18n('arr.fund.filterSettings.value.empty')}, ...valueItems]
+                        valueItems = [{
+                            id: FILTER_NULL_VALUE,
+                            name: i18n('arr.fund.filterSettings.value.empty')
+                        }, ...valueItems]
                     }
 
                     this.setState({
@@ -380,7 +403,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                         }
                         _ffs_validateTimer = setTimeout(fc, 250);
                     })
-                }                
+                }
                 items = [
                     {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
                     {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
@@ -448,6 +471,22 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
         )
     }
 
+    handleRefMarkSubmit = () => {
+        const {onSubmitForm} = this.props;
+        const {refMarkSelectedNode} = this.state;
+
+        const data = {
+            refMarkNodeId: refMarkSelectedNode.id,
+        };
+
+        onSubmitForm(data)
+    };
+
+    handleRefMarkClearSubmit = () => {
+        const {onSubmitForm} = this.props;
+        onSubmitForm(null);
+    };
+
     handleSubmit() {
         const {selectedValueItems, selectedValueItemsType, selectedSpecItems, selectedSpecItemsType, conditionSelectedCode, conditionValues} = this.state
         const {onSubmitForm, refType, dataType} = this.props
@@ -480,13 +519,24 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
         onSubmitForm(outData)
     }
 
+    handleNodeSelectChange = (ids, nodes) => {
+        this.setState({
+            refMarkSelectedNode: nodes.length > 0 ? nodes[0] : null
+        });
+    }
+
     render() {
-        const {refType, onClose, dataType, packetTypes} = this.props
-        const {conditionHasErrors, conditionSelectedCode, conditionValues, selectedSpecItems, selectedSpecItemsType} = this.state
+        const {filter, refType, onClose, dataType, packetTypes} = this.props
+        const {refMarkSelectedNode, conditionHasErrors, conditionSelectedCode, conditionValues, selectedSpecItems, selectedSpecItemsType} = this.state
 
         var specContent = null
-        if (refType.useSpecification) {
-            var items = [{id: FILTER_NULL_VALUE, name: i18n('arr.fund.filterSettings.value.empty')}, ...refType.descItemSpecs]
+        if (refType.id === COL_REFERENCE_MARK) {
+            // nemá specifikaci
+        } else if (refType.useSpecification) {
+            var items = [{
+                id: FILTER_NULL_VALUE,
+                name: i18n('arr.fund.filterSettings.value.empty')
+            }, ...refType.descItemSpecs]
 
             specContent = (
                 <SimpleCheckListBox
@@ -495,10 +545,13 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                     label={i18n('arr.fund.filterSettings.filterBySpecification.title')}
                     value={{type: selectedSpecItemsType, ids: selectedSpecItems}}
                     onChange={this.handleSpecItemsChange}
-                    />
+                />
             )
         } else if (dataType.code === 'PACKET_REF') { // u obalů budeme místo specifikací zobrazovat výběr typů obsalů
-            var items = [{id: FILTER_NULL_VALUE, name: i18n('arr.fund.filterSettings.value.empty')}, ...packetTypes.items]
+            var items = [{
+                id: FILTER_NULL_VALUE,
+                name: i18n('arr.fund.filterSettings.value.empty')
+            }, ...packetTypes.items]
 
             specContent = (
                 <SimpleCheckListBox
@@ -507,27 +560,51 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                     label={i18n('arr.fund.filterSettings.filterByPacketType.title')}
                     value={{type: selectedSpecItemsType, ids: selectedSpecItems}}
                     onChange={this.handleSpecItemsChange}
-                    />
+                />
             )
         }
-        
-        var valueContent = this.renderValueFilter()
 
-        var conditionContent = this.renderConditionFilter()
-
+        var valueContent;
+        var conditionContent;
         var hasAllValues = true
-        if (hasDescItemTypeValue(dataType)) {
-            const info = this.getConditionInfo()
-            if (info.items.length > 0) {
-                const itemsCodeMap = getMapFromList(info.items, 'code')
-                const selectedItem = itemsCodeMap[conditionSelectedCode]
 
-                for (var a=0; a<selectedItem.values; a++) {
-                    if (!conditionValues[a]) {
-                        hasAllValues = false
+        let okButtons;
+        if (refType.id !== COL_REFERENCE_MARK) {
+            valueContent = this.renderValueFilter()
+
+            conditionContent = this.renderConditionFilter()
+
+            if (hasDescItemTypeValue(dataType)) {
+                const info = this.getConditionInfo()
+                if (info.items.length > 0) {
+                    const itemsCodeMap = getMapFromList(info.items, 'code')
+                    const selectedItem = itemsCodeMap[conditionSelectedCode]
+
+                    for (var a = 0; a < selectedItem.values; a++) {
+                        if (!conditionValues[a]) {
+                            hasAllValues = false
+                        }
                     }
                 }
             }
+
+            const okDisabled = conditionHasErrors || !hasAllValues;
+            okButtons = <Button disabled={okDisabled}
+                    onClick={this.handleSubmit}>{i18n('global.action.store')}</Button>
+        } else {    // referenční označení
+            valueContent = <FundNodesSelect
+                selectedId={filter && filter.refMarkNodeId != null ? filter.refMarkNodeId : null}
+                multipleSelection={false}
+                onChange={this.handleNodeSelectChange}
+                />
+
+            const okDisabled = refMarkSelectedNode === null;
+            okButtons = [
+                <Button className="pull-left"
+                        onClick={this.handleRefMarkClearSubmit}>{i18n('arr.fund.filterSettings.action.clear')}</Button>,
+                <Button disabled={okDisabled}
+                        onClick={this.handleRefMarkSubmit}>{i18n('global.action.select')}</Button>
+            ]
         }
 
         return (
@@ -540,7 +617,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button disabled={conditionHasErrors || !hasAllValues} onClick={this.handleSubmit}>{i18n('global.action.store')}</Button>
+                    {okButtons}
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>

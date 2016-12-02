@@ -12,8 +12,10 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -99,6 +101,9 @@ import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.SettingsRepository;
 import cz.tacr.elza.repository.UIPartyGroupRepository;
+import cz.tacr.elza.service.AdminService;
+import cz.tacr.elza.service.CacheService;
+import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -169,6 +174,8 @@ import cz.tacr.elza.service.eventnotification.events.ActionEvent;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.OutputGeneratorService;
 import cz.tacr.elza.utils.AppContext;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 
 /**
@@ -367,6 +374,9 @@ public class PackageService {
     @Autowired
     private SettingsRepository settingsRepository;
 
+    @Autowired
+    private CacheService cacheService;
+
     private List<RulTemplate> newRultemplates = null;
 
     /**
@@ -478,7 +488,7 @@ public class PackageService {
 
             Settings settings = convertXmlStreamToObject(Settings.class, mapEntry.get(SETTING_XML));
 
-            processSettings(settings, rulPackage);
+            processSettings(settings, rulPackage, rulRuleSets);
 
             // END NASTAVENÍ -------------------------------------------------------------------------------------------
 
@@ -493,6 +503,13 @@ public class PackageService {
             if (newRultemplates != null) {
                 cleanBackupTemplates(dirTemplates, newRultemplates);
             }
+
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                @Override
+                public void afterCommit() {
+                    cacheService.resetCache(CacheInvalidateEvent.Type.ALL);
+                }
+            });
 
             eventNotificationService.publishEvent(new ActionEvent(EventType.PACKAGE));
 
@@ -550,12 +567,15 @@ public class PackageService {
     /**
      * Zpracování nastavení.
      */
-    private void processSettings(final Settings settings, final RulPackage rulPackage) {
+    private void processSettings(final Settings settings, final RulPackage rulPackage, final List<RulRuleSet> rulRuleSets) {
         List<UISettings> uiSettings = settingsRepository.findByRulPackage(rulPackage);
         List<UISettings> uiSettingsAll = settingsRepository.findAll();
         List<UISettings> uiSettingsNew = new ArrayList<>();
         List<RulPackage> rulPackages = packageRepository.findAll();
         rulPackages.add(rulPackage);
+
+        Set<RulRuleSet> rulRuleSetsAll = new HashSet<>(rulRuleSets);
+        rulRuleSetsAll.addAll(ruleSetRepository.findAll());
 
         if (settings != null && !CollectionUtils.isEmpty(settings.getSettings())) {
             for (Setting setting : settings.getSettings()) {
@@ -567,7 +587,7 @@ public class PackageService {
                 } else if(!uiSetting.getRulPackage().equals(rulPackage)) {
                     throw new SystemException(PackageCode.OTHER_PACKAGE).set("code", uiSetting.getRulPackage().getCode());
                 }
-                convertUISettings(rulPackage, setting, uiSetting, rulPackages);
+                convertUISettings(rulPackage, setting, uiSetting, rulRuleSetsAll);
                 uiSettingsNew.add(uiSetting);
             }
         }
@@ -582,28 +602,30 @@ public class PackageService {
     /**
      * Konverze VO -> DO.
      */
-    private void convertUISettings(final RulPackage rulPackage, final Setting setting, final UISettings uiSetting, final List<RulPackage> rulPackages) {
+    private void convertUISettings(final RulPackage rulPackage, final Setting setting,
+                                   final UISettings uiSetting,
+                                   final Collection<RulRuleSet> rulRuleSets) {
         uiSetting.setRulPackage(rulPackage);
         uiSetting.setSettingsType(setting.getSettingsType());
         uiSetting.setEntityType(setting.getEntityType());
 
         if (setting instanceof SettingFundViews) {
             String code = ((SettingFundViews) setting).getCode();
-            setPackageToSetting(rulPackages, code, uiSetting);
+            setRuleSetToSetting(rulRuleSets, code, uiSetting);
         } else if(setting instanceof SettingTypeGroups) {
             String code = ((SettingTypeGroups) setting).getCode();
-            setPackageToSetting(rulPackages, code, uiSetting);
+            setRuleSetToSetting(rulRuleSets, code, uiSetting);
         }
 
         uiSetting.setValue(setting.getValue());
     }
 
-    private void setPackageToSetting(final List<RulPackage> rulPackages, final String code, final UISettings uiSetting) {
-        RulPackage entity = findEntity(rulPackages, code, RulPackage::getCode);
+    private void setRuleSetToSetting(final Collection<RulRuleSet> rulRuleSets, final String code, final UISettings uiSetting) {
+        RulRuleSet entity = findEntity(rulRuleSets, code, RulRuleSet::getCode);
         if (entity == null) {
             throw new BusinessException(PackageCode.CODE_NOT_FOUND).set("code", code).set("file", SETTING_XML);
         }
-        uiSetting.setEntityId(entity.getPackageId());
+        uiSetting.setEntityId(entity.getRuleSetId());
     }
 
     /**
@@ -987,7 +1009,7 @@ public class PackageService {
         parComplementType.setName(partyGroup.getName());
         parComplementType.setViewOrder(partyGroup.getViewOrder());
         parComplementType.setType(UIPartyGroupTypeEnum.valueOf(partyGroup.getType()));
-        parComplementType.setContentDefinition(partyGroup.getContentDefinition());
+        parComplementType.setContentDefinition(partyGroup.getContentDefinitionsString());
         if (partyGroup.getPartyType() != null) {
             ParPartyType parPartyType = findEntity(parPartyTypes, partyGroup.getPartyType(), ParPartyType::getCode);
             if (parPartyType == null) {
@@ -1172,7 +1194,7 @@ public class PackageService {
      * @param <S>
      * @return nalezená entita
      */
-    private <T, S> T findEntity(@NotNull final List<T> list,
+    private <T, S> T findEntity(@NotNull final Collection<T> list,
                                 @NotNull final S find,
                                 @NotNull final Function<T, S> function) {
         for (T item : list) {
@@ -1196,7 +1218,7 @@ public class PackageService {
      * @param <S2>
      * @return nalezená entita
      */
-    private <T, S1, S2> T findEntity(@NotNull final List<T> list,
+    private <T, S1, S2> T findEntity(@NotNull final Collection<T> list,
                                 @NotNull final S1 findA,
                                 @NotNull final S2 findB,
                                 @NotNull final Function<T, S1> functionA,
@@ -1222,7 +1244,7 @@ public class PackageService {
      * @param functionC metoda, jakou hledám v entitě - třetí
      * @return nalezená entita
      */
-    private <T, S1, S2, S3> T findEntity(@NotNull final List<T> list,
+    private <T, S1, S2, S3> T findEntity(@NotNull final Collection<T> list,
                                      @NotNull final S1 findA,
                                      @NotNull final S2 findB,
                                      @NotNull final S3 findC,
@@ -2281,6 +2303,13 @@ public class PackageService {
 
             bulkActionConfigManager.load();
 
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                @Override
+                public void afterCommit() {
+                    cacheService.resetCache(CacheInvalidateEvent.Type.ALL);
+                }
+            });
+
             eventNotificationService.publishEvent(new ActionEvent(EventType.PACKAGE));
 
         } catch (Exception e) {
@@ -2402,25 +2431,42 @@ public class PackageService {
         export(rulPackage, zos, settingsRepository, Settings.class, Setting.class,
                 (settingList, settings) -> settings.setSettings(settingList),
                 (uiSetting, setting) -> setting.setValue(uiSetting.getValue()),
-                uiSettings -> {
-                    // factory
-                    Setting entity;
-                    if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.FUND_VIEW)
-                            && Objects.equals(uiSettings.getEntityType(), UISettings.EntityType.RULE)) {
-                        entity = new SettingFundViews();
-                    } else if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.TYPE_GROUPS)
-                            && Objects.equals(uiSettings.getEntityType(), UISettings.EntityType.RULE)) {
-                        entity = new SettingTypeGroups();
-                    } else if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.RECORD)) {
-                        entity = new SettingRecord();
-                    } else {
-                        entity = new SettingBase();
-                    }
-                    entity.setSettingsType(uiSettings.getSettingsType());
-                    entity.setEntityType(uiSettings.getEntityType());
-                    entity.setEntityId(uiSettings.getEntityId());
-                    return entity;
-                }, SETTING_XML);
+                this::convertSetting, SETTING_XML);
+    }
+
+    public Setting convertSetting(final UISettings uiSettings) {
+        // factory
+        Setting entity;
+        if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.FUND_VIEW)
+                && Objects.equals(uiSettings.getEntityType(), UISettings.EntityType.RULE)) {
+            SettingFundViews settingFundViews = new SettingFundViews();
+            if (uiSettings.getEntityId() != null) {
+                RulRuleSet ruleSet = ruleSetRepository.findOne(uiSettings.getEntityId());
+                if (ruleSet != null) {
+                    settingFundViews.setCode(ruleSet.getCode());
+                }
+            }
+            entity = settingFundViews;
+        } else if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.TYPE_GROUPS)
+                && Objects.equals(uiSettings.getEntityType(), UISettings.EntityType.RULE)) {
+            SettingTypeGroups settingTypeGroups = new SettingTypeGroups();
+            if (uiSettings.getEntityId() != null) {
+                RulRuleSet ruleSet = ruleSetRepository.findOne(uiSettings.getEntityId());
+                if (ruleSet != null) {
+                    settingTypeGroups.setCode(ruleSet.getCode());
+                }
+            }
+            entity = settingTypeGroups;
+        } else if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.RECORD)) {
+            entity = new SettingRecord();
+        } else {
+            entity = new SettingBase();
+        }
+        entity.setSettingsType(uiSettings.getSettingsType());
+        entity.setEntityType(uiSettings.getEntityType());
+        entity.setEntityId(uiSettings.getEntityId());
+        entity.setValue(uiSettings.getValue());
+        return entity;
     }
 
     private void exportRelationRoleTypes(final RulPackage rulPackage, final ZipOutputStream zos) {
@@ -2469,7 +2515,7 @@ public class PackageService {
                     partyGroup.setName(uiPartyGroup.getName());
                     partyGroup.setViewOrder(uiPartyGroup.getViewOrder());
                     partyGroup.setPartyType(uiPartyGroup.getPartyType() == null ? null : uiPartyGroup.getPartyType().getCode());
-                    partyGroup.setContentDefinition(uiPartyGroup.getContentDefinition());
+                    partyGroup.setContentDefinitionsString(uiPartyGroup.getContentDefinition());
                     partyGroup.setType(uiPartyGroup.getType().name());
                 }, null, PARTY_GROUP_XML);
     }

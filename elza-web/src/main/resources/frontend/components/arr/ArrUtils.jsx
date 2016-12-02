@@ -303,10 +303,20 @@ export function getParentNode(node, fundTreeNodes) {
  * @param elProps {Object} další properties pro přidání do renderovaných elementů
  */
 export function createReferenceMark(node, elProps) {
+    return createReferenceMarkFromArray(node.referenceMark, elProps)
+}
+
+/**
+ * Vytvoření referenčního označení.
+ *
+ * @param referenceMark {Array} reference mark array
+ * @param elProps {Object} další properties pro přidání do renderovaných elementů
+ */
+export function createReferenceMarkFromArray(referenceMark, elProps) {
     var levels = [];
 
-    if (node.referenceMark) {
-        node.referenceMark.forEach((i, index) => {
+    if (referenceMark) {
+        referenceMark.forEach((i, index) => {
             if (index % 2 == 0) {
                 if (i < 1000) {
                     var cls = "level";
@@ -319,7 +329,7 @@ export function createReferenceMark(node, elProps) {
                     levels.push(<span {...elProps} key={'level' + index} title={i} className="level small">.{iStr.substr(-3)}</span>)
                 }
             } else {
-                if (index + 1 < node.referenceMark.length) {
+                if (index + 1 < referenceMark.length) {
                     levels.push(<span {...elProps} key={'sep' + index} className="separator">{i}</span>)
                 }
             }
@@ -334,7 +344,20 @@ export function createReferenceMark(node, elProps) {
  * @param node {Object} jednotka popisu
  */
 export function createReferenceMarkString(node) {
-    return node && node.referenceMark && node.referenceMark.join(" ");
+    if (node && node.referenceMark) {
+        return createReferenceMarkStringFromArray(node.referenceMark);
+    } else {
+        return 0;
+    }
+}
+
+/**
+ * Vytvoření referenčního označení - textově.
+ *
+ * @param referenceMark {Array} pole reference mark
+ */
+export function createReferenceMarkStringFromArray(referenceMark) {
+    return referenceMark.join(" ");
 }
 
 /**
