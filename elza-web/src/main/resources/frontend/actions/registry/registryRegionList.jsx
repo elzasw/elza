@@ -58,6 +58,9 @@ export function registrySetTypesId(registryTypesId) {
 
 export function getRegistryIfNeeded(registryId) {
     return (dispatch, getState) => {
+        if(registryId == null){
+            return;
+        }
         const {registryRegion: {registryRegionData: {isFetching, fetched, currentDataKey}}} = getState();
 
         if (currentDataKey !== registryId || (!isFetching && !fetched)) {
@@ -71,7 +74,9 @@ export function getRegistry(registryId) {
     return dispatch => {
         dispatch(registryRecordDetailRequest(registryId));
         if (registryId !== null) {
-            return WebApi.getRegistry(registryId).then((json) => dispatch(registryRecordDetailReceive(json)));
+            return WebApi.getRegistry(registryId)
+                .then((json) => dispatch(registryRecordDetailReceive(json)))
+                .catch((error) => dispatch(registrySelect()));
         }
     }
 }
@@ -89,6 +94,12 @@ export function registryRecordDetailReceive(json) {
         selectedId: json.id,
         type: types.REGISTRY_RECORD_DETAIL_RECEIVE,
         receivedAt: Date.now()
+    }
+}
+
+export function registryRecordDetailClear() {
+    return {
+        type: types.REGISTRY_RECORD_DETAIL_CLEAR,
     }
 }
 

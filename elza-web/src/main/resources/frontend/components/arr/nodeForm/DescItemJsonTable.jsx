@@ -192,7 +192,9 @@ var DescItemJsonTable = class DescItemJsonTable extends AbstractReactComponent {
 
         var actions = [];
 
-        actions.push(<NoFocusButton key="download" onClick={onDownload} title={i18n('subNodeForm.descItem.jsonTable.action.download')}><Icon glyph="fa-download" /></NoFocusButton>)
+        if (descItem.descItemObjectId != null) {
+            actions.push(<NoFocusButton key="download" onClick={onDownload} title={i18n('subNodeForm.descItem.jsonTable.action.download')}><Icon glyph="fa-download" /></NoFocusButton>)
+        }
 
         if (!locked) {
             actions.push(<NoFocusButton key="add" onClick={this.handleAddRow} title={i18n('subNodeForm.descItem.jsonTable.action.addRow')}><Icon glyph="fa-plus" /></NoFocusButton>)
