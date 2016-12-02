@@ -7,9 +7,12 @@ import cz.tacr.elza.print.NodeId;
  *         Date: 22.6.16
  */
 public class ItemEnum extends AbstractItem {
+	
+	String value;
 
     public ItemEnum(final NodeId nodeId, final String value) {
-        super(nodeId, value);
+        super(nodeId);
+        this.value = value;
     }
 
     @Override
@@ -21,4 +24,10 @@ public class ItemEnum extends AbstractItem {
     public String serialize() {
         return serializeValue();
     }
+    
+    @Override
+    public Object getValue() {
+    	return value;
+    }
+
 }

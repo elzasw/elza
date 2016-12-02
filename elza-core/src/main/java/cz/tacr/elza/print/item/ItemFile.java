@@ -4,6 +4,7 @@ package cz.tacr.elza.print.item;
 import java.io.File;
 
 import cz.tacr.elza.domain.ArrFile;
+import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.print.NodeId;
 
 /**
@@ -18,12 +19,18 @@ public class ItemFile extends AbstractItem {
     private Integer fileSize;
     private String mimeType;
     private Integer pagesCount;
+    DmsFile value;
 
     public ItemFile(final NodeId nodeId, final ArrFile value) {
-        super(nodeId, value.getFile());
-        this.fileId = value.getFileId();
+        super(nodeId);
+        this.value = value;
     }
 
+    @Override
+    public Object getValue() {
+    	return value;
+    }
+    
     public Integer getFileId() {
         return fileId;
     }
