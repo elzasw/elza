@@ -26,7 +26,7 @@ public class DataPacketRefRepositoryImpl implements DataPacketRefRepositoryCusto
 
     @Override
     public List<ArrDataPacketRef> findByDataIdsAndVersionFetchPacket(final Set<Integer> dataIds, final Set<RulItemType> itemTypes, final Integer changeId) {
-        String hql = "SELECT d FROM arr_data_packet_ref d JOIN FETCH d.item di JOIN FETCH di.node n JOIN FETCH di.itemType dit JOIN FETCH d.packet p JOIN FETCH p.packetType pt  WHERE ";
+        String hql = "SELECT d FROM arr_data_packet_ref d JOIN FETCH d.item di JOIN FETCH di.node n JOIN FETCH di.itemType dit JOIN FETCH d.packet p LEFT JOIN FETCH p.packetType pt  WHERE ";
         if (changeId == null) {
             hql += "di.deleteChange IS NULL ";
         } else {
