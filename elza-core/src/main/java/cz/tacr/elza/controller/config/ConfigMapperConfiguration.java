@@ -7,6 +7,10 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import cz.tacr.elza.controller.vo.ArrDigitalRepositoryVO;
+import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskVO;
+import cz.tacr.elza.domain.ArrDigitalRepository;
+import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -728,8 +732,9 @@ public class ConfigMapperConfiguration {
                 }).byDefault().register();
         mapperFactory.classMap(RegRecord.class, RegRecordSimple.class).field("recordId", "id").byDefault().register();
 
-        mapperFactory.classMap(RegExternalSystem.class, RegExternalSystemVO.class).byDefault().register();
-
+        mapperFactory.classMap(RegExternalSystem.class, RegExternalSystemVO.class).field("externalSystemId", "id").byDefault().register();
+        mapperFactory.classMap(ArrDigitizationFrontdesk.class, ArrDigitizationFrontdeskVO.class).field("externalSystemId", "id").byDefault().register();
+        mapperFactory.classMap(ArrDigitalRepository.class, ArrDigitalRepositoryVO.class).field("externalSystemId", "id").byDefault().register();
 
         mapperFactory.classMap(RegRegisterType.class, RegRegisterTypeVO.class).customize(
                 new CustomMapper<RegRegisterType, RegRegisterTypeVO>() {

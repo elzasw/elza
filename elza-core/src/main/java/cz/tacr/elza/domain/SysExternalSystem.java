@@ -6,6 +6,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.Table;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -23,6 +24,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Entity(name = "sys_external_system")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Inheritance(strategy = InheritanceType.JOINED)
+@Table
 public abstract class SysExternalSystem implements cz.tacr.elza.api.SysExternalSystem {
 
     @Id

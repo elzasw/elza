@@ -70,4 +70,22 @@
             </column>
         </createTable>
     </changeSet>
+
+    <changeSet id="20161205093500" author="slapa">
+        <createTable tableName="arr_digital_repository">
+            <column name="external_system_id" type="int">
+                <constraints primaryKey="true" nullable="false" foreignKeyName="fk_arr_digital_repository" referencedTableName="sys_external_system" referencedColumnNames="external_system_id"/>
+            </column>
+            <column name="view_dao_url" type="varchar(1000)" />
+            <column name="view_file_url" type="varchar(1000)" />
+            <column name="send_notification" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="arr_digitization_frontdesk">
+            <column name="external_system_id" type="int">
+                <constraints primaryKey="true" nullable="false" foreignKeyName="fk_arr_digitization_frontdesk" referencedTableName="sys_external_system" referencedColumnNames="external_system_id"/>
+            </column>
+        </createTable>
+    </changeSet>
 </databaseChangeLog>
