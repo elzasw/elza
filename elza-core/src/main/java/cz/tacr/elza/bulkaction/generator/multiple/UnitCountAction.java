@@ -20,10 +20,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,11 +69,15 @@ public class UnitCountAction extends Action {
      */
     private Set<String> storageNumbers = new HashSet<>();
 
-    // typy a názvy sloupců tabulky
-    private String outputTableColumn1;
-    private String outputTableColumn1Type;
-    private String outputTableColumn2;
-    private String outputTableColumn2Type;
+    /**
+     * Name of column where to store Unit type
+     */
+    private String outputColumnUnitName;
+    
+    /**
+     * Name of column where to store Unit count
+     */
+    private String outputColumnUnitCount;
 
     UnitCountAction(final Yaml config) {
         super(config);
@@ -87,20 +89,16 @@ public class UnitCountAction extends Action {
         outputItemType = findItemType(outputType, "output_type");
         checkValidDataType(outputItemType, "JSON_TABLE");
 
-        outputTableColumn1 = config.getString("output_table_column1", null);
-        checkValidateParam("output_table_column1", outputTableColumn1);
-        outputTableColumn1Type = config.getString("output_table_column1_type", null);
-        checkValidateParam("output_table_column1_type", outputTableColumn1Type);
-        outputTableColumn2 = config.getString("output_table_column2", null);
-        checkValidateParam("output_table_column2", outputTableColumn2);
-        outputTableColumn2Type = config.getString("output_table_column2_type", null);
-        checkValidateParam("output_table_column2_type", outputTableColumn2Type);
+        outputColumnUnitName = config.getString("output_column_unit_name", null);
+        checkValidateParam("output_column_unit_name", outputColumnUnitName);
+        outputColumnUnitCount = config.getString("output_column_unit_value", null);
+        checkValidateParam("output_column_unit_value", outputColumnUnitCount);
 
         List<ElzaColumn> columnsDefinition = outputItemType.getColumnsDefinition();
         Map<String, ElzaColumn> outputColumns = columnsDefinition.stream().collect(Collectors.toMap(ElzaColumn::getCode, Function.identity()));
 
-        validateColumn(outputTableColumn1, outputTableColumn1Type, outputColumns);
-        validateColumn(outputTableColumn2, outputTableColumn2Type, outputColumns);
+        validateColumn(outputColumnUnitName, ElzaColumn.DataType.TEXT,  outputColumns);
+        validateColumn(outputColumnUnitCount, ElzaColumn.DataType.INTEGER, outputColumns);
 
         loadType("UNIT_TYPE");
 
@@ -139,21 +137,20 @@ public class UnitCountAction extends Action {
      * Validace sloupce z definice typu atributu.
      *
      * @param outputTableColumn     název sloupce
-     * @param outputTableColumnType typ sloupce
+     * @param expectedColumnType 	očekávaný typ sloupce
      * @param outputColumns         mapa sloupců
      */
     protected void validateColumn(final String outputTableColumn,
-                                  final String outputTableColumnType,
+                                  final ElzaColumn.DataType expectedColumnType,
                                   final Map<String, ElzaColumn> outputColumns) {
         ElzaColumn column = outputColumns.get(outputTableColumn);
         if (column == null) {
             throw new IllegalArgumentException("Atribut " + outputItemType.getCode() + " nemá sloupec " + outputTableColumn);
         }
-        ElzaColumn.DataType dataType = ElzaColumn.DataType.valueOf(outputTableColumnType);
-        if (!column.getDataType().equals(dataType)) {
+        if (!column.getDataType().equals(expectedColumnType)) {
             throw new IllegalArgumentException("Atribut " + outputItemType.getCode()
                     + " má sloupec " + column.getCode() + " jiného datového typu (" + outputItemType.getDataType().getCode()
-                    + "), než je nastaveno (" + dataType.name() + ").");
+                    + "), než je nastaveno (" + expectedColumnType.name() + ").");
         }
     }
 
@@ -475,8 +472,8 @@ public class UnitCountAction extends Action {
         ElzaTable table = new ElzaTable();
 
         for (Map.Entry<String, Integer> entry : countMap.entrySet()) {
-            Map.Entry<String, String> key = new AbstractMap.SimpleEntry<>(outputTableColumn1, entry.getKey());
-            Map.Entry<String, String> value = new AbstractMap.SimpleEntry<>(outputTableColumn2, entry.getValue().toString());
+            Map.Entry<String, String> key = new AbstractMap.SimpleEntry<>(outputColumnUnitName, entry.getKey());
+            Map.Entry<String, String> value = new AbstractMap.SimpleEntry<>(outputColumnUnitCount, entry.getValue().toString());
             table.addRow(new ElzaRow(key, value));
         }
 
