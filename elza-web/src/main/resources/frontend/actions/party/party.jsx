@@ -186,9 +186,12 @@ export function partyDetailFetchIfNeeded(selectedPartyID) {
 export function partyDetailFetch(selectedPartyID) {
     return dispatch => {
         dispatch(partyDetailRequest(selectedPartyID))
-        
+
         return WebApi.getParty(selectedPartyID)
-            .then(json => dispatch(partyDetailReceive(selectedPartyID, json)));
+            .then(json => dispatch(partyDetailReceive(selectedPartyID, json)))
+            .catch(error => {
+                dispatch(clearPartyDetail());
+            });
     }
 }
 

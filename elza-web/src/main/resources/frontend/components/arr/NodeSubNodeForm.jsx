@@ -154,6 +154,7 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
                 {formActions}
                 <SubNodeForm
                     ref="subNodeForm"
+                    typePrefix="desc"
                     versionId={versionId}
                     fundId={fundId}
                     routingKey={routingKey}
