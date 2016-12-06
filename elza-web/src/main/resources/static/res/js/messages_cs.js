@@ -510,6 +510,7 @@ var messages = {
     "subNodeForm.descItemType.spec.favorite": "Oblíbené",
     "subNodeForm.descItemType.spec.all": "Všechny záznamy",
     "subNodeForm.addNodeAfter": "JP za",
+    "subNodeForm.digitizationRequest": "Požadavek na digitalizaci",
 
     "subNodeForm.descItem.edited": "Editováno",
     "subNodeForm.packets.confirm": "Správa obalů je uživatelsky vypnutá, chcete jí zapnout?",
@@ -804,6 +805,9 @@ var messages = {
     "visiblePolicy.action.save": "Upravit",
     "visiblePolicy.action.reset": "Vymazat",
     "visiblePolicy.action.reset.confirm": "Opravdu vymazat? Po vymazání definice budou přebírána pravidla kontroly z nadřízené jednotky popisu.",
+
+    "digitizationRequest.form.title": "Požadavek na digitalizát",
+    "digitizationRequest.title.newRequest": "Nový",
 
     "____": ""
 };

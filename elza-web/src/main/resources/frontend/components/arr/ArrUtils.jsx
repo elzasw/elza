@@ -3,6 +3,7 @@
  */
 import {indexById} from 'stores/app/utils.jsx'
 import React from 'react';
+import {dateToString} from 'components/Utils.jsx'
 import {getSetFromIdsList} from 'stores/app/utils.jsx'
 import {i18n} from 'components';
 
@@ -358,6 +359,18 @@ export function createReferenceMarkString(node) {
  */
 export function createReferenceMarkStringFromArray(referenceMark) {
     return referenceMark.join(" ");
+}
+
+/**
+ * Vytvoření názvu požadavku na digitalizaci pro zorbazení uživateli.
+ * @param digitizationRequest objekt požadavku
+ * @param userDetail detail přihlášeného uživatele
+ */
+export function createDigitizationName(digitizationRequest, userDetail) {
+    // Uživatelské jméno chceme pouze pokud je definované nebo je jiné než přihlášený uživatel
+    const username = userDetail ? (digitizationRequest.username !== userDetail.username ? digitizationRequest.username : null) : digitizationRequest.username;
+    const usernameStr = username ? username + " " : "";
+    return usernameStr + dateToString(new Date(digitizationRequest.time));
 }
 
 /**

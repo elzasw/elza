@@ -504,6 +504,17 @@ class WebApi {
         return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/nodeParents', {versionId, nodeId});
     }
 
+    addNodeToDigitization(versionId, nodeId, digReqId, description) {
+        return getData(null, 100);
+    }
+
+    getDigitizationRequests(versionId) {
+        return getData([
+            {id: 1, username: "kokozka", description: "Kokozkovo balicek", time: new Date().getTime() - 5555555},
+            {id: 2, username: "novak", description: "Balicek pana novaka...", time: new Date().getTime()},
+        ], 100);
+    }
+
     getFundTree(versionId, nodeId, expandedIds={}, includeIds=[]) {
         const data = {
             versionId,
@@ -516,7 +527,22 @@ class WebApi {
                 data.expandedIds.push(prop);
             }
         }
-        return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/fundTree', null, data);
+        return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/fundTree', null, data)
+            .then(json => {
+                console.log("##################################################", json)
+
+                json.nodes.forEach((node, index) => {
+                    if (index % 2 === 0) {
+                        node.digitizationRequest = {
+                            description: "Popis požadavku na digitalizaci #" + index,
+                            time: new Date().getTime(),
+                            username: "usr-" + (index * 123) + "er"
+                        };
+                    }
+                });
+
+                return json;
+            });
     }
 
     getFundTreeNodes(versionId, nodeIds) {

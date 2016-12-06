@@ -128,6 +128,12 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
                             <Icon glyph="fa-trash"/>
                         </NoFocusButton>}
                     </div>
+                    <div className='section'>
+                        <NoFocusButton onClick={this.props.onDigitizationRequest}>
+                            <Icon glyph="fa-camera"/>
+                            {i18n("subNodeForm.digitizationRequest")}
+                        </NoFocusButton>
+                    </div>
                 </div>
             </div>
         )
@@ -220,6 +226,7 @@ NodeSubNodeForm.propTypes = {
     userDetail: React.PropTypes.object.isRequired,
     onAddDescItemType: React.PropTypes.func.isRequired,
     onVisiblePolicy: React.PropTypes.func.isRequired,
+    onDigitizationRequest: React.PropTypes.func.isRequired,
     singleDescItemTypeId: React.PropTypes.number,
     singleDescItemTypeEdit: React.PropTypes.bool,
     readMode: React.PropTypes.bool,

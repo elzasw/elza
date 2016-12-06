@@ -20,7 +20,7 @@ import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
 import {fundNodeSubNodeFulltextSearch, fundSubNodesNext, fundSubNodesPrev, fundSubNodesNextPage, fundSubNodesPrevPage} from 'actions/arr/node.jsx'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
 import {indexById} from 'stores/app/utils.jsx'
-import {getDescItemsAddTree, createFundRoot, isFundRootId} from './ArrUtils.jsx'
+import {createDigitizationName, getDescItemsAddTree, createFundRoot, isFundRootId} from './ArrUtils.jsx'
 import {propsEquals} from 'components/Utils.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils.jsx'
@@ -28,6 +28,8 @@ import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {Utils} from 'components/index.jsx';
+import DigitizationRequestForm from "./DigitizationRequestForm"
+import {WebApi} from 'actions/index.jsx';
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
 const scrollIntoView = require('dom-scroll-into-view')
@@ -282,6 +284,22 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 }
                 break
         }
+    }
+
+    /**
+     * Zobrazení formuláře pro požadavek na digitalizaci.
+     */
+    handleDigitizationRequest = () => {
+        const {node, versionId} = this.props;
+        const nodeId = node.selectedSubNodeId;
+
+        const form = <DigitizationRequestForm nodeId={nodeId} fundVersionId={versionId} onSubmitForm={data => {
+            WebApi.addNodeToDigitization(versionId, nodeId, data.digitizationRequestId, data.description)
+                .then(() => {
+                    this.dispatch(modalDialogHide());
+                });
+        }} />;
+        this.dispatch(modalDialogShow(this, i18n('digitizationRequest.form.title'), form));
     }
 
     handleVisiblePolicy() {
@@ -633,15 +651,22 @@ return true
                     </Button>
                 )
             }
-            for (var a=node.viewStartIndex; (a<node.viewStartIndex + node.pageSize) && (a < node.childNodes.length); a++) {
+            for (let a=node.viewStartIndex; (a<node.viewStartIndex + node.pageSize) && (a < node.childNodes.length); a++) {
                 var item = node.childNodes[a];
 
-                var state = this.renderState(item);
-                var accordionLeft = item.accordionLeft ? item.accordionLeft : i18n('accordion.title.left.name.undefined', item.id)
-                var accordionRight = item.accordionRight ? item.accordionRight : ''
-                var referenceMark = <span className="reference-mark">{createReferenceMarkString(item)}</span>
+                const state = this.renderState(item);
+                const accordionLeft = item.accordionLeft ? item.accordionLeft : i18n('accordion.title.left.name.undefined', item.id)
+                const accordionRight = item.accordionRight ? item.accordionRight : ''
+                const referenceMark = <span className="reference-mark">{createReferenceMarkString(item)}</span>
+                const focused = a === this.state.focusItemIndex
 
-                var focused = a === this.state.focusItemIndex
+                let digitizationInfo;
+                if (item.digitizationRequest) {
+                    const name =
+                    digitizationInfo = <div className="digitizationInfo"  title={createDigitizationName(item.digitizationRequest, userDetail)}>
+                        <Icon glyph="fa-shopping-basket"/>
+                    </div>
+                }
 
                 if (node.selectedSubNodeId == item.id) {
                     rows.push(
@@ -655,6 +680,7 @@ return true
                                         <span className="title" title={accordionRight}>{accordionRight}</span>
                                     </div>
                                     {state}
+                                    {digitizationInfo}
                                 </div>
                             </div>
                             <div key="body" className='accordion-body'>
@@ -675,6 +701,7 @@ return true
                                         <span className="title" title={accordionRight}>{accordionRight}</span>
                                     </div>
                                     {state}
+                                    {digitizationInfo}
                                 </div>
                             </div>
                         </div>
@@ -770,6 +797,7 @@ return true
                 closed={closed}
                 onAddDescItemType={this.handleAddDescItemType}
                 onVisiblePolicy={this.handleVisiblePolicy}
+                onDigitizationRequest={this.handleDigitizationRequest}
                 readMode={readMode}
             />
         } else {
