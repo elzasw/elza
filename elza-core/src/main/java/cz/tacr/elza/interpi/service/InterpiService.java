@@ -1,6 +1,8 @@
 package cz.tacr.elza.interpi.service;
 
+import java.io.ByteArrayInputStream;
 import java.io.Serializable;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -14,6 +16,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.xml.bind.JAXBElement;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -64,6 +71,7 @@ import cz.tacr.elza.interpi.ws.wo.TitulTyp;
 import cz.tacr.elza.interpi.ws.wo.TitulTypA;
 import cz.tacr.elza.interpi.ws.wo.TridaTyp;
 import cz.tacr.elza.interpi.ws.wo.UdalostTyp;
+import cz.tacr.elza.interpi.ws.wo.VedlejsiCastTyp;
 import cz.tacr.elza.interpi.ws.wo.VyobrazeniTyp;
 import cz.tacr.elza.interpi.ws.wo.ZarazeniTyp;
 import cz.tacr.elza.interpi.ws.wo.ZaznamTyp;
@@ -272,8 +280,10 @@ public class InterpiService {
      * @param interpiRecordId id záznamu v INTERPI
      * @param scopeId id scope
      * @param systemId id systému
+     *
+     * @return nový/aktualizovaný rejstřík
      */
-    public void importRecord(final Integer recordId, final String interpiRecordId, final Integer scopeId, final Integer systemId) {
+    public RegRecord importRecord(final Integer recordId, final String interpiRecordId, final Integer scopeId, final Integer systemId) {
         Assert.assertNotNull(interpiRecordId);
         Assert.assertNotNull(scopeId);
         Assert.assertNotNull(systemId);
@@ -286,9 +296,9 @@ public class InterpiService {
         TridaTyp trida = getTrida(valueMap);
         PodtridaTyp podTrida = getPodTrida(valueMap);
 
-        RegRegisterType regRegisterType = registerTypeRepository.findRegisterTypeByCode(podTrida.value());
+        RegRegisterType regRegisterType = registerTypeRepository.findRegisterTypeByname(podTrida.value());
         ParPartyType partyType = regRegisterType.getPartyType();
-        boolean onlyRecord = partyType == null;
+        boolean saveOnlyRecord = partyType == null;
 
         RegScope regScope = scopeRepository.findOne(scopeId);
         RegRecord regRecord = createRecord(regRegisterType, valueMap, interpiRecordId, regExternalSystem, regScope);
@@ -296,11 +306,16 @@ public class InterpiService {
         ParParty newParty = createParty(regRecord, trida, valueMap);
         newParty.setPartyId(recordId); // TODO vyzkoušet zda se to aktualizuje
 
-        if (onlyRecord) {
-            registryService.saveRecord(regRecord, false);
+//        RegRecord recordFromGroovy = groovyScriptService.getRecordFromGroovy(newParty);
+//        recordFromGroovy = registryService.saveRecord(recordFromGroovy, false);
+
+        if (saveOnlyRecord) {
+            regRecord = registryService.saveRecord(regRecord, false);
         } else {
-            partyService.saveParty(newParty);
+            regRecord = partyService.saveParty(newParty).getRecord();
         }
+
+        return regRecord;
     }
 
     private ExternalRecordVO convertToExternalRecordVO(final EntitaTyp entitaTyp, final RegExternalSystem regExternalSystem) {
@@ -310,14 +325,16 @@ public class InterpiService {
 
         TridaTyp trida = getTrida(valueMap);
         PodtridaTyp podTrida = getPodTrida(valueMap);
-        RegRegisterType regRegisterType = registerTypeRepository.findRegisterTypeByCode(podTrida.value());
+        RegRegisterType regRegisterType = registerTypeRepository.findRegisterTypeByname(podTrida.value());
         RegScope scope = scopeRepository.findByCode("GLOBAL");
         RegRecord regRecord = createRecord(regRegisterType, valueMap, interpiRecordId, regExternalSystem, scope);
         ParParty newParty = createParty(regRecord, trida, valueMap);
         RegRecord recordFromGroovy = groovyScriptService.getRecordFromGroovy(newParty);
 
         ExternalRecordVO recordVO = new ExternalRecordVO();
-//        recordVO.setDetail(); // TODO dodělat
+        String detail = createDetail(entitaTyp);
+        recordVO.setDetail(detail);
+
         recordVO.setName(recordFromGroovy.getRecord());
         recordVO.setRecordId(interpiRecordId);
 
@@ -327,6 +344,26 @@ public class InterpiService {
         }
 
         return recordVO;
+    }
+
+    private String createDetail(final EntitaTyp entitaTyp) {
+        byte[] marshallData = XmlUtils.marshallData(entitaTyp, EntitaTyp.class);
+
+        try {
+//        	XmlUtils.transformData(marshallData, null, null);
+            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            StreamResult result = new StreamResult(new StringWriter());
+
+            StreamSource ss = new StreamSource(new ByteArrayInputStream(marshallData));
+
+            transformer.transform(ss, result);
+            return result.getWriter().toString();
+        } catch (Exception e) {
+            throw new IllegalStateException("Chyba při vytváření detailu záznamu.", e);
+        }
     }
 
     private String getInterpiRecordId(final Map<EntityValueType, List<Object>> valueMap) {
@@ -650,7 +687,7 @@ public class InterpiService {
         String historyAndCV;
         if (history == null && cv == null) {
             historyAndCV = null;
-        } if (history == null) {
+        } else if (history == null) {
             historyAndCV = cv;
         } else {
             historyAndCV = history + cv;
@@ -700,8 +737,7 @@ public class InterpiService {
         OznaceniTypTypA typ = oznaceniTyp.getTyp();
         if (typ == null) {
             if (isPreferred) {
-//            throw new IllegalStateException("Prázdný typ preferovaného označení.");
-                return null;
+                throw new IllegalStateException("Prázdný typ preferovaného označení.");
             } else {
                 return null;
             }
@@ -736,24 +772,31 @@ public class InterpiService {
 
         partyName.setMainPart(oznaceniTyp.getHlavniCast().getValue());
         partyName.setNote(oznaceniTyp.getPoznamka());
-        partyName.setOtherPart(oznaceniTyp.getVedlejsiCast().getValue());
+
+
+        VedlejsiCastTyp vedlejsiCast = oznaceniTyp.getVedlejsiCast();
+        if (vedlejsiCast != null) {
+            partyName.setOtherPart(vedlejsiCast.getValue());
+        }
         partyName.setParty(parParty);
 
         List<ParPartyNameComplement> partyNameComplements = createPartyNameComplements(oznaceniTyp.getDoplnek(), partyName);
         partyName.setPartyNameComplements(partyNameComplements);
 
         String datace = oznaceniTyp.getDatace();
-        ParUnitdate parUnitdate = new ParUnitdate();
-        UnitDateConvertor.convertToUnitDate(datace, parUnitdate);
+        if (datace != null) {
+            ParUnitdate parUnitdate = new ParUnitdate();
+            UnitDateConvertor.convertToUnitDate(datace, parUnitdate);
 
-        // TODO [vanek] zjistit jak se to má mapovat
-        ParUnitdate validFrom = new ParUnitdate();
-        UnitDateConvertor.convertToUnitDate(parUnitdate.getValueFrom(), validFrom);
-        partyName.setValidFrom(validFrom);
+            // TODO [vanek] zjistit jak se to má mapovat
+            ParUnitdate validFrom = new ParUnitdate();
+            UnitDateConvertor.convertToUnitDate(parUnitdate.getValueFrom(), validFrom);
+            partyName.setValidFrom(validFrom);
 
-        ParUnitdate validTo = new ParUnitdate();
-        UnitDateConvertor.convertToUnitDate(parUnitdate.getValueTo(), validTo);
-        partyName.setValidTo(validTo);
+            ParUnitdate validTo = new ParUnitdate();
+            UnitDateConvertor.convertToUnitDate(parUnitdate.getValueTo(), validTo);
+            partyName.setValidTo(validTo);
+        }
 
         return partyName;
     }
@@ -771,6 +814,8 @@ public class InterpiService {
 
                 parPartyNameComplement.setComplementType(parComplementType);
                 parPartyNameComplement.setPartyName(partyName);
+
+                parPartyNameComplements.add(parPartyNameComplement);
             }
         }
 

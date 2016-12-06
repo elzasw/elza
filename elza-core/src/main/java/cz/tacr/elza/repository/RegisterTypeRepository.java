@@ -2,7 +2,6 @@ package cz.tacr.elza.repository;
 
 import java.util.List;
 
-import cz.tacr.elza.domain.RulPackage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -12,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RulPackage;
 
 
 /**
@@ -87,4 +87,12 @@ public interface RegisterTypeRepository extends JpaRepository<RegRegisterType, I
     @Modifying
     @Query("UPDATE reg_register_type rr SET rr.parentRegisterType = NULL WHERE rr.rulPackage = :rulPackage")
     void preDeleteByRulPackage(@Param("rulPackage") RulPackage rulPackage);
+
+    /**
+     * Najde typ rejstříkového hesla podle názvu.
+     *
+     * @param registerTypeName název
+     * @return typ rejstříkového hesla
+     */
+    RegRegisterType findRegisterTypeByname(String registerTypeName);
 }

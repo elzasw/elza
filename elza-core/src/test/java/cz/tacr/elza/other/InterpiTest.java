@@ -1,20 +1,12 @@
 package cz.tacr.elza.other;
 
-import java.io.Reader;
-import java.io.StringReader;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.List;
-import java.util.stream.IntStream;
 
 import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import javax.transaction.Transactional;
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.JAXBIntrospector;
-import javax.xml.bind.Unmarshaller;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
@@ -31,14 +23,22 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaCoreTest;
 import cz.tacr.elza.api.RegExternalSystemType;
+import cz.tacr.elza.controller.AbstractControllerTest;
+import cz.tacr.elza.controller.vo.RecordImportVO;
 import cz.tacr.elza.domain.RegExternalSystem;
-import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.interpi.service.InterpiService;
+import cz.tacr.elza.interpi.service.vo.AttributeType;
+import cz.tacr.elza.interpi.service.vo.ConditionType;
+import cz.tacr.elza.interpi.service.vo.ConditionVO;
+import cz.tacr.elza.interpi.service.vo.ExternalRecordVO;
 import cz.tacr.elza.interpi.ws.WssoapSoap;
 import cz.tacr.elza.interpi.ws.wo.EntitaTyp;
 import cz.tacr.elza.interpi.ws.wo.IdentifikaceTyp;
@@ -58,7 +58,9 @@ import cz.tacr.elza.interpi.ws.wo.ZarazeniTyp;
 import cz.tacr.elza.interpi.ws.wo.ZaznamTyp;
 import cz.tacr.elza.interpi.ws.wo.ZdrojTyp;
 import cz.tacr.elza.repository.RegExternalSystemRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.utils.NoCheckTrustManager;
+import cz.tacr.elza.utils.XmlUtils;
 
 /**
  * Testy na volání INTERPI.
@@ -68,9 +70,10 @@ import cz.tacr.elza.repository.RegisterTypeRepository;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = ElzaCoreTest.class)
-public class InterpiTest {
+public class InterpiTest extends AbstractControllerTest {
 
     private String url = "https://195.113.132.114:443/csp/interpi/cust.interpi.ws.soap.cls";
+//    private String url = "https://localhost:8088/mockwssoapSoap";
     private String username = "tacr";
     private String password = "tacrinterpi2015";
     private String from = "1";
@@ -79,15 +82,15 @@ public class InterpiTest {
     @Autowired
     private InterpiService interpiService;
     @Autowired
-    private RegisterTypeRepository registerTypeRepository;
-    @Autowired
     private RegExternalSystemRepository regExternalSystemRepository;
 
     private Integer systemId;
 
+    @Override
     @Before
     @Transactional
-    public void setUp() {
+    public void setUp() throws Exception {
+        super.setUp();
         RegExternalSystem externalSystem = new RegExternalSystem();
         externalSystem.setCode("INTERPI");
         externalSystem.setName("INTERPI");
@@ -105,12 +108,42 @@ public class InterpiTest {
         regExternalSystemRepository.delete(systemId);
     }
 
+    public void authenticate() {
+        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken("admin", "admin");
+        token.setDetails(new UserDetail("admin"));
+        SecurityContextHolder.getContext().setAuthentication(token);
+    }
+
+    @Test
+    public void importByServiceTest() {
+        RegScope scope = scopeRepository.findByCode("GLOBAL");
+
+        RecordImportVO importVO = new RecordImportVO();
+        importVO.setInterpiRecordId("0000216");
+        importVO.setScopeId(scope.getScopeId());
+        importVO.setSystemId(systemId);
+
+        post(spec -> spec.body(importVO), "/api/registry/interpi/import");
+    }
+
     @Test
     public void findDataByServiceTest() {
-        List<RegRegisterType> types = registerTypeRepository.findAll();
-        Object data = interpiService.findByName("rod", types, systemId);
+        List<ConditionVO> conditions = Arrays.asList(new ConditionVO(ConditionType.AND, AttributeType.ALL_NAMES, "rod"),
+                new ConditionVO(ConditionType.AND, AttributeType.PREFFERED_NAME, "jan"));
+        List<ExternalRecordVO> data = interpiService.find(true, conditions, 500, systemId);
 
-        System.out.println(data);
+        for (ExternalRecordVO externalRecordVO : data) {
+            System.out.println(externalRecordVO.getName());
+        }
+    }
+
+    @Test
+    public void findOneByServiceTest() {
+        ExternalRecordVO externalRecordVO = interpiService.getOne("0000216", systemId);
+
+        System.out.println(externalRecordVO.getName());
+        System.out.println(externalRecordVO.getDetail());
+        System.out.println(externalRecordVO.getRecordId());
     }
 
     @Test
@@ -129,9 +162,9 @@ public class InterpiTest {
         System.out.println(data2);
         System.out.println(data3);
 
-        SetTyp setTyp = unmarshallData(new StringReader(data), SetTyp.class);
-        SetTyp setTyp2 = unmarshallData(new StringReader(data2), SetTyp.class);
-        SetTyp setTyp3 = unmarshallData(new StringReader(data3), SetTyp.class);
+        SetTyp setTyp = XmlUtils.unmarshallDataWithIntrospector(data, SetTyp.class);
+        SetTyp setTyp2 = XmlUtils.unmarshallDataWithIntrospector(data2, SetTyp.class);
+        SetTyp setTyp3 = XmlUtils.unmarshallDataWithIntrospector(data3, SetTyp.class);
     }
 
     @Test
@@ -146,8 +179,7 @@ public class InterpiTest {
         WssoapSoap client = createClient();
         String oneRecord = client.getOneRecord("n000382567", username, password);
 
-        StringReader stringReader = new StringReader(oneRecord);
-        SetTyp set = unmarshallData(stringReader, SetTyp.class);
+        SetTyp set = XmlUtils.unmarshallDataWithIntrospector(oneRecord, SetTyp.class);
 
         Assert.notEmpty(set.getEntita());
         Assert.isTrue(set.getEntita().size() == 1);
@@ -167,8 +199,7 @@ public class InterpiTest {
         String query = "@attr 1=2051 @and @or @or 'r' 'o' @or 'k' 'u' @attr 1=2055 'rod'";
         String data = client.findData(query, null, from, to, username, password);
 
-        StringReader stringReader = new StringReader(data);
-        SetTyp set = unmarshallData(stringReader, SetTyp.class);
+        SetTyp set = XmlUtils.unmarshallDataWithIntrospector(data, SetTyp.class);
         List<EntitaTyp> entita = set.getEntita();
         for (EntitaTyp entitaTyp : entita) {
             entitaTyp.getContent().forEach(e -> {
@@ -176,82 +207,6 @@ public class InterpiTest {
                 printElement2(0, element);
             });
         }
-    }
-
-    private void printElement(final int depth, final JAXBElement element) {
-        Object value = element.getValue();
-        String localPart = element.getName().getLocalPart();
-        switch (localPart) {
-            case "trida":
-                TridaTyp tridaTyp = getEntity(value, TridaTyp.class);
-                break;
-            case "podtrida":
-                PodtridaTyp podtridaTyp = getEntity(value, PodtridaTyp.class);
-                break;
-            case "identifikace":
-                IdentifikaceTyp identifikaceTyp = getEntity(value, IdentifikaceTyp.class);
-                break;
-            case "zaznam":
-                ZaznamTyp zaznamTyp = getEntity(value, ZaznamTyp.class);
-                break;
-            case "preferovane_oznaceni":
-                OznaceniTyp prefereovane = getEntity(value, OznaceniTyp.class);
-                break;
-            case "variantni_oznaceni":
-                OznaceniTyp variantni = getEntity(value, OznaceniTyp.class);
-                break;
-            case "udalost":
-                UdalostTyp udalostTyp = getEntity(value, UdalostTyp.class);
-                break;
-            case "pocatek_existence":
-                UdalostTyp pocatek = getEntity(value, UdalostTyp.class);
-                break;
-            case "konec_existence":
-                UdalostTyp konec = getEntity(value, UdalostTyp.class);
-                break;
-            case "zmena":
-                UdalostTyp zmena = getEntity(value, UdalostTyp.class);
-                break;
-            case "popis":
-                PopisTyp popisTyp = getEntity(value, PopisTyp.class);
-                break;
-            case "souradnice":
-                SouradniceTyp souradniceTyp = getEntity(value, SouradniceTyp.class);
-                break;
-            case "titul":
-                TitulTyp titulTyp = getEntity(value, TitulTyp.class);
-                break;
-            case "kodovane_udaje":
-                KodovaneTyp kodovaneTyp = getEntity(value, KodovaneTyp.class);
-                break;
-            case "souvisejici_entita":
-                SouvisejiciTyp souvisejiciTyp = getEntity(value, SouvisejiciTyp.class);
-                break;
-            case "hierarchicka_struktura":
-                StrukturaTyp strukturaTyp = getEntity(value, StrukturaTyp.class);
-                break;
-            case "zarazeni":
-                ZarazeniTyp zarazeniTyp = getEntity(value, ZarazeniTyp.class);
-                break;
-            case "vyobrazeni":
-                VyobrazeniTyp vyobrazeniTyp = getEntity(value, VyobrazeniTyp.class);
-                break;
-            case "zdroj_informaci":
-                ZdrojTyp zdrojTyp = getEntity(value, ZdrojTyp.class);
-                break;
-        }
-
-        if (value instanceof ZaznamTyp) {
-            ZaznamTyp zaznamTyp = getEntity(value, ZaznamTyp.class);
-            zaznamTyp.getHistorieZaznamu();
-            zaznamTyp.getJazyk();
-            zaznamTyp.getPoznamka();
-            zaznamTyp.getSouhlas();
-            zaznamTyp.getStav();
-        }
-        StringBuilder tabs = new StringBuilder();
-        IntStream.range(0, depth).forEach(i -> tabs.append("\t"));
-        System.out.println(tabs.toString() + element.getName() + " " + element.getValue());
     }
 
     private void printElement2(final int depth, final JAXBElement element) {
@@ -327,37 +282,6 @@ public class InterpiTest {
         return cls.cast(value);
     }
 
-    /**
-     * Převede data z xml do objektu.
-     *
-     * @param inputStream stream
-     *
-     * @return objekt typu T
-     */
-    public static <T> T unmarshallData(final Reader reader, final Class<T> cls) throws JAXBException {
-        Assert.notNull(reader);
-
-        JAXBContext jaxbContext = JAXBContext.newInstance(cls);
-        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-        JAXBIntrospector jaxbIntrospector = jaxbContext.createJAXBIntrospector();
-
-        Object unmarshal = unmarshaller.unmarshal(reader);
-
-
-        return (T) jaxbIntrospector.getValue(unmarshal);
-    }
-
-    /**
-     * Vytvoří unmarshaller pro data.
-     *
-     * @return unmarshaller pro data
-     */
-    private static <C> Unmarshaller createUnmarshaller(final Class<C> cls) throws JAXBException {
-        JAXBContext jaxbContext = JAXBContext.newInstance(cls);
-
-        return jaxbContext.createUnmarshaller();
-    }
-
     private WssoapSoap createClient() {
         JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
         factory.setServiceClass(WssoapSoap.class);
@@ -387,26 +311,5 @@ public class InterpiTest {
         conduit.setClient(httpClientPolicy);
 
         return client;
-    }
-
-    public class NoCheckTrustManager implements X509TrustManager {
-
-        public NoCheckTrustManager(final X509TrustManager tm) {
-        }
-
-        @Override
-        public X509Certificate[] getAcceptedIssuers() {
-            return new X509Certificate[0];
-        }
-
-        @Override
-        public void checkClientTrusted(final X509Certificate[] chain, final String authType)
-                throws CertificateException {
-        }
-
-        @Override
-        public void checkServerTrusted(final X509Certificate[] chain, final String authType)
-                throws CertificateException {
-        }
     }
 }
