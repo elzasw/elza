@@ -88,4 +88,181 @@
             </column>
         </createTable>
     </changeSet>
+
+    <changeSet id="20161206150100" author="slapa">
+
+        <createTable tableName="arr_dao_batch_info">
+            <column name="dao_batch_info_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="code" type="varchar(50)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="label" type="varchar(250)" />
+        </createTable>
+
+        <createTable tableName="arr_dao_package">
+            <column name="dao_package_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="digital_repository_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fund_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="dao_batch_info_id" type="int"/>
+            <column name="code" type="varchar(50)" >
+                <constraints unique="true"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="fk_dao_package_digital_repository"
+                                 baseTableName="arr_dao_package"
+                                 baseColumnNames="digital_repository_id"
+                                 referencedTableName="arr_digital_repository"
+                                 referencedColumnNames="external_system_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_dao_package_fund"
+                                 baseTableName="arr_dao_package"
+                                 baseColumnNames="fund_id"
+                                 referencedTableName="arr_fund"
+                                 referencedColumnNames="fund_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_dao_package_dao_batch_info"
+                                 baseTableName="arr_dao_package"
+                                 baseColumnNames="dao_batch_info_id"
+                                 referencedTableName="arr_dao_batch_info"
+                                 referencedColumnNames="dao_batch_info_id"
+                                 onDelete="NO ACTION"/>
+
+        <createTable tableName="arr_dao">
+            <column name="dao_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="dao_package_id" type="int">
+                <constraints nullable="true"/>
+            </column>
+            <column name="valid" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="varchar(50)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="label" type="varchar(250)"/>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="fk_dao_dao_package"
+                                 baseTableName="arr_dao"
+                                 baseColumnNames="dao_package_id"
+                                 referencedTableName="arr_dao_package"
+                                 referencedColumnNames="dao_package_id"
+                                 onDelete="NO ACTION"/>
+
+        <createTable tableName="arr_dao_link">
+            <column name="dao_link_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="node_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="dao_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="create_change_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="delete_change_id" type="int" />
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="fk_dao_link_dao"
+                                 baseTableName="arr_dao_link"
+                                 baseColumnNames="dao_id"
+                                 referencedTableName="arr_dao"
+                                 referencedColumnNames="dao_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_dao_link_node"
+                                 baseTableName="arr_dao_link"
+                                 baseColumnNames="node_id"
+                                 referencedTableName="arr_node"
+                                 referencedColumnNames="node_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_dao_link_create_change"
+                                 baseTableName="arr_dao_link"
+                                 baseColumnNames="create_change_id"
+                                 referencedTableName="arr_change"
+                                 referencedColumnNames="change_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_dao_link_delete_change"
+                                 baseTableName="arr_dao_link"
+                                 baseColumnNames="delete_change_id"
+                                 referencedTableName="arr_change"
+                                 referencedColumnNames="change_id"
+                                 onDelete="NO ACTION"/>
+
+        <createTable tableName="arr_dao_file_group">
+            <column name="dao_file_group_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="dao_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="label" type="varchar(250)"/>
+            <column name="code" type="varchar(50)">
+                <constraints unique="true"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="fk_dao_file_group_dao"
+                                 baseTableName="arr_dao_file_group"
+                                 baseColumnNames="dao_id"
+                                 referencedTableName="arr_dao"
+                                 referencedColumnNames="dao_id"
+                                 onDelete="NO ACTION"/>
+
+        <createTable tableName="arr_dao_file">
+            <column name="dao_file_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="dao_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="dao_file_group_id" type="int" />
+            <column name="checksum" type="varchar(250)"/>
+            <column name="checksum_type" type="char(10)"/>
+            <column name="created" type="timestamp"/>
+            <column name="mimetype" type="varchar(50)"/>
+            <column name="size" type="bigint" />
+            <column name="image_height" type="int" />
+            <column name="image_width" type="int" />
+            <column name="source_x_dimension_unit" type="char(10)"/>
+            <column name="source_x_dimension_value" type="decimal"/>
+            <column name="source_y_dimension_unit" type="char(10)"/>
+            <column name="source_y_dimension_value" type="decimal"/>
+            <column name="duration" type="varchar(250)"/>
+            <column name="code" type="varchar(50)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="fk_dao_file_dao"
+                                 baseTableName="arr_dao_file"
+                                 baseColumnNames="dao_id"
+                                 referencedTableName="arr_dao"
+                                 referencedColumnNames="dao_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_dao_file_dao_file_group"
+                                 baseTableName="arr_dao_file"
+                                 baseColumnNames="dao_file_group_id"
+                                 referencedTableName="arr_dao_file_group"
+                                 referencedColumnNames="dao_file_group_id"
+                                 onDelete="NO ACTION"/>
+
+    </changeSet>
 </databaseChangeLog>
