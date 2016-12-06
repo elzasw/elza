@@ -19,6 +19,7 @@ import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,6 +69,7 @@ import cz.tacr.elza.utils.XmlUtils;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 23. 11. 2016
  */
+@Ignore
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = ElzaCoreTest.class)
 public class InterpiTest extends AbstractControllerTest {
