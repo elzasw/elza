@@ -12,10 +12,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.repository.*;
-import cz.tacr.elza.service.UserService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -29,9 +25,40 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.InterpiSearchVO;
+import cz.tacr.elza.controller.vo.RecordImportVO;
+import cz.tacr.elza.controller.vo.RegCoordinatesVO;
+import cz.tacr.elza.controller.vo.RegRecordSimple;
+import cz.tacr.elza.controller.vo.RegRecordVO;
+import cz.tacr.elza.controller.vo.RegRecordWithCount;
+import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.controller.vo.RegScopeVO;
+import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParRelationRoleType;
+import cz.tacr.elza.domain.RegCoordinates;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.interpi.service.InterpiService;
+import cz.tacr.elza.interpi.service.vo.ExternalRecordVO;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.PartyTypeRepository;
+import cz.tacr.elza.repository.RegCoordinatesRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.RelationRoleTypeRepository;
+import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.service.PartyService;
 import cz.tacr.elza.service.RegistryService;
+import cz.tacr.elza.service.UserService;
 
 
 /**
@@ -85,6 +112,9 @@ public class RegistryController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private InterpiService interpiService;
 
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
@@ -561,5 +591,73 @@ public class RegistryController {
         RegCoordinates regCoordinate = registryService.getRegCoordinate(coordinatesId);
 
         registryService.deleteRegCoordinate(regCoordinate, regCoordinate.getRegRecord());
+    }
+
+    /**
+     * Aktualizace rejstříku z externího systému.
+     * @param recordId id rejstříku
+     * @param recordImportVO data rejstříku
+     */
+    @RequestMapping(value = "/interpi/import/{recordId}", method = RequestMethod.PUT)
+    @Transactional
+    public void importRecord(@PathVariable final Integer recordId, @RequestBody final RecordImportVO recordImportVO) {
+        Assert.notNull(recordId);
+        Assert.notNull(recordImportVO);
+        Assert.notNull(recordImportVO.getInterpiRecordId());
+        Assert.notNull(recordImportVO.getScopeId());
+        Assert.notNull(recordImportVO.getSystemId());
+
+        interpiService.importRecord(recordId, recordImportVO.getInterpiRecordId(), recordImportVO.getScopeId(),
+                recordImportVO.getSystemId());
+    }
+
+    /**
+     * Založení rejstříku z externího systému.
+     * @param recordImportVO data rejstříku
+     */
+    @RequestMapping(value = "/interpi/import", method = RequestMethod.POST)
+    @Transactional
+    public void importRecord(@RequestBody final RecordImportVO recordImportVO) {
+        Assert.notNull(recordImportVO);
+        Assert.notNull(recordImportVO.getInterpiRecordId());
+        Assert.notNull(recordImportVO.getScopeId());
+        Assert.notNull(recordImportVO.getSystemId());
+
+        interpiService.importRecord(null, recordImportVO.getInterpiRecordId(), recordImportVO.getScopeId(),
+                recordImportVO.getSystemId());
+    }
+
+    /**
+     * Načte rejstřík z externího systému.
+     *
+     * @param recordId id rejstříku
+     * @param systemId identifikátor externího systému
+     *
+     * @return rejstřík z externího systému
+     */
+    @RequestMapping(value = "/interpi/{recordId}", method = RequestMethod.GET)
+    @Transactional
+    public ExternalRecordVO findInterpiRecord(@PathVariable final String recordId, @RequestBody final Integer systemId) {
+        Assert.notNull(recordId);
+        Assert.notNull(systemId);
+
+        return interpiService.getOne(recordId, systemId);
+    }
+
+    /**
+     * Vyhledá rejstříky v externím systému.
+     *
+     * @param recordId id rejstříku
+     * @param systemId identifikátor externího systému
+     *
+     * @return rejstřík z externího systému
+     */
+    @RequestMapping(value = "/interpi/", method = RequestMethod.POST)
+    @Transactional
+    public List<ExternalRecordVO> findInterpiRecords(@PathVariable final String recordId, @RequestBody final InterpiSearchVO interpiSearchVO) {
+        Assert.notNull(interpiSearchVO);
+        Assert.notNull(interpiSearchVO.getSystemId());
+
+        return interpiService.find(interpiSearchVO.isParty(), interpiSearchVO.getConditions(), interpiSearchVO.getCount(), interpiSearchVO.getSystemId());
     }
 }

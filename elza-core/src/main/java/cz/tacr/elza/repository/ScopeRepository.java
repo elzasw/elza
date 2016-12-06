@@ -4,11 +4,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import cz.tacr.elza.domain.ArrFund;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.RegScope;
 
 
@@ -22,9 +21,9 @@ import cz.tacr.elza.domain.RegScope;
 public interface ScopeRepository extends ElzaJpaRepository<RegScope, Integer> {
 
     /**
-     * Najde třídy podle kodů.
+     * Najde třídy podle kódů.
      *
-     * @param codes seznam kodů
+     * @param codes seznam kódů
      * @return seznam tříd
      */
     @Query("SELECT s FROM reg_scope s WHERE s.code IN (?1)")
@@ -48,4 +47,12 @@ public interface ScopeRepository extends ElzaJpaRepository<RegScope, Integer> {
      */
     @Query("SELECT s FROM reg_scope s ORDER BY s.code ASC")
     List<RegScope> findAllOrderByCode();
+
+    /**
+     * Najde třídu podle kódu.
+     *
+     * @param code kód
+     * @return třída
+     */
+    RegScope findByCode(String string);
 }

@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,6 +15,7 @@ import java.util.Locale;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.JAXBIntrospector;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.OutputKeys;
@@ -29,6 +31,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import cz.tacr.elza.interpi.ws.wo.SetTyp;
 import cz.tacr.elza.service.ByteStreamResult;
 import liquibase.util.file.FilenameUtils;
 
@@ -237,6 +240,28 @@ public class XmlUtils {
         Unmarshaller unmarshaller = createUnmarshaller(cls);
 
         return (T) unmarshaller.unmarshal(inputStream);
+    }
+
+    /**
+     * Převede data z xml do objektu.
+     */
+    public static <T> T unmarshallDataWithIntrospector(final String xml, final Class<T> cls) {
+        if (xml == null) {
+            return null;
+        }
+
+        try {
+            JAXBContext jaxbContext = JAXBContext.newInstance(SetTyp.class);
+            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+            JAXBIntrospector jaxbIntrospector = jaxbContext.createJAXBIntrospector();
+
+            StringReader reader = new StringReader(xml);
+            Object unmarshal = unmarshaller.unmarshal(reader);
+
+            return (T) jaxbIntrospector.getValue(unmarshal);
+        } catch (JAXBException e) {
+            throw new IllegalStateException("Chyba při převodu dat z xml.", e);
+        }
     }
 
     /**
