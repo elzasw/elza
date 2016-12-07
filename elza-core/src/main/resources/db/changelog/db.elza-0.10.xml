@@ -265,4 +265,185 @@
                                  onDelete="NO ACTION"/>
 
     </changeSet>
+
+    <changeSet id="20161207102300" author="slapa">
+
+        <createTable tableName="arr_request">
+            <column name="request_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="fund_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="varchar(50)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="state" type="char(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="response_external_system" type="timestamp"/>
+            <column name="reject_reason" type="varchar(1000)"/>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="fk_request_fund"
+                                 baseTableName="arr_request"
+                                 baseColumnNames="fund_id"
+                                 referencedTableName="arr_fund"
+                                 referencedColumnNames="fund_id"
+                                 onDelete="NO ACTION"/>
+
+        <createTable tableName="arr_dao_request">
+            <column name="request_id" type="int">
+                <constraints primaryKey="true" foreignKeyName="fk_dao_request_request" referencedTableName="arr_request" referencedColumnNames="request_id"/>
+            </column>
+            <column name="digitization_frontdesk_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="char(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="varchar(1000)"/>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="fk_dao_request_digitization_frontdesk"
+                                 baseTableName="arr_dao_request"
+                                 baseColumnNames="digitization_frontdesk_id"
+                                 referencedTableName="arr_digitization_frontdesk"
+                                 referencedColumnNames="external_system_id"
+                                 onDelete="NO ACTION"/>
+
+        <createTable tableName="arr_digitization_request">
+            <column name="request_id" type="int">
+                <constraints primaryKey="true" foreignKeyName="fk_digitization_request_request" referencedTableName="arr_request" referencedColumnNames="request_id"/>
+            </column>
+            <column name="digitization_frontdesk_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="varchar(1000)"/>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="fk_digitization_request_digitization_frontdesk"
+                                 baseTableName="arr_digitization_request"
+                                 baseColumnNames="digitization_frontdesk_id"
+                                 referencedTableName="arr_digitization_frontdesk"
+                                 referencedColumnNames="external_system_id"
+                                 onDelete="NO ACTION"/>
+
+        <createTable tableName="arr_dao_link_request">
+            <column name="request_id" type="int">
+                <constraints primaryKey="true" foreignKeyName="fk_dao_link_request_request" referencedTableName="arr_request" referencedColumnNames="request_id"/>
+            </column>
+            <column name="node_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="dao_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="digital_repository_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="char(20)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="fk_dao_link_request_node"
+                                 baseTableName="arr_dao_link_request"
+                                 baseColumnNames="node_id"
+                                 referencedTableName="arr_node"
+                                 referencedColumnNames="node_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_dao_link_request_dao"
+                                 baseTableName="arr_dao_link_request"
+                                 baseColumnNames="dao_id"
+                                 referencedTableName="arr_dao"
+                                 referencedColumnNames="dao_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_dao_link_request_digital_repository"
+                                 baseTableName="arr_dao_link_request"
+                                 baseColumnNames="digital_repository_id"
+                                 referencedTableName="arr_digital_repository"
+                                 referencedColumnNames="external_system_id"
+                                 onDelete="NO ACTION"/>
+
+        <createTable tableName="arr_dao_request_dao">
+            <column name="dao_request_dao_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="dao_request_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="dao_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="fk_dao_request_dao_dao_request"
+                                 baseTableName="arr_dao_request_dao"
+                                 baseColumnNames="dao_request_id"
+                                 referencedTableName="arr_dao_request"
+                                 referencedColumnNames="request_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_dao_request_dao_dao"
+                                 baseTableName="arr_dao_request_dao"
+                                 baseColumnNames="dao_id"
+                                 referencedTableName="arr_dao"
+                                 referencedColumnNames="dao_id"
+                                 onDelete="NO ACTION"/>
+
+        <createTable tableName="arr_digitization_request_node">
+            <column name="digitization_request_node_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="digitization_request_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="node_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="fk_digitization_request_node_digitization_request"
+                                 baseTableName="arr_digitization_request_node"
+                                 baseColumnNames="digitization_request_id"
+                                 referencedTableName="arr_digitization_request"
+                                 referencedColumnNames="request_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_digitization_request_node_node"
+                                 baseTableName="arr_digitization_request_node"
+                                 baseColumnNames="node_id"
+                                 referencedTableName="arr_node"
+                                 referencedColumnNames="node_id"
+                                 onDelete="NO ACTION"/>
+
+        <createTable tableName="arr_request_queue_item">
+            <column name="request_queue_item_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="request_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="create" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="attempt_to_send" type="timestamp" />
+            <column name="error" type="varchar(1000)"/>
+            <column name="send" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="fk_request_queue_item_request"
+                                 baseTableName="arr_request_queue_item"
+                                 baseColumnNames="request_id"
+                                 referencedTableName="arr_request"
+                                 referencedColumnNames="request_id"
+                                 onDelete="NO ACTION"/>
+
+    </changeSet>
+
 </databaseChangeLog>

@@ -17,8 +17,6 @@ import javax.persistence.Table;
  * @since 05. 12. 2016
  */
 @Entity(name = "arr_digital_repository")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @Table
 public class ArrDigitalRepository extends SysExternalSystem implements cz.tacr.elza.api.ArrDigitalRepository {
 
