@@ -45,6 +45,9 @@ public abstract class ArrRequest implements cz.tacr.elza.api.ArrRequest<ArrFund>
     @Column(length = StringLength.LENGTH_1000)
     private String rejectReason;
 
+    @Column(nullable = false)
+    private LocalDateTime create;
+
     @Column
     private LocalDateTime responseExternalSystem;
 
@@ -106,5 +109,15 @@ public abstract class ArrRequest implements cz.tacr.elza.api.ArrRequest<ArrFund>
     @Override
     public void setRejectReason(final String rejectReason) {
         this.rejectReason = rejectReason;
+    }
+
+    @Override
+    public LocalDateTime getCreate() {
+        return create;
+    }
+
+    @Override
+    public void setCreate(final LocalDateTime create) {
+        this.create = create;
     }
 }

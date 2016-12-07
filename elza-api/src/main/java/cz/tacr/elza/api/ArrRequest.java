@@ -35,6 +35,10 @@ public interface ArrRequest<F extends ArrFund> extends Serializable {
 
     void setRejectReason(String rejectReason);
 
+    LocalDateTime getCreate();
+
+    void setCreate(LocalDateTime create);
+
     enum State {
 
         /**

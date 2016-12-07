@@ -446,4 +446,12 @@
 
     </changeSet>
 
+    <changeSet id="20161207124100" author="slapa">
+        <addColumn tableName="arr_request">
+            <column name="create" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
