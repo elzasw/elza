@@ -17,7 +17,6 @@ import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -103,12 +102,6 @@ public class InterpiTest extends AbstractControllerTest {
         externalSystem.setUsername(username);
 
         systemId = regExternalSystemRepository.save(externalSystem).getExternalSystemId();
-    }
-
-    @After
-    @Transactional
-    public void clean() {
-        regExternalSystemRepository.delete(systemId);
     }
 
     public void authenticate() {
