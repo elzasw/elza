@@ -321,6 +321,8 @@ public class PartyService {
             recordFromGroovy.setVersion(dbParty.getRecord().getVersion());
             recordFromGroovy.setUuid(dbParty.getRecord().getUuid());
         }
+        recordFromGroovy.setExternalId(party.getRecord().getExternalId());
+        recordFromGroovy.setExternalSystem(party.getRecord().getExternalSystem());
         RegRecord savedRecord = registryService.saveRecord(recordFromGroovy, true);
         party.setRecord(savedRecord);
 

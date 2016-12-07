@@ -1,4 +1,4 @@
-package cz.tacr.elza.interpi.service.vo;
+package cz.tacr.elza.interpi.service.pqf;
 
 /**
  * Typy podmínek.

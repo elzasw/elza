@@ -600,7 +600,7 @@ public class RegistryController {
      */
     @RequestMapping(value = "/interpi/import/{recordId}", method = RequestMethod.PUT)
     @Transactional
-    public void importRecord(@PathVariable final Integer recordId, @RequestBody final RecordImportVO recordImportVO) {
+    public RegRecordVO importRecord(@PathVariable final Integer recordId, @RequestBody final RecordImportVO recordImportVO) {
         Assert.notNull(recordId);
         Assert.notNull(recordImportVO);
         Assert.notNull(recordImportVO.getInterpiRecordId());
@@ -609,6 +609,8 @@ public class RegistryController {
 
         interpiService.importRecord(recordId, recordImportVO.getInterpiRecordId(), recordImportVO.getScopeId(),
                 recordImportVO.getSystemId());
+
+        return getRecord(recordId);
     }
 
     /**
@@ -617,14 +619,16 @@ public class RegistryController {
      */
     @RequestMapping(value = "/interpi/import", method = RequestMethod.POST)
     @Transactional
-    public void importRecord(@RequestBody final RecordImportVO recordImportVO) {
+    public RegRecordVO importRecord(@RequestBody final RecordImportVO recordImportVO) {
         Assert.notNull(recordImportVO);
         Assert.notNull(recordImportVO.getInterpiRecordId());
         Assert.notNull(recordImportVO.getScopeId());
         Assert.notNull(recordImportVO.getSystemId());
 
-        interpiService.importRecord(null, recordImportVO.getInterpiRecordId(), recordImportVO.getScopeId(),
+        RegRecord regRecord = interpiService.importRecord(null, recordImportVO.getInterpiRecordId(), recordImportVO.getScopeId(),
                 recordImportVO.getSystemId());
+
+        return getRecord(regRecord.getRecordId());
     }
 
     /**
@@ -641,7 +645,7 @@ public class RegistryController {
         Assert.notNull(recordId);
         Assert.notNull(systemId);
 
-        return interpiService.getOne(recordId, systemId);
+        return interpiService.getRecordById(recordId, systemId);
     }
 
     /**
@@ -658,6 +662,6 @@ public class RegistryController {
         Assert.notNull(interpiSearchVO);
         Assert.notNull(interpiSearchVO.getSystemId());
 
-        return interpiService.find(interpiSearchVO.isParty(), interpiSearchVO.getConditions(), interpiSearchVO.getCount(), interpiSearchVO.getSystemId());
+        return interpiService.findRecords(interpiSearchVO.isParty(), interpiSearchVO.getConditions(), interpiSearchVO.getCount(), interpiSearchVO.getSystemId());
     }
 }

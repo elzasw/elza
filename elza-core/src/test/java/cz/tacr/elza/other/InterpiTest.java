@@ -19,7 +19,6 @@ import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,11 +32,12 @@ import cz.tacr.elza.ElzaCoreTest;
 import cz.tacr.elza.api.RegExternalSystemType;
 import cz.tacr.elza.controller.AbstractControllerTest;
 import cz.tacr.elza.controller.vo.RecordImportVO;
+import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.domain.RegExternalSystem;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.interpi.service.InterpiService;
-import cz.tacr.elza.interpi.service.vo.AttributeType;
-import cz.tacr.elza.interpi.service.vo.ConditionType;
+import cz.tacr.elza.interpi.service.pqf.AttributeType;
+import cz.tacr.elza.interpi.service.pqf.ConditionType;
 import cz.tacr.elza.interpi.service.vo.ConditionVO;
 import cz.tacr.elza.interpi.service.vo.ExternalRecordVO;
 import cz.tacr.elza.interpi.ws.WssoapSoap;
@@ -125,27 +125,36 @@ public class InterpiTest extends AbstractControllerTest {
         importVO.setScopeId(scope.getScopeId());
         importVO.setSystemId(systemId);
 
-        post(spec -> spec.body(importVO), "/api/registry/interpi/import");
+        RegRecordVO regRecord = post(spec -> spec.body(importVO), "/api/registry/interpi/import").as(RegRecordVO.class);
+        RegRecordVO record = getRecord(regRecord.getId());
+        Assert.isTrue(regRecord.getRecord().equals(record.getRecord()));
+
+        RegRecordVO regRecordUpdate = put(spec -> spec.pathParam("recordId", record.getId()).body(importVO), "/api/registry/interpi/import/{recordId}").as(RegRecordVO.class);
+        Assert.isTrue(regRecordUpdate.getId().equals(record.getId()));
     }
 
     @Test
     public void findDataByServiceTest() {
         List<ConditionVO> conditions = Arrays.asList(new ConditionVO(ConditionType.AND, AttributeType.ALL_NAMES, "rod"),
                 new ConditionVO(ConditionType.AND, AttributeType.PREFFERED_NAME, "jan"));
-        List<ExternalRecordVO> data = interpiService.find(true, conditions, 500, systemId);
+        List<ExternalRecordVO> data = interpiService.findRecords(true, conditions, 500, systemId);
 
         for (ExternalRecordVO externalRecordVO : data) {
-            System.out.println(externalRecordVO.getName());
+            printRecord(externalRecordVO);
         }
+    }
+
+    private void printRecord(final ExternalRecordVO externalRecordVO) {
+        System.out.println(externalRecordVO.getDetail());
+        System.out.println(externalRecordVO.getName());
+        System.out.println(externalRecordVO.getRecordId());
     }
 
     @Test
     public void findOneByServiceTest() {
-        ExternalRecordVO externalRecordVO = interpiService.getOne("0000216", systemId);
+        ExternalRecordVO externalRecordVO = interpiService.getRecordById("0000216", systemId);
 
-        System.out.println(externalRecordVO.getName());
-        System.out.println(externalRecordVO.getDetail());
-        System.out.println(externalRecordVO.getRecordId());
+        printRecord(externalRecordVO);
     }
 
     @Test
