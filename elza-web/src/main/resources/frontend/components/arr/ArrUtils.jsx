@@ -370,7 +370,7 @@ export function createDigitizationName(digitizationRequest, userDetail) {
     // Uživatelské jméno chceme pouze pokud je definované nebo je jiné než přihlášený uživatel
     const username = userDetail ? (digitizationRequest.username !== userDetail.username ? digitizationRequest.username : null) : digitizationRequest.username;
     const usernameStr = username ? username + " " : "";
-    return usernameStr + dateToString(new Date(digitizationRequest.time));
+    return usernameStr + dateToString(new Date(digitizationRequest.create));
 }
 
 /**

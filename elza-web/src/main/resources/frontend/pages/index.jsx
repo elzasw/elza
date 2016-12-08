@@ -3,6 +3,7 @@ exports.AdminPackagesPage = require('pages/admin/AdminPackagesPage.jsx');
 exports.AdminFulltextPage = require('pages/admin/AdminFulltextPage.jsx');
 exports.AdminUserPage = require('pages/admin/AdminUserPage.jsx');
 exports.AdminGroupPage = require('pages/admin/AdminGroupPage.jsx');
+exports.AdminRequestsQueuePage = require('pages/admin/AdminRequestsQueuePage.jsx');
 
 exports.ArrPage = require('pages/arr/ArrPage.jsx');
 exports.ArrDataGridPage = require('pages/arr/ArrDataGridPage.jsx');

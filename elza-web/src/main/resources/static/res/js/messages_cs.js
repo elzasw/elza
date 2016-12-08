@@ -113,6 +113,7 @@ var messages = {
     "ribbon.action.admin": "Administrace",
     "ribbon.action.admin.developer": "Developer mode",
     "ribbon.action.admin.packages": "Správa balíčků",
+    "ribbon.action.admin.requestsQueue": "Fronta požadavků",
     "ribbon.action.admin.user": "Uživatelé",
     "ribbon.action.admin.user.edit": "Upravit jméno",
     "ribbon.action.admin.user.add": "Přidat uživatele",

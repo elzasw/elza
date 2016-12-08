@@ -132,7 +132,7 @@ class ArrRequestDetail extends AbstractReactComponent {
         this.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
             <FundNodesSelectForm
                 onSubmitForm={(ids, nodes) => {
-                    this.dispatch(digitizationActions.addNodes(versionId, requestDetail.id, ids))
+                    this.dispatch(digitizationActions.addNodes(versionId, requestDetail, ids))
                 }}
             />))
     };
@@ -141,7 +141,7 @@ class ArrRequestDetail extends AbstractReactComponent {
         const {versionId, requestDetail} = this.props;
 
         if (confirm(i18n("arr.fund.nodes.deleteNode"))) {
-            this.dispatch(digitizationActions.removeNode(versionId, requestDetail.id, node.id))
+            this.dispatch(digitizationActions.removeNode(versionId, requestDetail, node.id))
         }
     };
 
@@ -161,7 +161,7 @@ class ArrRequestDetail extends AbstractReactComponent {
                 <div>
                     <h2>{i18n("arr.request.title.digitizationRequest")}</h2>
                     <div>
-                        <label>{i18n("arr.request.title.created")}</label> {dateTimeToString(new Date(digReq.time))}
+                        <label>{i18n("arr.request.title.created")}</label> {dateTimeToString(new Date(digReq.create))}
                     </div>
                     <div>
                         <label>{i18n("arr.request.title.type")}</label> {i18n("arr.request.title.type." + reqType)}

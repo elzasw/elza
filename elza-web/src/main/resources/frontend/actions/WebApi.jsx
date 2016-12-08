@@ -514,24 +514,38 @@ class WebApi {
         return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/nodeParents', {versionId, nodeId});
     }
 
-    addNodeToDigitization(versionId, nodeId, digReqId, send, description) {
-        return getData(null, 100);
-    }
-
-    getDigitizationRequests(versionId, state) {
-        const data = digReqs.filter(r => r.state === state && r['@class'] === '.ArrDigitizationRequestVO');
-
+    getRequestsInQueue() {
+        const data = digReqs.map(r => {
+            return {
+                id: r.id,
+                request: r,
+                create: new Date().getTime() - 99999999,
+                attemptToSend: new Date().getTime() -77777777,
+                error: "Prostě se to nepovedlo",
+            }
+        });
         return getData(data, 100);
     }
 
-    arrRequestAddNodes(versionId, outputId, nodeIds) {
-        return getData({}, 100);
-        // return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/output/' + versionId + '/' + outputId + '/add', null, nodeIds);
+    getDigitizationRequests(versionId, state) {
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/requests/' + versionId, { state });
     }
 
-    arrRequestRemoveNodes(versionId, outputId, nodeIds) {
-        return getData({}, 100);
-        // return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/output/' + versionId + '/' + outputId + '/remove', null, nodeIds);
+    arrRequestAddNodes(versionId, reqId, send, description, nodeIds) {
+        const data = {
+            id: reqId,
+            nodeIds,
+            description
+        };
+        return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/requests/digitization/add', { send } , data);
+    }
+
+    arrRequestRemoveNodes(versionId, reqId, nodeIds) {
+        const data = {
+            id: reqId,
+            nodeIds,
+        };
+        return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/requests/digitization/remove', null, data);
     }
 
     updateArrRequest(versionId, id, data) {
@@ -539,11 +553,11 @@ class WebApi {
     }
 
     getArrRequests(versionId) {
-        return getData(digReqs, 100);
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/requests/' + versionId, { });
     }
 
     getArrRequest(versionId, id) {
-        return getData(digReqs[id], 100);
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/requests/' + versionId + "/" + id, { detail: true });
     }
 
     getFundTree(versionId, nodeId, expandedIds={}, includeIds=[]) {

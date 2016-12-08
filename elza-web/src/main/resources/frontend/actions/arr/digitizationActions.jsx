@@ -12,6 +12,7 @@ import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 
 const AREA_PREPARED_DIGITIZATION_REQUESTS = "preparedDigitizationRequestList";
 const AREA_DIGITIZATION_REQUEST_LIST_SUFFIX = ".requestList";
+const AREA_DIGITIZATION_REQUEST_IN_QUEUE_LIST_SUFFIX = ".requestInQueueList";
 const AREA_DIGITIZATION_REQUEST_DETAIL_SUFFIX = ".requestDetail";
 
 /**
@@ -27,12 +28,22 @@ export function fetchPreparedListIfNeeded(versionId) {
 }
 
 /**
- * Načtení požadavků na digitalizaci pro konkrétní fond.
- * @param versionId verze AS
+ * Načtení požadavků na digitalizaci v celé aplikaci.
  */
 export function fetchListIfNeeded(versionId) {
     return SimpleListActions.fetchIfNeeded("fund[" + versionId + "]" + AREA_DIGITIZATION_REQUEST_LIST_SUFFIX, versionId, (parent, filter) => {
         return WebApi.getArrRequests(versionId)
+            .then(json => ({rows: json, count: 0}));
+    });
+}
+
+/**
+ * Načtení požadavků ve frontě pro konkrétní fond.
+ * @param versionId verze AS
+ */
+export function fetchInQueueListIfNeeded(versionId) {
+    return SimpleListActions.fetchIfNeeded("fund[" + versionId + "]" + AREA_DIGITIZATION_REQUEST_IN_QUEUE_LIST_SUFFIX, versionId, (parent, filter) => {
+        return WebApi.getRequestsInQueue(versionId)
             .then(json => ({rows: json, count: 0}));
     });
 }
@@ -73,12 +84,12 @@ export function requestEdit(versionId, id, data) {
 /**
  * Přidání JP do požadavku.
  * @param versionId verze AS
- * @param id id požadavku
+ * @param request požadavek
  * @param nodeIds seznam id node pro přidání
  */
-export function addNodes(versionId, id, nodeIds) {
+export function addNodes(versionId, request, nodeIds) {
     return (dispatch, getState) => {
-        WebApi.arrRequestAddNodes(versionId, id, nodeIds)
+        WebApi.arrRequestAddNodes(versionId, request.id, false, request.description, nodeIds)
             .then((json) => {
                 dispatch(addToastrSuccess(i18n("arr.request.title.nodesAdded")));
                 dispatch(modalDialogHide());
@@ -89,11 +100,11 @@ export function addNodes(versionId, id, nodeIds) {
 /**
  * Odebrání JP od požadavku.
  * @param versionId verze AS
- * @param id id požadavku
+ * @param request požadavek
  * @param nodeId id node pro odebrání
  */
-export function removeNode(versionId, id, nodeId) {
+export function removeNode(versionId, request, nodeId) {
     return (dispatch, getState) => {
-        WebApi.arrRequestRemoveNodes(versionId, id, [nodeId])
+        WebApi.arrRequestRemoveNodes(versionId, request.id, [nodeId])
     }
 }

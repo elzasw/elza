@@ -1991,6 +1991,7 @@ public class ArrangementController {
         requestService.removeNodeDigitizationRequest(digitizationRequest, nodes, nodes.get(0).getFund());
     }
 
+    // TODO [slapa] - potřeboval bych umět specifikovat, že chci načíst také JEN požadavky na digitalizaci (tedy specifikovat typ požadavku)
     @RequestMapping(value = "/requests/{fundVersionId}", method = RequestMethod.GET)
     public List<ArrRequestVO> findRequests(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                            @RequestParam(value = "state", required = false) ArrRequest.State state,
@@ -1998,6 +1999,21 @@ public class ArrangementController {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         List<ArrRequest> requests = requestService.findRequests(fundVersion.getFund(), state);
         return factoryVo.createRequest(requests, detail, fundVersion);
+    }
+
+    @RequestMapping(value = "/requests/{fundVersionId}/{requestId}", method = RequestMethod.GET)
+    public ArrRequestVO getRequest(
+            @PathVariable(value = "fundVersionId") final Integer fundVersionId,
+            @PathVariable(value = "requestId") final Integer requestId,
+           @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail) {
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        ArrRequest request = requestService.getRequest(requestId);
+
+        // TODO [slapa] - opravit
+        List<ArrRequest> list = new ArrayList<>();
+        list.add(request);
+
+        return factoryVo.createRequest(list, detail, fundVersion).get(0);
     }
 
     /**
