@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,10 +24,12 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -51,13 +54,38 @@ public class XmlUtils {
         Assert.notNull(xmlData);
         Assert.notNull(transformationName);
 
-        StreamSource xmlSource = null;
+        StreamSource xsltSource = getTransformationSource(transformationName, transformationsDirectory);
+        return transformData(xmlData, xsltSource);
+    }
+
+
+    public static byte[] transformData(final byte[] xmlData, final Resource transformationResource) {
+        Assert.notNull(xmlData);
+        Assert.notNull(transformationResource);
+
         StreamSource xsltSource = null;
+        try {
+            xsltSource = getStreamSource(transformationResource.getFile());
+            return transformData(xmlData, xsltSource);
+        } catch (IOException e) {
+            throw new IllegalStateException("Chyba při transformaci vstupních dat.", e);
+        } finally {
+            if (xsltSource != null) {
+                try {
+                    xsltSource.getInputStream().close();
+                } catch (IOException ex) {
+                    logger.error("Chyba při zavírání souboru s transformací.", ex);
+                }
+            }
+        }
+    }
+
+    public static byte[] transformData(final byte[] xmlData, final StreamSource xsltSource)
+            throws TransformerFactoryConfigurationError {
+        StreamSource xmlSource = getStreamSource(xmlData);
         ByteStreamResult result = null;
         byte[] byteArray = null;
         try {
-            xmlSource = getStreamSource(xmlData);
-            xsltSource = getTransformationSource(transformationName, transformationsDirectory);
             result = new ByteStreamResult(new ByteArrayOutputStream());
 
             TransformerFactory transFact = TransformerFactory.newInstance();
@@ -329,6 +357,30 @@ public class XmlUtils {
             return file;
         } catch (IOException e) {
             throw new IllegalStateException(e);
+        }
+    }
+
+    /**
+     * Naformátuje předané xml.
+     *
+     * @param inputStream xml
+     *
+     * @return naformátované xml
+     */
+    public static String formatXml(final InputStream inputStream) {
+        try {
+            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            StreamResult result = new StreamResult(new StringWriter());
+
+            StreamSource ss = new StreamSource(inputStream);
+
+            transformer.transform(ss, result);
+            return result.getWriter().toString();
+        } catch (TransformerException e) {
+            throw new IllegalStateException("Chyba při formátování xml.", e);
         }
     }
 }

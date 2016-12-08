@@ -1,8 +1,12 @@
 package cz.tacr.elza.interpi.service;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
-import java.io.StringWriter;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,12 +17,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
 import javax.xml.bind.JAXBElement;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -26,6 +26,9 @@ import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.PathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.domain.ParComplementType;
@@ -79,6 +82,7 @@ import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.GroovyScriptService;
 import cz.tacr.elza.utils.PartyType;
 import cz.tacr.elza.utils.XmlUtils;
+import liquibase.util.file.FilenameUtils;
 
 /**
  * Třída pro konverzi objektů z a do INTERPI.
@@ -90,6 +94,22 @@ import cz.tacr.elza.utils.XmlUtils;
 public class InterpiFactory {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    /**
+     * Výchozí transformace pro vytvoření detailu rejstříkového hesla.
+     */
+    @Value("classpath:/interpi/transformation/detail.xslt")
+    private Resource createDetailDefaultResource;
+
+    /**
+     * Načtená transformace pro vytvoření detailu rejstříkového hesla.
+     */
+    private Resource createDetailResource;
+
+    private static final String CREATE_TRANSFORMATION_FILE = "detail.xslt";
+
+    @Value("${elza.interpi.interpiDir}")
+    private String interpiDir;
 
     @Autowired
     private GroovyScriptService groovyScriptService;
@@ -152,20 +172,11 @@ public class InterpiFactory {
     private String createDetail(final EntitaTyp entitaTyp) {
         byte[] marshallData = XmlUtils.marshallData(entitaTyp, EntitaTyp.class);
 
-        try {
-//        	XmlUtils.transformData(marshallData, null, null); //TODO dořešit konfiguraci šablony, stejbě jako groovy skript
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-            StreamResult result = new StreamResult(new StringWriter());
-
-            StreamSource ss = new StreamSource(new ByteArrayInputStream(marshallData));
-
-            transformer.transform(ss, result);
-            return result.getWriter().toString();
-        } catch (Exception e) {
-            throw new IllegalStateException("Chyba při vytváření detailu záznamu.", e);
+        if (createDetailResource != null) {
+            byte[] data = XmlUtils.transformData(marshallData, createDetailResource);
+            return new String(data, Charset.forName("UTF-8"));
+        } else {
+            return XmlUtils.formatXml(new ByteArrayInputStream(marshallData));
         }
     }
 
@@ -420,7 +431,6 @@ public class InterpiFactory {
         String partyNameFormTypeName = oznaceniTyp.getTyp().value();
         ParPartyNameFormType parPartyNameFormType = partyNameFormTypeRepository.findByName(partyNameFormTypeName);
         if (parPartyNameFormType == null) {
-            parPartyNameFormType = partyNameFormTypeRepository.findAll().iterator().next();
             if (isPreferred) {
                 throw new IllegalStateException("Neznámý název typu formy jména ");
             } else {
@@ -722,5 +732,38 @@ public class InterpiFactory {
         return valuesList.stream().
                 map(v -> (T) v).
                 collect(Collectors.toList());
+    }
+
+    @PostConstruct
+    private void initScripts() {
+        if (!createDetailDefaultResource.exists()) {
+            createDetailResource = null;
+            return;
+        }
+
+        File dirRules = new File(interpiDir);
+        if (!dirRules.exists()) {
+            dirRules.mkdir();
+        }
+
+        File createTransformationFile = new File(FilenameUtils.concat(interpiDir, CREATE_TRANSFORMATION_FILE));
+
+        try {
+            if (!createTransformationFile.exists() || createTransformationFile.lastModified() < createDetailDefaultResource
+                    .lastModified()) {
+                Files.copy(createDetailDefaultResource.getInputStream(), createTransformationFile.toPath(),
+                        StandardCopyOption.REPLACE_EXISTING);
+
+                File copiedFile = new File(createTransformationFile.getAbsolutePath());
+                copiedFile.setLastModified(createDetailDefaultResource.lastModified());
+
+
+                logger.info("Vytvoření souboru " + createTransformationFile.getAbsolutePath());
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Nepodařilo se vytvořit soubor " + createTransformationFile.getAbsolutePath());
+        }
+
+        createDetailResource = new PathResource(createTransformationFile.toPath());
     }
 }

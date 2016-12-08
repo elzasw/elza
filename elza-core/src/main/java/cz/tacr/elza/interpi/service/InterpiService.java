@@ -94,10 +94,11 @@ public class InterpiService {
         RegExternalSystem regExternalSystem = getExternalSystem(systemId);
 
         WssoapSoap client = createClient(regExternalSystem);
+        logger.info("Vyhledávání v interpi: " + query);
         String searchResult = client.findData(query, null, FROM, maxCount,
                 regExternalSystem.getUsername(), regExternalSystem.getPassword());
 
-        SetTyp setTyp = getResult(searchResult);
+        SetTyp setTyp = unmarshall(searchResult);
 
         List<ExternalRecordVO> result = new LinkedList<>();
         for (EntitaTyp entitaTyp : setTyp.getEntita()) {
@@ -139,6 +140,8 @@ public class InterpiService {
         Assert.assertNotNull(interpiRecordId);
         Assert.assertNotNull(scopeId);
         Assert.assertNotNull(systemId);
+
+        logger.info("Import záznamu s identifikátorem " + interpiRecordId + " z interpi.");
 
         RegExternalSystem regExternalSystem = getExternalSystem(systemId);
         SetTyp setTyp = findOneRecord(interpiRecordId, regExternalSystem);
@@ -184,8 +187,9 @@ public class InterpiService {
     private SetTyp findOneRecord(final String id, final RegExternalSystem regExternalSystem) {
         WssoapSoap client = createClient(regExternalSystem);
 
+        logger.info("Načítání záznamu s identifikátorem " + id + " z interpi.");
         String oneRecord = client.getOneRecord(id, regExternalSystem.getUsername(), regExternalSystem.getPassword());
-        SetTyp setTyp = getResult(oneRecord);
+        SetTyp setTyp = unmarshall(oneRecord);
 
         if (setTyp.getEntita().isEmpty()) {
             throw new IllegalStateException("Záznam s identifikátorem " + id + " nebyl nalezen v systému " + regExternalSystem);
@@ -204,7 +208,7 @@ public class InterpiService {
         return regExternalSystem;
     }
 
-    private SetTyp getResult(final String oneRecord) {
+    private SetTyp unmarshall(final String oneRecord) {
         return XmlUtils.unmarshallDataWithIntrospector(oneRecord, SetTyp.class);
     }
 }

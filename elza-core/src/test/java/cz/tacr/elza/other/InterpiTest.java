@@ -23,8 +23,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
 
@@ -59,7 +57,6 @@ import cz.tacr.elza.interpi.ws.wo.ZarazeniTyp;
 import cz.tacr.elza.interpi.ws.wo.ZaznamTyp;
 import cz.tacr.elza.interpi.ws.wo.ZdrojTyp;
 import cz.tacr.elza.repository.RegExternalSystemRepository;
-import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.utils.NoCheckTrustManager;
 import cz.tacr.elza.utils.XmlUtils;
 
@@ -102,12 +99,6 @@ public class InterpiTest extends AbstractControllerTest {
         externalSystem.setUsername(username);
 
         systemId = regExternalSystemRepository.save(externalSystem).getExternalSystemId();
-    }
-
-    public void authenticate() {
-        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken("admin", "admin");
-        token.setDetails(new UserDetail("admin"));
-        SecurityContextHolder.getContext().setAuthentication(token);
     }
 
     @Test
