@@ -96,7 +96,7 @@ export function updateValue(area, data) {
  * @param id id
  * @returns {{type: string, area: *, id: *}}
  */
-function select(area, id) {
+export function select(area, id) {
     return {
         type: SELECT,
         area,

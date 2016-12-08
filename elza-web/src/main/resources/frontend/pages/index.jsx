@@ -9,6 +9,7 @@ exports.ArrDataGridPage = require('pages/arr/ArrDataGridPage.jsx');
 exports.ArrMovementsPage = require('pages/arr/ArrMovementsPage.jsx');
 exports.FundActionPage = require('pages/arr/FundActionPage.jsx');
 exports.ArrOutputPage = require('pages/arr/ArrOutputPage.jsx');
+exports.ArrRequestPage = require('pages/arr/ArrRequestPage.jsx');
 
 exports.RegistryPage = require('pages/registry/RegistryPage.jsx');
 exports.PartyPage = require('pages/party/PartyPage.jsx');

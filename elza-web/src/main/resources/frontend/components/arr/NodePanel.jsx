@@ -293,8 +293,8 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         const {node, versionId} = this.props;
         const nodeId = node.selectedSubNodeId;
 
-        const form = <DigitizationRequestForm nodeId={nodeId} fundVersionId={versionId} onSubmitForm={data => {
-            WebApi.addNodeToDigitization(versionId, nodeId, data.digitizationRequestId, data.description)
+        const form = <DigitizationRequestForm nodeId={nodeId} fundVersionId={versionId} onSubmitForm={(send, data) => {
+            WebApi.addNodeToDigitization(versionId, nodeId, data.digitizationRequestId, send, data.description)
                 .then(() => {
                     this.dispatch(modalDialogHide());
                 });
@@ -661,9 +661,11 @@ return true
                 const focused = a === this.state.focusItemIndex
 
                 let digitizationInfo;
-                if (item.digitizationRequest) {
-                    const name =
-                    digitizationInfo = <div className="digitizationInfo"  title={createDigitizationName(item.digitizationRequest, userDetail)}>
+                if (item.digitizationRequests && item.digitizationRequests.length > 0) {
+                    const title = item.digitizationRequests.map(digReq => {
+                        return createDigitizationName(digReq, userDetail)
+                    });
+                    digitizationInfo = <div className="digitizationInfo" title={title}>
                         <Icon glyph="fa-shopping-basket"/>
                     </div>
                 }

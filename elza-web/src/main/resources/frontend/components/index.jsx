@@ -62,6 +62,7 @@ exports.FundNodesList = require('components/arr/FundNodesList.jsx');
 exports.FundNodesSelectForm = require('components/arr/FundNodesSelectForm.jsx');
 exports.AddOutputForm = require('components/arr/AddOutputForm.jsx');
 exports.ArrOutputDetail = require('components/arr/ArrOutputDetail.jsx');
+exports.ArrRequestDetail = require('components/arr/ArrRequestDetail.jsx');
 exports.FundDataGridCellForm = require('components/arr/FundDataGridCellForm.jsx');
 exports.AddFileForm = require('components/arr/AddFileForm.jsx');
 exports.FundFiles = require('components/arr/FundFiles.jsx');

@@ -28,6 +28,10 @@ import {isFundFilesAction} from 'actions/arr/fundFiles.jsx'
 import {isFundActionAction} from 'actions/arr/fundAction.jsx'
 import {getRoutingKeyType} from 'stores/app/utils.jsx'
 import {isFundOutput} from 'actions/arr/fundOutput.jsx'
+import DetailReducer from "shared/detail/DetailReducer";
+import SimpleListReducer from "shared/list/simple/SimpleListReducer";
+import processAreaStores from "shared/utils/processAreaStores";
+import isCommonArea from "stores/utils/isCommonArea";
 
 export function fundInitState(fundWithVersion) {
     const result = {
@@ -52,6 +56,9 @@ export function fundInitState(fundWithVersion) {
         bulkActions: bulkActions(undefined, {type: ''}),
         versionValidation: versionValidation(undefined, {type: ''}),
         fundNodesError: {}, // zatím jen pomocný, je řešeno ve state
+        requestList: SimpleListReducer(),   // seznam požadavků na digitalizaci
+        requestDetail: DetailReducer(), // detail vybraného požadavku na digitalizaci
+        reducer: fund,
     };
 
     result.fundTreeMovementsLeft = {...result.fundTreeMovementsLeft};
@@ -89,11 +96,14 @@ function updateFundTree(state, action) {
 }
 
 export function fund(state, action) {
+    if (isCommonArea(action.area)) {
+        return processAreaStores(state, action);
+    }
+
     if (isBulkAction(action)) {
         const result = {...state, bulkActions: bulkActions(state.bulkActions, action)}
         return consolidateState(state, result);
     }
-    
     if (isFundActionAction(action)) {
         const result = {...state, fundAction: fundAction(state.fundAction, action)}
         return consolidateState(state, result);
@@ -133,14 +143,15 @@ export function fund(state, action) {
     if (nodeFormActions.isSubNodeFormAction(action, "NODE")) {
         const type = getRoutingKeyType(action.routingKey)
         switch (type) {
-            case 'NODE':{
-                const result = {...state,
+            case 'NODE': {
+                const result = {
+                    ...state,
                     nodes: nodes(state.nodes, action),
                     fundTree: fundTree(state.fundTree, action),
                 }
                 return consolidateState(state, result);
             }
-            case 'DATA_GRID':{
+            case 'DATA_GRID': {
                 const result = {...state, fundDataGrid: fundDataGrid(state.fundDataGrid, action)};
                 return consolidateState(state, result)
             }
@@ -159,7 +170,8 @@ export function fund(state, action) {
         || isSubNodeRegisterAction(action)
         || isDeveloperScenariosAction(action)
     ) {
-        const result = {...state,
+        const result = {
+            ...state,
             nodes: nodes(state.nodes, action),
             fundTree: fundTree(state.fundTree, action),
         }
@@ -167,7 +179,8 @@ export function fund(state, action) {
     }
 
     if (false || isFundChangeAction(action)) {
-        const result = {...state,
+        const result = {
+            ...state,
             nodes: nodes(state.nodes, action),
             fundTree: fundTree(state.fundTree, action),
             fundNodesPolicy: fundNodesPolicy(state.fundNodesPolicy, action),
@@ -197,6 +210,9 @@ export function fund(state, action) {
                 fundAction: fundAction(undefined, {type: ''}),
                 versionValidation: versionValidation(undefined, {type: ''}),
                 fundNodesError: {},
+                requestList: SimpleListReducer(),   // seznam požadavků na digitalizaci
+                requestDetail: DetailReducer(), // detail vybraného požadavku na digitalizaci
+                reducer: fund,
             }
         case types.STORE_SAVE:
             const {id, versionId, name, lockDate} = state;
@@ -217,7 +233,7 @@ export function fund(state, action) {
         case types.OUTPUT_CHANGES:
         case types.OUTPUT_CHANGES_DETAIL:
         case types.OUTPUT_STATE_CHANGE:
-        case types.CHANGE_OUTPUTS:{
+        case types.CHANGE_OUTPUTS: {
             const result = {
                 ...state,
                 fundOutput: fundOutput(state.fundOutput, action),
@@ -232,7 +248,7 @@ export function fund(state, action) {
             }
             return consolidateState(state, result);
         }
-        case types.CHANGE_FUND_ACTION:{
+        case types.CHANGE_FUND_ACTION: {
             const result = {
                 ...state,
                 fundAction: fundAction(state.fundAction, action),
@@ -245,7 +261,7 @@ export function fund(state, action) {
                 ...state,
                 fundPackets: fundPackets(state.fundPackets, action)
             }
-        case types.CHANGE_FILES:{
+        case types.CHANGE_FILES: {
             return {
                 ...state,
                 fundFiles: fundFiles(state.fundFiles, action)
@@ -276,20 +292,21 @@ export function fund(state, action) {
                 ...state,
                 dirty: true,
             }
-        case types.GLOBAL_CONTEXT_MENU_HIDE:{
+        case types.GLOBAL_CONTEXT_MENU_HIDE: {
             const result = {...state};
             updateFundTree(result, action);
             return consolidateState(state, result);
         }
-        case types.FUND_FUND_SELECT_SUBNODE:{
+        case types.FUND_FUND_SELECT_SUBNODE: {
             const result = {...state, nodes: nodes(state.nodes, action)};
             updateFundTree(result, action);
             return consolidateState(state, result);
         }
         case types.FUND_NODE_CHANGE:
         case types.FUND_NODES_RECEIVE:
-        case types.FUND_NODES_REQUEST:{
-            const result = {...state,
+        case types.FUND_NODES_REQUEST: {
+            const result = {
+                ...state,
                 nodes: nodes(state.nodes, action),
                 fundTree: fundTree(state.fundTree, action),
             };
@@ -299,8 +316,9 @@ export function fund(state, action) {
         case types.CHANGE_NODES:
         case types.CHANGE_ADD_LEVEL:
         case types.CHANGE_DELETE_LEVEL:
-        case types.CHANGE_MOVE_LEVEL:{
-            const result = {...state,
+        case types.CHANGE_MOVE_LEVEL: {
+            const result = {
+                ...state,
                 nodes: nodes(state.nodes, action),
                 fundTree: fundTree(state.fundTree, action),
                 fundTreeMovementsLeft: fundTree(state.fundTreeMovementsLeft, action),
@@ -310,7 +328,7 @@ export function fund(state, action) {
             };
             return consolidateState(state, result);
         }
-        case types.CHANGE_CONFORMITY_INFO:{
+        case types.CHANGE_CONFORMITY_INFO: {
             const result = {
                 ...state,
                 fundTree: fundTree(state.fundTree, action),

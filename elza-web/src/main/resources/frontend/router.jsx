@@ -17,6 +17,7 @@ import {
     ArrDataGridPage,
     ArrMovementsPage,
     FundActionPage,
+    ArrRequestPage,
     ArrOutputPage,
     HomePage,
     RegistryPage,
@@ -41,6 +42,7 @@ const routes = <Route name="layout" path="/" component={Layout}>
         <Route path="movements" component={ArrMovementsPage} />
         <Route path="output" component={ArrOutputPage} />
         <Route path="actions" component={FundActionPage} />
+        <Route path="requests" component={ArrRequestPage} />
     </Route>
     <Route path="registry" component={RegistryPage} />
     <Route path="party" component={PartyPage} />

@@ -26,15 +26,15 @@ const DigitizationRequestForm = class extends AbstractReactComponent {
     }
 
     fetchDigitizationRequestList = (prevProps, nextProps) => {
-        this.props.dispatch(digitizationActions.fetchFundListIfNeeded("digitizationRequestList", nextProps.fundVersionId));
+        this.props.dispatch(digitizationActions.fetchPreparedListIfNeeded(nextProps.fundVersionId));
 
-        const digitizationRequestFetched = nextProps.digitizationRequestList.fetched && !nextProps.digitizationRequestList.isFetching;
-        const prevDigitizationRequestFetched = prevProps.digitizationRequestList &&  prevProps.digitizationRequestList.fetched && !prevProps.digitizationRequestList.isFetching;
+        const digitizationRequestFetched = nextProps.preparedDigitizationRequestList.fetched && !nextProps.preparedDigitizationRequestList.isFetching;
+        const prevDigitizationRequestFetched = prevProps.preparedDigitizationRequestList &&  prevProps.preparedDigitizationRequestList.fetched && !prevProps.preparedDigitizationRequestList.isFetching;
         if (!prevDigitizationRequestFetched && digitizationRequestFetched) {    // seznam byl načten, zkusíme vybrat jednu z možností, pokud není nic vybráno
             const {fields: {digitizationRequestId, description}} = nextProps;
-            if (nextProps.digitizationRequestList.rows.length > 0 && digitizationRequestId.value === "") {
-                digitizationRequestId.onChange(nextProps.digitizationRequestList.rows[0].id)
-                description.onChange(nextProps.digitizationRequestList.rows[0].description)
+            if (nextProps.preparedDigitizationRequestList.rows.length > 0 && digitizationRequestId.value === "") {
+                digitizationRequestId.onChange(nextProps.preparedDigitizationRequestList.rows[0].id)
+                description.onChange(nextProps.preparedDigitizationRequestList.rows[0].description)
             }
         }
     }
@@ -50,11 +50,11 @@ const DigitizationRequestForm = class extends AbstractReactComponent {
     ];
 
     handleRequestChange = (e) => {
-        const {digitizationRequestList, fields: {digitizationRequestId, description}} = this.props;
+        const {preparedDigitizationRequestList, fields: {digitizationRequestId, description}} = this.props;
         const id = e.target.value;
 
         if (id !== "") {  // vybrána nějaká možnost, převezmeme z ní popis
-            const digReq = digitizationRequestList.rows[indexById(digitizationRequestList.rows, id)];
+            const digReq = preparedDigitizationRequestList.rows[indexById(preparedDigitizationRequestList.rows, id)];
             digitizationRequestId.onChange(e);
             description.onChange(digReq.description);
         } else {    // vybrána možnost nového požadavku, vynulujeme popis
@@ -64,19 +64,19 @@ const DigitizationRequestForm = class extends AbstractReactComponent {
     }
 
     render() {
-        const {handleSubmit, onSubmitForm, userDetail, digitizationRequestList, onClose, fields: {digitizationRequestId, description}} = this.props;
-        const digitizationRequestFetched = digitizationRequestList.fetched && !digitizationRequestList.isFetching;
+        const {handleSubmit, onSubmitForm, userDetail, preparedDigitizationRequestList, onClose, fields: {digitizationRequestId, description}} = this.props;
+        const digitizationRequestFetched = preparedDigitizationRequestList.fetched && !preparedDigitizationRequestList.isFetching;
 
         const form = (
             <div>
-                <FormInput componentClass="select" {...digitizationRequestId} onChange={this.handleRequestChange} disabled={!digitizationRequestFetched}>
+                <FormInput label={i18n("arr.request.title.digitizationRequest")} componentClass="select" {...digitizationRequestId} onChange={this.handleRequestChange} disabled={!digitizationRequestFetched}>
                     <option key={-1} value="">{i18n('digitizationRequest.title.newRequest')}</option>
-                    {digitizationRequestList.fetched
-                    && !digitizationRequestList.isFetching
-                    && digitizationRequestList.rows.map(digReq => <option value={digReq.id}
+                    {preparedDigitizationRequestList.fetched
+                    && !preparedDigitizationRequestList.isFetching
+                    && preparedDigitizationRequestList.rows.map(digReq => <option value={digReq.id}
                                                                           key={digReq.id}>{createDigitizationName(digReq, userDetail)}</option>)}
                 </FormInput>
-                <FormInput componentClass="textarea" {...description} disabled={!digitizationRequestFetched} />
+                <FormInput label={i18n("arr.request.title.description")} componentClass="textarea" {...description} disabled={!digitizationRequestFetched} />
             </div>
         )
 
@@ -86,7 +86,8 @@ const DigitizationRequestForm = class extends AbstractReactComponent {
                     {form}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit" onClick={handleSubmit(onSubmitForm)}>{i18n('global.action.store')}</Button>
+                    <Button type="submit" onClick={handleSubmit(onSubmitForm.bind(this, false))}>{i18n('global.action.store')}</Button>
+                    <Button type="submit" onClick={handleSubmit(onSubmitForm.bind(this, true))}>{i18n('arr.request.action.storeAndSend')}</Button>
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.close')}</Button>
                 </Modal.Footer>
             </Form>
@@ -101,7 +102,7 @@ function mapStateToProps(state) {
         refTables,
         packets: arrRegion.packets,
         userDetail,
-        digitizationRequestList: state.app.digitizationRequestList
+        preparedDigitizationRequestList: state.app.preparedDigitizationRequestList
     }
 }
 

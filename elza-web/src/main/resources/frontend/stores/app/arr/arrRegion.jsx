@@ -1,9 +1,7 @@
  import * as types from 'actions/constants/ActionTypes.js';
 import {indexById, selectedAfterClose} from 'stores/app/utils.jsx'
 
-import nodes from './nodes.jsx'
 import {fund, fundInitState} from './fund.jsx'
-import fundTree from './fundTree.jsx'
 import nodeSetting from './nodeSetting.jsx'
 import visiblePolicy from './visiblePolicy.jsx'
 import {consolidateState} from 'components/Utils.jsx'
@@ -26,8 +24,10 @@ import {isFundFilesAction} from 'actions/arr/fundFiles.jsx'
 import {isFundActionAction} from 'actions/arr/fundAction.jsx'
 import {isFundOutput} from 'actions/arr/fundOutput.jsx'
 import {isFundOutputFilesAction} from 'actions/arr/fundOutputFiles.jsx'
+import processAreaStores from "shared/utils/processAreaStores";
+ import isCommonArea from "stores/utils/isCommonArea";
 
-const initialState = {
+ const initialState = {
     activeIndex: null,
     nodeSettings: nodeSetting(undefined, {}),
     extendedView: false,
@@ -69,6 +69,12 @@ function processFund(state, action, index) {
 }
 
 export default function arrRegion(state = initialState, action) {
+    if (isCommonArea(action.area)) {
+        if (action.area.startsWith("fund[")) { // area pro zpracování na předaný fund, ten zde můžeme zpracovat
+            return processAreaStores(state, action);
+        }
+    }
+
     if (false
         || isBulkAction(action)
         || isFundTreeAction(action)

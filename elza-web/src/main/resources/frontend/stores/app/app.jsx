@@ -10,7 +10,7 @@ function getPartyListDataKey() { return this.filter.type+"-"+this.filter.text };
 const initialState = {
     partyList: SimpleListReducer(undefined, undefined, {getPartyListDataKey, filter:{text:null, type:null}}),
     partyDetail: DetailReducer(),
-    digitizationRequestList: SimpleListReducer(),
+    preparedDigitizationRequestList: SimpleListReducer(),   // seznam neodeslaných požadavků na digitalizaci - sdíleno pro celou aplikaci
 };
 
 export default function app(state = initialState, action) {

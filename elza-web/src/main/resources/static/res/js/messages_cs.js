@@ -92,6 +92,7 @@ var messages = {
     "ribbon.action.arr.output.revert": "Vrátit do přípravy",
     "ribbon.action.arr.output.clone": "Vytvořit kopii",
     "ribbon.action.arr.fund.add": "Nový AS",
+    "ribbon.action.arr.fund.requests": "Požadavky",
     "ribbon.action.arr.fund.update": "Upravit vlastnosti",
     "ribbon.action.arr.fund.approve": "Nová verze AS",
     "ribbon.action.arr.fund.ruleSet": "Změnit pravidla",
@@ -808,6 +809,21 @@ var messages = {
 
     "digitizationRequest.form.title": "Požadavek na digitalizát",
     "digitizationRequest.title.newRequest": "Nový",
+    "arr.request.action.storeAndSend": "Uložit a odeslat",
+    "arr.request.title.digitizationRequest": "Požadavek",
+    "arr.request.title.created": "Vytvořen",
+    "arr.request.title.type": "Typ",
+    "arr.request.title.description": "Komentář",
+    "arr.request.noSelection.title" : "Není vybrán požadavek na digitalizaci",
+    "arr.request.noSelection.message" : "Prosím vyberte požadavek na digitalizaci ze seznamu.",
+    "arr.request.title.state": "Stav",
+    "arr.request.title.nodes": "Seznam jednotek popisu",
+    "arr.request.title.nodesAdded": "JP byly přidány",
+    "arr.request.title.type.DIGITIZATION_REQUEST": "Požadavek na digitalizaci",
+    "arr.request.title.type.DESTRUCTION": "Požadavek na skartaci",
+    "arr.request.title.type.TRANSFER": "Požadavek na dalimitaci",
+    "arr.request.title.type.LINK": "Požadavek na připojení k JP",
+    "arr.request.title.type.UNLINK": "Požadavek na odpojení od JP",
 
     "____": ""
 };
