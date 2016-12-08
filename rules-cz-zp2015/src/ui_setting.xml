@@ -1,7 +1,4 @@
 <settings>
-    <record>
-        <scope-code>GLOBAL</scope-code>
-    </record>
     <fund-views code="ZP2015">
         <default>
             <title>&lt;Není nastaveno&gt;</title>
