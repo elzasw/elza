@@ -636,7 +636,7 @@
         <view-order>18</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_1" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - blíže neurčené</name>
+        <name>blíže neurčené (indoevropské)</name>
         <description>indoevropské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
@@ -645,7 +645,7 @@
         <view-order>1</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_2" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - baltské - blíže neurčené</name>
+        <name>blíže neurčené (baltské)</name>
         <description>indoevropské - baltské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
@@ -655,7 +655,7 @@
         <view-order>2</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_3" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - baltské - litevština</name>
+        <name>litevština</name>
         <description>indoevropské - baltské - litevština</description>
         <shortcut>litevština</shortcut>
         <categories>
@@ -665,7 +665,7 @@
         <view-order>3</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_4" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - baltské - lotyština</name>
+        <name>lotyština</name>
         <description>indoevropské - baltské - lotyština</description>
         <shortcut>lotyština</shortcut>
         <categories>
@@ -675,7 +675,7 @@
         <view-order>4</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_5" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - germánské - blíže neurčené</name>
+        <name>blíže neurčené (germánské)</name>
         <description>indoevropské - germánské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
@@ -685,7 +685,7 @@
         <view-order>5</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_6" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - germánské - afrikánština</name>
+        <name>afrikánština</name>
         <description>indoevropské - germánské - afrikánština</description>
         <shortcut>afrikánština</shortcut>
         <categories>
@@ -695,7 +695,7 @@
         <view-order>6</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_7" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - germánské - alsaština</name>
+        <name>alsaština</name>
         <description>indoevropské - germánské - alsaština</description>
         <shortcut>alsaština</shortcut>
         <categories>
@@ -705,7 +705,7 @@
         <view-order>7</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_8" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - germánské - angličtina</name>
+        <name>angličtina</name>
         <description>indoevropské - germánské - angličtina</description>
         <shortcut>angličtina</shortcut>
         <categories>
@@ -715,7 +715,7 @@
         <view-order>8</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_9" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - germánské - dánština</name>
+        <name>dánština</name>
         <description>indoevropské - germánské - dánština</description>
         <shortcut>dánština</shortcut>
         <categories>
@@ -725,7 +725,7 @@
         <view-order>9</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_10" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - germánské - dolnoněmčina</name>
+        <name>dolnoněmčina</name>
         <description>indoevropské - germánské - dolnoněmčina</description>
         <shortcut>dolnoněmčina</shortcut>
         <categories>
@@ -735,7 +735,7 @@
         <view-order>10</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_11" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - germánské - faerština</name>
+        <name>faerština</name>
         <description>indoevropské - germánské - faerština</description>
         <shortcut>faerština</shortcut>
         <categories>
@@ -745,7 +745,7 @@
         <view-order>11</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_12" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - germánské - fríština</name>
+        <name>fríština</name>
         <description>indoevropské - germánské - fríština</description>
         <shortcut>fríština</shortcut>
         <categories>
@@ -755,7 +755,7 @@
         <view-order>12</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_13" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - germánské - holandština (nizozemština)</name>
+        <name>holandština (nizozemština)</name>
         <description>indoevropské - germánské - holandština (nizozemština)</description>
         <shortcut>holandština (nizozemština)</shortcut>
         <categories>
@@ -765,7 +765,7 @@
         <view-order>13</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_14" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - germánské - islandština</name>
+        <name>islandština</name>
         <description>indoevropské - germánské - islandština</description>
         <shortcut>islandština</shortcut>
         <categories>
@@ -775,7 +775,7 @@
         <view-order>14</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_15" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - germánské - jidiš</name>
+        <name>jidiš</name>
         <description>indoevropské - germánské - jidiš</description>
         <shortcut>jidiš</shortcut>
         <categories>
@@ -785,7 +785,7 @@
         <view-order>15</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_16" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - germánské - judendeutsch</name>
+        <name>judendeutsch</name>
         <description>indoevropské - germánské - judendeutsch</description>
         <shortcut>judendeutsch</shortcut>
         <categories>
@@ -795,7 +795,7 @@
         <view-order>16</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_17" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - germánské - lucemburština</name>
+        <name>lucemburština</name>
         <description>indoevropské - germánské - lucemburština</description>
         <shortcut>lucemburština</shortcut>
         <categories>
@@ -805,7 +805,7 @@
         <view-order>17</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_18" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - germánské - němčina</name>
+        <name>němčina</name>
         <description>indoevropské - germánské - němčina</description>
         <shortcut>němčina</shortcut>
         <categories>
@@ -815,7 +815,7 @@
         <view-order>18</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_19" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - germánské - norština</name>
+        <name>norština</name>
         <description>indoevropské - germánské - norština</description>
         <shortcut>norština</shortcut>
         <categories>
@@ -825,7 +825,7 @@
         <view-order>19</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_20" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - germánské - švédština</name>
+        <name>švédština</name>
         <description>indoevropské - germánské - švédština</description>
         <shortcut>švédština</shortcut>
         <categories>
@@ -835,7 +835,7 @@
         <view-order>20</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_21" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - keltské - blíže neurčené</name>
+        <name>blíže neurčené (keltské)</name>
         <description>indoevropské - keltské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
@@ -845,7 +845,7 @@
         <view-order>21</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_22" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - keltské - bretonština</name>
+        <name>bretonština</name>
         <description>indoevropské - keltské - bretonština</description>
         <shortcut>bretonština</shortcut>
         <categories>
@@ -855,7 +855,7 @@
         <view-order>22</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_23" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - keltské - irština</name>
+        <name>irština</name>
         <description>indoevropské - keltské - irština</description>
         <shortcut>irština</shortcut>
         <categories>
@@ -865,7 +865,7 @@
         <view-order>23</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_24" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - keltské - skotská gaelština</name>
+        <name>skotská gaelština</name>
         <description>indoevropské - keltské - skotská gaelština</description>
         <shortcut>skotská gaelština</shortcut>
         <categories>
@@ -875,7 +875,7 @@
         <view-order>24</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_25" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - keltské - velština</name>
+        <name>velština</name>
         <description>indoevropské - keltské - velština</description>
         <shortcut>velština</shortcut>
         <categories>
@@ -885,7 +885,7 @@
         <view-order>25</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_26" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - románské - blíže neurčené</name>
+        <name>blíže neurčené (románské)</name>
         <description>indoevropské - románské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
@@ -895,7 +895,7 @@
         <view-order>26</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_27" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - románské - francouzština</name>
+        <name>francouzština</name>
         <description>indoevropské - románské - francouzština</description>
         <shortcut>francouzština</shortcut>
         <categories>
@@ -905,7 +905,7 @@
         <view-order>27</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_28" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - románské - galicijština</name>
+        <name>galicijština</name>
         <description>indoevropské - románské - galicijština</description>
         <shortcut>galicijština</shortcut>
         <categories>
@@ -915,7 +915,7 @@
         <view-order>28</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_29" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - románské - italština</name>
+        <name>italština</name>
         <description>indoevropské - románské - italština</description>
         <shortcut>italština</shortcut>
         <categories>
@@ -925,7 +925,7 @@
         <view-order>29</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_30" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - románské - katalánština</name>
+        <name>katalánština</name>
         <description>indoevropské - románské - katalánština</description>
         <shortcut>katalánština</shortcut>
         <categories>
@@ -935,7 +935,7 @@
         <view-order>30</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_31" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - románské - korsičtina</name>
+        <name>korsičtina</name>
         <description>indoevropské - románské - korsičtina</description>
         <shortcut>korsičtina</shortcut>
         <categories>
@@ -945,7 +945,7 @@
         <view-order>31</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_32" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - románské - latina</name>
+        <name>latina</name>
         <description>indoevropské - románské - latina</description>
         <shortcut>latina</shortcut>
         <categories>
@@ -955,7 +955,7 @@
         <view-order>32</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_33" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - románské - moldavština</name>
+        <name>moldavština</name>
         <description>indoevropské - románské - moldavština</description>
         <shortcut>moldavština</shortcut>
         <categories>
@@ -965,7 +965,7 @@
         <view-order>33</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_34" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - románské - okcitánština</name>
+        <name>okcitánština</name>
         <description>indoevropské - románské - okcitánština</description>
         <shortcut>okcitánština</shortcut>
         <categories>
@@ -975,7 +975,7 @@
         <view-order>34</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_35" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - románské - portugalština</name>
+        <name>portugalština</name>
         <description>indoevropské - románské - portugalština</description>
         <shortcut>portugalština</shortcut>
         <categories>
@@ -985,7 +985,7 @@
         <view-order>35</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_36" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - románské - rétorománština</name>
+        <name>rétorománština</name>
         <description>indoevropské - románské - rétorománština</description>
         <shortcut>rétorománština</shortcut>
         <categories>
@@ -995,7 +995,7 @@
         <view-order>36</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_37" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - románské - rumunština</name>
+        <name>rumunština</name>
         <description>indoevropské - románské - rumunština</description>
         <shortcut>rumunština</shortcut>
         <categories>
@@ -1005,7 +1005,7 @@
         <view-order>37</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_38" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - románské - španělština</name>
+        <name>španělština</name>
         <description>indoevropské - románské - španělština</description>
         <shortcut>španělština</shortcut>
         <categories>
@@ -1015,7 +1015,7 @@
         <view-order>38</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_39" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - slovanské - blíže neurčené</name>
+        <name>blíže neurčené (slovanské)</name>
         <description>indoevropské - slovanské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
@@ -1025,7 +1025,7 @@
         <view-order>39</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_40" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - slovanské - běloruština</name>
+        <name>běloruština</name>
         <description>indoevropské - slovanské - běloruština</description>
         <shortcut>běloruština</shortcut>
         <categories>
@@ -1035,7 +1035,7 @@
         <view-order>40</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_41" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - slovanské - bosenština</name>
+        <name>bosenština</name>
         <description>indoevropské - slovanské - bosenština</description>
         <shortcut>bosenština</shortcut>
         <categories>
@@ -1045,7 +1045,7 @@
         <view-order>41</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_42" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - slovanské - bulharština</name>
+        <name>bulharština</name>
         <description>indoevropské - slovanské - bulharština</description>
         <shortcut>bulharština</shortcut>
         <categories>
@@ -1055,7 +1055,7 @@
         <view-order>42</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_43" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - slovanské - čeština</name>
+        <name>čeština</name>
         <description>indoevropské - slovanské - čeština</description>
         <shortcut>čeština</shortcut>
         <categories>
@@ -1065,7 +1065,7 @@
         <view-order>43</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_44" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - slovanské - chorvatština</name>
+        <name>chorvatština</name>
         <description>indoevropské - slovanské - chorvatština</description>
         <shortcut>chorvatština</shortcut>
         <categories>
@@ -1075,7 +1075,7 @@
         <view-order>44</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_45" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - slovanské - kašubština</name>
+        <name>kašubština</name>
         <description>indoevropské - slovanské - kašubština</description>
         <shortcut>kašubština</shortcut>
         <categories>
@@ -1085,7 +1085,7 @@
         <view-order>45</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_46" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - slovanské - lužická srbština dolní (dolnolužičtina)</name>
+        <name>lužická srbština dolní (dolnolužičtina)</name>
         <description>indoevropské - slovanské - lužická srbština dolní (dolnolužičtina)</description>
         <shortcut>lužická srbština dolní (dolnolužičtina)</shortcut>
         <categories>
@@ -1095,7 +1095,7 @@
         <view-order>46</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_47" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - slovanské - lužická srbština horní (hornolužičtina)</name>
+        <name>lužická srbština horní (hornolužičtina)</name>
         <description>indoevropské - slovanské - lužická srbština horní (hornolužičtina)</description>
         <shortcut>lužická srbština horní (hornolužičtina)</shortcut>
         <categories>
@@ -1105,7 +1105,7 @@
         <view-order>47</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_48" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - slovanské - makedonština</name>
+        <name>makedonština</name>
         <description>indoevropské - slovanské - makedonština</description>
         <shortcut>makedonština</shortcut>
         <categories>
@@ -1115,7 +1115,7 @@
         <view-order>48</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_49" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - slovanské - polština</name>
+        <name>polština</name>
         <description>indoevropské - slovanské - polština</description>
         <shortcut>polština</shortcut>
         <categories>
@@ -1125,7 +1125,7 @@
         <view-order>49</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_50" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - slovanské - rusínština</name>
+        <name>rusínština</name>
         <description>indoevropské - slovanské - rusínština</description>
         <shortcut>rusínština</shortcut>
         <categories>
@@ -1135,7 +1135,7 @@
         <view-order>50</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_51" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - slovanské - ruština</name>
+        <name>ruština</name>
         <description>indoevropské - slovanské - ruština</description>
         <shortcut>ruština</shortcut>
         <categories>
@@ -1145,7 +1145,7 @@
         <view-order>51</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_52" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - slovanské - slovenština</name>
+        <name>slovenština</name>
         <description>indoevropské - slovanské - slovenština</description>
         <shortcut>slovenština</shortcut>
         <categories>
@@ -1155,7 +1155,7 @@
         <view-order>52</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_53" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - slovanské - slovinština</name>
+        <name>slovinština</name>
         <description>indoevropské - slovanské - slovinština</description>
         <shortcut>slovinština</shortcut>
         <categories>
@@ -1165,7 +1165,7 @@
         <view-order>53</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_54" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - slovanské - srbochorvatština</name>
+        <name>srbochorvatština</name>
         <description>indoevropské - slovanské - srbochorvatština</description>
         <shortcut>srbochorvatština</shortcut>
         <categories>
@@ -1175,7 +1175,7 @@
         <view-order>54</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_55" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - slovanské - srbština</name>
+        <name>srbština</name>
         <description>indoevropské - slovanské - srbština</description>
         <shortcut>srbština</shortcut>
         <categories>
@@ -1185,7 +1185,7 @@
         <view-order>55</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_56" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - slovanské - staroslověnština, církevní slovanština</name>
+        <name>staroslověnština, církevní slovanština</name>
         <description>indoevropské - slovanské - staroslověnština, církevní slovanština</description>
         <shortcut>staroslověnština, církevní slovanština</shortcut>
         <view-order>56</view-order>
@@ -1195,7 +1195,7 @@
         </categories>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_57" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - slovanské - ukrajinština</name>
+        <name>ukrajinština</name>
         <description>indoevropské - slovanské - ukrajinština</description>
         <shortcut>ukrajinština</shortcut>
         <categories>
@@ -1205,7 +1205,7 @@
         <view-order>57</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_58" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - ostatní - blíže neurčené</name>
+        <name>blíže neurčené (indoevropské - ostatní)</name>
         <description>indoevropské - ostatní - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
@@ -1215,7 +1215,7 @@
         <view-order>58</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_59" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - ostatní - albánština</name>
+        <name>albánština</name>
         <description>indoevropské - ostatní - albánština</description>
         <shortcut>albánština</shortcut>
         <categories>
@@ -1225,7 +1225,7 @@
         <view-order>59</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_60" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - ostatní - arménština</name>
+        <name>arménština</name>
         <description>indoevropské - ostatní - arménština</description>
         <shortcut>arménština</shortcut>
         <categories>
@@ -1235,7 +1235,7 @@
         <view-order>60</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_61" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - ostatní - řečtina</name>
+        <name>řečtina</name>
         <description>indoevropské - ostatní - řečtina</description>
         <shortcut>řečtina</shortcut>
         <categories>
@@ -1245,7 +1245,7 @@
         <view-order>61</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_62" item-type="ZP2015_LANGUAGE">
-        <name>uralské - blíže neurčené</name>
+        <name>blíže neurčené (uralské)</name>
         <description>uralské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
@@ -1254,7 +1254,7 @@
         <view-order>62</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_63" item-type="ZP2015_LANGUAGE">
-        <name>uralské - estonština</name>
+        <name>estonština</name>
         <description>uralské - estonština</description>
         <shortcut>estonština</shortcut>
         <categories>
@@ -1263,7 +1263,7 @@
         <view-order>63</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_64" item-type="ZP2015_LANGUAGE">
-        <name>uralské - finština</name>
+        <name>finština</name>
         <description>uralské - finština</description>
         <shortcut>finština</shortcut>
         <categories>
@@ -1272,7 +1272,7 @@
         <view-order>64</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_65" item-type="ZP2015_LANGUAGE">
-        <name>uralské - maďarština</name>
+        <name>maďarština</name>
         <description>uralské - maďarština</description>
         <shortcut>maďarština</shortcut>
         <categories>
@@ -1281,7 +1281,7 @@
         <view-order>65</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_66" item-type="ZP2015_LANGUAGE">
-        <name>uralské - livština</name>
+        <name>livština</name>
         <description>uralské - livština</description>
         <shortcut>livština</shortcut>
         <categories>
@@ -1290,7 +1290,7 @@
         <view-order>66</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_67" item-type="ZP2015_LANGUAGE">
-        <name>izolované - baskičtina</name>
+        <name>baskičtina</name>
         <description>izolované - baskičtina</description>
         <shortcut>baskičtina</shortcut>
         <categories>
@@ -1299,7 +1299,7 @@
         <view-order>67</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_68" item-type="ZP2015_LANGUAGE">
-        <name>afroasijské - blíže neurčené</name>
+        <name>blíže neurčené (afroasijské)</name>
         <description>afroasijské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
@@ -1308,7 +1308,7 @@
         <view-order>68</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_69" item-type="ZP2015_LANGUAGE">
-        <name>afroasijské - semitské - blíže neurčené</name>
+        <name>blíže neurčené (semitské)</name>
         <description>afroasijské - semitské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
@@ -1318,7 +1318,7 @@
         <view-order>69</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_70" item-type="ZP2015_LANGUAGE">
-        <name>afroasijské - semitské - (novo)hebrejština</name>
+        <name>(novo)hebrejština</name>
         <description>afroasijské - semitské - (novo)hebrejština</description>
         <shortcut>(novo)hebrejština</shortcut>
         <categories>
@@ -1328,7 +1328,7 @@
         <view-order>70</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_71" item-type="ZP2015_LANGUAGE">
-        <name>afroasijské - semitské - amharština</name>
+        <name>amharština</name>
         <description>afroasijské - semitské - amharština</description>
         <shortcut>amharština</shortcut>
         <categories>
@@ -1338,7 +1338,7 @@
         <view-order>71</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_72" item-type="ZP2015_LANGUAGE">
-        <name>afroasijské - semitské - arabština</name>
+        <name>arabština</name>
         <description>afroasijské - semitské - arabština</description>
         <shortcut>arabština</shortcut>
         <categories>
@@ -1348,7 +1348,7 @@
         <view-order>72</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_73" item-type="ZP2015_LANGUAGE">
-        <name>afroasijské - semitské - aramejština</name>
+        <name>aramejština</name>
         <description>afroasijské - semitské - aramejština</description>
         <shortcut>aramejština</shortcut>
         <categories>
@@ -1358,7 +1358,7 @@
         <view-order>73</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_74" item-type="ZP2015_LANGUAGE">
-        <name>afroasijské - semitské - hauština</name>
+        <name>hauština</name>
         <description>afroasijské - semitské - hauština</description>
         <shortcut>hauština</shortcut>
         <categories>
@@ -1368,7 +1368,7 @@
         <view-order>74</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_75" item-type="ZP2015_LANGUAGE">
-        <name>afroasijské - semitské - maltština</name>
+        <name>maltština</name>
         <description>afroasijské - semitské - maltština</description>
         <shortcut>maltština</shortcut>
         <categories>
@@ -1378,7 +1378,7 @@
         <view-order>75</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_76" item-type="ZP2015_LANGUAGE">
-        <name>afroasijské - semitské - stará hebrejština</name>
+        <name>stará hebrejština</name>
         <description>afroasijské - semitské - stará hebrejština</description>
         <shortcut>stará hebrejština</shortcut>
         <categories>
@@ -1388,7 +1388,7 @@
         <view-order>76</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_77" item-type="ZP2015_LANGUAGE">
-        <name>afroasijské - semitské - akkadština</name>
+        <name>akkadština</name>
         <description>afroasijské - semitské - akkadština</description>
         <shortcut>akkadština</shortcut>
         <categories>
@@ -1398,7 +1398,7 @@
         <view-order>77</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_78" item-type="ZP2015_LANGUAGE">
-        <name>afroasijské - semitské - assyrština</name>
+        <name>assyrština</name>
         <description>afroasijské - semitské - assyrština</description>
         <shortcut>assyrština</shortcut>
         <categories>
@@ -1408,7 +1408,7 @@
         <view-order>78</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_79" item-type="ZP2015_LANGUAGE">
-        <name>afroasijské - semitské - babylonština</name>
+        <name>babylonština</name>
         <description>afroasijské - semitské - babylonština</description>
         <shortcut>babylonština</shortcut>
         <categories>
@@ -1418,7 +1418,7 @@
         <view-order>79</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_80" item-type="ZP2015_LANGUAGE">
-        <name>afroasijské - semitské - chetitština</name>
+        <name>chetitština</name>
         <description>afroasijské - semitské - chetitština</description>
         <shortcut>chetitština</shortcut>
         <categories>
@@ -1428,7 +1428,7 @@
         <view-order>80</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_81" item-type="ZP2015_LANGUAGE">
-        <name>afroasijské - semitské - sumerština</name>
+        <name>sumerština</name>
         <description>afroasijské - semitské - sumerština</description>
         <shortcut>sumerština</shortcut>
         <categories>
@@ -1438,7 +1438,7 @@
         <view-order>81</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_82" item-type="ZP2015_LANGUAGE">
-        <name>afroasijské - egyptština</name>
+        <name>egyptština</name>
         <description>afroasijské - egyptština</description>
         <shortcut>egyptština</shortcut>
         <categories>
@@ -1447,7 +1447,7 @@
         <view-order>82</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_83" item-type="ZP2015_LANGUAGE">
-        <name>afroasijské - koptština</name>
+        <name>koptština</name>
         <description>afroasijské - koptština</description>
         <shortcut>koptština</shortcut>
         <categories>
@@ -1456,7 +1456,7 @@
         <view-order>83</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_84" item-type="ZP2015_LANGUAGE">
-        <name>nigerokonžské - blíže neurčené</name>
+        <name>blíže neurčené (nigerokonžské)</name>
         <description>nigerokonžské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
@@ -1465,7 +1465,7 @@
         <view-order>84</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_85" item-type="ZP2015_LANGUAGE">
-        <name>nigerokonžské - svahilština</name>
+        <name>svahilština</name>
         <description>nigerokonžské - svahilština</description>
         <shortcut>svahilština</shortcut>
         <categories>
@@ -1474,7 +1474,7 @@
         <view-order>85</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_86" item-type="ZP2015_LANGUAGE">
-        <name>altajské - blíže neurčené</name>
+        <name>blíže neurčené (altajské)</name>
         <description>altajské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
@@ -1483,7 +1483,7 @@
         <view-order>86</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_87" item-type="ZP2015_LANGUAGE">
-        <name>altajské - japonština</name>
+        <name>japonština</name>
         <description>altajské - japonština</description>
         <shortcut>japonština</shortcut>
         <categories>
@@ -1492,7 +1492,7 @@
         <view-order>87</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_88" item-type="ZP2015_LANGUAGE">
-        <name>altajské - korejština</name>
+        <name>korejština</name>
         <description>altajské - korejština</description>
         <shortcut>korejština</shortcut>
         <categories>
@@ -1501,7 +1501,7 @@
         <view-order>88</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_89" item-type="ZP2015_LANGUAGE">
-        <name>altajské - mongolské - blíže neurčené</name>
+        <name>blíže neurčené (mongolské)</name>
         <description>altajské - mongolské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
@@ -1511,7 +1511,7 @@
         <view-order>89</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_90" item-type="ZP2015_LANGUAGE">
-        <name>altajské - mongolské - mongolština</name>
+        <name>mongolština</name>
         <description>altajské - mongolské - mongolština</description>
         <shortcut>mongolština</shortcut>
         <categories>
@@ -1521,7 +1521,7 @@
         <view-order>90</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_91" item-type="ZP2015_LANGUAGE">
-        <name>altajské - turkické - blíže neurčené</name>
+        <name>blíže neurčené (turkické)</name>
         <description>altajské - turkické - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
@@ -1531,7 +1531,7 @@
         <view-order>91</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_92" item-type="ZP2015_LANGUAGE">
-        <name>altajské - turkické - azerbajdžánština</name>
+        <name>azerbajdžánština</name>
         <description>altajské - turkické - azerbajdžánština</description>
         <shortcut>azerbajdžánština</shortcut>
         <categories>
@@ -1541,7 +1541,7 @@
         <view-order>92</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_93" item-type="ZP2015_LANGUAGE">
-        <name>altajské - turkické - baškirština</name>
+        <name>baškirština</name>
         <description>altajské - turkické - baškirština</description>
         <shortcut>baškirština</shortcut>
         <categories>
@@ -1551,7 +1551,7 @@
         <view-order>93</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_94" item-type="ZP2015_LANGUAGE">
-        <name>altajské - turkické - gagauzština</name>
+        <name>gagauzština</name>
         <description>altajské - turkické - gagauzština</description>
         <shortcut>gagauzština</shortcut>
         <categories>
@@ -1561,7 +1561,7 @@
         <view-order>94</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_95" item-type="ZP2015_LANGUAGE">
-        <name>altajské - turkické - hazarština</name>
+        <name>hazarština</name>
         <description>altajské - turkické - hazarština</description>
         <shortcut>hazarština</shortcut>
         <categories>
@@ -1571,7 +1571,7 @@
         <view-order>95</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_96" item-type="ZP2015_LANGUAGE">
-        <name>altajské - turkické - kyrgyzština</name>
+        <name>kyrgyzština</name>
         <description>altajské - turkické - kyrgyzština</description>
         <shortcut>kyrgyzština</shortcut>
         <categories>
@@ -1581,7 +1581,7 @@
         <view-order>96</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_97" item-type="ZP2015_LANGUAGE">
-        <name>altajské - turkické - krymská tatarština</name>
+        <name>krymská tatarština</name>
         <description>altajské - turkické - krymská tatarština</description>
         <shortcut>krymská tatarština</shortcut>
         <categories>
@@ -1591,7 +1591,7 @@
         <view-order>97</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_98" item-type="ZP2015_LANGUAGE">
-        <name>altajské - turkické - tatarština</name>
+        <name>tatarština</name>
         <description>altajské - turkické - tatarština</description>
         <shortcut>tatarština</shortcut>
         <categories>
@@ -1601,7 +1601,7 @@
         <view-order>98</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_99" item-type="ZP2015_LANGUAGE">
-        <name>altajské - turkické - turečtina</name>
+        <name>turečtina</name>
         <description>altajské - turkické - turečtina</description>
         <shortcut>turečtina</shortcut>
         <categories>
@@ -1611,7 +1611,7 @@
         <view-order>99</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_100" item-type="ZP2015_LANGUAGE">
-        <name>altajské - turkické - turkménština</name>
+        <name>turkménština</name>
         <description>altajské - turkické - turkménština</description>
         <shortcut>turkménština</shortcut>
         <categories>
@@ -1621,7 +1621,7 @@
         <view-order>100</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_101" item-type="ZP2015_LANGUAGE">
-        <name>altajské - turkické - ujgurština</name>
+        <name>ujgurština</name>
         <description>altajské - turkické - ujgurština</description>
         <shortcut>ujgurština</shortcut>
         <categories>
@@ -1631,7 +1631,7 @@
         <view-order>101</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_102" item-type="ZP2015_LANGUAGE">
-        <name>altajské - turkické - uzbečtina</name>
+        <name>uzbečtina</name>
         <description>altajské - turkické - uzbečtina</description>
         <shortcut>uzbečtina</shortcut>
         <categories>
@@ -1641,7 +1641,7 @@
         <view-order>102</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_103" item-type="ZP2015_LANGUAGE">
-        <name>austroasijské - blíže neurčené</name>
+        <name>blíže neurčené (austroasijské)</name>
         <description>austroasijské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
@@ -1650,7 +1650,7 @@
         <view-order>103</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_104" item-type="ZP2015_LANGUAGE">
-        <name>austroasijské - mundské - santalština</name>
+        <name>santalština</name>
         <description>austroasijské - mundské - santalština</description>
         <shortcut>santalština</shortcut>
         <categories>
@@ -1660,7 +1660,7 @@
         <view-order>104</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_105" item-type="ZP2015_LANGUAGE">
-        <name>austroasijské - khmérština</name>
+        <name>khmérština</name>
         <description>austroasijské - khmérština</description>
         <shortcut>khmérština</shortcut>
         <categories>
@@ -1669,7 +1669,7 @@
         <view-order>105</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_106" item-type="ZP2015_LANGUAGE">
-        <name>austroasijské - vietnamština</name>
+        <name>vietnamština</name>
         <description>austroasijské - vietnamština</description>
         <shortcut>vietnamština</shortcut>
         <categories>
@@ -1678,7 +1678,7 @@
         <view-order>106</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_107" item-type="ZP2015_LANGUAGE">
-        <name>austronéské - blíže neurčené</name>
+        <name>blíže neurčené (austronéské)</name>
         <description>austronéské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
@@ -1687,7 +1687,7 @@
         <view-order>107</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_108" item-type="ZP2015_LANGUAGE">
-        <name>austronéské - indonéština</name>
+        <name>indonéština</name>
         <description>austronéské - indonéština</description>
         <shortcut>indonéština</shortcut>
         <categories>
@@ -1696,7 +1696,7 @@
         <view-order>108</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_109" item-type="ZP2015_LANGUAGE">
-        <name>austronéské - malajština</name>
+        <name>malajština</name>
         <description>austronéské - malajština</description>
         <shortcut>malajština</shortcut>
         <categories>
@@ -1705,7 +1705,7 @@
         <view-order>109</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_110" item-type="ZP2015_LANGUAGE">
-        <name>drávidské - blíže neurčené</name>
+        <name>blíže neurčené (drávidské)</name>
         <description>drávidské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
@@ -1714,7 +1714,7 @@
         <view-order>110</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_111" item-type="ZP2015_LANGUAGE">
-        <name>drávidské - kannadština (též kannarština)</name>
+        <name>kannadština (též kannarština)</name>
         <description>drávidské - kannadština (též kannarština)</description>
         <shortcut>kannadština (též kannarština)</shortcut>
         <categories>
@@ -1723,7 +1723,7 @@
         <view-order>111</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_112" item-type="ZP2015_LANGUAGE">
-        <name>drávidské - malajalámština</name>
+        <name>malajalámština</name>
         <description>drávidské - malajalámština</description>
         <shortcut>malajalámština</shortcut>
         <categories>
@@ -1732,7 +1732,7 @@
         <view-order>112</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_113" item-type="ZP2015_LANGUAGE">
-        <name>drávidské - tamilština</name>
+        <name>tamilština</name>
         <description>drávidské - tamilština</description>
         <shortcut>tamilština</shortcut>
         <categories>
@@ -1741,7 +1741,7 @@
         <view-order>113</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_114" item-type="ZP2015_LANGUAGE">
-        <name>drávidské - telugština</name>
+        <name>telugština</name>
         <description>drávidské - telugština</description>
         <shortcut>telugština</shortcut>
         <categories>
@@ -1750,7 +1750,7 @@
         <view-order>114</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_115" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - indoárijské - blíže neurčené</name>
+        <name>blíže neurčené (indoárijské)</name>
         <description>indoevropské - indoárijské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
@@ -1760,7 +1760,7 @@
         <view-order>115</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_116" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - indoárijské - asámština</name>
+        <name>asámština</name>
         <description>indoevropské - indoárijské - asámština</description>
         <shortcut>asámština</shortcut>
         <categories>
@@ -1770,7 +1770,7 @@
         <view-order>116</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_117" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - indoárijské - bengálština</name>
+        <name>bengálština</name>
         <description>indoevropské - indoárijské - bengálština</description>
         <shortcut>bengálština</shortcut>
         <categories>
@@ -1780,7 +1780,7 @@
         <view-order>117</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_118" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - indoárijské - Bihárštiina (maithilština)</name>
+        <name>Bihárštiina (maithilština)</name>
         <description>indoevropské - indoárijské - Bihárštiina (maithilština)</description>
         <shortcut>Bihárštiina (maithilština)</shortcut>
         <categories>
@@ -1790,7 +1790,7 @@
         <view-order>118</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_119" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - indoárijské - dógrí</name>
+        <name>dógrí</name>
         <description>indoevropské - indoárijské - dógrí</description>
         <shortcut>dógrí</shortcut>
         <categories>
@@ -1800,7 +1800,7 @@
         <view-order>119</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_120" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - indoárijské - gudžarátština</name>
+        <name>gudžarátština</name>
         <description>indoevropské - indoárijské - gudžarátština</description>
         <shortcut>gudžarátština</shortcut>
         <categories>
@@ -1810,7 +1810,7 @@
         <view-order>120</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_121" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - indoárijské - hindština</name>
+        <name>hindština</name>
         <description>indoevropské - indoárijské - hindština</description>
         <shortcut>hindština</shortcut>
         <categories>
@@ -1820,7 +1820,7 @@
         <view-order>121</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_122" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - indoárijské - kašmírština</name>
+        <name>kašmírština</name>
         <description>indoevropské - indoárijské - kašmírština</description>
         <shortcut>kašmírština</shortcut>
         <categories>
@@ -1830,7 +1830,7 @@
         <view-order>122</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_123" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - indoárijské - konkánština</name>
+        <name>konkánština</name>
         <description>indoevropské - indoárijské - konkánština</description>
         <shortcut>konkánština</shortcut>
         <categories>
@@ -1840,7 +1840,7 @@
         <view-order>123</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_124" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - indoárijské - maráthština</name>
+        <name>maráthština</name>
         <description>indoevropské - indoárijské - maráthština</description>
         <shortcut>maráthština</shortcut>
         <categories>
@@ -1850,7 +1850,7 @@
         <view-order>124</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_125" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - indoárijské - pahárské jazyky (nepálština)</name>
+        <name>pahárské jazyky (nepálština)</name>
         <description>indoevropské - indoárijské - pahárské jazyky (nepálština)</description>
         <shortcut>pahárské jazyky (nepálština)</shortcut>
         <categories>
@@ -1860,7 +1860,7 @@
         <view-order>125</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_126" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - indoárijské - pandžábština</name>
+        <name>pandžábština</name>
         <description>indoevropské - indoárijské - pandžábština</description>
         <shortcut>pandžábština</shortcut>
         <categories>
@@ -1870,7 +1870,7 @@
         <view-order>126</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_127" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - indoárijské - romština</name>
+        <name>romština</name>
         <description>indoevropské - indoárijské - romština</description>
         <shortcut>romština</shortcut>
         <categories>
@@ -1880,7 +1880,7 @@
         <view-order>127</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_128" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - indoárijské - sanskrt</name>
+        <name>sanskrt</name>
         <description>indoevropské - indoárijské - sanskrt</description>
         <shortcut>sanskrt</shortcut>
         <categories>
@@ -1890,7 +1890,7 @@
         <view-order>128</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_129" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - indoárijské - sindština</name>
+        <name>sindština</name>
         <description>indoevropské - indoárijské - sindština</description>
         <shortcut>sindština</shortcut>
         <categories>
@@ -1900,7 +1900,7 @@
         <view-order>129</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_130" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - indoárijské - sinhálština</name>
+        <name>sinhálština</name>
         <description>indoevropské - indoárijské - sinhálština</description>
         <shortcut>sinhálština</shortcut>
         <categories>
@@ -1910,7 +1910,7 @@
         <view-order>130</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_131" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - indoárijské - urdština</name>
+        <name>urdština</name>
         <description>indoevropské - indoárijské - urdština</description>
         <shortcut>urdština</shortcut>
         <categories>
@@ -1920,7 +1920,7 @@
         <view-order>131</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_132" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - indoárijské - urijština</name>
+        <name>urijština</name>
         <description>indoevropské - indoárijské - urijština</description>
         <shortcut>urijština</shortcut>
         <categories>
@@ -1930,7 +1930,7 @@
         <view-order>132</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_133" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - indoíránské - blíže neurčené</name>
+        <name>blíže neurčené (indoíránské)</name>
         <description>indoevropské - indoíránské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
@@ -1940,7 +1940,7 @@
         <view-order>133</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_134" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - indoíránské - (novo)perština</name>
+        <name>(novo)perština</name>
         <description>indoevropské - indoíránské - (novo)perština</description>
         <shortcut>(novo)perština</shortcut>
         <categories>
@@ -1950,7 +1950,7 @@
         <view-order>134</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_135" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - indoíránské - kurdština</name>
+        <name>kurdština</name>
         <description>indoevropské - indoíránské - kurdština</description>
         <shortcut>kurdština</shortcut>
         <categories>
@@ -1960,7 +1960,7 @@
         <view-order>135</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_136" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - indoíránské - paštština</name>
+        <name>paštština</name>
         <description>indoevropské - indoíránské - paštština</description>
         <shortcut>paštština</shortcut>
         <categories>
@@ -1970,7 +1970,7 @@
         <view-order>136</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_137" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - indoíránské - stará perština</name>
+        <name>stará perština</name>
         <description>indoevropské - indoíránské - stará perština</description>
         <shortcut>stará perština</shortcut>
         <categories>
@@ -1980,7 +1980,7 @@
         <view-order>137</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_138" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - indoíránské - střední perština</name>
+        <name>střední perština</name>
         <description>indoevropské - indoíránské - střední perština</description>
         <shortcut>střední perština</shortcut>
         <categories>
@@ -1990,7 +1990,7 @@
         <view-order>138</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_139" item-type="ZP2015_LANGUAGE">
-        <name>indoevropské - indoíránské - tádžičtina</name>
+        <name>tádžičtina</name>
         <description>indoevropské - indoíránské - tádžičtina</description>
         <shortcut>tádžičtina</shortcut>
         <categories>
@@ -2000,7 +2000,7 @@
         <view-order>139</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_140" item-type="ZP2015_LANGUAGE">
-        <name>kartvelské - blíže neurčené</name>
+        <name>blíže neurčené (kartvelské)</name>
         <description>kartvelské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
@@ -2009,7 +2009,7 @@
         <view-order>140</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_141" item-type="ZP2015_LANGUAGE">
-        <name>kartvelské - gruzínština</name>
+        <name>gruzínština</name>
         <description>kartvelské - gruzínština</description>
         <shortcut>gruzínština</shortcut>
         <categories>
@@ -2018,7 +2018,7 @@
         <view-order>141</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_142" item-type="ZP2015_LANGUAGE">
-        <name>severokavkazské - blíže neurčené</name>
+        <name>blíže neurčené (severokavkazské)</name>
         <description>severokavkazské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
@@ -2027,7 +2027,7 @@
         <view-order>142</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_143" item-type="ZP2015_LANGUAGE">
-        <name>severokavkazské - abcházština</name>
+        <name>abcházština</name>
         <description>severokavkazské - abcházština</description>
         <shortcut>abcházština</shortcut>
         <categories>
@@ -2036,7 +2036,7 @@
         <view-order>143</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_144" item-type="ZP2015_LANGUAGE">
-        <name>tajsko-kadajské - blíže neurčené</name>
+        <name>blíže neurčené (tajsko-kadajské)</name>
         <description>tajsko-kadajské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
@@ -2045,7 +2045,7 @@
         <view-order>144</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_145" item-type="ZP2015_LANGUAGE">
-        <name>tajsko-kadajské - laoština</name>
+        <name>laoština</name>
         <description>tajsko-kadajské - laoština</description>
         <shortcut>laoština</shortcut>
         <categories>
@@ -2054,7 +2054,7 @@
         <view-order>145</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_146" item-type="ZP2015_LANGUAGE">
-        <name>tajsko-kadajské - thajština</name>
+        <name>thajština</name>
         <description>tajsko-kadajské - thajština</description>
         <shortcut>thajština</shortcut>
         <categories>
@@ -2063,7 +2063,7 @@
         <view-order>146</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_147" item-type="ZP2015_LANGUAGE">
-        <name>tibetskočínské - blíže neurčené</name>
+        <name>blíže neurčené (tibetskočínské)</name>
         <description>tibetskočínské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
@@ -2072,7 +2072,7 @@
         <view-order>147</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_148" item-type="ZP2015_LANGUAGE">
-        <name>tibetskočínské - barmština</name>
+        <name>barmština</name>
         <description>tibetskočínské - barmština</description>
         <shortcut>barmština</shortcut>
         <categories>
@@ -2081,7 +2081,7 @@
         <view-order>148</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_149" item-type="ZP2015_LANGUAGE">
-        <name>tibetskočínské - bodo</name>
+        <name>bodo</name>
         <description>tibetskočínské - bodo</description>
         <shortcut>bodo</shortcut>
         <categories>
@@ -2090,7 +2090,7 @@
         <view-order>149</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_150" item-type="ZP2015_LANGUAGE">
-        <name>tibetskočínské - bhútánština</name>
+        <name>bhútánština</name>
         <description>tibetskočínské - bhútánština</description>
         <shortcut>bhútánština</shortcut>
         <categories>
@@ -2099,7 +2099,7 @@
         <view-order>150</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_151" item-type="ZP2015_LANGUAGE">
-        <name>tibetskočínské - manípurština</name>
+        <name>manípurština</name>
         <description>tibetskočínské - manípurština</description>
         <shortcut>manípurština</shortcut>
         <categories>
@@ -2108,7 +2108,7 @@
         <view-order>151</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_152" item-type="ZP2015_LANGUAGE">
-        <name>tibetskočínské - čínština</name>
+        <name>čínština</name>
         <description>tibetskočínské - čínština</description>
         <shortcut>čínština</shortcut>
         <categories>
@@ -2117,7 +2117,7 @@
         <view-order>152</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_153" item-type="ZP2015_LANGUAGE">
-        <name>tibetskočínské - tibetština</name>
+        <name>tibetština</name>
         <description>tibetskočínské - tibetština</description>
         <shortcut>tibetština</shortcut>
         <categories>
@@ -2126,7 +2126,7 @@
         <view-order>153</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_154" item-type="ZP2015_LANGUAGE">
-        <name>eskymácko - aleutské - blíže neurčené</name>
+        <name>blíže neurčené (aleutské)</name>
         <description>eskymácko - aleutské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
@@ -2136,7 +2136,7 @@
         <view-order>154</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_155" item-type="ZP2015_LANGUAGE">
-        <name>eskymácko - aleutské - grónština</name>
+        <name>grónština</name>
         <description>eskymácko - aleutské - grónština</description>
         <shortcut>grónština</shortcut>
         <categories>
@@ -2146,7 +2146,7 @@
         <view-order>155</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_156" item-type="ZP2015_LANGUAGE">
-        <name>indiánské - blíže neurčené</name>
+        <name>blíže neurčené (indiánské)</name>
         <description>indiánské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
@@ -2161,7 +2161,7 @@
         <view-order>157</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_158" item-type="ZP2015_LANGUAGE">
-        <name>izolované - blíže neurčené</name>
+        <name>blíže neurčené (izolované)</name>
         <description>izolované - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
@@ -2170,7 +2170,7 @@
         <view-order>158</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_159" item-type="ZP2015_LANGUAGE">
-        <name>kreolské - blíže neurčené</name>
+        <name>blíže neurčené (kreolské)</name>
         <description>kreolské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
@@ -2179,7 +2179,7 @@
         <view-order>159</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_160" item-type="ZP2015_LANGUAGE">
-        <name>umělé - blíže neurčené</name>
+        <name>blíže neurčené (umělé)</name>
         <description>umělé - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
@@ -2188,7 +2188,7 @@
         <view-order>160</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_161" item-type="ZP2015_LANGUAGE">
-        <name>umělé - esperanto</name>
+        <name>esperanto</name>
         <description>umělé - esperanto</description>
         <shortcut>esperanto</shortcut>
         <categories>
@@ -2197,7 +2197,7 @@
         <view-order>161</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_162" item-type="ZP2015_LANGUAGE">
-        <name>umělé - ido</name>
+        <name>ido</name>
         <description>umělé - ido</description>
         <shortcut>ido</shortcut>
         <categories>
@@ -2206,7 +2206,7 @@
         <view-order>162</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_163" item-type="ZP2015_LANGUAGE">
-        <name>umělé - interlingua</name>
+        <name>interlingua</name>
         <description>umělé - interlingua</description>
         <shortcut>interlingua</shortcut>
         <categories>
@@ -2215,7 +2215,7 @@
         <view-order>163</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_164" item-type="ZP2015_LANGUAGE">
-        <name>umělé - interlingue</name>
+        <name>interlingue</name>
         <description>umělé - interlingue</description>
         <shortcut>interlingue</shortcut>
         <categories>
@@ -2224,7 +2224,7 @@
         <view-order>164</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_165" item-type="ZP2015_LANGUAGE">
-        <name>umělé - volapük</name>
+        <name>volapük</name>
         <description>umělé - volapük</description>
         <shortcut>volapük</shortcut>
         <categories>
@@ -2233,7 +2233,7 @@
         <view-order>165</view-order>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_166" item-type="ZP2015_LANGUAGE">
-        <name>umělé - slovio</name>
+        <name>slovio</name>
         <description>umělé - slovio</description>
         <shortcut>slovio</shortcut>
         <categories>
