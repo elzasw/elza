@@ -1890,20 +1890,22 @@ public class ClientFactoryVO {
                                             final List<TreeNodeClient> treeNodeClients) {
         requestVO.setDescription(request.getDescription());
         requestVO.setNodesCount(nodeCount);
-        treeNodeClients.sort((o1, o2) -> {
-            for (int i = 0; i < o1.getReferenceMarkInt().length; i++) {
-                if (o1.getReferenceMarkInt().length > i && o2.getReferenceMarkInt().length > i) {
-                    if (o1.getReferenceMarkInt()[i] > o2.getReferenceMarkInt()[i]) {
+        if (treeNodeClients != null) {
+            treeNodeClients.sort((o1, o2) -> {
+                for (int i = 0; i < o1.getReferenceMarkInt().length; i++) {
+                    if (o1.getReferenceMarkInt().length > i && o2.getReferenceMarkInt().length > i) {
+                        if (o1.getReferenceMarkInt()[i] > o2.getReferenceMarkInt()[i]) {
+                            return 1;
+                        }
+                    } else if (o1.getReferenceMarkInt().length > i) {
                         return 1;
+                    } else {
+                        return -1;
                     }
-                } else if (o1.getReferenceMarkInt().length > i) {
-                    return 1;
-                } else {
-                    return -1;
                 }
-            }
-            return -1;
-        });
-        requestVO.setNodes(treeNodeClients);
+                return -1;
+            });
+            requestVO.setNodes(treeNodeClients);
+        }
     }
 }
