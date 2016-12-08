@@ -1,6 +1,9 @@
 package cz.tacr.elza.domain;
 
+import cz.tacr.elza.domain.enumeration.StringLength;
+
 import javax.persistence.Column;
+import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -17,7 +20,8 @@ import javax.persistence.Table;
  */
 @Entity(name = "arr_dao_link_request")
 @Table
-public class ArrDaoLinkRequest extends ArrRequest implements cz.tacr.elza.api.ArrDaoLinkRequest<ArrDigitalRepository, ArrNode, ArrDao> {
+@DiscriminatorValue(value="DAO_LINK")
+public class ArrDaoLinkRequest extends ArrRequest implements cz.tacr.elza.api.ArrDaoLinkRequest<ArrDigitalRepository, ArrDao> {
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrDigitalRepository.class)
     @JoinColumn(name = "digitalRepositoryId", nullable = false)
@@ -27,9 +31,8 @@ public class ArrDaoLinkRequest extends ArrRequest implements cz.tacr.elza.api.Ar
     @JoinColumn(name = "daoId", nullable = false)
     private ArrDao dao;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNode.class)
-    @JoinColumn(name = "nodeId", nullable = false)
-    private ArrNode node;
+    @Column(length = StringLength.LENGTH_50, nullable = false)
+    private String didCode;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 10, nullable = false)
@@ -56,13 +59,13 @@ public class ArrDaoLinkRequest extends ArrRequest implements cz.tacr.elza.api.Ar
     }
 
     @Override
-    public ArrNode getNode() {
-        return node;
+    public String getDidCode() {
+        return didCode;
     }
 
     @Override
-    public void setNode(final ArrNode node) {
-        this.node = node;
+    public void setDidCode(final String didCode) {
+        this.didCode = didCode;
     }
 
     @Override

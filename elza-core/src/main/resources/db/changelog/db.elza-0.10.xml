@@ -454,4 +454,53 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20161207152100" author="slapa">
+        <addColumn tableName="arr_dao_link_request">
+            <column name="did_code" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <dropColumn tableName="arr_dao_link_request" columnName="node_id" />
+        <dropColumn tableName="arr_request" columnName="create" />
+        <dropColumn tableName="arr_request_queue_item" columnName="create" />
+
+        <addColumn tableName="arr_request">
+            <column name="create_change_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <addForeignKeyConstraint constraintName="fk_request_change"
+                                 baseTableName="arr_request"
+                                 baseColumnNames="create_change_id"
+                                 referencedTableName="arr_change"
+                                 referencedColumnNames="change_id"
+                                 onDelete="NO ACTION"/>
+
+        <addColumn tableName="arr_request_queue_item">
+            <column name="create_change_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <addForeignKeyConstraint constraintName="fk_request_queue_item_change"
+                                 baseTableName="arr_request_queue_item"
+                                 baseColumnNames="create_change_id"
+                                 referencedTableName="arr_change"
+                                 referencedColumnNames="change_id"
+                                 onDelete="NO ACTION"/>
+
+    </changeSet>
+
+    <changeSet id="20161208090500" author="slapa">
+
+        <addColumn tableName="arr_request">
+            <column name="discriminator" type="varchar(20)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+    </changeSet>
+
 </databaseChangeLog>

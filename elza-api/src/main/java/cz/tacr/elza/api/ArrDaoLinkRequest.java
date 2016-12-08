@@ -6,7 +6,7 @@ package cz.tacr.elza.api;
  * @author Martin Šlapa
  * @since 07.12.2016
  */
-public interface ArrDaoLinkRequest<DR extends ArrDigitalRepository, N extends ArrNode, D extends ArrDao> {
+public interface ArrDaoLinkRequest<DR extends ArrDigitalRepository, D extends ArrDao> {
 
     DR getDigitalRepository();
 
@@ -16,9 +16,9 @@ public interface ArrDaoLinkRequest<DR extends ArrDigitalRepository, N extends Ar
 
     void setDao(D dao);
 
-    N getNode();
+    String getDidCode();
 
-    void setNode(N node);
+    void setDidCode(String didCode);
 
     Type getType();
 

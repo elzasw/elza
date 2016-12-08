@@ -3,6 +3,7 @@ package cz.tacr.elza.domain;
 import cz.tacr.elza.domain.enumeration.StringLength;
 
 import javax.persistence.Column;
+import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -19,6 +20,7 @@ import javax.persistence.Table;
  */
 @Entity(name = "arr_dao_request")
 @Table
+@DiscriminatorValue(value="DAO")
 public class ArrDaoRequest extends ArrRequest implements cz.tacr.elza.api.ArrDaoRequest<ArrDigitizationFrontdesk> {
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrDigitizationFrontdesk.class)

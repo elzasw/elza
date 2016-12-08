@@ -7,15 +7,26 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.controller.vo.ArrDaoLinkRequestVO;
+import cz.tacr.elza.controller.vo.ArrDaoRequestVO;
+import cz.tacr.elza.controller.vo.ArrDigitizationRequestVO;
+import cz.tacr.elza.controller.vo.ArrRequestVO;
+import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.domain.ArrDigitizationRequest;
+import cz.tacr.elza.domain.ArrDigitizationRequestNode;
+import cz.tacr.elza.domain.ArrRequest;
+import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.ObjectUtils;
@@ -225,6 +236,9 @@ public class ClientFactoryVO {
 
     @Autowired
     private ComplementTypeRepository complementTypeRepository;
+
+    @Autowired
+    private DigitizationRequestNodeRepository digitizationRequestNodeRepository;
 
     /**
      * Vytvoří objekt informací o přihlášeném uživateli.
@@ -1768,5 +1782,113 @@ public class ClientFactoryVO {
         }
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.mapAsList(entity, clazz);
+    }
+
+    public List<ArrRequestVO> createRequest(final List<ArrRequest> requests, boolean detail, final ArrFundVersion fundVersion) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        List<ArrRequestVO> requestVOList = new ArrayList<>(requests.size());
+        Set<ArrDigitizationRequest> requestForNodes = new HashSet<>();
+        for (ArrRequest request : requests) {
+            switch (request.getDiscriminator()) {
+                case "DIGITIZATION": {
+                    requestForNodes.add((ArrDigitizationRequest) request);
+                    break;
+                }
+
+                case "DAO": {
+                    // TODO
+                    break;
+                }
+
+                case "DAO_LINK": {
+                    // TODO
+                    break;
+                }
+
+                default: {
+                    throw new IllegalStateException(request.getDiscriminator());
+                }
+            }
+        }
+
+        Map<ArrDigitizationRequest, Integer> countNodesRequestMap;
+        Map<ArrDigitizationRequest, List<TreeNodeClient>> nodesRequestMap = new HashMap<>();
+        if (detail) {
+            countNodesRequestMap = new HashMap<>();
+            List<ArrDigitizationRequestNode> digitizationRequestNodes = digitizationRequestNodeRepository.findByDigitizationRequest(requestForNodes);
+
+            Set<Integer> nodeIds = new HashSet<>();
+            for (ArrDigitizationRequestNode digitizationRequestNode : digitizationRequestNodes) {
+                nodeIds.add(digitizationRequestNode.getNode().getNodeId());
+            }
+
+            Map<Integer, TreeNodeClient> treeNodeClientMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()).stream().collect(Collectors.toMap(TreeNodeClient::getId, Function.identity()));
+
+            for (ArrDigitizationRequestNode digitizationRequestNode : digitizationRequestNodes) {
+                Integer nodeId = digitizationRequestNode.getNode().getNodeId();
+                nodeIds.add(nodeId);
+                List<TreeNodeClient> treeNodeClients = nodesRequestMap.get(digitizationRequestNode.getDigitizationRequest());
+                if (treeNodeClients == null) {
+                    treeNodeClients = new ArrayList<>();
+                    nodesRequestMap.put(digitizationRequestNode.getDigitizationRequest(), treeNodeClients);
+                }
+                treeNodeClients.add(treeNodeClientMap.get(nodeId));
+            }
+
+            for (Map.Entry<ArrDigitizationRequest, List<TreeNodeClient>> entry : nodesRequestMap.entrySet()) {
+                countNodesRequestMap.put(entry.getKey(), entry.getValue().size());
+            }
+
+        } else {
+            countNodesRequestMap = digitizationRequestNodeRepository.countByRequests(requestForNodes);
+        }
+
+        for (ArrRequest request : requests) {
+            ArrRequestVO requestVO;
+
+            switch (request.getDiscriminator()) {
+                case "DIGITIZATION": {
+                    requestVO = new ArrDigitizationRequestVO();
+                    convertDigitizationRequest((ArrDigitizationRequest) request, (ArrDigitizationRequestVO) requestVO, countNodesRequestMap.get(request), nodesRequestMap.get(request));
+                    break;
+                }
+
+                case "DAO": {
+                    requestVO = new ArrDaoRequestVO();
+                    // TODO
+                    break;
+                }
+
+                case "DAO_LINK": {
+                    requestVO = new ArrDaoLinkRequestVO();
+                    // TODO
+                    break;
+                }
+
+                default: {
+                    throw new IllegalStateException(request.getDiscriminator());
+                }
+            }
+
+            ArrChange createChange = request.getCreateChange();
+            requestVO.setCode(request.getCode());
+            requestVO.setId(request.getRequestId());
+            requestVO.setState(request.getState());
+            requestVO.setRejectReason(request.getRejectReason());
+            requestVO.setResponseExternalSystem(mapper.map(request.getResponseExternalSystem(), Date.class));
+            requestVO.setCreate(mapper.map(createChange.getChangeDate(), Date.class));
+            requestVO.setUsername(createChange.getUser() == null ? null : createChange.getUser().getUsername());
+            requestVOList.add(requestVO);
+        }
+        return requestVOList;
+    }
+
+    private void convertDigitizationRequest(final ArrDigitizationRequest request,
+                                            final ArrDigitizationRequestVO requestVO,
+                                            final Integer nodeCount,
+                                            final List<TreeNodeClient> treeNodeClients) {
+        requestVO.setDescription(request.getDescription());
+        requestVO.setNodesCount(nodeCount);
+        requestVO.setNodes(treeNodeClients);
     }
 }

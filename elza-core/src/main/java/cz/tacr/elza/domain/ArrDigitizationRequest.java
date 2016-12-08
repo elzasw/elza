@@ -3,6 +3,7 @@ package cz.tacr.elza.domain;
 import cz.tacr.elza.domain.enumeration.StringLength;
 
 import javax.persistence.Column;
+import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -17,6 +18,7 @@ import javax.persistence.Table;
  */
 @Entity(name = "arr_digitization_request")
 @Table
+@DiscriminatorValue(value="DIGITIZATION")
 public class ArrDigitizationRequest extends ArrRequest implements cz.tacr.elza.api.ArrDigitizationRequest<ArrDigitizationFrontdesk> {
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrDigitizationFrontdesk.class)

@@ -3,6 +3,8 @@ package cz.tacr.elza.domain;
 import cz.tacr.elza.domain.enumeration.StringLength;
 
 import javax.persistence.Column;
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.DiscriminatorType;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -25,7 +27,11 @@ import java.time.LocalDateTime;
 @Entity(name = "arr_request")
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table
-public abstract class ArrRequest implements cz.tacr.elza.api.ArrRequest<ArrFund> {
+@DiscriminatorColumn(
+        name="discriminator",
+        discriminatorType= DiscriminatorType.STRING
+)
+public abstract class ArrRequest implements cz.tacr.elza.api.ArrRequest<ArrFund, ArrChange> {
 
     @Id
     @GeneratedValue
@@ -45,11 +51,15 @@ public abstract class ArrRequest implements cz.tacr.elza.api.ArrRequest<ArrFund>
     @Column(length = StringLength.LENGTH_1000)
     private String rejectReason;
 
-    @Column(nullable = false)
-    private LocalDateTime create;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
+    @JoinColumn(name = "createChangeId", nullable = false)
+    private ArrChange createChange;
 
     @Column
     private LocalDateTime responseExternalSystem;
+
+    @Column(length = StringLength.LENGTH_20, nullable = false, insertable = false)
+    private String discriminator;
 
     @Override
     public Integer getRequestId() {
@@ -111,13 +121,15 @@ public abstract class ArrRequest implements cz.tacr.elza.api.ArrRequest<ArrFund>
         this.rejectReason = rejectReason;
     }
 
-    @Override
-    public LocalDateTime getCreate() {
-        return create;
+    public ArrChange getCreateChange() {
+        return createChange;
     }
 
-    @Override
-    public void setCreate(final LocalDateTime create) {
-        this.create = create;
+    public void setCreateChange(final ArrChange createChange) {
+        this.createChange = createChange;
+    }
+
+    public String getDiscriminator() {
+        return discriminator;
     }
 }

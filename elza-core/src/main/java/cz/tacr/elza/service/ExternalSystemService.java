@@ -3,10 +3,12 @@ package cz.tacr.elza.service;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.domain.ArrDigitalRepository;
+import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.domain.SysExternalSystem;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.DigitizationFrontdeskRepository;
 import cz.tacr.elza.repository.ExternalSystemRepository;
 import cz.tacr.elza.service.eventnotification.events.ActionEvent;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -27,6 +29,9 @@ public class ExternalSystemService {
 
     @Autowired
     private ExternalSystemRepository externalSystemRepository;
+
+    @Autowired
+    private DigitizationFrontdeskRepository digitizationFrontdeskRepository;
 
     @Autowired
     private IEventNotificationService eventNotificationService;
@@ -85,6 +90,15 @@ public class ExternalSystemService {
     public void delete(final Integer id) {
         sendChangeExternalSystemNotification();
         externalSystemRepository.delete(id);
+    }
+
+    /**
+     * Vyhledá všechny externí systémy typu - Digitalizační linka.
+     *
+     * @return seznam digitalizačních linek
+     */
+    public List<ArrDigitizationFrontdesk> findDigitizationFrontdesk() {
+        return digitizationFrontdeskRepository.findAll();
     }
 
     /**

@@ -2,6 +2,9 @@ package cz.tacr.elza.controller;
 
 import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.api.UsrPermission;
+import cz.tacr.elza.controller.vo.ArrRequestVO;
+import cz.tacr.elza.domain.ArrDigitizationRequest;
+import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.exception.ConcurrentUpdateException;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
@@ -53,7 +56,9 @@ import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.FilterExpiredException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
@@ -79,6 +84,7 @@ import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.PacketService;
 import cz.tacr.elza.service.PolicyService;
 import cz.tacr.elza.service.RegistryService;
+import cz.tacr.elza.service.RequestService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.repository.ChangeRepository;
@@ -225,6 +231,9 @@ public class ArrangementController {
 
     @Autowired
     private ChangeRepository changeRepository;
+
+    @Autowired
+    private RequestService requestService;
 
     /**
      * Seznam typů obalů.
@@ -1939,6 +1948,58 @@ public class ArrangementController {
         revertingChangesService.revertChanges(fundVersion.getFund(), node, fromChange, toChange);
     }
 
+    @RequestMapping(value = "/requests/digitization/add", method = RequestMethod.POST)
+    @Transactional
+    public void digitizationRequestAdd(@RequestParam(name = "send", defaultValue = "false") Boolean send,
+            @RequestBody DigitizationRequestParam param) {
+        Assert.notNull(param);
+        Assert.notEmpty(param.nodeIds);
+
+        List<ArrNode> nodes = nodeRepository.findAll(param.nodeIds);
+
+        if (nodes.size() != param.nodeIds.size()) {
+            throw new SystemException(BaseCode.ID_NOT_EXIST);
+        }
+
+        ArrDigitizationRequest digitizationRequest;
+        if (param.id == null) {
+            digitizationRequest = requestService.createDigitizationRequest(nodes, param.description, nodes.get(0).getFund());
+        } else {
+            digitizationRequest = requestService.getDigitizationRequest(param.id);
+            requestService.addNodeDigitizationRequest(digitizationRequest, nodes, nodes.get(0).getFund());
+        }
+
+        if (BooleanUtils.isTrue(send)) {
+            requestService.sendRequest(digitizationRequest);
+        }
+    }
+
+    @RequestMapping(value = "/requests/digitization/remove", method = RequestMethod.POST)
+    @Transactional
+    public void digitizationRequestRemove(@RequestBody DigitizationRequestParam param) {
+        Assert.notNull(param);
+        Assert.notNull(param.id);
+        Assert.notEmpty(param.nodeIds);
+
+        List<ArrNode> nodes = nodeRepository.findAll(param.nodeIds);
+
+        if (nodes.size() != param.nodeIds.size()) {
+            throw new SystemException(BaseCode.ID_NOT_EXIST);
+        }
+
+        ArrDigitizationRequest digitizationRequest = requestService.getDigitizationRequest(param.id);
+        requestService.removeNodeDigitizationRequest(digitizationRequest, nodes, nodes.get(0).getFund());
+    }
+
+    @RequestMapping(value = "/requests/{fundVersionId}", method = RequestMethod.GET)
+    public List<ArrRequestVO> findRequests(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                           @RequestParam(value = "state", required = false) ArrRequest.State state,
+                                           @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail) {
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        List<ArrRequest> requests = requestService.findRequests(fundVersion.getFund(), state);
+        return factoryVo.createRequest(requests, detail, fundVersion);
+    }
+
     /**
      * Výstupní objekt pro chybové jednotky popisu.
      */
@@ -2936,6 +2997,39 @@ public class ArrangementController {
 
         public void setTemplateId(Integer templateId) {
             this.templateId = templateId;
+        }
+    }
+
+    public static class DigitizationRequestParam {
+
+        private Integer id;
+
+        private List<Integer> nodeIds;
+
+        private String description;
+
+        public Integer getId() {
+            return id;
+        }
+
+        public void setId(final Integer id) {
+            this.id = id;
+        }
+
+        public List<Integer> getNodeIds() {
+            return nodeIds;
+        }
+
+        public void setNodeIds(final List<Integer> nodeIds) {
+            this.nodeIds = nodeIds;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(final String description) {
+            this.description = description;
         }
     }
 }
