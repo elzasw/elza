@@ -1,6 +1,7 @@
 package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.ArrDigitizationRequest;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +24,12 @@ public class DigitizationRequestNodeRepositoryImpl implements DigitizationReques
     private EntityManager entityManager;
 
     @Override
-    public Map<ArrDigitizationRequest, Integer> countByRequests(final Iterable<ArrDigitizationRequest> requests) {
+    public Map<ArrDigitizationRequest, Integer> countByRequests(final Collection<ArrDigitizationRequest> requests) {
+
+        if (CollectionUtils.isEmpty(requests)) {
+            return new HashMap<>();
+        }
+
         Query query = entityManager.createQuery("SELECT dr.requestId, COUNT(dr) FROM arr_digitization_request_node drn JOIN drn.digitizationRequest dr WHERE drn.digitizationRequest IN (:requests) GROUP BY dr.requestId");
         query.setParameter("requests", requests);
 

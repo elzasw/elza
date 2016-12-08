@@ -20,7 +20,7 @@ import javax.persistence.Table;
  */
 @Entity(name = "arr_dao_request")
 @Table
-@DiscriminatorValue(value="DAO")
+@DiscriminatorValue(value= ArrRequest.ClassType.Values.DAO)
 public class ArrDaoRequest extends ArrRequest implements cz.tacr.elza.api.ArrDaoRequest<ArrDigitizationFrontdesk> {
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrDigitizationFrontdesk.class)

@@ -1951,7 +1951,7 @@ public class ArrangementController {
     @RequestMapping(value = "/requests/digitization/add", method = RequestMethod.POST)
     @Transactional
     public void digitizationRequestAdd(@RequestParam(name = "send", defaultValue = "false") Boolean send,
-            @RequestBody DigitizationRequestParam param) {
+                                       @RequestBody DigitizationRequestParam param) {
         Assert.notNull(param);
         Assert.notEmpty(param.nodeIds);
 
@@ -1991,13 +1991,13 @@ public class ArrangementController {
         requestService.removeNodeDigitizationRequest(digitizationRequest, nodes, nodes.get(0).getFund());
     }
 
-    // TODO [slapa] - potřeboval bych umět specifikovat, že chci načíst také JEN požadavky na digitalizaci (tedy specifikovat typ požadavku)
     @RequestMapping(value = "/requests/{fundVersionId}", method = RequestMethod.GET)
     public List<ArrRequestVO> findRequests(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                            @RequestParam(value = "state", required = false) ArrRequest.State state,
+                                           @RequestParam(value = "type", required = false) ArrRequest.ClassType type,
                                            @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        List<ArrRequest> requests = requestService.findRequests(fundVersion.getFund(), state);
+        List<ArrRequest> requests = requestService.findRequests(fundVersion.getFund(), state, type);
         return factoryVo.createRequest(requests, detail, fundVersion);
     }
 
@@ -2005,7 +2005,7 @@ public class ArrangementController {
     public ArrRequestVO getRequest(
             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
             @PathVariable(value = "requestId") final Integer requestId,
-           @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail) {
+            @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrRequest request = requestService.getRequest(requestId);
 

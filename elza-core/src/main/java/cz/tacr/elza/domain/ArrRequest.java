@@ -33,6 +33,26 @@ import java.time.LocalDateTime;
 )
 public abstract class ArrRequest implements cz.tacr.elza.api.ArrRequest<ArrFund, ArrChange> {
 
+    public enum ClassType {
+        DAO_LINK(Values.DAO_LINK), DAO(Values.DAO), DIGITIZATION(Values.DIGITIZATION);
+
+        private String value;
+
+        ClassType(final String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public static class Values {
+            public static final String DAO_LINK= "DAO_LINK";
+            public static final String DAO = "DAO";
+            public static final String DIGITIZATION = "DIGITIZATION";
+        }
+    }
+
     @Id
     @GeneratedValue
     private Integer requestId;
@@ -58,8 +78,9 @@ public abstract class ArrRequest implements cz.tacr.elza.api.ArrRequest<ArrFund,
     @Column
     private LocalDateTime responseExternalSystem;
 
-    @Column(length = StringLength.LENGTH_20, nullable = false, insertable = false)
-    private String discriminator;
+    @Column(length = StringLength.LENGTH_20, nullable = false, insertable = false, updatable = false)
+    @Enumerated(EnumType.STRING)
+    private ClassType discriminator;
 
     @Override
     public Integer getRequestId() {
@@ -129,7 +150,7 @@ public abstract class ArrRequest implements cz.tacr.elza.api.ArrRequest<ArrFund,
         this.createChange = createChange;
     }
 
-    public String getDiscriminator() {
+    public ClassType getDiscriminator() {
         return discriminator;
     }
 }

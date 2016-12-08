@@ -2,6 +2,7 @@ package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 
+import java.util.Collection;
 import java.util.Map;
 
 
@@ -11,6 +12,6 @@ import java.util.Map;
  */
 public interface DigitizationRequestNodeRepositoryCustom {
 
-    Map<ArrDigitizationRequest,Integer> countByRequests(Iterable<ArrDigitizationRequest> requestForNodes);
+    Map<ArrDigitizationRequest,Integer> countByRequests(Collection<ArrDigitizationRequest> requestForNodes);
 
 }

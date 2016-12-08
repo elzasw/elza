@@ -29,6 +29,7 @@ import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -1790,23 +1791,23 @@ public class ClientFactoryVO {
         Set<ArrDigitizationRequest> requestForNodes = new HashSet<>();
         for (ArrRequest request : requests) {
             switch (request.getDiscriminator()) {
-                case "DIGITIZATION": {
+                case DIGITIZATION: {
                     requestForNodes.add((ArrDigitizationRequest) request);
                     break;
                 }
 
-                case "DAO": {
+                case DAO: {
                     // TODO
-                    break;
+                    throw new NotImplementedException();
                 }
 
-                case "DAO_LINK": {
+                case DAO_LINK: {
                     // TODO
-                    break;
+                    throw new NotImplementedException();
                 }
 
                 default: {
-                    throw new IllegalStateException(request.getDiscriminator());
+                    throw new IllegalStateException(String.valueOf(request.getDiscriminator()));
                 }
             }
         }
@@ -1847,26 +1848,26 @@ public class ClientFactoryVO {
             ArrRequestVO requestVO;
 
             switch (request.getDiscriminator()) {
-                case "DIGITIZATION": {
+                case DIGITIZATION: {
                     requestVO = new ArrDigitizationRequestVO();
                     convertDigitizationRequest((ArrDigitizationRequest) request, (ArrDigitizationRequestVO) requestVO, countNodesRequestMap.get(request), nodesRequestMap.get(request));
                     break;
                 }
 
-                case "DAO": {
+                case DAO: {
                     requestVO = new ArrDaoRequestVO();
                     // TODO
-                    break;
+                    throw new NotImplementedException();
                 }
 
-                case "DAO_LINK": {
+                case DAO_LINK: {
                     requestVO = new ArrDaoLinkRequestVO();
                     // TODO
-                    break;
+                    throw new NotImplementedException();
                 }
 
                 default: {
-                    throw new IllegalStateException(request.getDiscriminator());
+                    throw new IllegalStateException(String.valueOf(request.getDiscriminator()));
                 }
             }
 

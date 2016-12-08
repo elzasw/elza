@@ -113,9 +113,9 @@ public class RequestService {
                                               @NotNull final List<ArrNode> nodes,
                                               @AuthParam(type = AuthParam.Type.FUND) final ArrFund fund) {
         List<ArrDigitizationRequestNode> digitizationRequestNodes = digitizationRequestNodeRepository.findByDigitizationRequestAndNode(digitizationRequest, nodes);
-//        if (digitizationRequestNodes.size() != 0) {
-//            throw new BusinessException(ArrangementCode.ALREADY_ADDED);
-//        }
+        if (digitizationRequestNodes.size() != nodes.size()) {
+            throw new BusinessException(ArrangementCode.ALREADY_REMOVED);
+        }
 
         digitizationRequestNodeRepository.delete(digitizationRequestNodes);
         // TODO: websockety
@@ -129,8 +129,11 @@ public class RequestService {
         return requestRepository.getOneCheckExist(id);
     }
 
-    public List<ArrRequest> findRequests(final ArrFund fund, final cz.tacr.elza.api.ArrRequest.State state) {
-        return requestRepository.findAll();
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public List<ArrRequest> findRequests(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
+                                         @Nullable final ArrRequest.State state,
+                                         @Nullable final ArrRequest.ClassType type) {
+        return requestRepository.findRequests(fund, state, type);
     }
 
     public void sendRequest(final ArrRequest request) {

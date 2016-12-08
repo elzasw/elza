@@ -18,7 +18,7 @@ import javax.persistence.Table;
  */
 @Entity(name = "arr_digitization_request")
 @Table
-@DiscriminatorValue(value="DIGITIZATION")
+@DiscriminatorValue(ArrRequest.ClassType.Values.DIGITIZATION)
 public class ArrDigitizationRequest extends ArrRequest implements cz.tacr.elza.api.ArrDigitizationRequest<ArrDigitizationFrontdesk> {
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrDigitizationFrontdesk.class)

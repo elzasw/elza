@@ -9,6 +9,6 @@ import org.springframework.stereotype.Repository;
  * @since 07.12.2016
  */
 @Repository
-public interface RequestRepository extends ElzaJpaRepository<ArrRequest, Integer> {
+public interface RequestRepository extends ElzaJpaRepository<ArrRequest, Integer>, RequestRepositoryCustom {
 
 }

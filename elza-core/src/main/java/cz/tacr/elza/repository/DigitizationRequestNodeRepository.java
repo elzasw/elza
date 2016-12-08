@@ -17,6 +17,7 @@ import java.util.List;
 @Repository
 public interface DigitizationRequestNodeRepository extends ElzaJpaRepository<ArrDigitizationRequestNode, Integer>, DigitizationRequestNodeRepositoryCustom {
 
+    @Query("SELECT p FROM arr_digitization_request_node p WHERE p.digitizationRequest = ?1 AND p.node IN (?2)")
     List<ArrDigitizationRequestNode> findByDigitizationRequestAndNode(ArrDigitizationRequest digitizationRequest, List<ArrNode> nodes);
 
     @Query("SELECT p FROM arr_digitization_request_node p WHERE p.digitizationRequest IN (?1)")
