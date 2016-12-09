@@ -2,6 +2,7 @@ import React from 'react';
 
 import {EmailSettingsActions, ApplicationActions} from 'actions/index.jsx';
 import {webSocketConnect, webSocketDisconnect} from 'actions/global/webSocket.jsx';
+import * as digitizationActions from 'actions/arr/digitizationActions';
 import {buklActionStateChange} from 'actions/arr/bulkActions.jsx';
 import {store} from 'stores/AppStore.jsx';
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
@@ -115,6 +116,12 @@ function processEvents(values) {
 
         switch (value.eventType) {
 
+            case 'REQUEST_CHANGE':
+                arrRequest(value);
+                break;
+            case 'REQUEST_CREATE':
+                arrRequest(value);
+                break;
             case 'CONFORMITY_INFO':
                 conformityInfo(value);
                 break;
@@ -378,6 +385,14 @@ function visiblePolicyChange(value) {
  */
 function conformityInfo(value) {
     store.dispatch(changeConformityInfo(value.versionId, value.entityIds));
+}
+
+/**
+ * Změna požadavků arr request.
+ * @param value objekt
+ */
+function arrRequest(value) {
+    store.dispatch(digitizationActions.changeRequests(value.versionId, value.entityId, value.nodeIds));
 }
 
 /**

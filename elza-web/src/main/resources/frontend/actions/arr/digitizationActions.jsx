@@ -9,11 +9,12 @@ import {savingApiWrapper} from 'actions/global/status.jsx';
 import {i18n} from 'components/index.jsx';
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {storeFromArea} from "shared/utils";
 
 const AREA_PREPARED_DIGITIZATION_REQUESTS = "preparedDigitizationRequestList";
-const AREA_DIGITIZATION_REQUEST_LIST_SUFFIX = ".requestList";
-const AREA_DIGITIZATION_REQUEST_IN_QUEUE_LIST = "requestInQueueList";
-const AREA_DIGITIZATION_REQUEST_DETAIL_SUFFIX = ".requestDetail";
+const AREA_REQUEST_LIST_SUFFIX = ".requestList";
+const AREA_REQUEST_IN_QUEUE_LIST = "requestInQueueList";
+const AREA_REQUEST_DETAIL_SUFFIX = ".requestDetail";
 
 /**
  * Načtení seznamu NEODESLANÝCH požadavků na digitalizaci.
@@ -49,24 +50,47 @@ export function preparedListInvalidate() {
  * Načtení požadavků na digitalizaci v celé aplikaci.
  */
 export function fetchListIfNeeded(versionId) {
-    return SimpleListActions.fetchIfNeeded("fund[" + versionId + "]" + AREA_DIGITIZATION_REQUEST_LIST_SUFFIX, versionId, (parent, filter) => {
+    return SimpleListActions.fetchIfNeeded("fund[" + versionId + "]" + AREA_REQUEST_LIST_SUFFIX, versionId, (parent, filter) => {
         return WebApi.getArrRequests(versionId)
             .then(json => ({rows: json, count: 0}));
     });
 }
 
 /**
+ * Zpráva informující o změně requestů pro konkrétní AS.
+ * @param versionId verze AS
+ * @param reqId id požadavku
+ * @param nodeIds seznam node, se kterými se něco dělalo (např. byly přidány nebo odebrány)
+ */
+export function changeRequests(versionId, reqId, nodeIds) {
+    return (dispatch, getState) => {
+        // Seznam požadavků
+        dispatch(SimpleListActions.invalidate("fund[" + versionId + "]" + AREA_REQUEST_LIST_SUFFIX, null));
+
+        // Seznam otevřených požadavků pro přidání na pořádání
+        dispatch(SimpleListActions.invalidate(AREA_PREPARED_DIGITIZATION_REQUESTS, null));
+
+        // Detail požadavku
+        const detailArea = "fund[" + versionId + "]" + AREA_REQUEST_DETAIL_SUFFIX;
+        const requestDetail = storeFromArea(getState(), detailArea);
+        if (requestDetail.id === reqId) {
+            dispatch(DetailActions.invalidate(detailArea, null));
+        }
+    }
+}
+
+/**
  * Invalidace požadavků.
  */
 export function listInvalidate(versionId) {
-    return SimpleListActions.invalidate("fund[" + versionId + "]" + AREA_DIGITIZATION_REQUEST_LIST_SUFFIX, null);
+    return SimpleListActions.invalidate("fund[" + versionId + "]" + AREA_REQUEST_LIST_SUFFIX, null);
 }
 
 /**
  * Načtení všech požadavků ve frontě.
  */
 export function fetchInQueueListIfNeeded() {
-    return SimpleListActions.fetchIfNeeded(AREA_DIGITIZATION_REQUEST_IN_QUEUE_LIST, null, (parent, filter) => {
+    return SimpleListActions.fetchIfNeeded(AREA_REQUEST_IN_QUEUE_LIST, null, (parent, filter) => {
         return WebApi.getRequestsInQueue()
             .then(json => ({rows: json, count: 0}));
     });
@@ -76,7 +100,7 @@ export function fetchInQueueListIfNeeded() {
  * Invalidace požadavků ve frontě.
  */
 export function queueListInvalidate() {
-    return SimpleListActions.invalidate(AREA_DIGITIZATION_REQUEST_IN_QUEUE_LIST, null);
+    return SimpleListActions.invalidate(AREA_REQUEST_IN_QUEUE_LIST, null);
 }
 
 /**
@@ -85,7 +109,7 @@ export function queueListInvalidate() {
  * @param id id požadavku
  */
 export function fetchDetailIfNeeded(versionId, id) {
-    return DetailActions.fetchIfNeeded("fund[" + versionId + "]" + AREA_DIGITIZATION_REQUEST_DETAIL_SUFFIX, id, (id) => {
+    return DetailActions.fetchIfNeeded("fund[" + versionId + "]" + AREA_REQUEST_DETAIL_SUFFIX, id, (id) => {
         return WebApi.getArrRequest(versionId, id);
     });
 }
@@ -96,11 +120,11 @@ export function fetchDetailIfNeeded(versionId, id) {
  * @param id id požadavku
  */
 export function selectDetail(versionId, id) {
-    return DetailActions.select("fund[" + versionId + "]" + AREA_DIGITIZATION_REQUEST_DETAIL_SUFFIX, id);
+    return DetailActions.select("fund[" + versionId + "]" + AREA_REQUEST_DETAIL_SUFFIX, id);
 }
 
 export function detailInvalidate(versionId, id) {
-    return DetailActions.invalidate("fund[" + versionId + "]" + AREA_DIGITIZATION_REQUEST_DETAIL_SUFFIX, id)
+    return DetailActions.invalidate("fund[" + versionId + "]" + AREA_REQUEST_DETAIL_SUFFIX, id)
 }
 
 /**
