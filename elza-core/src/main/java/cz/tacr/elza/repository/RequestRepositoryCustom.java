@@ -13,4 +13,5 @@ public interface RequestRepositoryCustom {
 
     List<ArrRequest> findRequests(ArrFund fund, ArrRequest.State state, ArrRequest.ClassType type);
 
+    boolean setState(ArrRequest request, ArrRequest.State oldState, ArrRequest.State newState);
 }

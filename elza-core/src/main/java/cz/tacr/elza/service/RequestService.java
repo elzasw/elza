@@ -102,7 +102,7 @@ public class RequestService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void addNodeDigitizationRequest(@NotNull final ArrDigitizationRequest digitizationRequest,
                                            @NotNull final List<ArrNode> nodes,
-                                           @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
+                                           @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion, final String description) {
 
         List<ArrDigitizationRequestNode> digitizationRequestNodes = digitizationRequestNodeRepository.findByDigitizationRequestAndNode(digitizationRequest, nodes);
         if (digitizationRequestNodes.size() != 0) {
@@ -116,6 +116,8 @@ public class RequestService {
             digitizationRequestNodes.add(requestNode);
         }
 
+        digitizationRequest.setDescription(description);
+        digitizationRequestRepository.save(digitizationRequest);
         digitizationRequestNodeRepository.save(digitizationRequestNodes);
         sendNotification(fundVersion, digitizationRequest, EventType.REQUEST_CHANGE, nodes);
     }
@@ -159,11 +161,28 @@ public class RequestService {
         return requestRepository.findRequests(fund, state, type);
     }
 
-    public void sendRequest(final ArrRequest request) {
-        if (!request.getState().equals(ArrRequest.State.OPEN)) {
-            throw new BusinessException(ArrangementCode.CANT_SEND);
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public void sendRequest(@NotNull final ArrRequest request,
+                            @AuthParam(type = AuthParam.Type.FUND) final ArrFundVersion fundVersion) {
+        setRequestState(request, ArrRequest.State.OPEN, ArrRequest.State.QUEUED);
+
+        // TODO dopsat frontu napojení
+    }
+
+    /**
+     * Nastavit stav požadavku.
+     *
+     * @param request   požadavek
+     * @param oldState  původní stav požadavku
+     * @param newState  nastavovaný stav požadavku
+     */
+    private void setRequestState(final ArrRequest request,
+                                 final ArrRequest.State oldState,
+                                 final ArrRequest.State newState) {
+        boolean success = requestRepository.setState(request, oldState, newState);
+        if (!success) {
+            throw new BusinessException(ArrangementCode.REQUEST_INVALID_STATE).set("state", request.getState()).set("setState", newState);
         }
-        // TODO: dopsat napojení na frontu
     }
 
     private void sendNotification(final ArrFundVersion fundVersion,

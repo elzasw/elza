@@ -1975,11 +1975,11 @@ public class ArrangementController {
             digitizationRequest = requestService.createDigitizationRequest(nodes, param.description, fundVersion);
         } else {
             digitizationRequest = requestService.getDigitizationRequest(param.id);
-            requestService.addNodeDigitizationRequest(digitizationRequest, nodes, fundVersion);
+            requestService.addNodeDigitizationRequest(digitizationRequest, nodes, fundVersion, param.getDescription());
         }
 
         if (BooleanUtils.isTrue(send)) {
-            requestService.sendRequest(digitizationRequest);
+            requestService.sendRequest(digitizationRequest, fundVersion);
         }
     }
 
@@ -1998,7 +1998,7 @@ public class ArrangementController {
         if (!fundVersion.getFund().equals(digitizationRequest.getFund())) {
             throw new SystemException(ArrangementCode.INVALID_VERSION);
         }
-        requestService.sendRequest(digitizationRequest);
+        requestService.sendRequest(digitizationRequest, fundVersion);
     }
 
     /**

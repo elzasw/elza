@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -48,5 +49,13 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
         TypedQuery<ArrRequest> query = entityManager.createQuery(q);
 
         return query.getResultList();
+    }
+
+    @Override
+    public boolean setState(final ArrRequest request, final ArrRequest.State oldState, final ArrRequest.State newState) {
+        Query query = entityManager.createQuery("UPDATE arr_request SET state = :newState WHERE state = :oldState");
+        query.setParameter("newState", newState);
+        query.setParameter("oldState", oldState);
+        return query.executeUpdate() > 0;
     }
 }
