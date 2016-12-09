@@ -10,18 +10,26 @@ import java.util.Map;
  */
 public class Filters {
 
-    /** Mapa filtrů id rulDescItemType -> filter. */
-    private Map<Integer, Filter> filters;
+    private ColumnFilters columnFilters;
 
     /** Id nodu. */
     private Integer nodeId;
 
+    public void setColumnFilters(final ColumnFilters columnFilters) {
+        this.columnFilters = columnFilters;
+    }
+
+    public ColumnFilters getColumnFilters() {
+        return columnFilters;
+    }
+
     public Map<Integer, Filter> getFilters() {
-        return filters;
+        return getColumnFilters().getFilters();
     }
 
     public void setFilters(final Map<Integer, Filter> filters) {
-        this.filters = filters;
+        this.setColumnFilters(new ColumnFilters());
+        this.getColumnFilters().setFilters(filters);
     }
 
     public Integer getNodeId() {
