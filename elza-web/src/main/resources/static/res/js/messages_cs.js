@@ -109,6 +109,7 @@ var messages = {
     "ribbon.action.fundAction.form.run": "Spustit",
     "ribbon.action.fundAction.form.clear": "Vymazat",
     "ribbon.action.arr.show-register-jp": "Rejstříky k JP",
+    "ribbon.action.arr.show-requests": "Digitální entity k JP",
     "ribbon.action.arr.fund.settings.ui": "Nastavení zobrazení",
     "ribbon.action.registry": "Rejstříková hesla",
     "ribbon.action.party": "Osoby",

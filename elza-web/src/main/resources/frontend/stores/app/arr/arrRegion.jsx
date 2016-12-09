@@ -32,6 +32,7 @@ import processAreaStores from "shared/utils/processAreaStores";
     nodeSettings: nodeSetting(undefined, {}),
     extendedView: false,
     showRegisterJp: false,
+    showRequestsJp: false,
     packets: {},
     visiblePolicy: visiblePolicy(),
     funds: [],
@@ -143,6 +144,12 @@ export default function arrRegion(state = initialState, action) {
             return {
                 ...state,
                 showRegisterJp: action.showRegisterJp
+            }
+        }
+        case types.SHOW_REQUESTS_JP: {
+            return {
+                ...state,
+                showRequestsJp: action.show
             }
         }
         case types.STORE_LOAD:

@@ -14,6 +14,7 @@ import {Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
 import {addNodeForm} from 'actions/arr/addNodeForm.jsx';
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {fundSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister.jsx'
+import {fundSubNodeRequestsFetchIfNeeded} from 'actions/arr/subNodeRequests.jsx'
 import {fundSubNodeInfoFetchIfNeeded} from 'actions/arr/subNodeInfo.jsx'
 import {fundNodeInfoFetchIfNeeded} from 'actions/arr/nodeInfo.jsx'
 import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
@@ -172,7 +173,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.requestData(nextProps.versionId, nextProps.node, nextProps.showRegisterJp);
+        this.requestData(nextProps.versionId, nextProps.node, nextProps.showRegisterJp, nextProps.showRequestsJp);
 
         var newState = {
             focusItemIndex: this.getFocusItemIndex(nextProps, this.state.focusItemIndex)
@@ -387,7 +388,7 @@ return true
             return true;
         }
         var eqProps = ['versionId', 'fund', 'node', 'calendarTypes', 'descItemTypes',
-            'packetTypes', 'packets', 'rulDataTypes', 'fundId', 'showRegisterJp', 'closed']
+            'packetTypes', 'packets', 'rulDataTypes', 'fundId', 'showRegisterJp', 'showRequestsJp', 'closed']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -396,17 +397,17 @@ return true
      * @param versionId {String} verze AS
      * @param node {Object} node
      * @param showRegisterJp {bool} zobrazení rejstřílů vázené k jednotce popisu
+     * @param showRequestsJp {bool} zobrazení digit8lních entit vázené k jednotce popisu
      */
-    requestData(versionId, node, showRegisterJp) {
+    requestData(versionId, node, showRegisterJp,showRequestsJp) {
         if (node.selectedSubNodeId != null) {
             this.dispatch(descItemTypesFetchIfNeeded());
             this.dispatch(nodeFormActions.fundSubNodeFormFetchIfNeeded(versionId, node.routingKey));
             this.dispatch(fundSubNodeInfoFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
             this.dispatch(refRulDataTypesFetchIfNeeded());
 
-            if (showRegisterJp) {
-                this.dispatch(fundSubNodeRegisterFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
-            }
+            showRegisterJp && this.dispatch(fundSubNodeRegisterFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
+            showRequestsJp && this.dispatch(fundSubNodeRequestsFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
 
         }
         this.dispatch(visiblePolicyTypesFetchIfNeeded());
@@ -635,9 +636,11 @@ return true
     /**
      * Renderování Accordion.
      * @param form {Object} editační formulář, pokud je k dispozici (k dispozici je, pokud je nějaká položka Accordion vybraná)
+     * @param recordInfo rejstříky k JP
+     * @param requests digitální entity k JP
      * @return {Object} view
      */
-    renderAccordion(form, recordInfo, readMode) {
+    renderAccordion(form, recordInfo, requests, readMode) {
         const {node, versionId, userDetail, fund, fundId, closed} = this.props;
         const {focusItemIndex} = this.state;
         var rows = [];
@@ -689,6 +692,7 @@ return true
                             <div key="body" className='accordion-body'>
                                 {form}
                                 {recordInfo}
+                                {requests}
                             </div>
                         </div>
                     )
@@ -736,7 +740,7 @@ return true
     render() {
         const {calendarTypes, versionId, rulDataTypes, node,
                 packetTypes, packets, fundId, userDetail,
-                showRegisterJp, fund, closed, descItemTypes} = this.props;
+                showRegisterJp, showRequestsJp, fund, closed, descItemTypes} = this.props;
 
 
 
@@ -807,8 +811,7 @@ return true
             form = <Loading value={i18n('global.data.loading.form')}/>
         }
 
-        var record;
-
+        let record;
         if (showRegisterJp) {
             record = <SubNodeRegister
                         nodeId={node.id}
@@ -820,6 +823,13 @@ return true
                         readMode={readMode}/>
         }
 
+        let requests;
+        if (showRequestsJp) {
+            requests = <div>
+                RRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+            </div>
+        }
+
         var cls = classNames({
             'node-panel-container': true,
         })
@@ -828,7 +838,7 @@ return true
             <Shortcuts name='NodePanel' key={'node-panel'} className={cls} handler={this.handleShortcuts}>
                 <div key='main' className='main'>
                     {parents}
-                    {this.renderAccordion(form, record, readMode)}
+                    {this.renderAccordion(form, record, requests, readMode)}
                     {children}
                 </div>
             </Shortcuts>
@@ -912,6 +922,7 @@ NodePanel.propTypes = {
     rulDataTypes: React.PropTypes.object.isRequired,
     fundId: React.PropTypes.number,
     showRegisterJp: React.PropTypes.bool.isRequired,
+    showRequestsJp: React.PropTypes.bool.isRequired,
     closed: React.PropTypes.bool.isRequired,
     userDetail: React.PropTypes.object.isRequired,
 }

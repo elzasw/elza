@@ -173,6 +173,17 @@ export function showRegisterJp(show) {
 }
 
 /**
+ * Zobrazení/skrytí digitálních entit.
+ * @param show true, pokud se mají zobrazovat
+ */
+export function showRequestsJp(show) {
+    return {
+        type: types.SHOW_REQUESTS_JP,
+        show
+    }
+}
+
+/**
  * Nová verze AS po jeho schálení.
  * {int} versionId nová verze AS
  */
