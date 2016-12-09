@@ -936,6 +936,22 @@ class WebApi {
     outputClone(versionId, outputId) {
         return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/output/' + versionId + '/' + outputId + '/clone');
     }
+
+    getRegExternalSystems() {
+        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/externalSystems');
+    }
+
+    findInterpiRecords(criteria) {
+        return AjaxUtils.ajaxPost(WebApi.registryUrl + '/interpi', null, criteria);
+    }
+
+    importRecord(importVO) {
+        return AjaxUtils.ajaxPost(WebApi.registryUrl + '/interpi/import/', null, importVO);
+    }
+
+    importRecordUpdate(recordId, importVO) {
+        return AjaxUtils.ajaxPut(WebApi.registryUrl + '/interpi/import/'+ recordId, null, importVO);
+    }
 }
 
 WebApi.baseUrl = '/api';

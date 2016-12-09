@@ -4,12 +4,14 @@ import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
+import cz.tacr.elza.domain.RegExternalSystem;
 import cz.tacr.elza.domain.SysExternalSystem;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DigitizationFrontdeskRepository;
 import cz.tacr.elza.repository.ExternalSystemRepository;
+import cz.tacr.elza.repository.RegExternalSystemRepository;
 import cz.tacr.elza.service.eventnotification.events.ActionEvent;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +33,9 @@ public class ExternalSystemService {
     private ExternalSystemRepository externalSystemRepository;
 
     @Autowired
+    private RegExternalSystemRepository regExternalSystemRepository;
+
+    @Autowired
     private DigitizationFrontdeskRepository digitizationFrontdeskRepository;
 
     @Autowired
@@ -44,6 +49,17 @@ public class ExternalSystemService {
     @AuthMethod(permission = UsrPermission.Permission.ADMIN)
     public List<SysExternalSystem> findAll() {
         return externalSystemRepository.findAll();
+    }
+
+
+    /**
+     * Vyhledá všechny externí systémy.
+     *
+     * @return seznam externích systémů
+     */
+    @AuthMethod(permission = UsrPermission.Permission.REG_SCOPE_WR_ALL)
+    public List<RegExternalSystem> findAllRegSystem() {
+        return regExternalSystemRepository.findAll();
     }
 
     /**

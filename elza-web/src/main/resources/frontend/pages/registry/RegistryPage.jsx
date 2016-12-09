@@ -7,7 +7,7 @@ import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Loading} from 'components/index.jsx';
 import {Icon, RibbonGroup,Ribbon, ModalDialog, NodeTabs, ArrPanel,
         SearchWithGoto, RegistryPanel, AddRegistryForm, ImportForm,
-        ListBox, Autocomplete} from 'components';
+        ListBox, Autocomplete, ExtImportForm} from 'components';
 import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 import {Button} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
@@ -235,6 +235,10 @@ class RegistryPage extends AbstractReactComponent {
        );
     }
 
+    handleExtImport = () => {
+        this.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={false}/>));
+    };
+
     canMoveRegistry() {
         const {registryRegion: {selectedId, registryRegionData, registryParentId, recordForMove}} = this.props;
 
@@ -280,6 +284,11 @@ class RegistryPage extends AbstractReactComponent {
             altActions.push(
                 <Button key='registryImport' onClick={this.handleRegistryImport}><Icon glyph='fa-download'/>
                     <div><span className="btnText">{i18n('ribbon.action.registry.import')}</span></div>
+                </Button>
+            );
+            altActions.push(
+                <Button key='registryExtImport' onClick={this.handleExtImport}><Icon glyph='fa-download'/>
+                    <div><span className="btnText">{i18n('ribbon.action.registry.importExt')}</span></div>
                 </Button>
             );
         }

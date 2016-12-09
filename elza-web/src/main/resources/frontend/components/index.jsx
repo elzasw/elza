@@ -43,6 +43,7 @@ exports.CollapsablePanel = require('components/shared/collapsable-panel/Collapsa
 exports.FormUtils = require('components/form/FormUtils.jsx');
 exports.ImportForm = require('components/form/ImportForm.jsx');
 exports.ExportForm = require('components/form/ExportForm.jsx');
+exports.ExtImportForm = require('components/form/ExtImportForm.jsx');
 exports.FormInput = require('components/form/FormInput.jsx');
 
 exports.Ribbon = require('components/page/Ribbon.jsx');
