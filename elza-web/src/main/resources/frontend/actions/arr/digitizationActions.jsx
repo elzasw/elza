@@ -12,7 +12,7 @@ import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 
 const AREA_PREPARED_DIGITIZATION_REQUESTS = "preparedDigitizationRequestList";
 const AREA_DIGITIZATION_REQUEST_LIST_SUFFIX = ".requestList";
-const AREA_DIGITIZATION_REQUEST_IN_QUEUE_LIST_SUFFIX = ".requestInQueueList";
+const AREA_DIGITIZATION_REQUEST_IN_QUEUE_LIST = "requestInQueueList";
 const AREA_DIGITIZATION_REQUEST_DETAIL_SUFFIX = ".requestDetail";
 
 /**
@@ -38,12 +38,11 @@ export function fetchListIfNeeded(versionId) {
 }
 
 /**
- * Načtení požadavků ve frontě pro konkrétní fond.
- * @param versionId verze AS
+ * Načtení všech požadavků ve frontě.
  */
-export function fetchInQueueListIfNeeded(versionId) {
-    return SimpleListActions.fetchIfNeeded("fund[" + versionId + "]" + AREA_DIGITIZATION_REQUEST_IN_QUEUE_LIST_SUFFIX, versionId, (parent, filter) => {
-        return WebApi.getRequestsInQueue(versionId)
+export function fetchInQueueListIfNeeded() {
+    return SimpleListActions.fetchIfNeeded(AREA_DIGITIZATION_REQUEST_IN_QUEUE_LIST, null, (parent, filter) => {
+        return WebApi.getRequestsInQueue()
             .then(json => ({rows: json, count: 0}));
     });
 }

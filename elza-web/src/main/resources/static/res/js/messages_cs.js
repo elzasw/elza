@@ -23,6 +23,7 @@ var messages = {
     "global.error.ajax": "Při komunikaci nastala chyba",
     "global.action.create": "Vytvořit",
     "global.action.update": "Upravit",
+    "global.action.delete": "Odstranit",
     "global.action.add": "Přidat",
     "global.action.choose": "Vybrat",
     "global.action.remove": "Odebrat",
@@ -825,6 +826,15 @@ var messages = {
     "arr.request.title.type.TRANSFER": "Požadavek na dalimitaci",
     "arr.request.title.type.LINK": "Požadavek na připojení k JP",
     "arr.request.title.type.UNLINK": "Požadavek na odpojení od JP",
+
+    "requestQueue.title.requestQueue": "Požadavky ve frontě",
+    "requestQueue.title.create": "Vytvořeno",
+    "requestQueue.title.attemptToSend": "Poslední pokud o odeslání",
+    "requestQueue.title.error": "Chyba odeslání",
+    "requestQueue.title.username": "Uživatel",
+    "requestQueue.title.description": "Popis",
+    "requestQueue.title.type": "Typ",
+    "requestQueue.delete.confirm": "Opravdu chcete zmazat položku z fronty?",
 
     "____": ""
 };

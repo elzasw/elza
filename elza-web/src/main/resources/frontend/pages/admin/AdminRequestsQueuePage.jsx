@@ -3,12 +3,15 @@
  */
 import React from 'react';
 import {connect} from 'react-redux';
-import {Button} from 'react-bootstrap';
-import {AbstractReactComponent, i18n} from 'components/index.jsx';
+import {Table, Button} from 'react-bootstrap';
+import {AbstractReactComponent, i18n, Loading} from 'components/index.jsx';
 import {getIndexStateFetchIfNeeded, reindex} from 'actions/admin/fulltext.jsx';
 import {Ribbon, AdminPackagesList, AdminPackagesUpload} from 'components/index.jsx';
 import {PageLayout} from 'pages/index.jsx';
 import * as digitizationActions from 'actions/arr/digitizationActions';
+import {getRequestType} from 'components/arr/ArrUtils.jsx'
+import {dateTimeToString} from "components/Utils.jsx";
+import {WebApi} from 'actions/index.jsx';
 
 const AdminRequestsQueuePage = class extends AbstractReactComponent {
     constructor(props) {
@@ -23,21 +26,61 @@ const AdminRequestsQueuePage = class extends AbstractReactComponent {
 
 
     componentDidMount() {
-        // this.dispatch(digitizationActions.fetchInQueueListIfNeeded(fund.versionId));
-        // fetchInQueueListIfNeeded
+        this.dispatch(digitizationActions.fetchInQueueListIfNeeded());
     }
 
     componentWillReceiveProps(nextProps) {
-        // this.dispatch(digitizationActions.fetchInQueueListIfNeeded(fund.versionId));
+        this.dispatch(digitizationActions.fetchInQueueListIfNeeded());
+    }
+
+    handleDelete = (item) => {
+        if (confirm(i18n("requestQueue.delete.confirm"))) {
+            WebApi.deleteRequestFromQueue(item.id)
+                .then(json => {
+                });
+        }
     }
 
     render() {
-        const {splitter} = this.props;
+        const {requestInQueueList, splitter} = this.props;
 
-        var centerPanel = (
-            <div>
-            </div>
-        )
+        let centerPanel;
+        if (requestInQueueList.fetched) {
+            centerPanel = (
+                <div>
+                    <h2>{i18n("requestQueue.title.requestQueue")}</h2>
+
+                    <Table striped bordered condensed hover>
+                        <thead>
+                            <tr>
+                                <th>{i18n("requestQueue.title.create")}</th>
+                                <th>{i18n("requestQueue.title.attemptToSend")}</th>
+                                <th>{i18n("requestQueue.title.error")}</th>
+                                <th>{i18n("requestQueue.title.username")}</th>
+                                <th>{i18n("requestQueue.title.description")}</th>
+                                <th>{i18n("requestQueue.title.type")}</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {requestInQueueList.rows.map(item => {
+                            return <tr key={item.id}>
+                                <td>{dateTimeToString(new Date(item.create))}</td>
+                                <td>{dateTimeToString(new Date(item.attemptToSend))}</td>
+                                <td>{item.error}</td>
+                                <td>{item.request.username}</td>
+                                <td>{item.request.description}</td>
+                                <td>{getRequestType(item.request)}</td>
+                                <td><Button onClick={() => this.handleDelete(item)}>{i18n("global.action.delete")}</Button></td>
+                            </tr>
+                        })}
+                        </tbody>
+                    </Table>
+                </div>
+            );
+        } else {
+            centerPanel = <Loading/>;
+        }
 
         return (
             <PageLayout
@@ -57,10 +100,10 @@ const AdminRequestsQueuePage = class extends AbstractReactComponent {
  * @returns {{packages: *}}
  */
 function mapStateToProps(state) {
-    const {splitter, adminRegion: {packages}} = state
+    const {app:{requestInQueueList}, splitter} = state;
     return {
         splitter,
-        packages
+        requestInQueueList,
     }
 }
 

@@ -527,6 +527,10 @@ class WebApi {
         return getData(data, 100);
     }
 
+    deleteRequestFromQueue(id) {
+        return getData({}, 100);
+    }
+
     getDigitizationRequests(versionId, state) {
         return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/requests/' + versionId, { state });
     }

@@ -11,6 +11,7 @@ const initialState = {
     partyList: SimpleListReducer(undefined, undefined, {getPartyListDataKey, filter:{text:null, type:null}}),
     partyDetail: DetailReducer(),
     preparedDigitizationRequestList: SimpleListReducer(),   // seznam neodeslaných požadavků na digitalizaci - sdíleno pro celou aplikaci
+    requestInQueueList: SimpleListReducer(),   // seznam požadavků ve frontě
 };
 
 export default function app(state = initialState, action) {

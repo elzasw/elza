@@ -386,6 +386,35 @@ export function getGlyph(type) {
     }
 }
 
+const REQ_DIGITIZATION_REQUEST = "DIGITIZATION_REQUEST";
+const REQ_LINK = "LINK";
+const REQ_UNLINK = "UNLINK";
+const REQ_DESTRUCTION = "DESTRUCTION";
+const REQ_TRANSFER = "TRANSFER";
+export function getRequestType(digReq) {
+    switch (digReq["@class"]) {
+        case ".ArrDigitizationRequestVO":
+            return REQ_DIGITIZATION_REQUEST;
+        case ".ArrDaoLinkRequest":
+            switch (digReq.type) {
+                case "LINK":
+                    return REQ_LINK;
+                case "UNLINK":
+                    return REQ_UNLINK;
+            }
+            break;
+        case ".ArrDaoRequestVO":
+            switch (digReq.type) {
+                case "DESTRUCTION":
+                    return REQ_DESTRUCTION;
+                case "TRANSFER":
+                    return REQ_TRANSFER;
+            }
+            break;
+    }
+    return null;
+}
+
 export function hasDescItemTypeValue(dataType) {
     switch (dataType.code) {
         case 'TEXT':

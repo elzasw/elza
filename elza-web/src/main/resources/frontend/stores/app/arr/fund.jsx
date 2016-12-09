@@ -57,7 +57,6 @@ export function fundInitState(fundWithVersion) {
         versionValidation: versionValidation(undefined, {type: ''}),
         fundNodesError: {}, // zatím jen pomocný, je řešeno ve state
         requestList: SimpleListReducer(),   // seznam požadavků na digitalizaci
-        requestInQueueList: SimpleListReducer(),   // seznam požadavků ve frontě
         requestDetail: DetailReducer(), // detail vybraného požadavku na digitalizaci
         reducer: fund,
     };
@@ -212,7 +211,6 @@ export function fund(state, action) {
                 versionValidation: versionValidation(undefined, {type: ''}),
                 fundNodesError: {},
                 requestList: SimpleListReducer(),   // seznam požadavků na digitalizaci
-                requestInQueueList: SimpleListReducer(),   // seznam požadavků ve frontě
                 requestDetail: DetailReducer(), // detail vybraného požadavku na digitalizaci
                 reducer: fund,
             }
