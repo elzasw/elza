@@ -67,6 +67,9 @@ public enum EventType {
     GROUP_CREATE(EventId.class),
     GROUP_DELETE(EventId.class),
 
+    REQUEST_CHANGE(EventIdNodeIdInVersion.class),
+    REQUEST_CREATE(EventIdNodeIdInVersion.class),
+
     EXTERNAL_SYSTEM_CHANGE(ActionEvent.class),
 
     BULK_ACTION_STATE_CHANGE(EventStringInVersion.class);

@@ -1948,13 +1948,22 @@ public class ArrangementController {
         revertingChangesService.revertChanges(fundVersion.getFund(), node, fromChange, toChange);
     }
 
-    @RequestMapping(value = "/requests/digitization/add", method = RequestMethod.POST)
+    /**
+     * Vytvoření požadavku nebo přidání JP k existujícímu požadavku.
+     *
+     * @param fundVersionId identifikátor verze AS
+     * @param send          současně odeslat požadavek?
+     * @param param         parametry požadavku
+     */
+    @RequestMapping(value = "/requests/{fundVersionId}/digitization/add", method = RequestMethod.POST)
     @Transactional
-    public void digitizationRequestAdd(@RequestParam(name = "send", defaultValue = "false") Boolean send,
+    public void digitizationRequestAdd(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                       @RequestParam(name = "send", defaultValue = "false") Boolean send,
                                        @RequestBody DigitizationRequestParam param) {
         Assert.notNull(param);
         Assert.notEmpty(param.nodeIds);
 
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         List<ArrNode> nodes = nodeRepository.findAll(param.nodeIds);
 
         if (nodes.size() != param.nodeIds.size()) {
@@ -1963,10 +1972,10 @@ public class ArrangementController {
 
         ArrDigitizationRequest digitizationRequest;
         if (param.id == null) {
-            digitizationRequest = requestService.createDigitizationRequest(nodes, param.description, nodes.get(0).getFund());
+            digitizationRequest = requestService.createDigitizationRequest(nodes, param.description, fundVersion);
         } else {
             digitizationRequest = requestService.getDigitizationRequest(param.id);
-            requestService.addNodeDigitizationRequest(digitizationRequest, nodes, nodes.get(0).getFund());
+            requestService.addNodeDigitizationRequest(digitizationRequest, nodes, fundVersion);
         }
 
         if (BooleanUtils.isTrue(send)) {
@@ -1974,13 +1983,55 @@ public class ArrangementController {
         }
     }
 
-    @RequestMapping(value = "/requests/digitization/remove", method = RequestMethod.POST)
+    /**
+     * Odeslání požadavku.
+     *
+     * @param fundVersionId  identifikátor verze AS
+     * @param digitizationId identifikátor požadavku
+     */
+    @RequestMapping(value = "/requests/{fundVersionId}/{digitizationId}/send", method = RequestMethod.POST)
     @Transactional
-    public void digitizationRequestRemove(@RequestBody DigitizationRequestParam param) {
+    public void digitizationRequestSend(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                        @PathVariable(value = "digitizationId") final Integer digitizationId) {
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        ArrDigitizationRequest digitizationRequest = requestService.getDigitizationRequest(digitizationId);
+        if (!fundVersion.getFund().equals(digitizationRequest.getFund())) {
+            throw new SystemException(ArrangementCode.INVALID_VERSION);
+        }
+        requestService.sendRequest(digitizationRequest);
+    }
+
+    /**
+     * Změna požadavku.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param param         parametry požadavku
+     */
+    @RequestMapping(value = "/requests/{fundVersionId}/digitization/change", method = RequestMethod.POST)
+    @Transactional
+    public void digitizationRequestChange(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                          @RequestBody DigitizationRequestParam param) {
+        Assert.notNull(param);
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        ArrDigitizationRequest digitizationRequest = requestService.getDigitizationRequest(param.id);
+        requestService.changeDigitizationRequest(digitizationRequest, fundVersion, param.getDescription());
+    }
+
+    /**
+     * Odebrání JP z požadavku.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param param         parametry požadavku
+     */
+    @RequestMapping(value = "/requests/{fundVersionId}/digitization/remove", method = RequestMethod.POST)
+    @Transactional
+    public void digitizationRequestRemove(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                          @RequestBody DigitizationRequestParam param) {
         Assert.notNull(param);
         Assert.notNull(param.id);
         Assert.notEmpty(param.nodeIds);
 
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         List<ArrNode> nodes = nodeRepository.findAll(param.nodeIds);
 
         if (nodes.size() != param.nodeIds.size()) {
@@ -1988,9 +2039,18 @@ public class ArrangementController {
         }
 
         ArrDigitizationRequest digitizationRequest = requestService.getDigitizationRequest(param.id);
-        requestService.removeNodeDigitizationRequest(digitizationRequest, nodes, nodes.get(0).getFund());
+        requestService.removeNodeDigitizationRequest(digitizationRequest, nodes, fundVersion);
     }
 
+    /**
+     * Vyhledání požadavků.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param state         stav požadavku
+     * @param type          typ požadavku
+     * @param detail        vyplnit detailní informace o požadavku?
+     * @return seznam odpovídajících požadavků
+     */
     @RequestMapping(value = "/requests/{fundVersionId}", method = RequestMethod.GET)
     public List<ArrRequestVO> findRequests(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                            @RequestParam(value = "state", required = false) ArrRequest.State state,
@@ -2001,6 +2061,14 @@ public class ArrangementController {
         return factoryVo.createRequest(requests, detail, fundVersion);
     }
 
+    /**
+     * Získání konkrétního požadavku.
+     *
+     * @param fundVersionId  identfikátor verze AS
+     * @param requestId      identifikátor požadavku
+     * @param detail         vyplnit detailní informace o požadavku?
+     * @return nalezený požadavek
+     */
     @RequestMapping(value = "/requests/{fundVersionId}/{requestId}", method = RequestMethod.GET)
     public ArrRequestVO getRequest(
             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
@@ -2008,12 +2076,7 @@ public class ArrangementController {
             @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrRequest request = requestService.getRequest(requestId);
-
-        // TODO [slapa] - opravit
-        List<ArrRequest> list = new ArrayList<>();
-        list.add(request);
-
-        return factoryVo.createRequest(list, detail, fundVersion).get(0);
+        return factoryVo.createRequest(request, detail, fundVersion);
     }
 
     /**

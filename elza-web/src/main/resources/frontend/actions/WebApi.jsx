@@ -541,7 +541,7 @@ class WebApi {
             nodeIds,
             description
         };
-        return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/requests/digitization/add', { send } , data);
+        return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/requests/' + versionId + '/digitization/add', { send } , data);
     }
 
     arrRequestRemoveNodes(versionId, reqId, nodeIds) {
@@ -549,7 +549,7 @@ class WebApi {
             id: reqId,
             nodeIds,
         };
-        return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/requests/digitization/remove', null, data);
+        return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/requests/' + versionId + '/digitization/remove', null, data);
     }
 
     updateArrRequest(versionId, id, data) {
@@ -576,23 +576,7 @@ class WebApi {
                 data.expandedIds.push(prop);
             }
         }
-        return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/fundTree', null, data)
-            .then(json => {
-                console.log("##################################################", json)
-
-                json.nodes.forEach((node, index) => {
-                    // TODO [stanekpa] - odebrat, až bude posílat server
-                    if (index % 2 === 0) {
-                        node.digitizationRequests = [{
-                            description: "Popis požadavku na digitalizaci #" + index,
-                            time: new Date().getTime(),
-                            username: "usr-" + (index * 123) + "er"
-                        }];
-                    }
-                });
-
-                return json;
-            });
+        return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/fundTree', null, data);
     }
 
     getFundTreeNodes(versionId, nodeIds) {

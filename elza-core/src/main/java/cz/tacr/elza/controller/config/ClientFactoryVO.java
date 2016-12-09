@@ -1785,60 +1785,19 @@ public class ClientFactoryVO {
         return mapper.mapAsList(entity, clazz);
     }
 
-    public List<ArrRequestVO> createRequest(final List<ArrRequest> requests, boolean detail, final ArrFundVersion fundVersion) {
+    public List<ArrRequestVO> createRequest(final Collection<ArrRequest> requests, boolean detail, final ArrFundVersion fundVersion) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         List<ArrRequestVO> requestVOList = new ArrayList<>(requests.size());
         Set<ArrDigitizationRequest> requestForNodes = new HashSet<>();
+
         for (ArrRequest request : requests) {
-            switch (request.getDiscriminator()) {
-                case DIGITIZATION: {
-                    requestForNodes.add((ArrDigitizationRequest) request);
-                    break;
-                }
-
-                case DAO: {
-                    // TODO
-                    throw new NotImplementedException();
-                }
-
-                case DAO_LINK: {
-                    // TODO
-                    throw new NotImplementedException();
-                }
-
-                default: {
-                    throw new IllegalStateException(String.valueOf(request.getDiscriminator()));
-                }
-            }
+            prepareRequest(requestForNodes, request);
         }
 
         Map<ArrDigitizationRequest, Integer> countNodesRequestMap;
         Map<ArrDigitizationRequest, List<TreeNodeClient>> nodesRequestMap = new HashMap<>();
         if (detail) {
-            countNodesRequestMap = new HashMap<>();
-            List<ArrDigitizationRequestNode> digitizationRequestNodes = digitizationRequestNodeRepository.findByDigitizationRequest(requestForNodes);
-
-            Set<Integer> nodeIds = new HashSet<>();
-            for (ArrDigitizationRequestNode digitizationRequestNode : digitizationRequestNodes) {
-                nodeIds.add(digitizationRequestNode.getNode().getNodeId());
-            }
-
-            Map<Integer, TreeNodeClient> treeNodeClientMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()).stream().collect(Collectors.toMap(TreeNodeClient::getId, Function.identity()));
-
-            for (ArrDigitizationRequestNode digitizationRequestNode : digitizationRequestNodes) {
-                Integer nodeId = digitizationRequestNode.getNode().getNodeId();
-                nodeIds.add(nodeId);
-                List<TreeNodeClient> treeNodeClients = nodesRequestMap.get(digitizationRequestNode.getDigitizationRequest());
-                if (treeNodeClients == null) {
-                    treeNodeClients = new ArrayList<>();
-                    nodesRequestMap.put(digitizationRequestNode.getDigitizationRequest(), treeNodeClients);
-                }
-                treeNodeClients.add(treeNodeClientMap.get(nodeId));
-            }
-
-            for (Map.Entry<ArrDigitizationRequest, List<TreeNodeClient>> entry : nodesRequestMap.entrySet()) {
-                countNodesRequestMap.put(entry.getKey(), entry.getValue().size());
-            }
+            countNodesRequestMap = fillDetailParams(fundVersion, requestForNodes, nodesRequestMap);
 
         } else {
             countNodesRequestMap = digitizationRequestNodeRepository.countByRequests(requestForNodes);
@@ -1846,42 +1805,122 @@ public class ClientFactoryVO {
 
         for (ArrRequest request : requests) {
             ArrRequestVO requestVO;
-
-            switch (request.getDiscriminator()) {
-                case DIGITIZATION: {
-                    requestVO = new ArrDigitizationRequestVO();
-                    convertDigitizationRequest((ArrDigitizationRequest) request, (ArrDigitizationRequestVO) requestVO, countNodesRequestMap.get(request), nodesRequestMap.get(request));
-                    break;
-                }
-
-                case DAO: {
-                    requestVO = new ArrDaoRequestVO();
-                    // TODO
-                    throw new NotImplementedException();
-                }
-
-                case DAO_LINK: {
-                    requestVO = new ArrDaoLinkRequestVO();
-                    // TODO
-                    throw new NotImplementedException();
-                }
-
-                default: {
-                    throw new IllegalStateException(String.valueOf(request.getDiscriminator()));
-                }
-            }
-
-            ArrChange createChange = request.getCreateChange();
-            requestVO.setCode(request.getCode());
-            requestVO.setId(request.getRequestId());
-            requestVO.setState(request.getState());
-            requestVO.setRejectReason(request.getRejectReason());
-            requestVO.setResponseExternalSystem(mapper.map(request.getResponseExternalSystem(), Date.class));
-            requestVO.setCreate(mapper.map(createChange.getChangeDate(), Date.class));
-            requestVO.setUsername(createChange.getUser() == null ? null : createChange.getUser().getUsername());
+            requestVO = createRequestVO(countNodesRequestMap, nodesRequestMap, request);
+            convertRequest(mapper, request, requestVO);
             requestVOList.add(requestVO);
         }
         return requestVOList;
+    }
+
+    public ArrRequestVO createRequest(final ArrRequest request, boolean detail, final ArrFundVersion fundVersion) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        Set<ArrDigitizationRequest> requestForNodes = new HashSet<>();
+        prepareRequest(requestForNodes, request);
+
+        Map<ArrDigitizationRequest, Integer> countNodesRequestMap;
+        Map<ArrDigitizationRequest, List<TreeNodeClient>> nodesRequestMap = new HashMap<>();
+        if (detail) {
+            countNodesRequestMap = fillDetailParams(fundVersion, requestForNodes, nodesRequestMap);
+        } else {
+            countNodesRequestMap = digitizationRequestNodeRepository.countByRequests(requestForNodes);
+        }
+
+        ArrRequestVO requestVO;
+        requestVO = createRequestVO(countNodesRequestMap, nodesRequestMap, request);
+        convertRequest(mapper, request, requestVO);
+
+        return requestVO;
+    }
+
+    private Map<ArrDigitizationRequest, Integer> fillDetailParams(final ArrFundVersion fundVersion, final Set<ArrDigitizationRequest> requestForNodes, final Map<ArrDigitizationRequest, List<TreeNodeClient>> nodesRequestMap) {
+        Map<ArrDigitizationRequest, Integer> countNodesRequestMap;
+        countNodesRequestMap = new HashMap<>();
+        List<ArrDigitizationRequestNode> digitizationRequestNodes = digitizationRequestNodeRepository.findByDigitizationRequest(requestForNodes);
+
+        Set<Integer> nodeIds = new HashSet<>();
+        for (ArrDigitizationRequestNode digitizationRequestNode : digitizationRequestNodes) {
+            nodeIds.add(digitizationRequestNode.getNode().getNodeId());
+        }
+
+        Map<Integer, TreeNodeClient> treeNodeClientMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()).stream().collect(Collectors.toMap(TreeNodeClient::getId, Function.identity()));
+
+        for (ArrDigitizationRequestNode digitizationRequestNode : digitizationRequestNodes) {
+            Integer nodeId = digitizationRequestNode.getNode().getNodeId();
+            nodeIds.add(nodeId);
+            List<TreeNodeClient> treeNodeClients = nodesRequestMap.get(digitizationRequestNode.getDigitizationRequest());
+            if (treeNodeClients == null) {
+                treeNodeClients = new ArrayList<>();
+                nodesRequestMap.put(digitizationRequestNode.getDigitizationRequest(), treeNodeClients);
+            }
+            treeNodeClients.add(treeNodeClientMap.get(nodeId));
+        }
+
+        for (Map.Entry<ArrDigitizationRequest, List<TreeNodeClient>> entry : nodesRequestMap.entrySet()) {
+            countNodesRequestMap.put(entry.getKey(), entry.getValue().size());
+        }
+        return countNodesRequestMap;
+    }
+
+    private void convertRequest(final MapperFacade mapper, final ArrRequest request, final ArrRequestVO requestVO) {
+        ArrChange createChange = request.getCreateChange();
+        requestVO.setCode(request.getCode());
+        requestVO.setId(request.getRequestId());
+        requestVO.setState(request.getState());
+        requestVO.setRejectReason(request.getRejectReason());
+        requestVO.setResponseExternalSystem(mapper.map(request.getResponseExternalSystem(), Date.class));
+        requestVO.setCreate(mapper.map(createChange.getChangeDate(), Date.class));
+        requestVO.setUsername(createChange.getUser() == null ? null : createChange.getUser().getUsername());
+    }
+
+    private ArrRequestVO createRequestVO(final Map<ArrDigitizationRequest, Integer> countNodesRequestMap, final Map<ArrDigitizationRequest, List<TreeNodeClient>> nodesRequestMap, final ArrRequest request) {
+        ArrRequestVO requestVO;
+        switch (request.getDiscriminator()) {
+            case DIGITIZATION: {
+                requestVO = new ArrDigitizationRequestVO();
+                convertDigitizationRequest((ArrDigitizationRequest) request, (ArrDigitizationRequestVO) requestVO, countNodesRequestMap.get(request), nodesRequestMap.get(request));
+                break;
+            }
+
+            case DAO: {
+                requestVO = new ArrDaoRequestVO();
+                // TODO
+                throw new NotImplementedException();
+            }
+
+            case DAO_LINK: {
+                requestVO = new ArrDaoLinkRequestVO();
+                // TODO
+                throw new NotImplementedException();
+            }
+
+            default: {
+                throw new IllegalStateException(String.valueOf(request.getDiscriminator()));
+            }
+        }
+        return requestVO;
+    }
+
+    private void prepareRequest(final Set<ArrDigitizationRequest> requestForNodes, final ArrRequest request) {
+        switch (request.getDiscriminator()) {
+            case DIGITIZATION: {
+                requestForNodes.add((ArrDigitizationRequest) request);
+                break;
+            }
+
+            case DAO: {
+                // TODO
+                throw new NotImplementedException();
+            }
+
+            case DAO_LINK: {
+                // TODO
+                throw new NotImplementedException();
+            }
+
+            default: {
+                throw new IllegalStateException(String.valueOf(request.getDiscriminator()));
+            }
+        }
     }
 
     private void convertDigitizationRequest(final ArrDigitizationRequest request,

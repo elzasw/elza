@@ -16,11 +16,16 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.controller.vo.ArrDigitizationRequestVO;
+import cz.tacr.elza.controller.vo.ArrRequestVO;
+import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import org.apache.commons.collections4.CollectionUtils;
@@ -110,6 +115,9 @@ public class LevelTreeCacheService {
 
     @Autowired
     private PolicyService policyService;
+
+    @Autowired
+    private RequestService requestService;
 
     /**
      * Cache stromu pro danou verzi. (id verze -> nodeid uzlu -> uzel).
@@ -202,8 +210,38 @@ public class LevelTreeCacheService {
         TreeData treeData = new TreeData(createNodesWithTitles(nodesMap, null, rootNode, version).values(), expandedIdsExtended);
 
         addConformityInfo(treeData.getNodes(), version);
+        addRequests(treeData.getNodes(), version);
 
         return treeData;
+    }
+
+    private void addRequests(final Collection<TreeNodeClient> nodes, final ArrFundVersion version) {
+        if (CollectionUtils.isEmpty(nodes)) {
+            return;
+        }
+
+        Set<Integer> nodeIds = new HashSet<>();
+        nodes.forEach(treeNodeClient -> nodeIds.add(treeNodeClient.getId()));
+        Map<Integer, Set<ArrDigitizationRequest>> requestMap = requestService.findDigitizationRequest(nodeIds, ArrRequest.State.OPEN);
+        Set<ArrRequest> requests = new HashSet<>();
+
+        for (Set<ArrDigitizationRequest> digitizationRequests : requestMap.values()) {
+            requests.addAll(digitizationRequests);
+        }
+
+        List<ArrRequestVO> requestVOs = clientFactoryVO.createRequest(requests, false, version);
+        Map<Integer, ArrRequestVO> requestVOMap = requestVOs.stream().collect(Collectors.toMap(ArrRequestVO::getId, Function.identity()));
+        for (TreeNodeClient node : nodes) {
+            Collection<ArrDigitizationRequest> digitizationRequests = requestMap.get(node.getId());
+            if (CollectionUtils.isNotEmpty(digitizationRequests)) {
+                List<ArrDigitizationRequestVO> digitizationRequestVOs = new ArrayList<>();
+                for (ArrDigitizationRequest digitizationRequest : digitizationRequests) {
+                    ArrRequestVO requestVO = requestVOMap.get(digitizationRequest.getRequestId());
+                    digitizationRequestVOs.add((ArrDigitizationRequestVO) requestVO);
+                }
+                node.setDigitizationRequests(digitizationRequestVOs);
+            }
+        }
     }
 
     /**

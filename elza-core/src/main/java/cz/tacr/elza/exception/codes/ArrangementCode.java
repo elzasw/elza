@@ -69,6 +69,16 @@ public enum ArrangementCode implements ErrorCode {
     CANT_SEND,
 
     /**
+     * Neplatná verze.
+     */
+    INVALID_VERSION,
+
+    /**
+     * Neplatný stav požadavku.
+     */
+    REQUEST_INVALID_STATE,
+
+    /**
      * Existuje blokující změna v JP - obecně např. hromadná změna, import AS, atd.
      */
     EXISTS_BLOCKING_CHANGE

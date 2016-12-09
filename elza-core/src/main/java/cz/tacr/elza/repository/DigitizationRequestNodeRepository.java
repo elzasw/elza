@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.api.ArrRequest;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrDigitizationRequestNode;
 import cz.tacr.elza.domain.ArrNode;
@@ -22,4 +23,7 @@ public interface DigitizationRequestNodeRepository extends ElzaJpaRepository<Arr
 
     @Query("SELECT p FROM arr_digitization_request_node p WHERE p.digitizationRequest IN (?1)")
     List<ArrDigitizationRequestNode> findByDigitizationRequest(Collection<ArrDigitizationRequest> digitizationRequest);
+
+    @Query("SELECT p FROM arr_digitization_request_node p JOIN p.node n JOIN p.digitizationRequest dr WHERE n.nodeId IN (?1) AND dr.state = ?2")
+    List<ArrDigitizationRequestNode> findByNodeIds(Collection<Integer> nodeIds, final ArrRequest.State state);
 }
