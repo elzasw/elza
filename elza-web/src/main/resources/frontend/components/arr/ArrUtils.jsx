@@ -386,11 +386,11 @@ export function getGlyph(type) {
     }
 }
 
-const REQ_DIGITIZATION_REQUEST = "DIGITIZATION_REQUEST";
-const REQ_LINK = "LINK";
-const REQ_UNLINK = "UNLINK";
-const REQ_DESTRUCTION = "DESTRUCTION";
-const REQ_TRANSFER = "TRANSFER";
+export const REQ_DIGITIZATION_REQUEST = "DIGITIZATION_REQUEST";
+export const REQ_LINK = "LINK";
+export const REQ_UNLINK = "UNLINK";
+export const REQ_DESTRUCTION = "DESTRUCTION";
+export const REQ_TRANSFER = "TRANSFER";
 export function getRequestType(digReq) {
     switch (digReq["@class"]) {
         case ".ArrDigitizationRequestVO":

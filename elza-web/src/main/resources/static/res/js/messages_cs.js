@@ -94,6 +94,7 @@ var messages = {
     "ribbon.action.arr.output.clone": "Vytvořit kopii",
     "ribbon.action.arr.fund.add": "Nový AS",
     "ribbon.action.arr.fund.requests": "Požadavky",
+    "ribbon.action.arr.fund.request.send": "Odeslat požadavek",
     "ribbon.action.arr.fund.update": "Upravit vlastnosti",
     "ribbon.action.arr.fund.approve": "Nová verze AS",
     "ribbon.action.arr.fund.ruleSet": "Změnit pravidla",

@@ -153,87 +153,17 @@ const ArrRequestPage = class extends ArrParentPage {
         var itemActions = [];
         var altActions = [];
         if (fund) {
-            const outputDetail = fund.fundOutput.fundOutputDetail;
-            const isDetailIdNotNull = outputDetail.id !== null;
-            const isDetailLoaded = outputDetail.fetched && !outputDetail.isFetching;
+            const requestDetail = fund.requestDetail;
+            const detailSelected = requestDetail.id !== null;
+            const detailLoaded = requestDetail.fetched && !requestDetail.isFetching;
 
-            const hasPersmission = userDetail.hasOne(perms.FUND_ADMIN, perms.FUND_OUTPUT_WR_ALL, {
-                type: perms.FUND_OUTPUT_WR,
-                fundId: fund.id
-            });
-
-            if (hasPersmission && !readMode && !closed) {
-                altActions.push(
-                    <Button key="add-output" onClick={this.handleAddOutput}><Icon glyph="fa-plus-circle"/>
-                        <div><span className="btnText">{i18n('ribbon.action.arr.output.add')}</span></div>
-                    </Button>
-                )
-                if (isDetailIdNotNull && !closed) {
-                    altActions.push(
-                        <Button key="generate-output" onClick={() => {this.handleGenerateOutput(outputDetail.id)}} disabled={!isDetailLoaded || !this.isOutputGeneratingAllowed(outputDetail.outputDefinition)}><Icon glyph="fa-youtube-play" />
-                            <div><span className="btnText">{i18n('ribbon.action.arr.output.generate')}</span></div>
+            if (!readMode && !closed) {
+                if (detailSelected && !closed) {
+                    itemActions.push(
+                        <Button key="send" onClick={() => {this.handleSend(requestDetail.id)}} disabled={!detailLoaded}><Icon glyph="fa-youtube-play" />
+                            <div><span className="btnText">{i18n('ribbon.action.arr.fund.request.send')}</span></div>
                         </Button>
                     )
-                }
-            }
-
-
-            if (isDetailIdNotNull && isDetailLoaded && !readMode) {
-                const runnable = !closed && outputDetail.outputDefinition.state !== OutputState.FINISHED && outputDetail.outputDefinition.state !== OutputState.OUTDATED;
-                if (hasPersmission) {
-                    if (runnable) {
-                        itemActions.push(
-                            <Button key="add-item" onClick={this.handleAddDescItemType}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.item.add')}</span></div></Button>
-                        )
-                        /**
-                         *  Skrytí tlačítka - pravděpodobně nebudeme verzovat
-                         */
-                        /*
-                        itemActions.push(
-                            <Button key="fund-output-usage-end" onClick={this.handleUsageEnd}><Icon glyph="fa-clock-o"/>
-                                <div><span className="btnText">{i18n('ribbon.action.arr.output.usageEnd')}</span></div>
-                            </Button>
-                        );
-                        */
-                    }
-
-                    itemActions.push(
-                        <Button key="fund-output-delete" onClick={this.handleDelete} disabled={!isDetailLoaded}><Icon glyph="fa-trash"/>
-                            <div><span className="btnText">{i18n('ribbon.action.arr.output.delete')}</span></div>
-                        </Button>
-                    );
-
-                    if (outputDetail.outputDefinition.generatedDate && (outputDetail.outputDefinition.state === OutputState.FINISHED || outputDetail.outputDefinition.state === OutputState.OUTDATED)) {
-                        itemActions.push(
-                            <Button key="fund-output-revert" onClick={this.handleRevertToOpen} disabled={!isDetailLoaded}><Icon glyph="fa-undo"/>
-                                <div><span className="btnText">{i18n('ribbon.action.arr.output.revert')}</span></div>
-                            </Button>
-                        );
-                    }
-                    itemActions.push(
-                        <Button key="fund-output-clone" onClick={this.handleClone} disabled={!isDetailLoaded}><Icon glyph="fa-clone"/>
-                            <div><span className="btnText">{i18n('ribbon.action.arr.output.clone')}</span></div>
-                        </Button>
-                    )
-                }
-
-                if (runnable && outputDetail.outputDefinition.nodes.length > 0) {
-                    if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: fund.id})) { // právo na hromadné akce
-                        itemActions.push(
-                            <Button key="fund-output-other-action" onClick={this.handleOtherActionDialog}><Icon
-                                glyph="fa-cog"/>
-                                <div><span className="btnText">{i18n('ribbon.action.arr.output.otherAction')}</span>
-                                </div>
-                            </Button>
-                        );
-                        itemActions.push(
-                            <Button key="fund-output-bulk-actions" onClick={this.handleBulkActions}><Icon
-                                glyph="fa-cog"/>
-                                <div><span className="btnText">{i18n('ribbon.action.arr.output.bulkActions')}</span>
-                                </div>
-                            </Button>
-                        )
-                    }
                 }
             }
         }

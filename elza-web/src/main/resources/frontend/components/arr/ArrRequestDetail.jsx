@@ -25,7 +25,7 @@ import {fundOutputRemoveNodes, fundOutputAddNodes} from 'actions/arr/fundOutput.
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import * as digitizationActions from 'actions/arr/digitizationActions';
 import RequestInlineForm from "./RequestInlineForm";
-import {getRequestType} from './ArrUtils.jsx'
+import {REQ_DIGITIZATION_REQUEST, getRequestType} from './ArrUtils.jsx'
 
 const ShortcutsManager = require('react-shortcuts');
 const Shortcuts = require('react-shortcuts/component');

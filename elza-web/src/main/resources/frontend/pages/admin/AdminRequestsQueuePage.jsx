@@ -70,7 +70,7 @@ const AdminRequestsQueuePage = class extends AbstractReactComponent {
                                 <td>{item.error}</td>
                                 <td>{item.request.username}</td>
                                 <td>{item.request.description}</td>
-                                <td>{getRequestType(item.request)}</td>
+                                <td>{i18n("arr.request.title.type." + getRequestType(item.request))}</td>
                                 <td><Button onClick={() => this.handleDelete(item)}>{i18n("global.action.delete")}</Button></td>
                             </tr>
                         })}
