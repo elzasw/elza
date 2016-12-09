@@ -10,7 +10,7 @@ import java.util.Map;
  */
 public class Filters {
 
-    private ColumnFilters columnFilters;
+    private ColumnFilters columnFilters = new ColumnFilters();
 
     /** Id nodu. */
     private Integer nodeId;

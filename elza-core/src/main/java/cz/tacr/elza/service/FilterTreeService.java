@@ -95,9 +95,9 @@ public class FilterTreeService {
         Map<Integer, TreeNode> versionTreeCache = levelTreeCacheService.getVersionTreeCache(version);
         TreeNode parentNode;
         if (parentNodeId == null) {
-            parentNode = versionTreeCache.get(parentNodeId);
-        } else {
             parentNode = versionTreeCache.get(version.getRootNode().getNodeId());
+        } else {
+            parentNode = versionTreeCache.get(parentNodeId);
         }
 
         LinkedHashSet<Integer> versionIdsTable = levelTreeCacheWalker.walkThroughDFS(parentNode);
