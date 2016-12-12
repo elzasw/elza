@@ -617,7 +617,7 @@ class WebApi {
     }
 
     filterNodes(versionId, filter) {
-        return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/filterNodes/' + versionId, {}, {filters: filter})
+        return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/filterNodes/' + versionId, {}, filter)
     }
 
     getFilteredNodes(versionId, pageIndex, pageSize, descItemTypeIds) {

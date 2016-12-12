@@ -158,7 +158,8 @@ export default function arrRegion(state = initialState, action) {
                     ...state,
                     packets: {},
                     ...action.arrRegion,
-                    funds: action.arrRegion.funds.map(fundobj => fund(fundobj, action))
+                    funds: action.arrRegion.funds.map(fundobj => fund(fundobj, action)),
+                    extendedView: false
                 }
             } else if (action.arrRegionFund) {
                 var index = indexById(state.funds, action.arrRegionFund.versionId, "versionId");
@@ -170,7 +171,8 @@ export default function arrRegion(state = initialState, action) {
                             ...state.funds.slice(0, index),
                             fund(action.arrRegionFund, action),
                             ...state.funds.slice(index + 1)
-                        ]
+                        ],
+                        extendedView: false
                     }
                 } else {    // přidáme novou
                     return {
@@ -179,18 +181,18 @@ export default function arrRegion(state = initialState, action) {
                         funds: [
                             ...state.funds,
                             fund(action.arrRegionFund, action),
-                        ]
+                        ],
+                        extendedView: false
                     }
                 }
             } else {
                 return state;
             }
         case types.STORE_SAVE:
-            const {activeIndex, nodeSettings, extendedView} = state;
+            const {activeIndex, nodeSettings} = state;
             return {
                 activeIndex,
                 nodeSettings,
-                extendedView,
                 funds: state.funds.map(fundobj => fund(fundobj, action))
             }
         case types.FUND_EXTENDED_VIEW:
