@@ -86,13 +86,13 @@ class ExtImportSearch extends AbstractReactComponent {
 
     renderParam = (fields, index, self) => {
         const {condition, value, attType} = fields;
-        return <div className="flex">
-            {index !== 0 && <div className="flex-1">
+        return <div className="flex" key={index}>
+            {/*index !== 0 && <div className="flex-1">
                 <FormInput componentClass="select" {...condition} label={i18n('extImport.condition')}>
                     <option key="null" />
                     {CONDITIONS.map((i,x) => <option key={x} value={i.val}>{i.name}</option>)}
                 </FormInput>
-            </div>}
+            </div>*/}
             <div className="flex-1">
                 <FormInput componentClass="select" {...attType} label={i18n('extImport.attType')}>
                     <option key="null" />
@@ -128,13 +128,8 @@ class ExtImportSearch extends AbstractReactComponent {
                 {system.type === EXT_SYSTEM_CODE_INTERPI ? <div>
                     <label>Hledané parametry</label>
                     {conditions.map(this.renderParam)}
-                    <Button bsStyle="action" onClick={() => {
-                        let condition = null;
-                        if (conditions.length === 0) {
-                            condition = CONDITION_TYPE.AND;
-                        }
-                        conditions.addField({condition, value:null, attType: null})
-                    }}><Icon glyph="fa-plus" /></Button>
+                    <Button bsStyle="action" onClick={() => conditions.addField({condition: CONDITION_TYPE.AND, value:null, attType: null})}>
+                        <Icon glyph="fa-plus" /></Button>
                 </div> : <div>{i18n('extImport.notImplemented', system.name)}</div>}
             </div>}
             <div className="text-right">
@@ -178,7 +173,7 @@ class ExtImportForm extends AbstractReactComponent {
     }
 
     submit = (data) => {
-        const {results} = this.state;
+        const {results, systemId, isParty} = this.state;
         const record = objectById(results, data.interpiRecordId, 'recordId');
 
         let update = false;
@@ -194,7 +189,7 @@ class ExtImportForm extends AbstractReactComponent {
             }
         }
 
-        const importVO = {...data, scopeId: parseInt(data.scopeId), systemId: parseInt(this.state.systemId)};
+        const importVO = {...data, scopeId: parseInt(data.scopeId), systemId: parseInt(systemId), originator: isParty};
 
         if (update) {
             return WebApi.importRecordUpdate(recordId, importVO);
@@ -206,8 +201,8 @@ class ExtImportForm extends AbstractReactComponent {
     submitSearch = (data) => {
         const {isParty, count} = this.props;
 
-        WebApi.findInterpiRecords({...data, isParty, count, systemId: parseInt(data.systemId)}).then((results) => {
-            this.setState({searched: true, results, selectedRecordId: null});
+        return WebApi.findInterpiRecords({...data, isParty, count, systemId: parseInt(data.systemId)}).then((results) => {
+            this.setState({searched: true, results, selectedRecordId: null, systemId: parseInt(data.systemId)});
         })
     };
 
@@ -248,27 +243,31 @@ class ExtImportForm extends AbstractReactComponent {
                             <div className="flex">
                                 <div className="flex-2">
                                     <label>{i18n('extImport.results')}</label>
-                                    <Table>
-                                        <thead>
-                                         <tr>
-                                            <th>{i18n('extImport.id')}</th>
-                                            <th>{i18n('extImport.record')}</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                            {results.map(i => <tr onClick={() => interpiRecordId.onChange(i.recordId)}>
-                                                <td>{i.recordId}</td>
-                                                <td>{i.name}</td>
-                                            </tr>)}
-                                        </tbody>
-                                    </Table>
+                                    <div style={{height: '272px', overflowY: 'auto'}}>
+                                        <Table>
+                                            <thead>
+                                             <tr>
+                                                <th>{i18n('extImport.id')}</th>
+                                                <th>{i18n('extImport.record')}</th>
+                                                <th>{i18n('extImport.scopeId')}</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                                {results.map(i => <tr className={record && record.recordId == i.recordId ? "active" : null} onClick={() => interpiRecordId.onChange(i.recordId)}>
+                                                    <td>{i.recordId}</td>
+                                                    <td>{i.name}</td>
+                                                    <td>{i.pairedRecords && i.pairedRecords.length > 0 ? i.pairedRecords.map((i,index) => (index != 0 ? ', ' : '') + i.scope.name ) : '-'}</td>
+                                                </tr>)}
+                                            </tbody>
+                                        </Table>
+                                    </div>
                                 </div>
-                                {record && <div className="flex-1">
+                                <div className="flex-1">
                                     <label>{i18n('extImport.resultDetail')}</label>
                                     <div>
-                                        <FormControl componentClass="textarea" disabled={true}>{record.detail}</FormControl>
+                                        <FormControl componentClass="textarea" rows="10" disabled={true} value={record ? record.detail : ''} style={{height: '272px'}} />
                                     </div>
-                                </div>}
+                                </div>
                             </div>
                             <div>
                                 <div>
