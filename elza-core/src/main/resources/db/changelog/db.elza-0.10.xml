@@ -535,6 +535,6 @@
         <update tableName="par_party">
             <column name="originator" value="true" />
         </update>
-        <addNotNullConstraint tableName="par_party" columnName="originator"/>
+        <addNotNullConstraint tableName="par_party" columnName="originator" columnDataType="boolean"/>
     </changeSet>
 </databaseChangeLog>
