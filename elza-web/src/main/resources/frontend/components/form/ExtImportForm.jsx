@@ -203,7 +203,7 @@ class ExtImportForm extends AbstractReactComponent {
             }
         }
 
-        const importVO = {...data, scopeId: parseInt(data.scopeId), systemId: parseInt(systemId), originator: isParty};
+        const importVO = {...data, scopeId: parseInt(data.scopeId), systemId: parseInt(systemId)};
 
         const promise = update ? WebApi.importRecordUpdate(recordId, importVO) : WebApi.importRecord(importVO);
 
