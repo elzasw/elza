@@ -503,4 +503,28 @@
 
     </changeSet>
 
+    <changeSet id="20161212134500" author="vanek">
+        <dropTable tableName="par_interpi_role_type"/>
+        <dropTable tableName="par_interpi_relation"/>
+        <createTable tableName="par_interpi_mapping">
+            <column name="par_interpi_mapping_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="relation_role_type_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_par_relation_role_type" referencedTableName="par_relation_role_type" referencedColumnNames="role_type_id"/>
+            </column>
+            <column name="relation_type_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_par_relation_type" referencedTableName="par_relation_type" referencedColumnNames="relation_type_id" />
+            </column>
+            <column name="interpi_class" type="char(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="interpi_relation_type" type="varchar(250)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="interpi_role_type" type="varchar(250)">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+    </changeSet>
 </databaseChangeLog>
