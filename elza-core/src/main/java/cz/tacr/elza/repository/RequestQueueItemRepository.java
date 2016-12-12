@@ -5,6 +5,8 @@ import cz.tacr.elza.domain.ArrRequestQueueItem;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 
 /**
  * @author Martin Šlapa
@@ -13,5 +15,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface RequestQueueItemRepository extends ElzaJpaRepository<ArrRequestQueueItem, Integer>, RequestQueueItemRepositoryCustom {
 
-    ArrRequestQueueItem findByRequestAndSend(ArrRequest request, boolean send);
+    ArrRequestQueueItem findByRequestAndSend(ArrRequest request, Boolean send);
+
+    List<ArrRequestQueueItem> findBySendOrderByCreateChangeAsc(boolean send);
 }

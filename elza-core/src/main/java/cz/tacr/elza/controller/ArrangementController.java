@@ -19,6 +19,9 @@ import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
+import cz.tacr.elza.domain.ArrRequestQueueItem;
+import cz.tacr.elza.service.RequestQueueService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,7 +90,6 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.DirectionLevel;
-import cz.tacr.elza.exception.ConcurrentUpdateException;
 import cz.tacr.elza.exception.FilterExpiredException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
@@ -237,6 +239,9 @@ public class ArrangementController {
 
     @Autowired
     private RequestService requestService;
+
+    @Autowired
+    private RequestQueueService requestQueueService;
 
     /**
      * Seznam typů obalů.
@@ -2065,6 +2070,14 @@ public class ArrangementController {
         return factoryVo.createRequest(requests, detail, fundVersion);
     }
 
+
+    @RequestMapping(value = "/requests/queued", method = RequestMethod.GET)
+    public List<ArrRequestQueueItemVO> findQueuedRequests() {
+        List<ArrRequestQueueItem> requestQueueItems = requestQueueService.findQueued();
+        return factoryVo.createRequestQueueItem(requestQueueItems);
+    }
+
+
     /**
      * Získání konkrétního požadavku.
      *
@@ -2082,6 +2095,14 @@ public class ArrangementController {
         ArrRequest request = requestService.getRequest(requestId);
         return factoryVo.createRequest(request, detail, fundVersion);
     }
+
+    @Transactional
+    @RequestMapping(value = "/requests/{requestId}", method = RequestMethod.DELETE)
+    public void removeQueuedRequest(@PathVariable(value = "requestId") final Integer requestId) {
+        ArrRequest request = requestService.getRequest(requestId);
+        requestService.removeQueuedRequest(request);
+    }
+
 
     /**
      * Výstupní objekt pro chybové jednotky popisu.

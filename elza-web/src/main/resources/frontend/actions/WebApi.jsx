@@ -515,16 +515,7 @@ class WebApi {
     }
 
     getRequestsInQueue() {
-        const data = digReqs.map(r => {
-            return {
-                id: r.id,
-                request: r,
-                create: new Date().getTime() - 99999999,
-                attemptToSend: new Date().getTime() -77777777,
-                error: "Prostě se to nepovedlo",
-            }
-        });
-        return getData(data, 100);
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/requests/queued');
     }
 
     deleteRequestFromQueue(id) {
@@ -554,6 +545,10 @@ class WebApi {
 
     updateArrRequest(versionId, id, data) {
         return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/requests/' + versionId + '/' + id, null , data);
+    }
+
+    removeArrRequestQueueItem(id) {
+        return AjaxUtils.ajaxDelete(WebApi.arrangementUrl + '/requests/' + id);
     }
 
     getArrRequests(versionId) {

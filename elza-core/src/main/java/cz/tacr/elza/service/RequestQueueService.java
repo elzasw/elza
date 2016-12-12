@@ -1,7 +1,6 @@
 package cz.tacr.elza.service;
 
 import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.ArrRequestQueueItem;
@@ -27,6 +26,7 @@ import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
@@ -101,10 +101,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
         }
 
         requestService.setRequestState(request, ArrRequest.State.QUEUED, ArrRequest.State.REJECTED);
-
-        request.setRejectReason("Removed from queue"); // TODO: neměl by být text, co ale vyplnit?
         requestRepository.save(request);
-
         requestQueueItemRepository.delete(requestQueueItem);
         sendNotification(fundVersion, request, requestQueueItem, EventType.REQUEST_ITEM_QUEUE_DELETE);
     }
@@ -135,15 +132,14 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
     @Override
     public void onFailure(final Throwable throwable) {
         try {
-            logger.error("onFailure", throwable);
-            try {
-                Thread.sleep(1000); // TODO: smazat
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            logger.error("Chyba při zpracování požadavku externím systémem", throwable);
         } finally {
             executeNextRequest();
         }
+    }
+
+    public List<ArrRequestQueueItem> findQueued() {
+        return requestQueueItemRepository.findBySendOrderByCreateChangeAsc(false);
     }
 
     @Override
@@ -152,8 +148,9 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
             if (requestExecute.getThrowable() == null) {
                 logger.info("onSuccess", requestExecute);
             } else {
+                logger.warn("notSend, wait for next try", requestExecute);
                 try {
-                    Thread.sleep(5000);
+                    Thread.sleep(60 * 1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -208,6 +205,18 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
         }
 
         private void execute(final ArrRequestQueueItem queueItem) {
+
+            List<ArrFundVersion> versions = queueItem.getRequest().getFund().getVersions();
+
+            ArrFundVersion openVersion = null;
+            for (ArrFundVersion version : versions) {
+                if (version.getLockChange() == null) {
+                    openVersion = version;
+                    break;
+                }
+            }
+
+            sendNotification(openVersion, queueItem.getRequest(), queueItem, EventType.REQUEST_ITEM_QUEUE_CHANGE);
 
             // TODO: dopsat odeslání požadavku a smazat kód
             if (1 > 0) {

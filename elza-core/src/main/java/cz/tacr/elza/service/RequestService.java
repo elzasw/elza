@@ -184,10 +184,17 @@ public class RequestService {
         requestQueueService.sendRequest(request, fundVersion);
     }
 
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public void removeQueuedRequest(@NotNull final ArrRequest request,
-                                    @AuthParam(type = AuthParam.Type.FUND) final ArrFundVersion fundVersion) {
-        requestQueueService.removeRequestFromQueue(request, fundVersion);
+    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
+    public void removeQueuedRequest(@NotNull final ArrRequest request) {
+
+        ArrFundVersion openVersion = null;
+        for (ArrFundVersion version : request.getFund().getVersions()) {
+            if (version.getLockChange() == null) {
+                openVersion = version;
+                break;
+            }
+        }
+        requestQueueService.removeRequestFromQueue(request, openVersion);
     }
 
     /**

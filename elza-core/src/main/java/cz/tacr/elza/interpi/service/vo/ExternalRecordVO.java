@@ -3,6 +3,8 @@ package cz.tacr.elza.interpi.service.vo;
 import java.util.LinkedList;
 import java.util.List;
 
+import cz.tacr.elza.domain.RegRecord;
+
 /**
  * Záznam z externího systému.
  *
@@ -21,7 +23,7 @@ public class ExternalRecordVO {
     private String detail;
 
     /** Existující záznamy. */
-    private List<PairedRecordVO> pairedRecords = new LinkedList<>();
+    private List<PairedRecordVO> pairedRecords = new LinkedList<>();;
 
     public String getRecordId() {
         return recordId;
@@ -55,7 +57,8 @@ public class ExternalRecordVO {
         this.pairedRecords = pairedRecords;
     }
 
-    public void addPairedRecord(final PairedRecordVO pairedRecordVO) {
+    public void addPairedRecord(final RegRecord regRecord) {
+        PairedRecordVO pairedRecordVO = new PairedRecordVO(regRecord.getScope(), regRecord.getRecordId());
         pairedRecords.add(pairedRecordVO);
     }
 }

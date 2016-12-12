@@ -73,6 +73,13 @@ export function fetchInQueueListIfNeeded() {
 }
 
 /**
+ * Invalidace požadavků ve frontě.
+ */
+export function queueListInvalidate() {
+    return SimpleListActions.invalidate(AREA_DIGITIZATION_REQUEST_IN_QUEUE_LIST, null);
+}
+
+/**
  * Načtení detailu požadavku na digitalizaci pro konkrétní fond.
  * @param versionId verze AS
  * @param id id požadavku

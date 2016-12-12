@@ -71,6 +71,7 @@ public enum EventType {
     REQUEST_CREATE(EventIdNodeIdInVersion.class),
 
     REQUEST_ITEM_QUEUE_CREATE(EventIdRequestIdInVersion.class),
+    REQUEST_ITEM_QUEUE_CHANGE(EventIdRequestIdInVersion.class),
     REQUEST_ITEM_QUEUE_DELETE(EventIdRequestIdInVersion.class),
 
     EXTERNAL_SYSTEM_CHANGE(ActionEvent.class),

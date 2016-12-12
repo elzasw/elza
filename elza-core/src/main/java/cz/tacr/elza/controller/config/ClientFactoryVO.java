@@ -21,11 +21,13 @@ import javax.annotation.Nullable;
 import cz.tacr.elza.controller.vo.ArrDaoLinkRequestVO;
 import cz.tacr.elza.controller.vo.ArrDaoRequestVO;
 import cz.tacr.elza.controller.vo.ArrDigitizationRequestVO;
+import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
 import cz.tacr.elza.controller.vo.ArrRequestVO;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrDigitizationRequestNode;
 import cz.tacr.elza.domain.ArrRequest;
+import cz.tacr.elza.domain.ArrRequestQueueItem;
 import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -1946,5 +1948,60 @@ public class ClientFactoryVO {
             });
             requestVO.setNodes(treeNodeClients);
         }
+    }
+
+    private ArrRequestQueueItemVO createRequestQueueItem(final MapperFacade mapper, final ArrRequestQueueItem requestQueueItem) {
+        ArrRequestQueueItemVO requestQueueItemVO = new ArrRequestQueueItemVO();
+        ArrChange createChange = requestQueueItem.getCreateChange();
+        requestQueueItemVO.setId(requestQueueItem.getRequestQueueItemId());
+        requestQueueItemVO.setCreate(mapper.map(createChange.getChangeDate(), Date.class));
+        requestQueueItemVO.setAttemptToSend(mapper.map(requestQueueItem.getAttemptToSend(), Date.class));
+        requestQueueItemVO.setError(requestQueueItem.getError());
+        requestQueueItemVO.setUsername(createChange.getUser() == null ? null : createChange.getUser().getUsername());
+        return requestQueueItemVO;
+    }
+
+    public List<ArrRequestQueueItemVO> createRequestQueueItem(final List<ArrRequestQueueItem> requestQueueItems) {
+        if (requestQueueItems == null) {
+            return null;
+        }
+
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+
+        List<ArrRequestQueueItemVO> result = new ArrayList<>(requestQueueItems.size());
+        Map<Integer, ArrRequestVO> requestMap = new HashMap<>();
+
+        Map<ArrFund, List<ArrRequest>> requestList = new HashMap<>(requestQueueItems.size());
+        for (ArrRequestQueueItem requestQueueItem : requestQueueItems) {
+            ArrFund fund = requestQueueItem.getRequest().getFund();
+            List<ArrRequest> arrRequests = requestList.get(fund);
+            if (arrRequests == null) {
+                arrRequests = new ArrayList<>();
+                requestList.put(fund, arrRequests);
+            }
+
+            arrRequests.add(requestQueueItem.getRequest());
+        }
+
+        for (Map.Entry<ArrFund, List<ArrRequest>> arrFundListEntry : requestList.entrySet()) {
+            ArrFund key = arrFundListEntry.getKey();
+            for (ArrFundVersion arrFundVersion : key.getVersions()) {
+                if (arrFundVersion.getLockChange() == null) {
+                    List<ArrRequestVO> request = createRequest(arrFundListEntry.getValue(), false, arrFundVersion);
+                    for (ArrRequestVO requestVO : request) {
+                        requestMap.put(requestVO.getId(), requestVO);
+                    }
+                    break;
+                }
+            }
+        }
+
+        for (ArrRequestQueueItem requestQueueItem : requestQueueItems) {
+            ArrRequestQueueItemVO requestQueueItemVO = createRequestQueueItem(mapper, requestQueueItem);
+            requestQueueItemVO.setRequest(requestMap.get(requestQueueItem.getRequest().getRequestId()));
+            result.add(requestQueueItemVO);
+        }
+
+        return result;
     }
 }

@@ -26,7 +26,7 @@ public class ArrRequestQueueItem implements cz.tacr.elza.api.ArrRequestQueueItem
     @GeneratedValue
     private Integer requestQueueItemId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrRequest.class)
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrRequest.class)
     @JoinColumn(name = "requestId", nullable = false)
     private ArrRequest request;
 

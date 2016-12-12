@@ -8,7 +8,7 @@ import {fundOutputSelectOutput} from 'actions/arr/fundOutput.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {partyListInvalidate, partyDetailClear, partyDetailInvalidate} from 'actions/party/party.jsx'
-import {preparedListInvalidate, detailInvalidate, listInvalidate} from 'actions/arr/digitizationActions.jsx'
+import {preparedListInvalidate, detailInvalidate, listInvalidate, queueListInvalidate} from 'actions/arr/digitizationActions.jsx'
 
 export function isFundChangeAction(action) {
     switch (action.type) {
@@ -289,14 +289,14 @@ export function groupDelete(id) {
 
 export function createRequest(value) {
     return (dispatch, getState) => {
-        dispatch(preparedListInvalidate());
+        dispatch(preparedListInvalidate(value.versionId));
         dispatch(listInvalidate(value.versionId));
     }
 }
 
 export function changeRequest(value) {
     return (dispatch, getState) => {
-        dispatch(preparedListInvalidate());
+        dispatch(preparedListInvalidate(value.versionId));
         dispatch(listInvalidate(value.versionId));
         dispatch(detailInvalidate(value.versionId, value.entityId));
     }
@@ -306,6 +306,15 @@ export function changeRequest(value) {
 export function createRequestItemQueue(value) {
     return (dispatch, getState) => {
         dispatch(listInvalidate(value.versionId));
+        dispatch(detailInvalidate(value.versionId, value.requestId));
+        dispatch(queueListInvalidate());
+    }
+}
+
+export function changeRequestItemQueue(value) {
+    return (dispatch, getState) => {
+        dispatch(listInvalidate(value.versionId));
+        dispatch(queueListInvalidate());
         dispatch(detailInvalidate(value.versionId, value.requestId));
     }
 }
