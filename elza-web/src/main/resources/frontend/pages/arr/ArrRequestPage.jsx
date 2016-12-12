@@ -160,7 +160,7 @@ const ArrRequestPage = class extends ArrParentPage {
             if (!readMode && !closed) {
                 if (detailSelected && !closed) {
                     itemActions.push(
-                        <Button key="send" onClick={() => {this.handleSend(requestDetail.id)}} disabled={!detailLoaded}><Icon glyph="fa-youtube-play" />
+                        <Button key="send" onClick={() => {this.handleSend(requestDetail.id)}} disabled={!detailLoaded || requestDetail.data.state != "OPEN"}><Icon glyph="fa-youtube-play" />
                             <div><span className="btnText">{i18n('ribbon.action.arr.fund.request.send')}</span></div>
                         </Button>
                     )
@@ -188,6 +188,11 @@ const ArrRequestPage = class extends ArrParentPage {
         this.dispatch(digitizationActions.selectDetail(fund.versionId, item.id));
     }
 
+    handleSend = (id) => {
+        const fund = this.getActiveFund(this.props);
+        this.dispatch(digitizationActions.sendRequest(fund.versionId, id));
+    }
+
     isEditable(item) {
         return !item.lockDate && item.outputDefinition && item.outputDefinition.state === OutputState.OPEN
     }
@@ -202,7 +207,7 @@ const ArrRequestPage = class extends ArrParentPage {
         return (
             <div className={classNames(cls)}>
                 <div className='name'>{createDigitizationName(item, userDetail)}</div>
-                <div className='state'>{i18n("arr.request.title.state")}: {item.state}</div>
+                <div className='state'>{i18n("arr.request.title.state")}: {i18n("arr.request.title.state." + item.state)}</div>
             </div>
         )
     }
@@ -218,7 +223,6 @@ const ArrRequestPage = class extends ArrParentPage {
 
         return (
             <div className="fund-request-list-container">
-                <div>FILTER...</div>
                 <ListBox
                     className='fund-request-listbox'
                     ref='fundDigitizationRequestList'

@@ -553,7 +553,7 @@ class WebApi {
     }
 
     updateArrRequest(versionId, id, data) {
-        return getData({}, 100);
+        return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/requests/' + versionId + '/' + id, null , data);
     }
 
     getArrRequests(versionId) {
@@ -562,6 +562,10 @@ class WebApi {
 
     getArrRequest(versionId, id) {
         return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/requests/' + versionId + "/" + id, { detail: true });
+    }
+
+    sendArrRequest(versionId, id) {
+        return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/requests/' + versionId + "/" + id + "/send");
     }
 
     getFundTree(versionId, nodeId, expandedIds={}, includeIds=[]) {

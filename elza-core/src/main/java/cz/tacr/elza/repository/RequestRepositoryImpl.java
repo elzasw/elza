@@ -45,7 +45,7 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
             predicates.add(typePredicate);
         }
 
-        q.select(c).where(predicates.toArray(new Predicate[predicates.size()]));
+        q.select(c).where(predicates.toArray(new Predicate[predicates.size()])).orderBy(cb.asc(c.get("createChange")));
         TypedQuery<ArrRequest> query = entityManager.createQuery(q);
 
         return query.getResultList();

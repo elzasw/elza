@@ -33,8 +33,18 @@ const DigitizationRequestForm = class extends AbstractReactComponent {
         if (!prevDigitizationRequestFetched && digitizationRequestFetched) {    // seznam byl načten, zkusíme vybrat jednu z možností, pokud není nic vybráno
             const {fields: {digitizationRequestId, description}} = nextProps;
             if (nextProps.preparedDigitizationRequestList.rows.length > 0 && digitizationRequestId.value === "") {
-                digitizationRequestId.onChange(nextProps.preparedDigitizationRequestList.rows[0].id)
-                description.onChange(nextProps.preparedDigitizationRequestList.rows[0].description)
+                let index = -1;
+                for (let i = 0; i < nextProps.preparedDigitizationRequestList.rows.length; i++) {
+                    let row = nextProps.preparedDigitizationRequestList.rows[i];
+                    if (nextProps.userDetail.username == row.username || (nextProps.userDetail.username == 'admin' && row.username == null)) {
+                        index = i;
+                        break;
+                    }
+                }
+                if (index >= 0) {
+                    digitizationRequestId.onChange(nextProps.preparedDigitizationRequestList.rows[index].id)
+                    description.onChange(nextProps.preparedDigitizationRequestList.rows[index].description)
+                }
             }
         }
     }

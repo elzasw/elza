@@ -2010,13 +2010,14 @@ public class ArrangementController {
      * @param fundVersionId identfikátor verze AS
      * @param param         parametry požadavku
      */
-    @RequestMapping(value = "/requests/{fundVersionId}/digitization/change", method = RequestMethod.POST)
+    @RequestMapping(value = "/requests/{fundVersionId}/{digitizationId}", method = RequestMethod.PUT)
     @Transactional
     public void digitizationRequestChange(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                          @PathVariable(value = "digitizationId") final Integer digitizationId,
                                           @RequestBody DigitizationRequestParam param) {
         Assert.notNull(param);
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        ArrDigitizationRequest digitizationRequest = requestService.getDigitizationRequest(param.id);
+        ArrDigitizationRequest digitizationRequest = requestService.getDigitizationRequest(digitizationId);
         requestService.changeDigitizationRequest(digitizationRequest, fundVersion, param.getDescription());
     }
 

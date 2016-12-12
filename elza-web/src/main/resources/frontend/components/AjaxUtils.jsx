@@ -99,6 +99,18 @@ function createMessage(result) {
         toaster = addToastrWarning(i18n('arr.exception.exists.blocking.change'), messages);
     }
 
+    if (result.type == 'ArrangementCode' && result.code == 'ALREADY_ADDED') {
+        toaster = addToastrWarning(i18n('arr.exception.already.added'), messages);
+    }
+
+    if (result.type == 'ArrangementCode' && result.code == 'ALREADY_REMOVED') {
+        toaster = addToastrWarning(i18n('arr.exception.already.removed'), messages);
+    }
+
+    if (result.type == 'ArrangementCode' && result.code == 'ILLEGAL_COUNT_EXTERNAL_SYSTEM') {
+        toaster = addToastrWarning(i18n('arr.exception.illegal.count.external.system'), messages);
+    }
+
     if (toaster == null) {
         if (result.message) {
             messages.push(<p><LongText text={result.message}/></p>);

@@ -111,6 +111,9 @@ public class RequestService {
     public void addNodeDigitizationRequest(@NotNull final ArrDigitizationRequest digitizationRequest,
                                            @NotNull final List<ArrNode> nodes,
                                            @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion, final String description) {
+        if (!digitizationRequest.getState().equals(ArrRequest.State.OPEN)) {
+            throw new BusinessException(ArrangementCode.REQUEST_INVALID_STATE).set("state", digitizationRequest.getState());
+        }
 
         List<ArrDigitizationRequestNode> digitizationRequestNodes = digitizationRequestNodeRepository.findByDigitizationRequestAndNode(digitizationRequest, nodes);
         if (digitizationRequestNodes.size() != 0) {
@@ -124,7 +127,9 @@ public class RequestService {
             digitizationRequestNodes.add(requestNode);
         }
 
-        digitizationRequest.setDescription(description);
+        if (description != null) {
+            digitizationRequest.setDescription(description);
+        }
         digitizationRequestRepository.save(digitizationRequest);
         digitizationRequestNodeRepository.save(digitizationRequestNodes);
         sendNotification(fundVersion, digitizationRequest, EventType.REQUEST_CHANGE, nodes);
@@ -134,6 +139,10 @@ public class RequestService {
     public void removeNodeDigitizationRequest(@NotNull final ArrDigitizationRequest digitizationRequest,
                                               @NotNull final List<ArrNode> nodes,
                                               @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
+        if (!digitizationRequest.getState().equals(ArrRequest.State.OPEN)) {
+            throw new BusinessException(ArrangementCode.REQUEST_INVALID_STATE).set("state", digitizationRequest.getState());
+        }
+
         List<ArrDigitizationRequestNode> digitizationRequestNodes = digitizationRequestNodeRepository.findByDigitizationRequestAndNode(digitizationRequest, nodes);
         if (digitizationRequestNodes.size() != nodes.size()) {
             throw new BusinessException(ArrangementCode.ALREADY_REMOVED);

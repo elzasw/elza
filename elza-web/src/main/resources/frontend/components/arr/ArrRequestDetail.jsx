@@ -139,7 +139,7 @@ class ArrRequestDetail extends AbstractReactComponent {
                     </div>
 
                     <RequestInlineForm
-                        disabled={false}
+                        disabled={digReq.state != "OPEN"}
                         initData={digReq}
                         onSave={this.handleSaveRequest}
                     />
@@ -150,7 +150,7 @@ class ArrRequestDetail extends AbstractReactComponent {
                             nodes={digReq.nodes}
                             onDeleteNode={this.handleRemoveNode}
                             onAddNode={this.handleAddNodes}
-                            readOnly={false}
+                            readOnly={digReq.state != "OPEN"}
                         />
                     </div>}
                 </div>
