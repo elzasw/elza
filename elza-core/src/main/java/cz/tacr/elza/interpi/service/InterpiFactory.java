@@ -31,6 +31,8 @@ import org.springframework.core.io.PathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
+import cz.tacr.elza.controller.config.ClientFactoryDO;
+import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParDynasty;
 import cz.tacr.elza.domain.ParEvent;
@@ -50,6 +52,7 @@ import cz.tacr.elza.interpi.service.pqf.PQFQueryBuilder;
 import cz.tacr.elza.interpi.service.vo.ConditionVO;
 import cz.tacr.elza.interpi.service.vo.EntityValueType;
 import cz.tacr.elza.interpi.service.vo.ExternalRecordVO;
+import cz.tacr.elza.interpi.service.vo.PairedRecordVO;
 import cz.tacr.elza.interpi.ws.wo.DoplnekTyp;
 import cz.tacr.elza.interpi.ws.wo.EntitaTyp;
 import cz.tacr.elza.interpi.ws.wo.IdentifikaceTyp;
@@ -112,6 +115,9 @@ public class InterpiFactory {
     private String interpiDir;
 
     @Autowired
+    private ClientFactoryDO factoryDO;
+
+    @Autowired
     private GroovyScriptService groovyScriptService;
 
     @Autowired
@@ -153,7 +159,9 @@ public class InterpiFactory {
 
         List<RegRecord> regRecords = recordRepository.findRegRecordByExternalIdAndExternalSystemCode(interpiRecordId, regExternalSystem.getCode());
         for (RegRecord existingRecord : regRecords) {
-            recordVO.addPairedRecord(existingRecord);
+            RegScopeVO regScopeVO = factoryDO.createSimpleEntity(existingRecord.getScope(), RegScopeVO.class);
+            PairedRecordVO pairedRecordVO = new PairedRecordVO(regScopeVO, existingRecord.getRecordId());
+            recordVO.addPairedRecord(pairedRecordVO);
         }
 
         return recordVO;
