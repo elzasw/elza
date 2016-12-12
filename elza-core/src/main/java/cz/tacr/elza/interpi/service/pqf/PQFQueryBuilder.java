@@ -62,7 +62,7 @@ public class PQFQueryBuilder {
         Set<String> allNames = new HashSet<>();
 
         for (ConditionVO condition : conditions) {
-            if (ConditionType.AND == condition.getConditionType()) { // po dohodě s Honzou Vejskalem se použije jen AND
+            if (ConditionType.AND == condition.getConditionType() || condition.getConditionType() == null) { // po dohodě s Honzou Vejskalem se použije jen AND
                 String value = condition.getValue();
                 if (AttributeType.ALL_NAMES == condition.getAttType() && StringUtils.isNotBlank(value)) {
                     addValue(allNames, value);

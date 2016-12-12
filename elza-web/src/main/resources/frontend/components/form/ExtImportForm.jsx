@@ -11,8 +11,8 @@ import {WebApi} from 'actions'
 const EXT_SYSTEM_CODE_INTERPI = 'INTERPI';
 
 const CONDITION_TYPE = {
-    AND: " @and ",
-    OR: " @or "
+    AND: "AND",
+    OR: "OR"
 };
 
 const CONDITIONS = [
@@ -21,17 +21,13 @@ const CONDITIONS = [
 ];
 
 const ATTRIBUTE_TYPE = {
-    PREFFERED_NAME: " @attr 1=2054 ",
-    ALL_NAMES: " @attr 1=2055 ",
-    TYPE: " @attr 1=2051 ",
-    EXTEND: " @attr 5=1 ",
+    PREFFERED_NAME: "PREFFERED_NAME",
+    ALL_NAMES: "ALL_NAMES",
 };
 
 const ATTRIBUTE_TYPES = [
     {val: ATTRIBUTE_TYPE.PREFFERED_NAME, name: i18n('extImport.attType.PREFFERED_NAME')},
     {val: ATTRIBUTE_TYPE.ALL_NAMES, name: i18n('extImport.attType.ALL_NAMES')},
-    {val: ATTRIBUTE_TYPE.TYPE, name: i18n('extImport.attType.TYPE')},
-    {val: ATTRIBUTE_TYPE.EXTEND, name: i18n('extImport.attType.EXTEND')},
 ];
 
 class ExtImportSearch extends AbstractReactComponent {

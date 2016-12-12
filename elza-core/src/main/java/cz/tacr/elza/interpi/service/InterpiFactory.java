@@ -231,8 +231,14 @@ public class InterpiFactory {
 //        regRecord.setParentRecord(parentRecord);
 //        regRecord.setRecord(record);
 
+        TridaTyp trida = getTrida(valueMap);
         PodtridaTyp podTrida = getPodTrida(valueMap);
-        RegRegisterType regRegisterType = registerTypeRepository.findRegisterTypeByname(podTrida.value());
+        RegRegisterType regRegisterType;
+        if (podTrida == null) {
+            regRegisterType = registerTypeRepository.findRegisterTypeByname(trida.value());
+        } else {
+            regRegisterType = registerTypeRepository.findRegisterTypeByname(podTrida.value());
+        }
 
         regRecord.setRegisterType(regRegisterType);
         regRecord.setScope(regScope);
@@ -387,28 +393,28 @@ public class InterpiFactory {
             ParPartyGroup parPartyGroup = (ParPartyGroup) newParty;
 
 //            String foundingNorm = null;
-            String foundingNorm = "d";
+            String foundingNorm = "d"; // TODO jen pro předváděčku
             if (!foundingNormList.isEmpty()) {
                 foundingNorm = StringUtils.join(foundingNormList, ", ");
             }
             parPartyGroup.setFoundingNorm(foundingNorm);
 
 //            String organization = null;
-            String organization = "d";
+            String organization = "d"; // TODO jen pro předváděčku
             if (!organizationList.isEmpty()) {
                 organization = StringUtils.join(organizationList, ", ");
             }
             parPartyGroup.setOrganization(organization);
 
 //            String scope = null;
-            String scope = "d";
+            String scope = "d"; // TODO jen pro předváděčku
             if (!scopeList.isEmpty()) {
                 scope = StringUtils.join(scopeList, ", ");
             }
             parPartyGroup.setScope(scope);
 
 //            String scopeNorm = null;
-            String scopeNorm = "d";
+            String scopeNorm = "d"; // TODO jen pro předváděčku
             if (!scopeNormList.isEmpty()) {
                 scopeNorm = StringUtils.join(scopeNormList, ", ");
             }
@@ -422,17 +428,19 @@ public class InterpiFactory {
         OznaceniTypTypA typ = oznaceniTyp.getTyp();
         if (typ == null) {
             if (isPreferred) {
-                throw new IllegalStateException("Prázdný typ preferovaného označení.");
+                typ = OznaceniTypTypA.JMÉNO_ÚŘEDNÍ; // TODO jen pro předváděčku
+//                throw new IllegalStateException("Prázdný typ preferovaného označení.");
             } else {
                 return null;
             }
         }
 
-        String partyNameFormTypeName = oznaceniTyp.getTyp().value();
+        String partyNameFormTypeName = typ.value();
         ParPartyNameFormType parPartyNameFormType = partyNameFormTypeRepository.findByName(partyNameFormTypeName);
         if (parPartyNameFormType == null) {
             if (isPreferred) {
-                throw new IllegalStateException("Neznámý název typu formy jména ");
+                partyNameFormTypeRepository.findByName(OznaceniTypTypA.JMÉNO_ÚŘEDNÍ.value()); // TODO jen pro předváděčku
+//                throw new IllegalStateException("Neznámý název typu formy jména ");
             } else {
                 return null;
             }
