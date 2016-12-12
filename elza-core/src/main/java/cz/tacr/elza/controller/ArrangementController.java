@@ -1,8 +1,40 @@
 package cz.tacr.elza.controller;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
 import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.api.UsrPermission;
-import cz.tacr.elza.exception.ConcurrentUpdateException;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
@@ -51,11 +83,13 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.DirectionLevel;
+import cz.tacr.elza.exception.ConcurrentUpdateException;
 import cz.tacr.elza.exception.FilterExpiredException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.repository.CalendarTypeRepository;
+import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundRepository;
@@ -79,45 +113,13 @@ import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.PacketService;
 import cz.tacr.elza.service.PolicyService;
 import cz.tacr.elza.service.RegistryService;
+import cz.tacr.elza.service.RevertingChangesService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.UserService;
-import cz.tacr.elza.repository.ChangeRepository;
-import cz.tacr.elza.service.RevertingChangesService;
 import cz.tacr.elza.service.exception.DeleteFailedException;
 import cz.tacr.elza.service.output.OutputGeneratorService;
 import cz.tacr.elza.service.output.StatusGenerate;
 import cz.tacr.elza.service.vo.ChangesResult;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
-import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -483,7 +485,7 @@ public class ArrangementController {
             method = RequestMethod.GET,
             produces = "text/csv")
     public void descItemCsvExport(
-            HttpServletResponse response,
+            final HttpServletResponse response,
             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
             @RequestParam(value = "descItemObjectId") final Integer descItemObjectId) throws IOException {
         Assert.notNull(fundVersionId);
@@ -511,7 +513,7 @@ public class ArrangementController {
             method = RequestMethod.GET,
             produces = "text/csv")
     public void outputItemCsvExport(
-            HttpServletResponse response,
+            final HttpServletResponse response,
             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
             @RequestParam(value = "descItemObjectId") final Integer descItemObjectId) throws IOException {
         Assert.notNull(fundVersionId);
@@ -1491,7 +1493,7 @@ public class ArrangementController {
             @RequestBody(required = false) final Filters filters) {
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
         List<DescItemTypeFilter> descItemFilters = factoryDO.createFilters(filters);
-        return filterTreeService.filterData(version, descItemFilters);
+        return filterTreeService.filterData(version, descItemFilters, filters.getNodeId());
     }
 
     /**
@@ -1731,7 +1733,7 @@ public class ArrangementController {
     @Transactional
     @RequestMapping(value = "/output/{fundVersionId}", method = RequestMethod.PUT)
     public ArrOutputDefinitionVO createNamedOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                                   @RequestBody OutputNameParam param) {
+                                                   @RequestBody final OutputNameParam param) {
         Assert.notNull(param);
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutputDefinition outputDefinition = outputService.createOutputDefinition(fundVersion, param.getName(), param.getInternalCode(),
@@ -1845,7 +1847,7 @@ public class ArrangementController {
     @RequestMapping(value = "/output/{fundVersionId}/{outputId}/update", method = RequestMethod.POST)
     public void updateNamedOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                   @PathVariable(value = "outputId") final Integer outputId,
-                                  @RequestBody OutputNameParam param) {
+                                  @RequestBody final OutputNameParam param) {
         Assert.notNull(param);
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
@@ -2925,7 +2927,7 @@ public class ArrangementController {
             return outputTypeId;
         }
 
-        public void setOutputTypeId(Integer outputTypeId) {
+        public void setOutputTypeId(final Integer outputTypeId) {
             this.outputTypeId = outputTypeId;
         }
 
@@ -2933,7 +2935,7 @@ public class ArrangementController {
             return templateId;
         }
 
-        public void setTemplateId(Integer templateId) {
+        public void setTemplateId(final Integer templateId) {
             this.templateId = templateId;
         }
     }
