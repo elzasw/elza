@@ -47,6 +47,7 @@ public class InterpiService {
     /** Stránkování. */
     private static final String FROM = "1";
     private static final String TO = "500";
+    private static final Integer TO_INT = Integer.valueOf(TO);
 
     @Autowired
     private PartyService partyService;
@@ -90,12 +91,12 @@ public class InterpiService {
             return Collections.emptyList();
         }
 
-        String maxCount = count == null ? TO : count.toString();
+        Integer maxCount = count == null ? TO_INT : count;
         RegExternalSystem regExternalSystem = getExternalSystem(systemId);
 
         WssoapSoap client = createClient(regExternalSystem);
         logger.info("Vyhledávání v interpi: " + query);
-        String searchResult = client.findData(query, null, FROM, maxCount,
+        String searchResult = client.findData(query, null, FROM, maxCount.toString(),
                 regExternalSystem.getUsername(), regExternalSystem.getPassword());
 
         SetTyp setTyp = unmarshall(searchResult);
@@ -103,6 +104,9 @@ public class InterpiService {
         List<ExternalRecordVO> result = new LinkedList<>();
         for (EntitaTyp entitaTyp : setTyp.getEntita()) {
             result.add(interpiFactory.convertToExternalRecordVO(entitaTyp, regExternalSystem));
+            if (result.size() == maxCount) {
+                break; // INTERPI neumí stránkovat
+            }
         }
 
         return result;
