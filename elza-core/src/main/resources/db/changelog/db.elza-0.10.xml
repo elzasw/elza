@@ -527,4 +527,14 @@
             </column>
         </createTable>
     </changeSet>
+
+    <changeSet id="20161212140000" author="vanek">
+        <addColumn tableName="par_party">
+            <column name="originator" type="boolean" />
+        </addColumn>
+        <update tableName="par_party">
+            <column name="originator" value="true" />
+        </update>
+        <addNotNullConstraint tableName="par_party" columnName="originator"/>
+    </changeSet>
 </databaseChangeLog>

@@ -164,7 +164,7 @@ public class InterpiFactory {
         RegScope scope = scopeRepository.findByCode("GLOBAL");
         RegRecord regRecord = createRecord(valueMap, interpiRecordId, regExternalSystem, scope);
 
-        ParParty newParty = createParty(regRecord, valueMap);
+        ParParty newParty = createParty(regRecord, valueMap, true);
 
         return groovyScriptService.getRecordFromGroovy(newParty);
     }
@@ -507,7 +507,7 @@ public class InterpiFactory {
         return parPartyNameComplements;
     }
 
-    public ParParty createParty(final RegRecord regRecord, final Map<EntityValueType, List<Object>> valueMap) {
+    public ParParty createParty(final RegRecord regRecord, final Map<EntityValueType, List<Object>> valueMap, final boolean isOriginator) {
         TridaTyp trida = getTrida(valueMap);
 
         ParParty parParty;
@@ -535,6 +535,7 @@ public class InterpiFactory {
 
         parParty.setPartyType(parPartyType);
         parParty.setRecord(regRecord);
+        parParty.setOriginator(isOriginator);
 
         fillParty(parParty, valueMap);
 

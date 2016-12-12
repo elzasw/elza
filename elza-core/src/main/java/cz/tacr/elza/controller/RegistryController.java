@@ -12,8 +12,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.controller.vo.RegExternalSystemVO;
-import cz.tacr.elza.service.ExternalSystemService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -30,6 +28,7 @@ import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.InterpiSearchVO;
 import cz.tacr.elza.controller.vo.RecordImportVO;
 import cz.tacr.elza.controller.vo.RegCoordinatesVO;
+import cz.tacr.elza.controller.vo.RegExternalSystemVO;
 import cz.tacr.elza.controller.vo.RegRecordSimple;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRecordWithCount;
@@ -58,6 +57,7 @@ import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
+import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.PartyService;
 import cz.tacr.elza.service.RegistryService;
 import cz.tacr.elza.service.UserService;
@@ -624,7 +624,7 @@ public class RegistryController {
         Assert.notNull(recordImportVO.getSystemId());
 
         interpiService.importRecord(recordId, recordImportVO.getInterpiRecordId(), recordImportVO.getScopeId(),
-                recordImportVO.getSystemId());
+                recordImportVO.getSystemId(), recordImportVO.isOriginator());
 
         return getRecord(recordId);
     }
@@ -642,7 +642,7 @@ public class RegistryController {
         Assert.notNull(recordImportVO.getSystemId());
 
         RegRecord regRecord = interpiService.importRecord(null, recordImportVO.getInterpiRecordId(), recordImportVO.getScopeId(),
-                recordImportVO.getSystemId());
+                recordImportVO.getSystemId(), recordImportVO.isOriginator());
 
         return getRecord(regRecord.getRecordId());
     }

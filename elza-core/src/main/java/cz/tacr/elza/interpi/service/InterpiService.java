@@ -136,7 +136,7 @@ public class InterpiService {
      *
      * @return nový/aktualizovaný rejstřík
      */
-    public RegRecord importRecord(final Integer recordId, final String interpiRecordId, final Integer scopeId, final Integer systemId) {
+    public RegRecord importRecord(final Integer recordId, final String interpiRecordId, final Integer scopeId, final Integer systemId, final boolean isOriginator) {
         Assert.assertNotNull(interpiRecordId);
         Assert.assertNotNull(scopeId);
         Assert.assertNotNull(systemId);
@@ -164,7 +164,7 @@ public class InterpiService {
         ParPartyType partyType = regRecord.getRegisterType().getPartyType();
         boolean saveOnlyRecord = partyType == null;
 
-        ParParty newParty = interpiFactory.createParty(regRecord, valueMap);
+        ParParty newParty = interpiFactory.createParty(regRecord, valueMap, isOriginator);
         newParty.setPartyId(recordId); // TODO vyzkoušet zda se to aktualizuje
 
         if (saveOnlyRecord) {
