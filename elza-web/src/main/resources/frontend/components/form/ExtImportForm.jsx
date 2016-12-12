@@ -8,6 +8,13 @@ import objectById from '../../shared/utils/objectById'
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx';
 import {submitReduxForm} from 'components/form/FormUtils.jsx'
 import {WebApi} from 'actions'
+import {modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
+import {partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
+import {registrySelect} from 'actions/registry/registryRegionList.jsx'
+import {routerNavigate} from 'actions/router.jsx'
+
+
 const EXT_SYSTEM_CODE_INTERPI = 'INTERPI';
 
 const CONDITION_TYPE = {
@@ -80,6 +87,9 @@ class ExtImportSearch extends AbstractReactComponent {
 
     componentDidMount() {
         WebApi.getRegExternalSystems().then((data) => {
+            if (data && data.length === 1) {
+                this.props.fields.systemId.onChange(data[0].id);
+            }
             this.setState({extSystems: data})
         })
     }
@@ -167,7 +177,11 @@ class ExtImportForm extends AbstractReactComponent {
     };
 
     componentDidMount() {
+        console.log(this.props, true)
         WebApi.getAllScopes().then(scopes => {
+            if (scopes.length === 1) {
+                this.props.fields.scopeId.onChange(scopes[0].id);
+            }
             this.setState({scopes});
         });
     }
@@ -191,11 +205,14 @@ class ExtImportForm extends AbstractReactComponent {
 
         const importVO = {...data, scopeId: parseInt(data.scopeId), systemId: parseInt(systemId), originator: isParty};
 
-        if (update) {
-            return WebApi.importRecordUpdate(recordId, importVO);
-        }
+        const promise = update ? WebApi.importRecordUpdate(recordId, importVO) : WebApi.importRecord(importVO);
 
-        return WebApi.importRecord(importVO);
+        promise.then(e => {
+            this.dispatch(modalDialogHide());
+            this.dispatch(addToastrSuccess(i18n("extImport.done.title"), i18n(update ? "extImport.done.messageImport" : "extImport.done.messageUpdate")));
+        })
+
+        return promise;
     };
 
     submitSearch = (data) => {
@@ -204,6 +221,19 @@ class ExtImportForm extends AbstractReactComponent {
         return WebApi.findInterpiRecords({...data, isParty, count, systemId: parseInt(data.systemId)}).then((results) => {
             this.setState({searched: true, results, selectedRecordId: null, systemId: parseInt(data.systemId)});
         })
+    };
+
+    showDetail = (detailId) => {
+        const {isParty} = this.props;
+        if (isParty) {
+            this.dispatch(partyDetailFetchIfNeeded(detailId));
+            this.dispatch(modalDialogHide());
+            this.dispatch(routerNavigate('party'));
+        } else {
+            this.dispatch(partyDetailFetchIfNeeded(detailId));
+            this.dispatch(modalDialogHide());
+            this.dispatch(routerNavigate('registry'));
+        }
     };
 
     render() {
@@ -223,7 +253,7 @@ class ExtImportForm extends AbstractReactComponent {
             visibleSubmit = true;
             if (record.pairedRecords) {
                 for (let pairedRec of record.pairedRecords) {
-                    if (pairedRec.scope.scopeId == scopeId.value) {
+                    if (pairedRec.scope.id == scopeId.value) {
                         showDetail = true;
                         detailId = pairedRec.recordId;
                         break;
@@ -283,7 +313,7 @@ class ExtImportForm extends AbstractReactComponent {
                     {searched && <Modal.Footer>
                         {showDetail ? <span>
                         <Button type="submit" disabled={disabledSubmit}>{i18n('extImport.update')}</Button>
-                        <Button type="button" disabled={disabledSubmit}>{autocomplete ? i18n('extImport.useActual') : i18n('extImport.showDetail')}</Button>
+                        <Button type="button" onClick={() => this.showDetail(detailId)} disabled={disabledSubmit}>{autocomplete ? i18n('extImport.useActual') : i18n('extImport.showDetail')}</Button>
                     </span> : <span>
                         <Button type="submit" disabled={disabledSubmit}>{i18n('global.action.import')}</Button>
                     </span>}

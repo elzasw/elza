@@ -813,6 +813,11 @@ var messages = {
     "extImport.id": "ID",
     "extImport.record": "Záznam",
     "extImport.scopeId": "Třída rejstříku",
+    "extImport.update": "Aktualizovat",
+    "extImport.showDetail": "Přejít na detail",
+    "extImport.done.title":"Hotovo",
+    "extImport.done.messageImport":"Osoba úspěšně naimportována",
+    "extImport.done.messageUpdate":"Osoba úspěšně aktualizována",
 
     "extImport.attType.PREFFERED_NAME": "Hledání v preferovaném jméně rejstříku",
     "extImport.attType.ALL_NAMES": "Hledání ve všech jménech rejstříku",
