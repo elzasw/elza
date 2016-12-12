@@ -93,7 +93,17 @@ public interface ArrChange<U extends UsrUser, N extends ArrNode> extends Seriali
         /**
          * Import AS.
          */
-        IMPORT("import AS");
+        IMPORT("import AS"),
+
+        /**
+         * Požadavek na digitalizaci.
+         */
+        CREATE_DIGI_REQUEST("požadavek na digitalizaci"),
+
+        /**
+         * Vytvoření položky ve frontě.
+         */
+        CREATE_REQUEST_QUEUE("vytvoření položky ve frontě");
 
         private String description;
 

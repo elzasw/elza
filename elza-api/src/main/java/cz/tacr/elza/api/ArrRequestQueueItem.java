@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
  * @author Martin Šlapa
  * @since 07.12.2016
  */
-public interface ArrRequestQueueItem<R extends ArrRequest> extends Serializable {
+public interface ArrRequestQueueItem<R extends ArrRequest, C extends ArrChange> extends Serializable {
 
     Integer getRequestQueueItemId();
 
@@ -19,9 +19,9 @@ public interface ArrRequestQueueItem<R extends ArrRequest> extends Serializable 
 
     void setRequest(R request);
 
-    LocalDateTime getCreate();
+    C getCreateChange();
 
-    void setCreate(LocalDateTime create);
+    void setCreateChange(C createChange);
 
     LocalDateTime getAttemptToSend();
 

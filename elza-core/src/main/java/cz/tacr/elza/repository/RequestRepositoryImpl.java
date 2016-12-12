@@ -53,9 +53,10 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
 
     @Override
     public boolean setState(final ArrRequest request, final ArrRequest.State oldState, final ArrRequest.State newState) {
-        Query query = entityManager.createQuery("UPDATE arr_request SET state = :newState WHERE state = :oldState");
+        Query query = entityManager.createQuery("UPDATE arr_request r SET r.state = :newState WHERE r.state = :oldState AND r = :request");
         query.setParameter("newState", newState);
         query.setParameter("oldState", oldState);
+        query.setParameter("request", request);
         return query.executeUpdate() > 0;
     }
 }
