@@ -131,10 +131,10 @@ class ArrRequestDetail extends AbstractReactComponent {
             form = (
                 <div>
                     <h2>{i18n("arr.request.title.digitizationRequest")}</h2>
-                    <div>
+                    <div className="form-group">
                         <label>{i18n("arr.request.title.created")}</label> {dateTimeToString(new Date(digReq.create))}
                     </div>
-                    <div>
+                    <div className="form-group">
                         <label>{i18n("arr.request.title.type")}</label> {i18n("arr.request.title.type." + reqType)}
                     </div>
 
