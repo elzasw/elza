@@ -14,7 +14,7 @@ public class RecordImportVO {
 
     private Integer systemId;
 
-    private boolean originator;
+    private boolean originator = true; // TODO dočasně než to bude přicházet z dialogu
 
     public Integer getScopeId() {
         return scopeId;
