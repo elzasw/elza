@@ -1,5 +1,6 @@
 package cz.tacr.elza.service;
 
+import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
@@ -105,11 +106,19 @@ public class DaoService implements InitializingBean {
         }
 
         for (ArrDao arrDao : arrDaoList) {
+            String viewDaoUrl = arrDao.getDaoPackage().getDigitalRepository().getViewDaoUrl();
+
             ArrDaoVO vo = new ArrDaoVO();
             vo.setId(arrDao.getDaoId());
             vo.setCode(arrDao.getCode());
             vo.setLabel(arrDao.getLabel());
             vo.setValid(arrDao.getValid());
+
+            ElzaTools.UrlParams params = ElzaTools.createUrlParams()
+                    .add("code", arrDao.getCode())
+                    .add("label", arrDao.getLabel())
+                    .add("id", arrDao.getDaoId());
+            vo.setUrl(ElzaTools.bindingUrlParams(viewDaoUrl, params));
 
             if (detail) {
                 // TODO Lebeda - optimalizovat na jeden dotaz seskupený dle DAO / vyčlenit do samostatné metody

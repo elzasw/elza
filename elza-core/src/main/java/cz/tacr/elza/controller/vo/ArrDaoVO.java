@@ -23,6 +23,8 @@ public class ArrDaoVO {
 
     private String label;
 
+    private String url;
+
     private List<ArrDaoFileVO> fileList = new ArrayList<>();
     private List<ArrDaoFileGroupVO> fileGroupList = new ArrayList<>();
     
@@ -121,6 +123,12 @@ public class ArrDaoVO {
     public void setFileGroupCount(long fileGroupCount) {
         this.fileGroupCount = fileGroupCount;
     }
-    
-    
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(final String url) {
+        this.url = url;
+    }
 }
