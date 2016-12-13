@@ -29,6 +29,7 @@ import cz.tacr.elza.domain.ArrDigitizationRequestNode;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.ArrRequestQueueItem;
 import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
+import cz.tacr.elza.repository.RequestQueueItemRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -242,6 +243,9 @@ public class ClientFactoryVO {
 
     @Autowired
     private DigitizationRequestNodeRepository digitizationRequestNodeRepository;
+
+    @Autowired
+    private RequestQueueItemRepository requestQueueItemRepository;
 
     /**
      * Vytvoří objekt informací o přihlášeném uživateli.
@@ -1792,6 +1796,12 @@ public class ClientFactoryVO {
         List<ArrRequestVO> requestVOList = new ArrayList<>(requests.size());
         Set<ArrDigitizationRequest> requestForNodes = new HashSet<>();
 
+        Map<ArrRequest, ArrRequestQueueItem> requestQueuedMap = new HashMap<>();
+        List<ArrRequestQueueItem> requestQueueItems = CollectionUtils.isEmpty(requests) ? Collections.emptyList() : requestQueueItemRepository.findByRequest(requests);
+        for (ArrRequestQueueItem requestQueueItem : requestQueueItems) {
+            requestQueuedMap.put(requestQueueItem.getRequest(), requestQueueItem);
+        }
+
         for (ArrRequest request : requests) {
             prepareRequest(requestForNodes, request);
         }
@@ -1808,7 +1818,7 @@ public class ClientFactoryVO {
         for (ArrRequest request : requests) {
             ArrRequestVO requestVO;
             requestVO = createRequestVO(countNodesRequestMap, nodesRequestMap, request);
-            convertRequest(mapper, request, requestVO);
+            convertRequest(mapper, request, requestQueuedMap.get(request), requestVO);
             requestVOList.add(requestVO);
         }
         return requestVOList;
@@ -1817,6 +1827,8 @@ public class ClientFactoryVO {
     public ArrRequestVO createRequest(final ArrRequest request, boolean detail, final ArrFundVersion fundVersion) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         Set<ArrDigitizationRequest> requestForNodes = new HashSet<>();
+        ArrRequestQueueItem requestQueueItem = requestQueueItemRepository.findByRequest(request);
+
         prepareRequest(requestForNodes, request);
 
         Map<ArrDigitizationRequest, Integer> countNodesRequestMap;
@@ -1829,7 +1841,7 @@ public class ClientFactoryVO {
 
         ArrRequestVO requestVO;
         requestVO = createRequestVO(countNodesRequestMap, nodesRequestMap, request);
-        convertRequest(mapper, request, requestVO);
+        convertRequest(mapper, request, requestQueueItem, requestVO);
 
         return requestVO;
     }
@@ -1863,7 +1875,7 @@ public class ClientFactoryVO {
         return countNodesRequestMap;
     }
 
-    private void convertRequest(final MapperFacade mapper, final ArrRequest request, final ArrRequestVO requestVO) {
+    private void convertRequest(final MapperFacade mapper, final ArrRequest request, final ArrRequestQueueItem requestQueueItem, final ArrRequestVO requestVO) {
         ArrChange createChange = request.getCreateChange();
         requestVO.setCode(request.getCode());
         requestVO.setId(request.getRequestId());
@@ -1871,6 +1883,10 @@ public class ClientFactoryVO {
         requestVO.setRejectReason(request.getRejectReason());
         requestVO.setResponseExternalSystem(mapper.map(request.getResponseExternalSystem(), Date.class));
         requestVO.setCreate(mapper.map(createChange.getChangeDate(), Date.class));
+        if (requestQueueItem != null) {
+            requestVO.setQueued(mapper.map(requestQueueItem.getCreateChange().getChangeDate(), Date.class));
+            requestVO.setSend(mapper.map(requestQueueItem.getAttemptToSend(), Date.class));
+        }
         requestVO.setUsername(createChange.getUser() == null ? null : createChange.getUser().getUsername());
     }
 

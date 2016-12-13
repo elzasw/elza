@@ -5,6 +5,7 @@ import cz.tacr.elza.domain.ArrRequestQueueItem;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 
 
@@ -18,4 +19,10 @@ public interface RequestQueueItemRepository extends ElzaJpaRepository<ArrRequest
     ArrRequestQueueItem findByRequestAndSend(ArrRequest request, Boolean send);
 
     List<ArrRequestQueueItem> findBySendOrderByCreateChangeAsc(boolean send);
+
+    @Query("SELECT rqi FROM arr_request_queue_item rqi WHERE rqi.request IN (?1)")
+    List<ArrRequestQueueItem> findByRequest(Collection<ArrRequest> request);
+
+    @Query("SELECT rqi FROM arr_request_queue_item rqi WHERE rqi.request = ?1")
+    ArrRequestQueueItem findByRequest(ArrRequest request);
 }

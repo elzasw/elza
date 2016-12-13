@@ -134,6 +134,12 @@ class ArrRequestDetail extends AbstractReactComponent {
                     <div className="form-group">
                         <label>{i18n("arr.request.title.created")}</label> {dateTimeToString(new Date(digReq.create))}
                     </div>
+                    {digReq.queued && <div className="form-group">
+                        <label>{i18n("arr.request.title.queued")}</label> {dateTimeToString(new Date(digReq.queued))}
+                    </div>}
+                    {digReq.send && <div className="form-group">
+                        <label>{digReq.state == "QUEUED" ? i18n("arr.request.title.trysend") : i18n("arr.request.title.send")}</label> {dateTimeToString(new Date(digReq.send))}
+                    </div>}
                     <div className="form-group">
                         <label>{i18n("arr.request.title.type")}</label> {i18n("arr.request.title.type." + reqType)}
                     </div>
