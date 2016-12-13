@@ -767,6 +767,7 @@ var messages = {
     "permission.FUND_BA_ALL": "Spouštění hromadných akcí všech AS",
     "permission.FUND_CL_VER_WR": "Drobné úpravy vybraných uzavřených AS",
     "permission.FUND_CL_VER_WR_ALL": "Drobné úpravy všech uzavřených AS",
+    "permission.INTERPI_MAPPING_WR": "Mapování INTERPI",
 
     "admin.group.title.users": "Členové skupiny",
     "admin.group.title.permissions": "Oprávnění skupiny",
