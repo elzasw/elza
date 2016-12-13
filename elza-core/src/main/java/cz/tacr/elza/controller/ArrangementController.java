@@ -319,8 +319,8 @@ public class ArrangementController {
      * @param detail        načíst detailní informace (plnit struktutu vč návazných), výchozí hodnota false
      * @return seznam digitálních entit (DAO)
      */
-    @RequestMapping(value = "/daos/{fundVersionId}/find",
-            method = RequestMethod.POST, // TODO Lebeda - jen pro ladění
+    @RequestMapping(value = "/daos/{fundVersionId}",
+            method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     List<ArrDaoVO> findDaos(@PathVariable(value = "fundVersionId") final Integer fundVersionId,

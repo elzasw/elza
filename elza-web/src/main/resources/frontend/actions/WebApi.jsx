@@ -420,8 +420,8 @@ class WebApi {
     }
 
     getFundNodeDaos(versionId, nodeId = null, detail = false) {
-        //return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/daos/' + versionId, {nodeId, detail});
-        return getData(digReqs, 200);
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/daos/' + versionId, {nodeId, detail});
+        //return getData(digReqs, 200);
     }
 
     deleteFundNodeRegister(versionId, nodeId, data) {
