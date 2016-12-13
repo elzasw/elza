@@ -9,7 +9,7 @@ import {getIndexStateFetchIfNeeded, reindex} from 'actions/admin/fulltext.jsx';
 import {Ribbon, AdminPackagesList, AdminPackagesUpload} from 'components/index.jsx';
 import {PageLayout} from 'pages/index.jsx';
 import * as digitizationActions from 'actions/arr/digitizationActions';
-import {getRequestType, REQ_DIGITIZATION_REQUEST} from 'components/arr/ArrUtils.jsx'
+import {getRequestType, REQ_DIGITIZATION_REQUEST, createDigitizationName} from 'components/arr/ArrUtils.jsx'
 import {dateTimeToString} from "components/Utils.jsx";
 import {WebApi} from 'actions/index.jsx';
 
@@ -40,10 +40,10 @@ const AdminRequestsQueuePage = class extends AbstractReactComponent {
     };
 
     createDescription = (type, request) => {
-        let user = request.username ? request.username : 'System';
+        const {userDetail} = this.props;
         switch (type) {
             case REQ_DIGITIZATION_REQUEST: {
-                return " - " + user + ", " + request.description + ", JP: " + request.nodesCount;
+                return " - " + createDigitizationName(request, userDetail);
             }
             default:
                 return "TODO [createDescription]: " + type;
@@ -106,10 +106,11 @@ const AdminRequestsQueuePage = class extends AbstractReactComponent {
  * @returns {{packages: *}}
  */
 function mapStateToProps(state) {
-    const {app:{requestInQueueList}, splitter} = state;
+    const {app:{requestInQueueList}, splitter, userDetail} = state;
     return {
         splitter,
         requestInQueueList,
+        userDetail
     }
 }
 

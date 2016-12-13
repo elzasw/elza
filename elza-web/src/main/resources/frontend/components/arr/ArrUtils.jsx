@@ -368,8 +368,9 @@ export function createReferenceMarkStringFromArray(referenceMark) {
  */
 export function createDigitizationName(digitizationRequest, userDetail) {
     // Uživatelské jméno chceme pouze pokud je definované nebo je jiné než přihlášený uživatel
-    const username = userDetail ? (digitizationRequest.username !== userDetail.username ? digitizationRequest.username : null) : digitizationRequest.username;
-    const usernameStr = username ? username + " " : "";
+    const usernameTmp = digitizationRequest.username ? digitizationRequest.username : "System";
+    const username = userDetail ? (usernameTmp !== userDetail.username ? usernameTmp : null) : usernameTmp;
+    const usernameStr = username ? "[" + username + "] " : "";
     let text = usernameStr + dateTimeToString(new Date(digitizationRequest.create));
     if (digitizationRequest.nodesCount != null) {
         text += " (" + digitizationRequest.nodesCount + ")";
