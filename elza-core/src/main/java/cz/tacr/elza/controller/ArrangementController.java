@@ -1,56 +1,19 @@
 package cz.tacr.elza.controller;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
-
-import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
-import cz.tacr.elza.domain.ArrRequestQueueItem;
-import cz.tacr.elza.service.RequestQueueService;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
 import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.api.UsrPermission;
-import cz.tacr.elza.controller.vo.ArrRequestVO;
-import cz.tacr.elza.domain.ArrDigitizationRequest;
-import cz.tacr.elza.domain.ArrRequest;
-import cz.tacr.elza.exception.ConcurrentUpdateException;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrDaoVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
 import cz.tacr.elza.controller.vo.ArrOutputExtVO;
 import cz.tacr.elza.controller.vo.ArrPacketVO;
+import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
+import cz.tacr.elza.controller.vo.ArrRequestVO;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.FundListCountResult;
@@ -68,7 +31,10 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItemJsonTable;
@@ -80,6 +46,8 @@ import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ArrRequest;
+import cz.tacr.elza.domain.ArrRequestQueueItem;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -98,6 +66,8 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundRepository;
@@ -113,6 +83,7 @@ import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.ArrIOService;
 import cz.tacr.elza.service.ArrMoveLevelService;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.FilterTreeService;
 import cz.tacr.elza.service.ItemService;
@@ -121,6 +92,7 @@ import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.PacketService;
 import cz.tacr.elza.service.PolicyService;
 import cz.tacr.elza.service.RegistryService;
+import cz.tacr.elza.service.RequestQueueService;
 import cz.tacr.elza.service.RequestService;
 import cz.tacr.elza.service.RevertingChangesService;
 import cz.tacr.elza.service.RuleService;
@@ -129,6 +101,37 @@ import cz.tacr.elza.service.exception.DeleteFailedException;
 import cz.tacr.elza.service.output.OutputGeneratorService;
 import cz.tacr.elza.service.output.StatusGenerate;
 import cz.tacr.elza.service.vo.ChangesResult;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.Nullable;
+import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -152,6 +155,9 @@ public class ArrangementController {
 
     @Autowired
     private NodeRepository nodeRepository;
+
+    @Autowired
+    private DaoLinkRepository daoLinkRepository;
 
     @Autowired
     private DataTypeRepository dataTypeRepository;
@@ -191,6 +197,12 @@ public class ArrangementController {
 
     @Autowired
     private PacketService packetService;
+
+    @Autowired
+    private DaoService daoService;
+
+    @Autowired
+    private DaoRepository daoRepository;
 
     @Autowired
     private RegistryService registryService;
@@ -298,6 +310,77 @@ public class ArrangementController {
         List<ArrPacket> packets = packetService.findPackets(fund, input.getLimit(), input.getText());
         return factoryVo.createPacketList(packets);
     }
+
+    /**
+     * Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní jednotku popisu (JP) nebo nemá žádné napojení (pouze pod archivní souborem (AS)).
+     *
+     * @param fundVersionId id archivního souboru
+     * @param nodeId        id node, pokud je null, najde entity bez napojení
+     * @param detail        načíst detailní informace (plnit struktutu vč návazných), výchozí hodnota false
+     * @return seznam digitálních entit (DAO)
+     */
+    @RequestMapping(value = "/daos/{fundVersionId}/find",
+            method = RequestMethod.POST, // TODO Lebeda - jen pro ladění
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    List<ArrDaoVO> findDaos(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                            @RequestParam(value = "nodeId", required = false) Integer nodeId,
+                            @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail) {
+        Assert.notNull(fundVersionId);
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+
+        ArrNode node = null;
+        if (nodeId != null) {
+            node = nodeRepository.getOneCheckExist(nodeId);
+        }
+
+        return daoService.findDaos(fundVersion, node, BooleanUtils.isTrue(detail));
+    }
+
+    /**
+     * připojení digitalizát na JP (vytvoření záznamu v arr_dao_link)
+     * @param daoId DAO pro propojení
+     * @param nodeId Node pro propojení
+     */
+    @Transactional
+    @RequestMapping(value = "/daos/{fundVersionId}/{daoId}/{nodeId}/create",
+                method = RequestMethod.PUT,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
+    public void createDaoLink(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                              @PathVariable(value = "daoId") Integer daoId,
+                              @PathVariable(value = "nodeId") Integer nodeId) {
+        Assert.notNull(fundVersionId);
+        Assert.notNull(daoId);
+        Assert.notNull(nodeId);
+
+        final ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        final ArrDao dao = daoRepository.getOneCheckExist(daoId);
+        final ArrNode node = nodeRepository.getOneCheckExist(nodeId);
+
+        final ArrDaoLink daoLink = daoService.createOrFindDaoLink(fundVersion, dao, node);
+    }
+
+    /**
+     * Odpojí digitalizát od JP (vyplnění záznamu delete_change_id v arr_dao_link)
+     * @param daoLinkId ID požadovaného linku k rozpojení
+     */
+    @Transactional
+    @RequestMapping(value = "/daolinks/{fundVersionId}/{daoLinkId}/delete",
+                method = RequestMethod.DELETE,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
+    public void deleteDaoLink(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                              @PathVariable(value = "daoLinkId") Integer daoLinkId) {
+        Assert.notNull(fundVersionId);
+        Assert.notNull(daoLinkId);
+
+        final ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        final ArrDaoLink daoLink = daoLinkRepository.getOneCheckExist(daoLinkId);
+
+        final ArrDaoLink deleteDaoLink = daoService.deleteDaoLink(fundVersion, daoLink);
+    }
+
 
     /**
      * Vyhledání obalů pro správu.

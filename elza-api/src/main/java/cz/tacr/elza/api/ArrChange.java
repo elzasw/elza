@@ -103,7 +103,17 @@ public interface ArrChange<U extends UsrUser, N extends ArrNode> extends Seriali
         /**
          * Vytvoření položky ve frontě.
          */
-        CREATE_REQUEST_QUEUE("vytvoření položky ve frontě");
+        CREATE_REQUEST_QUEUE("vytvoření položky ve frontě"),
+
+        /**
+         * Vytvoření vazby na DAO
+         */
+        CREATE_DAO_LINK("vytvoření vazby na digitalizát"),
+
+        /**
+         * Zrušení vazby na DAO
+         */
+        DELETE_DAO_LINK("zrušení vazby na digitalizát");
 
         private String description;
 

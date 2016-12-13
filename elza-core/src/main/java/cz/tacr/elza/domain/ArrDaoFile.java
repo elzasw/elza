@@ -61,17 +61,17 @@ public class ArrDaoFile implements cz.tacr.elza.api.ArrDaoFile<ArrDao, ArrDaoFil
     private Integer imageWidth;
 
     @Enumerated(EnumType.STRING)
-    @Column
+    @Column(name = "source_x_dimension_unit")
     private UnitOfMeasure sourceXDimesionUnit;
 
-    @Column
+    @Column(name = "source_x_dimension_value")
     private Double sourceXDimesionValue;
 
     @Enumerated(EnumType.STRING)
-    @Column
+    @Column(name = "source_y_dimension_unit")
     private UnitOfMeasure sourceYDimesionUnit;
 
-    @Column
+    @Column(name = "source_y_dimension_value")
     private Double sourceYDimesionValue;
 
     @Column(length = StringLength.LENGTH_250)
