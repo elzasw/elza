@@ -5,6 +5,7 @@ var messages = {
     "global.insufficient.right": "Nemáte dostatečná oprávnění pro přístup.",
 
     "global.data.loading.register": "Načítání rejstříků",
+    "global.data.loading.dao": "Načítání digitalizátů",
     "global.data.loading.form": "Načítání formuláře JP",
     "global.data.loading.node": "Načítání seznamu JP",
     "global.data.loading.node.children": "Načítání seznamu potomků JP",
@@ -112,7 +113,7 @@ var messages = {
     "ribbon.action.fundAction.form.run": "Spustit",
     "ribbon.action.fundAction.form.clear": "Vymazat",
     "ribbon.action.arr.show-register-jp": "Rejstříky k JP",
-    "ribbon.action.arr.show-requests": "Digitální entity k JP",
+    "ribbon.action.arr.show-daos": "Digitální entity k JP",
     "ribbon.action.arr.fund.settings.ui": "Nastavení zobrazení",
     "ribbon.action.registry": "Rejstříková hesla",
     "ribbon.action.party": "Osoby",
@@ -555,6 +556,13 @@ var messages = {
 
     "subNodeRegister.title": "Rejstříková hesla",
     "subNodeRegister.title.add": "Přidání hesla",
+
+    "subNodeDao.title": "Digitální entity",
+    "subNodeDao.dao.label": "Digitalizát",
+    "subNodeDao.dao.code": "Code",
+    "subNodeDao.dao.files.more": "souborů",
+    "subNodeDao.dao.files.one": "soubor",
+    "subNodeDao.dao.files.few": "soubory",
 
     "registry.noSelection.title": "Není vybráno rejstříkové heslo",
     "registry.noSelection.message": "Prosím vyberte rejstříkové heslo ze seznamu nebo vytvořte nové.",

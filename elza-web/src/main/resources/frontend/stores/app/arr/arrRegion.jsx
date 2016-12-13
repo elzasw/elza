@@ -10,6 +10,7 @@ import {isBulkAction} from 'actions/arr/bulkActions.jsx'
 import {isFundTreeAction} from 'actions/arr/fundTree.jsx'
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister.jsx'
+import {isSubNodeDaosAction} from 'actions/arr/subNodeDaos.jsx'
 import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo.jsx'
 import {isNodeInfoAction} from 'actions/arr/nodeInfo.jsx'
 import {isVersionValidation} from 'actions/arr/versionValidation.jsx'
@@ -32,7 +33,7 @@ import processAreaStores from "shared/utils/processAreaStores";
     nodeSettings: nodeSetting(undefined, {}),
     extendedView: false,
     showRegisterJp: false,
-    showRequestsJp: false,
+    showDaosJp: false,
     packets: {},
     visiblePolicy: visiblePolicy(),
     funds: [],
@@ -82,6 +83,7 @@ export default function arrRegion(state = initialState, action) {
         || nodeFormActions.isSubNodeFormAction(action, "NODE") || nodeFormActions.isSubNodeFormAction(action, "OUTPUT")
         || nodeFormActions.isSubNodeFormCacheAction(action, "NODE") || nodeFormActions.isSubNodeFormCacheAction(action, "OUTPUT")
         || isSubNodeRegisterAction(action)
+        || isSubNodeDaosAction(action)
         || isSubNodeInfoAction(action)
         || isNodeInfoAction(action)
         || isVersionValidation(action)
@@ -146,10 +148,10 @@ export default function arrRegion(state = initialState, action) {
                 showRegisterJp: action.showRegisterJp
             }
         }
-        case types.SHOW_REQUESTS_JP: {
+        case types.SHOW_DAOS_JP: {
             return {
                 ...state,
-                showRequestsJp: action.show
+                showDaosJp: action.show
             }
         }
         case types.STORE_LOAD:

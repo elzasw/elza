@@ -20,6 +20,7 @@ import {isVersionValidation} from 'actions/arr/versionValidation.jsx'
 import {isNodeAction} from 'actions/arr/node.jsx'
 import {isNodesAction} from 'actions/arr/nodes.jsx'
 import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister.jsx'
+import {isSubNodeDaosAction} from 'actions/arr/subNodeDaos.jsx'
 import {isDeveloperScenariosAction} from 'actions/global/developer.jsx'
 import {isFundDataGridAction} from 'actions/arr/fundDataGrid.jsx'
 import {isFundChangeAction} from 'actions/global/change.jsx'
@@ -168,6 +169,7 @@ export function fund(state, action) {
         || isNodeAction(action)
         || isNodesAction(action)
         || isSubNodeRegisterAction(action)
+        || isSubNodeDaosAction(action)
         || isDeveloperScenariosAction(action)
     ) {
         const result = {

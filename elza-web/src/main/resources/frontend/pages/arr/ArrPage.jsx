@@ -32,7 +32,7 @@ import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-boo
 import {PageLayout} from 'pages/index.jsx';
 import {WebApi} from 'actions/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {showRegisterJp, showRequestsJp, fundExtendedView, fundsFetchIfNeeded} from 'actions/arr/fund.jsx'
+import {showRegisterJp, showDaosJp, fundExtendedView, fundsFetchIfNeeded} from 'actions/arr/fund.jsx'
 import {versionValidate, versionValidationErrorNext, versionValidationErrorPrevious} from 'actions/arr/versionValidation.jsx'
 import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
@@ -253,8 +253,8 @@ class ArrPage extends ArrParentPage {
     /**
      * Zobrazení skrytí digitálních entit.
      */
-    handleToggleRequests = () => {
-        this.dispatch(showRequestsJp(!this.props.arrRegion.showRequestsJp));
+    handleToggleDaos = () => {
+        this.dispatch(showDaosJp(!this.props.arrRegion.showDaosJp));
     }
 
     /**
@@ -392,9 +392,9 @@ class ArrPage extends ArrParentPage {
             </Button>
         )
         altActions.push(
-            <Button active={this.props.arrRegion.showRequestsJp} onClick={this.handleToggleRequests} key="toggle-requests-jp">
+            <Button active={this.props.arrRegion.showDaosJp} onClick={this.handleToggleDaos} key="toggle-daos-jp">
                 <Icon glyph="fa-th-list"/>
-                <span className="btnText">{i18n('ribbon.action.arr.show-requests')}</span>
+                <span className="btnText">{i18n('ribbon.action.arr.show-daos')}</span>
             </Button>
         )
 
@@ -829,7 +829,7 @@ class ArrPage extends ArrParentPage {
     renderCenterPanel(readMode, closed) {
         const {focus, arrRegion, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
         const showRegisterJp = arrRegion.showRegisterJp;
-        const showRequestsJp = arrRegion.showRequestsJp;
+        const showDaosJp = arrRegion.showDaosJp;
         const activeFund = this.getActiveFund(this.props);
 
         if (arrRegion.extendedView) {   // extended view - jiné větší zobrazení stromu, renderuje se zde
@@ -874,7 +874,7 @@ class ArrPage extends ArrParentPage {
                     packets={packets}
                     fundId={fundId}
                     showRegisterJp={showRegisterJp}
-                    showRequestsJp={showRequestsJp}
+                    showDaosJp={showDaosJp}
                 />
             )
         }
