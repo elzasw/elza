@@ -7,6 +7,7 @@ import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
 import cz.tacr.elza.controller.vo.ArrDaoFileVO;
 import cz.tacr.elza.controller.vo.ArrDaoLinkRequestVO;
+import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
 import cz.tacr.elza.controller.vo.ArrDaoRequestVO;
 import cz.tacr.elza.controller.vo.ArrDaoVO;
 import cz.tacr.elza.controller.vo.ArrDigitizationRequestVO;
@@ -66,8 +67,10 @@ import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaoBatchInfo;
 import cz.tacr.elza.domain.ArrDaoFile;
 import cz.tacr.elza.domain.ArrDaoFileGroup;
+import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrDigitizationRequestNode;
@@ -123,6 +126,7 @@ import cz.tacr.elza.repository.BulkActionNodeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.DaoFileGroupRepository;
 import cz.tacr.elza.repository.DaoFileRepository;
+import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.GroupRepository;
@@ -255,6 +259,9 @@ public class ClientFactoryVO {
 
     @Autowired
     private DaoFileRepository daoFileRepository;
+
+    @Autowired
+    private DaoRepository daoRepository;
 
     @Autowired
     private DaoFileGroupRepository daoFileGroupRepository;
@@ -2086,5 +2093,35 @@ public class ClientFactoryVO {
             vo.setFileGroupCount(daoFileGroupRepository.countByDao(arrDao));
         }
         return vo;
+    }
+
+    // TODO - JavaDoc - Lebeda
+    public ArrayList<ArrDaoPackageVO> createDaoPackageList(List<ArrDaoPackage> arrDaoList, Boolean unassigned) {
+        ArrayList<ArrDaoPackageVO> result = new ArrayList<>();
+
+        for (ArrDaoPackage arrDaoPackage : arrDaoList) {
+            ArrDaoPackageVO vo = new ArrDaoPackageVO();
+            vo.setId(arrDaoPackage.getDaoPackageId());
+            vo.setCode(arrDaoPackage.getCode());
+
+            final ArrDaoBatchInfo daoBatchInfo = arrDaoPackage.getDaoBatchInfo();
+            if (daoBatchInfo != null) {
+                vo.setBatchInfoCode(daoBatchInfo.getCode());
+                vo.setBatchInfoLabel(daoBatchInfo.getLabel());
+            }
+
+            long daoCount;
+            if (unassigned) {
+                daoCount = daoRepository.countByDaoPackageIDAndNotExistsDaoLink(arrDaoPackage.getDaoPackageId());
+            } else {
+                daoCount = daoRepository.countByDaoPackageID(arrDaoPackage.getDaoPackageId());
+            }
+
+            vo.setDaoCount(daoCount);
+
+            result.add(vo);
+        }
+
+        return result;
     }
 }

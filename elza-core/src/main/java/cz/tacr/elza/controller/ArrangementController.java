@@ -5,6 +5,7 @@ import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
 import cz.tacr.elza.controller.vo.ArrDaoVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
@@ -33,6 +34,7 @@ import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrFund;
@@ -309,6 +311,34 @@ public class ArrangementController {
         ArrFund fund = fundRepository.getOneCheckExist(fundId);
         List<ArrPacket> packets = packetService.findPackets(fund, input.getLimit(), input.getText());
         return factoryVo.createPacketList(packets);
+    }
+
+    // TODO - JavaDoc - Lebeda
+
+    /**
+     *  Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní jednotku popisu (JP) nebo nemá žádné napojení (pouze pod archivní souborem (AS)).
+     *
+     * @param fundVersionId   id archivního souboru
+     * @param search   vyhledává (použití LIKE) nad kódem balíčku, kódem a labelem arr_dao (přirazený k balíčku), kódem a labelem arr_dao_batch_info
+     * @param unassigned mají-li se získávat pouze balíčky, které obsahují DAO, které nejsou nikam přirazené (unassigned = true), a nebo úplně všechny (unassigned = false)
+     * @param maxResults  maximální počet vyhledaných balíčků
+     * @return  seznam balíčků, seřazení je podle ID balíčku sestupně (tzn. poslední vytvořené budou na začátku seznamu)
+     */
+    @RequestMapping(value = "/daopackages/{fundVersionId}",
+            method = RequestMethod.GET,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    List<ArrDaoPackageVO> findDaoPackages(
+            @PathVariable(value = "fundVersionId") final Integer fundVersionId,
+            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "unassigned", required = false, defaultValue = "false") Boolean unassigned,
+            @RequestParam(value = "maxResults", required = false, defaultValue = "200") Integer maxResults) {
+        Assert.notNull(fundVersionId);
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+
+        final List<ArrDaoPackage> arrDaoList = daoService.findDaoPackages(fundVersion, search, unassigned, maxResults);
+
+        return factoryVo.createDaoPackageList(arrDaoList, unassigned);
     }
 
     /**

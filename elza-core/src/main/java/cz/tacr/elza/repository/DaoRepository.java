@@ -30,4 +30,15 @@ public interface DaoRepository extends ElzaJpaRepository<ArrDao, Integer> {
             + " and not exists (select l from arr_dao_link l "
             + " where l.dao.daoId = d.daoId and l.deleteChange IS NULL) ")
     List<ArrDao> findByFundAndNotExistsNode(@Param("fundId") Integer fundId);
+
+    @Query("select count(d) from arr_dao d "
+            + " join d.daoPackage dp "
+            + " where dp.daoPackageId = :daoPackageId"
+            + " and not exists (select dl from arr_dao_link dl where dl.dao = d and dl.deleteChange is null )")
+    long countByDaoPackageIDAndNotExistsDaoLink(@Param("daoPackageId") Integer daoPackageId);
+
+    @Query("select count(d) from arr_dao d "
+            + " join d.daoPackage dp "
+            + " where dp.daoPackageId = :daoPackageId")
+    long countByDaoPackageID(@Param("daoPackageId") Integer daoPackageId);
 }
