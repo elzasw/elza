@@ -1,36 +1,27 @@
 package cz.tacr.elza.service;
 
-import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
-import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
-import cz.tacr.elza.controller.vo.ArrDaoFileVO;
-import cz.tacr.elza.controller.vo.ArrDaoVO;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoFile;
-import cz.tacr.elza.domain.ArrDaoFileGroup;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.repository.DaoFileGroupRepository;
-import cz.tacr.elza.repository.DaoFileRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoRepository;
-import cz.tacr.elza.utils.LocalDateTimeConverter;
-import ma.glasnost.orika.MapperFacade;
-import ma.glasnost.orika.impl.DefaultMapperFactory;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventId;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -41,62 +32,31 @@ import java.util.List;
  */
 
 @Service
-public class DaoService implements InitializingBean {
+public class DaoService {
 
     private Log logger = LogFactory.getLog(this.getClass());
-
-    private DefaultMapperFactory factory;
-    private MapperFacade facade;
-//    private LinkedHashMap<Class, JpaRepository> mapRepository;
 
     @Autowired
     private DaoRepository daoRepository;
 
     @Autowired
-    private DaoFileRepository daoFileRepository;
-
-    @Autowired
     private DaoLinkRepository daoLinkRepository;
 
     @Autowired
-    private ArrangementService arrangementService;
+    private EventNotificationService eventNotificationService;
 
     @Autowired
-    private DaoFileGroupRepository daoFileGroupRepository;
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        factory = new DefaultMapperFactory.Builder().build();
-        factory.getConverterFactory().registerConverter(new LocalDateTimeConverter());
-
-        factory.classMap(ArrDaoFile.class, ArrDaoFileVO.class)
-                .field("daoFileId", "id")
-                .exclude("dao")
-                .byDefault()
-                .register();
-
-        factory.classMap(ArrDaoFileGroup.class, ArrDaoFileGroupVO.class)
-                .field("daoFileGroupId", "id")
-                .exclude("fileList")
-                .exclude("fileCount")
-                .exclude("dao")
-                .byDefault()
-                .register();
-
-        facade = factory.getMapperFacade();
-    }
+    private ArrangementService arrangementService;
 
     /**
      * Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní jednotku popisu (JP) nebo nemá žádné napojení (pouze pod archivní souborem (AS)).
      *
      * @param fundVersion archivní soubor
      * @param node        node, pokud je null, najde entity bez napojení
-     * @param detail      načíst detailní informace (plnit struktutu vč návazných), výchozí hodnota false
      * @return seznam digitálních entit (DAO)
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
-    public List<ArrDaoVO> findDaos(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion, ArrNode node, boolean detail) {
-        List<ArrDaoVO> voList = new ArrayList<>();
+    public List<ArrDao> findDaos(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion, ArrNode node) {
 
         List<ArrDao> arrDaoList;
         if (node != null) {
@@ -105,48 +65,7 @@ public class DaoService implements InitializingBean {
             arrDaoList = daoRepository.findByFundAndNotExistsNode(fundVersion.getFund().getFundId());
         }
 
-        for (ArrDao arrDao : arrDaoList) {
-            String viewDaoUrl = arrDao.getDaoPackage().getDigitalRepository().getViewDaoUrl();
-
-            ArrDaoVO vo = new ArrDaoVO();
-            vo.setId(arrDao.getDaoId());
-            vo.setCode(arrDao.getCode());
-            vo.setLabel(arrDao.getLabel());
-            vo.setValid(arrDao.getValid());
-
-            ElzaTools.UrlParams params = ElzaTools.createUrlParams()
-                    .add("code", arrDao.getCode())
-                    .add("label", arrDao.getLabel())
-                    .add("id", arrDao.getDaoId());
-            vo.setUrl(ElzaTools.bindingUrlParams(viewDaoUrl, params));
-
-            if (detail) {
-                // TODO Lebeda - optimalizovat na jeden dotaz seskupený dle DAO / vyčlenit do samostatné metody
-                final List<ArrDaoFile> daoFileList = daoFileRepository.findByDaoAndDaoFileGroupIsNull(arrDao);
-                final List<ArrDaoFileVO> daoFileVOList = facade.mapAsList(daoFileList, ArrDaoFileVO.class);
-                vo.addAllFile(daoFileVOList);
-
-                final List<ArrDaoFileGroup> daoFileGroups = daoFileGroupRepository.findByDaoOrderByCodeAsc(arrDao);
-                final List<ArrDaoFileGroupVO> daoFileGroupVOList = new ArrayList<>();
-                for (ArrDaoFileGroup daoFileGroup : daoFileGroups) {
-                    final ArrDaoFileGroupVO daoFileGroupVO = facade.map(daoFileGroup, ArrDaoFileGroupVO.class);
-                    // TODO Lebeda - optimalizovat na jeden dotaz seskupený dle DAO
-                    final List<ArrDaoFile> arrDaoFileList = daoFileRepository.findByDaoAndDaoFileGroup(arrDao, daoFileGroup);
-                    daoFileGroupVO.addAllFile(facade.mapAsList(arrDaoFileList, ArrDaoFileVO.class));
-                    daoFileGroupVOList.add(daoFileGroupVO);
-                }
-
-                vo.addAllFileGroup(daoFileGroupVOList);
-            } else {
-                // TODO Lebeda - optimalizovat na jeden dotaz seskupený dle DAO
-                vo.setFileCount(daoFileRepository.countByDaoAndDaoFileGroupIsNull(arrDao));
-                vo.setFileGroupCount(daoFileGroupRepository.countByDao(arrDao));
-            }
-
-            voList.add(vo);
-        }
-
-        return voList;
+        return arrDaoList;
     }
 
     /**
@@ -162,6 +81,7 @@ public class DaoService implements InitializingBean {
         // kontrola, že ještě neexistuje
         final List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaoAndNodeAndDeleteChangeIsNull(dao, node);
 
+        final ArrDaoLink resultDaoLink;
         if (CollectionUtils.isEmpty(daoLinkList)) {
             // vytvořit změnu
             final ArrChange createChange = arrangementService.createChange(ArrChange.Type.CREATE_DAO_LINK, node);
@@ -173,17 +93,23 @@ public class DaoService implements InitializingBean {
             daoLink.setNode(node);
 
             logger.debug("Založeno nové propojení mezi DAO(ID=" + dao.getDaoId() + ") a node(ID=" + node.getNodeId() + ").");
-            return daoLinkRepository.save(daoLink);
+            resultDaoLink = daoLinkRepository.save(daoLink);
         } else if (daoLinkList.size() == 1) {
             logger.debug("Nalezeno existující platné propojení mezi DAO(ID=" + dao.getDaoId() + ") a node(ID=" + node.getNodeId() + ").");
-            return daoLinkList.get(0); // vrací jediný prvek
+            resultDaoLink = daoLinkList.get(0); // vrací jediný prvek
         } else {
             // Nalezeno více než jedno platné propojení mezi digitalizátem a uzlem popisu.
             throw new BusinessException(ArrangementCode.ALREADY_ADDED);
         }
 
-        // TODO Lebeda - poslat i websockety o připojení
+        // poslat i websockety o připojení
+        EventId event = EventFactory.createIdEvent(EventType.DAO_LINK_CREATE, fundVersion.getFundVersionId());
+        eventNotificationService.publishEvent(event);
+
         // TODO Lebeda - vytvořit požadavek pro externí systém na připojení
+
+
+        return resultDaoLink;
     }
 
     /**
@@ -205,9 +131,15 @@ public class DaoService implements InitializingBean {
         final ArrChange deleteChange = arrangementService.createChange(ArrChange.Type.DELETE_DAO_LINK, daoLink.getNode());
         daoLink.setDeleteChange(deleteChange);
         logger.debug("Zadané propojení arrDaoLink(ID=" + daoLink.getDaoLinkId() + ") bylo zneplatněno novou změnou.");
-        return daoLinkRepository.save(daoLink);
+        final ArrDaoLink resultDaoLink = daoLinkRepository.save(daoLink);
 
-        // TODO Lebeda - poslat i websockety o odpojení
+        // poslat websockety o odpojení
+        EventId event = EventFactory.createIdEvent(EventType.DAO_LINK_DELETE, fundVersion.getFundVersionId());
+        eventNotificationService.publishEvent(event);
+
         // TODO Lebeda - vytvořit požadavek pro externí systém na odpojení
+
+
+        return resultDaoLink;
     }
 }

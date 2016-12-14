@@ -334,7 +334,9 @@ public class ArrangementController {
             node = nodeRepository.getOneCheckExist(nodeId);
         }
 
-        return daoService.findDaos(fundVersion, node, BooleanUtils.isTrue(detail));
+        final List<ArrDao> arrDaoList = daoService.findDaos(fundVersion, node);
+
+        return factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail));
     }
 
     /**

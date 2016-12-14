@@ -1,50 +1,15 @@
 package cz.tacr.elza.controller.config;
 
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import cz.tacr.elza.controller.vo.ArrDaoLinkRequestVO;
-import cz.tacr.elza.controller.vo.ArrDaoRequestVO;
-import cz.tacr.elza.controller.vo.ArrDigitizationRequestVO;
-import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
-import cz.tacr.elza.controller.vo.ArrRequestVO;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
-import cz.tacr.elza.domain.ArrDigitizationRequest;
-import cz.tacr.elza.domain.ArrDigitizationRequestNode;
-import cz.tacr.elza.domain.ArrRequest;
-import cz.tacr.elza.domain.ArrRequestQueueItem;
-import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
-import cz.tacr.elza.repository.RequestQueueItemRepository;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.config.ConfigRules;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
+import cz.tacr.elza.controller.vo.ArrDaoFileVO;
+import cz.tacr.elza.controller.vo.ArrDaoLinkRequestVO;
+import cz.tacr.elza.controller.vo.ArrDaoRequestVO;
+import cz.tacr.elza.controller.vo.ArrDaoVO;
+import cz.tacr.elza.controller.vo.ArrDigitizationRequestVO;
 import cz.tacr.elza.controller.vo.ArrFileVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
@@ -54,6 +19,8 @@ import cz.tacr.elza.controller.vo.ArrOutputExtVO;
 import cz.tacr.elza.controller.vo.ArrOutputFileVO;
 import cz.tacr.elza.controller.vo.ArrOutputVO;
 import cz.tacr.elza.controller.vo.ArrPacketVO;
+import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
+import cz.tacr.elza.controller.vo.ArrRequestVO;
 import cz.tacr.elza.controller.vo.BulkActionRunVO;
 import cz.tacr.elza.controller.vo.BulkActionVO;
 import cz.tacr.elza.controller.vo.DmsFileVO;
@@ -81,6 +48,7 @@ import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.RulTemplateVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
+import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.UISettingsVO;
 import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
@@ -97,7 +65,12 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaoFile;
+import cz.tacr.elza.domain.ArrDaoFileGroup;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDigitizationRequest;
+import cz.tacr.elza.domain.ArrDigitizationRequestNode;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -109,6 +82,8 @@ import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ArrRequest;
+import cz.tacr.elza.domain.ArrRequestQueueItem;
 import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParInstitution;
@@ -146,6 +121,9 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.packageimport.ItemTypeUpdater;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
+import cz.tacr.elza.repository.DaoFileGroupRepository;
+import cz.tacr.elza.repository.DaoFileRepository;
+import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.GroupRepository;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
@@ -158,6 +136,7 @@ import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RelationEntityRepository;
 import cz.tacr.elza.repository.RelationRepository;
+import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.security.UserDetail;
@@ -166,6 +145,33 @@ import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.SettingsService;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import javax.annotation.Nullable;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 /**
@@ -246,6 +252,12 @@ public class ClientFactoryVO {
 
     @Autowired
     private RequestQueueItemRepository requestQueueItemRepository;
+
+    @Autowired
+    private DaoFileRepository daoFileRepository;
+
+    @Autowired
+    private DaoFileGroupRepository daoFileGroupRepository;
 
     /**
      * Vytvoří objekt informací o přihlášeném uživateli.
@@ -2019,5 +2031,60 @@ public class ClientFactoryVO {
         }
 
         return result;
+    }
+
+    /**
+     * Vytvoření VO
+     *
+     * @param arrDaoList DO ke konverzi
+     * @param detail příznak, zda se mají naplnit seznamy na VO, pokud ne, jsou naplněny pouze počty podřízených záznamů v DB
+     * @return list VO
+     */
+    public List<ArrDaoVO> createDaoList(List<ArrDao> arrDaoList, boolean detail) {
+        List<ArrDaoVO> voList = new ArrayList<>();
+        for (ArrDao arrDao : arrDaoList) {
+            voList.add(createDao(arrDao, detail));
+        }
+        return voList;
+    }
+
+    /**
+     * Vytvoření vo z DO
+     *
+     * @param arrDao DO
+     * @param detail příznak, zda se mají naplnit seznamy na VO, pokud ne, jsou naplněny pouze počty podřízených záznamů v DB
+     * @return vo
+     */
+    private ArrDaoVO createDao(ArrDao arrDao, boolean detail) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        ArrDaoVO vo = mapper.map(arrDao, ArrDaoVO.class);
+
+        String viewDaoUrl = arrDao.getDaoPackage().getDigitalRepository().getViewDaoUrl();
+        ElzaTools.UrlParams params = ElzaTools.createUrlParams()
+                .add("code", arrDao.getCode())
+                .add("label", arrDao.getLabel())
+                .add("id", arrDao.getDaoId());
+        vo.setUrl(ElzaTools.bindingUrlParams(viewDaoUrl, params));
+
+        if (detail) {
+            final List<ArrDaoFile> daoFileList = daoFileRepository.findByDaoAndDaoFileGroupIsNull(arrDao);
+            final List<ArrDaoFileVO> daoFileVOList = mapper.mapAsList(daoFileList, ArrDaoFileVO.class);
+            vo.addAllFile(daoFileVOList);
+
+            final List<ArrDaoFileGroup> daoFileGroups = daoFileGroupRepository.findByDaoOrderByCodeAsc(arrDao);
+            final List<ArrDaoFileGroupVO> daoFileGroupVOList = new ArrayList<>();
+            for (ArrDaoFileGroup daoFileGroup : daoFileGroups) {
+                final ArrDaoFileGroupVO daoFileGroupVO = mapper.map(daoFileGroup, ArrDaoFileGroupVO.class);
+                final List<ArrDaoFile> arrDaoFileList = daoFileRepository.findByDaoAndDaoFileGroup(arrDao, daoFileGroup);
+                daoFileGroupVO.addAllFile(mapper.mapAsList(arrDaoFileList, ArrDaoFileVO.class));
+                daoFileGroupVOList.add(daoFileGroupVO);
+            }
+
+            vo.addAllFileGroup(daoFileGroupVOList);
+        } else {
+            vo.setFileCount(daoFileRepository.countByDaoAndDaoFileGroupIsNull(arrDao));
+            vo.setFileGroupCount(daoFileGroupRepository.countByDao(arrDao));
+        }
+        return vo;
     }
 }
