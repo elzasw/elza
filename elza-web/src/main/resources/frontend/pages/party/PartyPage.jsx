@@ -17,7 +17,6 @@ const Shortcuts = require('react-shortcuts/component');
 import {Utils} from 'components/index.jsx';
 import {setFocus} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
-import ExtImport from '../../components/form/ExtImportForm'
 
 import './PartyPage.less';
 

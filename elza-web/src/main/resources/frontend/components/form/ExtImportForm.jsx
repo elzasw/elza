@@ -13,6 +13,7 @@ import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
 import {registrySelect} from 'actions/registry/registryRegionList.jsx'
 import {routerNavigate} from 'actions/router.jsx'
+import Scope from '../../components/shared/scope/Scope';
 
 
 const EXT_SYSTEM_CODE_INTERPI = 'INTERPI';
@@ -162,29 +163,20 @@ class ExtImportForm extends AbstractReactComponent {
         systemId: null,
         searched: false,
         results: [],
-        scopes: [],
     };
 
     static PropTypes = {
         autocomplete: React.PropTypes.bool,
         isParty: React.PropTypes.bool,
-        count: React.PropTypes.number
+        count: React.PropTypes.number,
+        versionId: React.PropTypes.number
     };
 
     static defaultProps = {
         isParty: false,
-        count: 200
+        count: 200,
+        versionId: null
     };
-
-    componentDidMount() {
-        console.log(this.props, true)
-        WebApi.getAllScopes().then(scopes => {
-            if (scopes.length === 1) {
-                this.props.fields.scopeId.onChange(scopes[0].id);
-            }
-            this.setState({scopes});
-        });
-    }
 
     submit = (data) => {
         const {results, systemId, isParty} = this.state;
@@ -238,7 +230,7 @@ class ExtImportForm extends AbstractReactComponent {
 
     render() {
         const {searched, results, scopes} = this.state;
-        const {autocomplete, onClose, fields:{scopeId, interpiRecordId}, handleSubmit, submitting} = this.props;
+        const {autocomplete, onClose, fields:{scopeId, interpiRecordId}, handleSubmit, submitting, versionId} = this.props;
 
         let record = null;
         if (interpiRecordId.value) {
@@ -301,11 +293,7 @@ class ExtImportForm extends AbstractReactComponent {
                             </div>
                             <div>
                                 <div>
-                                    <label>{i18n('extImport.scopeId')}</label>
-                                    <FormControl componentClass="select" {...scopeId}>
-                                        <option key="null" />
-                                        {scopes && scopes.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
-                                    </FormControl>
+                                    <Scope label={i18n('extImport.scopeId')} {...scopeId} versionId={versionId} />
                                 </div>
                             </div>
                         </div>}
