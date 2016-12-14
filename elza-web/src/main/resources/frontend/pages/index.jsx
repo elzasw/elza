@@ -8,6 +8,7 @@ exports.AdminRequestsQueuePage = require('pages/admin/AdminRequestsQueuePage.jsx
 exports.ArrPage = require('pages/arr/ArrPage.jsx');
 exports.ArrDataGridPage = require('pages/arr/ArrDataGridPage.jsx');
 exports.ArrMovementsPage = require('pages/arr/ArrMovementsPage.jsx');
+exports.ArrDaoPage = require('pages/arr/ArrDaoPage.jsx');
 exports.FundActionPage = require('pages/arr/FundActionPage.jsx');
 exports.ArrOutputPage = require('pages/arr/ArrOutputPage.jsx');
 exports.ArrRequestPage = require('pages/arr/ArrRequestPage.jsx');

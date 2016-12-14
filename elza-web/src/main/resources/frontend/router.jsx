@@ -18,6 +18,7 @@ import {
     ArrMovementsPage,
     FundActionPage,
     ArrRequestPage,
+    ArrDaoPage,
     ArrOutputPage,
     HomePage,
     RegistryPage,
@@ -41,6 +42,7 @@ const routes = <Route name="layout" path="/" component={Layout}>
         <Route path="movements" component={ArrMovementsPage} />
         <Route path="output" component={ArrOutputPage} />
         <Route path="actions" component={FundActionPage} />
+        <Route path="daos" component={ArrDaoPage} />
         <Route path="requests" component={ArrRequestPage} />
     </Route>
     <Route path="registry" component={RegistryPage} />

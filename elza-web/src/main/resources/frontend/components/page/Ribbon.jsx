@@ -125,7 +125,11 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
             if (userDetail.hasFundActionPage(fundId)) {    // právo na hromadné akce            
                 arrParts.push(<LinkContainer key="ribbon-btn-arr-actions" to="/arr/actions"><Button><Icon glyph="fa-calculator" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.bulkActions')}</span></div></Button></LinkContainer>)
             }
-            arrParts.push(<LinkContainer key="ribbon-btn-arr-requests" to="/arr/requests"><Button><Icon glyph="fa-shopping-basket" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.requests')}</span></div></Button></LinkContainer>)
+
+            if (userDetail.hasArrPage(fundId)) {    // právo na pořádání
+                arrParts.push(<LinkContainer key="ribbon-btn-arr-requests" to="/arr/requests"><Button><Icon glyph="fa-shopping-basket" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.requests')}</span></div></Button></LinkContainer>)
+                arrParts.push(<LinkContainer key="ribbon-btn-arr-daos" to="/arr/daos"><Button><Icon glyph="fa-camera" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.daos')}</span></div></Button></LinkContainer>)
+            }
 
             section = (
                 <RibbonGroup key="ribbon-group-arr" className="large">

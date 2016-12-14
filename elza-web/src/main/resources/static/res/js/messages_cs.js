@@ -98,6 +98,7 @@ var messages = {
     "ribbon.action.arr.output.clone": "Vytvořit kopii",
     "ribbon.action.arr.fund.add": "Nový AS",
     "ribbon.action.arr.fund.requests": "Požadavky",
+    "ribbon.action.arr.fund.daos": "Digitální entity",
     "ribbon.action.arr.fund.request.send": "Odeslat požadavek",
     "ribbon.action.arr.fund.update": "Upravit vlastnosti",
     "ribbon.action.arr.fund.approve": "Nová verze AS",
@@ -434,6 +435,9 @@ var messages = {
     "arr.movements.move.under" : "Přesunout pod",
     "arr.movements.move.before" : "Přesunout před",
     "arr.movements.move.after" : "Přesunout za",
+
+    "arr.daos.pinned" : "Připojit k JP",
+    "arr.daos.create.under" : "Vytvořit podřízenou JP",
 
     "arr.fund.subNodes.prevPage": "Předchozí stránka",
     "arr.fund.subNodes.nextPage": "Další stránka",
