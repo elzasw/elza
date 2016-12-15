@@ -2095,33 +2095,37 @@ public class ClientFactoryVO {
         return vo;
     }
 
-    // TODO - JavaDoc - Lebeda
     public ArrayList<ArrDaoPackageVO> createDaoPackageList(List<ArrDaoPackage> arrDaoList, Boolean unassigned) {
         ArrayList<ArrDaoPackageVO> result = new ArrayList<>();
 
         for (ArrDaoPackage arrDaoPackage : arrDaoList) {
-            ArrDaoPackageVO vo = new ArrDaoPackageVO();
-            vo.setId(arrDaoPackage.getDaoPackageId());
-            vo.setCode(arrDaoPackage.getCode());
-
-            final ArrDaoBatchInfo daoBatchInfo = arrDaoPackage.getDaoBatchInfo();
-            if (daoBatchInfo != null) {
-                vo.setBatchInfoCode(daoBatchInfo.getCode());
-                vo.setBatchInfoLabel(daoBatchInfo.getLabel());
-            }
-
-            long daoCount;
-            if (unassigned) {
-                daoCount = daoRepository.countByDaoPackageIDAndNotExistsDaoLink(arrDaoPackage.getDaoPackageId());
-            } else {
-                daoCount = daoRepository.countByDaoPackageID(arrDaoPackage.getDaoPackageId());
-            }
-
-            vo.setDaoCount(daoCount);
-
+            ArrDaoPackageVO vo = createDaoPackage(unassigned, arrDaoPackage);
             result.add(vo);
         }
 
         return result;
+    }
+
+    private ArrDaoPackageVO createDaoPackage(Boolean unassigned, ArrDaoPackage arrDaoPackage) {
+        ArrDaoPackageVO vo = new ArrDaoPackageVO();
+        vo.setId(arrDaoPackage.getDaoPackageId());
+        vo.setCode(arrDaoPackage.getCode());
+
+        final ArrDaoBatchInfo daoBatchInfo = arrDaoPackage.getDaoBatchInfo();
+        if (daoBatchInfo != null) {
+            vo.setBatchInfoCode(daoBatchInfo.getCode());
+            vo.setBatchInfoLabel(daoBatchInfo.getLabel());
+        }
+
+        // review Lebeda - kolik jich má být - optimalizovat jedním hromadným dotazem?
+        long daoCount;
+        if (unassigned) {
+            daoCount = daoRepository.countByDaoPackageIDAndNotExistsDaoLink(arrDaoPackage.getDaoPackageId());
+        } else {
+            daoCount = daoRepository.countByDaoPackageID(arrDaoPackage.getDaoPackageId());
+        }
+
+        vo.setDaoCount(daoCount);
+        return vo;
     }
 }
