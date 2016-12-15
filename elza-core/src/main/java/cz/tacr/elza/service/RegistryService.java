@@ -753,7 +753,7 @@ public class RegistryService {
         List<String> scopeCodes = getScopeCodes();
         List<RegScope> defaultScopes;
         if (CollectionUtils.isEmpty(scopeCodes)) {
-            defaultScopes = Collections.EMPTY_LIST;
+            defaultScopes = Collections.emptyList();
         } else {
             defaultScopes = scopeRepository.findByCodes(scopeCodes);
         }

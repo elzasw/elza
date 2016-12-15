@@ -302,7 +302,7 @@ public class PartyService {
         Assert.notNull(party);
 
         Assert.notNull(party.getRecord(), "Osoba nemá zadané rejstříkové heslo.");
-        Assert.notNull(party.getRecord().getRegisterType(), "Není vyplněný typ rejstříkového helsa.");
+        Assert.notNull(party.getRecord().getRegisterType(), "Není vyplněný typ rejstříkového hesla.");
         Assert.notNull(party.getRecord().getScope(), "Není nastavena třída rejstříkového hesla");
         Assert.notNull(party.getRecord().getScope().getScopeId(), "Není nastaveno id třídy rejstříkového hesla");
 

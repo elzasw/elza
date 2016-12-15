@@ -23,6 +23,9 @@ public class ExternalRecordVO {
     /** Existující záznamy. */
     private List<PairedRecordVO> pairedRecords = new LinkedList<>();
 
+    /** Variantní rejstříková hesla. */
+    private List<String> variantNames = new LinkedList<>();
+
     public String getRecordId() {
         return recordId;
     }
@@ -57,5 +60,13 @@ public class ExternalRecordVO {
 
     public void addPairedRecord(final PairedRecordVO pairedRecordVO) {
         pairedRecords.add(pairedRecordVO);
+    }
+
+    public List<String> getVariantNames() {
+        return variantNames;
+    }
+
+    public void setVariantNames(final List<String> variantNames) {
+        this.variantNames = variantNames;
     }
 }
