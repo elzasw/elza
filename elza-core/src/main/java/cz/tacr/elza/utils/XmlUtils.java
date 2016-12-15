@@ -162,7 +162,7 @@ public class XmlUtils {
      *
      * @return pole bytů
      */
-    public static <T, C> byte[] marshallData(final T data,final Class<C> cls) {
+    public static <T, C> byte[] marshallData(final T data, final Class<C> cls) {
         Assert.notNull(data);
 
         try  {

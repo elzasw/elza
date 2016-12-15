@@ -3,7 +3,6 @@ package cz.tacr.elza.interpi.service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -21,6 +20,7 @@ import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegExternalSystem;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.interpi.service.vo.ConditionVO;
 import cz.tacr.elza.interpi.service.vo.EntityValueType;
 import cz.tacr.elza.interpi.service.vo.ExternalRecordVO;
@@ -31,6 +31,7 @@ import cz.tacr.elza.interpi.ws.wo.SetTyp;
 import cz.tacr.elza.repository.RegExternalSystemRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.service.PartyService;
 import cz.tacr.elza.service.RegistryService;
 import cz.tacr.elza.utils.WSUtils;
@@ -73,6 +74,9 @@ public class InterpiService {
     @Autowired
     private RegRecordRepository recordRepository;
 
+    @Autowired
+    private VariantRecordRepository variantRecordRepository;
+
     /**
      * Vyhledá záznamy v INTERPI.
      *
@@ -104,21 +108,32 @@ public class InterpiService {
 
         SetTyp setTyp = unmarshall(searchResult);
 
-        Map<String, ExternalRecordVO> result = new LinkedHashMap<>();
-        for (EntitaTyp entitaTyp : setTyp.getEntita()) {
-            ExternalRecordVO recordVO = interpiFactory.convertToExternalRecordVO(entitaTyp);
-            result.put(recordVO.getRecordId(), recordVO);
-
-            if (result.size() == maxCount) {
-                break; // INTERPI neumí stránkovat
-            }
-        }
-
+        Map<String, ExternalRecordVO> result = convertSearchResults(setTyp.getEntita(), maxCount, false);
         if (!result.isEmpty()) {
             matchWithExistingRecords(regExternalSystem, result);
         }
 
         return new ArrayList<>(result.values());
+    }
+
+    private Map<String, ExternalRecordVO> convertSearchResults(final List<EntitaTyp> entitaList, final Integer maxCount,
+            final boolean generateVariantNames) {
+        int searchResultCount = entitaList.size() > maxCount ? maxCount : entitaList.size();
+        List<EntitaTyp> searchResults = new ArrayList<>(searchResultCount);
+        for (EntitaTyp entitaTyp : entitaList) {
+            searchResults.add(entitaTyp);
+            if (searchResults.size() == searchResultCount) {
+                break; // INTERPI neumí stránkovat
+            }
+        }
+
+        List<ExternalRecordVO> recordVOList = interpiFactory.convertToExternalRecordVO(searchResults, generateVariantNames);
+        Map<String, ExternalRecordVO> result = new HashMap<>();
+        for (ExternalRecordVO externalRecordVO : recordVOList) {
+            result.put(externalRecordVO.getRecordId(), externalRecordVO);
+        }
+
+        return result;
     }
 
     /**
@@ -136,7 +151,7 @@ public class InterpiService {
         RegExternalSystem interpiSystem = getExternalSystem(systemId);
         EntitaTyp entitaTyp = findOneRecord(id, interpiSystem);
 
-        ExternalRecordVO recordVO = interpiFactory.convertToExternalRecordVO(entitaTyp);
+        ExternalRecordVO recordVO = interpiFactory.convertToExternalRecordVO(Collections.singletonList(entitaTyp), false).iterator().next();
         matchWithExistingRecords(interpiSystem, Collections.singletonMap(recordVO.getRecordId(), recordVO));
 
         return recordVO;
@@ -182,7 +197,7 @@ public class InterpiService {
         if (interpiFactory.isParty(valueMap)) {
             result = importParty(entitaTyp, valueMap, originalRecord, interpiRecordId, isOriginator, regScope, regExternalSystem);
         } else {
-            result = importRecord(entitaTyp, valueMap, originalRecord, interpiRecordId, regScope, regExternalSystem);
+            result = importRecord(entitaTyp, originalRecord, interpiRecordId, regScope, regExternalSystem);
         }
 
         return result;
@@ -217,16 +232,26 @@ public class InterpiService {
         }
     }
 
-    private RegRecord importRecord(final EntitaTyp entitaTyp,  final Map<EntityValueType, List<Object>> valueMap,
-            final RegRecord originalRecord, final String interpiRecordId,  final RegScope regScope,
-            final RegExternalSystem regExternalSystem) {
-        RegRecord regRecord = interpiFactory.createRecord(valueMap, interpiRecordId, regExternalSystem, regScope);
+    private RegRecord importRecord(final EntitaTyp entitaTyp, final RegRecord originalRecord,
+            final String interpiRecordId,  final RegScope regScope, final RegExternalSystem regExternalSystem) {
+        RegRecord regRecord = interpiFactory.createRecord(entitaTyp, interpiRecordId, regExternalSystem, regScope, true);
         if (originalRecord != null) {
             regRecord.setRecordId(originalRecord.getRecordId());
             regRecord.setVersion(originalRecord.getVersion());
+            regRecord.setUuid(originalRecord.getUuid());
+
+            //smazání variantních hesel
+            List<RegVariantRecord> oldVariants = variantRecordRepository.findByRegRecordId(originalRecord.getRecordId());
+            variantRecordRepository.delete(oldVariants);
         }
 
-        return registryService.saveRecord(regRecord, false);
+        List<RegVariantRecord> variantRecordList = regRecord.getVariantRecordList();
+        regRecord = registryService.saveRecord(regRecord, false);
+        for (RegVariantRecord variantRecord : variantRecordList) {
+            registryService.saveVariantRecord(variantRecord);
+        }
+
+        return regRecord;
     }
 
     private RegRecord importParty(final EntitaTyp entitaTyp, final Map<EntityValueType, List<Object>> valueMap,
@@ -237,7 +262,7 @@ public class InterpiService {
             originalParty = partyService.findParPartyByRecord(originalRecord);
         }
 
-        RegRecord regRecord = interpiFactory.createRecord(valueMap, interpiRecordId, regExternalSystem, regScope);
+        RegRecord regRecord = interpiFactory.createPartyRecord(valueMap, interpiRecordId, regExternalSystem, regScope);
         if (originalRecord != null) {
             regRecord.setRecordId(originalRecord.getRecordId());
             regRecord.setVersion(originalRecord.getVersion());

@@ -61,10 +61,55 @@ import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.service.GroovyScriptService;
 import cz.tacr.elza.service.RegistryService;
 import cz.tacr.elza.utils.PartyType;
+import cz.tacr.elza.utils.XmlUtils;
 
-OznaceniTyp oznaceniTyp = FACTORY.getPreferovaneOznaceni(VALUE_MAP);
-RECORD.setName(generatePartyNameString(oznaceniTyp, VALUE_MAP));
+List<ExternalRecordVO> records = new LinkedList<>();
+for (entitaTyp in ENTITIES) {
+    Map valueMap = FACTORY.convertToMap(entitaTyp);
+    OznaceniTyp oznaceniTyp = FACTORY.getPreferovaneOznaceni(valueMap);
 
+    ExternalRecordVO record = new ExternalRecordVO();
+    records.add(record);
+
+    record.setDetail(createDetail(entitaTyp));
+    record.setName(generatePartyNameString(oznaceniTyp, valueMap));
+    record.setRecordId(FACTORY.getInterpiRecordId(valueMap));
+
+    List<OznaceniTyp> otherNames = FACTORY.getVariantniOznaceni(valueMap);
+    List<String> variantNames = new ArrayList<>(otherNames.size());
+    otherNames.each {
+        String variantRecord = createVariantRecord(it, valueMap)
+        variantNames.add(variantRecord);
+    };
+    record.setVariantNames(variantNames);
+}
+
+return records;
+
+String createDetail(EntitaTyp entitaTyp) {
+    byte[] marshallData = XmlUtils.marshallData(entitaTyp, EntitaTyp.class);
+
+    return XmlUtils.formatXml(new ByteArrayInputStream(marshallData));
+}
+
+/**
+ * Vytvoří variantní rejstříkové heslo.
+ * @param oznaceniTyp jméno osoby
+ * @param valueMap data osoby
+ * @return variantní rejstříkové heslo
+ */
+String createVariantRecord(final OznaceniTyp oznaceniTyp, final Map valueMap) {
+    return generatePartyNameString(oznaceniTyp, valueMap);
+}
+
+/**
+ * Generování charakteristiky hesla.
+ * @param valueMap
+ * @return charakteristika hesla
+ */
+String generateCharacteristics(valueMap) {
+    return "charakteristika";
+}
 
     /**
      * Podle jména osoby provede vygenerování textu jména.

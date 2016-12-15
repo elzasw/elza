@@ -134,29 +134,18 @@ public class InterpiFactory {
                 createQuery();
     }
 
-    public ExternalRecordVO convertToExternalRecordVO(final EntitaTyp entitaTyp) {
-        Map<EntityValueType, List<Object>> valueMap = convertToMap(entitaTyp);
-
-        String interpiRecordId = getInterpiRecordId(valueMap);
-
-        ExternalRecordVO recordVO = new ExternalRecordVO();
-        recordVO.setRecordId(interpiRecordId);
-        createDetail(valueMap, recordVO);
-
-        return recordVO;
-    }
-
-    private void createDetail(final Map<EntityValueType, List<Object>> valueMap, final ExternalRecordVO recordVO) {
+    public List<ExternalRecordVO> convertToExternalRecordVO(final List<EntitaTyp> searchResults,
+            final boolean generateVariantNames) {
         Map<String, Object> input = new HashMap<>();
-        input.put("RECORD", recordVO);
-        input.put("VALUE_MAP", valueMap);
+        input.put("ENTITIES", searchResults);
         input.put("FACTORY", this);
+        input.put("GENERATE_VARIANT_NAMES", generateVariantNames);
 
         ScriptSource source = new ResourceScriptSource(createDetailResource);
-        groovyScriptEvaluator.evaluate(source, input);
+        return (List<ExternalRecordVO>) groovyScriptEvaluator.evaluate(source, input);
     }
 
-    private String getInterpiRecordId(final Map<EntityValueType, List<Object>> valueMap) {
+    public String getInterpiRecordId(final Map<EntityValueType, List<Object>> valueMap) {
         String interpiRecordId = null;
         List<IdentifikaceTyp> identifikace = getIdentifikace(valueMap);
         for (IdentifikaceTyp identifikaceTyp : identifikace) {
@@ -178,7 +167,41 @@ public class InterpiFactory {
         return interpiRecordId;
     }
 
-    public RegRecord createRecord(final Map<EntityValueType, List<Object>> valueMap,
+    public RegRecord createRecord(final EntitaTyp entitaTyp, final String interpiPartyId,
+            final RegExternalSystem regExternalSystem, final RegScope regScope, final boolean generateVariantNames) {
+        Map<EntityValueType, List<Object>> valueMap = convertToMap(entitaTyp);
+        RegRecord regRecord = createPartyRecord(valueMap, interpiPartyId, regExternalSystem, regScope);
+
+        ExternalRecordVO recordVO = convertToExternalRecordVO(Collections.singletonList(entitaTyp), generateVariantNames).
+                iterator().next();
+
+        regRecord.setCharacteristics(recordVO.getDetail());
+        regRecord.setRecord(recordVO.getName());
+
+        List<RegVariantRecord> regVariantRecords = new ArrayList<>(recordVO.getVariantNames().size());
+        for (String variantName : recordVO.getVariantNames()) {
+            RegVariantRecord regVariantRecord = new RegVariantRecord();
+            regVariantRecord.setRecord(variantName);
+            regVariantRecord.setRegRecord(regRecord);
+
+            regVariantRecords.add(regVariantRecord);
+        }
+        regRecord.setVariantRecordList(regVariantRecords);
+
+        return regRecord;
+    }
+
+    /**
+     * Vytvoří rejstříkové heslo se základními informacemi potřebnými pro uložení osoby.
+     *
+     * @param valueMap mapa hodnot z interpi
+     * @param interpiPartyId extrní id osoby
+     * @param regExternalSystem systém ze kterého je osoba
+     * @param regScope třída rejstříků do které se importuje
+     *
+     * @return rejstříkové heslo
+     */
+    public RegRecord createPartyRecord(final Map<EntityValueType, List<Object>> valueMap,
             final String interpiPartyId, final RegExternalSystem regExternalSystem, final RegScope regScope) {
         RegRecord regRecord = new RegRecord();
 
@@ -189,12 +212,12 @@ public class InterpiFactory {
         List<PopisTyp> popisTypList = getPopisTyp(valueMap);
         for (PopisTyp popisTyp : popisTypList) {
             switch (popisTyp.getTyp()) {
-                case POPIS:
-                    String popis = StringUtils.trimToNull(popisTyp.getTextPopisu());
-                    if (popis != null) {
-                        notes.add(popis);
-                    }
-                    break;
+            case POPIS:
+                String popis = StringUtils.trimToNull(popisTyp.getTextPopisu());
+                if (popis != null) {
+                    notes.add(popis);
+                }
+                break;
             }
         }
 
@@ -216,44 +239,29 @@ public class InterpiFactory {
         regRecord.setRegisterType(regRegisterType);
         regRecord.setScope(regScope);
 
-        ExternalRecordVO recordVO = new ExternalRecordVO();
-        createDetail(valueMap, recordVO);
-
-        regRecord.setCharacteristics(recordVO.getDetail());
-        regRecord.setRecord(recordVO.getName());
-
-        List<RegVariantRecord> regVariantRecords = new ArrayList<>(recordVO.getVariantNames().size());
-        for (String variantName : recordVO.getVariantNames()) {
-            RegVariantRecord regVariantRecord = new RegVariantRecord();
-            regVariantRecord.setRecord(variantName);
-            regVariantRecord.setRegRecord(regRecord);
-        }
-        regRecord.setVariantRecordList(regVariantRecords);
-
         return regRecord;
     }
 
-    private void fillParty(final ParParty newParty, final Map<EntityValueType, List<Object>> valueMap) {
+    private void fillParty(final ParParty parParty, final Map<EntityValueType, List<Object>> valueMap) {
 //        newParty.setPartyCreators(partyCreators);
 
         List<ParPartyName> partyNames = new LinkedList<>();
         List<OznaceniTyp> variantniOznaceniList = getVariantniOznaceni(valueMap);
         if (CollectionUtils.isNotEmpty(variantniOznaceniList)) {
             for (OznaceniTyp variantniOznaceni : variantniOznaceniList) {
-                ParPartyName parPartyName = createPartyName(valueMap, variantniOznaceni, newParty, false);
+                ParPartyName parPartyName = createPartyName(valueMap, variantniOznaceni, parParty, false);
                 if (parPartyName != null) {
                     partyNames.add(parPartyName);
                 }
             }
         }
-        newParty.setPartyNames(partyNames);
+        parParty.setPartyNames(partyNames);
 
         OznaceniTyp preferovaneOznaceni = getPreferovaneOznaceni(valueMap);
-        ParPartyName preferredName = createPartyName(valueMap, preferovaneOznaceni, newParty, true);
-        newParty.setPreferredName(preferredName);
+        ParPartyName preferredName = createPartyName(valueMap, preferovaneOznaceni, parParty, true);
+        parParty.setPreferredName(preferredName);
         partyNames.add(preferredName);
 
-//        newParty.setRecord(record);
 //        newParty.setRelations(relations);
 
         String sourceInformation;
@@ -270,10 +278,9 @@ public class InterpiFactory {
 
             sourceInformation = StringUtils.join(sourceInformations, ", ");
         }
-        newParty.setSourceInformation(sourceInformation);
+        parParty.setSourceInformation(sourceInformation);
 
-        fillPopis(newParty, valueMap);
-
+        fillPopis(parParty, valueMap);
     }
 
     private void fillPopis(final ParParty newParty, final Map<EntityValueType, List<Object>> valueMap) {
