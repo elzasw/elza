@@ -354,16 +354,6 @@ class ArrPage extends ArrParentPage {
     }
 
     /**
-     * Zobrazení formuláře historie konkrétní JP.
-     * @param versionId verze AS
-     * @param node node
-     */
-    handleShowNodeHistory = (versionId, node) => {
-        const form = <ArrHistoryForm versionId={versionId} node={node} onDeleteChanges={this.handleDeleteChanges} />
-        this.dispatch(modalDialogShow(this, i18n('arr.history.title'), form, "dialog-lg"));
-    }
-
-    /**
      * Sestavení Ribbonu.
      * @return {Object} view
      */
@@ -443,17 +433,6 @@ class ArrPage extends ArrParentPage {
                                 <span className="btnText">{i18n('ribbon.action.arr.fund.newFundAction')}</span>
                             </Button>
                         );
-                    }
-                    // Zobrazení historie změn
-                    if (userDetail.hasOne(perms.FUND_ADMIN, {type: perms.FUND_VER_WR, fundId: activeFund.id}, perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId: activeFund.id})) {
-                        itemActions.push(
-                            <Button onClick={() => this.handleShowNodeHistory(activeFund.versionId, activeNodeObj)} key="show-fund-history">
-                                <Icon glyph="fa-clock-o"/>
-                                <div>
-                                    <span className="btnText">{i18n('ribbon.action.showNodeHistory')}</span>
-                                </div>
-                            </Button>
-                        )
                     }
                 }
             }

@@ -145,7 +145,6 @@ var messages = {
     "ribbon.action.registry.importExt": "Import hesla",
     "ribbon.action.logout": "Odhlásit",
     "ribbon.action.showFundHistory": "Historie změn",
-    "ribbon.action.showNodeHistory": "Historie změn JP",
 
     "ribbon.action.arr.validation.error.previous": "Předchozí chyba",
     "ribbon.action.arr.validation.error.next": "Další chyba",
