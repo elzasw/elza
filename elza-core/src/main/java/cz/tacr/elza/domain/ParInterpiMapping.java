@@ -1,6 +1,7 @@
 package cz.tacr.elza.domain;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
@@ -8,6 +9,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -21,6 +23,8 @@ import cz.tacr.elza.domain.enumeration.StringLength;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 30. 11. 2016
  */
+@Entity(name = "par_interpi_mapping")
+@Table
 public class ParInterpiMapping implements cz.tacr.elza.api.ParInterpiMapping<ParRelationRoleType, ParRelationType> {
 
     @Id

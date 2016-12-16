@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
 import org.slf4j.Logger;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParRelation;
 import cz.tacr.elza.domain.RegExternalSystem;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegScope;
@@ -190,12 +192,11 @@ public class InterpiService {
         }
 
         EntitaTyp entitaTyp = findOneRecord(interpiRecordId, regExternalSystem);
-
         Map<EntityValueType, List<Object>> valueMap = interpiFactory.convertToMap(entitaTyp);
 
         RegRecord result;
         if (interpiFactory.isParty(valueMap)) {
-            result = importParty(entitaTyp, valueMap, originalRecord, interpiRecordId, isOriginator, regScope, regExternalSystem);
+            result = importParty(valueMap, originalRecord, interpiRecordId, isOriginator, regScope, regExternalSystem);
         } else {
             result = importRecord(entitaTyp, originalRecord, interpiRecordId, regScope, regExternalSystem);
         }
@@ -232,6 +233,17 @@ public class InterpiService {
         }
     }
 
+    /**
+     * Import rejstříkového hesla.
+     *
+     * @param entitaTyp INTERPI objekt
+     * @param originalRecord původní rejstřík, může být null
+     * @param interpiRecordId id INTERPI
+     * @param regScope třída rejstříku
+     * @param regExternalSystem externí systém
+     *
+     * @return uložené rejstříkové heslo
+     */
     private RegRecord importRecord(final EntitaTyp entitaTyp, final RegRecord originalRecord,
             final String interpiRecordId,  final RegScope regScope, final RegExternalSystem regExternalSystem) {
         RegRecord regRecord = interpiFactory.createRecord(entitaTyp, interpiRecordId, regExternalSystem, regScope, true);
@@ -254,30 +266,49 @@ public class InterpiService {
         return regRecord;
     }
 
-    private RegRecord importParty(final EntitaTyp entitaTyp, final Map<EntityValueType, List<Object>> valueMap,
-            final RegRecord originalRecord, final String interpiRecordId, final boolean isOriginator, final RegScope regScope,
+    /**
+     * Import osoby.
+     *
+     * @param valueMap INTERPI objekt
+     * @param originalRecord původní rejstřík, může být null
+     * @param interpiRecordId id INTERPI
+     * @param isOriginator příznak zda je osoba původce
+     * @param regScope třída rejstříku
+     * @param regExternalSystem externí systém
+     *
+     * @return uložené rejstříkové heslo osoby
+     */
+    private RegRecord importParty(final Map<EntityValueType, List<Object>> valueMap, final RegRecord originalRecord,
+            final String interpiRecordId, final boolean isOriginator, final RegScope regScope,
             final RegExternalSystem regExternalSystem) {
-        ParParty originalParty = null;
-        if (originalRecord != null) {
-            originalParty = partyService.findParPartyByRecord(originalRecord);
-        }
-
         RegRecord regRecord = interpiFactory.createPartyRecord(valueMap, interpiRecordId, regExternalSystem, regScope);
+        ParParty newParty = interpiFactory.createParty(regRecord, valueMap, isOriginator);
+
         if (originalRecord != null) {
             regRecord.setRecordId(originalRecord.getRecordId());
             regRecord.setVersion(originalRecord.getVersion());
-        }
 
-        ParParty newParty = interpiFactory.createParty(regRecord, valueMap, isOriginator);
-        if (originalParty == null) {
-            regRecord = partyService.saveParty(newParty).getRecord();
-        } else {
+            ParParty originalParty = partyService.findParPartyByRecord(originalRecord);
             newParty.setPartyId(originalParty.getPartyId());
             newParty.setVersion(originalParty.getVersion());
-            regRecord = partyService.saveParty(newParty).getRecord();
+
+            List<ParRelation> relations = originalParty.getRelations();
+            if (CollectionUtils.isNotEmpty(relations)) {
+                for (ParRelation relation : relations) {
+                    partyService.deleteRelation(relation);
+                }
+            }
         }
 
-        return regRecord;
+        ParParty parParty = partyService.saveParty(newParty);
+        List<ParRelation> relations = parParty.getRelations();
+        if (CollectionUtils.isNotEmpty(relations)) {
+            for (ParRelation relation : relations) {
+                partyService.saveRelation(relation, null);
+            }
+        }
+
+        return parParty.getRecord();
     }
 
     private EntitaTyp findOneRecord(final String id, final RegExternalSystem regExternalSystem) {

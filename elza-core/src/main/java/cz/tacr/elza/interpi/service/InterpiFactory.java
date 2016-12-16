@@ -7,12 +7,14 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -36,6 +38,7 @@ import org.springframework.stereotype.Service;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParDynasty;
 import cz.tacr.elza.domain.ParEvent;
+import cz.tacr.elza.domain.ParInterpiMapping;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyGroup;
 import cz.tacr.elza.domain.ParPartyName;
@@ -43,6 +46,9 @@ import cz.tacr.elza.domain.ParPartyNameComplement;
 import cz.tacr.elza.domain.ParPartyNameFormType;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParPerson;
+import cz.tacr.elza.domain.ParRelation;
+import cz.tacr.elza.domain.ParRelationClassType.ClassType;
+import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.domain.RegExternalSystem;
 import cz.tacr.elza.domain.RegRecord;
@@ -59,6 +65,8 @@ import cz.tacr.elza.interpi.ws.wo.IdentifikaceTyp;
 import cz.tacr.elza.interpi.ws.wo.IdentifikatorTyp;
 import cz.tacr.elza.interpi.ws.wo.IdentifikatorTypA;
 import cz.tacr.elza.interpi.ws.wo.KodovaneTyp;
+import cz.tacr.elza.interpi.ws.wo.KomplexniDataceTyp;
+import cz.tacr.elza.interpi.ws.wo.KomplexniDataceTypA;
 import cz.tacr.elza.interpi.ws.wo.OznaceniTyp;
 import cz.tacr.elza.interpi.ws.wo.OznaceniTypTypA;
 import cz.tacr.elza.interpi.ws.wo.PodtridaTyp;
@@ -77,9 +85,11 @@ import cz.tacr.elza.interpi.ws.wo.ZarazeniTyp;
 import cz.tacr.elza.interpi.ws.wo.ZaznamTyp;
 import cz.tacr.elza.interpi.ws.wo.ZdrojTyp;
 import cz.tacr.elza.repository.ComplementTypeRepository;
+import cz.tacr.elza.repository.InterpiMappingRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.utils.PartyType;
 import liquibase.util.file.FilenameUtils;
 
@@ -126,6 +136,12 @@ public class InterpiFactory {
 
     @Autowired
     private RegisterTypeRepository registerTypeRepository;
+
+    @Autowired
+    private InterpiMappingRepository interpiMappingRepository;
+
+    @Autowired
+    private RelationTypeRepository relationTypeRepository;
 
     public String createSearchQuery(final List<ConditionVO> conditions, final boolean isParty) {
         return new PQFQueryBuilder(conditions).
@@ -212,13 +228,13 @@ public class InterpiFactory {
         List<PopisTyp> popisTypList = getPopisTyp(valueMap);
         for (PopisTyp popisTyp : popisTypList) {
             switch (popisTyp.getTyp()) {
-            case POPIS:
-                String popis = StringUtils.trimToNull(popisTyp.getTextPopisu());
-                if (popis != null) {
-                    notes.add(popis);
+                case POPIS:
+                    String popis = StringUtils.trimToNull(popisTyp.getTextPopisu());
+                    if (popis != null) {
+                        notes.add(popis);
+                    }
+                    break;
                 }
-                break;
-            }
         }
 
         String note = null;
@@ -262,7 +278,7 @@ public class InterpiFactory {
         parParty.setPreferredName(preferredName);
         partyNames.add(preferredName);
 
-//        newParty.setRelations(relations);
+        fillRelations(parParty, valueMap);
 
         String sourceInformation;
         List<ZdrojTyp> zdrojTypList = getZdrojTyp(valueMap);
@@ -281,6 +297,79 @@ public class InterpiFactory {
         parParty.setSourceInformation(sourceInformation);
 
         fillPopis(parParty, valueMap);
+    }
+
+    private void fillRelations(final ParParty parParty, final Map<EntityValueType, List<Object>> valueMap) {
+//      newParty.setRelations(relations);
+
+        List<ParInterpiMapping> allMappings = interpiMappingRepository.findAll();
+
+        List<UdalostTyp> pocatekExistence = getPocatekExistence(valueMap); //class vznik
+        List<UdalostTyp> konecExistence = getKonecExistence(valueMap); // class zanik
+        List<UdalostTyp> udalostList = getUdalost(valueMap); // class vztah
+
+        List<ParRelation> relations = new LinkedList<>();
+
+        Collection<ParRelation> createRelations = createRelations(pocatekExistence, parParty, ClassType.VZNIK);
+        if (CollectionUtils.isNotEmpty(createRelations)) {
+            relations.addAll(createRelations);
+        }
+        Collection<ParRelation> endRelations = createRelations(konecExistence, parParty, ClassType.ZANIK);
+        if (CollectionUtils.isNotEmpty(endRelations)) {
+            relations.addAll(endRelations);
+        }
+        Collection<ParRelation> relRelations = createRelations(udalostList, parParty, ClassType.VZTAH);
+        if (CollectionUtils.isNotEmpty(relRelations)) {
+            relations.addAll(relRelations);
+        }
+//        relations.addAll(createRelations(konecExistence, parParty, ClassType.ZANIK));
+//        relations.addAll(createRelations(udalostList, parParty, ClassType.VZTAH));
+
+        List<UdalostTyp> zmenaList = getZmena(valueMap); // TODO importovat? jak mapovat?
+        List<SouvisejiciTyp> souvisejiciEntitaList = getSouvisejiciEntita(valueMap); // TODO importovat? jak mapovat?
+
+    }
+
+    private Collection<ParRelation> createRelations(final List<UdalostTyp> udalostList, final ParParty parParty, final ClassType classType) {
+        List<ParRelation> relations = new  LinkedList<>();
+        if (CollectionUtils.isEmpty(udalostList)) {
+            return relations;
+        }
+
+        for (UdalostTyp udalostTyp : udalostList) {
+            ParUnitdate from = new ParUnitdate();
+            ParUnitdate to = new ParUnitdate();
+
+            List<KomplexniDataceTyp> dataceList = udalostTyp.getDatace();
+            if (CollectionUtils.isNotEmpty(dataceList)) {
+                for (KomplexniDataceTyp dataceTyp : dataceList) {
+                    if (dataceTyp.getTyp() == KomplexniDataceTypA.ZAČÁTEK) {
+//                    	ParUnitdate from = new ParUnitdate(); // TODO upřesnit
+//                    	UnitDateConvertor.convertToUnitDate(input, unitdate)
+                    } else if (dataceTyp.getTyp() == KomplexniDataceTypA.KONEC) {
+
+                    }
+                }
+            }
+//            String interpiRoleType = udalostTyp.getSouvisejiciEntita().iterator().next().getRole().value();
+            String interpiType = udalostTyp.getTyp().value();
+
+            ParRelation parRelation = new ParRelation();
+            parRelation.setNote(udalostTyp.getPoznamka());
+            parRelation.setParty(parParty);
+            parRelation.setFrom(from);
+            parRelation.setTo(to);
+
+
+            List<ParRelationType> findAll = relationTypeRepository.findAll();
+            Optional<ParRelationType> relationType = findAll.stream().filter(t -> t.getRelationClassType().getCode().equals(classType.getClassType())).findFirst();
+            parRelation.setRelationType(relationType.orElseThrow(() -> new IllegalStateException()));
+
+//            parRelation.setSource(source); //TODO mapovat? jak?
+//            udalostTyp.getCisloZdroje();
+
+        }
+        return null;
     }
 
     private void fillPopis(final ParParty newParty, final Map<EntityValueType, List<Object>> valueMap) {
@@ -385,29 +474,29 @@ public class InterpiFactory {
         } else if (newParty instanceof ParPartyGroup) {
             ParPartyGroup parPartyGroup = (ParPartyGroup) newParty;
 
-//            String foundingNorm = null;
-            String foundingNorm = "d"; // TODO jen pro předváděčku
+            String foundingNorm = null;
+//            foundingNorm = "d"; // TODO jen pro předváděčku
             if (!foundingNormList.isEmpty()) {
                 foundingNorm = StringUtils.join(foundingNormList, ", ");
             }
             parPartyGroup.setFoundingNorm(foundingNorm);
 
-//            String organization = null;
-            String organization = "d"; // TODO jen pro předváděčku
+            String organization = null;
+//             organization = "d"; // TODO jen pro předváděčku
             if (!organizationList.isEmpty()) {
                 organization = StringUtils.join(organizationList, ", ");
             }
             parPartyGroup.setOrganization(organization);
 
-//            String scope = null;
-            String scope = "d"; // TODO jen pro předváděčku
+            String scope = null;
+//            scope = "d"; // TODO jen pro předváděčku
             if (!scopeList.isEmpty()) {
                 scope = StringUtils.join(scopeList, ", ");
             }
             parPartyGroup.setScope(scope);
 
-//            String scopeNorm = null;
-            String scopeNorm = "d"; // TODO jen pro předváděčku
+            String scopeNorm = null;
+//            scopeNorm = "d"; // TODO jen pro předváděčku
             if (!scopeNormList.isEmpty()) {
                 scopeNorm = StringUtils.join(scopeNormList, ", ");
             }
@@ -668,6 +757,26 @@ public class InterpiFactory {
 
     public List<OznaceniTyp> getVariantniOznaceni(final Map<EntityValueType, List<Object>> valueMap) {
         return getValueList(valueMap, EntityValueType.VARIANTNI_OZNACENI);
+    }
+
+    public List<UdalostTyp> getPocatekExistence(final Map<EntityValueType, List<Object>> valueMap) {
+        return getValueList(valueMap, EntityValueType.POCATEK_EXISTENCE);
+    }
+
+    public List<UdalostTyp> getKonecExistence(final Map<EntityValueType, List<Object>> valueMap) {
+        return getValueList(valueMap, EntityValueType.KONEC_EXISTENCE);
+    }
+
+    public List<UdalostTyp> getUdalost(final Map<EntityValueType, List<Object>> valueMap) {
+        return getValueList(valueMap, EntityValueType.UDALOST);
+    }
+
+    public List<UdalostTyp> getZmena(final Map<EntityValueType, List<Object>> valueMap) {
+        return getValueList(valueMap, EntityValueType.ZMENA);
+    }
+
+    public List<SouvisejiciTyp> getSouvisejiciEntita(final Map<EntityValueType, List<Object>> valueMap) {
+        return getValueList(valueMap, EntityValueType.SOUVISEJICI_ENTITA);
     }
 
     public OznaceniTyp getPreferovaneOznaceni(final Map<EntityValueType, List<Object>> valueMap) {
