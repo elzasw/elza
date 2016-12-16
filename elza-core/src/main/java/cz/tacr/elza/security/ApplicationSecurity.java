@@ -52,6 +52,9 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
     @Autowired
     private ApiAuthenticationSuccessHandler authenticationSuccessHandler;
 
+    @Autowired
+    private ApiLogoutSuccessHandler apiLogoutSuccessHandler;
+
     @Value("${elza.security.defaultUsername:admin}")
     private String defaultUsername;
 
@@ -128,7 +131,7 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
                 .sessionRegistry(sessionRegistry());
         http.exceptionHandling().authenticationEntryPoint(authenticationEntryPoint)
                 .and()
-                .logout().permitAll();
+                .logout().permitAll().logoutSuccessHandler(apiLogoutSuccessHandler);
         http.formLogin().successHandler(authenticationSuccessHandler);
         http.formLogin().failureHandler(authenticationFailureHandler);
     }
