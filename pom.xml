@@ -35,6 +35,7 @@
         <module>rules-cz-zp2015</module>
         <module>rules-simple-dev</module>
         <module>package-config</module>
+		<module>dao-test-bench</module>
     </modules>
 
     <dependencyManagement>

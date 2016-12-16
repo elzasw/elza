@@ -1,0 +1,97 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<parent>
+		<artifactId>elza</artifactId>
+		<groupId>cz.tacr.elza</groupId>
+		<version>0.10-SNAPSHOT</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>dao-test-bench</artifactId>
+	<packaging>jar</packaging>
+	<name>ELZA DAO test bench</name>
+
+	<properties>
+		<wsdl.package>${parent.groupId}.api.wsdl</wsdl.package>
+	</properties>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.cxf</groupId>
+				<artifactId>cxf-codegen-plugin</artifactId>
+				<version>${cxf.version}</version>
+				<executions>
+					<execution>
+						<id>dao-service</id>
+						<phase>generate-sources</phase>
+						<configuration>
+							<sourceRoot>target/generated-sources/cxf</sourceRoot>
+							<disableDirectoryScan>true</disableDirectoryScan>
+							<wsdlOptions>
+								<wsdlOption>
+									<wsdl>../elza-ws-api/src/main/resources/wsdl/elza-dao-service-v1.wsdl</wsdl>
+									<packagenames>
+										<packagename>${wsdl.package}.dao</packagename>
+									</packagenames>
+									<extraargs>
+										<extraarg>-verbose</extraarg>
+										<extraarg>-p</extraarg>
+										<extraarg>http://www.syntea.cz/gam/or/xd/2013/08=com.lightcomp.datagate.wsdl.ckp.l1.syntea</extraarg>
+										<extraarg>-p</extraarg>
+										<extraarg>http://ws.ckp.cz/pis/ds/L1WS/2013/09=com.lightcomp.datagate.wsdl.ckp.l1.types</extraarg>
+										<extraarg>-p</extraarg>
+										<extraarg>http://ws.ckp.cz/pis/ds/L1WS/2013/09/wsdl=com.lightcomp.datagate.wsdl.ckp.l1</extraarg>
+										<extraarg>-wsdlLocation</extraarg>
+										<wsdlurl />
+									</extraargs>
+								</wsdlOption>
+							</wsdlOptions>
+						</configuration>
+						<goals>
+							<goal>wsdl2java</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>digitization-service</id>
+						<phase>generate-sources</phase>
+						<configuration>
+							<sourceRoot>target/generated-sources/cxf</sourceRoot>
+							<disableDirectoryScan>true</disableDirectoryScan>
+							<wsdlOptions>
+								<wsdlOption>
+									<wsdl>../elza-ws-api/src/main/resources/wsdl/elza-digitization-service-v1.wsdl</wsdl>
+									<packagenames>
+										<packagename>${wsdl.package}.digitization</packagename>
+									</packagenames>
+									<extraargs>
+										<extraarg>-verbose</extraarg>
+										<extraarg>-p</extraarg>
+										<extraarg>http://www.syntea.cz/gam/or/xd/2013/08=com.lightcomp.datagate.wsdl.ckp.l1.syntea</extraarg>
+										<extraarg>-p</extraarg>
+										<extraarg>http://ws.ckp.cz/pis/ds/L1WS/2013/09=com.lightcomp.datagate.wsdl.ckp.l1.types</extraarg>
+										<extraarg>-p</extraarg>
+										<extraarg>http://ws.ckp.cz/pis/ds/L1WS/2013/09/wsdl=com.lightcomp.datagate.wsdl.ckp.l1</extraarg>
+										<extraarg>-wsdlLocation</extraarg>
+										<wsdlurl />
+									</extraargs>
+								</wsdlOption>
+							</wsdlOptions>
+						</configuration>
+						<goals>
+							<goal>wsdl2java</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>**/*</include>
+				</includes>
+			</resource>
+		</resources>
+	</build>
+
+</project>
