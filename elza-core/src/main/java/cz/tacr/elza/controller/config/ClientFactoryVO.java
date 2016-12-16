@@ -126,6 +126,7 @@ import cz.tacr.elza.repository.BulkActionNodeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.DaoFileGroupRepository;
 import cz.tacr.elza.repository.DaoFileRepository;
+import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -259,6 +260,9 @@ public class ClientFactoryVO {
 
     @Autowired
     private DaoFileRepository daoFileRepository;
+
+    @Autowired
+    private DaoLinkRepository daoLinkRepository;
 
     @Autowired
     private DaoRepository daoRepository;
@@ -2072,6 +2076,8 @@ public class ClientFactoryVO {
                 .add("label", arrDao.getLabel())
                 .add("id", arrDao.getDaoId());
         vo.setUrl(ElzaTools.bindingUrlParams(viewDaoUrl, params));
+
+        vo.setDaoLinkCount(daoLinkRepository.countByDaoAndDeleteChangeIsNull(arrDao));
 
         if (detail) {
             final List<ArrDaoFile> daoFileList = daoFileRepository.findByDaoAndDaoFileGroupIsNull(arrDao);

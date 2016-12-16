@@ -30,6 +30,7 @@ public class ArrDaoVO {
     
     private long fileCount;
     private long fileGroupCount;
+    private long daoLinkCount = 0; // inicializace
 
     /**
      * Zařazení nového daoFile do seznamu na vo, zároveň nastaví položku fileCount na novou délku seznamu
@@ -66,8 +67,23 @@ public class ArrDaoVO {
         fileGroupList.addAll(daoFileGroups);
         fileGroupCount = fileList.size();
     }
-    
-    
+
+    /**
+     * Informace o existenci propojení na daolink
+     * @return true pokud existuje platné propojení
+     */
+    public boolean isDaoLinkExists() {
+        return daoLinkCount > 0;
+    }
+
+    public long getDaoLinkCount() {
+        return daoLinkCount;
+    }
+
+    public void setDaoLinkCount(long daoLinkCount) {
+        this.daoLinkCount = daoLinkCount;
+    }
+
     public Integer getId() {
         return id;
     }

@@ -345,6 +345,8 @@ public class ArrangementController {
      * @param fundVersionId id archivního souboru
      * @param nodeId        id node, pokud je null, najde entity bez napojení
      * @param detail        načíst detailní informace (plnit struktutu vč návazných), výchozí hodnota false
+     * @param index         počáteční pozice pro načtení
+     * @param maxResults    počet načítaných výsledků
      * @return seznam digitálních entit (DAO)
      */
     @RequestMapping(value = "/daos/{fundVersionId}",
@@ -353,7 +355,9 @@ public class ArrangementController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     List<ArrDaoVO> findDaos(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                             @RequestParam(value = "nodeId", required = false) Integer nodeId,
-                            @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail) {
+                            @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail,
+                            @RequestParam(value = "index", required = false, defaultValue = "0") Integer index,
+                            @RequestParam(value = "maxResults", required = false, defaultValue = "20") Integer maxResults) {
         Assert.notNull(fundVersionId);
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
 
@@ -362,7 +366,7 @@ public class ArrangementController {
             node = nodeRepository.getOneCheckExist(nodeId);
         }
 
-        final List<ArrDao> arrDaoList = daoService.findDaos(fundVersion, node);
+        final List<ArrDao> arrDaoList = daoService.findDaos(fundVersion, node, index, maxResults);
 
         return factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail));
     }

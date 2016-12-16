@@ -58,19 +58,13 @@ public class DaoService {
      *
      * @param fundVersion archivní soubor
      * @param node        node, pokud je null, najde entity bez napojení
+     * @param index       počáteční pozice pro načtení
+     * @param maxResults  počet načítaných výsledků
      * @return seznam digitálních entit (DAO)
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
-    public List<ArrDao> findDaos(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion, ArrNode node) {
-
-        List<ArrDao> arrDaoList;
-        if (node != null) {
-            arrDaoList = daoRepository.findByFundAndNode(fundVersion.getFund().getFundId(), node.getNodeId());
-        } else {
-            arrDaoList = daoRepository.findByFundAndNotExistsNode(fundVersion.getFund().getFundId());
-        }
-
-        return arrDaoList;
+    public List<ArrDao> findDaos(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion, ArrNode node, Integer index, Integer maxResults) {
+        return daoRepository.findByFundAndNodePaginating(fundVersion, node, index, maxResults);
     }
 
     /**

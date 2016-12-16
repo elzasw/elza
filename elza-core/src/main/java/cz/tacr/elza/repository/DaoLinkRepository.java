@@ -16,4 +16,6 @@ import java.util.List;
 public interface DaoLinkRepository extends ElzaJpaRepository<ArrDaoLink, Integer> {
 
     List<ArrDaoLink> findByDaoAndNodeAndDeleteChangeIsNull(ArrDao dao, ArrNode node);
+
+    long countByDaoAndDeleteChangeIsNull(ArrDao arrDao);
 }
