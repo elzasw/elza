@@ -650,6 +650,9 @@ var messages = {
 
     "party.relation.class": "Třída vztahu",
     "party.relation.type": "Typ vztahu",
+    "party.relation.date": "Datum",
+    "party.relation.date.textDate": "Datum - textově",
+    "party.relation.date.note": "Datum - poznámka",
     "party.relation.from": "Datum od",
     "party.relation.from.textDate": "Datum od - textově",
     "party.relation.from.note": "Datum od - poznámka",
