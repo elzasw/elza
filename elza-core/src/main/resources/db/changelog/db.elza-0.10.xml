@@ -541,4 +541,8 @@
     <changeSet id="201612161100" author="vanek">
         <renameColumn tableName="par_interpi_mapping" oldColumnName="par_interpi_mapping_id" newColumnName="interpi_mapping_id"/>
     </changeSet>
+
+    <changeSet id="201612161155" author="vanek">
+        <dropNotNullConstraint tableName="par_party_name" columnName="name_form_type_id" columnDataType="int"/>
+    </changeSet>
 </databaseChangeLog>

@@ -63,6 +63,7 @@ import cz.tacr.elza.domain.ParPartyGroup;
 import cz.tacr.elza.domain.ParPartyGroupIdentifier;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyNameComplement;
+import cz.tacr.elza.domain.ParPartyNameFormType;
 import cz.tacr.elza.domain.ParPerson;
 import cz.tacr.elza.domain.ParRelation;
 import cz.tacr.elza.domain.ParRelationEntity;
@@ -595,7 +596,12 @@ public class XmlExportService {
         partyName.setOtherPart(parPartyName.getOtherPart());
 
         partyName.setPartyNameComplements(createPartyNameComplements(parPartyName.getPartyNameComplements()));
-        partyName.setPartyNameFormTypeCode(parPartyName.getNameFormType().getCode());
+
+        ParPartyNameFormType nameFormType = parPartyName.getNameFormType();
+        if (nameFormType != null) {
+            partyName.setPartyNameFormTypeCode(nameFormType.getCode());
+        }
+
         partyName.setValidFrom(XmlImportUtils.createComplexDate(parPartyName.getValidFrom()));
         partyName.setValidTo(XmlImportUtils.createComplexDate(parPartyName.getValidTo()));
 

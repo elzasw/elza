@@ -1205,10 +1205,13 @@ public class XmlImportService {
         parPartyName.setValidFrom(importComplexDate(partyName.getValidFrom()));
         parPartyName.setValidTo(importComplexDate(partyName.getValidTo()));
 
+        ParPartyNameFormType partyNameFormType = null;
         String partyNameFormTypeCode = partyName.getPartyNameFormTypeCode();
-        ParPartyNameFormType partyNameFormType = partyNameFormTypeRepository.findByCode(partyNameFormTypeCode);
-        if (partyNameFormType == null) {
-            throw new PartyImportException("Neexistuje typ formy jména s kódem " + partyNameFormTypeCode);
+        if (StringUtils.isNotBlank(partyNameFormTypeCode)) {
+            partyNameFormType = partyNameFormTypeRepository.findByCode(partyNameFormTypeCode);
+            if (partyNameFormType == null) {
+                throw new PartyImportException("Neexistuje typ formy jména s kódem " + partyNameFormTypeCode);
+            }
         }
         parPartyName.setNameFormType(partyNameFormType);
 

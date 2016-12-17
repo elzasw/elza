@@ -507,24 +507,13 @@ public class InterpiFactory {
     private ParPartyName createPartyName(final Map<EntityValueType, List<Object>> valueMap, final OznaceniTyp oznaceniTyp, final ParParty parParty, final boolean isPreferred) {
         ParPartyName partyName = new ParPartyName();
 
+        ParPartyNameFormType parPartyNameFormType = null;
         OznaceniTypTypA typ = oznaceniTyp.getTyp();
-        if (typ == null) {
-            if (isPreferred) {
-                typ = OznaceniTypTypA.JMÉNO_ÚŘEDNÍ; // TODO jen pro předváděčku
-//                throw new IllegalStateException("Prázdný typ preferovaného označení.");
-            } else {
-                return null;
-            }
-        }
-
-        String partyNameFormTypeName = typ.value();
-        ParPartyNameFormType parPartyNameFormType = partyNameFormTypeRepository.findByName(partyNameFormTypeName);
-        if (parPartyNameFormType == null) {
-            if (isPreferred) {
-                partyNameFormTypeRepository.findByName(OznaceniTypTypA.JMÉNO_ÚŘEDNÍ.value()); // TODO jen pro předváděčku
-//                throw new IllegalStateException("Neznámý název typu formy jména ");
-            } else {
-                return null;
+        if (typ != null) {
+            String partyNameFormTypeName = typ.value();
+            parPartyNameFormType = partyNameFormTypeRepository.findByName(partyNameFormTypeName);
+            if (parPartyNameFormType == null) {
+                throw new IllegalStateException("Neexistuje typ formy jména s názvem " + partyNameFormTypeName);
             }
         }
         partyName.setNameFormType(parPartyNameFormType);

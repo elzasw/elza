@@ -442,10 +442,12 @@ public class PartyService {
         for (ParPartyName newPartyName : newPartyNames) {
             ParPartyName oldPartyName = dbPartyNameMap.get(newPartyName.getPartyNameId());
 
-            Assert.notNull(newPartyName.getNameFormType());
-            Assert.notNull(newPartyName.getNameFormType().getNameFormTypeId());
-            ParPartyNameFormType nameFormType = partyNameFormTypeRepository
-                    .findOne(newPartyName.getNameFormType().getNameFormTypeId());
+            ParPartyNameFormType nameFormType = null;
+            ParPartyNameFormType partyNameFormType = newPartyName.getNameFormType();
+            if (partyNameFormType != null) {
+                Assert.notNull(partyNameFormType.getNameFormTypeId());
+                nameFormType = partyNameFormTypeRepository.findOne(partyNameFormType.getNameFormTypeId());
+            }
 
             if (oldPartyName == null) {
                 oldPartyName = newPartyName;

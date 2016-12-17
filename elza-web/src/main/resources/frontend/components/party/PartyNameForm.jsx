@@ -203,6 +203,7 @@ class PartyNameForm extends AbstractReactComponent {
                             </Col>
                             <Col xs={12}>
                                 <FormInput componentClass="select" label={i18n('party.name.nameFormType')} {...nameFormType.id}>
+                                    <option key="null" />
                                     {partyNameFormTypes.items.map((i) => <option value={i.id} key={i.id}>{i.name}</option>)}
                                 </FormInput>
                             </Col>
