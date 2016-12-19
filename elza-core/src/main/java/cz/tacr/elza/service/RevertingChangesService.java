@@ -503,7 +503,7 @@ public class RevertingChangesService {
         return entityManager.createQuery(hql);
     }
 
-    private Query createDeleteNotUseChangesQuery() {
+    public Query createDeleteNotUseChangesQuery() {
 
         String[][] configUnionTables = new String[][]{
                 {"arr_level", "createChange"},
