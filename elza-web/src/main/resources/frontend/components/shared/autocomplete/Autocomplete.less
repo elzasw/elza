@@ -74,17 +74,19 @@
     .autocomplete-menu-wrapper {
         max-height: 160px;
         max-width: 600px;
-        min-width: 200px;
+        min-width: 350px;
         overflow-y: auto;
         overflow-x: hidden;
+        padding-right: 8px;
 
         .autocomplete-menu {
             height: 100%;
-            padding-right: 20px;
+            /*padding-right: 20px;*/
             width: 100%;
 
             .item {
                 width: 100%;
+                display: flex;
 
                 .depth-container {
                     display: inline-block;
@@ -95,7 +97,9 @@
                 }
 
                 .item-text {
-                    padding-right: 8px;
+                    margin-right: 8px;
+                    white-space: nowrap;
+                    flex-shrink: 0;
                 }
 
                 cursor: pointer;
@@ -121,6 +125,7 @@
                     //width: 16px;
                     padding: 0px 4px 0px 5px;
                     vertical-align: middle;
+                    flex-shrink: 0;
                     &.expanded {
                     }
                     &.collapsed {
