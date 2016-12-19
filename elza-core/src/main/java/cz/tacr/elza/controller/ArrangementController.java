@@ -630,6 +630,7 @@ public class ArrangementController {
 
         ArrDescItem arrDescItem = descItemFactory.getDescItem(descItem);
         OutputStream os = response.getOutputStream();
+        response.setHeader("Content-Disposition", "attachment; filename=desc-item-" + descItemObjectId + ".csv");
         arrIOService.csvExport(arrDescItem, os);
         os.close();
     }
@@ -658,6 +659,7 @@ public class ArrangementController {
 
         outputItem = itemService.loadData(outputItem);
         OutputStream os = response.getOutputStream();
+        response.setHeader("Content-Disposition", "attachment; filename=output-item-" + descItemObjectId + ".csv");
         arrIOService.csvExport(outputItem, os);
         os.close();
     }

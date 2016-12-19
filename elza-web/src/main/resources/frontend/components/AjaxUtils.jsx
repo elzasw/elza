@@ -49,7 +49,7 @@ function createMessage(result) {
     let toaster;
 
     if (result.type == 'BaseCode' && result.code == 'INSUFFICIENT_PERMISSIONS') {
-        messages.push(<small><b>{i18n('global.exception.permission.need')}:</b> {result.properties && result.properties.permission && result.properties.permission.map((item)=>item).join(", ")}</small>);
+        messages.push(<small><b>{i18n('global.exception.permission.need')}:</b> {result.properties && result.properties.permission && result.properties.permission.map((item)=>i18n('permission.' + item)).join(", ")}</small>);
         toaster = addToastrDanger(i18n('global.exception.permission.denied'), messages);
     }
 
