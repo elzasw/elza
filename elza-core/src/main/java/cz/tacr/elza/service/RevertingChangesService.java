@@ -15,10 +15,7 @@ import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.ErrorCode;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.service.eventnotification.events.EventFunds;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
@@ -28,7 +25,6 @@ import cz.tacr.elza.service.vo.ChangesResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -278,7 +274,10 @@ public class RevertingChangesService {
         updateEntityQuery = createUpdateActionQuery(fund, node, toChange);
         updateEntityQuery.executeUpdate();
 
-        deleteEntityQuery = createDeleteActionQuery(fund, node, toChange);
+        deleteEntityQuery = createDeleteActionNodeQuery(fund, node, toChange);
+        deleteEntityQuery.executeUpdate();
+
+        deleteEntityQuery = createDeleteActionRunQuery(fund, toChange);
         deleteEntityQuery.executeUpdate();
 
         Query deleteNotUseChangesQuery = createDeleteNotUseChangesQuery();
@@ -406,9 +405,17 @@ public class RevertingChangesService {
         return query;
     }
 
-    private Query createDeleteActionQuery(final @NotNull ArrFund fund, final @Nullable ArrNode node, final @NotNull ArrChange toChange) {
-        Query query = entityManager.createQuery("DELETE FROM arr_bulk_action_node n WHERE n IN (" +
-                "SELECT rn FROM arr_bulk_action_node rn JOIN rn.bulkActionRun rs WHERE rn.node IN (" + createHqlSubNodeQuery(fund, node) + ") AND rs.change >= :change" +
+    /**
+     * Smazání návazných entity hromadné akce.
+     *
+     * @param fund     AS nad kterým provádím obnovu
+     * @param node     JP omezující obnovu
+     * @param toChange změna ke které se provádí revert
+     * @return
+     */
+    private Query createDeleteActionNodeQuery(final @NotNull ArrFund fund, final @Nullable ArrNode node, final @NotNull ArrChange toChange) {
+        Query query = entityManager.createQuery("DELETE FROM arr_bulk_action_node n WHERE n.bulkActionRun IN (" +
+                "SELECT rn.bulkActionRun FROM arr_bulk_action_node rn JOIN rn.bulkActionRun rs WHERE rn.node IN (" + createHqlSubNodeQuery(fund, node) + ") AND rs.change >= :change" +
                 ")");
 
         // nastavení parametrů dotazu
@@ -417,6 +424,22 @@ public class RevertingChangesService {
         if (node != null) {
             query.setParameter("node", node);
         }
+        return query;
+    }
+
+    /**
+     * Smazání samotných hromadných akcí.
+     *
+     * @param fund     AS nad kterým provádím obnovu
+     * @param toChange změna ke které se provádí revert
+     * @return
+     */
+    private Query createDeleteActionRunQuery(final @NotNull ArrFund fund, final @NotNull ArrChange toChange) {
+        Query query = entityManager.createQuery("DELETE FROM arr_bulk_action_run rd WHERE rd IN (SELECT r FROM arr_bulk_action_run r JOIN r.fundVersion v WHERE v.fund = :fund AND r.change >= :change)");
+
+        // nastavení parametrů dotazu
+        query.setParameter("fund", fund);
+        query.setParameter("change", toChange);
         return query;
     }
 

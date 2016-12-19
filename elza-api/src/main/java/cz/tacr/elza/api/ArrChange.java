@@ -93,8 +93,12 @@ public interface ArrChange<U extends UsrUser, N extends ArrNode> extends Seriali
         /**
          * Import AS.
          */
-        IMPORT
+        IMPORT,
 
+        /**
+         * Úprava dat výstupu.
+         */
+        UPDATE_OUTPUT
     }
 
     /**
