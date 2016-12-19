@@ -934,12 +934,9 @@ public class XmlExportService {
         if (externalSource != null) {
             record.setExternalId(regRecord.getExternalId());
             record.setExternalSourceCode(externalSource.getCode());
-
-            record.setLocal(false);
-        } else {
-            record.setLocal(true);
         }
 
+        record.setLocal(false);
         record.setNote(regRecord.getNote());
         record.setPreferredName(regRecord.getRecord());
 //        record.setRecordCoordinates(); //zatím se s nimi nepracuje
