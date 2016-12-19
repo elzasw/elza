@@ -2,6 +2,42 @@
 @import "~variables.less";
 
 .arr-history-form-container {
+    .modal-body {
+        .form-group {
+            .radio {
+                line-height: 1.8em;
+                height: 1.8em;
+                margin: 0;
+
+                label {
+                    margin: 0 15px 0 0;
+                    line-height: 1.8em;
+                    height: 1.8em;
+                }
+            }
+            .selected-node-container {
+                > div {
+                    line-height: 1.8em;
+                    height: 1.8em;
+                }
+                .form-group {
+                    line-height: 1.8em;
+                    .form-control-static {
+                        padding: 0;
+                        display: flex;
+                        input {
+                            line-height: 1.8em;
+                            height: 1.8em;
+                        }
+                        button {
+                            line-height: 1.8em;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     .selected-item-info-container {
         display: flex;
         input {
@@ -19,7 +55,7 @@
 
     .go-to-date-container {
         display: flex;
-        margin-bottom: 6px;
+        margin: 8px 0 10px 0;
         button {
             align-self: flex-end;
             margin-left: 6px;
@@ -28,9 +64,10 @@
 
     .changes-listbox-container {
         height: 100%;
+        margin-bottom: 6px;
 
         .lazy-listbox-container {
-            height: 500px;
+            height: 400px;
         }
 
         .listbox-item {
