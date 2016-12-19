@@ -11,4 +11,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface DaoPackageRepository extends ElzaJpaRepository<ArrDaoPackage, Integer>, DaoPackageRepositoryCustom {
 
+    ArrDaoPackage findOneByCode(String packageIdentifier);
 }

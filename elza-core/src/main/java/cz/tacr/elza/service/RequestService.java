@@ -118,7 +118,6 @@ public class RequestService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrDaoLinkRequest createDaoRequest(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion,
                                               ArrDao dao, ArrChange change, final Type type, ArrNode node) {
-        // review Lebeda - je to tak dobře???
         final ArrDaoLinkRequest request = new ArrDaoLinkRequest();
         request.setCreateChange(change);
         request.setDao(dao);

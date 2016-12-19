@@ -11,7 +11,6 @@ import cz.tacr.elza.repository.RequestRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdRequestIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import org.apache.commons.lang.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -217,11 +216,6 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
             }
 
             sendNotification(openVersion, queueItem.getRequest(), queueItem, EventType.REQUEST_ITEM_QUEUE_CHANGE);
-
-            // TODO: dopsat odeslání požadavku a smazat kód
-            if (1 > 0) {
-                throw new NotImplementedException();
-            }
 
             requestService.setRequestState(queueItem.getRequest(), ArrRequest.State.QUEUED, ArrRequest.State.SENT);
             queueItem.setSend(true);

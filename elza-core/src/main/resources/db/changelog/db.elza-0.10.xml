@@ -545,4 +545,13 @@
     <changeSet id="201612161155" author="vanek">
         <dropNotNullConstraint tableName="par_party_name" columnName="name_form_type_id" columnDataType="int"/>
     </changeSet>
+
+    <changeSet id="201612220713" author="lebeda">
+        <customChange class="cz.tacr.elza.dbchangelog.DbUpgrade_201612220713" />
+        <!--<addColumn tableName="arr_fund">-->
+            <!--<column name="uuid" type="char(36)">-->
+                <!--<constraints nullable="false" unique="true"/>-->
+            <!--</column>-->
+        <!--</addColumn>-->
+    </changeSet>
 </databaseChangeLog>

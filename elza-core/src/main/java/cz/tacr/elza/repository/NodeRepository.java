@@ -46,4 +46,8 @@ public interface NodeRepository extends ElzaJpaRepository<ArrNode, Integer>, Nod
     List<ArrNode> findNodesForOutput(@Param("output") ArrOutput output,
                                      @Param("createChange") ArrChange createChange,
                                      @Param("lockChange") ArrChange lockChange);
+
+
+    ArrNode findOneByUuid(String uuid);
+
 }
