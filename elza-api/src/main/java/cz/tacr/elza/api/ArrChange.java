@@ -18,112 +18,103 @@ public interface ArrChange<U extends UsrUser, N extends ArrNode> extends Seriali
         /**
          * Vytvoření AS.
          */
-        CREATE_AS("vytvoření AS"),
+        CREATE_AS,
 
         /**
          * Připojení JP k výstupu.
          */
-        ADD_NODES_OUTPUT("připojení JP k výstupu"),
+        ADD_NODES_OUTPUT,
 
         /**
          * Odpojení JP od výstupu.
          */
-        REMOVE_NODES_OUTPUT("odpojení JP od výstupu"),
+        REMOVE_NODES_OUTPUT,
 
         /**
          * Založení JP.
          */
-        ADD_LEVEL("založení JP"),
+        ADD_LEVEL,
 
         /**
          * Přesun JP.
          */
-        MOVE_LEVEL("přesun JP"),
+        MOVE_LEVEL,
 
         /**
          * Zrušení JP.
          */
-        DELETE_LEVEL("zrušení JP"),
+        DELETE_LEVEL,
 
         /**
          * Založení rejstříkového hesla k JP.
          */
-        ADD_RECORD_NODE("založení rejstříkového hesla k JP"),
+        ADD_RECORD_NODE,
 
         /**
          * Zrušení rejstříkového hesla k JP.
          */
-        DELETE_RECORD_NODE("zrušení rejstříkového hesla k JP"),
+        DELETE_RECORD_NODE,
 
         /**
          * Změna rejstříkového hesla k JP.
          */
-        UPDATE_RECORD_NODE("změna rejstříkového hesla k JP"),
+        UPDATE_RECORD_NODE,
 
         /**
          * Změna atributu včetně změny pořadí.
          */
-        UPDATE_DESC_ITEM("změna atributu"),
+        UPDATE_DESC_ITEM,
 
         /**
          * Založení atributu.
          */
-        ADD_DESC_ITEM("založení atributu"),
+        ADD_DESC_ITEM,
 
         /**
          * Zrušení atributu.
          */
-        DELETE_DESC_ITEM("zrušení atributu"),
+        DELETE_DESC_ITEM,
 
         /**
          * Hromadná změna atributů - změny z tabulkového zobrazení, pokud se týká jen jedné JP, tak jde o typ Změna atributu.
          */
-        BATCH_CHANGE_DESC_ITEM("hromadná změna atributů"),
+        BATCH_CHANGE_DESC_ITEM,
 
         /**
          * Hromadné vymazání atributů - změny z tabulkového zobrazení, pokud se týká jen jedné JP, tak jde o typ Zrušení atributu.
          */
-        BATCH_DELETE_DESC_ITEM("hromadné vymazání atributů"),
+        BATCH_DELETE_DESC_ITEM,
 
         /**
          * Hromadné funkce.
          */
-        BULK_ACTION("hromadná funkce"),
+        BULK_ACTION,
 
         /**
          * Import AS.
          */
-        IMPORT("import AS"),
+        IMPORT,
 
         /**
          * Požadavek na digitalizaci.
          */
-        CREATE_DIGI_REQUEST("požadavek na digitalizaci"),
+        CREATE_DIGI_REQUEST,
 
         /**
          * Vytvoření položky ve frontě.
          */
-        CREATE_REQUEST_QUEUE("vytvoření položky ve frontě"),
+        CREATE_REQUEST_QUEUE,
 
         /**
          * Vytvoření vazby na DAO
          */
-        CREATE_DAO_LINK("vytvoření vazby na digitalizát"),
+        CREATE_DAO_LINK,
 
         /**
          * Zrušení vazby na DAO
          */
-        DELETE_DAO_LINK("zrušení vazby na digitalizát");
+        DELETE_DAO_LINK;
 
-        private String description;
-
-        Type(final String description) {
-            this.description = description;
-        }
-
-        public String getDescription() {
-            return description;
-        }
     }
 
     /**

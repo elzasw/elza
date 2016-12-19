@@ -103,7 +103,7 @@ class PartyDetailNames extends AbstractReactComponent {
             ...this.props.party,
             partyNames: this.props.party.partyNames.map(name => ({
                 ...name,
-                prefferedName: name.partyNameId == id
+                prefferedName: name.id == id
             }))
         };
         this.props.onPartyUpdate(party);
