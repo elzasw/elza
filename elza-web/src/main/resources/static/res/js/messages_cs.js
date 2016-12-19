@@ -483,6 +483,10 @@ var messages = {
     "arr.history.change.description.BATCH_DELETE_DESC_ITEM": "Hromadný výmaz hodnot atributů",
     "arr.history.change.description.BULK_ACTION": "Funkce (Ovlivněno JP: {0})",
     "arr.history.change.description.IMPORT": "Import do AS",
+    "arr.history.change.description.CREATE_DIGI_REQUEST": "Požadavek na digitalizaci",
+    "arr.history.change.description.CREATE_REQUEST_QUEUE": "Vytvoření položky ve frontě",
+    "arr.history.change.description.CREATE_DAO_LINK": "Vytvoření vazby na digitalizát",
+    "arr.history.change.description.DELETE_DAO_LINK": "Zrušení vazby na digitalizát",
 
     "arr.history.deleteQuestion": "Opravdu chcete provést nenávratné odstranění změn? (počet změn, které budou odstraněny: {0})",
     "arr.history.title": "Historie změn",
