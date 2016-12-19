@@ -113,8 +113,12 @@ public interface ArrChange<U extends UsrUser, N extends ArrNode> extends Seriali
         /**
          * Zrušení vazby na DAO
          */
-        DELETE_DAO_LINK;
+        DELETE_DAO_LINK,
 
+        /**
+         * Úprava dat výstupu.
+         */
+        UPDATE_OUTPUT
     }
 
     /**
