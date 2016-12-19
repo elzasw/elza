@@ -762,9 +762,7 @@ public class RevertingChangesService {
             }
 
             change.setRevert(canRevert && canRevertByUser);
-
-            String description = createDescriptionNode(changeResult, change, changeNodeMap);
-            change.setDescription(description);
+            change.setLabel(changeNodeMap.get(new AbstractMap.SimpleImmutableEntry<>(changeResult.changeId, changeResult.primaryNodeId)));
             changes.add(change);
         }
         return changes;
@@ -806,74 +804,6 @@ public class RevertingChangesService {
         }
 
         return result;
-    }
-
-    /**
-     * Sestaví popis změny/JP.
-     *
-     * @param changeResult změna z DB
-     * @param change       změna pro klienta
-     * @param changeNodeMap mapa popisků JP podle identifikátorů change a JP
-     * @return výsledný popis změny
-     */
-    private String createDescriptionNode(final ChangeResult changeResult, final Change change, final HashMap<Map.Entry<Integer, Integer>, String> changeNodeMap) {
-        String description;
-
-        if (change.getType() == null) {
-            throw new IllegalStateException("Záznam nemá vyplněný typ změny a nelze jej revertovat.");
-        }
-
-        switch (change.getType()) {
-
-            case BULK_ACTION: {
-                description = "Funkce (Ovlivněno JP: " + change.getNodeChanges() + ")";
-                break;
-            }
-
-            case ADD_NODES_OUTPUT: {
-                description = "Připojení JP (" + change.getNodeChanges() + ") k výstupu";
-                break;
-            }
-
-            case REMOVE_NODES_OUTPUT: {
-                description = "Odpojení JP (" + change.getNodeChanges() + ") od výstupu";
-                break;
-            }
-
-            case CREATE_AS: {
-                description = "Vytvoření archivního souboru";
-                break;
-            }
-
-            case BATCH_CHANGE_DESC_ITEM: {
-                description = "Hromadná úprava hodnot atributů";
-                break;
-            }
-
-            case BATCH_DELETE_DESC_ITEM: {
-                description = "Hromadný výmaz hodnot atributů";
-                break;
-            }
-
-            case IMPORT: {
-                description = "Import do AS";
-                break;
-            }
-
-            default: {
-                String label = changeNodeMap.get(new AbstractMap.SimpleImmutableEntry<>(changeResult.changeId, changeResult.primaryNodeId));
-                if (label == null) {
-                    description = StringUtils.isEmpty(changeResult.type) ? "neznámý typ" : ArrChange.Type.valueOf(changeResult.type).getDescription();
-                    description += ", primaryNodeId: " + (changeResult.primaryNodeId == null ? "?" : changeResult.primaryNodeId);
-                    description += ", changeId: " + changeResult.changeId;
-                    description += ", changeDate: " + changeResult.changeDate;
-                } else {
-                    description = label;
-                }
-            }
-
-        }
-        return description;
     }
 
     /**
