@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
-import {Modal, Button, Input, Form} from 'react-bootstrap';
+import {FormControl, Modal, Button, Input, Radio, ControlLabel, Form, FormGroup} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx';
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx';
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
@@ -182,25 +182,27 @@ class FundBulkModificationsForm extends AbstractReactComponent {
 
         return <Form onSubmit={handleSubmit(submitForm)}>
             <Modal.Body className='fund-bulk-modifications-container'>
-                <Input label={i18n('arr.fund.bulkModifications.descItemType')} wrapperClassName='form-items-group'>
-                    <div title={refType.name}>
-                        {refType.shortcut}
-                    </div>
-                </Input>
+                <FormInput type="static" label={i18n('arr.fund.bulkModifications.descItemType')} wrapperClassName='form-items-group'>
+                    {refType.shortcut}
+                </FormInput>
 
-                {refType.useSpecification && <Input label={i18n('arr.fund.bulkModifications.specs')} {...decorateFormField(specs)}>
+                {refType.useSpecification && <FormGroup>
+                    <ControlLabel>{i18n('arr.fund.bulkModifications.specs')}</ControlLabel>
                     <SimpleCheckListBox
                         ref='specsListBox'
                         items={refType.descItemSpecs}
                         {...specs}
                     />
-                </Input>}
+                </FormGroup>}
 
-                <Input label={i18n('arr.fund.bulkModifications.itemsArea')} {...decorateFormField(itemsArea)} wrapperClassName='form-items-group'>
-                    <Input type="radio" label={i18n('arr.fund.bulkModifications.itemsArea.all', allItemsCount)} {...itemsArea} value='all' checked={itemsArea.value === 'all'} />
-                    {checkedItemsCount > 0 && checkedItemsCount < allItemsCount && <Input type="radio" label={i18n('arr.fund.bulkModifications.itemsArea.selected', checkedItemsCount)} {...itemsArea} value='selected' checked={itemsArea.value === 'selected'} />}
-                    {uncheckedItemsCount > 0 && checkedItemsCount > 0 && <Input type="radio" label={i18n('arr.fund.bulkModifications.itemsArea.unselected', uncheckedItemsCount)} {...itemsArea} value='unselected' checked={itemsArea.value === 'unselected'} />}
-                </Input>
+                <FormGroup>
+                    <ControlLabel>{i18n('arr.fund.bulkModifications.itemsArea')}</ControlLabel>
+                    <Radio
+                        {...itemsArea} value='all' checked={itemsArea.value === 'all'}
+                    >{i18n('arr.fund.bulkModifications.itemsArea.all', allItemsCount)}</Radio>
+                    {checkedItemsCount > 0 && checkedItemsCount < allItemsCount && <Radio {...itemsArea} value='selected' checked={itemsArea.value === 'selected'}>{i18n('arr.fund.bulkModifications.itemsArea.selected', checkedItemsCount)}</Radio>}
+                    {uncheckedItemsCount > 0 && checkedItemsCount > 0 && <Radio {...itemsArea} value='unselected' checked={itemsArea.value === 'unselected'}>{i18n('arr.fund.bulkModifications.itemsArea.unselected', uncheckedItemsCount)}</Radio>}
+                </FormGroup>
                 <FormInput componentClass='select' label={i18n('arr.fund.bulkModifications.operationType')} {...operationType} {...decorateFormField(operationType)}>
                     {this.supportFindAndReplace() && <option key='findAndReplace' value='findAndReplace'>{i18n('arr.fund.bulkModifications.operationType.findAndReplace')}</option>}
                     {this.supportReplace() && <option key='replace' value='replace'>{i18n('arr.fund.bulkModifications.operationType.replace')}</option>}

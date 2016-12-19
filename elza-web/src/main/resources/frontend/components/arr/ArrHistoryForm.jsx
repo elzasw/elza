@@ -136,7 +136,7 @@ class ArrHistoryForm extends AbstractReactComponent {
         if (selectedItem) {
             const description = this.getItemDescription(selectedItem);
             const typeText = this.getItemTypeText(selectedItem);
-            const username = selectedItem.username ? selectedItem.username : <i>System</i>;
+            const username = selectedItem.username ? selectedItem.username : 'System';
             infoText = `${dateToString(new Date(selectedItem.changeDate))}; ${timeToString(new Date(selectedItem.changeDate))}; ${description}; ${typeText}; ${username}`;
         } else {
             infoText = null;
