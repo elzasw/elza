@@ -1297,15 +1297,12 @@ public class XmlImportService {
         String uuid = record.getUuid();
         String externalId = record.getExternalId();
         String externalSystemCode = record.getExternalSystemCode();
-        RegRecord regRecord = null;
         boolean isNew = false;
         boolean update = false;
 
-        if (!record.isLocal()) {
-            regRecord = findExistingRecord(record.getRecordId(), uuid, externalId, externalSystemCode, regScope);
-        }
+        RegRecord regRecord = findExistingRecord(record.getRecordId(), uuid, externalId, externalSourceCode);
 
-        if (regRecord == null) { // je lokální nebo se páruje podle uuid nebo externalId a externalSystemCode a nenajde se
+        if (regRecord == null) { // nebyl nalezen podle uuid nebo externalId a externalSourceCode nebo nejsou vyplněné
             if (stopOnError) {
                 checkRequiredAttributes(record);
             }
@@ -1373,10 +1370,9 @@ public class XmlImportService {
         } else if (externalId != null && externalSystemCode != null) {
             return recordRepository.findRegRecordByExternalIdAndExternalSystemCodeAndScope(externalId, externalSystemCode,
                     regScope);
-        } else {
-            throw new RecordImportException("Globální rejstřík s identifikátorem " + recordId
-                    + " nemá vyplněné uuid nebo externí id a typ zdroje.");
         }
+
+        return null;
     }
 
     private void syncVariantRecords(final Record record, final RegRecord regRecord, final boolean isNew, final boolean stopOnError)
