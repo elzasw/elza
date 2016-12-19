@@ -3,6 +3,7 @@
  */
 import {indexById} from 'stores/app/utils.jsx'
 import React from 'react';
+import {dateToString, dateTimeToString} from 'components/Utils.jsx'
 import {getSetFromIdsList} from 'stores/app/utils.jsx'
 import {i18n} from 'components';
 
@@ -361,6 +362,23 @@ export function createReferenceMarkStringFromArray(referenceMark) {
 }
 
 /**
+ * Vytvoření názvu požadavku na digitalizaci pro zorbazení uživateli.
+ * @param digitizationRequest objekt požadavku
+ * @param userDetail detail přihlášeného uživatele
+ */
+export function createDigitizationName(digitizationRequest, userDetail) {
+    // Uživatelské jméno chceme pouze pokud je definované nebo je jiné než přihlášený uživatel
+    const usernameTmp = digitizationRequest.username ? digitizationRequest.username : "System";
+    const username = userDetail ? (usernameTmp !== userDetail.username ? usernameTmp : null) : usernameTmp;
+    const usernameStr = username ? "[" + username + "] " : "";
+    let text = usernameStr + dateTimeToString(new Date(digitizationRequest.create));
+    if (digitizationRequest.nodesCount != null) {
+        text += " (" + digitizationRequest.nodesCount + ")";
+    }
+    return text;
+}
+
+/**
  * Pokud je ikona null, je použita výchozí.
  *
  * @param type ikona zobrazení
@@ -371,6 +389,35 @@ export function getGlyph(type) {
     } else {
         return type;
     }
+}
+
+export const REQ_DIGITIZATION_REQUEST = "DIGITIZATION_REQUEST";
+export const REQ_LINK = "LINK";
+export const REQ_UNLINK = "UNLINK";
+export const REQ_DESTRUCTION = "DESTRUCTION";
+export const REQ_TRANSFER = "TRANSFER";
+export function getRequestType(digReq) {
+    switch (digReq["@class"]) {
+        case ".ArrDigitizationRequestVO":
+            return REQ_DIGITIZATION_REQUEST;
+        case ".ArrDaoLinkRequest":
+            switch (digReq.type) {
+                case "LINK":
+                    return REQ_LINK;
+                case "UNLINK":
+                    return REQ_UNLINK;
+            }
+            break;
+        case ".ArrDaoRequestVO":
+            switch (digReq.type) {
+                case "DESTRUCTION":
+                    return REQ_DESTRUCTION;
+                case "TRANSFER":
+                    return REQ_TRANSFER;
+            }
+            break;
+    }
+    return null;
 }
 
 export function hasDescItemTypeValue(dataType) {

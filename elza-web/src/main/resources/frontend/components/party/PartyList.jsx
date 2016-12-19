@@ -151,8 +151,8 @@ class PartyList extends AbstractReactComponent {
             </div>
             <div>
                 <span className="date">{datation}</span>
-                {item.record.externalId && item.record.externalSource && item.record.externalSource.name && <span className="description">{item.record.externalSource.name + ':' + item.record.externalId}</span>}
-                {item.record.externalId && (!item.record.externalSource || item.record.externalSource.name) && <span className="description">{'UNKNOWN:' + item.record.externalId}</span>}
+                {item.record.externalId && item.record.externalSystem && item.record.externalSystem.name && <span className="description">{item.record.externalSystem.name + ':' + item.record.externalId}</span>}
+                {item.record.externalId && (!item.record.externalSystem || !item.record.externalSystem.name) && <span className="description">{'UNKNOWN:' + item.record.externalId}</span>}
                 {!item.record.externalId && <span className="description">{item.id}</span>}
             </div>
         </div>

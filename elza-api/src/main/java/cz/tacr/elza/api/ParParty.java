@@ -1,8 +1,8 @@
 package cz.tacr.elza.api;
 
-import cz.tacr.elza.api.interfaces.IRegScope;
-
 import java.io.Serializable;
+
+import cz.tacr.elza.api.interfaces.IRegScope;
 
 /**
  * Abstraktní osoba.
@@ -82,4 +82,9 @@ public interface ParParty<RR extends RegRecord, PPT extends ParPartyType, PPN ex
      * @param sourceInformation zdroje informací
      */
     void setSourceInformation(String sourceInformation);
+
+
+    public boolean isOriginator();
+
+    public void setOriginator(boolean originator);
 }

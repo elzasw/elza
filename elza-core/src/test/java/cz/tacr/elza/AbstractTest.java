@@ -143,6 +143,9 @@ public abstract class AbstractTest {
     @Autowired
     private UtilsTest utilsTest;
 
+    @Autowired
+    protected ExternalSystemRepository externalSystemRepository;
+
     private RulPackage rulPackage;
 
     @Before
@@ -262,6 +265,7 @@ public abstract class AbstractTest {
         nodeRepository.deleteAll();
         fundRepository.deleteAll();
         institutionRepository.deleteAll();
+        externalSystemRepository.deleteAll();
     }
 
     /**

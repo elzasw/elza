@@ -4,10 +4,14 @@ import {detail, list, utils} from "shared";
 import DetailReducer from "shared/detail/DetailReducer";
 import SimpleListReducer from "shared/list/simple/SimpleListReducer";
 import processAreaStores from "shared/utils/processAreaStores";
-function getDataKey() { return this.filter.type+"-"+this.filter.text };
+
+function getPartyListDataKey() { return this.filter.type+"-"+this.filter.text };
+
 const initialState = {
-    partyList: SimpleListReducer(undefined, undefined, {getDataKey, filter:{text:null, type:null}}),
+    partyList: SimpleListReducer(undefined, undefined, {getPartyListDataKey, filter:{text:null, type:null}}),
     partyDetail: DetailReducer(),
+    preparedDigitizationRequestList: SimpleListReducer(),   // seznam neodeslaných požadavků na digitalizaci - sdíleno pro celou aplikaci
+    requestInQueueList: SimpleListReducer(),   // seznam požadavků ve frontě
 };
 
 export default function app(state = initialState, action) {

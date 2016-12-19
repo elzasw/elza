@@ -7,6 +7,7 @@ import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo.jsx'
 import {isNodeInfoAction} from 'actions/arr/nodeInfo.jsx'
 import {isNodeAction} from 'actions/arr/node.jsx'
 import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister.jsx'
+import {isSubNodeDaosAction} from 'actions/arr/subNodeDaos.jsx'
 import {isDeveloperScenariosAction} from 'actions/global/developer.jsx'
 import {isFundChangeAction} from 'actions/global/change.jsx'
 
@@ -43,6 +44,7 @@ export default function nodes(state = nodesInitialState, action) {
         || isNodeInfoAction(action)
         || isNodeAction(action)
         || isSubNodeRegisterAction(action)
+        || isSubNodeDaosAction(action)
         || isDeveloperScenariosAction(action)
         || nodeFormActions.isSubNodeFormCacheAction(action, "NODE")
     ) {

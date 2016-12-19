@@ -30,4 +30,5 @@ public interface ComplementTypeRepository extends JpaRepository<ParComplementTyp
 
     ParComplementType findByCode(String partyNameComplementTypeCode);
 
+    ParComplementType findByName(String partyNameComplementTypeName);
 }

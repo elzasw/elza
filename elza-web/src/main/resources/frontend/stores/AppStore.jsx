@@ -73,12 +73,13 @@ const inlineFormSupport = new class {
      * Načtení store pro formulář.
      * @param formName
      * @param state
+     * @param ignoreNotFound true, pokud se má ignorovat neexistence formuláře ve store
      * @returns {*}
      */
-    getFormState(formName, state) {
+    getFormState(formName, state, ignoreNotFound = false) {
         const formState = state.form[formName];
         if (!formState) {
-            console.error("Nenalezen store pro formulář", formName);
+            !ignoreNotFound && console.error("Nenalezen store pro formulář", formName);
             return {};
         }
         return formState;
@@ -176,7 +177,7 @@ const inlineFormSupport = new class {
             return false;
         }
 
-        const formState = this.getFormState(action.form, state);
+        const formState = this.getFormState(action.form, state, true);
 
         var someFieldExist = false;
         for (let a=0; a<this.initFields[action.form].length; a++) {
@@ -556,6 +557,7 @@ const save = function(store) {
 inlineFormSupport.addForm("outputEditForm");
 inlineFormSupport.addForm("permissionsEditForm");
 inlineFormSupport.addForm("partyDetail");
+inlineFormSupport.addForm("requestEditForm");
 
 // ----------------------------------------------------
 export default {

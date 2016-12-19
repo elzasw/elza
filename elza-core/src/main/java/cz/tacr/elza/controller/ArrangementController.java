@@ -2,16 +2,19 @@ package cz.tacr.elza.controller;
 
 import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.api.UsrPermission;
-import cz.tacr.elza.exception.ConcurrentUpdateException;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
+import cz.tacr.elza.controller.vo.ArrDaoVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
 import cz.tacr.elza.controller.vo.ArrOutputExtVO;
 import cz.tacr.elza.controller.vo.ArrPacketVO;
+import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
+import cz.tacr.elza.controller.vo.ArrRequestVO;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.FundListCountResult;
@@ -29,7 +32,11 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItemJsonTable;
@@ -41,6 +48,8 @@ import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ArrRequest;
+import cz.tacr.elza.domain.ArrRequestQueueItem;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -53,9 +62,14 @@ import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.FilterExpiredException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.repository.CalendarTypeRepository;
+import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundRepository;
@@ -71,6 +85,7 @@ import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.ArrIOService;
 import cz.tacr.elza.service.ArrMoveLevelService;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.FilterTreeService;
 import cz.tacr.elza.service.ItemService;
@@ -79,10 +94,11 @@ import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.PacketService;
 import cz.tacr.elza.service.PolicyService;
 import cz.tacr.elza.service.RegistryService;
+import cz.tacr.elza.service.RequestQueueService;
+import cz.tacr.elza.service.RequestService;
+import cz.tacr.elza.service.RevertingChangesService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.UserService;
-import cz.tacr.elza.repository.ChangeRepository;
-import cz.tacr.elza.service.RevertingChangesService;
 import cz.tacr.elza.service.exception.DeleteFailedException;
 import cz.tacr.elza.service.output.OutputGeneratorService;
 import cz.tacr.elza.service.output.StatusGenerate;
@@ -143,6 +159,9 @@ public class ArrangementController {
     private NodeRepository nodeRepository;
 
     @Autowired
+    private DaoLinkRepository daoLinkRepository;
+
+    @Autowired
     private DataTypeRepository dataTypeRepository;
 
     @Autowired
@@ -180,6 +199,12 @@ public class ArrangementController {
 
     @Autowired
     private PacketService packetService;
+
+    @Autowired
+    private DaoService daoService;
+
+    @Autowired
+    private DaoRepository daoRepository;
 
     @Autowired
     private RegistryService registryService;
@@ -225,6 +250,12 @@ public class ArrangementController {
 
     @Autowired
     private ChangeRepository changeRepository;
+
+    @Autowired
+    private RequestService requestService;
+
+    @Autowired
+    private RequestQueueService requestQueueService;
 
     /**
      * Seznam typů obalů.
@@ -281,6 +312,109 @@ public class ArrangementController {
         List<ArrPacket> packets = packetService.findPackets(fund, input.getLimit(), input.getText());
         return factoryVo.createPacketList(packets);
     }
+
+    /**
+     *  Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní jednotku popisu (JP) nebo nemá žádné napojení (pouze pod archivní souborem (AS)).
+     *
+     * @param fundVersionId   id archivního souboru
+     * @param search   vyhledává (použití LIKE) nad kódem balíčku, kódem a labelem arr_dao (přirazený k balíčku), kódem a labelem arr_dao_batch_info
+     * @param unassigned mají-li se získávat pouze balíčky, které obsahují DAO, které nejsou nikam přirazené (unassigned = true), a nebo úplně všechny (unassigned = false)
+     * @param maxResults  maximální počet vyhledaných balíčků
+     * @return  seznam balíčků, seřazení je podle ID balíčku sestupně (tzn. poslední vytvořené budou na začátku seznamu)
+     */
+    @RequestMapping(value = "/daopackages/{fundVersionId}",
+            method = RequestMethod.GET,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    List<ArrDaoPackageVO> findDaoPackages(
+            @PathVariable(value = "fundVersionId") final Integer fundVersionId,
+            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "unassigned", required = false, defaultValue = "false") Boolean unassigned,
+            @RequestParam(value = "maxResults", required = false, defaultValue = "200") Integer maxResults) {
+        Assert.notNull(fundVersionId);
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+
+        final List<ArrDaoPackage> arrDaoList = daoService.findDaoPackages(fundVersion, search, unassigned, maxResults);
+
+        return factoryVo.createDaoPackageList(arrDaoList, unassigned);
+    }
+
+    /**
+     * Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní jednotku popisu (JP) nebo nemá žádné napojení (pouze pod archivní souborem (AS)).
+     *
+     * @param fundVersionId id archivního souboru
+     * @param nodeId        id node, pokud je null, najde entity bez napojení
+     * @param detail        načíst detailní informace (plnit struktutu vč návazných), výchozí hodnota false
+     * @param index         počáteční pozice pro načtení
+     * @param maxResults    počet načítaných výsledků
+     * @return seznam digitálních entit (DAO)
+     */
+    @RequestMapping(value = "/daos/{fundVersionId}",
+            method = RequestMethod.GET,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    List<ArrDaoVO> findDaos(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                            @RequestParam(value = "nodeId", required = false) Integer nodeId,
+                            @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail,
+                            @RequestParam(value = "index", required = false, defaultValue = "0") Integer index,
+                            @RequestParam(value = "maxResults", required = false, defaultValue = "20") Integer maxResults) {
+        Assert.notNull(fundVersionId);
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+
+        ArrNode node = null;
+        if (nodeId != null) {
+            node = nodeRepository.getOneCheckExist(nodeId);
+        }
+
+        final List<ArrDao> arrDaoList = daoService.findDaos(fundVersion, node, index, maxResults);
+
+        return factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail));
+    }
+
+    /**
+     * připojení digitalizát na JP (vytvoření záznamu v arr_dao_link)
+     * @param daoId DAO pro propojení
+     * @param nodeId Node pro propojení
+     */
+    @Transactional
+    @RequestMapping(value = "/daos/{fundVersionId}/{daoId}/{nodeId}/create",
+                method = RequestMethod.PUT,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
+    public void createDaoLink(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                              @PathVariable(value = "daoId") Integer daoId,
+                              @PathVariable(value = "nodeId") Integer nodeId) {
+        Assert.notNull(fundVersionId);
+        Assert.notNull(daoId);
+        Assert.notNull(nodeId);
+
+        final ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        final ArrDao dao = daoRepository.getOneCheckExist(daoId);
+        final ArrNode node = nodeRepository.getOneCheckExist(nodeId);
+
+        final ArrDaoLink daoLink = daoService.createOrFindDaoLink(fundVersion, dao, node);
+    }
+
+    /**
+     * Odpojí digitalizát od JP (vyplnění záznamu delete_change_id v arr_dao_link)
+     * @param daoLinkId ID požadovaného linku k rozpojení
+     */
+    @Transactional
+    @RequestMapping(value = "/daolinks/{fundVersionId}/{daoLinkId}/delete",
+                method = RequestMethod.DELETE,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
+    public void deleteDaoLink(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                              @PathVariable(value = "daoLinkId") Integer daoLinkId) {
+        Assert.notNull(fundVersionId);
+        Assert.notNull(daoLinkId);
+
+        final ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        final ArrDaoLink daoLink = daoLinkRepository.getOneCheckExist(daoLinkId);
+
+        final ArrDaoLink deleteDaoLink = daoService.deleteDaoLink(fundVersion, daoLink);
+    }
+
 
     /**
      * Vyhledání obalů pro správu.
@@ -483,7 +617,7 @@ public class ArrangementController {
             method = RequestMethod.GET,
             produces = "text/csv")
     public void descItemCsvExport(
-            HttpServletResponse response,
+            final HttpServletResponse response,
             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
             @RequestParam(value = "descItemObjectId") final Integer descItemObjectId) throws IOException {
         Assert.notNull(fundVersionId);
@@ -511,7 +645,7 @@ public class ArrangementController {
             method = RequestMethod.GET,
             produces = "text/csv")
     public void outputItemCsvExport(
-            HttpServletResponse response,
+            final HttpServletResponse response,
             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
             @RequestParam(value = "descItemObjectId") final Integer descItemObjectId) throws IOException {
         Assert.notNull(fundVersionId);
@@ -1492,7 +1626,7 @@ public class ArrangementController {
             @RequestBody(required = false) final Filters filters) {
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
         List<DescItemTypeFilter> descItemFilters = factoryDO.createFilters(filters);
-        return filterTreeService.filterData(version, descItemFilters);
+        return filterTreeService.filterData(version, descItemFilters, filters.getNodeId());
     }
 
     /**
@@ -1732,7 +1866,7 @@ public class ArrangementController {
     @Transactional
     @RequestMapping(value = "/output/{fundVersionId}", method = RequestMethod.PUT)
     public ArrOutputDefinitionVO createNamedOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                                   @RequestBody OutputNameParam param) {
+                                                   @RequestBody final OutputNameParam param) {
         Assert.notNull(param);
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutputDefinition outputDefinition = outputService.createOutputDefinition(fundVersion, param.getName(), param.getInternalCode(),
@@ -1846,7 +1980,7 @@ public class ArrangementController {
     @RequestMapping(value = "/output/{fundVersionId}/{outputId}/update", method = RequestMethod.POST)
     public void updateNamedOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                   @PathVariable(value = "outputId") final Integer outputId,
-                                  @RequestBody OutputNameParam param) {
+                                  @RequestBody final OutputNameParam param) {
         Assert.notNull(param);
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
@@ -1938,6 +2072,154 @@ public class ArrangementController {
         }
         revertingChangesService.revertChanges(fundVersion.getFund(), node, fromChange, toChange);
     }
+
+    /**
+     * Vytvoření požadavku nebo přidání JP k existujícímu požadavku.
+     *
+     * @param fundVersionId identifikátor verze AS
+     * @param send          současně odeslat požadavek?
+     * @param param         parametry požadavku
+     */
+    @RequestMapping(value = "/requests/{fundVersionId}/digitization/add", method = RequestMethod.POST)
+    @Transactional
+    public void digitizationRequestAdd(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                       @RequestParam(name = "send", defaultValue = "false") Boolean send,
+                                       @RequestBody DigitizationRequestParam param) {
+        Assert.notNull(param);
+        Assert.notEmpty(param.nodeIds);
+
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        List<ArrNode> nodes = nodeRepository.findAll(param.nodeIds);
+
+        if (nodes.size() != param.nodeIds.size()) {
+            throw new SystemException(BaseCode.ID_NOT_EXIST);
+        }
+
+        ArrDigitizationRequest digitizationRequest;
+        if (param.id == null) {
+            digitizationRequest = requestService.createDigitizationRequest(nodes, param.description, fundVersion);
+        } else {
+            digitizationRequest = requestService.getDigitizationRequest(param.id);
+            requestService.addNodeDigitizationRequest(digitizationRequest, nodes, fundVersion, param.getDescription());
+        }
+
+        if (BooleanUtils.isTrue(send)) {
+            requestService.sendRequest(digitizationRequest, fundVersion);
+        }
+    }
+
+    /**
+     * Odeslání požadavku.
+     *
+     * @param fundVersionId  identifikátor verze AS
+     * @param digitizationId identifikátor požadavku
+     */
+    @RequestMapping(value = "/requests/{fundVersionId}/{digitizationId}/send", method = RequestMethod.POST)
+    @Transactional
+    public void digitizationRequestSend(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                        @PathVariable(value = "digitizationId") final Integer digitizationId) {
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        ArrDigitizationRequest digitizationRequest = requestService.getDigitizationRequest(digitizationId);
+        if (!fundVersion.getFund().equals(digitizationRequest.getFund())) {
+            throw new SystemException(ArrangementCode.INVALID_VERSION);
+        }
+        requestService.sendRequest(digitizationRequest, fundVersion);
+    }
+
+    /**
+     * Změna požadavku.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param param         parametry požadavku
+     */
+    @RequestMapping(value = "/requests/{fundVersionId}/{digitizationId}", method = RequestMethod.PUT)
+    @Transactional
+    public void digitizationRequestChange(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                          @PathVariable(value = "digitizationId") final Integer digitizationId,
+                                          @RequestBody DigitizationRequestParam param) {
+        Assert.notNull(param);
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        ArrDigitizationRequest digitizationRequest = requestService.getDigitizationRequest(digitizationId);
+        requestService.changeDigitizationRequest(digitizationRequest, fundVersion, param.getDescription());
+    }
+
+    /**
+     * Odebrání JP z požadavku.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param param         parametry požadavku
+     */
+    @RequestMapping(value = "/requests/{fundVersionId}/digitization/remove", method = RequestMethod.POST)
+    @Transactional
+    public void digitizationRequestRemove(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                          @RequestBody DigitizationRequestParam param) {
+        Assert.notNull(param);
+        Assert.notNull(param.id);
+        Assert.notEmpty(param.nodeIds);
+
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        List<ArrNode> nodes = nodeRepository.findAll(param.nodeIds);
+
+        if (nodes.size() != param.nodeIds.size()) {
+            throw new SystemException(BaseCode.ID_NOT_EXIST);
+        }
+
+        ArrDigitizationRequest digitizationRequest = requestService.getDigitizationRequest(param.id);
+        requestService.removeNodeDigitizationRequest(digitizationRequest, nodes, fundVersion);
+    }
+
+    /**
+     * Vyhledání požadavků.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param state         stav požadavku
+     * @param type          typ požadavku
+     * @param detail        vyplnit detailní informace o požadavku?
+     * @return seznam odpovídajících požadavků
+     */
+    @RequestMapping(value = "/requests/{fundVersionId}", method = RequestMethod.GET)
+    public List<ArrRequestVO> findRequests(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                           @RequestParam(value = "state", required = false) ArrRequest.State state,
+                                           @RequestParam(value = "type", required = false) ArrRequest.ClassType type,
+                                           @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail) {
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        List<ArrRequest> requests = requestService.findRequests(fundVersion.getFund(), state, type);
+        return factoryVo.createRequest(requests, detail, fundVersion);
+    }
+
+
+    @RequestMapping(value = "/requests/queued", method = RequestMethod.GET)
+    public List<ArrRequestQueueItemVO> findQueuedRequests() {
+        List<ArrRequestQueueItem> requestQueueItems = requestQueueService.findQueued();
+        return factoryVo.createRequestQueueItem(requestQueueItems);
+    }
+
+
+    /**
+     * Získání konkrétního požadavku.
+     *
+     * @param fundVersionId  identfikátor verze AS
+     * @param requestId      identifikátor požadavku
+     * @param detail         vyplnit detailní informace o požadavku?
+     * @return nalezený požadavek
+     */
+    @RequestMapping(value = "/requests/{fundVersionId}/{requestId}", method = RequestMethod.GET)
+    public ArrRequestVO getRequest(
+            @PathVariable(value = "fundVersionId") final Integer fundVersionId,
+            @PathVariable(value = "requestId") final Integer requestId,
+            @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail) {
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        ArrRequest request = requestService.getRequest(requestId);
+        return factoryVo.createRequest(request, detail, fundVersion);
+    }
+
+    @Transactional
+    @RequestMapping(value = "/requests/{requestId}", method = RequestMethod.DELETE)
+    public void removeQueuedRequest(@PathVariable(value = "requestId") final Integer requestId) {
+        ArrRequest request = requestService.getRequest(requestId);
+        requestService.removeQueuedRequest(request);
+    }
+
 
     /**
      * Výstupní objekt pro chybové jednotky popisu.
@@ -2926,7 +3208,7 @@ public class ArrangementController {
             return outputTypeId;
         }
 
-        public void setOutputTypeId(Integer outputTypeId) {
+        public void setOutputTypeId(final Integer outputTypeId) {
             this.outputTypeId = outputTypeId;
         }
 
@@ -2934,8 +3216,41 @@ public class ArrangementController {
             return templateId;
         }
 
-        public void setTemplateId(Integer templateId) {
+        public void setTemplateId(final Integer templateId) {
             this.templateId = templateId;
+        }
+    }
+
+    public static class DigitizationRequestParam {
+
+        private Integer id;
+
+        private List<Integer> nodeIds;
+
+        private String description;
+
+        public Integer getId() {
+            return id;
+        }
+
+        public void setId(final Integer id) {
+            this.id = id;
+        }
+
+        public List<Integer> getNodeIds() {
+            return nodeIds;
+        }
+
+        public void setNodeIds(final List<Integer> nodeIds) {
+            this.nodeIds = nodeIds;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(final String description) {
+            this.description = description;
         }
     }
 }

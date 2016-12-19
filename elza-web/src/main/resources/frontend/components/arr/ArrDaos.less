@@ -1,0 +1,49 @@
+@import "~variables.less";
+
+.daos-container {
+
+    border: 1px solid @fa-file-tree-border;
+    border-top: none;
+    height: 100%;
+    width: 100%;
+
+    display: flex;
+
+    .daos-list {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        width: 250px;
+
+        .title {
+            flex-shrink: 0;
+            padding: 5px;
+            background-color: @tree-node-active-bg;
+            font-size: @font-size-base * 1.1;
+        }
+
+        .daos-list-items {
+            flex-grow: 1;
+
+            overflow-y: scroll;
+
+            .item {
+                padding: 5px;
+
+                &:nth-child(odd) {
+                    background-color: #F8F8F8;
+                }
+
+                &:nth-child(even) {
+                    background-color: #FEFEFE;
+                }
+            }
+        }
+
+    }
+
+    .daos-detail {
+        flex-grow: 1;
+    }
+
+}

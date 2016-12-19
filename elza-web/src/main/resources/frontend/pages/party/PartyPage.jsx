@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {ControllableDropdownButton, Icon, AbstractReactComponent, Ribbon, RibbonGroup, PartyList, PartyDetail, PartyEntities, i18n, ImportForm} from 'components/index.jsx';
-import {RelationForm, AddPartyForm} from 'components/index.jsx';
+import {RelationForm, AddPartyForm, ExtImportForm} from 'components/index.jsx';
 import {MenuItem, Button} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {AppStore} from 'stores/index.jsx'
@@ -105,12 +105,11 @@ class PartyPage extends AbstractReactComponent {
 
 
     handleImport = () => {
-        this.dispatch(
-            modalDialogShow(this,
-                i18n('import.title.party'),
-                <ImportForm party/>
-            )
-        );
+        this.dispatch(modalDialogShow(this, i18n('import.title.party'), <ImportForm party/>));
+    };
+
+    handleExtImport = () => {
+        this.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={true}/>, "dialog-lg"));
     };
 
     /**
@@ -138,9 +137,13 @@ class PartyPage extends AbstractReactComponent {
                     {partyTypes.items.map(type => <MenuItem key={type.id} eventKey={type.id} onClick={this.handleAddParty.bind(this, type.id)}>{type.name}</MenuItem>)}
                 </ControllableDropdownButton>
             );
-            altActions.push(<Button key='export-party' onClick={this.handleImport}>
+            altActions.push(<Button key='import-party' onClick={this.handleImport}>
                 <Icon glyph='fa-download fa-fw' />
                 <div><span className="btnText">{i18n('ribbon.action.party.import')}</span></div>
+            </Button>);
+            altActions.push(<Button key='import-ext-party' onClick={this.handleExtImport}>
+                <Icon glyph='fa-download fa-fw' />
+                <div><span className="btnText">{i18n('ribbon.action.party.importExt')}</span></div>
             </Button>);
         }
 

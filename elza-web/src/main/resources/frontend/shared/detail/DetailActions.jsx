@@ -26,7 +26,7 @@ export function invalidate(area, data) {
  * @param id id objektu, které má být ve store
  * @param getData metoda která má vrátit promise pro načtení, vstupem dostane id
  */
-export function fetchIfNeeded(area, id, getData) {
+export function fetchIfNeeded(area, id, getData, force = false) {
     return (dispatch, getState) => {
         // Spočtení data key - se správným id
         var store = storeFromArea(getState(), area);
@@ -38,7 +38,7 @@ export function fetchIfNeeded(area, id, getData) {
         }
 
         const dataKey = store.getDataKey.bind(store)();
-        if (store.currentDataKey !== dataKey) { // pokus se data key neschoduje, provedeme fetch
+        if (force || store.currentDataKey !== dataKey) { // pokus se data key neschoduje, provedeme fetch
             dispatch(request(area, dataKey))
 
             if (id !== null) {  // pokud chceme reálně načíst objekt, provedeme fetch přes getData
@@ -96,7 +96,7 @@ export function updateValue(area, data) {
  * @param id id
  * @returns {{type: string, area: *, id: *}}
  */
-function select(area, id) {
+export function select(area, id) {
     return {
         type: SELECT,
         area,

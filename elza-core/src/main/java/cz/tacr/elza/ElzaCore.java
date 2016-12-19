@@ -99,6 +99,15 @@ public class ElzaCore {
         return threadPoolTaskExecutor;
     }
 
+    @Bean(name = "threadPoolTaskExecutorRQ")
+    public ThreadPoolTaskExecutor threadPoolTaskExecutorRequestQueue() {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize(1);
+        threadPoolTaskExecutor.setMaxPoolSize(1);
+        threadPoolTaskExecutor.afterPropertiesSet();
+        return threadPoolTaskExecutor;
+    }
+
     @Bean(name = "conformityUpdateTaskExecutor")
     public Executor conformityUpdateTaskExecutor() {
         return threadPoolTaskExecutorBulkAction();

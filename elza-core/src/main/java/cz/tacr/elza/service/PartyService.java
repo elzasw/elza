@@ -302,7 +302,7 @@ public class PartyService {
         Assert.notNull(party);
 
         Assert.notNull(party.getRecord(), "Osoba nemá zadané rejstříkové heslo.");
-        Assert.notNull(party.getRecord().getRegisterType(), "Není vyplněný typ rejstříkového helsa.");
+        Assert.notNull(party.getRecord().getRegisterType(), "Není vyplněný typ rejstříkového hesla.");
         Assert.notNull(party.getRecord().getScope(), "Není nastavena třída rejstříkového hesla");
         Assert.notNull(party.getRecord().getScope().getScopeId(), "Není nastaveno id třídy rejstříkového hesla");
 
@@ -321,6 +321,8 @@ public class PartyService {
             recordFromGroovy.setVersion(dbParty.getRecord().getVersion());
             recordFromGroovy.setUuid(dbParty.getRecord().getUuid());
         }
+        recordFromGroovy.setExternalId(party.getRecord().getExternalId());
+        recordFromGroovy.setExternalSystem(party.getRecord().getExternalSystem());
         RegRecord savedRecord = registryService.saveRecord(recordFromGroovy, true);
         party.setRecord(savedRecord);
 
@@ -440,10 +442,12 @@ public class PartyService {
         for (ParPartyName newPartyName : newPartyNames) {
             ParPartyName oldPartyName = dbPartyNameMap.get(newPartyName.getPartyNameId());
 
-            Assert.notNull(newPartyName.getNameFormType());
-            Assert.notNull(newPartyName.getNameFormType().getNameFormTypeId());
-            ParPartyNameFormType nameFormType = partyNameFormTypeRepository
-                    .findOne(newPartyName.getNameFormType().getNameFormTypeId());
+            ParPartyNameFormType nameFormType = null;
+            ParPartyNameFormType partyNameFormType = newPartyName.getNameFormType();
+            if (partyNameFormType != null) {
+                Assert.notNull(partyNameFormType.getNameFormTypeId());
+                nameFormType = partyNameFormTypeRepository.findOne(partyNameFormType.getNameFormTypeId());
+            }
 
             if (oldPartyName == null) {
                 oldPartyName = newPartyName;

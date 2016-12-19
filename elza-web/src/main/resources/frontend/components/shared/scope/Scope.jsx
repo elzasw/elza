@@ -1,29 +1,24 @@
-/**
- *  Komponenta pro vyhledávání
- *
- *  Pro inicializaci staci naimportovat: import {Search} from 'components/index.jsx';
- *
- **/
-
 import React from 'react';
-
+import ReactDOM from 'react-dom'
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
-import ReactDOM from 'react-dom'
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
-require('./Scope.less');
 import {indexById} from 'stores/app/utils.jsx';
+
+import './Scope.less';
 
 
 /**
  *  Komponenta pro scope
+ *
  *  @param versionId zadat null nebo id verze
  *  <Scope versionId={null} label='Scope'/>
- **/
-const Scope = class Scope extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
-    }
+ */
+class Scope extends AbstractReactComponent {
+
+    static PropTypes = {
+        value: React.PropTypes.oneOfType([React.PropTypes.number, React.PropTypes.string])
+    };
 
     componentWillReceiveProps(nextProps) {
         this.dispatch(requestScopesIfNeeded(nextProps.versionId));
@@ -37,23 +32,11 @@ const Scope = class Scope extends AbstractReactComponent {
             data = scopes[index].scopes;
         }
 
-        return (
-            <FormInput componentClass='select' options={data} {...other}>
-                <option />
-                {data.map((i)=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
-            </FormInput>
-        );
-    }
-};
-
-Scope.propTypes = {
-    value: React.PropTypes.oneOfType([React.PropTypes.number, React.PropTypes.string])
-};
-
-function mapStateToProps(state) {
-    return {
-        store: state.refTables.scopesData
+        return <FormInput componentClass='select' options={data} {...other}>
+            <option key="null" />
+            {data.map(i => <option value={i.id} key={i.id}>{i.name}</option>)}
+        </FormInput>
     }
 }
 
-module.exports = connect(mapStateToProps)(Scope);
+export default connect((state) => ({store: state.refTables.scopesData}))(Scope);

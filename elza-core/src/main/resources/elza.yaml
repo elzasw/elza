@@ -1,12 +1,12 @@
 elza:
   treenode:
     title: ${elza.conf.treenode.title}
-    defaultTitle: ${elza.conf.treenode.default.title} 
+    defaultTitle: ${elza.conf.treenode.default.title}
   workingDir: ./work
   xmlImport:
     transformationDir: ${elza.workingDir}/transformations/
   xmlExport:
-    transformationDir: ${elza.workingDir}/xmlExportTransformations/      
+    transformationDir: ${elza.workingDir}/xmlExportTransformations/
   bulkactions:
     bulkactionsDir: ${elza.workingDir}/bulkactions
   rulesDir: ${elza.workingDir}/rules
@@ -27,7 +27,7 @@ spring:
     rest:
       base-uri: /rest
   app:
-      buildType: REL      
+      buildType: REL
   jpa:
     # Logovani SQL dotazu
     #show-sql: true
@@ -49,4 +49,4 @@ spring:
               #dialect: org.hibernate.spatial.dialect.oracle.OracleSpatial10gDialect
               # MSSQL
               #dialect: org.hibernate.dialect.SQLServer2008Dialect
-                      
+

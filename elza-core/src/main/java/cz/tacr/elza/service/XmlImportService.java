@@ -1205,10 +1205,13 @@ public class XmlImportService {
         parPartyName.setValidFrom(importComplexDate(partyName.getValidFrom()));
         parPartyName.setValidTo(importComplexDate(partyName.getValidTo()));
 
+        ParPartyNameFormType partyNameFormType = null;
         String partyNameFormTypeCode = partyName.getPartyNameFormTypeCode();
-        ParPartyNameFormType partyNameFormType = partyNameFormTypeRepository.findByCode(partyNameFormTypeCode);
-        if (partyNameFormType == null) {
-            throw new PartyImportException("Neexistuje typ formy jména s kódem " + partyNameFormTypeCode);
+        if (StringUtils.isNotBlank(partyNameFormTypeCode)) {
+            partyNameFormType = partyNameFormTypeRepository.findByCode(partyNameFormTypeCode);
+            if (partyNameFormType == null) {
+                throw new PartyImportException("Neexistuje typ formy jména s kódem " + partyNameFormTypeCode);
+            }
         }
         parPartyName.setNameFormType(partyNameFormType);
 
@@ -1299,7 +1302,7 @@ public class XmlImportService {
         boolean update = false;
 
         if (!record.isLocal()) {
-            regRecord = findExistingRecord(record.getRecordId(), uuid, externalId, externalSystemCode);
+            regRecord = findExistingRecord(record.getRecordId(), uuid, externalId, externalSystemCode, regScope);
         }
 
         if (regRecord == null) { // je lokální nebo se páruje podle uuid nebo externalId a externalSystemCode a nenajde se
@@ -1362,12 +1365,14 @@ public class XmlImportService {
         return isRecordInXmlNewer;
     }
 
-    private RegRecord findExistingRecord(final String recordId, final String uuid, final String externalId, final String externalSystemCode)
+    private RegRecord findExistingRecord(final String recordId, final String uuid, final String externalId,
+            final String externalSystemCode, final RegScope regScope)
         throws RecordImportException {
         if (uuid != null) {
             return recordRepository.findRegRecordByUuid(uuid);
         } else if (externalId != null && externalSystemCode != null) {
-            return recordRepository.findRegRecordByExternalIdAndExternalSystemCode(externalId, externalSystemCode);
+            return recordRepository.findRegRecordByExternalIdAndExternalSystemCodeAndScope(externalId, externalSystemCode,
+                    regScope);
         } else {
             throw new RecordImportException("Globální rejstřík s identifikátorem " + recordId
                     + " nemá vyplněné uuid nebo externí id a typ zdroje.");

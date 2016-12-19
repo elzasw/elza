@@ -9,18 +9,19 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Icon, ListBox, AbstractReactComponent, i18n, Loading, NodeSubNodeForm, Accordion, SubNodeRegister, NodeActionsBar,
-        VisiblePolicyForm} from 'components';
+        VisiblePolicyForm, SubNodeDao} from 'components';
 import {Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
 import {addNodeForm} from 'actions/arr/addNodeForm.jsx';
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {fundSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister.jsx'
+import {fundSubNodeDaosFetchIfNeeded} from 'actions/arr/subNodeDaos.jsx'
 import {fundSubNodeInfoFetchIfNeeded} from 'actions/arr/subNodeInfo.jsx'
 import {fundNodeInfoFetchIfNeeded} from 'actions/arr/nodeInfo.jsx'
 import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
 import {fundNodeSubNodeFulltextSearch, fundSubNodesNext, fundSubNodesPrev, fundSubNodesNextPage, fundSubNodesPrevPage} from 'actions/arr/node.jsx'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
 import {indexById} from 'stores/app/utils.jsx'
-import {getDescItemsAddTree, createFundRoot, isFundRootId} from './ArrUtils.jsx'
+import {createDigitizationName, getDescItemsAddTree, createFundRoot, isFundRootId} from './ArrUtils.jsx'
 import {propsEquals} from 'components/Utils.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils.jsx'
@@ -28,6 +29,8 @@ import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {Utils} from 'components/index.jsx';
+import DigitizationRequestForm from "./DigitizationRequestForm"
+import {WebApi} from 'actions/index.jsx';
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
 const scrollIntoView = require('dom-scroll-into-view')
@@ -170,7 +173,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.requestData(nextProps.versionId, nextProps.node, nextProps.showRegisterJp);
+        this.requestData(nextProps.versionId, nextProps.node, nextProps.showRegisterJp, nextProps.showDaosJp);
 
         var newState = {
             focusItemIndex: this.getFocusItemIndex(nextProps, this.state.focusItemIndex)
@@ -284,6 +287,23 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         }
     }
 
+    /**
+     * Zobrazení formuláře pro požadavek na digitalizaci.
+     */
+    handleDigitizationRequest = () => {
+        const {node, versionId} = this.props;
+        const nodeId = node.selectedSubNodeId;
+
+        const form = <DigitizationRequestForm nodeId={nodeId} fundVersionId={versionId} onSubmitForm={(send, data) => {
+            {/*WebApi.addNodeToDigitization(versionId, nodeId, data.digitizationRequestId, send, data.description)*/}
+            WebApi.arrRequestAddNodes(versionId, data.digitizationRequestId, send, data.description, [nodeId])
+                .then(() => {
+                    this.dispatch(modalDialogHide());
+                });
+        }} />;
+        this.dispatch(modalDialogShow(this, i18n('digitizationRequest.form.title'), form));
+    }
+
     handleVisiblePolicy() {
         const {node, versionId} = this.props;
         var form = <VisiblePolicyForm nodeId={node.selectedSubNodeId} fundVersionId={versionId} onSubmitForm={this.handleSetVisiblePolicy} />;
@@ -368,7 +388,7 @@ return true
             return true;
         }
         var eqProps = ['versionId', 'fund', 'node', 'calendarTypes', 'descItemTypes',
-            'packetTypes', 'packets', 'rulDataTypes', 'fundId', 'showRegisterJp', 'closed']
+            'packetTypes', 'packets', 'rulDataTypes', 'fundId', 'showRegisterJp', 'showDaosJp', 'closed']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -377,17 +397,17 @@ return true
      * @param versionId {String} verze AS
      * @param node {Object} node
      * @param showRegisterJp {bool} zobrazení rejstřílů vázené k jednotce popisu
+     * @param showDaosJp {bool} zobrazení digitálních entit vázené k jednotce popisu
      */
-    requestData(versionId, node, showRegisterJp) {
+    requestData(versionId, node, showRegisterJp, showDaosJp) {
         if (node.selectedSubNodeId != null) {
             this.dispatch(descItemTypesFetchIfNeeded());
             this.dispatch(nodeFormActions.fundSubNodeFormFetchIfNeeded(versionId, node.routingKey));
             this.dispatch(fundSubNodeInfoFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
             this.dispatch(refRulDataTypesFetchIfNeeded());
 
-            if (showRegisterJp) {
-                this.dispatch(fundSubNodeRegisterFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
-            }
+            showRegisterJp && this.dispatch(fundSubNodeRegisterFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
+            showDaosJp && this.dispatch(fundSubNodeDaosFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
 
         }
         this.dispatch(visiblePolicyTypesFetchIfNeeded());
@@ -616,9 +636,11 @@ return true
     /**
      * Renderování Accordion.
      * @param form {Object} editační formulář, pokud je k dispozici (k dispozici je, pokud je nějaká položka Accordion vybraná)
+     * @param recordInfo rejstříky k JP
+     * @param daos digitální entity k JP
      * @return {Object} view
      */
-    renderAccordion(form, recordInfo, readMode) {
+    renderAccordion(form, recordInfo, daos, readMode) {
         const {node, versionId, userDetail, fund, fundId, closed} = this.props;
         const {focusItemIndex} = this.state;
         var rows = [];
@@ -633,15 +655,24 @@ return true
                     </Button>
                 )
             }
-            for (var a=node.viewStartIndex; (a<node.viewStartIndex + node.pageSize) && (a < node.childNodes.length); a++) {
+            for (let a=node.viewStartIndex; (a<node.viewStartIndex + node.pageSize) && (a < node.childNodes.length); a++) {
                 var item = node.childNodes[a];
 
-                var state = this.renderState(item);
-                var accordionLeft = item.accordionLeft ? item.accordionLeft : i18n('accordion.title.left.name.undefined', item.id)
-                var accordionRight = item.accordionRight ? item.accordionRight : ''
-                var referenceMark = <span className="reference-mark">{createReferenceMarkString(item)}</span>
+                const state = this.renderState(item);
+                const accordionLeft = item.accordionLeft ? item.accordionLeft : i18n('accordion.title.left.name.undefined', item.id)
+                const accordionRight = item.accordionRight ? item.accordionRight : ''
+                const referenceMark = <span className="reference-mark">{createReferenceMarkString(item)}</span>
+                const focused = a === this.state.focusItemIndex
 
-                var focused = a === this.state.focusItemIndex
+                let digitizationInfo;
+                if (item.digitizationRequests && item.digitizationRequests.length > 0) {
+                    const title = item.digitizationRequests.map(digReq => {
+                        return createDigitizationName(digReq, userDetail)
+                    });
+                    digitizationInfo = <div className="digitizationInfo" title={title}>
+                        <Icon glyph="fa-shopping-basket"/>
+                    </div>
+                }
 
                 if (node.selectedSubNodeId == item.id) {
                     rows.push(
@@ -655,11 +686,13 @@ return true
                                         <span className="title" title={accordionRight}>{accordionRight}</span>
                                     </div>
                                     {state}
+                                    {digitizationInfo}
                                 </div>
                             </div>
                             <div key="body" className='accordion-body'>
                                 {form}
                                 {recordInfo}
+                                {daos}
                             </div>
                         </div>
                     )
@@ -675,6 +708,7 @@ return true
                                         <span className="title" title={accordionRight}>{accordionRight}</span>
                                     </div>
                                     {state}
+                                    {digitizationInfo}
                                 </div>
                             </div>
                         </div>
@@ -706,7 +740,7 @@ return true
     render() {
         const {calendarTypes, versionId, rulDataTypes, node,
                 packetTypes, packets, fundId, userDetail,
-                showRegisterJp, fund, closed, descItemTypes} = this.props;
+                showRegisterJp, showDaosJp, fund, closed, descItemTypes} = this.props;
 
 
 
@@ -770,14 +804,14 @@ return true
                 closed={closed}
                 onAddDescItemType={this.handleAddDescItemType}
                 onVisiblePolicy={this.handleVisiblePolicy}
+                onDigitizationRequest={this.handleDigitizationRequest}
                 readMode={readMode}
             />
         } else {
             form = <Loading value={i18n('global.data.loading.form')}/>
         }
 
-        var record;
-
+        let record;
         if (showRegisterJp) {
             record = <SubNodeRegister
                         nodeId={node.id}
@@ -789,6 +823,16 @@ return true
                         readMode={readMode}/>
         }
 
+        let daos;
+        if (showDaosJp) {
+            daos = <SubNodeDao
+                nodeId={node.id}
+                versionId={versionId}
+                selectedSubNodeId={node.selectedSubNodeId}
+                routingKey={node.routingKey}
+                daos={node.subNodeDaos} />
+        }
+
         var cls = classNames({
             'node-panel-container': true,
         })
@@ -797,7 +841,7 @@ return true
             <Shortcuts name='NodePanel' key={'node-panel'} className={cls} handler={this.handleShortcuts}>
                 <div key='main' className='main'>
                     {parents}
-                    {this.renderAccordion(form, record, readMode)}
+                    {this.renderAccordion(form, record, daos, readMode)}
                     {children}
                 </div>
             </Shortcuts>
@@ -881,6 +925,7 @@ NodePanel.propTypes = {
     rulDataTypes: React.PropTypes.object.isRequired,
     fundId: React.PropTypes.number,
     showRegisterJp: React.PropTypes.bool.isRequired,
+    showDaosJp: React.PropTypes.bool.isRequired,
     closed: React.PropTypes.bool.isRequired,
     userDetail: React.PropTypes.object.isRequired,
 }

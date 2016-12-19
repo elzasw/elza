@@ -936,4 +936,20 @@ public class ClientFactoryDO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.mapAsList(settings, UISettings.class);
     }
+
+    public <T, R> R createSimpleEntity(final T entity, final Class<R> clazz) {
+        if (entity == null) {
+            return null;
+        }
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        return mapper.map(entity, clazz);
+    }
+
+    public <T, R> List<R> createSimpleEntity(final Collection<T> entity, final Class<R> clazz) {
+        if (entity == null) {
+            return null;
+        }
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        return mapper.mapAsList(entity, clazz);
+    }
 }
