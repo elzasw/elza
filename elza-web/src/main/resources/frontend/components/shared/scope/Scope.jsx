@@ -20,14 +20,37 @@ class Scope extends AbstractReactComponent {
         value: React.PropTypes.oneOfType([React.PropTypes.number, React.PropTypes.string])
     };
 
+    componentDidMount() {
+        const {store: {scopes}, versionId} = this.props;
+        this.dispatch(requestScopesIfNeeded(versionId));
+
+        const index = indexById(scopes, versionId, 'versionId');
+        if (index !== null) {
+            const data = scopes[index].scopes;
+            if (data && data.length === 1) {
+                this.props.onChange(data[0].id);
+            }
+        }
+    }
+
     componentWillReceiveProps(nextProps) {
         this.dispatch(requestScopesIfNeeded(nextProps.versionId));
+
+        const {store: {scopes}, versionId} = nextProps;
+        const index = indexById(scopes, versionId, 'versionId');
+        const oldIndex = indexById(this.props.store.scopes, versionId, 'versionId');
+        if (index !== null && index !== oldIndex) {
+            const data = scopes[index].scopes;
+            if (data && data.length === 1) {
+                nextProps.onChange(data[0].id);
+            }
+        }
     }
 
     render() {
         let data = [];
-        const {store: {scopes}, ...other} = this.props;
-        const index = indexById(scopes, this.props.versionId, 'versionId');
+        const {store: {scopes}, versionId, ...other} = this.props;
+        const index = indexById(scopes, versionId, 'versionId');
         if (index !== null && scopes[index].scopes) {
             data = scopes[index].scopes;
         }

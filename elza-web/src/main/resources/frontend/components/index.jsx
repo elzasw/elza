@@ -98,6 +98,7 @@ exports.BulkActionsTable = require('components/arr/BulkActionsTable.jsx');
 exports.FundTreeMain = require('components/arr/FundTreeMain.jsx');
 exports.FundTreeMovementsLeft = require('components/arr/FundTreeMovementsLeft.jsx');
 exports.FundTreeMovementsRight = require('components/arr/FundTreeMovementsRight.jsx');
+exports.FundTreeDaos = require('components/arr/FundTreeDaos.jsx');
 exports.AddNodeCross = require('components/arr/AddNodeCross.jsx');
 
 exports.PartyList = require('components/party/PartyList.jsx');

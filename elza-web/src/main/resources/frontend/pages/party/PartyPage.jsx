@@ -19,6 +19,8 @@ import {setFocus} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 
 import './PartyPage.less';
+import {regExtSystemListFetchIfNeeded} from 'actions/registry/regExtSystemList';
+
 
 const keyModifier = Utils.getKeyModifier();
 
@@ -55,10 +57,12 @@ class PartyPage extends AbstractReactComponent {
 
     componentDidMount() {
         this.dispatch(refPartyTypesFetchIfNeeded());         // načtení osob pro autory osoby
+        this.props.dispatch(regExtSystemListFetchIfNeeded());
     }
 
     componentWillReceiveProps(nextProps) {
         this.dispatch(refPartyTypesFetchIfNeeded());         // načtení osob pro autory osoby
+        this.props.dispatch(regExtSystemListFetchIfNeeded());
     }
 
     handleShortcuts = (action) => {
@@ -109,7 +113,9 @@ class PartyPage extends AbstractReactComponent {
     };
 
     handleExtImport = () => {
-        this.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={true}/>, "dialog-lg"));
+        this.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={true} onSubmitForm={(data) => {
+            this.dispatch(partyDetailFetchIfNeeded(data.id));
+        }} />, "dialog-lg"));
     };
 
     /**
@@ -127,7 +133,7 @@ class PartyPage extends AbstractReactComponent {
      * Sestavení Ribbon Menu - přidání položek pro osoby
      */ 
     buildRibbon = () => {
-        const {userDetail, partyDetail, refTables: {partyTypes}} = this.props;
+        const {userDetail, partyDetail, refTables: {partyTypes}, extSystems} = this.props;
 
         const isSelected = partyDetail.id !== null;
         const altActions = [];
@@ -141,10 +147,12 @@ class PartyPage extends AbstractReactComponent {
                 <Icon glyph='fa-download fa-fw' />
                 <div><span className="btnText">{i18n('ribbon.action.party.import')}</span></div>
             </Button>);
-            altActions.push(<Button key='import-ext-party' onClick={this.handleExtImport}>
-                <Icon glyph='fa-download fa-fw' />
-                <div><span className="btnText">{i18n('ribbon.action.party.importExt')}</span></div>
-            </Button>);
+            if (extSystems && extSystems.length > 0) {
+                altActions.push(<Button key='import-ext-party' onClick={this.handleExtImport}>
+                    <Icon glyph='fa-download fa-fw' />
+                    <div><span className="btnText">{i18n('ribbon.action.party.importExt')}</span></div>
+                </Button>);
+            }
         }
 
         const itemActions = [];
@@ -200,8 +208,10 @@ class PartyPage extends AbstractReactComponent {
 
 
 function mapStateToProps(state) {
-    const {app:{partyList, partyDetail}, splitter, refTables, userDetail} = state;
+    const {app:{partyList, partyDetail, regExtSystemList}, splitter, refTables, userDetail} = state;
+
     return {
+        extSystems: regExtSystemList.fetched ? regExtSystemList.data : null,
         partyList,
         partyDetail,
         splitter,

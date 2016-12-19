@@ -38,6 +38,17 @@ export function submitReduxForm(validate, values, dispatch) {
     })
 }
 
+export function submitForm(validate, values) {
+    return new Promise((resolve, reject) => {
+        var errors = validate(values, this.props)
+        if (Object.keys(errors).length > 0) {
+            reject(errors)
+        } else {
+            this.props.onSubmitForm(values).then(resolve).catch(reject)
+        }
+    })
+}
+
 export function submitReduxFormWithRemote(validate, values) {
     return new Promise((resolve, reject) => {
         const errors = validate(values, this.props);
@@ -62,8 +73,8 @@ export function submitReduxFormWithProp(validate, submitProp, values, dispatch) 
 }
 
 export function getBootstrapInputComponentInfo(props) {
-    var cls = 'form-group';
-    var feedbackIcon = '';
+    let cls = 'form-group';
+    let feedbackIcon = '';
     if (props.hasFeedback) {
         cls += ' has-feedback';
     }

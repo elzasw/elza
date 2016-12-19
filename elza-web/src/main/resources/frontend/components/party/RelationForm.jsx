@@ -104,7 +104,10 @@ class RelationForm extends AbstractReactComponent {
                         </div>
                     </div>
                     {relationType.useUnitdate !== USE_UNITDATE_ENUM.NONE && <div className="datation-group flex-1">
-                        {(relationType.useUnitdate === USE_UNITDATE_ENUM.INTERVAL || relationType.useUnitdate == USE_UNITDATE_ENUM.ONE) && <div>
+                        {(relationType.useUnitdate == USE_UNITDATE_ENUM.ONE) && <div>
+                            <DatationField fields={from} label={i18n('party.relation.date')} labelTextual={i18n('party.relation.date.textDate')} labelNote={i18n('party.relation.date.note')} />
+                        </div>}
+                        {(relationType.useUnitdate === USE_UNITDATE_ENUM.INTERVAL) && <div>
                             <DatationField fields={from} label={i18n('party.relation.from')} labelTextual={i18n('party.relation.from.textDate')} labelNote={i18n('party.relation.from.note')} />
                         </div>}
                         {relationType.useUnitdate === USE_UNITDATE_ENUM.INTERVAL && <div>

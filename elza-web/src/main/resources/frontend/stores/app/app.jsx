@@ -12,6 +12,7 @@ const initialState = {
     partyDetail: DetailReducer(),
     preparedDigitizationRequestList: SimpleListReducer(),   // seznam neodeslaných požadavků na digitalizaci - sdíleno pro celou aplikaci
     requestInQueueList: SimpleListReducer(),   // seznam požadavků ve frontě
+    regExtSystemList: DetailReducer(),   // seznam externích systémů
 };
 
 export default function app(state = initialState, action) {

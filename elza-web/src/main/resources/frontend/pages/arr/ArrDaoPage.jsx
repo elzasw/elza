@@ -11,7 +11,7 @@ import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {FundSettingsForm, Tabs, Icon, Search, Ribbon, i18n, FundTreeMovementsLeft, FundTreeMovementsRight, ArrFundPanel, ArrDaos} from 'components/index.jsx';
+import {FundSettingsForm, Tabs, Icon, Search, Ribbon, i18n, FundTreeMovementsLeft, FundTreeDaos, ArrFundPanel, ArrDaos} from 'components/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
 import {getNodeParents, getNodeParent} from 'components/arr/ArrUtils.jsx'
 import {moveNodesUnder, moveNodesBefore, moveNodesAfter} from 'actions/arr/nodes.jsx'
@@ -81,7 +81,7 @@ const ArrDaoPage = class ArrDaoPage extends ArrParentPage {
 
     getDestNode() {
         const fund = this.getActiveFund(this.props);
-        return fund.fundTreeMovementsRight.nodes[indexById(fund.fundTreeMovementsRight.nodes, fund.fundTreeMovementsRight.selectedId)];
+        return fund.fundTreeDaosRight.nodes[indexById(fund.fundTreeDaosRight.nodes, fund.fundTreeDaosRight.selectedId)];
     }
 
     getChildContext() {
@@ -141,9 +141,9 @@ const ArrDaoPage = class ArrDaoPage extends ArrParentPage {
             <Search key={'dao-search'}
                     placeholder={i18n('search.input.search')}
                     filterText={null}
-                    onChange={console.log("onChange")}
-                    onSearch={console.log("onSearch")}
-                    onClear={console.log("onClear")}
+                    onChange={() => console.log("onChange")}
+                    onSearch={() => console.log("onSearch")}
+                    onClear={() => console.log("onClear")}
             />
         )
     };
@@ -172,13 +172,17 @@ const ArrDaoPage = class ArrDaoPage extends ArrParentPage {
         )
     };
 
+    handleRightNodeSelect = (node) => {
+        this.setState({nodeRight: node});
+    };
+
     renderCenterPanel = (readMode, closed) => {
         const {userDetail} = this.props;
         const fund = this.getActiveFund(this.props);
 
-        let rightHasSelection = fund.fundTreeMovementsRight.selectedId != null;
+        let rightHasSelection = fund.fundTreeDaosRight.selectedId != null;
         let active = rightHasSelection && !readMode && !fund.closed;
-
+        let node = this.getDestNode();
         let classRight = "tree-right-container";
         if (!rightHasSelection) {
             classRight += " daos-hide";
@@ -219,6 +223,8 @@ const ArrDaoPage = class ArrDaoPage extends ArrParentPage {
                 break;
         }
 
+        console.log(this.state);
+
         return (
             <div className="daos-content-container">
                 <div key={1} className='tree-left-container'>
@@ -238,13 +244,14 @@ const ArrDaoPage = class ArrDaoPage extends ArrParentPage {
                 </div>
                 <div key={3} className={classRight}>
 
-                    <FundTreeMovementsRight
+                    <FundTreeDaos
                         fund={fund}
                         versionId={fund.versionId}
-                        {...fund.fundTreeMovementsRight}
+                        area={types.FUND_TREE_AREA_DAOS_RIGHT}
+                        {...fund.fundTreeDaosRight}
                     />
 
-                    {rightHasSelection && <ArrDaos />}
+                    {rightHasSelection && <ArrDaos node={node} versionId={fund.versionId} />}
                 </div>
             </div>
         )
