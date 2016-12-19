@@ -1300,7 +1300,7 @@ public class XmlImportService {
         boolean isNew = false;
         boolean update = false;
 
-        RegRecord regRecord = findExistingRecord(record.getRecordId(), uuid, externalId, externalSourceCode);
+        RegRecord regRecord = findExistingRecord(record.getRecordId(), uuid, externalId, externalSystemCode, regScope);
 
         if (regRecord == null) { // nebyl nalezen podle uuid nebo externalId a externalSourceCode nebo nejsou vyplněné
             if (stopOnError) {
