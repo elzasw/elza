@@ -444,8 +444,7 @@ public class PartyService {
 
             ParPartyNameFormType nameFormType = null;
             ParPartyNameFormType partyNameFormType = newPartyName.getNameFormType();
-            if (partyNameFormType != null) {
-                Assert.notNull(partyNameFormType.getNameFormTypeId());
+            if (partyNameFormType != null && partyNameFormType.getNameFormTypeId() != null) {
                 nameFormType = partyNameFormTypeRepository.findOne(partyNameFormType.getNameFormTypeId());
             }
 
