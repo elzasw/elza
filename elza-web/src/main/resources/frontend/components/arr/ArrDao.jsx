@@ -2,7 +2,7 @@ require ('./ArrDao.less');
 
 import React from "react";
 import {connect} from "react-redux";
-import {Icon, AbstractReactComponent, i18n} from "components/index.jsx";
+import {Icon, AbstractReactComponent, i18n, ListBox} from "components/index.jsx";
 import {indexById} from "stores/app/utils.jsx";
 import {Button} from "react-bootstrap";
 import {dateToString} from "components/Utils.jsx";
@@ -16,36 +16,60 @@ var ArrDao = class ArrDao extends AbstractReactComponent {
 
     constructor(props) {
         super(props);
+        this.state = {
+            activeIndex: null
+        };
     }
 
-    renderItem = (item) => {
-        return <div key={"dao" + item} className="item">Soubor {item + 1}</div>
+    renderFile = (item) => {
+        return <div key={"dao" + item.id} className="item">{item.code}</div>
+    };
+
+    handleSelect = (item, index) => {
+        this.setState({activeIndex: index});
+    };
+
+    renderFileDetail = (item) => {
+        return <div className="dao-files-detail">
+            {item.code}<br />
+            {item.code}<br />
+        </div>
     };
 
     render() {
+        const {dao} = this.props;
+        const {activeIndex} = this.state;
+
+        if (dao == null) {
+            return (<div>...</div>)
+        }
+
+        let items = [];
+
+        if (dao.fileList) {
+            dao.fileList.forEach((item) => items.push(item));
+        }
+
         return (
                 <div className="dao-container">
                     <div className="dao-detail">
-                        <div className="title"><i>Digitalizát</i>: Název 1</div>
+                        <div className="title"><i>Digitalizát</i>: {dao.label}</div>
                         <div className="info">
-                            asdasdf<br />
-                            asdasdf<br />
-                            asdasdf<br />
-                            asdasdf<br />asdasdf<br />
-                            asdasdf<br />
-                            asdasdf<br />
+                            <span>ID: {dao.code}</span><br />
+                            {dao.url && <span>Url: <a target="_blank" href={dao.url}>{dao.url}</a></span>}
                         </div>
                     </div>
                     <div className="dao-files">
-                        <div className="dao-files-list">
-                            {Array.apply(null, {length: 20}).map(Number.call, Number).map((item) => this.renderItem(item))}
-                        </div>
-                        <div className="dao-files-detail">
-                            MIME: jpeg<br />
-                            rozlišení: 1920x1080 px<br />
-                            velikost: 3 MB<br />
-                            link: /test/xxx.jpg<br />
-                        </div>
+                        <ListBox
+                            className='dao-files-list'
+                            ref='dao-files-list'
+                            items={items}
+                            activeIndex={activeIndex}
+                            renderItemContent={this.renderFile}
+                            onFocus={this.handleSelect}
+                            onSelect={this.handleSelect}
+                        />
+                        {activeIndex != null && this.renderFileDetail(items[activeIndex])}
                     </div>
                 </div>
         );

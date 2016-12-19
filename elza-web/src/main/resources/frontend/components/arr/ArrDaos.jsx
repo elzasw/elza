@@ -9,6 +9,8 @@ import {dateToString} from "components/Utils.jsx";
 import {userDetailsSaveSettings} from "actions/user/userDetail.jsx";
 import {fundChangeReadMode} from "actions/arr/fund.jsx";
 import {setSettings, getOneSettings} from "components/arr/ArrUtils.jsx";
+import {LazyListBox} from 'components/index.jsx';
+import {WebApi} from 'actions/index.jsx';
 
 var classNames = require('classnames');
 
@@ -16,23 +18,77 @@ var ArrDaos = class ArrDaos extends AbstractReactComponent {
 
     constructor(props) {
         super(props);
+
+        this.state = {
+            node: props.node,
+            selectedItem: null,
+            selectedIndex: null,
+            activeIndex: null,
+        }
     }
 
+    componentWillReceiveProps(nextProps) {
+        this.setState({
+            node: nextProps.node,
+            selectedItem: null,
+            selectedIndex: null,
+            activeIndex: null,
+        }, this.refreshRows);
+    }
+
+    refreshRows = () => {
+        if (this.refs.listbox) {
+            this.refs.listbox.reload();
+        }
+    };
+
     renderItem = (item) => {
-        return <div key={"daos" + item} className="item">Název {item + 1}<br /><i><small>5a0e5e5f-21c4-4767-a2e7-2be4ee61b05e</small></i></div>
+        return <div key={"daos" + item.id} className="item">{item.label}<br /><i><small>{item.code}</small></i></div>
+    };
+
+    getItems = (fromIndex, toIndex) => {
+        const {versionId} = this.props;
+        const {node} = this.state;
+
+        return WebApi.getFundNodeDaos(versionId, node.id, true)
+            .then(json => {
+                return {
+                    items: json,
+                    count: json.length,
+                };
+            })
+    };
+
+    handleSelect = (item) => {
+        this.setState({selectedItem: item});
     };
 
     render() {
+        const {selectedItem, selectedIndex, activeIndex, node} = this.state;
+
+        if (node == null) {
+            return (<div></div>);
+        }
+
         return (
             <div className="daos-container">
                 <div className="daos-list">
                     <div className="title">Digitální entity</div>
                     <div className="daos-list-items">
-                        {Array.apply(null, {length: 50}).map(Number.call, Number).map((item) => this.renderItem(item))}
+                        <LazyListBox
+                            ref="listbox"
+                            className="data-container"
+                            selectedIndex={selectedIndex}
+                            activeIndex={activeIndex}
+                            getItems={this.getItems}
+                            itemHeight={43} // nutne dat stejne cislo i do css jako .pokusny-listbox-container .listbox-item { height: 24px; }
+                            renderItemContent={this.renderItem}
+                            onSelect={this.handleSelect}
+                        />
                     </div>
                 </div>
                 <div className="daos-detail">
-                    <ArrDao />
+                    <ArrDao dao={selectedItem} />
                 </div>
             </div>
         );
