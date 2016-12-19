@@ -4,6 +4,8 @@ import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaoLinkRequest;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrDigitizationRequestNode;
@@ -13,6 +15,7 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.repository.DaoLinkRequestRepository;
 import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
 import cz.tacr.elza.repository.DigitizationRequestRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
@@ -32,6 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+
+import static cz.tacr.elza.api.ArrDaoLinkRequest.*;
 
 /**
  * Servisní třída pro obsluhu a správu požadavků
@@ -56,6 +61,9 @@ public class RequestService {
 
     @Autowired
     private RequestQueueItemRepository requestQueueItemRepository;
+
+    @Autowired
+    private DaoLinkRequestRepository daoLinkRequestRepository;
 
     @Autowired
     private ArrangementService arrangementService;
@@ -105,6 +113,22 @@ public class RequestService {
         sendNotification(fundVersion, digitizationRequest, EventType.REQUEST_CREATE, nodes);
 
         return digitizationRequest;
+    }
+
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public ArrDaoLinkRequest createDaoRequest(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion,
+                                              ArrDao dao, ArrChange change, final Type type, ArrNode node) {
+        // review Lebeda - je to tak dobře???
+        final ArrDaoLinkRequest request = new ArrDaoLinkRequest();
+        request.setCreateChange(change);
+        request.setDao(dao);
+        request.setType(type);
+        request.setCode(generateCode());
+        request.setState(ArrRequest.State.OPEN);
+        request.setDidCode(node.getUuid());
+        request.setDigitalRepository(dao.getDaoPackage().getDigitalRepository());
+        request.setFund(fundVersion.getFund());
+        return daoLinkRequestRepository.save(request);
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})

@@ -2,9 +2,11 @@ package cz.tacr.elza.service;
 
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.api.ArrDaoLinkRequest.Type;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrDaoLinkRequest;
 import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
@@ -37,6 +39,12 @@ import java.util.List;
 public class DaoService {
 
     private Log logger = LogFactory.getLog(this.getClass());
+
+    @Autowired
+    private RequestQueueService requestQueueService;
+
+    @Autowired
+    private RequestService requestService;
 
     @Autowired
     private DaoRepository daoRepository;
@@ -93,6 +101,15 @@ public class DaoService {
 
             logger.debug("Založeno nové propojení mezi DAO(ID=" + dao.getDaoId() + ") a node(ID=" + node.getNodeId() + ").");
             resultDaoLink = daoLinkRepository.save(daoLink);
+
+            // poslat i websockety o připojení
+            EventId event = EventFactory.createIdEvent(EventType.DAO_LINK_CREATE, fundVersion.getFundVersionId());
+            eventNotificationService.publishEvent(event);
+
+            // vytvořit požadavek pro externí systém na připojení
+            final ArrDaoLinkRequest request = requestService.createDaoRequest(fundVersion, dao, createChange, Type.LINK, node);
+            requestQueueService.sendRequest(request, fundVersion);
+
         } else if (daoLinkList.size() == 1) {
             logger.debug("Nalezeno existující platné propojení mezi DAO(ID=" + dao.getDaoId() + ") a node(ID=" + node.getNodeId() + ").");
             resultDaoLink = daoLinkList.get(0); // vrací jediný prvek
@@ -101,15 +118,10 @@ public class DaoService {
             throw new BusinessException(ArrangementCode.ALREADY_ADDED);
         }
 
-        // poslat i websockety o připojení
-        EventId event = EventFactory.createIdEvent(EventType.DAO_LINK_CREATE, fundVersion.getFundVersionId());
-        eventNotificationService.publishEvent(event);
-
-        // TODO Lebeda - vytvořit požadavek pro externí systém na připojení
-
-
         return resultDaoLink;
     }
+
+
 
     /**
      * Vytvoří změnu o zrušení vazby a nastaví ji na arrDaoLink.
@@ -136,7 +148,9 @@ public class DaoService {
         EventId event = EventFactory.createIdEvent(EventType.DAO_LINK_DELETE, fundVersion.getFundVersionId());
         eventNotificationService.publishEvent(event);
 
-        // TODO Lebeda - vytvořit požadavek pro externí systém na odpojení
+        // vytvořit požadavek pro externí systém na odpojení
+        final ArrDaoLinkRequest request = requestService.createDaoRequest(fundVersion, daoLink.getDao(), deleteChange, Type.LINK, daoLink.getNode());
+        requestQueueService.sendRequest(request, fundVersion);
 
 
         return resultDaoLink;
