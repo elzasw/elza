@@ -66,7 +66,16 @@ const DescItemTypeSpec = class DescItemTypeSpec extends AbstractReactComponent {
                 }
             });
         } else {    // plochý seznam
-            result = infoType.specs.map(spec => ( {...refType.descItemSpecsMap[spec.id], ...spec} ));
+            result = [];
+            infoType.specs.forEach(spec => {
+                const refSpec = refType.descItemSpecsMap[spec.id];
+                if (!lowerFilterText || (lowerFilterText && refSpec.name.toLocaleLowerCase().indexOf(lowerFilterText) >= 0)) { // vypnutý filtr nebo položka vyhovuje filtru
+                    result.push({
+                        ...refSpec, ...spec
+                    });
+                }
+            });
+            // result = infoType.specs.map(spec => ( {...refType.descItemSpecsMap[spec.id], ...spec} ));
         }
 
         // Oblíbené položky
@@ -211,7 +220,12 @@ const DescItemTypeSpec = class DescItemTypeSpec extends AbstractReactComponent {
                 onSearchChange: this.handleSearchChange,
             }
         } else {    // list
-            autocompleteAdditionalProps = {};
+            autocompleteAdditionalProps = {
+                customFilter: true,
+                allowSelectItem: (id, item) => !item.group,
+                allowFocusItem: (id, item) => !item.group,
+                onSearchChange: this.handleSearchChange,
+            };
         }
 
         // Pomocný kód pro testování rychlých změn na klientovi
