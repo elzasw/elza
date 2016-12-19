@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {reduxForm} from 'redux-form'
-import {Form, Button, FormControl, Table, Modal} from 'react-bootstrap'
+import {Form, Button, FormControl, Table, Modal, OverlayTrigger, Tooltip} from 'react-bootstrap'
 import {AbstractReactComponent, FormInput, i18n, Icon, Loading} from '../index.jsx';
 import objectById from '../../shared/utils/objectById'
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx';
@@ -295,8 +295,10 @@ class ExtImportForm extends AbstractReactComponent {
                                             <tbody>
                                                 {results.map(i => <tr className={record && record.recordId == i.recordId ? "active" : null} onClick={() => interpiRecordId.onChange(i.recordId)}>
                                                     <td>{i.recordId}</td>
-                                                    <td>{i.name} {i.pairedRecords && i.pairedRecords.length > 0 ? i.pairedRecords.map((i,index) => (index != 0 ? ', ' : '') + i.scope.name ) : null}</td>
-                                                    <td>{i.pairedRecords && i.pairedRecords.length > 0 ? <Icon glyph="fa-check" /> : null}</td>
+                                                    <td>{i.name}</td>
+                                                    <td>{i.pairedRecords && i.pairedRecords.length > 0 ? <OverlayTrigger overlay={<Tooltip id='tt'>{i.pairedRecords.map((x,index) => (index != 0 ? ', ' : '') + x.scope.name)}</Tooltip>} placement="top">
+                                                        <Icon glyph="fa-check" />
+                                                    </OverlayTrigger> : null}</td>
                                                 </tr>)}
                                             </tbody>
                                         </Table>
