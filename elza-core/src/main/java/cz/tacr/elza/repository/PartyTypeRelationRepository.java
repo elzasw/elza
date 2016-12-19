@@ -1,10 +1,12 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ParRelationType;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ParPartyTypeRelation;
+import cz.tacr.elza.domain.ParRelationType;
 
 
 /**
@@ -17,4 +19,6 @@ import cz.tacr.elza.domain.ParPartyTypeRelation;
 public interface PartyTypeRelationRepository extends JpaRepository<ParPartyTypeRelation, Integer>, Packaging<ParPartyTypeRelation> {
 
     void deleteByRelationType(ParRelationType parRelationType);
+
+    List<ParPartyTypeRelation> findAllByOrderByViewOrder();
 }
