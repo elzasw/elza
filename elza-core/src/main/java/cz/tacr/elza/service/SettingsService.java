@@ -25,8 +25,6 @@ public class SettingsService {
 
     @Autowired
     private SettingsRepository settingsRepository;
-    @Autowired
-    private UserService userService;
 
     /**
      * Načte nastavení podle uživatele.
@@ -90,6 +88,6 @@ public class SettingsService {
      */
     public List<UISettings> getGlobalSettings(final UISettings.SettingsType settingsType,
                                               final UISettings.EntityType entityType) {
-        return settingsRepository.findByUserAndSettingsTypeAndEntityType(userService.getLoggedUser(), settingsType, entityType);
+        return settingsRepository.findByUserAndSettingsTypeAndEntityType(null, settingsType, entityType);
     }
 }
