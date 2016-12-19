@@ -6,14 +6,16 @@ import {Form, Button, FormControl, Table, Modal} from 'react-bootstrap'
 import {AbstractReactComponent, FormInput, i18n, Icon, Loading} from '../index.jsx';
 import objectById from '../../shared/utils/objectById'
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx';
-import {submitReduxForm} from 'components/form/FormUtils.jsx'
+import {submitForm} from 'components/form/FormUtils.jsx'
 import {WebApi} from 'actions'
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
 import {registrySelect} from 'actions/registry/registryRegionList.jsx'
+import {registryRegionDataSelectRecord} from 'actions/registry/registryRegionData.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import Scope from '../../components/shared/scope/Scope';
+import {regExtSystemListFetchIfNeeded} from 'actions/registry/regExtSystemList';
 
 
 const EXT_SYSTEM_CODE_INTERPI = 'INTERPI';
@@ -41,8 +43,8 @@ const ATTRIBUTE_TYPES = [
 class ExtImportSearch extends AbstractReactComponent {
     state = {extSystems: null};
 
-    validate = (values) => {
-        const {extSystems} = this.state
+    validate = (values, props) => {
+        const {extSystems} = props;
         let errors = {};
 
         if (!values.systemId) {
@@ -82,28 +84,31 @@ class ExtImportSearch extends AbstractReactComponent {
             }
         }
 
+        if (!values.conditions || values.conditions.length < 1) {
+            errors._error = i18n('extImport.validation.missingConditions')
+        }
+
 
         return errors;
     };
 
     componentDidMount() {
-        WebApi.getRegExternalSystems().then((data) => {
-            if (data && data.length === 1) {
-                this.props.fields.systemId.onChange(data[0].id);
-            }
-            this.setState({extSystems: data})
-        })
+        this.props.dispatch(regExtSystemListFetchIfNeeded());
+        if (this.props.extSystems !== null && this.props.extSystems.length === 1) {
+            this.props.fields.systemId.onChange(this.props.extSystems[0].id);
+        }
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.props.dispatch(regExtSystemListFetchIfNeeded());
+        if (this.props.extSystems === null && nextProps.extSystems !== null && nextProps.extSystems.length === 1) {
+            this.props.fields.systemId.onChange(nextProps.extSystems[0].id);
+        }
     }
 
     renderParam = (fields, index, self) => {
-        const {condition, value, attType} = fields;
+        const {value, attType} = fields;
         return <div className="flex" key={index}>
-            {/*index !== 0 && <div className="flex-1">
-                <FormInput componentClass="select" {...condition} label={i18n('extImport.condition')}>
-                    <option key="null" />
-                    {CONDITIONS.map((i,x) => <option key={x} value={i.val}>{i.name}</option>)}
-                </FormInput>
-            </div>*/}
             <div className="flex-1">
                 <FormInput componentClass="select" {...attType} label={i18n('extImport.attType')}>
                     <option key="null" />
@@ -118,8 +123,7 @@ class ExtImportSearch extends AbstractReactComponent {
     };
 
     render() {
-        const {fields: {systemId, conditions}, handleSubmit, submitting} = this.props;
-        const {extSystems} = this.state;
+        const {fields: {systemId, conditions}, handleSubmit, submitting, error, extSystems} = this.props;
 
         if (!extSystems) {
             return <Loading />
@@ -128,9 +132,10 @@ class ExtImportSearch extends AbstractReactComponent {
         if (systemId.value != null) {
             system = objectById(extSystems, systemId.value);
         }
-        const submit = submitReduxForm.bind(this, this.validate);
+        const submit = submitForm.bind(this, this.validate);
 
         return <Form onSubmit={handleSubmit(submit)}>
+            {error && <p className="text-danger">{error}</p>}
             <FormInput componentClass="select" label={i18n('extImport.source')} {...systemId}>
                 <option key="null" />
                 {extSystems.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
@@ -154,6 +159,7 @@ const ExtImportSearchComponent = reduxForm({
     fields: ['systemId', 'conditions[].condition', 'conditions[].value', 'conditions[].attType'],
     form: 'extImportSearch'
 }, (state, props) => ({
+    extSystems: state.app.regExtSystemList.fetched ? state.app.regExtSystemList.data : null,
     initialValues: {params:[{condition:null, value:props.firstValue || null, attType: null}]}
 }))(ExtImportSearch);
 
@@ -179,7 +185,8 @@ class ExtImportForm extends AbstractReactComponent {
     };
 
     submit = (data) => {
-        const {results, systemId, isParty} = this.state;
+        const {results, systemId} = this.state;
+        const {isParty} = this.props;
         const record = objectById(results, data.interpiRecordId, 'recordId');
 
         let update = false;
@@ -187,7 +194,7 @@ class ExtImportForm extends AbstractReactComponent {
 
         if (record.pairedRecords) {
             for (let pairedRec of record.pairedRecords) {
-                if (pairedRec.scope.scopeId == data.scopeId) {
+                if (pairedRec.scope.id == data.scopeId) {
                     update = true;
                     recordId = pairedRec.recordId;
                     break;
@@ -202,10 +209,21 @@ class ExtImportForm extends AbstractReactComponent {
         promise.then(e => {
             this.dispatch(modalDialogHide());
             this.dispatch(addToastrSuccess(i18n("extImport.done.title"), i18n(update ? "extImport.done.messageImport" : "extImport.done.messageUpdate")));
-        })
+            this.props.onSubmitForm && this.props.onSubmitForm(e);
+        });
 
         return promise;
     };
+
+    componentWillReceiveProps(nextProps) {
+        if (this.props.fields.interpiRecordId.value !== nextProps.fields.interpiRecordId.value && nextProps.fields.interpiRecordId.value) {
+            const {results} = this.state;
+            const record = objectById(results, nextProps.fields.interpiRecordId.value, 'recordId');
+            if (record && record.pairedRecords.length === 1) {
+                this.props.fields.scopeId.onChange(record.pairedRecords[0].scope.id);
+            }
+        }
+    }
 
     submitSearch = (data) => {
         const {isParty, count} = this.props;
@@ -222,14 +240,14 @@ class ExtImportForm extends AbstractReactComponent {
             this.dispatch(modalDialogHide());
             this.dispatch(routerNavigate('party'));
         } else {
-            this.dispatch(partyDetailFetchIfNeeded(detailId));
+            this.dispatch(registryRegionDataSelectRecord({selectedId: detailId}));
             this.dispatch(modalDialogHide());
             this.dispatch(routerNavigate('registry'));
         }
     };
 
     render() {
-        const {searched, results, scopes} = this.state;
+        const {searched, results} = this.state;
         const {autocomplete, onClose, fields:{scopeId, interpiRecordId}, handleSubmit, submitting, versionId} = this.props;
 
         let record = null;
@@ -271,14 +289,14 @@ class ExtImportForm extends AbstractReactComponent {
                                              <tr>
                                                 <th>{i18n('extImport.id')}</th>
                                                 <th>{i18n('extImport.record')}</th>
-                                                <th>{i18n('extImport.scopeId')}</th>
+                                                <th>{i18n('extImport.alreadyImported')}</th>
                                             </tr>
                                             </thead>
                                             <tbody>
                                                 {results.map(i => <tr className={record && record.recordId == i.recordId ? "active" : null} onClick={() => interpiRecordId.onChange(i.recordId)}>
                                                     <td>{i.recordId}</td>
-                                                    <td>{i.name}</td>
-                                                    <td>{i.pairedRecords && i.pairedRecords.length > 0 ? i.pairedRecords.map((i,index) => (index != 0 ? ', ' : '') + i.scope.name ) : '-'}</td>
+                                                    <td>{i.name} {i.pairedRecords && i.pairedRecords.length > 0 ? i.pairedRecords.map((i,index) => (index != 0 ? ', ' : '') + i.scope.name ) : null}</td>
+                                                    <td>{i.pairedRecords && i.pairedRecords.length > 0 ? <Icon glyph="fa-check" /> : null}</td>
                                                 </tr>)}
                                             </tbody>
                                         </Table>
@@ -287,7 +305,7 @@ class ExtImportForm extends AbstractReactComponent {
                                 <div className="flex-1">
                                     <label>{i18n('extImport.resultDetail')}</label>
                                     <div>
-                                        <FormControl componentClass="textarea" rows="10" disabled={true} value={record ? record.detail : ''} style={{height: '272px'}} />
+                                        <FormControl componentClass="textarea" rows="10" value={record ? record.detail : ''} style={{height: '272px'}} />
                                     </div>
                                 </div>
                             </div>
