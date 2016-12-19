@@ -1,5 +1,34 @@
 package cz.tacr.elza.controller.config;
 
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.config.ConfigRules;
@@ -150,33 +179,6 @@ import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.SettingsService;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import javax.annotation.Nullable;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 
 /**
@@ -1793,6 +1795,7 @@ public class ClientFactoryVO {
                 ParRelationTypeVO.class);
 
         if (partyTypeRelation != null && StringUtils.isNotBlank(partyTypeRelation.getName())) {
+            parRelationTypeVO = mapperFactory.getMapperFacade().map(relationType,  ParRelationTypeVO.class); // snad to nebude dělat neplechu když budou různá VO se stejným id
             parRelationTypeVO.setName(partyTypeRelation.getName());
         }
         return parRelationTypeVO;
@@ -1814,7 +1817,7 @@ public class ClientFactoryVO {
         return mapper.mapAsList(entity, clazz);
     }
 
-    public List<ArrRequestVO> createRequest(final Collection<ArrRequest> requests, boolean detail, final ArrFundVersion fundVersion) {
+    public List<ArrRequestVO> createRequest(final Collection<ArrRequest> requests, final boolean detail, final ArrFundVersion fundVersion) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         List<ArrRequestVO> requestVOList = new ArrayList<>(requests.size());
         Set<ArrDigitizationRequest> requestForNodes = new HashSet<>();
@@ -1847,7 +1850,7 @@ public class ClientFactoryVO {
         return requestVOList;
     }
 
-    public ArrRequestVO createRequest(final ArrRequest request, boolean detail, final ArrFundVersion fundVersion) {
+    public ArrRequestVO createRequest(final ArrRequest request, final boolean detail, final ArrFundVersion fundVersion) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         Set<ArrDigitizationRequest> requestForNodes = new HashSet<>();
         ArrRequestQueueItem requestQueueItem = requestQueueItemRepository.findByRequest(request);
@@ -2051,7 +2054,7 @@ public class ClientFactoryVO {
      * @param detail příznak, zda se mají naplnit seznamy na VO, pokud ne, jsou naplněny pouze počty podřízených záznamů v DB
      * @return list VO
      */
-    public List<ArrDaoVO> createDaoList(List<ArrDao> arrDaoList, boolean detail) {
+    public List<ArrDaoVO> createDaoList(final List<ArrDao> arrDaoList, final boolean detail) {
         List<ArrDaoVO> voList = new ArrayList<>();
         for (ArrDao arrDao : arrDaoList) {
             voList.add(createDao(arrDao, detail));
@@ -2066,7 +2069,7 @@ public class ClientFactoryVO {
      * @param detail příznak, zda se mají naplnit seznamy na VO, pokud ne, jsou naplněny pouze počty podřízených záznamů v DB
      * @return vo
      */
-    private ArrDaoVO createDao(ArrDao arrDao, boolean detail) {
+    private ArrDaoVO createDao(final ArrDao arrDao, final boolean detail) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrDaoVO vo = mapper.map(arrDao, ArrDaoVO.class);
 
@@ -2101,7 +2104,7 @@ public class ClientFactoryVO {
         return vo;
     }
 
-    public ArrayList<ArrDaoPackageVO> createDaoPackageList(List<ArrDaoPackage> arrDaoList, Boolean unassigned) {
+    public ArrayList<ArrDaoPackageVO> createDaoPackageList(final List<ArrDaoPackage> arrDaoList, final Boolean unassigned) {
         ArrayList<ArrDaoPackageVO> result = new ArrayList<>();
 
         for (ArrDaoPackage arrDaoPackage : arrDaoList) {
@@ -2112,7 +2115,7 @@ public class ClientFactoryVO {
         return result;
     }
 
-    private ArrDaoPackageVO createDaoPackage(Boolean unassigned, ArrDaoPackage arrDaoPackage) {
+    private ArrDaoPackageVO createDaoPackage(final Boolean unassigned, final ArrDaoPackage arrDaoPackage) {
         ArrDaoPackageVO vo = new ArrDaoPackageVO();
         vo.setId(arrDaoPackage.getDaoPackageId());
         vo.setCode(arrDaoPackage.getCode());
