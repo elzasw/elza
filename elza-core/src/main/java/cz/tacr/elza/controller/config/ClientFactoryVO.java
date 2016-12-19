@@ -1749,6 +1749,7 @@ public class ClientFactoryVO {
                 ParRelationTypeVO.class);
 
         if (partyTypeRelation != null && StringUtils.isNotBlank(partyTypeRelation.getName())) {
+            parRelationTypeVO = mapperFactory.getMapperFacade().map(relationType,  ParRelationTypeVO.class); // snad to nebude dělat neplechu když budou různá VO se stejným id
             parRelationTypeVO.setName(partyTypeRelation.getName());
         }
         return parRelationTypeVO;
