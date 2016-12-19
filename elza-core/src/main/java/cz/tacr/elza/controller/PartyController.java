@@ -366,7 +366,7 @@ public class PartyController {
 
         //načtení ParRelationTypeVO
         Map<Integer, ParRelationTypeVO> relationTypeVoMap = new HashMap<>();
-        for (ParPartyTypeRelation partyTypeRelation : partyTypeRelationRepository.findAllByOrderByViewOrder()) {
+        for (ParPartyTypeRelation partyTypeRelation : partyTypeRelationRepository.findAllByOrderByPartyTypeAscViewOrderAsc()) {
             ParPartyType partyType = partyTypeRelation.getPartyType();
             ParPartyTypeVO partyTypeVO = factoryVo
                     .getOrCreateVo(partyType.getPartyTypeId(), partyType, partyTypeVoMap, ParPartyTypeVO.class);

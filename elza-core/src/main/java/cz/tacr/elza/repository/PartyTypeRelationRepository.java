@@ -20,5 +20,5 @@ public interface PartyTypeRelationRepository extends JpaRepository<ParPartyTypeR
 
     void deleteByRelationType(ParRelationType parRelationType);
 
-    List<ParPartyTypeRelation> findAllByOrderByViewOrder();
+    List<ParPartyTypeRelation> findAllByOrderByPartyTypeAscViewOrderAsc();
 }
