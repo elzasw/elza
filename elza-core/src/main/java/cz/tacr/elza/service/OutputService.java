@@ -742,11 +742,13 @@ public class OutputService {
         List<ArrBulkActionRun> bulkActionRunList = bulkActionService.findBulkActionsByNodes(fundVersion, newNodes);
         List<RulActionRecommended> actionRecommendeds = actionRecommendedRepository.findByOutputType(outputDefinition.getOutputType());
 
+        ArrChangeLazy changeLazy = () -> change;
+
         for (ArrBulkActionRun bulkActionRun : bulkActionRunList) {
             RulAction action = bulkActionService.getBulkActionByCode(bulkActionRun.getBulkActionCode());
             for (RulActionRecommended actionRecommended : actionRecommendeds) {
                 if (actionRecommended.getAction().equals(action)) {
-                    storeResultInternal(bulkActionRun.getResult(), fundVersion, newNodes, change, itemType);
+                    storeResultInternal(bulkActionRun.getResult(), fundVersion, newNodes, changeLazy, itemType);
                 }
             }
         }
@@ -1496,14 +1498,24 @@ public class OutputService {
      *
      * @param bulkActionRun hromadná akce
      * @param nodes         seznam uzlů
-     * @param change        změna překlopení
      * @param itemType      typ atributu
      */
     @Transactional
     public void storeResultBulkAction(final ArrBulkActionRun bulkActionRun,
                                       final Set<ArrNode> nodes,
-                                      final ArrChange change,
                                       @Nullable final RulItemType itemType) {
+        ArrChangeLazy change = new ArrChangeLazy() {
+            private ArrChange change = null;
+
+            @Override
+            public ArrChange getOrCreateChange() {
+                if (change == null) {
+                    change = arrangementService.createChange(ArrChange.Type.UPDATE_OUTPUT);
+                }
+                return change;
+            }
+        };
+
         List<RulItemType> itemTypes = storeResultInternal(bulkActionRun.getResult(), bulkActionRun.getFundVersion(), nodes, change, itemType);
 
         RulAction action = bulkActionService.getBulkActionByCode(bulkActionRun.getBulkActionCode());
@@ -1540,7 +1552,7 @@ public class OutputService {
     public List<RulItemType> storeResultInternal(final Result result,
                             final ArrFundVersion fundVersion,
                             final Set<ArrNode> nodes,
-                            final ArrChange change,
+                            final ArrChangeLazy change,
                             @Nullable final RulItemType itemType) {
         if (nodes.size() == 0) {
             return Collections.emptyList();
@@ -1607,7 +1619,7 @@ public class OutputService {
     private RulItemType storeActionResult(final ArrOutputDefinition outputDefinition,
                                    final ActionResult actionResult,
                                    final ArrFundVersion fundVersion,
-                                   final ArrChange change,
+                                   final ArrChangeLazy change,
                                    @Nullable final RulItemType itemType,
                                    @Nullable final Set<RulItemType> itemTypesIgnored) {
         RulItemType type;
@@ -1696,9 +1708,9 @@ public class OutputService {
                                 final List<ArrItemData> dataItems,
                                 final ArrOutputDefinition outputDefinition,
                                 final ArrFundVersion fundVersion,
-                                final ArrChange change) {
+                                final ArrChangeLazy change) {
         if (isDataChanged(type, dataItems, outputDefinition)) {
-            deleteOutputItemsByType(fundVersion, outputDefinition, type, change);
+            deleteOutputItemsByType(fundVersion, outputDefinition, type, change.getOrCreateChange());
 
             // donačte entity, které jsou reprezentované v JSON pouze s ID (odkazové)
             itemService.refItemsLoader(dataItems);
@@ -1707,7 +1719,7 @@ public class OutputService {
                 ArrOutputItem outputItem = new ArrOutputItem(dataItem);
                 outputItem.setItemType(type);
                 outputItem.setItemSpec(dataItem.getSpec());
-                createOutputItem(outputItem, outputDefinition, fundVersion, change);
+                createOutputItem(outputItem, outputDefinition, fundVersion, change.getOrCreateChange());
             }
         }
     }

@@ -1,6 +1,7 @@
-<settings>
-    <fund-views code="ZP2015">
-        <default>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<settings xmlns:ns2="fund-views" xmlns:ns3="type-groups">
+    <fund-views settings-type="FUND_VIEW" entity-type="RULE" entity-id="1" code="ZP2015">
+        <ns2:default>
             <title>&lt;Není nastaveno&gt;</title>
             <tree>ZP2015_NAD ZP2015_TITLE ZP2015_UNIT_DATE</tree>
             <accordion-left>ZP2015_NAD ZP2015_TITLE ZP2015_UNIT_DATE</accordion-left>
@@ -37,60 +38,60 @@
                     <separator-other>|</separator-other>
                 </hierarchy-item>
             </hierarchy-level>
-        </default>
+        </ns2:default>
     </fund-views>
-    <type-groups code="ZP2015">
-        <default>
+    <type-groups settings-type="TYPE_GROUPS" entity-type="RULE" entity-id="1" code="ZP2015">
+        <ns3:default>
             <group code="GROUP0">
                 <name>Pořádání</name>
-                <type code="ZP2015_ARRANGEMENT_TYPE" width="2" />
+                <type code="ZP2015_ARRANGEMENT_TYPE" width="2"/>
             </group>
             <group code="GROUP1">
                 <name>Typ jednotky</name>
-                <type code="ZP2015_LEVEL_TYPE" width="1" />
-                <type code="ZP2015_NAD" width="1" />
-                <type code="ZP2015_FOLDER_TYPE" width="1" />
-                <type code="ZP2015_UNIT_TYPE" width="1" />
-                <type code="ZP2015_UNIT_COUNT" width="1" />
-                <type code="ZP2015_STORAGE_ID" width="1" />
-                <type code="ZP2015_EXTRA_UNITS" width="1" />
-                <type code="ZP2015_UNIT_EXT_TYPE" width="1" />
+                <type code="ZP2015_LEVEL_TYPE" width="1"/>
+                <type code="ZP2015_NAD" width="1"/>
+                <type code="ZP2015_FOLDER_TYPE" width="1"/>
+                <type code="ZP2015_UNIT_TYPE" width="1"/>
+                <type code="ZP2015_UNIT_COUNT" width="1"/>
+                <type code="ZP2015_STORAGE_ID" width="1"/>
+                <type code="ZP2015_EXTRA_UNITS" width="1"/>
+                <type code="ZP2015_UNIT_EXT_TYPE" width="1"/>
             </group>
             <group code="GROUP2">
                 <name>Identifikátory jednotky popisu</name>
-                <type code="ZP2015_UNIT_ID" width="1" />
-                <type code="ZP2015_SERIAL_NUMBER" width="1" />
-                <type code="ZP2015_OTHER_ID" width="2" />
+                <type code="ZP2015_UNIT_ID" width="1"/>
+                <type code="ZP2015_SERIAL_NUMBER" width="1"/>
+                <type code="ZP2015_OTHER_ID" width="2"/>
             </group>
             <group code="GROUP3">
                 <name>Hlavní popis jednotky</name>
-                <type code="ZP2015_TITLE" width="0" />
-                <type code="ZP2015_FORMAL_TITLE" width="0" />
-                <type code="ZP2015_UNIT_DATE_PRE" width="1" />
-                <type code="ZP2015_UNIT_DATE" width="1" />
-                <type code="ZP2015_UNIT_DATE_POST" width="1" />
-                <type code="ZP2015_UNIT_DATE_TEXT" width="2" />
+                <type code="ZP2015_TITLE" width="0"/>
+                <type code="ZP2015_FORMAL_TITLE" width="0"/>
+                <type code="ZP2015_UNIT_DATE_PRE" width="1"/>
+                <type code="ZP2015_UNIT_DATE" width="1"/>
+                <type code="ZP2015_UNIT_DATE_POST" width="1"/>
+                <type code="ZP2015_UNIT_DATE_TEXT" width="2"/>
             </group>
             <group code="GROUP4">
                 <name>Společné prvky popisu</name>
-                <type code="ZP2015_ORIGINATOR" width="1" />
-                <type code="ZP2015_UNIT_HIST" width="0" />
-                <type code="ZP2015_UNIT_ARR" width="2" />
-                <type code="ZP2015_UNIT_CONTENT" width="0" />
-                <type code="ZP2015_UNIT_SOURCE" width="0" />
-                <type code="ZP2015_FUTURE_UNITS" width="0" />
-                <type code="ZP2015_UNIT_ACCESS" width="0" />
-                <type code="ZP2015_UNIT_INFO_RIGHTS" width="1" />
-                <type code="ZP2015_UNIT_COPY_RIGHTS" width="1" />
-                <type code="ZP2015_UNIT_CURRENT_STATUS" width="0" />
-                <type code="ZP2015_COPY_SOURCE" width="1" />
-                <type code="ZP2015_RELATED_UNITS" width="1" />
-                <type code="ZP2015_EXISTING_COPY" width="1" />
-                <type code="ZP2015_INTERNAL_NOTE" width="0" />
-                <type code="ZP2015_NOTE" width="0" />
-                <type code="ZP2015_ARRANGE_RULES" width="1" />
-                <type code="ZP2015_4_OTHER" width="1" />
+                <type code="ZP2015_ORIGINATOR" width="1"/>
+                <type code="ZP2015_UNIT_HIST" width="0"/>
+                <type code="ZP2015_UNIT_ARR" width="2"/>
+                <type code="ZP2015_UNIT_CONTENT" width="0"/>
+                <type code="ZP2015_UNIT_SOURCE" width="0"/>
+                <type code="ZP2015_FUTURE_UNITS" width="0"/>
+                <type code="ZP2015_UNIT_ACCESS" width="0"/>
+                <type code="ZP2015_UNIT_INFO_RIGHTS" width="1"/>
+                <type code="ZP2015_UNIT_COPY_RIGHTS" width="1"/>
+                <type code="ZP2015_UNIT_CURRENT_STATUS" width="0"/>
+                <type code="ZP2015_COPY_SOURCE" width="1"/>
+                <type code="ZP2015_RELATED_UNITS" width="1"/>
+                <type code="ZP2015_EXISTING_COPY" width="1"/>
+                <type code="ZP2015_INTERNAL_NOTE" width="0"/>
+                <type code="ZP2015_NOTE" width="0"/>
+                <type code="ZP2015_ARRANGE_RULES" width="1"/>
+                <type code="ZP2015_4_OTHER" width="1"/>
             </group>
-        </default>
+        </ns3:default>
     </type-groups>
 </settings>

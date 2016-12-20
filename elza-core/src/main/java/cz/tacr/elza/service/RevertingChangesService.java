@@ -15,10 +15,7 @@ import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.ErrorCode;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.service.eventnotification.events.EventFunds;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
@@ -28,7 +25,6 @@ import cz.tacr.elza.service.vo.ChangesResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -278,7 +274,10 @@ public class RevertingChangesService {
         updateEntityQuery = createUpdateActionQuery(fund, node, toChange);
         updateEntityQuery.executeUpdate();
 
-        deleteEntityQuery = createDeleteActionQuery(fund, node, toChange);
+        deleteEntityQuery = createDeleteActionNodeQuery(fund, node, toChange);
+        deleteEntityQuery.executeUpdate();
+
+        deleteEntityQuery = createDeleteActionRunQuery(fund, toChange);
         deleteEntityQuery.executeUpdate();
 
         Query deleteNotUseChangesQuery = createDeleteNotUseChangesQuery();
@@ -406,9 +405,17 @@ public class RevertingChangesService {
         return query;
     }
 
-    private Query createDeleteActionQuery(final @NotNull ArrFund fund, final @Nullable ArrNode node, final @NotNull ArrChange toChange) {
-        Query query = entityManager.createQuery("DELETE FROM arr_bulk_action_node n WHERE n IN (" +
-                "SELECT rn FROM arr_bulk_action_node rn JOIN rn.bulkActionRun rs WHERE rn.node IN (" + createHqlSubNodeQuery(fund, node) + ") AND rs.change >= :change" +
+    /**
+     * Smazání návazných entity hromadné akce.
+     *
+     * @param fund     AS nad kterým provádím obnovu
+     * @param node     JP omezující obnovu
+     * @param toChange změna ke které se provádí revert
+     * @return
+     */
+    private Query createDeleteActionNodeQuery(final @NotNull ArrFund fund, final @Nullable ArrNode node, final @NotNull ArrChange toChange) {
+        Query query = entityManager.createQuery("DELETE FROM arr_bulk_action_node n WHERE n.bulkActionRun IN (" +
+                "SELECT rn.bulkActionRun FROM arr_bulk_action_node rn JOIN rn.bulkActionRun rs WHERE rn.node IN (" + createHqlSubNodeQuery(fund, node) + ") AND rs.change >= :change" +
                 ")");
 
         // nastavení parametrů dotazu
@@ -417,6 +424,22 @@ public class RevertingChangesService {
         if (node != null) {
             query.setParameter("node", node);
         }
+        return query;
+    }
+
+    /**
+     * Smazání samotných hromadných akcí.
+     *
+     * @param fund     AS nad kterým provádím obnovu
+     * @param toChange změna ke které se provádí revert
+     * @return
+     */
+    private Query createDeleteActionRunQuery(final @NotNull ArrFund fund, final @NotNull ArrChange toChange) {
+        Query query = entityManager.createQuery("DELETE FROM arr_bulk_action_run rd WHERE rd IN (SELECT r FROM arr_bulk_action_run r JOIN r.fundVersion v WHERE v.fund = :fund AND r.change >= :change)");
+
+        // nastavení parametrů dotazu
+        query.setParameter("fund", fund);
+        query.setParameter("change", toChange);
         return query;
     }
 
@@ -503,7 +526,7 @@ public class RevertingChangesService {
         return entityManager.createQuery(hql);
     }
 
-    private Query createDeleteNotUseChangesQuery() {
+    public Query createDeleteNotUseChangesQuery() {
 
         String[][] configUnionTables = new String[][]{
                 {"arr_level", "createChange"},
@@ -762,9 +785,7 @@ public class RevertingChangesService {
             }
 
             change.setRevert(canRevert && canRevertByUser);
-
-            String description = createDescriptionNode(changeResult, change, changeNodeMap);
-            change.setDescription(description);
+            change.setLabel(changeNodeMap.get(new AbstractMap.SimpleImmutableEntry<>(changeResult.changeId, changeResult.primaryNodeId)));
             changes.add(change);
         }
         return changes;
@@ -806,74 +827,6 @@ public class RevertingChangesService {
         }
 
         return result;
-    }
-
-    /**
-     * Sestaví popis změny/JP.
-     *
-     * @param changeResult změna z DB
-     * @param change       změna pro klienta
-     * @param changeNodeMap mapa popisků JP podle identifikátorů change a JP
-     * @return výsledný popis změny
-     */
-    private String createDescriptionNode(final ChangeResult changeResult, final Change change, final HashMap<Map.Entry<Integer, Integer>, String> changeNodeMap) {
-        String description;
-
-        if (change.getType() == null) {
-            throw new IllegalStateException("Záznam nemá vyplněný typ změny a nelze jej revertovat.");
-        }
-
-        switch (change.getType()) {
-
-            case BULK_ACTION: {
-                description = "Funkce (Ovlivněno JP: " + change.getNodeChanges() + ")";
-                break;
-            }
-
-            case ADD_NODES_OUTPUT: {
-                description = "Připojení JP (" + change.getNodeChanges() + ") k výstupu";
-                break;
-            }
-
-            case REMOVE_NODES_OUTPUT: {
-                description = "Odpojení JP (" + change.getNodeChanges() + ") od výstupu";
-                break;
-            }
-
-            case CREATE_AS: {
-                description = "Vytvoření archivního souboru";
-                break;
-            }
-
-            case BATCH_CHANGE_DESC_ITEM: {
-                description = "Hromadná úprava hodnot atributů";
-                break;
-            }
-
-            case BATCH_DELETE_DESC_ITEM: {
-                description = "Hromadný výmaz hodnot atributů";
-                break;
-            }
-
-            case IMPORT: {
-                description = "Import do AS";
-                break;
-            }
-
-            default: {
-                String label = changeNodeMap.get(new AbstractMap.SimpleImmutableEntry<>(changeResult.changeId, changeResult.primaryNodeId));
-                if (label == null) {
-                    description = StringUtils.isEmpty(changeResult.type) ? "neznámý typ" : ArrChange.Type.valueOf(changeResult.type).getDescription();
-                    description += ", primaryNodeId: " + (changeResult.primaryNodeId == null ? "?" : changeResult.primaryNodeId);
-                    description += ", changeId: " + changeResult.changeId;
-                    description += ", changeDate: " + changeResult.changeDate;
-                } else {
-                    description = label;
-                }
-            }
-
-        }
-        return description;
     }
 
     /**

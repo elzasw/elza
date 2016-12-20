@@ -6,6 +6,7 @@ import {WebApi} from 'actions/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
 import {indexById, objectById} from 'stores/app/utils.jsx'
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {COL_REFERENCE_MARK} from "components/arr/FundDataGridConst";
 
 // Null hodnota, která se používaná v klientovi pro reprezentaci null hodnoty
 export const FILTER_NULL_VALUE = "____$<NULL>$___"
@@ -339,33 +340,37 @@ export function fundDataGridFilter(versionId, filter) {
 function _fundDataGridFilter(versionId, filter, resetViewState = true) {
     return (dispatch, getState) => {
         dispatch(_filterRequest(versionId))
-
-        var callFilter = {...filter}
+        const callFilter = { columnFilters: { filters: {} } }
 
         // Ladění objektu filtru pro server
-        Object.keys(callFilter).forEach(key => {
-            callFilter[key] = {...callFilter[key]}
+        Object.keys(filter).forEach(key => {
+            if (key === COL_REFERENCE_MARK) {
+                callFilter.nodeId = filter[COL_REFERENCE_MARK].nodeId;
+            } else {
+                callFilter.columnFilters.filters[key] = {...filter[key]};
+                const filterData = callFilter.columnFilters.filters[key];
 
-            // Typy selected a unselected na velká písmena
-            if (typeof callFilter[key].specsType !== 'undefined' && callFilter[key].specsType !== null) {
-                callFilter[key].specsType = callFilter[key].specsType.toUpperCase()
-            }
-            if (typeof callFilter[key].valuesType !== 'undefined' && callFilter[key].valuesType !== null) {
-                callFilter[key].valuesType = callFilter[key].valuesType.toUpperCase()
-            }
+                // Typy selected a unselected na velká písmena
+                if (typeof filterData.specsType !== 'undefined' && filterData.specsType !== null) {
+                    filterData.specsType = filterData.specsType.toUpperCase()
+                }
+                if (typeof filterData.valuesType !== 'undefined' && filterData.valuesType !== null) {
+                    filterData.valuesType = filterData.valuesType.toUpperCase()
+                }
 
-            // Hodnoty null na reálné null
-            if (callFilter[key].values) {
-                callFilter[key].values = callFilter[key].values.map(v => {
-                    return v === FILTER_NULL_VALUE ? null : v
-                })
+                // Hodnoty null na reálné null
+                if (filterData.values) {
+                    filterData.values = filterData.values.map(v => {
+                        return v === FILTER_NULL_VALUE ? null : v
+                    })
+                }
+                if (filterData.specs) {
+                    filterData.specs = filterData.specs.map(v => {
+                        return v === FILTER_NULL_VALUE ? null : v
+                    })
+                }
             }
-            if (callFilter[key].specs) {
-                callFilter[key].specs = callFilter[key].specs.map(v => {
-                    return v === FILTER_NULL_VALUE ? null : v
-                })
-            }
-        })
+        });
 
         WebApi.filterNodes(versionId, callFilter)
             .then(json => {
