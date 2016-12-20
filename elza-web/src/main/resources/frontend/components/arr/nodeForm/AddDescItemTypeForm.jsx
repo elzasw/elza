@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
 import {Autocomplete, AbstractReactComponent, i18n, Icon, FormInput} from 'components/index.jsx';
-import {Modal, Button, Form} from 'react-bootstrap';
+import {Modal, Button, Form, ControlLabel, FormGroup} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
 import './AddDescItemTypeForm.less';
@@ -33,52 +33,54 @@ class AddDescItemTypeForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        // Desc item types - vybrání myší - senzam položek nad autocompletem
-        var flatDescItemTypes = [];
+        // Stromové uspořádání možných položek
+        const possibleItemTypes = [];
         this.props.descItemTypes.forEach(node => {
-            flatDescItemTypes = [
-                ...flatDescItemTypes, ...node.children
-            ]
+            const children = [];
+            node.children.forEach(item => {
+                if (item.type === AddDescItemTypeForm.ITEM_TYPE_POSSIBLE) {
+                    children.push(item);
+                }
+            });
+            if (children.length > 0) {
+                possibleItemTypes.push({
+                    ...node,
+                    children
+                });
+            }
         });
 
         this.state = {
-            flatDescItemTypes
+            possibleItemTypes
         }
     }
 
-    onChange = (value) => {
-        console.log("a", value);
-    };
-
     render() {
         const {fields: {descItemTypeId}, handleSubmit, onClose, descItemTypes} = this.props;
-        const {flatDescItemTypes} = this.state;
+        const {possibleItemTypes} = this.state;
 
         var submitForm = submitReduxForm.bind(this, AddDescItemTypeForm.validate);
-
-        var descItemTypeValue;
-        if (typeof descItemTypeId.value !== 'undefined') {
-            var index = indexById(descItemTypes, descItemTypeId.value);
-            if (index !== null) {
-                descItemTypeValue = descItemTypes[index]
-            }
-        }
 
         return <Form onSubmit={handleSubmit(submitForm)}>
                 <Modal.Body>
                     <div>
-                        {flatDescItemTypes.map(i => {
-                            if (i.type == AddDescItemTypeForm.ITEM_TYPE_POSSIBLE) {
-                                return <a className="add-link btn btn-link" key={i.id} onClick={() => {
-                                    this.props.onSubmit2({descItemTypeId: i});
-                               }}><Icon glyph="fa-plus" />{i.name}</a>
-                            }
+                        {possibleItemTypes.map(node => {
+                            return <FormGroup>
+                                <ControlLabel>{node.name}</ControlLabel>
+                                <div>
+                                    {node.children.map(item => {
+                                        return <a className="add-link btn btn-link" key={item.id} onClick={() => {
+                                            this.props.onSubmit2({descItemTypeId: item});
+                                       }}><Icon glyph="fa-plus" />{item.name}</a>
+                                    })}
+                                </div>
+                            </FormGroup>
                         })}
                     </div>
                     <div className="autocomplete-desc-item-type">
                         <Autocomplete
                             tree
-                            label={i18n('subNodeForm.descItemType')}
+                            label={i18n('subNodeForm.descItemType.all')}
                             {...descItemTypeId}
                             {...decorateFormField(descItemTypeId)}
                             items={descItemTypes}
@@ -88,10 +90,6 @@ class AddDescItemTypeForm extends AbstractReactComponent {
                             onBlurValidation={false}
                         />
                     </div>
-                    {false && <FormInput componentClass="select" label={i18n('subNodeForm.descItemType')} {...descItemTypeId} {...decorateFormField(descItemTypeId)}>
-                        <option key="blank"/>
-                        {descItemTypes.map(i=> <option value={i.id}>{i.name}</option>)}
-                    </FormInput>}
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit" onClick={handleSubmit(submitForm)}>{i18n('global.action.add')}</Button>
