@@ -527,7 +527,7 @@ var messages = {
     "subNodeForm.validate.spec.required": "Specifikace musí být uvedena",
     "subNodeForm.validate.calendarType.required": "Typ kalendáře musí být uveden",
     "subNodeForm.validate.value.notEmpty": "Hodnota musí být uvedena",
-    "subNodeForm.descItemType": "Prvek",
+    "subNodeForm.descItemType.all": "Všechny prvky",
     "subNodeForm.descItemType.title.add": "Přidání prvku",
     "subNodeForm.descItemType.copy": "Nastavení opakovaného kopírování hodnot PP",
     "subNodeForm.descItemType.lock": "Nastavení zamknutí úprav hodnot PP",
