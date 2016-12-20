@@ -505,6 +505,37 @@ export function node(state = nodeInitialState, action) {
                 subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action)
             });
 
+        case types.NODES_DELETE: {
+            let result = {
+                ...state
+            };
+
+            if (result.selectedSubNodeId != null && action.nodeIds.indexOf(result.selectedSubNodeId) >= 0) {
+                result.selectedSubNodeId = null;
+            }
+
+            result.subNodeForm = subNodeForm(result.subNodeForm, action);
+            result.subNodeFormCache = subNodeFormCache(result.subNodeFormCache, action);
+
+            let allChildNodes = [];
+            result.allChildNodes.forEach((node) => {
+                if (action.nodeIds.indexOf(node.id) < 0) {
+                    allChildNodes.push(node);
+                }
+            });
+            result.allChildNodes = allChildNodes;
+
+            let childNodes = [];
+            result.childNodes.forEach((node) => {
+                if (action.nodeIds.indexOf(node.id) < 0) {
+                    childNodes.push(node);
+                }
+            });
+            result.childNodes = childNodes;
+
+            return consolidateState(state, result);
+        }
+
         default:
             return state;
     }

@@ -122,6 +122,9 @@ public abstract class ArrItem<T extends ArrItemData> implements cz.tacr.elza.api
     @Override
     public void setCreateChange(final ArrChange createChange) {
         this.createChange = createChange;
+        if (createChange != null) {
+            createChangeId = createChange.getChangeId();
+        }
     }
 
     @Override
