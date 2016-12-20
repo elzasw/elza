@@ -34,7 +34,6 @@
         <module>package-cz-base</module>
         <module>rules-cz-zp2015</module>
         <module>rules-simple-dev</module>
-        <module>package-config</module>
     </modules>
 
     <dependencyManagement>

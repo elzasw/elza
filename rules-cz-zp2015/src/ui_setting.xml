@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <settings xmlns:ns2="fund-views" xmlns:ns3="type-groups">
-    <record settings-type="RECORD">
-        <scope-code>GLOBAL</scope-code>
-    </record>
     <fund-views settings-type="FUND_VIEW" entity-type="RULE" entity-id="1" code="ZP2015">
         <ns2:default>
             <title>&lt;Není nastaveno&gt;</title>
