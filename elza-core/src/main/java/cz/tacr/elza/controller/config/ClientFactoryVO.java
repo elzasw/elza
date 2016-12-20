@@ -16,6 +16,9 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
+import cz.tacr.elza.repository.ItemSpecRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.ObjectUtils;
@@ -225,6 +228,12 @@ public class ClientFactoryVO {
 
     @Autowired
     private ComplementTypeRepository complementTypeRepository;
+
+    @Autowired
+    private PackageService packageServise;
+
+    @Autowired
+    private ItemSpecRepository itemSpecRepository;
 
     /**
      * Vytvoří objekt informací o přihlášeném uživateli.
@@ -1156,14 +1165,14 @@ public class ClientFactoryVO {
         // naplnění mapy podle oblíbených z nastavení
         Map<Integer, List<Integer>> typeSpecsMap = new HashMap<>();
         for (UISettings favoritesItemType : favoritesItemTypes) {
-            String value = favoritesItemType.getValue();
-            if (value != null) {
-                String[] specIdsString = value.split("\\|");
-                Integer[] specIds = new Integer[specIdsString.length];
-                for (int i = 0; i < specIdsString.length; i++) {
-                    specIds[i] = Integer.valueOf(specIdsString[i]);
+            SettingFavoriteItemSpecs setting = (SettingFavoriteItemSpecs) packageServise.convertSetting(favoritesItemType);
+            if (CollectionUtils.isNotEmpty(setting.getSpecCodes())) {
+                List<RulItemSpec> itemSpecs = itemSpecRepository.findOneByCodes(setting.getSpecCodes());
+                List<Integer> itemSpecsIds = new ArrayList<>(itemSpecs.size());
+                for (RulItemSpec itemSpec : itemSpecs) {
+                    itemSpecsIds.add(itemSpec.getItemSpecId());
                 }
-                typeSpecsMap.put(favoritesItemType.getEntityId(), Arrays.asList(specIds));
+                typeSpecsMap.put(favoritesItemType.getEntityId(), itemSpecsIds);
             }
         }
 

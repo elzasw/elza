@@ -60,7 +60,7 @@ var FundDetail = class FundDetail extends AbstractReactComponent {
 
         const activeVersionIndex = indexById(fundDetail.versions, null, 'lockChange');
         const ruleIndex = indexById(ruleSet.items, fundDetail.versions[activeVersionIndex].ruleSetId);
-        const rule = instIndex !== null ? ruleSet.items[ruleIndex].name : '';
+        const rule = ruleIndex !== null ? ruleSet.items[ruleIndex].name : '';
         const ver = fundDetail.versions[activeVersionIndex];
         return (
             <div className='fund-detail-container'>

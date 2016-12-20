@@ -82,6 +82,7 @@ import cz.tacr.elza.packageimport.xml.RelationTypeRoleTypes;
 import cz.tacr.elza.packageimport.xml.RelationTypes;
 import cz.tacr.elza.packageimport.xml.Setting;
 import cz.tacr.elza.packageimport.xml.SettingBase;
+import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
 import cz.tacr.elza.packageimport.xml.SettingFundViews;
 import cz.tacr.elza.packageimport.xml.SettingRecord;
 import cz.tacr.elza.packageimport.xml.SettingTypeGroups;
@@ -488,7 +489,7 @@ public class PackageService {
 
             Settings settings = convertXmlStreamToObject(Settings.class, mapEntry.get(SETTING_XML));
 
-            processSettings(settings, rulPackage, rulRuleSets);
+            processSettings(settings, rulPackage, rulRuleSets, rulDescItemTypes);
 
             // END NASTAVENÍ -------------------------------------------------------------------------------------------
 
@@ -567,7 +568,7 @@ public class PackageService {
     /**
      * Zpracování nastavení.
      */
-    private void processSettings(final Settings settings, final RulPackage rulPackage, final List<RulRuleSet> rulRuleSets) {
+    private void processSettings(final Settings settings, final RulPackage rulPackage, final List<RulRuleSet> rulRuleSets, final List<RulItemType> rulItemTypes) {
         List<UISettings> uiSettings = settingsRepository.findByRulPackage(rulPackage);
         List<UISettings> uiSettingsAll = settingsRepository.findAll();
         List<UISettings> uiSettingsNew = new ArrayList<>();
@@ -587,7 +588,7 @@ public class PackageService {
                 } else if(!uiSetting.getRulPackage().equals(rulPackage)) {
                     throw new SystemException(PackageCode.OTHER_PACKAGE).set("code", uiSetting.getRulPackage().getCode());
                 }
-                convertUISettings(rulPackage, setting, uiSetting, rulRuleSetsAll);
+                convertUISettings(rulPackage, setting, uiSetting, rulRuleSetsAll, rulItemTypes);
                 uiSettingsNew.add(uiSetting);
             }
         }
@@ -604,7 +605,8 @@ public class PackageService {
      */
     private void convertUISettings(final RulPackage rulPackage, final Setting setting,
                                    final UISettings uiSetting,
-                                   final Collection<RulRuleSet> rulRuleSets) {
+                                   final Collection<RulRuleSet> rulRuleSets,
+                                   final List<RulItemType> rulItemTypes) {
         uiSetting.setRulPackage(rulPackage);
         uiSetting.setSettingsType(setting.getSettingsType());
         uiSetting.setEntityType(setting.getEntityType());
@@ -612,12 +614,23 @@ public class PackageService {
         if (setting instanceof SettingFundViews) {
             String code = ((SettingFundViews) setting).getCode();
             setRuleSetToSetting(rulRuleSets, code, uiSetting);
-        } else if(setting instanceof SettingTypeGroups) {
+        } else if (setting instanceof SettingTypeGroups) {
             String code = ((SettingTypeGroups) setting).getCode();
             setRuleSetToSetting(rulRuleSets, code, uiSetting);
+        } else if (setting instanceof SettingFavoriteItemSpecs) {
+            String code = ((SettingFavoriteItemSpecs) setting).getCode();
+            setItemTypeToSetting(rulItemTypes, code, uiSetting);
         }
 
         uiSetting.setValue(setting.getValue());
+    }
+
+    private void setItemTypeToSetting(final List<RulItemType> rulItemTypes, final String code, final UISettings uiSetting) {
+        RulItemType entity = findEntity(rulItemTypes, code, RulItemType::getCode);
+        if (entity == null) {
+            throw new BusinessException(PackageCode.CODE_NOT_FOUND).set("code", code).set("file", SETTING_XML);
+        }
+        uiSetting.setEntityId(entity.getItemTypeId());
     }
 
     private void setRuleSetToSetting(final Collection<RulRuleSet> rulRuleSets, final String code, final UISettings uiSetting) {
@@ -2457,6 +2470,16 @@ public class PackageService {
                 }
             }
             entity = settingTypeGroups;
+        } else if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.FAVORITE_ITEM_SPECS)
+                && Objects.equals(uiSettings.getEntityType(), UISettings.EntityType.ITEM_TYPE)) {
+            SettingFavoriteItemSpecs settingFavoriteItemSpecs = new SettingFavoriteItemSpecs();
+            if (uiSettings.getEntityId() != null) {
+                RulItemType itemType = itemTypeRepository.findOne(uiSettings.getEntityId());
+                if (itemType != null) {
+                    settingFavoriteItemSpecs.setCode(itemType.getCode());
+                }
+            }
+            entity = settingFavoriteItemSpecs;
         } else if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.RECORD)) {
             entity = new SettingRecord();
         } else {
