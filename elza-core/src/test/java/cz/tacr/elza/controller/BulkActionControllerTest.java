@@ -228,7 +228,8 @@ public class BulkActionControllerTest extends AbstractControllerTest {
 
                 if (counter >= 0) {
                     if (state != null) {
-                        if (state.getState().equals(State.INTERRUPTED)) {
+                        // TODO: odebrat stav FINISHED, který nastává v případě, že hromadná akce doběhla ještě před požadavkem na přerušení
+                        if (state.getState().equals(State.INTERRUPTED) || state.getState().equals(State.FINISHED)) {
                             hasResult = true;
                         } else if (state.getState().equals(State.ERROR)) {
                             Assert.fail("Hromadná akce skončila chybou");
