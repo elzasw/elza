@@ -349,6 +349,18 @@ export function fund(state, action) {
             }
             return consolidateState(state, result);
 
+        case types.NODES_DELETE: {
+            const result = {
+                ...state,
+                nodes: nodes(state.nodes, action),
+                fundTree: fundTree(state.fundTree, action),
+                fundTreeMovementsLeft: fundTree(state.fundTreeMovementsLeft, action),
+                fundTreeMovementsRight: fundTree(state.fundTreeMovementsRight, action),
+                fundTreeNodes: fundTree(state.fundTreeNodes, action),
+            };
+            return consolidateState(state, result);
+        }
+
         default:
             return state;
     }
