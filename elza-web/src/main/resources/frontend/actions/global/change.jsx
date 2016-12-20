@@ -318,3 +318,11 @@ export function changeRequestItemQueue(value) {
         dispatch(detailInvalidate(value.versionId, value.requestId));
     }
 }
+
+export function nodesDelete(fundVersionId, nodeIds) {
+    return {
+        type: types.NODES_DELETE,
+        versionId: fundVersionId,
+        nodeIds: nodeIds
+    }
+}
