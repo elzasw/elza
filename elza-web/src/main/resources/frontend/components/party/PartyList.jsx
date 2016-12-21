@@ -142,7 +142,7 @@ class PartyList extends AbstractReactComponent {
         } else if (extinction != "") {
             datation = extinction;
         }
-        console.log(item.record.record,datation);
+        //console.log(item.record.record,datation);
 
         return <div className='search-result-row' onClick={this.handlePartyDetail.bind(this, item)}>
             <div>

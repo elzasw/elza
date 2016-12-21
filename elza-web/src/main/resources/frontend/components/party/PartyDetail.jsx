@@ -146,11 +146,20 @@ class PartyDetail extends AbstractReactComponent {
     }
 
     updateStateFromProps(props = this.props, state = this.state) {
+
+        let tmpActiveIndexes;
+        if (props.partyDetail.id === this.props.partyDetail.id) {
+            tmpActiveIndexes = state.activeIndexes;
+        } else {
+            tmpActiveIndexes = {};
+        }
+
+        let activeIndexes = tmpActiveIndexes, visibilitySettingsValue = {}, mergeIndex = {};
+
         if (props.userDetail && props.userDetail.settings) {
             const {settings} = props.userDetail;
             const visibilitySettings = getOneSettings(settings, SETTINGS_PARTY_PIN);
 
-            let activeIndexes, visibilitySettingsValue = {}, mergeIndex = {};
             if (visibilitySettings.value) {
                 try {
                     visibilitySettingsValue = JSON.parse(visibilitySettings.value);
@@ -162,23 +171,19 @@ class PartyDetail extends AbstractReactComponent {
                             delete visibilitySettingsValue[key];
                         }
                     }
-                    console.log(state.activeIndexes, visibilitySettingsValue, mergeIndex);
                 } catch(e) {
                     visibilitySettingsValue = {};
                 }
                 activeIndexes = {
-                    ...state.activeIndexes,
+                    ...activeIndexes,
                     ...visibilitySettingsValue,
                     ...mergeIndex
                 };
             } else {
                 console.warn("No settings for visibility - fallback to default - closed");
-                activeIndexes = {
-                    ...state.activeIndexes,
-                };
             }
-            this.setState({visibilitySettings, activeIndexes, visibilitySettingsValue})
         }
+        this.setState({activeIndexes, visibilitySettingsValue})
     }
 
     fetchIfNeeded = (props = this.props) => {
@@ -385,9 +390,11 @@ class PartyDetail extends AbstractReactComponent {
                                 }
                             }
 
-                            return <CollapsablePanel key={index} isOpen={activeIndexes && activeIndexes[index] === true}
-                                                     pinned={visibilitySettingsValue && visibilitySettingsValue[index] === true} header={i.name}
-                                                     eventKey={index} {...events}>
+                            const key = i.code;
+
+                            return <CollapsablePanel key={key} isOpen={activeIndexes && activeIndexes[key] === true}
+                                                     pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true} header={i.name}
+                                                     eventKey={key} {...events}>
                                 <div className="elements-container">
                                     {items}
                                 </div>
