@@ -25,6 +25,7 @@ public class Settings {
             @XmlElement(name = "type-groups", type = SettingTypeGroups.class),
             @XmlElement(name = "setting-base", type = SettingBase.class),
             @XmlElement(name = "record", type = SettingRecord.class),
+            @XmlElement(name = "favorite-item-specs", type = SettingFavoriteItemSpecs.class),
     })
     private List<Setting> settings;
 

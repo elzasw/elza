@@ -200,9 +200,11 @@ export default function arrRegion(state = initialState, action) {
         case types.OUTPUT_CHANGES:
         case types.OUTPUT_CHANGES_DETAIL:
         case types.OUTPUT_STATE_CHANGE:
+        case types.NODES_DELETE:
         case types.CHANGE_FUND_ACTION:
             var index = indexById(state.funds, action.versionId, "versionId");
             return processFund(state, action, index);
+
         case types.FUND_FUNDS_RECEIVE:
             var changed = false;
             var newFunds = state.funds.map(fundObj => {

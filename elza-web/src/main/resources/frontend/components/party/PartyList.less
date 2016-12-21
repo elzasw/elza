@@ -30,39 +30,47 @@
       border: 1px solid transparent;
       overflow: hidden;
       overflow-y: auto;
+      display: flex;
+      flex-direction: column;
 
-      .search-result-row {
-        padding: 5px;
-        list-style-type: none;
-        border-bottom: 1px solid #EEEEEE;
-        display: block;
-        > div {
-          display:flex;
-          .icon {
-            flex: 0;
-            padding: 3px 5px 3px 0;
-          }
-          .name, .date, .description {
-            font-size: 0.8em;
-            white-space: nowrap;
-          }
-          .name {
-            flex:1;
-            text-overflow: ellipsis;
-            overflow: hidden;
-            font-size: 1em;
-          }
-          .date {
-            flex-grow: 1;
-            flex-shrink: 1;
-            text-overflow: ellipsis;
-            overflow: hidden;
-            min-width: 0;
-          }
-          .description {
-            float:right;
-            flex: 0 1 auto;
-            text-align: right;
+      .listbox-item {
+        flex-shrink: 0;
+        .search-result-row {
+          padding: 5px;
+          border-bottom: 1px solid #EEEEEE;
+          flex-shrink: 0;
+          flex-grow: 1;
+          display: flex;
+          flex-direction: column;
+          //min-height: 0;
+          > div {
+            display: flex;
+            .icon {
+              flex-shrink: 0;
+              padding: 3px 5px 3px 0;
+            }
+            .name, .date, .description {
+              font-size: 0.8em;
+              white-space: nowrap;
+            }
+            .name {
+              flex: 1;
+              text-overflow: ellipsis;
+              overflow: hidden;
+              font-size: 1em;
+            }
+            .date {
+              flex-grow: 1;
+              flex-shrink: 1;
+              text-overflow: ellipsis;
+              overflow: hidden;
+              min-width: 0;
+            }
+            .description {
+              float: right;
+              flex: 0 1 auto;
+              text-align: right;
+            }
           }
         }
       }
