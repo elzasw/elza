@@ -80,12 +80,12 @@ class AddDescItemTypeForm extends AbstractReactComponent {
                     <div className="autocomplete-desc-item-type">
                         <Autocomplete
                             tree
+                            alwaysExpanded
                             label={i18n('subNodeForm.descItemType.all')}
                             {...descItemTypeId}
                             {...decorateFormField(descItemTypeId)}
                             items={descItemTypes}
                             getItemRenderClass={item => item.groupItem ? null : ' type-' + item.type.toLowerCase()}
-                            alwaysExpanded
                             allowSelectItem={(id, item) => !item.groupItem}
                             onBlurValidation={false}
                         />
