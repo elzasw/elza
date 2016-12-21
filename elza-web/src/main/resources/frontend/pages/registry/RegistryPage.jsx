@@ -521,6 +521,7 @@ class RegistryPage extends AbstractReactComponent {
                 inputProps={ {placeholder: registryTypesId === null ? i18n('registry.all') : ""} }
                 items={treeItems}
                 tree
+                alwaysExpanded
                 allowSelectItem={(id, item) => item.addRecord}
                 value={value}
                 onChange={item => this.handleRegistryTypesSelect.bind(this)(item ? item.id : null)}

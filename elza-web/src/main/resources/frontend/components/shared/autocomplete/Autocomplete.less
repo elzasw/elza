@@ -74,39 +74,32 @@
     .autocomplete-menu-wrapper {
         max-height: 160px;
         max-width: 600px;
-        min-width: 200px;
+        min-width: 350px;
         overflow-y: auto;
         overflow-x: hidden;
+        padding-right: 8px;
 
         .autocomplete-menu {
             height: 100%;
-            padding-right: 20px;
+            /*padding-right: 20px;*/
             width: 100%;
 
             .item {
                 width: 100%;
+                display: flex;
 
-                &.depth-0 {
-                    padding-left: 0*@autocomplete-tree-depth;
-                }
-                &.depth-1 {
-                    padding-left: 1*@autocomplete-tree-depth;
-                }
-                &.depth-2 {
-                    padding-left: 2*@autocomplete-tree-depth;
-                }
-                &.depth-3 {
-                    padding-left: 3*@autocomplete-tree-depth;
-                }
-                &.depth-4 {
-                    padding-left: 4*@autocomplete-tree-depth;
-                }
-                &.depth-5 {
-                    padding-left: 5*@autocomplete-tree-depth;
+                .depth-container {
+                    display: inline-block;
+                    .depth-item {
+                        display: inline-block;
+                        width: @autocomplete-tree-depth;
+                    }
                 }
 
                 .item-text {
-                    padding-right: 8px;
+                    margin-right: 8px;
+                    white-space: nowrap;
+                    flex-shrink: 0;
                 }
 
                 cursor: pointer;
@@ -132,6 +125,7 @@
                     //width: 16px;
                     padding: 0px 4px 0px 5px;
                     vertical-align: middle;
+                    flex-shrink: 0;
                     &.expanded {
                     }
                     &.collapsed {
