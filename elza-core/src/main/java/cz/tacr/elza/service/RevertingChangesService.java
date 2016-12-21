@@ -22,6 +22,7 @@ import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.Change;
 import cz.tacr.elza.service.vo.ChangesResult;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -283,8 +284,15 @@ public class RevertingChangesService {
         Query deleteNotUseChangesQuery = createDeleteNotUseChangesQuery();
         deleteNotUseChangesQuery.executeUpdate();
 
+        Set<Integer> deleteNodeIds = getNodeIdsToDelete();
+
         Query deleteNotUseNodesQuery = createDeleteNotUseNodesQuery();
         deleteNotUseNodesQuery.executeUpdate();
+
+        if (CollectionUtils.isNotEmpty(deleteNodeIds) && openFundVersion != null) {
+            eventNotificationService.publishEvent(new EventIdsInVersion(EventType.DELETE_NODES, openFundVersion.getFundVersionId(),
+                    deleteNodeIds.toArray(new Integer[deleteNodeIds.size()])));
+        }
 
         if (node == null) {
             Set<Integer> fundVersionIds = fund.getVersions().stream().map(ArrFundVersion::getFundVersionId).collect(Collectors.toSet());
@@ -501,6 +509,31 @@ public class RevertingChangesService {
     }
 
     private Query createDeleteNotUseNodesQuery() {
+        List<String[]> nodesTables = getNodesTables();
+        List<String> unionPart = new ArrayList<>();
+        for (String[] nodeTable : nodesTables) {
+            unionPart.add(String.format("n.nodeId NOT IN (SELECT i.%2$s.nodeId FROM %1$s i WHERE i.%2$s IS NOT NULL)", nodeTable[0], nodeTable[1]));
+        }
+        String changesHql = String.join("\nAND\n", unionPart);
+
+        String hql = String.format("DELETE FROM arr_node n WHERE %1$s", changesHql);
+
+        return entityManager.createQuery(hql);
+    }
+
+    private Set<Integer> getNodeIdsToDelete() {
+        List<String[]> nodesTables = getNodesTables();
+        List<String> unionPart = new ArrayList<>();
+        for (String[] nodeTable : nodesTables) {
+            unionPart.add(String.format("n.nodeId NOT IN (SELECT i.%2$s.nodeId FROM %1$s i WHERE i.%2$s IS NOT NULL)", nodeTable[0], nodeTable[1]));
+        }
+        String changesHql = String.join("\nAND\n", unionPart);
+        String hql = String.format("SELECT n.nodeId FROM arr_node n WHERE %1$s", changesHql);
+        Query query = entityManager.createQuery(hql);
+        return new HashSet<>(query.getResultList());
+    }
+
+    private List<String[]> getNodesTables() {
         String[][] configUnionTables = new String[][]{
                 {"arr_level", "node"},
                 {"arr_level", "nodeParent"},
@@ -514,16 +547,7 @@ public class RevertingChangesService {
                 {"arr_change", "primaryNode"},
         };
 
-        List<String[]> nodesTables = Arrays.asList(configUnionTables);
-        List<String> unionPart = new ArrayList<>();
-        for (String[] nodeTable : nodesTables) {
-            unionPart.add(String.format("n.nodeId NOT IN (SELECT i.%2$s.nodeId FROM %1$s i WHERE i.%2$s IS NOT NULL)", nodeTable[0], nodeTable[1]));
-        }
-        String changesHql = String.join("\nAND\n", unionPart);
-
-        String hql = String.format("DELETE FROM arr_node n WHERE %1$s", changesHql);
-
-        return entityManager.createQuery(hql);
+        return Arrays.asList(configUnionTables);
     }
 
     public Query createDeleteNotUseChangesQuery() {

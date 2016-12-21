@@ -36,10 +36,9 @@ import {
     groupChange,
     groupDelete,
     fundInvalidChanges,
-    changeRequest,
-    createRequestItemQueue,
     createRequest,
-    changeRequestItemQueue
+    changeRequestItemQueue,
+    nodesDelete
 } from 'actions/global/change.jsx';
 
 
@@ -256,6 +255,9 @@ function processEvents(values) {
                 changeRequestItemQueueChange(value);
                 break;
 
+            case 'DELETE_NODES':
+                deleteNodes(value);
+                break;
 
             default:
                 console.warn("Nedefinovaný typ eventu: " + value.eventType, value);
@@ -293,6 +295,10 @@ function createRequestItemQueueChange(value) {
 
 function changeRequestItemQueueChange(value) {
     store.dispatch(changeRequestItemQueue(value));
+}
+
+function deleteNodes(value) {
+    store.dispatch(nodesDelete(value.versionId, value.entityIds))
 }
 
 function approveVersionChange(value) {

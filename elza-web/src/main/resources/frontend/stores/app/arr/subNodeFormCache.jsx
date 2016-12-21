@@ -45,6 +45,7 @@ export default function subNodeFormCache(state = subNodeFormCacheInitialState, a
                 dataCache: dataCache,
             }
 
+        case types.NODES_DELETE:
         case types.FUND_INVALID:
             return subNodeFormCacheInitialState;
 

@@ -418,3 +418,8 @@ export const TAB_SELECT = 'TAB_SELECT'
  */
 export const STATUS_SAVING = 'STATUS_SAVING'
 export const STATUS_SAVED = 'STATUS_SAVED'
+
+/**
+ * Smazání nodů - při UNDO
+ */
+export const NODES_DELETE = 'NODES_DELETE'

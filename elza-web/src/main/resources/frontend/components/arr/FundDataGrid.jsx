@@ -518,6 +518,10 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
             return
         }
 
+        if (col.id === COL_REFERENCE_MARK) {
+            return;
+        }
+
         this.dispatch(fundDataGridPrepareEdit(versionId, row.id, parentNodeId, col.id));
 
         const dataGridComp = this.refs.dataGrid.getWrappedInstance();

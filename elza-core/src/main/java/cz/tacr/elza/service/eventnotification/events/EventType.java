@@ -39,6 +39,9 @@ public enum EventType {
 
     NODES_CHANGE(EventIdsInVersion.class),
 
+    // při použití UNDO, kde se reálně entity JP můžou mazat
+    DELETE_NODES(EventIdsInVersion.class),
+
     DESC_ITEM_CHANGE(EventChangeDescItem.class),
     OUTPUT_ITEM_CHANGE(EventChangeOutputItem.class),
     FUND_RECORD_CHANGE(EventNodeIdVersionInVersion.class),

@@ -679,11 +679,18 @@ class ItemFormActions {
         return (dispatch, getState) => {
             var state = getState();
 
-            const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
-            const parentObjStore = this._getParentObjStore(state, versionId, routingKey);
-            if ((!subNodeForm.fetched || subNodeForm.dirty || subNodeForm.needClean) && !subNodeForm.isFetching) {
-                const parentObjIdInfo = this._getParentObjIdInfo(parentObjStore, routingKey);
-                dispatch(this._fundSubNodeFormFetch(versionId, parentObjIdInfo.parentId, routingKey, subNodeForm.needClean));
+            // Fetch může být pouze v případě, že už jsou načteny číselníkové hodnoty na typy položek v ref
+            if (
+                !state.refTables.rulDataTypes.isFetching && state.refTables.rulDataTypes.fetched
+                &&
+                !state.refTables.descItemTypes.isFetching && state.refTables.descItemTypes.fetched
+            ) {
+                const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
+                const parentObjStore = this._getParentObjStore(state, versionId, routingKey);
+                if ((!subNodeForm.fetched || subNodeForm.dirty || subNodeForm.needClean) && !subNodeForm.isFetching) {
+                    const parentObjIdInfo = this._getParentObjIdInfo(parentObjStore, routingKey);
+                    dispatch(this._fundSubNodeFormFetch(versionId, parentObjIdInfo.parentId, routingKey, subNodeForm.needClean));
+                }
             }
         }
     }
