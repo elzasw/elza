@@ -88,23 +88,12 @@
                 width: 100%;
                 display: flex;
 
-                &.depth-0 {
-                    padding-left: 0*@autocomplete-tree-depth;
-                }
-                &.depth-1 {
-                    padding-left: 1*@autocomplete-tree-depth;
-                }
-                &.depth-2 {
-                    padding-left: 2*@autocomplete-tree-depth;
-                }
-                &.depth-3 {
-                    padding-left: 3*@autocomplete-tree-depth;
-                }
-                &.depth-4 {
-                    padding-left: 4*@autocomplete-tree-depth;
-                }
-                &.depth-5 {
-                    padding-left: 5*@autocomplete-tree-depth;
+                .depth-container {
+                    display: inline-block;
+                    .depth-item {
+                        display: inline-block;
+                        width: @autocomplete-tree-depth;
+                    }
                 }
 
                 .item-text {

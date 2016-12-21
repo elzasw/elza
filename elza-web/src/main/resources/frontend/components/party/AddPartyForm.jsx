@@ -295,6 +295,7 @@ class AddPartyForm extends AbstractReactComponent {
                                             label={i18n('party.recordType')}
                                             items={treeItems}
                                             tree
+                                            alwaysExpanded
                                             allowSelectItem={(id, item) => item.addRecord}
                                             {...registerTypeId}
                                             value={value}
@@ -334,7 +335,7 @@ class AddPartyForm extends AbstractReactComponent {
 
                             <Col xs={12}>
                                 <label>{i18n('party.name.complements')}</label> <Button bsStyle="action" onClick={() => {partyNameComplements.addField({complementTypeId:null, complement: null})}}><Icon glyph="fa-plus"/></Button>
-                                {partyNameComplements.map((complement, index) => <div key={'complement' + index}>
+                                {partyNameComplements.map((complement, index) => <div className="complement" key={'complement' + index}>
                                     <FormInput componentClass="select" {...complement.complementTypeId}>
                                         <option key='0'/>
                                         {complementsList}

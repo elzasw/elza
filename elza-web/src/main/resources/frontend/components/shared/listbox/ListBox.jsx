@@ -129,6 +129,52 @@ var keyDownHandlers = {
                 this.props.onChangeSelection && this.props.onChangeSelection([newActiveIndex])
             }
         }
+    },
+    PageDown: function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const {lastFocus} = this.state;
+        const {items, multiselect} = this.props;
+
+        if (items.length > 0) {
+            var newActiveIndex = null;
+
+            if (lastFocus === null) {
+                newActiveIndex = 0
+            } else {
+                newActiveIndex = this.getNextPageSelectableItemIndex(lastFocus, 10)
+            }
+            if (newActiveIndex !== null) {
+                var state = multiselect ? {lastFocus: newActiveIndex, activeIndexes: {[newActiveIndex]: true}} : {lastFocus: newActiveIndex, activeIndex: newActiveIndex};
+                this.setState(state, this.ensureItemVisible.bind(this, newActiveIndex));
+                this.props.onFocus && this.props.onFocus(items[newActiveIndex], newActiveIndex);
+                this.props.onChangeSelection && this.props.onChangeSelection([newActiveIndex]);
+            }
+        }
+    },
+    PageUp: function(e) {
+        e.preventDefault()
+        e.stopPropagation()
+
+        const {lastFocus} = this.state
+        const {items, multiselect} = this.props
+
+        if (items.length > 0) {
+            var newActiveIndex = null
+
+            if (lastFocus === null) {
+                newActiveIndex = 0
+            } else {
+                newActiveIndex = this.getPrevPageSelectableItemIndex(lastFocus, 10)
+            }
+            if (newActiveIndex !== null) {
+                var state = multiselect ? {lastFocus: newActiveIndex, activeIndexes: {[newActiveIndex]: true}} : {lastFocus: newActiveIndex, activeIndex: newActiveIndex}
+                this.setState(state, this.ensureItemVisible.bind(this, newActiveIndex))
+                this.props.onFocus && this.props.onFocus(items[newActiveIndex], newActiveIndex)
+                this.props.onChangeSelection && this.props.onChangeSelection([newActiveIndex])
+            }
+        }
     }
 }
 
@@ -343,6 +389,38 @@ var ListBox = class ListBox extends AbstractReactComponent {
         }
         return null
     }
+
+    getNextPageSelectableItemIndex = (index, pageSize) => {
+        const {items, canSelectItem} = this.props;
+
+        while (pageSize > 0) {
+            var i = index + pageSize;
+            while (i < items.length) {
+                if (canSelectItem(items[i], i)) {
+                    return i;
+                }
+                i++;
+            }
+            pageSize--;
+        }
+        return null;
+    };
+
+    getPrevPageSelectableItemIndex = (index, pageSize) => {
+        const {items, canSelectItem} = this.props;
+
+        while (pageSize > 0) {
+            var i = index - pageSize;
+            while (i >= 0) {
+                if (canSelectItem(items[i], i)) {
+                    return i;
+                }
+                i--;
+            }
+            pageSize--;
+        }
+        return null;
+    };
 
     getActiveIndexForUse(props, state) {
         var index
