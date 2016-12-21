@@ -1123,9 +1123,6 @@ Autocomplete.defaultProps = {
         if (!allowFocus) {
             cls += ' not-focusable';
         }
-        if (treeInfo !== null) {
-            cls += " depth-" + treeInfo.depth;
-        }
         if (item.className) {
             cls += " " + item.className;
         }
@@ -1138,7 +1135,16 @@ Autocomplete.defaultProps = {
         }
 
         let treeTogle;
+        let depth;
         if (treeInfo) {
+            const depthItems = [];
+            for (let a=0; a<treeInfo.depth; a++) {
+                depthItems.push(<div className="depth-item"></div>);
+            }
+            depth= <div className="depth-container">
+                {depthItems}
+            </div>
+
             if (item.children && item.children.length > 0) {
                 treeTogle = (
                     <div
@@ -1159,6 +1165,7 @@ Autocomplete.defaultProps = {
                 className={cls}
                 key={item.id}
             >
+                {depth}
                 {treeTogle}
                 {itemStr}
             </div>
