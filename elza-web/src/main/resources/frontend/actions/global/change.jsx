@@ -123,10 +123,13 @@ export function changeParty(partyId) {
 }
 
 export function changePartyCreate(partyId) {
-    return {
-        type: types.PARTY_CREATED,
-        partyId: partyId
-    }
+    return (dispatch, getState) => {
+        dispatch(partyListInvalidate());
+        dispatch({
+            type: types.PARTY_CREATED,
+            partyId: partyId
+        })
+    };
 }
 
 export function changePartyDelete(partyId) {

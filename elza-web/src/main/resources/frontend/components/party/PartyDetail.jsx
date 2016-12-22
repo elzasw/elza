@@ -14,11 +14,10 @@ import {
     Search,
     i18n,
     FormInput,
-    NoFocusButton,
     Icon,
     CollapsablePanel
 } from 'components/index.jsx';
-import {Form} from 'react-bootstrap';
+import {Form, Button} from 'react-bootstrap';
 import {AppActions} from 'stores/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
@@ -196,13 +195,13 @@ class PartyDetail extends AbstractReactComponent {
     };
 
     trySetFocus = (props = this.props) => {
-        const {focus} = props;
+        const {_focus} = props;
 
-        if (canSetFocus() && focus) {
-            if (isFocusFor(focus, 'party', 2)) {
+        if (canSetFocus() && _focus) {
+            if (isFocusFor(_focus, 'party', 2)) {
                 this.setState({}, () => {
-                    const el = ReactDOM.findDOMNode(this.refs.partyDetail);
-                    setInputFocus(el, false);
+                    this.refs.partyDetail.focus();
+                    //setInputFocus(this.refs.partyDetail);
                     focusWasSet()
                 })
             }
@@ -289,7 +288,7 @@ class PartyDetail extends AbstractReactComponent {
         const events = {onPin:this.handlePinToggle, onSelect: this.handleToggleActive};
 
         return <Shortcuts name='PartyDetail' handler={this.handleShortcuts}>
-            <div ref='partyDetail' className="party-detail">
+            <div tabIndex={0} ref='partyDetail' className="party-detail">
                 <div className="party-header">
                     <div>
                         <h3>{party.name}</h3>
@@ -308,7 +307,7 @@ class PartyDetail extends AbstractReactComponent {
                         if (TYPE == UI_PARTY_GROUP_TYPE.IDENT) {
                             const key = UI_PARTY_GROUP_TYPE.IDENT;
                             return <div key={index}>
-                                <CollapsablePanel isOpen={activeIndexes && activeIndexes[key] === true} pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true} header={i.name} eventKey={key} {...events}>
+                                <CollapsablePanel tabIndex={0} isOpen={activeIndexes && activeIndexes[key] === true} pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true} header={i.name} eventKey={key} {...events}>
                                     <PartyDetailNames party={party} partyType={partyType} onPartyUpdate={this.handlePartyUpdate} canEdit={canEdit} />
                                     {party.partyType.code == PARTY_TYPE_CODES.GROUP_PARTY && <PartyDetailIdentifiers party={party} onPartyUpdate={this.handlePartyUpdate} canEdit={canEdit} />}
                                 </CollapsablePanel>
@@ -316,16 +315,16 @@ class PartyDetail extends AbstractReactComponent {
                         } else if (TYPE == UI_PARTY_GROUP_TYPE.CONCLUSION) {
                             const key = UI_PARTY_GROUP_TYPE.CONCLUSION;
                             return <div key={index}>
-                                <CollapsablePanel isOpen={activeIndexes && activeIndexes[key] === true} pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true} header={i.name} eventKey={key} {...events}>
+                                <CollapsablePanel tabIndex={0} isOpen={activeIndexes && activeIndexes[key] === true} pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true} header={i.name} eventKey={key} {...events}>
                                     <FormInput componentClass="textarea" {...sourceInformation} label={i18n("party.detail.sources")} />
-                                    <label>{i18n("party.detail.creators")}{canEdit && <NoFocusButton bsStyle="default" onClick={() => creators.addField({})}><Icon glyph="fa-plus" /></NoFocusButton>}</label>
+                                    <label>{i18n("party.detail.creators")}{canEdit && <Button bsStyle="default" onClick={() => creators.addField({})}><Icon glyph="fa-plus" /></Button>}</label>
                                     {creators.map((creator, index) => <div key={index + "-" + creator.id} className="value-group">
                                         <PartyField onCreate={this.handleAddParty.bind(this, creator)} {...creator} />
-                                        {canEdit && <NoFocusButton bsStyle="action" onClick={() => {
+                                        {canEdit && <Button bsStyle="action" onClick={() => {
                                             if (confirm(i18n('party.detail.creator.delete'))) {
                                                 creators.removeField(index)
                                             }
-                                        }}><Icon glyph="fa-trash" /></NoFocusButton>}
+                                        }}><Icon glyph="fa-trash" /></Button>}
                                     </div>)}
                                 </CollapsablePanel>
                             </div>;
@@ -392,7 +391,7 @@ class PartyDetail extends AbstractReactComponent {
 
                             const key = i.code;
 
-                            return <CollapsablePanel key={key} isOpen={activeIndexes && activeIndexes[key] === true}
+                            return <CollapsablePanel tabIndex={0} key={key} isOpen={activeIndexes && activeIndexes[key] === true}
                                                      pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true} header={i.name}
                                                      eventKey={key} {...events}>
                                 <div className="elements-container">
@@ -414,12 +413,12 @@ export default reduxForm({
         fields: PartyDetail.fields,
         validate: PartyDetail.validate
     },(state) => {
-        const {app: {partyDetail}, focus, userDetail, refTables: {partyTypes}} = state;
+        const {app: {partyDetail}, userDetail, refTables: {partyTypes}, focus} = state;
         return {
             partyDetail,
-            focus,
             userDetail,
             partyTypes,
+            _focus: focus,
             initialValues: partyDetail.fetched ? partyDetail.data : {}
         }
     },
