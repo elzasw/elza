@@ -197,13 +197,14 @@ class PartyPage extends AbstractReactComponent {
 
 
 function mapStateToProps(state) {
-    const {app:{partyList, partyDetail}, splitter, refTables, userDetail} = state;
+    const {app:{partyList, partyDetail}, splitter, refTables, userDetail, focus} = state;
     return {
         partyList,
         partyDetail,
         splitter,
         refTables,
         userDetail,
+        focus
     }
 }
 
