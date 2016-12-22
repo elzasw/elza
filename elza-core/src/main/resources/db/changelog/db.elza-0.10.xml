@@ -548,10 +548,24 @@
 
     <changeSet id="201612220713" author="lebeda">
         <customChange class="cz.tacr.elza.dbchangelog.DbUpgrade_201612220713" />
-        <!--<addColumn tableName="arr_fund">-->
-            <!--<column name="uuid" type="char(36)">-->
-                <!--<constraints nullable="false" unique="true"/>-->
-            <!--</column>-->
-        <!--</addColumn>-->
     </changeSet>
+
+    <changeSet id="201612221346" author="lebeda">
+        <dropForeignKeyConstraint baseTableName="arr_dao_request"
+                                  constraintName="fk_dao_request_digitization_frontdesk"/>
+        <dropColumn tableName="arr_dao_request" columnName="digitization_frontdesk_id"/>
+
+        <addColumn tableName="arr_dao_request">
+            <column name="digital_repository_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <addForeignKeyConstraint constraintName="fk_dao_request_digital_repository"
+                                 baseTableName="arr_dao_request"
+                                 baseColumnNames="digital_repository_id"
+                                 referencedTableName="arr_digital_repository"
+                                 referencedColumnNames="external_system_id"
+                                 onDelete="NO ACTION"/>
+    </changeSet>
+
 </databaseChangeLog>

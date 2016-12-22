@@ -21,11 +21,11 @@ import javax.persistence.Table;
 @Entity(name = "arr_dao_request")
 @Table
 @DiscriminatorValue(value= ArrRequest.ClassType.Values.DAO)
-public class ArrDaoRequest extends ArrRequest implements cz.tacr.elza.api.ArrDaoRequest<ArrDigitizationFrontdesk> {
+public class ArrDaoRequest extends ArrRequest implements cz.tacr.elza.api.ArrDaoRequest<ArrDigitalRepository> {
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrDigitizationFrontdesk.class)
-    @JoinColumn(name = "digitizationFrontdeskId", nullable = false)
-    private ArrDigitizationFrontdesk digitizationFrontdesk;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrDigitalRepository.class)
+    @JoinColumn(name = "digitalRepositoryId", nullable = false)
+    private ArrDigitalRepository digitalRepository;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = false)
@@ -35,13 +35,13 @@ public class ArrDaoRequest extends ArrRequest implements cz.tacr.elza.api.ArrDao
     private String description;
 
     @Override
-    public ArrDigitizationFrontdesk getDigitizationFrontdesk() {
-        return digitizationFrontdesk;
+    public ArrDigitalRepository getDigitalRepository() {
+        return digitalRepository;
     }
 
     @Override
-    public void setDigitizationFrontdesk(final ArrDigitizationFrontdesk digitizationFrontdesk) {
-        this.digitizationFrontdesk = digitizationFrontdesk;
+    public void setDigitalRepository(ArrDigitalRepository digitalRepository) {
+        this.digitalRepository = digitalRepository;
     }
 
     @Override
