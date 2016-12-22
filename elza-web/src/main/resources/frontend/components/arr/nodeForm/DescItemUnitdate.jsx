@@ -1,12 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent, i18n} from 'components/index.jsx';
+import {TooltipTrigger, AbstractReactComponent, i18n} from 'components/index.jsx';
 import {connect} from 'react-redux'
 import {decorateValue} from './DescItemUtils.jsx'
 import {OverlayTrigger, Tooltip} from 'react-bootstrap';
 import DescItemLabel from './DescItemLabel.jsx'
 import {indexById} from 'stores/app/utils.jsx'
-import TooltipTrigger from "pages/home/TooltipTrigger"
 
 import './DescItemUnitdate.less'
 
@@ -175,7 +174,7 @@ class DescItemUnitdate extends AbstractReactComponent {
             <TooltipTrigger
                 content={tt}
                 holdOnHover={true}
-                position="right,left"
+                position="auto"
             >
                 <input
                     {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}

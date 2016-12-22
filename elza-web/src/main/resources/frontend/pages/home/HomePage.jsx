@@ -10,7 +10,7 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Icon, i18n} from 'components/index.jsx';
-import {Splitter, Autocomplete, FundForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent, PartyList} from 'components/index.jsx';
+import {TooltipTrigger, Splitter, Autocomplete, FundForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent, PartyList} from 'components/index.jsx';
 import {NodeTabs} from 'components/index.jsx';
 import {ButtonGroup, Button, Panel} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
@@ -19,8 +19,6 @@ import {createFund} from 'actions/arr/fund.jsx'
 import {storeLoadData, storeLoad} from 'actions/store/store.jsx'
 import {setInputFocus, dateToString} from 'components/Utils.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
-
-import TooltipTrigger from "./TooltipTrigger"
 
 const HomePage = class HomePage extends AbstractReactComponent {
     constructor(props) {
@@ -270,10 +268,10 @@ const HomePage = class HomePage extends AbstractReactComponent {
 <br/>
 <br/>
 <br/>
-                <TooltipTrigger
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb<TooltipTrigger
                     content={tt}
                     holdOnHover={true}
-                    position="right,left"
+                    placement="auto"
                     >
                     <button>xxxxxxxx</button>
                 </TooltipTrigger>
