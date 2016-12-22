@@ -1,9 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {FormControl} from 'react-bootstrap'
+import {FormControl, Button} from 'react-bootstrap'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
-import {i18n, AbstractReactComponent, NoFocusButton, Icon, RelationClassForm, RelationForm} from 'components/index.jsx'
+import {i18n, AbstractReactComponent, Icon, RelationClassForm, RelationForm} from 'components/index.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {relationCreate, relationUpdate, relationDelete, RELATION_CLASS_TYPE_REPEATABILITY, USE_UNITDATE_ENUM, RELATION_CLASS_CODES, normalizeDatation} from 'actions/party/party.jsx'
 import {getMapFromList} from 'stores/app/utils.jsx'
@@ -101,7 +101,7 @@ class PartyDetailRelations extends AbstractReactComponent {
         if (relationClassType.repeatability == RELATION_CLASS_TYPE_REPEATABILITY.MULTIPLE ||
             (relationClassType.repeatability == RELATION_CLASS_TYPE_REPEATABILITY.UNIQUE &&
                 (!relations || relations.length < 1))) {
-            addButton = <NoFocusButton bsStyle="default" onClick={this.handleRelationAdd}><Icon glyph="fa-plus" /></NoFocusButton>;
+            addButton = <Button bsStyle="default" onClick={this.handleRelationAdd}><Icon glyph="fa-plus" /></Button>;
         }
 
         const relationsArray = relations ? relations : [];
@@ -130,8 +130,8 @@ class PartyDetailRelations extends AbstractReactComponent {
                     {relation.note && <div>{relation.note}</div>}
                 </div>
                 <div className="actions">
-                    <NoFocusButton bsStyle="action" onClick={() => this.handleRelationUpdate(relation)}><Icon glyph="fa-pencil" /></NoFocusButton>
-                    <NoFocusButton bsStyle="action" onClick={() => this.handleRelationDelete(relation.id)}><Icon glyph="fa-times" /></NoFocusButton>
+                    <Button bsStyle="action" onClick={() => this.handleRelationUpdate(relation)}><Icon glyph="fa-pencil" /></Button>
+                    <Button bsStyle="action" onClick={() => this.handleRelationDelete(relation.id)}><Icon glyph="fa-times" /></Button>
                 </div>
             </div>)}
         </div>
