@@ -14,11 +14,10 @@ import {
     Search,
     i18n,
     FormInput,
-    NoFocusButton,
     Icon,
     CollapsablePanel
 } from 'components/index.jsx';
-import {Form} from 'react-bootstrap';
+import {Form, Button} from 'react-bootstrap';
 import {AppActions} from 'stores/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
@@ -318,14 +317,14 @@ class PartyDetail extends AbstractReactComponent {
                             return <div key={index}>
                                 <CollapsablePanel isOpen={activeIndexes && activeIndexes[key] === true} pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true} header={i.name} eventKey={key} {...events}>
                                     <FormInput componentClass="textarea" {...sourceInformation} label={i18n("party.detail.sources")} />
-                                    <label>{i18n("party.detail.creators")}{canEdit && <NoFocusButton bsStyle="default" onClick={() => creators.addField({})}><Icon glyph="fa-plus" /></NoFocusButton>}</label>
+                                    <label>{i18n("party.detail.creators")}{canEdit && <Button bsStyle="default" onClick={() => creators.addField({})}><Icon glyph="fa-plus" /></Button>}</label>
                                     {creators.map((creator, index) => <div key={index + "-" + creator.id} className="value-group">
                                         <PartyField onCreate={this.handleAddParty.bind(this, creator)} {...creator} />
-                                        {canEdit && <NoFocusButton bsStyle="action" onClick={() => {
+                                        {canEdit && <Button bsStyle="action" onClick={() => {
                                             if (confirm(i18n('party.detail.creator.delete'))) {
                                                 creators.removeField(index)
                                             }
-                                        }}><Icon glyph="fa-trash" /></NoFocusButton>}
+                                        }}><Icon glyph="fa-trash" /></Button>}
                                     </div>)}
                                 </CollapsablePanel>
                             </div>;
