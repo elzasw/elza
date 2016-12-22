@@ -25,7 +25,7 @@ import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {partyUpdate} from 'actions/party/party.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
-import {findPartyFetchIfNeeded, partyDetailFetchIfNeeded, PARTY_TYPE_CODES} from 'actions/party/party.jsx'
+import {partyAdd, findPartyFetchIfNeeded, partyDetailFetchIfNeeded, PARTY_TYPE_CODES} from 'actions/party/party.jsx'
 import {Utils} from 'components/index.jsx';
 import {objectById, indexById} from 'stores/app/utils.jsx';
 import {setInputFocus, dateTimeToString} from 'components/Utils.jsx'
@@ -146,11 +146,20 @@ class PartyDetail extends AbstractReactComponent {
     }
 
     updateStateFromProps(props = this.props, state = this.state) {
+
+        let tmpActiveIndexes;
+        if (props.partyDetail.id === this.props.partyDetail.id) {
+            tmpActiveIndexes = state.activeIndexes;
+        } else {
+            tmpActiveIndexes = {};
+        }
+
+        let activeIndexes = tmpActiveIndexes, visibilitySettingsValue = {}, mergeIndex = {};
+
         if (props.userDetail && props.userDetail.settings) {
             const {settings} = props.userDetail;
             const visibilitySettings = getOneSettings(settings, SETTINGS_PARTY_PIN);
 
-            let activeIndexes, visibilitySettingsValue = {}, mergeIndex = {};
             if (visibilitySettings.value) {
                 try {
                     visibilitySettingsValue = JSON.parse(visibilitySettings.value);
@@ -162,23 +171,19 @@ class PartyDetail extends AbstractReactComponent {
                             delete visibilitySettingsValue[key];
                         }
                     }
-                    console.log(state.activeIndexes, visibilitySettingsValue, mergeIndex);
                 } catch(e) {
                     visibilitySettingsValue = {};
                 }
                 activeIndexes = {
-                    ...state.activeIndexes,
+                    ...activeIndexes,
                     ...visibilitySettingsValue,
                     ...mergeIndex
                 };
             } else {
                 console.warn("No settings for visibility - fallback to default - closed");
-                activeIndexes = {
-                    ...state.activeIndexes,
-                };
             }
-            this.setState({visibilitySettings, activeIndexes, visibilitySettingsValue})
         }
+        this.setState({activeIndexes, visibilitySettingsValue})
     }
 
     fetchIfNeeded = (props = this.props) => {
@@ -248,6 +253,14 @@ class PartyDetail extends AbstractReactComponent {
         }));
     };
 
+    partyAdded = (field, party) => {
+        field.onChange(party);
+    };
+
+    handleAddParty = (field, partyTypeId) => {
+        this.dispatch(partyAdd(partyTypeId, null, this.partyAdded.bind(this, field), false));
+    };
+
     render() {
         const {userDetail, partyDetail, fields} = this.props;
         const {sourceInformation, creators} = fields;
@@ -307,7 +320,7 @@ class PartyDetail extends AbstractReactComponent {
                                     <FormInput componentClass="textarea" {...sourceInformation} label={i18n("party.detail.sources")} />
                                     <label>{i18n("party.detail.creators")}{canEdit && <NoFocusButton bsStyle="default" onClick={() => creators.addField({})}><Icon glyph="fa-plus" /></NoFocusButton>}</label>
                                     {creators.map((creator, index) => <div key={index + "-" + creator.id} className="value-group">
-                                        <PartyField {...creator} />
+                                        <PartyField onCreate={this.handleAddParty.bind(this, creator)} {...creator} />
                                         {canEdit && <NoFocusButton bsStyle="action" onClick={() => {
                                             if (confirm(i18n('party.detail.creator.delete'))) {
                                                 creators.removeField(index)
@@ -377,9 +390,11 @@ class PartyDetail extends AbstractReactComponent {
                                 }
                             }
 
-                            return <CollapsablePanel key={index} isOpen={activeIndexes && activeIndexes[index] === true}
-                                                     pinned={visibilitySettingsValue && visibilitySettingsValue[index] === true} header={i.name}
-                                                     eventKey={index} {...events}>
+                            const key = i.code;
+
+                            return <CollapsablePanel key={key} isOpen={activeIndexes && activeIndexes[key] === true}
+                                                     pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true} header={i.name}
+                                                     eventKey={key} {...events}>
                                 <div className="elements-container">
                                     {items}
                                 </div>

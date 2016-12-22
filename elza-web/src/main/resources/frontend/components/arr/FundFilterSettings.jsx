@@ -476,7 +476,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
         const {refMarkSelectedNode} = this.state;
 
         const data = {
-            refMarkNodeId: refMarkSelectedNode.id,
+            nodeId: refMarkSelectedNode.id,
         };
 
         onSubmitForm(data)
@@ -593,7 +593,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                     onClick={this.handleSubmit}>{i18n('global.action.store')}</Button>
         } else {    // referenční označení
             valueContent = <FundNodesSelect
-                selectedId={filter && filter.refMarkNodeId != null ? filter.refMarkNodeId : null}
+                selectedId={filter && filter.nodeId != null ? filter.nodeId : null}
                 multipleSelection={false}
                 onChange={this.handleNodeSelectChange}
                 />

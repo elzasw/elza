@@ -285,3 +285,11 @@ export function groupDelete(id) {
         id
     }
 }
+
+export function nodesDelete(fundVersionId, nodeIds) {
+    return {
+        type: types.NODES_DELETE,
+        versionId: fundVersionId,
+        nodeIds: nodeIds
+    }
+}

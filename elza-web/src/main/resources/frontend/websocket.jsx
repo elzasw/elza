@@ -35,7 +35,8 @@ import {
     userChange,
     groupChange,
     groupDelete,
-    fundInvalidChanges
+    fundInvalidChanges,
+    nodesDelete
 } from 'actions/global/change.jsx';
 
 
@@ -233,6 +234,12 @@ function processEvents(values) {
                 break;
             case 'GROUP_DELETE':
                 deleteGroup(value);
+                break;
+
+            case 'DELETE_NODES':
+                deleteNodes(value);
+                break;
+
             default:
                 console.warn("Nedefinovaný typ eventu: " + value.eventType, value);
                 break;
@@ -253,6 +260,10 @@ function changeGroup(value) {
 }
 function deleteGroup(value) {
     store.dispatch(groupDelete(value.ids[0]))
+}
+
+function deleteNodes(value) {
+    store.dispatch(nodesDelete(value.versionId, value.entityIds))
 }
 
 function approveVersionChange(value) {

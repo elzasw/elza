@@ -6,8 +6,8 @@ import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -1294,15 +1294,12 @@ public class XmlImportService {
         String uuid = record.getUuid();
         String externalId = record.getExternalId();
         String externalSourceCode = record.getExternalSourceCode();
-        RegRecord regRecord = null;
         boolean isNew = false;
         boolean update = false;
 
-        if (!record.isLocal()) {
-            regRecord = findExistingRecord(record.getRecordId(), uuid, externalId, externalSourceCode);
-        }
+        RegRecord regRecord = findExistingRecord(record.getRecordId(), uuid, externalId, externalSourceCode);
 
-        if (regRecord == null) { // je lokální nebo se páruje podle uuid nebo externalId a externalSourceCode a nenajde se
+        if (regRecord == null) { // nebyl nalezen podle uuid nebo externalId a externalSourceCode nebo nejsou vyplněné
             if (stopOnError) {
                 checkRequiredAttributes(record);
             }
@@ -1368,10 +1365,9 @@ public class XmlImportService {
             return recordRepository.findRegRecordByUuid(uuid);
         } else if (externalId != null && externalSourceCode != null) {
             return recordRepository.findRegRecordByExternalIdAndExternalSourceCode(externalId, externalSourceCode);
-        } else {
-            throw new RecordImportException("Globální rejstřík s identifikátorem " + recordId
-                    + " nemá vyplněné uuid nebo externí id a typ zdroje.");
         }
+
+        return null;
     }
 
     private void syncVariantRecords(final Record record, final RegRecord regRecord, final boolean isNew, final boolean stopOnError)

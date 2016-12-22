@@ -94,6 +94,15 @@ export default function registryRegionData(state = initialState, action = {}) {
                 fetched: false
             }
         }
+        case types.REGISTRY_RECORD_DETAIL_CLEAR: {
+            return {
+                ...state,
+                currentDataKey: null,
+                selectedId: null,
+                fetched: false,
+                isFetching: false
+            }
+        }
         case types.REGISTRY_RECORD_DETAIL_RECEIVE: {
             if (action.item.id !== state.currentDataKey) {
                 return state;

@@ -133,7 +133,6 @@ var messages = {
     "ribbon.action.registry.import": "Import Hesel",
     "ribbon.action.logout": "Odhlásit",
     "ribbon.action.showFundHistory": "Historie změn",
-    "ribbon.action.showNodeHistory": "Historie změn JP",
 
     "ribbon.action.arr.validation.error.previous": "Předchozí chyba",
     "ribbon.action.arr.validation.error.next": "Další chyba",
@@ -462,6 +461,14 @@ var messages = {
     "arr.history.change.title.BULK_ACTION": "hromadná funkce",
     "arr.history.change.title.IMPORT": "import AS",
 
+    "arr.history.change.description.CREATE_AS": "Vytvoření archivního souboru",
+    "arr.history.change.description.ADD_NODES_OUTPUT": "Připojení JP ({0}) k výstupu",
+    "arr.history.change.description.REMOVE_NODES_OUTPUT": "Odpojení JP ({0}) od výstupu",
+    "arr.history.change.description.BATCH_CHANGE_DESC_ITEM": "Hromadná úprava hodnot atributů",
+    "arr.history.change.description.BATCH_DELETE_DESC_ITEM": "Hromadný výmaz hodnot atributů",
+    "arr.history.change.description.BULK_ACTION": "Funkce (Ovlivněno JP: {0})",
+    "arr.history.change.description.IMPORT": "Import do AS",
+
     "arr.history.deleteQuestion": "Opravdu chcete provést nenávratné odstranění změn? (počet změn, které budou odstraněny: {0})",
     "arr.history.title": "Historie změn",
     "arr.history.title.change.date": "Datum",
@@ -501,7 +508,7 @@ var messages = {
     "subNodeForm.validate.spec.required": "Specifikace musí být uvedena",
     "subNodeForm.validate.calendarType.required": "Typ kalendáře musí být uveden",
     "subNodeForm.validate.value.notEmpty": "Hodnota musí být uvedena",
-    "subNodeForm.descItemType": "Prvek",
+    "subNodeForm.descItemType.all": "Všechny prvky",
     "subNodeForm.descItemType.title.add": "Přidání prvku",
     "subNodeForm.descItemType.copy": "Nastavení opakovaného kopírování hodnot PP",
     "subNodeForm.descItemType.lock": "Nastavení zamknutí úprav hodnot PP",
@@ -651,6 +658,9 @@ var messages = {
 
     "party.relation.class": "Třída vztahu",
     "party.relation.type": "Typ vztahu",
+    "party.relation.date": "Datum",
+    "party.relation.date.textDate": "Datum - textově",
+    "party.relation.date.note": "Datum - poznámka",
     "party.relation.from": "Datum od",
     "party.relation.from.textDate": "Datum od - textově",
     "party.relation.from.note": "Datum od - poznámka",

@@ -66,7 +66,11 @@ export function partyListInvalidate() {
 }
 
 export function partyDetailFetchIfNeeded(id) {
-    return DetailActions.fetchIfNeeded(AREA_PARTY_DETAIL, id, () => WebApi.getParty(id));
+    return (dispatch, getState) => {
+        dispatch(DetailActions.fetchIfNeeded(AREA_PARTY_DETAIL, id, () => {
+            return WebApi.getParty(id).catch(()=>dispatch(partyDetailClear()));
+        }));
+    }
 }
 
 export function partyDetailInvalidate() {
@@ -123,6 +127,9 @@ export function relationCreate(relation) {
                 if (partyList.filteredRows && indexById(partyList.filteredRows, relation.partyId) !== null) {
                     dispatch(partyListInvalidate())
                 }
+            })
+            .catch(error => {
+                dispatch(clearPartyDetail());
             });
     };
 }

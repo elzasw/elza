@@ -677,8 +677,8 @@ public class ConfigMapperConfiguration {
                     if (unitdateVO.getValue() != null) {
                         UnitDateConvertor.convertToUnitDate(unitdateVO.getValue(), parUnitdate);
                     }
-                    parUnitdate.setCalendarType(calendarTypeRepository.getOneCheckExist(unitdateVO.getCalendarTypeId()));
-
+                    Integer calendarTypeId = unitdateVO.getCalendarTypeId();
+                    parUnitdate.setCalendarType(calendarTypeId != null ? calendarTypeRepository.getOneCheckExist(calendarTypeId) : null);
                 }
             }).byDefault().register();
 
