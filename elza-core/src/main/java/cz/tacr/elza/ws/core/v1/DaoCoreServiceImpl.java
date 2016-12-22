@@ -42,6 +42,7 @@ import cz.tacr.elza.ws.types.v1.File;
 import cz.tacr.elza.ws.types.v1.RelatedFileGroup;
 import cz.tacr.elza.ws.types.v1.UnitOfMeasure;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -335,7 +336,7 @@ public class DaoCoreServiceImpl implements DaoService {
         logger.info("Executing operation getDid");
         // TODO Lebeda - ELZA-1330 - Zprovoznit webové služby - dopsat implementaci
         System.out.println(packageIdentifier);
-        throw new UnsupportedOperationException("Neimplementováno");
+        throw new NotImplementedException("Implementovat pomocí custom scriptu");
 
 //        logger.info("Ending operation getDid");
     }
