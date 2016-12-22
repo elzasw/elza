@@ -42,6 +42,21 @@ var ArrDaos = class ArrDaos extends AbstractReactComponent {
         }
     };
 
+    componentWillReceiveProps(nextProps) {
+        this.setState({
+            node: nextProps.node,
+            selectedItem: null,
+            selectedIndex: null,
+            activeIndex: null,
+        }, this.refreshRows);
+    }
+
+    refreshRows = () => {
+        if (this.refs.listbox) {
+            this.refs.listbox.reload();
+        }
+    };
+
     renderItem = (item) => {
         return <div key={"daos" + item.id} className="item">{item.label}<br /><i><small>{item.code}</small></i></div>
     };
