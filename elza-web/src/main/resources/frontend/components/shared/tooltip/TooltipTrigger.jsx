@@ -32,8 +32,8 @@ class TooltipTrigger extends AbstractReactComponent {
     static defaultProps = {
         showDelay: 300,
         hideDelay: 500,
-        focusShowDelay: 300,
-        focusHideDelay: 500,
+        focusShowDelay: 250,
+        focusHideDelay: 1,
         placement: "auto"
     }
 
@@ -241,14 +241,12 @@ class TooltipTrigger extends AbstractReactComponent {
     }
 
     render() {
-        const {content, children} = this.props;
+        const {className, content, children} = this.props;
         const {placement, maxWidth, maxHeight} = this.state;
 
-        console.log("...........", maxWidth, maxHeight)
-
         return (
-            <div
-                style={{ display: 'inline-block', background: 'red', border: '3px solid green' }}
+            <span
+                className={className}
                 ref="ttTarget"
                 onFocus={() => this.handleFocus(true)}
                 onBlur={() => this.handleFocus(false)}
@@ -271,7 +269,7 @@ class TooltipTrigger extends AbstractReactComponent {
                         </div>
                     </Tooltip>
                 </Overlay>
-            </div>
+            </span>
         )
     }
 }

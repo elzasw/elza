@@ -4,7 +4,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent, i18n, NoFocusButton, Icon, FormInput} from 'components/index.jsx';
+import {TooltipTrigger, AbstractReactComponent, i18n, NoFocusButton, Icon, FormInput} from 'components/index.jsx';
 import {objectFromWKT, wktFromTypeAndData, wktType} from 'components/Utils.jsx';
 import {connect} from 'react-redux'
 import {decorateValue} from './DescItemUtils.jsx'
@@ -58,14 +58,19 @@ var DescItemCoordinates = class DescItemCoordinates extends AbstractReactCompone
             )
         }
 
-        const tooltip = <Tooltip id='tt'>{i18n('subNodeForm.formatPointCoordinates')}</Tooltip>;
+        const tooltip = <div>{i18n('subNodeForm.formatPointCoordinates')}</div>;
         return (
             <div className="desc-item-value-coordinates">
                 <div className='desc-item-value'  key='cords'>
                     <Button bsStyle="default" disabled>{wktType(this.state.type)}</Button>
                     {
                         this.state.type == "POINT" ?
-                            <OverlayTrigger overlay={tooltip} placement="bottom">
+                            <TooltipTrigger
+                                content={tooltip}
+                                holdOnHover
+                                holdOnFocus
+                                placement="vertical"
+                            >
                                 <input
                                     {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
                                     ref='focusEl'
@@ -73,7 +78,7 @@ var DescItemCoordinates = class DescItemCoordinates extends AbstractReactCompone
                                     onChange={this.handleChangeData}
                                     value={this.state.data}
                                 />
-                            </OverlayTrigger>
+                            </TooltipTrigger>
                             : <span className="textvalue">{i18n('subNodeForm.countOfCoordinates', this.state.data)}</span>
                     }
                     { descItem.descItemObjectId && <div className='desc-item-coordinates-action' key='download-action'><NoFocusButton onClick={this.props.onDownload}>
