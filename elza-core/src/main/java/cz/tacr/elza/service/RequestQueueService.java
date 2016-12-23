@@ -1,16 +1,22 @@
 package cz.tacr.elza.service;
 
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDaoLinkRequest;
+import cz.tacr.elza.domain.ArrDaoRequest;
+import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.ArrRequestQueueItem;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.RequestRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdRequestIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.ws.WsClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +63,9 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
     @Autowired
     @Qualifier("threadPoolTaskExecutorRQ")
     private ThreadPoolTaskExecutor taskExecutor;
+
+    @Autowired
+    private WsClient wsClient;
 
     @Autowired
     @Qualifier("transactionManager")
@@ -216,6 +225,32 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
             }
 
             sendNotification(openVersion, queueItem.getRequest(), queueItem, EventType.REQUEST_ITEM_QUEUE_CHANGE);
+
+            // TODO Lebeda - Jak se postavit k nevyplněnému url/username/password v sys_external_system
+            if (ArrRequest.ClassType.DIGITIZATION.equals(queueItem.getRequest().getDiscriminator())) {
+                ArrDigitizationRequest arrDigitizationRequest = (ArrDigitizationRequest) queueItem.getRequest();
+                wsClient.postRequest(arrDigitizationRequest);
+            } else if (ArrRequest.ClassType.DAO.equals(queueItem.getRequest().getDiscriminator())) {
+                ArrDaoRequest arrDaoRequest = (ArrDaoRequest) queueItem.getRequest();
+                if (java.util.Objects.equals(arrDaoRequest.getType(), cz.tacr.elza.api.ArrDaoRequest.Type.DESTRUCTION)) {
+                    wsClient.postDestructionRequest(arrDaoRequest);
+                } else if (java.util.Objects.equals(arrDaoRequest.getType(), cz.tacr.elza.api.ArrDaoRequest.Type.DESTRUCTION)) {
+                    wsClient.postTransferRequest(arrDaoRequest);
+                } else {
+                    throw new SystemException(BaseCode.SYSTEM_ERROR);
+                }
+            } else if (ArrRequest.ClassType.DAO_LINK.equals(queueItem.getRequest().getDiscriminator())) {
+                ArrDaoLinkRequest arrDaoLinkRequest = (ArrDaoLinkRequest) queueItem.getRequest();
+                if (cz.tacr.elza.api.ArrDaoLinkRequest.Type.LINK.equals(arrDaoLinkRequest.getType())) {
+                    wsClient.onDaoLinked(arrDaoLinkRequest);
+                } else if (cz.tacr.elza.api.ArrDaoLinkRequest.Type.UNLINK.equals(arrDaoLinkRequest.getType())) {
+                    wsClient.onDaoUnlinked(arrDaoLinkRequest);
+                } else {
+                    throw new SystemException(BaseCode.SYSTEM_ERROR);
+                }
+            } else {
+                throw new SystemException(BaseCode.SYSTEM_ERROR);
+            }
 
             requestService.setRequestState(queueItem.getRequest(), ArrRequest.State.QUEUED, ArrRequest.State.SENT);
             queueItem.setSend(true);

@@ -42,7 +42,6 @@ import cz.tacr.elza.ws.types.v1.File;
 import cz.tacr.elza.ws.types.v1.RelatedFileGroup;
 import cz.tacr.elza.ws.types.v1.UnitOfMeasure;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -278,7 +277,6 @@ public class DaoCoreServiceImpl implements DaoService {
     }
 
     private cz.tacr.elza.api.UnitOfMeasure getDimensionUnit(UnitOfMeasure sourceDimensionUnit) {
-        // TODO Lebeda - jednotkový test pro všechny hodnoty z XML
         switch (sourceDimensionUnit) {
             case IN: return cz.tacr.elza.api.UnitOfMeasure.IN;
             case MM: return cz.tacr.elza.api.UnitOfMeasure.MM;
@@ -287,7 +285,6 @@ public class DaoCoreServiceImpl implements DaoService {
     }
 
     private cz.tacr.elza.api.ArrDaoFile.ChecksumType getChecksumType(ChecksumType checksumType) {
-    // TODO Lebeda - jednotkový test pro všechny hodnoty z XML
         switch (checksumType) {
             case MD_5: return cz.tacr.elza.api.ArrDaoFile.ChecksumType.MD5;
             case SHA_1: return cz.tacr.elza.api.ArrDaoFile.ChecksumType.SHA1;
@@ -306,7 +303,7 @@ public class DaoCoreServiceImpl implements DaoService {
         logger.info("Executing operation addPackage");
         final ArrDaoPackage arrDaoPackage = createArrDaoPackage(daoPackage);
         logger.info("Ending operation addPackage");
-        return arrDaoPackage.getCode(); // TODO Lebeda - co vracet?
+        return arrDaoPackage.getCode(); // TODO Lebeda - co vracet? Code nové package?
     }
 
     /* (non-Javadoc)
@@ -334,11 +331,14 @@ public class DaoCoreServiceImpl implements DaoService {
      */
     public Did getDid(String packageIdentifier) throws CoreServiceException   {
         logger.info("Executing operation getDid");
-        // TODO Lebeda - ELZA-1330 - Zprovoznit webové služby - dopsat implementaci
-        System.out.println(packageIdentifier);
-        throw new NotImplementedException("Implementovat pomocí custom scriptu");
+        // TODO Lebeda - ELZA-1330 - Zprovoznit webové služby - dopsat implementaci pomocí custom scriptu
+        final Did did = new Did();
+//        did.setIdentifier();
+//        did.setUnitdatestructured();
+//        did.setAbstract();
 
-//        logger.info("Ending operation getDid");
+        logger.info("Ending operation getDid");
+        return did;
     }
 
     /*
