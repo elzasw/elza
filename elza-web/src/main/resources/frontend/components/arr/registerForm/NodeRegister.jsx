@@ -1,10 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-
+import {connect} from 'react-redux'
 import {WebApi} from 'actions/index.jsx';
-import {Icon, i18n, AbstractReactComponent, NoFocusButton, Autocomplete, FormInput} from 'components/index.jsx';
+import {Icon, i18n, AbstractReactComponent, NoFocusButton, Autocomplete, FormInput, ExtImportForm} from 'components/index.jsx';
 import {decorateValue} from './../nodeForm/DescItemUtils.jsx'
 import {objectById} from 'stores/app/utils.jsx'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 
 import {Button} from 'react-bootstrap';
 
@@ -12,7 +13,7 @@ import {Button} from 'react-bootstrap';
 
 require('./NodeRegister.less');
 
-export default class NodeRegister extends AbstractReactComponent {
+class NodeRegister extends AbstractReactComponent {
 
     static PropTypes = {
         onChange: React.PropTypes.func.isRequired,
@@ -44,6 +45,13 @@ export default class NodeRegister extends AbstractReactComponent {
         this.props.onDetail(recordId);
     };
 
+
+    handleImport = () => {
+        const {versionId} = this.props;
+        this.refs.registryAutocomplete.closeMenu();
+        this.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={false} versionId={versionId}/>, "dialog-lg"));
+    };
+
     renderRecord = (item, isHighlighted, isSelected) => {
         let cls = 'item';
         if (isHighlighted) {
@@ -62,6 +70,7 @@ export default class NodeRegister extends AbstractReactComponent {
     renderFooter = () => {
         return <div className="create-record">
             <Button onClick={this.handleCreateRecord}><Icon glyph='fa-plus'/>{i18n('registry.addNewRegistry')}</Button>
+            <Button onClick={this.handleImport}><Icon glyph='fa-plus' /> {i18n("ribbon.action.registry.importExt")}</Button>
         </div>
     };
 
@@ -93,3 +102,5 @@ export default class NodeRegister extends AbstractReactComponent {
         </div>
     }
 }
+
+export default connect()(NodeRegister)

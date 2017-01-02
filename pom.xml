@@ -11,7 +11,7 @@
 
     <groupId>cz.tacr.elza</groupId>
     <artifactId>elza</artifactId>
-    <version>0.9-SNAPSHOT</version>
+    <version>0.10-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>ELZA</name>
     <url>http://elza.tacr.cz</url>
@@ -21,6 +21,7 @@
         <gpg.skip>true</gpg.skip>
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <enforcer.skip>true</enforcer.skip>
+        <cxf.version>3.1.8</cxf.version>
     </properties>
 
     <modules>
@@ -50,14 +51,6 @@
                 <artifactId>liquibase-slf4j</artifactId>
                 <version>1.2.1</version>
             </dependency>
-
-            <!--&lt;!&ndash; Find bugs &ndash;&gt;-->
-            <!--<dependency>-->
-                <!--<groupId>com.google.code.findbugs</groupId>-->
-                <!--<artifactId>jsr305</artifactId>-->
-                <!--<version>3.0.0</version>-->
-            <!--</dependency>-->
-            <!--&lt;!&ndash; END - Find bugs &ndash;&gt;-->
 
             <!-- Verze Spring, Hibernate, SLF4J -->
             <dependency>
@@ -216,20 +209,20 @@
                 <groupId>net.sf.jasperreports</groupId>
                 <artifactId>jasperreports</artifactId>
                 <version>6.3.0</version>
-	            <exclusions>
-		            <exclusion>
-		                <artifactId>lucene-core</artifactId>
-		                <groupId>org.apache.lucene</groupId>
-		            </exclusion>
-		            <exclusion>
-		                <artifactId>lucene-analyzers-common</artifactId>
-		                <groupId>org.apache.lucene</groupId>
-		            </exclusion>
+              <exclusions>
+                <exclusion>
+                    <artifactId>lucene-core</artifactId>
+                    <groupId>org.apache.lucene</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>lucene-analyzers-common</artifactId>
+                    <groupId>org.apache.lucene</groupId>
+                </exclusion>
                     <exclusion>
-	                    <artifactId>lucene-queryparser</artifactId>
-	                    <groupId>org.apache.lucene</groupId>
+                      <artifactId>lucene-queryparser</artifactId>
+                      <groupId>org.apache.lucene</groupId>
                     </exclusion>
-	            </exclusions>                
+              </exclusions>
             </dependency>
             <dependency>
                 <groupId>net.sf.jasperreports</groupId>
@@ -249,6 +242,43 @@
                 <version>2.5</version>
             </dependency>
 
+            <!-- CXF -->
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-spring-boot-starter-jaxws</artifactId>
+                <version>${cxf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-frontend-jaxws</artifactId>
+                <version>${cxf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-transports-http-jetty</artifactId>
+                <version>${cxf.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.eclipse.jetty</groupId>
+                        <artifactId>jetty-server</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-databinding-aegis</artifactId>
+                <version>${cxf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-transports-jms</artifactId>
+                <version>${cxf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-transports-local</artifactId>
+                <version>${cxf.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

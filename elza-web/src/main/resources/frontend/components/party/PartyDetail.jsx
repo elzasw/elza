@@ -292,8 +292,8 @@ class PartyDetail extends AbstractReactComponent {
                 <div className="party-header">
                     <div>
                         <h3>{party.name}</h3>
-                        {party.record.externalId && party.record.externalSource && party.record.externalSource.name && <span className="description">{party.record.externalSource.name + ':' + party.record.externalId}</span>}
-                        {party.record.externalId && (!party.record.externalSource || party.record.externalSource.name) && <span className="description">{'UNKNOWN:' + party.record.externalId}</span>}
+                        {party.record.externalId && party.record.externalSystem && party.record.externalSystem.name && <span className="description">{party.record.externalSystem.name + ':' + party.record.externalId}</span>}
+                        {party.record.externalId && (!party.record.externalSystem || !party.record.externalSystem.name) && <span className="description">{'UNKNOWN:' + party.record.externalId}</span>}
                         {!party.record.externalId && <span className="description">{party.id}</span>}
                     </div>
                     <div>

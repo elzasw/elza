@@ -46,6 +46,9 @@ public enum EventType {
     OUTPUT_ITEM_CHANGE(EventChangeOutputItem.class),
     FUND_RECORD_CHANGE(EventNodeIdVersionInVersion.class),
 
+    DAO_LINK_CREATE(EventIdInVersion.class),
+    DAO_LINK_DELETE(EventIdInVersion.class),
+
     INDEXING_FINISHED(ActionEvent.class),
 
     PACKAGE(ActionEvent.class),
@@ -69,6 +72,15 @@ public enum EventType {
     GROUP_CHANGE(EventId.class),
     GROUP_CREATE(EventId.class),
     GROUP_DELETE(EventId.class),
+
+    REQUEST_CHANGE(EventIdNodeIdInVersion.class),
+    REQUEST_CREATE(EventIdNodeIdInVersion.class),
+
+    REQUEST_ITEM_QUEUE_CREATE(EventIdRequestIdInVersion.class),
+    REQUEST_ITEM_QUEUE_CHANGE(EventIdRequestIdInVersion.class),
+    REQUEST_ITEM_QUEUE_DELETE(EventIdRequestIdInVersion.class),
+
+    EXTERNAL_SYSTEM_CHANGE(ActionEvent.class),
 
     BULK_ACTION_STATE_CHANGE(EventStringInVersion.class);
 

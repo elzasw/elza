@@ -123,7 +123,6 @@ class PartyNameForm extends AbstractReactComponent {
      */
     loadData(props) {
         const {refTables: {partyNameFormTypes, calendarTypes}, partyType, initData} = props;
-        const nameFormTypeId = partyNameFormTypes.items[0].id;
         const firstCalId = calendarTypes.items[0].id;
         if (!this.state.initialized) {
             this.setState({initialized: true, complementsTypes: partyType.complementTypes}, () => {
@@ -133,7 +132,7 @@ class PartyNameForm extends AbstractReactComponent {
                         ...initData
                     }
                 } else {
-                    newLoad = {nameFormType:{id: nameFormTypeId}, validFrom:{calendarTypeId:firstCalId}, validTo:{calendarTypeId:firstCalId}}
+                    newLoad = {validFrom:{calendarTypeId:firstCalId}, validTo:{calendarTypeId:firstCalId}}
                 }
                 this.props.load(newLoad);
             });
@@ -203,6 +202,7 @@ class PartyNameForm extends AbstractReactComponent {
                             </Col>
                             <Col xs={12}>
                                 <FormInput componentClass="select" label={i18n('party.name.nameFormType')} {...nameFormType.id}>
+                                    <option key="null" />
                                     {partyNameFormTypes.items.map((i) => <option value={i.id} key={i.id}>{i.name}</option>)}
                                 </FormInput>
                             </Col>

@@ -1,51 +1,11 @@
 package cz.tacr.elza.service;
 
-import java.text.Normalizer;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-import javax.persistence.Query;
-
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.repository.ItemSettingsRepository;
-import cz.tacr.elza.repository.OutputFileRepository;
-import cz.tacr.elza.repository.OutputResultRepository;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.lucene.analysis.reverse.ReverseStringFilter;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestParam;
-
 import com.google.common.collect.Iterables;
-
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.ArrNodeConformity.State;
 import cz.tacr.elza.api.UsrPermission;
-import cz.tacr.elza.exception.ConcurrentUpdateException;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
@@ -78,7 +38,11 @@ import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.drools.RulesExecutor;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ConcurrentUpdateException;
 import cz.tacr.elza.exception.InvalidQueryException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.ChangeRepository;
@@ -88,6 +52,7 @@ import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemRepository;
+import cz.tacr.elza.repository.ItemSettingsRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeConformityErrorRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
@@ -96,8 +61,10 @@ import cz.tacr.elza.repository.NodeOutputRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
+import cz.tacr.elza.repository.OutputFileRepository;
 import cz.tacr.elza.repository.OutputItemRepository;
 import cz.tacr.elza.repository.OutputRepository;
+import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
@@ -105,6 +72,35 @@ import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventFund;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import javax.annotation.Nullable;
+import javax.persistence.Query;
+import java.text.Normalizer;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 /**
@@ -230,6 +226,7 @@ public class ArrangementService {
         fund.setName(name);
         fund.setInternalCode(internalCode);
         fund.setInstitution(institution);
+        fund.setUuid(uuid);
 
         fund = fundRepository.save(fund);
 
@@ -337,7 +334,7 @@ public class ArrangementService {
                                           final String dateRange) {
         ArrChange change = createChange(ArrChange.Type.CREATE_AS);
 
-        ArrFund fund = createFund(name, ruleSet, change, null, internalCode, institution, dateRange);
+        ArrFund fund = createFund(name, ruleSet, change, generateUuid(), internalCode, institution, dateRange);
 
         List<RegScope> defaultScopes = registryService.findDefaultScopes();
         if (!defaultScopes.isEmpty()) {
@@ -424,10 +421,20 @@ public class ArrangementService {
         return levelRepository.save(level);
     }
 
+
+    /**
+     * Vytvoření jednoznačného identifikátoru požadavku.
+     *
+     * @return jednoznačný identifikátor
+     */
+    private String generateUuid() {
+        return UUID.randomUUID().toString();
+    }
+
     public ArrNode createNode(final ArrFund fund, final ArrChange createChange) {
         ArrNode node = new ArrNode();
         node.setLastUpdate(createChange.getChangeDate());
-        node.setUuid(UUID.randomUUID().toString());
+        node.setUuid(generateUuid());
         node.setFund(fund);
         return nodeRepository.save(node);
     }

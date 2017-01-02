@@ -117,6 +117,10 @@ export default class StoreUtils {
         }
     }
 
+    static processConcreteStore(store, action) {
+        return processStore2(store, action);
+    }
+
     static propsEquals(x, y, attrs) {
         if (typeof attrs !== 'undefined' && attrs !== null) {
             for (let a = 0; a < attrs.length; a++) {

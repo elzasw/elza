@@ -2,11 +2,13 @@ package cz.tacr.elza.repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.RegExternalSystem;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegScope;
 
@@ -38,9 +40,13 @@ public interface RegRecordRepository extends ElzaJpaRepository<RegRecord, Intege
     List<RegRecord> findByParentRecords(List<RegRecord> parentRecords);
 
 
+    @Query("SELECT r FROM reg_record r WHERE r.externalId IN (?1) "
+            + "and r.externalSystem = ?2")
+    List<RegRecord> findRegRecordByExternalIdsAndExternalSystem(Set<String> set, RegExternalSystem externalSystem);
+
     @Query("SELECT r FROM reg_record r WHERE r.externalId = ?1 "
-            + "and r.externalSource.code = ?2")
-    RegRecord findRegRecordByExternalIdAndExternalSourceCode(String externalId, String externalSourceCode);
+            + "and r.externalSystem.code = ?2 and r.scope = ?3")
+    RegRecord findRegRecordByExternalIdAndExternalSystemCodeAndScope(String externalId, String externalSystemCode, RegScope scope);
 
 
     /**

@@ -96,6 +96,26 @@ public interface ArrChange<U extends UsrUser, N extends ArrNode> extends Seriali
         IMPORT,
 
         /**
+         * Požadavek na digitalizaci.
+         */
+        CREATE_DIGI_REQUEST,
+
+        /**
+         * Vytvoření položky ve frontě.
+         */
+        CREATE_REQUEST_QUEUE,
+
+        /**
+         * Vytvoření vazby na DAO
+         */
+        CREATE_DAO_LINK,
+
+        /**
+         * Zrušení vazby na DAO
+         */
+        DELETE_DAO_LINK,
+
+        /**
          * Úprava dat výstupu.
          */
         UPDATE_OUTPUT

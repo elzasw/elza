@@ -2,6 +2,7 @@ import React from 'react';
 
 import {EmailSettingsActions, ApplicationActions} from 'actions/index.jsx';
 import {webSocketConnect, webSocketDisconnect} from 'actions/global/webSocket.jsx';
+import * as digitizationActions from 'actions/arr/digitizationActions';
 import {buklActionStateChange} from 'actions/arr/bulkActions.jsx';
 import {store} from 'stores/AppStore.jsx';
 import {addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
@@ -37,6 +38,8 @@ import {
     groupChange,
     groupDelete,
     fundInvalidChanges,
+    createRequest,
+    changeRequestItemQueue,
     nodesDelete
 } from 'actions/global/change.jsx';
 
@@ -224,6 +227,12 @@ function processEvents(values) {
 
         switch (value.eventType) {
 
+            case 'REQUEST_CHANGE':
+                arrRequest(value);
+                break;
+            case 'REQUEST_CREATE':
+                arrRequest(value);
+                break;
             case 'CONFORMITY_INFO':
                 conformityInfo(value);
                 break;
@@ -347,6 +356,23 @@ function processEvents(values) {
                 deleteGroup(value);
                 break;
 
+            case 'REQUEST_CREATE':
+                requestCreate(value);
+                break;
+
+            case 'REQUEST_CHANGE':
+                requestChange(value);
+                break;
+
+            case 'REQUEST_ITEM_QUEUE_CREATE':
+            case 'REQUEST_ITEM_QUEUE_DELETE':
+                createRequestItemQueueChange(value);
+                break;
+
+            case 'REQUEST_ITEM_QUEUE_CHANGE':
+                changeRequestItemQueueChange(value);
+                break;
+
             case 'DELETE_NODES':
                 deleteNodes(value);
                 break;
@@ -371,6 +397,22 @@ function changeGroup(value) {
 }
 function deleteGroup(value) {
     store.dispatch(groupDelete(value.ids[0]))
+}
+
+function requestChange(value) {
+    store.dispatch(changeRequest(value));
+}
+
+function requestCreate(value) {
+    store.dispatch(createRequest(value));
+}
+
+function createRequestItemQueueChange(value) {
+    store.dispatch(createRequestItemQueue(value));
+}
+
+function changeRequestItemQueueChange(value) {
+    store.dispatch(changeRequestItemQueue(value));
 }
 
 function deleteNodes(value) {
@@ -454,6 +496,14 @@ function visiblePolicyChange(value) {
  */
 function conformityInfo(value) {
     store.dispatch(changeConformityInfo(value.versionId, value.entityIds));
+}
+
+/**
+ * Změna požadavků arr request.
+ * @param value objekt
+ */
+function arrRequest(value) {
+    store.dispatch(digitizationActions.changeRequests(value.versionId, value.entityId, value.nodeIds));
 }
 
 /**

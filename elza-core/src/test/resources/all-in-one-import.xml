@@ -47,7 +47,7 @@
         </root-level>
     </fund>
     <record-list>
-        <record record-id="recordId-0" register-type-code="EVENT_EVENT" external-source-code="externalSourceCode 1341799512" external-id="externalId 0" local="false">
+        <record record-id="recordId-0" register-type-code="EVENT_EVENT" external-system-code="externalSourceCode 1341799512" external-id="externalId 0" local="false">
             <preferred-name>record 0</preferred-name>
             <characteristics>characteristics 0</characteristics>
             <note>comment 0</note>
@@ -68,7 +68,7 @@
                 </coordinate-list>
             </record-coordinates>
         </record>
-        <record record-id="recordId-1" register-type-code="FAMILY" external-source-code="externalSourceCode 1097950573" external-id="externalId 1" local="false">
+        <record record-id="recordId-1" register-type-code="FAMILY" external-system-code="externalSourceCode 1097950573" external-id="externalId 1" local="false">
             <preferred-name>record 1</preferred-name>
             <characteristics>characteristics 1</characteristics>
             <note>comment 1</note>
@@ -89,7 +89,7 @@
                 </coordinate-list>
             </record-coordinates>
         </record>
-        <record record-id="recordId-2" register-type-code="PERSON_INDIVIDUAL" external-source-code="externalSourceCode 1015647040" external-id="externalId 2" local="false">
+        <record record-id="recordId-2" register-type-code="PERSON_INDIVIDUAL" external-system-code="externalSourceCode 1015647040" external-id="externalId 2" local="false">
             <preferred-name>record 2</preferred-name>
             <characteristics>characteristics 2</characteristics>
             <note>comment 2</note>
@@ -110,7 +110,7 @@
                 </coordinate-list>
             </record-coordinates>
         </record>
-        <record record-id="recordId-3" register-type-code="COMPANY" external-source-code="externalSourceCode 1015647043" external-id="externalId 3" local="false">
+        <record record-id="recordId-3" register-type-code="COMPANY" external-system-code="externalSourceCode 1015647043" external-id="externalId 3" local="false">
             <preferred-name>record 3</preferred-name>
             <characteristics>characteristics 3</characteristics>
             <note>comment 3</note>

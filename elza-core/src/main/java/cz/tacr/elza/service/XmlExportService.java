@@ -63,10 +63,11 @@ import cz.tacr.elza.domain.ParPartyGroup;
 import cz.tacr.elza.domain.ParPartyGroupIdentifier;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyNameComplement;
+import cz.tacr.elza.domain.ParPartyNameFormType;
 import cz.tacr.elza.domain.ParPerson;
 import cz.tacr.elza.domain.ParRelation;
 import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.RegExternalSource;
+import cz.tacr.elza.domain.RegExternalSystem;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -595,7 +596,12 @@ public class XmlExportService {
         partyName.setOtherPart(parPartyName.getOtherPart());
 
         partyName.setPartyNameComplements(createPartyNameComplements(parPartyName.getPartyNameComplements()));
-        partyName.setPartyNameFormTypeCode(parPartyName.getNameFormType().getCode());
+
+        ParPartyNameFormType nameFormType = parPartyName.getNameFormType();
+        if (nameFormType != null) {
+            partyName.setPartyNameFormTypeCode(nameFormType.getCode());
+        }
+
         partyName.setValidFrom(XmlImportUtils.createComplexDate(parPartyName.getValidFrom()));
         partyName.setValidTo(XmlImportUtils.createComplexDate(parPartyName.getValidTo()));
 
@@ -930,10 +936,10 @@ public class XmlExportService {
 
         record.setCharacteristics(regRecord.getCharacteristics());
 
-        RegExternalSource externalSource = regRecord.getExternalSource();
-        if (externalSource != null) {
+        RegExternalSystem externalSystem = regRecord.getExternalSystem();
+        if (externalSystem != null) {
             record.setExternalId(regRecord.getExternalId());
-            record.setExternalSourceCode(externalSource.getCode());
+            record.setExternalSystemCode(externalSystem.getCode());
         }
 
         record.setLocal(false);

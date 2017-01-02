@@ -49,7 +49,7 @@ public class ParPartyName
     private ParUnitdate validTo;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParPartyNameFormType.class)
-    @JoinColumn(name = "nameFormTypeId", nullable = false)
+    @JoinColumn(name = "nameFormTypeId")
     private ParPartyNameFormType nameFormType;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParParty.class)

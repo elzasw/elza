@@ -48,7 +48,7 @@ export function deletePackage(code) {
         return WebApi.deletePackage(code)
                 .then(json => dispatch(deletePackageReceive(code)))
                 .then(json => {
-                    addToastrSuccess(i18n("admin.packages.message.delete.title"), i18n("admin.packages.message.delete.message", code));
+                    dispatch(addToastrSuccess(i18n("admin.packages.message.delete.title"), i18n("admin.packages.message.delete.message", code)));
                 });
     }
 }
@@ -63,7 +63,7 @@ export function importPackage(data) {
         dispatch(importPackageRequest())
         return savingApiWrapper(dispatch, WebApi.importPackage(data)).then(json => dispatch(importPackageReceive()))
             .then(json => {
-                addToastrSuccess(i18n("admin.packages.message.import.title"), i18n("admin.packages.message.import.message"));
+                dispatch(addToastrSuccess(i18n("admin.packages.message.import.title"), i18n("admin.packages.message.import.message")));
         });
     }
 }

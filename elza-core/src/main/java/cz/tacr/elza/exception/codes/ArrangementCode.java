@@ -48,6 +48,40 @@ public enum ArrangementCode implements ErrorCode {
      */
     EXISTS_NEWER_CHANGE,
 
+    /**
+     * Neplatný počet externích systémů daného typu - musí být právě jeden.
+     */
+    ILLEGAL_COUNT_EXTERNAL_SYSTEM,
+
+    /**
+     * Entita již byla přidána (obvykle v nějaké množině).
+     */
+    ALREADY_ADDED,
+
+    /**
+     * Entita již byla odstraněna (obvykle z nějaké množiny).
+     */
+    ALREADY_REMOVED,
+
+    /**
+     * Entitu nelze odeslat.
+     */
+    CANT_SEND,
+
+    /**
+     * Neplatná verze.
+     */
+    INVALID_VERSION,
+
+    /**
+     * Neplatný stav požadavku.
+     */
+    REQUEST_INVALID_STATE,
+
+    /**
+     * Požadavek nenalezen ve frontě.
+     */
+    REQUEST_NOT_FOUND_IN_QUEUE,
 
     /**
      * Existuje blokující změna v JP - obecně např. hromadná změna, import AS, atd.

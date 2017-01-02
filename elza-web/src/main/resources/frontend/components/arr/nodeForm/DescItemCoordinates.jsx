@@ -1,7 +1,3 @@
-/**
- * Input prvek pro desc item - typ STRING.
- */
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {TooltipTrigger, AbstractReactComponent, i18n, NoFocusButton, Icon, FormInput} from 'components/index.jsx';
@@ -12,51 +8,59 @@ import {Button, OverlayTrigger, Tooltip} from 'react-bootstrap';
 import DescItemLabel from './DescItemLabel.jsx'
 import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 
-require('./DescItemCoordinates.less');
+import './DescItemCoordinates.less';
 
-var DescItemCoordinates = class DescItemCoordinates extends AbstractReactComponent {
+/**
+ * Input prvek pro desc item - typ STRING.
+ */
+class DescItemCoordinates extends AbstractReactComponent {
+
     constructor(props) {
         super(props);
 
-        this.bindMethods('handleChangeData', 'handleChangeSelect', 'focus', 'handleUploadClick');
-
         this.state = objectFromWKT(props.descItem.value);
     }
+
+    static PropTypes = {
+        onChange: React.PropTypes.func.isRequired,
+        onDownload: React.PropTypes.func.isRequired,
+        onUpload: React.PropTypes.func,
+        descItem: React.PropTypes.object.isRequired,
+        repeatable: React.PropTypes.bool.isRequired
+    };
 
     componentWillReceiveProps(nextProps) {
         this.setState(objectFromWKT(nextProps.descItem.value));
     }
 
-    focus() {
+    focus = () => {
         this.refs.focusEl.focus()
-    }
+    };
 
-    handleUploadClick() {
+    handleUploadClick = () => {
         ReactDOM.findDOMNode(this.refs.uploadInput.refs.input).click();
-    }
+    };
 
-    handleChangeData(e) {
+    handleChangeData = (e) => {
         const val = wktFromTypeAndData(this.state.type, e.target.value);
         if (val != this.props.descItem.value) {
             this.props.onChange(val);
         }
-    }
+    };
 
-    handleChangeSelect(e) {
+    handleChangeSelect = (e) => {
         const val = wktFromTypeAndData(e.target.value, this.state.data);
         if (val != this.props.descItem.value) {
             this.props.onChange(val);
         }
-    }
+    };
 
     render() {
         const {descItem, locked, repeatable, onUpload, readMode, cal} = this.props;
         let value = cal && descItem.value == null ? i18n("subNodeForm.descItemType.calculable") : descItem.value;
 
         if (readMode) {
-            return (
-                <DescItemLabel value={value} cal={cal} />
-            )
+            return <DescItemLabel value={value} cal={cal} />
         }
 
         return (
@@ -90,15 +94,7 @@ var DescItemCoordinates = class DescItemCoordinates extends AbstractReactCompone
             </div>
         )
     }
-};
+}
 
-DescItemCoordinates.propTypes = {
-    onChange: React.PropTypes.func.isRequired,
-    onDownload: React.PropTypes.func.isRequired,
-    onUpload: React.PropTypes.func,
-    descItem: React.PropTypes.object.isRequired,
-    repeatable: React.PropTypes.bool.isRequired
-};
-
-module.exports = connect(null, null, null, {withRef: true})(DescItemCoordinates);
+export default connect(null, null, null, {withRef: true})(DescItemCoordinates);
 

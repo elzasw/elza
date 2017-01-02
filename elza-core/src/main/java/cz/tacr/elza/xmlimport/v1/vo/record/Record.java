@@ -34,8 +34,8 @@ public class Record {
     private String registerTypeCode;
 
     /** Kód externího zdroje. */
-    @XmlAttribute(name = "external-source-code")
-    private String externalSourceCode;
+    @XmlAttribute(name = "external-system-code")
+    private String externalSystemCode;
 
     /** Externí identifikátor rejstříkového hesla v externím zdroji záznamů, například interpi. */
     @XmlAttribute(name = "external-id", required = true)
@@ -98,12 +98,12 @@ public class Record {
         this.registerTypeCode = registerTypeCode;
     }
 
-    public String getExternalSourceCode() {
-        return externalSourceCode;
+    public String getExternalSystemCode() {
+        return externalSystemCode;
     }
 
-    public void setExternalSourceCode(final String externalSourceCode) {
-        this.externalSourceCode = externalSourceCode;
+    public void setExternalSystemCode(final String externalSystemCode) {
+        this.externalSystemCode = externalSystemCode;
     }
 
     public String getExternalId() {

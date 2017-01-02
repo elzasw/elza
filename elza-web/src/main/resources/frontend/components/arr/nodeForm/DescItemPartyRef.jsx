@@ -1,13 +1,16 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {WebApi} from 'actions/index.jsx';
-import {Icon, i18n, AbstractReactComponent, Autocomplete} from 'components/index.jsx';
+import {Icon, i18n, AbstractReactComponent, Autocomplete, ExtImportForm} from 'components/index.jsx';
 import {connect} from 'react-redux'
 import {decorateAutocompleteValue} from './DescItemUtils.jsx'
-import {MenuItem, DropdownButton} from 'react-bootstrap';
+import {MenuItem, DropdownButton, Button} from 'react-bootstrap';
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import DescItemLabel from './DescItemLabel.jsx'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+
+
 import './DescItemPartyRef.less'
 import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 
@@ -48,6 +51,12 @@ class DescItemPartyRef extends AbstractReactComponent {
         this.props.onCreateParty(partyTypeId);
     };
 
+    handleImport = () => {
+        const {versionId} = this.props;
+        this.refs.autocomplete.closeMenu();
+        this.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={true} versionId={versionId}/>, "dialog-lg"));
+    };
+
     renderParty = (item, isHighlighted, isSelected) => {
         var cls = 'item';
         if (isHighlighted) {
@@ -70,6 +79,7 @@ class DescItemPartyRef extends AbstractReactComponent {
             <DropdownButton noCaret title={<div><Icon glyph='fa-download' /><span className="create-party-label">{i18n('party.addParty')}</span></div>}>
                 {refTables.partyTypes.items.map(type=> <MenuItem key={'party' + type.id} onClick={this.handleCreateParty.bind(this, type.id)} eventKey={type.id}>{type.name}</MenuItem>)}
             </DropdownButton>
+            <Button onClick={this.handleImport}><Icon glyph='fa-plus' /> {i18n("ribbon.action.party.importExt")}</Button>
         </div>;
     };
 

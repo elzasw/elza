@@ -8,6 +8,13 @@ function getData(data, timeout = 1000) {
     });
 }
 
+const digReqs = [
+    {id: 1, code: "026c75c4-4ee7-4f7f-9c91-49df8e5abbcf", filesCount: 1, label: "Fotka - Petr Compel", url: "http://info.marbes.cz/modules/obrazky/preved_fotku.php?id=562"},
+    {id: 2, code: "09a2301a-61b9-4ce5-a013-df6e4f23a7bd", filesCount: 0, label: "Fotka - Michal Moučka", url: "http://info.marbes.cz/modules/obrazky/preved_fotku.php?id=55"},
+    {id: 3, code: "5369d629-baa0-4571-b5df-0c339f8fa36f", filesCount: 2, label: "Fotka - Martin Šlapa"},
+    {id: 4, code: "5369d629-baa0-4570-b5df-0c339f8fa36f", filesCount: 8, label: "Fotka - Václav Mařík", url: "http://info.marbes.cz/modules/obrazky/preved_fotku.php?id=54"},
+];
+
 /**
  * Zavolání webscoket operace na serveru.
  * @param url url
@@ -447,6 +454,11 @@ class WebApi {
         return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/registerLinks/' + nodeId + '/' + versionId + '/form');
     }
 
+    getFundNodeDaos(versionId, nodeId = null, detail = false) {
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/daos/' + versionId, {nodeId, detail});
+        //return getData(digReqs, 200);
+    }
+
     deleteFundNodeRegister(versionId, nodeId, data) {
         return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/registerLinks/' + nodeId + '/' + versionId + '/delete', null, data);
     }
@@ -537,6 +549,55 @@ class WebApi {
 
     getNodeParents(versionId, nodeId) {
         return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/nodeParents', {versionId, nodeId});
+    }
+
+    getRequestsInQueue() {
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/requests/queued');
+    }
+
+    deleteRequestFromQueue(id) {
+        return getData({}, 100);
+    }
+
+    getDigitizationRequests(versionId, state) {
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/requests/' + versionId, { state });
+    }
+
+    arrRequestAddNodes(versionId, reqId, send, description, nodeIds) {
+        const data = {
+            id: reqId,
+            nodeIds,
+            description
+        };
+        return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/requests/' + versionId + '/digitization/add', { send } , data);
+    }
+
+    arrRequestRemoveNodes(versionId, reqId, nodeIds) {
+        const data = {
+            id: reqId,
+            nodeIds,
+        };
+        return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/requests/' + versionId + '/digitization/remove', null, data);
+    }
+
+    updateArrRequest(versionId, id, data) {
+        return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/requests/' + versionId + '/' + id, null , data);
+    }
+
+    removeArrRequestQueueItem(id) {
+        return AjaxUtils.ajaxDelete(WebApi.arrangementUrl + '/requests/' + id);
+    }
+
+    getArrRequests(versionId) {
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/requests/' + versionId, { });
+    }
+
+    getArrRequest(versionId, id) {
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/requests/' + versionId + "/" + id, { detail: true });
+    }
+
+    sendArrRequest(versionId, id) {
+        return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/requests/' + versionId + "/" + id + "/send");
     }
 
     getFundTree(versionId, nodeId, expandedIds={}, includeIds=[]) {
@@ -910,6 +971,22 @@ class WebApi {
 
     outputClone(versionId, outputId) {
         return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/output/' + versionId + '/' + outputId + '/clone');
+    }
+
+    getRegExternalSystems() {
+        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/externalSystems');
+    }
+
+    findInterpiRecords(criteria) {
+        return AjaxUtils.ajaxPost(WebApi.registryUrl + '/interpi', null, criteria);
+    }
+
+    importRecord(importVO) {
+        return AjaxUtils.ajaxPost(WebApi.registryUrl + '/interpi/import/', null, importVO);
+    }
+
+    importRecordUpdate(recordId, importVO) {
+        return AjaxUtils.ajaxPut(WebApi.registryUrl + '/interpi/import/'+ recordId, null, importVO);
     }
 }
 
