@@ -61,4 +61,8 @@ public interface ArrFund<I extends ParInstitution> extends Versionable, Serializ
      * @param institution instituce
      */
     void setInstitution(I institution);
+
+    String getUuid();
+
+    void setUuid(String uuid);
 }

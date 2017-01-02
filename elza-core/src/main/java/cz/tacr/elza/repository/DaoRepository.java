@@ -1,9 +1,12 @@
 package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaoPackage;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 /**
  * @author Martin Šlapa
@@ -23,4 +26,9 @@ public interface DaoRepository extends ElzaJpaRepository<ArrDao, Integer>, DaoRe
             + " join d.daoPackage dp "
             + " where dp.daoPackageId = :daoPackageId")
     long countByDaoPackageID(@Param("daoPackageId") Integer daoPackageId);
+
+    ArrDao findOneByCode(String code);
+
+    @Query("select d from arr_dao d where d.daoPackage = :daoPackage")
+    List<ArrDao> findByPackage(@Param(value = "daoPackage") ArrDaoPackage arrDaoPackage);
 }

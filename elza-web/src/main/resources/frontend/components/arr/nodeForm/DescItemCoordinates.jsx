@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent, i18n, NoFocusButton, Icon, FormInput} from 'components/index.jsx';
+import {TooltipTrigger, AbstractReactComponent, i18n, NoFocusButton, Icon, FormInput} from 'components/index.jsx';
 import {objectFromWKT, wktFromTypeAndData, wktType} from 'components/Utils.jsx';
 import {connect} from 'react-redux'
 import {decorateValue} from './DescItemUtils.jsx'
@@ -62,35 +62,42 @@ class DescItemCoordinates extends AbstractReactComponent {
             return <DescItemLabel value={value} cal={cal} />
         }
 
-        const tooltip = <Tooltip id='tt'>{i18n('subNodeForm.formatPointCoordinates')}</Tooltip>;
-        return <div className="desc-item-value-coordinates">
-            <div className='desc-item-value'  key='cords'>
-                <Button bsStyle="default" disabled>{wktType(this.state.type)}</Button>
+        const tooltip = <div>{i18n('subNodeForm.formatPointCoordinates')}</div>;
+        return (
+            <div className="desc-item-value-coordinates">
+                <div className='desc-item-value'  key='cords'>
+                    <Button bsStyle="default" disabled>{wktType(this.state.type)}</Button>
+                    {
+                        this.state.type == "POINT" ?
+                            <TooltipTrigger
+                                content={tooltip}
+                                holdOnHover
+                                holdOnFocus
+                                placement="vertical"
+                            >
+                                <input
+                                    {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
+                                    ref='focusEl'
+                                    disabled={locked}
+                                    onChange={this.handleChangeData}
+                                    value={this.state.data}
+                                />
+                            </TooltipTrigger>
+                            : <span className="textvalue">{i18n('subNodeForm.countOfCoordinates', this.state.data)}</span>
+                    }
+                    { descItem.descItemObjectId && <div className='desc-item-coordinates-action' key='download-action'><NoFocusButton onClick={this.props.onDownload}>
+                            <Icon glyph="fa-download"/>
+                        </NoFocusButton></div>
+                    }
+                </div>
                 {
-                    this.state.type == "POINT" ?
-                        <OverlayTrigger overlay={tooltip} placement="bottom">
-                            <input
-                                {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
-                                ref='focusEl'
-                                disabled={locked}
-                                onChange={this.handleChangeData}
-                                value={this.state.data}
-                            />
-                        </OverlayTrigger>
-                        : <span className="textvalue">{i18n('subNodeForm.countOfCoordinates', this.state.data)}</span>
-                }
-                { descItem.descItemObjectId && <div className='desc-item-coordinates-action' key='download-action'><NoFocusButton onClick={this.props.onDownload}>
-                        <Icon glyph="fa-download"/>
-                    </NoFocusButton></div>
+                    !repeatable && <div className='desc-item-coordinates-action' key='cord-actions'>
+                        <NoFocusButton onClick={this.handleUploadClick} title={i18n('subNodeForm.descItem.coordinates.action.add')}><Icon glyph="fa-upload" /></NoFocusButton>
+                        <FormInput className="hidden" accept="application/vnd.google-earth.kml+xml" type="file" ref='uploadInput' onChange={onUpload} />
+                    </div>
                 }
             </div>
-            {
-                !repeatable && <div className='desc-item-coordinates-action' key='cord-actions'>
-                    <NoFocusButton onClick={this.handleUploadClick} title={i18n('subNodeForm.descItem.coordinates.action.add')}><Icon glyph="fa-upload" /></NoFocusButton>
-                    <FormInput className="hidden" accept="application/vnd.google-earth.kml+xml" type="file" ref='uploadInput' onChange={onUpload} />
-                </div>
-            }
-        </div>
+        )
     }
 }
 

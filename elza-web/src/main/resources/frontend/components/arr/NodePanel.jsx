@@ -8,7 +8,7 @@ const PARENT_CHILD_MAX_LENGTH = 250
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {Icon, ListBox, AbstractReactComponent, i18n, Loading, NodeSubNodeForm, Accordion, SubNodeRegister, NodeActionsBar,
+import {TooltipTrigger, Icon, ListBox, AbstractReactComponent, i18n, Loading, NodeSubNodeForm, Accordion, SubNodeRegister, NodeActionsBar,
         VisiblePolicyForm, SubNodeDao} from 'components';
 import {Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
 import {addNodeForm} from 'actions/arr/addNodeForm.jsx';
@@ -609,27 +609,33 @@ return true
 
             if (item.nodeConformity.state === "OK") {
                 icon = <Icon glyph="fa-check" />
-                tooltip = <Tooltip id="status-ok">{i18n('arr.node.status.ok') + description}</Tooltip>
+                tooltip = <div>{i18n('arr.node.status.ok') + description}</div>
             } else {
                 if ((missings == null || missingsHide == missings.length) && (errors == null || errorsHide == errors.length)) {
                     icon = <Icon glyph="fa-check-circle" />
-                    tooltip = <Tooltip id="status-err">{i18n('arr.node.status.okx')} {description} {messages}</Tooltip>
+                    tooltip = <div>{i18n('arr.node.status.okx')} {description} {messages}</div>
                 } else {
                     icon = <Icon glyph="fa-exclamation-circle" />
-                    tooltip = <Tooltip id="status-err">{i18n('arr.node.status.err')} {description} {messages}</Tooltip>
+                    tooltip = <div>{i18n('arr.node.status.err')} {description} {messages}</div>
                 }
             }
         } else {
             icon = <Icon glyph="fa-exclamation-triangle" />
-            tooltip = <Tooltip id="status-undefined">{i18n('arr.node.status.undefined')}</Tooltip>
+            tooltip = <div>{i18n('arr.node.status.undefined')}</div>
         }
 
         return (
-                <OverlayTrigger placement="left" overlay={tooltip}>
-                    <div className="status">
+                <TooltipTrigger
+                    content={tooltip}
+                    holdOnHover
+                    placement="auto"
+                    className="status"
+                    showDelay={1}
+                >
+                    <div>
                         {icon}
                     </div>
-                </OverlayTrigger>
+                </TooltipTrigger>
         );
     }
 

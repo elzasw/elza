@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux';
 import {Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
-import {AbstractReactComponent, Icon, FormInput, i18n} from 'components';
+import {TooltipTrigger, AbstractReactComponent, Icon, FormInput, i18n} from 'components';
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 
 import './DatationField.less'
@@ -82,7 +82,7 @@ class DatationField extends AbstractReactComponent {
         const {label, labelTextual, labelNote, fields} = this.props;
         const {allowedText, allowedNote, calendars, initialized} = this.state;
 
-        const tooltip = <Tooltip id='tt'>
+        const tooltip = <div>
             <b>Formát datace</b><br />
             Století: 20. st. <i>nebo</i> 20.st. <i>nebo</i> 20st<br />
             Rok: 1968<br />
@@ -95,7 +95,7 @@ class DatationField extends AbstractReactComponent {
             <b>Odhad</b><br />
             Definuje se uzavřením hodnoty do kulatých nebo hranatých závorek: [16.8.1977]<br />
             Při použití znaku "/" pro oddělení intervalu jsou od i do chápány jako odhad.
-        </Tooltip>
+        </div>
 
         return <div className="datation-field">
             <div className="header">
@@ -107,9 +107,14 @@ class DatationField extends AbstractReactComponent {
                 <FormInput componentClass="select" {...fields.calendarTypeId}>
                     {calendars}
                 </FormInput>
-                <OverlayTrigger overlay={tooltip} placement="bottom">
+                <TooltipTrigger
+                    content={tooltip}
+                    holdOnHover
+                    holdOnFocus
+                    placement="vertical"
+                >
                     <FormInput type="text" {...fields.value} />
-                </OverlayTrigger>
+                </TooltipTrigger>
             </div>
             {allowedText && <FormInput type="text" {...fields.textDate} label={labelTextual} />}
             {allowedNote && <FormInput componentClass="textarea" {...fields.note} label={labelNote} />}

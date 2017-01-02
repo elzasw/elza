@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent, i18n} from 'components/index.jsx';
+import {TooltipTrigger, AbstractReactComponent, i18n} from 'components/index.jsx';
 import {connect} from 'react-redux'
 import {decorateValue} from './DescItemUtils.jsx'
 import {OverlayTrigger, Tooltip} from 'react-bootstrap';
@@ -55,7 +55,7 @@ class DescItemUnitdate extends AbstractReactComponent {
             }
         }
 
-        const tooltip = <Tooltip id='tt'>
+        const tooltip = <div>
             <b>Formát datace</b><br />
             Století: 20. st. <i>nebo</i> 20.st. <i>nebo</i> 20st<br />
             Rok: 1968<br />
@@ -68,7 +68,7 @@ class DescItemUnitdate extends AbstractReactComponent {
             <b>Odhad</b><br />
             Definuje se uzavřením hodnoty do kulatých nebo hranatých závorek: [16.8.1977]<br />
             Při použití znaku "/" pro oddělení intervalu jsou od i do chápány jako odhad.
-        </Tooltip>;
+        </div>;
 
         let cls = ['unitdate-input'];
         if (cal) {
@@ -84,9 +84,12 @@ class DescItemUnitdate extends AbstractReactComponent {
                 <option />
                 {calendarTypes.items.map(type => <option key={type.id} value={type.id}>{type.name.charAt(0)}</option>)}
             </select>
-            <OverlayTrigger
-                    overlay={tooltip} placement="bottom"
-                    >
+            <TooltipTrigger
+                content={tooltip}
+                holdOnHover
+                holdOnFocus
+                placement="vertical"
+            >
                 <input
                     {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
                     ref='focusEl'
@@ -94,7 +97,8 @@ class DescItemUnitdate extends AbstractReactComponent {
                     value={value}
                     onChange={this.handleValueChange}
                 />
-            </OverlayTrigger>
+            </TooltipTrigger>
+
         </div>
     }
 }

@@ -8,11 +8,11 @@ import java.io.Serializable;
  * @author Martin Šlapa
  * @since 07.12.2016
  */
-public interface ArrDaoRequest<DF extends ArrDigitizationFrontdesk> extends Serializable {
+public interface ArrDaoRequest<DF extends ArrDigitalRepository> extends Serializable {
 
-    DF getDigitizationFrontdesk();
+    DF getDigitalRepository();
 
-    void setDigitizationFrontdesk(DF digitizationFrontdesk);
+    void setDigitalRepository(DF digitalRepository);
 
     Type getType();
 

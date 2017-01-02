@@ -1,9 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {FormControl} from 'react-bootstrap'
+import {FormControl, Button} from 'react-bootstrap'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
-import {i18n, AbstractReactComponent, NoFocusButton, Icon, PartyNameForm} from 'components/index.jsx'
+import {i18n, AbstractReactComponent, Icon, PartyNameForm} from 'components/index.jsx'
 import {indexById, objectById} from 'stores/app/utils.jsx'
 import {normalizeNameObject} from 'actions/party/party.jsx'
 
@@ -137,16 +137,16 @@ class PartyDetailNames extends AbstractReactComponent {
         return <div className="party-detail-names">
             <div>
                 <label>{i18n("party.detail.formNames")}</label>
-                {canEdit && <NoFocusButton bsStyle="default" onClick={this.handlePartyNameAdd}><Icon glyph="fa-plus" /></NoFocusButton>}
+                {canEdit && <Button bsStyle="default" onClick={this.handlePartyNameAdd}><Icon glyph="fa-plus" /></Button>}
             </div>
             {party.partyNames.map((partyName, index) => <div key={partyName.id} className="value-group">
                 <div className="value">{this.getPartyName(partyName, partyType)}</div>
                 <div className="actions">
-                    <NoFocusButton onClick={() => this.handlePartyNameUpdate(partyName)}><Icon glyph="fa-pencil" /></NoFocusButton>
+                    <Button onClick={() => this.handlePartyNameUpdate(partyName)}><Icon glyph="fa-pencil" /></Button>
                     {partyName.prefferedName && i18n('party.detail.formNames.prefferedName')}
                     {canEdit && !partyName.prefferedName && <span>
-                        <NoFocusButton onClick={() => this.handleDelete(partyName.id)}><Icon glyph="fa-times" /></NoFocusButton>
-                        <NoFocusButton onClick={() => this.handleSelectPreffered(partyName.id)}><Icon glyph="fa-check" /></NoFocusButton>
+                        <Button onClick={() => this.handleDelete(partyName.id)}><Icon glyph="fa-times" /></Button>
+                        <Button onClick={() => this.handleSelectPreffered(partyName.id)}><Icon glyph="fa-check" /></Button>
                     </span>}
                 </div>
             </div>)}
