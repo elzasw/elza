@@ -38,7 +38,7 @@ export function filter(area, filter) {
  * Načtení dat pokud je potřeba.
  * @param area oblast
  * @param parent parent data pro seznam, pokud je potřeba, např. id nadřazené entity, ke které se vztahuje seznam
- * @param getData promise pro načtení
+ * @param getData promise pro načtení, vstupem je parent a filtr
  * @param forceFetch pokud je true, provede se vždy nové načtení
  */
 export function fetchIfNeeded(area, parent, getData, forceFetch = false) {
@@ -57,7 +57,7 @@ export function fetchIfNeeded(area, parent, getData, forceFetch = false) {
         if (forceFetch || store.currentDataKey !== dataKey) {
             dispatch(request(area, dataKey))
 
-            getData()
+            getData(store.parent, store.filter)
                 .then(json => {
                     const newStore = storeFromArea(getState(), area);
                     const newDataKey = newStore.getDataKey.bind(newStore)()

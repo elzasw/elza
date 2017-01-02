@@ -59,6 +59,7 @@ class EditRegistryForm extends AbstractReactComponent {
                     label={i18n('registry.update.type')}
                     items = {items}
                     tree
+                    alwaysExpanded
                     allowSelectItem={(id, item) => item.addRecord}
                     {...registerTypeId}
                     {...decorateFormField(registerTypeId)}

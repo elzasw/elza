@@ -1,3 +1,5 @@
+import {indexById} from 'stores/app/utils.jsx';
+
 /**
  * Načtení store pro konkrétní areu.
  * @param store root store aplikace, pod kterým je očekáván store app!
@@ -28,18 +30,41 @@ export default function storeFromArea(store, area, showErrors=true) {
         }
     } else {
         const areaItems = area.split(".");
-        st = store.app;
+
+        if (areaItems[0].startsWith("fund[")) {
+            st = store.arrRegion;
+        } else {
+            st = store.app;
+        }
+
         for (let a=0, len = areaItems.length; a<len; a++) {
             const item = areaItems[a];
-            const subStore = st[item];
-            if (subStore) {
-                st = subStore;
-            } else {
-                const path = areaItems.slice(a).join(".");
-                if (showErrors) {
-                    console.error(`Store ${path} is not defined in`, st, `Cannot resolve full path 'app.${area}' in root store`, store);
+
+            // Variabilita zpracování area i do fund store na základě předaných dat
+            if (item.startsWith("fund[")) {
+                const versionId = item.substring("fund[".length, item.indexOf("]"));
+                const index = indexById(st.funds, versionId, "versionId");
+                const subStore = st.funds[index];
+                if (subStore) {
+                    st = subStore;
+                } else {
+                    const path = areaItems.slice(a).join(".");
+                    if (showErrors) {
+                        console.error(`Store ${path} is not defined in`, st, `Cannot resolve full path 'app.${area}' in root store`, store);
+                    }
+                    return null;
                 }
-                return null;
+            } else {
+                const subStore = st[item];
+                if (subStore) {
+                    st = subStore;
+                } else {
+                    const path = areaItems.slice(a).join(".");
+                    if (showErrors) {
+                        console.error(`Store ${path} is not defined in`, st, `Cannot resolve full path 'app.${area}' in root store`, store);
+                    }
+                    return null;
+                }
             }
         }
     }

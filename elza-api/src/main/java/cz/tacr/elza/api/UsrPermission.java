@@ -233,7 +233,12 @@ public interface UsrPermission<U extends UsrUser, G extends UsrGroup, F extends 
          * drobné úpravy uzavřených všech AS
          * - zatím neřešíme
          */
-        FUND_CL_VER_WR_ALL;
+        FUND_CL_VER_WR_ALL,
+
+        /**
+         * Ukládání mapování typů vztahů a entit mezi INTERPI a ELZA.
+         */
+        INTERPI_MAPPING_WR;
 
         /**
          * Typ oprávnění

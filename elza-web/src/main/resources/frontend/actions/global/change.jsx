@@ -8,6 +8,7 @@ import {fundOutputSelectOutput} from 'actions/arr/fundOutput.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {partyListInvalidate, partyDetailClear, partyDetailInvalidate} from 'actions/party/party.jsx'
+import {preparedListInvalidate, detailInvalidate, listInvalidate, queueListInvalidate} from 'actions/arr/digitizationActions.jsx'
 
 export function isFundChangeAction(action) {
     switch (action.type) {
@@ -122,10 +123,13 @@ export function changeParty(partyId) {
 }
 
 export function changePartyCreate(partyId) {
-    return {
-        type: types.PARTY_CREATED,
-        partyId: partyId
-    }
+    return (dispatch, getState) => {
+        dispatch(partyListInvalidate());
+        dispatch({
+            type: types.PARTY_CREATED,
+            partyId: partyId
+        })
+    };
 }
 
 export function changePartyDelete(partyId) {
@@ -283,5 +287,45 @@ export function groupDelete(id) {
     return {
         type: types.GROUP_DELETE,
         id
+    }
+}
+
+export function createRequest(value) {
+    return (dispatch, getState) => {
+        dispatch(preparedListInvalidate(value.versionId));
+        dispatch(listInvalidate(value.versionId));
+    }
+}
+
+export function changeRequest(value) {
+    return (dispatch, getState) => {
+        dispatch(preparedListInvalidate(value.versionId));
+        dispatch(listInvalidate(value.versionId));
+        dispatch(detailInvalidate(value.versionId, value.entityId));
+    }
+}
+
+
+export function createRequestItemQueue(value) {
+    return (dispatch, getState) => {
+        dispatch(listInvalidate(value.versionId));
+        dispatch(detailInvalidate(value.versionId, value.requestId));
+        dispatch(queueListInvalidate());
+    }
+}
+
+export function changeRequestItemQueue(value) {
+    return (dispatch, getState) => {
+        dispatch(listInvalidate(value.versionId));
+        dispatch(queueListInvalidate());
+        dispatch(detailInvalidate(value.versionId, value.requestId));
+    }
+}
+
+export function nodesDelete(fundVersionId, nodeIds) {
+    return {
+        type: types.NODES_DELETE,
+        versionId: fundVersionId,
+        nodeIds: nodeIds
     }
 }

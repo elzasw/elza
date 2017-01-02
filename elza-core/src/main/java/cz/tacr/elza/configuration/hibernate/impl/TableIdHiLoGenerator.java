@@ -32,7 +32,7 @@ public class TableIdHiLoGenerator extends TableGenerator {
     /**
      * Po každých dvaceti hodnotách se zvýší počítadlo v tabulce sekvencí.
      */
-    public static final String DEFAULT_INCREMENT_SIZE = "20";
+    public static final String DEFAULT_INCREMENT_SIZE = "1";
 
     @Override
     public void configure(final Type type, final Properties params, final Dialect d) throws MappingException {

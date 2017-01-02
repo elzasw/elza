@@ -25,7 +25,7 @@ import javax.persistence.Table;
  */
 @Entity(name = "par_relation_type_role_type")
 @Table
-@Inheritance(strategy = InheritanceType.JOINED)
+//@Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ParRelationTypeRoleType implements cz.tacr.elza.api.ParRelationTypeRoleType<ParRelationType, ParRelationRoleType> {
 

@@ -42,6 +42,7 @@ import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.RulTemplateVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
+import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.UserInfoVO;
@@ -129,6 +130,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String REINDEX = ADMIN_CONTROLLER_URL + "/reindex";
     protected static final String REINDEX_STATUS = ADMIN_CONTROLLER_URL + "/reindexStatus";
     protected static final String CACHE_RESET = ADMIN_CONTROLLER_URL + "/cache/reset";
+    protected static final String EXTERNAL_SYSTEMS = ADMIN_CONTROLLER_URL + "/externalSystems";
+    protected static final String FIND_EXTERNAL_SYSTEMS = EXTERNAL_SYSTEMS;
+    protected static final String CREATE_EXTERNAL_SYSTEM = EXTERNAL_SYSTEMS;
+    protected static final String UPDATE_EXTERNAL_SYSTEM = EXTERNAL_SYSTEMS + "/{externalSystemId}";
+    protected static final String DELETE_EXTERNAL_SYSTEM = EXTERNAL_SYSTEMS + "/{externalSystemId}";
 
     // ARRANGEMENT
     protected static final String CREATE_FUND = ARRANGEMENT_CONTROLLER_URL + "/funds";
@@ -2831,5 +2837,44 @@ public abstract class AbstractControllerTest extends AbstractTest {
         URL url = Thread.currentThread().getContextClassLoader().getResource(resourcePath);
         Assert.assertNotNull(url);
         return new File(url.getPath());
+    }
+
+    /**
+     * Vyhledá všechny externí systémy.
+     *
+     * @return seznam externích systémů
+     */
+    protected List<SysExternalSystemVO> getExternalSystems() {
+        return Arrays.asList(get(FIND_EXTERNAL_SYSTEMS).as(SysExternalSystemVO[].class));
+    }
+
+    /**
+     * Vytvoří externí systém.
+     *
+     * @param externalSystemVO vytvářený externí systém
+     * @return vytvořený externí systém
+     */
+    protected SysExternalSystemVO createExternalSystem(final SysExternalSystemVO externalSystemVO) {
+        return post(spec -> spec.body(externalSystemVO), CREATE_EXTERNAL_SYSTEM).as(SysExternalSystemVO.class);
+    }
+
+    /**
+     * Upravení externího systému.
+     *
+     * @param externalSystemVO upravovaný externí systém
+     * @return upravený externí systém
+     */
+    protected SysExternalSystemVO updateExternalSystem(final SysExternalSystemVO externalSystemVO) {
+        return put(spec -> spec.body(externalSystemVO).pathParam("externalSystemId", externalSystemVO.getId()),
+                UPDATE_EXTERNAL_SYSTEM).as(SysExternalSystemVO.class);
+    }
+
+    /**
+     * Smazání externího systému.
+     *
+     * @param externalSystemVO mazaný externí systém
+     */
+    protected void deleteExternalSystem(final SysExternalSystemVO externalSystemVO) {
+        delete(spec -> spec.pathParam("externalSystemId", externalSystemVO.getId()), DELETE_EXTERNAL_SYSTEM);
     }
 }

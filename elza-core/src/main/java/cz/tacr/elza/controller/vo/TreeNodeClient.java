@@ -2,6 +2,8 @@ package cz.tacr.elza.controller.vo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.util.List;
+
 
 /**
  * Data uzlu stromu odesílané klientovi pro strom fa.
@@ -55,6 +57,11 @@ public class TreeNodeClient {
      * Informace o stavu JP.
      */
     private NodeConformityVO nodeConformity;
+
+    /**
+     * Seznam otevřených požadavků na digitalizaci.
+     */
+    private List<ArrDigitizationRequestVO> digitizationRequests;
 
     public TreeNodeClient() {
     }
@@ -136,6 +143,14 @@ public class TreeNodeClient {
 
     public void setNodeConformity(final NodeConformityVO nodeConformity) {
         this.nodeConformity = nodeConformity;
+    }
+
+    public List<ArrDigitizationRequestVO> getDigitizationRequests() {
+        return digitizationRequests;
+    }
+
+    public void setDigitizationRequests(final List<ArrDigitizationRequestVO> digitizationRequests) {
+        this.digitizationRequests = digitizationRequests;
     }
 
     public String getAccordionLeft() {

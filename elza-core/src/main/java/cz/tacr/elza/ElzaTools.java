@@ -132,4 +132,50 @@ public class ElzaTools {
             return (T) entity;
         }
     }
+
+    /**
+     * Přidá parametry do url.
+     *
+     * @param url    vstupní urů
+     * @param params parametry, které se můžou použít
+     * @return výsůedná url
+     */
+    public static String bindingUrlParams(final String url, UrlParams params) {
+        if (params == null || url == null) {
+            return url;
+        }
+        String result = url;
+
+        for (Map.Entry<String, String> entry : params.getProperties().entrySet()) {
+            result = result.replaceAll("\\{" + entry.getKey() + "\\}", entry.getValue());
+        }
+        return result;
+    }
+
+    /**
+     * Vytvoření parametru pro url.
+     *
+     * @return parametry
+     */
+    public static UrlParams createUrlParams() {
+        return new UrlParams();
+    }
+
+    /**
+     * Struktura pro uchování parametrů pro url.
+     */
+    public static class UrlParams {
+        Map<String, String> properties = new HashMap<>();
+
+        public UrlParams add(final String key, final Object value) {
+            properties.put(key, value.toString());
+            return this;
+        }
+
+        public Map<String, String> getProperties() {
+            return properties;
+        }
+    }
+
+
 }

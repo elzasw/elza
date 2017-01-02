@@ -46,17 +46,44 @@ class ArrHistoryForm extends AbstractReactComponent {
 
         const {selectedItem} = this.state;
         const canDelete = selectedItem && item.changeDate >= selectedItem.changeDate;
-        const typeText = i18n(`arr.history.change.title.${item.type ? item.type : "unknown"}`);
+        const typeText = this.getItemTypeText(item);
+        const description = this.getItemDescription(item);
 
         return (
             <div className={`row-container ${item.revert ? " canRevert" : ""} ${canDelete ? " delete" : ""}`}>
                 <div className="col col1">{dateToString(new Date(item.changeDate))}</div>
                 <div className="col col2">{timeToString(new Date(item.changeDate))}</div>
-                <div className="col col3" title={item.description}>{item.description}</div>
+                <div className="col col3" title={description}>{description}</div>
                 <div className="col col4" title={typeText}>{typeText}</div>
                 <div className="col col5">{item.username ? item.username : <i>System</i>}</div>
             </div>
         )
+    }
+
+    getItemTypeText(item) {
+        return i18n(`arr.history.change.title.${item.type || 'unknown'}`);
+    }
+    
+    getItemDescription(item) {
+        switch (item.type || '') {
+            case 'BULK_ACTION':
+            case 'ADD_NODES_OUTPUT':
+            case 'REMOVE_NODES_OUTPUT':
+            case 'CREATE_AS':
+            case 'BATCH_CHANGE_DESC_ITEM':
+            case 'BATCH_DELETE_DESC_ITEM':
+            case 'IMPORT':
+                return i18n('arr.history.change.description.' + item.type, String(item.nodeChanges));
+        }
+
+        if (item.label) {
+            return item.label;
+        }
+
+        return this.getItemTypeText(item)
+            + ', primaryNodeId: ' + (item.primaryNodeId || '?')
+            + ', changeId: ' + item.changeId
+            + ', changeDate: ' + dateToString(new Date(item.changeDate));
     }
 
     getItems = (fromIndex, toIndex) => {
@@ -105,12 +132,12 @@ class ArrHistoryForm extends AbstractReactComponent {
     renderSelectedItemInfo = () => {
         const {selectedItem} = this.state;
 
-
         let infoText;
         if (selectedItem) {
-            let typeText = i18n(`arr.history.change.title.${selectedItem.type ? selectedItem.type : "unknown"}`);
-            let username = selectedItem.username ? selectedItem.username : <i>System</i>;
-            infoText = `${dateToString(new Date(selectedItem.changeDate))}; ${timeToString(new Date(selectedItem.changeDate))}; ${selectedItem.description}; ${typeText}; ${username}`;
+            const description = this.getItemDescription(selectedItem);
+            const typeText = this.getItemTypeText(selectedItem);
+            const username = selectedItem.username ? selectedItem.username : 'System';
+            infoText = `${dateToString(new Date(selectedItem.changeDate))}; ${timeToString(new Date(selectedItem.changeDate))}; ${description}; ${typeText}; ${username}`;
         } else {
             infoText = null;
         }

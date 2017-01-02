@@ -41,7 +41,7 @@ export default class AddRemoveList extends AbstractReactComponent {
     render() {
         const {items, readOnly, className, onAdd, renderItem, addTitle, removeTitle} = this.props;
 
-        const groups = items.map((item, index) => {
+        const groups = items == null ? [] : items.map((item, index) => {
             return (
                 <div className="item-container" key={"item-" + index}>
                     {renderItem(item, index)}

@@ -149,7 +149,7 @@ var keyDownHandlers = {
     },
 
     Enter: function (event) {
-        if (this.state.isOpen === false) {
+        if (this.state.isOpen === false && !this.state.changed) {
             // already selected this, do nothing
             return
         }
@@ -231,6 +231,8 @@ export default class Autocomplete extends AbstractReactComponent {
             'focus')
 
         this._ignoreBlur = false;
+
+        this._keyMap = {};
 
         var shouldItemRender;
         if (props.shouldItemRender) {
@@ -565,14 +567,16 @@ export default class Autocomplete extends AbstractReactComponent {
     }
 
     handleKeyDown(event) {
-        if (keyDownHandlers[event.key]) {
+        this._keyMap[event.keyCode] = event.type == 'keydown';
+
+        if (this._keyMap[17] && this._keyMap[40]) { // ctrl + šipka dolů
+            this.openMenu();
+        } else if (keyDownHandlers[event.key]) {
             keyDownHandlers[event.key].call(this, event)
-        } else {
-            this.changeState({
-                highlightedIndex: null,
-                isOpen: true
-            })
+        } else if (this.state.isOpen === false && event.keyCode > 47) {
+            this.openMenu();
         }
+
     }
 
     handleChange(event) {
@@ -585,10 +589,13 @@ export default class Autocomplete extends AbstractReactComponent {
     }
 
     handleKeyUp(e) {
+        this._keyMap = {};
+
         if (this._performAutoCompleteOnKeyUp) {
             this._performAutoCompleteOnKeyUp = false
-            this.maybeAutoCompleteText()
+            this.maybeAutoCompleteText(e.keyCode != 8) // pokud to není backpace, chci předvyplnit nápovědu
         }
+
         if (this.props.onKeyUp) {
             this.props.onKeyUp(e);
         }
@@ -734,7 +741,7 @@ export default class Autocomplete extends AbstractReactComponent {
         return result
     }
 
-    maybeAutoCompleteText() {
+    maybeAutoCompleteText(selectText = true) {
         if (this.props.customFilter) {
             return
         }
@@ -754,7 +761,7 @@ export default class Autocomplete extends AbstractReactComponent {
         var itemValue = this.props.getItemName(matchedItem)
         var itemValueDoesMatch = this.state.inputStrValue && (itemValue.toLowerCase().indexOf(this.state.inputStrValue.toLowerCase()) === 0)
 
-        if (itemValueDoesMatch) {
+        if (itemValueDoesMatch && selectText) {
             var node = ReactDOM.findDOMNode(this.refs.input)
             var setSelection = () => {
                 if (node.createTextRange) {
@@ -952,9 +959,36 @@ export default class Autocomplete extends AbstractReactComponent {
         if (this.state.isOpen) {
             return
         }
-        ReactDOM.findDOMNode(this.refs.input).select()
-        this.changeState({isOpen: true}, () => {
-            this.props.onSearchChange(this.state.inputStrValue);
+
+        let oldValue = ReactDOM.findDOMNode(this.refs.input).value;
+        ReactDOM.findDOMNode(this.refs.input).value = "";
+
+        let items = this.getFilteredItems();
+        let selectedId = null;
+
+        if (items) {
+            let item;
+            for (let i = 0; i < items.length; i++) {
+                item = items[i];
+                if (this.props.getItemName(item) == oldValue) {
+                    selectedId = item.id;
+                }
+            }
+        }
+
+        this.changeState({isOpen: true, inputStrValue: "", highlightedIndex: null}, () => {
+            this.props.onSearchChange("");
+            let items = this.getFilteredItems();
+            let item;
+            if (selectedId != null) {
+                for (let i = 0; i < items.length; i++) {
+                    item = items[i];
+                    if (item.id == selectedId) {
+                        this.changeState({highlightedIndex: i});
+                        break;
+                    }
+                }
+            }
         })
     }
 
@@ -1089,9 +1123,6 @@ Autocomplete.defaultProps = {
         if (!allowFocus) {
             cls += ' not-focusable';
         }
-        if (treeInfo !== null) {
-            cls += " depth-" + treeInfo.depth;
-        }
         if (item.className) {
             cls += " " + item.className;
         }
@@ -1104,7 +1135,16 @@ Autocomplete.defaultProps = {
         }
 
         let treeTogle;
+        let depth;
         if (treeInfo) {
+            const depthItems = [];
+            for (let a=0; a<treeInfo.depth; a++) {
+                depthItems.push(<div className="depth-item"></div>);
+            }
+            depth= <div className="depth-container">
+                {depthItems}
+            </div>
+
             if (item.children && item.children.length > 0) {
                 treeTogle = (
                     <div
@@ -1125,6 +1165,7 @@ Autocomplete.defaultProps = {
                 className={cls}
                 key={item.id}
             >
+                {depth}
                 {treeTogle}
                 {itemStr}
             </div>

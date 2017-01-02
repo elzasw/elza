@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {ControllableDropdownButton, Icon, AbstractReactComponent, Ribbon, RibbonGroup, PartyList, PartyDetail, PartyEntities, i18n, ImportForm} from 'components/index.jsx';
-import {RelationForm, AddPartyForm} from 'components/index.jsx';
+import {RelationForm, AddPartyForm, ExtImportForm} from 'components/index.jsx';
 import {MenuItem, Button} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {AppStore} from 'stores/index.jsx'
@@ -19,6 +19,8 @@ import {setFocus} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 
 import './PartyPage.less';
+import {regExtSystemListFetchIfNeeded} from 'actions/registry/regExtSystemList';
+
 
 const keyModifier = Utils.getKeyModifier();
 
@@ -55,10 +57,12 @@ class PartyPage extends AbstractReactComponent {
 
     componentDidMount() {
         this.dispatch(refPartyTypesFetchIfNeeded());         // načtení osob pro autory osoby
+        this.props.dispatch(regExtSystemListFetchIfNeeded());
     }
 
     componentWillReceiveProps(nextProps) {
         this.dispatch(refPartyTypesFetchIfNeeded());         // načtení osob pro autory osoby
+        this.props.dispatch(regExtSystemListFetchIfNeeded());
     }
 
     handleShortcuts = (action) => {
@@ -105,12 +109,13 @@ class PartyPage extends AbstractReactComponent {
 
 
     handleImport = () => {
-        this.dispatch(
-            modalDialogShow(this,
-                i18n('import.title.party'),
-                <ImportForm party/>
-            )
-        );
+        this.dispatch(modalDialogShow(this, i18n('import.title.party'), <ImportForm party/>));
+    };
+
+    handleExtImport = () => {
+        this.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={true} onSubmitForm={(data) => {
+            this.dispatch(partyDetailFetchIfNeeded(data.id));
+        }} />, "dialog-lg"));
     };
 
     /**
@@ -128,20 +133,26 @@ class PartyPage extends AbstractReactComponent {
      * Sestavení Ribbon Menu - přidání položek pro osoby
      */ 
     buildRibbon = () => {
-        const {userDetail, partyDetail, refTables: {partyTypes}} = this.props;
+        const {userDetail, partyDetail, refTables: {partyTypes}, extSystems} = this.props;
 
         const isSelected = partyDetail.id !== null;
         const altActions = [];
         if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL)) {
             altActions.push(
-                <ControllableDropdownButton key='add-party' ref='add-party' id='add-party' title={<span className="dropContent"><Icon glyph='fa-download fa-fw' /><div><span className="btnText">{i18n('party.addParty')}</span></div></span>}>
+                <ControllableDropdownButton key='add-party' ref='addParty' id='add-party' title={<span className="dropContent"><Icon glyph='fa-download fa-fw' /><div><span className="btnText">{i18n('party.addParty')}</span></div></span>}>
                     {partyTypes.items.map(type => <MenuItem key={type.id} eventKey={type.id} onClick={this.handleAddParty.bind(this, type.id)}>{type.name}</MenuItem>)}
                 </ControllableDropdownButton>
             );
-            altActions.push(<Button key='export-party' onClick={this.handleImport}>
+            altActions.push(<Button key='import-party' onClick={this.handleImport}>
                 <Icon glyph='fa-download fa-fw' />
                 <div><span className="btnText">{i18n('ribbon.action.party.import')}</span></div>
             </Button>);
+            if (extSystems && extSystems.length > 0) {
+                altActions.push(<Button key='import-ext-party' onClick={this.handleExtImport}>
+                    <Icon glyph='fa-download fa-fw' />
+                    <div><span className="btnText">{i18n('ribbon.action.party.importExt')}</span></div>
+                </Button>);
+            }
         }
 
         const itemActions = [];
@@ -197,13 +208,16 @@ class PartyPage extends AbstractReactComponent {
 
 
 function mapStateToProps(state) {
-    const {app:{partyList, partyDetail}, splitter, refTables, userDetail} = state;
+    const {app:{partyList, partyDetail, regExtSystemList}, splitter, refTables, userDetail, focus} = state;
+
     return {
+        extSystems: regExtSystemList.fetched ? regExtSystemList.data : null,
         partyList,
         partyDetail,
         splitter,
         refTables,
         userDetail,
+        focus
     }
 }
 

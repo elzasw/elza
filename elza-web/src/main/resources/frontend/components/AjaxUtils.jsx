@@ -49,7 +49,7 @@ function createMessage(result) {
     let toaster;
 
     if (result.type == 'BaseCode' && result.code == 'INSUFFICIENT_PERMISSIONS') {
-        messages.push(<small><b>{i18n('global.exception.permission.need')}:</b> {result.properties && result.properties.permission && result.properties.permission.map((item)=>item).join(", ")}</small>);
+        messages.push(<small><b>{i18n('global.exception.permission.need')}:</b> {result.properties && result.properties.permission && result.properties.permission.map((item)=>i18n('permission.' + item)).join(", ")}</small>);
         toaster = addToastrDanger(i18n('global.exception.permission.denied'), messages);
     }
 
@@ -97,6 +97,18 @@ function createMessage(result) {
 
     if (result.type == 'ArrangementCode' && result.code == 'EXISTS_BLOCKING_CHANGE') {
         toaster = addToastrWarning(i18n('arr.exception.exists.blocking.change'), messages);
+    }
+
+    if (result.type == 'ArrangementCode' && result.code == 'ALREADY_ADDED') {
+        toaster = addToastrWarning(i18n('arr.exception.already.added'), messages);
+    }
+
+    if (result.type == 'ArrangementCode' && result.code == 'ALREADY_REMOVED') {
+        toaster = addToastrWarning(i18n('arr.exception.already.removed'), messages);
+    }
+
+    if (result.type == 'ArrangementCode' && result.code == 'ILLEGAL_COUNT_EXTERNAL_SYSTEM') {
+        toaster = addToastrWarning(i18n('arr.exception.illegal.count.external.system'), messages);
     }
 
     if (toaster == null) {

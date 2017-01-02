@@ -476,6 +476,45 @@ export default function fundTree(state = initialState, action = {}) {
 
             return state;
 
+        case types.NODES_DELETE: {
+            var result = {
+                ...state
+            };
+
+            let expandedIds = {};
+            Object.keys(result.expandedIds).forEach(function(key,index) {
+                let nodeId = parseInt(key);
+                if (action.nodeIds.indexOf(nodeId) < 0) {
+                    expandedIds[nodeId] = true;
+                }
+            });
+            result.expandedIds = expandedIds;
+
+            let fetchingIncludeIds = {};
+            Object.keys(result.fetchingIncludeIds).forEach(function(key,index) {
+                let nodeId = parseInt(key);
+                if (action.nodeIds.indexOf(nodeId) < 0) {
+                    fetchingIncludeIds[nodeId] = true;
+                }
+            });
+            result.fetchingIncludeIds = fetchingIncludeIds;
+
+            let selectedIds = {};
+            Object.keys(result.selectedIds).forEach(function(key,index) {
+                let nodeId = parseInt(key);
+                if (action.nodeIds.indexOf(nodeId) < 0) {
+                    fetchingIncludeIds[nodeId] = true;
+                }
+            });
+            result.selectedIds = selectedIds;
+
+            if (result.selectedId !== null && action.nodeIds.indexOf(result.selectedId) >= 0) {
+                result.selectedId = null;
+            }
+
+            return consolidateState(state, result);
+        }
+
         default:
             return state
     }
