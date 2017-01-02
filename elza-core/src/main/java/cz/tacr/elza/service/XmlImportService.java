@@ -20,6 +20,9 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import javax.xml.bind.JAXBException;
 
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventId;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -173,6 +176,9 @@ import cz.tacr.elza.xmlimport.v1.vo.record.VariantRecord;
 public class XmlImportService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    @Autowired
+    private EventNotificationService eventNotificationService;
 
     @Autowired
     private ArrangementService arrangementService;
@@ -923,6 +929,7 @@ public class XmlImportService {
             throw new PartyImportException("Neznámý typ osoby " + party);
         }
 
+        EventType type = parParty.getPartyId() == null ? EventType.PARTY_CREATE : EventType.PARTY_UPDATE;
         parParty = partyRepository.save(parParty);
 
         importPartyNames(party, parParty, stopOnError);
@@ -936,7 +943,11 @@ public class XmlImportService {
 
         importPartyInstitution(party, parParty, stopOnError);
 
-        return partyRepository.save(parParty);
+        partyRepository.save(parParty);
+
+        eventNotificationService.publishEvent(new EventId(type, parParty.getPartyId()));
+
+        return parParty;
     }
 
     private void importPartyInstitution(final AbstractParty party, final ParParty parParty, final boolean stopOnError) throws PartyImportException {
