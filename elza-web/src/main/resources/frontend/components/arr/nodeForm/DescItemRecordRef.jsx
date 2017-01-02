@@ -9,6 +9,7 @@ import {MenuItem, Button} from 'react-bootstrap';
 import * as perms from 'actions/user/Permission.jsx';
 import DescItemLabel from './DescItemLabel.jsx'
 import './DescItemRecordRef.less'
+import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 
 class DescItemRecordRef extends AbstractReactComponent {
     constructor(props) {
@@ -103,7 +104,8 @@ class DescItemRecordRef extends AbstractReactComponent {
         }
 
         return (
-                <div className='desc-item-value desc-item-value-parts'>
+            <div className='desc-item-value desc-item-value-parts'>
+                <ItemTooltipWrapper tooltipTitle="dataType.recordRef.format">
                     <Autocomplete
                             {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, ['autocomplete-record'])}
                             ref='autocomplete'
@@ -119,7 +121,8 @@ class DescItemRecordRef extends AbstractReactComponent {
                             renderItem={this.renderRecord}
                             actions={[actions]}
                             />
-                </div>
+                </ItemTooltipWrapper>
+            </div>
         )
     }
 }

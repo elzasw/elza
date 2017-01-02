@@ -11,6 +11,7 @@ import {decorateValue} from './DescItemUtils.jsx'
 import DescItemJsonTableCellForm from './DescItemJsonTableCellForm.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import DescItemLabel from './DescItemLabel.jsx'
+import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 
 require ("./DescItemJsonTable.less")
 
@@ -202,20 +203,22 @@ var DescItemJsonTable = class DescItemJsonTable extends AbstractReactComponent {
 
         return (
             <div className='desc-item-value desc-item-value-table'>
-                <DataGrid
-                    key="grid"
-                    ref='dataGrid'
-                    rows={rows}
-                    cols={cols}
-                    onFocus={onFocus}
-                    onBlur={this.handleBlur}
-                    selectedIds={[]}
-                    allowRowCheck={false}
-                    staticColumns={true}
-                    onEdit={this.handleEdit}
-                    onDelete={this.handleDelete}
-                    disabled={locked || readMode}
-                    />
+                <ItemTooltipWrapper tooltipTitle="dataType.jsonTable.format">
+                    <DataGrid
+                        key="grid"
+                        ref='dataGrid'
+                        rows={rows}
+                        cols={cols}
+                        onFocus={onFocus}
+                        onBlur={this.handleBlur}
+                        selectedIds={[]}
+                        allowRowCheck={false}
+                        staticColumns={true}
+                        onEdit={this.handleEdit}
+                        onDelete={this.handleDelete}
+                        disabled={locked || readMode}
+                        />
+                </ItemTooltipWrapper>
                 <div
                     key="actions"
                     className='desc-item-value-actions'

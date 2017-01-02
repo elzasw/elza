@@ -17,7 +17,7 @@ const TOOLTIP_WINDOW_PADDING = 40;
 class TooltipTrigger extends AbstractReactComponent {
 
     static PropTypes = {
-        content: React.PropTypes.object.isRequired,
+        content: React.PropTypes.object,
         placement: React.PropTypes.oneOf(['left', 'right', 'top', 'bottom', 'vertical', 'horizontal', 'auto']),
         holdOnHover: React.PropTypes.bool,
         holdOnFocus: React.PropTypes.bool,
@@ -254,7 +254,7 @@ class TooltipTrigger extends AbstractReactComponent {
                 onMouseLeave={() => this.showTooltip(false, this.getDelay(false))}
             >
                 {children}
-                <Overlay
+                {content && <Overlay
                     show={this.state.showTooltip}
                     placement={placement}
                     target={() => this.refs.ttTarget}
@@ -268,7 +268,7 @@ class TooltipTrigger extends AbstractReactComponent {
                             {content}
                         </div>
                     </Tooltip>
-                </Overlay>
+                </Overlay>}
             </span>
         )
     }

@@ -6,10 +6,12 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {AbstractReactComponent, i18n} from 'components/index.jsx';
 import {connect} from 'react-redux'
-var classNames = require('classnames');
 import {normalizeDouble} from 'components/validate.jsx'
 import {decorateValue} from './DescItemUtils.jsx'
 import DescItemLabel from './DescItemLabel.jsx'
+import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
+
+var classNames = require('classnames');
 
 var DescItemDecimal = class DescItemDecimal extends AbstractReactComponent {
     constructor(props) {
@@ -78,14 +80,16 @@ var DescItemDecimal = class DescItemDecimal extends AbstractReactComponent {
 
         return (
             <div className='desc-item-value'>
-                <input
-                    {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
-                    ref='focusEl'
-                    type="text"
-                    disabled={locked}
-                    onChange={this.handleChange}
-                    value={cal && this.state.value == '' ? value : this.state.value}
-                />
+                <ItemTooltipWrapper tooltipTitle="dataType.decimal.format">
+                    <input
+                        {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
+                        ref='focusEl'
+                        type="text"
+                        disabled={locked}
+                        onChange={this.handleChange}
+                        value={cal && this.state.value == '' ? value : this.state.value}
+                    />
+                </ItemTooltipWrapper>
             </div>
         )
     }
