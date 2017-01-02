@@ -45,6 +45,19 @@ var messages = {
     "global.exception.undefined": "Neznámá chyba",
     "global.exception.optimistic.locking": "Zaznamenána práce s neaktuálními daty",
 
+    "dataType.coordinates.format": "Zadávejte ve tvaru \"15.5154,49.535\"",
+    "dataType.decimal.format": null,
+    "dataType.fileRef.format": null,
+    "dataType.int.format": null,
+    "dataType.jsonTable.format": null,
+    "dataType.packetRef.format": null,
+    "dataType.partyRef.format": null,
+    "dataType.recordRef.format": null,
+    "dataType.string.format": null,
+    "dataType.text.format": null,
+    "dataType.unitdate.format": "<div><b>Formát datace</b><br />Století: 20. st. <i>nebo</i> 20.st. <i>nebo</i> 20st<br />Rok: 1968<br />Měsíc.rok: 8.1968<br />Datum: 21.8.1698<br />Datum a čas: 21.8.1968 8:23 <i>nebo</i> 21.8.1968 8:23:31<br /><b>Intervaly</b><br />Jednotlivá hodnota: 1968<br />Interval: 21.8.1968 0:00-27.6.1989<br /><b>Odhad</b><br />Definuje se uzavřením hodnoty do kulatých nebo hranatých závorek: [16.8.1977]<br />Při použití znaku \"/\" pro oddělení intervalu jsou od i do chápány jako odhad.</div>",
+    "dataType.unitid.format": null,
+
     "arr.exception.delete.packets": "Nelze smazat obaly ({0}), protože existují navázané entity.",
     "arr.exception.version.already.closed": "Verze AS je již uzavřena.",
     "arr.exception.fund.not.found": "Archivní fond neexistuje.",
@@ -551,7 +564,6 @@ var messages = {
 
     "subNodeForm.countOfCoordinates": "Počet bodů: {0}",
     "subNodeForm.errorPointCoordinates": "Chybně zadaný bod. Zadávejte ve tvaru \"15.5154,49.535\"",
-    "subNodeForm.formatPointCoordinates": "Zadávejte ve tvaru \"15.5154,49.535\"",
 
     "subNodeForm.calculate-user": "Pole je vyplňováno uživatelsky, přepnout na automatické",
     "subNodeForm.calculate-auto": "Pole je vyplňováno automaticky, přepnout na uživatelské",
@@ -599,7 +611,6 @@ var messages = {
     "registry.coordinates.description": "Popis",
     "registry.coordinates.upload": "Importovat",
     "registry.coordinates.download": "Exportovat",
-    "registry.coordinates.format": "Zadávejte ve tvaru \"15.5154,49.535\"",
     "registry.detail.characteristics": "Charakteristika",
     "registry.detail.note": "Poznámka",
     "registry.detail.type": "Typ rejstříku - hierarchie",
