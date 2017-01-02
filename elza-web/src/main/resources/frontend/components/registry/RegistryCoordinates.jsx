@@ -66,7 +66,10 @@ class RegistryCoordinates extends AbstractReactComponent {
         const {item, disabled, onDelete, onBlur} = this.props;
         const title = item.error && item.error.value ? item.error.value : '';
         const isPoint = this.state.type == 'POINT';
-        const tooltip = <div>{i18n('registry.coordinates.format')}</div>;
+
+        const tooltipText = i18n("^dataType.coordinates.format");
+        const tooltip = tooltipText ? <div dangerouslySetInnerHTML={{__html: tooltipText}}></div> : null;
+
         return (
             <div className='reg-coordinates'>
                 {

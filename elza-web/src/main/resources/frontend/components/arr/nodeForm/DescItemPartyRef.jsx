@@ -8,8 +8,8 @@ import {MenuItem, DropdownButton} from 'react-bootstrap';
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import DescItemLabel from './DescItemLabel.jsx'
-
 import './DescItemPartyRef.less'
+import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 
 /**
  * Asi by bylo možné spojit s PartyField
@@ -106,21 +106,23 @@ class DescItemPartyRef extends AbstractReactComponent {
 
         return (
             <div className='desc-item-value desc-item-value-parts'>
-                <Autocomplete
-                        {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, ['autocomplete-party'])}
-                        ref='autocomplete'
-                        customFilter
-                        footer={footer}
-                        value={value}
-                        items={this.state.partyList}
-                        getItemId={(item) => item ? item.id : null}
-                        getItemName={(item) => item && item.record ? item.record.record : ''}
-                        onSearchChange={this.handleSearchChange}
-                        onChange={onChange}
-                        onBlur={onBlur}
-                        renderItem={this.renderParty}
-                        actions={[actions]}
-                />
+                <ItemTooltipWrapper tooltipTitle="dataType.partyRef.format">
+                    <Autocomplete
+                            {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, ['autocomplete-party'])}
+                            ref='autocomplete'
+                            customFilter
+                            footer={footer}
+                            value={value}
+                            items={this.state.partyList}
+                            getItemId={(item) => item ? item.id : null}
+                            getItemName={(item) => item && item.record ? item.record.record : ''}
+                            onSearchChange={this.handleSearchChange}
+                            onChange={onChange}
+                            onBlur={onBlur}
+                            renderItem={this.renderParty}
+                            actions={[actions]}
+                    />
+                </ItemTooltipWrapper>
             </div>
         )
     }
