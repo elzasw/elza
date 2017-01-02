@@ -28,6 +28,7 @@ import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.InterpiSearchVO;
 import cz.tacr.elza.controller.vo.RecordImportVO;
 import cz.tacr.elza.controller.vo.RegCoordinatesVO;
+import cz.tacr.elza.controller.vo.RegExternalSystemVO;
 import cz.tacr.elza.controller.vo.RegRecordSimple;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRecordWithCount;
@@ -56,6 +57,7 @@ import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
+import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.PartyService;
 import cz.tacr.elza.service.RegistryService;
 import cz.tacr.elza.service.UserService;
@@ -79,6 +81,9 @@ public class RegistryController {
 
     @Autowired
     private RegistryService registryService;
+
+    @Autowired
+    private ExternalSystemService externalSystemService;
 
     @Autowired
     private PartyService partyService;
@@ -593,6 +598,17 @@ public class RegistryController {
         registryService.deleteRegCoordinate(regCoordinate, regCoordinate.getRegRecord());
     }
 
+
+    /**
+     * Vyhledá všechny externí systémy.
+     *
+     * @return seznam externích systémů
+     */
+    @RequestMapping(value = "/externalSystems", method = RequestMethod.GET)
+    public List<RegExternalSystemVO> findAllExternalSystems() {
+        return factoryVo.createSimpleEntity(externalSystemService.findAllRegSystem(), RegExternalSystemVO.class);
+    }
+
     /**
      * Aktualizace rejstříku z externího systému.
      * @param recordId id rejstříku
@@ -608,7 +624,7 @@ public class RegistryController {
         Assert.notNull(recordImportVO.getSystemId());
 
         interpiService.importRecord(recordId, recordImportVO.getInterpiRecordId(), recordImportVO.getScopeId(),
-                recordImportVO.getSystemId());
+                recordImportVO.getSystemId(), recordImportVO.isOriginator());
 
         return getRecord(recordId);
     }
@@ -617,8 +633,8 @@ public class RegistryController {
      * Založení rejstříku z externího systému.
      * @param recordImportVO data rejstříku
      */
-    @RequestMapping(value = "/interpi/import", method = RequestMethod.POST)
     @Transactional
+    @RequestMapping(value = "/interpi/import", method = RequestMethod.POST)
     public RegRecordVO importRecord(@RequestBody final RecordImportVO recordImportVO) {
         Assert.notNull(recordImportVO);
         Assert.notNull(recordImportVO.getInterpiRecordId());
@@ -626,7 +642,7 @@ public class RegistryController {
         Assert.notNull(recordImportVO.getSystemId());
 
         RegRecord regRecord = interpiService.importRecord(null, recordImportVO.getInterpiRecordId(), recordImportVO.getScopeId(),
-                recordImportVO.getSystemId());
+                recordImportVO.getSystemId(), recordImportVO.isOriginator());
 
         return getRecord(regRecord.getRecordId());
     }
@@ -639,8 +655,8 @@ public class RegistryController {
      *
      * @return rejstřík z externího systému
      */
-    @RequestMapping(value = "/interpi/{recordId}", method = RequestMethod.GET)
     @Transactional
+    @RequestMapping(value = "/interpi/{recordId}", method = RequestMethod.GET)
     public ExternalRecordVO findInterpiRecord(@PathVariable final String recordId, @RequestBody final Integer systemId) {
         Assert.notNull(recordId);
         Assert.notNull(systemId);
@@ -651,14 +667,13 @@ public class RegistryController {
     /**
      * Vyhledá rejstříky v externím systému.
      *
-     * @param recordId id rejstříku
-     * @param systemId identifikátor externího systému
+     * @param interpiSearchVO vyhledávací kritéria
      *
      * @return rejstřík z externího systému
      */
-    @RequestMapping(value = "/interpi/", method = RequestMethod.POST)
     @Transactional
-    public List<ExternalRecordVO> findInterpiRecords(@PathVariable final String recordId, @RequestBody final InterpiSearchVO interpiSearchVO) {
+    @RequestMapping(value = "/interpi", method = RequestMethod.POST)
+    public List<ExternalRecordVO> findInterpiRecords(@RequestBody final InterpiSearchVO interpiSearchVO) {
         Assert.notNull(interpiSearchVO);
         Assert.notNull(interpiSearchVO.getSystemId());
 

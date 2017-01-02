@@ -1,30 +1,16 @@
 package cz.tacr.elza.controller.config;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-
-import cz.tacr.elza.controller.vo.ArrDigitalRepositoryVO;
-import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskVO;
-import cz.tacr.elza.domain.ArrDigitalRepository;
-import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.util.Assert;
-
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
-
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrChangeVO;
+import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
+import cz.tacr.elza.controller.vo.ArrDaoFileVO;
+import cz.tacr.elza.controller.vo.ArrDaoVO;
+import cz.tacr.elza.controller.vo.ArrDigitalRepositoryVO;
+import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskVO;
 import cz.tacr.elza.controller.vo.ArrFileVO;
 import cz.tacr.elza.controller.vo.ArrFundBaseVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
@@ -106,6 +92,11 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaoFile;
+import cz.tacr.elza.domain.ArrDaoFileGroup;
+import cz.tacr.elza.domain.ArrDigitalRepository;
+import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -195,6 +186,19 @@ import ma.glasnost.orika.converter.BidirectionalConverter;
 import ma.glasnost.orika.converter.builtin.PassThroughConverter;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
 import ma.glasnost.orika.metadata.Type;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.util.Assert;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -681,8 +685,8 @@ public class ConfigMapperConfiguration {
                     if (unitdateVO.getValue() != null) {
                         UnitDateConvertor.convertToUnitDate(unitdateVO.getValue(), parUnitdate);
                     }
-                    parUnitdate.setCalendarType(calendarTypeRepository.getOneCheckExist(unitdateVO.getCalendarTypeId()));
-
+                    Integer calendarTypeId = unitdateVO.getCalendarTypeId();
+                    parUnitdate.setCalendarType(calendarTypeId != null ? calendarTypeRepository.getOneCheckExist(calendarTypeId) : null);
                 }
             }).byDefault().register();
 
@@ -732,7 +736,7 @@ public class ConfigMapperConfiguration {
                 }).byDefault().register();
         mapperFactory.classMap(RegRecord.class, RegRecordSimple.class).field("recordId", "id").byDefault().register();
 
-        mapperFactory.classMap(RegExternalSystem.class, RegExternalSystemVO.class).field("externalSystemId", "id").byDefault().register();
+        mapperFactory.classMap(RegExternalSystem.class, RegExternalSystemVO.class).field("externalSystemId", "id").exclude("username").exclude("password").exclude("url").byDefault().register();
         mapperFactory.classMap(ArrDigitizationFrontdesk.class, ArrDigitizationFrontdeskVO.class).field("externalSystemId", "id").byDefault().register();
         mapperFactory.classMap(ArrDigitalRepository.class, ArrDigitalRepositoryVO.class).field("externalSystemId", "id").byDefault().register();
 
@@ -981,6 +985,25 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(UIPartyGroup.class, UIPartyGroupVO.class)
                 .byDefault()
                 .field("partyGroupId", "id")
+                .register();
+
+        mapperFactory.classMap(ArrDao.class, ArrDaoVO.class)
+                .field("daoId", "id")
+                .byDefault()
+                .register();
+
+        mapperFactory.classMap(ArrDaoFile.class, ArrDaoFileVO.class)
+                .field("daoFileId", "id")
+                .exclude("dao")
+                .byDefault()
+                .register();
+
+        mapperFactory.classMap(ArrDaoFileGroup.class, ArrDaoFileGroupVO.class)
+                .field("daoFileGroupId", "id")
+                .exclude("fileList")
+                .exclude("fileCount")
+                .exclude("dao")
+                .byDefault()
                 .register();
     }
 

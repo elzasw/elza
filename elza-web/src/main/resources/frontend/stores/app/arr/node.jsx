@@ -3,11 +3,13 @@ import {indexById, selectedAfterClose} from 'stores/app/utils.jsx'
 import subNodeForm from './subNodeForm.jsx'
 import subNodeFormCache from './subNodeFormCache.jsx'
 import subNodeRegister from './subNodeRegister.jsx'
+import subNodeDaos from './subNodeDaos.jsx'
 import subNodeInfo from './subNodeInfo.jsx'
 import {consolidateState} from 'components/Utils.jsx'
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo.jsx'
 import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister.jsx'
+import {isSubNodeDaosAction} from 'actions/arr/subNodeDaos.jsx'
 
 let _nextRoutingKey = 1;
 const _routingKeyAreaPrefix = 'NODE|';
@@ -45,12 +47,14 @@ export function nodeInitState(node, prevNodesNode) {
         result.subNodeFormCache = prevNodesNode.subNodeFormCache;
         result.subNodeInfo = prevNodesNode.subNodeInfo;
         result.subNodeRegister = prevNodesNode.subNodeRegister;
+        result.subNodeDaos = prevNodesNode.subNodeDaos;
     } else {
         result.routingKey = _routingKeyAreaPrefix + _nextRoutingKey++;
         result.subNodeForm = subNodeForm(undefined, {type:''});
         result.subNodeFormCache = subNodeFormCache(undefined, {type:''});
         result.subNodeInfo = subNodeInfo(undefined, {type:''});
         result.subNodeRegister = subNodeRegister(undefined, {type:''});
+        result.subNodeDaos = subNodeDaos();
     }
 
     if (prevNodesNode && prevNodesNode.id == node.id) {
@@ -106,6 +110,7 @@ const nodeInitialState = {
     subNodeForm: subNodeForm(undefined, {type:''}),
     subNodeFormCache: subNodeFormCache(undefined, {type:''}),
     subNodeRegister: subNodeRegister(undefined, {type:''}),
+    subNodeDaos: subNodeDaos(),
     subNodeInfo: subNodeInfo(undefined, {type:''}),
     isNodeInfoFetching: false,
     nodeInfoFetched: false,
@@ -157,6 +162,14 @@ export function node(state = nodeInitialState, action) {
         return consolidateState(state, result);
     }
 
+    if (isSubNodeDaosAction(action)) {
+        const result = {
+            ...state,
+            subNodeDaos: subNodeDaos(state.subNodeDaos, action),
+        };
+        return consolidateState(state, result);
+    }
+
     switch (action.type) {
         case types.STORE_LOAD:
             return {
@@ -173,6 +186,7 @@ export function node(state = nodeInitialState, action) {
                 subNodeForm: subNodeForm(undefined, {type:''}),
                 subNodeFormCache: subNodeFormCache(undefined, {type:''}),
                 subNodeRegister: subNodeRegister(undefined, {type:''}),
+                subNodeDaos: subNodeDaos(),
                 subNodeInfo: subNodeInfo(undefined, {type:''}),
                 routingKey: _routingKeyAreaPrefix + _nextRoutingKey++,
                 developerScenarios: {
@@ -219,6 +233,7 @@ export function node(state = nodeInitialState, action) {
                 ...state,
                 subNodeForm: subNodeForm(state.subNodeForm, action),
                 subNodeRegister: subNodeRegister(state.subNodeRegister, action),
+                subNodeDaos: subNodeDaos(state.subNodeDaos, action),
                 subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action),
             }
             return consolidateState(state, result);
@@ -350,6 +365,7 @@ export function node(state = nodeInitialState, action) {
             // Data vztahující se k vybranému ID
             if (state.selectedSubNodeId != action.subNodeId) {
                 result.subNodeRegister = subNodeRegister(undefined, {type:''});
+                result.subNodeDaos = subNodeDaos();
                 result.subNodeForm = subNodeForm(undefined, {type:''});
                 result.subNodeInfo = subNodeInfo(undefined, {type:''});
             }
@@ -465,6 +481,37 @@ export function node(state = nodeInitialState, action) {
                 subNodeForm: subNodeForm(state.subNodeForm, action),
                 subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action)
             });
+
+        case types.NODES_DELETE: {
+            let result = {
+                ...state
+            };
+
+            if (result.selectedSubNodeId != null && action.nodeIds.indexOf(result.selectedSubNodeId) >= 0) {
+                result.selectedSubNodeId = null;
+            }
+
+            result.subNodeForm = subNodeForm(result.subNodeForm, action);
+            result.subNodeFormCache = subNodeFormCache(result.subNodeFormCache, action);
+
+            let allChildNodes = [];
+            result.allChildNodes.forEach((node) => {
+                if (action.nodeIds.indexOf(node.id) < 0) {
+                    allChildNodes.push(node);
+                }
+            });
+            result.allChildNodes = allChildNodes;
+
+            let childNodes = [];
+            result.childNodes.forEach((node) => {
+                if (action.nodeIds.indexOf(node.id) < 0) {
+                    childNodes.push(node);
+                }
+            });
+            result.childNodes = childNodes;
+
+            return consolidateState(state, result);
+        }
 
         default:
             return state;

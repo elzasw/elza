@@ -14,6 +14,8 @@ public class RecordImportVO {
 
     private Integer systemId;
 
+    private boolean originator = true; // TODO dočasně než to bude přicházet z dialogu
+
     public Integer getScopeId() {
         return scopeId;
     }
@@ -36,5 +38,13 @@ public class RecordImportVO {
 
     public void setSystemId(final Integer systemId) {
         this.systemId = systemId;
+    }
+
+    public boolean isOriginator() {
+        return originator;
+    }
+
+    public void setOriginator(final boolean originator) {
+        this.originator = originator;
     }
 }

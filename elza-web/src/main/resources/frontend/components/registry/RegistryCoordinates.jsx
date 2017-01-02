@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import {Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
 import {objectFromWKT, wktFromTypeAndData, wktType} from 'components/Utils.jsx';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, NoFocusButton, Icon, FormInput} from 'components/index.jsx';
+import {TooltipTrigger, AbstractReactComponent, i18n, NoFocusButton, Icon, FormInput} from 'components/index.jsx';
 import './RegistryCoordinates.less';
 
 class RegistryCoordinates extends AbstractReactComponent {
@@ -66,14 +66,22 @@ class RegistryCoordinates extends AbstractReactComponent {
         const {item, disabled, onDelete, onBlur} = this.props;
         const title = item.error && item.error.value ? item.error.value : '';
         const isPoint = this.state.type == 'POINT';
-        const tooltip = <Tooltip id='ttf'>{i18n('registry.coordinates.format')}</Tooltip>;
+
+        const tooltipText = i18n("^dataType.coordinates.format");
+        const tooltip = tooltipText ? <div dangerouslySetInnerHTML={{__html: tooltipText}}></div> : null;
+
         return (
             <div className='reg-coordinates'>
                 {
                     isPoint ?
                         <div className='value'>
                             <Button bsStyle='default' disabled>{wktType(this.state.type)}</Button>
-                            <OverlayTrigger overlay={tooltip} placement="bottom">
+                            <TooltipTrigger
+                                content={tooltip}
+                                holdOnHover
+                                holdOnFocus
+                                placement="vertical"
+                            >
                                 <FormInput
                                     type='text'
                                     ref='focusEl'
@@ -86,7 +94,7 @@ class RegistryCoordinates extends AbstractReactComponent {
                                     onChange={this.handleChangeValue}
                                     value={this.state.data}
                                 />
-                            </OverlayTrigger>
+                            </TooltipTrigger>
                             {item.id ? <i className='fa fa-download download btn' onClick={this.props.onDownload} title={i18n('registry.coordinates.download')} /> : null}
                         </div>
                          : <div className='value-text'>

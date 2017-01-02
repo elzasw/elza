@@ -163,19 +163,25 @@ function changeCurrentIndex(dispatch, area, fund, versionId, fundTree, newIndex)
         switch (area) {
             case types.FUND_TREE_AREA_MAIN:
                 dispatch(fundSelectSubNode(versionId, nodeId, nodeParent, false, newIndex, true));
-                break
+                break;
             case types.FUND_TREE_AREA_MOVEMENTS_LEFT:
                 dispatch(fundTreeSelectNode(area, versionId, nodeId, false, false, newIndex, true))
-                break
+                break;
             case types.FUND_TREE_AREA_MOVEMENTS_RIGHT:
                 dispatch(fundTreeSelectNode(area, versionId, nodeId, false, false, newIndex, true))
-                break
+                break;
             case types.FUND_TREE_AREA_FUNDS_FUND_DETAIL:
                 dispatch(fundTreeSelectNode(area, versionId, nodeId, false, false, newIndex, true))
-                break
+                break;
             case types.FUND_TREE_AREA_NODES:
                 dispatch(fundTreeSelectNode(area, versionId, nodeId, false, false, newIndex, true))
-                break
+                break;
+            case types.FUND_TREE_AREA_DAOS_LEFT:
+                dispatch(fundTreeSelectNode(area, versionId, nodeId, false, false, newIndex, true))
+                break;
+            case types.FUND_TREE_AREA_DAOS_RIGHT:
+                dispatch(fundTreeSelectNode(area, versionId, nodeId, false, false, newIndex, true))
+                break;
         }
     }
 }
@@ -356,6 +362,10 @@ function getFundTree(fund, area) {
             return fund.fundTreeMovementsRight;
         case types.FUND_TREE_AREA_NODES:
             return fund.fundTreeNodes;
+        case types.FUND_TREE_AREA_DAOS_LEFT:
+            return fund.fundTreeDaosLeft;
+        case types.FUND_TREE_AREA_DAOS_RIGHT:
+            return fund.fundTreeDaosRight;
     }
 }
 

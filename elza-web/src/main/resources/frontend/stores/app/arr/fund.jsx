@@ -20,6 +20,7 @@ import {isVersionValidation} from 'actions/arr/versionValidation.jsx'
 import {isNodeAction} from 'actions/arr/node.jsx'
 import {isNodesAction} from 'actions/arr/nodes.jsx'
 import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister.jsx'
+import {isSubNodeDaosAction} from 'actions/arr/subNodeDaos.jsx'
 import {isDeveloperScenariosAction} from 'actions/global/developer.jsx'
 import {isFundDataGridAction} from 'actions/arr/fundDataGrid.jsx'
 import {isFundChangeAction} from 'actions/global/change.jsx'
@@ -50,6 +51,8 @@ export function fundInitState(fundWithVersion) {
         fundTree: fundTree(undefined, {type: ''}),
         fundTreeMovementsLeft: fundTree(undefined, {type: ''}),
         fundTreeMovementsRight: fundTree(undefined, {type: ''}),
+        fundTreeDaosLeft: fundTree(),
+        fundTreeDaosRight: fundTree(),
         fundTreeNodes: fundTree(undefined, {type: ''}),
         nodes: nodes(undefined, {type: ''}),
         fundNodesPolicy: fundNodesPolicy(),
@@ -91,6 +94,12 @@ function updateFundTree(state, action) {
             break;
         case types.FUND_TREE_AREA_NODES:
             state.fundTreeNodes = fundTree(state.fundTreeNodes, action)
+            break;
+        case types.FUND_TREE_AREA_DAOS_LEFT:
+            state.fundTreeDaosLeft = fundTree(state.fundTreeDaosLeft, action)
+            break;
+        case types.FUND_TREE_AREA_DAOS_RIGHT:
+            state.fundTreeDaosRight = fundTree(state.fundTreeDaosRight, action)
             break;
     }
 }
@@ -168,6 +177,7 @@ export function fund(state, action) {
         || isNodeAction(action)
         || isNodesAction(action)
         || isSubNodeRegisterAction(action)
+        || isSubNodeDaosAction(action)
         || isDeveloperScenariosAction(action)
     ) {
         const result = {
@@ -199,6 +209,8 @@ export function fund(state, action) {
                 fundTree: fundTree(state.fundTree, action),
                 fundTreeMovementsLeft: fundTree(state.fundTreeMovementsLeft, action),
                 fundTreeMovementsRight: fundTree(state.fundTreeMovementsRight, action),
+                fundTreeDaosLeft: fundTree(state.fundTreeDaosLeft, action),
+                fundTreeDaosRight: fundTree(state.fundTreeDaosRight, action),
                 fundTreeNodes: initFundTreeNodes(fundTree()),
                 nodes: nodes(state.nodes, action),
                 fundOutput: fundOutput(state.fundOutput, action),
@@ -224,6 +236,8 @@ export function fund(state, action) {
                 fundTree: fundTree(state.fundTree, action),
                 fundTreeMovementsLeft: fundTree(state.fundTreeMovementsLeft, action),
                 fundTreeMovementsRight: fundTree(state.fundTreeMovementsRight, action),
+                fundTreeDaosLeft: fundTree(state.fundTreeDaosLeft, action),
+                fundTreeDaosRight: fundTree(state.fundTreeDaosRight, action),
                 nodes: nodes(state.nodes, action),
                 fundOutput: fundOutput(state.fundOutput, action),
                 fundDataGrid: fundDataGrid(state.fundDataGrid, action),
@@ -323,6 +337,8 @@ export function fund(state, action) {
                 fundTree: fundTree(state.fundTree, action),
                 fundTreeMovementsLeft: fundTree(state.fundTreeMovementsLeft, action),
                 fundTreeMovementsRight: fundTree(state.fundTreeMovementsRight, action),
+                fundTreeDaosLeft: fundTree(state.fundTreeDaosLeft, action),
+                fundTreeDaosRight: fundTree(state.fundTreeDaosRight, action),
                 fundTreeNodes: fundTree(state.fundTreeNodes, action),
                 fundDataGrid: fundDataGrid(state.fundDataGrid, action),
             };
@@ -366,6 +382,18 @@ export function fund(state, action) {
                 nodes: nodes(state.nodes, action)
             }
             return consolidateState(state, result);
+
+        case types.NODES_DELETE: {
+            const result = {
+                ...state,
+                nodes: nodes(state.nodes, action),
+                fundTree: fundTree(state.fundTree, action),
+                fundTreeMovementsLeft: fundTree(state.fundTreeMovementsLeft, action),
+                fundTreeMovementsRight: fundTree(state.fundTreeMovementsRight, action),
+                fundTreeNodes: fundTree(state.fundTreeNodes, action),
+            };
+            return consolidateState(state, result);
+        }
 
         default:
             return state;

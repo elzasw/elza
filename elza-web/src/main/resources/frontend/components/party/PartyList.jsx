@@ -132,8 +132,8 @@ class PartyList extends AbstractReactComponent {
         const {relationTypesForClass} = this.state;
 
         let icon = PartyList.partyIconByPartyTypeCode(item.partyType.code);
-        const birth = this.getDatationRelationString(item.relations.filter(i => (relationTypesForClass[RELATION_CLASS_CODES.BIRTH].indexOf(i.relationTypeId) !== -1) && ((i.from && i.from.value) || (i.to && i.to.value))),'*');
-        const extinction = this.getDatationRelationString(item.relations.filter(i => (relationTypesForClass[RELATION_CLASS_CODES.EXTINCTION].indexOf(i.relationTypeId) !== -1) && ((i.from && i.from.value) || (i.to && i.to.value))),'†');
+        const birth = item.relations == null ? "" : this.getDatationRelationString(item.relations.filter(i => (relationTypesForClass[RELATION_CLASS_CODES.BIRTH].indexOf(i.relationTypeId) !== -1) && ((i.from && i.from.value) || (i.to && i.to.value))),'*');
+        const extinction = item.relations == null ? "" : this.getDatationRelationString(item.relations.filter(i => (relationTypesForClass[RELATION_CLASS_CODES.EXTINCTION].indexOf(i.relationTypeId) !== -1) && ((i.from && i.from.value) || (i.to && i.to.value))),'†');
         let datation = null;
         if (birth != "" && extinction != "") {
             datation = birth + ", " + extinction
@@ -142,7 +142,6 @@ class PartyList extends AbstractReactComponent {
         } else if (extinction != "") {
             datation = extinction;
         }
-        console.log(item.record.record,datation);
 
         return <div className='search-result-row' onClick={this.handlePartyDetail.bind(this, item)}>
             <div>
@@ -151,8 +150,8 @@ class PartyList extends AbstractReactComponent {
             </div>
             <div>
                 <span className="date">{datation}</span>
-                {item.record.externalId && item.record.externalSource && item.record.externalSource.name && <span className="description">{item.record.externalSource.name + ':' + item.record.externalId}</span>}
-                {item.record.externalId && (!item.record.externalSource || item.record.externalSource.name) && <span className="description">{'UNKNOWN:' + item.record.externalId}</span>}
+                {item.record.externalId && item.record.externalSystem && item.record.externalSystem.name && <span className="description">{item.record.externalSystem.name + ':' + item.record.externalId}</span>}
+                {item.record.externalId && (!item.record.externalSystem || !item.record.externalSystem.name) && <span className="description">{'UNKNOWN:' + item.record.externalId}</span>}
                 {!item.record.externalId && <span className="description">{item.id}</span>}
             </div>
         </div>

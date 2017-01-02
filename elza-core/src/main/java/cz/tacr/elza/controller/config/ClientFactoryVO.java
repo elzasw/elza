@@ -1,47 +1,16 @@
 package cz.tacr.elza.controller.config;
 
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import cz.tacr.elza.controller.vo.ArrDaoLinkRequestVO;
-import cz.tacr.elza.controller.vo.ArrDaoRequestVO;
-import cz.tacr.elza.controller.vo.ArrDigitizationRequestVO;
-import cz.tacr.elza.controller.vo.ArrRequestVO;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
-import cz.tacr.elza.domain.ArrDigitizationRequest;
-import cz.tacr.elza.domain.ArrDigitizationRequestNode;
-import cz.tacr.elza.domain.ArrRequest;
-import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.config.ConfigRules;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
+import cz.tacr.elza.controller.vo.ArrDaoFileVO;
+import cz.tacr.elza.controller.vo.ArrDaoLinkRequestVO;
+import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
+import cz.tacr.elza.controller.vo.ArrDaoRequestVO;
+import cz.tacr.elza.controller.vo.ArrDaoVO;
+import cz.tacr.elza.controller.vo.ArrDigitizationRequestVO;
 import cz.tacr.elza.controller.vo.ArrFileVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
@@ -51,6 +20,8 @@ import cz.tacr.elza.controller.vo.ArrOutputExtVO;
 import cz.tacr.elza.controller.vo.ArrOutputFileVO;
 import cz.tacr.elza.controller.vo.ArrOutputVO;
 import cz.tacr.elza.controller.vo.ArrPacketVO;
+import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
+import cz.tacr.elza.controller.vo.ArrRequestVO;
 import cz.tacr.elza.controller.vo.BulkActionRunVO;
 import cz.tacr.elza.controller.vo.BulkActionVO;
 import cz.tacr.elza.controller.vo.DmsFileVO;
@@ -78,6 +49,7 @@ import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.RulTemplateVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
+import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.UISettingsVO;
 import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
@@ -94,7 +66,14 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaoBatchInfo;
+import cz.tacr.elza.domain.ArrDaoFile;
+import cz.tacr.elza.domain.ArrDaoFileGroup;
+import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDigitizationRequest;
+import cz.tacr.elza.domain.ArrDigitizationRequestNode;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -106,6 +85,8 @@ import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ArrRequest;
+import cz.tacr.elza.domain.ArrRequestQueueItem;
 import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParInstitution;
@@ -141,10 +122,18 @@ import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.packageimport.ItemTypeUpdater;
+import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
+import cz.tacr.elza.repository.DaoFileGroupRepository;
+import cz.tacr.elza.repository.DaoFileRepository;
+import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.DaoRepository;
+import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.GroupRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyNameComplementRepository;
@@ -155,6 +144,7 @@ import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RelationEntityRepository;
 import cz.tacr.elza.repository.RelationRepository;
+import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.security.UserDetail;
@@ -163,6 +153,32 @@ import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.SettingsService;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import javax.annotation.Nullable;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 /**
@@ -240,6 +256,27 @@ public class ClientFactoryVO {
 
     @Autowired
     private DigitizationRequestNodeRepository digitizationRequestNodeRepository;
+
+    @Autowired
+    private RequestQueueItemRepository requestQueueItemRepository;
+
+    @Autowired
+    private DaoFileRepository daoFileRepository;
+
+    @Autowired
+    private DaoLinkRepository daoLinkRepository;
+
+    @Autowired
+    private DaoRepository daoRepository;
+
+    @Autowired
+    private DaoFileGroupRepository daoFileGroupRepository;
+
+    @Autowired
+    private PackageService packageServise;
+
+    @Autowired
+    private ItemSpecRepository itemSpecRepository;
 
     /**
      * Vytvoří objekt informací o přihlášeném uživateli.
@@ -1171,14 +1208,14 @@ public class ClientFactoryVO {
         // naplnění mapy podle oblíbených z nastavení
         Map<Integer, List<Integer>> typeSpecsMap = new HashMap<>();
         for (UISettings favoritesItemType : favoritesItemTypes) {
-            String value = favoritesItemType.getValue();
-            if (value != null) {
-                String[] specIdsString = value.split("\\|");
-                Integer[] specIds = new Integer[specIdsString.length];
-                for (int i = 0; i < specIdsString.length; i++) {
-                    specIds[i] = Integer.valueOf(specIdsString[i]);
+            SettingFavoriteItemSpecs setting = (SettingFavoriteItemSpecs) packageServise.convertSetting(favoritesItemType);
+            if (CollectionUtils.isNotEmpty(setting.getSpecCodes())) {
+                List<RulItemSpec> itemSpecs = itemSpecRepository.findOneByCodes(setting.getSpecCodes());
+                List<Integer> itemSpecsIds = new ArrayList<>(itemSpecs.size());
+                for (RulItemSpec itemSpec : itemSpecs) {
+                    itemSpecsIds.add(itemSpec.getItemSpecId());
                 }
-                typeSpecsMap.put(favoritesItemType.getEntityId(), Arrays.asList(specIds));
+                typeSpecsMap.put(favoritesItemType.getEntityId(), itemSpecsIds);
             }
         }
 
@@ -1764,6 +1801,7 @@ public class ClientFactoryVO {
                 ParRelationTypeVO.class);
 
         if (partyTypeRelation != null && StringUtils.isNotBlank(partyTypeRelation.getName())) {
+            parRelationTypeVO = mapperFactory.getMapperFacade().map(relationType,  ParRelationTypeVO.class); // snad to nebude dělat neplechu když budou různá VO se stejným id
             parRelationTypeVO.setName(partyTypeRelation.getName());
         }
         return parRelationTypeVO;
@@ -1785,10 +1823,16 @@ public class ClientFactoryVO {
         return mapper.mapAsList(entity, clazz);
     }
 
-    public List<ArrRequestVO> createRequest(final Collection<ArrRequest> requests, boolean detail, final ArrFundVersion fundVersion) {
+    public List<ArrRequestVO> createRequest(final Collection<ArrRequest> requests, final boolean detail, final ArrFundVersion fundVersion) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         List<ArrRequestVO> requestVOList = new ArrayList<>(requests.size());
         Set<ArrDigitizationRequest> requestForNodes = new HashSet<>();
+
+        Map<ArrRequest, ArrRequestQueueItem> requestQueuedMap = new HashMap<>();
+        List<ArrRequestQueueItem> requestQueueItems = CollectionUtils.isEmpty(requests) ? Collections.emptyList() : requestQueueItemRepository.findByRequest(requests);
+        for (ArrRequestQueueItem requestQueueItem : requestQueueItems) {
+            requestQueuedMap.put(requestQueueItem.getRequest(), requestQueueItem);
+        }
 
         for (ArrRequest request : requests) {
             prepareRequest(requestForNodes, request);
@@ -1806,15 +1850,17 @@ public class ClientFactoryVO {
         for (ArrRequest request : requests) {
             ArrRequestVO requestVO;
             requestVO = createRequestVO(countNodesRequestMap, nodesRequestMap, request);
-            convertRequest(mapper, request, requestVO);
+            convertRequest(mapper, request, requestQueuedMap.get(request), requestVO);
             requestVOList.add(requestVO);
         }
         return requestVOList;
     }
 
-    public ArrRequestVO createRequest(final ArrRequest request, boolean detail, final ArrFundVersion fundVersion) {
+    public ArrRequestVO createRequest(final ArrRequest request, final boolean detail, final ArrFundVersion fundVersion) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         Set<ArrDigitizationRequest> requestForNodes = new HashSet<>();
+        ArrRequestQueueItem requestQueueItem = requestQueueItemRepository.findByRequest(request);
+
         prepareRequest(requestForNodes, request);
 
         Map<ArrDigitizationRequest, Integer> countNodesRequestMap;
@@ -1827,7 +1873,7 @@ public class ClientFactoryVO {
 
         ArrRequestVO requestVO;
         requestVO = createRequestVO(countNodesRequestMap, nodesRequestMap, request);
-        convertRequest(mapper, request, requestVO);
+        convertRequest(mapper, request, requestQueueItem, requestVO);
 
         return requestVO;
     }
@@ -1861,7 +1907,7 @@ public class ClientFactoryVO {
         return countNodesRequestMap;
     }
 
-    private void convertRequest(final MapperFacade mapper, final ArrRequest request, final ArrRequestVO requestVO) {
+    private void convertRequest(final MapperFacade mapper, final ArrRequest request, final ArrRequestQueueItem requestQueueItem, final ArrRequestVO requestVO) {
         ArrChange createChange = request.getCreateChange();
         requestVO.setCode(request.getCode());
         requestVO.setId(request.getRequestId());
@@ -1869,6 +1915,10 @@ public class ClientFactoryVO {
         requestVO.setRejectReason(request.getRejectReason());
         requestVO.setResponseExternalSystem(mapper.map(request.getResponseExternalSystem(), Date.class));
         requestVO.setCreate(mapper.map(createChange.getChangeDate(), Date.class));
+        if (requestQueueItem != null) {
+            requestVO.setQueued(mapper.map(requestQueueItem.getCreateChange().getChangeDate(), Date.class));
+            requestVO.setSend(mapper.map(requestQueueItem.getAttemptToSend(), Date.class));
+        }
         requestVO.setUsername(createChange.getUser() == null ? null : createChange.getUser().getUsername());
     }
 
@@ -1946,5 +1996,150 @@ public class ClientFactoryVO {
             });
             requestVO.setNodes(treeNodeClients);
         }
+    }
+
+    private ArrRequestQueueItemVO createRequestQueueItem(final MapperFacade mapper, final ArrRequestQueueItem requestQueueItem) {
+        ArrRequestQueueItemVO requestQueueItemVO = new ArrRequestQueueItemVO();
+        ArrChange createChange = requestQueueItem.getCreateChange();
+        requestQueueItemVO.setId(requestQueueItem.getRequestQueueItemId());
+        requestQueueItemVO.setCreate(mapper.map(createChange.getChangeDate(), Date.class));
+        requestQueueItemVO.setAttemptToSend(mapper.map(requestQueueItem.getAttemptToSend(), Date.class));
+        requestQueueItemVO.setError(requestQueueItem.getError());
+        requestQueueItemVO.setUsername(createChange.getUser() == null ? null : createChange.getUser().getUsername());
+        return requestQueueItemVO;
+    }
+
+    public List<ArrRequestQueueItemVO> createRequestQueueItem(final List<ArrRequestQueueItem> requestQueueItems) {
+        if (requestQueueItems == null) {
+            return null;
+        }
+
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+
+        List<ArrRequestQueueItemVO> result = new ArrayList<>(requestQueueItems.size());
+        Map<Integer, ArrRequestVO> requestMap = new HashMap<>();
+
+        Map<ArrFund, List<ArrRequest>> requestList = new HashMap<>(requestQueueItems.size());
+        for (ArrRequestQueueItem requestQueueItem : requestQueueItems) {
+            ArrFund fund = requestQueueItem.getRequest().getFund();
+            List<ArrRequest> arrRequests = requestList.get(fund);
+            if (arrRequests == null) {
+                arrRequests = new ArrayList<>();
+                requestList.put(fund, arrRequests);
+            }
+
+            arrRequests.add(requestQueueItem.getRequest());
+        }
+
+        for (Map.Entry<ArrFund, List<ArrRequest>> arrFundListEntry : requestList.entrySet()) {
+            ArrFund key = arrFundListEntry.getKey();
+            for (ArrFundVersion arrFundVersion : key.getVersions()) {
+                if (arrFundVersion.getLockChange() == null) {
+                    List<ArrRequestVO> request = createRequest(arrFundListEntry.getValue(), false, arrFundVersion);
+                    for (ArrRequestVO requestVO : request) {
+                        requestMap.put(requestVO.getId(), requestVO);
+                    }
+                    break;
+                }
+            }
+        }
+
+        for (ArrRequestQueueItem requestQueueItem : requestQueueItems) {
+            ArrRequestQueueItemVO requestQueueItemVO = createRequestQueueItem(mapper, requestQueueItem);
+            requestQueueItemVO.setRequest(requestMap.get(requestQueueItem.getRequest().getRequestId()));
+            result.add(requestQueueItemVO);
+        }
+
+        return result;
+    }
+
+    /**
+     * Vytvoření VO
+     *
+     * @param arrDaoList DO ke konverzi
+     * @param detail příznak, zda se mají naplnit seznamy na VO, pokud ne, jsou naplněny pouze počty podřízených záznamů v DB
+     * @return list VO
+     */
+    public List<ArrDaoVO> createDaoList(final List<ArrDao> arrDaoList, final boolean detail) {
+        List<ArrDaoVO> voList = new ArrayList<>();
+        for (ArrDao arrDao : arrDaoList) {
+            voList.add(createDao(arrDao, detail));
+        }
+        return voList;
+    }
+
+    /**
+     * Vytvoření vo z DO
+     *
+     * @param arrDao DO
+     * @param detail příznak, zda se mají naplnit seznamy na VO, pokud ne, jsou naplněny pouze počty podřízených záznamů v DB
+     * @return vo
+     */
+    private ArrDaoVO createDao(final ArrDao arrDao, final boolean detail) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        ArrDaoVO vo = mapper.map(arrDao, ArrDaoVO.class);
+
+        String viewDaoUrl = arrDao.getDaoPackage().getDigitalRepository().getViewDaoUrl();
+        ElzaTools.UrlParams params = ElzaTools.createUrlParams()
+                .add("code", arrDao.getCode())
+                .add("label", arrDao.getLabel())
+                .add("id", arrDao.getDaoId());
+        vo.setUrl(ElzaTools.bindingUrlParams(viewDaoUrl, params));
+
+        vo.setDaoLinkCount(daoLinkRepository.countByDaoAndDeleteChangeIsNull(arrDao));
+
+        if (detail) {
+            final List<ArrDaoFile> daoFileList = daoFileRepository.findByDaoAndDaoFileGroupIsNull(arrDao);
+            final List<ArrDaoFileVO> daoFileVOList = mapper.mapAsList(daoFileList, ArrDaoFileVO.class);
+            vo.addAllFile(daoFileVOList);
+
+            final List<ArrDaoFileGroup> daoFileGroups = daoFileGroupRepository.findByDaoOrderByCodeAsc(arrDao);
+            final List<ArrDaoFileGroupVO> daoFileGroupVOList = new ArrayList<>();
+            for (ArrDaoFileGroup daoFileGroup : daoFileGroups) {
+                final ArrDaoFileGroupVO daoFileGroupVO = mapper.map(daoFileGroup, ArrDaoFileGroupVO.class);
+                final List<ArrDaoFile> arrDaoFileList = daoFileRepository.findByDaoAndDaoFileGroup(arrDao, daoFileGroup);
+                daoFileGroupVO.addAllFile(mapper.mapAsList(arrDaoFileList, ArrDaoFileVO.class));
+                daoFileGroupVOList.add(daoFileGroupVO);
+            }
+
+            vo.addAllFileGroup(daoFileGroupVOList);
+        } else {
+            vo.setFileCount(daoFileRepository.countByDaoAndDaoFileGroupIsNull(arrDao));
+            vo.setFileGroupCount(daoFileGroupRepository.countByDao(arrDao));
+        }
+        return vo;
+    }
+
+    public ArrayList<ArrDaoPackageVO> createDaoPackageList(final List<ArrDaoPackage> arrDaoList, final Boolean unassigned) {
+        ArrayList<ArrDaoPackageVO> result = new ArrayList<>();
+
+        for (ArrDaoPackage arrDaoPackage : arrDaoList) {
+            ArrDaoPackageVO vo = createDaoPackage(unassigned, arrDaoPackage);
+            result.add(vo);
+        }
+
+        return result;
+    }
+
+    private ArrDaoPackageVO createDaoPackage(final Boolean unassigned, final ArrDaoPackage arrDaoPackage) {
+        ArrDaoPackageVO vo = new ArrDaoPackageVO();
+        vo.setId(arrDaoPackage.getDaoPackageId());
+        vo.setCode(arrDaoPackage.getCode());
+
+        final ArrDaoBatchInfo daoBatchInfo = arrDaoPackage.getDaoBatchInfo();
+        if (daoBatchInfo != null) {
+            vo.setBatchInfoCode(daoBatchInfo.getCode());
+            vo.setBatchInfoLabel(daoBatchInfo.getLabel());
+        }
+
+        long daoCount;
+        if (unassigned) {
+            daoCount = daoRepository.countByDaoPackageIDAndNotExistsDaoLink(arrDaoPackage.getDaoPackageId());
+        } else {
+            daoCount = daoRepository.countByDaoPackageID(arrDaoPackage.getDaoPackageId());
+        }
+
+        vo.setDaoCount(daoCount);
+        return vo;
     }
 }

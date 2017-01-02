@@ -79,6 +79,11 @@ public enum ArrangementCode implements ErrorCode {
     REQUEST_INVALID_STATE,
 
     /**
+     * Požadavek nenalezen ve frontě.
+     */
+    REQUEST_NOT_FOUND_IN_QUEUE,
+
+    /**
      * Existuje blokující změna v JP - obecně např. hromadná změna, import AS, atd.
      */
     EXISTS_BLOCKING_CHANGE

@@ -14,7 +14,6 @@ import java.util.TreeSet;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.domain.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +32,13 @@ import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataPacketRef;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.vo.DescItemValues;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
@@ -81,14 +86,21 @@ public class FilterTreeService {
      *
      * @param version verze stromu
      * @param descItemFilters filtry
+     * @param parentNodeId id nodu od kterého se má načítat strom, pokud je null
+     * 			načítá se od kořene
      *
      * @return počet všech záznamů splňujících filtry
      */
-    public int filterData(final ArrFundVersion version, final  List<DescItemTypeFilter> descItemFilters) {
+    public int filterData(final ArrFundVersion version, final  List<DescItemTypeFilter> descItemFilters, final Integer parentNodeId) {
         Map<Integer, TreeNode> versionTreeCache = levelTreeCacheService.getVersionTreeCache(version);
-        TreeNode rootNode = versionTreeCache.get(version.getRootNode().getNodeId());
+        TreeNode parentNode;
+        if (parentNodeId == null) {
+            parentNode = versionTreeCache.get(version.getRootNode().getNodeId());
+        } else {
+            parentNode = versionTreeCache.get(parentNodeId);
+        }
 
-        LinkedHashSet<Integer> versionIdsTable = levelTreeCacheWalker.walkThroughDFS(rootNode);
+        LinkedHashSet<Integer> versionIdsTable = levelTreeCacheWalker.walkThroughDFS(parentNode);
 
         if (CollectionUtils.isNotEmpty(descItemFilters)) {
             Set<Integer> nodeIdsByFilters = nodeRepository.findNodeIdsByFilters(version, descItemFilters);

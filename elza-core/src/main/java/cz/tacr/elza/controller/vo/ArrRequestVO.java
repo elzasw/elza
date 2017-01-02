@@ -26,6 +26,10 @@ public abstract class ArrRequestVO {
 
     private Date create;
 
+    private Date queued;
+
+    private Date send;
+
     private Date responseExternalSystem;
 
     public Integer getId() {
@@ -82,5 +86,21 @@ public abstract class ArrRequestVO {
 
     public void setResponseExternalSystem(final Date responseExternalSystem) {
         this.responseExternalSystem = responseExternalSystem;
+    }
+
+    public Date getQueued() {
+        return queued;
+    }
+
+    public void setQueued(final Date queued) {
+        this.queued = queued;
+    }
+
+    public Date getSend() {
+        return send;
+    }
+
+    public void setSend(final Date send) {
+        this.send = send;
     }
 }

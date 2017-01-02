@@ -29,6 +29,24 @@ export function fetchPreparedListIfNeeded(versionId) {
 }
 
 /**
+ * Načtení seznamu NEODESLANÝCH požadavků na digitalizaci.
+ * @param versionId verze AS
+ * @return {function(*, *)}
+ */
+export function sendRequest(versionId, requestId) {
+    return (dispatch, getState) => {
+        return WebApi.sendArrRequest(versionId, requestId)
+    }
+}
+
+/**
+ * Invalidace NEODESLANÝCH požadavků na digitalizaci.
+ */
+export function preparedListInvalidate() {
+    return SimpleListActions.invalidate(AREA_PREPARED_DIGITIZATION_REQUESTS, null);
+}
+
+/**
  * Načtení požadavků na digitalizaci v celé aplikaci.
  */
 export function fetchListIfNeeded(versionId) {
@@ -62,6 +80,13 @@ export function changeRequests(versionId, reqId, nodeIds) {
 }
 
 /**
+ * Invalidace požadavků.
+ */
+export function listInvalidate(versionId) {
+    return SimpleListActions.invalidate("fund[" + versionId + "]" + AREA_REQUEST_LIST_SUFFIX, null);
+}
+
+/**
  * Načtení všech požadavků ve frontě.
  */
 export function fetchInQueueListIfNeeded() {
@@ -69,6 +94,13 @@ export function fetchInQueueListIfNeeded() {
         return WebApi.getRequestsInQueue()
             .then(json => ({rows: json, count: 0}));
     });
+}
+
+/**
+ * Invalidace požadavků ve frontě.
+ */
+export function queueListInvalidate() {
+    return SimpleListActions.invalidate(AREA_REQUEST_IN_QUEUE_LIST, null);
 }
 
 /**
@@ -89,6 +121,10 @@ export function fetchDetailIfNeeded(versionId, id) {
  */
 export function selectDetail(versionId, id) {
     return DetailActions.select("fund[" + versionId + "]" + AREA_REQUEST_DETAIL_SUFFIX, id);
+}
+
+export function detailInvalidate(versionId, id) {
+    return DetailActions.invalidate("fund[" + versionId + "]" + AREA_REQUEST_DETAIL_SUFFIX, id)
 }
 
 /**

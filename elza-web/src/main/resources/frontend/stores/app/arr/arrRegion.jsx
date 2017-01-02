@@ -10,6 +10,7 @@ import {isBulkAction} from 'actions/arr/bulkActions.jsx'
 import {isFundTreeAction} from 'actions/arr/fundTree.jsx'
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister.jsx'
+import {isSubNodeDaosAction} from 'actions/arr/subNodeDaos.jsx'
 import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo.jsx'
 import {isNodeInfoAction} from 'actions/arr/nodeInfo.jsx'
 import {isVersionValidation} from 'actions/arr/versionValidation.jsx'
@@ -32,7 +33,7 @@ import processAreaStores from "shared/utils/processAreaStores";
     nodeSettings: nodeSetting(undefined, {}),
     extendedView: false,
     showRegisterJp: false,
-    showRequestsJp: false,
+    showDaosJp: false,
     packets: {},
     visiblePolicy: visiblePolicy(),
     funds: [],
@@ -82,6 +83,7 @@ export default function arrRegion(state = initialState, action) {
         || nodeFormActions.isSubNodeFormAction(action, "NODE") || nodeFormActions.isSubNodeFormAction(action, "OUTPUT")
         || nodeFormActions.isSubNodeFormCacheAction(action, "NODE") || nodeFormActions.isSubNodeFormCacheAction(action, "OUTPUT")
         || isSubNodeRegisterAction(action)
+        || isSubNodeDaosAction(action)
         || isSubNodeInfoAction(action)
         || isNodeInfoAction(action)
         || isVersionValidation(action)
@@ -146,10 +148,10 @@ export default function arrRegion(state = initialState, action) {
                 showRegisterJp: action.showRegisterJp
             }
         }
-        case types.SHOW_REQUESTS_JP: {
+        case types.SHOW_DAOS_JP: {
             return {
                 ...state,
-                showRequestsJp: action.show
+                showDaosJp: action.show
             }
         }
         case types.STORE_LOAD:
@@ -158,7 +160,8 @@ export default function arrRegion(state = initialState, action) {
                     ...state,
                     packets: {},
                     ...action.arrRegion,
-                    funds: action.arrRegion.funds.map(fundobj => fund(fundobj, action))
+                    funds: action.arrRegion.funds.map(fundobj => fund(fundobj, action)),
+                    extendedView: false
                 }
             } else if (action.arrRegionFund) {
                 var index = indexById(state.funds, action.arrRegionFund.versionId, "versionId");
@@ -170,7 +173,8 @@ export default function arrRegion(state = initialState, action) {
                             ...state.funds.slice(0, index),
                             fund(action.arrRegionFund, action),
                             ...state.funds.slice(index + 1)
-                        ]
+                        ],
+                        extendedView: false
                     }
                 } else {    // přidáme novou
                     return {
@@ -179,18 +183,18 @@ export default function arrRegion(state = initialState, action) {
                         funds: [
                             ...state.funds,
                             fund(action.arrRegionFund, action),
-                        ]
+                        ],
+                        extendedView: false
                     }
                 }
             } else {
                 return state;
             }
         case types.STORE_SAVE:
-            const {activeIndex, nodeSettings, extendedView} = state;
+            const {activeIndex, nodeSettings} = state;
             return {
                 activeIndex,
                 nodeSettings,
-                extendedView,
                 funds: state.funds.map(fundobj => fund(fundobj, action))
             }
         case types.FUND_EXTENDED_VIEW:
@@ -211,9 +215,11 @@ export default function arrRegion(state = initialState, action) {
         case types.OUTPUT_CHANGES:
         case types.OUTPUT_CHANGES_DETAIL:
         case types.OUTPUT_STATE_CHANGE:
+        case types.NODES_DELETE:
         case types.CHANGE_FUND_ACTION:
             var index = indexById(state.funds, action.versionId, "versionId");
             return processFund(state, action, index);
+
         case types.FUND_FUNDS_RECEIVE:
             var changed = false;
             var newFunds = state.funds.map(fundObj => {

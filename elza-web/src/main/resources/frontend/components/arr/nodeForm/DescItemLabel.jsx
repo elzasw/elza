@@ -28,7 +28,7 @@ var DescItemLabel = class DescItemLabel extends AbstractReactComponent {
         if (onClick == null) {
             renderItem = <div dangerouslySetInnerHTML={{__html: updatedValue}}></div>;
         } else {
-            renderItem = <a href="#" onClick={onClick} dangerouslySetInnerHTML={{__html: updatedValue}}></a>;
+            renderItem = <a style={{'cursor': 'pointer'}} onClick={onClick} dangerouslySetInnerHTML={{__html: updatedValue}}></a>;
         }
 
         return (

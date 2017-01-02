@@ -8,13 +8,13 @@ const PARENT_CHILD_MAX_LENGTH = 250
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {Icon, ListBox, AbstractReactComponent, i18n, Loading, NodeSubNodeForm, Accordion, SubNodeRegister, NodeActionsBar,
-        VisiblePolicyForm} from 'components';
+import {TooltipTrigger, Icon, ListBox, AbstractReactComponent, i18n, Loading, NodeSubNodeForm, Accordion, SubNodeRegister, NodeActionsBar,
+        VisiblePolicyForm, SubNodeDao} from 'components';
 import {Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
 import {addNodeForm} from 'actions/arr/addNodeForm.jsx';
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {fundSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister.jsx'
-import {fundSubNodeRequestsFetchIfNeeded} from 'actions/arr/subNodeRequests.jsx'
+import {fundSubNodeDaosFetchIfNeeded} from 'actions/arr/subNodeDaos.jsx'
 import {fundSubNodeInfoFetchIfNeeded} from 'actions/arr/subNodeInfo.jsx'
 import {fundNodeInfoFetchIfNeeded} from 'actions/arr/nodeInfo.jsx'
 import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
@@ -173,7 +173,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.requestData(nextProps.versionId, nextProps.node, nextProps.showRegisterJp, nextProps.showRequestsJp);
+        this.requestData(nextProps.versionId, nextProps.node, nextProps.showRegisterJp, nextProps.showDaosJp);
 
         var newState = {
             focusItemIndex: this.getFocusItemIndex(nextProps, this.state.focusItemIndex)
@@ -388,7 +388,7 @@ return true
             return true;
         }
         var eqProps = ['versionId', 'fund', 'node', 'calendarTypes', 'descItemTypes',
-            'packetTypes', 'packets', 'rulDataTypes', 'fundId', 'showRegisterJp', 'showRequestsJp', 'closed']
+            'packetTypes', 'packets', 'rulDataTypes', 'fundId', 'showRegisterJp', 'showDaosJp', 'closed']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -397,9 +397,9 @@ return true
      * @param versionId {String} verze AS
      * @param node {Object} node
      * @param showRegisterJp {bool} zobrazení rejstřílů vázené k jednotce popisu
-     * @param showRequestsJp {bool} zobrazení digit8lních entit vázené k jednotce popisu
+     * @param showDaosJp {bool} zobrazení digitálních entit vázené k jednotce popisu
      */
-    requestData(versionId, node, showRegisterJp,showRequestsJp) {
+    requestData(versionId, node, showRegisterJp, showDaosJp) {
         if (node.selectedSubNodeId != null) {
             this.dispatch(descItemTypesFetchIfNeeded());
             this.dispatch(nodeFormActions.fundSubNodeFormFetchIfNeeded(versionId, node.routingKey));
@@ -407,7 +407,7 @@ return true
             this.dispatch(refRulDataTypesFetchIfNeeded());
 
             showRegisterJp && this.dispatch(fundSubNodeRegisterFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
-            showRequestsJp && this.dispatch(fundSubNodeRequestsFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
+            showDaosJp && this.dispatch(fundSubNodeDaosFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
 
         }
         this.dispatch(visiblePolicyTypesFetchIfNeeded());
@@ -609,27 +609,33 @@ return true
 
             if (item.nodeConformity.state === "OK") {
                 icon = <Icon glyph="fa-check" />
-                tooltip = <Tooltip id="status-ok">{i18n('arr.node.status.ok') + description}</Tooltip>
+                tooltip = <div>{i18n('arr.node.status.ok') + description}</div>
             } else {
                 if ((missings == null || missingsHide == missings.length) && (errors == null || errorsHide == errors.length)) {
                     icon = <Icon glyph="fa-check-circle" />
-                    tooltip = <Tooltip id="status-err">{i18n('arr.node.status.okx')} {description} {messages}</Tooltip>
+                    tooltip = <div>{i18n('arr.node.status.okx')} {description} {messages}</div>
                 } else {
                     icon = <Icon glyph="fa-exclamation-circle" />
-                    tooltip = <Tooltip id="status-err">{i18n('arr.node.status.err')} {description} {messages}</Tooltip>
+                    tooltip = <div>{i18n('arr.node.status.err')} {description} {messages}</div>
                 }
             }
         } else {
             icon = <Icon glyph="fa-exclamation-triangle" />
-            tooltip = <Tooltip id="status-undefined">{i18n('arr.node.status.undefined')}</Tooltip>
+            tooltip = <div>{i18n('arr.node.status.undefined')}</div>
         }
 
         return (
-                <OverlayTrigger placement="left" overlay={tooltip}>
-                    <div className="status">
+                <TooltipTrigger
+                    content={tooltip}
+                    holdOnHover
+                    placement="auto"
+                    className="status"
+                    showDelay={1}
+                >
+                    <div>
                         {icon}
                     </div>
-                </OverlayTrigger>
+                </TooltipTrigger>
         );
     }
 
@@ -637,10 +643,10 @@ return true
      * Renderování Accordion.
      * @param form {Object} editační formulář, pokud je k dispozici (k dispozici je, pokud je nějaká položka Accordion vybraná)
      * @param recordInfo rejstříky k JP
-     * @param requests digitální entity k JP
+     * @param daos digitální entity k JP
      * @return {Object} view
      */
-    renderAccordion(form, recordInfo, requests, readMode) {
+    renderAccordion(form, recordInfo, daos, readMode) {
         const {node, versionId, userDetail, fund, fundId, closed} = this.props;
         const {focusItemIndex} = this.state;
         var rows = [];
@@ -692,7 +698,7 @@ return true
                             <div key="body" className='accordion-body'>
                                 {form}
                                 {recordInfo}
-                                {requests}
+                                {daos}
                             </div>
                         </div>
                     )
@@ -740,7 +746,7 @@ return true
     render() {
         const {calendarTypes, versionId, rulDataTypes, node,
                 packetTypes, packets, fundId, userDetail,
-                showRegisterJp, showRequestsJp, fund, closed, descItemTypes} = this.props;
+                showRegisterJp, showDaosJp, fund, closed, descItemTypes} = this.props;
 
 
 
@@ -823,11 +829,14 @@ return true
                         readMode={readMode}/>
         }
 
-        let requests;
-        if (showRequestsJp) {
-            requests = <div>
-                RRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
-            </div>
+        let daos;
+        if (showDaosJp) {
+            daos = <SubNodeDao
+                nodeId={node.id}
+                versionId={versionId}
+                selectedSubNodeId={node.selectedSubNodeId}
+                routingKey={node.routingKey}
+                daos={node.subNodeDaos} />
         }
 
         var cls = classNames({
@@ -838,7 +847,7 @@ return true
             <Shortcuts name='NodePanel' key={'node-panel'} className={cls} handler={this.handleShortcuts}>
                 <div key='main' className='main'>
                     {parents}
-                    {this.renderAccordion(form, record, requests, readMode)}
+                    {this.renderAccordion(form, record, daos, readMode)}
                     {children}
                 </div>
             </Shortcuts>
@@ -922,7 +931,7 @@ NodePanel.propTypes = {
     rulDataTypes: React.PropTypes.object.isRequired,
     fundId: React.PropTypes.number,
     showRegisterJp: React.PropTypes.bool.isRequired,
-    showRequestsJp: React.PropTypes.bool.isRequired,
+    showDaosJp: React.PropTypes.bool.isRequired,
     closed: React.PropTypes.bool.isRequired,
     userDetail: React.PropTypes.object.isRequired,
 }

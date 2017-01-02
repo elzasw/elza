@@ -9,7 +9,7 @@ import {getIndexStateFetchIfNeeded, reindex} from 'actions/admin/fulltext.jsx';
 import {Ribbon, AdminPackagesList, AdminPackagesUpload} from 'components/index.jsx';
 import {PageLayout} from 'pages/index.jsx';
 import * as digitizationActions from 'actions/arr/digitizationActions';
-import {getRequestType} from 'components/arr/ArrUtils.jsx'
+import {getRequestType, REQ_DIGITIZATION_REQUEST, createDigitizationName} from 'components/arr/ArrUtils.jsx'
 import {dateTimeToString} from "components/Utils.jsx";
 import {WebApi} from 'actions/index.jsx';
 
@@ -35,11 +35,20 @@ const AdminRequestsQueuePage = class extends AbstractReactComponent {
 
     handleDelete = (item) => {
         if (confirm(i18n("requestQueue.delete.confirm"))) {
-            WebApi.deleteRequestFromQueue(item.id)
-                .then(json => {
-                });
+            WebApi.removeArrRequestQueueItem(item.request.id);
         }
-    }
+    };
+
+    createDescription = (type, request) => {
+        const {userDetail} = this.props;
+        switch (type) {
+            case REQ_DIGITIZATION_REQUEST: {
+                return " - " + createDigitizationName(request, userDetail);
+            }
+            default:
+                return "TODO [createDescription]: " + type;
+        }
+    };
 
     render() {
         const {requestInQueueList, splitter} = this.props;
@@ -48,29 +57,26 @@ const AdminRequestsQueuePage = class extends AbstractReactComponent {
         if (requestInQueueList.fetched) {
             centerPanel = (
                 <div>
-                    <h2>{i18n("requestQueue.title.requestQueue")}</h2>
-
                     <Table striped bordered condensed hover>
                         <thead>
                             <tr>
                                 <th>{i18n("requestQueue.title.create")}</th>
                                 <th>{i18n("requestQueue.title.attemptToSend")}</th>
+                                <th>{i18n("requestQueue.title.description")}</th>
                                 <th>{i18n("requestQueue.title.error")}</th>
                                 <th>{i18n("requestQueue.title.username")}</th>
-                                <th>{i18n("requestQueue.title.description")}</th>
-                                <th>{i18n("requestQueue.title.type")}</th>
                                 <th></th>
                             </tr>
                         </thead>
                         <tbody>
                         {requestInQueueList.rows.map(item => {
+                            let type = getRequestType(item.request);
                             return <tr key={item.id}>
                                 <td>{dateTimeToString(new Date(item.create))}</td>
-                                <td>{dateTimeToString(new Date(item.attemptToSend))}</td>
+                                <td>{item.attemptToSend && dateTimeToString(new Date(item.attemptToSend))}</td>
+                                <td>{i18n("arr.request.title.type." + type)} {this.createDescription(type, item.request)}</td>
                                 <td>{item.error}</td>
                                 <td>{item.request.username}</td>
-                                <td>{item.request.description}</td>
-                                <td>{i18n("arr.request.title.type." + getRequestType(item.request))}</td>
                                 <td><Button onClick={() => this.handleDelete(item)}>{i18n("global.action.delete")}</Button></td>
                             </tr>
                         })}
@@ -100,10 +106,11 @@ const AdminRequestsQueuePage = class extends AbstractReactComponent {
  * @returns {{packages: *}}
  */
 function mapStateToProps(state) {
-    const {app:{requestInQueueList}, splitter} = state;
+    const {app:{requestInQueueList}, splitter, userDetail} = state;
     return {
         splitter,
         requestInQueueList,
+        userDetail
     }
 }
 

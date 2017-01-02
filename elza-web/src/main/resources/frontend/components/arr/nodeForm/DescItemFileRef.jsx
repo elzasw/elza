@@ -9,6 +9,7 @@ import {Button} from 'react-bootstrap';
 import DescItemLabel from './DescItemLabel.jsx'
 
 import './DescItemFileRef.less'
+import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 
 class DescItemFileRef extends AbstractReactComponent {
 
@@ -77,19 +78,21 @@ class DescItemFileRef extends AbstractReactComponent {
         const footer = this.renderFooter();
 
         return <div className='desc-item-value desc-item-value-parts'>
-            <Autocomplete
-                {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, ['autocomplete-file'])}
-                ref='autocomplete'
-                customFilter
-                value={value}
-                items={this.state.fileList}
-                getItemId={(item) => item ? item.id : null}
-                getItemName={(item) => item ? item.name : ''}
-                onSearchChange={this.handleSearchChange}
-                onChange={onChange}
-                onBlur={onBlur}
-                footer={footer}
-            />
+            <ItemTooltipWrapper tooltipTitle="dataType.fileRef.format">
+                <Autocomplete
+                    {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, ['autocomplete-file'])}
+                    ref='autocomplete'
+                    customFilter
+                    value={value}
+                    items={this.state.fileList}
+                    getItemId={(item) => item ? item.id : null}
+                    getItemName={(item) => item ? item.name : ''}
+                    onSearchChange={this.handleSearchChange}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    footer={footer}
+                />
+            </ItemTooltipWrapper>
         </div>;
     }
 }

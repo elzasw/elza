@@ -26,6 +26,12 @@ public class InterpiSearchVO {
     public void setParty(final boolean isParty) {
         this.isParty = isParty;
     }
+    public boolean getIsParty() {
+        return isParty;
+    }
+    public void setIsParty(final boolean isParty) {
+        this.isParty = isParty;
+    }
     public List<ConditionVO> getConditions() {
         return conditions;
     }

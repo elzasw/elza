@@ -3,6 +3,9 @@ package cz.tacr.elza.service;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.UsrPermission;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaoLinkRequest;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrDigitizationRequestNode;
@@ -12,8 +15,10 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.repository.DaoLinkRequestRepository;
 import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
 import cz.tacr.elza.repository.DigitizationRequestRepository;
+import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.RequestRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdNodeIdInVersion;
@@ -30,6 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+
+import static cz.tacr.elza.api.ArrDaoLinkRequest.*;
 
 /**
  * Servisní třída pro obsluhu a správu požadavků
@@ -53,10 +60,19 @@ public class RequestService {
     private RequestRepository requestRepository;
 
     @Autowired
+    private RequestQueueItemRepository requestQueueItemRepository;
+
+    @Autowired
+    private DaoLinkRequestRepository daoLinkRequestRepository;
+
+    @Autowired
     private ArrangementService arrangementService;
 
     @Autowired
     private EventNotificationService eventNotificationService;
+
+    @Autowired
+    private RequestQueueService requestQueueService;
 
     /**
      * Vytvoření jednoznačného identifikátoru požadavku.
@@ -80,7 +96,7 @@ public class RequestService {
         }
         digitizationRequest.setDigitizationFrontdesk(digitizationFrontdeskList.get(0));
         digitizationRequest.setFund(fundVersion.getFund());
-        digitizationRequest.setCreateChange(arrangementService.createChange(null));
+        digitizationRequest.setCreateChange(arrangementService.createChange(ArrChange.Type.CREATE_DIGI_REQUEST));
         digitizationRequest.setState(ArrRequest.State.OPEN);
 
         List<ArrDigitizationRequestNode> requestNodes = new ArrayList<>(nodes.size());
@@ -100,9 +116,27 @@ public class RequestService {
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public ArrDaoLinkRequest createDaoRequest(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion,
+                                              ArrDao dao, ArrChange change, final Type type, ArrNode node) {
+        final ArrDaoLinkRequest request = new ArrDaoLinkRequest();
+        request.setCreateChange(change);
+        request.setDao(dao);
+        request.setType(type);
+        request.setCode(generateCode());
+        request.setState(ArrRequest.State.OPEN);
+        request.setDidCode(node.getUuid());
+        request.setDigitalRepository(dao.getDaoPackage().getDigitalRepository());
+        request.setFund(fundVersion.getFund());
+        return daoLinkRequestRepository.save(request);
+    }
+
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void addNodeDigitizationRequest(@NotNull final ArrDigitizationRequest digitizationRequest,
                                            @NotNull final List<ArrNode> nodes,
                                            @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion, final String description) {
+        if (!digitizationRequest.getState().equals(ArrRequest.State.OPEN)) {
+            throw new BusinessException(ArrangementCode.REQUEST_INVALID_STATE).set("state", digitizationRequest.getState());
+        }
 
         List<ArrDigitizationRequestNode> digitizationRequestNodes = digitizationRequestNodeRepository.findByDigitizationRequestAndNode(digitizationRequest, nodes);
         if (digitizationRequestNodes.size() != 0) {
@@ -116,7 +150,9 @@ public class RequestService {
             digitizationRequestNodes.add(requestNode);
         }
 
-        digitizationRequest.setDescription(description);
+        if (description != null) {
+            digitizationRequest.setDescription(description);
+        }
         digitizationRequestRepository.save(digitizationRequest);
         digitizationRequestNodeRepository.save(digitizationRequestNodes);
         sendNotification(fundVersion, digitizationRequest, EventType.REQUEST_CHANGE, nodes);
@@ -126,6 +162,10 @@ public class RequestService {
     public void removeNodeDigitizationRequest(@NotNull final ArrDigitizationRequest digitizationRequest,
                                               @NotNull final List<ArrNode> nodes,
                                               @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
+        if (!digitizationRequest.getState().equals(ArrRequest.State.OPEN)) {
+            throw new BusinessException(ArrangementCode.REQUEST_INVALID_STATE).set("state", digitizationRequest.getState());
+        }
+
         List<ArrDigitizationRequestNode> digitizationRequestNodes = digitizationRequestNodeRepository.findByDigitizationRequestAndNode(digitizationRequest, nodes);
         if (digitizationRequestNodes.size() != nodes.size()) {
             throw new BusinessException(ArrangementCode.ALREADY_REMOVED);
@@ -164,19 +204,30 @@ public class RequestService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void sendRequest(@NotNull final ArrRequest request,
                             @AuthParam(type = AuthParam.Type.FUND) final ArrFundVersion fundVersion) {
-        setRequestState(request, ArrRequest.State.OPEN, ArrRequest.State.QUEUED);
+        requestQueueService.sendRequest(request, fundVersion);
+    }
 
-        // TODO dopsat frontu napojení
+    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
+    public void removeQueuedRequest(@NotNull final ArrRequest request) {
+
+        ArrFundVersion openVersion = null;
+        for (ArrFundVersion version : request.getFund().getVersions()) {
+            if (version.getLockChange() == null) {
+                openVersion = version;
+                break;
+            }
+        }
+        requestQueueService.removeRequestFromQueue(request, openVersion);
     }
 
     /**
      * Nastavit stav požadavku.
      *
-     * @param request   požadavek
-     * @param oldState  původní stav požadavku
-     * @param newState  nastavovaný stav požadavku
+     * @param request  požadavek
+     * @param oldState původní stav požadavku
+     * @param newState nastavovaný stav požadavku
      */
-    private void setRequestState(final ArrRequest request,
+    public void setRequestState(final ArrRequest request,
                                  final ArrRequest.State oldState,
                                  final ArrRequest.State newState) {
         boolean success = requestRepository.setState(request, oldState, newState);

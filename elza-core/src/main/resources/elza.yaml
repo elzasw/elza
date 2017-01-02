@@ -15,8 +15,6 @@ elza:
   templates:
     templatesDir: ${elza.workingDir}/templates
   dmsDir: ${elza.workingDir}/dms/
-  interpi:
-    interpiDir: ${elza.workingDir}/interpi
 spring:
   application:
      name: elza

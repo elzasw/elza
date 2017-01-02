@@ -94,5 +94,5 @@ public interface RegisterTypeRepository extends JpaRepository<RegRegisterType, I
      * @param registerTypeName název
      * @return typ rejstříkového hesla
      */
-    RegRegisterType findRegisterTypeByname(String registerTypeName);
+    RegRegisterType findRegisterTypeByName(String registerTypeName);
 }

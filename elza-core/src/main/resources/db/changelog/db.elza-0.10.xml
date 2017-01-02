@@ -503,4 +503,69 @@
 
     </changeSet>
 
+    <changeSet id="20161212134500" author="vanek">
+        <dropTable tableName="par_interpi_role_type"/>
+        <dropTable tableName="par_interpi_relation"/>
+        <createTable tableName="par_interpi_mapping">
+            <column name="par_interpi_mapping_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="relation_role_type_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_par_relation_role_type" referencedTableName="par_relation_role_type" referencedColumnNames="role_type_id"/>
+            </column>
+            <column name="relation_type_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_par_relation_type" referencedTableName="par_relation_type" referencedColumnNames="relation_type_id" />
+            </column>
+            <column name="interpi_class" type="char(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="interpi_relation_type" type="varchar(250)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="interpi_role_type" type="varchar(250)">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="20161212140000" author="vanek">
+        <addColumn tableName="par_party">
+            <column name="originator" type="boolean" />
+        </addColumn>
+        <update tableName="par_party">
+            <column name="originator" value="true" />
+        </update>
+        <addNotNullConstraint tableName="par_party" columnName="originator" columnDataType="boolean"/>
+    </changeSet>
+
+    <changeSet id="201612161100" author="vanek">
+        <renameColumn tableName="par_interpi_mapping" oldColumnName="par_interpi_mapping_id" newColumnName="interpi_mapping_id"/>
+    </changeSet>
+
+    <changeSet id="201612161155" author="vanek">
+        <dropNotNullConstraint tableName="par_party_name" columnName="name_form_type_id" columnDataType="int"/>
+    </changeSet>
+
+    <changeSet id="201612220713" author="lebeda">
+        <customChange class="cz.tacr.elza.dbchangelog.DbUpgrade_201612220713" />
+    </changeSet>
+
+    <changeSet id="201612221346" author="lebeda">
+        <dropForeignKeyConstraint baseTableName="arr_dao_request"
+                                  constraintName="fk_dao_request_digitization_frontdesk"/>
+        <dropColumn tableName="arr_dao_request" columnName="digitization_frontdesk_id"/>
+
+        <addColumn tableName="arr_dao_request">
+            <column name="digital_repository_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <addForeignKeyConstraint constraintName="fk_dao_request_digital_repository"
+                                 baseTableName="arr_dao_request"
+                                 baseColumnNames="digital_repository_id"
+                                 referencedTableName="arr_digital_repository"
+                                 referencedColumnNames="external_system_id"
+                                 onDelete="NO ACTION"/>
+    </changeSet>
+
 </databaseChangeLog>

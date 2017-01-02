@@ -20,18 +20,19 @@ import java.time.LocalDateTime;
  */
 @Entity(name = "arr_request_queue_item")
 @Table
-public class ArrRequestQueueItem implements cz.tacr.elza.api.ArrRequestQueueItem<ArrRequest> {
+public class ArrRequestQueueItem implements cz.tacr.elza.api.ArrRequestQueueItem<ArrRequest, ArrChange> {
 
     @Id
     @GeneratedValue
     private Integer requestQueueItemId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrRequest.class)
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrRequest.class)
     @JoinColumn(name = "requestId", nullable = false)
     private ArrRequest request;
 
-    @Column(nullable = false)
-    private LocalDateTime create;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
+    @JoinColumn(name = "createChangeId", nullable = false)
+    private ArrChange createChange;
 
     @Column
     private LocalDateTime attemptToSend;
@@ -63,13 +64,13 @@ public class ArrRequestQueueItem implements cz.tacr.elza.api.ArrRequestQueueItem
     }
 
     @Override
-    public LocalDateTime getCreate() {
-        return create;
+    public ArrChange getCreateChange() {
+        return createChange;
     }
 
     @Override
-    public void setCreate(final LocalDateTime create) {
-        this.create = create;
+    public void setCreateChange(final ArrChange createChange) {
+        this.createChange= createChange;
     }
 
     @Override

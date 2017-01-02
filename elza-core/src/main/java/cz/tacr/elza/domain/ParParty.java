@@ -94,6 +94,9 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
     @JsonIgnore
     private String characteristics;
 
+    @Column(nullable = false)
+    private boolean originator = true;
+
     @Override
     public Integer getPartyId() {
         return partyId;
@@ -184,6 +187,16 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
 
     public void setRelations(final List<ParRelation> relations) {
         this.relations = relations;
+    }
+
+    @Override
+    public boolean isOriginator() {
+        return originator;
+    }
+
+    @Override
+    public void setOriginator(final boolean originator) {
+        this.originator = originator;
     }
 
     @Override

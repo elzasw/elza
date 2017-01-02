@@ -1,5 +1,6 @@
 package cz.tacr.elza.interpi.service.vo;
 
+import cz.tacr.elza.controller.vo.filter.Condition;
 import cz.tacr.elza.interpi.service.pqf.AttributeType;
 import cz.tacr.elza.interpi.service.pqf.ConditionType;
 
@@ -14,6 +15,10 @@ public class ConditionVO {
     private ConditionType conditionType;
     private AttributeType attType;
     private String value;
+
+    public ConditionVO() {
+
+    }
 
     public ConditionVO(final ConditionType conditionType, final AttributeType attType, final String value) {
         this.conditionType = conditionType;

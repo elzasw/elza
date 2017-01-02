@@ -3,7 +3,7 @@
  */
 import {indexById} from 'stores/app/utils.jsx'
 import React from 'react';
-import {dateToString} from 'components/Utils.jsx'
+import {dateToString, dateTimeToString} from 'components/Utils.jsx'
 import {getSetFromIdsList} from 'stores/app/utils.jsx'
 import {i18n} from 'components';
 
@@ -368,9 +368,14 @@ export function createReferenceMarkStringFromArray(referenceMark) {
  */
 export function createDigitizationName(digitizationRequest, userDetail) {
     // Uživatelské jméno chceme pouze pokud je definované nebo je jiné než přihlášený uživatel
-    const username = userDetail ? (digitizationRequest.username !== userDetail.username ? digitizationRequest.username : null) : digitizationRequest.username;
-    const usernameStr = username ? username + " " : "";
-    return usernameStr + dateToString(new Date(digitizationRequest.create));
+    const usernameTmp = digitizationRequest.username ? digitizationRequest.username : "System";
+    const username = userDetail ? (usernameTmp !== userDetail.username ? usernameTmp : null) : usernameTmp;
+    const usernameStr = username ? "[" + username + "] " : "";
+    let text = usernameStr + dateTimeToString(new Date(digitizationRequest.create));
+    if (digitizationRequest.nodesCount != null) {
+        text += " (" + digitizationRequest.nodesCount + ")";
+    }
+    return text;
 }
 
 /**

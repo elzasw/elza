@@ -2,13 +2,16 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import {WebApi} from 'actions/index.jsx';
-import {Icon, i18n, AbstractReactComponent, NoFocusButton, Autocomplete} from 'components/index.jsx';
+import {Icon, i18n, AbstractReactComponent, NoFocusButton, Autocomplete, ExtImportForm} from 'components/index.jsx';
 import {connect} from 'react-redux'
 import {decorateAutocompleteValue} from './DescItemUtils.jsx'
 import {MenuItem, Button} from 'react-bootstrap';
 import * as perms from 'actions/user/Permission.jsx';
 import DescItemLabel from './DescItemLabel.jsx'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+
 import './DescItemRecordRef.less'
+import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 
 class DescItemRecordRef extends AbstractReactComponent {
     constructor(props) {
@@ -46,6 +49,12 @@ class DescItemRecordRef extends AbstractReactComponent {
         this.props.onDetail(recordId);
     }
 
+    handleImport = () => {
+        const {versionId} = this.props;
+        this.refs.autocomplete.closeMenu();
+        this.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={false} versionId={versionId}/>, "dialog-lg"));
+    };
+
     renderRecord(item, isHighlighted, isSelected) {
         var cls = 'item';
         if (isHighlighted) {
@@ -67,6 +76,7 @@ class DescItemRecordRef extends AbstractReactComponent {
         return (
             <div className="create-record">
                 <Button onClick={this.handleCreateRecord}><Icon glyph='fa-plus'/>{i18n('registry.addNewRegistry')}</Button>
+                <Button onClick={this.handleImport}><Icon glyph='fa-plus' /> {i18n("ribbon.action.registry.importExt")}</Button>
             </div>
         )
     }
@@ -103,7 +113,8 @@ class DescItemRecordRef extends AbstractReactComponent {
         }
 
         return (
-                <div className='desc-item-value desc-item-value-parts'>
+            <div className='desc-item-value desc-item-value-parts'>
+                <ItemTooltipWrapper tooltipTitle="dataType.recordRef.format">
                     <Autocomplete
                             {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, ['autocomplete-record'])}
                             ref='autocomplete'
@@ -118,8 +129,9 @@ class DescItemRecordRef extends AbstractReactComponent {
                             onBlur={onBlur}
                             renderItem={this.renderRecord}
                             actions={[actions]}
-                            />
-                </div>
+                    />
+                </ItemTooltipWrapper>
+            </div>
         )
     }
 }

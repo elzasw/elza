@@ -84,10 +84,8 @@ action:
 
     - UNIT_COUNT
         output_type: ZP2015_UNIT_COUNT_TABLE
-        output_table_column1: NAME
-        output_table_column1_type: TEXT
-        output_table_column2: COUNT
-        output_table_column2_type: INTEGER
+        output_column_unit_name: NAME
+        output_column_unit_value: COUNT
         # typ pro typ archiválie
         UNIT_TYPE: ZP2015_UNIT_TYPE
 

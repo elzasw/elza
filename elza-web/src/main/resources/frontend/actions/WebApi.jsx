@@ -9,14 +9,11 @@ function getData(data, timeout = 1000) {
 }
 
 const digReqs = [
-    {id: 0, state: "OPEN", username: "kokozka1", description: "Kokozkovo1 balicek", time: new Date().getTime() - 5555555, '@class': '.ArrDigitizationRequestVO', nodes: []},
-    {id: 1, state: "QUEUED", username: "kokozka2", description: "Kokozkovo2 balicek", time: new Date().getTime() - 4444444, '@class': '.ArrDigitizationRequestVO', nodes: []},
-    {id: 2, state: "OPEN", username: "novak1", description: "Balicek pana novaka1...", time: new Date().getTime(), '@class': '.ArrDaoRequestVO', type: 'DESTRUCTION', nodes: []},
-    {id: 3, state: "QUEUED", username: "novak2", description: "Balicek pana novaka2...", time: new Date().getTime(), '@class': '.ArrDaoRequestVO', type: 'DESTRUCTION', nodes: []},
-    {id: 4, state: "OPEN", username: "novak3", description: "Balicek pana novaka3...", time: new Date().getTime(), '@class': '.ArrDaoRequestVO', type: 'TRANSFER', nodes: []},
-    {id: 5, state: "QUEUED", username: "novak4", description: "Balicek pana novaka4...", time: new Date().getTime(), '@class': '.ArrDaoRequestVO', type: 'TRANSFER', nodes: []}
-
-]
+    {id: 1, code: "026c75c4-4ee7-4f7f-9c91-49df8e5abbcf", filesCount: 1, label: "Fotka - Petr Compel", url: "http://info.marbes.cz/modules/obrazky/preved_fotku.php?id=562"},
+    {id: 2, code: "09a2301a-61b9-4ce5-a013-df6e4f23a7bd", filesCount: 0, label: "Fotka - Michal Moučka", url: "http://info.marbes.cz/modules/obrazky/preved_fotku.php?id=55"},
+    {id: 3, code: "5369d629-baa0-4571-b5df-0c339f8fa36f", filesCount: 2, label: "Fotka - Martin Šlapa"},
+    {id: 4, code: "5369d629-baa0-4570-b5df-0c339f8fa36f", filesCount: 8, label: "Fotka - Václav Mařík", url: "http://info.marbes.cz/modules/obrazky/preved_fotku.php?id=54"},
+];
 
 /**
  * Továrna URL
@@ -422,6 +419,11 @@ class WebApi {
         return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/registerLinks/' + nodeId + '/' + versionId + '/form');
     }
 
+    getFundNodeDaos(versionId, nodeId = null, detail = false) {
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/daos/' + versionId, {nodeId, detail});
+        //return getData(digReqs, 200);
+    }
+
     deleteFundNodeRegister(versionId, nodeId, data) {
         return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/registerLinks/' + nodeId + '/' + versionId + '/delete', null, data);
     }
@@ -515,16 +517,7 @@ class WebApi {
     }
 
     getRequestsInQueue() {
-        const data = digReqs.map(r => {
-            return {
-                id: r.id,
-                request: r,
-                create: new Date().getTime() - 99999999,
-                attemptToSend: new Date().getTime() -77777777,
-                error: "Prostě se to nepovedlo",
-            }
-        });
-        return getData(data, 100);
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/requests/queued');
     }
 
     deleteRequestFromQueue(id) {
@@ -553,7 +546,11 @@ class WebApi {
     }
 
     updateArrRequest(versionId, id, data) {
-        return getData({}, 100);
+        return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/requests/' + versionId + '/' + id, null , data);
+    }
+
+    removeArrRequestQueueItem(id) {
+        return AjaxUtils.ajaxDelete(WebApi.arrangementUrl + '/requests/' + id);
     }
 
     getArrRequests(versionId) {
@@ -562,6 +559,10 @@ class WebApi {
 
     getArrRequest(versionId, id) {
         return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/requests/' + versionId + "/" + id, { detail: true });
+    }
+
+    sendArrRequest(versionId, id) {
+        return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/requests/' + versionId + "/" + id + "/send");
     }
 
     getFundTree(versionId, nodeId, expandedIds={}, includeIds=[]) {
@@ -617,7 +618,7 @@ class WebApi {
     }
 
     filterNodes(versionId, filter) {
-        return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/filterNodes/' + versionId, {}, {filters: filter})
+        return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/filterNodes/' + versionId, {}, filter)
     }
 
     getFilteredNodes(versionId, pageIndex, pageSize, descItemTypeIds) {
@@ -935,6 +936,22 @@ class WebApi {
 
     outputClone(versionId, outputId) {
         return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/output/' + versionId + '/' + outputId + '/clone');
+    }
+
+    getRegExternalSystems() {
+        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/externalSystems');
+    }
+
+    findInterpiRecords(criteria) {
+        return AjaxUtils.ajaxPost(WebApi.registryUrl + '/interpi', null, criteria);
+    }
+
+    importRecord(importVO) {
+        return AjaxUtils.ajaxPost(WebApi.registryUrl + '/interpi/import/', null, importVO);
+    }
+
+    importRecordUpdate(recordId, importVO) {
+        return AjaxUtils.ajaxPut(WebApi.registryUrl + '/interpi/import/'+ recordId, null, importVO);
     }
 }
 

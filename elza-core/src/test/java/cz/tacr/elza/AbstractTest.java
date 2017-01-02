@@ -19,6 +19,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -187,7 +188,7 @@ public abstract class AbstractTest {
         byte[] buffer = new byte[1024];
         URL url = Thread.currentThread().getContextClassLoader().getResource("zp");
         File tmpFile = File.createTempFile("package-test_", ".zip");
-        String sourceDirectory = url.getPath();
+        String sourceDirectory = URLDecoder.decode(url.getPath(), "UTF-8");
         FileOutputStream fout = new FileOutputStream(tmpFile);
         ZipOutputStream zout = new ZipOutputStream(fout);
         File dir = new File(sourceDirectory);

@@ -9,6 +9,7 @@ import {connect} from 'react-redux'
 import {normalizeString} from 'components/validate.jsx'
 import {decorateValue} from './DescItemUtils.jsx'
 import DescItemLabel from './DescItemLabel.jsx'
+import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 
 const DescItemString_MAX_LENGTH = 250;
 
@@ -48,14 +49,16 @@ var DescItemUnitid = class DescItemUnitid extends AbstractReactComponent {
 
         return (
             <div className='desc-item-value'>
-                <input
-                    {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
-                    ref='focusEl'
-                    type="text"
-                    disabled={locked}
-                    value={value}
-                    onChange={this.handleChange}
-                />
+                <ItemTooltipWrapper tooltipTitle="dataType.unitid.format">
+                    <input
+                        {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
+                        ref='focusEl'
+                        type="text"
+                        disabled={locked}
+                        value={value}
+                        onChange={this.handleChange}
+                    />
+                </ItemTooltipWrapper>
             </div>
         )
     }

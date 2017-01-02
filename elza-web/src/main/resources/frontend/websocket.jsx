@@ -36,7 +36,10 @@ import {
     userChange,
     groupChange,
     groupDelete,
-    fundInvalidChanges
+    fundInvalidChanges,
+    createRequest,
+    changeRequestItemQueue,
+    nodesDelete
 } from 'actions/global/change.jsx';
 
 
@@ -240,6 +243,29 @@ function processEvents(values) {
                 break;
             case 'GROUP_DELETE':
                 deleteGroup(value);
+                break;
+
+            case 'REQUEST_CREATE':
+                requestCreate(value);
+                break;
+
+            case 'REQUEST_CHANGE':
+                requestChange(value);
+                break;
+
+            case 'REQUEST_ITEM_QUEUE_CREATE':
+            case 'REQUEST_ITEM_QUEUE_DELETE':
+                createRequestItemQueueChange(value);
+                break;
+
+            case 'REQUEST_ITEM_QUEUE_CHANGE':
+                changeRequestItemQueueChange(value);
+                break;
+
+            case 'DELETE_NODES':
+                deleteNodes(value);
+                break;
+
             default:
                 console.warn("Nedefinovaný typ eventu: " + value.eventType, value);
                 break;
@@ -260,6 +286,26 @@ function changeGroup(value) {
 }
 function deleteGroup(value) {
     store.dispatch(groupDelete(value.ids[0]))
+}
+
+function requestChange(value) {
+    store.dispatch(changeRequest(value));
+}
+
+function requestCreate(value) {
+    store.dispatch(createRequest(value));
+}
+
+function createRequestItemQueueChange(value) {
+    store.dispatch(createRequestItemQueue(value));
+}
+
+function changeRequestItemQueueChange(value) {
+    store.dispatch(changeRequestItemQueue(value));
+}
+
+function deleteNodes(value) {
+    store.dispatch(nodesDelete(value.versionId, value.entityIds))
 }
 
 function approveVersionChange(value) {
