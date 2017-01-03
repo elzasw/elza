@@ -10,8 +10,7 @@ import {AppStore} from 'stores/index.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
-import {partyDetailFetchIfNeeded, partyListInvalidate} from 'actions/party/party.jsx'
-import {partyAdd, partyCreate, insertRelation, partyDelete} from 'actions/party/party.jsx'
+import {partyDetailFetchIfNeeded, partyListInvalidate, PARTY_LIST_MAX_SIZE, partyAdd, partyCreate, insertRelation, partyDelete} from 'actions/party/party.jsx'
 const ShortcutsManager = require('react-shortcuts');
 const Shortcuts = require('react-shortcuts/component');
 import {Utils} from 'components/index.jsx';
