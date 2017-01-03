@@ -116,6 +116,8 @@ var messages = {
     "ribbon.action.arr.fund.requests": "Požadavky",
     "ribbon.action.arr.fund.daos": "Digitální entity",
     "ribbon.action.arr.fund.request.send": "Odeslat požadavek",
+    "ribbon.action.arr.fund.request.delete": "Vymazat požadavek",
+    "ribbon.action.arr.fund.request.delete.confirm": "Opravdu chcete smazat požadavek?",
     "ribbon.action.arr.fund.update": "Upravit vlastnosti",
     "ribbon.action.arr.fund.approve": "Nová verze AS",
     "ribbon.action.arr.fund.ruleSet": "Změnit pravidla",

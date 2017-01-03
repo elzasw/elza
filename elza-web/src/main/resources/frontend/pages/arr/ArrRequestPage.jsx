@@ -27,7 +27,8 @@ import {
     FundOutputFunctions,
     RunActionForm,
     FormInput,
-    ArrFundPanel
+    ArrFundPanel,
+    SearchWithGoto
 } from 'components/index.jsx';
 import {Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
@@ -56,10 +57,18 @@ import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx'
-import AddDescItemTypeForm from 'components/arr/nodeForm/AddDescItemTypeForm.jsx'
 import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
 import {outputTypesFetchIfNeeded} from "actions/refTables/outputTypes.jsx";
-import {createDigitizationName, getDescItemsAddTree, getOneSettings} from 'components/arr/ArrUtils.jsx';
+import {
+    REQ_DIGITIZATION_REQUEST,
+    REQ_DESTRUCTION,
+    REQ_TRANSFER,
+    REQ_LINK,
+    REQ_UNLINK,
+    createDigitizationName,
+    getDescItemsAddTree,
+    getOneSettings
+} from 'components/arr/ArrUtils.jsx';
 import ArrParentPage from "./ArrParentPage.jsx";
 
 const classNames = require('classnames');
@@ -163,7 +172,12 @@ const ArrRequestPage = class extends ArrParentPage {
                         <Button key="send" onClick={() => {this.handleSend(requestDetail.id)}} disabled={!detailLoaded || requestDetail.data.state != "OPEN"}><Icon glyph="fa-youtube-play" />
                             <div><span className="btnText">{i18n('ribbon.action.arr.fund.request.send')}</span></div>
                         </Button>
-                    )
+                    );
+                    itemActions.push(
+                        <Button key="delete" onClick={() => {this.handleDelete(requestDetail.id)}} disabled={!detailLoaded || requestDetail.data.state != "OPEN"}><Icon glyph="fa-trash" />
+                            <div><span className="btnText">{i18n('ribbon.action.arr.fund.request.delete')}</span></div>
+                        </Button>
+                    );
                 }
             }
         }
@@ -186,16 +200,19 @@ const ArrRequestPage = class extends ArrParentPage {
     handleSelect = (item) => {
         const fund = this.getActiveFund(this.props);
         this.dispatch(digitizationActions.selectDetail(fund.versionId, item.id));
-    }
+    };
 
     handleSend = (id) => {
         const fund = this.getActiveFund(this.props);
         this.dispatch(digitizationActions.sendRequest(fund.versionId, id));
-    }
+    };
 
-    isEditable(item) {
-        return !item.lockDate && item.outputDefinition && item.outputDefinition.state === OutputState.OPEN
-    }
+    handleDelete = (id) => {
+        const fund = this.getActiveFund(this.props);
+        if (confirm(i18n("ribbon.action.arr.fund.request.delete.confirm"))) {
+            this.dispatch(digitizationActions.deleteRequest(fund.versionId, id));
+        }
+    };
 
     renderListItem = (item, isActive, index) => {
         const {userDetail} = this.props;
@@ -210,7 +227,36 @@ const ArrRequestPage = class extends ArrParentPage {
                 <div className='state'>{i18n("arr.request.title.state")}: {i18n("arr.request.title.state." + item.state)}</div>
             </div>
         )
-    }
+    };
+
+    handleFilterType = (e) => {
+        const fund = this.getActiveFund(this.props);
+        const {requestList: {filter}} = fund;
+
+        const val = e.target.value;
+        const newFilter = {
+            ...filter,
+            type: val
+        }
+
+        this.dispatch(digitizationActions.filterList(fund.versionId, newFilter));
+    };
+
+    handleFilterText = (filterText) => {
+        const fund = this.getActiveFund(this.props);
+        const {requestList: {filter}} = fund;
+
+        const newFilter = {
+            ...filter,
+            description: filterText
+        };
+
+        this.dispatch(digitizationActions.filterList(fund.versionId, newFilter));
+    };
+
+    handleFilterTextClear = () => {
+        this.handleFilterText(null);
+    };
 
     renderLeftPanel(readMode, closed) {
         const fund = this.getActiveFund(this.props);
@@ -223,6 +269,26 @@ const ArrRequestPage = class extends ArrParentPage {
 
         return (
             <div className="fund-request-list-container">
+                <div className="filter">
+                    <FormInput componentClass="select" className="type" onChange={this.handleFilterType} value={requestList.filter.type}>
+                        <option value={-1}>{i18n('global.all')}</option>
+                        <option value="REQ_DIGITIZATION_REQUEST" key="REQ_DIGITIZATION_REQUEST">{i18n("arr.request.title.type." + REQ_DIGITIZATION_REQUEST)}</option>
+                        <option value="REQ_DESTRUCTION" key="REQ_DESTRUCTION">{i18n("arr.request.title.type." + REQ_DESTRUCTION)}</option>
+                        <option value="REQ_TRANSFER" key="REQ_TRANSFER">{i18n("arr.request.title.type." + REQ_TRANSFER)}</option>
+                        <option value="REQ_LINK" key="REQ_LINK">{i18n("arr.request.title.type." + REQ_LINK)}</option>
+                        <option value="REQ_UNLINK" key="REQ_UNLINK">{i18n("arr.request.title.type." + REQ_UNLINK)}</option>
+                    </FormInput>
+                    <SearchWithGoto
+                        onFulltextSearch={this.handleFilterText}
+                        onClear={this.handleFilterTextClear}
+                        placeholder={i18n('search.input.search')}
+                        filterText={requestList.filter.description}
+                        showFilterResult={true}
+                        type="INFO"
+                        itemsCount={requestList.filteredRows ? requestList.filteredRows.length : 0}
+                        allItemsCount={requestList.count}
+                    />
+                </div>
                 <ListBox
                     className='fund-request-listbox'
                     ref='fundDigitizationRequestList'

@@ -40,6 +40,17 @@ export function sendRequest(versionId, requestId) {
 }
 
 /**
+ * Načtení seznamu NEODESLANÝCH požadavků na digitalizaci.
+ * @param versionId verze AS
+ * @return {function(*, *)}
+ */
+export function deleteRequest(versionId, requestId) {
+    return (dispatch, getState) => {
+        return WebApi.deleteArrRequest(versionId, requestId)
+    }
+}
+
+/**
  * Invalidace NEODESLANÝCH požadavků na digitalizaci.
  */
 export function preparedListInvalidate() {
@@ -47,13 +58,23 @@ export function preparedListInvalidate() {
 }
 
 /**
- * Načtení požadavků na digitalizaci v celé aplikaci.
+ * Načtení požadavků na digitalizaci pro daný AS.
+ * @param versionId verze AS
  */
 export function fetchListIfNeeded(versionId) {
     return SimpleListActions.fetchIfNeeded("fund[" + versionId + "]" + AREA_REQUEST_LIST_SUFFIX, versionId, (parent, filter) => {
-        return WebApi.getArrRequests(versionId)
+        return WebApi.getArrRequests(versionId, filter.type, filter.description)
             .then(json => ({rows: json, count: 0}));
     });
+}
+
+/**
+ * Filtrování požadavků na digitalizaci pro daný AS.
+ * @param versionId verze AS
+ * @param filter
+ */
+export function filterList(versionId, filter) {
+    return SimpleListActions.filter("fund[" + versionId + "]" + AREA_REQUEST_LIST_SUFFIX, filter);
 }
 
 /**
