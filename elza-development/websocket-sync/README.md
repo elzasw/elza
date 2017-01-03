@@ -40,7 +40,7 @@ Z klienta budou novì požadavky na zmìnu uzlu pøenášeny na server jako JSON reque
 Zpracování ostatních požadavkù, kde nehrozí vznik synchronizaèních chyb mohou být pøenášeny stávajícím zpùsobem beze zmìny.
 
 Minimální seznam operaci u nichž musí dojít ke zmìnì zpùsobu pøenosu požadavkù:
- * vznik jednotky popisu
+ * vznik jednotky popisu - øeší se napø. pøípad, kdy se zmìní JP a hned poté se pod ní založí nová JP - tyto operace chceme synchronnì
  * zmìna jednotky popisu
  * vymazání jednotky popisu
  * pøesun jednotky popisu

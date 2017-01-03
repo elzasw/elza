@@ -125,7 +125,7 @@ class ArrRequestDetail extends AbstractReactComponent {
                 <div className="title">{i18n('arr.request.noSelection.title')}</div>
                 <div className="msg-text">{i18n('arr.request.noSelection.message')}</div>
             </div>;
-        } else if (requestDetail.fetched && !requestDetail.isFetching) {
+        } else if (requestDetail.fetched) {
             const digReq = requestDetail.data;
             const reqType = getRequestType(digReq);
             form = (

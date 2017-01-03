@@ -27,6 +27,19 @@ export function changeConformityInfo(fundVersionId, nodeIds) {
     }
 }
 
+/**
+ * Informace, že se změnil počet požadavků na digitalizaci u konkrétních node.
+ * @param fundVersionId verze AS
+ * @param nodeIds seznam id, u kterých došlo ke změně
+ */
+export function changeNodeRequests(fundVersionId, nodeIds) {
+    return {
+        type: types.CHANGE_NODE_REQUESTS,
+        fundVersionId: fundVersionId,
+        nodeIds: nodeIds
+    }
+}
+
 export function changeIndexingFinished() {
 
     addToastrSuccess(i18n("admin.fulltext.message.success"));

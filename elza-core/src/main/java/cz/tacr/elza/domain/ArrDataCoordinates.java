@@ -24,8 +24,7 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrDataCoordinates extends ArrData implements cz.tacr.elza.api.ArrDataCoordinates {
 
-    @Column(nullable = false)
-    @Type(type="org.hibernate.spatial.GeometryType")
+    @Column(nullable = false, columnDefinition = "geometry")
     private Geometry value;
 
     @Override

@@ -22,6 +22,7 @@ var messages = {
     "global.title.processAction": "Opravdu chcete provést vybranou akci?",
 
     "global.error.ajax": "Při komunikaci nastala chyba",
+    "global.error.ws": "Při komunikaci nastala chyba",
     "global.action.create": "Vytvořit",
     "global.action.update": "Upravit",
     "global.action.delete": "Odstranit",
@@ -84,6 +85,8 @@ var messages = {
 
     "global.websocket.title": "Odpojení od severu",
     "global.websocket.message": "Vyčkejte na automatické obnovení spojení",
+    "global.websocket.disconnectedOnError.title": "Při komunikaci nastala chyba",
+    "global.websocket.disconnectedOnError.action.refresh": "Aktualizovat aplikaci",
 
     "global.websocket.title.loading": "Načítání aplikace",
     "global.websocket.message.loading": "Probíhá načítání aplikace, chvilku strpení",
@@ -616,15 +619,20 @@ var messages = {
     "registry.detail.type": "Typ rejstříku - hierarchie",
     "registry.detail.coordinates": "Souřadnice",
     "registry.detail.variantRegistry": "Variantní rejstříková hesla",
+
+    "registry.list.itemsVisibleCountFrom": "Zobrazeno {0} z {1}, zpřesněte vyhledávací filtr",
+    "registry.list.noRecord": "Zadanému filtru neodpovídají žádná data",
+
     "registry.add.type": "Rejstřík",
     "registry.update.title": "Editace rejstříku",
     "registry.update.type": "Rejstřík",
     "registry.scopeClass": "Třída rejstříkového hesla",
     "registry.addRegistryVariant": "Přidání varianty jména",
     "registry.placePath": "Cesta k umístění: ",
-    "registry.listNoRecord": "Zadanému filtru neodpovídají žádná data",
     "registry.disallowedMoveAction.title": "Nepovolená akce",
     "registry.disallowedMoveAction.text": "Nelze přesunout sama sebe do sebe",
+
+    "registryField.visibleCount": "Zobrazeno {0} z {1} záznamů",
 
     "party.noSelection.title": "Není vybrána osoba",
     "party.noSelection.message": "Prosím vyberte osobu ze seznamu nebo vytvořte novou.",
@@ -655,6 +663,8 @@ var messages = {
     "party.detail.partyGroupIdentifiers" : "Identifikátory korporace",
 
     "party.detail.errors.undefinedCreator": "Nebyl vybrán autor",
+
+    "party.list.itemsVisibleCountFrom": "Zobrazeno {0} z {1}, zpřesněte vyhledávací filtr",
 
     "party.identifier.errors.undefinedIdentifierText": "Nebyl zadán název identifikátoru",
     "party.identifier.identifierText": "Hodnota",
@@ -720,6 +730,8 @@ var messages = {
     "party.relation.errors.undefinedCalendarType": "Typ kalendáře musí být zadaný",
     "party.relation.errors.undefinedRecord": "U některé entity nebyla zadaná rejstříková položka",
     "party.relation.errors.undefinedRoleType": "U některé entity nebyla zadaná role rejstříkové položky",
+
+    "partyField.visibleCount": "Zobrazeno {0} z {1} záznamů",
 
     "arr.fund.title.added": "AS byl vytvořen",
     "arr.fund.title.approved": "AS byl uzavřen",

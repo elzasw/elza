@@ -12,7 +12,7 @@ class ItemTooltipWrapper extends AbstractReactComponent {
     }
 
     render() {
-        const {tooltipTitle, children} = this.props;
+        const {tooltipTitle, children, ...otherProps} = this.props;
 
         const tooltipText = i18n("^" + tooltipTitle);
         const tooltip = tooltipText ? <div dangerouslySetInnerHTML={{__html: tooltipText}}></div> : null;
@@ -23,6 +23,7 @@ class ItemTooltipWrapper extends AbstractReactComponent {
                 holdOnHover
                 holdOnFocus
                 placement="vertical"
+                {...otherProps}
             >
                 {children}
             </TooltipTrigger>

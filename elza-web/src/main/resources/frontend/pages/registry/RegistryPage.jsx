@@ -32,7 +32,8 @@ import {
     fetchRegistry,
     registryAdd,
     registryClickNavigation,
-    registryArrReset
+    registryArrReset,
+    DEFAULT_REGISTRY_LIST_MAX_SIZE
 } from 'actions/registry/registryRegionList.jsx'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
 const ShortcutsManager = require('react-shortcuts');
@@ -62,6 +63,7 @@ const keymap = {
 };
 const shortcutManager = new ShortcutsManager(keymap);
 
+
 /**
  * Stránka rejstříků.
  * Zobrazuje stranku s vyberem rejstriku a jeho detailem/editaci
@@ -80,37 +82,7 @@ class RegistryPage extends AbstractReactComponent {
         shortcuts: React.PropTypes.object.isRequired
     };
 
-    constructor(props) {
-        super(props);
-
-        this.state = {items: []};
-
-        this.bindMethods(
-            'buildRibbon',
-            'canMoveApplyCancelRegistry',
-            'canMoveRegistry',
-            'canDeleteRegistry',
-            'handleAddRegistry',
-            'handleArrReset',
-            'handleCallAddRegistry',
-            'handleCancelMoveRegistry',
-            'handleClickNavigation',
-            'handleDoubleClick',
-            'handleRegistryImport',
-            'handleRegistryTypesSelectNavigation',
-            'handleDeleteRegistry',
-            'handleDeleteRegistryDialog',
-            'handleSaveMoveRegistry',
-            'handleSearch',
-            'handleSearchClear',
-            'handleSelect',
-            'handleShortcuts',
-            'handleStartMoveRegistry',
-            'handleUnsetParents',
-            'renderListItem',
-            'trySetFocus'
-        );
-    }
+    state = {items: []};
 
     componentDidMount() {
         this.initData();
@@ -120,16 +92,16 @@ class RegistryPage extends AbstractReactComponent {
         this.initData(nextProps);
     }
 
-    initData(props = this.props) {
+    initData = (props = this.props) => {
         const {registryRegion: {filterText, registryParentId, registryTypesId, panel: {versionId}}} = props;
         this.dispatch(fetchRegistryIfNeeded(filterText, registryParentId, registryTypesId, versionId));
         this.dispatch(refRecordTypesFetchIfNeeded());
                 this.props.dispatch(regExtSystemListFetchIfNeeded());
 
         this.trySetFocus(props)
-    }
+    };
 
-    trySetFocus(props) {
+    trySetFocus = (props) => {
         const {focus} = props;
 
         if (canSetFocus()) {
@@ -147,9 +119,9 @@ class RegistryPage extends AbstractReactComponent {
                 })
             }
         }
-    }
+    };
 
-    handleShortcuts(action) {
+    handleShortcuts = (action) => {
         console.log("#handleShortcuts", '[' + action + ']', this);
         switch (action) {
             case 'addRegistry':
@@ -177,13 +149,13 @@ class RegistryPage extends AbstractReactComponent {
                 this.dispatch(setFocus('registry', 2));
                 break
         }
-    }
+    };
 
     getChildContext() {
         return { shortcuts: shortcutManager };
     }
 
-    handleAddRegistry() {
+    handleAddRegistry = () => {
         const {registryRegion: {registryParentId, panel, parents}} = this.props;
         let parentName = '';
 
@@ -191,54 +163,54 @@ class RegistryPage extends AbstractReactComponent {
             parentName = parents[indexById(parents, registryParentId, 'id')].name;
         }
         this.dispatch(registryAdd(registryParentId, panel.versionId, this.handleCallAddRegistry, parentName, false));
-    }
+    };
 
-    handleCallAddRegistry(data) {
+    handleCallAddRegistry = (data) => {
         const {registryRegion: {filterText, registryParentId, registryTypesId, panel: {versionId}}} = this.props;
         this.dispatch(fetchRegistry(filterText, registryParentId, registryTypesId, versionId));
         this.dispatch(registryRegionDataSelectRecord({
             ...data,
             selectedId: data.id
         }));
-    }
+    };
 
-    handleDeleteRegistryDialog(){
+    handleDeleteRegistryDialog = () => {
         const result = confirm(i18n('registry.deleteRegistryQuestion'));
         if (result) {
             this.dispatch(this.handleDeleteRegistry());
         }
 
-    }
+    };
     
-    handleDeleteRegistry() {
+    handleDeleteRegistry = () => {
         this.dispatch(registryDelete(this.props.registryRegion.selectedId));
-    }
+    };
 
 
-    handleStartMoveRegistry() {
+    handleStartMoveRegistry = () => {
         this.dispatch(registryStartMove());
-    }
+    };
 
-    handleSaveMoveRegistry() {
+    handleSaveMoveRegistry = () => {
         this.dispatch(registryRecordMove({
             ...this.props.registryRegion.recordForMove,
             parentRecordId: this.props.registryRegion.registryParentId
         }));
-    }
+    };
 
-    handleCancelMoveRegistry() {
+    handleCancelMoveRegistry = () => {
         this.dispatch(registryCancelMove());
-    }
+    };
 
 
-    handleRegistryImport() {
+    handleRegistryImport = () => {
        this.dispatch(
            modalDialogShow(this,
                i18n('import.title.registry'),
                <ImportForm record/>
            )
        );
-    }
+    };
 
     handleExtImport = () => {
         this.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={false} onSubmitForm={(data) => {
@@ -246,7 +218,7 @@ class RegistryPage extends AbstractReactComponent {
         }}/>, "dialog-lg"));
     };
 
-    canMoveRegistry() {
+    canMoveRegistry = () => {
         const {registryRegion: {selectedId, registryRegionData, registryParentId, recordForMove}} = this.props;
 
         return selectedId &&
@@ -255,10 +227,10 @@ class RegistryPage extends AbstractReactComponent {
             !registryRegionData.item.partyId &&
             registryRegionData.item.hierarchical &&
             selectedId != registryParentId
-    }
+    };
     
 
-    canDeleteRegistry() {
+    canDeleteRegistry = () => {
         const {registryRegion: {selectedId, registryRegionData, registryParentId}} = this.props;
 
         return selectedId &&
@@ -266,18 +238,18 @@ class RegistryPage extends AbstractReactComponent {
             registryRegionData.item.childs &&
             registryRegionData.item.childs.length === 0 &&
             selectedId != registryParentId
-    }
+    };
 
-    canMoveApplyCancelRegistry() {
+    canMoveApplyCancelRegistry = () => {
         const {registryRegion: {selectedId, registryRegionData, recordForMove}} = this.props;
 
         return selectedId &&
             registryRegionData.item && 
             recordForMove &&
             !registryRegionData.item.partyId
-    }
+    };
 
-    buildRibbon() {
+    buildRibbon = () => {
         const {registryRegion: {registryRegionData}, userDetail, extSystems} = this.props;
 
         const altActions = [];
@@ -350,13 +322,13 @@ class RegistryPage extends AbstractReactComponent {
         return (
             <Ribbon registry altSection={altSection} itemSection={itemSection} {...this.props} />
         )
-    }
+    };
 
-    handleSelect(record, event) {
+    handleSelect = (record, event) => {
         this.dispatch(registryRegionDataSelectRecord({...record, selectedId: record.id}));
-    }
+    };
 
-    handleDoubleClick(item, event) {
+    handleDoubleClick = (item, event) => {
         if (!item.hierarchical) {
             return
         }
@@ -376,41 +348,41 @@ class RegistryPage extends AbstractReactComponent {
             filterText: '',
             registryTypesId: item.registerTypeId
         }));
-    }
+    };
 
-    handleClickNavigation(recordIdForOpen, event) {
+    handleClickNavigation = (recordIdForOpen, event) => {
         this.dispatch(registryClickNavigation(recordIdForOpen));
-    }
+    };
 
-    handleSearch(search) {
+    handleSearch = (search) => {
         this.dispatch(registrySearchData({filterText: search}));
-    }
+    };
 
-    handleSearchClear(){
+    handleSearchClear = () => {
         this.dispatch(registrySetTypesId(null));
         this.dispatch(registryUnsetParents(null));
         this.dispatch(registryClearSearch());
-    }
+    };
 
-    handleRegistryTypesSelect(selectedId, event) {
+    handleRegistryTypesSelect = (selectedId, event) => {
             this.dispatch(registrySetTypesId(selectedId));
-    }
+    };
 
-    handleRegistryTypesSelectNavigation(selectedId){
+    handleRegistryTypesSelectNavigation = (selectedId) => {
         this.dispatch(registryUnsetParents(null));
         this.dispatch(registrySetTypesId(selectedId));
-    }
+    };
 
-    handleUnsetParents(){
+    handleUnsetParents = () => {
         this.dispatch(registryUnsetParents(null));
         this.dispatch(registrySetTypesId(null));
-    }
+    };
 
-    handleArrReset() {
+    handleArrReset = () => {
         this.dispatch(registryArrReset());
-    }
+    };
 
-    renderListItem(item) {
+    renderListItem = (item) => {
         const {registryRegion: {parents, typesToRoot, selectedId, registryParentId, registryTypesId}} = this.props;
 
         const parentsShown = [];
@@ -483,7 +455,7 @@ class RegistryPage extends AbstractReactComponent {
         const recordTypes = refTables.recordTypes;
         const treeItems = recordTypes.items ? recordTypes.items : [];
 
-        let regListBox = <div className='search-norecord'>{i18n('registry.listNoRecord')}</div>
+        let regListBox = <div className='search-norecord'>{i18n('registry.list.noRecord')}</div>
         if (records.length) {
             const activeIndex = indexById(records, selectedId)
             regListBox = <ListBox
@@ -544,7 +516,7 @@ class RegistryPage extends AbstractReactComponent {
                 value={value}
                 onChange={item => this.handleRegistryTypesSelect.bind(this)(item ? item.id : null)}
                 />
-        )
+        );
 
         const arrPanel = panel.versionId != null ? <ArrPanel onReset={this.handleArrReset} name={panel.name} /> : null;
 
@@ -562,10 +534,11 @@ class RegistryPage extends AbstractReactComponent {
                         type="INFO"
                         itemsCount={records.length}
                         allItemsCount={countRecords}
-                        />
+                    />
                 </div>
                 <div className='registry-list-breadcrumbs' key='breadcrumbs'>{navParents}</div>
                 <div className="registry-list-results">{fetched ? regListBox : <Loading/>}</div>
+                {fetched && countRecords > DEFAULT_REGISTRY_LIST_MAX_SIZE && <div className="items-count">{i18n('registry.list.itemsVisibleCountFrom', records.length, countRecords)}</div>}
             </div>
         );
 
@@ -583,10 +556,11 @@ class RegistryPage extends AbstractReactComponent {
             />
         </Shortcuts>
     }
-};
+}
 
-function mapStateToProps(state) {
-    const {app:{regExtSystemList}, splitter, registryRegion, refTables, focus, userDetail} = state;
+
+export default connect((state) => {
+    const {app:{regExtSystemList},splitter, registryRegion, refTables, focus, userDetail} = state;
     return {
         extSystems: regExtSystemList.fetched ? regExtSystemList.data : null,
         splitter,
@@ -595,6 +569,4 @@ function mapStateToProps(state) {
         focus,
         userDetail
     }
-}
-
-export default connect(mapStateToProps)(RegistryPage);
+})(RegistryPage);

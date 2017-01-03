@@ -297,6 +297,21 @@ export default function subNodeForm(state = initialState, action = {}) {
                 }
             }
         }
+        case types.FUND_NODE_INCREASE_VERSION:
+            if (state.data.parent.id !== action.nodeId || state.data.parent.version !== action.nodeVersionId) { // není pro nás nebo již bylo zavoláno
+                return state;
+            }
+
+            return {
+                ...state,
+                data: {
+                    ...state.data,
+                    parent: {
+                        id: action.nodeId,
+                        version: action.nodeVersionId + 1,
+                    }
+                }
+            }
         case types.FUND_SUB_NODE_FORM_VALUE_RESPONSE:
             if (state.data.parent.id !== action.descItemResult.parent.id) {
                 return state;

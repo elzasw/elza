@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import {WebApi} from 'actions/index.jsx';
-import {Icon, i18n, AbstractReactComponent, Autocomplete} from 'components/index.jsx';
+import {Icon, i18n, AbstractReactComponent, Autocomplete, ExtImportForm} from 'components/index.jsx';
 import {connect} from 'react-redux'
 //import {decorateAutocompleteValue} from './DescItemUtils.jsx'
 import {MenuItem, DropdownButton, Button} from 'react-bootstrap';
@@ -10,15 +10,21 @@ import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {partyDetailFetchIfNeeded, partyAdd} from 'actions/party/party.jsx'
 import {routerNavigate} from 'actions/router.jsx'
-import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {indexById} from 'stores/app/utils.jsx'
+import {DEFAULT_LIST_SIZE} from 'constants'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+
 
 import './PartyField.less'
+
+const AUTOCOMPLETE_PARTY_LIST_SIZE = DEFAULT_LIST_SIZE;
 
 class PartyField extends AbstractReactComponent {
 
     static defaultProps = {
-        detail: false
+        detail: false,
+        footer: true,
+        partyTypeId: null
     };
 
     static PropTypes = {
@@ -27,10 +33,11 @@ class PartyField extends AbstractReactComponent {
         onChange: React.PropTypes.func.isRequired,
         onDetail: React.PropTypes.func,
         onCreate: React.PropTypes.func.isRequired,
+        partyTypeId: React.PropTypes.number,
         versionId: React.PropTypes.number
     };
 
-    state = {partyList: []};
+    state = {partyList: [], count: null};
 
     componentDidMount() {
         this.dispatch(refPartyTypesFetchIfNeeded());
@@ -44,9 +51,10 @@ class PartyField extends AbstractReactComponent {
 
         text = text == "" ? null : text;
 
-        WebApi.findParty(text, this.props.versionId).then(json => {
+        WebApi.findParty(text, this.props.versionId, this.props.partyTypeId, 0, AUTOCOMPLETE_PARTY_LIST_SIZE).then(json => {
             this.setState({
-                partyList: json.rows
+                partyList: json.rows,
+                count: json.count
             })
         })
     };
@@ -76,13 +84,23 @@ class PartyField extends AbstractReactComponent {
 
     renderFooter = () => {
         const {refTables} = this.props;
-        return (
+        return <div>
             <div className="create-party">
-                <DropdownButton id="party-field" noCaret title={<div><Icon glyph='fa-download' /><span className="create-party-label">{i18n('party.addParty')}</span></div>}>
+                <DropdownButton noCaret title={<div><Icon glyph='fa-download' /><span className="create-party-label">{i18n('party.addParty')}</span></div>} id="party-field" >
                     {refTables.partyTypes.items.map(type => <MenuItem key={'party' + type.id} onClick={() => this.handleCreateParty(type.id)} eventKey={type.id}>{type.name}</MenuItem>)}
                 </DropdownButton>
+                <Button onClick={this.handleImport} type="button"><Icon glyph='fa-plus' /> {i18n("ribbon.action.party.importExt")}</Button>
             </div>
-        )
+            {this.state.count !== null && this.state.count > AUTOCOMPLETE_PARTY_LIST_SIZE && <div className="items-count">
+                {i18n('partyField.visibleCount', this.state.partyList.length, this.state.count)}
+            </div>}
+        </div>
+    };
+
+    handleImport = () => {
+        const {versionId} = this.props;
+        this.refs.autocomplete.closeMenu();
+        this.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={true} versionId={versionId}/>, "dialog-lg"));
     };
 
     handleDetail = (partyId) => {
@@ -96,11 +114,11 @@ class PartyField extends AbstractReactComponent {
     };
 
     render() {
-        const {userDetail, locked, value, detail, ...otherProps} = this.props;
+        const {userDetail, value, detail, footer, ...otherProps} = this.props;
 
-        let footer;
-        if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, perms.REG_SCOPE_WR)) {
-            footer = this.renderFooter()
+        let footerRender;
+        if (footer && userDetail.hasOne(perms.REG_SCOPE_WR_ALL, perms.REG_SCOPE_WR)) {
+            footerRender = this.renderFooter()
         }
 
         const actions = [];
@@ -110,21 +128,21 @@ class PartyField extends AbstractReactComponent {
                                   className={'btn btn-default detail'}><Icon glyph={'fa-user'}/></div>);
             }
         }
-        return <div className='desc-item-value desc-item-value-parts'>
-            <Autocomplete
-                ref='autocomplete'
-                customFilter
-                footer={footer}
-                value={value}
-                items={this.state.partyList}
-                getItemId={(item) => item ? item.id : null}
-                getItemName={(item) => item && item.record ? item.record.record : ''}
-                onSearchChange={this.handleSearchChange}
-                renderItem={this.renderParty}
-                actions={[actions]}
-                {...otherProps}
-            />
-        </div>;
+
+        return <Autocomplete
+            ref='autocomplete'
+            className="autocomplete-party"
+            customFilter
+            footer={footerRender}
+            value={value}
+            items={this.state.partyList}
+            getItemId={(item) => item ? item.id : null}
+            getItemName={(item) => item && item.record ? item.record.record : ''}
+            onSearchChange={this.handleSearchChange}
+            renderItem={this.renderParty}
+            actions={[actions]}
+            {...otherProps}
+        />
     }
 }
 

@@ -6,8 +6,10 @@ export function webSocketConnect() {
     }
 }
 
-export function webSocketDisconnect() {
+export function webSocketDisconnect(disconnectedOnError, disconnectedErrorMessage) {
     return {
-        type: types.GLOBAL_WEB_SOCKET_DISCONNECT
+        type: types.GLOBAL_WEB_SOCKET_DISCONNECT,
+        disconnectedOnError,
+        disconnectedErrorMessage
     }
 }

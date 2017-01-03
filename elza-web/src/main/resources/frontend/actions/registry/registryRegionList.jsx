@@ -11,20 +11,24 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {i18n, AddRegistryForm} from 'components/index.jsx';
 import {registryChangeParent, registryRegionDataSelectRecord, registryUnsetParents} from 'actions/registry/registryRegionData.jsx'
 import {savingApiWrapper} from 'actions/global/status.jsx';
-export function fetchRegistryIfNeeded(search = '', registryParent = null, registerTypeIds = null, versionId = null) {
+import {DEFAULT_LIST_SIZE} from 'constants'
+
+export const DEFAULT_REGISTRY_LIST_MAX_SIZE = DEFAULT_LIST_SIZE;
+
+export function fetchRegistryIfNeeded(search = '', registryParent = null, registerTypeIds = null, versionId = null, from = 0, size = DEFAULT_REGISTRY_LIST_MAX_SIZE) {
     return (dispatch, getState) => {
         const {registryRegion} = getState();
 
         if ((registryRegion.dirty && !registryRegion.isFetching) || (!registryRegion.fetched && !registryRegion.isFetching)) {
-            return dispatch(fetchRegistry(search, registryParent, registerTypeIds, versionId));
+            return dispatch(fetchRegistry(search, registryParent, registerTypeIds, versionId, from, size));
         }
     }
 }
 
-export function fetchRegistry(search, registryParentId = null, registerTypesId = null, versionId = null) {
+export function fetchRegistry(search, registryParentId = null, registerTypesId = null, versionId = null, from = 0, size = DEFAULT_REGISTRY_LIST_MAX_SIZE) {
     return (dispatch) => {
         dispatch(registryListRequest());
-        return WebApi.findRegistry(search, registryParentId, registerTypesId, versionId)
+        return WebApi.findRegistry(search, registryParentId, registerTypesId, versionId, from, size)
             .then(json => {
                 dispatch(registryListReceive(search, registryParentId, json));
             });

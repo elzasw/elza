@@ -3,9 +3,9 @@ import React from 'react';
 import {EmailSettingsActions, ApplicationActions} from 'actions/index.jsx';
 import {webSocketConnect, webSocketDisconnect} from 'actions/global/webSocket.jsx';
 import * as digitizationActions from 'actions/arr/digitizationActions';
-import {buklActionStateChange} from 'actions/arr/bulkActions.jsx';
 import {store} from 'stores/AppStore.jsx';
-import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
+import {addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
+import {i18n} from 'components'
 
 import {
     changeConformityInfo,
@@ -14,6 +14,7 @@ import {
     changeFiles,
     changePackets,
     changeNodes,
+    changeNodeRequests,
     changeOutputs,
     changeDeleteLevel,
     changeAddLevel,
@@ -39,28 +40,124 @@ import {
     fundInvalidChanges,
     createRequest,
     changeRequestItemQueue,
+    createRequestItemQueue,
     nodesDelete
 } from 'actions/global/change.jsx';
 
+import Stomp from 'stompjs';
+import URLParse from "url-parse";
 
-var SockJS = require('sockjs-client');
-var Stomp = require('stompjs');
-var socket = new SockJS(serverContextPath + '/config/websock');
-var client = Stomp.over(socket);
+const url = new URLParse(serverContextPath + '/stomp');
+const wsUrl = "ws://" + url.host + url.pathname;
+console.log("Websocekt URL", wsUrl)
 var refresh = false;
-/**
- * Připojení websocketů.
- */
-function stompConnect() {
-    console.info('WebSocket: Pokus o připojení...');
+var stompClient;
 
-    socket = new SockJS(serverContextPath + '/web/websock');
-    client = Stomp.over(socket);
-    client.debug = null;
+/** Odpojení od websocketů. */
+export function stompDisconnect() {
+    if (stompClient != null) {
+        stompClient.disconnect();
+        stompClient = null;
+    }
+    console.log('Websocket disconnected');
+}
 
-    client.heartbeat.outgoing = 5000;
-    client.heartbeat.incoming = 0;
-    client.connect('guest', 'guest', stompSuccessCallback, stompFundilureCallback);
+/** Připojení websocketů. */
+export function stompConnect() {
+    stompClient = Stomp.client(wsUrl);
+    stompClient = stompClient;
+    stompClient.heartbeat.outgoing = 20000;
+    stompClient.heartbeat.incoming = 20000;
+    stompClient.onreceipt = receiptCallback;
+    console.info("Websocket connecting to " + wsUrl);
+    stompClient.connect({}, stompSuccessCallback, stompFailureCallback);
+}
+stompConnect();
+
+class ws {
+    constructor() {
+        this.nextReceiptId = 0;
+        this.receiptSuccessCallbacks = {}; // mapa id receipt na callback funkci
+        this.receiptErrorCallbacks = {}; // mapa id receipt na error callback funkci
+    }
+
+    send = (url, headers, data, successCallback, errorCallback) => {
+        const useHeaders = headers ? headers : {};
+        if (successCallback || errorCallback) {
+            useHeaders.receipt = this.nextReceiptId;
+            this.receiptSuccessCallbacks[this.nextReceiptId] = successCallback;
+            this.receiptErrorCallbacks[this.nextReceiptId] = errorCallback;
+            this.nextReceiptId++;
+        }
+        stompClient.send(url, headers, data);
+    }
+
+    processCallback(body, headers) {
+        if (!body || !headers) {
+            return false;
+        }
+
+        // console.log("#####processCallback", "body: ", body, "headers: ", headers)
+        const receiptIdStr = headers["receipt-id"];
+        if ((typeof receiptIdStr === "string" && receiptIdStr.length > 0) || (typeof receiptIdStr === "number")) {
+            const receiptId = typeof receiptIdStr === "number" ? receiptIdStr : parseInt(receiptIdStr);
+
+            const bodyObj = JSON.parse(body);
+            console.log("__WESOCKET", bodyObj)
+            if (bodyObj && bodyObj.errorMessage) {  // error
+                if (this.receiptErrorCallbacks[receiptId]) {
+                    this.receiptErrorCallbacks[receiptId](bodyObj);
+                }
+            } else {    // succes
+                if (this.receiptSuccessCallbacks[receiptId]) {
+                    this.receiptSuccessCallbacks[receiptId](bodyObj);
+                }
+            }
+
+            // Smazání callback z pole
+            this.receiptSuccessCallbacks[receiptId] && delete this.receiptSuccessCallbacks[receiptId];
+            this.receiptErrorCallbacks[receiptId] && delete this.receiptErrorCallbacks[receiptId];
+
+            return true;
+        }
+
+        return false;
+    }
+}
+if (!window.ws) {
+    window.ws = new ws();
+}
+
+//
+//
+//
+//
+//
+//
+//
+// var SockJS = require('sockjs-client');
+// var Stomp = require('stompjs');
+// var socket = new SockJS(serverContextPath + '/config/websock');
+// var client = Stomp.over(socket);
+// var refresh = false;
+// /**
+//  * Připojení websocketů.
+//  */
+// function stompConnect() {
+//     console.info('WebSocket: Pokus o připojení...');
+//
+//     socket = new SockJS(serverContextPath + '/web/websock');
+//     client = Stomp.over(socket);
+//     client.debug = null;
+//
+//     client.heartbeat.outgoing = 5000;
+//     client.heartbeat.incoming = 0;
+//     client.connect('guest', 'guest', stompSuccessCallback, stompFailureCallback);
+// }
+//
+
+function receiptCallback(frame) {
+    // console.log("@@@@@@@@@@@@@@@@@@receiptCallback", frame)
 }
 
 /**
@@ -68,27 +165,32 @@ function stompConnect() {
  * @param frame {object}
  */
 function stompSuccessCallback(frame) {
+    // console.log("############################## stompSuccessCallback");
+    // console.log("::::stompSuccessCallback", frame);
     store.dispatch(webSocketConnect());
     if (!refresh) {
         refresh = true;
     } else {
         location.reload(true);
     }
-    client.subscribe('/topic/api/changes', function(body, headers) {
-        var change = JSON.parse(body.body);
-        console.info("WebSocket", change);
-        switch (change.area) {
-            case 'EVENT':
-                processEvents(change.value);
-                break;
-
-            case 'VALIDATION':
-                processValidations(change.value);
-                break;
-
-            default:
-                console.warn("Nedefinovaný datový typ ze serveru: " + change.area);
-                break;
+    stompClient.subscribe('/topic/api/changes', function({body, headers}) {
+        // console.log("############### stompClient.subscribe('/topic/api/changes'", "body: ", body, "headers: ", headers)
+        if (window.ws.processCallback(body, headers)) { // zpracováno jako callback
+            // již zpracováno a není třeba nic dělat
+        } else {    // standardní informace o změnách
+            var change = JSON.parse(body);
+            console.info("WebSocket", change);
+            switch (change.area) {
+                case 'EVENT':
+                    processEvents(change.value);
+                    break;
+                case 'VALIDATION':
+                    processValidations(change.value);
+                    break;
+                default:
+                    console.warn("Nedefinovaný datový typ ze serveru: " + change.area);
+                    break;
+            }
         }
     });
 }
@@ -98,11 +200,21 @@ function stompSuccessCallback(frame) {
  *
  * @param error {string} text chyby
  */
-function stompFundilureCallback(error) {
-    store.dispatch(webSocketDisconnect());
-    console.error('WebSocket: ' + error);
-    setTimeout(stompConnect, 5000);
-    console.info('WebSocket: Obnovení spojení za 5 sekund...');
+function stompFailureCallback(error) {
+    console.error("Websocket - failure", error);
+
+    const {body, headers} = error;
+    if (error.command === "ERROR" && body && headers) {
+        stompDisconnect();
+
+        const bodyObj = JSON.parse(body);
+        store.dispatch(addToastrDanger(i18n('global.error.ws'), bodyObj.message));
+        store.dispatch(webSocketDisconnect(true, bodyObj.message));
+    } else {
+        store.dispatch(webSocketDisconnect(false));
+        setTimeout(stompConnect, 5000);
+        console.info('WebSocket: Obnovení spojení za 5 sekund...');
+    }
 }
 
 
@@ -217,7 +329,7 @@ function processEvents(values) {
             case 'FUND_DELETE':
                 fundDelete(value);
                 break;
-            
+
             case 'OUTPUT_STATE_CHANGE':
                 outputStateChange(value);
                 break;
@@ -393,6 +505,7 @@ function conformityInfo(value) {
  */
 function arrRequest(value) {
     store.dispatch(digitizationActions.changeRequests(value.versionId, value.entityId, value.nodeIds));
+    store.dispatch(changeNodeRequests(value.versionId, value.nodeIds));
 }
 
 /**
@@ -476,7 +589,4 @@ function processValidations(values) {
 
     });
 }
-
-// připojení websocketů
-stompConnect();
 

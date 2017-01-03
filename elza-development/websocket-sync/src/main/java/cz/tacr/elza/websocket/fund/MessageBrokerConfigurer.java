@@ -29,7 +29,10 @@ public class MessageBrokerConfigurer extends AbstractSecurityWebSocketMessageBro
 
 	@Override
 	public void configureMessageBroker(MessageBrokerRegistry config) {
+		// Prefix url, na který se můžou posílat zprávy, např. klient sem posílá data, jedná se o prefix, za kterým musí být část, která je mapována jako @MessageMapping, např. v kontroleru
 		config.setApplicationDestinationPrefixes("/fund"); // URL prefix where server is listening
+
+		// Destination - kam posílat zprávy zpět klientovi, pokud jsou určeny pro konkrétního uživatele, uvede se asresa /user/xxx a při posílání se uvede recipient
 		config.setUserDestinationPrefix("/user"); // direct message for current user (@SentToUser) or session (broadcast=false)
 		config.enableSimpleBroker(BROKER_DESTINATION) // notifications from server (client must be subscribed)
 				.setHeartbeatValue(new long[] { 10000, 10000 })

@@ -14,6 +14,7 @@ import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.id.enhanced.StandardOptimizerDescriptor;
 import org.hibernate.id.enhanced.TableGenerator;
+import org.hibernate.service.ServiceRegistry;
 import org.hibernate.type.Type;
 
 
@@ -35,15 +36,15 @@ public class TableIdHiLoGenerator extends TableGenerator {
     public static final String DEFAULT_INCREMENT_SIZE = "1";
 
     @Override
-    public void configure(final Type type, final Properties params, final Dialect d) throws MappingException {
+    public void configure(Type type, Properties params, ServiceRegistry serviceRegistry) throws MappingException {
         params.setProperty(TABLE_PARAM, "db_hibernate_sequences");
         params.setProperty(OPT_PARAM, StandardOptimizerDescriptor.HILO.getExternalName());
         params.setProperty(SEGMENT_VALUE_PARAM,
                 params.getProperty("target_table") + "|" + params.getProperty("target_column"));
         params.setProperty(INCREMENT_PARAM, DEFAULT_INCREMENT_SIZE);
         params.setProperty(OPT_PARAM, StandardOptimizerDescriptor.HILO.getExternalName());
-
-        super.configure(type, params, d);
+        
+        super.configure(type, params, serviceRegistry);
     }
 
     @Override

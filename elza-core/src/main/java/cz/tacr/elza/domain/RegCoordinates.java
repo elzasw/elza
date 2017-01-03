@@ -30,8 +30,7 @@ public class RegCoordinates implements cz.tacr.elza.api.RegCoordinates<RegRecord
     private RegRecord regRecord;
 
 
-    @Column(nullable = false)
-    @Type(type="org.hibernate.spatial.GeometryType")
+    @Column(nullable = false, columnDefinition = "geometry")
     private Geometry value;
 
 

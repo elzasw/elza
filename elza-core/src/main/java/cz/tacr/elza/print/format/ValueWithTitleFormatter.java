@@ -2,10 +2,9 @@ package cz.tacr.elza.print.format;
 
 import java.util.List;
 
-import org.jadira.usertype.spi.utils.lang.StringUtils;
-
 import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.item.ItemSpec;
+import org.springframework.util.StringUtils;
 
 /**
  * Append specification and value
