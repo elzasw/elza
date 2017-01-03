@@ -4,11 +4,13 @@ import {ListBox, AbstractReactComponent, SearchWithGoto, i18n, ArrPanel, Loading
 import FormInput from 'components/form/FormInput.jsx';
 import {AppActions} from 'stores/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
-import {partyListFetchIfNeeded, partyListFilter, partyDetailFetchIfNeeded, partyArrReset, PARTY_TYPE_CODES, RELATION_CLASS_CODES} from 'actions/party/party.jsx'
+import {partyListFetchIfNeeded, partyListFilter, partyListInvalidate, partyDetailFetchIfNeeded, partyArrReset, PARTY_TYPE_CODES, RELATION_CLASS_CODES, DEFAULT_PARTY_LIST_MAX_SIZE} from 'actions/party/party.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {WebApi} from 'actions/index.jsx';
 
 import './PartyList.less';
+
+const LIST_MAX_COUNT = 200;
 
 /**
  * Komponenta list osob
@@ -23,6 +25,14 @@ class PartyList extends AbstractReactComponent {
         initialized: false
     };
 
+    static PropTypes = {
+        maxSize: React.PropTypes.number
+    };
+
+    static defaultProps = {
+        maxSize: DEFAULT_PARTY_LIST_MAX_SIZE
+    };
+
     componentDidMount() {
         this.fetchIfNeeded();
         this.trySetFocus()
@@ -31,11 +41,14 @@ class PartyList extends AbstractReactComponent {
     componentWillReceiveProps(nextProps) {
         this.fetchIfNeeded(nextProps);
         this.trySetFocus(nextProps);
+        if (nextProps.maxSize !== this.props.maxSize) {
+            this.dispatch(partyListInvalidate());
+        }
     }
 
     fetchIfNeeded = (props = this.props) => {
-        const {partyList: {filter}} = props;
-        this.dispatch(partyListFetchIfNeeded(filter))
+        const {partyList: {filter}, maxSize} = props;
+        this.dispatch(partyListFetchIfNeeded(filter, null, 0, maxSize));
         if(!this.state.initialized && props.partyTypes) {
             const a = [].concat.apply(...props.partyTypes.map(i => i.relationTypes));
             this.setState({
@@ -166,6 +179,30 @@ class PartyList extends AbstractReactComponent {
             activeIndex = indexById(partyList.filteredRows, partyDetail.id);
         }
 
+        let list;
+
+        const isFetched = !partyList.isFetching && partyList.fetched;
+
+        if (isFetched) {
+            if (partyList.rows.length > 0) {
+                list = <ListBox
+                    ref='partyList'
+                    items={partyList.filteredRows}
+                    activeIndex={activeIndex}
+                    renderItemContent={this.renderListItem}
+                    onFocus={this.handlePartyDetail}
+                    onSelect={this.handlePartyDetail}
+                />;
+            } else {
+                list = <ul><li className="noResult">{i18n('search.action.noResult')}</li></ul>;
+            }
+        } else {
+            list = <div className="listbox-container"><Loading /></div>;
+        }
+        // Wrap
+        list = <div className="list">{list}</div>;
+
+
         return <div className="party-list">
             <div className="filter">
                 {partyTypes ? <FormInput componentClass="select" className="type" onChange={this.handleFilterType} value={partyList.filter.type}>
@@ -183,16 +220,8 @@ class PartyList extends AbstractReactComponent {
                     allItemsCount={partyList.count}
                 />
             </div>
-            {!partyList.isFetching && partyList.fetched ? <div className="list">
-                {partyList.rows.length > 0 ? <ListBox
-                    ref='partyList'
-                    items={partyList.filteredRows}
-                    activeIndex={activeIndex}
-                    renderItemContent={this.renderListItem}
-                    onFocus={this.handlePartyDetail}
-                    onSelect={this.handlePartyDetail}
-                /> :<ul><li className="noResult">{i18n('search.action.noResult')}</li></ul>}
-            </div> : <div className="list"><div className="listbox-container"><Loading /></div></div>}
+            {list}
+            {isFetched && partyList.filteredRows.length > LIST_MAX_COUNT && <span className="items-count">{i18n('party.list.itemsVisibleCountFrom', partyList.filteredRows.length, partyList.count)}</span>}
         </div>
     }
 }

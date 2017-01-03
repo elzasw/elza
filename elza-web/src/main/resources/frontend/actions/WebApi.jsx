@@ -1,4 +1,5 @@
 import {AjaxUtils} from 'components/index.jsx';
+import {DEFAULT_LIST_SIZE} from 'constants'
 
 function getData(data, timeout = 1000) {
     return new Promise(function (resolve, reject) {
@@ -91,23 +92,12 @@ class WebApi {
         return AjaxUtils.ajaxGet(WebApi.partyUrl + '/' + partyId);
     }
 
-    findParty(search = null, versionId = null, partyTypeId = null) {
-        return AjaxUtils.ajaxGet(WebApi.partyUrl + '/', {
-            search: search,
-            from: 0,
-            count : 200,
-            partyTypeId: partyTypeId,
-            versionId: versionId
-        });
+    findParty(search = null, versionId = null, partyTypeId = null, from = 0, count = DEFAULT_LIST_SIZE) {
+        return AjaxUtils.ajaxGet(WebApi.partyUrl + '/', {search, from, count, partyTypeId, versionId});
     }
 
-    findPartyForParty(partyId, search = null) {
-        return AjaxUtils.ajaxGet(WebApi.partyUrl + '/findPartyForParty', {
-            search: search,
-            from: 0,
-            count : 200,
-            partyId: partyId
-        });
+    findPartyForParty(partyId, search = null, from = 0, count = DEFAULT_LIST_SIZE) {
+        return AjaxUtils.ajaxGet(WebApi.partyUrl + '/findPartyForParty', {search, from, count, partyId});
     }
 
     updateParty(party) {
@@ -296,22 +286,22 @@ class WebApi {
         });
     }
 
-    findRegistry(search = null, registryParent = null, registerTypeId = null, versionId = null){
+    findRegistry(search = null, registryParent = null, registerTypeId = null, versionId = null, from = 0, count = DEFAULT_LIST_SIZE) {
         return AjaxUtils.ajaxGet(WebApi.registryUrl + '/', {
-            search: search,
-            from: 0,
-            count: 200,
+            search,
+            from,
+            count,
             parentRecordId: registryParent,
             registerTypeId: registerTypeId,
-            versionId: versionId
+            versionId
         });
     }
 
-    findRecordForRelation(search = null, roleTypeId = null, partyId = null) {
+    findRecordForRelation(search = null, roleTypeId = null, partyId = null, from = 0, count = DEFAULT_LIST_SIZE) {
         return AjaxUtils.ajaxGet(WebApi.registryUrl + '/findRecordForRelation',{
-            search: search,
-            from: 0,
-            count: 200,
+            search,
+            from,
+            count,
             roleTypeId: roleTypeId,
             partyId: partyId
         });
@@ -472,10 +462,7 @@ class WebApi {
     }
 
     insertPacket(fundId, storageNumber, packetTypeId, invalidPacket) {
-        const data = {
-            packetTypeId: packetTypeId, storageNumber: storageNumber, invalidPacket: invalidPacket
-        };
-        return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/packets/' + fundId, {}, data);
+        return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/packets/' + fundId, {}, {packetTypeId, storageNumber, invalidPacket});
     }
 
     getFundNodeForm1(versionId, nodeId) {
@@ -540,11 +527,11 @@ class WebApi {
 
     createFund(name, ruleSetId, institutionId, internalCode, dateRange) {
         return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/funds', {
-            name: name,
-            institutionId: institutionId,
-            ruleSetId: ruleSetId,
-            internalCode: internalCode,
-            dateRange: dateRange
+            name,
+            institutionId,
+            ruleSetId,
+            internalCode,
+            dateRange
         });
     }
 
@@ -553,7 +540,7 @@ class WebApi {
     }
 
     approveVersion(versionId, dateRange) {
-        return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/approveVersion', {dateRange: dateRange, versionId: versionId});
+        return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/approveVersion', {dateRange, versionId});
     }
 
     filterNodes(versionId, filter) {
@@ -697,12 +684,12 @@ class WebApi {
         return AjaxUtils.ajaxCallRaw('/logout', {}, 'POST', '', 'application/x-www-form-urlencoded', true);
     }
 
-    findFunds(fulltext, max = 200) {
+    findFunds(fulltext, max = DEFAULT_LIST_SIZE) {
         return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/getFunds', {fulltext, max})
             .then(json => ({funds: json.list, fundCount: json.count}))
     }
 
-    findUser(fulltext, active, disabled, max = 200, groupId = null) {
+    findUser(fulltext, active, disabled, max = DEFAULT_LIST_SIZE, groupId = null) {
         return AjaxUtils.ajaxGet(WebApi.userUrl + '', {search: fulltext, active, disabled, from: 0, count: max, excludedGroupId: groupId})
             .then(json => ({users: json.rows, usersCount: json.count}))
     }
@@ -715,7 +702,7 @@ class WebApi {
         return AjaxUtils.ajaxPost(WebApi.userUrl + "/group/" + groupId + '/permission', null, permissions);
     }
 
-    findGroup(fulltext, max = 200) {
+    findGroup(fulltext, max = DEFAULT_LIST_SIZE) {
         return AjaxUtils.ajaxGet(WebApi.userUrl + '/group', {search: fulltext, from: 0, count: max})
             .then(json => ({groups: json.rows, groupsCount: json.count}))
     }

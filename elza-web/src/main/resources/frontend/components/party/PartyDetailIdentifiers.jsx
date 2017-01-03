@@ -103,13 +103,13 @@ class PartyDetailIdentifiers extends AbstractReactComponent {
         return <div className="party-detail-identifiers">
             <div>
                 <label>{i18n("party.detail.partyGroupIdentifiers")}</label>
-                {canEdit && <Button bsStyle="default" onClick={this.handlePartyGroupIdentifierAdd}><Icon glyph="fa-plus" /></Button>}
+                {canEdit && <Button bsStyle="action" onClick={this.handlePartyGroupIdentifierAdd}><Icon glyph="fa-plus" /></Button>}
             </div>
             {party.partyGroupIdentifiers.map((partyGroupIdentifier, index) => <div key={partyGroupIdentifier.id} className="value-group">
                 <div className="value">{partyGroupIdentifier.identifier}</div>
                 {canEdit && <div className="actions">
-                    <Button onClick={() => this.handlePartyGroupIdentifierUpdate(partyGroupIdentifier)}><Icon glyph="fa-pencil" /></Button>
-                    <Button onClick={() => this.partyGroupIdentifierDelete(partyGroupIdentifier.id)}><Icon glyph="fa-times" /></Button>
+                    <Button bsStyle="action" onClick={() => this.handlePartyGroupIdentifierUpdate(partyGroupIdentifier)}><Icon glyph="fa-pencil" /></Button>
+                    <Button bsStyle="action" onClick={() => this.partyGroupIdentifierDelete(partyGroupIdentifier.id)}><Icon glyph="fa-times" /></Button>
                 </div>}
             </div>)}
         </div>
