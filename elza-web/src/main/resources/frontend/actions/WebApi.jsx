@@ -575,7 +575,8 @@ class WebApi {
         return AjaxUtils.ajaxDelete(WebApi.arrangementUrl + '/requests/' + id);
     }
 
-    getArrRequests(versionId) {
+    getArrRequests(versionId, type, description) {
+        // TODO - předat i filtr, až bude na serveru
         return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/requests/' + versionId, { });
     }
 
