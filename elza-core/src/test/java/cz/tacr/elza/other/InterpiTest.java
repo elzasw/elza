@@ -106,9 +106,10 @@ public class InterpiTest extends AbstractControllerTest {
         RegScope scope = scopeRepository.findByCode("GLOBAL");
 
         RecordImportVO importVO = new RecordImportVO();
-        importVO.setInterpiRecordId("0000216");
+        importVO.setInterpiRecordId("n000022537");
         importVO.setScopeId(scope.getScopeId());
         importVO.setSystemId(systemId);
+        importVO.setOriginator(true);
 
         RegRecordVO regRecord = post(spec -> spec.body(importVO), "/api/registry/interpi/import").as(RegRecordVO.class);
         RegRecordVO record = getRecord(regRecord.getId());

@@ -581,6 +581,8 @@ public class PartyService {
 
         checkPartyUsage(party);
 
+        partyRelationRepository.findByParty(party).forEach(this::deleteRelation);
+
         List<ParPartyName> partyNames = new ArrayList<>(partyNameRepository.findByParty(party));
 
         party.setPreferredName(null);
@@ -591,7 +593,6 @@ public class PartyService {
         partyCreatorRepository.deleteByPartyBoth(party);
 
 
-        partyRelationRepository.findByParty(party).forEach(this::deleteRelation);
 
         ParPartyGroup partyGroup = partyGroupRepository.findOne(party.getPartyId());
         if (partyGroup != null) {

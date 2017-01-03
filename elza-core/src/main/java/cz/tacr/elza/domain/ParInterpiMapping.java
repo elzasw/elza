@@ -13,6 +13,8 @@ import javax.persistence.Table;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import cz.tacr.elza.api.InterpiClass;
 import cz.tacr.elza.domain.enumeration.StringLength;
@@ -24,6 +26,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
  * @since 30. 11. 2016
  */
 @Entity(name = "par_interpi_mapping")
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table
 public class ParInterpiMapping implements cz.tacr.elza.api.ParInterpiMapping<ParRelationRoleType, ParRelationType> {
 

@@ -1,13 +1,14 @@
 package cz.tacr.elza.api;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * //TODO marik missing comment
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
-public interface ParRelation<PP extends ParParty, PRT extends ParRelationType, PU extends ParUnitdate>
+public interface ParRelation<PP extends ParParty, PRT extends ParRelationType, PU extends ParUnitdate, PRE extends ParRelationEntity>
         extends Versionable, Serializable {
 
     /**
@@ -41,4 +42,8 @@ public interface ParRelation<PP extends ParParty, PRT extends ParRelationType, P
     String getSource();
 
     void setSource(String source);
+
+    List<PRE> getRelationEntities();
+
+    void setRelationEntities(List<PRE> relations);
 }

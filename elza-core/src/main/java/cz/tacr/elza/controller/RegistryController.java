@@ -13,6 +13,8 @@ import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.InterpiMappingVO;
 import cz.tacr.elza.controller.vo.InterpiSearchVO;
 import cz.tacr.elza.controller.vo.RecordImportVO;
 import cz.tacr.elza.controller.vo.RegCoordinatesVO;
@@ -72,6 +75,8 @@ import cz.tacr.elza.service.UserService;
 @RestController
 @RequestMapping(value = "/api/registry", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 public class RegistryController {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private RegRecordRepository regRecordRepository;
@@ -624,7 +629,7 @@ public class RegistryController {
         Assert.notNull(recordImportVO.getSystemId());
 
         interpiService.importRecord(recordId, recordImportVO.getInterpiRecordId(), recordImportVO.getScopeId(),
-                recordImportVO.getSystemId(), recordImportVO.isOriginator());
+                recordImportVO.getSystemId(), recordImportVO.getOriginator(), recordImportVO.getMappings());
 
         return getRecord(recordId);
     }
@@ -642,7 +647,7 @@ public class RegistryController {
         Assert.notNull(recordImportVO.getSystemId());
 
         RegRecord regRecord = interpiService.importRecord(null, recordImportVO.getInterpiRecordId(), recordImportVO.getScopeId(),
-                recordImportVO.getSystemId(), recordImportVO.isOriginator());
+                recordImportVO.getSystemId(), recordImportVO.getOriginator(), recordImportVO.getMappings());
 
         return getRecord(regRecord.getRecordId());
     }
@@ -677,6 +682,28 @@ public class RegistryController {
         Assert.notNull(interpiSearchVO);
         Assert.notNull(interpiSearchVO.getSystemId());
 
-        return interpiService.findRecords(interpiSearchVO.isParty(), interpiSearchVO.getConditions(), interpiSearchVO.getCount(), interpiSearchVO.getSystemId());
+        long start = System.currentTimeMillis();
+        List<ExternalRecordVO> records = interpiService.findRecords(interpiSearchVO.isParty(), interpiSearchVO.getConditions(),
+                interpiSearchVO.getCount(), interpiSearchVO.getSystemId());
+        long end = System.currentTimeMillis();
+        logger.debug("Nalezení " + records.size() + " záznamů, trvalo " + (end - start) + " ms.");
+
+        return records;
+    }
+
+    /**
+     * Načte vztahy daného záznamu.
+     *
+     * @param interpiRecordId id rejstříku v INTERPI
+     * @param systemId identifikátor externího systému
+     *
+     * @return vztahy a jejich mapování
+     */
+    @RequestMapping(value = "/interpi/{interpiRecordId}/relations", method = RequestMethod.GET)
+    public InterpiMappingVO findInterpiRecordRelations(@PathVariable final String interpiRecordId, @RequestBody final Integer systemId) {
+        Assert.notNull(interpiRecordId);
+        Assert.notNull(systemId);
+
+        return interpiService.findInterpiRecordRelations(interpiRecordId, systemId);
     }
 }

@@ -86,6 +86,11 @@ public enum ArrangementCode implements ErrorCode {
     /**
      * Existuje blokující změna v JP - obecně např. hromadná změna, import AS, atd.
      */
-    EXISTS_BLOCKING_CHANGE
+    EXISTS_BLOCKING_CHANGE,
+
+    /**
+     * Typ formy jména neexistuje.
+     */
+    PARTY_NAME_FORM_TYPE_NOT_FOUND
 
 }
