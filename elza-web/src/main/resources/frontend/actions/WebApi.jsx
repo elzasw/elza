@@ -588,6 +588,10 @@ class WebApi {
         return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/requests/' + versionId + "/" + id + "/send");
     }
 
+    deleteArrRequest(versionId, id) {
+        return AjaxUtils.ajaxDelete(WebApi.arrangementUrl + '/requests/' + versionId + "/" + id + "/" + id);
+    }
+
     getFundTree(versionId, nodeId, expandedIds={}, includeIds=[]) {
         const data = {
             versionId,

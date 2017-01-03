@@ -40,6 +40,17 @@ export function sendRequest(versionId, requestId) {
 }
 
 /**
+ * Načtení seznamu NEODESLANÝCH požadavků na digitalizaci.
+ * @param versionId verze AS
+ * @return {function(*, *)}
+ */
+export function deleteRequest(versionId, requestId) {
+    return (dispatch, getState) => {
+        return WebApi.deleteArrRequest(versionId, requestId)
+    }
+}
+
+/**
  * Invalidace NEODESLANÝCH požadavků na digitalizaci.
  */
 export function preparedListInvalidate() {
