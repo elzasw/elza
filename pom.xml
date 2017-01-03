@@ -155,7 +155,19 @@
 	                    <artifactId>lucene-queryparser</artifactId>
 	                    <groupId>org.apache.lucene</groupId>
                     </exclusion>
-	            </exclusions>                
+                    <exclusion>
+                        <groupId>bouncycastle</groupId>
+                        <artifactId>bcmail-jdk14</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>bouncycastle</groupId>
+                        <artifactId>bcprov-jdk14</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.xml.stream</groupId>
+                        <artifactId>stax-api</artifactId>
+                    </exclusion>
+	            </exclusions>
             </dependency>
             <dependency>
                 <groupId>net.sf.jasperreports</groupId>
