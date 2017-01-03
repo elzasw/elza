@@ -4,7 +4,7 @@
   "description": "Elza UI",
   "main": "index.jsx",
   "scripts": {
-    "dev": "webpack-dev-server --progress --colors --hot --inline --port 8090",
+    "dev": "webpack-dev-server --progress --colors --hot --inline --port 8090 --watch",
     "build": "webpack --config webpack.build.config.js -p",
     "flow": "flow; test $? -eq 0 -o $? -eq 2"
   },
