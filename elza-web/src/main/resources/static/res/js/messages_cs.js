@@ -868,6 +868,7 @@ var messages = {
     "extImport.id": "ID",
     "extImport.record": "Záznam",
     "extImport.scopeId": "Třída rejstříku",
+    "extImport.originator": "Importovat včetně vztahů (jedná se o původce)",
     "extImport.alreadyImported": "Již naimportováno",
     "extImport.update": "Aktualizovat",
     "extImport.showDetail": "Přejít na detail",

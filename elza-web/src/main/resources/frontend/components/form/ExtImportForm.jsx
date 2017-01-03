@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {reduxForm} from 'redux-form'
-import {Form, Button, FormControl, Table, Modal, OverlayTrigger, Tooltip} from 'react-bootstrap'
+import {Form, Button, FormControl, Table, Modal, OverlayTrigger, Tooltip, Checkbox} from 'react-bootstrap'
 import {AbstractReactComponent, FormInput, i18n, Icon, Loading} from '../index.jsx';
 import objectById from '../../shared/utils/objectById'
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx';
@@ -204,15 +204,19 @@ class ExtImportForm extends AbstractReactComponent {
 
         const importVO = {...data, scopeId: parseInt(data.scopeId), systemId: parseInt(systemId)};
 
-        const promise = update ? WebApi.importRecordUpdate(recordId, importVO) : WebApi.importRecord(importVO);
+        if (importVO.originator) {
 
-        promise.then(e => {
-            this.dispatch(modalDialogHide());
-            this.dispatch(addToastrSuccess(i18n("extImport.done.title"), i18n(update ? "extImport.done.messageImport" : "extImport.done.messageUpdate")));
-            this.props.onSubmitForm && this.props.onSubmitForm(e);
-        });
+        } else {
+            const promise = update ? WebApi.importRecordUpdate(recordId, importVO) : WebApi.importRecord(importVO);
 
-        return promise;
+            promise.then(e => {
+                this.dispatch(modalDialogHide());
+                this.dispatch(addToastrSuccess(i18n("extImport.done.title"), i18n(update ? "extImport.done.messageImport" : "extImport.done.messageUpdate")));
+                this.props.onSubmitForm && this.props.onSubmitForm(e);
+            });
+
+            return promise;
+        }
     };
 
     componentWillReceiveProps(nextProps) {
@@ -248,7 +252,7 @@ class ExtImportForm extends AbstractReactComponent {
 
     render() {
         const {searched, results} = this.state;
-        const {autocomplete, onClose, fields:{scopeId, interpiRecordId}, handleSubmit, submitting, versionId} = this.props;
+        const {autocomplete, onClose, fields:{scopeId, interpiRecordId, originator}, handleSubmit, submitting, versionId} = this.props;
 
         let record = null;
         if (interpiRecordId.value) {
@@ -257,10 +261,8 @@ class ExtImportForm extends AbstractReactComponent {
 
         let showDetail = false;
         let detailId = null;
-        let visibleSubmit = false;
 
         if (record && scopeId.value) {
-            visibleSubmit = true;
             if (record.pairedRecords) {
                 for (let pairedRec of record.pairedRecords) {
                     if (pairedRec.scope.id == scopeId.value) {
@@ -315,6 +317,11 @@ class ExtImportForm extends AbstractReactComponent {
                                 <div>
                                     <Scope label={i18n('extImport.scopeId')} {...scopeId} versionId={versionId} />
                                 </div>
+                                <div>
+                                    <Checkbox {...originator}>
+                                        {i18n('extImport.originator')}
+                                    </Checkbox>
+                                </div>
                             </div>
                         </div>}
                     </div>}
@@ -334,7 +341,7 @@ class ExtImportForm extends AbstractReactComponent {
 }
 
 export default reduxForm({
-    fields: ['scopeId', 'interpiRecordId'],
+    fields: ['scopeId', 'interpiRecordId', 'originator'],
     form: 'extImportForm'
 })(ExtImportForm);
 
