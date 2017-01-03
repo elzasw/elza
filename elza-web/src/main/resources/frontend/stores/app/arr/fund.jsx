@@ -345,7 +345,8 @@ export function fund(state, action) {
             };
             return consolidateState(state, result);
         }
-        case types.CHANGE_CONFORMITY_INFO: {
+        case types.CHANGE_CONFORMITY_INFO:
+        case types.CHANGE_NODE_REQUESTS: {
             const result = {
                 ...state,
                 fundTree: fundTree(state.fundTree, action),

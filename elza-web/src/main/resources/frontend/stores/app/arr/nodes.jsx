@@ -185,6 +185,7 @@ export default function nodes(state = nodesInitialState, action) {
                 return state;
             }
         case types.CHANGE_CONFORMITY_INFO:
+        case types.CHANGE_NODE_REQUESTS:
             var nodes = state.nodes;
             var nodesChange = [
                 ...nodes

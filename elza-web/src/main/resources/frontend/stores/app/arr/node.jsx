@@ -412,6 +412,7 @@ export function node(state = nodeInitialState, action) {
 
         case types.CHANGE_VISIBLE_POLICY:
         case types.CHANGE_CONFORMITY_INFO:
+        case types.CHANGE_NODE_REQUESTS:
             return Object.assign({}, state, { nodeInfoDirty: true });
 
         case types.CHANGE_ADD_LEVEL:

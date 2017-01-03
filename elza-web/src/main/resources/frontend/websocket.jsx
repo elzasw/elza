@@ -3,7 +3,6 @@ import React from 'react';
 import {EmailSettingsActions, ApplicationActions} from 'actions/index.jsx';
 import {webSocketConnect, webSocketDisconnect} from 'actions/global/webSocket.jsx';
 import * as digitizationActions from 'actions/arr/digitizationActions';
-import {buklActionStateChange} from 'actions/arr/bulkActions.jsx';
 import {store} from 'stores/AppStore.jsx';
 import {addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
 import {i18n} from 'components'
@@ -15,6 +14,7 @@ import {
     changeFiles,
     changePackets,
     changeNodes,
+    changeNodeRequests,
     changeOutputs,
     changeDeleteLevel,
     changeAddLevel,
@@ -40,6 +40,7 @@ import {
     fundInvalidChanges,
     createRequest,
     changeRequestItemQueue,
+    createRequestItemQueue,
     nodesDelete
 } from 'actions/global/change.jsx';
 
@@ -504,6 +505,7 @@ function conformityInfo(value) {
  */
 function arrRequest(value) {
     store.dispatch(digitizationActions.changeRequests(value.versionId, value.entityId, value.nodeIds));
+    store.dispatch(changeNodeRequests(value.versionId, value.nodeIds));
 }
 
 /**
