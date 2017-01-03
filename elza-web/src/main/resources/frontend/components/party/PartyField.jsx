@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import {WebApi} from 'actions/index.jsx';
-import {Icon, i18n, AbstractReactComponent, Autocomplete} from 'components/index.jsx';
+import {Icon, i18n, AbstractReactComponent, Autocomplete, ExtImportForm} from 'components/index.jsx';
 import {connect} from 'react-redux'
 //import {decorateAutocompleteValue} from './DescItemUtils.jsx'
 import {MenuItem, DropdownButton, Button} from 'react-bootstrap';
@@ -10,9 +10,10 @@ import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {partyDetailFetchIfNeeded, partyAdd} from 'actions/party/party.jsx'
 import {routerNavigate} from 'actions/router.jsx'
-import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {DEFAULT_LIST_SIZE} from 'constants'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+
 
 import './PartyField.less'
 
@@ -88,11 +89,18 @@ class PartyField extends AbstractReactComponent {
                 <DropdownButton noCaret title={<div><Icon glyph='fa-download' /><span className="create-party-label">{i18n('party.addParty')}</span></div>} id="party-field" >
                     {refTables.partyTypes.items.map(type => <MenuItem key={'party' + type.id} onClick={() => this.handleCreateParty(type.id)} eventKey={type.id}>{type.name}</MenuItem>)}
                 </DropdownButton>
+                <Button onClick={this.handleImport} type="button"><Icon glyph='fa-plus' /> {i18n("ribbon.action.party.importExt")}</Button>
             </div>
             {this.state.count !== null && this.state.count > AUTOCOMPLETE_PARTY_LIST_SIZE && <div className="items-count">
                 {i18n('partyField.visibleCount', this.state.partyList.length, this.state.count)}
             </div>}
         </div>
+    };
+
+    handleImport = () => {
+        const {versionId} = this.props;
+        this.refs.autocomplete.closeMenu();
+        this.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={true} versionId={versionId}/>, "dialog-lg"));
     };
 
     handleDetail = (partyId) => {

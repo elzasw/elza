@@ -1,10 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {WebApi} from 'actions/index.jsx';
-import {Icon, i18n, AbstractReactComponent, Autocomplete} from 'components/index.jsx';
+import {Icon, i18n, AbstractReactComponent, Autocomplete, ExtImportForm} from 'components/index.jsx';
 import {Button} from 'react-bootstrap'
 import {connect} from 'react-redux'
 import * as perms from 'actions/user/Permission.jsx';
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 
 import {DEFAULT_LIST_SIZE} from 'constants'
 
@@ -67,6 +68,12 @@ class RegistryField extends AbstractReactComponent {
     };
 
 
+    handleImport = () => {
+        const {versionId} = this.props;
+        this.refs.autocomplete.closeMenu();
+        this.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={false} versionId={versionId}/>, "dialog-lg"));
+    };
+
     handleCreateRecord = () => {
         this.refs.autocomplete.closeMenu();
         this.props.onCreateRecord();
@@ -76,6 +83,7 @@ class RegistryField extends AbstractReactComponent {
         return <div>
             <div className="create-record">
                 <Button onClick={this.handleCreateRecord} type="button"><Icon glyph='fa-plus'/>{i18n('registry.addNewRegistry')}</Button>
+                <Button onClick={this.handleImport} type="button"><Icon glyph='fa-plus' /> {i18n("ribbon.action.registry.importExt")}</Button>
             </div>
             {this.state.count !== null && this.state.count > AUTOCOMPLETE_REGISTRY_LIST_SIZE && <div className="items-count">
                 {i18n('registryField.visibleCount', this.state.registryList.length, this.state.count)}
