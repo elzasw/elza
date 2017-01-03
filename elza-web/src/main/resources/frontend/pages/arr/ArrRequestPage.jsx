@@ -172,7 +172,12 @@ const ArrRequestPage = class extends ArrParentPage {
                         <Button key="send" onClick={() => {this.handleSend(requestDetail.id)}} disabled={!detailLoaded || requestDetail.data.state != "OPEN"}><Icon glyph="fa-youtube-play" />
                             <div><span className="btnText">{i18n('ribbon.action.arr.fund.request.send')}</span></div>
                         </Button>
-                    )
+                    );
+                    itemActions.push(
+                        <Button key="delete" onClick={() => {this.handleDelete(requestDetail.id)}} disabled={!detailLoaded || requestDetail.data.state != "OPEN"}><Icon glyph="fa-trash" />
+                            <div><span className="btnText">{i18n('ribbon.action.arr.fund.request.delete')}</span></div>
+                        </Button>
+                    );
                 }
             }
         }
@@ -195,16 +200,19 @@ const ArrRequestPage = class extends ArrParentPage {
     handleSelect = (item) => {
         const fund = this.getActiveFund(this.props);
         this.dispatch(digitizationActions.selectDetail(fund.versionId, item.id));
-    }
+    };
 
     handleSend = (id) => {
         const fund = this.getActiveFund(this.props);
         this.dispatch(digitizationActions.sendRequest(fund.versionId, id));
-    }
+    };
 
-    isEditable(item) {
-        return !item.lockDate && item.outputDefinition && item.outputDefinition.state === OutputState.OPEN
-    }
+    handleDelete = (id) => {
+        const fund = this.getActiveFund(this.props);
+        if (confirm(i18n("ribbon.action.arr.fund.request.delete.confirm"))) {
+            this.dispatch(digitizationActions.deleteRequest(fund.versionId, id));
+        }
+    };
 
     renderListItem = (item, isActive, index) => {
         const {userDetail} = this.props;
