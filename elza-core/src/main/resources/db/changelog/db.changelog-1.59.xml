@@ -7,9 +7,12 @@
     <property name="now" value="sysdate" dbms="oracle"/>
     <property name="now" value="now()" dbms="mysql"/>
     <property name="now" value="now()" dbms="postgresql"/>
+    <property name="now" value="GETDATE()" dbms="mssql"/>
     <property name="now" value="now()" dbms="hsqldb"/>
 
     <changeSet id="60" author="vanek">
+        <validCheckSum>7:e9ec0272ae0f5caa2ef096d9ecfab34c</validCheckSum>
+
 <!--         reg_record -->
         <addColumn tableName="reg_record">
             <column name="uuid" type="char(36)" />
@@ -17,15 +20,15 @@
 
         <customChange class="cz.tacr.elza.dbchangelog.DBChangelog1_59"/>
 
-        <addUniqueConstraint columnNames="uuid" tableName="reg_record"/>
         <addNotNullConstraint tableName="reg_record" columnName="uuid" columnDataType="char(36)"/>
+        <addUniqueConstraint columnNames="uuid" tableName="reg_record" constraintName="uq_reg_record_uuid"/>
 
         <addColumn tableName="reg_record">
             <column name="last_update" type="timestamp" />
         </addColumn>
 
         <update tableName="reg_record">
-            <column name="last_update" value="${now}" />
+            <column name="last_update" value="${now}"/>
         </update>
 
         <addNotNullConstraint tableName="reg_record" columnName="last_update" columnDataType="timestamp"/>

@@ -5,8 +5,11 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
     <changeSet id="54" author="slapa">
+        <validCheckSum>7:b6a2caade9fb4c3bf2a116c4f5827319</validCheckSum>
 
         <dropNotNullConstraint columnDataType="int" tableName="rul_rule" columnName="rule_set_id" />
+
+        <dropForeignKeyConstraint baseTableName="rul_rule" constraintName="fk_rule_output_type"/>
         <dropColumn tableName="rul_rule" columnName="output_type_id" />
 
         <addColumn tableName="rul_output_type">

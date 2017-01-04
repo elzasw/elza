@@ -5,11 +5,16 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
     <changeSet id="32" author="compel">
+        <validCheckSum>7:3c9be2c9cb70939b3799c0453603fe14</validCheckSum>
+
         <delete tableName="arr_bulk_action_node" />
         <delete tableName="arr_bulk_action_run" />
+
+        <dropForeignKeyConstraint baseTableName="arr_bulk_action_run" constraintName="fk_arrFaBulkAction_faChange" />
         <dropColumn tableName="arr_bulk_action_run">
             <column name="change_id" />
         </dropColumn>
+
         <addColumn tableName="arr_bulk_action_run">
             <column name="user_id" type="int">
                 <constraints nullable="true"/>

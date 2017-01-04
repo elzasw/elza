@@ -5,6 +5,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
     <changeSet id="17" author="slapa">
+        <validCheckSum>7:e19fc2525b3379188786d68ecb2c0191</validCheckSum>
 
         <!--
             par_institution_type
@@ -48,7 +49,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="code" type="varchar(50)">
-                <constraints unique="true" nullable="false"/>
+                <constraints unique="true" nullable="false" uniqueConstraintName="uq_par_institution_code"/>
             </column>
         </createTable>
 
@@ -95,6 +96,7 @@
             arr_fund_version
         -->
 
+        <dropForeignKeyConstraint baseTableName="arr_fund_version" constraintName="fk_arr_finding_aid_version_4"/>
         <dropColumn columnName="arrangement_type_id" tableName="arr_fund_version"/>
 
         <addColumn tableName="arr_fund_version">

@@ -7,6 +7,8 @@
     <!--Verze 1.0 - vytvoreni schematu databaze-->
 
     <changeSet id="1" author="bendik">
+        <validCheckSum>7:afd13cad297ec7de3f49c71eb8876999</validCheckSum>
+        <validCheckSum>7:919eaa87d17925639ee8c78c95da9f33</validCheckSum>
 
         <createTable tableName="db_hibernate_sequences">
             <column name="sequence_name" type="varchar(255)">
@@ -1172,7 +1174,6 @@
 
         <addUniqueConstraint tableName="rul_packet_type" columnNames="code" constraintName="u_rul_packet_type_code"/>
 
-        <addUniqueConstraint columnNames="uuid" tableName="arr_node"/>
 
         <addUniqueConstraint tableName="arr_packet" columnNames="finding_aid_id, storage_number" />
 
@@ -1186,6 +1187,7 @@
                               tableName="par_party"/>
 
         <addNotNullConstraint tableName="arr_node" columnName="uuid" columnDataType="char(36)"/>
+        <addUniqueConstraint columnNames="uuid" tableName="arr_node"/>
 
         <addNotNullConstraint columnDataType="int"
                               columnName="last_arr_fa_change_id"
