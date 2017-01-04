@@ -69,6 +69,7 @@ import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.DaoPackageRepository;
 import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
@@ -157,6 +158,9 @@ public class ArrangementController {
 
     @Autowired
     private NodeRepository nodeRepository;
+
+    @Autowired
+    private DaoPackageRepository daoPackageRepository;
 
     @Autowired
     private DaoLinkRepository daoLinkRepository;
@@ -357,7 +361,7 @@ public class ArrangementController {
                             @RequestParam(value = "nodeId", required = false) Integer nodeId,
                             @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail,
                             @RequestParam(value = "index", required = false, defaultValue = "0") Integer index,
-                            @RequestParam(value = "maxResults", required = false, defaultValue = "20") Integer maxResults) {
+                            @RequestParam(value = "maxResults", required = false, defaultValue = "99999") Integer maxResults) {
         Assert.notNull(fundVersionId);
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
 
@@ -370,6 +374,37 @@ public class ArrangementController {
 
         return factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail));
     }
+
+        /**
+         * Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní balíček.
+         *
+         * @param fundVersionId id archivního souboru
+         * @param daoPackageId  id package
+         * @param index         počáteční pozice pro načtení
+         * @param maxResults    počet načítaných výsledků
+         * @return seznam digitálních entit (DAO)
+         */
+        @RequestMapping(value = "/daos/{fundVersionId}/{daoPackageId}",
+                method = RequestMethod.GET,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
+        List<ArrDaoVO> findDaosByPackage(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                @PathVariable(value = "daoPackageId") Integer daoPackageId,
+                                @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail,
+                                @RequestParam(value = "index", required = false, defaultValue = "0") Integer index,
+                                @RequestParam(value = "maxResults", required = false, defaultValue = "99999") Integer maxResults) {
+            Assert.notNull(fundVersionId);
+            Assert.notNull(daoPackageId);
+
+            ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+            final ArrDaoPackage arrDaoPackage = daoPackageRepository.getOneCheckExist(daoPackageId);
+
+
+            final List<ArrDao> arrDaoList = daoService.findDaosByPackage(fundVersion, arrDaoPackage, index, maxResults);
+
+            final List<ArrDaoVO> daoList = factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail));
+            return daoList;
+        }
 
     /**
      * připojení digitalizát na JP (vytvoření záznamu v arr_dao_link)

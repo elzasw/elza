@@ -1,6 +1,7 @@
 package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 
@@ -23,5 +24,16 @@ public interface DaoRepositoryCustom {
      * @return seznam digitálních entit (DAO)
      */
     List<ArrDao> findByFundAndNodePaginating(ArrFundVersion fundVersion, @Nullable ArrNode node, Integer index, Integer maxResults);
+
+    /**
+     * Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní balíček.
+     *
+     * @param fundVersion archivní soubor
+     * @param daoPackage  package
+     * @param index       počáteční pozice pro načtení
+     * @param maxResults  počet načítaných výsledků
+     * @return seznam digitálních entit (DAO)
+     */
+    List<ArrDao> findByFundAndPackagePaginating(ArrFundVersion fundVersion, ArrDaoPackage daoPackage, Integer index, Integer maxResults);
 
 }
