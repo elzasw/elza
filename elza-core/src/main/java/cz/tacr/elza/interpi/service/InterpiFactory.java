@@ -836,10 +836,6 @@ public class InterpiFactory {
             if (!genealogyList.isEmpty()) {
                 genealogy = StringUtils.join(genealogyList, ", ");
             }
-            if (genealogy == null) {
-//                genealogy = "fake"; // pro testování, skoro nikdy nechodí vyplněné
-                throw new IllegalStateException("Rod musí mít vyplněnu hodnotu genealogy.");
-            }
             parDynasty.setGenealogy(genealogy);
         } else if (newParty instanceof ParPartyGroup) {
             ParPartyGroup parPartyGroup = (ParPartyGroup) newParty;
@@ -859,10 +855,6 @@ public class InterpiFactory {
             String scope = null;
             if (!scopeList.isEmpty()) {
                 scope = StringUtils.join(scopeList, ", ");
-            }
-            if (scope == null) {
-//                scope = "fake"; // pro testování, skoro nikdy nechodí vyplněné
-                throw new IllegalStateException("Korporace musí mít vyplněnu hodnotu scope.");
             }
             parPartyGroup.setScope(scope);
 

@@ -36,7 +36,7 @@ public class ParInterpiMapping implements cz.tacr.elza.api.ParInterpiMapping<Par
 
     /** Typ vztahu ELZA. */
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParRelationRoleType.class)
-    @JoinColumn(name = "relationRoleTypeId", nullable = false)
+    @JoinColumn(name = "relationRoleTypeId")
     private ParRelationRoleType relationRoleType;
 
     /** Typ role entity ELZA. */
@@ -49,11 +49,11 @@ public class ParInterpiMapping implements cz.tacr.elza.api.ParInterpiMapping<Par
     private InterpiClass interpiClass;
 
     /** Typ vztahu INTERPI. */
-    @Column(length = StringLength.LENGTH_250, nullable = true)
+    @Column(length = StringLength.LENGTH_250)
     private String interpiRelationType;
 
     /** Typ role INTERPI. */
-    @Column(length = StringLength.LENGTH_250, nullable = true)
+    @Column(length = StringLength.LENGTH_250)
     private String interpiRoleType;
 
     @Override
