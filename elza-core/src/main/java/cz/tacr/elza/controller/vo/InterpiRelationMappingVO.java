@@ -1,23 +1,25 @@
 package cz.tacr.elza.controller.vo;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.springframework.util.Assert;
 
 import cz.tacr.elza.api.InterpiClass;
 
 /**
- * Jedna položka pro INTERPI mapování.
+ * Mapování entity ve vztahu.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 19. 12. 2016
  */
-public class InterpiMappingItemVO {
+public class InterpiRelationMappingVO {
 
+    /** Id záznamu v ELZA. */
     private Integer id;
-
-    /** Typ vztahu ELZA. */
-    private Integer relationRoleTypeId;
 
     /** Typ role entity ELZA. */
     private Integer relationTypeId;
@@ -27,11 +29,20 @@ public class InterpiMappingItemVO {
     /** Typ vztahu INTERPI. */
     private String interpiRelationType;
 
-    /** Typ role INTERPI. */
-    private String interpiRoleType;
-
     /** Příznak zda se má vztak importovat. */
     private boolean importRelation;
+
+    /** Seznam entit. */
+    private List<InterpiEntityMappingVO> entities;
+
+    public void addEntityMapping(final InterpiEntityMappingVO entityMappingVO) {
+        Assert.notNull(entityMappingVO);
+
+        if (entities == null) {
+            entities = new LinkedList<>();
+        }
+        entities.add(entityMappingVO);
+    }
 
     public Integer getId() {
         return id;
@@ -40,15 +51,6 @@ public class InterpiMappingItemVO {
     public void setId(final Integer id) {
         this.id = id;
     }
-
-    public Integer getRelationRoleTypeId() {
-        return relationRoleTypeId;
-    }
-
-    public void setRelationRoleTypeId(final Integer relationRoleTypeId) {
-        this.relationRoleTypeId = relationRoleTypeId;
-    }
-
     public Integer getRelationTypeId() {
         return relationTypeId;
     }
@@ -73,20 +75,20 @@ public class InterpiMappingItemVO {
         this.interpiRelationType = interpiRelationType;
     }
 
-    public String getInterpiRoleType() {
-        return interpiRoleType;
-    }
-
-    public void setInterpiRoleType(final String interpiRoleType) {
-        this.interpiRoleType = interpiRoleType;
-    }
-
     public boolean getImportRelation() {
         return importRelation;
     }
 
     public void setImportRelation(final boolean importRelation) {
         this.importRelation = importRelation;
+    }
+
+    public List<InterpiEntityMappingVO> getEntities() {
+        return entities;
+    }
+
+    public void setEntities(final List<InterpiEntityMappingVO> entities) {
+        this.entities = entities;
     }
 
     @Override
