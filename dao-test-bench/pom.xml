@@ -10,9 +10,25 @@
 	<packaging>jar</packaging>
 	<name>ELZA DAO test bench</name>
 
-	<properties>
-		<wsdl.package>${parent.groupId}.api.wsdl</wsdl.package>
-	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.yaml</groupId>
+			<artifactId>snakeyaml</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-frontend-jaxws</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-transports-http</artifactId>
+			<version>${cxf.version}</version>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<plugins>
@@ -22,60 +38,18 @@
 				<version>${cxf.version}</version>
 				<executions>
 					<execution>
-						<id>dao-service</id>
+						<id>elza-ws-api</id>
 						<phase>generate-sources</phase>
 						<configuration>
 							<sourceRoot>target/generated-sources/cxf</sourceRoot>
-							<disableDirectoryScan>true</disableDirectoryScan>
-							<wsdlOptions>
-								<wsdlOption>
-									<wsdl>../elza-ws-api/src/main/resources/wsdl/elza-dao-service-v1.wsdl</wsdl>
-									<packagenames>
-										<packagename>${wsdl.package}.dao</packagename>
-									</packagenames>
-									<extraargs>
-										<extraarg>-verbose</extraarg>
-										<extraarg>-p</extraarg>
-										<extraarg>http://www.syntea.cz/gam/or/xd/2013/08=com.lightcomp.datagate.wsdl.ckp.l1.syntea</extraarg>
-										<extraarg>-p</extraarg>
-										<extraarg>http://ws.ckp.cz/pis/ds/L1WS/2013/09=com.lightcomp.datagate.wsdl.ckp.l1.types</extraarg>
-										<extraarg>-p</extraarg>
-										<extraarg>http://ws.ckp.cz/pis/ds/L1WS/2013/09/wsdl=com.lightcomp.datagate.wsdl.ckp.l1</extraarg>
-										<extraarg>-wsdlLocation</extraarg>
-										<wsdlurl />
-									</extraargs>
-								</wsdlOption>
-							</wsdlOptions>
-						</configuration>
-						<goals>
-							<goal>wsdl2java</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>digitization-service</id>
-						<phase>generate-sources</phase>
-						<configuration>
-							<sourceRoot>target/generated-sources/cxf</sourceRoot>
-							<disableDirectoryScan>true</disableDirectoryScan>
-							<wsdlOptions>
-								<wsdlOption>
-									<wsdl>../elza-ws-api/src/main/resources/wsdl/elza-digitization-service-v1.wsdl</wsdl>
-									<packagenames>
-										<packagename>${wsdl.package}.digitization</packagename>
-									</packagenames>
-									<extraargs>
-										<extraarg>-verbose</extraarg>
-										<extraarg>-p</extraarg>
-										<extraarg>http://www.syntea.cz/gam/or/xd/2013/08=com.lightcomp.datagate.wsdl.ckp.l1.syntea</extraarg>
-										<extraarg>-p</extraarg>
-										<extraarg>http://ws.ckp.cz/pis/ds/L1WS/2013/09=com.lightcomp.datagate.wsdl.ckp.l1.types</extraarg>
-										<extraarg>-p</extraarg>
-										<extraarg>http://ws.ckp.cz/pis/ds/L1WS/2013/09/wsdl=com.lightcomp.datagate.wsdl.ckp.l1</extraarg>
-										<extraarg>-wsdlLocation</extraarg>
-										<wsdlurl />
-									</extraargs>
-								</wsdlOption>
-							</wsdlOptions>
+							<wsdlRoot>../elza-ws-api/src/main/resources/wsdl/</wsdlRoot>
+							<defaultOptions>
+								<extraargs>
+									<extraarg>-verbose</extraarg>
+									<extraarg>-wsdlLocation</extraarg>
+									<wsdlurl />
+								</extraargs>
+							</defaultOptions>
 						</configuration>
 						<goals>
 							<goal>wsdl2java</goal>
