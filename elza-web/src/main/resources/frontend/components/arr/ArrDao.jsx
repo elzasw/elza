@@ -12,13 +12,30 @@ import {setSettings, getOneSettings} from "components/arr/ArrUtils.jsx";
 
 var classNames = require('classnames');
 
-var ArrDao = class ArrDao extends AbstractReactComponent {
+class ArrDao extends AbstractReactComponent {
 
     constructor(props) {
         super(props);
         this.state = {
             activeIndex: null
         };
+    }
+
+    static PropTypes = {
+        dao: React.PropTypes.object.isRequired,
+        fund: React.PropTypes.object.isRequired,
+    };
+
+    componentDidMount() {
+
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (this.props.dao !== nextProps.dao) {
+            this.setState({
+                activeIndex: null
+            });
+        }
     }
 
     renderFile = (item) => {
@@ -37,7 +54,7 @@ var ArrDao = class ArrDao extends AbstractReactComponent {
     };
 
     render() {
-        const {dao} = this.props;
+        const {fund, dao} = this.props;
         const {activeIndex} = this.state;
 
         if (dao == null) {
@@ -76,16 +93,4 @@ var ArrDao = class ArrDao extends AbstractReactComponent {
     }
 }
 
-function mapStateToProps(state) {
-    const {arrRegion, userDetail} = state
-    let fund = null;
-    if (arrRegion.activeIndex != null) {
-        fund = arrRegion.funds[arrRegion.activeIndex];
-    }
-    return {
-        fund,
-        userDetail,
-    }
-}
-
-module.exports = connect(mapStateToProps)(ArrDao);
+export default connect()(ArrDao);

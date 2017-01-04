@@ -1,30 +1,24 @@
 require('./SubNodeDao.less');
 
 import React from 'react';
-import {Icon, i18n, AbstractReactComponent, Loading} from 'components/index.jsx';
+import {NodeDaosForm, Icon, i18n, AbstractReactComponent, Loading} from 'components/index.jsx';
 import {Button} from "react-bootstrap";
 import {connect} from 'react-redux'
 
 import {registrySelect, registryAdd} from 'actions/registry/registryRegionList.jsx'
 import {routerNavigate} from 'actions/router.jsx'
+import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 
 const SubNodeDao = class SubNodeDao extends AbstractReactComponent {
     static PropTypes = {
         daos: React.PropTypes.object.isRequired,
+        versionId: React.PropTypes.number.isRequired,
+        nodeId: React.PropTypes.oneOfType([React.PropTypes.number, React.PropTypes.string]),
         selectedSubNodeId: React.PropTypes.number.isRequired,
         routingKey: React.PropTypes.number.isRequired,
-        nodeId: React.PropTypes.oneOfType([React.PropTypes.number, React.PropTypes.string]),
     };
 
-
-
-    handleRemove(index) {
-        //this.dispatch(fundSubNodeRegisterValueDelete(this.props.versionId, this.props.selectedSubNodeId, this.props.routingKey, index));
-    }
-
     renderDao = (dao, index) => {
-        const {closed, versionId, readMode} = this.props;
-
         let filesLabel = 'subNodeDao.dao.files.more';
 
         if (dao.filesCount == 1) {
@@ -32,8 +26,6 @@ const SubNodeDao = class SubNodeDao extends AbstractReactComponent {
         } else if (dao.filesCount < 5 && dao.filesCount > 1) {
             filesLabel = 'subNodeDao.dao.files.few';
         }
-
-        let result;
 
         let daoResults = [];
 
@@ -59,11 +51,32 @@ const SubNodeDao = class SubNodeDao extends AbstractReactComponent {
     };
 
     handleShowDetailAll = () => {
+        const {fund, versionId, selectedSubNodeId} = this.props;
 
+        this.dispatch(
+            modalDialogShow(
+                this,
+                i18n('subNodeDao.dao.title.node'),
+                <NodeDaosForm
+                    nodeId={selectedSubNodeId}
+                />
+            )
+        );
     };
 
     handleShowDetailOne = (dao) => {
+        const {fund, selectedSubNodeId} = this.props;
 
+        this.dispatch(
+            modalDialogShow(
+                this,
+                i18n('subNodeDao.dao.title.node'),
+                <NodeDaosForm
+                    nodeId={selectedSubNodeId}
+                    daoId={dao.id}
+                />
+            )
+        );
     };
 
     render() {

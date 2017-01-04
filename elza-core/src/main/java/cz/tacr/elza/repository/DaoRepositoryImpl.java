@@ -41,6 +41,7 @@ public class DaoRepositoryImpl implements DaoRepositoryCustom {
         hql += " order by d.daoId desc ";
 
         Query query = entityManager.createQuery(hql);
+        query.setFirstResult(index);
         query.setMaxResults(maxResults);
 
         query.setParameter("fundId", fundVersion.getFund().getFundId());

@@ -318,7 +318,7 @@ public class ArrangementController {
     }
 
     /**
-     *  Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní jednotku popisu (JP) nebo nemá žádné napojení (pouze pod archivní souborem (AS)).
+     *  Poskytuje seznam balíčků digitalizátů pouze pod archivní souborem (AS).
      *
      * @param fundVersionId   id archivního souboru
      * @param search   vyhledává (použití LIKE) nad kódem balíčku, kódem a labelem arr_dao (přirazený k balíčku), kódem a labelem arr_dao_batch_info

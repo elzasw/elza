@@ -52,7 +52,7 @@ const DigitizationRequestForm = class extends AbstractReactComponent {
     static PropTypes = {
         nodeId: React.PropTypes.number.isRequired,
         fundVersionId: React.PropTypes.number.isRequired,
-    };
+};
 
     static fields = [
         'digitizationRequestId',

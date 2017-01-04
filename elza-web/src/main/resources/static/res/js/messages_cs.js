@@ -592,6 +592,7 @@ var messages = {
     "subNodeDao.title": "Digitální entity",
     "subNodeDao.dao.action.showDetailAll": "Zobrazit detail digitálních entit",
     "subNodeDao.dao.action.showDetailOne": "Zobrazit detail digitální entity",
+    "subNodeDao.dao.title.node": "Digitální entity pro jednotku popisu",
     "subNodeDao.dao.label": "Digitalizát",
     "subNodeDao.dao.code": "Code",
     "subNodeDao.dao.files.more": "souborů",

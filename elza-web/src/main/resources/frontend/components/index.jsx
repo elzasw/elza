@@ -62,6 +62,7 @@ exports.FundDetail = require('components/fund/FundDetail.jsx');
 exports.FundDetailExt = require('components/fund/FundDetailExt.jsx');
 exports.FundDetailTree = require('components/fund/FundDetailTree.jsx');
 
+exports.NodeDaosForm = require('components/arr/NodeDaosForm.jsx');
 exports.FundNodesList = require('components/arr/FundNodesList.jsx');
 exports.FundNodesSelectForm = require('components/arr/FundNodesSelectForm.jsx');
 exports.AddOutputForm = require('components/arr/AddOutputForm.jsx');
