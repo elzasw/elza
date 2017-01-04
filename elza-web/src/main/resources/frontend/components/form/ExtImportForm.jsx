@@ -221,6 +221,7 @@ class ExtImportForm extends AbstractReactComponent {
                 this.dispatch(modalDialogHide());
                 this.dispatch(modalDialogShow(this, i18n('extMapperForm.title'), <ExtMapperForm
                     initialValues={mapping}
+                    record={record}
                     onSubmit={(data) => {
                         importVO.mapping = data.mapping;
                         return send(importVO, update, recordId);

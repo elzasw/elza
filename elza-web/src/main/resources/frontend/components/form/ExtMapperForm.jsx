@@ -4,7 +4,7 @@ import {connect} from 'react-redux';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, FormInput, Icon, Loading} from 'components'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
-import {Modal, Form, Table, Checkbox, Button} from 'react-bootstrap'
+import {Modal, Form, Table, Checkbox, FormControl, Button} from 'react-bootstrap'
 import objectById from '../../shared/utils/objectById'
 
 
@@ -26,7 +26,7 @@ class ExtMapperForm extends AbstractReactComponent {
     }
 
     render() {
-        const {handleSubmit, submitting, onClose, fields: {mappings, partyTypeId}, partyTypes} = this.props;
+        const {handleSubmit, submitting, onClose, fields: {mappings, partyTypeId}, partyTypes, record} = this.props;
 
         if (partyTypes === false) {
             return <Loading />;
@@ -114,6 +114,10 @@ class ExtMapperForm extends AbstractReactComponent {
 
                     </tbody>)}
                 </Table>
+                <div>
+                    <label>{i18n('extMapperForm.recordExtSystemDescription')}</label>
+                    <FormControl componentClass="textarea" rows="10" value={record ? record.detail : ''} style={{height: '272px'}} />
+                </div>
             </Modal.Body>
             <Modal.Footer>
                 <Button type="submit" disabled={submitting}>{i18n('extImport.update')}</Button>
