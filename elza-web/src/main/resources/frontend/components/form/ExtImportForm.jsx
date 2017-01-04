@@ -3,12 +3,12 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {reduxForm} from 'redux-form'
 import {Form, Button, FormControl, Table, Modal, OverlayTrigger, Tooltip, Checkbox} from 'react-bootstrap'
-import {AbstractReactComponent, FormInput, i18n, Icon, Loading} from '../index.jsx';
+import {AbstractReactComponent, FormInput, i18n, Icon, Loading, ExtMapperForm} from '../index.jsx';
 import objectById from '../../shared/utils/objectById'
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx';
 import {submitForm} from 'components/form/FormUtils.jsx'
 import {WebApi} from 'actions'
-import {modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
 import {registrySelect} from 'actions/registry/registryRegionList.jsx'
@@ -204,10 +204,8 @@ class ExtImportForm extends AbstractReactComponent {
 
         const importVO = {...data, scopeId: parseInt(data.scopeId), systemId: parseInt(systemId)};
 
-        if (importVO.originator) {
-
-        } else {
-            const promise = update ? WebApi.importRecordUpdate(recordId, importVO) : WebApi.importRecord(importVO);
+        const send = (data, update, recordId = null) => {
+            const promise = update ? WebApi.importRecordUpdate(recordId, data) : WebApi.importRecord(data);
 
             promise.then(e => {
                 this.dispatch(modalDialogHide());
@@ -216,6 +214,21 @@ class ExtImportForm extends AbstractReactComponent {
             });
 
             return promise;
+        };
+
+        if (importVO.originator) {
+            return WebApi.findInterpiRecordRelations(importVO.interpiRecordId, importVO.systemId).then(mapping => {
+                this.dispatch(modalDialogHide());
+                this.dispatch(modalDialogShow(this, i18n('extMapperForm.title'), <ExtMapperForm
+                    initialValues={mapping}
+                    onSubmit={(data) => {
+                        importVO.mapping = data.mapping;
+                        return send(importVO, update, recordId);
+                    }
+                } />, "dialog-lg"));
+            });
+        } else {
+            return send(importVO, update, recordId);
         }
     };
 

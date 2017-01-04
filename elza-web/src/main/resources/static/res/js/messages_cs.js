@@ -881,6 +881,9 @@ var messages = {
     "extImport.attType.TYPE": "Hledání určitých typů rejstříků",
     "extImport.attType.EXTEND": "Pravostranný like na hledané výrazy ve jménech",
 
+    "extMapperForm.title": "Import hesla - vazby",
+    "extMapperForm.relationMapping": "Mapování vztahů",
+
     "export.title.fund": "Import archivního souboru",
     "export.transformationName": "Šablona transformace",
 

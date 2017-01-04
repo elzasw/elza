@@ -699,7 +699,7 @@ public class RegistryController {
      *
      * @return vztahy a jejich mapování
      */
-    @RequestMapping(value = "/interpi/{interpiRecordId}/relations", method = RequestMethod.GET)
+    @RequestMapping(value = "/interpi/{interpiRecordId}/relations", method = RequestMethod.POST)
     public InterpiMappingVO findInterpiRecordRelations(@PathVariable final String interpiRecordId, @RequestBody final Integer systemId) {
         Assert.notNull(interpiRecordId);
         Assert.notNull(systemId);

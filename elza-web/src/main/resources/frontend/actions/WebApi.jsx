@@ -980,6 +980,10 @@ class WebApi {
     importRecordUpdate(recordId, importVO) {
         return AjaxUtils.ajaxPut(WebApi.registryUrl + '/interpi/import/'+ recordId, null, importVO);
     }
+
+    findInterpiRecordRelations(recordId, systemId) {
+        return AjaxUtils.ajaxPost(WebApi.registryUrl + '/interpi/' + recordId + '/relations/', null, systemId);
+    }
 }
 
 WebApi.baseUrl = '/api';

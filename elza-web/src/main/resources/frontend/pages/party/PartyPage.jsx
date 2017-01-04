@@ -90,7 +90,7 @@ class PartyPage extends AbstractReactComponent {
      * ADD PARTY
      * *********************************************
      * Uložení nové osoby
-     */ 
+     */
     addParty = (data) => {
         this.dispatch(partyDetailFetchIfNeeded(data.id));
         this.dispatch(partyListInvalidate());
@@ -101,7 +101,7 @@ class PartyPage extends AbstractReactComponent {
      * *********************************************
      * Kliknutí na tlačítko pro založení nové osoby
      * @param partyTypeId - identifikátor typu osoby (osoba, rod, korporace, ..)
-     */ 
+     */
     handleAddParty = (partyTypeId) => {
         this.dispatch(partyAdd(partyTypeId, null, this.addParty, false));
     };
@@ -121,7 +121,7 @@ class PartyPage extends AbstractReactComponent {
      * HANDLE DELETE PARTY
      * *********************************************
      * Kliknutí na tlačítko pro smazání osoby
-     */ 
+     */
     handleDeleteParty = () => {
         confirm(i18n('party.delete.confirm')) && this.dispatch(partyDelete(this.props.partyDetail.data.id));
     };
@@ -130,7 +130,7 @@ class PartyPage extends AbstractReactComponent {
      * BUILD RIBBON
      * *********************************************
      * Sestavení Ribbon Menu - přidání položek pro osoby
-     */ 
+     */
     buildRibbon = () => {
         const {userDetail, partyDetail, refTables: {partyTypes}, extSystems} = this.props;
 
@@ -181,13 +181,9 @@ class PartyPage extends AbstractReactComponent {
      * RENDER
      * *********************************************
      * Vykreslení stránky pro osoby
-     */ 
+     */
     render() {
-        const {splitter, userDetail, partyDetail} = this.props;
-        const canEdit = partyDetail.fetched &&
-            !partyDetail.isFetching &&
-            partyDetail.data &&
-            userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: partyDetail.data.record.scopeId});
+        const {splitter} = this.props;
 
         const leftPanel = <PartyList />;
 
