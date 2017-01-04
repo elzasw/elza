@@ -883,6 +883,7 @@ var messages = {
 
     "extMapperForm.title": "Import hesla - vazby",
     "extMapperForm.relationMapping": "Mapování vztahů",
+    "extMapperForm.saveAsDefaultMapping": "Nastavit mapování jako výchozí?",
 
     "export.title.fund": "Import archivního souboru",
     "export.transformationName": "Šablona transformace",

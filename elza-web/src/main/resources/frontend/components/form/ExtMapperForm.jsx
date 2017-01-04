@@ -53,7 +53,11 @@ class ExtMapperForm extends AbstractReactComponent {
                                 <td><Icon glyph="fa-arrow-right" /></td>
                                 <td/>
                                 <td>
-                                    <FormInput componentClass="select" {...i.relationTypeId}>
+                                    <FormInput componentClass="select" {...i.relationTypeId} onChange={(ev) => {
+                                        const save = confirm(i18n('extMapperForm.saveAsDefaultMapping'));
+                                        i.save.onChange(save);
+                                        i.relationTypeId.onChange(ev);
+                                    }}>
                                         <option key="null"/>
                                         {partyType.relationTypes.map(r => <option value={r.id} key={r.id}>{r.name}</option>)}
                                     </FormInput>
@@ -66,7 +70,11 @@ class ExtMapperForm extends AbstractReactComponent {
                                 <td>{e.interpiRoleType.value}</td>
                                 <td><Icon glyph="fa-arrow-right" /></td>
                                 <td>
-                                    <FormInput componentClass="select" disabled={!i.relationTypeId.value || !e.importEntity.value} {...e.relationRoleTypeId}>
+                                    <FormInput componentClass="select" disabled={!i.relationTypeId.value || !e.importEntity.value} {...e.relationRoleTypeId} onChange={(ev) => {
+                                        const save = confirm(i18n('extMapperForm.saveAsDefaultMapping'));
+                                        e.save.onChange(save);
+                                        e.relationRoleTypeId.onChange(ev);
+                                    }}>
                                         <option key="null"/>
                                         {i.relationTypeId.value && relationRoleTypes.map(r => <option value={r.id} key={r.id}>{r.name}</option>)}
                                     </FormInput>
@@ -123,12 +131,14 @@ export default reduxForm({
         'mappings[].interpiClass',
         'mappings[].interpiRelationType',
         'mappings[].importRelation',
+        'mappings[].save',
         'mappings[].relationEntities[].id',
         'mappings[].relationEntities[].interpiClass',
         'mappings[].relationEntities[].interpiEntityName',
         'mappings[].relationEntities[].interpiRoleType',
         'mappings[].relationEntities[].relationRoleTypeId',
         'mappings[].relationEntities[].importEntity',
+        'mappings[].relationEntities[].save',
     ],
     form: 'extMapperForm'
 }, (state) => ({
