@@ -1,9 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {FormControl} from 'react-bootstrap'
+import {FormControl, Button} from 'react-bootstrap'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
-import {i18n, AbstractReactComponent, NoFocusButton, Icon, PartyIdentifierForm} from 'components/index.jsx'
+import {i18n, AbstractReactComponent, Icon, PartyIdentifierForm} from 'components/index.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 
 import './PartyDetailIdentifiers.less'
@@ -83,12 +83,12 @@ class PartyDetailIdentifiers extends AbstractReactComponent {
     };
 
     handlePartyGroupIdentifierAdd = () => {
-        this.dispatch(modalDialogShow(this, i18n('party.detail.identifier.new') , <PartyIdentifierForm onSubmitForm={this.addIdentifier} />));
+        this.dispatch(modalDialogShow(this, i18n('party.detail.identifier.new') , <PartyIdentifierForm onSubmitForm={this.addIdentifier} />, 'dialog-lg'));
     };
 
 
     handlePartyGroupIdentifierUpdate = (partyGroupIdentifier) => {
-        this.dispatch(modalDialogShow(this, i18n('party.detail.identifier.update'), <PartyIdentifierForm initialValues={partyGroupIdentifier} onSubmitForm={this.update.bind(this, partyGroupIdentifier)} />));
+        this.dispatch(modalDialogShow(this, i18n('party.detail.identifier.update'), <PartyIdentifierForm initialValues={partyGroupIdentifier} onSubmitForm={this.update.bind(this, partyGroupIdentifier)} />, 'dialog-lg'));
     };
 
 
@@ -103,13 +103,13 @@ class PartyDetailIdentifiers extends AbstractReactComponent {
         return <div className="party-detail-identifiers">
             <div>
                 <label>{i18n("party.detail.partyGroupIdentifiers")}</label>
-                {canEdit && <NoFocusButton bsStyle="default" onClick={this.handlePartyGroupIdentifierAdd}><Icon glyph="fa-plus" /></NoFocusButton>}
+                {canEdit && <Button bsStyle="default" onClick={this.handlePartyGroupIdentifierAdd}><Icon glyph="fa-plus" /></Button>}
             </div>
             {party.partyGroupIdentifiers.map((partyGroupIdentifier, index) => <div key={partyGroupIdentifier.id} className="value-group">
                 <div className="value">{partyGroupIdentifier.identifier}</div>
                 {canEdit && <div className="actions">
-                    <NoFocusButton onClick={() => this.handlePartyGroupIdentifierUpdate(partyGroupIdentifier)}><Icon glyph="fa-pencil" /></NoFocusButton>
-                    <NoFocusButton onClick={() => this.partyGroupIdentifierDelete(partyGroupIdentifier.id)}><Icon glyph="fa-times" /></NoFocusButton>
+                    <Button onClick={() => this.handlePartyGroupIdentifierUpdate(partyGroupIdentifier)}><Icon glyph="fa-pencil" /></Button>
+                    <Button onClick={() => this.partyGroupIdentifierDelete(partyGroupIdentifier.id)}><Icon glyph="fa-times" /></Button>
                 </div>}
             </div>)}
         </div>

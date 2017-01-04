@@ -28,8 +28,8 @@ elza:
     transformationDir: ${elza.workingDir}/transformations/
 
   xmlExport:
-    transformationDir: ${elza.workingDir}/xmlExportTransformations/  
-    
+    transformationDir: ${elza.workingDir}/xmlExportTransformations/
+
   bulkactions:
     bulkactionsDir: ${elza.workingDir}/bulkactions
 
@@ -44,6 +44,8 @@ elza:
 
   groovy:
     groovyDir: ${elza.workingDir}/groovy
+  interpi:
+    interpiDir: ${elza.workingDir}/interpi
 
   fund:
       ZP2015:

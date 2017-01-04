@@ -4,7 +4,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Autocomplete, Utils, Icon, i18n, AbstractReactComponent, NoFocusButton, FormInput} from 'components/index.jsx';
+import {TooltipTrigger, Autocomplete, Utils, Icon, i18n, AbstractReactComponent, NoFocusButton, FormInput} from 'components/index.jsx';
 import {Tooltip, OverlayTrigger} from 'react-bootstrap';
 import {addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
 import {connect} from 'react-redux'
@@ -789,10 +789,15 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
         const missings = conformityInfo.missings[descItemType.id];
         if (missings && missings.length > 0) {
             const messages = missings.map(missing => missing.description);
-            const tooltip = <Tooltip id="messages">{messages}</Tooltip>
-            actions.push(<OverlayTrigger key="state" placement="right" overlay={tooltip}>
+            const tooltip = <div>{messages}</div>
+            actions.push(<TooltipTrigger
+                key="state"
+                content={tooltip}
+                holdOnHover
+                placement="auto"
+            >
                 <div className='btn btn-default'><Icon className="messages" glyph="fa-exclamation-triangle"/></div>
-            </OverlayTrigger>);
+            </TooltipTrigger>);
         }
 
         if (infoType.cal === 1) {
@@ -811,9 +816,14 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
         let titleText = descItemType.name;
         if (refType.description && refType.description.length > 0) {
             if (refType.description != titleText) {
-                titleText = [titleText, refType.description].join('\n')
+                if (titleText && titleText.length > 0) {
+                    titleText = [titleText, refType.description].join('<br/>');
+                } else {
+                    titleText = refType.description;
+                }
             }
         }
+        const tooltip = <div dangerouslySetInnerHTML={{__html: titleText}}></div>
 
         if (hasPermission) {
             if (infoType.rep === 1 && !(locked || closed || readMode)) {
@@ -851,9 +861,15 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
         // Render
         return (
             <div key="label" className='desc-item-type-label'>
-                <div key="title" className='title' title={titleText}>
+                <TooltipTrigger
+                    key="title"
+                    className='title'
+                    content={tooltip}
+                    holdOnHover
+                    placement="vertical"
+                >
                     {refType.shortcut}
-                </div>
+                </TooltipTrigger>
                 <div key="actions" className='actions'>
                     {actions}
                 </div>
@@ -909,10 +925,16 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
             const errors = conformityInfo.errors[descItem.descItemObjectId];
             if (errors && errors.length > 0) {
                 const messages = errors.map(error => error.description);
-                const tooltip = <Tooltip id="info">{messages}</Tooltip>
-                actions.push(<OverlayTrigger key="info" placement="left" overlay={tooltip}>
+                const tooltip = <div>{messages}</div>
+                actions.push(<TooltipTrigger
+                    key="info"
+                    content={tooltip}
+                    holdOnHover
+                    placement="auto"
+                    showDelay={1}
+                >
                     <div className='btn btn-default'><Icon glyph="fa-exclamation-triangle"/></div>
-                </OverlayTrigger>);
+                </TooltipTrigger>);
             }
 
             let canModifyDescItem = !(locked || closed)

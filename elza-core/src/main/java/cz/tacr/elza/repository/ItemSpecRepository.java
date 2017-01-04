@@ -5,6 +5,7 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPackage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
@@ -32,4 +33,7 @@ public interface ItemSpecRepository extends JpaRepository<RulItemSpec, Integer> 
     RulItemSpec findOneByCode(String code);
 
     RulItemSpec findByItemTypeAndCode(RulItemType itemType, String itemSpecCode);
+
+    @Query("SELECT s FROM rul_item_spec s WHERE s.code IN :codes")
+    List<RulItemSpec> findOneByCodes(@Param("codes") Collection<String> codes);
 }

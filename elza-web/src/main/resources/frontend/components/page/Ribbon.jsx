@@ -101,6 +101,9 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
                         <LinkContainer key="ribbon-btn-admin-fulltext" to="/admin/fulltext"><Button><Icon glyph="fa-search"/>
                             <div><span className="btnText">{i18n('ribbon.action.admin.fulltext')}</span></div>
                         </Button></LinkContainer>
+                        <LinkContainer key="ribbon-btn-admin-requestsQueue" to="/admin/requestsQueue"><Button><Icon glyph="fa-shopping-basket"/>
+                            <div><span className="btnText">{i18n('ribbon.action.admin.requestsQueue')}</span></div>
+                        </Button></LinkContainer>
                     </RibbonGroup>
                 );
             }
@@ -121,6 +124,11 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
 
             if (userDetail.hasFundActionPage(fundId)) {    // právo na hromadné akce            
                 arrParts.push(<LinkContainer key="ribbon-btn-arr-actions" to="/arr/actions"><Button><Icon glyph="fa-calculator" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.bulkActions')}</span></div></Button></LinkContainer>)
+            }
+
+            if (userDetail.hasArrPage(fundId)) {    // právo na pořádání
+                arrParts.push(<LinkContainer key="ribbon-btn-arr-requests" to="/arr/requests"><Button><Icon glyph="fa-shopping-basket" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.requests')}</span></div></Button></LinkContainer>)
+                arrParts.push(<LinkContainer key="ribbon-btn-arr-daos" to="/arr/daos"><Button><Icon glyph="fa-camera" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.daos')}</span></div></Button></LinkContainer>)
             }
 
             section = (
@@ -146,7 +154,8 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
                     <LinkContainer key="ribbon-btn-fund" to="/fund"><Button><Icon glyph="fa-paste" /><div><span className="btnText">{i18n('ribbon.action.fund')}</span></div></Button></LinkContainer>
                     <LinkContainer key="ribbon-btn-registry" to="/registry"><Button><Icon glyph="fa-th-list" /><div><span className="btnText">{i18n('ribbon.action.registry')}</span></div></Button></LinkContainer>
                     <LinkContainer key="ribbon-btn-party" to="/party"><Button><Icon glyph="fa-users" /><div><span className="btnText">{i18n('ribbon.action.party')}</span></div></Button></LinkContainer>
-                    <LinkContainer key="ribbon-btn-admin" to="/admin"><Button><Icon glyph="fa-cog" /><div><span className="btnText">{i18n('ribbon.action.admin')}</span></div></Button></LinkContainer>
+                    {userDetail.hasOne(perms.ADMIN) &&
+                    <LinkContainer key="ribbon-btn-admin" to="/admin"><Button><Icon glyph="fa-cog" /><div><span className="btnText">{i18n('ribbon.action.admin')}</span></div></Button></LinkContainer>}
                 </RibbonGroup>
             )
         }

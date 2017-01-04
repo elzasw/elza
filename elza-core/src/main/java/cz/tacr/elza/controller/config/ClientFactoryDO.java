@@ -79,6 +79,7 @@ import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.filter.condition.BeginDescItemCondition;
 import cz.tacr.elza.filter.condition.ContainDescItemCondition;
 import cz.tacr.elza.filter.condition.DescItemCondition;
+import cz.tacr.elza.filter.condition.EmptyPacketTypeDescItemCondition;
 import cz.tacr.elza.filter.condition.EndDescItemCondition;
 import cz.tacr.elza.filter.condition.EqDescItemCondition;
 import cz.tacr.elza.filter.condition.EqIntervalDesCitemCondition;
@@ -94,7 +95,9 @@ import cz.tacr.elza.filter.condition.NeDescItemCondition;
 import cz.tacr.elza.filter.condition.NoValuesCondition;
 import cz.tacr.elza.filter.condition.NotContainDescItemCondition;
 import cz.tacr.elza.filter.condition.NotEmptyDescItemCondition;
+import cz.tacr.elza.filter.condition.NotEmptyPacketTypeDescItemCondition;
 import cz.tacr.elza.filter.condition.NotIntervalDescItemCondition;
+import cz.tacr.elza.filter.condition.SelectedAndEmptyPacketTypeDescItemCondition;
 import cz.tacr.elza.filter.condition.SelectedSpecificationsDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.SelectedValuesDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.SelectsNothingCondition;
@@ -456,10 +459,12 @@ public class ClientFactoryDO {
         Assert.notNull(descItemType);
         Assert.notNull(filter);
 
+        boolean isPacketRef = descItemType.getDataType().getCode().equalsIgnoreCase("PACKET_REF");
+
         List<DescItemCondition> valuesConditions = createValuesEnumCondition(filter.getValuesType(), filter.getValues(),
                 LuceneDescItemCondition.FULLTEXT_ATT);
         List<DescItemCondition> specsConditions = createSpecificationsEnumCondition(filter.getSpecsType(), filter.getSpecs(),
-                LuceneDescItemCondition.SPECIFICATION_ATT);
+                LuceneDescItemCondition.SPECIFICATION_ATT, isPacketRef);
 
         List<DescItemCondition> conditions = new LinkedList<>();
         Condition conditionType = filter.getConditionType();
@@ -786,7 +791,9 @@ public class ClientFactoryDO {
             } else if (!values.isEmpty()) { // odškrtlé jen hodnoty = hodnoty které neobsahují proškrtlé položky + nody bez hodnot
                 conditions.add(new UnselectedValuesDescItemEnumCondition(values, attName));
                 conditions.add(new NoValuesCondition());
-            } else { // odškrtlé jen "Prázdné" = vše s hodnotou
+            } else if (containsNull) { // odškrtlé jen "Prázdné" = vše s hodnotou
+                conditions.add(new NotEmptyDescItemCondition());
+            } else {
                 // není potřeba vkládat podmínku, pokud vznikne ještě jiná podmínka tak by se udělal průnik výsledků a když bude seznam podmínek prázdný tak se vrátí všechna data
             }
         }
@@ -800,10 +807,11 @@ public class ClientFactoryDO {
      * @param valuesTypes typ výběru - zaškrtnutí/odškrtnutí
      * @param values id specifikací
      * @param attName název atributu na který se podmínka aplikuje
+     * @param isPacketRef
      * @param conditions seznam podmínek do kterého se přidají nové podmínky
      */
     private List<DescItemCondition> createSpecificationsEnumCondition(final ValuesTypes valuesTypes, final List<Integer> values,
-            final String attName) {
+            final String attName, final boolean isPacketRef) {
         if (valuesTypes == null && values == null) {
             return Collections.emptyList();
         }
@@ -818,20 +826,41 @@ public class ClientFactoryDO {
             if (noValues) { // nehledat nic
                 conditions.add(new SelectsNothingCondition());
             } else if (containsNull && !values.isEmpty()) { // vybrané hodnoty i "Prázdné"
-                conditions.add(new SelectedSpecificationsDescItemEnumCondition(values, attName));
-                conditions.add(new NoValuesCondition());
+                if (isPacketRef) {
+                    conditions.add(new SelectedAndEmptyPacketTypeDescItemCondition(values));
+                } else {
+                    conditions.add(new SelectedSpecificationsDescItemEnumCondition(values, attName));
+                    conditions.add(new NoValuesCondition());
+                }
             } else if (!values.isEmpty()) { // vybrané jen hodnoty
                 conditions.add(new SelectedSpecificationsDescItemEnumCondition(values, attName));
             } else { // vybrané jen "Prázdné"
-                conditions.add(new NoValuesCondition());
+                if (isPacketRef) {
+                    conditions.add(new EmptyPacketTypeDescItemCondition());
+                } else {
+                    conditions.add(new NoValuesCondition());
+                }
             }
         } else {
             if (containsNull && !values.isEmpty()) { // odškrtlé hodnoty i "Prázdné" = hodnoty které neobsahují proškrtlé položky
+                if (isPacketRef) {
+                    conditions.add(new NotEmptyPacketTypeDescItemCondition());
+                }
                 conditions.add(new UnselectedSpecificationsDescItemEnumCondition(values, attName));
             } else if (!values.isEmpty()) { // odškrtlé jen hodnoty = hodnoty které neobsahují proškrtlé položky + nody bez hodnot
-                conditions.add(new UnselectedSpecificationsDescItemEnumCondition(values, attName));
-                conditions.add(new NoValuesCondition());
-            } else { // odškrtlé jen "Prázdné" = vše s hodnotou
+                if (isPacketRef) {
+                    conditions.add(new UnselectedSpecificationsDescItemEnumCondition(values, attName));
+                } else {
+                    conditions.add(new UnselectedSpecificationsDescItemEnumCondition(values, attName));
+                    conditions.add(new NoValuesCondition());
+                }
+            } else if (containsNull) { // odškrtlé jen "Prázdné" = vše s hodnotou
+                if (isPacketRef) {
+                    conditions.add(new NotEmptyPacketTypeDescItemCondition());
+                } else {
+                    conditions.add(new NotEmptyDescItemCondition());
+                }
+            } else {
                 // není potřeba vkládat podmínku, pokud vznikne ještě jiná podmínka tak by se udělal průnik výsledků a když bude seznam podmínek prázdný tak se vrátí všechna data
             }
         }
@@ -935,5 +964,21 @@ public class ClientFactoryDO {
     public List<UISettings> createSettingsList(final List<UISettingsVO> settings) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.mapAsList(settings, UISettings.class);
+    }
+
+    public <T, R> R createSimpleEntity(final T entity, final Class<R> clazz) {
+        if (entity == null) {
+            return null;
+        }
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        return mapper.map(entity, clazz);
+    }
+
+    public <T, R> List<R> createSimpleEntity(final Collection<T> entity, final Class<R> clazz) {
+        if (entity == null) {
+            return null;
+        }
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        return mapper.mapAsList(entity, clazz);
     }
 }

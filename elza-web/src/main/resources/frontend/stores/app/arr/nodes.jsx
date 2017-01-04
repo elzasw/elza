@@ -7,6 +7,7 @@ import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo.jsx'
 import {isNodeInfoAction} from 'actions/arr/nodeInfo.jsx'
 import {isNodeAction} from 'actions/arr/node.jsx'
 import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister.jsx'
+import {isSubNodeDaosAction} from 'actions/arr/subNodeDaos.jsx'
 import {isDeveloperScenariosAction} from 'actions/global/developer.jsx'
 import {isFundChangeAction} from 'actions/global/change.jsx'
 
@@ -43,6 +44,7 @@ export default function nodes(state = nodesInitialState, action) {
         || isNodeInfoAction(action)
         || isNodeAction(action)
         || isSubNodeRegisterAction(action)
+        || isSubNodeDaosAction(action)
         || isDeveloperScenariosAction(action)
         || nodeFormActions.isSubNodeFormCacheAction(action, "NODE")
     ) {
@@ -270,6 +272,35 @@ export default function nodes(state = nodesInitialState, action) {
                     return node(nodeObj, action);
                 })};
             return consolidateState(state, result);
+
+        case types.NODES_DELETE: {
+            let result = {...state};
+
+            if (state.activeIndex != null) {
+                let node = state.nodes[state.activeIndex];
+                if (action.nodeIds.indexOf(node.nodeId) >= 0) {
+                    result.activeIndex = null;
+                }
+            }
+
+            let nodes = [];
+            for (let i = 0; i < result.nodes.length; i++) {
+                if (action.nodeIds.indexOf(result.nodes[i].id) < 0) {
+                    nodes.push(node(result.nodes[i], action));
+                } else {
+                    if (result.activeIndex != null) {
+                        if (result.activeIndex > i) {
+                            result.activeIndex--; // posunutí otevřené záložky
+                        } else if (result.activeIndex === 0) {
+                            result.activeIndex = null; // zavření jediné záložky
+                        }
+                    }
+                }
+            }
+            result.nodes = nodes;
+
+            return consolidateState(state, result);
+        }
 
         default:
             return state

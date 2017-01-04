@@ -46,19 +46,37 @@ class PartyIdentifierForm extends AbstractReactComponent {
 
         return <Form onSubmit={handleSubmit(submit)}>
             <Modal.Body className="party-identifier-form">
-                <FormInput type="text" label={i18n('party.identifier.source')} {...source} />
-                <FormInput type="text" label={i18n('party.identifier.identifierText')} {...identifier} />
-                <hr/>
-                <Row className="datations">
-                    <Col xs={12} md={6}>
-                        <DatationField fields={from} label={i18n('party.identifier.from')} labelTextual={i18n('party.identifier.from.textDate')} labelNote={i18n('party.identifier.from.note')} />
-                    </Col>
-                    <Col xs={12} md={6}>
-                        <DatationField fields={to} label={i18n('party.identifier.to')} labelTextual={i18n('party.identifier.to.textDate')} labelNote={i18n('party.identifier.to.note')} />
-                    </Col>
-                </Row>
-                <hr/>
-                <FormInput type="text" label={i18n('party.identifier.note')} {...note} />
+                <div className="flex">
+                    <div className="flex-2">
+                        <Row>
+                            <Col xs={12}>
+                                <FormInput type="text" label={i18n('party.identifier.source')} {...source} />
+                                <FormInput type="text" label={i18n('party.identifier.identifierText')} {...identifier} />
+                            </Col>
+                        </Row>
+                    </div>
+                    <div className="datation-group flex-1">
+                        <Row>
+                            <Col xs={12}>
+                                <Row>
+                                    <Col xs={6} md={12}>
+                                        <DatationField fields={from} label={i18n('party.identifier.from')} labelTextual={i18n('party.identifier.from.textDate')} labelNote={i18n('party.identifier.from.note')} />
+                                    </Col>
+                                    <Col xs={6} md={12}>
+                                        <DatationField fields={to} label={i18n('party.identifier.to')} labelTextual={i18n('party.identifier.to.textDate')} labelNote={i18n('party.identifier.to.note')} />
+                                    </Col>
+                                </Row>
+                            </Col>
+                        </Row>
+                    </div>
+                    <div className="flex-1">
+                        <Row>
+                            <Col xs={12}>
+                                <FormInput componentClass="textarea" label={i18n('party.identifier.note')} {...note} />
+                            </Col>
+                        </Row>
+                    </div>
+                </div>
             </Modal.Body>
             <Modal.Footer>
                 <Button bsStyle="default" type="submit">{i18n('global.action.store')}</Button>

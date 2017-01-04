@@ -17,6 +17,9 @@ import * as perms from 'actions/user/Permission.jsx';
 import {SubNodeForm} from "components/index.jsx";
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {getOneSettings} from 'components/arr/ArrUtils.jsx';
+import ArrHistoryForm from 'components/arr/ArrHistoryForm.jsx'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {WebApi} from 'actions/index.jsx';
 
 const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
     constructor(props) {
@@ -80,7 +83,21 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
         }
     }
 
+    /**
+     * Zobrazení formuláře historie JP.
+     */
+    handleShowHistory = () => {
+        const {versionId, fund} = this.props;
+        const node = fund.nodes[fund.activeIndex];
+        const form = <ArrHistoryForm versionId={versionId} node={node} onDeleteChanges={this.handleDeleteChanges} />
+        this.dispatch(modalDialogShow(this, i18n('arr.history.title'), form, "dialog-lg"));
+    }
 
+    handleDeleteChanges = (nodeId, fromChangeId, toChangeId) => {
+        WebApi.revertChanges(this.props.versionId, nodeId, fromChangeId, toChangeId).then(() => {
+            this.dispatch(modalDialogHide());
+        });
+    }
 
     handleDeleteNode() {
         if (window.confirm('Opravdu chcete smazat tento JP?')) {
@@ -110,6 +127,11 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
      */
     renderFormActions() {
         const notRoot = !isFundRootId(this.props.nodeId);
+
+        const {fundId, userDetail} = this.props;
+        const historyAllowed = userDetail.hasOne(perms.FUND_ADMIN, {type: perms.FUND_VER_WR, fundId},
+                                                 perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId});
+
         return (
             <div ref="nodeToolbar" className='node-form-actions-container'>
                 <div className='node-form-actions'>
@@ -123,10 +145,20 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
                         <NoFocusButton onClick={this.props.onVisiblePolicy}>
                             <Icon glyph="fa-eye"/>
                         </NoFocusButton>
+                        {historyAllowed &&
+                        <NoFocusButton onClick={this.handleShowHistory}>
+                            <Icon glyph="fa-history"/>
+                        </NoFocusButton>}
                         {notRoot &&
                         <NoFocusButton onClick={this.handleDeleteNode}>
                             <Icon glyph="fa-trash"/>
                         </NoFocusButton>}
+                    </div>
+                    <div className='section'>
+                        <NoFocusButton onClick={this.props.onDigitizationRequest}>
+                            <Icon glyph="fa-camera"/>
+                            {i18n("subNodeForm.digitizationRequest")}
+                        </NoFocusButton>
                     </div>
                 </div>
             </div>
@@ -220,6 +252,7 @@ NodeSubNodeForm.propTypes = {
     userDetail: React.PropTypes.object.isRequired,
     onAddDescItemType: React.PropTypes.func.isRequired,
     onVisiblePolicy: React.PropTypes.func.isRequired,
+    onDigitizationRequest: React.PropTypes.func.isRequired,
     singleDescItemTypeId: React.PropTypes.number,
     singleDescItemTypeEdit: React.PropTypes.bool,
     readMode: React.PropTypes.bool,

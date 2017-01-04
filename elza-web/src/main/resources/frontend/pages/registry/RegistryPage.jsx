@@ -7,7 +7,7 @@ import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Loading} from 'components/index.jsx';
 import {Icon, RibbonGroup,Ribbon, ModalDialog, NodeTabs, ArrPanel,
         SearchWithGoto, RegistryPanel, AddRegistryForm, ImportForm,
-        ListBox, Autocomplete} from 'components';
+        ListBox, Autocomplete, ExtImportForm} from 'components';
 import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 import {Button} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
@@ -42,8 +42,11 @@ import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {getTreeItemById} from "./../../components/registry/registryUtils";
+import {regExtSystemListFetchIfNeeded} from 'actions/registry/regExtSystemList';
 
 import './RegistryPage.less';
+
+
 
 const keyModifier = Utils.getKeyModifier();
 
@@ -121,6 +124,8 @@ class RegistryPage extends AbstractReactComponent {
         const {registryRegion: {filterText, registryParentId, registryTypesId, panel: {versionId}}} = props;
         this.dispatch(fetchRegistryIfNeeded(filterText, registryParentId, registryTypesId, versionId));
         this.dispatch(refRecordTypesFetchIfNeeded());
+                this.props.dispatch(regExtSystemListFetchIfNeeded());
+
         this.trySetFocus(props)
     }
 
@@ -235,6 +240,12 @@ class RegistryPage extends AbstractReactComponent {
        );
     }
 
+    handleExtImport = () => {
+        this.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={false} onSubmitForm={(data) => {
+            this.dispatch(registryRegionDataSelectRecord({selectedId: data.id}));
+        }}/>, "dialog-lg"));
+    };
+
     canMoveRegistry() {
         const {registryRegion: {selectedId, registryRegionData, registryParentId, recordForMove}} = this.props;
 
@@ -267,7 +278,7 @@ class RegistryPage extends AbstractReactComponent {
     }
 
     buildRibbon() {
-        const {registryRegion: {registryRegionData}, userDetail} = this.props;
+        const {registryRegion: {registryRegionData}, userDetail, extSystems} = this.props;
 
         const altActions = [];
 
@@ -282,6 +293,13 @@ class RegistryPage extends AbstractReactComponent {
                     <div><span className="btnText">{i18n('ribbon.action.registry.import')}</span></div>
                 </Button>
             );
+            if (extSystems && extSystems.length > 0) {
+                altActions.push(
+                    <Button key='registryExtImport' onClick={this.handleExtImport}><Icon glyph='fa-download'/>
+                        <div><span className="btnText">{i18n('ribbon.action.registry.importExt')}</span></div>
+                    </Button>
+                );
+            }
         }
 
         const itemActions = [];
@@ -521,6 +539,7 @@ class RegistryPage extends AbstractReactComponent {
                 inputProps={ {placeholder: registryTypesId === null ? i18n('registry.all') : ""} }
                 items={treeItems}
                 tree
+                alwaysExpanded
                 allowSelectItem={(id, item) => item.addRecord}
                 value={value}
                 onChange={item => this.handleRegistryTypesSelect.bind(this)(item ? item.id : null)}
@@ -567,8 +586,9 @@ class RegistryPage extends AbstractReactComponent {
 };
 
 function mapStateToProps(state) {
-    const {splitter, registryRegion, refTables, focus, userDetail} = state;
+    const {app:{regExtSystemList}, splitter, registryRegion, refTables, focus, userDetail} = state;
     return {
+        extSystems: regExtSystemList.fetched ? regExtSystemList.data : null,
         splitter,
         registryRegion,
         refTables,

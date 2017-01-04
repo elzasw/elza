@@ -103,27 +103,29 @@ return true;
         if (typeof nextProps.scrollToIndex !== 'undefined' && this.props.scrollToIndex !== nextProps.scrollToIndex) {
             var scrollTopPadding = this.props.scrollTopPadding || 0
 
-            const scrollToIndexNum = typeof nextProps.scrollToIndex === "number" ? nextProps.scrollToIndex : nextProps.scrollToIndex.index;
+            const scrollToIndexNum = typeof nextProps.scrollToIndex === "number" ? nextProps.scrollToIndex : (nextProps.scrollToIndex !== null ? nextProps.scrollToIndex.index : null);
 
-            this.setState(state, () => {
-                var box = ReactDOM.findDOMNode(this.refs.box)
-                var itemTop = scrollToIndexNum * this.props.itemHeight + this.props.scrollTopPadding
+            if (scrollToIndexNum !== null) {
+                this.setState(state, () => {
+                    var box = ReactDOM.findDOMNode(this.refs.box)
+                    var itemTop = scrollToIndexNum * this.props.itemHeight + this.props.scrollTopPadding
 
-                var from = this.state.bufferStart + this.props.scrollTopPadding
-                var to = from + box.parentNode.clientHeight - 2*this.props.scrollTopPadding
+                    var from = this.state.bufferStart + this.props.scrollTopPadding
+                    var to = from + box.parentNode.clientHeight - 2*this.props.scrollTopPadding
 
-                //console.log('itemTop', itemTop, 'from', from, 'to', to, 'itemHeight', this.props.itemHeight)
-                if (itemTop <= from) {
-                    if (itemTop - this.props.itemHeight < this.props.scrollTopPadding) {
-                        box.parentNode.scrollTop = 0
-                    } else {
-                        box.parentNode.scrollTop = itemTop - this.props.itemHeight  // chceme alespon o jednu vice, aby nebyla vybrana moc nahore
+                    //console.log('itemTop', itemTop, 'from', from, 'to', to, 'itemHeight', this.props.itemHeight)
+                    if (itemTop <= from) {
+                        if (itemTop - this.props.itemHeight < this.props.scrollTopPadding) {
+                            box.parentNode.scrollTop = 0
+                        } else {
+                            box.parentNode.scrollTop = itemTop - this.props.itemHeight  // chceme alespon o jednu vice, aby nebyla vybrana moc nahore
+                        }
+                    } else if (itemTop + this.props.itemHeight > to) {
+                        // box.parentNode.scrollTop = itemTop + this.props.itemHeight  // chceme alespon o jednu vice, aby nebyla vybrana moc dole
+                        box.parentNode.scrollTop = itemTop - this.props.itemHeight
                     }
-                } else if (itemTop + this.props.itemHeight > to) {
-                    // box.parentNode.scrollTop = itemTop + this.props.itemHeight  // chceme alespon o jednu vice, aby nebyla vybrana moc dole
-                    box.parentNode.scrollTop = itemTop - this.props.itemHeight
-                }
-            });
+                });
+            }
         } else {
             this.setState(state);
         }

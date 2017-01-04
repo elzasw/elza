@@ -6,6 +6,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.Table;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -21,10 +22,11 @@ import cz.tacr.elza.api.RegExternalSystemType;
 @Entity(name = "reg_external_system")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@Table
 public class RegExternalSystem extends SysExternalSystem implements cz.tacr.elza.api.RegExternalSystem {
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = true)
+    @Column
     private RegExternalSystemType type;
 
     @Override

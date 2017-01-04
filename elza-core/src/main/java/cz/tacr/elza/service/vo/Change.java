@@ -50,9 +50,9 @@ public class Change {
     private Integer nodeChanges;
 
     /**
-     * Textový popis změny.
+     * Popisek změny.
      */
-    private String description;
+    private String label;
 
     /**
      * Může se vrátit?
@@ -107,12 +107,12 @@ public class Change {
         this.nodeChanges = nodeChanges;
     }
 
-    public String getDescription() {
-        return description;
+    public String getLabel() {
+        return label;
     }
 
-    public void setDescription(final String description) {
-        this.description = description;
+    public void setLabel(final String label) {
+        this.label = label;
     }
 
     public Boolean getRevert() {

@@ -26,6 +26,21 @@ public enum BaseCode implements ErrorCode {
     /**
      * Chyba při převodu JSON objektu.
      */
-    JSON_PARSE
+    JSON_PARSE,
+
+    /**
+     * Identifikátor entity nesmí existovat.
+     */
+    ID_EXIST,
+
+    /**
+     * Identifikátor entity musí existovat.
+     */
+    ID_NOT_EXIST,
+
+    /**
+     * Pole entity musí být vyplněno.
+     */
+    PROPERTY_NOT_EXIST
 
 }

@@ -55,15 +55,6 @@ class AddPartyForm extends AbstractReactComponent {
     validate = (values) => {
         const {partyType} = this.props;
         let errors = AddPartyForm.validateInline(values);
-        if (!values.prefferedName.nameFormType.id) {
-            if (!errors.prefferedName) {
-                errors.prefferedName = {}
-            }
-            if (!errors.prefferedName.nameFormType) {
-                errors.prefferedName.nameFormType = {}
-            }
-            errors.prefferedName.nameFormType.id = i18n('global.validation.required');
-        }
         if (!values.prefferedName.mainPart) {
             if (!errors.prefferedName) {
                 errors.prefferedName = {}
@@ -196,13 +187,12 @@ class AddPartyForm extends AbstractReactComponent {
     };
 
     /**
-     * Pokud nejsou nastaveny hodnoty - nastavíme hodnotu do pole nameFormTypeId a scopeId
+     * Pokud nejsou nastaveny hodnoty - nastavíme hodnotu do pole scopeId
      */
     loadData(props) {
         const {recordTypes, refTables: {partyNameFormTypes, scopesData:{scopes}, calendarTypes}, partyType} = props;
 
         const registerTypeId = this.getPreselectRecordTypeId(recordTypes);
-        const nameFormTypeId = partyNameFormTypes.items[0].id;
         const scopeId = scopes.filter(i => i.versionId === null)[0].scopes[0].id;
         const complementsTypes = partyType.complementTypes;
         const firstCalId = calendarTypes.items[0].id;
@@ -216,9 +206,6 @@ class AddPartyForm extends AbstractReactComponent {
                 scopeId,
             },
             prefferedName:{
-                nameFormType: {
-                    id: nameFormTypeId,
-                },
                 validFrom: {calendarTypeId: firstCalId},
                 validTo: {calendarTypeId: firstCalId}
             }
@@ -308,6 +295,7 @@ class AddPartyForm extends AbstractReactComponent {
                                             label={i18n('party.recordType')}
                                             items={treeItems}
                                             tree
+                                            alwaysExpanded
                                             allowSelectItem={(id, item) => item.addRecord}
                                             {...registerTypeId}
                                             value={value}
@@ -347,7 +335,7 @@ class AddPartyForm extends AbstractReactComponent {
 
                             <Col xs={12}>
                                 <label>{i18n('party.name.complements')}</label> <Button bsStyle="action" onClick={() => {partyNameComplements.addField({complementTypeId:null, complement: null})}}><Icon glyph="fa-plus"/></Button>
-                                {partyNameComplements.map((complement, index) => <div key={'complement' + index}>
+                                {partyNameComplements.map((complement, index) => <div className="complement" key={'complement' + index}>
                                     <FormInput componentClass="select" {...complement.complementTypeId}>
                                         <option key='0'/>
                                         {complementsList}
@@ -358,6 +346,7 @@ class AddPartyForm extends AbstractReactComponent {
                             </Col>
                             <Col xs={12}>
                                 <FormInput componentClass="select" label={i18n('party.name.nameFormType')} {...nameFormType.id}>
+                                    <option key="null" />
                                     {partyNameFormTypes.items.map((i) => <option value={i.id} key={i.id}>{i.name}</option>)}
                                 </FormInput>
                             </Col>
@@ -371,7 +360,7 @@ class AddPartyForm extends AbstractReactComponent {
                                         <DatationField fields={validFrom} label={i18n('party.name.validFrom')} labelTextual={i18n('party.name.validFrom.textDate')} labelNote={i18n('party.name.validFrom.note')} />
                                     </Col>
                                     <Col xs={6} md={12}>
-                                        <DatationField fields={validTo} label={i18n('party.name.validTo')} labelTextual={i18n('party.name.validTo.textual')} labelNote={i18n('party.name.validTo.note')} />
+                                        <DatationField fields={validTo} label={i18n('party.name.validTo')} labelTextual={i18n('party.name.validTo.textDate')} labelNote={i18n('party.name.validTo.note')} />
                                     </Col>
                                 </Row>
                             </Col>

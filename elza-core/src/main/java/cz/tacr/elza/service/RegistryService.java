@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -15,17 +14,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import javax.annotation.PostConstruct;
 
-import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.packageimport.PackageService;
-import cz.tacr.elza.packageimport.xml.SettingRecord;
-import cz.tacr.elza.repository.SettingsRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -45,8 +38,11 @@ import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.packageimport.xml.SettingRecord;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -57,6 +53,7 @@ import cz.tacr.elza.repository.RegExternalSystemRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.SettingsRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
@@ -241,7 +238,7 @@ public class RegistryService {
      *
      * @param record    naplněný objekt, bez vazeb
      * @param partySave true - jedná se o ukládání přes ukládání osoby, false -> editace z klienta
-     * @return výslendný objekt
+     * @return výsledný objekt
      */
     @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL, UsrPermission.Permission.REG_SCOPE_WR})
     public RegRecord saveRecord(@AuthParam(type = AuthParam.Type.SCOPE) final RegRecord record,
@@ -756,7 +753,7 @@ public class RegistryService {
         List<String> scopeCodes = getScopeCodes();
         List<RegScope> defaultScopes;
         if (CollectionUtils.isEmpty(scopeCodes)) {
-            defaultScopes = Collections.EMPTY_LIST;
+            defaultScopes = Collections.emptyList();
         } else {
             defaultScopes = scopeRepository.findByCodes(scopeCodes);
         }
