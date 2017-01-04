@@ -24,8 +24,11 @@ public class InterpiEntityMappingVO {
     /** Název entity v roli. */
     private String interpiEntityName;
 
-    /** Příznak zda se má vztak importovat. */
-    private boolean importRelation;
+    /** Příznak zda se má entita importovat. */
+    private boolean importEntity;
+
+    /** Příznak zda se má mapování uložit. */
+    private boolean save;
 
     public Integer getId() {
         return id;
@@ -58,12 +61,20 @@ public class InterpiEntityMappingVO {
     public void setInterpiEntityName(final String interpiEntityName) {
         this.interpiEntityName = interpiEntityName;
     }
-    public boolean getImportRelation() {
-        return importRelation;
+    public boolean getImportEntity() {
+        return importEntity;
     }
 
-    public void setImportRelation(final boolean importRelation) {
-        this.importRelation = importRelation;
+    public void setImportEntity(final boolean importRelation) {
+        this.importEntity = importRelation;
+    }
+
+    public boolean getSave() {
+        return save;
+    }
+
+    public void setSave(final boolean save) {
+        this.save = save;
     }
 
     @Override

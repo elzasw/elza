@@ -29,11 +29,14 @@ public class InterpiRelationMappingVO {
     /** Typ vztahu INTERPI. */
     private String interpiRelationType;
 
-    /** Příznak zda se má vztak importovat. */
+    /** Příznak zda se má vztah importovat. */
     private boolean importRelation;
 
     /** Seznam entit. */
     private List<InterpiEntityMappingVO> entities;
+
+    /** Příznak zda se má mapování uložit. */
+    private boolean save;
 
     public void addEntityMapping(final InterpiEntityMappingVO entityMappingVO) {
         Assert.notNull(entityMappingVO);
@@ -89,6 +92,14 @@ public class InterpiRelationMappingVO {
 
     public void setEntities(final List<InterpiEntityMappingVO> entities) {
         this.entities = entities;
+    }
+
+    public boolean getSave() {
+        return save;
+    }
+
+    public void setSave(final boolean save) {
+        this.save = save;
     }
 
     @Override

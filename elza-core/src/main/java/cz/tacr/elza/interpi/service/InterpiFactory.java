@@ -42,6 +42,7 @@ import cz.tacr.elza.domain.ParDynasty;
 import cz.tacr.elza.domain.ParEvent;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyGroup;
+import cz.tacr.elza.domain.ParPartyGroupIdentifier;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyNameComplement;
 import cz.tacr.elza.domain.ParPartyNameFormType;
@@ -621,7 +622,7 @@ public class InterpiFactory {
             return null;
         }
 
-        Predicate<InterpiEntityMappingVO> basePredicate = (m -> m.getImportRelation());
+        Predicate<InterpiEntityMappingVO> basePredicate = (m -> m.getImportEntity());
         Predicate<InterpiEntityMappingVO> rolePredicate = null;
         if (interpiRoleType == null) {
             rolePredicate = (m -> m.getInterpiRoleType() == null);
@@ -870,6 +871,18 @@ public class InterpiFactory {
                 scopeNorm = StringUtils.join(scopeNormList, ", ");
             }
             parPartyGroup.setScopeNorm(scopeNorm);
+
+            List<KodovaneTyp> kodovaneUdajeList = getKodovaneUdaje(valueMap);
+            for (KodovaneTyp kodovaneTyp : kodovaneUdajeList) {
+                ParPartyGroupIdentifier partyGroupIdentifier = new ParPartyGroupIdentifier(); // TODO dodělat
+
+//                partyGroupIdentifier.setFrom(from);
+//                partyGroupIdentifier.setIdentifier(identifier);
+//                partyGroupIdentifier.setNote(kodovaneTyp.getPoznámka());
+//                partyGroupIdentifier.setPartyGroup(parPartyGroup);
+//                partyGroupIdentifier.setSource(source);
+//                partyGroupIdentifier.setTo(to);
+            }
         }
     }
 
@@ -1140,6 +1153,10 @@ public class InterpiFactory {
         return getValueList(valueMap, EntityValueType.SOUVISEJICI_ENTITA);
     }
 
+    public List<KodovaneTyp> getKodovaneUdaje(final Map<EntityValueType, List<Object>> valueMap) {
+        return getValueList(valueMap, EntityValueType.KODOVANE_UDAJE);
+    }
+
     public OznaceniTyp getPreferovaneOznaceni(final Map<EntityValueType, List<Object>> valueMap) {
         List<OznaceniTyp> preferovaneOznaceniList = getValueList(valueMap, EntityValueType.PREFEROVANE_OZNACENI);
 
@@ -1315,7 +1332,7 @@ public class InterpiFactory {
         OznaceniTyp preferovaneOznaceni = souvisejiciTyp.getPreferovaneOznaceni();
         entityMappingVO.setInterpiEntityName(preferovaneOznaceni.getHlavniCast().getValue() + " " + preferovaneOznaceni.getVedlejsiCast().getValue());
 
-        entityMappingVO.setImportRelation(true);
+        entityMappingVO.setImportEntity(true);
 
         return entityMappingVO;
     }

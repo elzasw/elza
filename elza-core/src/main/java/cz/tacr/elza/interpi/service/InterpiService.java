@@ -303,7 +303,7 @@ public class InterpiService {
                         InterpiEntityMappingVO entityMappingVO = new InterpiEntityMappingVO();
 
                         entityMappingVO.setId(parInterpiMapping.getInterpiMappingId());
-                        entityMappingVO.setImportRelation(true);
+                        entityMappingVO.setImportEntity(true);
                         entityMappingVO.setInterpiRoleType(parInterpiMapping.getInterpiRoleType());
                         entityMappingVO.setRelationRoleTypeId(parInterpiMapping.getRelationRoleType().getRoleTypeId());
 
