@@ -29,8 +29,8 @@ class ExtMapperForm extends AbstractReactComponent {
     static validate = (data) => {
         const error = {};
         error.mappings = data.mappings.map(i => {
-            const entities = i.entities ? i.entities.map(e => e.relationRoleTypeId === null ? {relationRoleTypeId: i18n('global.validation.required')} : null) : [];
-            const relationTypeId = i.relationTypeId === null ? i18n('global.validation.required') : null;
+            const entities = i.entities ? i.entities.map(e => !e.relationRoleTypeId ? {relationRoleTypeId: i18n('global.validation.required')} : null) : [];
+            const relationTypeId = !i.relationTypeId ? i18n('global.validation.required') : null;
             const isEntitiesOk = entities.length === 0;
             const isRelationTypeIdOk = relationTypeId === null;
             if (isEntitiesOk && isRelationTypeIdOk) {
@@ -90,7 +90,7 @@ class ExtMapperForm extends AbstractReactComponent {
                                     <td><Icon glyph="fa-arrow-right" /></td>
                                     <td/>
                                     <td>
-                                        <FormInput componentClass="select" disabled={!hasPermission || i.importRelation.value === false} {...i.relationTypeId} onChange={(ev) => {
+                                        <FormInput componentClass="select" disabled={!hasPermission} {...i.relationTypeId} onChange={(ev) => {
                                             const save = confirm(i18n('extMapperForm.saveAsDefaultMapping'));
                                             i.save.onChange(save);
                                             i.relationTypeId.onChange(ev);
@@ -107,7 +107,7 @@ class ExtMapperForm extends AbstractReactComponent {
                                     <td>{e.interpiRoleType.value}</td>
                                     <td><Icon glyph="fa-arrow-right" /></td>
                                     <td>
-                                        <FormInput componentClass="select" disabled={!hasPermission || i.importRelation.value === false || !i.relationTypeId.value || e.importEntity.value === false} {...e.relationRoleTypeId} onChange={(ev) => {
+                                        <FormInput componentClass="select" disabled={!hasPermission || !i.relationTypeId.value} {...e.relationRoleTypeId} onChange={(ev) => {
                                             const save = confirm(i18n('extMapperForm.saveAsDefaultMapping'));
                                             e.save.onChange(save);
                                             e.relationRoleTypeId.onChange(ev);
