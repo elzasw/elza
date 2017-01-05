@@ -77,6 +77,7 @@ import cz.tacr.elza.interpi.ws.wo.IdentifikatorSouvTypA;
 import cz.tacr.elza.interpi.ws.wo.IdentifikatorTyp;
 import cz.tacr.elza.interpi.ws.wo.IdentifikatorTypA;
 import cz.tacr.elza.interpi.ws.wo.KodovaneTyp;
+import cz.tacr.elza.interpi.ws.wo.KodovaneTypA;
 import cz.tacr.elza.interpi.ws.wo.KomplexniDataceTyp;
 import cz.tacr.elza.interpi.ws.wo.KomplexniDataceTypA;
 import cz.tacr.elza.interpi.ws.wo.OznaceniTyp;
@@ -288,7 +289,7 @@ public class InterpiFactory {
         String interpiRecordId = null;
         for (IdentifikaceTyp identifikaceTyp : identifikace) {
             for (IdentifikatorTyp identifikator : identifikaceTyp.getIdentifikator()) {
-                if (identifikator.getTyp().equals(IdentifikatorTypA.INTERPI)) {
+                if (identifikator.getTyp().equals(IdentifikatorTypA.INTERPI)) { // chceme jen identifikátory typu INTERPI
                     interpiRecordId = identifikator.getValue();
                     break;
                 }
@@ -305,7 +306,7 @@ public class InterpiFactory {
     private String getInterpiSouvIdentifier(final List<IdentifikatorSouvTyp> identifikace) {
         String interpiRecordId = null;
         for (IdentifikatorSouvTyp identifikaceTyp : identifikace) {
-            if (identifikaceTyp.getTyp() == IdentifikatorSouvTypA.INTERPI) {
+            if (identifikaceTyp.getTyp() == IdentifikatorSouvTypA.INTERPI) { // chceme jen identifikátory typu INTERPI
                 interpiRecordId = identifikaceTyp.getValue();
                 break;
             }
@@ -322,7 +323,18 @@ public class InterpiFactory {
         return interpiRecordId;
     }
 
-    public RegRecord createRecord(final EntitaTyp entitaTyp, final String interpiPartyId,
+    /**
+     * Vytvoří rejstříkové heslo.
+     *
+     * @param entitaTyp záznam z INTERPI
+     * @param interpiPartyId externí id osoby
+     * @param regExternalSystem systém ze kterého je osoba
+     * @param regScope třída rejstříků do které se importuje
+     * @param generateVariantNames příznak zda se mají generovat variantní jména
+     *
+     * @return rejstříkové heslo
+     */
+    private RegRecord createRecord(final EntitaTyp entitaTyp, final String interpiPartyId,
             final RegExternalSystem regExternalSystem, final RegScope regScope, final boolean generateVariantNames) {
         Map<EntityValueType, List<Object>> valueMap = convertToMap(entitaTyp);
         RegRecord regRecord = createPartyRecord(valueMap, interpiPartyId, regExternalSystem, regScope);
@@ -444,6 +456,14 @@ public class InterpiFactory {
         return regRegisterType;
     }
 
+    /**
+     * Naplní předanou osobu.
+     *
+     * @param parParty osoba
+     * @param valueMap informace z INTERPI
+     * @param regExternalSystem externí systém
+     * @param mappings mapování vztahů
+     */
     private void fillParty(final ParParty parParty, final Map<EntityValueType, List<Object>> valueMap,
             final RegExternalSystem regExternalSystem, final List<MappingVO> mappings) {
 //        newParty.setPartyCreators(null); // po dohodě s Honzou Vejskalem neimportovat, není jak
@@ -530,6 +550,10 @@ public class InterpiFactory {
                 continue;
             }
 
+            if (!mappingVO.isImportRelation()) { // přeskočení
+                continue;
+            }
+
             String relationCode = mappingVO.getParRelationType().getCode();
             ParRelation entityRelation = relationsMap.get(relationCode);
             if (entityRelation == null) {
@@ -537,7 +561,7 @@ public class InterpiFactory {
                 relationsMap.put(entityRelation.getRelationType().getCode(), entityRelation);
             }
 
-            createParRelationEntity(parParty, mappings, regExternalSystem, entityRelation, souvisejiciTyp,
+            createParRelationEntity(parParty, regExternalSystem, entityRelation, souvisejiciTyp,
                     mappingVO.getParRelationRoleType());
         }
 
@@ -567,6 +591,10 @@ public class InterpiFactory {
                     continue;
                 }
 
+                if (!mappingVO.isImportRelation()) { // přeskočení
+                    continue;
+                }
+
                 ParRelation parRelation = createParRelation(parParty, udalostTyp, mappingVO.getParRelationType());
                 relations.add(parRelation);
             } else {
@@ -579,12 +607,16 @@ public class InterpiFactory {
                         continue;
                     }
 
+                    if (!mappingVO.isImportRelation()) { // přeskočení
+                        continue;
+                    }
+
                     if (parRelation == null) {
                         parRelation = createParRelation(parParty, udalostTyp, mappingVO.getParRelationType());
                         relations.add(parRelation);
                     }
 
-                    createParRelationEntity(parParty, mappings, regExternalSystem, parRelation, souvisejiciTyp, mappingVO.getParRelationRoleType());
+                    createParRelationEntity(parParty, regExternalSystem, parRelation, souvisejiciTyp, mappingVO.getParRelationRoleType());
                 }
             }
         }
@@ -594,42 +626,43 @@ public class InterpiFactory {
 
     private MappingVO findRelationMapping(final List<MappingVO> mappings, final InterpiClass interpiClass,
             final String interpiRelationType, final String interpiRoleType) {
+        Assert.isTrue(interpiRelationType != null || interpiRoleType != null);
+
         if (mappings == null) {
             return null;
         }
 
-        Predicate<MappingVO> basePredicate = (m -> m.isImportRelation()
-                && interpiClass == m.getInterpiClass());
+        Predicate<MappingVO> classCondition = (m -> interpiClass == m.getInterpiClass()); // podmínka na třídu
 
-        Predicate<MappingVO> typePredicate = null;
+        Predicate<MappingVO> typeCondition = null;
         if (interpiRelationType == null) {
-            typePredicate = (m -> m.getInterpiRelationType() == null);
+            typeCondition = (m -> m.getInterpiRelationType() == null); // entita bez vztahu
         } else {
-            typePredicate = (m -> interpiRelationType.equalsIgnoreCase(m.getInterpiRelationType()));
+            typeCondition = (m -> interpiRelationType.equalsIgnoreCase(m.getInterpiRelationType())); // vztah
         }
 
-        Predicate<MappingVO> rolePredicate = null;
+        Predicate<MappingVO> roleCondition = null;
         if (interpiRoleType == null) {
-            rolePredicate = (m -> m.getInterpiRoleType() == null);
+            roleCondition = (m -> m.getInterpiRoleType() == null); // vztah bez entity
         } else {
-            rolePredicate = (m -> interpiRoleType.equalsIgnoreCase(m.getInterpiRoleType()));
+            roleCondition = (m -> interpiRoleType.equalsIgnoreCase(m.getInterpiRoleType())); // entita
         }
 
         return mappings.stream().
-                filter(basePredicate).
-                filter(typePredicate).
-                filter(rolePredicate).
+                filter(classCondition).
+                filter(typeCondition).
+                filter(roleCondition).
                 findFirst().
                 orElse(null);
     }
 
-    private void createParRelationEntity(final ParParty parParty, final List<MappingVO> mappings, final RegExternalSystem regExternalSystem,
+    private void createParRelationEntity(final ParParty parParty, final RegExternalSystem regExternalSystem,
             final ParRelation parRelation, final SouvisejiciTyp souvisejiciTyp, final ParRelationRoleType parRelationRoleType) {
         ParRelationEntity parRelationEntity = new ParRelationEntity();
         parRelationEntity.setNote(souvisejiciTyp.getPoznamka());
         parRelationEntity.setRelation(parRelation);
 
-        RegRecord entityRecord = getRelationEntityRecord(parParty, mappings, regExternalSystem, souvisejiciTyp);
+        RegRecord entityRecord = getRelationEntityRecord(parParty, regExternalSystem, souvisejiciTyp);
         parRelationEntity.setRecord(entityRecord);
 
         parRelationEntity.setRoleType(parRelationRoleType);
@@ -637,17 +670,26 @@ public class InterpiFactory {
         parRelation.getRelationEntities().add(parRelationEntity);
     }
 
-    private RegRecord getRelationEntityRecord(final ParParty parParty, final List<MappingVO> mappings,
-            final RegExternalSystem regExternalSystem, final SouvisejiciTyp souvisejiciTyp) {
+    /**
+     * Získání rejstříkového hesla pro entitu ve vztahu.
+     *
+     * @param parParty osoba
+     * @param regExternalSystem externí systém
+     * @param souvisejiciTyp entita ve vztahu
+     *
+     * @return rejstříkové heslo entity
+     */
+    private RegRecord getRelationEntityRecord(final ParParty parParty, final RegExternalSystem regExternalSystem,
+            final SouvisejiciTyp souvisejiciTyp) {
         String interpiId = getInterpiSouvIdentifier(souvisejiciTyp.getIdentifikator());
         RegRecord entityRecord = recordRepository.findRegRecordByExternalIdAndExternalSystemCodeAndScope(interpiId,
                 regExternalSystem.getCode(), parParty.getRecord().getScope());
 
-        if (entityRecord == null) { // import bez vztahů
+        if (entityRecord == null) { // pokud neexstiuje v db tak se importuje bez vztahů
             EntitaTyp entitaTyp = client.findOneRecord(interpiId, regExternalSystem);
             Map<EntityValueType, List<Object>> entityValueMap = convertToMap(entitaTyp);
             if (isParty(entityValueMap)) {
-                entityRecord = importParty(entityValueMap, null, interpiId, false, parParty.getRecord().getScope(), regExternalSystem, mappings);
+                entityRecord = importParty(entityValueMap, null, interpiId, false, parParty.getRecord().getScope(), regExternalSystem, null);
             } else {
                 entityRecord = importRecord(entitaTyp, null, interpiId, parParty.getRecord().getScope(), regExternalSystem);
             }
@@ -864,7 +906,11 @@ public class InterpiFactory {
 //                partyGroupIdentifier.setIdentifier(identifier);
                 partyGroupIdentifier.setNote(kodovaneTyp.getPoznámka());
                 partyGroupIdentifier.setPartyGroup(parPartyGroup);
-//                partyGroupIdentifier.setSource(source);
+
+                KodovaneTypA kodovaneTypA = kodovaneTyp.getTyp();
+                if (kodovaneTypA != null) {
+                    partyGroupIdentifier.setSource(kodovaneTypA.value());
+                }
 //                partyGroupIdentifier.setTo(to);
             }
         }
@@ -944,6 +990,9 @@ public class InterpiFactory {
         return parPartyNameComplements;
     }
 
+    /**
+     * Zjistí zda data entity odpovídají osobě.
+     */
     public boolean isParty(final Map<EntityValueType, List<Object>> valueMap) {
         TridaTyp trida = getTrida(valueMap);
 
@@ -952,7 +1001,18 @@ public class InterpiFactory {
         return partyTypes.contains(trida);
     }
 
-    public ParParty createParty(final RegRecord regRecord, final Map<EntityValueType, List<Object>> valueMap,
+    /**
+     * Vytvoří osobu.
+     *
+     * @param regRecord rejstříkové heslo osoby
+     * @param valueMap data osoby
+     * @param isOriginator příznak původce
+     * @param regExternalSystem systém ze kterého je osoba
+     * @param mappings mapování vztahů
+     *
+     * @return osoba
+     */
+    private ParParty createParty(final RegRecord regRecord, final Map<EntityValueType, List<Object>> valueMap,
             final boolean isOriginator, final RegExternalSystem regExternalSystem, final List<MappingVO> mappings) {
         TridaTyp trida = getTrida(valueMap);
 
@@ -988,6 +1048,13 @@ public class InterpiFactory {
         return parParty;
     }
 
+    /**
+     * Převod entity do mapy, kde klíče jsou typy hodnot.
+     *
+     * @param entitaTyp INTERPI entita
+     *
+     * @return mapa hodnot, typ hodnoty -> seznam hodnot
+     */
     public Map<EntityValueType, List<Object>> convertToMap(final EntitaTyp entitaTyp) {
         Assert.notNull(entitaTyp);
         Assert.notNull(entitaTyp.getContent());
@@ -1241,6 +1308,13 @@ public class InterpiFactory {
         createDetailResource = new PathResource(createTransformationFile.toPath());
     }
 
+    /**
+     * Načtení vztahů entity.
+     *
+     * @param valueMap data entity
+     *
+     * @param seznam mapování
+     */
     public List<InterpiRelationMappingVO> getRelations(final Map<EntityValueType, List<Object>> valueMap) {
         List<InterpiRelationMappingVO> mappings = new LinkedList<>();
 
@@ -1249,10 +1323,10 @@ public class InterpiFactory {
         List<UdalostTyp> udalostList = getUdalost(valueMap);
         List<UdalostTyp> zmenaList = getZmena(valueMap);
 
-        addMappings(pocatekExistence, InterpiClass.POCATEK_EXISTENCE, mappings);
-        addMappings(konecExistence, InterpiClass.KONEC_EXISTENCE, mappings);
-        addMappings(udalostList, InterpiClass.UDALOST, mappings);
-        addMappings(zmenaList, InterpiClass.ZMENA, mappings);
+        addRelationMappings(pocatekExistence, InterpiClass.POCATEK_EXISTENCE, mappings);
+        addRelationMappings(konecExistence, InterpiClass.KONEC_EXISTENCE, mappings);
+        addRelationMappings(udalostList, InterpiClass.UDALOST, mappings);
+        addRelationMappings(zmenaList, InterpiClass.ZMENA, mappings);
 
         List<SouvisejiciTyp> souvisejiciEntitaList = getSouvisejiciEntita(valueMap);
         addEntityMappings(souvisejiciEntitaList, InterpiClass.SOUVISEJICI_ENTITA, mappings);
@@ -1260,13 +1334,20 @@ public class InterpiFactory {
         return mappings;
     }
 
-    private void addEntityMappings(final List<SouvisejiciTyp> souvisejiciEntitaList, final InterpiClass souvisejiciEntita,
+    /**
+     * Vytvoření mapovacích záznamů pro entity bez vztahu.
+     *
+     * @param souvisejiciEntitaList seznam entit
+     * @param interpiClass třída vztahu
+     * @param mappings kolekce do které se přidají vytvořená mapování
+     */
+    private void addEntityMappings(final List<SouvisejiciTyp> souvisejiciEntitaList, final InterpiClass interpiClass,
             final List<InterpiRelationMappingVO> mappings) {
         if (CollectionUtils.isEmpty(souvisejiciEntitaList)) {
             return;
         }
 
-        InterpiRelationMappingVO relationMappingVO = createRelationMapping(null, souvisejiciEntita);
+        InterpiRelationMappingVO relationMappingVO = createRelationMapping(null, interpiClass); // vztah bez názvu pro navázání entit
         mappings.add(relationMappingVO);
 
         for (SouvisejiciTyp souvisejiciTyp : souvisejiciEntitaList) {
@@ -1276,7 +1357,14 @@ public class InterpiFactory {
         }
     }
 
-    private void addMappings(final List<UdalostTyp> udalostList, final InterpiClass interpiClass,
+    /**
+     * Vytvoření mapovacích záznamů pro vztahy a jejich entity.
+     *
+     * @param udalostList seznam vztahů
+     * @param interpiClass třída vztahu
+     * @param mappings kolekce do které se přidají vytvořená mapování
+     */
+    private void addRelationMappings(final List<UdalostTyp> udalostList, final InterpiClass interpiClass,
             final List<InterpiRelationMappingVO> mappings) {
         for (UdalostTyp udalostTyp : udalostList) {
             InterpiRelationMappingVO relationMappingVO = createRelationMapping(udalostTyp, interpiClass);
@@ -1293,6 +1381,14 @@ public class InterpiFactory {
         }
     }
 
+    /**
+     * Vytvoří mapovací záznam pro vztah.
+     *
+     * @param udalostTyp vztah
+     * @param interpiClass třída vztahu
+     *
+     * @return mapovací záznam
+     */
     private InterpiRelationMappingVO createRelationMapping(final UdalostTyp udalostTyp, final InterpiClass interpiClass) {
         InterpiRelationMappingVO mappingVO = new InterpiRelationMappingVO();
 
@@ -1307,6 +1403,13 @@ public class InterpiFactory {
     }
 
 
+    /**
+     * Vytvoří mapovací záznam pro entitu.
+     *
+     * @param souvisejiciTyp entita
+     *
+     * @return mapovací záznam
+     */
     private InterpiEntityMappingVO createEntityMapping(final SouvisejiciTyp souvisejiciTyp) {
         InterpiEntityMappingVO entityMappingVO = new InterpiEntityMappingVO();
 

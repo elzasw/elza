@@ -621,7 +621,7 @@ public class RegistryController {
      */
     @RequestMapping(value = "/interpi/import/{recordId}", method = RequestMethod.PUT)
     @Transactional
-    public RegRecordVO importRecord(@PathVariable final Integer recordId, @RequestBody final RecordImportVO recordImportVO) {
+    public RegRecordVO updateRecord(@PathVariable final Integer recordId, @RequestBody final RecordImportVO recordImportVO) {
         Assert.notNull(recordId);
         Assert.notNull(recordImportVO);
         Assert.notNull(recordImportVO.getInterpiRecordId());

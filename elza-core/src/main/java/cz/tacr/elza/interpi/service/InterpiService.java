@@ -113,6 +113,14 @@ public class InterpiService {
         return new ArrayList<>(result.values());
     }
 
+    /**
+     * Převod záznamů z INTERPI.
+     *
+     * @param records INTERPI záznamy
+     * @param generateVariantNames příznak zda se mají generovat variantní jména
+     *
+     * @return mapa externí id rejstříku -> převedený záznam
+     */
     private Map<String, ExternalRecordVO> convertSearchResults(final List<EntitaTyp> records, final boolean generateVariantNames) {
         List<ExternalRecordVO> recordVOList = interpiFactory.convertToExternalRecordVO(records, generateVariantNames);
         Map<String, ExternalRecordVO> result = new HashMap<>();
@@ -266,47 +274,29 @@ public class InterpiService {
         relationTypeRepository.findAll(); // načtení do hibernate cache
         relationRoleTypeRepository.findAll(); // načtení do hibernate cache
 
-        List<MappingVO> processedMappings = new LinkedList<>();
+        List<MappingVO> mappingsToUse = new LinkedList<>();
         List<ParInterpiMapping > mappingsToSave = new LinkedList<>();
         for (InterpiRelationMappingVO relationMappingVO : mappings) {
             List<InterpiEntityMappingVO> entities = relationMappingVO.getEntities();
             if (CollectionUtils.isEmpty(entities)) {
-                MappingVO mappingVO = new MappingVO();
-                mappingVO.setImportRelation(relationMappingVO.getImportRelation());
-                mappingVO.setInterpiClass(relationMappingVO.getInterpiClass());
-                mappingVO.setInterpiRelationType(relationMappingVO.getInterpiRelationType());
-                mappingVO.setParRelationType(relationTypeRepository.findOne(relationMappingVO.getRelationTypeId()));
+                MappingVO mappingVO = createMappingVO(relationMappingVO, null);
+                ParInterpiMapping interpiMapping = createParInterpiMapping(relationMappingVO, null);
 
-                processedMappings.add(mappingVO);
+                if (relationMappingVO.getImportRelation()) {
+                    mappingsToUse.add(mappingVO);
+                }
                 if (relationMappingVO.getSave()) {
-                    ParInterpiMapping interpiMapping = new ParInterpiMapping();
-                    interpiMapping.setInterpiClass(relationMappingVO.getInterpiClass());
-                    interpiMapping.setInterpiMappingId(relationMappingVO.getId());
-                    interpiMapping.setInterpiRelationType(relationMappingVO.getInterpiRelationType());
-                    interpiMapping.setInterpiRoleType(null);
-                    interpiMapping.setRelationRoleType(null);
-                    interpiMapping.setRelationType(relationTypeRepository.findOne(relationMappingVO.getRelationTypeId()));
-
                     mappingsToSave.add(interpiMapping);
                 }
             } else {
                 for (InterpiEntityMappingVO entityMappingVO : entities) {
-                    MappingVO mappingVO = new MappingVO();
-                    mappingVO.setImportRelation(entityMappingVO.getImportEntity());
-                    mappingVO.setInterpiClass(relationMappingVO.getInterpiClass());
-                    mappingVO.setInterpiRelationType(relationMappingVO.getInterpiRelationType());
-                    mappingVO.setParRelationRoleType(relationRoleTypeRepository.findOne(entityMappingVO.getRelationRoleTypeId()));
-                    mappingVO.setParRelationType(relationTypeRepository.findOne(relationMappingVO.getRelationTypeId()));
+                    MappingVO mappingVO = createMappingVO(relationMappingVO, entityMappingVO);
+                    ParInterpiMapping interpiMapping = createParInterpiMapping(relationMappingVO, entityMappingVO);
 
-                    processedMappings.add(mappingVO);
+                    if (relationMappingVO.getImportRelation()) {
+                        mappingsToUse.add(mappingVO);
+                    }
                     if (relationMappingVO.getSave()) {
-                        ParInterpiMapping interpiMapping = new ParInterpiMapping();
-                        interpiMapping.setInterpiClass(relationMappingVO.getInterpiClass());
-                        interpiMapping.setInterpiMappingId(entityMappingVO.getId());
-                        interpiMapping.setInterpiRelationType(relationMappingVO.getInterpiRelationType());
-                        interpiMapping.setRelationRoleType(relationRoleTypeRepository.findOne(entityMappingVO.getRelationRoleTypeId()));
-                        interpiMapping.setRelationType(relationTypeRepository.findOne(relationMappingVO.getRelationTypeId()));
-
                         mappingsToSave.add(interpiMapping);
                     }
                 }
@@ -315,9 +305,66 @@ public class InterpiService {
 
         interpiMappingRepository.save(mappingsToSave);
 
-        return processedMappings;
+        return mappingsToUse;
     }
 
+    /**
+     * Převede hierarchickou reprezentaci mapování z klienta na plochou strukturu pro import.
+     *
+     * @param relationMappingVO informace o vztahu
+     * @param entityMappingVO informace o entitě ve vztahu, může být null
+     *
+     * @return plochá reprezentace mapování
+     */
+    private MappingVO createMappingVO(final InterpiRelationMappingVO relationMappingVO,
+            final InterpiEntityMappingVO entityMappingVO) {
+        MappingVO mappingVO = new MappingVO();
+
+        if (entityMappingVO != null) {
+            mappingVO.setInterpiRoleType(entityMappingVO.getInterpiRoleType());
+            mappingVO.setParRelationRoleType(relationRoleTypeRepository.findOne(entityMappingVO.getRelationRoleTypeId()));
+            mappingVO.setImportRelation(entityMappingVO.getImportEntity());
+        } else {
+            mappingVO.setImportRelation(relationMappingVO.getImportRelation());
+        }
+
+        mappingVO.setInterpiClass(relationMappingVO.getInterpiClass());
+        mappingVO.setInterpiRelationType(relationMappingVO.getInterpiRelationType());
+        mappingVO.setParRelationType(relationTypeRepository.findOne(relationMappingVO.getRelationTypeId()));
+
+        return mappingVO;
+    }
+
+    /**
+     * Převede hierarchickou reprezentaci mapování z klienta na plochou strukturu pro uložení do db.
+     *
+     * @param relationMappingVO informace o vztahu
+     * @param entityMappingVO informace o entitě ve vztahu, může být null
+     *
+     * @return plochá reprezentace mapování
+     */
+    private ParInterpiMapping createParInterpiMapping(final InterpiRelationMappingVO relationMappingVO,
+            final InterpiEntityMappingVO entityMappingVO) {
+        ParInterpiMapping interpiMapping = new ParInterpiMapping();
+
+        if (entityMappingVO != null) {
+            interpiMapping.setInterpiMappingId(entityMappingVO.getId());
+            interpiMapping.setInterpiRoleType(entityMappingVO.getInterpiRoleType());
+            interpiMapping.setRelationRoleType(relationRoleTypeRepository.findOne(entityMappingVO.getRelationRoleTypeId()));
+        } else {
+            interpiMapping.setInterpiMappingId(relationMappingVO.getId());
+        }
+
+        interpiMapping.setInterpiClass(relationMappingVO.getInterpiClass());
+        interpiMapping.setInterpiRelationType(relationMappingVO.getInterpiRelationType());
+        interpiMapping.setRelationType(relationTypeRepository.findOne(relationMappingVO.getRelationTypeId()));
+
+        return interpiMapping;
+    }
+
+    /**
+     * Načtení mapování z db.
+     */
     private List<MappingVO> getDefaultMappings() {
         List<ParInterpiMapping> interpiMappings = interpiMappingRepository.findAll();
         List<MappingVO> defaultMappings = new ArrayList<>(interpiMappings.size());
