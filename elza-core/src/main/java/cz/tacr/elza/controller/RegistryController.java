@@ -653,23 +653,6 @@ public class RegistryController {
     }
 
     /**
-     * Načte rejstřík z externího systému.
-     *
-     * @param recordId id rejstříku
-     * @param systemId identifikátor externího systému
-     *
-     * @return rejstřík z externího systému
-     */
-    @Transactional
-    @RequestMapping(value = "/interpi/{recordId}", method = RequestMethod.GET)
-    public ExternalRecordVO findInterpiRecord(@PathVariable final String recordId, @RequestBody final Integer systemId) {
-        Assert.notNull(recordId);
-        Assert.notNull(systemId);
-
-        return interpiService.getRecordById(recordId, systemId);
-    }
-
-    /**
      * Vyhledá rejstříky v externím systému.
      *
      * @param interpiSearchVO vyhledávací kritéria

@@ -28,6 +28,9 @@ public class InterpiClient {
     private static final String FROM = "1";
     private static final String TO = "500";
 
+    /** Prefix pro chybovou hlášku. */
+    private static final String ERROR_PREFIX = "ERR";
+
     public List<EntitaTyp> findRecords(final String query, final Integer count, final RegExternalSystem regExternalSystem) {
         WssoapSoap client = createClient(regExternalSystem);
 
@@ -56,6 +59,9 @@ public class InterpiClient {
         long end = System.currentTimeMillis();
         logger.debug("Dotaz do INTERPI trval " + (end - start) + " ms.");
 
+        if (oneRecord.startsWith(ERROR_PREFIX)) {
+             throw new IllegalStateException("Nastala chyba " + oneRecord + " při hledání záznamu s identifikátorem " + id + " v systému " + regExternalSystem);
+        }
         SetTyp setTyp = unmarshall(oneRecord);
 
         if (setTyp.getEntita().isEmpty()) {

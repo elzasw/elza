@@ -30,6 +30,7 @@ import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ExternalCode;
+import cz.tacr.elza.interpi.service.pqf.AttributeType;
 import cz.tacr.elza.interpi.service.vo.ConditionVO;
 import cz.tacr.elza.interpi.service.vo.EntityValueType;
 import cz.tacr.elza.interpi.service.vo.ExternalRecordVO;
@@ -97,13 +98,22 @@ public class InterpiService {
             final Integer systemId) {
         Assert.notNull(systemId);
 
-        String query = interpiFactory.createSearchQuery(conditions, isParty);
-        if (StringUtils.isBlank(query)) {
-            return Collections.emptyList();
-        }
+        String interpiRecordId = findIdCondition(conditions);
 
         RegExternalSystem regExternalSystem = regExternalSystemRepository.findOne(systemId);
-        List<EntitaTyp> records = interpiClient.findRecords(query, count, regExternalSystem);
+        List<EntitaTyp> records;
+        if (StringUtils.isNotBlank(interpiRecordId)) {
+            EntitaTyp entitaTyp = getRecordById(interpiRecordId, regExternalSystem);
+
+            records = Collections.singletonList(entitaTyp);
+        } else {
+            String query = interpiFactory.createSearchQuery(conditions, isParty);
+            if (StringUtils.isBlank(query)) {
+                return Collections.emptyList();
+            }
+
+            records = interpiClient.findRecords(query, count, regExternalSystem);
+        }
 
         Map<String, ExternalRecordVO> result = convertSearchResults(records, false);
         if (!result.isEmpty()) {
@@ -111,6 +121,29 @@ public class InterpiService {
         }
 
         return new ArrayList<>(result.values());
+    }
+
+    /**
+     * Zjistí zda je v podmínkách podmínka na id. Když ano tak ho vrátí.
+     *
+     * @param conditions podmínky
+     *
+     * @return id pokud je v podmínkách
+     */
+    private String findIdCondition(final List<ConditionVO> conditions) {
+        if (conditions == null) {
+            return null;
+        }
+
+        String id = null;
+        for (ConditionVO condition : conditions) {
+            if (condition.getAttType() == AttributeType.ID) {
+                id = condition.getValue();
+                break;
+            }
+        }
+
+        return id;
     }
 
     /**
@@ -135,21 +168,15 @@ public class InterpiService {
      * Načte konkrétní záznam podle externího id.
      *
      * @param interpiRecordId id v externím systému
-     * @param systemId id externího systému
+     * @param interpiSystem externí systém
      *
      * @return požadovaný záznam
      */
-    public ExternalRecordVO getRecordById(final String interpiRecordId, final Integer systemId) {
+    private EntitaTyp getRecordById(final String interpiRecordId, final RegExternalSystem regExternalSystem) {
         Assert.notNull(interpiRecordId);
-        Assert.notNull(systemId);
+        Assert.notNull(regExternalSystem);
 
-        RegExternalSystem interpiSystem = regExternalSystemRepository.findOne(systemId);
-        EntitaTyp entitaTyp = interpiClient.findOneRecord(interpiRecordId, interpiSystem);
-
-        ExternalRecordVO recordVO = interpiFactory.convertToExternalRecordVO(Collections.singletonList(entitaTyp), false).iterator().next();
-        matchWithExistingRecords(interpiSystem, Collections.singletonMap(recordVO.getRecordId(), recordVO));
-
-        return recordVO;
+        return interpiClient.findOneRecord(interpiRecordId, regExternalSystem);
     }
 
     /**

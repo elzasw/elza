@@ -33,11 +33,13 @@ const CONDITIONS = [
 const ATTRIBUTE_TYPE = {
     PREFFERED_NAME: "PREFFERED_NAME",
     ALL_NAMES: "ALL_NAMES",
+    ID: "ID",
 };
 
 const ATTRIBUTE_TYPES = [
     {val: ATTRIBUTE_TYPE.PREFFERED_NAME, name: i18n('extImport.attType.PREFFERED_NAME')},
     {val: ATTRIBUTE_TYPE.ALL_NAMES, name: i18n('extImport.attType.ALL_NAMES')},
+    {val: ATTRIBUTE_TYPE.ID, name: i18n('extImport.attType.ID')},
 ];
 
 class ExtImportSearch extends AbstractReactComponent {

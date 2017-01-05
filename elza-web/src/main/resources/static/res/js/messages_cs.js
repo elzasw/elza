@@ -879,6 +879,7 @@ var messages = {
 
     "extImport.attType.PREFFERED_NAME": "Hledání v preferovaném jméně rejstříku",
     "extImport.attType.ALL_NAMES": "Hledání ve všech jménech rejstříku",
+    "extImport.attType.ID": "Hledání podle identifikátoru rejstříku",
     "extImport.attType.TYPE": "Hledání určitých typů rejstříků",
     "extImport.attType.EXTEND": "Pravostranný like na hledané výrazy ve jménech",
 
