@@ -897,6 +897,10 @@ var messages = {
     "extMapperForm.relationMapping": "Mapování vztahů",
     "extMapperForm.saveAsDefaultMapping": "Nastavit mapování jako výchozí?",
     "extMapperForm.recordExtSystemDescription": "Popis ze zdrojového systému",
+    "extMapperForm.insufficientPrivileges": "Nemáte dostatečná oprávnění k mapování vztahů",
+    "extMapperForm.idForImport": "ID pro import záznamu \"{0}\". Kontaktujte správce a požádejte o import s mapováním vztahů.",
+    "extMapperForm.import": "Importovat",
+    "extMapperForm.update": "Aktualizovat",
 
     "export.title.fund": "Import archivního souboru",
     "export.transformationName": "Šablona transformace",
