@@ -63,61 +63,7 @@ import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
-import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoBatchInfo;
-import cz.tacr.elza.domain.ArrDaoFile;
-import cz.tacr.elza.domain.ArrDaoFileGroup;
-import cz.tacr.elza.domain.ArrDaoPackage;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrDigitizationRequest;
-import cz.tacr.elza.domain.ArrDigitizationRequestNode;
-import cz.tacr.elza.domain.ArrFile;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformityExt;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ArrOutputFile;
-import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.ArrRequest;
-import cz.tacr.elza.domain.ArrRequestQueueItem;
-import cz.tacr.elza.domain.DmsFile;
-import cz.tacr.elza.domain.ParComplementType;
-import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParPartyNameComplement;
-import cz.tacr.elza.domain.ParPartyNameFormType;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.ParPartyTypeRelation;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.ParRelationType;
-import cz.tacr.elza.domain.RegCoordinates;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RegVariantRecord;
-import cz.tacr.elza.domain.RulDataType;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemSpecExt;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.domain.RulPacketType;
-import cz.tacr.elza.domain.RulPolicyType;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.RulTemplate;
-import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.domain.UsrGroup;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
@@ -148,6 +94,7 @@ import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.SettingsService;
@@ -196,6 +143,9 @@ public class ClientFactoryVO {
 
     @Autowired
     private PartyNameComplementRepository partyNameComplementRepository;
+
+    @Autowired
+    private DaoService daoService;
 
     @Autowired
     private PartyNameRepository partyNameRepository;
@@ -2069,6 +2019,21 @@ public class ClientFactoryVO {
     }
 
     /**
+     * Vytvoření VO z DO.
+     * @param daoFile do
+     * @return VO
+     */
+    private ArrDaoFileVO createDaoFile(final ArrDaoFile daoFile) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        ArrDaoFileVO result = mapper.map(daoFile, ArrDaoFileVO.class);
+
+        ArrDigitalRepository digitalRepository = daoFile.getDao().getDaoPackage().getDigitalRepository();
+        result.setUrl(daoService.getDaoFileUrl(daoFile, digitalRepository));
+
+        return result;
+    }
+
+    /**
      * Vytvoření vo z DO
      *
      * @param arrDao DO
@@ -2079,18 +2044,15 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrDaoVO vo = mapper.map(arrDao, ArrDaoVO.class);
 
-        String viewDaoUrl = arrDao.getDaoPackage().getDigitalRepository().getViewDaoUrl();
-        ElzaTools.UrlParams params = ElzaTools.createUrlParams()
-                .add("code", arrDao.getCode())
-                .add("label", arrDao.getLabel())
-                .add("id", arrDao.getDaoId());
-        vo.setUrl(ElzaTools.bindingUrlParams(viewDaoUrl, params));
+        ArrDigitalRepository digitalRepository = arrDao.getDaoPackage().getDigitalRepository();
+
+        vo.setUrl(daoService.getDaoUrl(arrDao, digitalRepository));
 
         vo.setDaoLinkCount(daoLinkRepository.countByDaoAndDeleteChangeIsNull(arrDao));
 
         if (detail) {
             final List<ArrDaoFile> daoFileList = daoFileRepository.findByDaoAndDaoFileGroupIsNull(arrDao);
-            final List<ArrDaoFileVO> daoFileVOList = mapper.mapAsList(daoFileList, ArrDaoFileVO.class);
+            final List<ArrDaoFileVO> daoFileVOList = daoFileList.stream().map(this::createDaoFile).collect(Collectors.toList());
             vo.addAllFile(daoFileVOList);
 
             final List<ArrDaoFileGroup> daoFileGroups = daoFileGroupRepository.findByDaoOrderByCodeAsc(arrDao);
@@ -2098,7 +2060,8 @@ public class ClientFactoryVO {
             for (ArrDaoFileGroup daoFileGroup : daoFileGroups) {
                 final ArrDaoFileGroupVO daoFileGroupVO = mapper.map(daoFileGroup, ArrDaoFileGroupVO.class);
                 final List<ArrDaoFile> arrDaoFileList = daoFileRepository.findByDaoAndDaoFileGroup(arrDao, daoFileGroup);
-                daoFileGroupVO.addAllFile(mapper.mapAsList(arrDaoFileList, ArrDaoFileVO.class));
+                final List<ArrDaoFileVO> groupDaoFileVOList = arrDaoFileList.stream().map(this::createDaoFile).collect(Collectors.toList());
+                daoFileGroupVO.setFiles(groupDaoFileVOList);
                 daoFileGroupVOList.add(daoFileGroupVO);
             }
 

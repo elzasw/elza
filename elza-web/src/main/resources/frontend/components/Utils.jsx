@@ -172,6 +172,22 @@ function lenToBytesStr(len) {
     return lenStr;
 }
 
+function humanFileSize(bytes, si = false) {
+    var thresh = si ? 1000 : 1024;
+    if (Math.abs(bytes) < thresh) {
+        return bytes + ' B';
+    }
+    var units = si
+        ? ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+        : ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+    var u = -1;
+    do {
+        bytes /= thresh;
+        ++u;
+    } while (Math.abs(bytes) >= thresh && u < units.length - 1);
+    return bytes.toFixed(1) + ' ' + units[u];
+}
+
 function roughSizeOfObject( object ) {
 
     var objectList = [];
@@ -288,7 +304,7 @@ var _browser
         // Chrome 1+
     var chrome = !!window.chrome && !!window.chrome.webstore;
         // Blink engine detection
-    var blink = (chrome || opera) && !!window.CSS;    
+    var blink = (chrome || opera) && !!window.CSS;
 
     _browser = {
         opera,
@@ -672,6 +688,7 @@ module.exports = {
     detectIE: detectIE,
     removeUndefined,
     isNotBlankObject,
+    humanFileSize,
     init: function() {
         init();
     }

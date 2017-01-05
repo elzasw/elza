@@ -446,7 +446,6 @@ class WebApi {
 
     getFundNodeDaos(versionId, nodeId = null, detail = false, from = 0, max = 10000) {
         return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/daos/' + versionId, {
-            fundVersionId: versionId,
             nodeId,
             detail,
             index: from,
@@ -459,10 +458,8 @@ class WebApi {
         return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/daopackages/' + versionId, { search, unassigned });
     }
 
-    getPackageDaos(versionId,daoPackageId, detail = false, from = 0, max = 10000) {
-        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/daos/' + versionId, {
-            fundVersionId: versionId,
-            daoPackageId,
+    getPackageDaos(versionId, daoPackageId, detail = false, from = 0, max = 10000) {
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/daos/' + versionId + "/" + daoPackageId, {
             detail,
             index: from,
             maxResults: max,

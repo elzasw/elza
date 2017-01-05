@@ -29,6 +29,7 @@ public class ArrDaoFileVO {
     private Double sourceYDimesionValue;
     private String duration;
     private String code;
+    private String url;
 
     public Integer getId() {
         return id;
@@ -140,5 +141,13 @@ public class ArrDaoFileVO {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 }

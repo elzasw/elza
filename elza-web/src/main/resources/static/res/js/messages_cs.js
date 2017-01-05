@@ -455,6 +455,16 @@ var messages = {
 
     "arr.daos.pinned" : "Připojit k JP",
     "arr.daos.create.under" : "Vytvořit podřízenou JP",
+    "arr.daos.files.title.withoutGroup" : "Soubory",
+    "arr.daos.files.title.inGroup" : "Ostatní soubory",
+    "arr.daos.files.title.duration" : "Délka",
+    "arr.daos.files.title.imageWidthHeight" : "Rozlišení",
+    "arr.daos.files.title.sourceXY" : "Zdrojové rozlišení",
+    "arr.daos.files.title.mimeType" : "MIME",
+    "arr.daos.files.title.size" : "Velikost",
+    "arr.daos.files.title.url" : "Odkaz",
+    "arr.daos.files.title.unitOfMeasure.IN" : "in",
+    "arr.daos.files.title.unitOfMeasure.MM" : "mm",
 
     "arr.fund.subNodes.prevPage": "Předchozí stránka",
     "arr.fund.subNodes.nextPage": "Další stránka",

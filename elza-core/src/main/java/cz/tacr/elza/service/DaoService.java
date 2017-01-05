@@ -1,17 +1,10 @@
 package cz.tacr.elza.service;
 
+import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.ArrDaoLinkRequest.Type;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoLink;
-import cz.tacr.elza.domain.ArrDaoLinkRequest;
-import cz.tacr.elza.domain.ArrDaoPackage;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrRequest;
-import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.DaoLinkRepository;
@@ -251,4 +244,32 @@ public class DaoService {
         }
         return result;
     }
+
+    /**
+     * Získání url na dao.
+     * @param dao dao
+     * @param repository repository, je předáváno z důvodu výkonu při možných hromadných operacích, jinak se jedná o repository, které je v dohledatelné od DAO
+     * @return url
+     */
+    public String getDaoUrl(final ArrDao dao, final ArrDigitalRepository repository) {
+        ElzaTools.UrlParams params = ElzaTools.createUrlParams()
+                .add("code", dao.getCode())
+                .add("label", dao.getLabel())
+                .add("id", dao.getDaoId());
+        return ElzaTools.bindingUrlParams(repository.getViewDaoUrl(), params);
+    }
+
+    /**
+     * Získání url na dao file.
+     * @param daoFile dao file
+     * @param repository repository, je předáváno z důvodu výkonu při možných hromadných operacích, jinak se jedná o repository, které je v dohledatelné od DAO
+     * @return url
+     */
+    public String getDaoFileUrl(final ArrDaoFile daoFile, final ArrDigitalRepository repository) {
+        ElzaTools.UrlParams params = ElzaTools.createUrlParams()
+                .add("code", daoFile.getCode());
+        return ElzaTools.bindingUrlParams(repository.getViewFileUrl(), params);
+    }
+
+
 }
