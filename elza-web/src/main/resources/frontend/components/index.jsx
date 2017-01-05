@@ -46,6 +46,7 @@ exports.FormUtils = require('components/form/FormUtils.jsx');
 exports.ImportForm = require('components/form/ImportForm.jsx');
 exports.ExportForm = require('components/form/ExportForm.jsx');
 exports.ExtImportForm = require('components/form/ExtImportForm.jsx');
+exports.ExtMapperForm = require('components/form/ExtMapperForm.jsx');
 exports.FormInput = require('components/form/FormInput.jsx');
 
 exports.Ribbon = require('components/page/Ribbon.jsx');
@@ -61,6 +62,7 @@ exports.FundDetail = require('components/fund/FundDetail.jsx');
 exports.FundDetailExt = require('components/fund/FundDetailExt.jsx');
 exports.FundDetailTree = require('components/fund/FundDetailTree.jsx');
 
+exports.NodeDaosForm = require('components/arr/NodeDaosForm.jsx');
 exports.FundNodesList = require('components/arr/FundNodesList.jsx');
 exports.FundNodesSelectForm = require('components/arr/FundNodesSelectForm.jsx');
 exports.AddOutputForm = require('components/arr/AddOutputForm.jsx');

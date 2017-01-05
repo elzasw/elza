@@ -16,9 +16,9 @@ public class InterpiMappingVO {
     private Integer partyTypeId;
 
     /** Mapování vztahů a entit. */
-    private List<InterpiMappingItemVO> mappings;
+    private List<InterpiRelationMappingVO> mappings;
 
-    public InterpiMappingVO(final Integer partyTypeId, final List<InterpiMappingItemVO> mappings) {
+    public InterpiMappingVO(final Integer partyTypeId, final List<InterpiRelationMappingVO> mappings) {
         Assert.notNull(partyTypeId);
 
         this.partyTypeId = partyTypeId;
@@ -29,7 +29,7 @@ public class InterpiMappingVO {
         return partyTypeId;
     }
 
-    public List<InterpiMappingItemVO> getMappings() {
+    public List<InterpiRelationMappingVO> getMappings() {
         return mappings;
     }
 }

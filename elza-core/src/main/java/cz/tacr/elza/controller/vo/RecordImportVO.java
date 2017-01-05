@@ -16,9 +16,9 @@ public class RecordImportVO {
 
     private Integer systemId;
 
-    private boolean originator = true; // TODO dočasně než to bude přicházet z dialogu
+    private boolean originator;
 
-    private List<InterpiMappingItemVO> mappings;
+    private List<InterpiRelationMappingVO> mappings;
 
     public Integer getScopeId() {
         return scopeId;
@@ -52,11 +52,11 @@ public class RecordImportVO {
         this.originator = originator;
     }
 
-    public List<InterpiMappingItemVO> getMappings() {
+    public List<InterpiRelationMappingVO> getMappings() {
         return mappings;
     }
 
-    public void setMappings(final List<InterpiMappingItemVO> mappings) {
+    public void setMappings(final List<InterpiRelationMappingVO> mappings) {
         this.mappings = mappings;
     }
 }

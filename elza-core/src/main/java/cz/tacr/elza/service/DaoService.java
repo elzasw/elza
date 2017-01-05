@@ -27,7 +27,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -79,8 +81,27 @@ public class DaoService {
      * @return seznam digitálních entit (DAO)
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
-    public List<ArrDao> findDaos(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion, ArrNode node, Integer index, Integer maxResults) {
+    public List<ArrDao> findDaos(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion,
+                                 @Nullable ArrNode node, Integer index, Integer maxResults) {
+        Assert.notNull(fundVersion);
         return daoRepository.findByFundAndNodePaginating(fundVersion, node, index, maxResults);
+    }
+
+    /**
+     * Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní balíček.
+     *
+     * @param fundVersion archivní soubor
+     * @param daoPackage  package
+     * @param index       počáteční pozice pro načtení
+     * @param maxResults  počet načítaných výsledků
+     * @return seznam digitálních entit (DAO)
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
+    public List<ArrDao> findDaosByPackage(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion,
+                                          ArrDaoPackage daoPackage, Integer index, Integer maxResults) {
+        Assert.notNull(fundVersion);
+        Assert.notNull(daoPackage);
+        return daoRepository.findByFundAndPackagePaginating(fundVersion, daoPackage, index, maxResults);
     }
 
     /**

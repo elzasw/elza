@@ -11,7 +11,7 @@ import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {FundSettingsForm, Tabs, Icon, Search, Ribbon, i18n, FundTreeMovementsLeft, FundTreeDaos, ArrFundPanel, ArrDaos} from 'components/index.jsx';
+import {FundSettingsForm, Tabs, Icon, Search, Ribbon, i18n, FundTreeDaos, ArrFundPanel, ArrDaos} from 'components/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
 import {getNodeParents, getNodeParent} from 'components/arr/ArrUtils.jsx'
 import {moveNodesUnder, moveNodesBefore, moveNodesAfter} from 'actions/arr/nodes.jsx'
@@ -64,11 +64,13 @@ const keymap = ArrParentPage.mergeKeymap({});
 
 const shortcutManager = new ShortcutsManager(keymap)
 
-let _selectedTab = 0;
-
 const ArrDaoPage = class ArrDaoPage extends ArrParentPage {
     constructor(props) {
         super(props, "fa-page");
+
+        this.state = {
+            selectedTab: 0
+        }
     }
 
     componentDidMount() {
@@ -102,8 +104,9 @@ const ArrDaoPage = class ArrDaoPage extends ArrParentPage {
     };
 
     handleTabSelect = (item) => {
-        _selectedTab = item.id;
-        this.setState({});
+        this.setState({
+            selectedTab: item.id
+        });
     };
 
     /**
@@ -136,7 +139,7 @@ const ArrDaoPage = class ArrDaoPage extends ArrParentPage {
         return userDetail.hasArrPage(activeFund ? activeFund.id : null);
     };
 
-    renderPackage = () => {
+    renderUnassignedPackages = () => {
         return (
             <Search key={'dao-search'}
                     placeholder={i18n('search.input.search')}
@@ -148,7 +151,7 @@ const ArrDaoPage = class ArrDaoPage extends ArrParentPage {
         )
     };
 
-    renderUnresolvePackage = () => {
+    renderPackages = () => {
         return (
             <Search key={'dao-search'}
                     placeholder={i18n('search.input.search')}
@@ -163,13 +166,12 @@ const ArrDaoPage = class ArrDaoPage extends ArrParentPage {
     renderLeftTree = () => {
         const fund = this.getActiveFund(this.props);
 
-        return (
-            <FundTreeMovementsLeft key={'tree-left'}
-                                   fund={fund}
-                                   versionId={fund.versionId}
-                                   {...fund.fundTreeMovementsLeft}
-            />
-        )
+        return <FundTreeDaos
+            fund={fund}
+            versionId={fund.versionId}
+            area={types.FUND_TREE_AREA_DAOS_LEFT}
+            {...fund.fundTreeDaosLeft}
+        />;
     };
 
     handleRightNodeSelect = (node) => {
@@ -178,6 +180,7 @@ const ArrDaoPage = class ArrDaoPage extends ArrParentPage {
 
     renderCenterPanel = (readMode, closed) => {
         const {userDetail} = this.props;
+        const {selectedTab} = this.state;
         const fund = this.getActiveFund(this.props);
 
         let rightHasSelection = fund.fundTreeDaosRight.selectedId != null;
@@ -209,12 +212,12 @@ const ArrDaoPage = class ArrDaoPage extends ArrParentPage {
         });
 
         let content;
-        switch (_selectedTab) {
+        switch (selectedTab) {
             case 0:
-                content = this.renderPackage();
+                content = this.renderUnassignedPackages();
                 break;
             case 1:
-                content = this.renderUnresolvePackage();
+                content = this.renderPackages();
                 break;
             case 2:
                 content = this.renderLeftTree();
@@ -223,34 +226,29 @@ const ArrDaoPage = class ArrDaoPage extends ArrParentPage {
                 break;
         }
 
-        console.log(this.state);
-
         return (
             <div className="daos-content-container">
                 <div key={1} className='tree-left-container'>
-
                     <Tabs.Container ref='tabs' className='daos-tabs-container'>
-                        <Tabs.Tabs items={tabs} activeItem={{id: _selectedTab}} onSelect={this.handleTabSelect} />
+                        <Tabs.Tabs items={tabs} activeItem={{id: selectedTab}} onSelect={this.handleTabSelect} />
                         <Tabs.Content>
                             {content}
                         </Tabs.Content>
                     </Tabs.Container>
 
-                    <ArrDaos />
+                    {false && <ArrDaos />}
                 </div>
                 <div key={2} className='tree-actions-container'>
                     <Button onClick={this.handlePinned} disabled={!active}><Icon glyph="fa-thumb-tack"/><div>{i18n('arr.daos.pinned')}</div></Button>
                     <Button onClick={this.handleCreateUnder} disabled={!active}><Icon glyph="ez-move-under"/><div>{i18n('arr.daos.create.under')}</div></Button>
                 </div>
                 <div key={3} className={classRight}>
-
                     <FundTreeDaos
                         fund={fund}
                         versionId={fund.versionId}
                         area={types.FUND_TREE_AREA_DAOS_RIGHT}
                         {...fund.fundTreeDaosRight}
                     />
-
                     {rightHasSelection && <ArrDaos node={node} versionId={fund.versionId} />}
                 </div>
             </div>

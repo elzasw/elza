@@ -621,7 +621,7 @@ public class RegistryController {
      */
     @RequestMapping(value = "/interpi/import/{recordId}", method = RequestMethod.PUT)
     @Transactional
-    public RegRecordVO importRecord(@PathVariable final Integer recordId, @RequestBody final RecordImportVO recordImportVO) {
+    public RegRecordVO updateRecord(@PathVariable final Integer recordId, @RequestBody final RecordImportVO recordImportVO) {
         Assert.notNull(recordId);
         Assert.notNull(recordImportVO);
         Assert.notNull(recordImportVO.getInterpiRecordId());
@@ -650,23 +650,6 @@ public class RegistryController {
                 recordImportVO.getSystemId(), recordImportVO.getOriginator(), recordImportVO.getMappings());
 
         return getRecord(regRecord.getRecordId());
-    }
-
-    /**
-     * Načte rejstřík z externího systému.
-     *
-     * @param recordId id rejstříku
-     * @param systemId identifikátor externího systému
-     *
-     * @return rejstřík z externího systému
-     */
-    @Transactional
-    @RequestMapping(value = "/interpi/{recordId}", method = RequestMethod.GET)
-    public ExternalRecordVO findInterpiRecord(@PathVariable final String recordId, @RequestBody final Integer systemId) {
-        Assert.notNull(recordId);
-        Assert.notNull(systemId);
-
-        return interpiService.getRecordById(recordId, systemId);
     }
 
     /**
@@ -699,7 +682,7 @@ public class RegistryController {
      *
      * @return vztahy a jejich mapování
      */
-    @RequestMapping(value = "/interpi/{interpiRecordId}/relations", method = RequestMethod.GET)
+    @RequestMapping(value = "/interpi/{interpiRecordId}/relations", method = RequestMethod.POST)
     public InterpiMappingVO findInterpiRecordRelations(@PathVariable final String interpiRecordId, @RequestBody final Integer systemId) {
         Assert.notNull(interpiRecordId);
         Assert.notNull(systemId);

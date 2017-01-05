@@ -444,9 +444,29 @@ class WebApi {
         return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/registerLinks/' + nodeId + '/' + versionId + '/form');
     }
 
-    getFundNodeDaos(versionId, nodeId = null, detail = false) {
-        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/daos/' + versionId, {nodeId, detail});
+    getFundNodeDaos(versionId, nodeId = null, detail = false, from = 0, max = 10000) {
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/daos/' + versionId, {
+            fundVersionId: versionId,
+            nodeId,
+            detail,
+            index: from,
+            maxResults: max,
+        });
         //return getData(digReqs, 200);
+    }
+
+    findDaoPackages(versionId, search, unassigned) {
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/daopackages/' + versionId, { search, unassigned });
+    }
+
+    getPackageDaos(versionId,daoPackageId, detail = false, from = 0, max = 10000) {
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/daos/' + versionId, {
+            fundVersionId: versionId,
+            daoPackageId,
+            detail,
+            index: from,
+            maxResults: max,
+        });
     }
 
     deleteFundNodeRegister(versionId, nodeId, data) {
@@ -979,6 +999,10 @@ class WebApi {
 
     importRecordUpdate(recordId, importVO) {
         return AjaxUtils.ajaxPut(WebApi.registryUrl + '/interpi/import/'+ recordId, null, importVO);
+    }
+
+    findInterpiRecordRelations(recordId, systemId) {
+        return AjaxUtils.ajaxPost(WebApi.registryUrl + '/interpi/' + recordId + '/relations/', null, systemId);
     }
 }
 

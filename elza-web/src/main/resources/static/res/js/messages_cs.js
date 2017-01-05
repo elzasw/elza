@@ -590,6 +590,9 @@ var messages = {
     "subNodeRegister.title.add": "Přidání hesla",
 
     "subNodeDao.title": "Digitální entity",
+    "subNodeDao.dao.action.showDetailAll": "Zobrazit detail digitálních entit",
+    "subNodeDao.dao.action.showDetailOne": "Zobrazit detail digitální entity",
+    "subNodeDao.dao.title.node": "Digitální entity pro jednotku popisu",
     "subNodeDao.dao.label": "Digitalizát",
     "subNodeDao.dao.code": "Code",
     "subNodeDao.dao.files.more": "souborů",
@@ -866,6 +869,7 @@ var messages = {
     "extImport.id": "ID",
     "extImport.record": "Záznam",
     "extImport.scopeId": "Třída rejstříku",
+    "extImport.originator": "Importovat včetně vztahů (jedná se o původce)",
     "extImport.alreadyImported": "Již naimportováno",
     "extImport.update": "Aktualizovat",
     "extImport.showDetail": "Přejít na detail",
@@ -875,8 +879,14 @@ var messages = {
 
     "extImport.attType.PREFFERED_NAME": "Hledání v preferovaném jméně rejstříku",
     "extImport.attType.ALL_NAMES": "Hledání ve všech jménech rejstříku",
+    "extImport.attType.ID": "Hledání podle identifikátoru rejstříku",
     "extImport.attType.TYPE": "Hledání určitých typů rejstříků",
     "extImport.attType.EXTEND": "Pravostranný like na hledané výrazy ve jménech",
+
+    "extMapperForm.title": "Import hesla - vazby",
+    "extMapperForm.relationMapping": "Mapování vztahů",
+    "extMapperForm.saveAsDefaultMapping": "Nastavit mapování jako výchozí?",
+    "extMapperForm.recordExtSystemDescription": "Popis ze zdrojového systému",
 
     "export.title.fund": "Import archivního souboru",
     "export.transformationName": "Šablona transformace",
