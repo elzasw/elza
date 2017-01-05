@@ -49,7 +49,7 @@ class ExtMapperForm extends AbstractReactComponent {
     };
 
     render() {
-        const {handleSubmit, submitting, onClose, fields: {mappings, partyTypeId}, partyTypes, record, userDetail} = this.props;
+        const {handleSubmit, submitting, onClose, fields: {mappings, partyTypeId}, partyTypes, record, userDetail, isUpdate} = this.props;
 
         if (partyTypes === false) {
             return <Loading />;
