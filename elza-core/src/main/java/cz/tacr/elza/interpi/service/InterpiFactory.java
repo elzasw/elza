@@ -466,7 +466,7 @@ public class InterpiFactory {
      */
     private void fillParty(final ParParty parParty, final Map<EntityValueType, List<Object>> valueMap,
             final RegExternalSystem regExternalSystem, final List<MappingVO> mappings) {
-//        newParty.setPartyCreators(null); // po dohodě s Honzou Vejskalem neimportovat, není jak
+//        parParty.setPartyCreators(null); // po dohodě s Honzou Vejskalem neimportovat, není jak
 
         List<ParPartyName> partyNames = new LinkedList<>();
         List<OznaceniTyp> variantniOznaceniList = getVariantniOznaceni(valueMap);
@@ -894,7 +894,7 @@ public class InterpiFactory {
             List<ParPartyGroupIdentifier> partyGroupIdentifiers = new ArrayList<>(kodovaneUdajeList.size());
             parPartyGroup.setPartyGroupIdentifiers(partyGroupIdentifiers);
             for (KodovaneTyp kodovaneTyp : kodovaneUdajeList) {
-                ParPartyGroupIdentifier partyGroupIdentifier = new ParPartyGroupIdentifier(); // TODO dodělat
+                ParPartyGroupIdentifier partyGroupIdentifier = new ParPartyGroupIdentifier();
                 partyGroupIdentifiers.add(partyGroupIdentifier);
 
                 String datace = kodovaneTyp.getDatace();
@@ -903,7 +903,8 @@ public class InterpiFactory {
                     UnitDateConvertor.convertToUnitDate(datace, parUnitdate);
                     partyGroupIdentifier.setFrom(parUnitdate);
                 }
-//                partyGroupIdentifier.setIdentifier(identifier);
+
+                partyGroupIdentifier.setIdentifier(kodovaneTyp.getKod());
                 partyGroupIdentifier.setNote(kodovaneTyp.getPoznámka());
                 partyGroupIdentifier.setPartyGroup(parPartyGroup);
 
