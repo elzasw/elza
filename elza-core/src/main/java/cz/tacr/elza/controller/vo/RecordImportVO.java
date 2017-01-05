@@ -16,7 +16,7 @@ public class RecordImportVO {
 
     private Integer systemId;
 
-    private boolean originator = true; // TODO dočasně než to bude přicházet z dialogu
+    private boolean originator;
 
     private List<InterpiRelationMappingVO> mappings;
 
