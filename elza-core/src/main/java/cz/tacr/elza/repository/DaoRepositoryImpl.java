@@ -54,15 +54,23 @@ public class DaoRepositoryImpl implements DaoRepositoryCustom {
     }
 
     @Override
-    public List<ArrDao> findByFundAndPackagePaginating(ArrFundVersion fundVersion, ArrDaoPackage daoPackage, Integer index, Integer maxResults) {
+    public List<ArrDao> findByFundAndPackagePaginating(ArrFundVersion fundVersion, ArrDaoPackage daoPackage, Integer index, Integer maxResults, boolean unassigned) {
         Assert.notNull(fundVersion);
         Assert.notNull(daoPackage);
         String hql = "SELECT d FROM arr_dao d "
                 + "  join d.daoPackage p "
                 + "  join p.fund f "
                 + " WHERE f.fundId = :fundId "
-                + "   and p = :daoPackage "
-                + " order by d.daoId desc ";
+                + "   and p = :daoPackage ";
+
+
+        if (unassigned) {
+            hql += " AND NOT exists (SELECT dl FROM arr_dao_link dl "
+                    + "               WHERE dl.dao = d "
+                    + "                 AND (dl.deleteChange IS NULL))";
+        }
+
+        hql += " order by d.daoId desc ";
 
         Query query = entityManager.createQuery(hql);
         query.setMaxResults(maxResults);

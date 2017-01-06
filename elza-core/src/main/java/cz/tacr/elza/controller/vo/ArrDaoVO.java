@@ -27,7 +27,7 @@ public class ArrDaoVO {
 
     private List<ArrDaoFileVO> fileList = new ArrayList<>();
     private List<ArrDaoFileGroupVO> fileGroupList = new ArrayList<>();
-    
+
     private long fileCount;
     private long fileGroupCount;
     private long daoLinkCount = 0; // inicializace
@@ -66,14 +66,6 @@ public class ArrDaoVO {
     public void addAllFileGroup(Collection<ArrDaoFileGroupVO> daoFileGroups) {
         fileGroupList.addAll(daoFileGroups);
         fileGroupCount = fileList.size();
-    }
-
-    /**
-     * Informace o existenci propojení na daolink
-     * @return true pokud existuje platné propojení
-     */
-    public boolean isDaoLinkExists() {
-        return daoLinkCount > 0;
     }
 
     public long getDaoLinkCount() {

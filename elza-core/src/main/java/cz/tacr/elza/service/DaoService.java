@@ -87,14 +87,15 @@ public class DaoService {
      * @param daoPackage  package
      * @param index       počáteční pozice pro načtení
      * @param maxResults  počet načítaných výsledků
+     * @param unassigned mají-li se získávat pouze balíčky, které obsahují DAO, které nejsou nikam přirazené (unassigned = true), a nebo úplně všechny (unassigned = false)
      * @return seznam digitálních entit (DAO)
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
     public List<ArrDao> findDaosByPackage(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion,
-                                          ArrDaoPackage daoPackage, Integer index, Integer maxResults) {
+                                          ArrDaoPackage daoPackage, Integer index, Integer maxResults, boolean unassigned) {
         Assert.notNull(fundVersion);
         Assert.notNull(daoPackage);
-        return daoRepository.findByFundAndPackagePaginating(fundVersion, daoPackage, index, maxResults);
+        return daoRepository.findByFundAndPackagePaginating(fundVersion, daoPackage, index, maxResults, unassigned);
     }
 
     /**

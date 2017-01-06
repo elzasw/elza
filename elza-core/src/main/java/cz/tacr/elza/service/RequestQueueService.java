@@ -227,23 +227,23 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
             sendNotification(openVersion, queueItem.getRequest(), queueItem, EventType.REQUEST_ITEM_QUEUE_CHANGE);
 
             // TODO Lebeda - Jak se postavit k nevyplněnému url/username/password v sys_external_system
-            if (ArrRequest.ClassType.DIGITIZATION.equals(queueItem.getRequest().getDiscriminator())) {
+            if (ArrRequest.ClassType.DIGITIZATION == queueItem.getRequest().getDiscriminator()) {
                 ArrDigitizationRequest arrDigitizationRequest = (ArrDigitizationRequest) queueItem.getRequest();
                 wsClient.postRequest(arrDigitizationRequest);
-            } else if (ArrRequest.ClassType.DAO.equals(queueItem.getRequest().getDiscriminator())) {
+            } else if (ArrRequest.ClassType.DAO == queueItem.getRequest().getDiscriminator()) {
                 ArrDaoRequest arrDaoRequest = (ArrDaoRequest) queueItem.getRequest();
-                if (java.util.Objects.equals(arrDaoRequest.getType(), cz.tacr.elza.api.ArrDaoRequest.Type.DESTRUCTION)) {
+                if (cz.tacr.elza.api.ArrDaoRequest.Type.DESTRUCTION == arrDaoRequest.getType()) {
                     wsClient.postDestructionRequest(arrDaoRequest);
-                } else if (java.util.Objects.equals(arrDaoRequest.getType(), cz.tacr.elza.api.ArrDaoRequest.Type.DESTRUCTION)) {
+                } else if (cz.tacr.elza.api.ArrDaoRequest.Type.DESTRUCTION == arrDaoRequest.getType()) {
                     wsClient.postTransferRequest(arrDaoRequest);
                 } else {
                     throw new SystemException(BaseCode.SYSTEM_ERROR);
                 }
-            } else if (ArrRequest.ClassType.DAO_LINK.equals(queueItem.getRequest().getDiscriminator())) {
+            } else if (ArrRequest.ClassType.DAO_LINK == queueItem.getRequest().getDiscriminator()) {
                 ArrDaoLinkRequest arrDaoLinkRequest = (ArrDaoLinkRequest) queueItem.getRequest();
-                if (cz.tacr.elza.api.ArrDaoLinkRequest.Type.LINK.equals(arrDaoLinkRequest.getType())) {
+                if (cz.tacr.elza.api.ArrDaoLinkRequest.Type.LINK == arrDaoLinkRequest.getType()) {
                     wsClient.onDaoLinked(arrDaoLinkRequest);
-                } else if (cz.tacr.elza.api.ArrDaoLinkRequest.Type.UNLINK.equals(arrDaoLinkRequest.getType())) {
+                } else if (cz.tacr.elza.api.ArrDaoLinkRequest.Type.UNLINK == arrDaoLinkRequest.getType()) {
                     wsClient.onDaoUnlinked(arrDaoLinkRequest);
                 } else {
                     throw new SystemException(BaseCode.SYSTEM_ERROR);

@@ -31,10 +31,11 @@ public class DaoPackageRepositoryImpl implements DaoPackageRepositoryCustom {
         }
 
         if (unassigned) {
-            hql += " and not exists (select dl from arr_dao_link dl "
-                    + " join dl.dao d "
-                    + " where d.daoPackage = dp "
-                    + "  and dl.deleteChange is null)";
+            hql += "and exists (select d from arr_dao d\n"
+                    + "          WHERE d.daoPackage = dp "
+                    + "            AND NOT exists (SELECT dl FROM arr_dao_link dl "
+                    + "                             WHERE dl.dao = d "
+                    + "                               AND (dl.deleteChange IS NULL)))";
         }
 
         hql += " order by dp.daoPackageId desc ";
