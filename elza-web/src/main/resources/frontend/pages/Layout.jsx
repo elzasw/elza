@@ -14,6 +14,7 @@ var keyModifier = Utils.getKeyModifier()
 import {Utils} from 'components/index.jsx';
 import {routerNavigate} from 'actions/router.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
+import Tetris from "components/game/Tetris.jsx";
 
 require('./Layout.less');
 
@@ -29,11 +30,18 @@ var keymap = {
 }
 var shortcutManager = new ShortcutsManager(keymap)
 
+var _gameRunner = null;
+
 var Layout = class Layout extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
         this.bindMethods('handleShortcuts');
+
+        this.state = {
+            showGame: false,
+            canStartGame: false,
+        }
     }
 
     getChildContext() {
@@ -65,10 +73,36 @@ var Layout = class Layout extends AbstractReactComponent {
         }
     }
 
+    handleGameStartLeave = () => {
+        if (_gameRunner) {
+            clearTimeout(_gameRunner);
+            _gameRunner = null;
+        }
+        this.setState({canStartGame: false});
+    };
+
+    handleGameStartOver = () => {
+        if (_gameRunner) {
+            clearTimeout(_gameRunner);
+            _gameRunner = null;
+        }
+        _gameRunner = setTimeout(() => {
+            this.setState({canStartGame: true});
+        }, 1000);
+    };
+
     render() {
+        const {canStartGame, showGame} = this.state;
+
+        if (showGame) {
+            return <Tetris onClose={() => { this.setState({showGame: false, canStartGame: false}) }} />;
+        }
         return (
             <Shortcuts name='Main' handler={this.handleShortcuts}>
                 <div className='root-container'>
+                    <div onClick={() => { canStartGame && this.setState({showGame: true}) }} onMouseEnter={this.handleGameStartOver} onMouseLeave={this.handleGameStartLeave} className={"game-placeholder " + (canStartGame ? "canStart" : "")}>
+                        &nbsp;
+                    </div>
                     {this.props.children}
                     <div style={{overflow:'hidden'}}>
                         <Toastr.Toastr />

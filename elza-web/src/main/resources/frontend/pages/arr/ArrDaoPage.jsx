@@ -29,7 +29,8 @@ import {
     Loading,
     FundPackets,
     FundFiles,
-    FundTreeMain
+    FundTreeMain,
+    ArrDaoPackages
 } from 'components/index.jsx';
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
@@ -64,13 +65,26 @@ const keymap = ArrParentPage.mergeKeymap({});
 
 const shortcutManager = new ShortcutsManager(keymap)
 
-const ArrDaoPage = class ArrDaoPage extends ArrParentPage {
+class ArrDaoPage extends ArrParentPage {
     constructor(props) {
-        super(props, "fa-page");
+        super(props, "dao-page");
 
         this.state = {
             selectedTab: 0
         }
+    }
+
+    static PropTypes = {
+        splitter: React.PropTypes.object.isRequired,
+        arrRegion: React.PropTypes.object.isRequired,
+        developer: React.PropTypes.object.isRequired,
+        rulDataTypes: React.PropTypes.object.isRequired,
+        calendarTypes: React.PropTypes.object.isRequired,
+        descItemTypes: React.PropTypes.object.isRequired,
+        packetTypes: React.PropTypes.object.isRequired,
+        focus: React.PropTypes.object.isRequired,
+        userDetail: React.PropTypes.object.isRequired,
+        ruleSet: React.PropTypes.object.isRequired,
     }
 
     componentDidMount() {
@@ -140,27 +154,15 @@ const ArrDaoPage = class ArrDaoPage extends ArrParentPage {
     };
 
     renderUnassignedPackages = () => {
-        return (
-            <Search key={'dao-search'}
-                    placeholder={i18n('search.input.search')}
-                    filterText={null}
-                    onChange={() => console.log("onChange")}
-                    onSearch={() => console.log("onSearch")}
-                    onClear={() => console.log("onClear")}
-            />
-        )
+        return <ArrDaoPackages
+            unassigned={true}
+        />
     };
 
     renderPackages = () => {
-        return (
-            <Search key={'dao-search'}
-                    placeholder={i18n('search.input.search')}
-                    filterText={null}
-                    onChange={console.log("onChange")}
-                    onSearch={console.log("onSearch")}
-                    onClear={console.log("onClear")}
-            />
-        )
+        return <ArrDaoPackages
+            unassigned={false}
+        />
     };
 
     renderLeftTree = () => {
@@ -273,17 +275,4 @@ function mapStateToProps(state) {
     }
 }
 
-ArrDaoPage.propTypes = {
-    splitter: React.PropTypes.object.isRequired,
-    arrRegion: React.PropTypes.object.isRequired,
-    developer: React.PropTypes.object.isRequired,
-    rulDataTypes: React.PropTypes.object.isRequired,
-    calendarTypes: React.PropTypes.object.isRequired,
-    descItemTypes: React.PropTypes.object.isRequired,
-    packetTypes: React.PropTypes.object.isRequired,
-    focus: React.PropTypes.object.isRequired,
-    userDetail: React.PropTypes.object.isRequired,
-    ruleSet: React.PropTypes.object.isRequired,
-}
-
-module.exports = connect(mapStateToProps)(ArrDaoPage);
+export default connect(mapStateToProps)(ArrDaoPage);
