@@ -44,6 +44,12 @@ var Layout = class Layout extends AbstractReactComponent {
         }
     }
 
+    componentWillUnmount() {
+        if (_gameRunner) {
+            clearTimeout(_gameRunner);
+        }
+    }
+
     getChildContext() {
         return { shortcuts: shortcutManager };
     }

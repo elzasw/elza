@@ -33,6 +33,11 @@ class Tetris extends Component {
     componentDidMount() {
     }
 
+    componentWillUnmount() {
+        this.clearTimer();
+    }
+
+
     createBoard = (levelNum) => {
         const level = lev.levels[levelNum];
         let bricksCount = 0;
