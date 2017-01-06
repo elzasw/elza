@@ -211,8 +211,7 @@ public class RegistryController {
                                                     @RequestParam final Integer from,
                                                     @RequestParam final Integer count,
                                                     @RequestParam final Integer roleTypeId,
-                                                    @RequestParam final Integer partyId,
-                                                    @RequestParam final Integer specificationId) {
+                                                    @RequestParam final Integer partyId) {
 
         ParParty party = partyRepository.findOne(partyId);
         Assert.notNull(party, "Nebyla nalezena osoba s id " + partyId);
