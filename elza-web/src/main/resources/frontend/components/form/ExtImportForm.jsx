@@ -226,7 +226,7 @@ class ExtImportForm extends AbstractReactComponent {
                     record={record}
                     isUpdate={update}
                     onSubmit={(data) => {
-                        importVO.mapping = data.mapping;
+                        importVO.mappings = data.mappings;
                         return send(importVO, update, recordId);
                     }
                 } />, "dialog-lg"));
