@@ -7,7 +7,7 @@ import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 
-import './PartyIdentifierForm.less'
+import './RelationForm.less'
 
 /**
  * Formulář přidání nového / úpravu identifikátoru osobě
@@ -45,9 +45,9 @@ class PartyIdentifierForm extends AbstractReactComponent {
         const submit = submitReduxForm.bind(this, PartyIdentifierForm.validate);
 
         return <Form onSubmit={handleSubmit(submit)}>
-            <Modal.Body className="party-identifier-form">
+            <Modal.Body className="dialog-3-col party-identifier-form">
                 <div className="flex">
-                    <div className="flex-2">
+                    <div className="flex-2 col">
                         <Row>
                             <Col xs={12}>
                                 <FormInput type="text" label={i18n('party.identifier.source')} {...source} />
@@ -55,7 +55,7 @@ class PartyIdentifierForm extends AbstractReactComponent {
                             </Col>
                         </Row>
                     </div>
-                    <div className="datation-group flex-1">
+                    <div className="datation-group flex-1 col">
                         <Row>
                             <Col xs={12}>
                                 <Row>
@@ -69,7 +69,7 @@ class PartyIdentifierForm extends AbstractReactComponent {
                             </Col>
                         </Row>
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 col">
                         <Row>
                             <Col xs={12}>
                                 <FormInput componentClass="textarea" label={i18n('party.identifier.note')} {...note} />
@@ -90,6 +90,3 @@ export default reduxForm({
     form: 'partyIdentifierForm',
     fields: PartyIdentifierForm.fields,
 })(PartyIdentifierForm)
-
-
-

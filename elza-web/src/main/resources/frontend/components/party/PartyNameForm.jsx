@@ -14,7 +14,7 @@ import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {PARTY_TYPE_CODES} from 'actions/party/party.jsx'
 
 
-import './PartyNameForm.less'
+import './RelationForm.less'
 
 const stringNormalize = val => val && val.trim().length > 0 ? val.trim() : null;
 
@@ -169,9 +169,9 @@ class PartyNameForm extends AbstractReactComponent {
         const complementsList = complementsTypes && complementsTypes.map(i => <option value={i.complementTypeId} key={'index' + i.complementTypeId}>{i.name}</option>);
 
         return initialized ? <Form onSubmit={handleSubmit(submit)}>
-            <Modal.Body className="party-name-form">
+            <Modal.Body className="dialog-3-col party-name-form">
                 <div className="flex">
-                    <div className="flex-2">
+                    <div className="flex-2 col">
                         <Row>
                             <Col xs={12} md={6}>
                                 <FormInput type="text" label={i18n('party.name.mainPart')} {...mainPart} />
@@ -208,7 +208,7 @@ class PartyNameForm extends AbstractReactComponent {
                             </Col>
                         </Row>
                     </div>
-                    <div className="datation-group flex-1">
+                    <div className="datation-group flex-1 col">
                         <Row>
                             <Col xs={12}>
                                 <Row>
@@ -222,7 +222,7 @@ class PartyNameForm extends AbstractReactComponent {
                             </Col>
                         </Row>
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 col">
                         <Row>
                             <Col xs={12}>
                                 <FormInput componentClass="textarea" label={i18n('party.name.note')} {...note} />
