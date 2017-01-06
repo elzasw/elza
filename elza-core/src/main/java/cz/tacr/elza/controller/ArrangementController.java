@@ -372,7 +372,7 @@ public class ArrangementController {
 
         final List<ArrDao> arrDaoList = daoService.findDaos(fundVersion, node, index, maxResults);
 
-        return factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail));
+        return factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail), fundVersion);
     }
 
         /**
@@ -405,7 +405,7 @@ public class ArrangementController {
             final List<ArrDao> arrDaoList = daoService.findDaosByPackage(fundVersion, arrDaoPackage, index, maxResults,
                     BooleanUtils.isTrue(unassigned));
 
-            final List<ArrDaoVO> daoList = factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail));
+            final List<ArrDaoVO> daoList = factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail), fundVersion);
             return daoList;
         }
 
