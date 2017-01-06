@@ -32,9 +32,9 @@ public class ItemSpec {
     @XmlElement(name = "view-order", required = true)
     private Integer viewOrder;
 
-    @XmlElement(name = "desc-item-spec-register")
-    @XmlElementWrapper(name = "desc-item-spec-registers")
-    private List<DescItemSpecRegister> descItemSpecRegisters;
+    @XmlElement(name = "item-spec-register")
+    @XmlElementWrapper(name = "item-spec-registers")
+    private List<ItemSpecRegister> itemSpecRegisters;
 
     @XmlElement(name = "category")
     @XmlElementWrapper(name = "categories")
@@ -88,12 +88,12 @@ public class ItemSpec {
         this.viewOrder = viewOrder;
     }
 
-    public List<DescItemSpecRegister> getDescItemSpecRegisters() {
-        return descItemSpecRegisters;
+    public List<ItemSpecRegister> getItemSpecRegisters() {
+        return itemSpecRegisters;
     }
 
-    public void setDescItemSpecRegisters(final List<DescItemSpecRegister> descItemSpecRegisters) {
-        this.descItemSpecRegisters = descItemSpecRegisters;
+    public void setItemSpecRegisters(final List<ItemSpecRegister> itemSpecRegisters) {
+        this.itemSpecRegisters = itemSpecRegisters;
     }
 
     public List<Category> getCategories() {

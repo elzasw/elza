@@ -86,6 +86,12 @@ public class RegistryController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private ItemSpecRepository itemSpecRepository;
+
+    @Autowired
+    private ItemSpecRegisterRepository itemSpecRegisterRepository;
+
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
      * nebo pole variantního záznamu obsahují hledaný řetězec. V případě, že hledaný řetězec je null, nevyhodnocuje se.
@@ -96,6 +102,7 @@ public class RegistryController {
      * @param registerTypeId   IDčka typu záznamu, může být null
      * @param parentRecordId    id rodiče, pokud je null načtou se všechny záznamy, jinak potomci daného rejstříku
      * @param versionId   id verze, podle které se budou filtrovat třídy rejstříků, null - výchozí třídy
+     * @param itemSpecId   id specifikace
      * @return                  vybrané záznamy dle popisu seřazené za text hesla, nebo prázdná množina
      */
     @RequestMapping(value = "/", method = RequestMethod.GET)
@@ -104,13 +111,21 @@ public class RegistryController {
                                          @RequestParam final Integer count,
                                          @RequestParam(required = false) @Nullable final Integer registerTypeId,
                                          @RequestParam(required = false) @Nullable final Integer parentRecordId,
-                                         @RequestParam(required = false) @Nullable final Integer versionId) {
+                                         @RequestParam(required = false) @Nullable final Integer versionId,
+                                         @RequestParam(required = false) @Nullable final Integer itemSpecId) {
 
         Set<Integer> registerTypeIdTree = Collections.EMPTY_SET;
-        if (registerTypeId != null) {
-            Set<Integer> registerTypeIds = new HashSet<>();
-            registerTypeIds.add(registerTypeId);
 
+        if (itemSpecId != null && registerTypeId != null) {
+            throw new IllegalArgumentException("Nelza použít specifikaci a typ rejstříku zároveň.");
+        } else if (itemSpecId != null || registerTypeId != null) {
+            Set<Integer> registerTypeIds = new HashSet<>();
+            if (itemSpecId != null) {
+                RulItemSpec spec = itemSpecRepository.getOneCheckExist(itemSpecId);
+                registerTypeIds.addAll(itemSpecRegisterRepository.findIdsByItemSpecId(spec));
+            } else {
+                registerTypeIds.add(registerTypeId);
+            }
             registerTypeIdTree = registerTypeRepository.findSubtreeIds(registerTypeIds);
         }
 
@@ -196,13 +211,15 @@ public class RegistryController {
                                                     @RequestParam final Integer from,
                                                     @RequestParam final Integer count,
                                                     @RequestParam final Integer roleTypeId,
-                                                    @RequestParam final Integer partyId) {
+                                                    @RequestParam final Integer partyId,
+                                                    @RequestParam final Integer specificationId) {
 
         ParParty party = partyRepository.findOne(partyId);
         Assert.notNull(party, "Nebyla nalezena osoba s id " + partyId);
 
         ParRelationRoleType relationRoleType = relationRoleTypeRepository.findOne(roleTypeId);
         Assert.notNull(roleTypeId, "Nebyl nalezen typ vztahu s id " + roleTypeId);
+
 
         Set<Integer> registerTypeIds = registerTypeRepository.findByRelationRoleType(relationRoleType)
                 .stream().map(RegRegisterType::getRegisterTypeId).collect(Collectors.toSet());
