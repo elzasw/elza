@@ -23,11 +23,11 @@ public class PathResolver {
 	private static final String REQUEST_INFO_FILE_NAME = "request-info.yaml";
 	private static final String DELETE_ENTRY_FILE_NAME = "deleted";
 
-	private static Path storagePath;
+	private static final Path STORAGE_PATH;
 	static {
 		String basePath = DCStorageConfig.get().getBasePath();
 		String repositoryIdentifier = DCStorageConfig.get().getRepositoryIdentifier();
-		storagePath = Paths.get(basePath, repositoryIdentifier);
+		STORAGE_PATH = Paths.get(basePath, repositoryIdentifier);
 	}
 
 	public static void forEachDaoFilePath(String packageIdentifier, String daoIdentifier, Consumer<Path> action) {
@@ -54,7 +54,7 @@ public class PathResolver {
 	}
 
 	public static Path resolveRequestInfoPath(String requestIdentifier, boolean destrRequest) {
-		return storagePath.resolve(resolveRelativeRequestPath(requestIdentifier, destrRequest)).resolve(REQUEST_INFO_FILE_NAME);
+		return STORAGE_PATH.resolve(resolveRelativeRequestPath(requestIdentifier, destrRequest)).resolve(REQUEST_INFO_FILE_NAME);
 	}
 
 	public static Path resolveRelativeRequestPath(String requestIdentifier, boolean destrRequest) {
@@ -82,7 +82,7 @@ public class PathResolver {
 	}
 
 	public static Path resolvePackagePath(String packageIdentifier) {
-		return storagePath.resolve(PACKAGES_FOLDER_NAME).resolve(packageIdentifier);
+		return STORAGE_PATH.resolve(PACKAGES_FOLDER_NAME).resolve(packageIdentifier);
 	}
 
 	private static class DaoVisitor extends SimpleFileVisitor<Path> {

@@ -1,6 +1,5 @@
 package cz.tacr.elza.dao.bo;
 
-import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
@@ -89,7 +88,7 @@ public class DaoFileBo {
 				dao.getDaoPackage().getIdentifier(), dao.getIdentifier(), identifier);
 		try {
 			fileInfoResource.init();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			throw new DaoComponentException("cannot read dao file attributes", e);
 		}
 		fileInfo = fileInfoResource.getResource();

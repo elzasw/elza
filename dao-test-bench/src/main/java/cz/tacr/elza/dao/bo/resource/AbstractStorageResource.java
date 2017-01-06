@@ -1,7 +1,5 @@
 package cz.tacr.elza.dao.bo.resource;
 
-import java.io.IOException;
-
 public abstract class AbstractStorageResource<T> {
 
 	private T resource;
@@ -10,7 +8,7 @@ public abstract class AbstractStorageResource<T> {
 		return resource != null;
 	}
 
-	public void init() throws IOException {
+	public void init() throws Exception {
 		if (isInitialized()) {
 			return;
 		}
@@ -25,5 +23,5 @@ public abstract class AbstractStorageResource<T> {
 		resource = null;
 	}
 
-	protected abstract T loadResource() throws IOException;
+	protected abstract T loadResource() throws Exception;
 }

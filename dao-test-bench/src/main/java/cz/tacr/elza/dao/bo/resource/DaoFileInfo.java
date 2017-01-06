@@ -11,7 +11,7 @@ public class DaoFileInfo {
 
 	private Date created;
 
-	private Long size;
+	private long size;
 
 	public Path getFilePath() {
 		return filePath;
@@ -37,11 +37,11 @@ public class DaoFileInfo {
 		this.created = created;
 	}
 
-	public Long getSize() {
+	public long getSize() {
 		return size;
 	}
 
-	public void setSize(Long size) {
+	public void setSize(long size) {
 		this.size = size;
 	}
 }

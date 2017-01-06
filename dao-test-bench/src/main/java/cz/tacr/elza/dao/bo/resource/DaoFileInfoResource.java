@@ -19,11 +19,11 @@ public class DaoFileInfoResource extends AbstractStorageResource<DaoFileInfo> {
 	@Override
 	protected DaoFileInfo loadResource() throws IOException {
 		DaoFileInfo info = new DaoFileInfo();
+		info.setFilePath(resourcePath);
 		info.setMimeType(Files.probeContentType(resourcePath));
 		BasicFileAttributes attrs = Files.readAttributes(resourcePath, BasicFileAttributes.class);
 		info.setCreated(new Date(attrs.creationTime().toMillis()));
 		info.setSize(attrs.size());
-		info.setFilePath(resourcePath);
 		return info;
 	}
 }

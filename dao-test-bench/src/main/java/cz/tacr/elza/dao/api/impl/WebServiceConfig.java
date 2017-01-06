@@ -45,8 +45,8 @@ public class WebServiceConfig {
 
 	@Bean
 	public ServletRegistrationBean CXFServlet() {
-		ServletRegistrationBean servlet = new ServletRegistrationBean(new CXFServlet(),
-				"/" + storageConfig.getRepositoryIdentifier() + "/*");
+		String contextPath = "/" + storageConfig.getRepositoryIdentifier() + "/api/*";
+		ServletRegistrationBean servlet = new ServletRegistrationBean(new CXFServlet(), contextPath);
 		servlet.setLoadOnStartup(1);
 		return servlet;
 	}

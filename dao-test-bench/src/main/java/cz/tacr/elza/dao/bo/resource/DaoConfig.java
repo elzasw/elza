@@ -11,21 +11,12 @@ public class DaoConfig {
 	public static final String FILE_CREATED_ATTR_NAME = "created";
 	public static final String FILE_SIZE_ATTR_NAME = "size";
 
-	private String identifier;
-
 	private List<Map<String, Object>> fileAttributes = new ArrayList<>();
 
 	private String didIdentifier;
 
 	private String label;
 
-	public String getIdentifier() {
-		return identifier;
-	}
-
-	public void setIdentifier(String identifier) {
-		this.identifier = identifier;
-	}
 
 	public List<Map<String, Object>> getFileAttributes() {
 		return fileAttributes;

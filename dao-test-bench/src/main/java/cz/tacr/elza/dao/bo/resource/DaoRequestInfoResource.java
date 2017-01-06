@@ -41,12 +41,12 @@ public class DaoRequestInfoResource extends YamlResource<DaoRequestInfo> {
 		while (tryCount++ < 10) {
 			Path path = PathResolver.resolveRequestInfoPath(uniqueName, destrRequest);
 			if (!Files.exists(path)) {
-				daoRequestInfo.setIdentifier(uniqueName);
 				Files.createDirectory(path.getParent());
 				try (BufferedWriter bw = Files.newBufferedWriter(path, StandardOpenOption.WRITE,
 						StandardOpenOption.CREATE_NEW)) {
 					YAML_INSTANCE.dump(daoRequestInfo, bw);
 				}
+				daoRequestInfo.setIdentifier(uniqueName);
 				return new DaoRequestInfoResource(path);
 			}
 			uniqueName = identifier + '-' + tryCount;

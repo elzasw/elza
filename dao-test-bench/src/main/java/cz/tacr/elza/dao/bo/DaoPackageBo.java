@@ -44,7 +44,7 @@ public class DaoPackageBo {
 	public DaoPackageConfig getConfig() {
 		try {
 			configResource.init();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			throw new DaoComponentException("package config not found", e);
 		}
 		return configResource.getResource();
@@ -105,9 +105,12 @@ public class DaoPackageBo {
 	}
 
 	public List<DaoLink> exportLinks() {
-		List<DaoLink> links = new ArrayList<>(getAllDao().size());
+		List<DaoLink> links = new ArrayList<>();
 		for (DaoBo dao : getAllDao()) {
-			links.add(dao.exportLink());
+			DaoLink link = dao.exportLink();
+			if (link != null) {
+				links.add(link);
+			}
 		}
 		return links;
 	}

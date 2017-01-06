@@ -2,21 +2,11 @@ package cz.tacr.elza.dao.bo.resource;
 
 public class DaoPackageConfig {
 
-	private String identifier;
-
 	private String fundIdentifier;
 
 	private String batchIdentifier;
 
 	private String batchLabel;
-
-	public String getIdentifier() {
-		return identifier;
-	}
-
-	public void setIdentifier(String identifier) {
-		this.identifier = identifier;
-	}
 
 	public String getFundIdentifier() {
 		return fundIdentifier;

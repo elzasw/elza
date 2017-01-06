@@ -19,7 +19,7 @@ public class DcsResourceService {
 				() -> new DaoPackageBo(packageIdentifier).getDao(daoIdentifier).getDaoFile(fileIdentifier));
 	}
 
-	public Collection<DaoFileBo> getDao(String packageIdentifier, String daoIdentifier) {
+	public Collection<DaoFileBo> getDaoFiles(String packageIdentifier, String daoIdentifier) {
 		return GlobalLock.runAtomicFunction(
 				() -> new DaoPackageBo(packageIdentifier).getDao(daoIdentifier).getAllDaoFiles());
 	}

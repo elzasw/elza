@@ -100,9 +100,13 @@ public class DaoBo {
 	}
 
 	public DaoLink exportLink() {
+		String didIdentifier = getConfig().getDidIdentifier();
+		if (didIdentifier == null) {
+			return null;
+		}
 		DaoLink link = new DaoLink();
 		link.setDaoIdentifier(identifier);
-		link.setDidIdentifier(getConfig().getDidIdentifier());
+		link.setDidIdentifier(didIdentifier);
 		link.setRepositoryIdentifier(DCStorageConfig.get().getRepositoryIdentifier());
 		return link;
 	}
@@ -135,7 +139,7 @@ public class DaoBo {
 	private void initConfigResource() {
 		try {
 			configResource.init();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			throw new DaoComponentException("cannot init dao config", e);
 		}
 	}

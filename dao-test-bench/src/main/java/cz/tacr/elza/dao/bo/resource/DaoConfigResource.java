@@ -35,7 +35,7 @@ public class DaoConfigResource extends YamlResource<DaoConfig> {
 	}
 
 	@Override
-	protected DaoConfig loadResource() throws IOException {
+	protected DaoConfig loadResource() throws Exception {
 		if (Files.exists(deleteEntryPath)) {
 			throw new NoSuchFileException(resourcePath.toString());
 		}

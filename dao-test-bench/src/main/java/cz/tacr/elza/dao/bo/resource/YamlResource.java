@@ -30,9 +30,14 @@ public abstract class YamlResource<T> extends AbstractStorageResource<T> {
 	}
 
 	@Override
-	protected T loadResource() throws IOException {
+	protected T loadResource() throws Exception {
 		try (InputStream is = Files.newInputStream(getResourcePath())) {
-			return YAML_INSTANCE.loadAs(is, type);
+			T resource = YAML_INSTANCE.loadAs(is, type);
+			if (resource == null) {
+				// empty file
+				resource = type.newInstance();
+			}
+			return resource;
 		}
 	}
 

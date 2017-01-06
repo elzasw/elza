@@ -57,7 +57,7 @@ public class DcsDaoRequestService {
 					}
 				}
 				daoRequestInfo.delete();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				throw new DaoComponentException("dao request confirmation failed", e);
 			}
 		});
