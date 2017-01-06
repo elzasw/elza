@@ -1,21 +1,23 @@
 package cz.tacr.elza.dao.bo;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.dao.FileUtils;
+import cz.tacr.elza.dao.DCStorageConfig;
 import cz.tacr.elza.dao.PathResolver;
-import cz.tacr.elza.dao.descriptor.DaoConfig;
+import cz.tacr.elza.dao.bo.resource.DaoConfig;
+import cz.tacr.elza.dao.bo.resource.DaoConfigResource;
 import cz.tacr.elza.dao.exception.DaoComponentException;
+import cz.tacr.elza.ws.types.v1.Dao;
+import cz.tacr.elza.ws.types.v1.DaoLink;
+import cz.tacr.elza.ws.types.v1.FileGroup;
 
-public class DaoBo implements DescriptorTarget<DaoConfig> {
+public class DaoBo {
 
 	private final static char UID_SEPARATOR = '/';
 
@@ -23,17 +25,21 @@ public class DaoBo implements DescriptorTarget<DaoConfig> {
 
 	private final String identifier;
 
-	private Map<String, DaoFileBo> daoFiles;
+	private final DaoConfigResource configResource;
 
-	private DaoConfig descriptor;
+	private final Map<String, DaoFileBo> daoFiles = new HashMap<>();
 
-	private boolean daoFileLazyInit = true;
+	private boolean allFileInitialized;
 
-	public DaoBo(DaoPackageBo daoPackage, String identifier) {
+	public DaoBo(DaoPackageBo daoPackage, String identifier, boolean init) {
 		Assert.notNull(daoPackage);
 		Assert.notNull(identifier);
 		this.daoPackage = daoPackage;
 		this.identifier = identifier;
+		configResource = new DaoConfigResource(daoPackage.getIdentifier(), identifier);
+		if (init) {
+			initConfigResource();
+		}
 	}
 
 	public DaoPackageBo getDaoPackage() {
@@ -48,64 +54,62 @@ public class DaoBo implements DescriptorTarget<DaoConfig> {
 		return daoPackage.getIdentifier() + UID_SEPARATOR + identifier;
 	}
 
+	public DaoConfig getConfig() {
+		initConfigResource();
+		return configResource.getResource();
+	}
+
+	public void saveConfig() {
+		try {
+			configResource.save();
+		} catch (IOException e) {
+			throw new DaoComponentException("cannot save dao config", e);
+		}
+	}
+
 	public Collection<DaoFileBo> getAllDaoFiles() {
-		return getDaoFiles(true).values();
+		if (!allFileInitialized) {
+			PathResolver.forEachDaoFilePath(daoPackage.getIdentifier(), identifier, path -> {
+				String fileIdentifier = path.getFileName().toString();
+				daoFiles.computeIfAbsent(fileIdentifier, k -> new DaoFileBo(this, k, false));
+			});
+			allFileInitialized = true;
+		}
+		return daoFiles.values();
 	}
 
 	public DaoFileBo getDaoFile(String fileIdentifier) {
-		return getDaoFiles(false).computeIfAbsent(fileIdentifier, k -> {
-			DaoFileBo daoFile;
-			if (!daoFileLazyInit || !(daoFile = new DaoFileBo(this, k)).isValidDescriptor()) {
-				return null;
+		return daoFiles.computeIfAbsent(fileIdentifier, k -> {
+			if (allFileInitialized) {
+				throw new DaoComponentException("dao file not found, identifier:" + k);
 			}
-			return daoFile;
+			return new DaoFileBo(this, k, true);
 		});
 	}
 
-	public List<String> getRelatedDaoIdentifiers() {
-		return getDescriptor().getRelatedDaoIdentifiers();
-	}
-
-	public String getDidIdentifier() {
-		return getDescriptor().getDidIdentifier();
-	}
-
-	public void setDidIdentifier(String didIdentifier) {
-		getDescriptor().setDidIdentifier(didIdentifier);
-	}
-
-	public String getLabel() {
-		return getDescriptor().getLabel();
-	}
-
-	@Override
-	public DaoConfig getDescriptor() {
-		if (descriptor == null) {
-			Path path = PathResolver.resolveDaoConfigPath(daoPackage.getIdentifier(), identifier);
-			try {
-				descriptor = FileUtils.readYamlFile(path, DaoConfig.class);
-			} catch (IOException e) {
-				throw new DaoComponentException("dao descriptor not found", e);
-			}
+	public Dao export() {
+		Dao dao = new Dao();
+		dao.setIdentifier(identifier);
+		dao.setLabel(getConfig().getLabel());
+		FileGroup fileGroup = new FileGroup();
+		for (DaoFileBo daoFile : getAllDaoFiles()) {
+			fileGroup.getFile().add(daoFile.export());
 		}
-		return descriptor;
+		dao.setFileGroup(fileGroup);
+		return dao;
 	}
 
-	@Override
-	public void saveDescriptor() {
-		if (descriptor != null && descriptor.isDirty()) {
-			Path path = PathResolver.resolveDaoConfigPath(daoPackage.getIdentifier(), identifier);
-			try {
-				FileUtils.saveYamlFile(path, descriptor);
-			} catch (IOException e) {
-				throw new DaoComponentException("cannot save dao descriptor", e);
-			}
-		}
+	public DaoLink exportLink() {
+		DaoLink link = new DaoLink();
+		link.setDaoIdentifier(identifier);
+		link.setDidIdentifier(getConfig().getDidIdentifier());
+		link.setRepositoryIdentifier(DCStorageConfig.get().getRepositoryIdentifier());
+		return link;
 	}
 
 	@Override
 	public String toString() {
-		return "DaoBo [packageIdentifier:" + daoPackage.getIdentifier() + ", identifier:" + identifier + "]";
+		return "DaoBo [packageIdentifier=" + daoPackage.getIdentifier() + ", identifier=" + identifier + "]";
 	}
 
 	@Override
@@ -128,28 +132,12 @@ public class DaoBo implements DescriptorTarget<DaoConfig> {
 		return false;
 	}
 
-	private Map<String, DaoFileBo> getDaoFiles(boolean forceInit) {
-		if (daoFileLazyInit) {
-			if (daoFiles == null) {
-				daoFiles = new HashMap<>();
-			}
-			if (!forceInit) {
-				return daoFiles;
-			} else {
-				daoFileLazyInit = false;
-			}
-		} else {
-			if (daoFiles != null) {
-				return daoFiles;
-			} else {
-				daoFiles = new HashMap<>();
-			}
+	private void initConfigResource() {
+		try {
+			configResource.init();
+		} catch (IOException e) {
+			throw new DaoComponentException("cannot init dao config", e);
 		}
-		PathResolver.forEachDaoFilePath(daoPackage.getIdentifier(), identifier, path -> {
-			String fileIdentifier = path.getFileName().toString();
-			daoFiles.computeIfAbsent(fileIdentifier, k -> new DaoFileBo(this, k));
-		});
-		return daoFiles;
 	}
 
 	public static String[] parseUId(String value) {

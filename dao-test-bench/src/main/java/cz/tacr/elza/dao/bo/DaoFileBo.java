@@ -1,81 +1,72 @@
 package cz.tacr.elza.dao.bo;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Consumer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.dao.PathResolver;
-import cz.tacr.elza.dao.descriptor.DaoConfig;
-import cz.tacr.elza.dao.descriptor.DaoFileInfo;
+import cz.tacr.elza.dao.XmlUtils;
+import cz.tacr.elza.dao.bo.resource.DaoConfig;
+import cz.tacr.elza.dao.bo.resource.DaoFileInfo;
+import cz.tacr.elza.dao.bo.resource.DaoFileInfoResource;
 import cz.tacr.elza.dao.exception.DaoComponentException;
+import cz.tacr.elza.ws.types.v1.File;
 
-public class DaoFileBo implements DescriptorTarget<DaoFileInfo> {
+public class DaoFileBo {
 
-	private final DaoBo daoBo;
+	private static final Logger LOG = LoggerFactory.getLogger(DaoFileBo.class);
+
+	private final DaoBo dao;
 
 	private final String identifier;
 
-	private Map<String, Object> attributes;
+	private DaoFileInfo fileInfo;
 
-	public DaoFileBo(DaoBo daoBo, String identifier) {
-		Assert.notNull(daoBo);
+	public DaoFileBo(DaoBo dao, String identifier, boolean init) {
+		Assert.notNull(dao);
 		Assert.notNull(identifier);
-		this.daoBo = daoBo;
+		this.dao = dao;
 		this.identifier = identifier;
+		if (init) {
+			initFileInfoResource();
+		}
 	}
 
 	public String getIdentifier() {
 		return identifier;
 	}
 
-	public Map<String, Object> getAttributes() {
-		if (attributes == null) {
-			attributes = daoBo.getDescriptor().getFileAttributes().stream()
-				.filter(m -> identifier.equals(m.get(DaoConfig.FILE_IDENTIFIER_ATTR_NAME)))
-				.findFirst().orElse(new HashMap<>());
+	public DaoFileInfo getFileInfo() {
+		if (fileInfo == null) {
+			initFileInfoResource();
 		}
-		return attributes;
+		return fileInfo;
 	}
 
-	public String getMimeType() {
-		Object value = getAttributes().get(DaoConfig.FILE_MIME_TYPE_ATTR_NAME);
-		if (value instanceof String) {
-			return (String) value;
-		}
-		return getDescriptor().getMimeType();
-	}
-
-	public Date getCreated() {
-		Object value = getAttributes().get(DaoConfig.FILE_CREATED_ATTR_NAME);
-		if (value instanceof Date) {
-			return (Date) value;
-		}
-		return getDescriptor().getCreated();
-	}
-
-	public Long getSize() {
-		Object value = getAttributes().get(DaoConfig.FILE_SIZE_ATTR_NAME);
-		if (value instanceof Long) {
-			return (Long) value;
-		}
-		return getDescriptor().getSize();
+	public File export() {
+		File file = new File();
+		file.setIdentifier(identifier);
+		DaoFileInfo info = getFileInfo();
+		file.setMimetype(info.getMimeType());
+		file.setCreated(XmlUtils.convertDate(info.getCreated()));
+		file.setSize(info.getSize());
+		return file;
 	}
 
 	@Override
 	public String toString() {
-		return "DaoFileBo [packageIdentifier:" + daoBo.getDaoPackage().getIdentifier()
-				+ ", daoIdentifier:" + daoBo.getIdentifier() + ", identifier:" + identifier + "]";
+		return "DaoFileBo [packageIdentifier=" + dao.getDaoPackage().getIdentifier() + ", daoIdentifier="
+				+ dao.getIdentifier() + ", identifier=" + identifier + "]";
 	}
 
 	@Override
 	public int hashCode() {
-		return identifier.hashCode();
+		return Objects.hash(dao, identifier);
 	}
 
 	@Override
@@ -88,28 +79,38 @@ public class DaoFileBo implements DescriptorTarget<DaoFileInfo> {
 		}
 		if (obj instanceof DaoFileBo) {
 			DaoFileBo o = (DaoFileBo) obj;
-			return daoBo.equals(o.daoBo) && identifier.equals(o.identifier);
+			return dao.equals(o.dao) && identifier.equals(o.identifier);
 		}
 		return false;
 	}
 
-	@Override
-	public DaoFileInfo getDescriptor() {
-		Path path = PathResolver.resolveDaoFilePath(daoBo.getDaoPackage().getIdentifier(), daoBo.getIdentifier(), identifier);
-		DaoFileInfo info = new DaoFileInfo();
+	private void initFileInfoResource() {
+		DaoFileInfoResource fileInfoResource = new DaoFileInfoResource(
+				dao.getDaoPackage().getIdentifier(), dao.getIdentifier(), identifier);
 		try {
-			info.setMimeType(Files.probeContentType(path));
-			BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
-			info.setCreated(new Date(attrs.creationTime().toMillis()));
-			info.setSize(attrs.size());
+			fileInfoResource.init();
 		} catch (IOException e) {
-			throw new DaoComponentException("cannot create dao file descriptor", e);
+			throw new DaoComponentException("cannot read dao file attributes", e);
 		}
-		return info;
+		fileInfo = fileInfoResource.getResource();
+		for (Map<String, Object> map : dao.getConfig().getFileAttributes()) {
+			if (identifier.equals(map.get(DaoConfig.FILE_IDENTIFIER_ATTR_NAME))) {
+				setFileAttribute(map, DaoConfig.FILE_MIME_TYPE_ATTR_NAME, String.class, fileInfo::setMimeType);
+				setFileAttribute(map, DaoConfig.FILE_CREATED_ATTR_NAME, Date.class, fileInfo::setCreated);
+				setFileAttribute(map, DaoConfig.FILE_SIZE_ATTR_NAME, Long.class, fileInfo::setSize);
+				break;
+			}
+		}
 	}
 
-	@Override
-	public void saveDescriptor() {
-		throw new UnsupportedOperationException();
+	@SuppressWarnings("unchecked")
+	private static <T> void setFileAttribute(Map<String, Object> attributes, String name, Class<T> type, Consumer<T> setter) {
+		Object value = attributes.get(name);
+		if (type.isInstance(value)) {
+			setter.accept((T) value);
+		} else if (value != null) {
+			LOG.error("mismatched file attribute type, name:" + name + ", expected:" + type.getName() + ", present:"
+					+ value.getClass().getName());
+		}
 	}
 }

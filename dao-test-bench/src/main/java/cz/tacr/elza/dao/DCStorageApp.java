@@ -23,20 +23,11 @@ import cz.tacr.elza.ws.core.v1.DaoRequestsService;
 @EnableWebMvc
 public class DCStorageApp extends SpringBootServletInitializer {
 
-	public static final String REPOSITORY_IDENTIFIER_PARAM_NAME = "repositoryIdentifier";
-	public static final String BASE_PATH_PARAM_NAME = "storageBasePath";
-	public static final String REJECT_MODE_PARAM_NAME = "rejectMode";
-
 	private static final Map<String, Object> DEFAULT_PROPERTIES = new HashMap<String, Object>() {{
-		put(REPOSITORY_IDENTIFIER_PARAM_NAME, "defaultTestStorage");
-		put(BASE_PATH_PARAM_NAME, "/storage");
+		put("dcstorage.repositoryIdentifier", "defaultReporisotory");
+		put("dcstorage.basePath", "/storage");
+		put("dcstorage.rejectMode", false);
 	}};
-
-	public static void main(String[] args) {
-		SpringApplication app = new SpringApplication(DCStorageApp.class);
-		app.setDefaultProperties(DEFAULT_PROPERTIES);
-		app.run(args);
-	}
 
 	@Bean
 	public DaoRequestsService daoRequestsService() {
@@ -46,5 +37,11 @@ public class DCStorageApp extends SpringBootServletInitializer {
 	@Override
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
 		return builder.sources(DCStorageApp.class).properties(DEFAULT_PROPERTIES);
+	}
+
+	public static void main(String[] args) {
+		SpringApplication app = new SpringApplication(DCStorageApp.class);
+		app.setDefaultProperties(DEFAULT_PROPERTIES);
+		app.run(args);
 	}
 }

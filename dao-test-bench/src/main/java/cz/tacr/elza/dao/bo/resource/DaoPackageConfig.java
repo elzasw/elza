@@ -1,6 +1,6 @@
-package cz.tacr.elza.dao.descriptor;
+package cz.tacr.elza.dao.bo.resource;
 
-public class DaoPackageConfig implements Descriptor {
+public class DaoPackageConfig {
 
 	private String identifier;
 
@@ -40,10 +40,5 @@ public class DaoPackageConfig implements Descriptor {
 
 	public void setBatchLabel(String batchLabel) {
 		this.batchLabel = batchLabel;
-	}
-
-	@Override
-	public boolean isDirty() {
-		return true;
 	}
 }

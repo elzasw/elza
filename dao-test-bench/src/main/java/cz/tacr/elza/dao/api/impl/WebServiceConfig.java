@@ -4,13 +4,12 @@ import org.apache.cxf.Bus;
 import org.apache.cxf.jaxws.EndpointImpl;
 import org.apache.cxf.transport.servlet.CXFServlet;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.embedded.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 
-import cz.tacr.elza.dao.DCStorageApp;
+import cz.tacr.elza.dao.DCStorageConfig;
 import cz.tacr.elza.ws.dao_service.v1.DaoNotifications;
 import cz.tacr.elza.ws.dao_service.v1.DaoRequests;
 
@@ -22,13 +21,13 @@ public class WebServiceConfig {
 	private DaoNotifications daoNotifications;
 
 	@Autowired
+	private DCStorageConfig storageConfig;
+
+	@Autowired
 	private DaoRequests daoRequests;
 
 	@Autowired
 	private Bus bus;
-
-	@Value(DCStorageApp.REPOSITORY_IDENTIFIER_PARAM)
-	private String repositoryIdentifier;
 
 	@Bean
 	public EndpointImpl notificationsEndpoint() {
@@ -46,7 +45,8 @@ public class WebServiceConfig {
 
 	@Bean
 	public ServletRegistrationBean CXFServlet() {
-		ServletRegistrationBean servlet = new ServletRegistrationBean(new CXFServlet(), "/" + repositoryIdentifier + "/*");
+		ServletRegistrationBean servlet = new ServletRegistrationBean(new CXFServlet(),
+				"/" + storageConfig.getRepositoryIdentifier() + "/*");
 		servlet.setLoadOnStartup(1);
 		return servlet;
 	}

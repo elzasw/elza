@@ -1,9 +1,9 @@
-package cz.tacr.elza.dao.descriptor;
+package cz.tacr.elza.dao.bo.resource;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DaoRequestInfo implements Descriptor {
+public class DaoRequestInfo {
 
 	private String identifier;
 
@@ -63,10 +63,5 @@ public class DaoRequestInfo implements Descriptor {
 
 	public void setDescription(String description) {
 		this.description = description;
-	}
-
-	@Override
-	public boolean isDirty() {
-		return true;
 	}
 }

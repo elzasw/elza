@@ -1,79 +1,115 @@
 package cz.tacr.elza.dao.bo;
 
 import java.io.IOException;
-import java.nio.file.Path;
+import java.nio.file.FileAlreadyExistsException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.dao.FileUtils;
+import cz.tacr.elza.dao.DCStorageConfig;
 import cz.tacr.elza.dao.PathResolver;
-import cz.tacr.elza.dao.descriptor.DaoPackageConfig;
+import cz.tacr.elza.dao.bo.resource.DaoConfigResource;
+import cz.tacr.elza.dao.bo.resource.DaoPackageConfig;
+import cz.tacr.elza.dao.bo.resource.DaoPackageConfigResource;
 import cz.tacr.elza.dao.exception.DaoComponentException;
+import cz.tacr.elza.ws.types.v1.DaoBatchInfo;
+import cz.tacr.elza.ws.types.v1.DaoLink;
+import cz.tacr.elza.ws.types.v1.DaoPackage;
+import cz.tacr.elza.ws.types.v1.Daoset;
 
-public class DaoPackageBo implements DescriptorTarget<DaoPackageConfig> {
+public class DaoPackageBo {
 
 	private final String identifier;
 
-	private Map<String, DaoBo> daoSet;
+	private final DaoPackageConfigResource configResource;
 
-	private DaoPackageConfig descriptor;
+	private final Map<String, DaoBo> daoSet = new HashMap<>();
 
-	private boolean daoLazyInit = true;
+	private boolean allDaoInitialized;
 
 	public DaoPackageBo(String identifier) {
 		Assert.notNull(identifier);
 		this.identifier = identifier;
+		configResource = new DaoPackageConfigResource(identifier);
 	}
 
 	public String getIdentifier() {
 		return identifier;
 	}
 
+	public DaoPackageConfig getConfig() {
+		try {
+			configResource.init();
+		} catch (IOException e) {
+			throw new DaoComponentException("package config not found", e);
+		}
+		return configResource.getResource();
+	}
+
 	public Collection<DaoBo> getAllDao() {
-		return getDaoSet(true).values();
+		if (!allDaoInitialized) {
+			PathResolver.forEachDaoPath(identifier, (path, active) -> {
+				if (active) {
+					String daoIdentifier = path.getFileName().toString();
+					daoSet.computeIfAbsent(daoIdentifier, k -> new DaoBo(this, k, false));
+				}
+			});
+			allDaoInitialized = true;
+		}
+		return daoSet.values();
 	}
 
 	public DaoBo getDao(String daoIdentifier) {
-		return getDaoSet(false).computeIfAbsent(daoIdentifier, k -> {
-			DaoBo dao;
-			if (!daoLazyInit || !(dao = new DaoBo(this, k)).isValidDescriptor()) {
-				return null;
+		return daoSet.computeIfAbsent(daoIdentifier, k -> {
+			if (allDaoInitialized) {
+				throw new DaoComponentException("dao not found, identifier:" + k);
 			}
-			return dao;
+			return new DaoBo(this, k, true);
 		});
 	}
 
-	public String getFundIdentifier() {
-		return getDescriptor().getFundIdentifier();
-	}
-
-	public String getBatchIdentifier() {
-		return getDescriptor().getBatchIdentifier();
-	}
-
-	public String getBatchLabel() {
-		return getDescriptor().getBatchLabel();
-	}
-
-	@Override
-	public DaoPackageConfig getDescriptor() {
-		if (descriptor == null) {
-			Path path = PathResolver.resolvePackageConfigPath(identifier);
-			try {
-				descriptor = FileUtils.readYamlFile(path, DaoPackageConfig.class);
-			} catch (IOException e) {
-				throw new DaoComponentException("package descriptor not found", e);
-			}
+	public boolean deleteDao(String daoIdentifier, String deleteEntry) {
+		try {
+			new DaoConfigResource(identifier, daoIdentifier).delete(deleteEntry);
+		} catch (FileAlreadyExistsException e) {
+			return false;
+		} catch (IOException e) {
+			throw new DaoComponentException(e);
 		}
-		return descriptor;
+		daoSet.remove(daoIdentifier);
+		return true;
 	}
 
-	@Override
-	public void saveDescriptor() {
-		throw new UnsupportedOperationException();
+	public DaoPackage export() {
+		DaoPackage daoPackage = new DaoPackage();
+		daoPackage.setIdentifier(identifier);
+		DaoPackageConfig config = getConfig();
+		daoPackage.setFundIdentifier(config.getFundIdentifier());
+		daoPackage.setRepositoryIdentifier(DCStorageConfig.get().getRepositoryIdentifier());
+		if (config.getBatchIdentifier() != null) {
+			DaoBatchInfo batchInfo = new DaoBatchInfo();
+			batchInfo.setIdentifier(config.getBatchIdentifier());
+			batchInfo.setLabel(config.getBatchLabel());
+			daoPackage.setDaoBatchInfo(batchInfo);
+		}
+		Daoset daoSet = new Daoset();
+		for (DaoBo dao : getAllDao()) {
+			daoSet.getDao().add(dao.export());
+		}
+		daoPackage.setDaoset(daoSet);
+		return daoPackage;
+	}
+
+	public List<DaoLink> exportLinks() {
+		List<DaoLink> links = new ArrayList<>(getAllDao().size());
+		for (DaoBo dao : getAllDao()) {
+			links.add(dao.exportLink());
+		}
+		return links;
 	}
 
 	@Override
@@ -98,31 +134,5 @@ public class DaoPackageBo implements DescriptorTarget<DaoPackageConfig> {
 			return identifier.equals(((DaoPackageBo) obj).identifier);
 		}
 		return false;
-	}
-
-	private Map<String, DaoBo> getDaoSet(boolean forceInit) {
-		if (daoLazyInit) {
-			if (daoSet == null) {
-				daoSet = new HashMap<>();
-			}
-			if (!forceInit) {
-				return daoSet;
-			} else {
-				daoLazyInit = false;
-			}
-		} else {
-			if (daoSet != null) {
-				return daoSet;
-			} else {
-				daoSet = new HashMap<>();
-			}
-		}
-		PathResolver.forEachDaoPath(identifier, (path, active) -> {
-			if (active) {
-				String daoIdentifier = path.getFileName().toString();
-				daoSet.computeIfAbsent(daoIdentifier, k -> new DaoBo(this, k));
-			}
-		});
-		return daoSet;
 	}
 }

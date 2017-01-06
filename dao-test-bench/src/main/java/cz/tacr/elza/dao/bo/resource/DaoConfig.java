@@ -1,10 +1,10 @@
-package cz.tacr.elza.dao.descriptor;
+package cz.tacr.elza.dao.bo.resource;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class DaoConfig implements Descriptor {
+public class DaoConfig {
 
 	public static final String FILE_IDENTIFIER_ATTR_NAME = "identifier";
 	public static final String FILE_MIME_TYPE_ATTR_NAME = "mimeType";
@@ -14,8 +14,6 @@ public class DaoConfig implements Descriptor {
 	private String identifier;
 
 	private List<Map<String, Object>> fileAttributes = new ArrayList<>();
-
-	private List<String> relatedDaoIdentifiers = new ArrayList<>();
 
 	private String didIdentifier;
 
@@ -37,14 +35,6 @@ public class DaoConfig implements Descriptor {
 		this.fileAttributes = fileAttributes;
 	}
 
-	public List<String> getRelatedDaoIdentifiers() {
-		return relatedDaoIdentifiers;
-	}
-
-	public void setRelatedDaoIdentifiers(List<String> relatedDaoIdentifiers) {
-		this.relatedDaoIdentifiers = relatedDaoIdentifiers;
-	}
-
 	public String getDidIdentifier() {
 		return didIdentifier;
 	}
@@ -59,10 +49,5 @@ public class DaoConfig implements Descriptor {
 
 	public void setLabel(String label) {
 		this.label = label;
-	}
-
-	@Override
-	public boolean isDirty() {
-		return true;
 	}
 }

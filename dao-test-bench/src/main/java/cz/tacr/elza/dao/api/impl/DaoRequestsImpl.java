@@ -1,14 +1,13 @@
 package cz.tacr.elza.dao.api.impl;
 
-import java.io.IOException;
-
 import javax.jws.WebService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import cz.tacr.elza.dao.descriptor.DaoRequestInfo;
-import cz.tacr.elza.dao.service.DcsRequestService;
+import cz.tacr.elza.dao.bo.resource.DaoRequestInfo;
+import cz.tacr.elza.dao.exception.DaoComponentException;
+import cz.tacr.elza.dao.service.DcsDaoRequestService;
 import cz.tacr.elza.ws.dao_service.v1.DaoRequests;
 import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
 import cz.tacr.elza.ws.types.v1.DestructionRequest;
@@ -19,7 +18,7 @@ import cz.tacr.elza.ws.types.v1.TransferRequest;
 public class DaoRequestsImpl implements DaoRequests {
 
 	@Autowired
-	private DcsRequestService requestService;
+	private DcsDaoRequestService requestService;
 
 	@Override
 	public String postDestructionRequest(DestructionRequest destructionRequest) throws DaoServiceException {
@@ -31,8 +30,8 @@ public class DaoRequestsImpl implements DaoRequests {
 		requestInfo.setDescription(destructionRequest.getDescription());
 		try {
 			requestService.createRequest(requestInfo, true);
-		} catch (IOException e) {
-			throw new DaoServiceException(e.getMessage());
+		} catch (DaoComponentException e) {
+			throw new DaoServiceException(e.getMessage(), e.getCause());
 		}
 		return requestInfo.getIdentifier();
 	}
@@ -48,8 +47,8 @@ public class DaoRequestsImpl implements DaoRequests {
 		requestInfo.setTargetFund(transferRequest.getTargetFund());
 		try {
 			requestService.createRequest(requestInfo, false);
-		} catch (IOException e) {
-			throw new DaoServiceException(e.getMessage());
+		} catch (DaoComponentException e) {
+			throw new DaoServiceException(e.getMessage(), e.getCause());
 		}
 		return requestInfo.getIdentifier();
 	}
