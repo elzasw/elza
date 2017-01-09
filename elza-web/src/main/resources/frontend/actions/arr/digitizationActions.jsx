@@ -144,6 +144,16 @@ export function selectDetail(versionId, id) {
     return DetailActions.select("fund[" + versionId + "]" + AREA_REQUEST_DETAIL_SUFFIX, id);
 }
 
+export function detailUnselect(versionId, id) {
+    return (dispatch, getState) => {
+        const area = "fund[" + versionId + "]" + AREA_REQUEST_DETAIL_SUFFIX;
+        const detailStore = storeFromArea(getState(), area);
+        if (detailStore.id === id) {
+            dispatch(DetailActions.select(area, null));
+        }
+    };
+}
+
 export function detailInvalidate(versionId, id) {
     return DetailActions.invalidate("fund[" + versionId + "]" + AREA_REQUEST_DETAIL_SUFFIX, id)
 }

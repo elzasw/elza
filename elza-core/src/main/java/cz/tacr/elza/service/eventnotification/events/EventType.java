@@ -74,6 +74,7 @@ public enum EventType {
     GROUP_DELETE(EventId.class),
 
     REQUEST_CHANGE(EventIdNodeIdInVersion.class),
+    REQUEST_DELETE(EventIdNodeIdInVersion.class),
     REQUEST_CREATE(EventIdNodeIdInVersion.class),
 
     REQUEST_ITEM_QUEUE_CREATE(EventIdRequestIdInVersion.class),
