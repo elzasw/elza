@@ -18,15 +18,15 @@ import cz.tacr.elza.dao.exception.DaoComponentException;
 import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
 
 @Service
-public class DcsDaoRequestService {
+public class StorageDaoRequestService {
 
-	private static final Logger LOG = LoggerFactory.getLogger(DcsDaoRequestService.class);
+	private static final Logger LOG = LoggerFactory.getLogger(StorageDaoRequestService.class);
 
 	@Autowired
 	private DCStorageConfig storageConfig;
 
 	@Autowired
-	private DcsDaoService dcsDaoService;
+	private StorageDaoService storageDaoService;
 
 	/**
 	 * @param destrRequest destruction request otherwise transfer request
@@ -44,7 +44,7 @@ public class DcsDaoRequestService {
 	public void createRequest(DaoRequestInfo daoRequestInfo, boolean destrRequest) {
 		GlobalLock.runAtomicAction(() -> {
 			try {
-				DaoRequestInfoResource.create(daoRequestInfo, destrRequest).save();
+				DaoRequestInfoResource.create(daoRequestInfo, destrRequest);
 			} catch (IOException e) {
 				throw new DaoComponentException("dao request creation failed", e);
 			}
@@ -62,7 +62,7 @@ public class DcsDaoRequestService {
 				List<String> daoIdentifiers = daoRequestInfo.getResource().getDaoIdentifiers();
 				for (String daoUId : daoIdentifiers) {
 					Path rrp = PathResolver.resolveRelativeRequestPath(requestIdentifier, destrRequest);
-					if (!dcsDaoService.deleteDao(daoUId, rrp.toString())) {
+					if (!storageDaoService.deleteDao(daoUId, rrp.toString())) {
 						LOG.error("dao already deleted, uid:" + daoUId);
 					}
 				}

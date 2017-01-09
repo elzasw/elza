@@ -23,14 +23,19 @@ public class DaoRequestInfoResource extends YamlResource<DaoRequestInfo> {
 	}
 
 	public void delete() throws IOException {
-		Files.delete(resourcePath.getParent());
 		Files.delete(resourcePath);
+		Files.delete(resourcePath.getParent());
 		clearCached();
 	}
 
 	@Override
 	protected Path getResourcePath() {
 		return resourcePath;
+	}
+
+	@Override
+	protected DaoRequestInfo createEmptyResource() {
+		return new DaoRequestInfo();
 	}
 
 	public static DaoRequestInfoResource create(DaoRequestInfo daoRequestInfo, boolean destrRequest)
@@ -42,11 +47,11 @@ public class DaoRequestInfoResource extends YamlResource<DaoRequestInfo> {
 			Path path = PathResolver.resolveRequestInfoPath(uniqueName, destrRequest);
 			if (!Files.exists(path)) {
 				Files.createDirectory(path.getParent());
+				daoRequestInfo.setIdentifier(uniqueName);
 				try (BufferedWriter bw = Files.newBufferedWriter(path, StandardOpenOption.WRITE,
 						StandardOpenOption.CREATE_NEW)) {
 					YAML_INSTANCE.dump(daoRequestInfo, bw);
 				}
-				daoRequestInfo.setIdentifier(uniqueName);
 				return new DaoRequestInfoResource(path);
 			}
 			uniqueName = identifier + '-' + tryCount;

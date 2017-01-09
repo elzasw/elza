@@ -23,7 +23,7 @@ public class PathResolver {
 	private static final String PACKAGE_CONFIG_FILE_NAME = "package-config.yaml";
 	private static final String REQUEST_INFO_FILE_NAME = "request-info.yaml";
 	private static final String DELETE_ENTRY_FILE_NAME = "deleted";
-	private static final String EXTERNAL_SYSTEMS_CONFIG_FILE_NAME = "ext-systems-config.yaml";
+	private static final String EXTERNAL_SYSTEMS_CONFIG_FILE_NAME = "external-systems-config.yaml";
 
 	private static final Path STORAGE_PATH;
 	static {

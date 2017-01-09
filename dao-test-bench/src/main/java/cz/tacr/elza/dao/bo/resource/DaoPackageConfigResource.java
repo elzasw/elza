@@ -17,4 +17,9 @@ public class DaoPackageConfigResource extends YamlResource<DaoPackageConfig> {
 	protected Path getResourcePath() {
 		return resourcePath;
 	}
+
+	@Override
+	protected DaoPackageConfig createEmptyResource() {
+		return new DaoPackageConfig();
+	}
 }

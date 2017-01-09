@@ -14,58 +14,52 @@ import cz.tacr.elza.ws.core.v1.CoreServiceException;
 @ControllerAdvice
 public class ControllerExceptionHandler {
 
-	private static final int STACK_DEPTH = 10;
-
-	@ExceptionHandler
-	@ResponseBody @ResponseStatus(HttpStatus.BAD_REQUEST)
-	public String handleComponentException(DaoComponentException e) {
-		return createHtmlErrorDescription(HttpStatus.BAD_REQUEST, e, STACK_DEPTH);
+	@ExceptionHandler({ DaoComponentException.class, CoreServiceException.class })
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ResponseBody
+	public String handleComponentException(Exception e) {
+		return createHtmlErrorDescription(HttpStatus.BAD_REQUEST, e);
 	}
 
 	@ExceptionHandler
-	@ResponseBody @ResponseStatus(HttpStatus.BAD_REQUEST)
-	public String handleReceivedWsException(CoreServiceException e) {
-		return createHtmlErrorDescription(HttpStatus.BAD_REQUEST, e, STACK_DEPTH);
-	}
-
-	@ExceptionHandler
-	@ResponseBody @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+	@ResponseBody
 	public String handleUnexpectedException(IOException e) {
-		return createHtmlErrorDescription(HttpStatus.INTERNAL_SERVER_ERROR, e, STACK_DEPTH);
+		return createHtmlErrorDescription(HttpStatus.INTERNAL_SERVER_ERROR, e);
 	}
 
-	public static String createHtmlErrorDescription(HttpStatus httpStatus, Throwable t, int stackDepth) {
+	public static String createHtmlErrorDescription(HttpStatus httpStatus, Throwable t) {
 		String spacer = "<span style='display:inline-block;width:30px'></span>";
-		StringBuilder sb = new StringBuilder("<html>\n<head><meta charset='utf-8'/><title>");
+		StringBuilder sb = new StringBuilder("<!DOCTYPE html><head><meta charset='UTF-8'/><title>");
 		sb.append(httpStatus.value());
 		sb.append(' ');
 		sb.append(httpStatus.name());
-		sb.append("</title></head>\n<body><div style='white-space:nowrap'><strong>");
+		sb.append("</title></head><body><div style='white-space:nowrap'><strong>");
 		sb.append(httpStatus.value());
 		sb.append(' ');
 		sb.append(httpStatus.name());
-		sb.append("</strong><br/>\n");
+		sb.append("</strong><br/>");
 		while (t != null) {
 			sb.append("<br/>");
 			sb.append(t.getClass().getName());
 			sb.append(": ");
 			sb.append(t.getMessage());
-			sb.append("<br/>\n");
+			sb.append("<br/>");
 			StackTraceElement[] st = t.getStackTrace();
-			int max = Math.min(st.length, stackDepth);
+			int max = Math.min(st.length, 10);
 			for (int i = 0; i < max; i++) {
 				sb.append(spacer);
 				sb.append("at ");
 				sb.append(st[i]);
-				sb.append("<br/>\n");
+				sb.append("<br/>");
 			}
-			if (st.length > stackDepth) {
+			if (st.length > max) {
 				sb.append(spacer);
 				sb.append("...");
 			}
 			t = t.getCause();
 		}
-		sb.append("</div><body>\n</html>");
+		sb.append("</div><body></html>");
 		return sb.toString();
 	}
 }

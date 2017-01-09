@@ -6,8 +6,9 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.xml.ws.BindingProvider;
+import javax.xml.namespace.QName;
 
+import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.yaml.snakeyaml.Yaml;
 
 import cz.tacr.elza.dao.exception.DaoComponentException;
@@ -18,10 +19,7 @@ import cz.tacr.elza.ws.core.v1.DaoService;
 
 public class CoreServiceProvider {
 
-	private static final CoreService CORE_SERVICE = new CoreService();
-
 	private static final Map<String, String> EXTERNAL_SYSTEMS_CONFIG;
-
 	static {
 		Path path = PathResolver.resolveExternalSystemsConfigPath();
 		try (InputStream os = Files.newInputStream(path)) {
@@ -33,30 +31,29 @@ public class CoreServiceProvider {
 	}
 
 	public static DaoRequestsService getDaoRequestsService(String systemIdentifier) {
-		DaoRequestsService service = CORE_SERVICE.getDaoRequestsService();
-		setEndPointAddress((BindingProvider) service, systemIdentifier);
-		return service;
+		return getWsClient(DaoRequestsService.class, CoreService.DaoRequestsService, systemIdentifier);
 	}
 
 	public static DaoDigitizationService getDaoDigitizationService(String systemIdentifier) {
-		DaoDigitizationService service = CORE_SERVICE.getDaoDigitizationService();
-		setEndPointAddress((BindingProvider) service, systemIdentifier);
-		return service;
+		return getWsClient(DaoDigitizationService.class, CoreService.DaoDigitizationService, systemIdentifier);
 	}
 
-	public static DaoService getDaoService(String systemIdentifier) {
-		DaoService service = CORE_SERVICE.getDaoCoreService();
-		setEndPointAddress((BindingProvider) service, systemIdentifier);
-		return service;
+	public static DaoService getDaoCoreService(String systemIdentifier) {
+		return getWsClient(DaoService.class, CoreService.DaoCoreService, systemIdentifier);
 	}
 
-	private static void setEndPointAddress(BindingProvider bindingProvider, String systemIdentifier) {
-		String systemAddress = EXTERNAL_SYSTEMS_CONFIG.get(systemIdentifier);
-		if (systemAddress == null) {
-			throw new DaoComponentException(
-					"external system address not found, systemIdentifier:" + systemIdentifier);
+	private static <T> T getWsClient(Class<T> serviceClass, QName serviceName, String systemIdentifier) {
+		String addr = EXTERNAL_SYSTEMS_CONFIG.get(systemIdentifier);
+		if (addr == null || (addr = addr.trim()).length() == 0) {
+			throw new DaoComponentException("external system address not found, systemIdentifier:" + systemIdentifier);
 		}
-		Map<String, Object> context = bindingProvider.getRequestContext();
-		context.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, systemAddress);
-	}
+		addr += addr.endsWith("/") ? serviceName.getLocalPart() : '/' + serviceName.getLocalPart();
+		try {
+            JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
+            factory.setAddress(addr);
+            return factory.create(serviceClass);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

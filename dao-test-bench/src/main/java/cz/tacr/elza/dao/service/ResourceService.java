@@ -12,7 +12,7 @@ import cz.tacr.elza.ws.types.v1.DaoLinks;
 import cz.tacr.elza.ws.types.v1.DaoPackages;
 
 @Service
-public class DcsResourceService {
+public class ResourceService {
 
 	public DaoFileBo getDaoFile(String packageIdentifier, String daoIdentifier, String fileIdentifier) {
 		return GlobalLock.runAtomicFunction(

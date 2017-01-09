@@ -10,7 +10,7 @@ import cz.tacr.elza.dao.common.GlobalLock;
 import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
 
 @Service
-public class DcsDaoService {
+public class StorageDaoService {
 
 	@Autowired
 	private DCStorageConfig storageConfig;

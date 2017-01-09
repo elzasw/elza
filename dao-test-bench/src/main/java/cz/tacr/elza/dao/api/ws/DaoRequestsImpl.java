@@ -7,29 +7,33 @@ import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.dao.bo.resource.DaoRequestInfo;
 import cz.tacr.elza.dao.exception.DaoComponentException;
-import cz.tacr.elza.dao.service.DcsDaoRequestService;
+import cz.tacr.elza.dao.service.StorageDaoRequestService;
 import cz.tacr.elza.ws.dao_service.v1.DaoRequests;
 import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
 import cz.tacr.elza.ws.types.v1.DestructionRequest;
 import cz.tacr.elza.ws.types.v1.TransferRequest;
 
 @Service
-@WebService(endpointInterface = "cz.tacr.elza.ws.dao_service.v1.DaoRequests")
+@WebService(name = "DaoRequests",
+		portName = "DaoRequests",
+		serviceName = "DaoRequests",
+		targetNamespace = "http://elza.tacr.cz/ws/dao-service/v1",
+		endpointInterface = "cz.tacr.elza.ws.dao_service.v1.DaoRequests")
 public class DaoRequestsImpl implements DaoRequests {
 
 	@Autowired
-	private DcsDaoRequestService dcsDaoRequestService;
+	private StorageDaoRequestService storageDaoRequestService;
 
 	@Override
 	public String postDestructionRequest(DestructionRequest destructionRequest) throws DaoServiceException {
-		dcsDaoRequestService.checkRejectMode();
+		storageDaoRequestService.checkRejectMode();
 		DaoRequestInfo requestInfo = new DaoRequestInfo();
 		requestInfo.setDaoIdentifiers(destructionRequest.getDaoIdentifiers().getIdentifier());
 		requestInfo.setRequestIdentifier(destructionRequest.getIdentifier());
 		requestInfo.setSystemIdentifier(destructionRequest.getSystemIdentifier());
 		requestInfo.setDescription(destructionRequest.getDescription());
 		try {
-			dcsDaoRequestService.createRequest(requestInfo, true);
+			storageDaoRequestService.createRequest(requestInfo, true);
 		} catch (DaoComponentException e) {
 			throw new DaoServiceException(e.getMessage(), e.getCause());
 		}
@@ -38,7 +42,7 @@ public class DaoRequestsImpl implements DaoRequests {
 
 	@Override
 	public String postTransferRequest(TransferRequest transferRequest) throws DaoServiceException {
-		dcsDaoRequestService.checkRejectMode();
+		storageDaoRequestService.checkRejectMode();
 		DaoRequestInfo requestInfo = new DaoRequestInfo();
 		requestInfo.setDaoIdentifiers(transferRequest.getDaoIdentifiers().getIdentifier());
 		requestInfo.setRequestIdentifier(transferRequest.getIdentifier());
@@ -46,7 +50,7 @@ public class DaoRequestsImpl implements DaoRequests {
 		requestInfo.setDescription(transferRequest.getDescription());
 		requestInfo.setTargetFund(transferRequest.getTargetFund());
 		try {
-			dcsDaoRequestService.createRequest(requestInfo, false);
+			storageDaoRequestService.createRequest(requestInfo, false);
 		} catch (DaoComponentException e) {
 			throw new DaoServiceException(e.getMessage(), e.getCause());
 		}

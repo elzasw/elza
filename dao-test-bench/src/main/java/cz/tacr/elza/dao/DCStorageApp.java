@@ -28,6 +28,7 @@ public class DCStorageApp extends SpringBootServletInitializer {
 			put("dcstorage.repositoryIdentifier", "defaultRepository");
 			put("dcstorage.basePath", "storage");
 			put("dcstorage.rejectMode", false);
+			put("server.port", 8536);
 	}};
 
 	@Autowired

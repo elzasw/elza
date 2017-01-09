@@ -8,10 +8,14 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.introspector.Property;
+import org.yaml.snakeyaml.nodes.NodeTuple;
+import org.yaml.snakeyaml.nodes.Tag;
+import org.yaml.snakeyaml.representer.Representer;
 
 public abstract class YamlResource<T> extends AbstractStorageResource<T> {
 
-	protected final static Yaml YAML_INSTANCE = new Yaml();
+	protected final static Yaml YAML_INSTANCE = new Yaml(new NotNullRepresenter());
 
 	private final Class<T> type;
 
@@ -34,12 +38,25 @@ public abstract class YamlResource<T> extends AbstractStorageResource<T> {
 		try (InputStream is = Files.newInputStream(getResourcePath())) {
 			T resource = YAML_INSTANCE.loadAs(is, type);
 			if (resource == null) {
-				// empty file
-				resource = type.newInstance();
+				resource = createEmptyResource();
 			}
 			return resource;
 		}
 	}
 
 	protected abstract Path getResourcePath();
+
+	protected abstract T createEmptyResource() throws Exception;
+
+	private static class NotNullRepresenter extends Representer {
+		@Override
+		protected NodeTuple representJavaBeanProperty(Object javaBean, Property property, Object propertyValue,
+				Tag customTag) {
+			if (propertyValue == null) {
+				return null;
+			} else {
+				return super.representJavaBeanProperty(javaBean, property, propertyValue, customTag);
+			}
+		}
+	}
 }
