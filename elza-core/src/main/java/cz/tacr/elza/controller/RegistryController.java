@@ -12,6 +12,9 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.repository.ItemSpecRegisterRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
