@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -36,8 +37,8 @@ import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.interpi.service.InterpiSessionHolder.InterpiEntitySession;
 import cz.tacr.elza.interpi.service.pqf.AttributeType;
 import cz.tacr.elza.interpi.service.vo.ConditionVO;
-import cz.tacr.elza.interpi.service.vo.EntityValueType;
 import cz.tacr.elza.interpi.service.vo.ExternalRecordVO;
+import cz.tacr.elza.interpi.service.vo.InterpiEntity;
 import cz.tacr.elza.interpi.service.vo.MappingVO;
 import cz.tacr.elza.interpi.service.vo.PairedRecordVO;
 import cz.tacr.elza.interpi.ws.wo.EntitaTyp;
@@ -166,13 +167,9 @@ public class InterpiService {
      * @return mapa externí id rejstříku -> převedený záznam
      */
     private Map<String, ExternalRecordVO> convertSearchResults(final List<EntitaTyp> records, final boolean generateVariantNames) {
-        List<ExternalRecordVO> recordVOList = interpiFactory.convertToExternalRecordVO(records, generateVariantNames);
-        Map<String, ExternalRecordVO> result = new HashMap<>();
-        for (ExternalRecordVO externalRecordVO : recordVOList) {
-            result.put(externalRecordVO.getRecordId(), externalRecordVO);
-        }
-
-        return result;
+        return interpiFactory.convertToExternalRecordVO(records, generateVariantNames).
+                stream().
+                collect(Collectors.toMap(ExternalRecordVO::getRecordId, Function.identity()));
     }
 
     /**
@@ -210,15 +207,15 @@ public class InterpiService {
         interpiEntitySession.setEntitaTyp(entitaTyp);
 
         RegScope regScope = scopeRepository.findOne(scopeId);
-        Map<EntityValueType, List<Object>> valueMap = interpiFactory.convertToMap(entitaTyp);
+        InterpiEntity interpiEntity = new InterpiEntity(entitaTyp);
 
-        RegRegisterType regRegisterType = interpiFactory.getRegisterType(valueMap);
+        RegRegisterType regRegisterType = interpiFactory.getRegisterType(interpiEntity);
         ParPartyType partyType = regRegisterType.getPartyType();
         if (partyType == null) {
             throw new IllegalStateException("Vztahy lze mapovat jen pro osoby.");
         }
 
-        List<InterpiRelationMappingVO> mappings = interpiFactory.getRelations(valueMap, regExternalSystem, regScope);
+        List<InterpiRelationMappingVO> mappings = interpiFactory.getRelations(interpiEntity, regExternalSystem, regScope);
 
         List<ParInterpiMapping> interpiMappings = interpiMappingRepository.findAll(); // načtení do hibernate cache
         for (InterpiRelationMappingVO relationMappingVO : mappings) {
@@ -293,12 +290,12 @@ public class InterpiService {
         if (entitaTyp == null) {
             entitaTyp = interpiClient.findOneRecord(interpiRecordId, regExternalSystem);
         }
-        Map<EntityValueType, List<Object>> valueMap = interpiFactory.convertToMap(entitaTyp);
+        InterpiEntity interpiEntity = new InterpiEntity(entitaTyp);
 
         RegRecord result;
-        if (interpiFactory.isParty(valueMap)) {
+        if (interpiFactory.isParty(interpiEntity)) {
             List<MappingVO> updatedMappings = processMappings(mappings);
-            result = interpiFactory.importParty(valueMap, originalRecord, interpiRecordId, isOriginator, regScope, regExternalSystem, updatedMappings);
+            result = interpiFactory.importParty(interpiEntity, originalRecord, interpiRecordId, isOriginator, regScope, regExternalSystem, updatedMappings);
         } else {
             result = interpiFactory.importRecord(entitaTyp, originalRecord, interpiRecordId, regScope, regExternalSystem);
         }
