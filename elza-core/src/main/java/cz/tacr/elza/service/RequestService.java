@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -197,8 +198,11 @@ public class RequestService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public List<ArrRequest> findRequests(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
                                          @Nullable final ArrRequest.State state,
-                                         @Nullable final ArrRequest.ClassType type) {
-        return requestRepository.findRequests(fund, state, type);
+                                         @Nullable final ArrRequest.ClassType type,
+                                         @Nullable final String description,
+                                         @Nullable final LocalDateTime fromDate,
+                                         @Nullable final LocalDateTime toDate) {
+        return requestRepository.findRequests(fund, state, type, description, fromDate, toDate);
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})

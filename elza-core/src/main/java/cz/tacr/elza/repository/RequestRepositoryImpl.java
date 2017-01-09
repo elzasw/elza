@@ -1,7 +1,11 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrRequest;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
@@ -10,9 +14,12 @@ import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 @Component
@@ -22,11 +29,12 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
     private EntityManager entityManager;
 
     @Override
-    public List<ArrRequest> findRequests(final ArrFund fund, final ArrRequest.State state, final ArrRequest.ClassType type) {
+    public List<ArrRequest> findRequests(final ArrFund fund, final ArrRequest.State state, final ArrRequest.ClassType type,
+                                         final String description, final LocalDateTime fromDate, final LocalDateTime toDate) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<ArrRequest> q = cb.createQuery(ArrRequest.class);
         Root<ArrRequest> c = q.from(ArrRequest.class);
-
+        Path<ArrChange> ch = c.get("createChange");
 
         List<Predicate> predicates = new ArrayList<>();
 
@@ -45,10 +53,36 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
             predicates.add(typePredicate);
         }
 
+        if (fromDate != null || toDate != null) {
+            if (fromDate == null || toDate == null || toDate.isBefore(fromDate)) {
+                throw new BusinessException(ArrangementCode.REQUEST_INVALID).set("toDate", toDate).set("fromDate", fromDate);
+            }
+
+            Predicate fundPredicate = cb.between(ch.get("changeDate"), fromDate, toDate);
+            predicates.add(fundPredicate);
+        }
+
         q.select(c).where(predicates.toArray(new Predicate[predicates.size()])).orderBy(cb.asc(c.get("createChange")));
         TypedQuery<ArrRequest> query = entityManager.createQuery(q);
 
-        return query.getResultList();
+        List<ArrRequest> resultList = query.getResultList();
+        if (description != null) {
+            Iterator<ArrRequest> iterator = resultList.iterator();
+            while (iterator.hasNext()) {
+                ArrRequest request = iterator.next();
+                if (request.getDiscriminator() == ArrRequest.ClassType.DIGITIZATION) {
+                    ArrDigitizationRequest digitizationRequest = (ArrDigitizationRequest) request;
+                    if (digitizationRequest.getDescription() == null || !digitizationRequest.getDescription().matches(".*(" + description + ").*")) {
+                        iterator.remove();
+                    }
+                } else {
+                    // jiné požadavky nemají vůbec popis
+                    iterator.remove();
+                }
+            }
+        }
+
+        return resultList;
     }
 
     @Override
