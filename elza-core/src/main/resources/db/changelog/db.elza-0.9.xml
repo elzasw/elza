@@ -36,4 +36,8 @@
                                  referencedColumnNames="package_id"
                                  onDelete="NO ACTION" />
     </changeSet>
+
+    <changeSet id="20170109110532" author="slapa">
+        <sql>UPDATE db_hibernate_sequences SET next_val = next_val+20</sql>
+    </changeSet>
 </databaseChangeLog>
