@@ -17,9 +17,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-import cz.tacr.elza.ws.core.v1.CoreService;
-import cz.tacr.elza.ws.core.v1.DaoRequestsService;
-
 @Configuration
 @ComponentScan(basePackageClasses = DCStorageApp.class)
 @EnableAutoConfiguration
@@ -35,11 +32,6 @@ public class DCStorageApp extends SpringBootServletInitializer {
 
 	@Autowired
 	private DCStorageConfig storageConfig;
-
-	@Bean
-	public DaoRequestsService daoRequestsService() {
-		return new CoreService().getDaoRequestsService();
-	}
 
 	@Bean
 	public DispatcherServlet dispatcherServlet() {

@@ -11,10 +11,10 @@ import java.util.Map;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.dao.DCStorageConfig;
-import cz.tacr.elza.dao.PathResolver;
 import cz.tacr.elza.dao.bo.resource.DaoConfigResource;
 import cz.tacr.elza.dao.bo.resource.DaoPackageConfig;
 import cz.tacr.elza.dao.bo.resource.DaoPackageConfigResource;
+import cz.tacr.elza.dao.common.PathResolver;
 import cz.tacr.elza.dao.exception.DaoComponentException;
 import cz.tacr.elza.ws.types.v1.DaoBatchInfo;
 import cz.tacr.elza.ws.types.v1.DaoLink;
@@ -52,11 +52,9 @@ public class DaoPackageBo {
 
 	public Collection<DaoBo> getAllDao() {
 		if (!allDaoInitialized) {
-			PathResolver.forEachDaoPath(identifier, (path, active) -> {
-				if (active) {
-					String daoIdentifier = path.getFileName().toString();
-					daoSet.computeIfAbsent(daoIdentifier, k -> new DaoBo(this, k, false));
-				}
+			PathResolver.forEachDaoPath(identifier, path -> {
+				String daoIdentifier = path.getFileName().toString();
+				daoSet.computeIfAbsent(daoIdentifier, k -> new DaoBo(this, k, false));
 			});
 			allDaoInitialized = true;
 		}

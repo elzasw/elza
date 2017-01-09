@@ -10,10 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.dao.DCStorageConfig;
-import cz.tacr.elza.dao.GlobalLock;
-import cz.tacr.elza.dao.PathResolver;
 import cz.tacr.elza.dao.bo.resource.DaoRequestInfo;
 import cz.tacr.elza.dao.bo.resource.DaoRequestInfoResource;
+import cz.tacr.elza.dao.common.GlobalLock;
+import cz.tacr.elza.dao.common.PathResolver;
 import cz.tacr.elza.dao.exception.DaoComponentException;
 import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
 
@@ -27,6 +27,16 @@ public class DcsDaoRequestService {
 
 	@Autowired
 	private DcsDaoService dcsDaoService;
+
+	/**
+	 * @param destrRequest destruction request otherwise transfer request
+	 */
+	public String getSystemIdentifier(String requestIdentifier, boolean destrRequest) {
+		return GlobalLock.runAtomicFunction(() -> {
+			DaoRequestInfoResource resource = new DaoRequestInfoResource(requestIdentifier, destrRequest);
+			return resource.getResource().getSystemIdentifier();
+		});
+	}
 
 	/**
 	 * @param destrRequest destruction request otherwise transfer request

@@ -1,4 +1,4 @@
-package cz.tacr.elza.dao;
+package cz.tacr.elza.dao.common;
 
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;

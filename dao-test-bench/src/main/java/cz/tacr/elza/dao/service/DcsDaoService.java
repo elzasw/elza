@@ -4,9 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.dao.DCStorageConfig;
-import cz.tacr.elza.dao.GlobalLock;
 import cz.tacr.elza.dao.bo.DaoBo;
 import cz.tacr.elza.dao.bo.DaoPackageBo;
+import cz.tacr.elza.dao.common.GlobalLock;
 import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
 
 @Service

@@ -4,9 +4,9 @@ import java.util.Collection;
 
 import org.springframework.stereotype.Service;
 
-import cz.tacr.elza.dao.GlobalLock;
 import cz.tacr.elza.dao.bo.DaoFileBo;
 import cz.tacr.elza.dao.bo.DaoPackageBo;
+import cz.tacr.elza.dao.common.GlobalLock;
 import cz.tacr.elza.ws.types.v1.DaoImport;
 import cz.tacr.elza.ws.types.v1.DaoLinks;
 import cz.tacr.elza.ws.types.v1.DaoPackages;

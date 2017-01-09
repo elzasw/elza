@@ -9,10 +9,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.dao.XmlUtils;
 import cz.tacr.elza.dao.bo.resource.DaoConfig;
 import cz.tacr.elza.dao.bo.resource.DaoFileInfo;
 import cz.tacr.elza.dao.bo.resource.DaoFileInfoResource;
+import cz.tacr.elza.dao.common.XmlUtils;
 import cz.tacr.elza.dao.exception.DaoComponentException;
 import cz.tacr.elza.ws.types.v1.File;
 

@@ -1,4 +1,4 @@
-package cz.tacr.elza.dao;
+package cz.tacr.elza.dao.common;
 
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;

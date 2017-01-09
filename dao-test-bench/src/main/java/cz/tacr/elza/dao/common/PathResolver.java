@@ -1,4 +1,4 @@
-package cz.tacr.elza.dao;
+package cz.tacr.elza.dao.common;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -10,8 +10,9 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+
+import cz.tacr.elza.dao.DCStorageConfig;
 
 public class PathResolver {
 
@@ -22,6 +23,7 @@ public class PathResolver {
 	private static final String PACKAGE_CONFIG_FILE_NAME = "package-config.yaml";
 	private static final String REQUEST_INFO_FILE_NAME = "request-info.yaml";
 	private static final String DELETE_ENTRY_FILE_NAME = "deleted";
+	private static final String EXTERNAL_SYSTEMS_CONFIG_FILE_NAME = "ext-systems-config.yaml";
 
 	private static final Path STORAGE_PATH;
 	static {
@@ -43,7 +45,7 @@ public class PathResolver {
 		}
 	}
 
-	public static void forEachDaoPath(String packageIdentifier, BiConsumer<Path, Boolean> action) {
+	public static void forEachDaoPath(String packageIdentifier, Consumer<Path> action) {
 		Path packagePath = resolvePackagePath(packageIdentifier);
 		DaoVisitor daoVisitor = new DaoVisitor(packagePath, action);
 		try {
@@ -51,6 +53,10 @@ public class PathResolver {
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
+	}
+
+	public static Path resolveExternalSystemsConfigPath() {
+		return STORAGE_PATH.resolve(EXTERNAL_SYSTEMS_CONFIG_FILE_NAME);
 	}
 
 	public static Path resolveRequestInfoPath(String requestIdentifier, boolean destrRequest) {
@@ -91,9 +97,9 @@ public class PathResolver {
 
 		private final Path packagePath;
 
-		private final BiConsumer<Path, Boolean> action;
+		private final Consumer<Path> action;
 
-		public DaoVisitor(Path packagePath, BiConsumer<Path, Boolean> action) {
+		public DaoVisitor(Path packagePath, Consumer<Path> action) {
 			this.packagePath = packagePath;
 			this.action = action;
 		}
@@ -121,8 +127,8 @@ public class PathResolver {
 			if (exc != null) {
 				throw exc;
 			}
-			if (isDaoDirectory(dir)) {
-				action.accept(dir, !deletedDaoPaths.contains(dir));
+			if (isDaoDirectory(dir) && !deletedDaoPaths.contains(dir)) {
+				action.accept(dir);
 			}
 			return FileVisitResult.CONTINUE;
 		}

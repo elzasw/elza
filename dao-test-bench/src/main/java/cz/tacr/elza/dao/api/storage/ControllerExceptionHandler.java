@@ -1,4 +1,4 @@
-package cz.tacr.elza.dao.api.impl;
+package cz.tacr.elza.dao.api.storage;
 
 import java.io.IOException;
 
@@ -12,29 +12,31 @@ import cz.tacr.elza.dao.exception.DaoComponentException;
 import cz.tacr.elza.ws.core.v1.CoreServiceException;
 
 @ControllerAdvice
-public class ControllerErrorHandler {
+public class ControllerExceptionHandler {
+
+	private static final int STACK_DEPTH = 10;
 
 	@ExceptionHandler
 	@ResponseBody @ResponseStatus(HttpStatus.BAD_REQUEST)
 	public String handleComponentException(DaoComponentException e) {
-		return createHtmlErrorDescription(HttpStatus.BAD_REQUEST, e);
+		return createHtmlErrorDescription(HttpStatus.BAD_REQUEST, e, STACK_DEPTH);
 	}
 
 	@ExceptionHandler
 	@ResponseBody @ResponseStatus(HttpStatus.BAD_REQUEST)
 	public String handleReceivedWsException(CoreServiceException e) {
-		return createHtmlErrorDescription(HttpStatus.BAD_REQUEST, e);
+		return createHtmlErrorDescription(HttpStatus.BAD_REQUEST, e, STACK_DEPTH);
 	}
 
 	@ExceptionHandler
 	@ResponseBody @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	public String handleUnexpectedException(IOException e) {
-		return createHtmlErrorDescription(HttpStatus.INTERNAL_SERVER_ERROR, e);
+		return createHtmlErrorDescription(HttpStatus.INTERNAL_SERVER_ERROR, e, STACK_DEPTH);
 	}
 
-	public static String createHtmlErrorDescription(HttpStatus httpStatus, Throwable t) {
+	public static String createHtmlErrorDescription(HttpStatus httpStatus, Throwable t, int stackDepth) {
 		String spacer = "<span style='display:inline-block;width:30px'></span>";
-		StringBuilder sb = new StringBuilder("<html>\n<head><title>");
+		StringBuilder sb = new StringBuilder("<html>\n<head><meta charset='utf-8'/><title>");
 		sb.append(httpStatus.value());
 		sb.append(' ');
 		sb.append(httpStatus.name());
@@ -44,20 +46,20 @@ public class ControllerErrorHandler {
 		sb.append(httpStatus.name());
 		sb.append("</strong><br/>\n");
 		while (t != null) {
-			sb.append("<br/><strong>");
+			sb.append("<br/>");
 			sb.append(t.getClass().getName());
 			sb.append(": ");
 			sb.append(t.getMessage());
-			sb.append("</strong><br/>\n");
+			sb.append("<br/>\n");
 			StackTraceElement[] st = t.getStackTrace();
-			int rows = Math.min(st.length, 10);
-			for (int i = 0; i < rows; i++) {
+			int max = Math.min(st.length, stackDepth);
+			for (int i = 0; i < max; i++) {
 				sb.append(spacer);
 				sb.append("at ");
 				sb.append(st[i]);
 				sb.append("<br/>\n");
 			}
-			if (rows < st.length) {
+			if (st.length > stackDepth) {
 				sb.append(spacer);
 				sb.append("...");
 			}

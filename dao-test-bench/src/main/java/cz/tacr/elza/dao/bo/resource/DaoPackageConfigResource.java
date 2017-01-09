@@ -2,7 +2,7 @@ package cz.tacr.elza.dao.bo.resource;
 
 import java.nio.file.Path;
 
-import cz.tacr.elza.dao.PathResolver;
+import cz.tacr.elza.dao.common.PathResolver;
 
 public class DaoPackageConfigResource extends YamlResource<DaoPackageConfig> {
 

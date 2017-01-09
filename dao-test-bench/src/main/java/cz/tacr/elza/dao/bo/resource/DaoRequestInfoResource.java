@@ -7,7 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
-import cz.tacr.elza.dao.PathResolver;
+import cz.tacr.elza.dao.common.PathResolver;
 
 public class DaoRequestInfoResource extends YamlResource<DaoRequestInfo> {
 

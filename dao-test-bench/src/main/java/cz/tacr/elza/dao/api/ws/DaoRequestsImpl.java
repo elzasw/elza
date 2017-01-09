@@ -1,4 +1,4 @@
-package cz.tacr.elza.dao.api.impl;
+package cz.tacr.elza.dao.api.ws;
 
 import javax.jws.WebService;
 
@@ -18,18 +18,18 @@ import cz.tacr.elza.ws.types.v1.TransferRequest;
 public class DaoRequestsImpl implements DaoRequests {
 
 	@Autowired
-	private DcsDaoRequestService requestService;
+	private DcsDaoRequestService dcsDaoRequestService;
 
 	@Override
 	public String postDestructionRequest(DestructionRequest destructionRequest) throws DaoServiceException {
-		requestService.checkRejectMode();
+		dcsDaoRequestService.checkRejectMode();
 		DaoRequestInfo requestInfo = new DaoRequestInfo();
 		requestInfo.setDaoIdentifiers(destructionRequest.getDaoIdentifiers().getIdentifier());
 		requestInfo.setRequestIdentifier(destructionRequest.getIdentifier());
 		requestInfo.setSystemIdentifier(destructionRequest.getSystemIdentifier());
 		requestInfo.setDescription(destructionRequest.getDescription());
 		try {
-			requestService.createRequest(requestInfo, true);
+			dcsDaoRequestService.createRequest(requestInfo, true);
 		} catch (DaoComponentException e) {
 			throw new DaoServiceException(e.getMessage(), e.getCause());
 		}
@@ -38,7 +38,7 @@ public class DaoRequestsImpl implements DaoRequests {
 
 	@Override
 	public String postTransferRequest(TransferRequest transferRequest) throws DaoServiceException {
-		requestService.checkRejectMode();
+		dcsDaoRequestService.checkRejectMode();
 		DaoRequestInfo requestInfo = new DaoRequestInfo();
 		requestInfo.setDaoIdentifiers(transferRequest.getDaoIdentifiers().getIdentifier());
 		requestInfo.setRequestIdentifier(transferRequest.getIdentifier());
@@ -46,7 +46,7 @@ public class DaoRequestsImpl implements DaoRequests {
 		requestInfo.setDescription(transferRequest.getDescription());
 		requestInfo.setTargetFund(transferRequest.getTargetFund());
 		try {
-			requestService.createRequest(requestInfo, false);
+			dcsDaoRequestService.createRequest(requestInfo, false);
 		} catch (DaoComponentException e) {
 			throw new DaoServiceException(e.getMessage(), e.getCause());
 		}

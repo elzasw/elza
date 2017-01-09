@@ -1,4 +1,4 @@
-package cz.tacr.elza.dao.api.impl;
+package cz.tacr.elza.dao.api.ws;
 
 import javax.jws.WebService;
 

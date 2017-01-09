@@ -9,9 +9,9 @@ import java.util.Objects;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.dao.DCStorageConfig;
-import cz.tacr.elza.dao.PathResolver;
 import cz.tacr.elza.dao.bo.resource.DaoConfig;
 import cz.tacr.elza.dao.bo.resource.DaoConfigResource;
+import cz.tacr.elza.dao.common.PathResolver;
 import cz.tacr.elza.dao.exception.DaoComponentException;
 import cz.tacr.elza.ws.types.v1.Dao;
 import cz.tacr.elza.ws.types.v1.DaoLink;

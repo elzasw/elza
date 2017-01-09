@@ -6,7 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
 
-import cz.tacr.elza.dao.PathResolver;
+import cz.tacr.elza.dao.common.PathResolver;
 
 public class DaoFileInfoResource extends AbstractStorageResource<DaoFileInfo> {
 

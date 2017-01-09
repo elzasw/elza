@@ -1,4 +1,4 @@
-package cz.tacr.elza.dao.api.impl;
+package cz.tacr.elza.dao.api.ws;
 
 import org.apache.cxf.Bus;
 import org.apache.cxf.jaxws.EndpointImpl;
