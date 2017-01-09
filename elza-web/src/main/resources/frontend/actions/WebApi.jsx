@@ -328,11 +328,12 @@ class WebApi {
         });
     }
 
-    findRegistry(search = null, registryParent = null, registerTypeId = null, versionId = null, from = 0, count = DEFAULT_LIST_SIZE) {
+    findRegistry(search = null, registryParent = null, registerTypeId = null, versionId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE) {
         return AjaxUtils.ajaxGet(WebApi.registryUrl + '/', {
             search,
             from,
             count,
+            itemSpecId,
             parentRecordId: registryParent,
             registerTypeId: registerTypeId,
             versionId
