@@ -40,6 +40,8 @@ exports.DataGridColumnsSettings = require('components/shared/datagrid/DataGridCo
 exports.Resizer = require('components/shared/resizer/Resizer.jsx');
 exports.CollapsablePanel = require('components/shared/collapsable-panel/CollapsablePanel.jsx');
 
+exports.TooltipTrigger = require('components/shared/tooltip/TooltipTrigger.jsx');
+
 exports.FormUtils = require('components/form/FormUtils.jsx');
 exports.ImportForm = require('components/form/ImportForm.jsx');
 exports.ExportForm = require('components/form/ExportForm.jsx');

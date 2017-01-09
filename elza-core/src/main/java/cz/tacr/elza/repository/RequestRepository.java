@@ -11,4 +11,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface RequestRepository extends ElzaJpaRepository<ArrRequest, Integer>, RequestRepositoryCustom {
 
+    ArrRequest findOneByCode(String code);
 }

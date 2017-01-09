@@ -10,10 +10,12 @@ import cz.tacr.elza.domain.ArrDaoLinkRequest;
 import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.DaoLinkRequestRepository;
 import cz.tacr.elza.repository.DaoPackageRepository;
 import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
@@ -26,6 +28,9 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -45,6 +50,9 @@ public class DaoService {
 
     @Autowired
     private RequestService requestService;
+
+    @Autowired
+    private DaoLinkRequestRepository daoLinkRequestRepository;
 
     @Autowired
     private DaoRepository daoRepository;
@@ -132,6 +140,11 @@ public class DaoService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrDaoLink deleteDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion, ArrDaoLink daoLink) {
+        return deleteArrDaoLink(Collections.singletonList(fundVersion), daoLink);
+
+    }
+
+    private ArrDaoLink deleteArrDaoLink(List<ArrFundVersion> fundVersionList, ArrDaoLink daoLink) {
         // kontrola, že ještě existuje
         if (daoLink.getDeleteChange() != null) {
             logger.debug("Zadané propojení arrDaoLink(ID=" + daoLink.getDaoLinkId() + ") je již zneplatněné.");
@@ -144,13 +157,15 @@ public class DaoService {
         logger.debug("Zadané propojení arrDaoLink(ID=" + daoLink.getDaoLinkId() + ") bylo zneplatněno novou změnou.");
         final ArrDaoLink resultDaoLink = daoLinkRepository.save(daoLink);
 
-        // poslat websockety o odpojení
-        EventId event = EventFactory.createIdEvent(EventType.DAO_LINK_DELETE, fundVersion.getFundVersionId());
-        eventNotificationService.publishEvent(event);
+        for (ArrFundVersion arrFundVersion : fundVersionList) {
+            // poslat websockety o odpojení
+            EventId event = EventFactory.createIdEvent(EventType.DAO_LINK_DELETE, arrFundVersion.getFundVersionId());
+            eventNotificationService.publishEvent(event);
 
-        // vytvořit požadavek pro externí systém na odpojení
-        final ArrDaoLinkRequest request = requestService.createDaoRequest(fundVersion, daoLink.getDao(), deleteChange, Type.LINK, daoLink.getNode());
-        requestQueueService.sendRequest(request, fundVersion);
+            // vytvořit požadavek pro externí systém na odpojení
+            final ArrDaoLinkRequest request = requestService.createDaoRequest(arrFundVersion, daoLink.getDao(), deleteChange, Type.LINK, daoLink.getNode());
+            requestQueueService.sendRequest(request, arrFundVersion);
+        }
 
 
         return resultDaoLink;
@@ -169,5 +184,50 @@ public class DaoService {
     public List<ArrDaoPackage> findDaoPackages(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion,
                                                String search, Boolean unassigned, Integer maxResults) {
         return daoPackageRepository.findDaoPackages(fundVersion, search, unassigned, maxResults);
+    }
+
+    /**
+     * Zneplatní DAO, pokud není navázané na požadavek ve stavu Příprava, Odesílaný, Odeslaný.
+     * Zneplatní všechny nebo nic.
+     * Po zneplatnněí DAO zruší jejich návazné linky a pošle notifikace.
+     *
+     * @param arrDaos seznam dao pro zneplatnění
+     * @return seznam zneplatněných ArrDao
+     */
+    public List<ArrDao> deleteDaosWithoutLinks(List<ArrDao> arrDaos) {
+        List<ArrDao> result = new ArrayList<>();
+
+        // kontrola, že neexistuje DAO navázané na požadavek ve stavu Příprava, Odesílaný, Odeslaný
+        final List<ArrDaoLinkRequest> daoLinkRequests = daoLinkRequestRepository.findByDaosAndStates(arrDaos,
+                Arrays.asList(ArrRequest.State.OPEN, ArrRequest.State.QUEUED, ArrRequest.State.SENT));
+
+        if (daoLinkRequests.size() == 0) {
+            result.addAll(deleteDaos(arrDaos));
+        } else {
+            logger.info("Nelze zneplatnit vybraná dao, počet otevřených požadavků: " + daoLinkRequests.size());
+        }
+
+        return result;
+    }
+
+    /**
+     * Zneplatní DAO a zruší jejich návazné linky a pošle notifikace.
+     *
+     * @param arrDaos seznam dao pro zneplatnění
+     * @return seznam zneplatněných ArrDao
+     */
+    public List<ArrDao> deleteDaos(List<ArrDao> arrDaos) {
+        List<ArrDao> result = new ArrayList<>();
+        for (ArrDao arrDao : arrDaos) {
+            arrDao.setValid(false);
+            result.add(daoRepository.save(arrDao));
+
+            // zrušit linky a poslat notifikace
+            final List<ArrDaoLink> arrDaoLinkList = daoLinkRepository.findByDaoAndDeleteChangeIsNull(arrDao);
+            for (ArrDaoLink arrDaoLink : arrDaoLinkList) {
+                deleteArrDaoLink(arrDaoLink.getNode().getFund().getVersions(), arrDaoLink);
+            }
+        }
+        return result;
     }
 }

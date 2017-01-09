@@ -208,7 +208,7 @@ class PartyPage extends AbstractReactComponent {
 
 
 function mapStateToProps(state) {
-    const {app:{partyList, partyDetail, regExtSystemList}, splitter, refTables, userDetail} = state;
+    const {app:{partyList, partyDetail, regExtSystemList}, splitter, refTables, userDetail, focus} = state;
 
     return {
         extSystems: regExtSystemList.fetched ? regExtSystemList.data : null,
@@ -217,6 +217,7 @@ function mapStateToProps(state) {
         splitter,
         refTables,
         userDetail,
+        focus
     }
 }
 

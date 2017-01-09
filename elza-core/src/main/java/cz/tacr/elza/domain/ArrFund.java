@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.persistence.*;
 
+import cz.tacr.elza.domain.enumeration.StringLength;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -33,6 +34,9 @@ public class ArrFund extends AbstractVersionableEntity implements cz.tacr.elza.a
 
     @Column(length = 250)
     private String internalCode;
+
+    @Column(length = StringLength.LENGTH_36)
+    private String uuid;
 
     @OneToOne(fetch = FetchType.LAZY, targetEntity = ParInstitution.class)
     @JoinColumn(name = "institutionId", nullable = false)
@@ -110,6 +114,16 @@ public class ArrFund extends AbstractVersionableEntity implements cz.tacr.elza.a
     @Override
     public ArrFund getFund() {
         return this;
+    }
+
+    @Override
+    public String getUuid() {
+        return uuid;
+    }
+
+    @Override
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public List<ArrOutputDefinition> getOutputDefinitions() {

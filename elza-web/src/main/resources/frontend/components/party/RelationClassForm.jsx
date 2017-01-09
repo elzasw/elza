@@ -83,6 +83,7 @@ class RelationClassForm extends AbstractReactComponent {
         const {relationTypes, onClose, handleSubmit, fields: {from, to, relationEntities, note, source, relationTypeId}, partyId, submitting} = this.props;
 
         let relationType = null;
+        console.warn(relationTypeId, relationTypes)
         if (relationTypeId.value !== null) {
             relationType = objectById(relationTypes, relationTypeId.value);
         }
@@ -95,7 +96,7 @@ class RelationClassForm extends AbstractReactComponent {
                 <div className="flex">
                     <div className="flex-2">
                         <FormGroup validationState={relationTypeId.touched && relationTypeId.invalid ? 'error' : null}>
-                            <div className="relation-class-select">{relationTypes.map(i => <Radio inline {...relationTypeId} value={i.id}>{i.name}</Radio>)}</div>
+                            <div className="relation-class-select">{relationTypes.map(i => <Radio inline {...relationTypeId} value={i.id} onBlur={()=>{/* musí být kvůli chybné implementaci v REDUX */}}>{i.name}</Radio>)}</div>
                             {relationTypeId.touched && relationTypeId.invalid && <HelpBlock>{relationTypeId.error}</HelpBlock>}
                         </FormGroup>
                         {relationType && <div className="relation-entities">

@@ -11,4 +11,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface DigitalRepositoryRepository extends ElzaJpaRepository<ArrDigitalRepository, Integer> {
 
+    ArrDigitalRepository findOneByCode(String code);
+
 }
