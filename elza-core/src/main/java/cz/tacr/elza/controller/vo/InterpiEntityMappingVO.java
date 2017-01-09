@@ -24,6 +24,15 @@ public class InterpiEntityMappingVO {
     /** Název entity v roli. */
     private String interpiEntityName;
 
+    /** Typ entity v roli. */
+    private String interpiEntityType;
+
+    /** Id záznamu v INTERPI. */
+    private String interpiId;
+
+    /** Příznak že INTERPI typ entity neexistuje v ELZA. */
+    private boolean notExistingType;
+
     /** Příznak zda se má entita importovat. */
     private boolean importEntity;
 
@@ -61,6 +70,31 @@ public class InterpiEntityMappingVO {
     public void setInterpiEntityName(final String interpiEntityName) {
         this.interpiEntityName = interpiEntityName;
     }
+
+    public String getInterpiEntityType() {
+        return interpiEntityType;
+    }
+
+    public void setInterpiEntityType(final String interpiEntityType) {
+        this.interpiEntityType = interpiEntityType;
+    }
+
+    public String getInterpiId() {
+        return interpiId;
+    }
+
+    public void setInterpiId(final String interpiId) {
+        this.interpiId = interpiId;
+    }
+
+    public boolean getNotExistingType() {
+        return notExistingType;
+    }
+
+    public void setNotExistingType(final boolean notExistingType) {
+        this.notExistingType = notExistingType;
+    }
+
     public boolean getImportEntity() {
         return importEntity;
     }

@@ -18,6 +18,8 @@ public class MappingVO {
 
     private InterpiClass interpiClass;
 
+    private String interpiId;
+
     private ParRelationType parRelationType;
 
     private ParRelationRoleType parRelationRoleType;
@@ -48,6 +50,14 @@ public class MappingVO {
         this.interpiClass = interpiClass;
     }
 
+    public String getInterpiId() {
+        return interpiId;
+    }
+
+    public void setInterpiId(final String interpiId) {
+        this.interpiId = interpiId;
+    }
+
     public ParRelationType getParRelationType() {
         return parRelationType;
     }
@@ -71,5 +81,4 @@ public class MappingVO {
     public void setImportRelation(final boolean importRelation) {
         this.importRelation = importRelation;
     }
-
 }
