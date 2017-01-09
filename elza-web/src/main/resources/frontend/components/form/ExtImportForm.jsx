@@ -205,6 +205,7 @@ class ExtImportForm extends AbstractReactComponent {
         }
 
         const importVO = {...data, scopeId: parseInt(data.scopeId), systemId: parseInt(systemId)};
+        const relationsVO = {scopeId: parseInt(data.scopeId), systemId: parseInt(systemId)};
 
         const send = (data, update, recordId = null) => {
             const promise = update ? WebApi.importRecordUpdate(recordId, data) : WebApi.importRecord(data);
@@ -219,7 +220,7 @@ class ExtImportForm extends AbstractReactComponent {
         };
 
         if (importVO.originator) {
-            return WebApi.findInterpiRecordRelations(importVO.interpiRecordId, importVO.systemId).then(mapping => {
+            return WebApi.findInterpiRecordRelations(importVO.interpiRecordId, relationsVO).then(mapping => {
                 this.dispatch(modalDialogHide());
                 this.dispatch(modalDialogShow(this, i18n('extMapperForm.title'), <ExtMapperForm
                     initialValues={mapping}
@@ -269,7 +270,7 @@ class ExtImportForm extends AbstractReactComponent {
 
     render() {
         const {searched, results} = this.state;
-        const {autocomplete, onClose, fields:{scopeId, interpiRecordId, originator}, handleSubmit, submitting, versionId} = this.props;
+        const {autocomplete, onClose, fields:{scopeId, interpiRecordId, originator}, handleSubmit, submitting, versionId, isParty} = this.props;
 
         let record = null;
         if (interpiRecordId.value) {
@@ -284,7 +285,11 @@ class ExtImportForm extends AbstractReactComponent {
                 for (let pairedRec of record.pairedRecords) {
                     if (pairedRec.scope.id == scopeId.value) {
                         showDetail = true;
-                        detailId = pairedRec.recordId;
+                        if (isParty) {
+                            detailId = pairedRec.partyId;
+                        } else {
+                            detailId = pairedRec.recordId;
+                        }
                         break;
                     }
                 }
@@ -334,11 +339,11 @@ class ExtImportForm extends AbstractReactComponent {
                                 <div>
                                     <Scope label={i18n('extImport.scopeId')} {...scopeId} versionId={versionId} />
                                 </div>
-                                <div>
+                                {isParty && <div>
                                     <Checkbox {...originator}>
                                         {i18n('extImport.originator')}
                                     </Checkbox>
-                                </div>
+                                </div>}
                             </div>
                         </div>}
                     </div>}

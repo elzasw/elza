@@ -41,6 +41,7 @@ import cz.tacr.elza.controller.vo.RegRecordWithCount;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.RegVariantRecordVO;
+import cz.tacr.elza.controller.vo.RelationSearchVO;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ParParty;
@@ -702,10 +703,12 @@ public class RegistryController {
      * @return vztahy a jejich mapování
      */
     @RequestMapping(value = "/interpi/{interpiRecordId}/relations", method = RequestMethod.POST)
-    public InterpiMappingVO findInterpiRecordRelations(@PathVariable final String interpiRecordId, @RequestBody final Integer systemId) {
+    public InterpiMappingVO findInterpiRecordRelations(@PathVariable final String interpiRecordId, @RequestBody final RelationSearchVO relationSearchVO) {
         Assert.notNull(interpiRecordId);
-        Assert.notNull(systemId);
+        Assert.notNull(relationSearchVO);
+        Assert.notNull(relationSearchVO.getScopeId());
+        Assert.notNull(relationSearchVO.getSystemId());
 
-        return interpiService.findInterpiRecordRelations(interpiRecordId, systemId);
+        return interpiService.findInterpiRecordRelations(interpiRecordId, relationSearchVO.getSystemId(), relationSearchVO.getScopeId());
     }
 }

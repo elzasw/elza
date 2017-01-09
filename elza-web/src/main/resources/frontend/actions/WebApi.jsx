@@ -999,8 +999,8 @@ class WebApi {
         return AjaxUtils.ajaxPut(WebApi.registryUrl + '/interpi/import/'+ recordId, null, importVO);
     }
 
-    findInterpiRecordRelations(recordId, systemId) {
-        return AjaxUtils.ajaxPost(WebApi.registryUrl + '/interpi/' + recordId + '/relations/', null, systemId);
+    findInterpiRecordRelations(recordId, relationsVO) {
+        return AjaxUtils.ajaxPost(WebApi.registryUrl + '/interpi/' + recordId + '/relations/', null, relationsVO);
     }
 }
 
