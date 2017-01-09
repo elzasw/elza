@@ -438,7 +438,7 @@ public class ArrangementController {
      * @param daoLinkId ID požadovaného linku k rozpojení
      */
     @Transactional
-    @RequestMapping(value = "/daolinks/{fundVersionId}/{daoLinkId}/delete",
+    @RequestMapping(value = "/daolinks/{fundVersionId}/{daoLinkId}",
                 method = RequestMethod.DELETE,
                 consumes = MediaType.APPLICATION_JSON_VALUE,
                 produces = MediaType.APPLICATION_JSON_VALUE)
