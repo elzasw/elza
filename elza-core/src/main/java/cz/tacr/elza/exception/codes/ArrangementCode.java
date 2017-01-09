@@ -74,6 +74,11 @@ public enum ArrangementCode implements ErrorCode {
     INVALID_VERSION,
 
     /**
+     * Neplatný požadavek.
+     */
+    REQUEST_INVALID,
+
+    /**
      * Neplatný stav požadavku.
      */
     REQUEST_INVALID_STATE,

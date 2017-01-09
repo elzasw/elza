@@ -4,6 +4,7 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDaoLinkRequest;
 import cz.tacr.elza.domain.ArrDaoRequest;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
+import cz.tacr.elza.domain.ArrDigitizationRequestNode;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.ArrRequestQueueItem;
@@ -11,6 +12,7 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.RequestRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
@@ -31,6 +33,7 @@ import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -68,13 +71,34 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
     private WsClient wsClient;
 
     @Autowired
+    private DigitizationRequestNodeRepository digitizationRequestNodeRepository;
+
+    @Autowired
     @Qualifier("transactionManager")
     protected PlatformTransactionManager txManager;
 
-    public void sendRequest(ArrRequest request,
+    public void sendRequest(final ArrRequest request,
                             final ArrFundVersion fundVersion) {
+        validateRequest(request);
         requestService.setRequestState(request, ArrRequest.State.OPEN, ArrRequest.State.QUEUED);
         addRequestToQueue(request, fundVersion);
+    }
+
+    /**
+     * Provede validaci požadavku.
+     *
+     * @param request požadavek
+     */
+    private void validateRequest(final ArrRequest request) {
+
+        // kontroluje, že obsahuje alespoň jednu navázanou JP
+        if (request instanceof ArrDigitizationRequest) {
+            List<ArrDigitizationRequestNode> digitizationRequestNodes =
+                    digitizationRequestNodeRepository.findByDigitizationRequest(Collections.singletonList((ArrDigitizationRequest) request));
+            if (digitizationRequestNodes.size() == 0) {
+                throw new BusinessException(ArrangementCode.REQUEST_INVALID);
+            }
+        }
     }
 
     private void addRequestToQueue(ArrRequest request,
