@@ -607,7 +607,7 @@ class WebApi {
     }
 
     deleteArrRequest(versionId, id) {
-        return AjaxUtils.ajaxDelete(WebApi.arrangementUrl + '/requests/' + versionId + "/" + id + "/" + id);
+        return AjaxUtils.ajaxDelete(WebApi.arrangementUrl + '/requests/' + id);
     }
 
     getFundTree(versionId, nodeId, expandedIds={}, includeIds=[]) {

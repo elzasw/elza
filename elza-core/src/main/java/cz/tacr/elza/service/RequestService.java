@@ -212,7 +212,7 @@ public class RequestService {
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
-    public void removeQueuedRequest(@NotNull final ArrRequest request) {
+    public void deleteQueuedRequest(@NotNull final ArrRequest request) {
 
         ArrFundVersion openVersion = null;
         for (ArrFundVersion version : request.getFund().getVersions()) {
@@ -221,7 +221,7 @@ public class RequestService {
                 break;
             }
         }
-        requestQueueService.removeRequestFromQueue(request, openVersion);
+        requestQueueService.deleteRequestFromQueue(request, openVersion);
     }
 
     /**

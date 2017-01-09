@@ -2257,9 +2257,9 @@ public class ArrangementController {
 
     @Transactional
     @RequestMapping(value = "/requests/{requestId}", method = RequestMethod.DELETE)
-    public void removeQueuedRequest(@PathVariable(value = "requestId") final Integer requestId) {
+    public void deleteQueuedRequest(@PathVariable(value = "requestId") final Integer requestId) {
         ArrRequest request = requestService.getRequest(requestId);
-        requestService.removeQueuedRequest(request);
+        requestService.deleteQueuedRequest(request);
     }
 
 
