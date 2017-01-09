@@ -2,7 +2,6 @@ package cz.tacr.elza.interpi.service;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -15,10 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
-import javax.xml.bind.JAXBElement;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -66,8 +63,8 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.interpi.service.pqf.PQFQueryBuilder;
 import cz.tacr.elza.interpi.service.vo.ConditionVO;
-import cz.tacr.elza.interpi.service.vo.EntityValueType;
 import cz.tacr.elza.interpi.service.vo.ExternalRecordVO;
+import cz.tacr.elza.interpi.service.vo.InterpiEntity;
 import cz.tacr.elza.interpi.service.vo.MappingVO;
 import cz.tacr.elza.interpi.ws.wo.DoplnekTyp;
 import cz.tacr.elza.interpi.ws.wo.EntitaTyp;
@@ -84,20 +81,14 @@ import cz.tacr.elza.interpi.ws.wo.OznaceniTyp;
 import cz.tacr.elza.interpi.ws.wo.OznaceniTypTypA;
 import cz.tacr.elza.interpi.ws.wo.PodtridaTyp;
 import cz.tacr.elza.interpi.ws.wo.PopisTyp;
-import cz.tacr.elza.interpi.ws.wo.PravidlaTyp;
 import cz.tacr.elza.interpi.ws.wo.RoleTypA;
-import cz.tacr.elza.interpi.ws.wo.SouradniceTyp;
 import cz.tacr.elza.interpi.ws.wo.SouvisejiciTyp;
-import cz.tacr.elza.interpi.ws.wo.StrukturaTyp;
 import cz.tacr.elza.interpi.ws.wo.TitulTyp;
 import cz.tacr.elza.interpi.ws.wo.TitulTypA;
 import cz.tacr.elza.interpi.ws.wo.TridaTyp;
 import cz.tacr.elza.interpi.ws.wo.UdalostTyp;
 import cz.tacr.elza.interpi.ws.wo.UdalostTypA;
 import cz.tacr.elza.interpi.ws.wo.VedlejsiCastTyp;
-import cz.tacr.elza.interpi.ws.wo.VyobrazeniTyp;
-import cz.tacr.elza.interpi.ws.wo.ZarazeniTyp;
-import cz.tacr.elza.interpi.ws.wo.ZaznamTyp;
 import cz.tacr.elza.interpi.ws.wo.ZdrojTyp;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
@@ -215,10 +206,10 @@ public class InterpiFactory {
      *
      * @return uložené rejstříkové heslo osoby
      */
-    public RegRecord importParty(final Map<EntityValueType, List<Object>> valueMap, final RegRecord originalRecord,
+    public RegRecord importParty(final InterpiEntity interpiEntity, final RegRecord originalRecord,
             final String interpiRecordId, final boolean isOriginator, final RegScope regScope,
             final RegExternalSystem regExternalSystem, final List<MappingVO> mappings) {
-        RegRecord regRecord = createPartyRecord(valueMap, interpiRecordId, regExternalSystem, regScope);
+        RegRecord regRecord = createPartyRecord(interpiEntity, interpiRecordId, regExternalSystem, regScope);
 
         Integer partyId = null;
         Integer partyVersion = null;
@@ -241,7 +232,7 @@ public class InterpiFactory {
             partyVersion = originalParty.getVersion();
         }
 
-        ParParty newParty = createParty(regRecord, valueMap, isOriginator, regExternalSystem, mappings);
+        ParParty newParty = createParty(regRecord, interpiEntity, isOriginator, regExternalSystem, mappings);
         newParty.setPartyId(partyId);
         newParty.setVersion(partyVersion);
 
@@ -278,8 +269,8 @@ public class InterpiFactory {
         return (List<ExternalRecordVO>) groovyScriptEvaluator.evaluate(source, input);
     }
 
-    public String getInterpiRecordId(final Map<EntityValueType, List<Object>> valueMap) {
-        List<IdentifikaceTyp> identifikace = getIdentifikace(valueMap);
+    public String getInterpiRecordId(final InterpiEntity interpiEntity) {
+        List<IdentifikaceTyp> identifikace = interpiEntity.getIdentifikace();
         String interpiRecordId = getInterpiIdentifier(identifikace);
 
         if (interpiRecordId == null) {
@@ -339,8 +330,8 @@ public class InterpiFactory {
      */
     private RegRecord createRecord(final EntitaTyp entitaTyp, final String interpiPartyId,
             final RegExternalSystem regExternalSystem, final RegScope regScope, final boolean generateVariantNames) {
-        Map<EntityValueType, List<Object>> valueMap = convertToMap(entitaTyp);
-        RegRecord regRecord = createPartyRecord(valueMap, interpiPartyId, regExternalSystem, regScope);
+        InterpiEntity interpiEntity = new InterpiEntity(entitaTyp);
+        RegRecord regRecord = createPartyRecord(interpiEntity, interpiPartyId, regExternalSystem, regScope);
 
         ExternalRecordVO recordVO = convertToExternalRecordVO(Collections.singletonList(entitaTyp), generateVariantNames).
                 iterator().next();
@@ -364,24 +355,24 @@ public class InterpiFactory {
     /**
      * Vytvoří rejstříkové heslo se základními informacemi potřebnými pro uložení osoby.
      *
-     * @param valueMap mapa hodnot z interpi
+     * @param interpiEntity mapa hodnot z interpi
      * @param interpiPartyId extrní id osoby
      * @param regExternalSystem systém ze kterého je osoba
      * @param regScope třída rejstříků do které se importuje
      *
      * @return rejstříkové heslo
      */
-    public RegRecord createPartyRecord(final Map<EntityValueType, List<Object>> valueMap,
+    private RegRecord createPartyRecord(final InterpiEntity interpiEntity,
             final String interpiPartyId, final RegExternalSystem regExternalSystem, final RegScope regScope) {
         RegRecord regRecord = new RegRecord();
 
         regRecord.setExternalId(interpiPartyId);
         regRecord.setExternalSystem(regExternalSystem);
 
-        String note = getNote(valueMap);
+        String note = getNote(interpiEntity);
         regRecord.setNote(note);
 
-        RegRegisterType regRegisterType = getRegisterType(valueMap);
+        RegRegisterType regRegisterType = getRegisterType(interpiEntity);
         regRecord.setRegisterType(regRegisterType);
 
         regRecord.setScope(regScope);
@@ -392,13 +383,13 @@ public class InterpiFactory {
     /**
      * Vytvoří poznámku.
      *
-     * @param valueMap mapa hodnot z interpi
+     * @param interpiEntity mapa hodnot z interpi
      *
      * @return poznámka, může být null
      */
-    private String getNote(final Map<EntityValueType, List<Object>> valueMap) {
+    private String getNote(final InterpiEntity interpiEntity) {
         List<String> notes = new LinkedList<>();
-        List<PopisTyp> popisTypList = getPopisTyp(valueMap);
+        List<PopisTyp> popisTypList = interpiEntity.getPopisTyp();
         for (PopisTyp popisTyp : popisTypList) {
             switch (popisTyp.getTyp()) {
                 case POPIS:
@@ -417,8 +408,8 @@ public class InterpiFactory {
         return note;
     }
 
-    private String getSourceInformation(final Map<EntityValueType, List<Object>> valueMap) {
-        List<ZdrojTyp> zdrojTypList = getZdrojTyp(valueMap);
+    private String getSourceInformation(final InterpiEntity interpiEntity) {
+        List<ZdrojTyp> zdrojTypList = interpiEntity.getZdrojTyp();
         List<String> sourceInformations = new ArrayList<>(zdrojTypList.size());
         for (ZdrojTyp zdrojTyp : zdrojTypList) {
             String standardizovanyPopis = StringUtils.trimToNull(zdrojTyp.getStandardizovanyPopis());
@@ -437,15 +428,15 @@ public class InterpiFactory {
     /**
      * Zjistí typ rejstříku.
      *
-     * @param valueMap hodnoty entity
+     * @param interpiEntity hodnoty entity
      *
      * @return typ rejstříku
      */
-    public RegRegisterType getRegisterType(final Map<EntityValueType, List<Object>> valueMap) {
+    public RegRegisterType getRegisterType(final InterpiEntity interpiEntity) {
         String registryTypeName;
-        PodtridaTyp podTrida = getPodTrida(valueMap);
+        PodtridaTyp podTrida = interpiEntity.getPodTrida();
         if (podTrida == null) {
-            TridaTyp trida = getTrida(valueMap);
+            TridaTyp trida = interpiEntity.getTrida();
             registryTypeName = trida.value();
         } else {
             registryTypeName = podTrida.value();
@@ -463,19 +454,19 @@ public class InterpiFactory {
      * Naplní předanou osobu.
      *
      * @param parParty osoba
-     * @param valueMap informace z INTERPI
+     * @param interpiEntity informace z INTERPI
      * @param regExternalSystem externí systém
      * @param mappings mapování vztahů
      */
-    private void fillParty(final ParParty parParty, final Map<EntityValueType, List<Object>> valueMap,
+    private void fillParty(final ParParty parParty, final InterpiEntity interpiEntity,
             final RegExternalSystem regExternalSystem, final List<MappingVO> mappings) {
 //        parParty.setPartyCreators(null); // po dohodě s Honzou Vejskalem neimportovat, není jak
 
         List<ParPartyName> partyNames = new LinkedList<>();
-        List<OznaceniTyp> variantniOznaceniList = getVariantniOznaceni(valueMap);
+        List<OznaceniTyp> variantniOznaceniList = interpiEntity.getVariantniOznaceni();
         if (CollectionUtils.isNotEmpty(variantniOznaceniList)) {
             for (OznaceniTyp variantniOznaceni : variantniOznaceniList) {
-                ParPartyName parPartyName = createPartyName(valueMap, variantniOznaceni, parParty, false);
+                ParPartyName parPartyName = createPartyName(interpiEntity, variantniOznaceni, parParty, false);
                 if (parPartyName != null) {
                     partyNames.add(parPartyName);
                 }
@@ -483,28 +474,28 @@ public class InterpiFactory {
         }
         parParty.setPartyNames(partyNames);
 
-        OznaceniTyp preferovaneOznaceni = getPreferovaneOznaceni(valueMap);
-        ParPartyName preferredName = createPartyName(valueMap, preferovaneOznaceni, parParty, true);
+        OznaceniTyp preferovaneOznaceni = interpiEntity.getPreferovaneOznaceni();
+        ParPartyName preferredName = createPartyName(interpiEntity, preferovaneOznaceni, parParty, true);
         parParty.setPreferredName(preferredName);
         partyNames.add(preferredName);
 
-        String sourceInformation = getSourceInformation(valueMap);
+        String sourceInformation = getSourceInformation(interpiEntity);
         parParty.setSourceInformation(sourceInformation);
 
-        fillAdditionalInfo(parParty, valueMap);
+        fillAdditionalInfo(parParty, interpiEntity);
 
         if (parParty.isOriginator() && CollectionUtils.isNotEmpty(mappings)) {
-            fillRelations(parParty, valueMap, regExternalSystem, mappings);
+            fillRelations(parParty, interpiEntity, regExternalSystem, mappings);
         }
     }
 
-    private void fillRelations(final ParParty parParty, final Map<EntityValueType, List<Object>> valueMap,
+    private void fillRelations(final ParParty parParty, final InterpiEntity interpiEntity,
             final RegExternalSystem regExternalSystem, final List<MappingVO> mappings) {
-        List<UdalostTyp> pocatekExistence = getPocatekExistence(valueMap);
-        List<UdalostTyp> konecExistence = getKonecExistence(valueMap);
-        List<UdalostTyp> udalostList = getUdalost(valueMap);
-        List<UdalostTyp> zmenaList = getZmena(valueMap);
-        List<SouvisejiciTyp> souvisejiciEntitaList = getSouvisejiciEntita(valueMap);
+        List<UdalostTyp> pocatekExistence = interpiEntity.getPocatekExistence();
+        List<UdalostTyp> konecExistence = interpiEntity.getKonecExistence();
+        List<UdalostTyp> udalostList = interpiEntity.getUdalost();
+        List<UdalostTyp> zmenaList = interpiEntity.getZmena();
+        List<SouvisejiciTyp> souvisejiciEntitaList = interpiEntity.getSouvisejiciEntita();
 
         List<ParRelation> relations = new LinkedList<>();
         List<ParRelation> createRelations = createRelations(pocatekExistence, parParty, InterpiClass.POCATEK_EXISTENCE,
@@ -699,12 +690,12 @@ public class InterpiFactory {
             EntitaTyp entitaTyp = interpiSessionHolder.getInterpiEntitySession().getRelatedEntity(interpiId);
             if (entitaTyp == null) {
                 entitaTyp = client.findOneRecord(interpiId, regExternalSystem);
-                Map<EntityValueType, List<Object>> entityValueMap = convertToMap(entitaTyp);
-                if (isParty(entityValueMap)) {
-                    entityRecord = importParty(entityValueMap, null, interpiId, false, parParty.getRecord().getScope(), regExternalSystem, null);
-                } else {
-                    entityRecord = importRecord(entitaTyp, null, interpiId, parParty.getRecord().getScope(), regExternalSystem);
-                }
+            }
+            InterpiEntity interpiEntity = new InterpiEntity(entitaTyp);
+            if (isParty(interpiEntity)) {
+                entityRecord = importParty(interpiEntity, null, interpiId, false, parParty.getRecord().getScope(), regExternalSystem, null);
+            } else {
+                entityRecord = importRecord(entitaTyp, null, interpiId, parParty.getRecord().getScope(), regExternalSystem);
             }
         }
         return entityRecord;
@@ -777,8 +768,8 @@ public class InterpiFactory {
     /**
      * Nastaví různé informace které jsou v INTERPI uloženy jako popis.
      */
-    private void fillAdditionalInfo(final ParParty newParty, final Map<EntityValueType, List<Object>> valueMap) {
-        List<PopisTyp> popisTypList = getPopisTyp(valueMap);
+    private void fillAdditionalInfo(final ParParty newParty, final InterpiEntity interpiEntity) {
+        List<PopisTyp> popisTypList = interpiEntity.getPopisTyp();
 
         List<String> characteristicsList = new LinkedList<>();
         List<String> historyList = new LinkedList<>();
@@ -903,7 +894,7 @@ public class InterpiFactory {
             }
             parPartyGroup.setScopeNorm(scopeNorm);
 
-            List<KodovaneTyp> kodovaneUdajeList = getKodovaneUdaje(valueMap);
+            List<KodovaneTyp> kodovaneUdajeList = interpiEntity.getKodovaneUdaje();
             List<ParPartyGroupIdentifier> partyGroupIdentifiers = new ArrayList<>(kodovaneUdajeList.size());
             parPartyGroup.setPartyGroupIdentifiers(partyGroupIdentifiers);
             for (KodovaneTyp kodovaneTyp : kodovaneUdajeList) {
@@ -930,7 +921,7 @@ public class InterpiFactory {
         }
     }
 
-    private ParPartyName createPartyName(final Map<EntityValueType, List<Object>> valueMap, final OznaceniTyp oznaceniTyp, final ParParty parParty, final boolean isPreferred) {
+    private ParPartyName createPartyName(final InterpiEntity interpiEntity, final OznaceniTyp oznaceniTyp, final ParParty parParty, final boolean isPreferred) {
         ParPartyName partyName = new ParPartyName();
 
         ParPartyNameFormType parPartyNameFormType = null;
@@ -947,7 +938,7 @@ public class InterpiFactory {
         if (isPreferred) {
             Set<String> degreesBefore = new HashSet<>();
             Set<String> degreesAfter = new HashSet<>();
-            List<TitulTyp> titulTypList = getTitul(valueMap);
+            List<TitulTyp> titulTypList = interpiEntity.getTitul();
             for (TitulTyp titulTyp : titulTypList) {
                 if (TitulTypA.TITULY_PŘED_JMÉNEM == titulTyp.getTyp()) {
                     degreesBefore.add(titulTyp.getValue());
@@ -1007,8 +998,8 @@ public class InterpiFactory {
     /**
      * Zjistí zda data entity odpovídají osobě.
      */
-    public boolean isParty(final Map<EntityValueType, List<Object>> valueMap) {
-        TridaTyp trida = getTrida(valueMap);
+    public boolean isParty(final InterpiEntity interpiEntity) {
+        TridaTyp trida = interpiEntity.getTrida();
 
         List<TridaTyp> partyTypes = Arrays.asList(TridaTyp.KORPORACE, TridaTyp.OSOBA_BYTOST, TridaTyp.ROD_RODINA, TridaTyp.UDÁLOST);
 
@@ -1026,9 +1017,9 @@ public class InterpiFactory {
      *
      * @return osoba
      */
-    private ParParty createParty(final RegRecord regRecord, final Map<EntityValueType, List<Object>> valueMap,
+    private ParParty createParty(final RegRecord regRecord, final InterpiEntity interpiEntity,
             final boolean isOriginator, final RegExternalSystem regExternalSystem, final List<MappingVO> mappings) {
-        TridaTyp trida = getTrida(valueMap);
+        TridaTyp trida = interpiEntity.getTrida();
 
         ParParty parParty;
         ParPartyType parPartyType;
@@ -1057,241 +1048,9 @@ public class InterpiFactory {
         parParty.setRecord(regRecord);
         parParty.setOriginator(isOriginator);
 
-        fillParty(parParty, valueMap, regExternalSystem, mappings);
+        fillParty(parParty, interpiEntity, regExternalSystem, mappings);
 
         return parParty;
-    }
-
-    /**
-     * Převod entity do mapy, kde klíče jsou typy hodnot.
-     *
-     * @param entitaTyp INTERPI entita
-     *
-     * @return mapa hodnot, typ hodnoty -> seznam hodnot
-     */
-    public Map<EntityValueType, List<Object>> convertToMap(final EntitaTyp entitaTyp) {
-        Assert.notNull(entitaTyp);
-        Assert.notNull(entitaTyp.getContent());
-
-        Map<EntityValueType, List<Object>> result = new HashMap<>();
-        for (Serializable ser : entitaTyp.getContent()) {
-            JAXBElement<?> element = (JAXBElement<?>) ser;
-            addToMap(element, result);
-        }
-
-        return result;
-    }
-
-    private void addToMap(final JAXBElement<?> element, final Map<EntityValueType, List<Object>> result) {
-        Object value = element.getValue();
-        String localPart = element.getName().getLocalPart();
-        switch (localPart) {
-            case "trida":
-                TridaTyp tridaTyp = getEntity(value, TridaTyp.class);
-                putToMap(result, EntityValueType.TRIDA, tridaTyp);
-                break;
-            case "podtrida":
-                PodtridaTyp podtridaTyp = getEntity(value, PodtridaTyp.class);
-                putToMap(result, EntityValueType.PODTRIDA, podtridaTyp);
-                break;
-            case "identifikace":
-                IdentifikaceTyp identifikaceTyp = getEntity(value, IdentifikaceTyp.class);
-                putToMap(result, EntityValueType.IDENTIFIKACE, identifikaceTyp);
-                break;
-            case "zaznam":
-                ZaznamTyp zaznamTyp = getEntity(value, ZaznamTyp.class);
-                putToMap(result, EntityValueType.ZAZNAM, zaznamTyp);
-                break;
-            case "preferovane_oznaceni":
-                OznaceniTyp prefereovane = getEntity(value, OznaceniTyp.class);
-                putToMap(result, EntityValueType.PREFEROVANE_OZNACENI, prefereovane);
-                break;
-            case "variantni_oznaceni":
-                OznaceniTyp variantni = getEntity(value, OznaceniTyp.class);
-                putToMap(result, EntityValueType.VARIANTNI_OZNACENI, variantni);
-                break;
-            case "udalost":
-                UdalostTyp udalostTyp = getEntity(value, UdalostTyp.class);
-                putToMap(result, EntityValueType.UDALOST, udalostTyp);
-                break;
-            case "pocatek_existence":
-                UdalostTyp pocatek = getEntity(value, UdalostTyp.class);
-                putToMap(result, EntityValueType.POCATEK_EXISTENCE, pocatek);
-                break;
-            case "konec_existence":
-                UdalostTyp konec = getEntity(value, UdalostTyp.class);
-                putToMap(result, EntityValueType.KONEC_EXISTENCE, konec);
-                break;
-            case "zmena":
-                UdalostTyp zmena = getEntity(value, UdalostTyp.class);
-                putToMap(result, EntityValueType.ZMENA, zmena);
-                break;
-            case "popis":
-                PopisTyp popisTyp = getEntity(value, PopisTyp.class);
-                putToMap(result, EntityValueType.POPIS, popisTyp);
-                break;
-            case "souradnice":
-                SouradniceTyp souradniceTyp = getEntity(value, SouradniceTyp.class);
-                putToMap(result, EntityValueType.SOURADNICE, souradniceTyp);
-                break;
-            case "titul":
-                TitulTyp titulTyp = getEntity(value, TitulTyp.class);
-                putToMap(result, EntityValueType.TITUL, titulTyp);
-                break;
-            case "kodovane_udaje":
-                KodovaneTyp kodovaneTyp = getEntity(value, KodovaneTyp.class);
-                putToMap(result, EntityValueType.KODOVANE_UDAJE, kodovaneTyp);
-                break;
-            case "souvisejici_entita":
-                SouvisejiciTyp souvisejiciTyp = getEntity(value, SouvisejiciTyp.class);
-                putToMap(result, EntityValueType.SOUVISEJICI_ENTITA, souvisejiciTyp);
-                break;
-            case "hierarchicka_struktura":
-                StrukturaTyp strukturaTyp = getEntity(value, StrukturaTyp.class);
-                putToMap(result, EntityValueType.HIERARCHICKA_STRUKTURA, strukturaTyp);
-                break;
-            case "zarazeni":
-                ZarazeniTyp zarazeniTyp = getEntity(value, ZarazeniTyp.class);
-                putToMap(result, EntityValueType.ZARAZENI, zarazeniTyp);
-                break;
-            case "vyobrazeni":
-                VyobrazeniTyp vyobrazeniTyp = getEntity(value, VyobrazeniTyp.class);
-                putToMap(result, EntityValueType.VYOBRAZENI, vyobrazeniTyp);
-                break;
-            case "zdroj_informaci":
-                ZdrojTyp zdrojTyp = getEntity(value, ZdrojTyp.class);
-                putToMap(result, EntityValueType.ZDROJ_INFORMACI, zdrojTyp);
-                break;
-        }
-    }
-
-    private void putToMap(final Map<EntityValueType, List<Object>> result, final EntityValueType type, final Object value) {
-        List<Object> values = result.get(type);
-        if (values == null) {
-            values = new LinkedList<>();
-            result.put(type, values);
-        }
-        values.add(value);
-    }
-
-    private <T> T getEntity(final Object value, final Class<T> cls) {
-        return cls.cast(value);
-    }
-
-    public List<PopisTyp> getPopisTyp(final Map<EntityValueType, List<Object>> valueMap) {
-        return getValueList(valueMap, EntityValueType.POPIS);
-    }
-
-    public List<ZdrojTyp> getZdrojTyp(final Map<EntityValueType, List<Object>> valueMap) {
-        return getValueList(valueMap, EntityValueType.ZDROJ_INFORMACI);
-    }
-
-    public List<TitulTyp> getTitul(final Map<EntityValueType, List<Object>> valueMap) {
-        return getValueList(valueMap, EntityValueType.TITUL);
-    }
-
-    public List<IdentifikaceTyp> getIdentifikace(final Map<EntityValueType, List<Object>> valueMap) {
-        return getValueList(valueMap, EntityValueType.IDENTIFIKACE);
-    }
-
-    public List<OznaceniTyp> getVariantniOznaceni(final Map<EntityValueType, List<Object>> valueMap) {
-        return getValueList(valueMap, EntityValueType.VARIANTNI_OZNACENI);
-    }
-
-    public List<UdalostTyp> getPocatekExistence(final Map<EntityValueType, List<Object>> valueMap) {
-        return getValueList(valueMap, EntityValueType.POCATEK_EXISTENCE);
-    }
-
-    public List<UdalostTyp> getKonecExistence(final Map<EntityValueType, List<Object>> valueMap) {
-        return getValueList(valueMap, EntityValueType.KONEC_EXISTENCE);
-    }
-
-    public List<UdalostTyp> getUdalost(final Map<EntityValueType, List<Object>> valueMap) {
-        return getValueList(valueMap, EntityValueType.UDALOST);
-    }
-
-    public List<UdalostTyp> getZmena(final Map<EntityValueType, List<Object>> valueMap) {
-        return getValueList(valueMap, EntityValueType.ZMENA);
-    }
-
-    public List<SouvisejiciTyp> getSouvisejiciEntita(final Map<EntityValueType, List<Object>> valueMap) {
-        return getValueList(valueMap, EntityValueType.SOUVISEJICI_ENTITA);
-    }
-
-    public List<KodovaneTyp> getKodovaneUdaje(final Map<EntityValueType, List<Object>> valueMap) {
-        return getValueList(valueMap, EntityValueType.KODOVANE_UDAJE);
-    }
-
-    public OznaceniTyp getPreferovaneOznaceni(final Map<EntityValueType, List<Object>> valueMap) {
-        List<OznaceniTyp> preferovaneOznaceniList = getValueList(valueMap, EntityValueType.PREFEROVANE_OZNACENI);
-
-        // chceme typ ZP, pak INTERPI a pak je to jedno
-        OznaceniTyp zp = null;
-        OznaceniTyp interpi = null;
-        OznaceniTyp other = null;
-        for (OznaceniTyp oznaceniTyp : preferovaneOznaceniList) {
-            for (PravidlaTyp pravidlaTyp : oznaceniTyp.getPravidla()) {
-                switch (pravidlaTyp) {
-                    case INTERPI:
-                        if (interpi == null) {
-                            interpi = oznaceniTyp;
-                        }
-                        break;
-                    case ZP:
-                        if (zp == null) {
-                            zp = oznaceniTyp;
-                        }
-                        break;
-                    default:
-                        if (other == null) {
-                            other = oznaceniTyp;
-                        }
-                }
-            }
-        }
-
-        // alespoň jedno bude podle xsd vyplněné
-        OznaceniTyp preferovaneOznaceni;
-        if (zp != null) {
-            preferovaneOznaceni = zp;
-        } else if (interpi != null) {
-            preferovaneOznaceni = interpi;
-        } else {
-            preferovaneOznaceni = other;
-        }
-
-        return preferovaneOznaceni;
-    }
-
-    public PodtridaTyp getPodTrida(final Map<EntityValueType, List<Object>> valueMap) {
-        return getValue(valueMap, EntityValueType.PODTRIDA);
-    }
-
-    public TridaTyp getTrida(final Map<EntityValueType, List<Object>> valueMap) {
-        return getValue(valueMap, EntityValueType.TRIDA);
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T> T getValue(final Map<EntityValueType, List<Object>> valueMap, final EntityValueType entityValueType) {
-        List<Object> valuesList = valueMap.get(entityValueType);
-
-        if (CollectionUtils.isEmpty(valuesList)) {
-            return null;
-        }
-        return (T) valuesList.iterator().next();
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T> List<T> getValueList(final Map<EntityValueType, List<Object>> valueMap, final EntityValueType entityValueType) {
-        List<Object> valuesList = valueMap.get(entityValueType);
-
-        if (CollectionUtils.isEmpty(valuesList)) {
-            return Collections.emptyList();
-        }
-
-        return valuesList.stream().
-                map(v -> (T) v).
-                collect(Collectors.toList());
     }
 
     @PostConstruct
@@ -1331,21 +1090,21 @@ public class InterpiFactory {
      *
      * @param seznam mapování
      */
-    public List<InterpiRelationMappingVO> getRelations(final Map<EntityValueType, List<Object>> valueMap,
+    public List<InterpiRelationMappingVO> getRelations(final InterpiEntity interpiEntity,
             final RegExternalSystem regExternalSystem, final RegScope regScope) {
         List<InterpiRelationMappingVO> mappings = new LinkedList<>();
 
-        List<UdalostTyp> pocatekExistence = getPocatekExistence(valueMap);
-        List<UdalostTyp> konecExistence = getKonecExistence(valueMap);
-        List<UdalostTyp> udalostList = getUdalost(valueMap);
-        List<UdalostTyp> zmenaList = getZmena(valueMap);
+        List<UdalostTyp> pocatekExistence = interpiEntity.getPocatekExistence();
+        List<UdalostTyp> konecExistence = interpiEntity.getKonecExistence();
+        List<UdalostTyp> udalostList = interpiEntity.getUdalost();
+        List<UdalostTyp> zmenaList = interpiEntity.getZmena();
 
         addRelationMappings(pocatekExistence, InterpiClass.POCATEK_EXISTENCE, mappings, regExternalSystem, regScope);
         addRelationMappings(konecExistence, InterpiClass.KONEC_EXISTENCE, mappings, regExternalSystem, regScope);
         addRelationMappings(udalostList, InterpiClass.UDALOST, mappings, regExternalSystem, regScope);
         addRelationMappings(zmenaList, InterpiClass.ZMENA, mappings, regExternalSystem, regScope);
 
-        List<SouvisejiciTyp> souvisejiciEntitaList = getSouvisejiciEntita(valueMap);
+        List<SouvisejiciTyp> souvisejiciEntitaList = interpiEntity.getSouvisejiciEntita();
         addEntityMappings(souvisejiciEntitaList, InterpiClass.SOUVISEJICI_ENTITA, mappings, regExternalSystem, regScope);
 
         return mappings;
@@ -1473,10 +1232,10 @@ public class InterpiFactory {
                 // najít v interpi
                 EntitaTyp entitaTyp = client.findOneRecord(interpiIdentifier, regExternalSystem);
                 interpiSessionHolder.getInterpiEntitySession().addRelatedEntity(interpiIdentifier, entitaTyp);
-                Map<EntityValueType, List<Object>> valueMap = convertToMap(entitaTyp);
-                PodtridaTyp podTrida = getPodTrida(valueMap);
+                InterpiEntity interpiEntity = new InterpiEntity(entitaTyp);
+                PodtridaTyp podTrida = interpiEntity.getPodTrida();
                 if (podTrida == null) {
-                    TridaTyp trida = getTrida(valueMap);
+                    TridaTyp trida = interpiEntity.getTrida();
                     if (trida != null) {
                         interpiEntityType = trida.value();
                     }
