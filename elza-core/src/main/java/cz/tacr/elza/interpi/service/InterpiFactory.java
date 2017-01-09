@@ -138,6 +138,9 @@ public class InterpiFactory {
     private String groovyScriptDir;
 
     @Autowired
+    private InterpiSessionHolder interpiSessionHolder;
+
+    @Autowired
     private PartyService partyService;
 
     @Autowired
@@ -692,13 +695,16 @@ public class InterpiFactory {
         RegRecord entityRecord = recordRepository.findRegRecordByExternalIdAndExternalSystemCodeAndScope(interpiId,
                 regExternalSystem.getCode(), parParty.getRecord().getScope());
 
-        if (entityRecord == null) { // pokud neexstiuje v db tak se importuje bez vztahů
-            EntitaTyp entitaTyp = client.findOneRecord(interpiId, regExternalSystem);
-            Map<EntityValueType, List<Object>> entityValueMap = convertToMap(entitaTyp);
-            if (isParty(entityValueMap)) {
-                entityRecord = importParty(entityValueMap, null, interpiId, false, parParty.getRecord().getScope(), regExternalSystem, null);
-            } else {
-                entityRecord = importRecord(entitaTyp, null, interpiId, parParty.getRecord().getScope(), regExternalSystem);
+        if (entityRecord == null) { // pokud neexistiuje v db tak se importuje bez vztahů
+            EntitaTyp entitaTyp = interpiSessionHolder.getInterpiEntitySession().getRelatedEntity(interpiId);
+            if (entitaTyp == null) {
+                entitaTyp = client.findOneRecord(interpiId, regExternalSystem);
+                Map<EntityValueType, List<Object>> entityValueMap = convertToMap(entitaTyp);
+                if (isParty(entityValueMap)) {
+                    entityRecord = importParty(entityValueMap, null, interpiId, false, parParty.getRecord().getScope(), regExternalSystem, null);
+                } else {
+                    entityRecord = importRecord(entitaTyp, null, interpiId, parParty.getRecord().getScope(), regExternalSystem);
+                }
             }
         }
         return entityRecord;
@@ -1466,6 +1472,7 @@ public class InterpiFactory {
             if (regRecord == null) {
                 // najít v interpi
                 EntitaTyp entitaTyp = client.findOneRecord(interpiIdentifier, regExternalSystem);
+                interpiSessionHolder.getInterpiEntitySession().addRelatedEntity(interpiIdentifier, entitaTyp);
                 Map<EntityValueType, List<Object>> valueMap = convertToMap(entitaTyp);
                 PodtridaTyp podTrida = getPodTrida(valueMap);
                 if (podTrida == null) {

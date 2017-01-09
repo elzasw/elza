@@ -15,10 +15,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -37,6 +33,7 @@ import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ExternalCode;
+import cz.tacr.elza.interpi.service.InterpiSessionHolder.InterpiEntitySession;
 import cz.tacr.elza.interpi.service.pqf.AttributeType;
 import cz.tacr.elza.interpi.service.vo.ConditionVO;
 import cz.tacr.elza.interpi.service.vo.EntityValueType;
@@ -58,7 +55,6 @@ import cz.tacr.elza.service.PartyService;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 27. 11. 2016
  */
-@Configuration
 @Service
 public class InterpiService {
 
@@ -66,6 +62,9 @@ public class InterpiService {
 
     @Autowired
     private ClientFactoryVO factoryVO;
+
+    @Autowired
+    private InterpiSessionHolder interpiSessionHolder;
 
     @Autowired
     private InterpiFactory interpiFactory;
@@ -207,7 +206,8 @@ public class InterpiService {
 
         RegExternalSystem regExternalSystem = regExternalSystemRepository.findOne(systemId);
         EntitaTyp entitaTyp = interpiClient.findOneRecord(interpiRecordId, regExternalSystem);
-        getInterpiEntitySession().setEntitaTyp(entitaTyp);
+        InterpiEntitySession interpiEntitySession = interpiSessionHolder.getInterpiEntitySession();
+        interpiEntitySession.setEntitaTyp(entitaTyp);
 
         RegScope regScope = scopeRepository.findOne(scopeId);
         Map<EntityValueType, List<Object>> valueMap = interpiFactory.convertToMap(entitaTyp);
@@ -288,7 +288,8 @@ public class InterpiService {
             originalRecord = recordRepository.findOne(recordId);
         }
 
-        EntitaTyp entitaTyp = getInterpiEntitySession().getEntitaTyp();
+        InterpiEntitySession interpiEntitySession = interpiSessionHolder.getInterpiEntitySession();
+        EntitaTyp entitaTyp = interpiEntitySession.getEntitaTyp();
         if (entitaTyp == null) {
             entitaTyp = interpiClient.findOneRecord(interpiRecordId, regExternalSystem);
         }
@@ -302,7 +303,7 @@ public class InterpiService {
             result = interpiFactory.importRecord(entitaTyp, originalRecord, interpiRecordId, regScope, regExternalSystem);
         }
 
-        getInterpiEntitySession().setEntitaTyp(null);
+        interpiEntitySession.clear();
 
         return result;
     }
@@ -472,33 +473,6 @@ public class InterpiService {
                     recordVO.addPairedRecord(pairedRecordVO);
                 }
             }
-        }
-    }
-
-    /**
-     * @return vrací session uživatele
-     */
-    @Bean
-    @Scope("session")
-    protected InterpiEntitySession getInterpiEntitySession() {
-        return new InterpiEntitySession();
-    }
-
-
-    /**
-     * Session uživatele s načtenou entitou z INTERPI.
-     */
-    @Component
-    private static class InterpiEntitySession {
-
-        private EntitaTyp entitaTyp;
-
-        public EntitaTyp getEntitaTyp() {
-            return entitaTyp;
-        }
-
-        public void setEntitaTyp(final EntitaTyp entitaTyp) {
-            this.entitaTyp = entitaTyp;
         }
     }
 }
