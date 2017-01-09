@@ -9,7 +9,7 @@ import {getIndexStateFetchIfNeeded, reindex} from 'actions/admin/fulltext.jsx';
 import {Ribbon, AdminPackagesList, AdminPackagesUpload} from 'components/index.jsx';
 import {PageLayout} from 'pages/index.jsx';
 import * as digitizationActions from 'actions/arr/digitizationActions';
-import {getRequestType, REQ_DIGITIZATION_REQUEST, createDigitizationName} from 'components/arr/ArrUtils.jsx'
+import {getRequestType, DIGITIZATION, createDigitizationName} from 'components/arr/ArrUtils.jsx'
 import {dateTimeToString} from "components/Utils.jsx";
 import {WebApi} from 'actions/index.jsx';
 
@@ -42,7 +42,7 @@ const AdminRequestsQueuePage = class extends AbstractReactComponent {
     createDescription = (type, request) => {
         const {userDetail} = this.props;
         switch (type) {
-            case REQ_DIGITIZATION_REQUEST: {
+            case DIGITIZATION: {
                 return " - " + createDigitizationName(request, userDetail);
             }
             default:

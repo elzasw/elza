@@ -594,8 +594,7 @@ class WebApi {
     }
 
     getArrRequests(versionId, type, description) {
-        // TODO - předat i filtr, až bude na serveru
-        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/requests/' + versionId, { });
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/requests/' + versionId, {type, description});
     }
 
     getArrRequest(versionId, id) {
@@ -607,7 +606,7 @@ class WebApi {
     }
 
     deleteArrRequest(versionId, id) {
-        return AjaxUtils.ajaxDelete(WebApi.arrangementUrl + '/requests/' + versionId + "/" + id + "/" + id);
+        return AjaxUtils.ajaxDelete(WebApi.arrangementUrl + '/requests/' + id);
     }
 
     getFundTree(versionId, nodeId, expandedIds={}, includeIds=[]) {

@@ -125,7 +125,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
         eventNotificationService.publishEvent(event);
     }
 
-    public void removeRequestFromQueue(ArrRequest request,
+    public void deleteRequestFromQueue(ArrRequest request,
                                        ArrFundVersion fundVersion) {
         ArrRequestQueueItem requestQueueItem = requestQueueItemRepository.findByRequestAndSend(request, false);
         if (requestQueueItem == null) {

@@ -2220,9 +2220,12 @@ public class ArrangementController {
     public List<ArrRequestVO> findRequests(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                            @RequestParam(value = "state", required = false) ArrRequest.State state,
                                            @RequestParam(value = "type", required = false) ArrRequest.ClassType type,
-                                           @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail) {
+                                           @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail,
+                                           @RequestParam(value = "description", required = false) String description,
+                                           @RequestParam(value = "fromDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final LocalDateTime fromDate,
+                                           @RequestParam(value = "toDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final LocalDateTime toDate) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        List<ArrRequest> requests = requestService.findRequests(fundVersion.getFund(), state, type);
+        List<ArrRequest> requests = requestService.findRequests(fundVersion.getFund(), state, type, description, fromDate, toDate);
         return factoryVo.createRequest(requests, detail, fundVersion);
     }
 
@@ -2254,9 +2257,9 @@ public class ArrangementController {
 
     @Transactional
     @RequestMapping(value = "/requests/{requestId}", method = RequestMethod.DELETE)
-    public void removeQueuedRequest(@PathVariable(value = "requestId") final Integer requestId) {
+    public void deleteQueuedRequest(@PathVariable(value = "requestId") final Integer requestId) {
         ArrRequest request = requestService.getRequest(requestId);
-        requestService.removeQueuedRequest(request);
+        requestService.deleteQueuedRequest(request);
     }
 
 
