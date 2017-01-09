@@ -255,7 +255,6 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
 
             sendNotification(openVersion, queueItem.getRequest(), queueItem, EventType.REQUEST_ITEM_QUEUE_CHANGE);
 
-            // TODO Lebeda - Jak se postavit k nevyplněnému url/username/password v sys_external_system
             if (ArrRequest.ClassType.DIGITIZATION == queueItem.getRequest().getDiscriminator()) {
                 ArrDigitizationRequest arrDigitizationRequest = (ArrDigitizationRequest) queueItem.getRequest();
                 wsClient.postRequest(arrDigitizationRequest);
