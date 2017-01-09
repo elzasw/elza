@@ -45,6 +45,15 @@ export function fetchDaoPackageListIfNeeded(versionId) {
 }
 
 /**
+ * Filtr seznamu.
+ * @param versionId verze AS
+ * @param filter filtr
+ */
+export function filterDaoPackageList(versionId, filter) {
+    return SimpleListActions.filter("fund[" + versionId + "]" + AREA_DAO_PACKAGE_LIST_SUFFIX, filter);
+}
+
+/**
  * Načtení nepřiřazených balíčků digitalizátů pro daný AS.
  * @param versionId verze AS
  */
@@ -53,6 +62,15 @@ export function fetchDaoUnassignedPackageListIfNeeded(versionId) {
         return WebApi.findDaoPackages(versionId, filter.fulltext, true)
             .then(json => ({rows: json, count: 0}));
     });
+}
+
+/**
+ * Filtr seznamu.
+ * @param versionId verze AS
+ * @param filter filtr
+ */
+export function filterDaoUnassignedPackageList(versionId, filter) {
+    return SimpleListActions.filter("fund[" + versionId + "]" + AREA_DAO_UNASSIGNED_PACKAGE_LIST_SUFFIX, filter);
 }
 
 /**

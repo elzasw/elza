@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {connect} from 'react-redux'
+
 import {reduxForm} from 'redux-form'
 import {Form, Button, FormControl, Table, Modal, OverlayTrigger, Tooltip, Checkbox} from 'react-bootstrap'
 import {AbstractReactComponent, FormInput, i18n, Icon, Loading, ExtMapperForm} from '../index.jsx';
@@ -224,8 +224,9 @@ class ExtImportForm extends AbstractReactComponent {
                 this.dispatch(modalDialogShow(this, i18n('extMapperForm.title'), <ExtMapperForm
                     initialValues={mapping}
                     record={record}
+                    isUpdate={update}
                     onSubmit={(data) => {
-                        importVO.mapping = data.mapping;
+                        importVO.mappings = data.mappings;
                         return send(importVO, update, recordId);
                     }
                 } />, "dialog-lg"));

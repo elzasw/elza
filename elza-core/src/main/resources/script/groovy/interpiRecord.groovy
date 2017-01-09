@@ -103,74 +103,65 @@ String createVariantRecord(final OznaceniTyp oznaceniTyp, final Map valueMap) {
 }
 
 /**
- * Generování charakteristiky hesla.
- * @param valueMap
- * @return charakteristika hesla
+ * Podle jména osoby provede vygenerování textu jména.
+ * @param partyName jméno osoby
+ * @param partyType typ osoby
+ * @return text rejstříkového hesla
  */
-String generateCharacteristics(valueMap) {
-    return "charakteristika";
+String generatePartyNameString(final OznaceniTyp oznaceniTyp, final Map<EntityValueType, List<Object>> valueMap) {
+    Assert.assertNotNull(oznaceniTyp);
+
+    List<String> recordNames = new ArrayList<>();
+    recordNames.add(oznaceniTyp.getHlavniCast().getValue());
+    VedlejsiCastTyp vedlejsiCast = oznaceniTyp.getVedlejsiCast();
+    if (vedlejsiCast != null) {
+        recordNames.add(vedlejsiCast.getValue());
+    }
+
+    Set<String> degreesBefore = new HashSet<>();
+    Set<String> degreesAfter = new HashSet<>();
+    List<TitulTyp> titulTypList = FACTORY.getTitul(valueMap);
+    for (TitulTyp titulTyp : titulTypList) {
+        if (TitulTypA.TITULY_PŘED_JMÉNEM == titulTyp.getTyp()) {
+            degreesBefore.add(titulTyp.getValue());
+        } else if (TitulTypA.TITULY_ZA_JMÉNEM == titulTyp.getTyp()) {
+            degreesAfter.add(titulTyp.getValue());
+        }
+    }
+    recordNames.add(StringUtils.join(degreesBefore, " "));
+    recordNames.add(StringUtils.join(degreesAfter, " "));
+
+//    List<ParPartyNameComplement> sortedComplements =
+//            sortNameComplements(oznaceniTyp.getPartyNameComplements(), partyType);
+
+    List<ParPartyNameComplement> partyNameComplements = createPartyNameComplements(oznaceniTyp.getDoplnek());
+    partyNameComplements.each {
+        recordNames.add(it.getComplement() + ",");
+    }
+
+    String recordName = StringUtils.join(recordNames, " ");
+    recordName = recordName.replaceAll("\\s+", " ").trim();
+    recordName = StringUtils.strip(recordName, ",");
+
+    return recordName;
 }
 
-    /**
-     * Podle jména osoby provede vygenerování textu jména.
-     * @param partyName jméno osoby
-     * @param partyType typ osoby
-     * @return text rejstříkového hesla
-     */
-    String generatePartyNameString(final OznaceniTyp oznaceniTyp, final Map<EntityValueType, List<Object>> valueMap) {
-        Assert.assertNotNull(oznaceniTyp);
+List<ParPartyNameComplement> createPartyNameComplements(final List<DoplnekTyp> doplnekTypList) {
+    List<ParPartyNameComplement> parPartyNameComplements = new LinkedList<>();
 
-        List<String> recordNames = new ArrayList<>();
-        recordNames.add(oznaceniTyp.getHlavniCast().getValue());
-        VedlejsiCastTyp vedlejsiCast = oznaceniTyp.getVedlejsiCast();
-        if (vedlejsiCast != null) {
-            recordNames.add(vedlejsiCast.getValue());
-        }
+    if (doplnekTypList != null) {
+    for (DoplnekTyp doplnekTyp : doplnekTypList) {
+            ParPartyNameComplement parPartyNameComplement = new ParPartyNameComplement();
+            parPartyNameComplement.setComplement(doplnekTyp.getValue());
 
-        Set<String> degreesBefore = new HashSet<>();
-        Set<String> degreesAfter = new HashSet<>();
-        List<TitulTyp> titulTypList = FACTORY.getTitul(valueMap);
-        for (TitulTyp titulTyp : titulTypList) {
-            if (TitulTypA.TITULY_PŘED_JMÉNEM == titulTyp.getTyp()) {
-                degreesBefore.add(titulTyp.getValue());
-            } else if (TitulTypA.TITULY_ZA_JMÉNEM == titulTyp.getTyp()) {
-                degreesAfter.add(titulTyp.getValue());
-            }
-        }
-        recordNames.add(StringUtils.join(degreesBefore, " "));
-        recordNames.add(StringUtils.join(degreesAfter, " "));
-
-//        List<ParPartyNameComplement> sortedComplements =
-//                sortNameComplements(oznaceniTyp.getPartyNameComplements(), partyType);
-
-        List<ParPartyNameComplement> partyNameComplements = createPartyNameComplements(oznaceniTyp.getDoplnek());
-        partyNameComplements.each {
-            recordNames.add(it.getComplement() + ",");
-        }
-
-        String recordName = StringUtils.join(recordNames, " ");
-        recordName = recordName.replaceAll("\\s+", " ").trim();
-        recordName = StringUtils.strip(recordName, ",");
-
-        return recordName;
-    }
-
-    List<ParPartyNameComplement> createPartyNameComplements(final List<DoplnekTyp> doplnekTypList) {
-        List<ParPartyNameComplement> parPartyNameComplements = new LinkedList<>();
-
-        if (doplnekTypList != null) {
-            for (DoplnekTyp doplnekTyp : doplnekTypList) {
-                ParPartyNameComplement parPartyNameComplement = new ParPartyNameComplement();
-                parPartyNameComplement.setComplement(doplnekTyp.getValue());
-
-//                String parPartyNameComplementName = doplnekTyp.getTyp().value();
-//                ParComplementType parComplementType = complementTypeRepository.findByName(parPartyNameComplementName);
+//            String parPartyNameComplementName = doplnekTyp.getTyp().value();
+//            ParComplementType parComplementType = complementTypeRepository.findByName(parPartyNameComplementName);
 //
-//                parPartyNameComplement.setComplementType(parComplementType);
+//            parPartyNameComplement.setComplementType(parComplementType);
 
-                parPartyNameComplements.add(parPartyNameComplement);
-            }
+            parPartyNameComplements.add(parPartyNameComplement);
         }
-
-        return parPartyNameComplements;
     }
+
+    return parPartyNameComplements;
+}

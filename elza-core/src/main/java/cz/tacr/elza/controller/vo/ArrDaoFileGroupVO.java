@@ -20,7 +20,7 @@ public class ArrDaoFileGroupVO {
     private String label;
     private String code;
 
-    private long fileCount;
+    private long fileCount = 0;
     private List<ArrDaoFileVO> fileList = new ArrayList<>();
 
 
@@ -31,15 +31,15 @@ public class ArrDaoFileGroupVO {
      */
     public void addFile(ArrDaoFileVO file) {
         fileList.add(file);
-        fileCount = fileList.size();
+        fileCount++;
     }
 
     /**
-     * Zařazení seznamu daoFile do seznamu na vo, zároveň nastaví položku fileCount na novou délku seznamu
+     * Nastavení seznami daoFile do seznamu na vo, zároveň nastaví položku fileCount na novou délku seznamu
      *
      * @param files seznam daoFile
      */
-    public void addAllFile(Collection<ArrDaoFileVO> files) {
+    public void setFiles(Collection<ArrDaoFileVO> files) {
         fileList.addAll(files);
         fileCount = fileList.size();
     }

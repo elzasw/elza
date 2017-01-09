@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.PackageCode;
 import cz.tacr.elza.packageimport.xml.Category;
+import cz.tacr.elza.packageimport.xml.ItemSpecRegister;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,6 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.packageimport.xml.Column;
-import cz.tacr.elza.packageimport.xml.DescItemSpecRegister;
 import cz.tacr.elza.packageimport.xml.ItemSpec;
 import cz.tacr.elza.packageimport.xml.ItemSpecs;
 import cz.tacr.elza.packageimport.xml.ItemType;
@@ -33,35 +33,34 @@ import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 
-import static cz.tacr.elza.packageimport.PackageService.ITEM_SPEC_XML;
 import static cz.tacr.elza.packageimport.PackageService.ITEM_TYPE_XML;
 
 /**
  * Class to update item types in DB
- * 
+ *
  * Class will use types from XML and try to synchronize them in DB
- * 
+ *
  * @author Petr Pytelka
  *
  */
 @Component
 @Scope("prototype")
 public class ItemTypeUpdater {
-	
+
 	private RulPackage rulPackage;
-	
+
 	private List<RulDataType> rulDataTypes;
-	
+
 	List<RulItemType> rulItemTypesOrig;
-	
+
 	@Autowired
 	private ItemTypeRepository itemTypeRepository;
-	
+
 	@Autowired
 	private DescItemRepository descItemRepository;
-	
+
     @Autowired
-    private ItemSpecRepository itemSpecRepository;	
+    private ItemSpecRepository itemSpecRepository;
 
     @Autowired
     private ItemSpecRegisterRepository itemSpecRegisterRepository;
@@ -75,10 +74,10 @@ public class ItemTypeUpdater {
      * Max used view order
      */
     int maxViewOrderPos = 0;
-    
+
 	public ItemTypeUpdater() {
 	}
-	
+
 
     /**
      * Porovnávání typů sloupců.
@@ -103,7 +102,7 @@ public class ItemTypeUpdater {
 
         return true;
     }
-    
+
     /**
      * Zpracování specifikací atributů.
      *
@@ -144,17 +143,17 @@ public class ItemTypeUpdater {
             itemSpecRegisterRepository.deleteByItemSpec(descItemSpec);
         }
         itemSpecRepository.delete(rulDescItemSpecsDelete);
-    }    
+    }
 
 	/**
 	 * Do the update
-	 * @param itemSpecs 
-	 * @param itemTypes 
+	 * @param itemSpecs
+	 * @param itemTypes
 	 * @return return list of updated types
 	 */
-	public List<RulItemType> update(final List<RulDataType> rulDataTypes, final RulPackage rulPackage, 
+	public List<RulItemType> update(final List<RulDataType> rulDataTypes, final RulPackage rulPackage,
 			final ItemTypes itemTypes, final ItemSpecs itemSpecs) {
-		this.rulDataTypes = rulDataTypes; 
+		this.rulDataTypes = rulDataTypes;
 		this.rulPackage = rulPackage;
 
 		prepareForUpdate();
@@ -180,11 +179,11 @@ public class ItemTypeUpdater {
 
 		return rulItemTypesUpdated;
 	}
-	
+
 
 	/**
 	 * Update items types
-	 * @param rulItemTypesOrig 
+	 * @param rulItemTypesOrig
 	 * @param itemTypes
 	 * @return Return new list of active item types
 	 */
@@ -193,7 +192,7 @@ public class ItemTypeUpdater {
     	int lastUsedViewOrder = -1;
 		for (ItemType itemType : itemTypes) {
 			RulItemType dbItemType = getItemTypeByCode(rulItemTypesOrig, itemType.getCode());
-			if (dbItemType!=null) {				
+			if (dbItemType!=null) {
 
 				// provedla se změna pro použití specifikace?
 				if (!dbItemType.getUseSpecification().equals(itemType.getUseSpecification())) {
@@ -214,7 +213,7 @@ public class ItemTypeUpdater {
 								+ dbItemType.getCode() + ", protože existují záznamy, které typ využívají");
 					}
 				}
-				
+
 				// update view order
 				int i = dbItemType.getViewOrder().intValue();
 				if(i<=lastUsedViewOrder) {
@@ -229,10 +228,10 @@ public class ItemTypeUpdater {
 			}
 
 			convertRulDescItemType(rulPackage, itemType, dbItemType, rulDataTypes);
-			
+
 			// update view order
 			dbItemType.setViewOrder(lastUsedViewOrder);
-			
+
 			rulItemTypesUpdated.add(dbItemType);
 		}
 		return rulItemTypesUpdated;
@@ -315,7 +314,7 @@ public class ItemTypeUpdater {
 
         rulDescItemType.setPackage(rulPackage);
     }
-    
+
     /**
      * Převod VO na DAO specifikace atributu.
      *
@@ -355,8 +354,8 @@ public class ItemTypeUpdater {
         }
 
         rulDescItemSpec.setItemType(item);
-    }    
-	
+    }
+
 
     /**
      * Zpracování napojení specifikací na reg.
@@ -383,11 +382,11 @@ public class ItemTypeUpdater {
                     .findByDescItemSpecId(rulDescItemSpec);
             List<RulItemSpecRegister> rulItemSpecRegistersNew = new ArrayList<>();
 
-            if (!CollectionUtils.isEmpty(item.getDescItemSpecRegisters())) {
-                for (DescItemSpecRegister descItemSpecRegister : item.getDescItemSpecRegisters()) {
+            if (!CollectionUtils.isEmpty(item.getItemSpecRegisters())) {
+                for (ItemSpecRegister itemSpecRegister : item.getItemSpecRegisters()) {
                     List<RulItemSpecRegister> findItems = rulItemSpecRegisters.stream()
                             .filter((r) -> r.getRegisterType().getCode().equals(
-                                    descItemSpecRegister.getRegisterType())).collect(Collectors.toList());
+                                    itemSpecRegister.getRegisterType())).collect(Collectors.toList());
                     RulItemSpecRegister itemRegister;
                     if (findItems.size() > 0) {
                         itemRegister = findItems.get(0);
@@ -396,7 +395,7 @@ public class ItemTypeUpdater {
                     }
 
                     convertRulDescItemSpecsRegister(rulDescItemSpec, itemRegister, regRegisterTypes,
-                            descItemSpecRegister);
+                            itemSpecRegister);
 
                     rulItemSpecRegistersNew.add(itemRegister);
                 }
@@ -419,17 +418,17 @@ public class ItemTypeUpdater {
      * @param rulDescItemSpec         seznam specifikací
      * @param rulItemSpecRegister seznam DAO napojení
      * @param regRegisterTypes        seznam typů reg.
-     * @param descItemSpecRegister    seznam VO napojení
+     * @param itemSpecRegister    seznam VO napojení
      */
     private void convertRulDescItemSpecsRegister(final RulItemSpec rulDescItemSpec,
                                                  final RulItemSpecRegister rulItemSpecRegister,
                                                  final List<RegRegisterType> regRegisterTypes,
-                                                 final DescItemSpecRegister descItemSpecRegister) {
+                                                 final ItemSpecRegister itemSpecRegister) {
 
         rulItemSpecRegister.setItemSpec(rulDescItemSpec);
 
         List<RegRegisterType> findItems = regRegisterTypes.stream()
-                .filter((r) -> r.getCode().equals(descItemSpecRegister.getRegisterType()))
+                .filter((r) -> r.getCode().equals(itemSpecRegister.getRegisterType()))
                 .collect(Collectors.toList());
 
         RegRegisterType item;
@@ -438,7 +437,7 @@ public class ItemTypeUpdater {
             item = findItems.get(0);
         } else {
             throw new IllegalStateException(
-                    "Kód " + descItemSpecRegister.getRegisterType() + " neexistuje v RegRegisterType");
+                    "Kód " + itemSpecRegister.getRegisterType() + " neexistuje v RegRegisterType");
         }
 
         rulItemSpecRegister.setRegisterType(item);
@@ -447,13 +446,13 @@ public class ItemTypeUpdater {
 
     /**
 	 * Prepare item types to be updated
-	 * @return 
+	 * @return
 	 */
 	private void prepareForUpdate() {
-		
+
 		rulItemTypesOrig = itemTypeRepository.findByRulPackage(rulPackage);
-		
-		// read first free view-order id 
+
+		// read first free view-order id
 		RulItemType itemTypeHighest = itemTypeRepository.findFirstByOrderByViewOrderDesc();
 		if(itemTypeHighest!=null) {
 			Integer maxValue = itemTypeHighest.getViewOrder();

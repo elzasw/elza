@@ -455,6 +455,16 @@ var messages = {
 
     "arr.daos.pinned" : "Připojit k JP",
     "arr.daos.create.under" : "Vytvořit podřízenou JP",
+    "arr.daos.files.title.withoutGroup" : "Soubory",
+    "arr.daos.files.title.inGroup" : "Ostatní soubory",
+    "arr.daos.files.title.duration" : "Délka",
+    "arr.daos.files.title.imageWidthHeight" : "Rozlišení",
+    "arr.daos.files.title.sourceXY" : "Zdrojové rozlišení",
+    "arr.daos.files.title.mimeType" : "MIME",
+    "arr.daos.files.title.size" : "Velikost",
+    "arr.daos.files.title.url" : "Odkaz",
+    "arr.daos.files.title.unitOfMeasure.IN" : "in",
+    "arr.daos.files.title.unitOfMeasure.MM" : "mm",
 
     "arr.fund.subNodes.prevPage": "Předchozí stránka",
     "arr.fund.subNodes.nextPage": "Další stránka",
@@ -887,6 +897,10 @@ var messages = {
     "extMapperForm.relationMapping": "Mapování vztahů",
     "extMapperForm.saveAsDefaultMapping": "Nastavit mapování jako výchozí?",
     "extMapperForm.recordExtSystemDescription": "Popis ze zdrojového systému",
+    "extMapperForm.insufficientPrivileges": "Nemáte dostatečná oprávnění k mapování vztahů",
+    "extMapperForm.idForImport": "ID pro import záznamu \"{0}\". Kontaktujte správce a požádejte o import s mapováním vztahů.",
+    "extMapperForm.import": "Importovat",
+    "extMapperForm.update": "Aktualizovat",
 
     "export.title.fund": "Import archivního souboru",
     "export.transformationName": "Šablona transformace",

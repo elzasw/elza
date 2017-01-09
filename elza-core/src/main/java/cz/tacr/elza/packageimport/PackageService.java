@@ -60,6 +60,7 @@ import cz.tacr.elza.exception.codes.PackageCode;
 import cz.tacr.elza.packageimport.xml.Category;
 import cz.tacr.elza.packageimport.xml.ComplementType;
 import cz.tacr.elza.packageimport.xml.ComplementTypes;
+import cz.tacr.elza.packageimport.xml.ItemSpecRegister;
 import cz.tacr.elza.packageimport.xml.PartyGroup;
 import cz.tacr.elza.packageimport.xml.PartyGroups;
 import cz.tacr.elza.packageimport.xml.PartyNameFormType;
@@ -102,7 +103,6 @@ import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.SettingsRepository;
 import cz.tacr.elza.repository.UIPartyGroupRepository;
-import cz.tacr.elza.service.AdminService;
 import cz.tacr.elza.service.CacheService;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import org.apache.commons.collections4.CollectionUtils;
@@ -135,7 +135,6 @@ import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.packageimport.xml.ActionItemType;
 import cz.tacr.elza.packageimport.xml.ActionRecommended;
 import cz.tacr.elza.packageimport.xml.Column;
-import cz.tacr.elza.packageimport.xml.DescItemSpecRegister;
 import cz.tacr.elza.packageimport.xml.ItemSpec;
 import cz.tacr.elza.packageimport.xml.ItemSpecs;
 import cz.tacr.elza.packageimport.xml.ItemType;
@@ -1870,9 +1869,9 @@ public class PackageService {
                                                final ItemSpecs itemSpecs,
                                                final RulPackage rulPackage) {
     	List<RulDataType> rulDataTypes = dataTypeRepository.findAll();
-    	
+
     	ItemTypeUpdater updater = AppContext.getBean(ItemTypeUpdater.class);
-    	
+
     	return updater.update(rulDataTypes, rulPackage, itemTypes, itemSpecs);
     }
 
@@ -1978,13 +1977,13 @@ public class PackageService {
             List<ArrOutputDefinition> byTemplate = outputDefinitionRepository.findNonDeletedByTemplatesAndStates(rulTemplateToDelete, Arrays.asList(OutputState.OPEN, OutputState.GENERATING, OutputState.COMPUTING));
             if (!byTemplate.isEmpty()) {
             	StringBuilder sb = new StringBuilder().append("Existuje výstup(y), který nebyl vygenerován či smazán a je navázán na šablonu, která je v novém balíčku smazána.");
-            	byTemplate.forEach((a) -> { 
-            		ArrFund fund = a.getFund();            		
+            	byTemplate.forEach((a) -> {
+            		ArrFund fund = a.getFund();
             		sb.append("\noutputDefinitionId: ").append(a.getOutputDefinitionId())
             				.append(", outputName: ").append(a.getName())
             				.append(", fundId: ").append(fund.getFundId())
             				.append(", fundName: ").append(fund.getName()).toString();
-            				
+
             	});
                 throw new IllegalStateException(sb.toString());
             }
@@ -3059,15 +3058,15 @@ public class PackageService {
         List<RulItemSpecRegister> rulItemSpecRegisters = itemSpecRegisterRepository
                 .findByDescItemSpecId(rulDescItemSpec);
 
-        List<DescItemSpecRegister> descItemSpecRegisterList = new ArrayList<>(rulItemSpecRegisters.size());
+        List<ItemSpecRegister> itemSpecRegisterList = new ArrayList<>(rulItemSpecRegisters.size());
 
         for (RulItemSpecRegister rulItemSpecRegister : rulItemSpecRegisters) {
-            DescItemSpecRegister descItemSpecRegister = new DescItemSpecRegister();
-            convertDescItemSpecRegister(rulItemSpecRegister, descItemSpecRegister);
-            descItemSpecRegisterList.add(descItemSpecRegister);
+            ItemSpecRegister itemSpecRegister = new ItemSpecRegister();
+            convertDescItemSpecRegister(rulItemSpecRegister, itemSpecRegister);
+            itemSpecRegisterList.add(itemSpecRegister);
         }
 
-        itemSpec.setDescItemSpecRegisters(descItemSpecRegisterList);
+        itemSpec.setItemSpecRegisters(itemSpecRegisterList);
 
         if (StringUtils.isNotEmpty(rulDescItemSpec.getCategory())) {
             String[] categoriesString = rulDescItemSpec.getCategory().split("\\" + ItemTypeUpdater.CATEGORY_SEPARATOR);
@@ -3082,11 +3081,11 @@ public class PackageService {
      * Převod DAO na VO napojení specifikací na reg.
      *
      * @param rulItemSpecRegister DAO napojení specifikací
-     * @param descItemSpecRegister    VO napojení specifikací
+     * @param itemSpecRegister    VO napojení specifikací
      */
     private void convertDescItemSpecRegister(final RulItemSpecRegister rulItemSpecRegister,
-                                             final DescItemSpecRegister descItemSpecRegister) {
-        descItemSpecRegister.setRegisterType(rulItemSpecRegister.getRegisterType().getCode());
+                                             final ItemSpecRegister itemSpecRegister) {
+        itemSpecRegister.setRegisterType(rulItemSpecRegister.getRegisterType().getCode());
     }
 
     /**

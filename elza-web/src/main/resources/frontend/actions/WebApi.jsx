@@ -328,11 +328,12 @@ class WebApi {
         });
     }
 
-    findRegistry(search = null, registryParent = null, registerTypeId = null, versionId = null, from = 0, count = DEFAULT_LIST_SIZE) {
+    findRegistry(search = null, registryParent = null, registerTypeId = null, versionId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE) {
         return AjaxUtils.ajaxGet(WebApi.registryUrl + '/', {
             search,
             from,
             count,
+            itemSpecId,
             parentRecordId: registryParent,
             registerTypeId: registerTypeId,
             versionId
@@ -446,7 +447,6 @@ class WebApi {
 
     getFundNodeDaos(versionId, nodeId = null, detail = false, from = 0, max = 10000) {
         return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/daos/' + versionId, {
-            fundVersionId: versionId,
             nodeId,
             detail,
             index: from,
@@ -459,10 +459,8 @@ class WebApi {
         return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/daopackages/' + versionId, { search, unassigned });
     }
 
-    getPackageDaos(versionId,daoPackageId, detail = false, from = 0, max = 10000) {
-        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/daos/' + versionId, {
-            fundVersionId: versionId,
-            daoPackageId,
+    getPackageDaos(versionId, daoPackageId, detail = false, from = 0, max = 10000) {
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/daos/' + versionId + "/" + daoPackageId, {
             detail,
             index: from,
             maxResults: max,

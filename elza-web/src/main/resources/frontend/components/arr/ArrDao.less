@@ -2,58 +2,72 @@
 
 .dao-container {
 
-  height: 100%;
-  width: 100%;
-
-  display: flex;
-
-  .dao-detail {
-    flex-grow: 1;
-
-    .title {
-      padding: 5px;
-      font-size: @font-size-base * 1.1;
-    }
-
-    .info {
-      padding: 0px 5px 5px 5px;
-    }
-  }
-
-  .dao-files {
-    width: 200px;
-
     height: 100%;
+    width: 100%;
 
     display: flex;
-    flex-flow: column;
-    padding: 5px;
 
-    .dao-files-list {
-      border: 1px solid @fa-file-tree-border;
-      flex-grow: 2;
+    .dao-detail {
+        flex-grow: 1;
 
-      overflow-y: scroll;
+        .title {
+            padding: 5px;
+            font-size: @font-size-base * 1.1;
+        }
 
-      //.item {
-      //  padding: 5px;
-      //
-      //  &:nth-child(odd) {
-      //    background-color: #F8F8F8;
-      //  }
-      //
-      //  &:nth-child(even) {
-      //    background-color: #FEFEFE;
-      //  }
-      //}
+        .info {
+            padding: 0px 5px 5px 5px;
+        }
     }
 
-    .dao-files-detail {
-      padding: 5px;
-      border: 1px solid @fa-file-tree-border;
-      border-top: none;
-      flex-grow: 1;
+    .dao-files {
+        width: 200px;
+
+        height: 100%;
+
+        display: flex;
+        flex-flow: column;
+        padding: 5px;
+
+        .dao-files-list {
+            border: 1px solid @fa-file-tree-border;
+            flex-grow: 2;
+
+            overflow-y: scroll;
+
+            .global-group {
+                font-weight: normal;
+                color: silver;
+            }
+            .file-group {
+                padding-left: 16px;
+                .file {
+                    padding-left: 0;
+                }
+            }
+            .file {
+                padding-left: 16px;
+            }
+
+            //.item {
+            //  padding: 5px;
+            //
+            //  &:nth-child(odd) {
+            //    background-color: #F8F8F8;
+            //  }
+            //
+            //  &:nth-child(even) {
+            //    background-color: #FEFEFE;
+            //  }
+            //}
+        }
+
+        .dao-files-detail {
+            padding: 5px;
+            border: 1px solid @fa-file-tree-border;
+            border-top: none;
+            flex-grow: 1;
+        }
     }
-  }
 
 }

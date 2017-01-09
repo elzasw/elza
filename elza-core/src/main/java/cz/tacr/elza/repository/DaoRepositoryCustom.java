@@ -32,8 +32,9 @@ public interface DaoRepositoryCustom {
      * @param daoPackage  package
      * @param index       počáteční pozice pro načtení
      * @param maxResults  počet načítaných výsledků
+     * @param unassigned  mají-li se získávat pouze balíčky, které obsahují DAO, které nejsou nikam přirazené (unassigned = true), a nebo úplně všechny (unassigned = false)
      * @return seznam digitálních entit (DAO)
      */
-    List<ArrDao> findByFundAndPackagePaginating(ArrFundVersion fundVersion, ArrDaoPackage daoPackage, Integer index, Integer maxResults);
+    List<ArrDao> findByFundAndPackagePaginating(ArrFundVersion fundVersion, ArrDaoPackage daoPackage, Integer index, Integer maxResults, boolean unassigned);
 
 }

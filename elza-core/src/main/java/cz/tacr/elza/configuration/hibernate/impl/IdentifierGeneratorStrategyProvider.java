@@ -29,7 +29,7 @@ public class IdentifierGeneratorStrategyProvider implements org.hibernate.jpa.sp
         Map<String, Class<?>> map = new HashMap<String, Class<?>>();
         //viz org.hibernate.cfg.AnnotationBinder.generatorType()
         //pro defaultni javax.persistence.GenerationType.AUTO zaregistruje náš IdentifierGenerator
-        map.put(org.hibernate.id.enhanced.SequenceStyleGenerator.class.getName(), TableIdHiLoGenerator.class);
+        map.put(org.hibernate.id.enhanced.SequenceStyleGenerator.class.getName(), TableIdGenerator.class);
         return map;
     }
 }

@@ -372,7 +372,7 @@ public class ArrangementController {
 
         final List<ArrDao> arrDaoList = daoService.findDaos(fundVersion, node, index, maxResults);
 
-        return factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail));
+        return factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail), fundVersion);
     }
 
         /**
@@ -380,6 +380,7 @@ public class ArrangementController {
          *
          * @param fundVersionId id archivního souboru
          * @param daoPackageId  id package
+         * @param unassigned mají-li se získávat pouze balíčky, které obsahují DAO, které nejsou nikam přirazené (unassigned = true), a nebo úplně všechny (unassigned = false)
          * @param index         počáteční pozice pro načtení
          * @param maxResults    počet načítaných výsledků
          * @return seznam digitálních entit (DAO)
@@ -389,10 +390,11 @@ public class ArrangementController {
                 consumes = MediaType.APPLICATION_JSON_VALUE,
                 produces = MediaType.APPLICATION_JSON_VALUE)
         List<ArrDaoVO> findDaosByPackage(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                @PathVariable(value = "daoPackageId") Integer daoPackageId,
-                                @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail,
-                                @RequestParam(value = "index", required = false, defaultValue = "0") Integer index,
-                                @RequestParam(value = "maxResults", required = false, defaultValue = "99999") Integer maxResults) {
+                                         @PathVariable(value = "daoPackageId") Integer daoPackageId,
+                                         @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail,
+                                         @RequestParam(value = "unassigned", required = false, defaultValue = "false") Boolean unassigned,
+                                         @RequestParam(value = "index", required = false, defaultValue = "0") Integer index,
+                                         @RequestParam(value = "maxResults", required = false, defaultValue = "99999") Integer maxResults) {
             Assert.notNull(fundVersionId);
             Assert.notNull(daoPackageId);
 
@@ -400,9 +402,10 @@ public class ArrangementController {
             final ArrDaoPackage arrDaoPackage = daoPackageRepository.getOneCheckExist(daoPackageId);
 
 
-            final List<ArrDao> arrDaoList = daoService.findDaosByPackage(fundVersion, arrDaoPackage, index, maxResults);
+            final List<ArrDao> arrDaoList = daoService.findDaosByPackage(fundVersion, arrDaoPackage, index, maxResults,
+                    BooleanUtils.isTrue(unassigned));
 
-            final List<ArrDaoVO> daoList = factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail));
+            final List<ArrDaoVO> daoList = factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail), fundVersion);
             return daoList;
         }
 
@@ -435,7 +438,7 @@ public class ArrangementController {
      * @param daoLinkId ID požadovaného linku k rozpojení
      */
     @Transactional
-    @RequestMapping(value = "/daolinks/{fundVersionId}/{daoLinkId}/delete",
+    @RequestMapping(value = "/daolinks/{fundVersionId}/{daoLinkId}",
                 method = RequestMethod.DELETE,
                 consumes = MediaType.APPLICATION_JSON_VALUE,
                 produces = MediaType.APPLICATION_JSON_VALUE)
