@@ -25,7 +25,7 @@ import {fundOutputRemoveNodes, fundOutputAddNodes} from 'actions/arr/fundOutput.
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import * as digitizationActions from 'actions/arr/digitizationActions';
 import RequestInlineForm from "./RequestInlineForm";
-import {REQ_DIGITIZATION_REQUEST, getRequestType} from './ArrUtils.jsx'
+import {DIGITIZATION, getRequestType} from './ArrUtils.jsx'
 
 const ShortcutsManager = require('react-shortcuts');
 const Shortcuts = require('react-shortcuts/component');
@@ -150,7 +150,7 @@ class ArrRequestDetail extends AbstractReactComponent {
                         onSave={this.handleSaveRequest}
                     />
 
-                    {reqType === REQ_DIGITIZATION_REQUEST && <div>
+                    {reqType === DIGITIZATION && <div>
                         <label className="control-label">{i18n("arr.request.title.nodes")}</label>
                         <FundNodesList
                             nodes={digReq.nodes}

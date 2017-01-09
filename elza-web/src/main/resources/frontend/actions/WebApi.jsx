@@ -594,8 +594,7 @@ class WebApi {
     }
 
     getArrRequests(versionId, type, description) {
-        // TODO - předat i filtr, až bude na serveru
-        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/requests/' + versionId, { });
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/requests/' + versionId, {type, description});
     }
 
     getArrRequest(versionId, id) {
