@@ -11,9 +11,8 @@ import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoLinkRequestRepository;
 import cz.tacr.elza.repository.DaoPackageRepository;
 import cz.tacr.elza.repository.DaoRepository;
-import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.EventId;
+import cz.tacr.elza.service.eventnotification.events.EventIdNodeIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.logging.Log;
@@ -135,7 +134,8 @@ public class DaoService {
             resultDaoLink = daoLinkRepository.save(daoLink);
 
             // poslat i websockety o připojení
-            EventId event = EventFactory.createIdEvent(EventType.DAO_LINK_CREATE, fundVersion.getFundVersionId());
+            EventIdNodeIdInVersion event = new EventIdNodeIdInVersion(EventType.DAO_LINK_CREATE, fundVersion.getFundVersionId(),
+                    dao.getDaoId(), Collections.singletonList(node.getNodeId()));
             eventNotificationService.publishEvent(event);
 
             // vytvořit požadavek pro externí systém na připojení
@@ -183,7 +183,8 @@ public class DaoService {
 
         for (ArrFundVersion arrFundVersion : fundVersionList) {
             // poslat websockety o odpojení
-            EventId event = EventFactory.createIdEvent(EventType.DAO_LINK_DELETE, arrFundVersion.getFundVersionId());
+            EventIdNodeIdInVersion event = new EventIdNodeIdInVersion(EventType.DAO_LINK_DELETE, arrFundVersion.getFundVersionId(),
+                    daoLink.getDao().getDaoId(), Collections.singletonList(daoLink.getNode().getNodeId()));
             eventNotificationService.publishEvent(event);
 
             // vytvořit požadavek pro externí systém na odpojení

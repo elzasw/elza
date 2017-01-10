@@ -46,8 +46,8 @@ public enum EventType {
     OUTPUT_ITEM_CHANGE(EventChangeOutputItem.class),
     FUND_RECORD_CHANGE(EventNodeIdVersionInVersion.class),
 
-    DAO_LINK_CREATE(EventIdInVersion.class),
-    DAO_LINK_DELETE(EventIdInVersion.class),
+    DAO_LINK_CREATE(EventIdNodeIdInVersion.class),
+    DAO_LINK_DELETE(EventIdNodeIdInVersion.class),
 
     INDEXING_FINISHED(ActionEvent.class),
 
