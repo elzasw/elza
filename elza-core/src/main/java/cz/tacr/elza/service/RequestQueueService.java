@@ -8,17 +8,20 @@ import cz.tacr.elza.domain.ArrDigitizationRequestNode;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.ArrRequestQueueItem;
+import cz.tacr.elza.domain.SysExternalSystem;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
+import cz.tacr.elza.repository.ExternalSystemRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.RequestRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdRequestIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.ws.WsClient;
+import org.apache.commons.lang.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +37,9 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 /**
@@ -74,8 +79,25 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
     private DigitizationRequestNodeRepository digitizationRequestNodeRepository;
 
     @Autowired
+    private ExternalSystemRepository externalSystemRepository;
+
+    @Autowired
     @Qualifier("transactionManager")
     protected PlatformTransactionManager txManager;
+
+    // seznam identifikátorů externích systémů, na které se provádí odesílání požadavků
+    private Set<Integer> externalSystemIds = new HashSet<>();
+    private final Object lock = new Object();
+
+    /**
+     * Metoda pro obnovení/spuštění vláken pro zpracovávání fronty požadavků na externí systémy.
+     */
+    public void restartQueuedRequests() {
+        List<SysExternalSystem> externalSystems = externalSystemRepository.findAll();
+        for (SysExternalSystem externalSystem : externalSystems) {
+            executeNextRequest(externalSystem.getExternalSystemId());
+        }
+    }
 
     public void sendRequest(final ArrRequest request,
                             final ArrFundVersion fundVersion) {
@@ -113,7 +135,18 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
         requestQueueItemRepository.save(requestQueueItem);
         sendNotification(fundVersion, request, requestQueueItem, EventType.REQUEST_ITEM_QUEUE_CREATE);
 
-        executeNextRequest();
+        Integer externalSystemId;
+        if (request instanceof ArrDaoRequest) {
+            externalSystemId = ((ArrDaoRequest) request).getDigitalRepository().getExternalSystemId();
+        } else if (request instanceof ArrDaoLinkRequest) {
+            externalSystemId = ((ArrDaoLinkRequest) request).getDigitalRepository().getExternalSystemId();
+        } else if (request instanceof ArrDigitizationRequest) {
+            externalSystemId = ((ArrDigitizationRequest) request).getDigitizationFrontdesk().getExternalSystemId();
+        } else {
+            throw new NotImplementedException(request.getClass().getSimpleName());
+        }
+
+        executeNextRequest(externalSystemId);
     }
 
     private void sendNotification(final ArrFundVersion fundVersion,
@@ -143,7 +176,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
         sendNotification(fundVersion, request, requestQueueItem, EventType.REQUEST_ITEM_QUEUE_DELETE);
     }
 
-    private void executeNextRequest() {
+    private void executeNextRequest(final Integer externalSystemId) {
 
         final RequestQueueService thiz = this;
 
@@ -152,15 +185,21 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
             @Override
             protected void doInTransactionWithoutResult(final TransactionStatus transactionStatus) {
 
-                ArrRequestQueueItem queueItem = requestQueueItemRepository.findNext();
+                ArrRequestQueueItem queueItem = requestQueueItemRepository.findNext(externalSystemId);
 
                 if (queueItem != null) {
-                    RequestExecute requestExecute = new RequestExecute(queueItem.getRequestQueueItemId());
-
-                    ListenableFuture<RequestExecute> future = taskExecutor.submitListenable(requestExecute);
-                    future.addCallback(thiz);
-
-                    //eventPublishBulkAction(bulkActionWorker.getBulkActionRun());
+                    synchronized (lock) {
+                        if (!externalSystemIds.contains(externalSystemId)) {
+                            externalSystemIds.add(externalSystemId);
+                            RequestExecute requestExecute = new RequestExecute(queueItem.getRequestQueueItemId(), externalSystemId);
+                            ListenableFuture<RequestExecute> future = taskExecutor.submitListenable(requestExecute);
+                            future.addCallback(thiz);
+                        } else {
+                            logger.info("Externí systém " + externalSystemId + " již zpracovává požadavek");
+                        }
+                    }
+                } else {
+                    logger.info("Fronta pro externí systém " + externalSystemId + " je prazdná");
                 }
             }
         });
@@ -168,11 +207,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
 
     @Override
     public void onFailure(final Throwable throwable) {
-        try {
-            logger.error("Chyba při zpracování požadavku externím systémem", throwable);
-        } finally {
-            executeNextRequest();
-        }
+        logger.error("Chyba při zpracování požadavku externím systémem", throwable);
     }
 
     public List<ArrRequestQueueItem> findQueued() {
@@ -183,30 +218,36 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
     public void onSuccess(final RequestExecute requestExecute) {
         try {
             if (requestExecute.getThrowable() == null) {
-                logger.info("onSuccess", requestExecute);
+                logger.info("Úspěšné odeslání požadavku " + requestExecute);
             } else {
-                logger.warn("notSend, wait for next try", requestExecute);
+                logger.warn("Nepodařilo se odeslat požadavek " + requestExecute + " na externí systém " + requestExecute.externalSystemId);
                 try {
                     Thread.sleep(60 * 1000);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    logger.error(e.toString(), e);
                 }
             }
+            synchronized (lock) {
+                externalSystemIds.remove(requestExecute.externalSystemId);
+            }
         } finally {
-            executeNextRequest();
+            executeNextRequest(requestExecute.externalSystemId);
         }
     }
 
     class RequestExecute implements Callable<RequestExecute> {
 
-        public static final int ERROR_LENGHT = 1000;
+        public static final int ERROR_LENGTH = 1000;
 
         private Integer requestQueueItemId;
 
+        private Integer externalSystemId;
+
         private Throwable throwable = null;
 
-        public RequestExecute(final Integer requestQueueItemId) {
+        public RequestExecute(final Integer requestQueueItemId, final Integer externalSystemId) {
             this.requestQueueItemId = requestQueueItemId;
+            this.externalSystemId = externalSystemId;
         }
 
         @Override
@@ -234,11 +275,11 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
             final StringBuilder stringBuffer = new StringBuilder();
             stringBuffer.append(e.getLocalizedMessage()).append("\n");
             Throwable cause = e.getCause();
-            while (cause != null && stringBuffer.length() < ERROR_LENGHT) {
+            while (cause != null && stringBuffer.length() < ERROR_LENGTH) {
                 stringBuffer.append(cause.getLocalizedMessage()).append("\n");
                 cause = cause.getCause();
             }
-            return stringBuffer.length() > ERROR_LENGHT ? stringBuffer.substring(0, ERROR_LENGHT) : stringBuffer.toString();
+            return stringBuffer.length() > ERROR_LENGTH ? stringBuffer.substring(0, ERROR_LENGTH) : stringBuffer.toString();
         }
 
         private void execute(final ArrRequestQueueItem queueItem) {
