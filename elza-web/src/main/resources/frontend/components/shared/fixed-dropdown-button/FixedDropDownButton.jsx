@@ -29,7 +29,7 @@ var FixedDropDownButton = class FixedDropDownButton extends AbstractReactCompone
 
         dropMenu[1].style.display = "block";
         const calHeight = dropMenu[1].offsetHeight;
-        dropMenu[1].style.display = "none";
+        dropMenu[1].style.display = null;
 
         const newState = {
             marginSide: this.props.pullRight ?
