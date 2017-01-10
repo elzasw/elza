@@ -15,9 +15,13 @@ public class RequestQueueItemRepositoryImpl implements RequestQueueItemRepositor
     private EntityManager entityManager;
 
     @Override
-    public ArrRequestQueueItem findNext() {
-        Query query = entityManager.createQuery("SELECT i FROM arr_request_queue_item i JOIN i.createChange c WHERE i.send = false ORDER BY c.changeDate ASC");
+    public ArrRequestQueueItem findNext(final Integer externalSystemId) {
+        Query query = entityManager.createQuery("SELECT i FROM arr_request_queue_item i JOIN i.createChange c " +
+                " LEFT JOIN i.request r LEFT JOIN r.digitalRepository dr " +
+                " LEFT JOIN i.request r LEFT JOIN r.digitizationFrontdesk df " +
+                " WHERE i.send = false AND ((dr IS NOT NULL AND dr.externalSystemId = :externalSystemId) OR (df IS NOT NULL AND df.externalSystemId = :externalSystemId)) ORDER BY c.changeDate ASC");
         query.setMaxResults(1);
+        query.setParameter("externalSystemId", externalSystemId);
 
         try {
             return (ArrRequestQueueItem) query.getSingleResult();

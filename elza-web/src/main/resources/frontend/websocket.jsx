@@ -3,6 +3,7 @@ import React from 'react';
 import {EmailSettingsActions, ApplicationActions} from 'actions/index.jsx';
 import {webSocketConnect, webSocketDisconnect} from 'actions/global/webSocket.jsx';
 import * as digitizationActions from 'actions/arr/digitizationActions';
+import * as daoActions from 'actions/arr/daoActions';
 import {store} from 'stores/AppStore.jsx';
 import {addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
 import {i18n} from 'components'
@@ -229,6 +230,10 @@ function processEvents(values) {
 
         switch (value.eventType) {
 
+            case 'DAO_LINK_CREATE':
+            case 'DAO_LINK_DELETE':
+                daoLink(value);
+                break;
             case 'REQUEST_CHANGE':
                 arrRequest(value);
                 break;
@@ -506,6 +511,14 @@ function visiblePolicyChange(value) {
  */
 function conformityInfo(value) {
     store.dispatch(changeConformityInfo(value.versionId, value.entityIds));
+}
+
+/**
+ * Změna připojení digitalizátů k JP.
+ * @param value objekt
+ */
+function daoLink(value) {
+    store.dispatch(daoActions.changeAllDaos());
 }
 
 /**

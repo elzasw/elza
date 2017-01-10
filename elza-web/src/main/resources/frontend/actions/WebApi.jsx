@@ -459,11 +459,12 @@ class WebApi {
         return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/daopackages/' + versionId, { search, unassigned });
     }
 
-    getPackageDaos(versionId, daoPackageId, detail = false, from = 0, max = 10000) {
+    getPackageDaos(versionId, daoPackageId, unassigned, detail = false, from = 0, max = 10000) {
         return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/daos/' + versionId + "/" + daoPackageId, {
             detail,
             index: from,
             maxResults: max,
+            unassigned
         });
     }
 
@@ -691,6 +692,14 @@ class WebApi {
 
     deletePackage(code) {
         return AjaxUtils.ajaxGet(WebApi.ruleUrl + '/deletePackage/' + code);
+    }
+
+    createDaoLink(versionId, daoId, nodeId) {
+        return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/daos/' + versionId + "/" + daoId + "/" + nodeId + "/create", null, null);
+    }
+
+    deleteDaoLink(versionId, daoLinkId) {
+        return AjaxUtils.ajaxDelete(WebApi.arrangementUrl + '/daolinks/' + versionId + "/" + daoLinkId, null, null);
     }
 
     importPackage(data) {

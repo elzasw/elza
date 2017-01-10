@@ -178,8 +178,9 @@ export function increaseNodeVersion(versionId, nodeId, nodeVersionId) {
  * @param {string} direction směr přidání, řetězec 'BEFORE', 'AFTER' nebo 'CHILD'
  * @param {Array} descItemCopyTypes seznam id atributů, pro které se mají zkopírovat hodnoty z bezprostředně předcházejícího uzlu, který je před aktuálně přidávaným
  * @param {string} scenarioName název scénáře, který má být použit
+ * @param {func} callback, který je volán po úspěšném založení, předpis: function (versionId, node, parentNode), node je nově založený node a parentNode je jeho aktualizovaný nadřazený node
  */
-export function addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes = null, scenarioName = null) {
+export function addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes = null, scenarioName = null, afterCreateCallback = null) {
     return (dispatch) => {
         parentNode = {
             id: parentNode.id,
@@ -198,7 +199,7 @@ export function addNode(indexNode, parentNode, versionId, direction, descItemCop
         // Reálné provedení operace
         return savingApiWrapper(dispatch, WebApi.addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes, scenarioName)).then((json) => {
             dispatch(fundNodeChangeAdd(versionId, json.node, indexNode, json.parentNode, direction));
-            dispatch(fundSelectSubNode(versionId, json.node.id, json.parentNode));
+            afterCreateCallback && afterCreateCallback(versionId, json.node, json.parentNode);
         });
     }
 }

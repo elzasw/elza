@@ -13,17 +13,37 @@
         text-align: center;
     }
 
-    .daos-hide {
-        height: 100% !important;
+    .left-container, .right-container {
+        flex-grow: 1;
+        width: 100%;
     }
 
-    .tree-left-container, .tree-right-container {
-        width: 50%;
-        height: 50%;
+    .left-container {
+        .packages-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+        }
+        .tree-left-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+        }
     }
 
-    .tree-actions-container {
-        height: 50%;
+    .right-container {
+        .tree-right-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+        }
+    }
+
+    .actions-container {
+        //height: 50%;
         flex-grow: 0;
         flex-shrink: 0;
         padding: 0 10px;
@@ -32,7 +52,6 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-
 
         .arrow{
             display:flex;
@@ -68,13 +87,5 @@
                 color:#333;
             }
         }
-    }
-    .tree-left-container {
-    }
-    .tree-right-container {
-    }
-
-    .daos-tabs-container {
-
     }
  }

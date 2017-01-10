@@ -102,8 +102,8 @@ public class ElzaCore {
     @Bean(name = "threadPoolTaskExecutorRQ")
     public ThreadPoolTaskExecutor threadPoolTaskExecutorRequestQueue() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-        threadPoolTaskExecutor.setCorePoolSize(1);
-        threadPoolTaskExecutor.setMaxPoolSize(1);
+        threadPoolTaskExecutor.setCorePoolSize(3);
+        threadPoolTaskExecutor.setMaxPoolSize(10);
         threadPoolTaskExecutor.afterPropertiesSet();
         return threadPoolTaskExecutor;
     }

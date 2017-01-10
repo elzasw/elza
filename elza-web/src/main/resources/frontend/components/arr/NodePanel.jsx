@@ -11,7 +11,7 @@ import {connect} from 'react-redux'
 import {TooltipTrigger, Icon, ListBox, AbstractReactComponent, i18n, Loading, NodeSubNodeForm, Accordion, SubNodeRegister, NodeActionsBar,
         VisiblePolicyForm, SubNodeDao} from 'components';
 import {Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
-import {addNodeForm} from 'actions/arr/addNodeForm.jsx';
+import {addNodeFormArr} from 'actions/arr/addNodeForm.jsx';
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {fundSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister.jsx'
 import {fundSubNodeDaosFetchIfNeeded} from 'actions/arr/subNodeDaos.jsx'
@@ -266,22 +266,22 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 break
             case 'addNodeAfter':
                 if (!readMode) {
-                    this.dispatch(addNodeForm('AFTER', node, focusItemIndex, versionId));
+                    this.dispatch(addNodeFormArr('AFTER', node, focusItemIndex, versionId));
                 }
                 break
             case 'addNodeBefore':
                 if (!readMode) {
-                    this.dispatch(addNodeForm('BEFORE', node, focusItemIndex, versionId));
+                    this.dispatch(addNodeFormArr('BEFORE', node, focusItemIndex, versionId));
                 }
                 break
             case 'addNodeChild':
                 if (!readMode) {
-                    this.dispatch(addNodeForm('CHILD', node, focusItemIndex, versionId));
+                    this.dispatch(addNodeFormArr('CHILD', node, focusItemIndex, versionId));
                 }
                 break
             case 'addNodeEnd':
                 if (!readMode) {
-                    this.dispatch(addNodeForm('ATEND', node, focusItemIndex, versionId));
+                    this.dispatch(addNodeFormArr('ATEND', node, focusItemIndex, versionId));
                 }
                 break
         }

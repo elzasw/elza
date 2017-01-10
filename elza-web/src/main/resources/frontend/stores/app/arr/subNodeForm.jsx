@@ -244,7 +244,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             loc.descItem.hasFocus = true;
             loc.descItemType.hasFocus = true;
             loc.descItemGroup.hasFocus = true;
-            
+
             state.formData = {...state.formData};
             return {...state};
         case types.FUND_SUB_NODE_FORM_VALUE_ADD:
@@ -253,7 +253,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             var descItem = createDescItem(loc.descItemType, refType, true);
             descItem.position = loc.descItemType.descItems.length + 1;
             loc.descItemType.descItems = [...loc.descItemType.descItems, descItem];
-            
+
             state.formData = {...state.formData};
             return {...state};
         case types.CHANGE_NODES:
@@ -298,7 +298,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             }
         }
         case types.FUND_NODE_INCREASE_VERSION:
-            if (state.data.parent.id !== action.nodeId || state.data.parent.version !== action.nodeVersionId) { // není pro nás nebo již bylo zavoláno
+            if (state.data === null || state.data.parent.id !== action.nodeId || state.data.parent.version !== action.nodeVersionId) { // není pro nás nebo již bylo zavoláno
                 return state;
             }
 
@@ -439,7 +439,7 @@ export default function subNodeForm(state = initialState, action = {}) {
 
             // Upravení a opravení seznamu hodnot, případně přidání prázdných
             consolidateDescItems(loc.descItemType, infoType, refType, true)
-            
+
             state.formData = {...state.formData};
             return {...state};
         case types.FUND_SUB_NODE_FORM_REQUEST:
@@ -464,7 +464,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             })
 
             // Sestavení mapy ref descItemType
-            var refTypesMap = getMapFromList(descItemTypes)            
+            var refTypesMap = getMapFromList(descItemTypes)
 
             // ##
             // # Result a merge formuláře.
