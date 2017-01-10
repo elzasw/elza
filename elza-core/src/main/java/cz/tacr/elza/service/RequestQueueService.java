@@ -180,29 +180,33 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
 
         final RequestQueueService thiz = this;
 
-        (new TransactionTemplate(txManager)).execute(new TransactionCallbackWithoutResult() {
+        try {
+            (new TransactionTemplate(txManager)).execute(new TransactionCallbackWithoutResult() {
 
-            @Override
-            protected void doInTransactionWithoutResult(final TransactionStatus transactionStatus) {
+                @Override
+                protected void doInTransactionWithoutResult(final TransactionStatus transactionStatus) {
 
-                ArrRequestQueueItem queueItem = requestQueueItemRepository.findNext(externalSystemId);
+                    ArrRequestQueueItem queueItem = requestQueueItemRepository.findNext(externalSystemId);
 
-                if (queueItem != null) {
-                    synchronized (lock) {
-                        if (!externalSystemIds.contains(externalSystemId)) {
-                            externalSystemIds.add(externalSystemId);
-                            RequestExecute requestExecute = new RequestExecute(queueItem.getRequestQueueItemId(), externalSystemId);
-                            ListenableFuture<RequestExecute> future = taskExecutor.submitListenable(requestExecute);
-                            future.addCallback(thiz);
-                        } else {
-                            logger.info("Externí systém " + externalSystemId + " již zpracovává požadavek");
+                    if (queueItem != null) {
+                        synchronized (lock) {
+                            if (!externalSystemIds.contains(externalSystemId)) {
+                                externalSystemIds.add(externalSystemId);
+                                RequestExecute requestExecute = new RequestExecute(queueItem.getRequestQueueItemId(), externalSystemId);
+                                ListenableFuture<RequestExecute> future = taskExecutor.submitListenable(requestExecute);
+                                future.addCallback(thiz);
+                            } else {
+                                logger.info("Externí systém " + externalSystemId + " již zpracovává požadavek");
+                            }
                         }
+                    } else {
+                        logger.info("Fronta pro externí systém " + externalSystemId + " je prazdná");
                     }
-                } else {
-                    logger.info("Fronta pro externí systém " + externalSystemId + " je prazdná");
                 }
-            }
-        });
+            });
+        } catch (Exception e) {
+            logger.error("Nastala chyba při předávání požadavku ke zpracování", e);
+        }
     }
 
     @Override
