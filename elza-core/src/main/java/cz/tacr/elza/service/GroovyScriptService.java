@@ -123,8 +123,12 @@ public class GroovyScriptService {
     }
 
 
-
-    // TODO - JavaDoc - Lebeda
+    /**
+     * Zavolá script pro vytvoření did z node.
+     *
+     * @param arrNode zdrojové node
+     * @return vytvořená instance node
+     */
     public Did createDid(ArrNode arrNode) {
 
         Map<String, Object> input = new HashMap<>();
