@@ -115,27 +115,32 @@ public class DaoCoreServiceImpl implements DaoService {
      */
     @Transactional
     public void _import(DaoImport daoImport) throws CoreServiceException   {
-        logger.info("Executing operation _import");
-        Assert.notNull(daoImport);
-        Assert.notNull(daoImport.getDaoPackages());
-        Assert.notNull(daoImport.getDaoLinks());
+        try {
+            logger.info("Executing operation _import");
+            Assert.notNull(daoImport);
+            Assert.notNull(daoImport.getDaoPackages());
+            Assert.notNull(daoImport.getDaoLinks());
 
-        final List<DaoPackage> daoPackageList = daoImport.getDaoPackages().getDaoPackage();
-        if (CollectionUtils.isNotEmpty(daoPackageList)) {
-            for (DaoPackage daoPackage : daoPackageList) {
-                final ArrDaoPackage arrDaoPackage = createArrDaoPackage(daoPackage);
+            final List<DaoPackage> daoPackageList = daoImport.getDaoPackages().getDaoPackage();
+            if (CollectionUtils.isNotEmpty(daoPackageList)) {
+                for (DaoPackage daoPackage : daoPackageList) {
+                    final ArrDaoPackage arrDaoPackage = createArrDaoPackage(daoPackage);
+                }
             }
-        }
 
-        // založí se DaoLink bez notifikace, pokud již link existuje, tak se zruší a založí se nový (arr_change).
-        final List<DaoLink> daoLinkList = daoImport.getDaoLinks().getDaoLink();
-        if (CollectionUtils.isNotEmpty(daoLinkList)) {
-            for (DaoLink daoLink : daoLinkList) {
-                final ArrDaoLink arrDaoLink = createArrDaoLink(daoLink);
+            // založí se DaoLink bez notifikace, pokud již link existuje, tak se zruší a založí se nový (arr_change).
+            final List<DaoLink> daoLinkList = daoImport.getDaoLinks().getDaoLink();
+            if (CollectionUtils.isNotEmpty(daoLinkList)) {
+                for (DaoLink daoLink : daoLinkList) {
+                    final ArrDaoLink arrDaoLink = createArrDaoLink(daoLink);
+                }
             }
-        }
 
-        logger.info("Finished operation _import");
+            logger.info("Finished operation _import");
+        } catch (Exception e) {
+            logger.error("Fail operation _import", e);
+            throw new CoreServiceException("Fail operation _import", e);
+        }
     }
 
     /**
@@ -304,10 +309,15 @@ public class DaoCoreServiceImpl implements DaoService {
      */
     @Transactional
     public String addPackage(DaoPackage daoPackage) throws CoreServiceException   {
-        logger.info("Executing operation addPackage");
-        final ArrDaoPackage arrDaoPackage = createArrDaoPackage(daoPackage);
-        logger.info("Ending operation addPackage");
-        return arrDaoPackage.getCode();
+        try {
+            logger.info("Executing operation addPackage");
+            final ArrDaoPackage arrDaoPackage = createArrDaoPackage(daoPackage);
+            logger.info("Ending operation addPackage");
+            return arrDaoPackage.getCode();
+        } catch (Exception e) {
+            logger.error("Fail operation addPackage", e);
+            throw new CoreServiceException("Fail operation addPackage", e);
+        }
     }
 
     /* (non-Javadoc)
@@ -315,31 +325,41 @@ public class DaoCoreServiceImpl implements DaoService {
      */
     @Transactional
     public void removePackage(String packageIdentifier) throws CoreServiceException   {
-        logger.info("Executing operation removePackage");
-        Assert.hasText(packageIdentifier);
+        try {
+            logger.info("Executing operation removePackage");
+            Assert.hasText(packageIdentifier);
 
-        final ArrDaoPackage arrDaoPackage = daoPackageRepository.findOneByCode(packageIdentifier);
-        if (arrDaoPackage == null) {
-            throw new ObjectNotFoundException(DigitizationCode.PACKAGE_NOT_FOUND).set("code", packageIdentifier);
+            final ArrDaoPackage arrDaoPackage = daoPackageRepository.findOneByCode(packageIdentifier);
+            if (arrDaoPackage == null) {
+                throw new ObjectNotFoundException(DigitizationCode.PACKAGE_NOT_FOUND).set("code", packageIdentifier);
+            }
+
+            final List<ArrDao> arrDaoList = daoService.deleteDaosWithoutLinks(daoRepository.findByPackage(arrDaoPackage));
+
+            // TODO Lebeda - jak zneplatnit samotnou package
+
+            logger.info("Ending operation removePackage");
+        } catch (Exception e) {
+            logger.error("Fail operation removePackage", e);
+            throw new CoreServiceException("Fail operation removePackage", e);
         }
-
-        final List<ArrDao> arrDaoList = daoService.deleteDaosWithoutLinks(daoRepository.findByPackage(arrDaoPackage));
-
-        // TODO Lebeda - jak zneplatnit samotnou package
-
-        logger.info("Ending operation removePackage");
     }
 
     /*
      * @see cz.tacr.elza.ws.core.v1.DaoService#link(cz.tacr.elza.ws.types.v1.DaoLink daoLink)*
      */
     @Transactional
-    public void link(DaoLink daoLink) throws CoreServiceException   {
-        logger.info("Executing operation link");
+    public void link(DaoLink daoLink) throws CoreServiceException {
+        try {
+            logger.info("Executing operation link");
 
-        final ArrDaoLink arrDaoLink = createArrDaoLink(daoLink);
+            final ArrDaoLink arrDaoLink = createArrDaoLink(daoLink);
 
-        logger.info("Ending operation link");
+            logger.info("Ending operation link");
+        } catch (Exception e) {
+            logger.error("Fail operation link", e);
+            throw new CoreServiceException("Fail operation link", e);
+        }
     }
 
     /* (non-Javadoc)
@@ -347,39 +367,49 @@ public class DaoCoreServiceImpl implements DaoService {
      */
     @Transactional
     public void removeDao(String daoIdentifier) throws CoreServiceException   {
-        logger.info("Executing operation removeDao");
-        Assert.hasText(daoIdentifier);
+        try {
+            logger.info("Executing operation removeDao");
+            Assert.hasText(daoIdentifier);
 
-        final ArrDao arrDao = daoRepository.findOneByCode(daoIdentifier);
-        if (arrDao == null) {
-            throw new ObjectNotFoundException(DigitizationCode.DAO_NOT_FOUND).set("code", daoIdentifier);
+            final ArrDao arrDao = daoRepository.findOneByCode(daoIdentifier);
+            if (arrDao == null) {
+                throw new ObjectNotFoundException(DigitizationCode.DAO_NOT_FOUND).set("code", daoIdentifier);
+            }
+
+            daoService.deleteDaosWithoutLinks(Collections.singletonList(arrDao));
+
+            logger.info("Ending operation removeDao");
+        } catch (Exception e) {
+            logger.error("Fail operation removeDao", e);
+            throw new CoreServiceException("Fail operation removeDao", e);
         }
-
-        daoService.deleteDaosWithoutLinks(Collections.singletonList(arrDao));
-
-        logger.info("Ending operation removeDao");
     }
 
     /* (non-Javadoc)
-         * @see cz.tacr.elza.ws.core.v1.DaoService#getDid(java.lang.String packageIdentifier)*
-         */
+     * @see cz.tacr.elza.ws.core.v1.DaoService#getDid(java.lang.String packageIdentifier)*
+     */
     public Did getDid(String nodeIdentifier) throws CoreServiceException {
-        logger.info("Executing operation getDid");
+        try {
+            logger.info("Executing operation getDid");
 
-        // TODO Lebeda - jak se dostanu z package na ArrNode???
-        //        final ArrDaoPackage arrDaoPackage = daoPackageRepository.findOneByCode(packageIdentifier);
-        //        Assert.notNull(arrDaoPackage);
-        //
-        //        final ArrFund arrFund = arrDaoPackage.getFund();
-        //        Assert.notNull(arrFund);
+            // TODO Lebeda - jak se dostanu z package na ArrNode???
+            //        final ArrDaoPackage arrDaoPackage = daoPackageRepository.findOneByCode(packageIdentifier);
+            //        Assert.notNull(arrDaoPackage);
+            //
+            //        final ArrFund arrFund = arrDaoPackage.getFund();
+            //        Assert.notNull(arrFund);
 
-        final ArrNode arrNode = nodeRepository.findOneByUuid(nodeIdentifier);
-        Assert.notNull(arrNode, "Node ID=" + nodeIdentifier + " wasn't found.");
+            final ArrNode arrNode = nodeRepository.findOneByUuid(nodeIdentifier);
+            Assert.notNull(arrNode, "Node ID=" + nodeIdentifier + " wasn't found.");
 
-        final Did did = groovyScriptService.createDid(arrNode);
+            final Did did = groovyScriptService.createDid(arrNode);
 
-        logger.info("Ending operation getDid");
-        return did;
+            logger.info("Ending operation getDid");
+            return did;
+        } catch (Exception e) {
+            logger.error("Fail operation getDid", e);
+            throw new CoreServiceException("Fail operation getDid", e);
+        }
     }
 
 }
