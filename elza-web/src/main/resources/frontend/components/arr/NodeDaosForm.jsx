@@ -33,6 +33,7 @@ class NodeDaosForm extends AbstractReactComponent {
                     <Modal.Body>
                         <ArrDaos
                             fund={fund}
+                            type="NODE"
                             nodeId={nodeId}
                             selectedDaoId={daoId}
                             />
