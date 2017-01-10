@@ -2150,19 +2150,19 @@ public class ArrangementController {
     /**
      * Odeslání požadavku.
      *
-     * @param fundVersionId  identifikátor verze AS
-     * @param digitizationId identifikátor požadavku
+     * @param fundVersionId identifikátor verze AS
+     * @param requestId     identifikátor požadavku
      */
-    @RequestMapping(value = "/requests/{fundVersionId}/{digitizationId}/send", method = RequestMethod.POST)
+    @RequestMapping(value = "/requests/{fundVersionId}/{requestId}/send", method = RequestMethod.POST)
     @Transactional
-    public void digitizationRequestSend(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                        @PathVariable(value = "digitizationId") final Integer digitizationId) {
+    public void requestSend(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                            @PathVariable(value = "requestId") final Integer requestId) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        ArrDigitizationRequest digitizationRequest = requestService.getDigitizationRequest(digitizationId);
-        if (!fundVersion.getFund().equals(digitizationRequest.getFund())) {
+        ArrRequest request = requestService.getRequest(requestId);
+        if (!fundVersion.getFund().equals(request.getFund())) {
             throw new SystemException(ArrangementCode.INVALID_VERSION);
         }
-        requestService.sendRequest(digitizationRequest, fundVersion);
+        requestService.sendRequest(request, fundVersion);
     }
 
     /**
