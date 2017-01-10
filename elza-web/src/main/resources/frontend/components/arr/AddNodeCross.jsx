@@ -9,7 +9,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {addNodeForm} from 'actions/arr/addNodeForm.jsx';
+import {addNodeFormArr} from 'actions/arr/addNodeForm.jsx';
 import * as perms from 'actions/user/Permission.jsx';
 import {AbstractReactComponent, i18n} from 'components/index.jsx';
 import {getOneSettings, isFundRootId} from 'components/arr/ArrUtils.jsx';
@@ -27,7 +27,7 @@ const AddNodeCross = class AddNodeCross extends AbstractReactComponent {
      */
     handleAddNode(direction) {
         const {node, selectedSubNodeIndex, versionId} = this.props;
-        this.dispatch(addNodeForm(direction, node, selectedSubNodeIndex, versionId));
+        this.dispatch(addNodeFormArr(direction, node, selectedSubNodeIndex, versionId));
     }
 
     renderCross() {

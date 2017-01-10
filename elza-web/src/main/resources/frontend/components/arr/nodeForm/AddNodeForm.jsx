@@ -18,10 +18,11 @@ import './AddNodeForm.less';
 class AddNodeForm extends AbstractReactComponent {
 
     static PropTypes = {
-        node: React.PropTypes.object.isRequired,
+        node: React.PropTypes.object.isRequired,    // node pro který se akce volá
+        parentNode: React.PropTypes.object.isRequired,  // nadřený node pro vstupní node
         initDirection: React.PropTypes.oneOf(['BEFORE', 'AFTER', 'CHILD', 'ATEND']),
         nodeSettings: React.PropTypes.object.isRequired,
-        selectedSubNodeIndex: React.PropTypes.number.isRequired
+        onSubmit: React.PropTypes.func.isRequired,
     };
 
     state = { // initial states
@@ -37,22 +38,18 @@ class AddNodeForm extends AbstractReactComponent {
      * @param {String} inDirection směr, kterým se má vytvořit nová JP
      * @param {Object} inNode uzel pro který je volána akce
      */
-    formatDataForServer = (inDirection, inNode, inSelectedSubNodeIndex) => {
+    formatDataForServer = (inDirection, inNode, inParentNode) => {
         var di, no, pno;
-        if(inDirection == 'ATEND') { // prvek na konec seznamu
+        if (inDirection == 'ATEND') { // prvek na konec seznamu
             di = 'CHILD';
             no = inNode;
             pno = inNode;
         } else {
             di = inDirection;
             // výběr node v akordeonu podle toho zda je otevřená JP nebo je akordeon zavřený
-            if(inNode.selectedSubNodeId != null) {
-                no = inNode.subNodeForm.data.parent;
-            } else {
-                no = inNode.childNodes[inSelectedSubNodeIndex];
-            }
+            no = inParentNode;
             pno = inNode;
-            if(inDirection == 'CHILD') {
+            if (inDirection == 'CHILD') {
                 pno = no;
             }
         }
@@ -74,9 +71,9 @@ class AddNodeForm extends AbstractReactComponent {
         this.setState({
             loading: true
         });
-        const {node, selectedSubNodeIndex, versionId} = this.props;
+        const {node, parentNode, versionId} = this.props;
         // nastavi odpovidajiciho rodice a direction pro dotaz
-        var dataServ = this.formatDataForServer(newDirection, node, selectedSubNodeIndex)
+        var dataServ = this.formatDataForServer(newDirection, node, parentNode)
         // ajax dotaz na scenare
         WebApi.getNodeAddScenarios(dataServ.activeNode, versionId, dataServ.direction).then(
             (result) => { // resolved
@@ -132,13 +129,24 @@ class AddNodeForm extends AbstractReactComponent {
      */
     handleFormSubmit = (e) => {
         e.preventDefault();
-        const {node, selectedSubNodeIndex, versionId, initDirection, handlePostSubmitActions} = this.props;
-        var selDi = this.state.selectedDirection;
-        var selScn = this.state.selectedScenario;
+
+        const {onSubmit, node, parentNode, versionId, initDirection} = this.props;
+        const {selectedDirection, selectedScenario} = this.state;
+
         // nastavi odpovidajiciho rodice a direction pro dotaz
-        var dataServ = this.formatDataForServer(selDi, node, selectedSubNodeIndex);
-        this.dispatch(addNode(dataServ.activeNode, dataServ.parentNode, this.props.versionId, dataServ.direction, this.getDescItemTypeCopyIds(), selScn));
-        handlePostSubmitActions();
+        const dataServ = this.formatDataForServer(selectedDirection, node, parentNode);
+
+        // Data pro poslání do on submit - obsahují všechny informace pro založení
+        const submitData = {
+            indexNode: dataServ.activeNode,
+            parentNode: dataServ.parentNode,
+            versionId: versionId,
+            direction: dataServ.direction,
+            descItemCopyTypes: this.getDescItemTypeCopyIds(),
+            scenarioName: selectedScenario
+        };
+
+        onSubmit(submitData);
     };
 
     componentWillMount() {
