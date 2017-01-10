@@ -39,6 +39,7 @@ import {
     groupDelete,
     fundInvalidChanges,
     createRequest,
+    deleteRequest,
     changeRequestItemQueue,
     createRequestItemQueue,
     nodesDelete
@@ -365,6 +366,10 @@ function processEvents(values) {
                 requestChange(value);
                 break;
 
+            case 'REQUEST_DELETE':
+                requestDelete(value);
+                break;
+
             case 'REQUEST_ITEM_QUEUE_CREATE':
             case 'REQUEST_ITEM_QUEUE_DELETE':
                 createRequestItemQueueChange(value);
@@ -402,6 +407,10 @@ function deleteGroup(value) {
 
 function requestChange(value) {
     store.dispatch(changeRequest(value));
+}
+
+function requestDelete(value) {
+    store.dispatch(deleteRequest(value));
 }
 
 function requestCreate(value) {
