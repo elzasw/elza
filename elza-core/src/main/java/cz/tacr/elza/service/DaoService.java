@@ -108,11 +108,20 @@ public class DaoService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrDaoLink createOrFindDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion, ArrDao dao, ArrNode node) {
-        // kontrola, že ještě neexistuje
+        // kontrola, že ještě neexistuje vazba na zadaný node
         final List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaoAndNodeAndDeleteChangeIsNull(dao, node);
 
         final ArrDaoLink resultDaoLink;
         if (CollectionUtils.isEmpty(daoLinkList)) {
+            // Pokud má DAO jinou platnou vazbu, bude nejprve zneplatněna
+            final List<ArrDaoLink> linkList = daoLinkRepository.findByDaoAndDeleteChangeIsNull(dao);
+            if (CollectionUtils.isNotEmpty(linkList)) {
+                // měla by být jen jedna, ale cyklus ošetří i případnou chybu v datech
+                for (ArrDaoLink arrDaoLink : linkList) {
+                    deleteDaoLink(fundVersion, arrDaoLink);
+                }
+            }
+
             // vytvořit změnu
             final ArrChange createChange = arrangementService.createChange(ArrChange.Type.CREATE_DAO_LINK, node);
 
