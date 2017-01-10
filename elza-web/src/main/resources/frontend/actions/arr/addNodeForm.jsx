@@ -20,18 +20,13 @@ import {i18n, AddNodeForm} from 'components/index.jsx';
  */
 export function addNodeFormArr(direction, node, selectedSubNodeIndex, versionId) {
     return (dispatch) => {
-        let parentNode;
-        if(node.selectedSubNodeId != null) {
-            parentNode = node.subNodeForm.data.parent;
-        } else {
-            parentNode = node.childNodes[selectedSubNodeIndex];
-        }
-
         const afterCreateCallback = (versionId, node, parentNode) => {
             dispatch(fundSelectSubNode(versionId, node.id, parentNode));
         };
 
-        dispatch(addNodeForm(direction, node, parentNode, versionId, afterCreateCallback));
+        const inParentNode = node;
+        const inNode = node.childNodes[selectedSubNodeIndex];
+        dispatch(addNodeForm(direction, inNode, inParentNode, versionId, afterCreateCallback));
     }
 }
 
@@ -42,8 +37,9 @@ export function addNodeFormArr(direction, node, selectedSubNodeIndex, versionId)
  * @param {Object} parentNode uzel nadřazený předanému node
  * @param {Object} versionId verze AS
  * @param {func} afterCreateCallback funkce, která je volána po úspěšném vytvoření node, předpis: function (versionId, node, parentNode), node je nově založený node a parentNode je jeho aktualizovaný nadřazený node
+ * @param {array} allowedDirections seznam směrů, které chceme povolit na dialogu přidání node
  */
-export function addNodeForm(direction, node, parentNode, versionId, afterCreateCallback) {
+export function addNodeForm(direction, node, parentNode, versionId, afterCreateCallback, allowedDirections = ['BEFORE', 'AFTER', 'CHILD', 'ATEND']) {
     return (dispatch) => {
         const onSubmit = (data) => {
             dispatch(addNode(data.indexNode, data.parentNode, data.versionId, data.direction, data.descItemCopyTypes, data.scenarioName, afterCreateCallback));
@@ -59,6 +55,7 @@ export function addNodeForm(direction, node, parentNode, versionId, afterCreateC
                 parentNode={parentNode}
                 versionId={versionId}
                 onSubmit={onSubmit}
+                allowedDirections={allowedDirections}
             />
         ));
     }

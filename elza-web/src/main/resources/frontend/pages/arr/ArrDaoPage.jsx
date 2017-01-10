@@ -13,10 +13,11 @@ import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {FundSettingsForm, Tabs, Icon, Search, Ribbon, i18n, FundTreeDaos, ArrFundPanel, ArrDaos} from 'components/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
-import {getNodeParents, getNodeParent} from 'components/arr/ArrUtils.jsx'
+import {createFundRoot, getParentNode} from 'components/arr/ArrUtils.jsx'
 import {moveNodesUnder, moveNodesBefore, moveNodesAfter} from 'actions/arr/nodes.jsx'
-
+import {addNodeForm} from "actions/arr/addNodeForm.jsx"
 import ArrParentPage from "./ArrParentPage.jsx";
+import {fundTreeSelectNode} from 'actions/arr/fundTree.jsx'
 
 import {
     BulkActionsDialog,
@@ -49,7 +50,6 @@ import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {fundNodesPolicyFetchIfNeeded} from 'actions/arr/fundNodesPolicy.jsx'
 import {fundActionFormChange, fundActionFormShow} from 'actions/arr/fundAction.jsx'
 import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
-import {createFundRoot} from 'components/arr/ArrUtils.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {fundTreeFetchIfNeeded} from 'actions/arr/fundTree.jsx'
@@ -112,6 +112,31 @@ class ArrDaoPage extends ArrParentPage {
     }
 
     handleCreateUnderAndLink = () => {
+        const fund = this.getActiveFund(this.props);
+        const node = this.getDestNode();
+        const {selectedDaoLeft} = this.state;
+
+        let parentNode = getParentNode(node, fund.fundTreeDaosRight.nodes);
+        if (parentNode == null) {   // root
+            parentNode = createFundRoot(fund);
+        }
+
+        const afterCreateCallback = (versionId, node, parentNode) => {
+            // Připojení - link
+            WebApi.createDaoLink(fund.versionId, selectedDaoLeft.id, node.id);
+
+            // Výběr node ve stromu
+            this.props.dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_DAOS_RIGHT, fund.versionId, node.id, false, false, null, true));
+        };
+
+        this.props.dispatch(addNodeForm(
+            "CHILD",
+            node,
+            parentNode,
+            fund.versionId,
+            afterCreateCallback,
+            ["CHILD"]
+        ));
         console.log("handleCreateUnder");
     };
 
@@ -136,16 +161,16 @@ class ArrDaoPage extends ArrParentPage {
     buildRibbon = (readMode, closed) => {
         const activeFund = this.getActiveFund(this.props);
 
-        var altActions = [];
+        let altActions = [];
 
-        var itemActions = [];
+        let itemActions = [];
 
-        var altSection;
+        let altSection;
         if (altActions.length > 0) {
             altSection = <RibbonGroup key="alt" className="small">{altActions}</RibbonGroup>
         }
 
-        var itemSection;
+        let itemSection;
         if (itemActions.length > 0) {
             itemSection = <RibbonGroup key="item" className="small">{itemActions}</RibbonGroup>
         }
@@ -219,17 +244,12 @@ class ArrDaoPage extends ArrParentPage {
         </div>
     };
 
-    handleRightNodeSelect = (node) => {
-        this.setState({nodeRight: node});
-    };
-
     renderCenterPanel = (readMode, closed) => {
         const {selectedDaoLeft, selectedTab} = this.state;
         const fund = this.getActiveFund(this.props);
 
         let rightHasSelection = fund.fundTreeDaosRight.selectedId != null;
         let active = rightHasSelection && !readMode && !fund.closed;
-        let node = this.getDestNode();
 
         let tabs = [];
         tabs.push({
