@@ -1,0 +1,59 @@
+.tetris {
+  margin-left: 400px;
+  padding: 16px;
+  .actions {
+    padding-bottom: 12px;
+    button {
+      margin-right: 6px;
+    }
+  }
+  .game {
+    display: flex;
+
+    .board {
+      background: #f0f0f0;
+      border: 1px solid silver;
+      &.end {
+        background: #f0c0c0;
+      }
+
+      .item {
+        stroke: black;
+        stroke-width: 1;
+      }
+
+      .brick {
+        stroke: black;
+        stroke-width: 1;
+      }
+      .brickBorder {
+        stroke: white;
+        stroke-width: 1;
+      }
+    }
+
+    .info-container {
+      display: flex;
+      flex-direction: column;
+
+      .piece-info {
+        margin-left: 6px;
+        background: #f0f0f0;
+        border: 1px solid silver;
+
+        .item {
+          stroke: black;
+          stroke-width: 1;
+        }
+      }
+
+      .level-info {
+        background: #f0f0f0;
+        border: 1px solid silver;
+        margin-top: 6px;
+        margin-left: 6px;
+        padding: 6px;
+      }
+    }
+  }
+}

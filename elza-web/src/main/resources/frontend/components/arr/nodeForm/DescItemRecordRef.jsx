@@ -15,8 +15,17 @@ class DescItemRecordRef extends AbstractReactComponent {
         this.refs.registryField.refs.wrappedInstance.focus()
     }
 
+    static defaultProps = {
+        hasSpecification: false,
+    };
+
+    static PropTypes = {
+        descItem: React.PropTypes.object.isRequired,
+        hasSpecification: React.PropTypes.bool,
+    };
+
     render() {
-        const {descItem, locked, singleDescItemTypeEdit, readMode, cal, ...otherProps} = this.props;
+        const {descItem, locked, singleDescItemTypeEdit, hasSpecification, readMode, cal, ...otherProps} = this.props;
         const value = descItem.record ? descItem.record : null;
 
         if (readMode) {
@@ -27,15 +36,22 @@ class DescItemRecordRef extends AbstractReactComponent {
             }
         }
 
+
+        let disabled = locked;
+        if (hasSpecification && !descItem.descItemSpecId) {
+            disabled = true;
+        }
+
         return <div className='desc-item-value desc-item-value-parts'>
             <ItemTooltipWrapper tooltipTitle="dataType.recordRef.format" className="tooltipWrapper">
                 <RegistryField
                     ref='registryField'
                     {...otherProps}
+                    itemSpecId={descItem.descItemSpecId}
                     value={value}
                     footer={!singleDescItemTypeEdit}
                     detail={true}
-                    {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, ['autocomplete-record'])}
+                    {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, disabled, ['autocomplete-record'])}
                 />
             </ItemTooltipWrapper>
         </div>

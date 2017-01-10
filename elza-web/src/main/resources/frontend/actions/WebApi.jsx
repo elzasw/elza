@@ -328,11 +328,12 @@ class WebApi {
         });
     }
 
-    findRegistry(search = null, registryParent = null, registerTypeId = null, versionId = null, from = 0, count = DEFAULT_LIST_SIZE) {
+    findRegistry(search = null, registryParent = null, registerTypeId = null, versionId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE) {
         return AjaxUtils.ajaxGet(WebApi.registryUrl + '/', {
             search,
             from,
             count,
+            itemSpecId,
             parentRecordId: registryParent,
             registerTypeId: registerTypeId,
             versionId
@@ -444,9 +445,26 @@ class WebApi {
         return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/registerLinks/' + nodeId + '/' + versionId + '/form');
     }
 
-    getFundNodeDaos(versionId, nodeId = null, detail = false) {
-        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/daos/' + versionId, {nodeId, detail});
+    getFundNodeDaos(versionId, nodeId = null, detail = false, from = 0, max = 10000) {
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/daos/' + versionId, {
+            nodeId,
+            detail,
+            index: from,
+            maxResults: max,
+        });
         //return getData(digReqs, 200);
+    }
+
+    findDaoPackages(versionId, search, unassigned) {
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/daopackages/' + versionId, { search, unassigned });
+    }
+
+    getPackageDaos(versionId, daoPackageId, detail = false, from = 0, max = 10000) {
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/daos/' + versionId + "/" + daoPackageId, {
+            detail,
+            index: from,
+            maxResults: max,
+        });
     }
 
     deleteFundNodeRegister(versionId, nodeId, data) {
@@ -576,8 +594,7 @@ class WebApi {
     }
 
     getArrRequests(versionId, type, description) {
-        // TODO - předat i filtr, až bude na serveru
-        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/requests/' + versionId, { });
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/requests/' + versionId, {type, description});
     }
 
     getArrRequest(versionId, id) {
@@ -589,7 +606,7 @@ class WebApi {
     }
 
     deleteArrRequest(versionId, id) {
-        return AjaxUtils.ajaxDelete(WebApi.arrangementUrl + '/requests/' + versionId + "/" + id + "/" + id);
+        return AjaxUtils.ajaxDelete(WebApi.arrangementUrl + '/requests/' + id);
     }
 
     getFundTree(versionId, nodeId, expandedIds={}, includeIds=[]) {
@@ -979,6 +996,10 @@ class WebApi {
 
     importRecordUpdate(recordId, importVO) {
         return AjaxUtils.ajaxPut(WebApi.registryUrl + '/interpi/import/'+ recordId, null, importVO);
+    }
+
+    findInterpiRecordRelations(recordId, relationsVO) {
+        return AjaxUtils.ajaxPost(WebApi.registryUrl + '/interpi/' + recordId + '/relations/', null, relationsVO);
     }
 }
 

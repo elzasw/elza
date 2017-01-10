@@ -69,6 +69,7 @@ import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.DaoPackageRepository;
 import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
@@ -157,6 +158,9 @@ public class ArrangementController {
 
     @Autowired
     private NodeRepository nodeRepository;
+
+    @Autowired
+    private DaoPackageRepository daoPackageRepository;
 
     @Autowired
     private DaoLinkRepository daoLinkRepository;
@@ -314,7 +318,7 @@ public class ArrangementController {
     }
 
     /**
-     *  Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní jednotku popisu (JP) nebo nemá žádné napojení (pouze pod archivní souborem (AS)).
+     *  Poskytuje seznam balíčků digitalizátů pouze pod archivní souborem (AS).
      *
      * @param fundVersionId   id archivního souboru
      * @param search   vyhledává (použití LIKE) nad kódem balíčku, kódem a labelem arr_dao (přirazený k balíčku), kódem a labelem arr_dao_batch_info
@@ -357,7 +361,7 @@ public class ArrangementController {
                             @RequestParam(value = "nodeId", required = false) Integer nodeId,
                             @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail,
                             @RequestParam(value = "index", required = false, defaultValue = "0") Integer index,
-                            @RequestParam(value = "maxResults", required = false, defaultValue = "20") Integer maxResults) {
+                            @RequestParam(value = "maxResults", required = false, defaultValue = "99999") Integer maxResults) {
         Assert.notNull(fundVersionId);
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
 
@@ -368,8 +372,42 @@ public class ArrangementController {
 
         final List<ArrDao> arrDaoList = daoService.findDaos(fundVersion, node, index, maxResults);
 
-        return factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail));
+        return factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail), fundVersion);
     }
+
+        /**
+         * Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní balíček.
+         *
+         * @param fundVersionId id archivního souboru
+         * @param daoPackageId  id package
+         * @param unassigned mají-li se získávat pouze balíčky, které obsahují DAO, které nejsou nikam přirazené (unassigned = true), a nebo úplně všechny (unassigned = false)
+         * @param index         počáteční pozice pro načtení
+         * @param maxResults    počet načítaných výsledků
+         * @return seznam digitálních entit (DAO)
+         */
+        @RequestMapping(value = "/daos/{fundVersionId}/{daoPackageId}",
+                method = RequestMethod.GET,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
+        List<ArrDaoVO> findDaosByPackage(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                         @PathVariable(value = "daoPackageId") Integer daoPackageId,
+                                         @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail,
+                                         @RequestParam(value = "unassigned", required = false, defaultValue = "false") Boolean unassigned,
+                                         @RequestParam(value = "index", required = false, defaultValue = "0") Integer index,
+                                         @RequestParam(value = "maxResults", required = false, defaultValue = "99999") Integer maxResults) {
+            Assert.notNull(fundVersionId);
+            Assert.notNull(daoPackageId);
+
+            ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+            final ArrDaoPackage arrDaoPackage = daoPackageRepository.getOneCheckExist(daoPackageId);
+
+
+            final List<ArrDao> arrDaoList = daoService.findDaosByPackage(fundVersion, arrDaoPackage, index, maxResults,
+                    BooleanUtils.isTrue(unassigned));
+
+            final List<ArrDaoVO> daoList = factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail), fundVersion);
+            return daoList;
+        }
 
     /**
      * připojení digitalizát na JP (vytvoření záznamu v arr_dao_link)
@@ -400,7 +438,7 @@ public class ArrangementController {
      * @param daoLinkId ID požadovaného linku k rozpojení
      */
     @Transactional
-    @RequestMapping(value = "/daolinks/{fundVersionId}/{daoLinkId}/delete",
+    @RequestMapping(value = "/daolinks/{fundVersionId}/{daoLinkId}",
                 method = RequestMethod.DELETE,
                 consumes = MediaType.APPLICATION_JSON_VALUE,
                 produces = MediaType.APPLICATION_JSON_VALUE)
@@ -2182,9 +2220,12 @@ public class ArrangementController {
     public List<ArrRequestVO> findRequests(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                            @RequestParam(value = "state", required = false) ArrRequest.State state,
                                            @RequestParam(value = "type", required = false) ArrRequest.ClassType type,
-                                           @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail) {
+                                           @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail,
+                                           @RequestParam(value = "description", required = false) String description,
+                                           @RequestParam(value = "fromDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final LocalDateTime fromDate,
+                                           @RequestParam(value = "toDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final LocalDateTime toDate) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        List<ArrRequest> requests = requestService.findRequests(fundVersion.getFund(), state, type);
+        List<ArrRequest> requests = requestService.findRequests(fundVersion.getFund(), state, type, description, fromDate, toDate);
         return factoryVo.createRequest(requests, detail, fundVersion);
     }
 
@@ -2216,9 +2257,9 @@ public class ArrangementController {
 
     @Transactional
     @RequestMapping(value = "/requests/{requestId}", method = RequestMethod.DELETE)
-    public void removeQueuedRequest(@PathVariable(value = "requestId") final Integer requestId) {
+    public void deleteRequest(@PathVariable(value = "requestId") final Integer requestId) {
         ArrRequest request = requestService.getRequest(requestId);
-        requestService.removeQueuedRequest(request);
+        requestService.deleteRequest(request);
     }
 
 

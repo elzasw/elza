@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -197,18 +198,22 @@ public class RequestService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public List<ArrRequest> findRequests(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
                                          @Nullable final ArrRequest.State state,
-                                         @Nullable final ArrRequest.ClassType type) {
-        return requestRepository.findRequests(fund, state, type);
+                                         @Nullable final ArrRequest.ClassType type,
+                                         @Nullable final String description,
+                                         @Nullable final LocalDateTime fromDate,
+                                         @Nullable final LocalDateTime toDate) {
+        return requestRepository.findRequests(fund, state, type, description, fromDate, toDate);
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void sendRequest(@NotNull final ArrRequest request,
                             @AuthParam(type = AuthParam.Type.FUND) final ArrFundVersion fundVersion) {
         requestQueueService.sendRequest(request, fundVersion);
+        sendNotification(fundVersion, request, EventType.REQUEST_CHANGE, null);
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
-    public void removeQueuedRequest(@NotNull final ArrRequest request) {
+    public void deleteRequest(@NotNull final ArrRequest request) {
 
         ArrFundVersion openVersion = null;
         for (ArrFundVersion version : request.getFund().getVersions()) {
@@ -217,7 +222,20 @@ public class RequestService {
                 break;
             }
         }
-        requestQueueService.removeRequestFromQueue(request, openVersion);
+        if (requestQueueService.isRequestInQueue(request)) {
+            requestQueueService.deleteRequestFromQueue(request, openVersion);
+        } else {
+            switch (request.getDiscriminator()) {
+                case DIGITIZATION: {
+                    digitizationRequestNodeRepository.deleteByDigitizationRequest((ArrDigitizationRequest) request);
+                    requestRepository.delete(request);
+                    break;
+                }
+                default:
+                    throw new IllegalStateException(request.getDiscriminator() != null ? request.getDiscriminator().toString() : "null");
+            }
+            sendNotification(openVersion, request, EventType.REQUEST_DELETE, null);
+        }
     }
 
     /**
@@ -237,7 +255,7 @@ public class RequestService {
     }
 
     private void sendNotification(final ArrFundVersion fundVersion,
-                                  final ArrDigitizationRequest digitizationRequest,
+                                  final ArrRequest request,
                                   final EventType type,
                                   final List<ArrNode> nodes) {
         List<Integer> nodeIds = nodes != null ? new ArrayList<>(nodes.size()) : null;
@@ -247,7 +265,7 @@ public class RequestService {
         }
 
         EventIdNodeIdInVersion event = new EventIdNodeIdInVersion(type, fundVersion.getFundVersionId(),
-                digitizationRequest.getRequestId(), nodeIds);
+                request.getRequestId(), nodeIds);
         eventNotificationService.publishEvent(event);
     }
 

@@ -61,6 +61,10 @@ export function fundInitState(fundWithVersion) {
         fundNodesError: {}, // zatím jen pomocný, je řešeno ve state
         requestList: SimpleListReducer(),   // seznam požadavků na digitalizaci
         requestDetail: DetailReducer(), // detail vybraného požadavku na digitalizaci
+        daoPackageList: SimpleListReducer(),   // seznam všech balíčků pro daný AS
+        daoUnassignedPackageList: SimpleListReducer(),   // seznam nepřiřazených balíčků pro daný AS
+        daoPackageDetail: DetailReducer(), // detail vybraného balíčků
+        daoList: SimpleListReducer(), // seznam DAO buď pro node nebo balíček
         reducer: fund,
     };
 
@@ -222,8 +226,12 @@ export function fund(state, action) {
                 fundAction: fundAction(undefined, {type: ''}),
                 versionValidation: versionValidation(undefined, {type: ''}),
                 fundNodesError: {},
-                requestList: SimpleListReducer(),   // seznam požadavků na digitalizaci
-                requestDetail: DetailReducer(), // detail vybraného požadavku na digitalizaci
+                requestList: SimpleListReducer(),
+                requestDetail: DetailReducer(),
+                daoPackageList: SimpleListReducer(),
+                daoUnassignedPackageList: SimpleListReducer(),
+                daoPackageDetail: DetailReducer(),
+                daoList: SimpleListReducer(),
                 reducer: fund,
             }
         case types.STORE_SAVE:

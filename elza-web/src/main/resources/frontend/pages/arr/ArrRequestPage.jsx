@@ -60,11 +60,9 @@ import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx'
 import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
 import {outputTypesFetchIfNeeded} from "actions/refTables/outputTypes.jsx";
 import {
-    REQ_DIGITIZATION_REQUEST,
-    REQ_DESTRUCTION,
-    REQ_TRANSFER,
-    REQ_LINK,
-    REQ_UNLINK,
+    DIGITIZATION,
+    DAO,
+    DAO_LINK,
     createDigitizationName,
     getDescItemsAddTree,
     getOneSettings
@@ -271,12 +269,10 @@ const ArrRequestPage = class extends ArrParentPage {
             <div className="fund-request-list-container">
                 <div className="filter">
                     <FormInput componentClass="select" className="type" onChange={this.handleFilterType} value={requestList.filter.type}>
-                        <option value={-1}>{i18n('global.all')}</option>
-                        <option value="REQ_DIGITIZATION_REQUEST" key="REQ_DIGITIZATION_REQUEST">{i18n("arr.request.title.type." + REQ_DIGITIZATION_REQUEST)}</option>
-                        <option value="REQ_DESTRUCTION" key="REQ_DESTRUCTION">{i18n("arr.request.title.type." + REQ_DESTRUCTION)}</option>
-                        <option value="REQ_TRANSFER" key="REQ_TRANSFER">{i18n("arr.request.title.type." + REQ_TRANSFER)}</option>
-                        <option value="REQ_LINK" key="REQ_LINK">{i18n("arr.request.title.type." + REQ_LINK)}</option>
-                        <option value="REQ_UNLINK" key="REQ_UNLINK">{i18n("arr.request.title.type." + REQ_UNLINK)}</option>
+                        <option value={""}>{i18n('global.all')}</option>
+                        <option value="DIGITIZATION" key="DIGITIZATION">{i18n("arr.request.title.type." + DIGITIZATION)}</option>
+                        <option value="DAO" key="DAO">{i18n("arr.request.title.type." + DAO)}</option>
+                        <option value="DAO_LINK" key="DAO_LINK">{i18n("arr.request.title.type." + DAO_LINK)}</option>
                     </FormInput>
                     <SearchWithGoto
                         onFulltextSearch={this.handleFilterText}

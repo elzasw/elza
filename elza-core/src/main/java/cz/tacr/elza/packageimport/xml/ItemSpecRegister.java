@@ -8,14 +8,14 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * VO DescItemSpecRegister.
+ * VO ItemSpecRegister.
  *
  * @author Martin Šlapa
  * @since 14.12.2015
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "desc-item-spec-register")
-public class DescItemSpecRegister {
+@XmlType(name = "item-spec-register")
+public class ItemSpecRegister {
 
     @XmlAttribute(name = "register-type", required = true)
     private String registerType;

@@ -27,10 +27,12 @@ public class ArrDaoVO {
 
     private List<ArrDaoFileVO> fileList = new ArrayList<>();
     private List<ArrDaoFileGroupVO> fileGroupList = new ArrayList<>();
-    
+
     private long fileCount;
     private long fileGroupCount;
-    private long daoLinkCount = 0; // inicializace
+
+    private ArrDaoLinkVO daoLink; // null pokud vazba neexistuje
+
 
     /**
      * Zařazení nového daoFile do seznamu na vo, zároveň nastaví položku fileCount na novou délku seznamu
@@ -68,20 +70,12 @@ public class ArrDaoVO {
         fileGroupCount = fileList.size();
     }
 
-    /**
-     * Informace o existenci propojení na daolink
-     * @return true pokud existuje platné propojení
-     */
-    public boolean isDaoLinkExists() {
-        return daoLinkCount > 0;
+    public ArrDaoLinkVO getDaoLink() {
+        return daoLink;
     }
 
-    public long getDaoLinkCount() {
-        return daoLinkCount;
-    }
-
-    public void setDaoLinkCount(long daoLinkCount) {
-        this.daoLinkCount = daoLinkCount;
+    public void setDaoLink(ArrDaoLinkVO arrDaoLinkVO) {
+        this.daoLink = arrDaoLinkVO;
     }
 
     public Integer getId() {

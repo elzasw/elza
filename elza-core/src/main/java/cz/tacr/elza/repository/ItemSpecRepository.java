@@ -17,7 +17,7 @@ import java.util.List;
  * @since 20.8.2015
  */
 @Repository
-public interface ItemSpecRepository extends JpaRepository<RulItemSpec, Integer> {
+public interface ItemSpecRepository extends ElzaJpaRepository<RulItemSpec, Integer> {
 
     @Query("SELECT s FROM rul_item_spec s WHERE s.itemType in (?1)")
     List<RulItemSpec> findByItemTypeIds(Collection<RulItemType> itemTypes);

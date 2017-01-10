@@ -138,9 +138,13 @@ public class InterpiTest extends AbstractControllerTest {
 
     @Test
     public void findOneByServiceTest() {
-        ExternalRecordVO externalRecordVO = interpiService.getRecordById("0000216", systemId);
+        List<ConditionVO> conditions = Arrays.asList(new ConditionVO(ConditionType.AND, AttributeType.ID, "0000216"));
+        List<ExternalRecordVO> externalRecords = interpiService.findRecords(true, conditions, 500, systemId);
 
-        printRecord(externalRecordVO);
+        Assert.notEmpty(externalRecords);
+        Assert.isTrue(externalRecords.size() == 1);
+
+        printRecord(externalRecords.iterator().next());
     }
 
     @Test

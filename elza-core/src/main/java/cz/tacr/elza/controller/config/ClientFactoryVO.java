@@ -7,6 +7,7 @@ import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
 import cz.tacr.elza.controller.vo.ArrDaoFileVO;
 import cz.tacr.elza.controller.vo.ArrDaoLinkRequestVO;
+import cz.tacr.elza.controller.vo.ArrDaoLinkVO;
 import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
 import cz.tacr.elza.controller.vo.ArrDaoRequestVO;
 import cz.tacr.elza.controller.vo.ArrDaoVO;
@@ -70,8 +71,10 @@ import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoBatchInfo;
 import cz.tacr.elza.domain.ArrDaoFile;
 import cz.tacr.elza.domain.ArrDaoFileGroup;
+import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrDigitizationRequestNode;
 import cz.tacr.elza.domain.ArrFile;
@@ -120,6 +123,7 @@ import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.packageimport.ItemTypeUpdater;
 import cz.tacr.elza.packageimport.PackageService;
@@ -148,6 +152,7 @@ import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.SettingsService;
@@ -158,6 +163,8 @@ import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -190,12 +197,17 @@ import java.util.stream.Collectors;
 @Service
 public class ClientFactoryVO {
 
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
     @Autowired
     @Qualifier("configVOMapper")
     private MapperFactory mapperFactory;
 
     @Autowired
     private PartyNameComplementRepository partyNameComplementRepository;
+
+    @Autowired
+    private DaoService daoService;
 
     @Autowired
     private PartyNameRepository partyNameRepository;
@@ -2058,14 +2070,30 @@ public class ClientFactoryVO {
      *
      * @param arrDaoList DO ke konverzi
      * @param detail příznak, zda se mají naplnit seznamy na VO, pokud ne, jsou naplněny pouze počty podřízených záznamů v DB
+     * @param version
      * @return list VO
      */
-    public List<ArrDaoVO> createDaoList(final List<ArrDao> arrDaoList, final boolean detail) {
+    public List<ArrDaoVO> createDaoList(final List<ArrDao> arrDaoList, final boolean detail, ArrFundVersion version) {
         List<ArrDaoVO> voList = new ArrayList<>();
         for (ArrDao arrDao : arrDaoList) {
-            voList.add(createDao(arrDao, detail));
+            voList.add(createDao(arrDao, detail, version));
         }
         return voList;
+    }
+
+    /**
+     * Vytvoření VO z DO.
+     * @param daoFile do
+     * @return VO
+     */
+    private ArrDaoFileVO createDaoFile(final ArrDaoFile daoFile) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        ArrDaoFileVO result = mapper.map(daoFile, ArrDaoFileVO.class);
+
+        ArrDigitalRepository digitalRepository = daoFile.getDao().getDaoPackage().getDigitalRepository();
+        result.setUrl(daoService.getDaoFileUrl(daoFile, digitalRepository));
+
+        return result;
     }
 
     /**
@@ -2073,24 +2101,38 @@ public class ClientFactoryVO {
      *
      * @param arrDao DO
      * @param detail příznak, zda se mají naplnit seznamy na VO, pokud ne, jsou naplněny pouze počty podřízených záznamů v DB
+     * @param version
      * @return vo
      */
-    private ArrDaoVO createDao(final ArrDao arrDao, final boolean detail) {
+    private ArrDaoVO createDao(final ArrDao arrDao, final boolean detail, ArrFundVersion version) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrDaoVO vo = mapper.map(arrDao, ArrDaoVO.class);
 
-        String viewDaoUrl = arrDao.getDaoPackage().getDigitalRepository().getViewDaoUrl();
-        ElzaTools.UrlParams params = ElzaTools.createUrlParams()
-                .add("code", arrDao.getCode())
-                .add("label", arrDao.getLabel())
-                .add("id", arrDao.getDaoId());
-        vo.setUrl(ElzaTools.bindingUrlParams(viewDaoUrl, params));
+        ArrDigitalRepository digitalRepository = arrDao.getDaoPackage().getDigitalRepository();
 
-        vo.setDaoLinkCount(daoLinkRepository.countByDaoAndDeleteChangeIsNull(arrDao));
+        vo.setUrl(daoService.getDaoUrl(arrDao, digitalRepository));
+
+
+        final List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaoAndDeleteChangeIsNull(arrDao);
+        if (CollectionUtils.isNotEmpty(daoLinkList)) {
+            if (daoLinkList.size() > 1) {
+                logger.error("Nalezen více než jeden platný link pro arrDao ID=" + arrDao.getDaoId() + ".");
+                throw new SystemException();
+            }
+            final ArrDaoLink daoLink = daoLinkList.iterator().next();
+
+            ArrDaoLinkVO daoLinkVo = new ArrDaoLinkVO();
+            daoLinkVo.setId(daoLink.getDaoLinkId());
+            final List<TreeNodeClient> nodesByIds = levelTreeCacheService.getNodesByIds(Collections.singletonList(daoLink.getNode().getNodeId()), version.getFundVersionId());
+            daoLinkVo.setTreeNodeClient(nodesByIds.iterator().next());
+
+            vo.setDaoLink(daoLinkVo);
+        }
+
 
         if (detail) {
             final List<ArrDaoFile> daoFileList = daoFileRepository.findByDaoAndDaoFileGroupIsNull(arrDao);
-            final List<ArrDaoFileVO> daoFileVOList = mapper.mapAsList(daoFileList, ArrDaoFileVO.class);
+            final List<ArrDaoFileVO> daoFileVOList = daoFileList.stream().map(this::createDaoFile).collect(Collectors.toList());
             vo.addAllFile(daoFileVOList);
 
             final List<ArrDaoFileGroup> daoFileGroups = daoFileGroupRepository.findByDaoOrderByCodeAsc(arrDao);
@@ -2098,7 +2140,8 @@ public class ClientFactoryVO {
             for (ArrDaoFileGroup daoFileGroup : daoFileGroups) {
                 final ArrDaoFileGroupVO daoFileGroupVO = mapper.map(daoFileGroup, ArrDaoFileGroupVO.class);
                 final List<ArrDaoFile> arrDaoFileList = daoFileRepository.findByDaoAndDaoFileGroup(arrDao, daoFileGroup);
-                daoFileGroupVO.addAllFile(mapper.mapAsList(arrDaoFileList, ArrDaoFileVO.class));
+                final List<ArrDaoFileVO> groupDaoFileVOList = arrDaoFileList.stream().map(this::createDaoFile).collect(Collectors.toList());
+                daoFileGroupVO.setFiles(groupDaoFileVOList);
                 daoFileGroupVOList.add(daoFileGroupVO);
             }
 

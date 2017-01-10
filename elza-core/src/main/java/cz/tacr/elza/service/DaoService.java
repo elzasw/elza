@@ -1,17 +1,10 @@
 package cz.tacr.elza.service;
 
+import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.ArrDaoLinkRequest.Type;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoLink;
-import cz.tacr.elza.domain.ArrDaoLinkRequest;
-import cz.tacr.elza.domain.ArrDaoPackage;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrRequest;
-import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.DaoLinkRepository;
@@ -27,7 +20,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -79,8 +74,28 @@ public class DaoService {
      * @return seznam digitálních entit (DAO)
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
-    public List<ArrDao> findDaos(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion, ArrNode node, Integer index, Integer maxResults) {
+    public List<ArrDao> findDaos(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion,
+                                 @Nullable ArrNode node, Integer index, Integer maxResults) {
+        Assert.notNull(fundVersion);
         return daoRepository.findByFundAndNodePaginating(fundVersion, node, index, maxResults);
+    }
+
+    /**
+     * Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní balíček.
+     *
+     * @param fundVersion archivní soubor
+     * @param daoPackage  package
+     * @param index       počáteční pozice pro načtení
+     * @param maxResults  počet načítaných výsledků
+     * @param unassigned mají-li se získávat pouze balíčky, které obsahují DAO, které nejsou nikam přirazené (unassigned = true), a nebo úplně všechny (unassigned = false)
+     * @return seznam digitálních entit (DAO)
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
+    public List<ArrDao> findDaosByPackage(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion,
+                                          ArrDaoPackage daoPackage, Integer index, Integer maxResults, boolean unassigned) {
+        Assert.notNull(fundVersion);
+        Assert.notNull(daoPackage);
+        return daoRepository.findByFundAndPackagePaginating(fundVersion, daoPackage, index, maxResults, unassigned);
     }
 
     /**
@@ -230,4 +245,32 @@ public class DaoService {
         }
         return result;
     }
+
+    /**
+     * Získání url na dao.
+     * @param dao dao
+     * @param repository repository, je předáváno z důvodu výkonu při možných hromadných operacích, jinak se jedná o repository, které je v dohledatelné od DAO
+     * @return url
+     */
+    public String getDaoUrl(final ArrDao dao, final ArrDigitalRepository repository) {
+        ElzaTools.UrlParams params = ElzaTools.createUrlParams()
+                .add("code", dao.getCode())
+                .add("label", dao.getLabel())
+                .add("id", dao.getDaoId());
+        return ElzaTools.bindingUrlParams(repository.getViewDaoUrl(), params);
+    }
+
+    /**
+     * Získání url na dao file.
+     * @param daoFile dao file
+     * @param repository repository, je předáváno z důvodu výkonu při možných hromadných operacích, jinak se jedná o repository, které je v dohledatelné od DAO
+     * @return url
+     */
+    public String getDaoFileUrl(final ArrDaoFile daoFile, final ArrDigitalRepository repository) {
+        ElzaTools.UrlParams params = ElzaTools.createUrlParams()
+                .add("code", daoFile.getCode());
+        return ElzaTools.bindingUrlParams(repository.getViewFileUrl(), params);
+    }
+
+
 }

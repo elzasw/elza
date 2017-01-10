@@ -584,4 +584,10 @@
                                  onDelete="NO ACTION"/>
     </changeSet>
 
+    <changeSet id="201701041340" author="vanek">
+        <dropNotNullConstraint tableName="par_interpi_mapping" columnName="relation_role_type_id" columnDataType="int"/>
+        <dropNotNullConstraint tableName="par_dynasty" columnName="genealogy" columnDataType="text"/>
+        <dropNotNullConstraint tableName="par_party_group" columnName="scope" columnDataType="varchar(1000)"/>
+    </changeSet>
+
 </databaseChangeLog>

@@ -16,9 +16,13 @@ public class PairedRecordVO {
     /** Id rejstříku. */
     private Integer recordId;
 
-    public PairedRecordVO(final RegScopeVO scope, final Integer recordId) {
+    /** Id osoby. */
+    private Integer partyId;
+
+    public PairedRecordVO(final RegScopeVO scope, final Integer recordId, final Integer partyId) {
         this.scope = scope;
         this.recordId = recordId;
+        this.partyId = partyId;
     }
 
     public RegScopeVO getScope() {
@@ -27,5 +31,9 @@ public class PairedRecordVO {
 
     public Integer getRecordId() {
         return recordId;
+    }
+
+    public Integer getPartyId() {
+        return partyId;
     }
 }

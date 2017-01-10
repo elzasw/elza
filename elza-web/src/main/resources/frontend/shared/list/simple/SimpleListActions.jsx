@@ -49,8 +49,17 @@ export function fetchIfNeeded(area, parent, getData, forceFetch = false) {
 
         // Pokud ve store není potřebné parent, dáme ho tam, aby se nám správně spočetl data key
         if (store.parent !== parent) {
-            dispatch(selectParent(area, parent))
-            store = storeFromArea(getState(), area);
+            var same = false;
+            if (typeof store.parent === "object" && typeof parent === "object") {   // porovnáme objekty
+                if (JSON.stringify(store.parent) === JSON.stringify(parent)) {
+                    same = true;
+                }
+            }
+
+            if (!same) {
+                dispatch(selectParent(area, parent))
+                store = storeFromArea(getState(), area);
+            }
         }
 
         const dataKey = store.getDataKey.bind(store)()

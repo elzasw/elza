@@ -18,6 +18,7 @@ class RegistryField extends AbstractReactComponent {
     static defaultProps = {
         detail: false,
         footer: false,
+        itemSpecId: null,
         registryParent: null,
         registerTypeId: null,
         roleTypeId: null,
@@ -34,6 +35,7 @@ class RegistryField extends AbstractReactComponent {
         onCreate: React.PropTypes.func.isRequired,
         registryParent: React.PropTypes.number,
         registerTypeId: React.PropTypes.number,
+        itemSpecId: React.PropTypes.number,
         roleTypeId: React.PropTypes.number,
         partyId: React.PropTypes.number,
         versionId: React.PropTypes.number
@@ -48,12 +50,12 @@ class RegistryField extends AbstractReactComponent {
 
     handleSearchChange = (text) => {
         text = text == "" ? null : text;
-        const {roleTypeId, partyId, registryParent, registerTypeId, versionId} = this.props;
+        const {roleTypeId, partyId, registryParent, registerTypeId, versionId, itemSpecId} = this.props;
         let promise = null;
         if (roleTypeId || partyId) {
             promise = WebApi.findRecordForRelation(text, roleTypeId, partyId, 0, AUTOCOMPLETE_REGISTRY_LIST_SIZE);
         } else {
-            promise = WebApi.findRegistry(text, registryParent, registerTypeId, versionId, 0, AUTOCOMPLETE_REGISTRY_LIST_SIZE);
+            promise = WebApi.findRegistry(text, registryParent, registerTypeId, versionId, itemSpecId, 0, AUTOCOMPLETE_REGISTRY_LIST_SIZE);
         }
         promise.then(json => {
             this.setState({
