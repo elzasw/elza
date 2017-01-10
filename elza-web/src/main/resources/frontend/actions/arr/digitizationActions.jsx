@@ -23,7 +23,7 @@ const AREA_REQUEST_DETAIL_SUFFIX = ".requestDetail";
  */
 export function fetchPreparedListIfNeeded(versionId) {
     return SimpleListActions.fetchIfNeeded(AREA_PREPARED_DIGITIZATION_REQUESTS, versionId, (parent, filter) => {
-        return WebApi.getDigitizationRequests(versionId, "OPEN")
+        return WebApi.findRequests(versionId, "DIGITIZATION", "OPEN")
             .then(json => ({rows: json, count: 0}));
     });
 }
@@ -63,7 +63,7 @@ export function preparedListInvalidate() {
  */
 export function fetchListIfNeeded(versionId) {
     return SimpleListActions.fetchIfNeeded("fund[" + versionId + "]" + AREA_REQUEST_LIST_SUFFIX, versionId, (parent, filter) => {
-        return WebApi.getArrRequests(versionId, filter.type, filter.description)
+        return WebApi.findRequests(versionId, filter.type, null, filter.description, filter.fromDate, filter.toDate)
             .then(json => ({rows: json, count: 0}));
     });
 }
