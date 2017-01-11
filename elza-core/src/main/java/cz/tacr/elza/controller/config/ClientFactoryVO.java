@@ -73,6 +73,8 @@ import cz.tacr.elza.domain.ArrDaoFile;
 import cz.tacr.elza.domain.ArrDaoFileGroup;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDaoPackage;
+import cz.tacr.elza.domain.ArrDaoRequest;
+import cz.tacr.elza.domain.ArrDaoRequestDao;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
@@ -134,6 +136,7 @@ import cz.tacr.elza.repository.DaoFileGroupRepository;
 import cz.tacr.elza.repository.DaoFileRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoRepository;
+import cz.tacr.elza.repository.DaoRequestDaoRepository;
 import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.GroupRepository;
@@ -160,7 +163,6 @@ import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -280,6 +282,9 @@ public class ClientFactoryVO {
 
     @Autowired
     private DaoRepository daoRepository;
+
+    @Autowired
+    private DaoRequestDaoRepository daoRequestDaoRepository;
 
     @Autowired
     private DaoFileGroupRepository daoFileGroupRepository;
@@ -1839,6 +1844,7 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         List<ArrRequestVO> requestVOList = new ArrayList<>(requests.size());
         Set<ArrDigitizationRequest> requestForNodes = new HashSet<>();
+        Set<ArrDaoRequest> requestForDaos = new HashSet<>();
 
         Map<ArrRequest, ArrRequestQueueItem> requestQueuedMap = new HashMap<>();
         List<ArrRequestQueueItem> requestQueueItems = CollectionUtils.isEmpty(requests) ? Collections.emptyList() : requestQueueItemRepository.findByRequest(requests);
@@ -1847,21 +1853,35 @@ public class ClientFactoryVO {
         }
 
         for (ArrRequest request : requests) {
-            prepareRequest(requestForNodes, request);
+            prepareRequest(requestForNodes, requestForDaos, request);
         }
 
-        Map<ArrDigitizationRequest, Integer> countNodesRequestMap;
+        Map<ArrDigitizationRequest, Integer> countNodesRequestMap = Collections.emptyMap();
         Map<ArrDigitizationRequest, List<TreeNodeClient>> nodesRequestMap = new HashMap<>();
-        if (detail) {
-            countNodesRequestMap = fillDetailParams(fundVersion, requestForNodes, nodesRequestMap);
 
-        } else {
-            countNodesRequestMap = digitizationRequestNodeRepository.countByRequests(requestForNodes);
+        if (requestForNodes.size() > 0) {
+            if (detail) {
+                countNodesRequestMap = fillDigitizationDetailParams(fundVersion, requestForNodes, nodesRequestMap);
+            } else {
+                countNodesRequestMap = digitizationRequestNodeRepository.countByRequests(requestForNodes);
+            }
         }
+
+        Map<ArrDaoRequest, Integer> countDaosRequestMap = Collections.emptyMap();
+        Map<ArrDaoRequest, List<ArrDao>> daosRequestMap = new HashMap<>();
+
+        if (requestForDaos.size() > 0) {
+            if (detail) {
+                countDaosRequestMap = fillDaoDetailParams(fundVersion, requestForDaos, daosRequestMap);
+            } else {
+                countDaosRequestMap = daoRequestDaoRepository.countByRequests(requestForDaos);
+            }
+        }
+
 
         for (ArrRequest request : requests) {
             ArrRequestVO requestVO;
-            requestVO = createRequestVO(countNodesRequestMap, nodesRequestMap, request);
+            requestVO = createRequestVO(countNodesRequestMap, nodesRequestMap, countDaosRequestMap, daosRequestMap, request, detail, fundVersion);
             convertRequest(mapper, request, requestQueuedMap.get(request), requestVO);
             requestVOList.add(requestVO);
         }
@@ -1871,26 +1891,76 @@ public class ClientFactoryVO {
     public ArrRequestVO createRequest(final ArrRequest request, final boolean detail, final ArrFundVersion fundVersion) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         Set<ArrDigitizationRequest> requestForNodes = new HashSet<>();
+        Set<ArrDaoRequest> requestForDaos = new HashSet<>();
+
         ArrRequestQueueItem requestQueueItem = requestQueueItemRepository.findByRequest(request);
 
-        prepareRequest(requestForNodes, request);
+        prepareRequest(requestForNodes, requestForDaos, request);
 
-        Map<ArrDigitizationRequest, Integer> countNodesRequestMap;
+        Map<ArrDigitizationRequest, Integer> countNodesRequestMap = Collections.emptyMap();
         Map<ArrDigitizationRequest, List<TreeNodeClient>> nodesRequestMap = new HashMap<>();
-        if (detail) {
-            countNodesRequestMap = fillDetailParams(fundVersion, requestForNodes, nodesRequestMap);
-        } else {
-            countNodesRequestMap = digitizationRequestNodeRepository.countByRequests(requestForNodes);
+
+        if (requestForNodes.size() > 0) {
+            if (detail) {
+                countNodesRequestMap = fillDigitizationDetailParams(fundVersion, requestForNodes, nodesRequestMap);
+            } else {
+                countNodesRequestMap = digitizationRequestNodeRepository.countByRequests(requestForNodes);
+            }
+        }
+
+        Map<ArrDaoRequest, Integer> countDaosRequestMap = Collections.emptyMap();
+        Map<ArrDaoRequest, List<ArrDao>> daosRequestMap = new HashMap<>();
+
+        if (requestForDaos.size() > 0) {
+            if (detail) {
+                countDaosRequestMap = fillDaoDetailParams(fundVersion, requestForDaos, daosRequestMap);
+            } else {
+                countDaosRequestMap = daoRequestDaoRepository.countByRequests(requestForDaos);
+            }
         }
 
         ArrRequestVO requestVO;
-        requestVO = createRequestVO(countNodesRequestMap, nodesRequestMap, request);
+        requestVO = createRequestVO(countNodesRequestMap, nodesRequestMap, countDaosRequestMap, daosRequestMap, request, detail, fundVersion);
         convertRequest(mapper, request, requestQueueItem, requestVO);
 
         return requestVO;
     }
 
-    private Map<ArrDigitizationRequest, Integer> fillDetailParams(final ArrFundVersion fundVersion, final Set<ArrDigitizationRequest> requestForNodes, final Map<ArrDigitizationRequest, List<TreeNodeClient>> nodesRequestMap) {
+    private Map<ArrDaoRequest, Integer> fillDaoDetailParams(final ArrFundVersion fundVersion,
+                                                            final Set<ArrDaoRequest> requestForDaos,
+                                                            final Map<ArrDaoRequest, List<ArrDao>> daosRequestMap) {
+        Map<ArrDaoRequest, Integer> countDaosRequestMap;
+        countDaosRequestMap = new HashMap<>();
+        List<ArrDaoRequestDao> daoRequestDaos = daoRequestDaoRepository.findByDaoRequest(requestForDaos);
+
+        Set<Integer> daoIds = new HashSet<>();
+        for (ArrDaoRequestDao daoRequestDao : daoRequestDaos) {
+            daoIds.add(daoRequestDao.getDao().getDaoId());
+        }
+
+        List<ArrDao> arrDaos = daoRepository.findAll(daoIds);
+        Map<Integer, ArrDao> daosMap = new HashMap<>(arrDaos.size());
+        for (ArrDao arrDao : arrDaos) {
+            daosMap.put(arrDao.getDaoId(), arrDao);
+        }
+
+        for (ArrDaoRequestDao daoRequestDao : daoRequestDaos) {
+            Integer daoId = daoRequestDao.getDao().getDaoId();
+            List<ArrDao> daos = daosRequestMap.get(daoRequestDao.getDaoRequest());
+            if (daos == null) {
+                daos = new ArrayList<>();
+                daosRequestMap.put(daoRequestDao.getDaoRequest(), daos);
+            }
+            daos.add(daosMap.get(daoId));
+        }
+
+        for (Map.Entry<ArrDaoRequest, List<ArrDao>> entry : daosRequestMap.entrySet()) {
+            countDaosRequestMap.put(entry.getKey(), entry.getValue().size());
+        }
+        return countDaosRequestMap;
+    }
+
+    private Map<ArrDigitizationRequest, Integer> fillDigitizationDetailParams(final ArrFundVersion fundVersion, final Set<ArrDigitizationRequest> requestForNodes, final Map<ArrDigitizationRequest, List<TreeNodeClient>> nodesRequestMap) {
         Map<ArrDigitizationRequest, Integer> countNodesRequestMap;
         countNodesRequestMap = new HashMap<>();
         List<ArrDigitizationRequestNode> digitizationRequestNodes = digitizationRequestNodeRepository.findByDigitizationRequest(requestForNodes);
@@ -1919,7 +1989,10 @@ public class ClientFactoryVO {
         return countNodesRequestMap;
     }
 
-    private void convertRequest(final MapperFacade mapper, final ArrRequest request, final ArrRequestQueueItem requestQueueItem, final ArrRequestVO requestVO) {
+    private void convertRequest(final MapperFacade mapper,
+                                final ArrRequest request,
+                                final ArrRequestQueueItem requestQueueItem,
+                                final ArrRequestVO requestVO) {
         ArrChange createChange = request.getCreateChange();
         requestVO.setCode(request.getCode());
         requestVO.setId(request.getRequestId());
@@ -1934,7 +2007,13 @@ public class ClientFactoryVO {
         requestVO.setUsername(createChange.getUser() == null ? null : createChange.getUser().getUsername());
     }
 
-    private ArrRequestVO createRequestVO(final Map<ArrDigitizationRequest, Integer> countNodesRequestMap, final Map<ArrDigitizationRequest, List<TreeNodeClient>> nodesRequestMap, final ArrRequest request) {
+    private ArrRequestVO createRequestVO(final Map<ArrDigitizationRequest, Integer> countNodesRequestMap,
+                                         final Map<ArrDigitizationRequest, List<TreeNodeClient>> nodesRequestMap,
+                                         final Map<ArrDaoRequest, Integer> countDaosRequestMap,
+                                         final Map<ArrDaoRequest, List<ArrDao>> daosRequestMap,
+                                         final ArrRequest request,
+                                         final boolean detail,
+                                         final ArrFundVersion fundVersion) {
         ArrRequestVO requestVO;
         switch (request.getDiscriminator()) {
             case DIGITIZATION: {
@@ -1945,8 +2024,7 @@ public class ClientFactoryVO {
 
             case DAO: {
                 requestVO = new ArrDaoRequestVO();
-                // TODO
-                //throw new NotImplementedException();
+                convertDaoRequest((ArrDaoRequest) request, (ArrDaoRequestVO) requestVO, countDaosRequestMap.get(request), daosRequestMap.get(request), detail, fundVersion);
                 break;
             }
 
@@ -1964,7 +2042,7 @@ public class ClientFactoryVO {
         return requestVO;
     }
 
-    private void prepareRequest(final Set<ArrDigitizationRequest> requestForNodes, final ArrRequest request) {
+    private void prepareRequest(final Set<ArrDigitizationRequest> requestForNodes, final Set<ArrDaoRequest> requestForDaos, final ArrRequest request) {
         switch (request.getDiscriminator()) {
             case DIGITIZATION: {
                 requestForNodes.add((ArrDigitizationRequest) request);
@@ -1972,8 +2050,7 @@ public class ClientFactoryVO {
             }
 
             case DAO: {
-                // TODO
-                //throw new NotImplementedException();
+                requestForDaos.add((ArrDaoRequest) request);
                 break;
             }
 
@@ -1986,6 +2063,20 @@ public class ClientFactoryVO {
             default: {
                 throw new IllegalStateException(String.valueOf(request.getDiscriminator()));
             }
+        }
+    }
+
+    private void convertDaoRequest(final ArrDaoRequest request,
+                                   final ArrDaoRequestVO requestVO,
+                                   final Integer daoCount,
+                                   final List<ArrDao> daos,
+                                   final boolean detail,
+                                   final ArrFundVersion fundVersion) {
+        requestVO.setDescription(request.getDescription());
+        requestVO.setDaosCount(daoCount);
+        requestVO.setType(request.getType());
+        if (daos != null) {
+            requestVO.setDaos(createDaoList(daos, detail, fundVersion));
         }
     }
 
