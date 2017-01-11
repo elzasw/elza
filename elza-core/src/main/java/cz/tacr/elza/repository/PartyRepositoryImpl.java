@@ -21,7 +21,6 @@ import cz.tacr.elza.domain.UsrPermissionView;
 import cz.tacr.elza.domain.UsrUser;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.hibernate.jpa.criteria.OrderImpl;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.domain.ParParty;
@@ -64,7 +63,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
         }
 
         Join<Object, Object> partyName = party.join(ParParty.PARTY_PREFERRED_NAME, JoinType.LEFT);
-        query.orderBy(new OrderImpl(partyName.get("mainPart")), new OrderImpl(partyName.get("otherPart")));
+        query.orderBy(builder.asc(partyName.get("mainPart")), builder.asc(partyName.get("otherPart")));
 
 
         return entityManager.createQuery(query)

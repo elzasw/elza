@@ -68,14 +68,6 @@ class AddPartyForm extends AbstractReactComponent {
             errors.record.registerTypeId = i18n('global.validation.required');
         }
 
-        if (partyType.code == PARTY_TYPE_CODES.DYNASTY && !values.genealogy) {
-            errors.genealogy = i18n('global.validation.required');
-        }
-
-        if (partyType.code == PARTY_TYPE_CODES.GROUP_PARTY && !values.scope) {
-            errors.scope = i18n('global.validation.required');
-        }
-
         if (values.prefferedName.complements && values.prefferedName.complements.length > 0) {
             if (!errors.prefferedName) {
                 errors.prefferedName = {}

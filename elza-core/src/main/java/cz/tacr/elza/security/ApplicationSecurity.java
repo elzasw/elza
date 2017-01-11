@@ -14,7 +14,9 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.servlet.configuration.EnableWebMvcSecurity;
 import org.springframework.security.core.Authentication;
@@ -32,7 +34,9 @@ import org.springframework.stereotype.Component;
  * @since 11.04.2016
  */
 @Component
-@EnableWebMvcSecurity
+//@EnableWebMvcSecurity
+@EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 @Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
 public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
 

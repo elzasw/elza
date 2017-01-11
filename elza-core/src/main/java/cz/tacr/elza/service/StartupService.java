@@ -1,7 +1,6 @@
 package cz.tacr.elza.service;
 
 import cz.tacr.elza.api.ArrBulkActionRun;
-import cz.tacr.elza.api.ArrOutputDefinition;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
@@ -13,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -21,9 +19,13 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.PostConstruct;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
-import static cz.tacr.elza.api.ArrOutputDefinition.*;
+import static cz.tacr.elza.api.ArrOutputDefinition.OutputState;
 
 /**
  * Serviska pro úlohy, které je nutné spustit těsně po spuštění.
@@ -55,11 +57,22 @@ public class StartupService {
     @Autowired
     private OutputDefinitionRepository outputDefinitionRepository;
 
+    @Autowired
+    private RequestQueueService requestQueueService;
+
     @PostConstruct
     private void init() {
         clearBulkActions();
         revalidateNodes();
         clearOutputGeneration();
+        runQueuedRequests();
+    }
+
+    /**
+     * Provede spuštění neodeslaných požadavků ve frontě na externí systémy.
+     */
+    private void runQueuedRequests() {
+        requestQueueService.restartQueuedRequests();
     }
 
     /**

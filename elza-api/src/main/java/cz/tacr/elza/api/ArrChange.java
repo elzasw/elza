@@ -101,6 +101,11 @@ public interface ArrChange<U extends UsrUser, N extends ArrNode> extends Seriali
         CREATE_DIGI_REQUEST,
 
         /**
+         * Požadavek na delimitaci/skartaci.
+         */
+        CREATE_DAO_REQUEST,
+
+        /**
          * Vytvoření položky ve frontě.
          */
         CREATE_REQUEST_QUEUE,
@@ -122,7 +127,7 @@ public interface ArrChange<U extends UsrUser, N extends ArrNode> extends Seriali
     }
 
     /**
-     * 
+     *
      * @return číslo změny.
      */
     Integer getChangeId();
@@ -134,7 +139,7 @@ public interface ArrChange<U extends UsrUser, N extends ArrNode> extends Seriali
     void setChangeId(Integer changeId);
 
     /**
-     * 
+     *
      * @return datum změny.
      */
     LocalDateTime getChangeDate();

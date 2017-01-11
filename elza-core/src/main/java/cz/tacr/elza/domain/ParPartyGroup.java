@@ -20,7 +20,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ParPartyGroup extends ParParty implements cz.tacr.elza.api.ParPartyGroup {
 
-    @Column(length = StringLength.LENGTH_1000, nullable = false)
+    @Column(length = StringLength.LENGTH_1000)
     @JsonIgnore
     private String scope;
 

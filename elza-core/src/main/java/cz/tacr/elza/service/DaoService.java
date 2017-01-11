@@ -1,33 +1,27 @@
 package cz.tacr.elza.service;
 
+import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.ArrDaoLinkRequest.Type;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoLink;
-import cz.tacr.elza.domain.ArrDaoLinkRequest;
-import cz.tacr.elza.domain.ArrDaoPackage;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrRequest;
-import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoLinkRequestRepository;
 import cz.tacr.elza.repository.DaoPackageRepository;
 import cz.tacr.elza.repository.DaoRepository;
-import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.EventId;
+import cz.tacr.elza.service.eventnotification.events.EventIdNodeIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -79,8 +73,28 @@ public class DaoService {
      * @return seznam digitálních entit (DAO)
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
-    public List<ArrDao> findDaos(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion, ArrNode node, Integer index, Integer maxResults) {
+    public List<ArrDao> findDaos(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion,
+                                 @Nullable ArrNode node, Integer index, Integer maxResults) {
+        Assert.notNull(fundVersion);
         return daoRepository.findByFundAndNodePaginating(fundVersion, node, index, maxResults);
+    }
+
+    /**
+     * Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní balíček.
+     *
+     * @param fundVersion archivní soubor
+     * @param daoPackage  package
+     * @param index       počáteční pozice pro načtení
+     * @param maxResults  počet načítaných výsledků
+     * @param unassigned mají-li se získávat pouze balíčky, které obsahují DAO, které nejsou nikam přirazené (unassigned = true), a nebo úplně všechny (unassigned = false)
+     * @return seznam digitálních entit (DAO)
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
+    public List<ArrDao> findDaosByPackage(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion,
+                                          ArrDaoPackage daoPackage, Integer index, Integer maxResults, boolean unassigned) {
+        Assert.notNull(fundVersion);
+        Assert.notNull(daoPackage);
+        return daoRepository.findByFundAndPackagePaginating(fundVersion, daoPackage, index, maxResults, unassigned);
     }
 
     /**
@@ -93,11 +107,20 @@ public class DaoService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrDaoLink createOrFindDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion, ArrDao dao, ArrNode node) {
-        // kontrola, že ještě neexistuje
+        // kontrola, že ještě neexistuje vazba na zadaný node
         final List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaoAndNodeAndDeleteChangeIsNull(dao, node);
 
         final ArrDaoLink resultDaoLink;
         if (CollectionUtils.isEmpty(daoLinkList)) {
+            // Pokud má DAO jinou platnou vazbu, bude nejprve zneplatněna
+            final List<ArrDaoLink> linkList = daoLinkRepository.findByDaoAndDeleteChangeIsNull(dao);
+            if (CollectionUtils.isNotEmpty(linkList)) {
+                // měla by být jen jedna, ale cyklus ošetří i případnou chybu v datech
+                for (ArrDaoLink arrDaoLink : linkList) {
+                    deleteDaoLink(fundVersion, arrDaoLink);
+                }
+            }
+
             // vytvořit změnu
             final ArrChange createChange = arrangementService.createChange(ArrChange.Type.CREATE_DAO_LINK, node);
 
@@ -111,11 +134,12 @@ public class DaoService {
             resultDaoLink = daoLinkRepository.save(daoLink);
 
             // poslat i websockety o připojení
-            EventId event = EventFactory.createIdEvent(EventType.DAO_LINK_CREATE, fundVersion.getFundVersionId());
+            EventIdNodeIdInVersion event = new EventIdNodeIdInVersion(EventType.DAO_LINK_CREATE, fundVersion.getFundVersionId(),
+                    dao.getDaoId(), Collections.singletonList(node.getNodeId()));
             eventNotificationService.publishEvent(event);
 
             // vytvořit požadavek pro externí systém na připojení
-            final ArrDaoLinkRequest request = requestService.createDaoRequest(fundVersion, dao, createChange, Type.LINK, node);
+            final ArrDaoLinkRequest request = requestService.createDaoLinkRequest(fundVersion, dao, createChange, Type.LINK, node);
             requestQueueService.sendRequest(request, fundVersion);
 
         } else if (daoLinkList.size() == 1) {
@@ -159,11 +183,12 @@ public class DaoService {
 
         for (ArrFundVersion arrFundVersion : fundVersionList) {
             // poslat websockety o odpojení
-            EventId event = EventFactory.createIdEvent(EventType.DAO_LINK_DELETE, arrFundVersion.getFundVersionId());
+            EventIdNodeIdInVersion event = new EventIdNodeIdInVersion(EventType.DAO_LINK_DELETE, arrFundVersion.getFundVersionId(),
+                    daoLink.getDao().getDaoId(), Collections.singletonList(daoLink.getNode().getNodeId()));
             eventNotificationService.publishEvent(event);
 
             // vytvořit požadavek pro externí systém na odpojení
-            final ArrDaoLinkRequest request = requestService.createDaoRequest(arrFundVersion, daoLink.getDao(), deleteChange, Type.LINK, daoLink.getNode());
+            final ArrDaoLinkRequest request = requestService.createDaoLinkRequest(arrFundVersion, daoLink.getDao(), deleteChange, Type.LINK, daoLink.getNode());
             requestQueueService.sendRequest(request, arrFundVersion);
         }
 
@@ -230,4 +255,32 @@ public class DaoService {
         }
         return result;
     }
+
+    /**
+     * Získání url na dao.
+     * @param dao dao
+     * @param repository repository, je předáváno z důvodu výkonu při možných hromadných operacích, jinak se jedná o repository, které je v dohledatelné od DAO
+     * @return url
+     */
+    public String getDaoUrl(final ArrDao dao, final ArrDigitalRepository repository) {
+        ElzaTools.UrlParams params = ElzaTools.createUrlParams()
+                .add("code", dao.getCode())
+                .add("label", dao.getLabel())
+                .add("id", dao.getDaoId());
+        return ElzaTools.bindingUrlParams(repository.getViewDaoUrl(), params);
+    }
+
+    /**
+     * Získání url na dao file.
+     * @param daoFile dao file
+     * @param repository repository, je předáváno z důvodu výkonu při možných hromadných operacích, jinak se jedná o repository, které je v dohledatelné od DAO
+     * @return url
+     */
+    public String getDaoFileUrl(final ArrDaoFile daoFile, final ArrDigitalRepository repository) {
+        ElzaTools.UrlParams params = ElzaTools.createUrlParams()
+                .add("code", daoFile.getCode());
+        return ElzaTools.bindingUrlParams(repository.getViewFileUrl(), params);
+    }
+
+
 }

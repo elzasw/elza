@@ -13,3 +13,20 @@ html, body {
 .root-container {
     height: 100%;
 }
+
+.game-placeholder {
+    position: absolute;
+    width: 8px;
+    height: 1px;
+    left: 0;
+    top: 0;
+    display: inline-block;
+    z-index: 5000;
+    cursor: pointer;
+    &.canStart:hover {
+        background: green;
+    }
+    &:hover {
+        background: silver;
+    }
+}

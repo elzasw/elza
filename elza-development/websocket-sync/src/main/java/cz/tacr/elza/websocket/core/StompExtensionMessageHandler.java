@@ -24,6 +24,7 @@ public class StompExtensionMessageHandler extends AbstractBrokerMessageHandler {
 
 	@Override
 	protected void handleMessageInternal(Message<?> message) {
+		System.out.println("$$$$$$$$$ handleMessageInternal");
 		StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 		if (accessor.getCommand() != null) {
 			handleStompMessage(accessor);
@@ -45,6 +46,8 @@ public class StompExtensionMessageHandler extends AbstractBrokerMessageHandler {
 		accessor.setReceiptId(clientAccessor.getReceipt());
 
 		// Send message
-		getClientOutboundChannel().send(new GenericMessage<>(EMPTY_PAYLOAD, accessor.getMessageHeaders()));
+//		getClientOutboundChannel().send(new GenericMessage<>(EMPTY_PAYLOAD, accessor.getMessageHeaders()));
+		getClientOutboundChannel().send(new GenericMessage<>("ahoj".getBytes(), accessor.getMessageHeaders()));
+		System.out.println("----------------------------------");
 	}
 }

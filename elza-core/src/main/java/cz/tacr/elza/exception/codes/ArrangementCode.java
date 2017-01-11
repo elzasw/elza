@@ -74,6 +74,11 @@ public enum ArrangementCode implements ErrorCode {
     INVALID_VERSION,
 
     /**
+     * Neplatný požadavek.
+     */
+    REQUEST_INVALID,
+
+    /**
      * Neplatný stav požadavku.
      */
     REQUEST_INVALID_STATE,
@@ -86,6 +91,11 @@ public enum ArrangementCode implements ErrorCode {
     /**
      * Existuje blokující změna v JP - obecně např. hromadná změna, import AS, atd.
      */
-    EXISTS_BLOCKING_CHANGE
+    EXISTS_BLOCKING_CHANGE,
+
+    /**
+     * Typ formy jména neexistuje.
+     */
+    PARTY_NAME_FORM_TYPE_NOT_FOUND
 
 }

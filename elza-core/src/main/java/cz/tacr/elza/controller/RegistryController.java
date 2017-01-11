@@ -12,7 +12,12 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.repository.ItemSpecRegisterRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -25,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.InterpiMappingVO;
 import cz.tacr.elza.controller.vo.InterpiSearchVO;
 import cz.tacr.elza.controller.vo.RecordImportVO;
 import cz.tacr.elza.controller.vo.RegCoordinatesVO;
@@ -35,6 +41,7 @@ import cz.tacr.elza.controller.vo.RegRecordWithCount;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.RegVariantRecordVO;
+import cz.tacr.elza.controller.vo.RelationSearchVO;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ParParty;
@@ -72,6 +79,8 @@ import cz.tacr.elza.service.UserService;
 @RestController
 @RequestMapping(value = "/api/registry", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 public class RegistryController {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private RegRecordRepository regRecordRepository;
@@ -119,6 +128,12 @@ public class RegistryController {
     private UserService userService;
 
     @Autowired
+    private ItemSpecRepository itemSpecRepository;
+
+    @Autowired
+    private ItemSpecRegisterRepository itemSpecRegisterRepository;
+
+    @Autowired
     private InterpiService interpiService;
 
     /**
@@ -131,6 +146,7 @@ public class RegistryController {
      * @param registerTypeId   IDčka typu záznamu, může být null
      * @param parentRecordId    id rodiče, pokud je null načtou se všechny záznamy, jinak potomci daného rejstříku
      * @param versionId   id verze, podle které se budou filtrovat třídy rejstříků, null - výchozí třídy
+     * @param itemSpecId   id specifikace
      * @return                  vybrané záznamy dle popisu seřazené za text hesla, nebo prázdná množina
      */
     @RequestMapping(value = "/", method = RequestMethod.GET)
@@ -139,13 +155,21 @@ public class RegistryController {
                                          @RequestParam final Integer count,
                                          @RequestParam(required = false) @Nullable final Integer registerTypeId,
                                          @RequestParam(required = false) @Nullable final Integer parentRecordId,
-                                         @RequestParam(required = false) @Nullable final Integer versionId) {
+                                         @RequestParam(required = false) @Nullable final Integer versionId,
+                                         @RequestParam(required = false) @Nullable final Integer itemSpecId) {
 
         Set<Integer> registerTypeIdTree = Collections.EMPTY_SET;
-        if (registerTypeId != null) {
-            Set<Integer> registerTypeIds = new HashSet<>();
-            registerTypeIds.add(registerTypeId);
 
+        if (itemSpecId != null && registerTypeId != null) {
+            throw new IllegalArgumentException("Nelza použít specifikaci a typ rejstříku zároveň.");
+        } else if (itemSpecId != null || registerTypeId != null) {
+            Set<Integer> registerTypeIds = new HashSet<>();
+            if (itemSpecId != null) {
+                RulItemSpec spec = itemSpecRepository.getOneCheckExist(itemSpecId);
+                registerTypeIds.addAll(itemSpecRegisterRepository.findIdsByItemSpecId(spec));
+            } else {
+                registerTypeIds.add(registerTypeId);
+            }
             registerTypeIdTree = registerTypeRepository.findSubtreeIds(registerTypeIds);
         }
 
@@ -238,6 +262,7 @@ public class RegistryController {
 
         ParRelationRoleType relationRoleType = relationRoleTypeRepository.findOne(roleTypeId);
         Assert.notNull(roleTypeId, "Nebyl nalezen typ vztahu s id " + roleTypeId);
+
 
         Set<Integer> registerTypeIds = registerTypeRepository.findByRelationRoleType(relationRoleType)
                 .stream().map(RegRegisterType::getRegisterTypeId).collect(Collectors.toSet());
@@ -616,7 +641,7 @@ public class RegistryController {
      */
     @RequestMapping(value = "/interpi/import/{recordId}", method = RequestMethod.PUT)
     @Transactional
-    public RegRecordVO importRecord(@PathVariable final Integer recordId, @RequestBody final RecordImportVO recordImportVO) {
+    public RegRecordVO updateRecord(@PathVariable final Integer recordId, @RequestBody final RecordImportVO recordImportVO) {
         Assert.notNull(recordId);
         Assert.notNull(recordImportVO);
         Assert.notNull(recordImportVO.getInterpiRecordId());
@@ -624,7 +649,7 @@ public class RegistryController {
         Assert.notNull(recordImportVO.getSystemId());
 
         interpiService.importRecord(recordId, recordImportVO.getInterpiRecordId(), recordImportVO.getScopeId(),
-                recordImportVO.getSystemId(), recordImportVO.isOriginator());
+                recordImportVO.getSystemId(), recordImportVO.getOriginator(), recordImportVO.getMappings());
 
         return getRecord(recordId);
     }
@@ -642,26 +667,9 @@ public class RegistryController {
         Assert.notNull(recordImportVO.getSystemId());
 
         RegRecord regRecord = interpiService.importRecord(null, recordImportVO.getInterpiRecordId(), recordImportVO.getScopeId(),
-                recordImportVO.getSystemId(), recordImportVO.isOriginator());
+                recordImportVO.getSystemId(), recordImportVO.getOriginator(), recordImportVO.getMappings());
 
         return getRecord(regRecord.getRecordId());
-    }
-
-    /**
-     * Načte rejstřík z externího systému.
-     *
-     * @param recordId id rejstříku
-     * @param systemId identifikátor externího systému
-     *
-     * @return rejstřík z externího systému
-     */
-    @Transactional
-    @RequestMapping(value = "/interpi/{recordId}", method = RequestMethod.GET)
-    public ExternalRecordVO findInterpiRecord(@PathVariable final String recordId, @RequestBody final Integer systemId) {
-        Assert.notNull(recordId);
-        Assert.notNull(systemId);
-
-        return interpiService.getRecordById(recordId, systemId);
     }
 
     /**
@@ -677,6 +685,30 @@ public class RegistryController {
         Assert.notNull(interpiSearchVO);
         Assert.notNull(interpiSearchVO.getSystemId());
 
-        return interpiService.findRecords(interpiSearchVO.isParty(), interpiSearchVO.getConditions(), interpiSearchVO.getCount(), interpiSearchVO.getSystemId());
+        long start = System.currentTimeMillis();
+        List<ExternalRecordVO> records = interpiService.findRecords(interpiSearchVO.isParty(), interpiSearchVO.getConditions(),
+                interpiSearchVO.getCount(), interpiSearchVO.getSystemId());
+        long end = System.currentTimeMillis();
+        logger.debug("Nalezení " + records.size() + " záznamů, trvalo " + (end - start) + " ms.");
+
+        return records;
+    }
+
+    /**
+     * Načte vztahy daného záznamu.
+     *
+     * @param interpiRecordId id rejstříku v INTERPI
+     * @param systemId identifikátor externího systému
+     *
+     * @return vztahy a jejich mapování
+     */
+    @RequestMapping(value = "/interpi/{interpiRecordId}/relations", method = RequestMethod.POST)
+    public InterpiMappingVO findInterpiRecordRelations(@PathVariable final String interpiRecordId, @RequestBody final RelationSearchVO relationSearchVO) {
+        Assert.notNull(interpiRecordId);
+        Assert.notNull(relationSearchVO);
+        Assert.notNull(relationSearchVO.getScopeId());
+        Assert.notNull(relationSearchVO.getSystemId());
+
+        return interpiService.findInterpiRecordRelations(interpiRecordId, relationSearchVO.getSystemId(), relationSearchVO.getScopeId());
     }
 }

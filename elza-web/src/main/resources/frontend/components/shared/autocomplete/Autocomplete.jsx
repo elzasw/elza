@@ -1,45 +1,40 @@
-const React = require('react')
+import React from 'react';
 import ReactDOM from 'react-dom';
 import {Button, Input, HelpBlock} from 'react-bootstrap';
 import {Icon, AbstractReactComponent} from 'components/index.jsx';
 import {getBootstrapInputComponentInfo} from 'components/form/FormUtils.jsx';
-const scrollIntoView = require('dom-scroll-into-view')
-require('./Autocomplete.less')
-let _debugStates = false
+import scrollIntoView from 'dom-scroll-into-view';
+import './Autocomplete.less';
+let _debugStates = false;
 import {propsEquals} from 'components/Utils.jsx'
 
 /**
  * Komponenta pro text input - defoinována pro překrytí a kontrolu shouldComponentUpdate. Pokud se v autocomplete
  * dovyplní a označí zbytek textu a input se překreslil, zmizel daný text. Tato komponenta tomuz zabrání - testuje změnu value.
  */
-const TextInput = class extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
-    }
+class TextInput extends AbstractReactComponent {
+
     shouldComponentUpdate(nextProps, nextState) {
         return !propsEquals(this.props, nextProps);
     }
+
     render() {
-        return (
-            <input
-                {...this.props}
-            />
-        )
+        return <input {...this.props} />
     }
 }
 
-var keyDownHandlers = {
+const keyDownHandlers = {
     ArrowRight: function (event) {
         const {tree} = this.props;
         if (tree) {
-            var {highlightedIndex} = this.state
+            const {highlightedIndex} = this.state;
 
             if (highlightedIndex != null) {
                 event.preventDefault(); // u stromu nechceme posouvat po inputu, pokud je highlightedIndex = má focus list s položkami a klávesy fungují na rozbalení a zabalení stromu
                 event.stopPropagation();
             }
 
-            var {expandedIds} = this.state
+            const {expandedIds} = this.state;
             if (highlightedIndex !== null) {
                 const items = this.getFilteredItems();
                 const node = items[highlightedIndex];
@@ -47,7 +42,7 @@ var keyDownHandlers = {
                 if (node.children && node.children.length > 0) {
                     if (expandedIds[id]) {  // je rozbalený, přejdeme na potomka
                         if (highlightedIndex + 1 < items.length) {
-                            this._performAutoCompleteOnKeyUp = true
+                            this._performAutoCompleteOnKeyUp = true;
                             this.changeState({
                                 highlightedIndex: highlightedIndex + 1,
                             })
@@ -62,14 +57,14 @@ var keyDownHandlers = {
     ArrowLeft: function (event) {
         const {tree} = this.props;
         if (tree) {
-            var {highlightedIndex} = this.state;
+            const {highlightedIndex} = this.state;
 
             if (highlightedIndex != null) {
                 event.preventDefault(); // u stromu nechceme posouvat po inputu, pokud je highlightedIndex = má focus list s položkami a klávesy fungují na rozbalení a zabalení stromu
                 event.stopPropagation();
             }
 
-            var {expandedIds} = this.state;
+            const {expandedIds} = this.state;
             if (highlightedIndex !== null) {
                 const items = this.getFilteredItems();
                 const node = items[highlightedIndex];
@@ -78,12 +73,12 @@ var keyDownHandlers = {
                     this.expandNode(node, false)
                 } else {    // není rozbalený, přejmede na parenta
                     const currDepth = this.state.itemsDepth[highlightedIndex];
-                    var index = highlightedIndex - 1;
+                    let index = highlightedIndex - 1;
                     while (index >= 0 && this.state.itemsDepth[index] >= currDepth) {
                         index--;
                     }
                     if (index >= 0) {
-                        this._performAutoCompleteOnKeyUp = true
+                        this._performAutoCompleteOnKeyUp = true;
                         this.changeState({
                             highlightedIndex: index,
                         })
@@ -92,14 +87,10 @@ var keyDownHandlers = {
             }
         }
     },
-    Home: ()=> {
-    },
-    End: ()=> {
-    },
-    Alt: ()=> {
-    },
-    Tab: ()=> {
-    },
+    Home: () => {},
+    End: () => {},
+    Alt: () => {},
+    Tab: () => {},
     ArrowDown: function (event) {
         event.preventDefault();
         event.stopPropagation();
@@ -111,10 +102,10 @@ var keyDownHandlers = {
                 this.props.onSearchChange(this.state.inputStrValue)
             })
         } else {
-            var {highlightedIndex} = this.state;
+            const {highlightedIndex} = this.state;
             const {tree} = this.props;
 
-            var index = this.getNextFocusableItem(highlightedIndex, !tree);
+            const index = this.getNextFocusableItem(highlightedIndex, !tree);
 
             if (index !== null) {   // je pokud je nějaká vybraná položka, zkusíme doplnit autocomplete text
                 this._performAutoCompleteOnKeyUp = true;
@@ -133,10 +124,10 @@ var keyDownHandlers = {
         if (event.altKey) {
             this.closeMenu();
         } else {
-            var {highlightedIndex} = this.state;
+            const {highlightedIndex} = this.state;
             const {tree} = this.props;
 
-            var index = this.getPrevFocusableItem(highlightedIndex, !tree);
+            const index = this.getPrevFocusableItem(highlightedIndex, !tree);
 
             if (index !== null) {   // je pokud je nějaká vybraná položka, zkusíme doplnit autocomplete text
                 this._performAutoCompleteOnKeyUp = true;
@@ -156,7 +147,7 @@ var keyDownHandlers = {
         if (this.props.tags) {
             event.stopPropagation();
             event.preventDefault();
-            var id, item;
+            let id, item;
             if (this.state.highlightedIndex == null) {
                 id = null;
                 item = {
@@ -186,14 +177,14 @@ var keyDownHandlers = {
                     inputStrValue: '',
                     value: null,
                 }, () => {
-                    ReactDOM.findDOMNode(this.refs.input).select()
+                    ReactDOM.findDOMNode(this.refs.input).select();
                     this.props.onChange(null)
                 })
             } else {
                 event.stopPropagation();
                 event.preventDefault();
 
-                var item = this.getFilteredItems()[this.state.highlightedIndex]
+                const item = this.getFilteredItems()[this.state.highlightedIndex];
 
                 const id = this.props.getItemId(item);
                 if (this.props.allowSelectItem(id, item)) {
@@ -208,7 +199,7 @@ var keyDownHandlers = {
                         ReactDOM.findDOMNode(this.refs.input).setSelectionRange(
                             this.state.inputStrValue.length,
                             this.state.inputStrValue.length
-                        )
+                        );
                         this.props.onChange(item)
                     })
                 }
@@ -219,7 +210,7 @@ var keyDownHandlers = {
     Escape: function (event) {
         this.closeMenu();
     }
-}
+};
 
 export default class Autocomplete extends AbstractReactComponent {
     constructor(props) {

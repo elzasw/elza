@@ -1,5 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
+import java.util.List;
+
 /**
  * Import osoby z externího systému.
  *
@@ -14,7 +16,9 @@ public class RecordImportVO {
 
     private Integer systemId;
 
-    private boolean originator = true; // TODO dočasně než to bude přicházet z dialogu
+    private boolean originator;
+
+    private List<InterpiRelationMappingVO> mappings;
 
     public Integer getScopeId() {
         return scopeId;
@@ -40,11 +44,19 @@ public class RecordImportVO {
         this.systemId = systemId;
     }
 
-    public boolean isOriginator() {
+    public boolean getOriginator() {
         return originator;
     }
 
     public void setOriginator(final boolean originator) {
         this.originator = originator;
+    }
+
+    public List<InterpiRelationMappingVO> getMappings() {
+        return mappings;
+    }
+
+    public void setMappings(final List<InterpiRelationMappingVO> mappings) {
+        this.mappings = mappings;
     }
 }

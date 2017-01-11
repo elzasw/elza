@@ -22,6 +22,7 @@ var messages = {
     "global.title.processAction": "Opravdu chcete provést vybranou akci?",
 
     "global.error.ajax": "Při komunikaci nastala chyba",
+    "global.error.ws": "Při komunikaci nastala chyba",
     "global.action.create": "Vytvořit",
     "global.action.update": "Upravit",
     "global.action.delete": "Odstranit",
@@ -44,6 +45,19 @@ var messages = {
     "global.exception.permission.need": "Požadované oprávnění",
     "global.exception.undefined": "Neznámá chyba",
     "global.exception.optimistic.locking": "Zaznamenána práce s neaktuálními daty",
+
+    "dataType.coordinates.format": "Zadávejte ve tvaru \"15.5154,49.535\"",
+    "dataType.decimal.format": null,
+    "dataType.fileRef.format": null,
+    "dataType.int.format": null,
+    "dataType.jsonTable.format": null,
+    "dataType.packetRef.format": null,
+    "dataType.partyRef.format": null,
+    "dataType.recordRef.format": null,
+    "dataType.string.format": null,
+    "dataType.text.format": null,
+    "dataType.unitdate.format": "<div><b>Formát datace</b><br />Století: 20. st. <i>nebo</i> 20.st. <i>nebo</i> 20st<br />Rok: 1968<br />Měsíc.rok: 8.1968<br />Datum: 21.8.1698<br />Datum a čas: 21.8.1968 8:23 <i>nebo</i> 21.8.1968 8:23:31<br /><b>Intervaly</b><br />Jednotlivá hodnota: 1968<br />Interval: 21.8.1968 0:00-27.6.1989<br /><b>Odhad</b><br />Definuje se uzavřením hodnoty do kulatých nebo hranatých závorek: [16.8.1977]<br />Při použití znaku \"/\" pro oddělení intervalu jsou od i do chápány jako odhad.</div>",
+    "dataType.unitid.format": null,
 
     "arr.exception.delete.packets": "Nelze smazat obaly ({0}), protože existují navázané entity.",
     "arr.exception.version.already.closed": "Verze AS je již uzavřena.",
@@ -71,6 +85,8 @@ var messages = {
 
     "global.websocket.title": "Odpojení od severu",
     "global.websocket.message": "Vyčkejte na automatické obnovení spojení",
+    "global.websocket.disconnectedOnError.title": "Při komunikaci nastala chyba",
+    "global.websocket.disconnectedOnError.action.refresh": "Aktualizovat aplikaci",
 
     "global.websocket.title.loading": "Načítání aplikace",
     "global.websocket.message.loading": "Probíhá načítání aplikace, chvilku strpení",
@@ -100,6 +116,8 @@ var messages = {
     "ribbon.action.arr.fund.requests": "Požadavky",
     "ribbon.action.arr.fund.daos": "Digitální entity",
     "ribbon.action.arr.fund.request.send": "Odeslat požadavek",
+    "ribbon.action.arr.fund.request.delete": "Vymazat požadavek",
+    "ribbon.action.arr.fund.request.delete.confirm": "Opravdu chcete smazat požadavek?",
     "ribbon.action.arr.fund.update": "Upravit vlastnosti",
     "ribbon.action.arr.fund.approve": "Nová verze AS",
     "ribbon.action.arr.fund.ruleSet": "Změnit pravidla",
@@ -435,8 +453,22 @@ var messages = {
     "arr.movements.move.before" : "Přesunout před",
     "arr.movements.move.after" : "Přesunout za",
 
-    "arr.daos.pinned" : "Připojit k JP",
-    "arr.daos.create.under" : "Vytvořit podřízenou JP",
+    "arr.daos.link" : "Připojit k JP",
+    "arr.daos.createUnderAndLink" : "Vytvořit podřízenou JP",
+    "arr.daos.unlink.confirm" : "Opravdu chcete odpojit digitální entitu od jednotky popisu?",
+    "arr.daos.title.code" : "ID",
+    "arr.daos.title.node" : "JP",
+    "arr.daos.title.url" : "Odkaz",
+    "arr.daos.files.title.withoutGroup" : "Soubory",
+    "arr.daos.files.title.inGroup" : "Ostatní soubory",
+    "arr.daos.files.title.duration" : "Délka",
+    "arr.daos.files.title.imageWidthHeight" : "Rozlišení",
+    "arr.daos.files.title.sourceXY" : "Zdrojové rozlišení",
+    "arr.daos.files.title.mimeType" : "MIME",
+    "arr.daos.files.title.size" : "Velikost",
+    "arr.daos.files.title.url" : "Odkaz",
+    "arr.daos.files.title.unitOfMeasure.IN" : "in",
+    "arr.daos.files.title.unitOfMeasure.MM" : "mm",
 
     "arr.fund.subNodes.prevPage": "Předchozí stránka",
     "arr.fund.subNodes.nextPage": "Další stránka",
@@ -551,7 +583,6 @@ var messages = {
 
     "subNodeForm.countOfCoordinates": "Počet bodů: {0}",
     "subNodeForm.errorPointCoordinates": "Chybně zadaný bod. Zadávejte ve tvaru \"15.5154,49.535\"",
-    "subNodeForm.formatPointCoordinates": "Zadávejte ve tvaru \"15.5154,49.535\"",
 
     "subNodeForm.calculate-user": "Pole je vyplňováno uživatelsky, přepnout na automatické",
     "subNodeForm.calculate-auto": "Pole je vyplňováno automaticky, přepnout na uživatelské",
@@ -573,6 +604,9 @@ var messages = {
     "subNodeRegister.title.add": "Přidání hesla",
 
     "subNodeDao.title": "Digitální entity",
+    "subNodeDao.dao.action.showDetailAll": "Zobrazit detail digitálních entit",
+    "subNodeDao.dao.action.showDetailOne": "Zobrazit detail digitální entity",
+    "subNodeDao.dao.title.node": "Digitální entity pro jednotku popisu",
     "subNodeDao.dao.label": "Digitalizát",
     "subNodeDao.dao.code": "Code",
     "subNodeDao.dao.files.more": "souborů",
@@ -599,21 +633,25 @@ var messages = {
     "registry.coordinates.description": "Popis",
     "registry.coordinates.upload": "Importovat",
     "registry.coordinates.download": "Exportovat",
-    "registry.coordinates.format": "Zadávejte ve tvaru \"15.5154,49.535\"",
     "registry.detail.characteristics": "Charakteristika",
     "registry.detail.note": "Poznámka",
     "registry.detail.type": "Typ rejstříku - hierarchie",
     "registry.detail.coordinates": "Souřadnice",
     "registry.detail.variantRegistry": "Variantní rejstříková hesla",
+
+    "registry.list.itemsVisibleCountFrom": "Zobrazeno {0} z {1}, zpřesněte vyhledávací filtr",
+    "registry.list.noRecord": "Zadanému filtru neodpovídají žádná data",
+
     "registry.add.type": "Rejstřík",
     "registry.update.title": "Editace rejstříku",
     "registry.update.type": "Rejstřík",
     "registry.scopeClass": "Třída rejstříkového hesla",
     "registry.addRegistryVariant": "Přidání varianty jména",
     "registry.placePath": "Cesta k umístění: ",
-    "registry.listNoRecord": "Zadanému filtru neodpovídají žádná data",
     "registry.disallowedMoveAction.title": "Nepovolená akce",
     "registry.disallowedMoveAction.text": "Nelze přesunout sama sebe do sebe",
+
+    "registryField.visibleCount": "Zobrazeno {0} z {1} záznamů",
 
     "party.noSelection.title": "Není vybrána osoba",
     "party.noSelection.message": "Prosím vyberte osobu ze seznamu nebo vytvořte novou.",
@@ -644,6 +682,8 @@ var messages = {
     "party.detail.partyGroupIdentifiers" : "Identifikátory korporace",
 
     "party.detail.errors.undefinedCreator": "Nebyl vybrán autor",
+
+    "party.list.itemsVisibleCountFrom": "Zobrazeno {0} z {1}, zpřesněte vyhledávací filtr",
 
     "party.identifier.errors.undefinedIdentifierText": "Nebyl zadán název identifikátoru",
     "party.identifier.identifierText": "Hodnota",
@@ -709,6 +749,8 @@ var messages = {
     "party.relation.errors.undefinedCalendarType": "Typ kalendáře musí být zadaný",
     "party.relation.errors.undefinedRecord": "U některé entity nebyla zadaná rejstříková položka",
     "party.relation.errors.undefinedRoleType": "U některé entity nebyla zadaná role rejstříkové položky",
+
+    "partyField.visibleCount": "Zobrazeno {0} z {1} záznamů",
 
     "arr.fund.title.added": "AS byl vytvořen",
     "arr.fund.title.approved": "AS byl uzavřen",
@@ -841,6 +883,7 @@ var messages = {
     "extImport.id": "ID",
     "extImport.record": "Záznam",
     "extImport.scopeId": "Třída rejstříku",
+    "extImport.originator": "Importovat včetně vztahů (jedná se o původce)",
     "extImport.alreadyImported": "Již naimportováno",
     "extImport.update": "Aktualizovat",
     "extImport.showDetail": "Přejít na detail",
@@ -850,8 +893,18 @@ var messages = {
 
     "extImport.attType.PREFFERED_NAME": "Hledání v preferovaném jméně rejstříku",
     "extImport.attType.ALL_NAMES": "Hledání ve všech jménech rejstříku",
+    "extImport.attType.ID": "Hledání podle identifikátoru rejstříku",
     "extImport.attType.TYPE": "Hledání určitých typů rejstříků",
     "extImport.attType.EXTEND": "Pravostranný like na hledané výrazy ve jménech",
+
+    "extMapperForm.title": "Import hesla - vazby",
+    "extMapperForm.relationMapping": "Mapování vztahů",
+    "extMapperForm.saveAsDefaultMapping": "Nastavit mapování jako výchozí?",
+    "extMapperForm.recordExtSystemDescription": "Popis ze zdrojového systému",
+    "extMapperForm.insufficientPrivileges": "Nemáte dostatečná oprávnění k mapování vztahů",
+    "extMapperForm.idForImport": "ID pro import záznamu \"{0}\". Kontaktujte správce a požádejte o import s mapováním vztahů.",
+    "extMapperForm.import": "Importovat",
+    "extMapperForm.update": "Aktualizovat",
 
     "export.title.fund": "Import archivního souboru",
     "export.transformationName": "Šablona transformace",
@@ -870,7 +923,8 @@ var messages = {
     "visiblePolicy.action.reset": "Vymazat",
     "visiblePolicy.action.reset.confirm": "Opravdu vymazat? Po vymazání definice budou přebírána pravidla kontroly z nadřízené jednotky popisu.",
 
-    "digitizationRequest.form.title": "Požadavek na digitalizát",
+    "arr.request.digitizationRequest.form.title": "Požadavek na digitalizát",
+    "arr.request.dao.form.title": "Požadavek na delimitaci/skartaci",
     "digitizationRequest.title.newRequest": "Nový",
     "arr.request.action.storeAndSend": "Uložit a odeslat",
     "arr.request.title.digitizationRequest": "Požadavek",
@@ -890,12 +944,9 @@ var messages = {
     "arr.request.title.state.REJECTED": "zamítnuto",
     "arr.request.title.nodes": "Seznam jednotek popisu",
     "arr.request.title.nodesAdded": "JP byly přidány",
-    "arr.request.title.type.DIGITIZATION_REQUEST": "Požadavek na digitalizaci",
-    "arr.request.title.type.DESTRUCTION": "Požadavek na skartaci",
-    "arr.request.title.type.TRANSFER": "Požadavek na dalimitaci",
-    "arr.request.title.type.LINK": "Požadavek na připojení k JP",
-    "arr.request.title.type.UNLINK": "Požadavek na odpojení od JP",
-
+    "arr.request.title.type.DIGITIZATION": "Požadavek na digitalizaci",
+    "arr.request.title.type.DAO": "Požadavek na skartaci/dalimitaci",
+    "arr.request.title.type.DAO_LINK": "Požadavek na připojení k/odpojení od JP",
     "requestQueue.title.requestQueue": "Požadavky ve frontě",
     "requestQueue.title.create": "Vytvořeno",
     "requestQueue.title.attemptToSend": "Poslední pokud o odeslání",

@@ -1,60 +1,9 @@
 @import "~variables.less";
 
-.desc-item-value {
-
-        .autocomplete-menu-footer {
-
-            .create-record {
-                position: fixed;
-                padding: 5px;
-                .btn {
-                    .icon {
-                        padding-right: 3px;
-                    }
-                }
-            }
-        }
-
+.desc-item-value.desc-item-value-parts {
+    > .tooltipWrapper {
+        width:100%
     }
-
-.autocomplete-record {
-
-    @record-item-padding: 5px;
-    @max-width-container: 600px;
-
-    .item {
-        display: table-row;
-
-        &.active {
-            font-weight: bold;
-        }
-        &.focus {
-            background: #afafaf;
-        }
-
-        .name {
-            padding: @record-item-padding;
-            display: table-cell;
-        }
-
-        .type {
-            padding: @record-item-padding;
-            display: table-cell;;
-        }
-
-        .interval {
-            padding: @record-item-padding;
-            display: table-cell;
-        }
-
-        .characteristics {
-            padding: @record-item-padding;
-            max-width: 300px;
-            text-overflow: ellipsis;
-            display: table-cell;
-            overflow: hidden;
-        }
-    }
-
 }
+
 

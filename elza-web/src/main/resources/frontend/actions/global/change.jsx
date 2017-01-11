@@ -8,7 +8,7 @@ import {fundOutputSelectOutput} from 'actions/arr/fundOutput.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {partyListInvalidate, partyDetailClear, partyDetailInvalidate} from 'actions/party/party.jsx'
-import {preparedListInvalidate, detailInvalidate, listInvalidate, queueListInvalidate} from 'actions/arr/digitizationActions.jsx'
+import {preparedListInvalidate, detailInvalidate, listInvalidate, queueListInvalidate, detailUnselect} from 'actions/arr/arrRequestActions.jsx'
 
 export function isFundChangeAction(action) {
     switch (action.type) {
@@ -22,6 +22,19 @@ export function isFundChangeAction(action) {
 export function changeConformityInfo(fundVersionId, nodeIds) {
     return {
         type: types.CHANGE_CONFORMITY_INFO,
+        fundVersionId: fundVersionId,
+        nodeIds: nodeIds
+    }
+}
+
+/**
+ * Informace, že se změnil počet požadavků na digitalizaci u konkrétních node.
+ * @param fundVersionId verze AS
+ * @param nodeIds seznam id, u kterých došlo ke změně
+ */
+export function changeNodeRequests(fundVersionId, nodeIds) {
+    return {
+        type: types.CHANGE_NODE_REQUESTS,
         fundVersionId: fundVersionId,
         nodeIds: nodeIds
     }
@@ -305,6 +318,13 @@ export function changeRequest(value) {
     }
 }
 
+export function deleteRequest(value) {
+    return (dispatch, getState) => {
+        dispatch(preparedListInvalidate(value.versionId));
+        dispatch(listInvalidate(value.versionId));
+        dispatch(detailUnselect(value.versionId, value.entityId));
+    }
+}
 
 export function createRequestItemQueue(value) {
     return (dispatch, getState) => {

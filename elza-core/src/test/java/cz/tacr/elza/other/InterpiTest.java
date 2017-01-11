@@ -106,9 +106,10 @@ public class InterpiTest extends AbstractControllerTest {
         RegScope scope = scopeRepository.findByCode("GLOBAL");
 
         RecordImportVO importVO = new RecordImportVO();
-        importVO.setInterpiRecordId("0000216");
+        importVO.setInterpiRecordId("n000022537");
         importVO.setScopeId(scope.getScopeId());
         importVO.setSystemId(systemId);
+        importVO.setOriginator(true);
 
         RegRecordVO regRecord = post(spec -> spec.body(importVO), "/api/registry/interpi/import").as(RegRecordVO.class);
         RegRecordVO record = getRecord(regRecord.getId());
@@ -137,9 +138,13 @@ public class InterpiTest extends AbstractControllerTest {
 
     @Test
     public void findOneByServiceTest() {
-        ExternalRecordVO externalRecordVO = interpiService.getRecordById("0000216", systemId);
+        List<ConditionVO> conditions = Arrays.asList(new ConditionVO(ConditionType.AND, AttributeType.ID, "0000216"));
+        List<ExternalRecordVO> externalRecords = interpiService.findRecords(true, conditions, 500, systemId);
 
-        printRecord(externalRecordVO);
+        Assert.notEmpty(externalRecords);
+        Assert.isTrue(externalRecords.size() == 1);
+
+        printRecord(externalRecords.iterator().next());
     }
 
     @Test

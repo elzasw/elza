@@ -1,11 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {TooltipTrigger, AbstractReactComponent, i18n} from 'components/index.jsx';
+import {AbstractReactComponent, i18n} from 'components/index.jsx';
 import {connect} from 'react-redux'
 import {decorateValue} from './DescItemUtils.jsx'
 import {OverlayTrigger, Tooltip} from 'react-bootstrap';
 import DescItemLabel from './DescItemLabel.jsx'
 import {indexById} from 'stores/app/utils.jsx'
+import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 
 import './DescItemUnitdate.less'
 
@@ -55,21 +56,6 @@ class DescItemUnitdate extends AbstractReactComponent {
             }
         }
 
-        const tooltip = <div>
-            <b>Formát datace</b><br />
-            Století: 20. st. <i>nebo</i> 20.st. <i>nebo</i> 20st<br />
-            Rok: 1968<br />
-            Měsíc.rok: 8.1968<br />
-            Datum: 21.8.1698<br />
-            Datum a čas: 21.8.1968 8:23 <i>nebo</i> 21.8.1968 8:23:31<br />
-            <b>Intervaly</b><br />
-            Jednotlivá hodnota: 1968<br />
-            Interval: 21.8.1968 0:00-27.6.1989<br />
-            <b>Odhad</b><br />
-            Definuje se uzavřením hodnoty do kulatých nebo hranatých závorek: [16.8.1977]<br />
-            Při použití znaku "/" pro oddělení intervalu jsou od i do chápány jako odhad.
-        </div>;
-
         let cls = ['unitdate-input'];
         if (cal) {
             cls.push("calculable");
@@ -84,12 +70,7 @@ class DescItemUnitdate extends AbstractReactComponent {
                 <option />
                 {calendarTypes.items.map(type => <option key={type.id} value={type.id}>{type.name.charAt(0)}</option>)}
             </select>
-            <TooltipTrigger
-                content={tooltip}
-                holdOnHover
-                holdOnFocus
-                placement="vertical"
-            >
+            <ItemTooltipWrapper tooltipTitle="dataType.unitdate.format">
                 <input
                     {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
                     ref='focusEl'
@@ -97,8 +78,7 @@ class DescItemUnitdate extends AbstractReactComponent {
                     value={value}
                     onChange={this.handleValueChange}
                 />
-            </TooltipTrigger>
-
+            </ItemTooltipWrapper>
         </div>
     }
 }

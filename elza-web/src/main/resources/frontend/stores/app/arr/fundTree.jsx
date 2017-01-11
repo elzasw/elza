@@ -460,6 +460,7 @@ export default function fundTree(state = initialState, action = {}) {
 
         case types.CHANGE_NODES:
         case types.CHANGE_CONFORMITY_INFO:
+        case types.CHANGE_NODE_REQUESTS:
             var isDirty = false;
             var nodeId;
             for(var i = 0; i < state.nodes.length; i++) {

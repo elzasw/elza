@@ -6,6 +6,9 @@ import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLinkRequest;
+import cz.tacr.elza.domain.ArrDaoRequest;
+import cz.tacr.elza.domain.ArrDaoRequestDao;
+import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrDigitizationRequestNode;
@@ -16,11 +19,13 @@ import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.DaoLinkRequestRepository;
+import cz.tacr.elza.repository.DaoRequestDaoRepository;
+import cz.tacr.elza.repository.DaoRequestRepository;
 import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
 import cz.tacr.elza.repository.DigitizationRequestRepository;
-import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.RequestRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventIdDaoIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventIdNodeIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +33,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -57,13 +63,16 @@ public class RequestService {
     private DigitizationRequestNodeRepository digitizationRequestNodeRepository;
 
     @Autowired
+    private DaoRequestDaoRepository daoRequestDaoRepository;
+
+    @Autowired
     private RequestRepository requestRepository;
 
     @Autowired
-    private RequestQueueItemRepository requestQueueItemRepository;
+    private DaoLinkRequestRepository daoLinkRequestRepository;
 
     @Autowired
-    private DaoLinkRequestRepository daoLinkRequestRepository;
+    private DaoRequestRepository daoRequestRepository;
 
     @Autowired
     private ArrangementService arrangementService;
@@ -116,8 +125,42 @@ public class RequestService {
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public ArrDaoLinkRequest createDaoRequest(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion,
-                                              ArrDao dao, ArrChange change, final Type type, ArrNode node) {
+    public ArrDaoRequest createDaoRequest(@NotNull final List<ArrDao> daos,
+                                          @Nullable final String description,
+                                          @NotNull final ArrDaoRequest.Type type,
+                                          @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
+        ArrDaoRequest daoRequest = new ArrDaoRequest();
+        daoRequest.setCode(generateCode());
+        daoRequest.setDescription(description);
+        List<ArrDigitalRepository> digitalRepositories = externalSystemService.findDigitalRepository();
+        if (digitalRepositories.size() != 1) {
+            throw new BusinessException(ArrangementCode.ILLEGAL_COUNT_EXTERNAL_SYSTEM);
+        }
+        daoRequest.setDigitalRepository(digitalRepositories.get(0));
+        daoRequest.setFund(fundVersion.getFund());
+        daoRequest.setCreateChange(arrangementService.createChange(ArrChange.Type.CREATE_DAO_REQUEST));
+        daoRequest.setState(ArrRequest.State.OPEN);
+        daoRequest.setType(type);
+
+        List<ArrDaoRequestDao> requestDaos = new ArrayList<>(daos.size());
+        for (ArrDao dao : daos) {
+            ArrDaoRequestDao requestDao = new ArrDaoRequestDao();
+            requestDao.setDao(dao);
+            requestDao.setDaoRequest(daoRequest);
+            requestDaos.add(requestDao);
+        }
+
+        daoRequestRepository.save(daoRequest);
+        daoRequestDaoRepository.save(requestDaos);
+
+        sendDaoNotification(fundVersion, daoRequest, EventType.REQUEST_DAO_CREATE, daos);
+
+        return daoRequest;
+    }
+
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public ArrDaoLinkRequest createDaoLinkRequest(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion,
+                                                  ArrDao dao, ArrChange change, final Type type, ArrNode node) {
         final ArrDaoLinkRequest request = new ArrDaoLinkRequest();
         request.setCreateChange(change);
         request.setDao(dao);
@@ -159,6 +202,36 @@ public class RequestService {
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public void addDaoDaoRequest(@NotNull final ArrDaoRequest daoRequest,
+                                 @NotNull final List<ArrDao> daos,
+                                 @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                                 @Nullable final String description) {
+        if (!daoRequest.getState().equals(ArrRequest.State.OPEN)) {
+            throw new BusinessException(ArrangementCode.REQUEST_INVALID_STATE).set("state", daoRequest.getState());
+        }
+
+        List<ArrDaoRequestDao> daoRequestDaos = daoRequestDaoRepository.findByDaoRequestAndDao(daoRequest, daos);
+        if (daoRequestDaos.size() != 0) {
+            throw new BusinessException(ArrangementCode.ALREADY_ADDED);
+        }
+
+        for (ArrDao dao : daos) {
+            ArrDaoRequestDao requestDao = new ArrDaoRequestDao();
+            requestDao.setDao(dao);
+            requestDao.setDaoRequest(daoRequest);
+            daoRequestDaos.add(requestDao);
+        }
+
+        if (description != null) {
+            daoRequest.setDescription(description);
+        }
+
+        daoRequestRepository.save(daoRequest);
+        daoRequestDaoRepository.save(daoRequestDaos);
+        sendDaoNotification(fundVersion, daoRequest, EventType.REQUEST_DAO_CHANGE, daos);
+    }
+
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void removeNodeDigitizationRequest(@NotNull final ArrDigitizationRequest digitizationRequest,
                                               @NotNull final List<ArrNode> nodes,
                                               @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
@@ -190,6 +263,10 @@ public class RequestService {
         return digitizationRequestRepository.getOneCheckExist(id);
     }
 
+    public ArrDaoRequest getDaoRequest(final Integer id) {
+        return daoRequestRepository.getOneCheckExist(id);
+    }
+
     public ArrRequest getRequest(final Integer id) {
         return requestRepository.getOneCheckExist(id);
     }
@@ -197,18 +274,22 @@ public class RequestService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public List<ArrRequest> findRequests(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
                                          @Nullable final ArrRequest.State state,
-                                         @Nullable final ArrRequest.ClassType type) {
-        return requestRepository.findRequests(fund, state, type);
+                                         @Nullable final ArrRequest.ClassType type,
+                                         @Nullable final String description,
+                                         @Nullable final LocalDateTime fromDate,
+                                         @Nullable final LocalDateTime toDate) {
+        return requestRepository.findRequests(fund, state, type, description, fromDate, toDate);
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void sendRequest(@NotNull final ArrRequest request,
                             @AuthParam(type = AuthParam.Type.FUND) final ArrFundVersion fundVersion) {
         requestQueueService.sendRequest(request, fundVersion);
+        sendNotification(fundVersion, request, EventType.REQUEST_CHANGE, null);
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
-    public void removeQueuedRequest(@NotNull final ArrRequest request) {
+    public void deleteRequest(@NotNull final ArrRequest request) {
 
         ArrFundVersion openVersion = null;
         for (ArrFundVersion version : request.getFund().getVersions()) {
@@ -217,7 +298,20 @@ public class RequestService {
                 break;
             }
         }
-        requestQueueService.removeRequestFromQueue(request, openVersion);
+        if (requestQueueService.isRequestInQueue(request)) {
+            requestQueueService.deleteRequestFromQueue(request, openVersion);
+        } else {
+            switch (request.getDiscriminator()) {
+                case DIGITIZATION: {
+                    digitizationRequestNodeRepository.deleteByDigitizationRequest((ArrDigitizationRequest) request);
+                    requestRepository.delete(request);
+                    break;
+                }
+                default:
+                    throw new IllegalStateException(request.getDiscriminator() != null ? request.getDiscriminator().toString() : "null");
+            }
+            sendNotification(openVersion, request, EventType.REQUEST_DELETE, null);
+        }
     }
 
     /**
@@ -237,7 +331,7 @@ public class RequestService {
     }
 
     private void sendNotification(final ArrFundVersion fundVersion,
-                                  final ArrDigitizationRequest digitizationRequest,
+                                  final ArrRequest request,
                                   final EventType type,
                                   final List<ArrNode> nodes) {
         List<Integer> nodeIds = nodes != null ? new ArrayList<>(nodes.size()) : null;
@@ -247,7 +341,22 @@ public class RequestService {
         }
 
         EventIdNodeIdInVersion event = new EventIdNodeIdInVersion(type, fundVersion.getFundVersionId(),
-                digitizationRequest.getRequestId(), nodeIds);
+                request.getRequestId(), nodeIds);
+        eventNotificationService.publishEvent(event);
+    }
+
+    private void sendDaoNotification(final ArrFundVersion fundVersion,
+                                     final ArrRequest request,
+                                     final EventType type,
+                                     final List<ArrDao> daos) {
+        List<Integer> daoIds = daos != null ? new ArrayList<>(daos.size()) : null;
+
+        if (daos != null) {
+            daos.forEach(node -> daoIds.add(node.getDaoId()));
+        }
+
+        EventIdDaoIdInVersion event = new EventIdDaoIdInVersion(type, fundVersion.getFundVersionId(),
+                request.getRequestId(), daoIds);
         eventNotificationService.publishEvent(event);
     }
 

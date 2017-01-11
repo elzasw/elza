@@ -23,9 +23,9 @@ import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
 import {fundOutputRemoveNodes, fundOutputAddNodes} from 'actions/arr/fundOutput.jsx'
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
-import * as digitizationActions from 'actions/arr/digitizationActions';
+import * as arrRequestActions from 'actions/arr/arrRequestActions';
 import RequestInlineForm from "./RequestInlineForm";
-import {REQ_DIGITIZATION_REQUEST, getRequestType} from './ArrUtils.jsx'
+import {DIGITIZATION, getRequestType} from './ArrUtils.jsx'
 
 const ShortcutsManager = require('react-shortcuts');
 const Shortcuts = require('react-shortcuts/component');
@@ -58,7 +58,7 @@ class ArrRequestDetail extends AbstractReactComponent {
     componentDidMount() {
         const {versionId, requestDetail} = this.props;
 
-        requestDetail.id !== null && this.dispatch(digitizationActions.fetchDetailIfNeeded(versionId, requestDetail.id));
+        requestDetail.id !== null && this.dispatch(arrRequestActions.fetchDetailIfNeeded(versionId, requestDetail.id));
 
         this.trySetFocus(this.props)
     }
@@ -66,7 +66,7 @@ class ArrRequestDetail extends AbstractReactComponent {
     componentWillReceiveProps(nextProps) {
         const {versionId, requestDetail} = nextProps;
 
-        requestDetail.id !== null && this.dispatch(digitizationActions.fetchDetailIfNeeded(versionId, requestDetail.id));
+        requestDetail.id !== null && this.dispatch(arrRequestActions.fetchDetailIfNeeded(versionId, requestDetail.id));
 
         this.trySetFocus(nextProps)
     }
@@ -94,7 +94,7 @@ class ArrRequestDetail extends AbstractReactComponent {
 
     handleSaveRequest = (data) => {
         const {versionId, requestDetail} = this.props;
-        this.dispatch(digitizationActions.requestEdit(versionId, requestDetail.id, data));
+        this.dispatch(arrRequestActions.requestEdit(versionId, requestDetail.id, data));
     }
 
     handleAddNodes = () => {
@@ -103,7 +103,7 @@ class ArrRequestDetail extends AbstractReactComponent {
         this.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
             <FundNodesSelectForm
                 onSubmitForm={(ids, nodes) => {
-                    this.dispatch(digitizationActions.addNodes(versionId, requestDetail, ids))
+                    this.dispatch(arrRequestActions.addNodes(versionId, requestDetail, ids))
                 }}
             />))
     };
@@ -112,7 +112,7 @@ class ArrRequestDetail extends AbstractReactComponent {
         const {versionId, requestDetail} = this.props;
 
         if (confirm(i18n("arr.fund.nodes.deleteNode"))) {
-            this.dispatch(digitizationActions.removeNode(versionId, requestDetail, node.id))
+            this.dispatch(arrRequestActions.removeNode(versionId, requestDetail, node.id))
         }
     };
 
@@ -125,7 +125,7 @@ class ArrRequestDetail extends AbstractReactComponent {
                 <div className="title">{i18n('arr.request.noSelection.title')}</div>
                 <div className="msg-text">{i18n('arr.request.noSelection.message')}</div>
             </div>;
-        } else if (requestDetail.fetched && !requestDetail.isFetching) {
+        } else if (requestDetail.fetched) {
             const digReq = requestDetail.data;
             const reqType = getRequestType(digReq);
             form = (
@@ -150,7 +150,7 @@ class ArrRequestDetail extends AbstractReactComponent {
                         onSave={this.handleSaveRequest}
                     />
 
-                    {reqType === REQ_DIGITIZATION_REQUEST && <div>
+                    {reqType === DIGITIZATION && <div>
                         <label className="control-label">{i18n("arr.request.title.nodes")}</label>
                         <FundNodesList
                             nodes={digReq.nodes}

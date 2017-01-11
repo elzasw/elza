@@ -61,6 +61,12 @@ export function fundInitState(fundWithVersion) {
         fundNodesError: {}, // zatím jen pomocný, je řešeno ve state
         requestList: SimpleListReducer(),   // seznam požadavků na digitalizaci
         requestDetail: DetailReducer(), // detail vybraného požadavku na digitalizaci
+        daoPackageList: SimpleListReducer(),   // seznam všech balíčků pro daný AS
+        daoUnassignedPackageList: SimpleListReducer(),   // seznam nepřiřazených balíčků pro daný AS
+        daoPackageDetail: DetailReducer(), // detail vybraného balíčků
+        nodeDaoList: SimpleListReducer(), // seznam DAO pro node
+        nodeDaoListAssign: SimpleListReducer(), // seznam DAO pro node sloužící pro node, které jsou sekundární, např. pro přiřazení atp.
+        packageDaoList: SimpleListReducer(), // seznam DAO pro balíček
         reducer: fund,
     };
 
@@ -222,8 +228,14 @@ export function fund(state, action) {
                 fundAction: fundAction(undefined, {type: ''}),
                 versionValidation: versionValidation(undefined, {type: ''}),
                 fundNodesError: {},
-                requestList: SimpleListReducer(),   // seznam požadavků na digitalizaci
-                requestDetail: DetailReducer(), // detail vybraného požadavku na digitalizaci
+                requestList: SimpleListReducer(),
+                requestDetail: DetailReducer(),
+                daoPackageList: SimpleListReducer(),
+                daoUnassignedPackageList: SimpleListReducer(),
+                daoPackageDetail: DetailReducer(),
+                nodeDaoList: SimpleListReducer(),
+                nodeDaoListAssign: SimpleListReducer(),
+                packageDaoList: SimpleListReducer(),
                 reducer: fund,
             }
         case types.STORE_SAVE:
@@ -326,6 +338,7 @@ export function fund(state, action) {
             };
             return consolidateState(state, result);
         }
+        case types.FUND_NODE_INCREASE_VERSION:
         case types.CHANGE_FUND_RECORD:
         case types.CHANGE_NODES:
         case types.CHANGE_ADD_LEVEL:
@@ -344,7 +357,8 @@ export function fund(state, action) {
             };
             return consolidateState(state, result);
         }
-        case types.CHANGE_CONFORMITY_INFO: {
+        case types.CHANGE_CONFORMITY_INFO:
+        case types.CHANGE_NODE_REQUESTS: {
             const result = {
                 ...state,
                 fundTree: fundTree(state.fundTree, action),

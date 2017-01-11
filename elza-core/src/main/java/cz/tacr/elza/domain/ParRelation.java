@@ -1,6 +1,7 @@
 package cz.tacr.elza.domain;
 
 import java.util.Comparator;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,7 +12,7 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -32,7 +33,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParRelation extends AbstractVersionableEntity implements cz.tacr.elza.api.ParRelation<ParParty, ParRelationType, ParUnitdate> {
+public class ParRelation extends AbstractVersionableEntity implements cz.tacr.elza.api.ParRelation<ParParty, ParRelationType, ParUnitdate, ParRelationEntity> {
 
     @Id
     @GeneratedValue
@@ -62,6 +63,9 @@ public class ParRelation extends AbstractVersionableEntity implements cz.tacr.el
     @Column
     private String source;
 
+    @OneToMany(mappedBy = "relation", fetch = FetchType.LAZY)
+    private List<ParRelationEntity> relationEntities;
+
     @Override
     public Integer getRelationId() {
         return relationId;
@@ -82,10 +86,12 @@ public class ParRelation extends AbstractVersionableEntity implements cz.tacr.el
         this.party = party;
     }
 
+    @Override
     public ParRelationType getRelationType() {
         return relationType;
     }
 
+    @Override
     public void setRelationType(final ParRelationType relationType) {
         this.relationType = relationType;
     }
@@ -128,6 +134,16 @@ public class ParRelation extends AbstractVersionableEntity implements cz.tacr.el
     @Override
     public void setSource(final String source) {
         this.source = source;
+    }
+
+    @Override
+    public List<ParRelationEntity> getRelationEntities() {
+        return relationEntities;
+    }
+
+    @Override
+    public void setRelationEntities(final List<ParRelationEntity> relationEntities) {
+        this.relationEntities = relationEntities;
     }
 
     @Override
