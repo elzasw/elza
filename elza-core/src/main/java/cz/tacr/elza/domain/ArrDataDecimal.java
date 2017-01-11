@@ -23,12 +23,11 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 @Entity(name = "arr_data_decimal")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrDataDecimal extends ArrData implements cz.tacr.elza.api.ArrDataDecimal {
+public class ArrDataDecimal extends ArrData {
 
     @Column(nullable = false)
     private BigDecimal value;
 
-    @Override
     public BigDecimal getValue() {
         return value;
     }
@@ -38,7 +37,6 @@ public class ArrDataDecimal extends ArrData implements cz.tacr.elza.api.ArrDataD
         return value.doubleValue();
     }
 
-    @Override
     public void setValue(final BigDecimal value) {
         this.value = value;
     }

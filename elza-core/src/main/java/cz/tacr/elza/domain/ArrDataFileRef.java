@@ -1,11 +1,17 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 import org.hibernate.search.annotations.Indexed;
 import org.springframework.data.rest.core.annotation.RestResource;
 
-import javax.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 
 
 /**
@@ -18,7 +24,7 @@ import javax.persistence.*;
 @Entity(name = "arr_data_file_ref")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrDataFileRef extends ArrData implements cz.tacr.elza.api.ArrDataFileRef<ArrFile> {
+public class ArrDataFileRef extends ArrData {
 
     public static final String FILE = "file";
 
@@ -27,12 +33,10 @@ public class ArrDataFileRef extends ArrData implements cz.tacr.elza.api.ArrDataF
     @JoinColumn(name = "fileId", nullable = false)
     private ArrFile file;
 
-    @Override
     public ArrFile getFile() {
         return file;
     }
 
-    @Override
     public void setFile(final ArrFile file) {
         this.file = file;
     }

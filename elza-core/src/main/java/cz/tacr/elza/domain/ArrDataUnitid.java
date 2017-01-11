@@ -20,17 +20,15 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 @Entity(name = "arr_data_unitid")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrDataUnitid extends ArrData implements cz.tacr.elza.api.ArrDataUnitid {
+public class ArrDataUnitid extends ArrData {
 
     @Column(length = StringLength.LENGTH_250, nullable = false)
     private String value;
 
-    @Override
     public String getValue() {
         return value;
     }
 
-    @Override
     public void setValue(final String value) {
         this.value = value;
     }

@@ -21,19 +21,17 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 @Entity(name = "arr_data_text")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrDataText extends ArrData implements cz.tacr.elza.api.ArrDataText{
+public class ArrDataText extends ArrData {
 
     @Column(nullable = false)
     @Lob
     @Type(type = "org.hibernate.type.TextType")
     private String value;
 
-    @Override
     public String getValue() {
         return value;
     }
 
-    @Override
     public void setValue(final String value) {
         this.value = value;
     }

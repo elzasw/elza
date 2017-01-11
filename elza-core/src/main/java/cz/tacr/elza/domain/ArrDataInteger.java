@@ -22,19 +22,17 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 @Entity(name = "arr_data_integer")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrDataInteger extends ArrData implements cz.tacr.elza.api.ArrDataInteger{
+public class ArrDataInteger extends ArrData {
 
     @Column(nullable = false)
     private Integer value;
 
     @Field(name = "valueInt", store = Store.YES)
     @NumericField
-    @Override
     public Integer getValue() {
         return value;
     }
 
-    @Override
     public void setValue(final Integer value) {
         this.value = value;
     }
