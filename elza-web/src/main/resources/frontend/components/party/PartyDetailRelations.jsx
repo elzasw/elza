@@ -63,6 +63,7 @@ class PartyDetailRelations extends AbstractReactComponent {
     render() {
         const {party, label, relationType} = this.props;
         const relations = party.relations ? party.relations.filter(i => i.relationTypeId == relationType.id) : [];
+
         let addButton = null;
         if (relationType.relationClassType.repeatability == RELATION_CLASS_TYPE_REPEATABILITY.MULTIPLE ||
             (relationType.relationClassType.repeatability == RELATION_CLASS_TYPE_REPEATABILITY.UNIQUE &&
@@ -70,35 +71,48 @@ class PartyDetailRelations extends AbstractReactComponent {
             addButton = <Button bsStyle="default" onClick={this.handleRelationAdd}><Icon glyph="fa-plus" /></Button>;
         }
 
-        return <div className="party-detail-relations">
-            <div>
-                <label>{label}</label>
-                {addButton}
-            </div>
-            {relations.map((relation, index) => <div key={relation.id} className="value-group relation-group flex">
-                <div className="flex-1">
-                    {(relationType.useUnitdate == USE_UNITDATE_ENUM.INTERVAL || relationType.useUnitdate == USE_UNITDATE_ENUM.ONE) && relation.from && relation.from.value && <div className="flex flex-1 no-wrap-group">
-                        {relationType.relationClassType.code !== RELATION_CLASS_CODES && <div className="item">{relationType.relationClassType.name}: </div>}
+        return (
+            <div className="party-detail-relations">
+                <div>
+                    <label>{label}</label>
+                    {addButton}
+                </div>
+                {relations.map((relation, index) =>
+                <div key={relation.id} className="value-group relation-group flex">
+                    <div className="flex-1">
+                        {(relationType.useUnitdate == USE_UNITDATE_ENUM.INTERVAL
+                        || relationType.useUnitdate == USE_UNITDATE_ENUM.ONE)
+                        && relation.from
+                        && (relation.from.value || relation.from.textDate || relation.from.note)
+                        && <div className="flex flex-1 no-wrap-group">
+                            <label>{relationType.useUnitdate == USE_UNITDATE_ENUM.ONE ? i18n('party.relation.date')+":" : i18n('party.relation.from')+":"}</label>
                             {relation.from.value && <div className="item">{relation.from.value}</div>}
-                            {relation.from.textDate && <div className="item">{relation.from.textDate}</div>}
-                            {relation.from.note && <div className="note">{relation.from.note}</div>}
-                    </div>}
-                    {relationType.useUnitdate == USE_UNITDATE_ENUM.INTERVAL && relation.to && relation.to.value && <div className="flex flex-1 no-wrap-group">
-                        {relation.to.value && <div className="item">{relation.to.value}</div>}
-                        {relation.to.textDate && <div className="item">{relation.to.textDate}</div>}
-                        {relation.to.note && <div className="note">{relation.to.note}</div>}
-                    </div>}
-                    {relation.relationEntities && relation.relationEntities.map(entity => <div key={entity.id}>
-                        <label>{entity.roleType.name}:</label> {entity.record.record}<small>{entity.record.note}</small>
-                    </div>)}
-                    {relation.note && <div>{relation.note}</div>}
-                </div>
-                <div className="actions">
-                    <Button onClick={() => this.handleRelationUpdate(relation)}><Icon glyph="fa-pencil" /></Button>
-                    <Button onClick={() => this.handleRelationDelete(relation.id)}><Icon glyph="fa-times" /></Button>
-                </div>
-            </div>)}
-        </div>
+                            {relation.from.textDate && <div className="item">"{relation.from.textDate}"</div>}
+                            {relation.from.note && <div className="item note">{relation.from.note}</div>}
+                        </div>}
+                        {relationType.useUnitdate == USE_UNITDATE_ENUM.INTERVAL
+                        && relation.to
+                        && (relation.to.value || relation.to.textDate || relation.to.note)
+                        && <div className="flex flex-1 no-wrap-group">
+                            <label>{i18n('party.relation.to')+":"}</label>
+                            {relation.to.value && <div className="item">{relation.to.value}</div>}
+                            {relation.to.textDate && <div className="item">"{relation.to.textDate}"</div>}
+                            {relation.to.note && <div className="item note">{relation.to.note}</div>}
+                        </div>}
+                        {relation.relationEntities && relation.relationEntities.map(entity =>
+                        <div className="flex flex-1 no-wrap-group" key={entity.id}>
+                            <label>{entity.roleType.name}:</label>
+                            <div className="item">{entity.record.record}</div>
+                            <div className="item note">{entity.record.note}</div>
+                        </div>)}
+                        {relation.note && <div className="note">{relation.note}</div>}
+                    </div>
+                    <div className="actions">
+                        <Button onClick={() => this.handleRelationUpdate(relation)}><Icon glyph="fa-pencil" /></Button>
+                        <Button onClick={() => this.handleRelationDelete(relation.id)}><Icon glyph="fa-times" /></Button>
+                    </div>
+                </div>)}
+            </div>);
     }
 }
 
