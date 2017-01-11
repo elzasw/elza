@@ -9,14 +9,11 @@ import cz.tacr.elza.dao.DCStorageConfig;
 import cz.tacr.elza.dao.bo.resource.DigitizationRequestResource;
 import cz.tacr.elza.dao.common.GlobalLock;
 import cz.tacr.elza.dao.exception.DaoComponentException;
-import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
+import cz.tacr.elza.ws.digitization.v1.DigitizationServiceException;
 import cz.tacr.elza.ws.types.v1.DigitizationRequest;
 
 @Service
 public class StorageDigitizationRequestService {
-
-	@Autowired
-	private ResourceService resourceService;
 
 	@Autowired
 	private DCStorageConfig storageConfig;
@@ -51,9 +48,9 @@ public class StorageDigitizationRequestService {
 		});
 	}
 
-	public void checkRejectMode() throws DaoServiceException {
+	public void checkRejectMode() throws DigitizationServiceException {
 		if (storageConfig.isRejectMode()) {
-			throw new DaoServiceException("reject mode enabled");
+			throw new DigitizationServiceException("reject mode enabled");
 		}
 	}
 }

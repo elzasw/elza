@@ -26,6 +26,7 @@ public class DigitizationFrontdeskImpl implements DigitizationFrontdesk {
 
 	@Override
 	public String postRequest(DigitizationRequest digitizationRequest) throws DigitizationServiceException {
+		storageDigitizationRequestService.checkRejectMode();
 		try {
 			return storageDigitizationRequestService.createRequest(digitizationRequest);
 		} catch (DaoComponentException e) {

@@ -17,12 +17,15 @@ import cz.tacr.elza.ws.core.v1.DaoRequestsService;
 import cz.tacr.elza.ws.types.v1.RequestRevoked;
 
 @RestController
-@RequestMapping(value = "/request")
-public class RequestController {
+@RequestMapping(value = "/request/dao")
+public class DaoRequestController {
 
 	@Autowired
 	private StorageDaoRequestService storageDaoRequestService;
 
+	/**
+	 * Confirms destruction request only for storage (no notification send to external system).
+	 */
 	@ResponseBody
 	@ResponseStatus(HttpStatus.ACCEPTED)
 	@RequestMapping(value = "/destr/{requestIdentifier}/confirm", method = RequestMethod.PUT)
@@ -30,6 +33,11 @@ public class RequestController {
 		storageDaoRequestService.confirmRequest(requestIdentifier, true);
 	}
 
+	/**
+	 * Sends notification about confirmed destruction to external system.
+	 * This action should be called afters success of {@link #confirmDestrRequest(String)}.
+	 * Connection to external system must be defined in /{repositoryIdentifier}/external-systems-config.yaml.
+	 */
 	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
 	@RequestMapping(value = "/destr/{requestIdentifier}/finished", method = RequestMethod.POST)
@@ -39,6 +47,9 @@ public class RequestController {
 		service.destructionRequestFinished(requestIdentifier);
 	}
 
+	/**
+	 * Rejects destruction request only for storage (no notification send to external system).
+	 */
 	@ResponseBody
 	@ResponseStatus(HttpStatus.ACCEPTED)
 	@RequestMapping(value = "/destr/{requestIdentifier}/reject", method = RequestMethod.DELETE)
@@ -46,6 +57,11 @@ public class RequestController {
 		storageDaoRequestService.deleteRequest(requestIdentifier, true);
 	}
 
+	/**
+	 * Sends notification about rejected destruction to external system.
+	 * This action should be called afters success of {@link #rejectDestrRequest(String)}.
+	 * Connection to external system must be defined in /{repositoryIdentifier}/external-systems-config.yaml.
+	 */
 	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
 	@RequestMapping(value = "/destr/{requestIdentifier}/revoked", method = RequestMethod.POST)
@@ -59,6 +75,9 @@ public class RequestController {
 		service.destructionRequestRevoked(requestRevoked);
 	}
 
+	/**
+	 * Confirms transfer request only for storage (no notification send to external system).
+	 */
 	@ResponseBody
 	@ResponseStatus(HttpStatus.ACCEPTED)
 	@RequestMapping(value = "/trans/{requestIdentifier}/confirm", method = RequestMethod.PUT)
@@ -66,6 +85,11 @@ public class RequestController {
 		storageDaoRequestService.confirmRequest(requestIdentifier, false);
 	}
 
+	/**
+	 * Sends notification about confirmed transfer to external system.
+	 * This action should be called afters success of {@link #confirmTransRequest(String)}.
+	 * Connection to external system must be defined in /{repositoryIdentifier}/external-systems-config.yaml.
+	 */
 	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
 	@RequestMapping(value = "/trans/{requestIdentifier}/finished", method = RequestMethod.POST)
@@ -75,6 +99,9 @@ public class RequestController {
 		service.transferRequestFinished(requestIdentifier);
 	}
 
+	/**
+	 * Rejects transfer request only for storage (no notification send to external system).
+	 */
 	@ResponseBody
 	@ResponseStatus(HttpStatus.ACCEPTED)
 	@RequestMapping(value = "/trans/{requestIdentifier}/reject", method = RequestMethod.DELETE)
@@ -82,6 +109,11 @@ public class RequestController {
 		storageDaoRequestService.deleteRequest(requestIdentifier, false);
 	}
 
+	/**
+	 * Sends notification about rejected transfer to external system.
+	 * This action should be called afters success of {@link #rejectTransRequest(String)}.
+	 * Connection to external system must be defined in /{repositoryIdentifier}/external-systems-config.yaml.
+	 */
 	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
 	@RequestMapping(value = "/trans/{requestIdentifier}/revoked", method = RequestMethod.POST)
