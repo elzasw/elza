@@ -1,14 +1,10 @@
 package cz.tacr.elza.domain;
 
-import cz.tacr.elza.domain.enumeration.StringLength;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 import javax.persistence.Table;
+
+import cz.tacr.elza.domain.enumeration.StringLength;
 
 /**
  * Uložiště digitalizátů.
@@ -18,7 +14,7 @@ import javax.persistence.Table;
  */
 @Entity(name = "arr_digital_repository")
 @Table
-public class ArrDigitalRepository extends SysExternalSystem implements cz.tacr.elza.api.ArrDigitalRepository {
+public class ArrDigitalRepository extends SysExternalSystem {
 
     @Column(length = StringLength.LENGTH_1000)
     private String viewDaoUrl;
@@ -29,32 +25,26 @@ public class ArrDigitalRepository extends SysExternalSystem implements cz.tacr.e
     @Column(nullable = false)
     private Boolean sendNotification;
 
-    @Override
     public String getViewDaoUrl() {
         return viewDaoUrl;
     }
 
-    @Override
     public void setViewDaoUrl(final String viewDaoUrl) {
         this.viewDaoUrl = viewDaoUrl;
     }
 
-    @Override
     public String getViewFileUrl() {
         return viewFileUrl;
     }
 
-    @Override
     public void setViewFileUrl(final String viewFileUrl) {
         this.viewFileUrl = viewFileUrl;
     }
 
-    @Override
     public Boolean getSendNotification() {
         return sendNotification;
     }
 
-    @Override
     public void setSendNotification(final Boolean sendNotification) {
         this.sendNotification = sendNotification;
     }

@@ -16,7 +16,7 @@ import javax.persistence.Table;
  */
 @Entity(name = "arr_digitization_request_node")
 @Table
-public class ArrDigitizationRequestNode implements cz.tacr.elza.api.ArrDigitizationRequestNode<ArrDigitizationRequest, ArrNode> {
+public class ArrDigitizationRequestNode {
 
     @Id
     @GeneratedValue
@@ -30,32 +30,26 @@ public class ArrDigitizationRequestNode implements cz.tacr.elza.api.ArrDigitizat
     @JoinColumn(name = "nodeId", nullable = false)
     private ArrNode node;
 
-    @Override
     public Integer getDigitizationRequestNodeId() {
         return digitizationRequestNodeId;
     }
 
-    @Override
     public void setDigitizationRequestNodeId(final Integer digitizationRequestNodeId) {
         this.digitizationRequestNodeId = digitizationRequestNodeId;
     }
 
-    @Override
     public ArrDigitizationRequest getDigitizationRequest() {
         return digitizationRequest;
     }
 
-    @Override
     public void setDigitizationRequest(final ArrDigitizationRequest digitizationRequest) {
         this.digitizationRequest = digitizationRequest;
     }
 
-    @Override
     public ArrNode getNode() {
         return node;
     }
 
-    @Override
     public void setNode(final ArrNode node) {
         this.node = node;
     }

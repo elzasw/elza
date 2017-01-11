@@ -37,7 +37,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class RegRecord extends AbstractVersionableEntity
-        implements cz.tacr.elza.api.RegRecord<RegRegisterType, RegExternalSystem, RegVariantRecord, RegRecord,
+        implements cz.tacr.elza.api.RegRecord<RegRegisterType, RegVariantRecord, RegRecord,
         RegScope> {
 
     @Id
@@ -143,12 +143,10 @@ public class RegRecord extends AbstractVersionableEntity
         this.parentRecord = parentRecord;
     }
 
-    @Override
     public RegExternalSystem getExternalSystem() {
         return externalSystem;
     }
 
-    @Override
     public void setExternalSystem(final RegExternalSystem externalSystem) {
         this.externalSystem = externalSystem;
     }

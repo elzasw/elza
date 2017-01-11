@@ -11,7 +11,7 @@ import cz.tacr.elza.api.interfaces.IRegScope;
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
-public interface RegRecord<RT extends RegRegisterType, ES extends RegExternalSystem, VR extends RegVariantRecord,
+public interface RegRecord<RT extends RegRegisterType, VR extends RegVariantRecord,
         RR extends RegRecord, RS extends RegScope>
     extends Versionable, Serializable, IRegScope {
 
@@ -50,18 +50,6 @@ public interface RegRecord<RT extends RegRegisterType, ES extends RegExternalSys
      * @param parentRecord nadřazený záznam rejstříku
      */
     void setParentRecord(RR parentRecord);
-
-    /**
-     * Externí zdroj hesel.
-     * @return  externí zdroj hesel
-     */
-    ES getExternalSystem();
-
-    /**
-     * Externí zdroj hesel.
-     * @param externalSystem externí zdroj hesel
-     */
-    void setExternalSystem(ES externalSystem);
 
     /**
      * Rejstříkové heslo.

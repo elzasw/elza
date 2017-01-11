@@ -1,11 +1,6 @@
 package cz.tacr.elza.domain;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
 import javax.persistence.Entity;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 import javax.persistence.Table;
 
 /**
@@ -16,7 +11,7 @@ import javax.persistence.Table;
  */
 @Entity(name = "arr_digitization_frontdesk")
 @Table
-public class ArrDigitizationFrontdesk extends SysExternalSystem implements cz.tacr.elza.api.ArrDigitizationFrontdesk {
+public class ArrDigitizationFrontdesk extends SysExternalSystem {
 
     @Override
     public String toString() {
