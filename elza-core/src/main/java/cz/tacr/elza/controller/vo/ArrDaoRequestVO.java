@@ -16,6 +16,8 @@ public class ArrDaoRequestVO extends ArrRequestVO {
 
     private String description;
 
+    private Integer daosCount;
+
     private List<ArrDaoVO> daos;
 
     public ArrDaoRequest.Type getType() {
@@ -32,6 +34,14 @@ public class ArrDaoRequestVO extends ArrRequestVO {
 
     public void setDescription(final String description) {
         this.description = description;
+    }
+
+    public Integer getDaosCount() {
+        return daosCount;
+    }
+
+    public void setDaosCount(final Integer daosCount) {
+        this.daosCount = daosCount;
     }
 
     public List<ArrDaoVO> getDaos() {

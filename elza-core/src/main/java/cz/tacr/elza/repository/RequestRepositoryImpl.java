@@ -1,6 +1,7 @@
 package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDaoRequest;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrRequest;
@@ -73,6 +74,11 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
                 if (request.getDiscriminator() == ArrRequest.ClassType.DIGITIZATION) {
                     ArrDigitizationRequest digitizationRequest = (ArrDigitizationRequest) request;
                     if (digitizationRequest.getDescription() == null || !digitizationRequest.getDescription().matches(".*(" + description + ").*")) {
+                        iterator.remove();
+                    }
+                } else if (request.getDiscriminator() == ArrRequest.ClassType.DAO) {
+                    ArrDaoRequest daoRequest = (ArrDaoRequest) request;
+                    if (daoRequest.getDescription() == null || !daoRequest.getDescription().matches(".*(" + description + ").*")) {
                         iterator.remove();
                     }
                 } else {
