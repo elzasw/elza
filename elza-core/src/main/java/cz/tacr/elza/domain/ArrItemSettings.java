@@ -1,7 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -9,6 +7,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * Implementace {@link cz.tacr.elza.api.ArrItemSettings}
@@ -18,7 +18,7 @@ import javax.persistence.ManyToOne;
  */
 @Entity(name = "arr_item_settings")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrItemSettings implements cz.tacr.elza.api.ArrItemSettings<RulItemType, ArrOutputDefinition> {
+public class ArrItemSettings {
 
     @Id
     @GeneratedValue
@@ -35,42 +35,34 @@ public class ArrItemSettings implements cz.tacr.elza.api.ArrItemSettings<RulItem
     @Column(nullable = false)
     private Boolean blockActionResult;
 
-    @Override
     public Integer getItemSettingsId() {
         return itemSettingsId;
     }
 
-    @Override
     public void setItemSettingsId(final Integer itemSettingsId) {
         this.itemSettingsId = itemSettingsId;
     }
 
-    @Override
     public RulItemType getItemType() {
         return itemType;
     }
 
-    @Override
     public void setItemType(final RulItemType itemType) {
         this.itemType = itemType;
     }
 
-    @Override
     public ArrOutputDefinition getOutputDefinition() {
         return outputDefinition;
     }
 
-    @Override
     public void setOutputDefinition(final ArrOutputDefinition outputDefinition) {
         this.outputDefinition = outputDefinition;
     }
 
-    @Override
     public Boolean getBlockActionResult() {
         return blockActionResult;
     }
 
-    @Override
     public void setBlockActionResult(final Boolean blockActionResult) {
         this.blockActionResult = blockActionResult;
     }

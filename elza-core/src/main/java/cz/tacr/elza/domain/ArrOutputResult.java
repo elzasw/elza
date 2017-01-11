@@ -1,9 +1,19 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import javax.persistence.*;
 import java.util.List;
+
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * Implementace třídy {@link cz.tacr.elza.api.ArrOutputResult}
@@ -14,7 +24,7 @@ import java.util.List;
 @Entity(name = "arr_output_result")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"outputDefinitionId"}))
-public class ArrOutputResult implements cz.tacr.elza.api.ArrOutputResult<ArrOutputDefinition, RulTemplate, ArrChange, ArrOutputFile> {
+public class ArrOutputResult {
 
     @Id
     @GeneratedValue
@@ -35,7 +45,6 @@ public class ArrOutputResult implements cz.tacr.elza.api.ArrOutputResult<ArrOutp
     @OneToMany(mappedBy = "outputResult", fetch = FetchType.LAZY)
     private List<ArrOutputFile> outputFiles;
 
-    @Override
     public Integer getOutputResultId() {
         return outputResultId;
     }
@@ -44,43 +53,35 @@ public class ArrOutputResult implements cz.tacr.elza.api.ArrOutputResult<ArrOutp
         this.outputResultId = outputResultId;
     }
 
-    @Override
     public ArrOutputDefinition getOutputDefinition() {
         return outputDefinition;
     }
 
-    @Override
-    public void setOutputDefinition(ArrOutputDefinition outputDefinition) {
+    public void setOutputDefinition(final ArrOutputDefinition outputDefinition) {
         this.outputDefinition = outputDefinition;
     }
 
-    @Override
     public RulTemplate getTemplate() {
         return template;
     }
 
-    @Override
-    public void setTemplate(RulTemplate template) {
+    public void setTemplate(final RulTemplate template) {
         this.template = template;
     }
 
-    @Override
     public ArrChange getChange() {
         return change;
     }
 
-    @Override
-    public void setChange(ArrChange change) {
+    public void setChange(final ArrChange change) {
         this.change = change;
     }
 
-    @Override
     public List<ArrOutputFile> getOutputFiles() {
         return outputFiles;
     }
 
-    @Override
-    public void setOutputFiles(List<ArrOutputFile> outputFiles) {
+    public void setOutputFiles(final List<ArrOutputFile> outputFiles) {
         this.outputFiles = outputFiles;
     }
 }

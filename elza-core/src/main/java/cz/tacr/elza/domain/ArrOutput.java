@@ -1,8 +1,15 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.io.Serializable;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * Implementace třídy {@link cz.tacr.elza.api.ArrOutput}
@@ -12,7 +19,7 @@ import javax.persistence.*;
  */
 @Entity(name = "arr_output")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrOutput implements cz.tacr.elza.api.ArrOutput<ArrOutputDefinition, ArrChange> {
+public class ArrOutput implements Serializable {
 
     @Id
     @GeneratedValue
@@ -30,42 +37,34 @@ public class ArrOutput implements cz.tacr.elza.api.ArrOutput<ArrOutputDefinition
     @JoinColumn(name = "lockChangeId")
     private ArrChange lockChange;
 
-    @Override
     public Integer getOutputId() {
         return outputId;
     }
 
-    @Override
     public void setOutputId(final Integer outputId) {
         this.outputId = outputId;
     }
 
-    @Override
     public ArrOutputDefinition getOutputDefinition() {
         return outputDefinition;
     }
 
-    @Override
     public void getOutputDefinition(final ArrOutputDefinition outputDefinition) {
         this.outputDefinition = outputDefinition;
     }
 
-    @Override
     public ArrChange getCreateChange() {
         return createChange;
     }
 
-    @Override
     public void setCreateChange(final ArrChange createChange) {
         this.createChange = createChange;
     }
 
-    @Override
     public ArrChange getLockChange() {
         return lockChange;
     }
 
-    @Override
     public void setLockChange(final ArrChange lockChange) {
         this.lockChange = lockChange;
     }

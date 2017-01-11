@@ -1,8 +1,15 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.io.Serializable;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * Implementace třídy {@link cz.tacr.elza.api.ArrNodeOutput}
@@ -12,7 +19,7 @@ import javax.persistence.*;
  */
 @Entity(name = "arr_node_output")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrNodeOutput implements cz.tacr.elza.api.ArrNodeOutput<ArrOutputDefinition, ArrChange, ArrNode> {
+public class ArrNodeOutput implements Serializable {
 
     @Id
     @GeneratedValue
@@ -34,12 +41,10 @@ public class ArrNodeOutput implements cz.tacr.elza.api.ArrNodeOutput<ArrOutputDe
     @JoinColumn(name = "deleteChangeId")
     private ArrChange deleteChange;
 
-    @Override
     public Integer getNodeOutputId() {
         return nodeOutputId;
     }
 
-    @Override
     public void setNodeOutputId(final Integer nodeOutputId) {
         this.nodeOutputId = nodeOutputId;
     }
@@ -48,37 +53,30 @@ public class ArrNodeOutput implements cz.tacr.elza.api.ArrNodeOutput<ArrOutputDe
         return outputDefinition;
     }
 
-    @Override
     public void setOutputDefinition(final ArrOutputDefinition outputDefinition) {
         this.outputDefinition = outputDefinition;
     }
 
-    @Override
     public ArrNode getNode() {
         return node;
     }
 
-    @Override
     public void setNode(final ArrNode node) {
         this.node = node;
     }
 
-    @Override
     public ArrChange getCreateChange() {
         return createChange;
     }
 
-    @Override
     public void setCreateChange(final ArrChange createChange) {
         this.createChange = createChange;
     }
 
-    @Override
     public ArrChange getDeleteChange() {
         return deleteChange;
     }
 
-    @Override
     public void setDeleteChange(final ArrChange deleteChange) {
         this.deleteChange = deleteChange;
     }

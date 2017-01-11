@@ -1,12 +1,13 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.springframework.data.rest.core.annotation.RestResource;
-
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+
+import org.springframework.data.rest.core.annotation.RestResource;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
@@ -17,7 +18,7 @@ import javax.persistence.ManyToOne;
  */
 @Entity(name = "arr_output_file")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrOutputFile extends DmsFile implements cz.tacr.elza.api.ArrOutputFile<ArrOutputResult> {
+public class ArrOutputFile extends DmsFile {
 
     public static final String OUTPUT_RESULT = "outputResult";
 
@@ -26,13 +27,11 @@ public class ArrOutputFile extends DmsFile implements cz.tacr.elza.api.ArrOutput
     @JoinColumn(name = "outputResultId", nullable = false)
     private ArrOutputResult outputResult;
 
-    @Override
     public ArrOutputResult getOutputResult() {
         return outputResult;
     }
 
-    @Override
-    public void setOutputResult(ArrOutputResult outputResult) {
+    public void setOutputResult(final ArrOutputResult outputResult) {
         this.outputResult = outputResult;
     }
 }

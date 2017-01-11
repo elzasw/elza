@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
-public class ArrOutputItem<T extends ArrItemData> extends ArrItem<T> implements cz.tacr.elza.api.ArrOutputItem<ArrOutputDefinition> {
+public class ArrOutputItem<T extends ArrItemData> extends ArrItem<T> {
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrOutputDefinition.class)
@@ -48,7 +48,6 @@ public class ArrOutputItem<T extends ArrItemData> extends ArrItem<T> implements 
         return outputDefinition;
     }
 
-    @Override
     public void setOutputDefinition(final ArrOutputDefinition outputDefinition) {
         this.outputDefinition = outputDefinition;
     }

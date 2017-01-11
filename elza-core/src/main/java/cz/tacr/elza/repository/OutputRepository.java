@@ -1,14 +1,15 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.domain.ArrOutputDefinition;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
 
 /**
  * Respozitory pro verzi pojmenovaného výstupu z archivního výstupu.
