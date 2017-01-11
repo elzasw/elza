@@ -3,6 +3,7 @@ package cz.tacr.elza.repository;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoRequest;
 import cz.tacr.elza.domain.ArrDaoRequestDao;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -26,4 +27,7 @@ public interface DaoRequestDaoRepository extends ElzaJpaRepository<ArrDaoRequest
     List<ArrDaoRequestDao> findByDaoRequestAndDao(ArrDaoRequest daoRequest, List<ArrDao> daos);
 
     List<ArrDaoRequestDao> findByDao(ArrDao arrDao);
+
+    @Modifying
+    void deleteByDaoRequest(ArrDaoRequest daoRequest);
 }

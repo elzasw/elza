@@ -316,8 +316,13 @@ public class RequestService {
                     requestRepository.delete(request);
                     break;
                 }
+                case DAO: {
+                    daoRequestDaoRepository.deleteByDaoRequest((ArrDaoRequest) request);
+                    requestRepository.delete(request);
+                    break;
+                }
                 default:
-                    throw new IllegalStateException(request.getDiscriminator() != null ? request.getDiscriminator().toString() : "null");
+                    throw new IllegalStateException("Neimplementovaný typ požadavku: " + request.getDiscriminator());
             }
             sendNotification(openVersion, request, EventType.REQUEST_DELETE, null);
         }
