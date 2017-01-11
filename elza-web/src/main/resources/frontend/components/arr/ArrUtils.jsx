@@ -398,7 +398,7 @@ export function getRequestType(digReq) {
     switch (digReq["@class"]) {
         case ".ArrDigitizationRequestVO":
             return DIGITIZATION;
-        case ".ArrDaoLinkRequest":
+        case ".ArrDaoLinkRequestVO":
             return DAO_LINK;
         case ".ArrDaoRequestVO":
             return DAO;

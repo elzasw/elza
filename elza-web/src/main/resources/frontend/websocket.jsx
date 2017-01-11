@@ -235,9 +235,11 @@ function processEvents(values) {
                 daoLink(value);
                 break;
             case 'REQUEST_CHANGE':
+            case 'REQUEST_DAO_CHANGE':
                 arrRequest(value);
                 break;
             case 'REQUEST_CREATE':
+            case 'REQUEST_DAO_CREATE':
                 arrRequest(value);
                 break;
             case 'CONFORMITY_INFO':

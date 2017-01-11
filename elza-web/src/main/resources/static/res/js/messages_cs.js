@@ -950,6 +950,7 @@ var messages = {
     "arr.request.title.state.ACCEPTED": "přijmuto",
     "arr.request.title.state.REJECTED": "zamítnuto",
     "arr.request.title.nodes": "Seznam jednotek popisu",
+    "arr.request.title.nodes.daosWithoutNode": "Bez JP",
     "arr.request.title.nodesAdded": "JP byly přidány",
     "arr.request.title.type.dao.DESTRUCTION": "Požadavek na skartaci",
     "arr.request.title.type.dao.TRANSFER": "Požadavek na delimitaci",
