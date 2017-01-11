@@ -1,5 +1,5 @@
 /**
- * Formulář Požadavku na digitaliyaci.
+ * Formulář Požadavku na digitaliyaci nebo skartaci/delimitaci.
  */
 
 import React from 'react';
@@ -9,16 +9,25 @@ import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
 import {Modal, Button, Input, Form} from 'react-bootstrap';
 import {createDigitizationName} from './ArrUtils.jsx'
 import {indexById} from 'stores/app/utils.jsx';
-import * as digitizationActions from "actions/arr/digitizationActions";
+import * as arrRequestActions from "actions/arr/arrRequestActions";
 
-const DigitizationRequestForm = class extends AbstractReactComponent {
+const ArrRequestForm = class extends AbstractReactComponent {
     constructor(props) {
         super(props);
     }
 
+    static PropTypes = {
+        fundVersionId: React.PropTypes.number.isRequired,
+        type: React.PropTypes.oneOf(["DAO", "DIGITIZATION"]),
+    };
+
+    static fields = [
+        'digitizationRequestId',
+        'description',
+    ];
+
     componentDidMount() {
         this.fetchDigitizationRequestList({}, this.props);
-
     }
 
     componentWillReceiveProps(nextProps) {
@@ -26,45 +35,37 @@ const DigitizationRequestForm = class extends AbstractReactComponent {
     }
 
     fetchDigitizationRequestList = (prevProps, nextProps) => {
-        this.props.dispatch(digitizationActions.fetchPreparedListIfNeeded(nextProps.fundVersionId));
+        this.props.dispatch(arrRequestActions.fetchPreparedListIfNeeded(nextProps.fundVersionId, nextProps.type));
 
-        const digitizationRequestFetched = nextProps.preparedDigitizationRequestList.fetched && !nextProps.preparedDigitizationRequestList.isFetching;
-        const prevDigitizationRequestFetched = prevProps.preparedDigitizationRequestList &&  prevProps.preparedDigitizationRequestList.fetched && !prevProps.preparedDigitizationRequestList.isFetching;
+        const digitizationRequestFetched = nextProps.preparedRequestList.fetched && !nextProps.preparedRequestList.isFetching;
+        const prevDigitizationRequestFetched = prevProps.preparedRequestList &&  prevProps.preparedRequestList.fetched && !prevProps.preparedRequestList.isFetching;
         if (!prevDigitizationRequestFetched && digitizationRequestFetched) {    // seznam byl načten, zkusíme vybrat jednu z možností, pokud není nic vybráno
             const {fields: {digitizationRequestId, description}} = nextProps;
-            if (nextProps.preparedDigitizationRequestList.rows.length > 0 && digitizationRequestId.value === "") {
+            if (nextProps.preparedRequestList.rows.length > 0 && digitizationRequestId.value === "") {
                 let index = -1;
-                for (let i = 0; i < nextProps.preparedDigitizationRequestList.rows.length; i++) {
-                    let row = nextProps.preparedDigitizationRequestList.rows[i];
+                for (let i = 0; i < nextProps.preparedRequestList.rows.length; i++) {
+                    let row = nextProps.preparedRequestList.rows[i];
                     if (nextProps.userDetail.username == row.username || (nextProps.userDetail.username == 'admin' && row.username == null)) {
                         index = i;
                         break;
                     }
                 }
                 if (index >= 0) {
-                    digitizationRequestId.onChange(nextProps.preparedDigitizationRequestList.rows[index].id)
-                    description.onChange(nextProps.preparedDigitizationRequestList.rows[index].description)
+                    digitizationRequestId.onChange(nextProps.preparedRequestList.rows[index].id);
+                    description.onChange(nextProps.preparedRequestList.rows[index].description);
                 }
+            } else {
+                description.onChange("");
             }
         }
     }
 
-    static PropTypes = {
-        nodeId: React.PropTypes.number.isRequired,
-        fundVersionId: React.PropTypes.number.isRequired,
-};
-
-    static fields = [
-        'digitizationRequestId',
-        'description',
-    ];
-
     handleRequestChange = (e) => {
-        const {preparedDigitizationRequestList, fields: {digitizationRequestId, description}} = this.props;
+        const {preparedRequestList, fields: {digitizationRequestId, description}} = this.props;
         const id = e.target.value;
 
         if (id !== "") {  // vybrána nějaká možnost, převezmeme z ní popis
-            const digReq = preparedDigitizationRequestList.rows[indexById(preparedDigitizationRequestList.rows, id)];
+            const digReq = preparedRequestList.rows[indexById(preparedRequestList.rows, id)];
             digitizationRequestId.onChange(e);
             description.onChange(digReq.description);
         } else {    // vybrána možnost nového požadavku, vynulujeme popis
@@ -74,16 +75,16 @@ const DigitizationRequestForm = class extends AbstractReactComponent {
     }
 
     render() {
-        const {handleSubmit, onSubmitForm, userDetail, preparedDigitizationRequestList, onClose, fields: {digitizationRequestId, description}} = this.props;
-        const digitizationRequestFetched = preparedDigitizationRequestList.fetched && !preparedDigitizationRequestList.isFetching;
+        const {handleSubmit, onSubmitForm, userDetail, preparedRequestList, onClose, fields: {digitizationRequestId, description}} = this.props;
+        const digitizationRequestFetched = preparedRequestList.fetched && !preparedRequestList.isFetching;
 
         const form = (
             <div>
                 <FormInput label={i18n("arr.request.title.digitizationRequest")} componentClass="select" {...digitizationRequestId} onChange={this.handleRequestChange} disabled={!digitizationRequestFetched}>
                     <option key={-1} value="">{i18n('digitizationRequest.title.newRequest')}</option>
-                    {preparedDigitizationRequestList.fetched
-                    && !preparedDigitizationRequestList.isFetching
-                    && preparedDigitizationRequestList.rows.map(digReq => <option value={digReq.id}
+                    {preparedRequestList.fetched
+                    && !preparedRequestList.isFetching
+                    && preparedRequestList.rows.map(digReq => <option value={digReq.id}
                                                                           key={digReq.id}>{createDigitizationName(digReq, userDetail)}</option>)}
                 </FormInput>
                 <FormInput label={i18n("arr.request.title.description")} componentClass="textarea" {...description} disabled={!digitizationRequestFetched} />
@@ -112,12 +113,12 @@ function mapStateToProps(state) {
         refTables,
         packets: arrRegion.packets,
         userDetail,
-        preparedDigitizationRequestList: state.app.preparedDigitizationRequestList
+        preparedRequestList: state.app.preparedRequestList
     }
 }
 
 export default reduxForm({
-        form: 'digitizationRequestForm',
-        fields: DigitizationRequestForm.fields,
+        form: 'arrRequestForm',
+        fields: ArrRequestForm.fields,
     }, mapStateToProps
-)(DigitizationRequestForm)
+)(ArrRequestForm)

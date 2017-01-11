@@ -923,7 +923,8 @@ var messages = {
     "visiblePolicy.action.reset": "Vymazat",
     "visiblePolicy.action.reset.confirm": "Opravdu vymazat? Po vymazání definice budou přebírána pravidla kontroly z nadřízené jednotky popisu.",
 
-    "digitizationRequest.form.title": "Požadavek na digitalizát",
+    "arr.request.digitizationRequest.form.title": "Požadavek na digitalizát",
+    "arr.request.dao.form.title": "Požadavek na delimitaci/skartaci",
     "digitizationRequest.title.newRequest": "Nový",
     "arr.request.action.storeAndSend": "Uložit a odeslat",
     "arr.request.title.digitizationRequest": "Požadavek",

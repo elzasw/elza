@@ -23,7 +23,7 @@ import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
 import {fundOutputRemoveNodes, fundOutputAddNodes} from 'actions/arr/fundOutput.jsx'
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
-import * as digitizationActions from 'actions/arr/digitizationActions';
+import * as arrRequestActions from 'actions/arr/arrRequestActions';
 import RequestInlineForm from "./RequestInlineForm";
 import {DIGITIZATION, getRequestType} from './ArrUtils.jsx'
 
@@ -58,7 +58,7 @@ class ArrRequestDetail extends AbstractReactComponent {
     componentDidMount() {
         const {versionId, requestDetail} = this.props;
 
-        requestDetail.id !== null && this.dispatch(digitizationActions.fetchDetailIfNeeded(versionId, requestDetail.id));
+        requestDetail.id !== null && this.dispatch(arrRequestActions.fetchDetailIfNeeded(versionId, requestDetail.id));
 
         this.trySetFocus(this.props)
     }
@@ -66,7 +66,7 @@ class ArrRequestDetail extends AbstractReactComponent {
     componentWillReceiveProps(nextProps) {
         const {versionId, requestDetail} = nextProps;
 
-        requestDetail.id !== null && this.dispatch(digitizationActions.fetchDetailIfNeeded(versionId, requestDetail.id));
+        requestDetail.id !== null && this.dispatch(arrRequestActions.fetchDetailIfNeeded(versionId, requestDetail.id));
 
         this.trySetFocus(nextProps)
     }
@@ -94,7 +94,7 @@ class ArrRequestDetail extends AbstractReactComponent {
 
     handleSaveRequest = (data) => {
         const {versionId, requestDetail} = this.props;
-        this.dispatch(digitizationActions.requestEdit(versionId, requestDetail.id, data));
+        this.dispatch(arrRequestActions.requestEdit(versionId, requestDetail.id, data));
     }
 
     handleAddNodes = () => {
@@ -103,7 +103,7 @@ class ArrRequestDetail extends AbstractReactComponent {
         this.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
             <FundNodesSelectForm
                 onSubmitForm={(ids, nodes) => {
-                    this.dispatch(digitizationActions.addNodes(versionId, requestDetail, ids))
+                    this.dispatch(arrRequestActions.addNodes(versionId, requestDetail, ids))
                 }}
             />))
     };
@@ -112,7 +112,7 @@ class ArrRequestDetail extends AbstractReactComponent {
         const {versionId, requestDetail} = this.props;
 
         if (confirm(i18n("arr.fund.nodes.deleteNode"))) {
-            this.dispatch(digitizationActions.removeNode(versionId, requestDetail, node.id))
+            this.dispatch(arrRequestActions.removeNode(versionId, requestDetail, node.id))
         }
     };
 

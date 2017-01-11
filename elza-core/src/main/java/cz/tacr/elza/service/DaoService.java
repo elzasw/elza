@@ -166,7 +166,7 @@ public class DaoService {
             eventNotificationService.publishEvent(event);
 
             // vytvořit požadavek pro externí systém na připojení
-            final ArrDaoLinkRequest request = requestService.createDaoRequest(fundVersion, dao, createChange, Type.LINK, node);
+            final ArrDaoLinkRequest request = requestService.createDaoLinkRequest(fundVersion, dao, createChange, Type.LINK, node);
             requestQueueService.sendRequest(request, fundVersion);
 
         } else if (daoLinkList.size() == 1) {
@@ -215,7 +215,7 @@ public class DaoService {
             eventNotificationService.publishEvent(event);
 
             // vytvořit požadavek pro externí systém na odpojení
-            final ArrDaoLinkRequest request = requestService.createDaoRequest(arrFundVersion, daoLink.getDao(), deleteChange, Type.LINK, daoLink.getNode());
+            final ArrDaoLinkRequest request = requestService.createDaoLinkRequest(arrFundVersion, daoLink.getDao(), deleteChange, Type.LINK, daoLink.getNode());
             requestQueueService.sendRequest(request, arrFundVersion);
         }
 

@@ -3,6 +3,7 @@ package cz.tacr.elza.service;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDaoLinkRequest;
 import cz.tacr.elza.domain.ArrDaoRequest;
+import cz.tacr.elza.domain.ArrDaoRequestDao;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrDigitizationRequestNode;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -13,6 +14,7 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.DaoRequestDaoRepository;
 import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
 import cz.tacr.elza.repository.ExternalSystemRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
@@ -82,6 +84,9 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
     private ExternalSystemRepository externalSystemRepository;
 
     @Autowired
+    private DaoRequestDaoRepository daoRequestDaoRepository;
+
+    @Autowired
     @Qualifier("transactionManager")
     protected PlatformTransactionManager txManager;
 
@@ -113,11 +118,16 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
      */
     private void validateRequest(final ArrRequest request) {
 
-        // kontroluje, že obsahuje alespoň jednu navázanou JP
-        if (request instanceof ArrDigitizationRequest) {
+        if (request instanceof ArrDigitizationRequest) { // kontroluje, že obsahuje alespoň jednu navázanou JP
             List<ArrDigitizationRequestNode> digitizationRequestNodes =
                     digitizationRequestNodeRepository.findByDigitizationRequest(Collections.singletonList((ArrDigitizationRequest) request));
             if (digitizationRequestNodes.size() == 0) {
+                throw new BusinessException(ArrangementCode.REQUEST_INVALID);
+            }
+        } else if (request instanceof ArrDaoRequest) { // kontroluje, že obsahuje alespoň jedno navázané DAO
+            List<ArrDaoRequestDao> daoRequestDaos =
+                    daoRequestDaoRepository.findByDaoRequest((ArrDaoRequest) request);
+            if (daoRequestDaos.size() == 0) {
                 throw new BusinessException(ArrangementCode.REQUEST_INVALID);
             }
         }

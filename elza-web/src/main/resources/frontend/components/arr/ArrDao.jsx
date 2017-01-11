@@ -10,6 +10,9 @@ import {userDetailsSaveSettings} from "actions/user/userDetail.jsx";
 import {fundChangeReadMode} from "actions/arr/fund.jsx";
 import {setSettings, getOneSettings} from "components/arr/ArrUtils.jsx";
 import {humanFileSize} from "components/Utils.jsx";
+import ArrRequestForm from "./ArrRequestForm";
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {WebApi} from 'actions/index.jsx';
 
 var classNames = require('classnames');
 
@@ -70,6 +73,22 @@ class ArrDao extends AbstractReactComponent {
         }
     };
 
+    handleTrash = () => {
+        const {fund, dao} = this.props;
+
+        const form = <ArrRequestForm
+            fundVersionId={fund.versionId}
+            type="DAO"
+            onSubmitForm={(send, data) => {
+                WebApi.arrDaoRequestAddDaos(fund.versionId, data.digitizationRequestId, send, data.description, [dao.id], 'DESTRUCTION' /* TODO: nebo TRANSFER */)
+                    .then(() => {
+                        this.dispatch(modalDialogHide());
+                    });
+            }}
+        />;
+        this.dispatch(modalDialogShow(this, i18n('arr.request.dao.form.title'), form));
+    };
+
     render() {
         const {fund, dao} = this.props;
         const {selectedFile} = this.state;
@@ -107,7 +126,7 @@ class ArrDao extends AbstractReactComponent {
                 <div className="dao-detail">
                     <div className="title"><i>Digitalizát</i>: {dao.label}</div>
                     <NoFocusButton disabled={!dao.daoLink} onClick={this.handleUnlink}><Icon glyph='fa-unlink'/></NoFocusButton>
-                    <NoFocusButton disabled={true} onClick={this.handleTrash}><Icon glyph='fa-trash'/></NoFocusButton>
+                    <NoFocusButton onClick={this.handleTrash}><Icon glyph='fa-trash'/></NoFocusButton>
                     <div className="info">
                         <Form inline>
                             <div><FormInput type="static" label={i18n("arr.daos.title.code") + ":"}>{dao.code}</FormInput></div>
