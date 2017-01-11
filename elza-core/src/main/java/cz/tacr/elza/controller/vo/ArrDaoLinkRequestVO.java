@@ -13,7 +13,7 @@ public class ArrDaoLinkRequestVO extends ArrRequestVO {
 
     private ArrDaoVO dao;
 
-    private ArrDaoRequest.Type type;
+    private ArrDaoLinkRequest.Type type;
 
     private String didCode;
 
@@ -25,11 +25,11 @@ public class ArrDaoLinkRequestVO extends ArrRequestVO {
         this.dao = dao;
     }
 
-    public ArrDaoRequest.Type getType() {
+    public ArrDaoLinkRequest.Type getType() {
         return type;
     }
 
-    public void setType(final ArrDaoRequest.Type type) {
+    public void setType(final ArrDaoLinkRequest.Type type) {
         this.type = type;
     }
 

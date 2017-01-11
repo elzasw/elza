@@ -72,6 +72,7 @@ import cz.tacr.elza.domain.ArrDaoBatchInfo;
 import cz.tacr.elza.domain.ArrDaoFile;
 import cz.tacr.elza.domain.ArrDaoFileGroup;
 import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrDaoLinkRequest;
 import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrDaoRequest;
 import cz.tacr.elza.domain.ArrDaoRequestDao;
@@ -2030,8 +2031,7 @@ public class ClientFactoryVO {
 
             case DAO_LINK: {
                 requestVO = new ArrDaoLinkRequestVO();
-                // TODO
-                //throw new NotImplementedException();
+                convertDaoLinkRequest((ArrDaoLinkRequest) request, (ArrDaoLinkRequestVO) requestVO, false, fundVersion);
                 break;
             }
 
@@ -2064,6 +2064,16 @@ public class ClientFactoryVO {
                 throw new IllegalStateException(String.valueOf(request.getDiscriminator()));
             }
         }
+    }
+
+
+    private void convertDaoLinkRequest(final ArrDaoLinkRequest request,
+                                       final ArrDaoLinkRequestVO requestVO,
+                                       final boolean detail,
+                                       final ArrFundVersion fundVersion) {
+        requestVO.setDidCode(request.getDidCode());
+        requestVO.setType(request.getType());
+        requestVO.setDao(createDao(request.getDao(), detail, fundVersion));
     }
 
     private void convertDaoRequest(final ArrDaoRequest request,
