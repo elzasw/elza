@@ -8,12 +8,16 @@ import {getPartyTypeById} from 'actions/refTables/partyTypes.jsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 import {objectById, indexById} from 'stores/app/utils.jsx'
+import {DEFAULT_LIST_SIZE} from 'constants'
 
 import {SimpleListActions} from 'shared/list'
 import {DetailActions} from 'shared/detail'
 
 export const AREA_PARTY_LIST = 'partyList';
 export const AREA_PARTY_DETAIL = 'partyDetail';
+
+
+export const DEFAULT_PARTY_LIST_MAX_SIZE = DEFAULT_LIST_SIZE;
 
 export const PARTY_TYPE_CODES = {
     GROUP_PARTY: 'GROUP_PARTY',
@@ -44,9 +48,11 @@ export const RELATION_CLASS_CODES = {
  *
  * @param filter {Object} - objekt filtru
  * @param versionId int - versionId
+ * @param from {number} od kolikáté položky se má posílat seznam - stránkování
+ * @param size {number} počet položek v seznamu - velikost jedné stránky
  */
-export function partyListFetchIfNeeded(filter, versionId = null) {
-    return SimpleListActions.fetchIfNeeded(AREA_PARTY_LIST, versionId, () => WebApi.findParty(filter.text, versionId, filter.type))
+export function partyListFetchIfNeeded(filter, versionId = null, from = 0, size = DEFAULT_PARTY_LIST_MAX_SIZE) {
+    return SimpleListActions.fetchIfNeeded(AREA_PARTY_LIST, versionId, () => WebApi.findParty(filter.text, versionId, filter.type, from, size))
 }
 
 /**

@@ -1,37 +1,37 @@
-/**
- * Komponenta pro zobrazení specifikace pro daný atribut.
- */
 import React from 'react';
 import {Autocomplete, Icon, i18n, AbstractReactComponent} from 'components/index.jsx';
 import {getSetFromIdsList} from "stores/app/utils.jsx";
-const classNames = require('classnames');
+import classNames from 'classnames';
 
-require("./DescItemTypeSpec.less");
+import "./DescItemTypeSpec.less";
 
-const DescItemTypeSpec = class DescItemTypeSpec extends AbstractReactComponent {
+/**
+ * Komponenta pro zobrazení specifikace pro daný atribut.
+ */
+class DescItemTypeSpec extends AbstractReactComponent {
 
     constructor(props) {
         super(props);
 
         // Při vstupu inicializujeme filtr položek na aktuálne vybranou položku
-        const {descItem, refType, infoType} = props;
-        const value = this.getValueObj(descItem, refType, infoType);
-        this.state = {
-            items: this.getSpecItems(refType, infoType, value ? value.name : "")
-        };
+        this.state = this.getStateFromProps(props);
     }
 
     componentWillReceiveProps(nextProps) {
         // Při změně hodnoty inicializujeme filtr položek na aktuálne vybranou položku
         if (this.props.descItem.descItemSpecId !== nextProps.descItemSpecId) {  // při externí změně aktualizujeme seznam položek
-            const {descItem, refType, infoType} = nextProps;
-            const value = this.getValueObj(descItem, refType, infoType);
-
-            this.setState({
-                items: this.getSpecItems(refType, infoType, value ? value.name : "")
-            });
+            this.setState(this.getStateFromProps(nextProps));
         }
     }
+
+    getStateFromProps = (props = this.props) => {
+        const {descItem, refType, infoType} = props;
+        const value = this.getValueObj(descItem, refType, infoType);
+
+        return {
+            items: this.getSpecItems(refType, infoType, value ? value.name : "")
+        }
+    };
 
     /**
      * Hledání v položkách.
@@ -42,7 +42,7 @@ const DescItemTypeSpec = class DescItemTypeSpec extends AbstractReactComponent {
         this.setState({
             items: this.getSpecItems(refType, infoType, text)
         });
-    }
+    };
 
     /**
      * Sestaví strom specifikací, pokud je vyžadován strom, jinak sestaví plochý seznam. Vytváří nové instance položek stromu.
@@ -60,7 +60,7 @@ const DescItemTypeSpec = class DescItemTypeSpec extends AbstractReactComponent {
             result = [];
             const treeNodeIndex = {index: 0};
             refType.itemSpecsTree.forEach(node => {
-                var newNode = this.getSpecTreeNode(node, refType, infoType, lowerFilterText, treeNodeIndex);
+                const newNode = this.getSpecTreeNode(node, refType, infoType, lowerFilterText, treeNodeIndex);
                 if (newNode) {
                     result.push(newNode);
                 }
@@ -106,7 +106,7 @@ const DescItemTypeSpec = class DescItemTypeSpec extends AbstractReactComponent {
         }
 
         return result;
-    }
+    };
 
     /**
      * Sestavuje strom pro daný node a jeho podstrom.
@@ -153,10 +153,10 @@ const DescItemTypeSpec = class DescItemTypeSpec extends AbstractReactComponent {
             id: treeNodeIndex.index++,
             name: node.name,
             node: true,
-            expanded: lowerFilterText ? true : false,
+            expanded: !!lowerFilterText,
             children: [...children, ...specChildren]
         };
-    }
+    };
 
     /**
      * Načtení aktuálně vybrané hodnoty - jako desc item type - složení ref a info type.
@@ -174,7 +174,7 @@ const DescItemTypeSpec = class DescItemTypeSpec extends AbstractReactComponent {
 
         }
         return value;
-    }
+    };
 
     render() {
         const {onChange, onBlur, onFocus, descItem, locked, infoType, refType, readMode} = this.props;
@@ -227,17 +227,15 @@ const DescItemTypeSpec = class DescItemTypeSpec extends AbstractReactComponent {
                 onSearchChange: this.handleSearchChange,
             };
         }
-        return (
-            <Autocomplete
-                key="spec"
-                {...descItemSpecProps}
-                className={cls}
-                value={value}
-                title={descItem.error.spec}
-                items={items}
-                {...autocompleteAdditionalProps}
-            />
-        )
+        return <Autocomplete
+            key="spec"
+            {...descItemSpecProps}
+            className={cls}
+            value={value}
+            title={descItem.error.spec}
+            items={items}
+            {...autocompleteAdditionalProps}
+        />
     }
 }
 

@@ -101,7 +101,7 @@ class PartyDetailRelations extends AbstractReactComponent {
         if (relationClassType.repeatability == RELATION_CLASS_TYPE_REPEATABILITY.MULTIPLE ||
             (relationClassType.repeatability == RELATION_CLASS_TYPE_REPEATABILITY.UNIQUE &&
                 (!relations || relations.length < 1))) {
-            addButton = <Button bsStyle="default" onClick={this.handleRelationAdd}><Icon glyph="fa-plus" /></Button>;
+            addButton = <Button bsStyle="action" onClick={this.handleRelationAdd}><Icon glyph="fa-plus" /></Button>;
         }
 
         const relationsArray = relations ? relations : [];
