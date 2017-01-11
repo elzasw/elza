@@ -29,7 +29,7 @@ import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {Utils} from 'components/index.jsx';
-import DigitizationRequestForm from "./DigitizationRequestForm"
+import ArrRequestForm from "./ArrRequestForm";
 import {WebApi} from 'actions/index.jsx';
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
@@ -294,14 +294,17 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         const {node, versionId} = this.props;
         const nodeId = node.selectedSubNodeId;
 
-        const form = <DigitizationRequestForm nodeId={nodeId} fundVersionId={versionId} onSubmitForm={(send, data) => {
-            {/*WebApi.addNodeToDigitization(versionId, nodeId, data.digitizationRequestId, send, data.description)*/}
-            WebApi.arrRequestAddNodes(versionId, data.digitizationRequestId, send, data.description, [nodeId])
-                .then(() => {
-                    this.dispatch(modalDialogHide());
-                });
-        }} />;
-        this.dispatch(modalDialogShow(this, i18n('digitizationRequest.form.title'), form));
+        const form = <ArrRequestForm
+            fundVersionId={versionId}
+            type="DIGITIZATION"
+            onSubmitForm={(send, data) => {
+                WebApi.arrDigitizationRequestAddNodes(versionId, data.digitizationRequestId, send, data.description, [nodeId])
+                    .then(() => {
+                        this.dispatch(modalDialogHide());
+                    });
+            }}
+        />;
+        this.dispatch(modalDialogShow(this, i18n('arr.request.digitizationRequest.form.title'), form));
     }
 
     handleVisiblePolicy() {

@@ -575,13 +575,22 @@ class WebApi {
         });
     }
 
-    arrRequestAddNodes(versionId, reqId, send, description, nodeIds) {
+    arrDigitizationRequestAddNodes(versionId, reqId, send, description, nodeIds) {
         const data = {
             id: reqId,
             nodeIds,
             description
         };
         return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/requests/' + versionId + '/digitization/add', { send } , data);
+    }
+
+    arrDaoRequestAddDaos(versionId, reqId, send, description, daoIds) {
+        const data = {
+            id: reqId,
+            daoIds,
+            description
+        };
+        return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/requests/' + versionId + '/dao/add', { send } , data);
     }
 
     arrRequestRemoveNodes(versionId, reqId, nodeIds) {

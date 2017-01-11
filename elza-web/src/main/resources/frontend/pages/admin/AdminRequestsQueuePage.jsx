@@ -8,7 +8,7 @@ import {AbstractReactComponent, i18n, Loading} from 'components/index.jsx';
 import {getIndexStateFetchIfNeeded, reindex} from 'actions/admin/fulltext.jsx';
 import {Ribbon, AdminPackagesList, AdminPackagesUpload} from 'components/index.jsx';
 import {PageLayout} from 'pages/index.jsx';
-import * as digitizationActions from 'actions/arr/digitizationActions';
+import * as arrRequestActions from 'actions/arr/arrRequestActions';
 import {getRequestType, DIGITIZATION, createDigitizationName} from 'components/arr/ArrUtils.jsx'
 import {dateTimeToString} from "components/Utils.jsx";
 import {WebApi} from 'actions/index.jsx';
@@ -26,11 +26,11 @@ const AdminRequestsQueuePage = class extends AbstractReactComponent {
 
 
     componentDidMount() {
-        this.dispatch(digitizationActions.fetchInQueueListIfNeeded());
+        this.dispatch(arrRequestActions.fetchInQueueListIfNeeded());
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(digitizationActions.fetchInQueueListIfNeeded());
+        this.dispatch(arrRequestActions.fetchInQueueListIfNeeded());
     }
 
     handleDelete = (item) => {

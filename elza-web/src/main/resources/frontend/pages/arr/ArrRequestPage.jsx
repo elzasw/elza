@@ -49,7 +49,7 @@ import {
 } from 'actions/arr/fundOutput.jsx'
 import {fundOutputActionRun} from 'actions/arr/fundOutputFunctions.jsx'
 import * as perms from 'actions/user/Permission.jsx';
-import * as digitizationActions from 'actions/arr/digitizationActions';
+import * as arrRequestActions from 'actions/arr/arrRequestActions';
 import {fundActionFormShow, fundActionFormChange} from 'actions/arr/fundAction.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
@@ -101,7 +101,7 @@ const ArrRequestPage = class extends ArrParentPage {
         super.componentDidMount();
 
         const fund = this.getActiveFund(this.props);
-        this.dispatch(digitizationActions.fetchListIfNeeded(fund.versionId));
+        this.dispatch(arrRequestActions.fetchListIfNeeded(fund.versionId));
 
         this.trySetFocus(this.props)
     }
@@ -110,7 +110,7 @@ const ArrRequestPage = class extends ArrParentPage {
         super.componentWillReceiveProps(nextProps);
 
         const fund = this.getActiveFund(nextProps);
-        this.dispatch(digitizationActions.fetchListIfNeeded(fund.versionId));
+        this.dispatch(arrRequestActions.fetchListIfNeeded(fund.versionId));
 
         this.trySetFocus(nextProps)
     }
@@ -197,18 +197,18 @@ const ArrRequestPage = class extends ArrParentPage {
 
     handleSelect = (item) => {
         const fund = this.getActiveFund(this.props);
-        this.dispatch(digitizationActions.selectDetail(fund.versionId, item.id));
+        this.dispatch(arrRequestActions.selectDetail(fund.versionId, item.id));
     };
 
     handleSend = (id) => {
         const fund = this.getActiveFund(this.props);
-        this.dispatch(digitizationActions.sendRequest(fund.versionId, id));
+        this.dispatch(arrRequestActions.sendRequest(fund.versionId, id));
     };
 
     handleDelete = (id) => {
         const fund = this.getActiveFund(this.props);
         if (confirm(i18n("ribbon.action.arr.fund.request.delete.confirm"))) {
-            this.dispatch(digitizationActions.deleteRequest(fund.versionId, id));
+            this.dispatch(arrRequestActions.deleteRequest(fund.versionId, id));
         }
     };
 
@@ -237,7 +237,7 @@ const ArrRequestPage = class extends ArrParentPage {
             type: val
         }
 
-        this.dispatch(digitizationActions.filterList(fund.versionId, newFilter));
+        this.dispatch(arrRequestActions.filterList(fund.versionId, newFilter));
     };
 
     handleFilterText = (filterText) => {
@@ -249,7 +249,7 @@ const ArrRequestPage = class extends ArrParentPage {
             description: filterText
         };
 
-        this.dispatch(digitizationActions.filterList(fund.versionId, newFilter));
+        this.dispatch(arrRequestActions.filterList(fund.versionId, newFilter));
     };
 
     handleFilterTextClear = () => {

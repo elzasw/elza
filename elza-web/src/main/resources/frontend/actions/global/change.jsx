@@ -8,7 +8,7 @@ import {fundOutputSelectOutput} from 'actions/arr/fundOutput.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {partyListInvalidate, partyDetailClear, partyDetailInvalidate} from 'actions/party/party.jsx'
-import {preparedListInvalidate, detailInvalidate, listInvalidate, queueListInvalidate, detailUnselect} from 'actions/arr/digitizationActions.jsx'
+import {preparedListInvalidate, detailInvalidate, listInvalidate, queueListInvalidate, detailUnselect} from 'actions/arr/arrRequestActions.jsx'
 
 export function isFundChangeAction(action) {
     switch (action.type) {

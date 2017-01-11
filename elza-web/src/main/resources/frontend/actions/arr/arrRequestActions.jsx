@@ -11,7 +11,7 @@ import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {storeFromArea} from "shared/utils";
 
-const AREA_PREPARED_DIGITIZATION_REQUESTS = "preparedDigitizationRequestList";
+const AREA_PREPARED_DIGITIZATION_REQUESTS = "preparedRequestList";
 const AREA_REQUEST_LIST_SUFFIX = ".requestList";
 const AREA_REQUEST_IN_QUEUE_LIST = "requestInQueueList";
 const AREA_REQUEST_DETAIL_SUFFIX = ".requestDetail";
@@ -19,35 +19,14 @@ const AREA_REQUEST_DETAIL_SUFFIX = ".requestDetail";
 /**
  * Načtení seznamu NEODESLANÝCH požadavků na digitalizaci.
  * @param versionId verze AS
+ * @param type typ požadavků
  * @return {function(*, *)}
  */
-export function fetchPreparedListIfNeeded(versionId) {
-    return SimpleListActions.fetchIfNeeded(AREA_PREPARED_DIGITIZATION_REQUESTS, versionId, (parent, filter) => {
-        return WebApi.findRequests(versionId, "DIGITIZATION", "OPEN")
+export function fetchPreparedListIfNeeded(versionId, type) {
+    return SimpleListActions.fetchIfNeeded(AREA_PREPARED_DIGITIZATION_REQUESTS, { versionId, type }, (parent, filter) => {
+        return WebApi.findRequests(versionId, parent.type, "OPEN")
             .then(json => ({rows: json, count: 0}));
     });
-}
-
-/**
- * Načtení seznamu NEODESLANÝCH požadavků na digitalizaci.
- * @param versionId verze AS
- * @return {function(*, *)}
- */
-export function sendRequest(versionId, requestId) {
-    return (dispatch, getState) => {
-        return WebApi.sendArrRequest(versionId, requestId)
-    }
-}
-
-/**
- * Načtení seznamu NEODESLANÝCH požadavků na digitalizaci.
- * @param versionId verze AS
- * @return {function(*, *)}
- */
-export function deleteRequest(versionId, requestId) {
-    return (dispatch, getState) => {
-        return WebApi.deleteArrRequest(versionId, requestId)
-    }
 }
 
 /**
@@ -58,7 +37,33 @@ export function preparedListInvalidate() {
 }
 
 /**
- * Načtení požadavků na digitalizaci pro daný AS.
+ * Odeslání požadavku.
+ * @param versionId verze AS
+ * @param versionId verze AS
+ * @param versionId verze AS
+ * @param requestId id požadavku
+ * @return {function(*, *)}
+ */
+export function sendRequest(versionId, requestId) {
+    return (dispatch, getState) => {
+        return WebApi.sendArrRequest(versionId, requestId)
+    }
+}
+
+/**
+ * Smazání požadavku.
+ * @param versionId verze AS
+ * Smazání požadavku.
+ * @return {function(*, *)}
+ */
+export function deleteRequest(versionId, requestId) {
+    return (dispatch, getState) => {
+        return WebApi.deleteArrRequest(versionId, requestId)
+    }
+}
+
+/**
+ * Načtení požadavků pro daný AS.
  * @param versionId verze AS
  */
 export function fetchListIfNeeded(versionId) {
@@ -69,7 +74,7 @@ export function fetchListIfNeeded(versionId) {
 }
 
 /**
- * Filtrování požadavků na digitalizaci pro daný AS.
+ * Filtrování požadavků pro daný AS.
  * @param versionId verze AS
  * @param filter
  */
@@ -78,7 +83,7 @@ export function filterList(versionId, filter) {
 }
 
 /**
- * Zpráva informující o změně requestů pro konkrétní AS.
+ * Zpráva informující o změně požadavků pro konkrétní AS.
  * @param versionId verze AS
  * @param reqId id požadavku
  * @param nodeIds seznam node, se kterými se něco dělalo (např. byly přidány nebo odebrány)
@@ -125,7 +130,7 @@ export function queueListInvalidate() {
 }
 
 /**
- * Načtení detailu požadavku na digitalizaci pro konkrétní fond.
+ * Načtení detailu požadavku pro konkrétní fond.
  * @param versionId verze AS
  * @param id id požadavku
  */
@@ -136,7 +141,7 @@ export function fetchDetailIfNeeded(versionId, id) {
 }
 
 /**
- * Výběr nového detailu požadavku na digitalizaci.
+ * Výběr nového detailu požadavku.
  * @param versionId verze AS
  * @param id id požadavku
  */
@@ -144,6 +149,12 @@ export function selectDetail(versionId, id) {
     return DetailActions.select("fund[" + versionId + "]" + AREA_REQUEST_DETAIL_SUFFIX, id);
 }
 
+/**
+ * Zrušení detailu výběru požadavku, pokud je požadavek daného id zobrazen v detailu.
+ * @param versionId verze AS
+ * @param id jaké id se má testovat - pokud je zobrazen v detailu požadavek s tímto id, bude detail zrušen - nebude vybrán žádný požýadavek
+ * @return {function(*, *)}
+ */
 export function detailUnselect(versionId, id) {
     return (dispatch, getState) => {
         const area = "fund[" + versionId + "]" + AREA_REQUEST_DETAIL_SUFFIX;
@@ -154,6 +165,12 @@ export function detailUnselect(versionId, id) {
     };
 }
 
+/**
+ * Invalidace dat požadavku.
+ * @param versionId verze AS
+ * @param id id požadavku
+ * @return {*}
+ */
 export function detailInvalidate(versionId, id) {
     return DetailActions.invalidate("fund[" + versionId + "]" + AREA_REQUEST_DETAIL_SUFFIX, id)
 }
@@ -172,14 +189,14 @@ export function requestEdit(versionId, id, data) {
 }
 
 /**
- * Přidání JP do požadavku.
+ * Přidání JP do požadavku na digitalizaci.
  * @param versionId verze AS
  * @param request požadavek
  * @param nodeIds seznam id node pro přidání
  */
 export function addNodes(versionId, request, nodeIds) {
     return (dispatch, getState) => {
-        WebApi.arrRequestAddNodes(versionId, request.id, false, request.description, nodeIds)
+        WebApi.arrDigitizationRequestAddNodes(versionId, request.id, false, request.description, nodeIds)
             .then((json) => {
                 dispatch(addToastrSuccess(i18n("arr.request.title.nodesAdded")));
                 dispatch(modalDialogHide());
@@ -188,7 +205,7 @@ export function addNodes(versionId, request, nodeIds) {
 }
 
 /**
- * Odebrání JP od požadavku.
+ * Odebrání JP od požadavkuna digitalizaci.
  * @param versionId verze AS
  * @param request požadavek
  * @param nodeId id node pro odebrání
