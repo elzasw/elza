@@ -31,7 +31,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParPartyNameComplement implements cz.tacr.elza.api.ParPartyNameComplement<ParComplementType, ParPartyName> {
+public class ParPartyNameComplement implements cz.tacr.elza.api.ParPartyNameComplement<ParComplementType> {
 
     /* Konstanty pro vazby a fieldy. */
     public static final String PARTY_NAME_COMPLEMENT_ID = "partyNameComplementId";
@@ -74,12 +74,10 @@ public class ParPartyNameComplement implements cz.tacr.elza.api.ParPartyNameComp
         this.complementType = complementType;
     }
 
-    @Override
     public ParPartyName getPartyName() {
         return partyName;
     }
 
-    @Override
     public void setPartyName(final ParPartyName partyName) {
         this.partyName = partyName;
     }
@@ -96,14 +94,14 @@ public class ParPartyNameComplement implements cz.tacr.elza.api.ParPartyNameComp
 
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof cz.tacr.elza.api.ParUnitdate)) {
+        if (!(obj instanceof cz.tacr.elza.api.ParPartyNameComplement)) {
             return false;
         }
         if (this == obj) {
             return true;
         }
 
-        cz.tacr.elza.api.ParPartyNameComplement<ParComplementType, ParPartyName> other = (cz.tacr.elza.api.ParPartyNameComplement<ParComplementType, ParPartyName>) obj;
+        cz.tacr.elza.api.ParPartyNameComplement<ParComplementType> other = (cz.tacr.elza.api.ParPartyNameComplement<ParComplementType>) obj;
 
         return new EqualsBuilder().append(partyNameComplementId, other.getPartyNameComplementId()).isEquals();
     }

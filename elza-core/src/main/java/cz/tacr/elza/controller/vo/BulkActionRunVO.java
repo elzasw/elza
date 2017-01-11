@@ -1,6 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
-import cz.tacr.elza.api.ArrBulkActionRun.State;
+import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 
 import java.util.Date;

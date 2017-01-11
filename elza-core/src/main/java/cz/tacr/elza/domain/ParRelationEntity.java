@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -29,7 +31,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParRelationEntity implements cz.tacr.elza.api.ParRelationEntity<ParRelation, RegRecord, ParRelationRoleType> {
+public class ParRelationEntity implements Serializable {
 
     @Id
     @GeneratedValue
@@ -55,42 +57,34 @@ public class ParRelationEntity implements cz.tacr.elza.api.ParRelationEntity<Par
     @org.hibernate.annotations.Type(type = "org.hibernate.type.TextType")
     private String note;
 
-    @Override
     public Integer getRelationEntityId() {
         return relationEntityId;
     }
 
-    @Override
     public void setRelationEntityId(final Integer relationEntityId) {
         this.relationEntityId = relationEntityId;
     }
 
-    @Override
     public ParRelation getRelation() {
         return relation;
     }
 
-    @Override
     public void setRelation(final ParRelation relation) {
         this.relation = relation;
     }
 
-    @Override
     public RegRecord getRecord() {
         return record;
     }
 
-    @Override
     public void setRecord(final RegRecord record) {
         this.record = record;
     }
 
-    @Override
     public ParRelationRoleType getRoleType() {
         return roleType;
     }
 
-    @Override
     public void setRoleType(final ParRelationRoleType roleType) {
         this.roleType = roleType;
     }

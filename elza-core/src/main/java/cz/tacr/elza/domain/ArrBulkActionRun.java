@@ -1,21 +1,34 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.*;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Type;
+import org.springframework.data.annotation.ReadOnlyProperty;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.tacr.elza.bulkaction.generator.result.Result;
-import cz.tacr.elza.domain.table.ElzaColumn;
-import org.hibernate.annotations.Type;
-import org.springframework.data.annotation.ReadOnlyProperty;
-import org.springframework.data.rest.core.annotation.RestResource;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import cz.tacr.elza.bulkaction.generator.result.Result;
 
 
 /**
@@ -26,7 +39,7 @@ import java.util.List;
  */
 @Entity(name = "arr_bulk_action_run")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrBulkActionRun implements cz.tacr.elza.api.ArrBulkActionRun<ArrChange, ArrFundVersion, ArrBulkActionNode, ArrOutputDefinition, Result> {
+public class ArrBulkActionRun implements Serializable {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -37,13 +50,11 @@ public class ArrBulkActionRun implements cz.tacr.elza.api.ArrBulkActionRun<ArrCh
     @Column(nullable = false)
     private String bulkActionCode;
 
-    @Override
     public List<ArrBulkActionNode> getArrBulkActionNodes() {
         return arrBulkActionNodes;
     }
 
-    @Override
-    public void setArrBulkActionNodes(List<ArrBulkActionNode> arrBulkActionNodes) {
+    public void setArrBulkActionNodes(final List<ArrBulkActionNode> arrBulkActionNodes) {
         this.arrBulkActionNodes = arrBulkActionNodes;
     }
 
@@ -94,84 +105,68 @@ public class ArrBulkActionRun implements cz.tacr.elza.api.ArrBulkActionRun<ArrCh
     @JoinColumn(name = "outputDefinitionId")
     private ArrOutputDefinition outputDefinition;
 
-    @Override
     public Integer getBulkActionRunId() {
         return bulkActionRunId;
     }
 
-    @Override
     public void setBulkActionRunId(final Integer bulkActionId) {
         this.bulkActionRunId = bulkActionId;
     }
 
-    @Override
     public String getBulkActionCode() {
         return bulkActionCode;
     }
 
-    @Override
     public void setBulkActionCode(final String bulkActionCode) {
         this.bulkActionCode = bulkActionCode;
     }
 
-    @Override
     public ArrFundVersion getFundVersion() {
         return fundVersion;
     }
 
-    @Override
     public void setFundVersion(final ArrFundVersion fundVersion) {
         this.fundVersion = fundVersion;
         this.fundVersionId = fundVersion.getFundVersionId();
     }
 
-    @Override
     public Integer getUserId() {
         return userId;
     }
 
-    @Override
-    public void setUserId(Integer userId) {
+    public void setUserId(final Integer userId) {
         this.userId = userId;
     }
 
-    @Override
     public ArrChange getChange() {
         return change;
     }
 
-    @Override
     public void setChange(final ArrChange change) {
         this.change = change;
     }
 
-    @Override
     public State getState() {
         return state;
     }
 
-    @Override
-    public void setState(State state) {
+    public void setState(final State state) {
         this.state = state;
     }
 
-    @Override
     public Date getDateFinished() {
         return dateFinished;
     }
 
-    @Override
-    public void setDateFinished(Date dateFinished) {
+    public void setDateFinished(final Date dateFinished) {
         this.dateFinished = dateFinished;
     }
 
-    @Override
     public Date getDateStarted() {
         return dateStarted;
     }
 
-    @Override
-    public void setDateStarted(Date dateStarted) {
+    public void setDateStarted(final Date dateStarted) {
         this.dateStarted = dateStarted;
     }
 
@@ -179,17 +174,15 @@ public class ArrBulkActionRun implements cz.tacr.elza.api.ArrBulkActionRun<ArrCh
         return datePlanned;
     }
 
-    public void setDatePlanned(Date datePlaned) {
+    public void setDatePlanned(final Date datePlaned) {
         this.datePlanned = datePlaned;
     }
 
-    @Override
     public String getError() {
         return error;
     }
 
-    @Override
-    public void setError(String error) {
+    public void setError(final String error) {
         this.error = error;
     }
 
@@ -201,11 +194,10 @@ public class ArrBulkActionRun implements cz.tacr.elza.api.ArrBulkActionRun<ArrCh
         return interrupted;
     }
 
-    public void setInterrupted(boolean interrupted) {
+    public void setInterrupted(final boolean interrupted) {
         this.interrupted = interrupted;
     }
 
-    @Override
     public Result getResult() {
         if (this.result == null) {
             return null;
@@ -217,7 +209,6 @@ public class ArrBulkActionRun implements cz.tacr.elza.api.ArrBulkActionRun<ArrCh
         }
     }
 
-    @Override
     public void setResult(final Result result) {
         try {
             this.result = objectMapper.writeValueAsString(result);
@@ -226,13 +217,45 @@ public class ArrBulkActionRun implements cz.tacr.elza.api.ArrBulkActionRun<ArrCh
         }
     }
 
-    @Override
     public ArrOutputDefinition getOutputDefinition() {
         return outputDefinition;
     }
 
-    @Override
     public void setOutputDefinition(final ArrOutputDefinition outputDefinition) {
         this.outputDefinition = outputDefinition;
+    }
+
+    /**
+     * Stav hromadné akce
+     */
+    public enum State {
+        /**
+         * Čekající
+         */
+        WAITING,
+        /**
+         * Naplánovaný
+         */
+        PLANNED,
+        /**
+         * Běžící
+         */
+        RUNNING,
+        /**
+         * Dokončená
+         */
+        FINISHED,
+        /**
+         * Chyba při běhu
+         */
+        ERROR,
+        /**
+         * Zrušená
+         */
+        INTERRUPTED,
+        /**
+         * Neplatný
+         */
+        OUTDATED;
     }
 }

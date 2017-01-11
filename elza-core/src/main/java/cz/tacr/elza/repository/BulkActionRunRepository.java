@@ -2,7 +2,7 @@ package cz.tacr.elza.repository;
 
 import java.util.List;
 
-import cz.tacr.elza.api.ArrBulkActionRun.State;
+import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

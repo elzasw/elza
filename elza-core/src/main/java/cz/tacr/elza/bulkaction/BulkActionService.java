@@ -1,33 +1,20 @@
 package cz.tacr.elza.bulkaction;
 
 
-import cz.tacr.elza.annotation.AuthMethod;
-import cz.tacr.elza.annotation.AuthParam;
-import cz.tacr.elza.api.ArrBulkActionRun.State;
-import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
-import cz.tacr.elza.api.UsrPermission;
-import cz.tacr.elza.bulkaction.factory.BulkActionFactory;
-import cz.tacr.elza.bulkaction.factory.BulkActionWorkerFactory;
-import cz.tacr.elza.bulkaction.generator.BulkAction;
-import cz.tacr.elza.domain.ArrBulkActionNode;
-import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformityExt;
-import cz.tacr.elza.domain.RulAction;
-import cz.tacr.elza.domain.RulActionRecommended;
-import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.repository.*;
-import cz.tacr.elza.service.ArrangementService;
-import cz.tacr.elza.service.LevelTreeCacheService;
-import cz.tacr.elza.service.OutputService;
-import cz.tacr.elza.service.RuleService;
-import cz.tacr.elza.service.eventnotification.EventFactory;
-import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.utils.Yaml;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.transaction.Transactional;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,11 +33,39 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
-import javax.transaction.Transactional;
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
+import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
+import cz.tacr.elza.api.UsrPermission;
+import cz.tacr.elza.bulkaction.factory.BulkActionFactory;
+import cz.tacr.elza.bulkaction.factory.BulkActionWorkerFactory;
+import cz.tacr.elza.bulkaction.generator.BulkAction;
+import cz.tacr.elza.domain.ArrBulkActionNode;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrBulkActionRun.State;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformityExt;
+import cz.tacr.elza.domain.RulAction;
+import cz.tacr.elza.domain.RulActionRecommended;
+import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.repository.ActionRecommendedRepository;
+import cz.tacr.elza.repository.ActionRepository;
+import cz.tacr.elza.repository.BulkActionNodeRepository;
+import cz.tacr.elza.repository.BulkActionRunRepository;
+import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.LevelTreeCacheService;
+import cz.tacr.elza.service.OutputService;
+import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.utils.Yaml;
 
 /**
  * Serviska pro obsluhu hromadných akcí.
@@ -102,7 +117,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
 
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
-    
+
     @Autowired
     private NodeRepository nodeRepository;
 
@@ -342,7 +357,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      *
      * @param fundVersionId id verze archivní pomůcky
      */
-    public void terminateBulkActions(Integer fundVersionId) {
+    public void terminateBulkActions(final Integer fundVersionId) {
         bulkActionRepository.findByFundVersionIdAndState(fundVersionId, State.WAITING).forEach(bulkActionRun -> {
             bulkActionRun.setState(State.INTERRUPTED);
             bulkActionRepository.save(bulkActionRun);
@@ -431,7 +446,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      *
      * @param bulkActionRun the bulk action run
      */
-    public void eventPublishBulkAction(ArrBulkActionRun bulkActionRun) {
+    public void eventPublishBulkAction(final ArrBulkActionRun bulkActionRun) {
         eventNotificationService.forcePublish(
                 EventFactory.createIdInVersionEvent(
                         EventType.BULK_ACTION_STATE_CHANGE,
@@ -563,7 +578,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      *
      * @param bulkActionRun the bulk action run
      */
-    public void storeBulkActionRun(ArrBulkActionRun bulkActionRun) {
+    public void storeBulkActionRun(final ArrBulkActionRun bulkActionRun) {
         if (bulkActionRun.getBulkActionRunId() == null) {
             BulkActionConfig bulkActionConfigOrig = bulkActionConfigManager.get(bulkActionRun.getBulkActionCode());
 
@@ -599,7 +614,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      *
      * @param bulkActionNodes the bulk action nodes
      */
-    public void storeBulkActionNodes(List<ArrBulkActionNode> bulkActionNodes) {
+    public void storeBulkActionNodes(final List<ArrBulkActionNode> bulkActionNodes) {
         bulkActionNodeRepository.save(bulkActionNodes);
     }
 
@@ -668,7 +683,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         return actionRepository.findByFilename(codes.stream().map(code -> code + ".yaml").collect(Collectors.toList()));
     }
 
-    public Set<RulAction> getRecommendedActions(RulOutputType outputType) {
+    public Set<RulAction> getRecommendedActions(final RulOutputType outputType) {
         return actionRecommendedRepository.findByOutputType(outputType).stream().map(RulActionRecommended::getAction).collect(Collectors.toSet());
     }
 }

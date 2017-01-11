@@ -1,12 +1,14 @@
 package cz.tacr.elza.api;
 
+import cz.tacr.elza.domain.ArrCalendarType;
+
 /**
  * Rozhraní pro datace.
  *
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 26.01.2016
  */
-public interface IUnitdate<CT extends ArrCalendarType> {
+public interface IUnitdate {
     /**
      * @return vrací datum "od" v iso formátu
      */
@@ -58,13 +60,13 @@ public interface IUnitdate<CT extends ArrCalendarType> {
     /**
      * @return typ kalendáře
      */
-    CT getCalendarType();
+    ArrCalendarType getCalendarType();
 
 
     /**
      * @param calendarType typ kalendáře
      */
-    void setCalendarType(CT calendarType);
+    void setCalendarType(ArrCalendarType calendarType);
 
 
     /**

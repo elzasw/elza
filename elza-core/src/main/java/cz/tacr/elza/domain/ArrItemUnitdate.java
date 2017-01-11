@@ -3,13 +3,15 @@ package cz.tacr.elza.domain;
 
 import java.util.Objects;
 
+import cz.tacr.elza.api.IUnitdate;
+
 /**
  * Rozšiřuje atribut archivního popisu o jeho hodnotu.
  *
  * @author Martin Šlapa
  * @since 15.9.15
  */
-public class ArrItemUnitdate extends ArrItemData implements cz.tacr.elza.api.ArrItemUnitdate<ArrCalendarType> {
+public class ArrItemUnitdate extends ArrItemData implements IUnitdate {
 
     private String valueFrom;
 
@@ -28,7 +30,7 @@ public class ArrItemUnitdate extends ArrItemData implements cz.tacr.elza.api.Arr
     private Long normalizedFrom;
 
     @Override
-    public String getValueFrom() {
+	public String getValueFrom() {
         return this.valueFrom;
     }
 

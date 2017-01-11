@@ -36,7 +36,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.api.ParParty<RegRecord, ParPartyType, ParPartyName> {
+public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.api.ParParty<RegRecord, ParPartyType> {
 
     /* Konstanty pro vazby a fieldy. */
     public static final String ABSTRACT_PARTY_ID = "partyId";
@@ -127,12 +127,10 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
         this.partyType = partyType;
     }
 
-    @Override
     public ParPartyName getPreferredName() {
         return preferredName;
     }
 
-    @Override
     public void setPreferredName(final ParPartyName preferredName) {
         this.preferredName = preferredName;
     }
@@ -208,7 +206,7 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
             return true;
         }
 
-        cz.tacr.elza.api.ParParty<RegRecord, ParPartyType, ParPartyName> other = (cz.tacr.elza.api.ParParty<RegRecord, ParPartyType, ParPartyName>) obj;
+        cz.tacr.elza.api.ParParty<RegRecord, ParPartyType> other = (cz.tacr.elza.api.ParParty<RegRecord, ParPartyType>) obj;
 
         return new EqualsBuilder().append(partyId, other.getPartyId()).isEquals();
     }

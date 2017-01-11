@@ -9,7 +9,7 @@ import cz.tacr.elza.api.interfaces.IRegScope;
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
-public interface ParParty<RR extends RegRecord, PPT extends ParPartyType, PPN extends ParPartyName> extends Versionable, Serializable, IRegScope {
+public interface ParParty<RR extends RegRecord, PPT extends ParPartyType> extends Versionable, Serializable, IRegScope {
 
     /**
      * Primární ID.
@@ -34,18 +34,6 @@ public interface ParParty<RR extends RegRecord, PPT extends ParPartyType, PPN ex
      * @param record    objekt navázaného rejstříkového hesla
      */
     void setRecord(RR record);
-
-    /**
-     * Jednoznačné určení preferovaného jména osoby vazbou na tabulku jmen osoby.
-     * @param preferredName
-     */
-    void setPreferredName(PPN preferredName);
-
-    /**
-     * Jednoznačné určení preferovaného jména osoby vazbou na tabulku jmen osoby.
-     * @return Jednoznačné určení preferovaného jména osoby vazbou na tabulku jmen osoby.
-     */
-    PPN getPreferredName();
 
     /**
      * Typ osoby.

@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -20,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity(name = "arr_calendar_type")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrCalendarType implements cz.tacr.elza.api.ArrCalendarType {
+public class ArrCalendarType implements Serializable {
 
     @Id
     @GeneratedValue
@@ -32,34 +34,27 @@ public class ArrCalendarType implements cz.tacr.elza.api.ArrCalendarType {
     @Column(length = 250, nullable = false)
     private String name;
 
-    @Override
     public Integer getCalendarTypeId() {
         return this.calendarTypeId;
     }
 
-    @Override
     public void setCalendarTypeId(final Integer calendarTypeId) {
         this.calendarTypeId = calendarTypeId;
     }
 
-    @Override
     public String getCode() {
         return this.code;
     }
 
-    @Override
     public void setCode(final String code) {
         this.code = code;
     }
 
-    @Override
     public String getName() {
         return this.name;
     }
 
-    @Override
     public void setName(final String name) {
         this.name = name;
     }
-
 }

@@ -7,7 +7,7 @@ import java.io.Serializable;
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
-public interface ParPartyNameComplement<CT extends ParComplementType, PN extends ParPartyName> extends Serializable {
+public interface ParPartyNameComplement<CT extends ParComplementType> extends Serializable {
 
     /**
      * Primární ID.
@@ -20,10 +20,6 @@ public interface ParPartyNameComplement<CT extends ParComplementType, PN extends
     CT getComplementType();
 
     void setComplementType(CT complementType);
-
-    PN getPartyName();
-
-    void setPartyName(PN partyName);
 
     String getComplement();
 

@@ -1,5 +1,6 @@
 package cz.tacr.elza.domain;
 
+import java.io.Serializable;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -31,8 +32,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParPartyName
-        implements cz.tacr.elza.api.ParPartyName<ParParty, ParUnitdate, ParPartyNameFormType> {
+public class ParPartyName implements Serializable {
 
     public static final String PARTY = "party";
 
@@ -75,102 +75,82 @@ public class ParPartyName
     @OneToMany(mappedBy = "partyName", fetch = FetchType.EAGER)
     private List<ParPartyNameComplement> partyNameComplements;
 
-    @Override
     public Integer getPartyNameId() {
         return partyNameId;
     }
 
-    @Override
     public void setPartyNameId(final Integer partyNameId) {
         this.partyNameId = partyNameId;
     }
 
-    @Override
     public ParParty getParty() {
         return party;
     }
 
-    @Override
     public void setParty(final ParParty party) {
         this.party = party;
     }
 
-    @Override
     public String getMainPart() {
         return mainPart;
     }
 
-    @Override
     public void setMainPart(final String mainPart) {
         this.mainPart = mainPart;
     }
 
-    @Override
     public String getOtherPart() {
         return otherPart;
     }
 
-    @Override
     public void setOtherPart(final String otherPart) {
         this.otherPart = otherPart;
     }
 
-    @Override
     public String getDegreeBefore() {
         return degreeBefore;
     }
 
-    @Override
     public void setDegreeBefore(final String degreeBefore) {
         this.degreeBefore = degreeBefore;
     }
 
-    @Override
     public String getDegreeAfter() {
         return degreeAfter;
     }
 
-    @Override
     public void setDegreeAfter(final String degreeAfter) {
         this.degreeAfter = degreeAfter;
     }
 
-    @Override
     public ParUnitdate getValidFrom() {
         return validFrom;
     }
 
-    @Override
     public void setValidFrom(final ParUnitdate validFrom) {
         this.validFrom = validFrom;
     }
 
-    @Override
     public ParUnitdate getValidTo() {
         return validTo;
     }
 
-    @Override
     public void setValidTo(final ParUnitdate validTo) {
         this.validTo = validTo;
     }
 
-    @Override
     public ParPartyNameFormType getNameFormType() {
         return nameFormType;
     }
 
-    @Override
     public void setNameFormType(final ParPartyNameFormType nameFormType) {
         this.nameFormType = nameFormType;
     }
 
-    @Override
     public String getNote() {
         return note;
     }
 
-    @Override
     public void setNote(final String note) {
         this.note = note;
     }
@@ -185,7 +165,7 @@ public class ParPartyName
 
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof cz.tacr.elza.api.ParPartyName)) {
+        if (!(obj instanceof ParPartyName)) {
             return false;
         }
         if (this == obj) {

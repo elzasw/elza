@@ -1,9 +1,15 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import javax.persistence.*;
 import java.io.Serializable;
+
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * Implementace {@link cz.tacr.elza.api.ArrBulkActionNode}
@@ -13,7 +19,7 @@ import java.io.Serializable;
  */
 @Entity(name = "arr_bulk_action_node")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrBulkActionNode implements cz.tacr.elza.api.ArrBulkActionNode<ArrNode, ArrBulkActionRun>, Serializable {
+public class ArrBulkActionNode implements Serializable {
 
     @Id
     @GeneratedValue
@@ -27,32 +33,26 @@ public class ArrBulkActionNode implements cz.tacr.elza.api.ArrBulkActionNode<Arr
     @JoinColumn(name = "bulkActionRunId", nullable = false)
     private ArrBulkActionRun bulkActionRun;
 
-    @Override
     public Integer getBulkActionNodeId() {
         return bulkActionNodeId;
     }
 
-    @Override
     public void setBulkActionNodeId(final Integer bulkActionNodeId) {
         this.bulkActionNodeId = bulkActionNodeId;
     }
 
-    @Override
     public ArrNode getNode() {
         return node;
     }
 
-    @Override
     public void setNode(final ArrNode node) {
         this.node = node;
     }
 
-    @Override
     public ArrBulkActionRun getBulkActionRun() {
         return bulkActionRun;
     }
 
-    @Override
     public void setBulkActionRun(final ArrBulkActionRun bulkActionRun) {
         this.bulkActionRun = bulkActionRun;
     }
