@@ -207,11 +207,16 @@ public class DaoCoreServiceImpl implements DaoService {
         if (repository == null) {
             throw new ObjectNotFoundException(DigitizationCode.REPOSITORY_NOT_FOUND).set("code", daoPackage.getRepositoryIdentifier());
         }
+        if (StringUtils.isBlank(daoPackage.getIdentifier())) {
+            logger.error("Nebylo vyplněno povinné pole externího identifikátoru");
+            throw new SystemException(DigitizationCode.NOT_FILLED_EXTERNAL_IDENTIRIER);
+        }
 
         ArrDaoPackage arrDaoPackage = new ArrDaoPackage();
         arrDaoPackage.setFund(fund);
         arrDaoPackage.setDigitalRepository(repository);
-        arrDaoPackage.setCode(daoPackage.getIdentifier()); // TODO Lebeda - založit pokud nepřijde??
+
+        arrDaoPackage.setCode(daoPackage.getIdentifier());
 
         final DaoBatchInfo daoBatchInfo = daoPackage.getDaoBatchInfo();
         if (daoBatchInfo != null) {
@@ -265,7 +270,7 @@ public class DaoCoreServiceImpl implements DaoService {
         ArrDaoFile arrDaoFile = new ArrDaoFile();
         if (StringUtils.isBlank(file.getIdentifier())) {
             logger.error("Nebylo vyplněno povinné pole identifikátoru");
-            throw new SystemException();
+            throw new SystemException(DigitizationCode.NOT_FILLED_EXTERNAL_IDENTIRIER);
         }
         arrDaoFile.setCode(file.getIdentifier());
 
@@ -343,7 +348,7 @@ public class DaoCoreServiceImpl implements DaoService {
     }
 
     /* (non-Javadoc)
-     * @see cz.tacr.elza.ws.core.v1.DaoService#removePackage(java.lang.String packageIdentifier)*
+     * @see cz.tacr.elza.ws.core.v1.DaoService#removePackage(java.lang.String packageIdentifier)
      */
     @Transactional
     public void removePackage(String packageIdentifier) throws CoreServiceException   {
@@ -356,9 +361,10 @@ public class DaoCoreServiceImpl implements DaoService {
                 throw new ObjectNotFoundException(DigitizationCode.PACKAGE_NOT_FOUND).set("code", packageIdentifier);
             }
 
-            final List<ArrDao> arrDaoList = daoService.deleteDaosWithoutLinks(daoRepository.findByPackage(arrDaoPackage));
+            // původní zneplatnění - nahrazeno skutečným kaskádovým smazáním - výslovně požadováno 10.1. LightCompem
+            // final List<ArrDao> arrDaoList = daoService.deleteDaosWithoutLinks(arrDaos);
 
-            // TODO Lebeda - jak zneplatnit samotnou package
+            daoService.deleteDaoPackageWithCascade(packageIdentifier, arrDaoPackage);
 
             logger.info("Ending operation removePackage");
         } catch (Exception e) {
@@ -410,19 +416,12 @@ public class DaoCoreServiceImpl implements DaoService {
     /* (non-Javadoc)
      * @see cz.tacr.elza.ws.core.v1.DaoService#getDid(java.lang.String packageIdentifier)*
      */
-    public Did getDid(String nodeIdentifier) throws CoreServiceException {
+    public Did getDid(String didIdentifier) throws CoreServiceException {
         try {
             logger.info("Executing operation getDid");
 
-            // TODO Lebeda - jak se dostanu z package na ArrNode???
-            //        final ArrDaoPackage arrDaoPackage = daoPackageRepository.findOneByCode(packageIdentifier);
-            //        Assert.notNull(arrDaoPackage);
-            //
-            //        final ArrFund arrFund = arrDaoPackage.getFund();
-            //        Assert.notNull(arrFund);
-
-            final ArrNode arrNode = nodeRepository.findOneByUuid(nodeIdentifier);
-            Assert.notNull(arrNode, "Node ID=" + nodeIdentifier + " wasn't found.");
+            final ArrNode arrNode = nodeRepository.findOneByUuid(didIdentifier);
+            Assert.notNull(arrNode, "Node ID=" + didIdentifier + " wasn't found.");
 
             final Did did = groovyScriptService.createDid(arrNode);
 

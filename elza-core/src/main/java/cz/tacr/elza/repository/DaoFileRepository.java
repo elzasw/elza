@@ -20,4 +20,6 @@ public interface DaoFileRepository extends ElzaJpaRepository<ArrDaoFile, Integer
     long countByDaoAndDaoFileGroupIsNull(ArrDao arrDao);
 
     List<ArrDaoFile> findByDaoAndDaoFileGroup(ArrDao arrDao, ArrDaoFileGroup daoFileGroup);
+
+    List<ArrDaoFile> findByDao(ArrDao arrDao);
 }

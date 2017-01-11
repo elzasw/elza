@@ -52,9 +52,9 @@ public interface DaoService {
      */
     @WebMethod(operationName = "GetDid")
     @WebResult(name = "did", targetNamespace = "", partName = "did")
-    public cz.tacr.elza.ws.types.v1.Did getDid( // TODO Lebeda - přejmenovaný parameter, dle zadaného wsdl je PackageIdentifier
-        @WebParam(partName = "NodeIdentifier", name = "NodeIdentifier", targetNamespace = "")
-        java.lang.String nodeIdentifier
+    public cz.tacr.elza.ws.types.v1.Did getDid(
+        @WebParam(partName = "DidIdentifier", name = "DidIdentifier", targetNamespace = "")
+        java.lang.String didIdentifier
     ) throws CoreServiceException;
 
     @WebMethod(operationName = "Link")
@@ -69,7 +69,7 @@ public interface DaoService {
      */
     @WebMethod(operationName = "RemoveDao")
     @Oneway
-    public void removeDao( // TODO Lebeda - přejmenovaný parameter, dle zadaného wsdl je PackageIdentifier
+    public void removeDao(
         @WebParam(partName = "DaoIdentifier", name = "DaoIdentifier", targetNamespace = "")
         java.lang.String daoIdentifier
     ) throws CoreServiceException;

@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoRequest;
 import cz.tacr.elza.domain.ArrDaoRequestDao;
 import org.springframework.stereotype.Repository;
@@ -16,4 +17,5 @@ public interface DaoRequestDaoRepository extends ElzaJpaRepository<ArrDaoRequest
 
     List<ArrDaoRequestDao> findByDaoRequest(ArrDaoRequest arrDaoRequest);
 
+    List<ArrDaoRequestDao> findByDao(ArrDao arrDao);
 }

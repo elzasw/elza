@@ -22,4 +22,6 @@ public interface DaoLinkRequestRepository extends ElzaJpaRepository<ArrDaoLinkRe
 
     @Query("select r from arr_dao_link_request r where r.code = :code")
     List<ArrDaoLinkRequest> findByCode(@Param(value = "code") String code);
+
+    List<ArrDaoLinkRequest> findByDao(ArrDao arrDao);
 }
