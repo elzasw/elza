@@ -1,15 +1,14 @@
 package cz.tacr.elza.domain;
 
-import cz.tacr.elza.domain.enumeration.StringLength;
+import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import cz.tacr.elza.domain.enumeration.StringLength;
 
 
 /**
@@ -20,7 +19,7 @@ import javax.persistence.Table;
  */
 @Table
 @Entity(name = "arr_dao_batch_info")
-public class ArrDaoBatchInfo implements cz.tacr.elza.api.ArrDaoBatchInfo {
+public class ArrDaoBatchInfo implements Serializable {
 
     @Id
     @GeneratedValue
@@ -32,32 +31,26 @@ public class ArrDaoBatchInfo implements cz.tacr.elza.api.ArrDaoBatchInfo {
     @Column(length = StringLength.LENGTH_250)
     private String label;
 
-    @Override
     public Integer getDaoBatchInfoId() {
         return daoBatchInfoId;
     }
 
-    @Override
     public void setDaoBatchInfoId(final Integer daoBatchInfoId) {
         this.daoBatchInfoId = daoBatchInfoId;
     }
 
-    @Override
     public String getCode() {
         return code;
     }
 
-    @Override
     public void setCode(final String code) {
         this.code = code;
     }
 
-    @Override
     public String getLabel() {
         return label;
     }
 
-    @Override
     public void setLabel(final String label) {
         this.label = label;
     }

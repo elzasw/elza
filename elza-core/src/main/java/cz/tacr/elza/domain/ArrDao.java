@@ -1,6 +1,6 @@
 package cz.tacr.elza.domain;
 
-import cz.tacr.elza.domain.enumeration.StringLength;
+import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,6 +11,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import cz.tacr.elza.domain.enumeration.StringLength;
+
 
 /**
  * Implementace {@link cz.tacr.elza.api.ArrDao}
@@ -20,7 +22,7 @@ import javax.persistence.Table;
  */
 @Table
 @Entity(name = "arr_dao")
-public class ArrDao implements cz.tacr.elza.api.ArrDao<ArrDaoPackage> {
+public class ArrDao implements Serializable {
 
     @Id
     @GeneratedValue
@@ -39,52 +41,42 @@ public class ArrDao implements cz.tacr.elza.api.ArrDao<ArrDaoPackage> {
     @Column(length = StringLength.LENGTH_250)
     private String label;
 
-    @Override
     public Integer getDaoId() {
         return daoId;
     }
 
-    @Override
     public void setDaoId(final Integer daoId) {
         this.daoId = daoId;
     }
 
-    @Override
     public ArrDaoPackage getDaoPackage() {
         return daoPackage;
     }
 
-    @Override
     public void setDaoPackage(final ArrDaoPackage daoPackage) {
         this.daoPackage = daoPackage;
     }
 
-    @Override
     public Boolean getValid() {
         return valid;
     }
 
-    @Override
     public void setValid(final Boolean valid) {
         this.valid = valid;
     }
 
-    @Override
     public String getCode() {
         return code;
     }
 
-    @Override
     public void setCode(final String code) {
         this.code = code;
     }
 
-    @Override
     public String getLabel() {
         return label;
     }
 
-    @Override
     public void setLabel(final String label) {
         this.label = label;
     }

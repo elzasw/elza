@@ -1,6 +1,6 @@
 package cz.tacr.elza.domain;
 
-import cz.tacr.elza.domain.enumeration.StringLength;
+import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,6 +11,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import cz.tacr.elza.domain.enumeration.StringLength;
+
 
 /**
  * Implementace {@link cz.tacr.elza.api.ArrDaoFileGroup}
@@ -20,7 +22,7 @@ import javax.persistence.Table;
  */
 @Table
 @Entity(name = "arr_dao_file_group")
-public class ArrDaoFileGroup implements cz.tacr.elza.api.ArrDaoFileGroup<ArrDao> {
+public class ArrDaoFileGroup implements Serializable {
 
     @Id
     @GeneratedValue
@@ -36,42 +38,34 @@ public class ArrDaoFileGroup implements cz.tacr.elza.api.ArrDaoFileGroup<ArrDao>
     @Column(length = StringLength.LENGTH_50, unique = true)
     private String code;
 
-    @Override
     public Integer getDaoFileGroupId() {
         return daoFileGroupId;
     }
 
-    @Override
     public void setDaoFileGroupId(final Integer daoFileGroupId) {
         this.daoFileGroupId = daoFileGroupId;
     }
 
-    @Override
     public ArrDao getDao() {
         return dao;
     }
 
-    @Override
     public void setDao(final ArrDao dao) {
         this.dao = dao;
     }
 
-    @Override
     public String getLabel() {
         return label;
     }
 
-    @Override
     public void setLabel(final String label) {
         this.label = label;
     }
 
-    @Override
     public String getCode() {
         return code;
     }
 
-    @Override
     public void setCode(final String code) {
         this.code = code;
     }
