@@ -2,7 +2,7 @@ import React from 'react';
 
 import {EmailSettingsActions, ApplicationActions} from 'actions/index.jsx';
 import {webSocketConnect, webSocketDisconnect} from 'actions/global/webSocket.jsx';
-import * as digitizationActions from 'actions/arr/digitizationActions';
+import * as arrRequestActions from 'actions/arr/arrRequestActions';
 import * as daoActions from 'actions/arr/daoActions';
 import {store} from 'stores/AppStore.jsx';
 import {addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
@@ -526,7 +526,7 @@ function daoLink(value) {
  * @param value objekt
  */
 function arrRequest(value) {
-    store.dispatch(digitizationActions.changeRequests(value.versionId, value.entityId, value.nodeIds));
+    store.dispatch(arrRequestActions.changeRequests(value.versionId, value.entityId, value.nodeIds));
     store.dispatch(changeNodeRequests(value.versionId, value.nodeIds));
 }
 

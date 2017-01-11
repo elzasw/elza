@@ -565,17 +565,33 @@ class WebApi {
         return getData({}, 100);
     }
 
-    getDigitizationRequests(versionId, state) {
-        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/requests/' + versionId, { state });
+    findRequests(versionId, type, state, description, fromDate, toDate) {
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/requests/' + versionId, {
+            state,
+            type,
+            description,
+            fromDate,
+            toDate
+        });
     }
 
-    arrRequestAddNodes(versionId, reqId, send, description, nodeIds) {
+    arrDigitizationRequestAddNodes(versionId, reqId, send, description, nodeIds) {
         const data = {
             id: reqId,
             nodeIds,
             description
         };
         return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/requests/' + versionId + '/digitization/add', { send } , data);
+    }
+
+    arrDaoRequestAddDaos(versionId, reqId, send, description, daoIds, type) {
+        const data = {
+            id: reqId,
+            daoIds,
+            description,
+            type
+        };
+        return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/requests/' + versionId + '/dao/add', { send } , data);
     }
 
     arrRequestRemoveNodes(versionId, reqId, nodeIds) {
@@ -592,10 +608,6 @@ class WebApi {
 
     removeArrRequestQueueItem(id) {
         return AjaxUtils.ajaxDelete(WebApi.arrangementUrl + '/requests/' + id);
-    }
-
-    getArrRequests(versionId, type, description) {
-        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/requests/' + versionId, {type, description});
     }
 
     getArrRequest(versionId, id) {

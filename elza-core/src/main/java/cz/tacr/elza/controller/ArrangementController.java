@@ -35,6 +35,7 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDaoPackage;
+import cz.tacr.elza.domain.ArrDaoRequest;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrFund;
@@ -2147,22 +2148,59 @@ public class ArrangementController {
         }
     }
 
+
+    /**
+     * Vytvoření požadavku nebo přidání DAO k existujícímu požadavku.
+     *
+     * @param fundVersionId identifikátor verze AS
+     * @param send          současně odeslat požadavek?
+     * @param param         parametry požadavku
+     */
+    @RequestMapping(value = "/requests/{fundVersionId}/dao/add", method = RequestMethod.POST)
+    @Transactional
+    public void daoRequestAdd(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                              @RequestParam(name = "send", defaultValue = "false") Boolean send,
+                              @RequestBody DaoRequestParam param) {
+        Assert.notNull(param);
+        Assert.notNull(param.type);
+        Assert.notEmpty(param.daoIds);
+
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        List<ArrDao> daos = daoRepository.findAll(param.daoIds);
+
+        if (daos.size() != param.daoIds.size()) {
+            throw new SystemException(BaseCode.ID_NOT_EXIST);
+        }
+
+        ArrDaoRequest daoRequest;
+        if (param.id == null) {
+            daoRequest = requestService.createDaoRequest(daos, param.description, param.type, fundVersion);
+        } else {
+            daoRequest = requestService.getDaoRequest(param.id);
+            requestService.addDaoDaoRequest(daoRequest, daos, fundVersion, param.getDescription());
+        }
+
+        if (BooleanUtils.isTrue(send)) {
+            requestService.sendRequest(daoRequest, fundVersion);
+        }
+    }
+
     /**
      * Odeslání požadavku.
      *
-     * @param fundVersionId  identifikátor verze AS
-     * @param digitizationId identifikátor požadavku
+     * @param fundVersionId identifikátor verze AS
+     * @param requestId     identifikátor požadavku
      */
-    @RequestMapping(value = "/requests/{fundVersionId}/{digitizationId}/send", method = RequestMethod.POST)
+    @RequestMapping(value = "/requests/{fundVersionId}/{requestId}/send", method = RequestMethod.POST)
     @Transactional
-    public void digitizationRequestSend(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                        @PathVariable(value = "digitizationId") final Integer digitizationId) {
+    public void requestSend(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                            @PathVariable(value = "requestId") final Integer requestId) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        ArrDigitizationRequest digitizationRequest = requestService.getDigitizationRequest(digitizationId);
-        if (!fundVersion.getFund().equals(digitizationRequest.getFund())) {
+        ArrRequest request = requestService.getRequest(requestId);
+        if (!fundVersion.getFund().equals(request.getFund())) {
             throw new SystemException(ArrangementCode.INVALID_VERSION);
         }
-        requestService.sendRequest(digitizationRequest, fundVersion);
+        requestService.sendRequest(request, fundVersion);
     }
 
     /**
@@ -3293,6 +3331,49 @@ public class ArrangementController {
 
         public void setDescription(final String description) {
             this.description = description;
+        }
+    }
+
+    public static class DaoRequestParam {
+
+        private Integer id;
+
+        private List<Integer> daoIds;
+
+        private String description;
+
+        private ArrDaoRequest.Type type;
+
+        public Integer getId() {
+            return id;
+        }
+
+        public void setId(final Integer id) {
+            this.id = id;
+        }
+
+        public List<Integer> getDaoIds() {
+            return daoIds;
+        }
+
+        public void setDaoIds(final List<Integer> daoIds) {
+            this.daoIds = daoIds;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(final String description) {
+            this.description = description;
+        }
+
+        public ArrDaoRequest.Type getType() {
+            return type;
+        }
+
+        public void setType(final ArrDaoRequest.Type type) {
+            this.type = type;
         }
     }
 }
