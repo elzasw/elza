@@ -57,7 +57,6 @@ const Toastr = class Toastr extends AbstractReactComponent {
             }
 
             let message;
-            console.log(555555, t)
             if (t.extended) {
                 message = <div>
                     {createElement(t.messageComponent, {...t.messageComponentProps, onClose: () => this.handleDismiss(index)})}
