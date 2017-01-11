@@ -29,7 +29,7 @@ public abstract class YamlResource<T> extends AbstractStorageResource<T> {
 		}
 		try (BufferedWriter bw = Files.newBufferedWriter(getResourcePath(), StandardOpenOption.WRITE,
 				StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
-			YAML_INSTANCE.dump(getResource(), bw);
+			YAML_INSTANCE.dump(get(), bw);
 		}
 	}
 

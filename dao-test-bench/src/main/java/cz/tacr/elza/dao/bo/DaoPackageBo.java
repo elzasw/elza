@@ -43,11 +43,10 @@ public class DaoPackageBo {
 
 	public DaoPackageConfig getConfig() {
 		try {
-			configResource.init();
+			return configResource.getOrInit();
 		} catch (Exception e) {
 			throw new DaoComponentException("package config not found", e);
 		}
-		return configResource.getResource();
 	}
 
 	public Collection<DaoBo> getAllDao() {

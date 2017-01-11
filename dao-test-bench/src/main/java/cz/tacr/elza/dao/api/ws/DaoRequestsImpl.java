@@ -14,12 +14,14 @@ import cz.tacr.elza.ws.types.v1.DestructionRequest;
 import cz.tacr.elza.ws.types.v1.TransferRequest;
 
 @Service
-@WebService(name = "DaoRequests",
-		portName = "DaoRequests",
-		serviceName = "DaoRequests",
+@WebService(name = DaoRequestsImpl.NAME,
+		portName = DaoRequestsImpl.NAME,
+		serviceName = DaoRequestsImpl.NAME,
 		targetNamespace = "http://elza.tacr.cz/ws/dao-service/v1",
 		endpointInterface = "cz.tacr.elza.ws.dao_service.v1.DaoRequests")
 public class DaoRequestsImpl implements DaoRequests {
+
+	public static final String NAME = "DaoRequests";
 
 	@Autowired
 	private StorageDaoRequestService storageDaoRequestService;
@@ -33,11 +35,10 @@ public class DaoRequestsImpl implements DaoRequests {
 		requestInfo.setSystemIdentifier(destructionRequest.getSystemIdentifier());
 		requestInfo.setDescription(destructionRequest.getDescription());
 		try {
-			storageDaoRequestService.createRequest(requestInfo, true);
+			return storageDaoRequestService.createRequest(requestInfo, true);
 		} catch (DaoComponentException e) {
 			throw new DaoServiceException(e.getMessage(), e.getCause());
 		}
-		return requestInfo.getIdentifier();
 	}
 
 	@Override
@@ -50,10 +51,9 @@ public class DaoRequestsImpl implements DaoRequests {
 		requestInfo.setDescription(transferRequest.getDescription());
 		requestInfo.setTargetFund(transferRequest.getTargetFund());
 		try {
-			storageDaoRequestService.createRequest(requestInfo, false);
+			return storageDaoRequestService.createRequest(requestInfo, false);
 		} catch (DaoComponentException e) {
 			throw new DaoServiceException(e.getMessage(), e.getCause());
 		}
-		return requestInfo.getIdentifier();
 	}
 }

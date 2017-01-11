@@ -1,7 +1,5 @@
 package cz.tacr.elza.dao.api.ws;
 
-import javax.jws.WebService;
-
 import org.apache.cxf.Bus;
 import org.apache.cxf.jaxws.EndpointImpl;
 import org.apache.cxf.transport.servlet.CXFServlet;
@@ -10,21 +8,21 @@ import org.springframework.boot.context.embedded.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
-import org.springframework.util.StringUtils;
 
 import cz.tacr.elza.dao.DCStorageConfig;
-import cz.tacr.elza.ws.dao_service.v1.DaoNotifications;
-import cz.tacr.elza.ws.dao_service.v1.DaoRequests;
 
 @Configuration
 @ImportResource({ "classpath:META-INF/cxf/cxf.xml" })
 public class WebServiceConfig {
 
 	@Autowired
-	private DaoNotifications daoNotifications;
+	private DaoNotificationsImpl daoNotifications;
 
 	@Autowired
-	private DaoRequests daoRequests;
+	private DaoRequestsImpl daoRequests;
+
+	@Autowired
+	private DigitizationFrontdeskImpl digitizationFrontdesk;
 
 	@Autowired
 	private DCStorageConfig storageConfig;
@@ -33,35 +31,31 @@ public class WebServiceConfig {
 	private Bus bus;
 
 	@Bean
-	public EndpointImpl notificationsEndpoint() {
+	public EndpointImpl daoNotificationsEndpoint() {
 		EndpointImpl endpoint = new EndpointImpl(bus, daoNotifications);
-		endpoint.publish(getWebServiceName(DaoNotifications.class));
+		endpoint.publish(DaoNotificationsImpl.NAME);
 		return endpoint;
 	}
 
 	@Bean
-	public EndpointImpl requestsEndpoint() {
+	public EndpointImpl daoRequestsEndpoint() {
 		EndpointImpl endpoint = new EndpointImpl(bus, daoRequests);
-		endpoint.publish(getWebServiceName(DaoRequests.class));
+		endpoint.publish(DaoRequestsImpl.NAME);
+		return endpoint;
+	}
+
+	@Bean
+	public EndpointImpl digitizationFrontdeskEndpoint() {
+		EndpointImpl endpoint = new EndpointImpl(bus, digitizationFrontdesk);
+		endpoint.publish(DigitizationFrontdeskImpl.NAME);
 		return endpoint;
 	}
 
 	@Bean
 	public ServletRegistrationBean CXFServlet() {
-		String contextPath = "/" + storageConfig.getRepositoryIdentifier() + "/api/*";
+		String contextPath = "/" + storageConfig.getRepositoryIdentifier() + "/ws/*";
 		ServletRegistrationBean servlet = new ServletRegistrationBean(new CXFServlet(), contextPath);
 		servlet.setLoadOnStartup(1);
 		return servlet;
-	}
-
-	private static String getWebServiceName(Class<?> serviceClass) {
-		WebService[] webServices = serviceClass.getDeclaredAnnotationsByType(WebService.class);
-		for (int i = 0; i < webServices.length; i++) {
-			String name = webServices[i].name();
-			if (StringUtils.hasText(name)) {
-				return name;
-			}
-		}
-		throw new RuntimeException("@WebService name not found");
 	}
 }

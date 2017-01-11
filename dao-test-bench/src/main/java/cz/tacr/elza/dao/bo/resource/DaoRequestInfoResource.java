@@ -2,12 +2,12 @@ package cz.tacr.elza.dao.bo.resource;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
 import cz.tacr.elza.dao.common.PathResolver;
+import cz.tacr.elza.dao.exception.DaoComponentException;
 
 public class DaoRequestInfoResource extends YamlResource<DaoRequestInfo> {
 
@@ -19,7 +19,11 @@ public class DaoRequestInfoResource extends YamlResource<DaoRequestInfo> {
 	}
 
 	public DaoRequestInfoResource(String requestIdentifier, boolean destrRequest) {
-		this(PathResolver.resolveRequestInfoPath(requestIdentifier, destrRequest));
+		this(PathResolver.resolveDaoRequestInfoPath(requestIdentifier, destrRequest));
+	}
+
+	public String getIdentifier() {
+		return resourcePath.getParent().getFileName().toString();
 	}
 
 	public void delete() throws IOException {
@@ -35,27 +39,18 @@ public class DaoRequestInfoResource extends YamlResource<DaoRequestInfo> {
 
 	@Override
 	protected DaoRequestInfo createEmptyResource() {
-		return new DaoRequestInfo();
+		throw new DaoComponentException("empty dao request info: " + resourcePath);
 	}
 
 	public static DaoRequestInfoResource create(DaoRequestInfo daoRequestInfo, boolean destrRequest)
 			throws IOException {
-		String identifier = Long.toString(System.currentTimeMillis());
-		String uniqueName = identifier;
-		int tryCount = 0;
-		while (tryCount++ < 10) {
-			Path path = PathResolver.resolveRequestInfoPath(uniqueName, destrRequest);
-			if (!Files.exists(path)) {
-				Files.createDirectory(path.getParent());
-				daoRequestInfo.setIdentifier(uniqueName);
-				try (BufferedWriter bw = Files.newBufferedWriter(path, StandardOpenOption.WRITE,
-						StandardOpenOption.CREATE_NEW)) {
-					YAML_INSTANCE.dump(daoRequestInfo, bw);
-				}
-				return new DaoRequestInfoResource(path);
-			}
-			uniqueName = identifier + '-' + tryCount;
+		Path filePath = PathResolver.createDaoRequestInfoPath(destrRequest, 10);
+		Path dirPath = filePath.getParent();
+		Files.createDirectory(dirPath);
+		try (BufferedWriter bw = Files.newBufferedWriter(filePath, StandardOpenOption.WRITE,
+				StandardOpenOption.CREATE_NEW)) {
+			YAML_INSTANCE.dump(daoRequestInfo, bw);
 		}
-		throw new FileAlreadyExistsException("dao request already exists, identifier:" + identifier);
+		return new DaoRequestInfoResource(filePath);
 	}
 }

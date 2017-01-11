@@ -31,13 +31,13 @@ public class DaoBo {
 
 	private boolean allFileInitialized;
 
-	public DaoBo(DaoPackageBo daoPackage, String identifier, boolean init) {
+	public DaoBo(DaoPackageBo daoPackage, String identifier, boolean eagerInit) {
 		Assert.notNull(daoPackage);
 		Assert.notNull(identifier);
 		this.daoPackage = daoPackage;
 		this.identifier = identifier;
 		configResource = new DaoConfigResource(daoPackage.getIdentifier(), identifier);
-		if (init) {
+		if (eagerInit) {
 			initConfigResource();
 		}
 	}
@@ -55,8 +55,7 @@ public class DaoBo {
 	}
 
 	public DaoConfig getConfig() {
-		initConfigResource();
-		return configResource.getResource();
+		return initConfigResource();
 	}
 
 	public void saveConfig() {
@@ -89,7 +88,7 @@ public class DaoBo {
 
 	public Dao export() {
 		Dao dao = new Dao();
-		dao.setIdentifier(identifier);
+		dao.setIdentifier(getUId());
 		dao.setLabel(getConfig().getLabel());
 		FileGroup fileGroup = new FileGroup();
 		for (DaoFileBo daoFile : getAllDaoFiles()) {
@@ -105,7 +104,7 @@ public class DaoBo {
 			return null;
 		}
 		DaoLink link = new DaoLink();
-		link.setDaoIdentifier(identifier);
+		link.setDaoIdentifier(getUId());
 		link.setDidIdentifier(didIdentifier);
 		link.setRepositoryIdentifier(DCStorageConfig.get().getRepositoryIdentifier());
 		return link;
@@ -136,9 +135,9 @@ public class DaoBo {
 		return false;
 	}
 
-	private void initConfigResource() {
+	private DaoConfig initConfigResource() {
 		try {
-			configResource.init();
+			return configResource.getOrInit();
 		} catch (Exception e) {
 			throw new DaoComponentException("cannot init dao config", e);
 		}

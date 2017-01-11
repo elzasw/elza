@@ -13,12 +13,14 @@ import cz.tacr.elza.ws.types.v1.OnDaoLinked;
 import cz.tacr.elza.ws.types.v1.OnDaoUnlinked;
 
 @Service
-@WebService(name = "DaoNotifications",
-		portName = "DaoNotifications",
-		serviceName = "DaoNotifications",
+@WebService(name = DaoNotificationsImpl.NAME,
+		portName = DaoNotificationsImpl.NAME,
+		serviceName = DaoNotificationsImpl.NAME,
 		targetNamespace = "http://elza.tacr.cz/ws/dao-service/v1",
 		endpointInterface = "cz.tacr.elza.ws.dao_service.v1.DaoNotifications")
 public class DaoNotificationsImpl implements DaoNotifications {
+
+	public static final String NAME = "DaoNotifications";
 
 	@Autowired
 	private StorageDaoService storageDaoService;

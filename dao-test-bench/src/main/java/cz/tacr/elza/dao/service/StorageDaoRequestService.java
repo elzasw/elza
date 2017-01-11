@@ -33,18 +33,21 @@ public class StorageDaoRequestService {
 	 */
 	public String getSystemIdentifier(String requestIdentifier, boolean destrRequest) {
 		return GlobalLock.runAtomicFunction(() -> {
-			DaoRequestInfoResource resource = new DaoRequestInfoResource(requestIdentifier, destrRequest);
-			return resource.getResource().getSystemIdentifier();
+			try {
+				return new DaoRequestInfoResource(requestIdentifier, destrRequest).getOrInit().getSystemIdentifier();
+			} catch (Exception e) {
+				throw new DaoComponentException("dao request initialization failed", e);
+			}
 		});
 	}
 
 	/**
 	 * @param destrRequest destruction request otherwise transfer request
 	 */
-	public void createRequest(DaoRequestInfo daoRequestInfo, boolean destrRequest) {
-		GlobalLock.runAtomicAction(() -> {
+	public String createRequest(DaoRequestInfo daoRequestInfo, boolean destrRequest) {
+		return GlobalLock.runAtomicFunction(() -> {
 			try {
-				DaoRequestInfoResource.create(daoRequestInfo, destrRequest);
+				return DaoRequestInfoResource.create(daoRequestInfo, destrRequest).getIdentifier();
 			} catch (IOException e) {
 				throw new DaoComponentException("dao request creation failed", e);
 			}
@@ -55,18 +58,17 @@ public class StorageDaoRequestService {
 	 * @param destrRequest destruction request otherwise transfer request
 	 */
 	public void confirmRequest(String requestIdentifier, boolean destrRequest) {
-		DaoRequestInfoResource daoRequestInfo = new DaoRequestInfoResource(requestIdentifier, destrRequest);
 		GlobalLock.runAtomicAction(() -> {
+			DaoRequestInfoResource resource = new DaoRequestInfoResource(requestIdentifier, destrRequest);
 			try {
-				daoRequestInfo.init();
-				List<String> daoIdentifiers = daoRequestInfo.getResource().getDaoIdentifiers();
+				List<String> daoIdentifiers = resource.getOrInit().getDaoIdentifiers();
 				for (String daoUId : daoIdentifiers) {
-					Path rrp = PathResolver.resolveRelativeRequestPath(requestIdentifier, destrRequest);
+					Path rrp = PathResolver.resolveRelativeDaoRequestPath(requestIdentifier, destrRequest);
 					if (!storageDaoService.deleteDao(daoUId, rrp.toString())) {
 						LOG.error("dao already deleted, uid:" + daoUId);
 					}
 				}
-				daoRequestInfo.delete();
+				resource.delete();
 			} catch (Exception e) {
 				throw new DaoComponentException("dao request confirmation failed", e);
 			}

@@ -5,8 +5,6 @@ import java.util.List;
 
 public class DaoRequestInfo {
 
-	private String identifier;
-
 	private String requestIdentifier;
 
 	private String systemIdentifier;
@@ -16,14 +14,6 @@ public class DaoRequestInfo {
 	private String targetFund;
 
 	private String description;
-
-	public String getIdentifier() {
-		return identifier;
-	}
-
-	public void setIdentifier(String identifier) {
-		this.identifier = identifier;
-	}
 
 	public String getRequestIdentifier() {
 		return requestIdentifier;

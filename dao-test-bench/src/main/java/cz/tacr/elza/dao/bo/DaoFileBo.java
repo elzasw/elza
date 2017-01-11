@@ -20,24 +20,30 @@ public class DaoFileBo {
 
 	private static final Logger LOG = LoggerFactory.getLogger(DaoFileBo.class);
 
+	private final static char UID_SEPARATOR = '/';
+
 	private final DaoBo dao;
 
 	private final String identifier;
 
 	private DaoFileInfo fileInfo;
 
-	public DaoFileBo(DaoBo dao, String identifier, boolean init) {
+	public DaoFileBo(DaoBo dao, String identifier, boolean eagerInit) {
 		Assert.notNull(dao);
 		Assert.notNull(identifier);
 		this.dao = dao;
 		this.identifier = identifier;
-		if (init) {
+		if (eagerInit) {
 			initFileInfoResource();
 		}
 	}
 
 	public String getIdentifier() {
 		return identifier;
+	}
+
+	public String getUId() {
+		return dao.getUId() + UID_SEPARATOR + identifier;
 	}
 
 	public DaoFileInfo getFileInfo() {
@@ -49,7 +55,7 @@ public class DaoFileBo {
 
 	public File export() {
 		File file = new File();
-		file.setIdentifier(identifier);
+		file.setIdentifier(getUId());
 		DaoFileInfo info = getFileInfo();
 		file.setMimetype(info.getMimeType());
 		file.setCreated(XmlUtils.convertDate(info.getCreated()));
@@ -87,11 +93,10 @@ public class DaoFileBo {
 		DaoFileInfoResource fileInfoResource = new DaoFileInfoResource(
 				dao.getDaoPackage().getIdentifier(), dao.getIdentifier(), identifier);
 		try {
-			fileInfoResource.init();
+			fileInfo = fileInfoResource.getOrInit();
 		} catch (Exception e) {
 			throw new DaoComponentException("cannot read dao file attributes", e);
 		}
-		fileInfo = fileInfoResource.getResource();
 		for (Map<String, Object> map : dao.getConfig().getFileAttributes()) {
 			if (identifier.equals(map.get(DaoConfig.FILE_IDENTIFIER_ATTR_NAME))) {
 				setFileAttribute(map, DaoConfig.FILE_MIME_TYPE_ATTR_NAME, String.class, fileInfo::setMimeType);

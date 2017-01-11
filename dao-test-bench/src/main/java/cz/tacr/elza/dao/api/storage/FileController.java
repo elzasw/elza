@@ -26,6 +26,10 @@ public class FileController {
 	@Autowired
 	private ResourceService dcsResourceService;
 
+	/**
+	 * Returns file based on unique dao file identifier which is formatted as "package/dao/file".
+	 * (original file extensions are preserved as part of file identifier)
+	 */
 	@RequestMapping(value = "/{packageIdentifier}/{daoIdentifier}/{fileIdentifier:.+}", method = RequestMethod.GET)
 	public ResponseEntity<Resource> downloadDaoFile(
 			@PathVariable String packageIdentifier,
@@ -45,6 +49,9 @@ public class FileController {
 				.body(new PathResource(fileInfo.getFilePath()));
 	}
 
+	/**
+	 * Returns HTML formatted page which contains files for unique dao identifier formatted as "package/dao".
+	 */
 	@RequestMapping(value = "/{packageIdentifier}/{daoIdentifier}", produces = "text/html;charset=UTF-8", method = RequestMethod.GET)
 	public String listDaoFiles(
 			@PathVariable String packageIdentifier,

@@ -2,6 +2,7 @@ package cz.tacr.elza.dao.common;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,8 +18,9 @@ import cz.tacr.elza.dao.DCStorageConfig;
 public class PathResolver {
 
 	private static final String PACKAGES_FOLDER_NAME = "packages";
-	private static final String DESTRUCTION_REQUEST_FOLDER_NAME = "destr-requests";
-	private static final String TRANSFER_REQUEST_FOLDER_NAME = "trans-requests";
+	private static final String DESTRUCTION_REQUESTS_FOLDER_NAME = "destr-requests";
+	private static final String TRANSFER_REQUESTS_FOLDER_NAME = "trans-requests";
+	private static final String DIGITIZATION_REQUESTS_FOLDER_NAME = "digi-requests";
 	private static final String DAO_CONFIG_FILE_NAME = "dao-config.yaml";
 	private static final String PACKAGE_CONFIG_FILE_NAME = "package-config.yaml";
 	private static final String REQUEST_INFO_FILE_NAME = "request-info.yaml";
@@ -55,16 +57,20 @@ public class PathResolver {
 		}
 	}
 
+	public static Path resolveDigitizationRequestInfoPath(String requestIdentifier) {
+		return STORAGE_PATH.resolve(DIGITIZATION_REQUESTS_FOLDER_NAME).resolve(requestIdentifier).resolve(REQUEST_INFO_FILE_NAME);
+	}
+
 	public static Path resolveExternalSystemsConfigPath() {
 		return STORAGE_PATH.resolve(EXTERNAL_SYSTEMS_CONFIG_FILE_NAME);
 	}
 
-	public static Path resolveRequestInfoPath(String requestIdentifier, boolean destrRequest) {
-		return STORAGE_PATH.resolve(resolveRelativeRequestPath(requestIdentifier, destrRequest)).resolve(REQUEST_INFO_FILE_NAME);
+	public static Path resolveDaoRequestInfoPath(String requestIdentifier, boolean destrRequest) {
+		return STORAGE_PATH.resolve(resolveRelativeDaoRequestPath(requestIdentifier, destrRequest)).resolve(REQUEST_INFO_FILE_NAME);
 	}
 
-	public static Path resolveRelativeRequestPath(String requestIdentifier, boolean destrRequest) {
-		return Paths.get(destrRequest ? DESTRUCTION_REQUEST_FOLDER_NAME : TRANSFER_REQUEST_FOLDER_NAME, requestIdentifier);
+	public static Path resolveRelativeDaoRequestPath(String requestIdentifier, boolean destrRequest) {
+		return Paths.get(destrRequest ? DESTRUCTION_REQUESTS_FOLDER_NAME : TRANSFER_REQUESTS_FOLDER_NAME, requestIdentifier);
 	}
 
 	public static Path resolveDaoFilePath(String packageIdentifier, String daoIdentifier, String fileIdentifier) {
@@ -89,6 +95,29 @@ public class PathResolver {
 
 	public static Path resolvePackagePath(String packageIdentifier) {
 		return STORAGE_PATH.resolve(PACKAGES_FOLDER_NAME).resolve(packageIdentifier);
+	}
+
+	public static Path createDaoRequestInfoPath(boolean destrRequest, int tryCount) throws FileAlreadyExistsException {
+		Path dir = STORAGE_PATH.resolve(destrRequest ? DESTRUCTION_REQUESTS_FOLDER_NAME : TRANSFER_REQUESTS_FOLDER_NAME);
+		return createUniqueTimestampDirPath(dir, tryCount).resolve(REQUEST_INFO_FILE_NAME);
+	}
+
+	public static Path createDigitizationRequestInfoPath(int tryCount) throws FileAlreadyExistsException {
+		Path dir = STORAGE_PATH.resolve(DIGITIZATION_REQUESTS_FOLDER_NAME);
+		return createUniqueTimestampDirPath(dir, tryCount).resolve(REQUEST_INFO_FILE_NAME);
+	}
+
+	private static Path createUniqueTimestampDirPath(Path path, int tryCount) throws FileAlreadyExistsException {
+		String timestamp = Long.toString(System.currentTimeMillis());
+		String uniqueName = timestamp;
+		for (int i = 1; i <= tryCount; i++) {
+			Path tmpPath = path.resolve(uniqueName);
+			if (!Files.exists(tmpPath)) {
+				return tmpPath;
+			}
+			uniqueName = timestamp + '-' + tryCount;
+		}
+		throw new FileAlreadyExistsException(path.toString());
 	}
 
 	private static class DaoVisitor extends SimpleFileVisitor<Path> {

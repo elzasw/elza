@@ -24,11 +24,11 @@ public class ResourceService {
 				() -> new DaoPackageBo(packageIdentifier).getDao(daoIdentifier).getAllDaoFiles());
 	}
 
-	public DaoImport getDaoImport(Iterable<String> packageIdentifiers) {
+	public DaoImport getDaoImport(String[] packageIdentifiers) {
 		return GlobalLock.runAtomicFunction(() -> getDaoImportInternal(packageIdentifiers));
 	}
 
-	private DaoImport getDaoImportInternal(Iterable<String> packageIdentifiers) {
+	private DaoImport getDaoImportInternal(String[] packageIdentifiers) {
 		DaoImport daoImport = new DaoImport();
 		DaoPackages daoPackages = new DaoPackages();
 		DaoLinks daoLinks = new DaoLinks();

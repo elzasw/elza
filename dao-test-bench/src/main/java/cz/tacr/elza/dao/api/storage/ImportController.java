@@ -2,7 +2,6 @@ package cz.tacr.elza.dao.api.storage;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Arrays;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -29,12 +28,15 @@ import cz.tacr.elza.ws.types.v1.DaoImport;
 public class ImportController {
 
 	@Autowired
-	private ResourceService dcsResourceService;
+	private ResourceService resourceService;
 
+	/**
+	 * Downloads XML serialized DaoImport. Expecting list of package identifiers.
+	 */
 	@RequestMapping(value = "/{packageIdentifiers}", method = RequestMethod.GET)
 	public void downloadDaoImport(@PathVariable String[] packageIdentifiers, HttpServletResponse response)
 			throws IOException {
-		DaoImport daoImport = dcsResourceService.getDaoImport(Arrays.asList(packageIdentifiers));
+		DaoImport daoImport = resourceService.getDaoImport(packageIdentifiers);
 
 		response.setContentType(MediaType.APPLICATION_XML_VALUE);
 		response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"dao-import.xml\"");
@@ -44,12 +46,16 @@ public class ImportController {
 		}
 	}
 
+	/**
+	 * Imports DaoImport to external system (ELZA). Expecting list of package identifiers and system identifier.
+	 * Connection to external system must be defined in /{repositoryIdentifier}/external-systems-config.yaml.
+	 */
 	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
 	@RequestMapping(value = "/{packageIdentifiers}/system/{systemIdentifier}", method = RequestMethod.POST)
 	public void transRequestRevoked(@PathVariable String systemIdentifier, @PathVariable String[] packageIdentifiers)
 			throws CoreServiceException {
-		DaoImport daoImport = dcsResourceService.getDaoImport(Arrays.asList(packageIdentifiers));
+		DaoImport daoImport = resourceService.getDaoImport(packageIdentifiers);
 		DaoService service = CoreServiceProvider.getDaoCoreService(systemIdentifier);
 		service._import(daoImport);
 	}

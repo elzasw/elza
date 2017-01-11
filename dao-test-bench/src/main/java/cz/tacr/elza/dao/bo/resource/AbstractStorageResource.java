@@ -4,22 +4,26 @@ public abstract class AbstractStorageResource<T> {
 
 	private T resource;
 
-	public final boolean isInitialized() {
+	public boolean isInitialized() {
 		return resource != null;
 	}
 
-	public void init() throws Exception {
-		if (isInitialized()) {
-			return;
-		}
-		resource = loadResource();
-	}
-
-	public T getResource() {
+	public T get() {
 		return resource;
 	}
 
-	protected final void clearCached() {
+	public void init() throws Exception {
+		resource = loadResource();
+	}
+
+	public T getOrInit() throws Exception {
+		if (!isInitialized()) {
+			init();
+		}
+		return get();
+	}
+
+	protected void clearCached() {
 		resource = null;
 	}
 
