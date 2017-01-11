@@ -24,7 +24,7 @@ public class SystemException extends AbstractException {
     }
 
     public SystemException(final Throwable cause) {
-        super(cause, BaseCode.SYSTEM_ERROR);
+        super(cause.getMessage(), cause, BaseCode.SYSTEM_ERROR);
     }
 
     public SystemException(final String message, final Throwable cause) {

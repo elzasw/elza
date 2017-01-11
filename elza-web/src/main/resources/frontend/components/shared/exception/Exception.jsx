@@ -25,8 +25,8 @@ var Exception = class Exception extends AbstractReactComponent {
     renderText = () => {
         const {textRenderer, data} = this.props;
 
-        if (textRenderer && data.properties) {
-            return textRenderer(data.properties);
+        if (textRenderer) {
+            return textRenderer(data.properties ? data.properties : {}, data.message ? data.message : "");
         }
     };
 

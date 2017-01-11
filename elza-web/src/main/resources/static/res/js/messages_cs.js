@@ -26,6 +26,8 @@ var messages = {
     "global.exception.detail.message": "Technický popis",
     "global.exception.detail.stack": "Stack",
     "global.exception.detail.properties": "Rozšiřující parametry",
+    "global.exception.bad.request": "Neplatný požadavek",
+    "global.exception.bad.request.tech": "Syntaxe požadavku odeslaného na server je chybná",
 
     "global.error.ajax": "Při komunikaci nastala chyba",
     "global.error.ws": "Při komunikaci nastala chyba",

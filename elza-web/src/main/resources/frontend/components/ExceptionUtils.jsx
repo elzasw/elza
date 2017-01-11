@@ -31,14 +31,17 @@ export function createException(data) {
 
 function resolveBase(data) {
     switch (data.code) {
+        case 'BAD_REQUEST': {
+            return createToaster(i18n('global.exception.bad.request'), data, "danger");
+        }
         case 'INSUFFICIENT_PERMISSIONS': {
             return createToaster(i18n('global.exception.permission.need'), data, "danger", (p) => {
                 return <small><b>{i18n('global.exception.permission.need')}:</b> {p.permission && p.permission.map((item)=>i18n('permission.' + item)).join(", ")}</small>
             });
         }
         case 'OPTIMISTIC_LOCKING_ERROR': {
-            return createToaster(i18n('global.exception.permission.need'), data, "danger", (p) => {
-                return <LongText text={p.message} />
+            return createToaster(i18n('global.exception.permission.need'), data, "danger", (p, m) => {
+                return <LongText text={m} />
             });
         }
     }
@@ -90,7 +93,9 @@ function resolveArrangement(data) {
 }
 
 function resolveUndefined(data) {
-    return createToaster(i18n('global.exception.undefined'), data, "danger");
+    return createToaster(i18n('global.exception.undefined'), data, "danger", (p, m) => {
+        return <LongText text={m} />
+    });
 }
 
 function createToaster(title, data, type, textRenderer, size = "lg", time = null) {

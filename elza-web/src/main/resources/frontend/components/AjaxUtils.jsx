@@ -57,11 +57,9 @@ function resolveException(status, statusText, data) {
     } else if (status == 400) {
         result = {
             createToaster: true,
-            type: "BAD_REQUEST",
+            type: "BaseCode",
             code: "BAD_REQUEST",
-            // properties: data.properties,
-            message: statusText,
-            devMessage: statusText,
+            message: i18n('global.exception.bad.request.tech'),
             status: status,
             statusText: statusText
         };
