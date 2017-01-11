@@ -140,7 +140,7 @@ public class DaoCoreServiceImpl implements DaoService {
             logger.info("Finished operation _import");
         } catch (Exception e) {
             logger.error("Fail operation _import", e);
-            throw new CoreServiceException("Fail operation _import", e);
+            throw new CoreServiceException(e.getMessage(), e);
         }
     }
 
@@ -343,7 +343,7 @@ public class DaoCoreServiceImpl implements DaoService {
             return arrDaoPackage.getCode();
         } catch (Exception e) {
             logger.error("Fail operation addPackage", e);
-            throw new CoreServiceException("Fail operation addPackage", e);
+            throw new CoreServiceException(e.getMessage(), e);
         }
     }
 
@@ -369,7 +369,7 @@ public class DaoCoreServiceImpl implements DaoService {
             logger.info("Ending operation removePackage");
         } catch (Exception e) {
             logger.error("Fail operation removePackage", e);
-            throw new CoreServiceException("Fail operation removePackage", e);
+            throw new CoreServiceException(e.getMessage(), e);
         }
     }
 
@@ -386,7 +386,7 @@ public class DaoCoreServiceImpl implements DaoService {
             logger.info("Ending operation link");
         } catch (Exception e) {
             logger.error("Fail operation link", e);
-            throw new CoreServiceException("Fail operation link", e);
+            throw new CoreServiceException(e.getMessage(), e);
         }
     }
 
@@ -409,7 +409,7 @@ public class DaoCoreServiceImpl implements DaoService {
             logger.info("Ending operation removeDao");
         } catch (Exception e) {
             logger.error("Fail operation removeDao", e);
-            throw new CoreServiceException("Fail operation removeDao", e);
+            throw new CoreServiceException(e.getMessage(), e);
         }
     }
 
@@ -429,7 +429,7 @@ public class DaoCoreServiceImpl implements DaoService {
             return did;
         } catch (Exception e) {
             logger.error("Fail operation getDid", e);
-            throw new CoreServiceException("Fail operation getDid", e);
+            throw new CoreServiceException(e.getMessage(), e);
         }
     }
 

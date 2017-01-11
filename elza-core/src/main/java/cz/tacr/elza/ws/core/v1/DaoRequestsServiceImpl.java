@@ -72,7 +72,7 @@ public class DaoRequestsServiceImpl implements DaoRequestsService {
             logger.info("Ending operation destructionRequestRevoked");
         } catch (Exception e) {
             logger.error("Fail operation destructionRequestRevoked", e);
-            throw new CoreServiceException("Fail operation destructionRequestRevoked", e);
+            throw new CoreServiceException(e.getMessage(), e);
         }
     }
 
@@ -96,7 +96,7 @@ public class DaoRequestsServiceImpl implements DaoRequestsService {
             logger.info("Ending operation transferRequestFinished");
         } catch (Exception e) {
             logger.error("Fail operation transferRequestFinished", e);
-            throw new CoreServiceException("Fail operation transferRequestFinished", e);
+            throw new CoreServiceException(e.getMessage(), e);
         }
     }
 
@@ -123,7 +123,7 @@ public class DaoRequestsServiceImpl implements DaoRequestsService {
             logger.info("Ending operation transferRequestRevoked");
         } catch (Exception e) {
             logger.error("Fail operation transferRequestRevoked", e);
-            throw new CoreServiceException("Fail operation removeDao", e);
+            throw new CoreServiceException(e.getMessage(), e);
         }
     }
 
@@ -148,7 +148,7 @@ public class DaoRequestsServiceImpl implements DaoRequestsService {
             logger.info("Ending operation destructionRequestFinished");
         } catch (Exception e) {
             logger.error("Fail operation destructionRequestFinished", e);
-            throw new CoreServiceException("Fail operation destructionRequestFinished", e);
+            throw new CoreServiceException(e.getMessage(), e);
         }
     }
 
