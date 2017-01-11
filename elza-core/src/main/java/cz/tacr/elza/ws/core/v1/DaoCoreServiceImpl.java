@@ -18,6 +18,7 @@ import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.DigitizationCode;
 import cz.tacr.elza.exception.codes.PackageCode;
@@ -262,18 +263,39 @@ public class DaoCoreServiceImpl implements DaoService {
 
     private ArrDaoFile createArrDaoFile(@Nullable ArrDao arrDao, @Nullable ArrDaoFileGroup arrDaoFileGroup, File file) {
         ArrDaoFile arrDaoFile = new ArrDaoFile();
+        if (StringUtils.isBlank(file.getIdentifier())) {
+            logger.error("Nebylo vyplněno povinné pole identifikátoru");
+            throw new SystemException();
+        }
         arrDaoFile.setCode(file.getIdentifier());
-        arrDaoFile.setChecksumType(getChecksumType(file.getChecksumType()));
+
+        if (file.getChecksumType() != null) {
+            arrDaoFile.setChecksumType(getChecksumType(file.getChecksumType()));
+        }
         arrDaoFile.setChecksum(file.getChecksum());
-        arrDaoFile.setCreated(file.getCreated().toGregorianCalendar().toZonedDateTime().toLocalDateTime());
+        if (file.getCreated() != null) {
+            arrDaoFile.setCreated(file.getCreated().toGregorianCalendar().toZonedDateTime().toLocalDateTime());
+        }
         arrDaoFile.setMimetype(file.getMimetype());
         arrDaoFile.setSize(file.getSize());
-        arrDaoFile.setImageHeight(file.getImageHeight().intValueExact());
-        arrDaoFile.setImageWidth(file.getImageWidth().intValueExact());
-        arrDaoFile.setSourceXDimesionUnit(getDimensionUnit(file.getSourceXDimensionUnit()));
-        arrDaoFile.setSourceXDimesionValue(file.getSourceXDimensionValue().doubleValue());
-        arrDaoFile.setSourceYDimesionUnit(getDimensionUnit(file.getSourceYDimensionUnit()));
-        arrDaoFile.setSourceYDimesionValue(file.getSourceYDimensionValue().doubleValue());
+        if (file.getImageHeight() != null) {
+            arrDaoFile.setImageHeight(file.getImageHeight().intValueExact());
+        }
+        if (file.getImageHeight() != null) {
+            arrDaoFile.setImageWidth(file.getImageWidth().intValueExact());
+        }
+        if (file.getSourceXDimensionUnit() != null) {
+            arrDaoFile.setSourceXDimesionUnit(getDimensionUnit(file.getSourceXDimensionUnit()));
+        }
+        if (file.getSourceXDimensionUnit() != null) {
+            arrDaoFile.setSourceXDimesionValue(file.getSourceXDimensionValue().doubleValue());
+        }
+        if (file.getSourceXDimensionUnit() != null) {
+            arrDaoFile.setSourceYDimesionUnit(getDimensionUnit(file.getSourceYDimensionUnit()));
+        }
+        if (file.getSourceXDimensionUnit() != null) {
+            arrDaoFile.setSourceYDimesionValue(file.getSourceYDimensionValue().doubleValue());
+        }
         arrDaoFile.setDuration(file.getDuration());
 
         if (arrDao != null) {
