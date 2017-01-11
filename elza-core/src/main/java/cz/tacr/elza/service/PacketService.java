@@ -245,15 +245,15 @@ public class PacketService {
         Assert.notNull(packetIds);
         Assert.isTrue(packetIds.length > 0, "Musí být alespoň jeden ke smazání");
 
-        List<Integer> integers = Arrays.asList(packetIds);
-        List<ArrPacket> usePackets = dataPacketRefRepository.findUsePacketsByPacketIds(integers);
+        List<Integer> packetIdList = Arrays.asList(packetIds);
+        List<ArrPacket> usePackets = dataPacketRefRepository.findUsePacketsByPacketIds(packetIdList);
 
         if (usePackets.size() > 0) {
-            throw new DeleteException(ArrangementCode.PACKET_DELETE_ERROR)
+            throw new DeleteException("Není možné odstranit použíté obaly: " + usePackets, ArrangementCode.PACKET_DELETE_ERROR)
                     .set("packets", usePackets.stream().map(ArrPacket::getStorageNumber).collect(Collectors.toList()));
         }
 
-        ObjectListIterator<Integer> packetIdsIterator = new ObjectListIterator<>(integers);
+        ObjectListIterator<Integer> packetIdsIterator = new ObjectListIterator<>(packetIdList);
         while (packetIdsIterator.hasNext()) {
             packetRepository.deletePackets(fund, packetIdsIterator.next());
         }

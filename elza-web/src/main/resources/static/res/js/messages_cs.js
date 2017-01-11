@@ -21,6 +21,12 @@ var messages = {
 
     "global.title.processAction": "Opravdu chcete provést vybranou akci?",
 
+    "global.exception.detail": "Detail",
+    "global.exception.detail.code": "Kód chyby",
+    "global.exception.detail.message": "Technický popis",
+    "global.exception.detail.stack": "Stack",
+    "global.exception.detail.properties": "Rozšiřující parametry",
+
     "global.error.ajax": "Při komunikaci nastala chyba",
     "global.error.ws": "Při komunikaci nastala chyba",
     "global.action.create": "Vytvořit",

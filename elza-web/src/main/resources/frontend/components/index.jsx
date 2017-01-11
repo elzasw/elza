@@ -1,6 +1,7 @@
 exports.AbstractReactComponent = require('components/AbstractReactComponent.jsx');
 
 exports.AjaxUtils = require('components/AjaxUtils.jsx');
+exports.ExceptionUtils = require('components/ExceptionUtils.jsx');
 exports.i18n = require('components/i18n.jsx');
 exports.LongText = require('components/LongText.jsx');
 exports.Utils = require('components/Utils.jsx');
@@ -39,6 +40,8 @@ exports.DataGridPagination = require('components/shared/datagrid/DataGridPaginat
 exports.DataGridColumnsSettings = require('components/shared/datagrid/DataGridColumnsSettings.jsx');
 exports.Resizer = require('components/shared/resizer/Resizer.jsx');
 exports.CollapsablePanel = require('components/shared/collapsable-panel/CollapsablePanel.jsx');
+exports.Exception = require('components/shared/exception/Exception.jsx');
+exports.ExceptionDetail = require('components/shared/exception/ExceptionDetail.jsx');
 
 exports.TooltipTrigger = require('components/shared/tooltip/TooltipTrigger.jsx');
 

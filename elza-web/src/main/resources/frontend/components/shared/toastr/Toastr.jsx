@@ -73,7 +73,7 @@ const Toastr = class Toastr extends AbstractReactComponent {
                 closeLabel={i18n('global.action.close')}
                 onDismiss={() => (this.handleDismiss(index))}
             >
-                {Toastr.getIconStyle(t.style)}
+                <div className="icon-container">{Toastr.getIconStyle(t.style)}</div>
                 <div className="content">
                     <h4>{t.title}</h4>
                     {message}
