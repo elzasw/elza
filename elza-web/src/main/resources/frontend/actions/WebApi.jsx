@@ -584,11 +584,12 @@ class WebApi {
         return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/requests/' + versionId + '/digitization/add', { send } , data);
     }
 
-    arrDaoRequestAddDaos(versionId, reqId, send, description, daoIds) {
+    arrDaoRequestAddDaos(versionId, reqId, send, description, daoIds, type) {
         const data = {
             id: reqId,
             daoIds,
-            description
+            description,
+            type
         };
         return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/requests/' + versionId + '/dao/add', { send } , data);
     }
