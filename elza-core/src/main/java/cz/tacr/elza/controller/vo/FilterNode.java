@@ -3,7 +3,6 @@ package cz.tacr.elza.controller.vo;
 import java.util.Map;
 
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.domain.vo.DescItemValue;
 import cz.tacr.elza.domain.vo.DescItemValues;
 
 

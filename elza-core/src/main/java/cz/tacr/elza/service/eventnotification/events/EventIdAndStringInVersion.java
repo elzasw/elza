@@ -6,7 +6,7 @@ package cz.tacr.elza.service.eventnotification.events;
  * @author Petr Compel [<a href="mailto:petr.compel@marbes.cz">petr.compel@marbes.cz</a>]
  * @since 15.01.2016
  */
-public class EventIdAndStringInVersion extends EventVersion<EventIdAndStringInVersion> {
+public class EventIdAndStringInVersion extends EventVersion {
 
     /**
      * Id entity
@@ -28,7 +28,7 @@ public class EventIdAndStringInVersion extends EventVersion<EventIdAndStringInVe
         return entityString;
     }
 
-    public void setEntityString(String entityString) {
+    public void setEntityString(final String entityString) {
         this.entityString = entityString;
     }
 
@@ -36,7 +36,7 @@ public class EventIdAndStringInVersion extends EventVersion<EventIdAndStringInVe
         return entityId;
     }
 
-    public void setEntityId(Integer entityId) {
+    public void setEntityId(final Integer entityId) {
         this.entityId = entityId;
     }
 }

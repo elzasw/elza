@@ -1,14 +1,13 @@
 package cz.tacr.elza.repository;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import cz.tacr.elza.domain.ArrFundVersion;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.ArrNodeConformityError;
 

@@ -6,7 +6,7 @@ package cz.tacr.elza.service.eventnotification.events;
  * @author Martin Šlapa
  * @since 3.2.2016
  */
-public class EventDeleteNode extends EventVersion<EventDeleteNode> {
+public class EventDeleteNode extends EventVersion {
 
     private Integer nodeId;
 

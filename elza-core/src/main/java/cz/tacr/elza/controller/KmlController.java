@@ -1,15 +1,14 @@
 package cz.tacr.elza.controller;
 
-import com.vividsolutions.jts.geom.Geometry;
-import cz.tacr.elza.domain.RegCoordinates;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.factory.DescItemFactory;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.RegCoordinatesRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.service.ArrIOService;
-import cz.tacr.elza.service.RegistryService;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.geotools.kml.KMLConfiguration;
 import org.geotools.xml.Parser;
 import org.opengis.feature.simple.SimpleFeature;
@@ -24,13 +23,14 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.xml.sax.SAXException;
 
-import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import com.vividsolutions.jts.geom.Geometry;
+
+import cz.tacr.elza.domain.RegCoordinates;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.repository.RegCoordinatesRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.service.ArrIOService;
+import cz.tacr.elza.service.RegistryService;
 
 /**
  * Controller pro import a export KML souborů
@@ -130,7 +130,7 @@ public class KmlController {
     @RequestMapping(value = "/api/kml/export/descCoordinates/{fundVersionId}/{descItemObjectId}",
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_XML_VALUE)
-    public void coordinatesDescExport(HttpServletResponse response,
+    public void coordinatesDescExport(final HttpServletResponse response,
                                      @PathVariable(value = "descItemObjectId") final Integer descItemObjectId,
                                      @PathVariable(value = "fundVersionId") final Integer fundVersionId) throws IOException {
         Assert.notNull(descItemObjectId);
@@ -143,7 +143,7 @@ public class KmlController {
     @RequestMapping(value = "/api/kml/export/outputCoordinates/{fundVersionId}/{descItemObjectId}",
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_XML_VALUE)
-    public void coordinatesOutputExport(HttpServletResponse response,
+    public void coordinatesOutputExport(final HttpServletResponse response,
                                      @PathVariable(value = "descItemObjectId") final Integer descItemObjectId,
                                      @PathVariable(value = "fundVersionId") final Integer fundVersionId) throws IOException {
         Assert.notNull(descItemObjectId);
@@ -155,7 +155,7 @@ public class KmlController {
     @RequestMapping(value = "/api/kml/export/regCoordinates/{coordinatesId}",
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_XML_VALUE)
-    public void exportRegCoordinates(HttpServletResponse response, @PathVariable(value = "coordinatesId") final Integer coordinatesId) throws IOException {
+    public void exportRegCoordinates(final HttpServletResponse response, @PathVariable(value = "coordinatesId") final Integer coordinatesId) throws IOException {
         Assert.notNull(coordinatesId);
         RegCoordinates cords = regCoordinatesRepository.findOne(coordinatesId);
 

@@ -4,7 +4,6 @@ import java.util.Collection;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.service.IClientDataChangesService;
 import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
@@ -22,7 +21,8 @@ public class ClientDataChangesService implements IClientDataChangesService {
     private SimpMessagingTemplate messagingTemplate;
 
 
-    public void fireEvents(final Collection<AbstractEventSimple> events) {
+    @Override
+	public void fireEvents(final Collection<AbstractEventSimple> events) {
         messagingTemplate
                 .convertAndSend(API_CHANGES_DESTINATION, new WebsocketDataVO(WebsocketDataType.EVENT, events));
     }

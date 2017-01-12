@@ -11,12 +11,12 @@ import java.util.Set;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 14.01.2016
  */
-public class EventId extends AbstractEventSimple<EventId> {
+public class EventId extends AbstractEventSimple {
 
     /**
      * Seznam id.
      */
-    private Set<Integer> ids = Collections.EMPTY_SET;
+    private Set<Integer> ids = Collections.emptySet();
 
     public EventId(final EventType eventType, final Integer... ids) {
         super(eventType);

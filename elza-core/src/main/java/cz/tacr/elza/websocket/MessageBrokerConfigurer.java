@@ -1,33 +1,22 @@
 package cz.tacr.elza.websocket;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.context.embedded.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.security.config.annotation.web.messaging.MessageSecurityMetadataSourceRegistry;
 import org.springframework.security.config.annotation.web.socket.AbstractSecurityWebSocketMessageBrokerConfigurer;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.web.context.request.RequestContextListener;
-import org.springframework.web.filter.DelegatingFilterProxy;
-import org.springframework.web.filter.RequestContextFilter;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketSession;
-import org.springframework.web.socket.config.annotation.AbstractWebSocketMessageBrokerConfigurer;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration;
 import org.springframework.web.socket.handler.WebSocketHandlerDecorator;
-import org.springframework.web.socket.handler.WebSocketHandlerDecoratorFactory;
 import org.springframework.web.socket.messaging.StompSubProtocolErrorHandler;
 import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor;
-
-import java.util.Arrays;
 
 /**
  * Konfigurace message brokera.
@@ -44,7 +33,7 @@ public class MessageBrokerConfigurer extends AbstractSecurityWebSocketMessageBro
     }
 
     @Override
-    public void configureMessageBroker(MessageBrokerRegistry registry) {
+    public void configureMessageBroker(final MessageBrokerRegistry registry) {
         registry.setApplicationDestinationPrefixes("/app");
         registry.setUserDestinationPrefix("/user"); // direct message for current user (@SentToUser) or session (broadcast=false)
         registry
@@ -54,7 +43,7 @@ public class MessageBrokerConfigurer extends AbstractSecurityWebSocketMessageBro
     }
 
     @Override
-    public void registerStompEndpoints(StompEndpointRegistry registry) {
+    public void registerStompEndpoints(final StompEndpointRegistry registry) {
         registry.setErrorHandler(new StompSubProtocolErrorHandler());
         registry.addEndpoint("/stomp")
                 // copy HTTP session attributes to simpSessionAttributes
@@ -65,7 +54,7 @@ public class MessageBrokerConfigurer extends AbstractSecurityWebSocketMessageBro
 //    private WebSocketHandler subProtocolWebSocketHandler;
 
     @Override
-    protected void configureInbound(MessageSecurityMetadataSourceRegistry messages) {
+    protected void configureInbound(final MessageSecurityMetadataSourceRegistry messages) {
         messages
 //                .nullDestMatcher().authenticated()
                 .simpDestMatchers("/app/**").authenticated();
@@ -93,19 +82,19 @@ public class MessageBrokerConfigurer extends AbstractSecurityWebSocketMessageBro
     private static class ExecutorWebSocketHandlerDecorator extends WebSocketHandlerDecorator {
         private final WebSocketThreadPoolTaskExecutor executor;
 
-        public ExecutorWebSocketHandlerDecorator(WebSocketHandler delegate, WebSocketThreadPoolTaskExecutor executor) {
+        public ExecutorWebSocketHandlerDecorator(final WebSocketHandler delegate, final WebSocketThreadPoolTaskExecutor executor) {
             super(delegate);
             this.executor = executor;
         }
 
         @Override
-        public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+        public void afterConnectionEstablished(final WebSocketSession session) throws Exception {
             executor.addSession(session.getId());
             super.afterConnectionEstablished(session);
         }
 
         @Override
-        public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
+        public void afterConnectionClosed(final WebSocketSession session, final CloseStatus closeStatus) throws Exception {
             super.afterConnectionClosed(session, closeStatus);
             executor.removeSession(session.getId());
         }

@@ -10,7 +10,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 import org.hibernate.MappingException;
-import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.id.enhanced.TableGenerator;
 import org.hibernate.service.ServiceRegistry;
@@ -31,7 +30,7 @@ public class TableIdGenerator extends TableGenerator {
     public static final String DEFAULT_INCREMENT_SIZE = "20";
 
     @Override
-    public void configure(Type type, Properties params, ServiceRegistry serviceRegistry) throws MappingException {
+    public void configure(final Type type, final Properties params, final ServiceRegistry serviceRegistry) throws MappingException {
         params.setProperty(TABLE_PARAM, "db_hibernate_sequences");
         params.setProperty(SEGMENT_VALUE_PARAM, params.getProperty("target_table") + "|" + params.getProperty("target_column"));
         params.setProperty(INCREMENT_PARAM, DEFAULT_INCREMENT_SIZE);
@@ -40,7 +39,7 @@ public class TableIdGenerator extends TableGenerator {
     }
 
     @Override
-    public Serializable generate(SessionImplementor session, Object obj) {
+    public Serializable generate(final SessionImplementor session, final Object obj) {
         Serializable id = getReplicatedId(obj);
         if (id == null) {
             id = super.generate(session, obj);
@@ -48,7 +47,7 @@ public class TableIdGenerator extends TableGenerator {
         return id;
     }
 
-    private Serializable getReplicatedId(Object obj) {
+    private Serializable getReplicatedId(final Object obj) {
         try {
             Class<?> cls = obj.getClass();
 

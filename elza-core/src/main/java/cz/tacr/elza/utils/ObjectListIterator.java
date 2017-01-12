@@ -24,12 +24,12 @@ public class ObjectListIterator<T> {
     private int index = 0;
 
     public ObjectListIterator(final Collection<T> list) {
-        this.list = new ArrayList(list);
+        this.list = new ArrayList<>(list);
     }
 
-    public ObjectListIterator(int maximalIterationSize, Collection<T> list) {
+    public ObjectListIterator(final int maximalIterationSize, final Collection<T> list) {
         this.maximalIterationSize = maximalIterationSize;
-        this.list = new ArrayList(list);
+        this.list = new ArrayList<>(list);
     }
 
     public boolean hasNext() {
@@ -43,7 +43,7 @@ public class ObjectListIterator<T> {
      */
     public List<T> next() {
         int size = Math.min(this.maximalIterationSize, this.list.size() - this.index);
-        ArrayList result = new ArrayList(size);
+        List<T> result = new ArrayList<>(size);
         result.addAll(this.list.subList(this.index, this.index + size));
         this.index += this.maximalIterationSize;
         return result;

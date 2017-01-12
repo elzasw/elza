@@ -1,15 +1,11 @@
 package cz.tacr.elza.bulkaction.factory;
 
-import cz.tacr.elza.bulkaction.BulkActionConfig;
-import cz.tacr.elza.bulkaction.BulkActionWorker;
-import cz.tacr.elza.bulkaction.generator.BulkAction;
-import cz.tacr.elza.domain.ArrBulkActionRun;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import cz.tacr.elza.bulkaction.BulkActionWorker;
 
 
 /**

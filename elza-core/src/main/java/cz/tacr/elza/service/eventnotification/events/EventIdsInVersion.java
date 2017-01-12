@@ -6,7 +6,7 @@ package cz.tacr.elza.service.eventnotification.events;
  * @author Martin Šlapa
  * @since 12.2.2016
  */
-public class EventIdsInVersion extends EventVersion<EventIdsInVersion> {
+public class EventIdsInVersion extends EventVersion {
 
     /**
      * Id entit.
