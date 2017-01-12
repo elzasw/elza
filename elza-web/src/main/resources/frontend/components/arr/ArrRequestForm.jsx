@@ -74,6 +74,7 @@ const ArrRequestForm = class extends AbstractReactComponent {
         requestId.onChange("");
         description.onChange("");
         this.props.dispatch(arrRequestActions.filterPreparedList({ daoType: value }));
+        this.trySelectRequest(this.props);
     };
 
     handleRequestChange = (e) => {
