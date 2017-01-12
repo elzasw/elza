@@ -14,12 +14,11 @@ import org.springframework.data.rest.core.annotation.RestResource;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.vividsolutions.jts.geom.Geometry;
 
-import cz.tacr.elza.api.RegScope;
 import cz.tacr.elza.api.interfaces.IRegScope;
 
 
 /**
- * Implementace třídy {@link cz.tacr.elza.api.RegCoordinates}
+ * Souřadnice.
  *
  * @author Petr Compel
  * @since 18. 4. 2016
@@ -27,7 +26,7 @@ import cz.tacr.elza.api.interfaces.IRegScope;
 @Entity(name = "reg_coordinates")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RegCoordinates implements cz.tacr.elza.api.RegCoordinates<RegRecord>, IRegScope {
+public class RegCoordinates implements IRegScope {
 
     @Id
     @GeneratedValue
@@ -46,41 +45,54 @@ public class RegCoordinates implements cz.tacr.elza.api.RegCoordinates<RegRecord
     @Column
     private String description;
 
-    @Override
     public Integer getCoordinatesId() {
         return coordinatesId;
     }
 
-    @Override
     public void setCoordinatesId(final Integer coordinatesId) {
         this.coordinatesId = coordinatesId;
     }
 
-    @Override
+    /**
+     *  @return souřadnice
+     */
     public Geometry getValue() {
         return value;
     }
-    @Override
+
+    /**
+     * @param value souřadnice
+     */
     public void setValue(final Geometry value) {
         this.value = value;
     }
 
-    @Override
+    /**
+     * @return popis
+     */
     public String getDescription() {
         return description;
     }
 
-    @Override
+    /**
+     * @param description popis
+     */
     public void setDescription(final String description) {
         this.description = description;
     }
 
-    @Override
+    /**
+     * Vazba na heslo rejstříku.
+     * @return  objekt hesla
+     */
     public RegRecord getRegRecord() {
         return regRecord;
     }
 
-    @Override
+    /**
+     * Vazba na heslo rejstříku.
+     * @param regRecord objekt hesla
+     */
     public void setRegRecord(final RegRecord regRecord) {
         this.regRecord = regRecord;
     }

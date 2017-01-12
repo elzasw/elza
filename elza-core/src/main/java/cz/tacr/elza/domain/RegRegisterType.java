@@ -1,12 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.springframework.data.rest.core.annotation.RestResource;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -17,6 +10,14 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.springframework.data.rest.core.annotation.RestResource;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
@@ -30,7 +31,7 @@ import javax.persistence.Table;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RegRegisterType implements  cz.tacr.elza.api.RegRegisterType<RegRegisterType, ParPartyType> {
+public class RegRegisterType {
 
     /* Konstanty pro vazby a fieldy. */
     public static final String ID = "registerTypeId";
@@ -44,17 +45,17 @@ public class RegRegisterType implements  cz.tacr.elza.api.RegRegisterType<RegReg
 
     @Column(length = 250, nullable = false)
     private String name;
-    
+
     @Column(nullable = true)
     private Boolean hierarchical;
-    
+
     @Column(nullable = true)
     private Boolean addRecord;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRegisterType.class)
     @JoinColumn(name = "parentRegisterTypeId", nullable = true)
     private RegRegisterType parentRegisterType;
-    
+
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParPartyType.class)
     @JoinColumn(name = "partyTypeId", nullable = true)
@@ -64,73 +65,115 @@ public class RegRegisterType implements  cz.tacr.elza.api.RegRegisterType<RegReg
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
-    @Override
+    /**
+     * Vlastní ID.
+     * @return  id
+     */
     public Integer getRegisterTypeId() {
         return registerTypeId;
     }
 
-    @Override
+    /**
+     * Vlastní ID.
+     * @param registerTypeId id
+     */
     public void setRegisterTypeId(final Integer registerTypeId) {
         this.registerTypeId = registerTypeId;
     }
 
-    @Override
+    /**
+     * Kód typu.
+     * @return kód typu
+     */
     public String getCode() {
         return code;
     }
 
-    @Override
+    /**
+     * Kód typu.
+     * @param code kód typu
+     */
     public void setCode(final String code) {
         this.code = code;
     }
 
-    @Override
+    /**
+     * Název typu.
+     * @return název typu
+     */
     public String getName() {
         return name;
     }
 
-    @Override
+    /**
+     * Název typu.
+     * @param name název typu
+     */
     public void setName(final String name) {
         this.name = name;
     }
 
-    @Override
+    /**
+     * Příznak, zda rejstříková hesla tohoto typu rejstříku tvoří hierarchii.
+     * @param hierarchical
+     */
     public Boolean getHierarchical() {
         return hierarchical;
     }
 
-    @Override
-    public void setHierarchical(Boolean hierarchical) {
+    /**
+     * Příznak, zda rejstříková hesla tohoto typu rejstříku tvoří hierarchii.
+     * @return Příznak, zda rejstříková hesla tohoto typu rejstříku tvoří hierarchii.
+     */
+    public void setHierarchical(final Boolean hierarchical) {
         this.hierarchical = hierarchical;
     }
 
-    @Override
+    /**
+     * Příznak, zda může daný typ rejstříku obsahovat hesla nebo se jedná jen o "nadtyp".
+     * @return Příznak, zda může daný typ rejstříku obsahovat hesla nebo se jedná jen o "nadtyp".
+     */
     public Boolean getAddRecord() {
         return addRecord;
     }
 
-    @Override
-    public void setAddRecord(Boolean addRecord) {
+    /**
+     * Příznak, zda může daný typ rejstříku obsahovat hesla nebo se jedná jen o "nadtyp".
+     * @param addRecord
+     */
+    public void setAddRecord(final Boolean addRecord) {
         this.addRecord = addRecord;
     }
 
-    @Override
+    /**
+     * Odkaz na sebe sama (hierarchie typů rejstříků).
+     * @param parentRegisterType
+     */
     public RegRegisterType getParentRegisterType() {
         return parentRegisterType;
     }
 
-    @Override
-    public void setParentRegisterType(RegRegisterType parentRegisterType) {
+    /**
+     * Odkaz na sebe sama (hierarchie typů rejstříků).
+     * @return Odkaz na sebe sama (hierarchie typů rejstříků).
+     */
+    public void setParentRegisterType(final RegRegisterType parentRegisterType) {
         this.parentRegisterType = parentRegisterType;
     }
 
-    @Override
+    /**
+     * Určení, zda hesla daného typu mohou být "abstraktní" osobou/původcem a jakého typu.
+     * @return Určení, zda hesla daného typu mohou být "abstraktní" osobou/původcem a jakého typu.
+     */
     public ParPartyType getPartyType() {
         return partyType;
     }
 
-    @Override
-    public void setPartyType(ParPartyType partyType) {
+    /**
+     * Určení, zda hesla daného typu mohou být "abstraktní" osobou/původcem a jakého typu.
+     * @param partyType
+     */
+    public void setPartyType(final ParPartyType partyType) {
         this.partyType = partyType;
     }
 
@@ -143,7 +186,7 @@ public class RegRegisterType implements  cz.tacr.elza.api.RegRegisterType<RegReg
             return true;
         }
 
-        cz.tacr.elza.api.RegRegisterType other = (cz.tacr.elza.api.RegRegisterType) obj;
+        RegRegisterType other = (RegRegisterType) obj;
 
         return new EqualsBuilder().append(registerTypeId, other.getRegisterTypeId()).isEquals();
     }

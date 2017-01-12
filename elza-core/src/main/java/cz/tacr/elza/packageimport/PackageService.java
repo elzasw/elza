@@ -45,8 +45,8 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import com.google.common.collect.Maps;
 
-import cz.tacr.elza.api.ParRelationClassTypeRepeatabilityEnum;
 import cz.tacr.elza.api.UseUnitdateEnum;
+import cz.tacr.elza.api.enums.ParRelationClassTypeRepeatabilityEnum;
 import cz.tacr.elza.api.enums.UIPartyGroupTypeEnum;
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
 import cz.tacr.elza.domain.ArrFund;

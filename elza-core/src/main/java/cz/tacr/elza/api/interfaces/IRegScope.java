@@ -1,6 +1,6 @@
 package cz.tacr.elza.api.interfaces;
 
-import cz.tacr.elza.api.RegScope;
+import cz.tacr.elza.domain.RegScope;
 
 /**
  * Rozhraní pro získání Scope.
@@ -8,7 +8,7 @@ import cz.tacr.elza.api.RegScope;
  * @author Martin Šlapa
  * @since 27.04.2016
  */
-public interface IRegScope<S extends RegScope> {
+public interface IRegScope {
 
     RegScope getRegScope();
 

@@ -30,7 +30,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 
 
 /**
- * Záznamy v rejstříku.
+ * Rejstříkové heslo.
  *
  * @author Martin Kužel [<a href="mailto:martin.kuzel@marbes.cz">martin.kuzel@marbes.cz</a>]
  * @since 21.8.2015
@@ -39,9 +39,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RegRecord extends AbstractVersionableEntity
-        implements cz.tacr.elza.api.RegRecord<RegRegisterType, RegVariantRecord, RegRecord,
-        RegScope>, Versionable, Serializable, IRegScope {
+public class RegRecord extends AbstractVersionableEntity implements Versionable, Serializable, IRegScope {
 
     @Id
     @GeneratedValue
@@ -115,33 +113,50 @@ public class RegRecord extends AbstractVersionableEntity
     public static final String UUID = "uuid";
     public static final String LAST_UPDATE = "lastUpdate";
 
-
-    @Override
+    /**
+     * ID hesla.
+     * @return  id hesla
+     */
     public Integer getRecordId() {
         return recordId;
     }
 
-    @Override
+    /**
+     * ID hesla.
+     * @param recordId  id hesla
+     */
     public void setRecordId(final Integer recordId) {
         this.recordId = recordId;
     }
 
-    @Override
+    /**
+     * Typ rejstříku.
+     * @return  typ rejstříku
+     */
     public RegRegisterType getRegisterType() {
         return registerType;
     }
 
-    @Override
+    /**
+     * Typ rejstříku.
+     * @param registerType typ rejstříku
+     */
     public void setRegisterType(final RegRegisterType registerType) {
         this.registerType = registerType;
     }
 
-    @Override
+    /**
+     * Nadřazený záznam rejstříku.
+     * @return  nadřazený záznam rejstříku
+     */
     public RegRecord getParentRecord() {
         return parentRecord;
     }
 
-    @Override
+    /**
+     * Nadřazený záznam rejstříku.
+     * @param parentRecord nadřazený záznam rejstříku
+     */
     public void setParentRecord(final RegRecord parentRecord) {
         this.parentRecord = parentRecord;
     }
@@ -154,95 +169,139 @@ public class RegRecord extends AbstractVersionableEntity
         this.externalSystem = externalSystem;
     }
 
-    @Override
+    /**
+     * Rejstříkové heslo.
+     * @return rejstříkové heslo
+     */
     public String getRecord() {
         return record;
     }
 
-    @Override
+    /**
+     * Rejstříkové heslo.
+     * @param record rejstříkové heslo
+     */
     public void setRecord(final String record) {
         this.record = record;
     }
 
-    @Override
+    /**
+     * Podrobná charakteristika rejstříkového hesla.
+     * @return podrobná charakteristika rejstříkového hesla
+     */
     public String getCharacteristics() {
         return characteristics;
     }
 
-    @Override
+    /**
+     * Podrobná charakteristika rejstříkového hesla.
+     * @param characteristics podrobná charakteristika rejstříkového hesla.
+     */
     public void setCharacteristics(final String characteristics) {
         this.characteristics = characteristics;
     }
 
-    @Override
+    /**
+     * Poznámka k heslu v rejstříku.
+     * @return poznámka k heslu v rejstříku
+     */
     public String getNote() {
         return note;
     }
 
-    @Override
+    /**
+     * Poznámka k heslu v rejstříku.
+     * @param note poznámka k heslu v rejstříku
+     */
     public void setNote(final String note) {
         this.note = note;
     }
 
-    @Override
+    /**
+     * Externí identifikátor rejstříkového hesla v externím zdroji záznamů, například interpi.
+     * @return externí identifikátor rejstříkového hesla v externím zdroji záznamů, například interpi
+     */
     public String getExternalId() {
         return externalId;
     }
 
-    @Override
+    /**
+     * Externí identifikátor rejstříkového hesla v externím zdroji záznamů, například interpi.
+     *
+     * @param externalId externí identifikátor rejstříkového hesla v externím zdroji záznamů, například interpi
+     */
     public void setExternalId(final String externalId) {
         this.externalId = externalId;
     }
 
-    @Override
+    /**
+     * Vazba na variantní záznamy.
+     *
+     * @param variantRecordList množina záznamů.
+     */
     public void setVariantRecordList(final List<RegVariantRecord> variantRecordList) {
         this.variantRecordList = variantRecordList;
     }
 
-    @Override
+    /**
+     * Vazba na variantní záznamy.
+     *
+     * @return množina, může být prázdná.
+     */
     public List<RegVariantRecord> getVariantRecordList() {
         return variantRecordList;
     }
 
-    @Override
+    /**
+     * @return třída rejstříku
+     */
     public RegScope getScope() {
         return scope;
     }
 
-    @Override
+    /**
+     * @param scope třída rejstříku
+     */
     public void setScope(final RegScope scope) {
         this.scope = scope;
     }
 
     @Override
-    @JsonIgnore
     public RegScope getRegScope() {
         return scope;
     }
 
-    @Override
+    /** @return UUID */
     public String getUuid() {
         return uuid;
     }
 
-    @Override
+    /**
+     * UUID.
+     *
+     * @param uuid UUID
+     */
     public void setUuid(final String uuid) {
         this.uuid = uuid;
     }
 
-    @Override
+    /** @return čas poslední aktualizace rejstříku nebo osoby */
     public LocalDateTime getLastUpdate() {
         return lastUpdate;
     }
 
-    @Override
+    /**
+     * Čas poslední aktualizace rejstříku nebo osoby.
+     *
+     * @param lastUpdate as poslední aktualizace rejstříku nebo osoby
+     */
     public void setLastUpdate(final LocalDateTime lastUpdate) {
         this.lastUpdate = lastUpdate;
     }
 
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof cz.tacr.elza.api.RegRecord)) {
+        if (!(obj instanceof RegRecord)) {
             return false;
         }
         if (this == obj) {

@@ -1,11 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -13,6 +7,13 @@ import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.Table;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
@@ -26,7 +27,7 @@ import javax.persistence.Table;
 @Inheritance(strategy = InheritanceType.JOINED)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "partyTypeEnum"})
-public class ParPartyType implements cz.tacr.elza.api.ParPartyType {
+public class ParPartyType {
 
     /* Konstanty pro vazby a fieldy. */
     public static final String PARTY_TYPE_ID = "partyTypeId";
@@ -45,42 +46,66 @@ public class ParPartyType implements cz.tacr.elza.api.ParPartyType {
     private String description;
 
 
-    @Override
+    /**
+     * Vlastní ID.
+     * @return id
+     */
     public Integer getPartyTypeId() {
         return partyTypeId;
     }
 
-    @Override
+    /**
+     * Vlastní ID.
+     * @param partyTypeId id
+     */
     public void setPartyTypeId(final Integer partyTypeId) {
         this.partyTypeId = partyTypeId;
     }
 
-    @Override
+    /**
+     * Kód typu osoby.
+     * @return kód typu
+     */
     public String getCode() {
         return code;
     }
 
-    @Override
+    /**
+     * Kód typu osoby.
+     * @param code kód typu
+     */
     public void setCode(final String code) {
         this.code = code;
     }
 
-    @Override
+    /**
+     * Název typu osoby.
+     * @return název typu
+     */
     public String getName() {
         return name;
     }
 
-    @Override
+    /**
+     * Název typu osoby.
+     * @param name název typu
+     */
     public void setName(final String name) {
         this.name = name;
     }
 
-    @Override
+    /**
+     * Popis.
+     * @return popis
+     */
     public String getDescription() {
         return description;
     }
 
-    @Override
+    /**
+     * Popis.
+     * @param description popis
+     */
     public void setDescription(final String description) {
         this.description = description;
     }
@@ -119,5 +144,4 @@ public class ParPartyType implements cz.tacr.elza.api.ParPartyType {
         GROUP_PARTY,
         EVENT
     }
-
 }

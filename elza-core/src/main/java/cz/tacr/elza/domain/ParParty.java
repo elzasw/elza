@@ -22,7 +22,6 @@ import org.springframework.data.rest.core.annotation.RestResource;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import cz.tacr.elza.api.RegScope;
 import cz.tacr.elza.api.interfaces.IRegScope;
 import cz.tacr.elza.domain.enumeration.StringLength;
 
@@ -37,7 +36,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.api.ParParty<RegRecord, ParPartyType>, IRegScope {
+public class ParParty extends AbstractVersionableEntity implements IRegScope {
 
     /* Konstanty pro vazby a fieldy. */
     public static final String ABSTRACT_PARTY_ID = "partyId";
@@ -98,32 +97,50 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
     @Column(nullable = false)
     private boolean originator = true;
 
-    @Override
+    /**
+     * Primární ID.
+     * @return      id objektu
+     */
     public Integer getPartyId() {
         return partyId;
     }
 
-    @Override
+    /**
+     * Primární ID.
+     * @param partyId   id objektu
+     */
     public void setPartyId(final Integer partyId) {
         this.partyId = partyId;
     }
 
-    @Override
+    /**
+     * Rejstříkové heslo.
+     * @return  objekt navázaného rejstříkového hesla
+     */
     public RegRecord getRecord() {
         return record;
     }
 
-    @Override
+    /**
+     * Rejstříkové heslo.
+     * @param record    objekt navázaného rejstříkového hesla
+     */
     public void setRecord(final RegRecord record) {
         this.record = record;
     }
 
-    @Override
+    /**
+     * Typ osoby.
+     * @return typ osoby.
+     */
     public ParPartyType getPartyType() {
         return partyType;
     }
 
-    @Override
+    /**
+     * Typ osoby.
+     * @param partyType
+     */
     public void setPartyType(final ParPartyType partyType) {
         this.partyType = partyType;
     }
@@ -144,22 +161,34 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
         this.partyNames = partyNames;
     }
 
-    @Override
+    /**
+     * Dějiny osoby.
+     * @return dějiny osoby
+     */
     public String getHistory() {
         return history;
     }
 
-    @Override
+    /**
+     * Dějiny osoby.
+     * @param history dějiny osoby
+     */
     public void setHistory(final String history) {
         this.history = history;
     }
 
-    @Override
+    /**
+     * Zdroje informací.
+     * @return  zdroje informací
+     */
     public String getSourceInformation() {
         return sourceInformation;
     }
 
-    @Override
+    /**
+     * Zdroje informací.
+     * @param sourceInformation zdroje informací
+     */
     public void setSourceInformation(final String sourceInformation) {
         this.sourceInformation = sourceInformation;
     }
@@ -188,26 +217,24 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
         this.relations = relations;
     }
 
-    @Override
     public boolean isOriginator() {
         return originator;
     }
 
-    @Override
     public void setOriginator(final boolean originator) {
         this.originator = originator;
     }
 
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof cz.tacr.elza.api.ParParty)) {
+        if (!(obj instanceof ParParty)) {
             return false;
         }
         if (this == obj) {
             return true;
         }
 
-        cz.tacr.elza.api.ParParty<RegRecord, ParPartyType> other = (cz.tacr.elza.api.ParParty<RegRecord, ParPartyType>) obj;
+        ParParty other = (ParParty) obj;
 
         return new EqualsBuilder().append(partyId, other.getPartyId()).isEquals();
     }
@@ -223,7 +250,6 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
     }
 
     @Override
-    @JsonIgnore
     public RegScope getRegScope() {
         return record.getScope();
     }
