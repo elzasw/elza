@@ -1,31 +1,25 @@
 package cz.tacr.elza.domain.table;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
- * Implementace {@link cz.tacr.elza.api.table.ElzaTable}
+ * Tabulka.
  *
  * @author Martin Šlapa
  * @since 21.06.2016
  */
-public class ElzaTable implements cz.tacr.elza.api.table.ElzaTable<ElzaRow> {
-
+public class ElzaTable {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private static final Logger logger = LoggerFactory.getLogger(ElzaTable.class);
-
     private List<ElzaRow> rows;
 
-    @Override
     public List<ElzaRow> getRows() {
         if (rows == null) {
             rows = new ArrayList<>();
@@ -33,7 +27,6 @@ public class ElzaTable implements cz.tacr.elza.api.table.ElzaTable<ElzaRow> {
         return rows;
     }
 
-    @Override
     public void setRows(final List<ElzaRow> rows) {
         this.rows = rows;
     }
@@ -52,7 +45,6 @@ public class ElzaTable implements cz.tacr.elza.api.table.ElzaTable<ElzaRow> {
         }
     }
 
-    @Override
     public void addRow(final ElzaRow row) {
         getRows().add(row);
     }
@@ -73,7 +65,9 @@ public class ElzaTable implements cz.tacr.elza.api.table.ElzaTable<ElzaRow> {
         }
     }
 
-    @Override
+    /**
+     * Smaže všechny řádky v tabulce.
+     */
     public void clear() {
         this.rows = null;
     }

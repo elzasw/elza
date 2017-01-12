@@ -2,17 +2,14 @@ package cz.tacr.elza.domain.vo;
 
 import java.util.Collection;
 
-import cz.tacr.elza.api.vo.RelatedNodeDirection;
-
 
 /**
- * Implementace rozšíření hodnoty atributů o seznam dopadů na uzel.
+ * Rozšíření hodnoty atributů o seznam dopadů na uzel.
  *
  * @author Martin Šlapa
  * @since 27.11.2015
  */
-public class RelatedNodeDirectionWithDescItems
-        implements cz.tacr.elza.api.vo.RelatedNodeDirectionWithDescItems<RelatedNodeDirection> {
+public class RelatedNodeDirectionWithDescItems {
 
     private ArrDescItems arrDescItems;
 
@@ -32,12 +29,16 @@ public class RelatedNodeDirectionWithDescItems
         this.arrDescItems = arrDescItems;
     }
 
-    @Override
+    /**
+     * @return seznam změn dopadů na uzel
+     */
     public Collection<RelatedNodeDirection> getRelatedNodeDirections() {
         return relatedNodeDirections;
     }
 
-    @Override
+    /**
+     * @param relatedNodeDirections seznam změn dopadů na uzel
+     */
     public void setRelatedNodeDirections(final Collection<RelatedNodeDirection> relatedNodeDirections) {
         this.relatedNodeDirections = relatedNodeDirections;
     }

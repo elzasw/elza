@@ -17,14 +17,16 @@ import org.springframework.data.rest.core.annotation.RestResource;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * popis {@link cz.tacr.elza.api.ArrLevel}.
+ * Úroveň hierarchického popisu. Úroveň sama o sobě není nositelem hodnoty. Vlastní hodnoty prvků
+ * popisu jsou zapsány v atributech archivního popisu {@link ArrDescItem}.
+ *
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
 @Entity(name = "arr_level")
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"position", "nodeIdParent", "deleteChangeId"}))
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrLevel implements cz.tacr.elza.api.ArrLevel<ArrChange> {
+public class ArrLevel {
 
     @Id
     @GeneratedValue
@@ -53,12 +55,10 @@ public class ArrLevel implements cz.tacr.elza.api.ArrLevel<ArrChange> {
     @Column(nullable = false)
     private Integer position;
 
-    @Override
     public Integer getLevelId() {
         return levelId;
     }
 
-    @Override
     public void setLevelId(final Integer levelId) {
         this.levelId = levelId;
     }
@@ -103,45 +103,57 @@ public class ArrLevel implements cz.tacr.elza.api.ArrLevel<ArrChange> {
         this.nodeParent = parentNode;
     }
 
-    @Override
+    /**
+     * @return číslo změny vytvoření uzlu.
+     */
     public ArrChange getCreateChange() {
         return createChange;
     }
 
-    @Override
+    /**
+     * @param createChange číslo změny vytvoření uzlu.
+     */
     public void setCreateChange(final ArrChange createChange) {
         this.createChange = createChange;
     }
 
-    @Override
+    /**
+     * @return číslo změny smazání uzlu.
+     */
     public ArrChange getDeleteChange() {
         return deleteChange;
     }
 
-    @Override
+    /**
+     * @param deleteChange číslo změny smazání uzlu.
+     */
     public void setDeleteChange(final ArrChange deleteChange) {
         this.deleteChange = deleteChange;
     }
 
-    @Override
+    /**
+     * @return pozice uzlu mezi sourozenci.
+     */
     public Integer getPosition() {
         return position;
     }
 
-    @Override
+    /**
+     * @param position pozice uzlu mezi sourozenci.
+     */
     public void setPosition(final Integer position) {
         this.position = position;
     }
 
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof cz.tacr.elza.domain.ArrLevel)) {
+        if (!(obj instanceof ArrLevel)) {
             return false;
         }
         if (this == obj) {
             return true;
         }
-        cz.tacr.elza.domain.ArrLevel other = (cz.tacr.elza.domain.ArrLevel) obj;
+        ArrLevel other = (ArrLevel) obj;
         return EqualsBuilder.reflectionEquals(levelId, other.getLevelId());
     }
 

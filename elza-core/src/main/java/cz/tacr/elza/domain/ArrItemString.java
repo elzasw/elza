@@ -1,8 +1,8 @@
 package cz.tacr.elza.domain;
 
-import cz.tacr.elza.domain.interfaces.IArrItemStringValue;
-
 import java.util.Objects;
+
+import cz.tacr.elza.domain.interfaces.IArrItemStringValue;
 
 /**
  * Rozšiřuje atribut archivního popisu o jeho hodnotu.
@@ -10,7 +10,7 @@ import java.util.Objects;
  * @author Martin Šlapa
  * @since 15.9.15
  */
-public class ArrItemString extends ArrItemData implements cz.tacr.elza.api.ArrItemString, IArrItemStringValue {
+public class ArrItemString extends ArrItemData implements IArrItemStringValue {
 
     private String value;
 
@@ -20,7 +20,7 @@ public class ArrItemString extends ArrItemData implements cz.tacr.elza.api.ArrIt
     }
 
     @Override
-    public void setValue(String value) {
+    public void setValue(final String value) {
         this.value = value;
     }
 

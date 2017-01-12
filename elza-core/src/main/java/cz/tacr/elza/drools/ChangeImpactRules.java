@@ -14,11 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import cz.tacr.elza.api.vo.NodeTypeOperation;
-import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.vo.NodeTypeOperation;
+import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.drools.model.DescItemChange;
 import cz.tacr.elza.drools.service.ScriptModelFactory;

@@ -10,17 +10,15 @@ import java.util.Objects;
  * @author Martin Šlapa
  * @since 12.10.2015
  */
-public class ArrItemDecimal extends ArrItemData implements cz.tacr.elza.api.ArrItemDecimal {
+public class ArrItemDecimal extends ArrItemData {
 
     private BigDecimal value;
 
-    @Override
     public BigDecimal getValue() {
         return value;
     }
 
-    @Override
-    public void setValue(BigDecimal value) {
+    public void setValue(final BigDecimal value) {
         this.value = value;
     }
 

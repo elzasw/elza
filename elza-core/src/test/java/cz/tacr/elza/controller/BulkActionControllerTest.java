@@ -1,7 +1,7 @@
 package cz.tacr.elza.controller;
 
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
-import cz.tacr.elza.api.vo.XmlImportType;
+import cz.tacr.elza.domain.vo.XmlImportType;
 import cz.tacr.elza.controller.vo.*;
 import org.junit.After;
 import org.junit.Assert;

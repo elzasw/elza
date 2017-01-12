@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 
-import cz.tacr.elza.api.vo.ArrLevelPack;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
@@ -19,7 +18,7 @@ import cz.tacr.elza.domain.ArrNode;
  * @author Martin Šlapa
  * @since 28.8.2015
  */
-public class ArrLevelWithExtraNode implements ArrLevelPack<ArrLevel>, Serializable {
+public class ArrLevelWithExtraNode implements Serializable {
 
     /** Úroveň  - předmět operace. */
     private ArrLevel level;
@@ -48,12 +47,18 @@ public class ArrLevelWithExtraNode implements ArrLevelPack<ArrLevel>, Serializab
         this.rootNode = rootNode;
     }
 
-    @Override
+    /**
+     * Úroveň  - předmět operace.
+     * @return  úroveň  - předmět operace
+     */
     public ArrLevel getLevel() {
         return level;
     }
 
-    @Override
+    /**
+     * Úroveň  - předmět operace.
+     * @param faLevel úroveň  - předmět operace
+     */
     public void setLevel(final ArrLevel faLevel) {
         this.level = faLevel;
     }
@@ -90,17 +95,26 @@ public class ArrLevelWithExtraNode implements ArrLevelPack<ArrLevel>, Serializab
         this.rootNode = rootNode;
     }
 
-    @Override
+    /**
+     * Cílová úroveň.
+     * @param level cílová úroveň
+     */
     public void setLevelTarget(final ArrLevel levelTarget) {
         this.levelTarget = levelTarget;
     }
 
-    @Override
+    /**
+     * ID archivní pomůcky.
+     * @return id archivní pomůcky
+     */
     public Integer getFundVersionId() {
         return fundVersionId;
     }
 
-    @Override
+    /**
+     * ID archivní pomůcky.
+     * @param fundVersionId id archivní pomůcky
+     */
     public void setFundVersionId(final Integer fundVersionId) {
         this.fundVersionId = fundVersionId;
     }
@@ -121,7 +135,10 @@ public class ArrLevelWithExtraNode implements ArrLevelPack<ArrLevel>, Serializab
         this.descItems = descItems;
     }
 
-    @Override
+    /**
+     * Cílová úroveň.
+     * @return cílová úroveň
+     */
     public ArrLevel getLevelTarget() {
         return levelTarget;
     }

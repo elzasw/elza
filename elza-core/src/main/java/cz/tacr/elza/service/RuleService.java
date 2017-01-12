@@ -1,8 +1,6 @@
 package cz.tacr.elza.service;
 
 import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.api.vo.NodeTypeOperation;
-import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.config.ConfigRules;
 import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
@@ -28,6 +26,8 @@ import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.vo.DataValidationResult;
+import cz.tacr.elza.domain.vo.NodeTypeOperation;
+import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.LockVersionChangeException;
 import cz.tacr.elza.repository.*;

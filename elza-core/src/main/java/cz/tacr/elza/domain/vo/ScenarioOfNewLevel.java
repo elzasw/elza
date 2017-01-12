@@ -1,29 +1,26 @@
 package cz.tacr.elza.domain.vo;
 
-import java.io.Serializable;
 import java.util.List;
 
 import cz.tacr.elza.domain.ArrDescItem;
 
 
 /**
- * Implementace scénáře založení nového uzlu.
+ * Scénář založení nového uzlu.
  *
  * @author Martin Šlapa
  * @since 9.12.2015
  */
-public class ScenarioOfNewLevel implements cz.tacr.elza.api.vo.ScenarioOfNewLevel, Serializable {
+public class ScenarioOfNewLevel {
 
     private String name;
 
     private List<ArrDescItem> descItems;
 
-    @Override
     public String getName() {
         return name;
     }
 
-    @Override
     public void setName(final String name) {
         this.name = name;
     }

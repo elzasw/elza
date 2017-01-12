@@ -1,4 +1,4 @@
-package cz.tacr.elza.api;
+package cz.tacr.elza.domain.interfaces;
 
 /**
  * Rozhraní pro objekty které budou mít verzi sloužící jako optimistický zámek.

@@ -2,8 +2,8 @@ package cz.tacr.elza.xmlimport.v1.utils;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import cz.tacr.elza.api.vo.XmlImportType;
 import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.vo.XmlImportType;
 
 /**
  *

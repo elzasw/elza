@@ -22,8 +22,8 @@ import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import cz.tacr.elza.api.Versionable;
 import cz.tacr.elza.domain.enumeration.StringLength;
+import cz.tacr.elza.domain.interfaces.Versionable;
 
 
 /**

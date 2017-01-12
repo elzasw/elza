@@ -1,4 +1,4 @@
-package cz.tacr.elza.api.vo;
+package cz.tacr.elza.domain.vo;
 
 /**
  * Typ operace s uzlem.

@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @Entity(name = "arr_change")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrChange implements cz.tacr.elza.api.ArrChange {
+public class ArrChange {
 
     @Id
     @GeneratedValue
@@ -43,22 +43,34 @@ public class ArrChange implements cz.tacr.elza.api.ArrChange {
     @Column(length = 25, nullable = true)
     private Type type;
 
-    @Override
+    /**
+    *
+    * @return číslo změny.
+    */
     public Integer getChangeId() {
         return changeId;
     }
 
-    @Override
+    /**
+     * Nastaví číslo změny.
+     * @param changeId  číslo změny.
+     */
     public void setChangeId(final Integer changeId) {
         this.changeId = changeId;
     }
 
-    @Override
+    /**
+    *
+    * @return datum změny.
+    */
     public LocalDateTime getChangeDate() {
         return changeDate;
     }
 
-    @Override
+    /**
+     * Nastaví datum změny.
+     * @param changeDate datum změny.
+     */
     public void setChangeDate(final LocalDateTime changeDate) {
         this.changeDate = changeDate;
     }

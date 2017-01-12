@@ -6,7 +6,7 @@ package cz.tacr.elza.domain;
  * @author Martin Šlapa
  * @since 15.9.15
  */
-public class ArrItemEnum extends ArrItemData implements cz.tacr.elza.api.ArrItemEnum {
+public class ArrItemEnum extends ArrItemData {
 
     @Override
     public String toString() {

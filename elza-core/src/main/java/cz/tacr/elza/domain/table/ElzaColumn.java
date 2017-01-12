@@ -3,12 +3,12 @@ package cz.tacr.elza.domain.table;
 import java.util.Objects;
 
 /**
- * Implementace {@link cz.tacr.elza.api.table.ElzaColumn}
+ * Sloupec v tabulce.
  *
  * @author Martin Šlapa
  * @since 21.06.2016
  */
-public class ElzaColumn implements cz.tacr.elza.api.table.ElzaColumn {
+public class ElzaColumn {
 
     private String code;
 
@@ -18,22 +18,22 @@ public class ElzaColumn implements cz.tacr.elza.api.table.ElzaColumn {
 
     private Integer width;
 
-    @Override
+    public enum DataType {
+        TEXT, INTEGER
+    }
+
     public String getCode() {
         return code;
     }
 
-    @Override
     public void setCode(final String code) {
         this.code = code;
     }
 
-    @Override
     public String getName() {
         return name;
     }
 
-    @Override
     public void setName(final String name) {
         this.name = name;
     }
@@ -46,12 +46,10 @@ public class ElzaColumn implements cz.tacr.elza.api.table.ElzaColumn {
         this.dataType = dataType;
     }
 
-    @Override
     public Integer getWidth() {
         return width;
     }
 
-    @Override
     public void setWidth(final Integer width) {
         this.width = width;
     }

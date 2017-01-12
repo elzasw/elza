@@ -1,8 +1,8 @@
 package cz.tacr.elza.domain;
 
-import cz.tacr.elza.domain.table.ElzaTable;
-
 import java.util.Objects;
+
+import cz.tacr.elza.domain.table.ElzaTable;
 
 /**
  * Implementace {@link cz.tacr.elza.api.ArrItemJsonTable}
@@ -10,16 +10,14 @@ import java.util.Objects;
  * @author Martin Šlapa
  * @since 21.06.2016
  */
-public class ArrItemJsonTable extends ArrItemData implements cz.tacr.elza.api.ArrItemJsonTable<ElzaTable> {
+public class ArrItemJsonTable extends ArrItemData {
 
     private ElzaTable value;
 
-    @Override
     public ElzaTable getValue() {
         return value;
     }
 
-    @Override
     public void setValue(final ElzaTable value) {
         this.value = value;
     }

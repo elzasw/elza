@@ -32,7 +32,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
-public abstract class ArrItem<T extends ArrItemData> implements cz.tacr.elza.api.ArrItem<T, ArrChange> {
+public abstract class ArrItem<T extends ArrItemData> {
 
     public static final String ITEM_SPEC = "itemSpec";
     public static final String ITEM_TYPE = "itemType";
@@ -104,22 +104,18 @@ public abstract class ArrItem<T extends ArrItemData> implements cz.tacr.elza.api
         return deleteChangeId == null ? Integer.MAX_VALUE : deleteChangeId;
     }
 
-    @Override
     public Integer getItemId() {
         return itemId;
     }
 
-    @Override
     public void setItemId(final Integer itemId) {
         this.itemId = itemId;
     }
 
-    @Override
     public ArrChange getCreateChange() {
         return createChange;
     }
 
-    @Override
     public void setCreateChange(final ArrChange createChange) {
         this.createChange = createChange;
         if (createChange != null) {
@@ -127,12 +123,10 @@ public abstract class ArrItem<T extends ArrItemData> implements cz.tacr.elza.api
         }
     }
 
-    @Override
     public ArrChange getDeleteChange() {
         return deleteChange;
     }
 
-    @Override
     public void setDeleteChange(final ArrChange deleteChange) {
         this.deleteChange = deleteChange;
         if (deleteChange != null) {
@@ -140,22 +134,37 @@ public abstract class ArrItem<T extends ArrItemData> implements cz.tacr.elza.api
         }
     }
 
-    @Override
+    /**
+     * @return identifikátor hodnoty atrributu, který se nemění při verzované změně hodnoty.
+     */
     public Integer getDescItemObjectId() {
         return descItemObjectId;
     }
 
-    @Override
+    /**
+     * Nastaví identifikátor hodnoty atrributu, který se nemění při verzované změně hodnoty.
+     *
+     * @param descItemObjectId identifikátor hodnoty atrributu, který se nemění při verzované změně hodnoty.
+     */
     public void setDescItemObjectId(final Integer descItemObjectId) {
         this.descItemObjectId = descItemObjectId;
     }
 
-    @Override
+    /**
+    *
+    * @return pořadí atributu v rámci shodného typu a specifikace atributu. U neopakovatelných
+    *         atributů bude hodnota vždy 1, u opakovatelných dle skutečnosti.).
+    */
     public Integer getPosition() {
         return position;
     }
 
-    @Override
+    /**
+     * Nastaví pořadí atributu v rámci shodného typu a specifikace atributu. U neopakovatelných
+     * atributů bude hodnota vždy 1, u opakovatelných dle skutečnosti.).
+     *
+     * @param position pořadí atributu v rámci shodného typu a specifikace atributu.
+     */
     public void setPosition(final Integer position) {
         this.position = position;
     }
@@ -224,7 +233,6 @@ public abstract class ArrItem<T extends ArrItemData> implements cz.tacr.elza.api
 
     public abstract ArrOutputDefinition getOutputDefinition();
 
-    @Override
     public T getItem() {
         return item;
     }

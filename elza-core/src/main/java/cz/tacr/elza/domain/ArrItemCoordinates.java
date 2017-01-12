@@ -1,9 +1,9 @@
 package cz.tacr.elza.domain;
 
+import java.util.Objects;
+
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTWriter;
-
-import java.util.Objects;
 
 /**
  * Implementace třídy {@link cz.tacr.elza.api.ArrItemCoordinates}
@@ -11,17 +11,15 @@ import java.util.Objects;
  * @author Martin Šlapa
  * @since 15.9.15
  */
-public class ArrItemCoordinates extends ArrItemData implements cz.tacr.elza.api.ArrItemCoordinates {
+public class ArrItemCoordinates extends ArrItemData {
 
     private Geometry value;
 
-    @Override
     public Geometry getValue() {
         return value;
     }
 
-    @Override
-    public void setValue(Geometry value) {
+    public void setValue(final Geometry value) {
         this.value = value;
     }
 

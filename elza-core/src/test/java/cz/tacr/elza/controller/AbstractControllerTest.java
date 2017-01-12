@@ -37,7 +37,6 @@ import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
 
 import cz.tacr.elza.AbstractTest;
-import cz.tacr.elza.api.vo.XmlImportType;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
@@ -99,6 +98,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.table.ElzaTable;
+import cz.tacr.elza.domain.vo.XmlImportType;
 import cz.tacr.elza.exception.FilterExpiredException;
 import cz.tacr.elza.service.ArrMoveLevelService;
 

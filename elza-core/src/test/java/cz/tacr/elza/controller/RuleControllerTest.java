@@ -1,7 +1,7 @@
 package cz.tacr.elza.controller;
 
 import com.jayway.restassured.RestAssured;
-import cz.tacr.elza.api.vo.XmlImportType;
+
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
@@ -10,6 +10,8 @@ import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.domain.vo.XmlImportType;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.util.Assert;
