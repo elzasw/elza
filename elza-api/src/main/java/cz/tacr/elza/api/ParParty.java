@@ -2,14 +2,12 @@ package cz.tacr.elza.api;
 
 import java.io.Serializable;
 
-import cz.tacr.elza.api.interfaces.IRegScope;
-
 /**
  * Abstraktní osoba.
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
-public interface ParParty<RR extends RegRecord, PPT extends ParPartyType> extends Versionable, Serializable, IRegScope {
+public interface ParParty<RR extends RegRecord, PPT extends ParPartyType> extends Versionable, Serializable {
 
     /**
      * Primární ID.

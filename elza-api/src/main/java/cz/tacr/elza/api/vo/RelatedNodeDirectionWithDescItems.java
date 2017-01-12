@@ -9,19 +9,7 @@ import java.util.Collection;
  * @author Martin Šlapa
  * @since 27.11.2015
  */
-public interface RelatedNodeDirectionWithDescItems<DIS extends ArrDescItems, RND extends RelatedNodeDirection> {
-
-    /**
-     * @return hodnoty atributů
-     */
-    DIS getArrDescItems();
-
-
-    /**
-     * @param arrDescItems hodnoty atributů
-     */
-    void setArrDescItems(DIS arrDescItems);
-
+public interface RelatedNodeDirectionWithDescItems<RND extends RelatedNodeDirection> {
 
     /**
      * @return seznam změn dopadů na uzel

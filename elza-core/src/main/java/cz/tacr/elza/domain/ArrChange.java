@@ -1,9 +1,18 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import javax.persistence.*;
 import java.time.LocalDateTime;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * Seznam provedených změn v archivních pomůckách.
@@ -13,7 +22,7 @@ import java.time.LocalDateTime;
  */
 @Entity(name = "arr_change")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrChange implements cz.tacr.elza.api.ArrChange<UsrUser, ArrNode> {
+public class ArrChange implements cz.tacr.elza.api.ArrChange<UsrUser> {
 
     @Id
     @GeneratedValue
@@ -40,7 +49,7 @@ public class ArrChange implements cz.tacr.elza.api.ArrChange<UsrUser, ArrNode> {
     }
 
     @Override
-    public void setChangeId(Integer changeId) {
+    public void setChangeId(final Integer changeId) {
         this.changeId = changeId;
     }
 
@@ -50,7 +59,7 @@ public class ArrChange implements cz.tacr.elza.api.ArrChange<UsrUser, ArrNode> {
     }
 
     @Override
-    public void setChangeDate(LocalDateTime changeDate) {
+    public void setChangeDate(final LocalDateTime changeDate) {
         this.changeDate = changeDate;
     }
 
@@ -74,12 +83,10 @@ public class ArrChange implements cz.tacr.elza.api.ArrChange<UsrUser, ArrNode> {
         this.type = type;
     }
 
-    @Override
     public ArrNode getPrimaryNode() {
         return primaryNode;
     }
 
-    @Override
     public void setPrimaryNode(final ArrNode primaryNode) {
         this.primaryNode = primaryNode;
     }

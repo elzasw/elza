@@ -1,15 +1,11 @@
 package cz.tacr.elza.api;
 
-import cz.tacr.elza.api.interfaces.IRegScope;
-
-import java.io.Serializable;
-
 /**
  * Variantní rejstříkové heslo.
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
-public interface RegVariantRecord<RR extends RegRecord> extends Versionable, Serializable, IRegScope {
+public interface RegVariantRecord<RR extends RegRecord> {
 
     /**
      * Vlastní ID.

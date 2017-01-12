@@ -17,14 +17,15 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
+ * Pro chybové stavy uzlu {@link ArrNodeConformity} se odkazuje na hodnoty atributů, které jsou ve špatném stavu.
+ *
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 19.11.2015
  */
 @Entity(name = "arr_node_conformity_error")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrNodeConformityError implements cz.tacr.elza.api.ArrNodeConformityError<
-        ArrNodeConformity, ArrDescItem, RulPolicyType> {
+public class ArrNodeConformityError {
 
     @Id
     @GeneratedValue
@@ -47,52 +48,72 @@ public class ArrNodeConformityError implements cz.tacr.elza.api.ArrNodeConformit
     @JoinColumn(name = "policyTypeId", nullable = true)
     private RulPolicyType policyType;
 
-    @Override
+    /**
+     * @return id chyby
+     */
     public Integer getNodeConformityErrorId() {
         return nodeConformityErrorId;
     }
 
-    @Override
+    /**
+     * @param nodeConformityErrorId id chyby
+     */
     public void setNodeConformityErrorId(final Integer nodeConformityErrorId) {
         this.nodeConformityErrorId = nodeConformityErrorId;
     }
 
-    @Override
+    /**
+     * @return stav uzlu
+     */
     public ArrNodeConformity getNodeConformity() {
         return nodeConformity;
     }
 
-    @Override
+    /**
+     * @param nodeConformity stav uzlu
+     */
     public void setNodeConformity(final ArrNodeConformity nodeConformity) {
         this.nodeConformity = nodeConformity;
     }
 
-    @Override
+    /**
+     * @return chybná hodnota atributu
+     */
     public ArrDescItem getDescItem() {
         return descItem;
     }
 
-    @Override
+    /**
+     * @param descItem chybná hodnota atributu
+     */
     public void setDescItem(final ArrDescItem descItem) {
         this.descItem = descItem;
     }
 
-    @Override
+    /**
+     * @return textový popis chyby
+     */
     public String getDescription() {
         return description;
     }
 
-    @Override
+    /**
+     * @param description textový popis chyby
+     */
     public void setDescription(final String description) {
         this.description = description;
     }
 
-    @Override
+    /**
+     * @return typy kontrol, validací, archivního popisu
+     */
     public RulPolicyType getPolicyType() {
         return policyType;
     }
 
-    @Override
+    /**
+     * @param policyType typy kontrol, validací, archivního popisu
+     */
     public void setPolicyType(final RulPolicyType policyType) {
         this.policyType = policyType;
     }

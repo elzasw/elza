@@ -1,6 +1,6 @@
 package cz.tacr.elza.domain;
 
-import cz.tacr.elza.domain.enumeration.StringLength;
+import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorColumn;
@@ -16,7 +16,8 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.time.LocalDateTime;
+
+import cz.tacr.elza.domain.enumeration.StringLength;
 
 /**
  * Implementace {@link cz.tacr.elza.api.ArrRequest}
@@ -31,7 +32,7 @@ import java.time.LocalDateTime;
         name="discriminator",
         discriminatorType= DiscriminatorType.STRING
 )
-public abstract class ArrRequest implements cz.tacr.elza.api.ArrRequest<ArrFund, ArrChange> {
+public abstract class ArrRequest implements cz.tacr.elza.api.ArrRequest<ArrChange> {
 
     public enum ClassType {
         DAO_LINK(Values.DAO_LINK), DAO(Values.DAO), DIGITIZATION(Values.DIGITIZATION);
@@ -92,12 +93,10 @@ public abstract class ArrRequest implements cz.tacr.elza.api.ArrRequest<ArrFund,
         this.requestId = requestId;
     }
 
-    @Override
     public ArrFund getFund() {
         return fund;
     }
 
-    @Override
     public void setFund(final ArrFund fund) {
         this.fund = fund;
     }
@@ -142,11 +141,13 @@ public abstract class ArrRequest implements cz.tacr.elza.api.ArrRequest<ArrFund,
         this.rejectReason = rejectReason;
     }
 
-    public ArrChange getCreateChange() {
+    @Override
+	public ArrChange getCreateChange() {
         return createChange;
     }
 
-    public void setCreateChange(final ArrChange createChange) {
+    @Override
+	public void setCreateChange(final ArrChange createChange) {
         this.createChange = createChange;
     }
 

@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -12,15 +14,16 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.springframework.data.rest.core.annotation.RestResource;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import cz.tacr.elza.api.interfaces.IArrFund;
 import cz.tacr.elza.domain.enumeration.StringLength;
 
 /**
@@ -34,7 +37,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
         @UniqueConstraint(columnNames = {"storageNumber"})})
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrPacket implements cz.tacr.elza.api.ArrPacket<RulPacketType, ArrFund> {
+public class ArrPacket implements cz.tacr.elza.api.ArrPacket<RulPacketType>, IArrFund, Serializable {
     public final static String PACKET_ID = "packetId";
     public final static String PACKET_TYPE = "packetType";
     public final static String STORAGE_NUMBER = "storageNumber";
@@ -71,7 +74,7 @@ public class ArrPacket implements cz.tacr.elza.api.ArrPacket<RulPacketType, ArrF
     }
 
     @Override
-    public void setPacketId(Integer packetId) {
+    public void setPacketId(final Integer packetId) {
         this.packetId = packetId;
     }
 
@@ -81,7 +84,7 @@ public class ArrPacket implements cz.tacr.elza.api.ArrPacket<RulPacketType, ArrF
     }
 
     @Override
-    public void setPacketType(RulPacketType packetType) {
+    public void setPacketType(final RulPacketType packetType) {
         this.packetType = packetType;
     }
 
@@ -90,8 +93,7 @@ public class ArrPacket implements cz.tacr.elza.api.ArrPacket<RulPacketType, ArrF
         return fund;
     }
 
-    @Override
-    public void setFund(ArrFund fund) {
+    public void setFund(final ArrFund fund) {
         this.fund = fund;
     }
 
@@ -101,17 +103,15 @@ public class ArrPacket implements cz.tacr.elza.api.ArrPacket<RulPacketType, ArrF
     }
 
     @Override
-    public void setStorageNumber(String storageNumber) {
+    public void setStorageNumber(final String storageNumber) {
         this.storageNumber = storageNumber;
     }
 
-    @Override
     public State getState() {
         return state;
     }
 
-    @Override
-    public void setState(State state) {
+    public void setState(final State state) {
         this.state = state;
     }
 
@@ -137,5 +137,14 @@ public class ArrPacket implements cz.tacr.elza.api.ArrPacket<RulPacketType, ArrF
     @Override
     public String toString() {
         return "ArrPacket pk=" + packetId;
+    }
+
+    /**
+     * Stav obalu.
+     */
+    public enum State {
+        OPEN,
+        CLOSED,
+        CANCELED;
     }
 }

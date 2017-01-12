@@ -1,10 +1,8 @@
 package cz.tacr.elza.api.vo;
 
 import java.io.Serializable;
-import java.util.List;
 
 import cz.tacr.elza.api.ArrChange;
-import cz.tacr.elza.api.ArrDescItem;
 
 
 /**
@@ -13,7 +11,7 @@ import cz.tacr.elza.api.ArrDescItem;
  * @author Martin Šlapa
  * @since 22.9.2015
  */
-public interface ArrNodeHistoryItem<CH extends ArrChange, DI extends ArrDescItem> extends Serializable {
+public interface ArrNodeHistoryItem<CH extends ArrChange> extends Serializable {
 
     /**
      * Typ změny.
@@ -36,11 +34,4 @@ public interface ArrNodeHistoryItem<CH extends ArrChange, DI extends ArrDescItem
 
 
     void setChange(CH change);
-
-
-    List<DI> getDescItems();
-
-
-    void setDescItems(List<DI> descItems);
-
 }

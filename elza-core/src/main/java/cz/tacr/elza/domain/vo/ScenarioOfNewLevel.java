@@ -1,5 +1,6 @@
 package cz.tacr.elza.domain.vo;
 
+import java.io.Serializable;
 import java.util.List;
 
 import cz.tacr.elza.domain.ArrDescItem;
@@ -11,7 +12,7 @@ import cz.tacr.elza.domain.ArrDescItem;
  * @author Martin Šlapa
  * @since 9.12.2015
  */
-public class ScenarioOfNewLevel implements cz.tacr.elza.api.vo.ScenarioOfNewLevel<ArrDescItem> {
+public class ScenarioOfNewLevel implements cz.tacr.elza.api.vo.ScenarioOfNewLevel, Serializable {
 
     private String name;
 
@@ -27,12 +28,16 @@ public class ScenarioOfNewLevel implements cz.tacr.elza.api.vo.ScenarioOfNewLeve
         this.name = name;
     }
 
-    @Override
+    /**
+     * @return seznam hodnot atributů k vytvoření
+     */
     public List<ArrDescItem> getDescItems() {
         return descItems;
     }
 
-    @Override
+    /**
+     * @param descItems seznam hodnot atributů k vytvoření
+     */
     public void setDescItems(final List<ArrDescItem> descItems) {
         this.descItems = descItems;
     }

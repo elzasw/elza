@@ -9,15 +9,11 @@ import java.time.LocalDateTime;
  * @author Martin Šlapa
  * @since 07.12.2016
  */
-public interface ArrRequest<F extends ArrFund, C extends ArrChange> extends Serializable {
+public interface ArrRequest<C extends ArrChange> extends Serializable {
 
     Integer getRequestId();
 
     void setRequestId(Integer requestId);
-
-    F getFund();
-
-    void setFund(F fund);
 
     String getCode();
 

@@ -1,12 +1,14 @@
 package cz.tacr.elza.domain.vo;
 
+import java.io.Serializable;
 import java.util.List;
+
+import org.apache.commons.lang.builder.ToStringBuilder;
 
 import cz.tacr.elza.api.vo.ArrLevelPack;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
-import org.apache.commons.lang.builder.ToStringBuilder;
 
 
 /**
@@ -17,7 +19,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @author Martin Šlapa
  * @since 28.8.2015
  */
-public class ArrLevelWithExtraNode implements ArrLevelPack<ArrLevel, ArrNode, ArrDescItem> {
+public class ArrLevelWithExtraNode implements ArrLevelPack<ArrLevel>, Serializable {
 
     /** Úroveň  - předmět operace. */
     private ArrLevel level;
@@ -52,32 +54,44 @@ public class ArrLevelWithExtraNode implements ArrLevelPack<ArrLevel, ArrNode, Ar
     }
 
     @Override
-    public void setLevel(ArrLevel faLevel) {
+    public void setLevel(final ArrLevel faLevel) {
         this.level = faLevel;
     }
 
-    @Override
+    /**
+     * Dodatečný uzel pro zámek. Většinou parent.
+     * @return  dodatečný uzel pro zámek, většinou parent
+     */
     public ArrNode getExtraNode() {
         return extraNode;
     }
 
-    @Override
-    public void setExtraNode(ArrNode extraNode) {
+    /**
+     * Dodatečný uzel pro zámek. Většinou parent.
+     * @param parentNode dodatečný uzel pro zámek, většinou parent
+     */
+    public void setExtraNode(final ArrNode extraNode) {
         this.extraNode = extraNode;
     }
 
-    @Override
+    /**
+     * Kořenový uzel archivní pomůcky.
+     * @return kořenový uzel archivní pomůcky
+     */
     public ArrNode getRootNode() {
         return rootNode;
     }
 
-    @Override
+    /**
+     * Kořenový uzel archivní pomůcky.
+     * @param rootNode kořenový uzel archivní pomůcky
+     */
     public void setRootNode(final ArrNode rootNode) {
         this.rootNode = rootNode;
     }
 
     @Override
-    public void setLevelTarget(ArrLevel levelTarget) {
+    public void setLevelTarget(final ArrLevel levelTarget) {
         this.levelTarget = levelTarget;
     }
 
@@ -87,16 +101,22 @@ public class ArrLevelWithExtraNode implements ArrLevelPack<ArrLevel, ArrNode, Ar
     }
 
     @Override
-    public void setFundVersionId(Integer fundVersionId) {
+    public void setFundVersionId(final Integer fundVersionId) {
         this.fundVersionId = fundVersionId;
     }
 
-    @Override
+    /**
+     * Seznam hodnot atrubutů.
+     * @return seznam hodnot atrubutů
+     */
     public List<ArrDescItem> getDescItems() {
         return descItems;
     }
 
-    @Override
+    /**
+     * Nastaví seznam hodnot atrubutů.
+     * @param descItems seznam hodnot atrubutů
+     */
     public void setDescItems(final List<ArrDescItem> descItems) {
         this.descItems = descItems;
     }

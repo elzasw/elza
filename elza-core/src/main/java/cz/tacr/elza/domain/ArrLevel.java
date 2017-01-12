@@ -1,10 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.springframework.data.rest.core.annotation.RestResource;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -15,6 +10,12 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.springframework.data.rest.core.annotation.RestResource;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * popis {@link cz.tacr.elza.api.ArrLevel}.
  * @author by Ondřej Buriánek, burianek@marbes.cz.
@@ -23,7 +24,7 @@ import javax.persistence.UniqueConstraint;
 @Entity(name = "arr_level")
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"position", "nodeIdParent", "deleteChangeId"}))
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrLevel implements cz.tacr.elza.api.ArrLevel<ArrChange, ArrNode> {
+public class ArrLevel implements cz.tacr.elza.api.ArrLevel<ArrChange> {
 
     @Id
     @GeneratedValue
@@ -62,23 +63,43 @@ public class ArrLevel implements cz.tacr.elza.api.ArrLevel<ArrChange, ArrNode> {
         this.levelId = levelId;
     }
 
-    @Override
+    /**
+    *
+    * @return identifikátor uzlu, existuje více záznamů se stejným node_id, všechny reprezentují
+    *         stejný uzel stromu - v případě, že je uzel zařazený pouze do jedné AP (má jednoho
+    *         nadřízeného), tak je pouze jedno platné node_id - platné = nevyplněné node_id - pokud
+    *         je uzel přímo zařazený do jiné AP, tak existují 2 platné záznamy uzlu (nevyplněné
+    *         delete_change_id).
+    */
     public ArrNode getNode() {
         return node;
     }
 
-    @Override
-    public void setNode(ArrNode node) {
+    /**
+     * identifikátor uzlu, existuje více záznamů se stejným node_id, všechny reprezentují stejný
+     * uzel stromu - v případě, že je uzel zařazený pouze do jedné AP (má jednoho nadřízeného), tak
+     * je pouze jedno platné node_id - platné = nevyplněné node_id - pokud je uzel přímo zařazený do
+     * jiné AP, tak existují 2 platné záznamy uzlu (nevyplněné delete_change_id)
+     *
+     * @param node identifikátor uzlu.
+     */
+    public void setNode(final ArrNode node) {
         this.node = node;
     }
 
-    @Override
+    /**
+    *
+    * @return odkaz na nadřízený uzel stromu, v případě root levelu je NULL.
+    */
     public ArrNode getNodeParent() {
         return nodeParent;
     }
 
-    @Override
-    public void setNodeParent(ArrNode parentNode) {
+    /**
+    *
+    * @param parentNode odkaz na nadřízený uzel stromu, v případě root levelu je NULL.
+    */
+    public void setNodeParent(final ArrNode parentNode) {
         this.nodeParent = parentNode;
     }
 
@@ -88,7 +109,7 @@ public class ArrLevel implements cz.tacr.elza.api.ArrLevel<ArrChange, ArrNode> {
     }
 
     @Override
-    public void setCreateChange(ArrChange createChange) {
+    public void setCreateChange(final ArrChange createChange) {
         this.createChange = createChange;
     }
 

@@ -1,9 +1,9 @@
 package cz.tacr.elza.controller.vo;
 
-import cz.tacr.elza.api.UsrPermission;
-
 import java.util.HashSet;
 import java.util.Set;
+
+import cz.tacr.elza.domain.UsrPermission;
 
 /**
  * Informace o oprávnění uživatele.
@@ -25,7 +25,7 @@ public class UserPermissionInfoVO {
         return permission;
     }
 
-    public void setPermission(UsrPermission.Permission permission) {
+    public void setPermission(final UsrPermission.Permission permission) {
         this.permission = permission;
     }
 
@@ -33,7 +33,7 @@ public class UserPermissionInfoVO {
         return fundIds;
     }
 
-    public void setFundIds(Set<Integer> fundIds) {
+    public void setFundIds(final Set<Integer> fundIds) {
         this.fundIds = fundIds;
     }
 
@@ -41,7 +41,7 @@ public class UserPermissionInfoVO {
         return scopeIds;
     }
 
-    public void setScopeIds(Set<Integer> scopeIds) {
+    public void setScopeIds(final Set<Integer> scopeIds) {
         this.scopeIds = scopeIds;
     }
 }

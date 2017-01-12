@@ -1,5 +1,6 @@
 package cz.tacr.elza.domain.vo;
 
+import java.io.Serializable;
 import java.util.List;
 
 import cz.tacr.elza.domain.ArrChange;
@@ -12,7 +13,7 @@ import cz.tacr.elza.domain.ArrDescItem;
  * @author Martin Šlapa
  * @since 22.9.2015
  */
-public class ArrNodeHistoryItem implements cz.tacr.elza.api.vo.ArrNodeHistoryItem<ArrChange, ArrDescItem> {
+public class ArrNodeHistoryItem implements cz.tacr.elza.api.vo.ArrNodeHistoryItem<ArrChange>, Serializable {
 
     private Type type;
     private ArrChange change;
@@ -36,15 +37,5 @@ public class ArrNodeHistoryItem implements cz.tacr.elza.api.vo.ArrNodeHistoryIte
     @Override
     public void setChange(final ArrChange change) {
         this.change = change;
-    }
-
-    @Override
-    public List<ArrDescItem> getDescItems() {
-        return descItems;
-    }
-
-    @Override
-    public void setDescItems(final List<ArrDescItem> descItems) {
-        this.descItems = descItems;
     }
 }

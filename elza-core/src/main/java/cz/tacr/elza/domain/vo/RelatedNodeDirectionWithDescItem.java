@@ -13,18 +13,22 @@ import cz.tacr.elza.domain.ArrDescItem;
  * @since 27.11.2015
  */
 public class RelatedNodeDirectionWithDescItem
-        implements cz.tacr.elza.api.vo.RelatedNodeDirectionWithDescItem<ArrDescItem, RelatedNodeDirection> {
+        implements cz.tacr.elza.api.vo.RelatedNodeDirectionWithDescItem<RelatedNodeDirection> {
 
     private ArrDescItem arrDescItem;
 
     private Collection<RelatedNodeDirection> relatedNodeDirections;
 
-    @Override
+    /**
+     * @return hodnota atributu
+     */
     public ArrDescItem getArrDescItem() {
         return arrDescItem;
     }
 
-    @Override
+    /**
+     * @param arrDescItem hodnota atributu
+     */
     public void setArrDescItem(final ArrDescItem arrDescItem) {
         this.arrDescItem = arrDescItem;
     }

@@ -10,6 +10,6 @@ import cz.tacr.elza.api.RegScope;
  */
 public interface IRegScope<S extends RegScope> {
 
-    S getRegScope();
+    RegScope getRegScope();
 
 }

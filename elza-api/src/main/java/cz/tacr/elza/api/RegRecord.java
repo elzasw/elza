@@ -1,10 +1,7 @@
 package cz.tacr.elza.api;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
-
-import cz.tacr.elza.api.interfaces.IRegScope;
 
 /**
  * Záznam v rejstříku.
@@ -12,8 +9,7 @@ import cz.tacr.elza.api.interfaces.IRegScope;
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
 public interface RegRecord<RT extends RegRegisterType, VR extends RegVariantRecord,
-        RR extends RegRecord, RS extends RegScope>
-    extends Versionable, Serializable, IRegScope {
+        RR extends RegRecord, RS extends RegScope> {
 
     /**
      * ID hesla.

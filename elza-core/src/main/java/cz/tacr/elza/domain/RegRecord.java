@@ -1,5 +1,6 @@
 package cz.tacr.elza.domain;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,8 @@ import org.springframework.data.rest.core.annotation.RestResource;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import cz.tacr.elza.api.Versionable;
+import cz.tacr.elza.api.interfaces.IRegScope;
 import cz.tacr.elza.domain.enumeration.StringLength;
 
 
@@ -38,7 +41,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class RegRecord extends AbstractVersionableEntity
         implements cz.tacr.elza.api.RegRecord<RegRegisterType, RegVariantRecord, RegRecord,
-        RegScope> {
+        RegScope>, Versionable, Serializable, IRegScope {
 
     @Id
     @GeneratedValue

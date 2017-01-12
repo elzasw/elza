@@ -1,11 +1,11 @@
 package cz.tacr.elza.security;
 
-import cz.tacr.elza.api.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
 
 /**
  * Detail uživatele v session.

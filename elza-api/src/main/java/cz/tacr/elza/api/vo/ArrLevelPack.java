@@ -1,11 +1,8 @@
 package cz.tacr.elza.api.vo;
 
-import cz.tacr.elza.api.ArrDescItem;
-import cz.tacr.elza.api.ArrLevel;
-import cz.tacr.elza.api.ArrNode;
-
 import java.io.Serializable;
-import java.util.List;
+
+import cz.tacr.elza.api.ArrLevel;
 
 
 /**
@@ -18,7 +15,7 @@ import java.util.List;
  * @param <FL> {@link ArrLevel}
  * @param <N> {@link ArrNode}
  */
-public interface ArrLevelPack<FL extends ArrLevel, N extends ArrNode, DI extends ArrDescItem> extends Serializable {
+public interface ArrLevelPack<FL extends ArrLevel> extends Serializable {
 
     /**
      * Úroveň  - předmět operace.
@@ -31,30 +28,6 @@ public interface ArrLevelPack<FL extends ArrLevel, N extends ArrNode, DI extends
      * @param faLevel úroveň  - předmět operace
      */
     void setLevel(FL faLevel);
-
-    /**
-     * Dodatečný uzel pro zámek. Většinou parent.
-     * @return  dodatečný uzel pro zámek, většinou parent
-     */
-    N getExtraNode();
-
-    /**
-     * Dodatečný uzel pro zámek. Většinou parent.
-     * @param parentNode dodatečný uzel pro zámek, většinou parent
-     */
-    void setExtraNode(N parentNode);
-
-    /**
-     * Kořenový uzel archivní pomůcky.
-     * @return kořenový uzel archivní pomůcky
-     */
-    N getRootNode();
-
-    /**
-     * Kořenový uzel archivní pomůcky.
-     * @param rootNode kořenový uzel archivní pomůcky
-     */
-    void setRootNode(N rootNode);
 
     /**
      * Cílová úroveň.
@@ -79,19 +52,4 @@ public interface ArrLevelPack<FL extends ArrLevel, N extends ArrNode, DI extends
      * @param fundVersionId id archivní pomůcky
      */
     void setFundVersionId(Integer fundVersionId);
-
-
-    /**
-     * Seznam hodnot atrubutů.
-     * @return seznam hodnot atrubutů
-     */
-    List<DI> getDescItems();
-
-
-    /**
-     * Nastaví seznam hodnot atrubutů.
-     * @param descItems seznam hodnot atrubutů
-     */
-    void setDescItems(List<DI> descItems);
-
 }

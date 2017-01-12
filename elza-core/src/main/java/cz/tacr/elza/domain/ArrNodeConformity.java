@@ -23,13 +23,17 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
+ * Stav uzlu v rámci verze archivní pomůcky.
+ * V případě sdílení jsou stavy uzlů uloženy pro každou verzi AP.
+ * Při uzamčení pomůcky zůstane stav uzlu uložen a nemůže již být měněn.
+ *
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 19.11.2015
  */
 @Entity(name = "arr_node_conformity")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrNodeConformity implements cz.tacr.elza.api.ArrNodeConformity<ArrNode, ArrFundVersion> {
+public class ArrNodeConformity {
 
     @Id
     @GeneratedValue
@@ -63,60 +67,86 @@ public class ArrNodeConformity implements cz.tacr.elza.api.ArrNodeConformity<Arr
     @OneToMany(mappedBy = "nodeConformity", fetch = FetchType.LAZY)
     private Set<ArrNodeConformityMissing> missingConformity;
 
-    @Override
+    /**
+     * @return id stavu
+     */
     public Integer getNodeConformityId() {
         return nodeConformityId;
     }
 
-    @Override
+    /**
+     * @param nodeConformityId id stavu
+     */
     public void setNodeConformityId(final Integer nodeConformityId) {
         this.nodeConformityId = nodeConformityId;
     }
 
-    @Override
+    /**
+     * @return uzel, kterému názeží stav
+     */
     public ArrNode getNode() {
         return node;
     }
 
-    @Override
+    /**
+     * @param node uzel, kterému názeží stav
+     */
     public void setNode(final ArrNode node) {
         this.node = node;
     }
 
+    /**
+     * @return verze archivní pomůcky
+     */
     public ArrFundVersion getFundVersion() {
         return fundVersion;
     }
 
+    /**
+     * @param fundVersion verze archivní pomůcky
+     */
     public void setFundVersion(final ArrFundVersion fundVersion) {
         this.fundVersion = fundVersion;
     }
 
-    @Override
+    /**
+     * @return stav uzlu (OK/ERR)
+     */
     public State getState() {
         return state;
     }
 
-    @Override
+    /**
+     * @param state stav uzlu (OK/ERR)
+     */
     public void setState(final State state) {
         this.state = state;
     }
 
-    @Override
+    /**
+     * @return textový popis případného chybového stavu
+     */
     public String getDescription() {
         return description;
     }
 
-    @Override
+    /**
+     * @param description textový popis případného chybového stavu
+     */
     public void setDescription(final String description) {
         this.description = description;
     }
 
-    @Override
+    /**
+     * @return datum a čas nastavení stavu
+     */
     public Date getDate() {
         return date;
     }
 
-    @Override
+    /**
+     * @param date datum a čas nastavení stavu
+     */
     public void setDate(final Date date) {
         this.date = date;
     }
@@ -125,7 +155,7 @@ public class ArrNodeConformity implements cz.tacr.elza.api.ArrNodeConformity<Arr
         return errorConformity;
     }
 
-    public void setErrorConformity(Set<ArrNodeConformityError> errorConformity) {
+    public void setErrorConformity(final Set<ArrNodeConformityError> errorConformity) {
         this.errorConformity = errorConformity;
     }
 
@@ -133,7 +163,7 @@ public class ArrNodeConformity implements cz.tacr.elza.api.ArrNodeConformity<Arr
         return missingConformity;
     }
 
-    public void setMissingConformity(Set<ArrNodeConformityMissing> missingConformity) {
+    public void setMissingConformity(final Set<ArrNodeConformityMissing> missingConformity) {
         this.missingConformity = missingConformity;
     }
 
@@ -159,5 +189,13 @@ public class ArrNodeConformity implements cz.tacr.elza.api.ArrNodeConformity<Arr
     @Override
     public String toString() {
         return "ArrNodeConformity pk=" + nodeConformityId;
+    }
+
+    /**
+     * Stav uzlu.
+     */
+    public enum State {
+        OK,
+        ERR;
     }
 }

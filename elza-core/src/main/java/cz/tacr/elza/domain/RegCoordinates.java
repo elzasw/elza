@@ -1,12 +1,21 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.vividsolutions.jts.geom.Geometry;
-import cz.tacr.elza.api.RegScope;
-import org.hibernate.annotations.Type;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 import org.springframework.data.rest.core.annotation.RestResource;
 
-import javax.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.vividsolutions.jts.geom.Geometry;
+
+import cz.tacr.elza.api.RegScope;
+import cz.tacr.elza.api.interfaces.IRegScope;
 
 
 /**
@@ -18,7 +27,7 @@ import javax.persistence.*;
 @Entity(name = "reg_coordinates")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RegCoordinates implements cz.tacr.elza.api.RegCoordinates<RegRecord> {
+public class RegCoordinates implements cz.tacr.elza.api.RegCoordinates<RegRecord>, IRegScope {
 
     @Id
     @GeneratedValue
@@ -43,7 +52,7 @@ public class RegCoordinates implements cz.tacr.elza.api.RegCoordinates<RegRecord
     }
 
     @Override
-    public void setCoordinatesId(Integer coordinatesId) {
+    public void setCoordinatesId(final Integer coordinatesId) {
         this.coordinatesId = coordinatesId;
     }
 

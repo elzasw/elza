@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -11,13 +13,15 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import cz.tacr.elza.api.RegScope;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import cz.tacr.elza.api.RegScope;
+import cz.tacr.elza.api.Versionable;
+import cz.tacr.elza.api.interfaces.IRegScope;
 import cz.tacr.elza.domain.enumeration.StringLength;
 
 
@@ -31,7 +35,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RegVariantRecord extends AbstractVersionableEntity implements  cz.tacr.elza.api.RegVariantRecord<RegRecord> {
+public class RegVariantRecord extends AbstractVersionableEntity implements  cz.tacr.elza.api.RegVariantRecord<RegRecord>, Versionable, Serializable, IRegScope {
 
     @Id
     @GeneratedValue

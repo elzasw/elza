@@ -1,12 +1,23 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.*;
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import cz.tacr.elza.api.Versionable;
+import cz.tacr.elza.api.interfaces.IArrFund;
 
 
 /**
@@ -21,8 +32,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity(name = "arr_fund_version")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrFundVersion extends AbstractVersionableEntity implements
-        cz.tacr.elza.api.ArrFundVersion<ArrFund, ArrChange, ArrNode, RulRuleSet> {
+public class ArrFundVersion extends AbstractVersionableEntity implements Versionable, Serializable, IArrFund {
 
     @Id
     @GeneratedValue
@@ -56,42 +66,52 @@ public class ArrFundVersion extends AbstractVersionableEntity implements
     @Column(nullable = true)
     private String dateRange;
 
-    @Override
     public Integer getFundVersionId() {
         return fundVersionId;
     }
 
-    @Override
     public void setFundVersionId(final Integer fundVersionId) {
         this.fundVersionId = fundVersionId;
     }
 
-    @Override
+    /**
+     * @return číslo změny vytvoření pomůcky.
+     */
     public ArrChange getCreateChange() {
         return createChange;
     }
 
-    @Override
+    /**
+     * @param createChange číslo změny vytvoření pomůcky.
+     */
     public void setCreateChange(final ArrChange createChange) {
         this.createChange = createChange;
     }
 
-    @Override
+    /**
+     * @return číslo změny uzamčení pomůcky.
+     */
     public ArrChange getLockChange() {
         return lockChange;
     }
 
-    @Override
+    /**
+     * @param lockChange číslo změny uzamčení pomůcky.
+     */
     public void setLockChange(final ArrChange lockChange) {
         this.lockChange = lockChange;
     }
 
-    @Override
+    /**
+     * @return odkaz na root uzel struktury archivního popisu.
+     */
     public ArrNode getRootNode() {
         return rootNode;
     }
 
-    @Override
+    /**
+     * @param rootNode odkaz na root uzel struktury archivního popisu .
+     */
     public void setRootNode(final ArrNode rootNode) {
         this.rootNode = rootNode;
     }
@@ -101,34 +121,44 @@ public class ArrFundVersion extends AbstractVersionableEntity implements
         return fund;
     }
 
-    @Override
+    /**
+     * @param fund identifikátor archívní pomůcky.
+     */
     public void setFund(final ArrFund fund) {
         this.fund = fund;
     }
 
-    @Override
+    /**
+     * @return odkaz na pravidla tvorby.
+     */
     public RulRuleSet getRuleSet() {
         return ruleSet;
     }
 
-    @Override
+    /**
+     * @param ruleSet odkaz na pravidla tvorby.
+     */
     public void setRuleSet(final RulRuleSet ruleSet) {
         this.ruleSet = ruleSet;
+    }
+
+    /**
+     * @return vysčítaná informace o časovém rozsahu fondu - sdruženo po typech kalendářů
+     */
+    public String getDateRange() {
+        return dateRange;
+    }
+
+    /**
+     * @param dateRange vysčítaná informace o časovém rozsahu fondu - sdruženo po typech kalendářů
+     */
+    public void setDateRange(final String dateRange) {
+        this.dateRange = dateRange;
     }
 
     @Override
     public String toString() {
         return "ArrFundVersion pk=" + fundVersionId;
-    }
-
-    @Override
-    public String getDateRange() {
-        return dateRange;
-    }
-
-    @Override
-    public void setDateRange(final String dateRange) {
-        this.dateRange = dateRange;
     }
 
     @Override

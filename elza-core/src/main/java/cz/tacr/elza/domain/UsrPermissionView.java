@@ -1,7 +1,5 @@
 package cz.tacr.elza.domain;
 
-import cz.tacr.elza.api.UsrPermission;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;

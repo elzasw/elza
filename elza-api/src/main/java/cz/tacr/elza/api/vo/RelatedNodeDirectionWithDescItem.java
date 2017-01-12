@@ -2,8 +2,6 @@ package cz.tacr.elza.api.vo;
 
 import java.util.Collection;
 
-import cz.tacr.elza.api.ArrDescItem;
-
 
 /**
  * Rozšíření hodnoty atributu o seznam dopadů na uzel.
@@ -11,19 +9,7 @@ import cz.tacr.elza.api.ArrDescItem;
  * @author Martin Šlapa
  * @since 27.11.2015
  */
-public interface RelatedNodeDirectionWithDescItem<DI extends ArrDescItem, RND extends RelatedNodeDirection> {
-
-    /**
-     * @return hodnota atributu
-     */
-    DI getArrDescItem();
-
-
-    /**
-     * @param arrDescItem hodnota atributu
-     */
-    void setArrDescItem(DI arrDescItem);
-
+public interface RelatedNodeDirectionWithDescItem<RND extends RelatedNodeDirection> {
 
     /**
      * @return seznam změn dopadů na uzel

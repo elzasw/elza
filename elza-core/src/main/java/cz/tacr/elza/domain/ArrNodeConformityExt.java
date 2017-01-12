@@ -9,9 +9,7 @@ import java.util.List;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 26.11.2015
  */
-public class ArrNodeConformityExt extends ArrNodeConformity
-        implements
-        cz.tacr.elza.api.ArrNodeConformityExt<ArrNode, ArrFundVersion, ArrNodeConformityMissing, ArrNodeConformityError> {
+public class ArrNodeConformityExt extends ArrNodeConformity {
 
     /**
      * Seznam chybějících hodnot.
@@ -27,7 +25,6 @@ public class ArrNodeConformityExt extends ArrNodeConformity
     /**
      * @return Seznam chybějících hodnot.
      */
-    @Override
     public List<ArrNodeConformityMissing> getMissingList() {
         return missingList;
     }
@@ -35,13 +32,12 @@ public class ArrNodeConformityExt extends ArrNodeConformity
     /**
      * @param missingList Seznam chybějících hodnot.
      */
-    @Override
     public void setMissingList(final List<ArrNodeConformityMissing> missingList) {
         this.missingList = missingList;
     }
 
     /**
-     * @return Seznam chybějících hodnot.
+     * @return Seznam špatně zadaných hodnot
      */
     public List<ArrNodeConformityError> getErrorList() {
         return errorList;

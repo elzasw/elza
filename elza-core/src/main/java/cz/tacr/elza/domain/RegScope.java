@@ -14,6 +14,8 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import cz.tacr.elza.api.interfaces.IRegScope;
+
 
 /**
  * Třída rejstříku.
@@ -25,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"code"}))
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RegScope implements cz.tacr.elza.api.RegScope {
+public class RegScope implements cz.tacr.elza.api.RegScope, IRegScope {
 
     public static final String SCOPE_ID = "scopeId";
 
