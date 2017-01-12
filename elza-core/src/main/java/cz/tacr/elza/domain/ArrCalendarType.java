@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
- * Seznam provedených změn v archivních pomůckách.
+ * Typ kalendáře.
  *
  * @author Martin Šlapa
  * @since 20.10.2015

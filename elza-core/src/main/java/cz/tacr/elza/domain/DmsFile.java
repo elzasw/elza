@@ -15,7 +15,7 @@ import javax.persistence.Transient;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * Dms Soubor
+ * Dms Soubor.
  *
  * @author Petr Compel <petr.compel@marbes.cz>
  * @since 17.6.2016
@@ -52,50 +52,87 @@ public class DmsFile implements Serializable {
     @Transient
     private File file;
 
+    /**
+     * @return id souboru
+     */
     public Integer getFileId() {
         return fileId;
     }
 
+    /**
+     * Nastaví id souboru
+     * @param fileId id souboru
+     */
     public void setFileId(final Integer fileId) {
         this.fileId = fileId;
     }
 
+    /**
+     * @return název souboru
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * @param name název souboru
+     */
     public void setName(final String name) {
         this.name = name;
     }
 
+    /**
+     * @return Reálný název souboru
+     */
     public String getFileName() {
         return fileName;
     }
 
+    /**
+     * @param fileName Reálný název souboru
+     */
     public void setFileName(final String fileName) {
         this.fileName = fileName;
     }
 
+    /**
+     * @return velikost
+     */
     public Integer getFileSize() {
         return fileSize;
     }
 
+    /**
+     * @param fileSize velikost
+     */
     public void setFileSize(final Integer fileSize) {
         this.fileSize = fileSize;
     }
 
+    /**
+     * @return mime
+     */
     public String getMimeType() {
         return mimeType;
     }
 
+    /**
+     * @param mimeType mime
+     */
     public void setMimeType(final String mimeType) {
         this.mimeType = mimeType;
     }
 
+    /**
+     * @return Počet stran (pouze u pdf)
+     */
     public Integer getPagesCount() {
         return pagesCount;
     }
 
+    /**
+     * @param pagesCount Počet stran (pouze u pdf)
+     */
     public void setPagesCount(final Integer pagesCount) {
         this.pagesCount = pagesCount;
     }

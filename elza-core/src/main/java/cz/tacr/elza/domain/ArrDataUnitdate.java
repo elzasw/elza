@@ -21,6 +21,8 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 
 
 /**
+ * Hodnota atributu archivního popisu typu strojově zpracovatelná datace.
+ *
  * @author Martin Šlapa
  * @since 1.9.2015
  */
@@ -119,18 +121,30 @@ public class ArrDataUnitdate extends ArrData implements Serializable, IUnitdate 
         this.format = format;
     }
 
+    /**
+     * @return počet sekund v normalizačním kalendáři - od
+     */
     public Long getNormalizedFrom() {
         return normalizedFrom;
     }
 
+    /**
+     * @param normalizedFrom počet sekund v normalizačním kalendáři - od
+     */
     public void setNormalizedFrom(final Long normalizedFrom) {
         this.normalizedFrom = normalizedFrom;
     }
 
+    /**
+     * @return počet sekund v normalizačním kalendáři - do
+     */
     public Long getNormalizedTo() {
         return normalizedTo;
     }
 
+    /**
+     * @param normalizedFrom počet sekund v normalizačním kalendáři - do
+     */
     public void setNormalizedTo(final Long normalizedTo) {
         this.normalizedTo = normalizedTo;
     }

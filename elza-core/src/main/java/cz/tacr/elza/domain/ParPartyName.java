@@ -75,66 +75,130 @@ public class ParPartyName implements Serializable {
     @OneToMany(mappedBy = "partyName", fetch = FetchType.EAGER)
     private List<ParPartyNameComplement> partyNameComplements;
 
+    /**
+     * Vlastní ID.
+     * @return id
+     */
     public Integer getPartyNameId() {
         return partyNameId;
     }
 
+    /**
+     * Vlastní ID.
+     * @param partyNameId id
+     */
     public void setPartyNameId(final Integer partyNameId) {
         this.partyNameId = partyNameId;
     }
 
+    /**
+     * Vazba na osobu.
+     * @return osoba
+     */
     public ParParty getParty() {
         return party;
     }
 
+    /**
+     * Vazba na osobu.
+     * @param party osoba
+     */
     public void setParty(final ParParty party) {
         this.party = party;
     }
 
+    /**
+     * Hlavní část jména.
+     * @return hlavní část jména
+     */
     public String getMainPart() {
         return mainPart;
     }
 
+    /**
+     * Hlavní část jména.
+     * @param mainPart hlavní část jména
+     */
     public void setMainPart(final String mainPart) {
         this.mainPart = mainPart;
     }
 
+    /**
+     * Vedlejší část jména.
+     * @return vedlejší část jména
+     */
     public String getOtherPart() {
         return otherPart;
     }
 
+    /**
+     * Vedlejší část jména.
+     * @param otherPart vedlejší část jména
+     */
     public void setOtherPart(final String otherPart) {
         this.otherPart = otherPart;
     }
 
+    /**
+     * Titul před jménem.
+     * @return titul před jménem
+     */
     public String getDegreeBefore() {
         return degreeBefore;
     }
 
+    /**
+     * Titul před jménem.
+     * @param degreeBefore titul před jménem
+     */
     public void setDegreeBefore(final String degreeBefore) {
         this.degreeBefore = degreeBefore;
     }
 
+    /**
+     * Titul za jménem.
+     * @return titul za jménem
+     */
     public String getDegreeAfter() {
         return degreeAfter;
     }
 
+    /**
+     * Titul za jménem.
+     * @param degreeAfter titul za jménem
+     */
     public void setDegreeAfter(final String degreeAfter) {
         this.degreeAfter = degreeAfter;
     }
 
+    /**
+     * Platnost jména od.
+     * @return platnost jména od
+     */
     public ParUnitdate getValidFrom() {
         return validFrom;
     }
 
+    /**
+     * Platnost jména od.
+     * @param validFrom platnost jména od
+     */
     public void setValidFrom(final ParUnitdate validFrom) {
         this.validFrom = validFrom;
     }
 
+    /**
+     * Platnost jména do.
+     * @return platnost jména do
+     */
     public ParUnitdate getValidTo() {
         return validTo;
     }
 
+    /**
+     * Platnost jména do.
+     * @param validTo platnost jména do
+     */
     public void setValidTo(final ParUnitdate validTo) {
         this.validTo = validTo;
     }
@@ -147,10 +211,18 @@ public class ParPartyName implements Serializable {
         this.nameFormType = nameFormType;
     }
 
+    /**
+     * Poznámka - využije se v případě nutnosti doplnit informaci uvedenou v prvcích.
+     * @return poznámka - využije se v případě nutnosti doplnit informaci uvedenou v prvcích
+     */
     public String getNote() {
         return note;
     }
 
+    /**
+     * Poznámka - využije se v případě nutnosti doplnit informaci uvedenou v prvcích.
+     * @param note poznámka - využije se v případě nutnosti doplnit informaci uvedenou v prvcích
+     */
     public void setNote(final String note) {
         this.note = note;
     }

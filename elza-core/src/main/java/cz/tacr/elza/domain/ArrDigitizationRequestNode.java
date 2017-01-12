@@ -9,7 +9,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
- * Implementace {@link cz.tacr.elza.api.ArrDigitizationRequestNode}
+ * Vazební entita mezi nodem a požadavkem na digitalizaci.
  *
  * @author Martin Šlapa
  * @since 07.12.2016

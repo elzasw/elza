@@ -17,6 +17,8 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 
 
 /**
+ * Hodnota atributu archivního popisu typu JsonTable.
+ *
  * @author Martin Šlapa
  * @since 21.06.2016
  */

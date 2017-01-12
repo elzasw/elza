@@ -13,6 +13,8 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 
 
 /**
+ * Hodnota atributu archivního popisu typu referenční označení.
+ *
  * @author Martin Šlapa
  * @since 1.9.2015
  */

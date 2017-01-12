@@ -30,7 +30,7 @@ public class ArrItemUnitdate extends ArrItemData implements IUnitdate {
     private Long normalizedFrom;
 
     @Override
-	public String getValueFrom() {
+    public String getValueFrom() {
         return this.valueFrom;
     }
 

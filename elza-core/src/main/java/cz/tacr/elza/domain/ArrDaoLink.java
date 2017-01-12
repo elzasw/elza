@@ -12,7 +12,7 @@ import javax.persistence.Table;
 
 
 /**
- * Implementace {@link cz.tacr.elza.api.ArrDaoLink}
+ * Digitální archivní objekt (digitalizát).
  *
  * @author Martin Šlapa
  * @since 06.12.2016

@@ -11,7 +11,7 @@ import javax.persistence.Table;
 import cz.tacr.elza.domain.enumeration.StringLength;
 
 /**
- * Implementace {@link cz.tacr.elza.api.ArrDigitizationRequest}
+ * Dotaz pro externí systémy - Vytvoření digitalizátu.
  *
  * @author Martin Šlapa
  * @since 07.12.2016

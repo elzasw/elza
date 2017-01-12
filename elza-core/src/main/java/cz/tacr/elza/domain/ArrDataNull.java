@@ -11,6 +11,8 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 
 
 /**
+ * Atributu archivního popisu bez hodnoty - napr. enum
+ *
  * @author Martin Šlapa
  * @since 18.11.2015
  */

@@ -16,7 +16,7 @@ import javax.persistence.UniqueConstraint;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * Implementace třídy {@link cz.tacr.elza.api.ArrOutputResult}
+ * Soubor v Output.
  *
  * @author Petr Compel <petr.compel@marbes.cz>
  * @since 20.6.2016

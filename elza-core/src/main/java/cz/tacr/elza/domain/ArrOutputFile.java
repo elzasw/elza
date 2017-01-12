@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
- * Implementace třídy {@link cz.tacr.elza.api.ArrOutputFile}
+ * Soubor v Output.
  *
  * @author Petr Compel <petr.compel@marbes.cz>
  * @since 17.6.2016

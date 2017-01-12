@@ -154,10 +154,16 @@ public class ParUnitdate implements IUnitdate {
         this.format = format;
     }
 
+    /**
+     * @return Text pokud není validní datace.
+     */
     public String getTextDate() {
         return textDate;
     }
 
+    /**
+     * @param textDate Text pokud není validní datace.
+     */
     public void setTextDate(final String textDate) {
         this.textDate = textDate;
     }
@@ -172,10 +178,16 @@ public class ParUnitdate implements IUnitdate {
         return "ParUnitdate pk=" + unitdateId;
     }
 
+    /** @return poznámka */
     public String getNote() {
         return note;
     }
 
+    /**
+     * Poznámka
+     *
+     * @param note poznámka
+     */
     public void setNote(final String note) {
         this.note = note;
     }

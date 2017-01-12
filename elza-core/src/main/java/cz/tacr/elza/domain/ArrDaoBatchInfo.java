@@ -12,7 +12,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 
 
 /**
- * Implementace {@link cz.tacr.elza.api.ArrDaoBatchInfo}
+ * Přejímka.
  *
  * @author Martin Šlapa
  * @since 06.12.2016

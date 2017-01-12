@@ -25,26 +25,44 @@ public class ArrDigitalRepository extends SysExternalSystem {
     @Column(nullable = false)
     private Boolean sendNotification;
 
+    /**
+     * @return url k dao
+     */
     public String getViewDaoUrl() {
         return viewDaoUrl;
     }
 
+    /**
+     * @param viewDaoUrl url k dao
+     */
     public void setViewDaoUrl(final String viewDaoUrl) {
         this.viewDaoUrl = viewDaoUrl;
     }
 
+    /**
+     * @return url k souboru
+     */
     public String getViewFileUrl() {
         return viewFileUrl;
     }
 
+    /**
+     * @param viewFileUrl url k souboru
+     */
     public void setViewFileUrl(final String viewFileUrl) {
         this.viewFileUrl = viewFileUrl;
     }
 
+    /**
+     * @return odeslat notifikaci?
+     */
     public Boolean getSendNotification() {
         return sendNotification;
     }
 
+    /**
+     * @param sendNotification odeslat notifikaci?
+     */
     public void setSendNotification(final Boolean sendNotification) {
         this.sendNotification = sendNotification;
     }

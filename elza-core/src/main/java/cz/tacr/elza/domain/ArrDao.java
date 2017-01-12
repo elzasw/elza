@@ -15,7 +15,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 
 
 /**
- * Implementace {@link cz.tacr.elza.api.ArrDao}
+ * Digitální archivní objekt (digitalizát).
  *
  * @author Martin Šlapa
  * @since 06.12.2016

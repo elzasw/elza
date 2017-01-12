@@ -19,7 +19,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 
 
 /**
- * Implementace {@link cz.tacr.elza.api.ArrDaoFile}
+ * Soubor k DAO.
  *
  * @author Martin Šlapa
  * @since 06.12.2016

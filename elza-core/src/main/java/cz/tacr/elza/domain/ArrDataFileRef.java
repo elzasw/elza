@@ -15,7 +15,7 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 
 
 /**
- * Implementace třídy {@link cz.tacr.elza.api.ArrDataFileRef}
+ * Hodnota atributu archivního popisu typu ArrFile.
  *
  * @author Petr Compel <petr.compel@marbes.cz>
  * @since 17.6.2016

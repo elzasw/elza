@@ -15,6 +15,8 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 
 
 /**
+ * Hodnota atributu archivního popisu typu RegRecord.
+ *
  * @author Martin Šlapa
  * @since 1.9.2015
  */

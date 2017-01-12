@@ -13,7 +13,8 @@ import com.vividsolutions.jts.io.WKTWriter;
 import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 
 /**
- * popis {@link cz.tacr.elza.api.ArrDataCoordinates}.
+ * Hodnota atributu archivního popisu typu Coordinates.
+ *
  * @author Martin Šlapa
  * @since 1.9.2015
  */

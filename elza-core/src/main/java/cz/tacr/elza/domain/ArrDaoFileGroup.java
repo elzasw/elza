@@ -15,7 +15,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 
 
 /**
- * Implementace {@link cz.tacr.elza.api.ArrDaoFileGroup}
+ * Skupina souborů k DAO.
  *
  * @author Martin Šlapa
  * @since 06.12.2016

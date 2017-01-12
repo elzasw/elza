@@ -12,7 +12,7 @@ import javax.persistence.ManyToOne;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * Implementace třídy {@link cz.tacr.elza.api.ArrNodeOutput}
+ * Vazba výstupu na podstromy archivního popisu.
  *
  * @author Martin Šlapa
  * @since 01.04.2016
@@ -41,42 +41,72 @@ public class ArrNodeOutput implements Serializable {
     @JoinColumn(name = "deleteChangeId")
     private ArrChange deleteChange;
 
+    /**
+     * @return  identifikátor entity
+     */
     public Integer getNodeOutputId() {
         return nodeOutputId;
     }
 
+    /**
+     * @param nodeOutputId identifikátor entity
+     */
     public void setNodeOutputId(final Integer nodeOutputId) {
         this.nodeOutputId = nodeOutputId;
     }
 
+    /**
+     * @return pojmenovaný výstup z archivního souboru
+     */
     public ArrOutputDefinition getOutputDefinition() {
         return outputDefinition;
     }
 
+    /**
+     * @param outputDefinition pojmenovaný výstup z archivního souboru
+     */
     public void setOutputDefinition(final ArrOutputDefinition outputDefinition) {
         this.outputDefinition = outputDefinition;
     }
 
+    /**
+     * @return navázaný uzel
+     */
     public ArrNode getNode() {
         return node;
     }
 
+    /**
+     * @param node navázaný uzel
+     */
     public void setNode(final ArrNode node) {
         this.node = node;
     }
 
+    /**
+     * @return změna vytvoření
+     */
     public ArrChange getCreateChange() {
         return createChange;
     }
 
+    /**
+     * @param createChange změna vytvoření
+     */
     public void setCreateChange(final ArrChange createChange) {
         this.createChange = createChange;
     }
 
+    /**
+     * @return změna smazání
+     */
     public ArrChange getDeleteChange() {
         return deleteChange;
     }
 
+    /**
+     * @param deleteChange změna smazání
+     */
     public void setDeleteChange(final ArrChange deleteChange) {
         this.deleteChange = deleteChange;
     }

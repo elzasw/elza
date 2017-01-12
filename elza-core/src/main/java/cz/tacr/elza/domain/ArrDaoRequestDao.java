@@ -11,7 +11,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
- * Implementace {@link cz.tacr.elza.api.ArrRequestQueueItem}
+ * Vazební entita mezi dao a požadavkem.
  *
  * @author Martin Šlapa
  * @since 07.12.2016

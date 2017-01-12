@@ -15,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 
 /**
- * Implementace {@link cz.tacr.elza.api.ArrOutputItem}
+ * Atribut pro výstupy.
  *
  * @author Martin Šlapa
  * @since 20.06.2016

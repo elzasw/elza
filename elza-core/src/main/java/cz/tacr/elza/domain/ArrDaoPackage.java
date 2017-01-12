@@ -15,7 +15,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 
 
 /**
- * Implementace {@link cz.tacr.elza.api.ArrDaoPackage}
+ * Informační balíček digitalizátů (digitálních archivních objektů DAO).
  *
  * @author Martin Šlapa
  * @since 06.12.2016

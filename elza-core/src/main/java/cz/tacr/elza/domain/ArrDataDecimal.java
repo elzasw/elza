@@ -16,6 +16,8 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 
 
 /**
+ * Hodnota atributu archivního popisu typu desetinného čísla.
+ *
  * @author Martin Šlapa
  * @since 12.10.2015
  */
