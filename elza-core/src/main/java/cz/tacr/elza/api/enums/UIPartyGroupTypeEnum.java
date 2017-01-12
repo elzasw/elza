@@ -1,4 +1,4 @@
-package cz.tacr.elza.api;
+package cz.tacr.elza.api.enums;
 
 /**
  * Typ skupiny.

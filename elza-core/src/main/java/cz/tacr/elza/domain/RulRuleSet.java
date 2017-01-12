@@ -1,7 +1,5 @@
 package cz.tacr.elza.domain;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -15,13 +13,16 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * popis {@link cz.tacr.elza.api.RulRuleSet}.
+ * Pravidla tvorby AP. Primárními pravidly jsou Základní pravidla. Je možné však připravit jiná
+ * pravidla tvorby, případně stávající pravidla dále rozpracovat a modifikovat. Je realizována pouze
+ * entita obalující základní pravidla, nikoli reálná základní pravidla.
+ *
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
 @Entity(name = "rul_rule_set")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class RulRuleSet implements cz.tacr.elza.api.RulRuleSet<RulPackage>, Serializable {
+public class RulRuleSet {
 
     @Id
     @GeneratedValue
@@ -37,42 +38,34 @@ public class RulRuleSet implements cz.tacr.elza.api.RulRuleSet<RulPackage>, Seri
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
-    @Override
     public Integer getRuleSetId() {
         return ruleSetId;
     }
 
-    @Override
     public void setRuleSetId(final Integer ruleSetId) {
         this.ruleSetId = ruleSetId;
     }
 
-    @Override
     public String getCode() {
         return code;
     }
 
-    @Override
-    public void setCode(String code) {
+    public void setCode(final String code) {
         this.code = code;
     }
 
-    @Override
     public String getName() {
         return name;
     }
 
-    @Override
     public void setName(final String name) {
         this.name = name;
     }
 
-    @Override
     public RulPackage getPackage() {
         return rulPackage;
     }
 
-    @Override
     public void setPackage(final RulPackage rulPackage) {
         this.rulPackage = rulPackage;
     }

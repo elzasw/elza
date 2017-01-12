@@ -19,14 +19,13 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 
 
 /**
- * Implementace třídy {@link cz.tacr.elza.api.RulTemplate}
  * @author Petr Compel <petr.compel@marbes.cz>
  * @since 16.6.2016
  */
 @Entity(name = "rul_template")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulTemplate implements cz.tacr.elza.api.RulTemplate<RulPackage, RulOutputType> {
+public class RulTemplate {
 
     @Id
     @GeneratedValue
@@ -65,103 +64,95 @@ public class RulTemplate implements cz.tacr.elza.api.RulTemplate<RulPackage, Rul
     /* Konstanty pro vazby a fieldy. */
     public static final String NAME = "name";
 
-    @Override
     public Integer getTemplateId() {
         return templateId;
     }
 
-    @Override
     public void setTemplateId(final Integer templateId) {
         this.templateId = templateId;
     }
 
-    @Override
     public String getCode() {
         return code;
     }
 
-    @Override
     public void setCode(final String code) {
         this.code = code;
     }
 
-    @Override
     public String getName() {
         return name;
     }
 
-    @Override
     public void setName(final String name) {
         this.name = name;
     }
 
-    @Override
     public Engine getEngine() {
         return engine;
     }
 
-    @Override
     public void setEngine(final Engine engine) {
         this.engine = engine;
     }
 
-    @Override
     public String getDirectory() {
         return directory;
     }
 
-    @Override
     public void setDirectory(final String directory) {
         this.directory = directory;
     }
 
-    @Override
+    /**
+     * @return balíček
+     */
     public RulPackage getPackage() {
         return rulPackage;
     }
 
-    @Override
+    /**
+     * @param rulPackage balíček
+     */
     public void setPackage(final RulPackage rulPackage) {
         this.rulPackage = rulPackage;
     }
 
-    @Override
+    /**
+     * @return typ outputu
+     */
     public RulOutputType getOutputType() {
         return outputType;
     }
 
-    @Override
+    /**
+     * @param outputType typ outputu
+     */
     public void setOutputType(final RulOutputType outputType) {
         this.outputType = outputType;
     }
 
-    @Override
     public String getMimeType() {
         return mimeType;
     }
 
-    @Override
     public void setMimeType(final String mimeType) {
         this.mimeType = mimeType;
     }
 
-    @Override
     public String getExtension() {
         return extension;
     }
 
-    @Override
     public void setExtension(final String extension) {
         this.extension = extension;
     }
 
-    @Override
     public Boolean getDeleted() {
         return deleted;
     }
 
-    @Override
-    public void setDeleted(Boolean deleted) {
+    public void setDeleted(final Boolean deleted) {
         this.deleted = deleted;
     }
 
@@ -177,5 +168,14 @@ public class RulTemplate implements cz.tacr.elza.api.RulTemplate<RulPackage, Rul
         cz.tacr.elza.domain.RulTemplate other = (cz.tacr.elza.domain.RulTemplate) obj;
 
         return new EqualsBuilder().append(templateId, other.getTemplateId()).isEquals();
+    }
+
+    /**
+     * Výčet template enginů
+     */
+    public enum Engine {
+        JASPER,
+        FREEMARKER,
+        DOCX
     }
 }

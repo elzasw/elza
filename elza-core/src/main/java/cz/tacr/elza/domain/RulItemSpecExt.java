@@ -7,6 +7,6 @@ package cz.tacr.elza.domain;
  * @since 20.8.2015
  */
 
-public class RulItemSpecExt extends RulItemSpec implements cz.tacr.elza.api.RulItemSpecExt<RulItemType, RegRegisterType, RulPackage> {
+public class RulItemSpecExt extends RulItemSpec {
 
 }

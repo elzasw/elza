@@ -1,6 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
-import cz.tacr.elza.api.UIPartyGroupTypeEnum;
+import cz.tacr.elza.api.enums.UIPartyGroupTypeEnum;
 
 /**
  * VO nastavení zobrazení formuláře pro osoby.

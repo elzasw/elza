@@ -18,7 +18,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import cz.tacr.elza.api.InterpiClass;
+import cz.tacr.elza.api.enums.InterpiClass;
 import cz.tacr.elza.domain.enumeration.StringLength;
 
 /**

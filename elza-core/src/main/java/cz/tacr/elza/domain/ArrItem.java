@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 
 /**
- * Implementace {@link cz.tacr.elza.api.ArrItem}
+ * Nadřízená položka.
  *
  * @author Martin Šlapa
  * @since 19.06.2016
@@ -32,7 +32,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
-public abstract class ArrItem<T extends ArrItemData> implements cz.tacr.elza.api.ArrItem<T, ArrChange, RulItemType, RulItemSpec> {
+public abstract class ArrItem<T extends ArrItemData> implements cz.tacr.elza.api.ArrItem<T, ArrChange> {
 
     public static final String ITEM_SPEC = "itemSpec";
     public static final String ITEM_TYPE = "itemType";
@@ -160,22 +160,35 @@ public abstract class ArrItem<T extends ArrItemData> implements cz.tacr.elza.api
         this.position = position;
     }
 
-    @Override
+    /**
+    *
+    * @return Odkaz na typ atributu.
+    */
     public RulItemType getItemType() {
         return itemType;
     }
 
-    @Override
+    /**
+     * Nastaví odkaz na typ atributu.
+     *
+     * @param itemType odkaz na typ atributu.
+     */
     public void setItemType(final RulItemType itemType) {
         this.itemType = itemType;
     }
 
-    @Override
+    /**
+     * @return Odkaz na podtyp atributu.
+     */
     public RulItemSpec getItemSpec() {
         return itemSpec;
     }
 
-    @Override
+    /**
+     * Nastaví odkaz na podtyp atributu.
+     *
+     * @param itemSpec odkaz na podtyp atributu.
+     */
     public void setItemSpec(final RulItemSpec itemSpec) {
         this.itemSpec = itemSpec;
     }

@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulItemSpecRegister implements cz.tacr.elza.api.RulItemSpecRegister<RegRegisterType, RulItemSpec> {
+public class RulItemSpecRegister {
 
     @Id
     @GeneratedValue
@@ -47,17 +47,15 @@ public class RulItemSpecRegister implements cz.tacr.elza.api.RulItemSpecRegister
         return itemSpecRegisterId;
     }
 
-    public void setItemSpecRegisterId(Integer descItemSpecRegisterId) {
+    public void setItemSpecRegisterId(final Integer descItemSpecRegisterId) {
         this.itemSpecRegisterId = descItemSpecRegisterId;
     }
 
-    @Override
     public RegRegisterType getRegisterType() {
         return registerType;
     }
 
-    @Override
-    public void setRegisterType(RegRegisterType registerType) {
+    public void setRegisterType(final RegRegisterType registerType) {
         this.registerType = registerType;
     }
 
@@ -65,7 +63,7 @@ public class RulItemSpecRegister implements cz.tacr.elza.api.RulItemSpecRegister
         return itemSpec;
     }
 
-    public void setItemSpec(RulItemSpec descItemSpec) {
+    public void setItemSpec(final RulItemSpec descItemSpec) {
         this.itemSpec = descItemSpec;
     }
 
@@ -78,7 +76,7 @@ public class RulItemSpecRegister implements cz.tacr.elza.api.RulItemSpecRegister
             return true;
         }
 
-        cz.tacr.elza.api.RulItemSpecRegister other = (cz.tacr.elza.api.RulItemSpecRegister) obj;
+        RulItemSpecRegister other = (RulItemSpecRegister) obj;
 
         return new EqualsBuilder().append(itemSpecRegisterId, other.getItemSpecRegisterId()).isEquals();
     }

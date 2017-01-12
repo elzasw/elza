@@ -46,8 +46,8 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import com.google.common.collect.Maps;
 
 import cz.tacr.elza.api.ParRelationClassTypeRepeatabilityEnum;
-import cz.tacr.elza.api.UIPartyGroupTypeEnum;
 import cz.tacr.elza.api.UseUnitdateEnum;
+import cz.tacr.elza.api.enums.UIPartyGroupTypeEnum;
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrOutputDefinition;
@@ -78,6 +78,7 @@ import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulTemplate;
+import cz.tacr.elza.domain.RulTemplate.Engine;
 import cz.tacr.elza.domain.UIPartyGroup;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.table.ElzaColumn;
@@ -2065,7 +2066,7 @@ public class PackageService {
     private void convertRulTemplate(final RulPackage rulPackage, final Template template, final RulTemplate rulTemplate, final List<RulOutputType> rulOutputTypes) {
         rulTemplate.setName(template.getName());
         rulTemplate.setCode(template.getCode());
-        rulTemplate.setEngine(cz.tacr.elza.api.RulTemplate.Engine.valueOf(template.getEngine()));
+        rulTemplate.setEngine(Engine.valueOf(template.getEngine()));
         rulTemplate.setPackage(rulPackage);
         rulTemplate.setDirectory(template.getDirectory());
         rulTemplate.setMimeType(template.getMimeType());

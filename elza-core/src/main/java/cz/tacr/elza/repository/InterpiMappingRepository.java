@@ -3,7 +3,7 @@ package cz.tacr.elza.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.api.InterpiClass;
+import cz.tacr.elza.api.enums.InterpiClass;
 import cz.tacr.elza.domain.ParInterpiMapping;
 
 @Repository

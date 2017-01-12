@@ -37,7 +37,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
         @UniqueConstraint(columnNames = {"storageNumber"})})
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrPacket implements cz.tacr.elza.api.ArrPacket<RulPacketType>, IArrFund, Serializable {
+public class ArrPacket implements IArrFund, Serializable {
     public final static String PACKET_ID = "packetId";
     public final static String PACKET_TYPE = "packetType";
     public final static String STORAGE_NUMBER = "storageNumber";
@@ -68,22 +68,18 @@ public class ArrPacket implements cz.tacr.elza.api.ArrPacket<RulPacketType>, IAr
     @JsonIgnore
     private State state;
 
-    @Override
     public Integer getPacketId() {
         return packetId;
     }
 
-    @Override
     public void setPacketId(final Integer packetId) {
         this.packetId = packetId;
     }
 
-    @Override
     public RulPacketType getPacketType() {
         return packetType;
     }
 
-    @Override
     public void setPacketType(final RulPacketType packetType) {
         this.packetType = packetType;
     }
@@ -97,12 +93,10 @@ public class ArrPacket implements cz.tacr.elza.api.ArrPacket<RulPacketType>, IAr
         this.fund = fund;
     }
 
-    @Override
     public String getStorageNumber() {
         return storageNumber;
     }
 
-    @Override
     public void setStorageNumber(final String storageNumber) {
         this.storageNumber = storageNumber;
     }

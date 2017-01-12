@@ -1,7 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -9,15 +7,17 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
- * Implementace {@link cz.tacr.elza.api.RulItemTypeAction}
+ * Vazba: Hromadná akce, která počítá hodnotu atributu výstupu.
  *
  * @author Martin Šlapa
  * @since 27.06.2016
  */
 @Entity(name = "rul_item_type_action")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulItemTypeAction implements cz.tacr.elza.api.RulItemTypeAction<RulAction, RulItemType> {
+public class RulItemTypeAction {
 
     @Id
     @GeneratedValue
@@ -31,32 +31,44 @@ public class RulItemTypeAction implements cz.tacr.elza.api.RulItemTypeAction<Rul
     @JoinColumn(name = "itemTypeId", nullable = false)
     private RulItemType itemType;
 
-    @Override
+    /**
+     * @return identifikátor entity
+     */
     public Integer getItemTypeActionId() {
         return itemTypeActionId;
     }
 
-    @Override
+    /**
+     * @param itemTypeActionId identifikátor entity
+     */
     public void setItemTypeActionId(final Integer itemTypeActionId) {
         this.itemTypeActionId = itemTypeActionId;
     }
 
-    @Override
+    /**
+     * @return hromadná akce
+     */
     public RulAction getAction() {
         return action;
     }
 
-    @Override
+    /**
+     * @param action hromadná akce
+     */
     public void setAction(final RulAction action) {
         this.action = action;
     }
 
-    @Override
+    /**
+     * @return typ atributu
+     */
     public RulItemType getItemType() {
         return itemType;
     }
 
-    @Override
+    /**
+     * @param itemType typ atributu
+     */
     public void setItemType(final RulItemType itemType) {
         this.itemType = itemType;
     }

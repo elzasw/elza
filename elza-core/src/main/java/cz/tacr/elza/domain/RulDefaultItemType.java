@@ -9,14 +9,14 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
- * Implementace třídy {@link cz.tacr.elza.api.RulDefaultItemType}
+ * Vazební tabulka mezi pravidlem a typem atribut - určení atributů, které jsou implicitní pro zobrazení, využívá se pro klilenta.
  *
  * @author Pavel Stánek
  * @since 10.06.2016
  */
 @Entity(name = "rul_default_item_type")
 @Table
-public class RulDefaultItemType implements cz.tacr.elza.api.RulDefaultItemType<RulRuleSet, RulItemType> {
+public class RulDefaultItemType {
     @Id
     @GeneratedValue
     private Integer defaultItemTypeId;
@@ -33,27 +33,23 @@ public class RulDefaultItemType implements cz.tacr.elza.api.RulDefaultItemType<R
         return defaultItemTypeId;
     }
 
-    public void setDefaultItemTypeId(Integer defaultItemTypeId) {
+    public void setDefaultItemTypeId(final Integer defaultItemTypeId) {
         this.defaultItemTypeId = defaultItemTypeId;
     }
 
-    @Override
     public void setRuleSet(final RulRuleSet ruleSet) {
         this.ruleSet = ruleSet;
     }
 
-    @Override
     public RulRuleSet getRuleSet() {
         return ruleSet;
     }
 
-    @Override
     public void setItemType(final RulItemType itemType) {
         this.itemType = itemType;
 
     }
 
-    @Override
     public RulItemType getItemType() {
         return itemType;
     }

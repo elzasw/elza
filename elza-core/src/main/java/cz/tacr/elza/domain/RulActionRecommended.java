@@ -1,7 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -9,15 +7,17 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
- * Implementace {@link cz.tacr.elza.api.RulActionRecommended}
+ * Doporučení hromadné akce pro typ výstupu.
  *
  * @author Martin Šlapa
  * @since 27.06.2016
  */
 @Entity(name = "rul_action_recommended")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulActionRecommended implements cz.tacr.elza.api.RulActionRecommended<RulAction, RulOutputType> {
+public class RulActionRecommended {
 
     @Id
     @GeneratedValue
@@ -31,32 +31,44 @@ public class RulActionRecommended implements cz.tacr.elza.api.RulActionRecommend
     @JoinColumn(name = "outputTypeId", nullable = false)
     private RulOutputType outputType;
 
-    @Override
+    /**
+     * @return identifikátor entity
+     */
     public Integer getActionRecommendedId() {
         return actionRecommendedId;
     }
 
-    @Override
+    /**
+     * @param actionRecommendedId identifikátor entity
+     */
     public void setActionRecommendedId(final Integer actionRecommendedId) {
         this.actionRecommendedId = actionRecommendedId;
     }
 
-    @Override
+    /**
+     * @return hromadná akce
+     */
     public RulAction getAction() {
         return action;
     }
 
-    @Override
+    /**
+     * @param action hromadná akce
+     */
     public void setAction(final RulAction action) {
         this.action = action;
     }
 
-    @Override
+    /**
+     * @return typ výstupu
+     */
     public RulOutputType getOutputType() {
         return outputType;
     }
 
-    @Override
+    /**
+     * @param outputType typ výstupu
+     */
     public void setOutputType(final RulOutputType outputType) {
         this.outputType = outputType;
     }

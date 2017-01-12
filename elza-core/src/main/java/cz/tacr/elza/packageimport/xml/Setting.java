@@ -1,10 +1,11 @@
 package cz.tacr.elza.packageimport.xml;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import cz.tacr.elza.api.UISettings;
-
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import cz.tacr.elza.domain.UISettings;
 
 
 /**

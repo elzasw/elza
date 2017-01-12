@@ -8,7 +8,7 @@ import java.io.Serializable;
  * @author Martin Šlapa
  * @since 17.06.2016
  */
-public interface ArrItem<D extends ArrItemData, C extends ArrChange, RT extends RulItemType, RS extends RulItemSpec> extends Serializable {
+public interface ArrItem<D extends ArrItemData, C extends ArrChange> extends Serializable {
 
     D getItem();
 
@@ -51,29 +51,4 @@ public interface ArrItem<D extends ArrItemData, C extends ArrChange, RT extends 
      * @param position pořadí atributu v rámci shodného typu a specifikace atributu.
      */
     void setPosition(Integer position);
-
-    /**
-     *
-     * @return Odkaz na typ atributu.
-     */
-    RT getItemType();
-
-    /**
-     * Nastaví odkaz na typ atributu.
-     *
-     * @param itemType odkaz na typ atributu.
-     */
-    void setItemType(RT itemType);
-
-    /**
-     * @return Odkaz na podtyp atributu.
-     */
-    RS getItemSpec();
-
-    /**
-     * Nastaví odkaz na podtyp atributu.
-     *
-     * @param itemSpec odkaz na podtyp atributu.
-     */
-    void setItemSpec(RS itemSpec);
 }
