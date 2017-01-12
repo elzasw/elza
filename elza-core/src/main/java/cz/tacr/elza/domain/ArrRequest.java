@@ -20,7 +20,7 @@ import javax.persistence.Table;
 import cz.tacr.elza.domain.enumeration.StringLength;
 
 /**
- * Implementace {@link cz.tacr.elza.api.ArrRequest}
+ * Dotaz pro externí systémy.
  *
  * @author Martin Šlapa
  * @since 07.12.2016
@@ -32,7 +32,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
         name="discriminator",
         discriminatorType= DiscriminatorType.STRING
 )
-public abstract class ArrRequest implements cz.tacr.elza.api.ArrRequest<ArrChange> {
+public abstract class ArrRequest {
 
     public enum ClassType {
         DAO_LINK(Values.DAO_LINK), DAO(Values.DAO), DIGITIZATION(Values.DIGITIZATION);
@@ -52,6 +52,35 @@ public abstract class ArrRequest implements cz.tacr.elza.api.ArrRequest<ArrChang
             public static final String DAO = "DAO";
             public static final String DIGITIZATION = "DIGITIZATION";
         }
+    }
+
+    public enum State {
+
+        /**
+         * V přípravě.
+         */
+        OPEN,
+
+        /**
+         * Ve frontě.
+         */
+        QUEUED,
+
+        /**
+         * Odeslán.
+         */
+        SENT,
+
+        /**
+         * Přijat.
+         */
+        ACCEPTED,
+
+        /**
+         * Zamítnut.
+         */
+        REJECTED
+
     }
 
     @Id
@@ -83,12 +112,10 @@ public abstract class ArrRequest implements cz.tacr.elza.api.ArrRequest<ArrChang
     @Enumerated(EnumType.STRING)
     private ClassType discriminator;
 
-    @Override
     public Integer getRequestId() {
         return requestId;
     }
 
-    @Override
     public void setRequestId(final Integer requestId) {
         this.requestId = requestId;
     }
@@ -101,53 +128,43 @@ public abstract class ArrRequest implements cz.tacr.elza.api.ArrRequest<ArrChang
         this.fund = fund;
     }
 
-    @Override
     public String getCode() {
         return code;
     }
 
-    @Override
     public void setCode(final String code) {
         this.code = code;
     }
 
-    @Override
     public State getState() {
         return state;
     }
 
-    @Override
     public void setState(final State state) {
         this.state = state;
     }
 
-    @Override
     public LocalDateTime getResponseExternalSystem() {
         return responseExternalSystem;
     }
 
-    @Override
     public void setResponseExternalSystem(final LocalDateTime responseExternalSystem) {
         this.responseExternalSystem = responseExternalSystem;
     }
 
-    @Override
     public String getRejectReason() {
         return rejectReason;
     }
 
-    @Override
     public void setRejectReason(final String rejectReason) {
         this.rejectReason = rejectReason;
     }
 
-    @Override
-	public ArrChange getCreateChange() {
+    public ArrChange getCreateChange() {
         return createChange;
     }
 
-    @Override
-	public void setCreateChange(final ArrChange createChange) {
+    public void setCreateChange(final ArrChange createChange) {
         this.createChange = createChange;
     }
 

@@ -18,7 +18,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
  */
 @Entity(name = "par_party_group")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParPartyGroup extends ParParty implements cz.tacr.elza.api.ParPartyGroup {
+public class ParPartyGroup extends ParParty {
 
     @Column(length = StringLength.LENGTH_1000)
     @JsonIgnore
@@ -40,43 +40,34 @@ public class ParPartyGroup extends ParParty implements cz.tacr.elza.api.ParParty
     @JsonIgnore
     private List<ParPartyGroupIdentifier> partyGroupIdentifiers;
 
-
-    @Override
     public String getScope() {
         return scope;
     }
 
-    @Override
     public void setScope(final String scope) {
         this.scope = scope;
     }
 
-    @Override
     public String getFoundingNorm() {
         return foundingNorm;
     }
 
-    @Override
     public void setFoundingNorm(final String foundingNorm) {
         this.foundingNorm = foundingNorm;
     }
 
-    @Override
     public String getScopeNorm() {
         return scopeNorm;
     }
 
-    @Override
     public void setScopeNorm(final String scopeNorm) {
         this.scopeNorm = scopeNorm;
     }
 
-    @Override
     public String getOrganization() {
         return organization;
     }
 
-    @Override
     public void setOrganization(final String organization) {
         this.organization = organization;
     }

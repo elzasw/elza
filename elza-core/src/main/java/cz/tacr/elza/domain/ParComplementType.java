@@ -1,11 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -14,6 +8,13 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 
 /**
  * Číselník typů doplňků jmen osob.
@@ -21,7 +22,7 @@ import javax.persistence.ManyToOne;
 @Entity(name = "par_complement_type")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ParComplementType implements cz.tacr.elza.api.ParComplementType {
+public class ParComplementType {
 
     @Id
     @GeneratedValue
@@ -40,56 +41,48 @@ public class ParComplementType implements cz.tacr.elza.api.ParComplementType {
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
-    @Override
     public Integer getComplementTypeId() {
         return complementTypeId;
     }
 
-    @Override
-    public void setComplementTypeId(Integer complementTypeId) {
+    public void setComplementTypeId(final Integer complementTypeId) {
         this.complementTypeId = complementTypeId;
     }
 
-    @Override
     public String getCode() {
         return code;
     }
 
-    @Override
-    public void setCode(String code) {
+    public void setCode(final String code) {
         this.code = code;
     }
 
-    @Override
     public String getName() {
         return name;
     }
 
-    @Override
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
-    @Override
     public Integer getViewOrder() {
         return viewOrder;
     }
 
-    @Override
-    public void setViewOrder(Integer viewOrder) {
+    public void setViewOrder(final Integer viewOrder) {
         this.viewOrder = viewOrder;
     }
 
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof cz.tacr.elza.api.ParComplementType)) {
+        if (!(obj instanceof ParComplementType)) {
             return false;
         }
         if (this == obj) {
             return true;
         }
 
-        cz.tacr.elza.api.ParComplementType other = (cz.tacr.elza.api.ParComplementType) obj;
+        ParComplementType other = (ParComplementType) obj;
 
         return new EqualsBuilder().append(complementTypeId, other.getComplementTypeId()).isEquals();
     }

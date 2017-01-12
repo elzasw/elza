@@ -1,6 +1,6 @@
 package cz.tacr.elza.domain;
 
-import cz.tacr.elza.domain.enumeration.StringLength;
+import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,17 +10,18 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.time.LocalDateTime;
+
+import cz.tacr.elza.domain.enumeration.StringLength;
 
 /**
- * Implementace {@link cz.tacr.elza.api.ArrRequestQueueItem}
+ * Položka ve frontě pro odeslání do externích systémů.
  *
  * @author Martin Šlapa
  * @since 07.12.2016
  */
 @Entity(name = "arr_request_queue_item")
 @Table
-public class ArrRequestQueueItem implements cz.tacr.elza.api.ArrRequestQueueItem<ArrRequest, ArrChange> {
+public class ArrRequestQueueItem {
 
     @Id
     @GeneratedValue
@@ -43,62 +44,50 @@ public class ArrRequestQueueItem implements cz.tacr.elza.api.ArrRequestQueueItem
     @Column(nullable = false)
     private Boolean send;
 
-    @Override
     public Integer getRequestQueueItemId() {
         return requestQueueItemId;
     }
 
-    @Override
     public void setRequestQueueItemId(final Integer requestQueueItemId) {
         this.requestQueueItemId = requestQueueItemId;
     }
 
-    @Override
     public ArrRequest getRequest() {
         return request;
     }
 
-    @Override
     public void setRequest(final ArrRequest request) {
         this.request = request;
     }
 
-    @Override
     public ArrChange getCreateChange() {
         return createChange;
     }
 
-    @Override
     public void setCreateChange(final ArrChange createChange) {
         this.createChange= createChange;
     }
 
-    @Override
     public LocalDateTime getAttemptToSend() {
         return attemptToSend;
     }
 
-    @Override
     public void setAttemptToSend(final LocalDateTime attemptToSend) {
         this.attemptToSend = attemptToSend;
     }
 
-    @Override
     public String getError() {
         return error;
     }
 
-    @Override
     public void setError(final String error) {
         this.error = error;
     }
 
-    @Override
     public Boolean getSend() {
         return send;
     }
 
-    @Override
     public void setSend(final Boolean send) {
         this.send = send;
     }

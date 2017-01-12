@@ -1,15 +1,16 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.api.ArrRequest;
-import cz.tacr.elza.domain.ArrDigitizationRequest;
-import cz.tacr.elza.domain.ArrDigitizationRequestNode;
-import cz.tacr.elza.domain.ArrNode;
+import java.util.Collection;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
-import java.util.List;
+import cz.tacr.elza.domain.ArrDigitizationRequest;
+import cz.tacr.elza.domain.ArrDigitizationRequestNode;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrRequest;
 
 
 /**

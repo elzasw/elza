@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @Entity(name = "arr_change")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrChange implements cz.tacr.elza.api.ArrChange<UsrUser> {
+public class ArrChange implements cz.tacr.elza.api.ArrChange {
 
     @Id
     @GeneratedValue
@@ -63,22 +63,30 @@ public class ArrChange implements cz.tacr.elza.api.ArrChange<UsrUser> {
         this.changeDate = changeDate;
     }
 
-    @Override
+    /**
+     * @return uživatel, který provedl změnu
+     */
     public UsrUser getUser() {
         return user;
     }
 
-    @Override
+    /**
+     * @param user uživatel, který provedl změnu
+     */
     public void setUser(final UsrUser user) {
         this.user = user;
     }
 
-    @Override
+    /**
+     * @return typ změny
+     */
     public Type getType() {
         return type;
     }
 
-    @Override
+    /**
+     * @param type typ změny
+     */
     public void setType(final Type type) {
         this.type = type;
     }
@@ -94,5 +102,121 @@ public class ArrChange implements cz.tacr.elza.api.ArrChange<UsrUser> {
     @Override
     public String toString() {
         return "ArrChange pk=" + changeId;
+    }
+
+    /**
+     * Typ změny.
+     */
+    public enum Type {
+
+        /**
+         * Vytvoření AS.
+         */
+        CREATE_AS,
+
+        /**
+         * Připojení JP k výstupu.
+         */
+        ADD_NODES_OUTPUT,
+
+        /**
+         * Odpojení JP od výstupu.
+         */
+        REMOVE_NODES_OUTPUT,
+
+        /**
+         * Založení JP.
+         */
+        ADD_LEVEL,
+
+        /**
+         * Přesun JP.
+         */
+        MOVE_LEVEL,
+
+        /**
+         * Zrušení JP.
+         */
+        DELETE_LEVEL,
+
+        /**
+         * Založení rejstříkového hesla k JP.
+         */
+        ADD_RECORD_NODE,
+
+        /**
+         * Zrušení rejstříkového hesla k JP.
+         */
+        DELETE_RECORD_NODE,
+
+        /**
+         * Změna rejstříkového hesla k JP.
+         */
+        UPDATE_RECORD_NODE,
+
+        /**
+         * Změna atributu včetně změny pořadí.
+         */
+        UPDATE_DESC_ITEM,
+
+        /**
+         * Založení atributu.
+         */
+        ADD_DESC_ITEM,
+
+        /**
+         * Zrušení atributu.
+         */
+        DELETE_DESC_ITEM,
+
+        /**
+         * Hromadná změna atributů - změny z tabulkového zobrazení, pokud se týká jen jedné JP, tak jde o typ Změna atributu.
+         */
+        BATCH_CHANGE_DESC_ITEM,
+
+        /**
+         * Hromadné vymazání atributů - změny z tabulkového zobrazení, pokud se týká jen jedné JP, tak jde o typ Zrušení atributu.
+         */
+        BATCH_DELETE_DESC_ITEM,
+
+        /**
+         * Hromadné funkce.
+         */
+        BULK_ACTION,
+
+        /**
+         * Import AS.
+         */
+        IMPORT,
+
+        /**
+         * Požadavek na digitalizaci.
+         */
+        CREATE_DIGI_REQUEST,
+
+        /**
+         * Požadavek na delimitaci/skartaci.
+         */
+        CREATE_DAO_REQUEST,
+
+        /**
+         * Vytvoření položky ve frontě.
+         */
+        CREATE_REQUEST_QUEUE,
+
+        /**
+         * Vytvoření vazby na DAO
+         */
+        CREATE_DAO_LINK,
+
+        /**
+         * Zrušení vazby na DAO
+         */
+        DELETE_DAO_LINK,
+
+        /**
+         * Úprava dat výstupu.
+         */
+        UPDATE_OUTPUT
     }
 }
