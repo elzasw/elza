@@ -52,8 +52,7 @@ export default function list(state = initialState, action = {}, config = null) {
         case INVALIDATE: {
             return {
                 ...state,
-                currentDataKey: initialState.currentDataKey,
-                fetched: false
+                currentDataKey: initialState.currentDataKey
             }
         }
         case RESPONSE: {
