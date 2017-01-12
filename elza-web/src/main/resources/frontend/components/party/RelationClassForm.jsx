@@ -89,14 +89,13 @@ class RelationClassForm extends AbstractReactComponent {
         }
         const roleTypesList = relationType ? relationType.relationRoleTypes : null;
         const usedRoles = relationEntities.map(i => parseInt(i.roleType.id.value));
-
         const submit = submitReduxForm.bind(this, RelationClassForm.validate);
         return <Form onSubmit={handleSubmit(submit)}>
-            <Modal.Body className="relation-form">
+            <Modal.Body className="dialog-3-col relation-form">
                 <div className="flex">
-                    <div className="flex-2">
+                    <div className="flex-2 col">
                         <FormGroup validationState={relationTypeId.touched && relationTypeId.invalid ? 'error' : null}>
-                            <div className="relation-class-select">{relationTypes.map(i => <Radio inline {...relationTypeId} value={i.id} onBlur={()=>{/* musí být kvůli chybné implementaci v REDUX */}}>{i.name}</Radio>)}</div>
+                            <div className="relation-class-select">{relationTypes.map(i => <Radio inline checked {...relationTypeId} value={i.id} onBlur={()=>{/* musí být kvůli chybné implementaci v REDUX */}}>{i.name}</Radio>)}</div>
                             {relationTypeId.touched && relationTypeId.invalid && <HelpBlock>{relationTypeId.error}</HelpBlock>}
                         </FormGroup>
                         {relationType && <div className="relation-entities">
@@ -115,7 +114,7 @@ class RelationClassForm extends AbstractReactComponent {
                             </div>)}
                         </div>}
                     </div>
-                    {relationType && relationType.useUnitdate !== USE_UNITDATE_ENUM.NONE && <div className="datation-group flex-1">
+                    {relationType && relationType.useUnitdate !== USE_UNITDATE_ENUM.NONE && <div className="datation-group flex-1 col">
                         {(relationType.useUnitdate === USE_UNITDATE_ENUM.INTERVAL || relationType.useUnitdate == USE_UNITDATE_ENUM.ONE) && <div>
                             <DatationField fields={from} label={i18n('party.relation.from')} labelTextual={i18n('party.relation.from.textDate')} labelNote={i18n('party.relation.from.note')} />
                         </div>}
@@ -123,7 +122,7 @@ class RelationClassForm extends AbstractReactComponent {
                             <DatationField fields={to} label={i18n('party.relation.to')} labelTextual={i18n('party.relation.to.textDate')} labelNote={i18n('party.relation.to.note')} />
                         </div>}
                     </div>}
-                    <div className="flex-1">
+                    <div className="flex-1 col">
                         <FormInput type="text" label={i18n('party.relation.note')} {...note} />
                         <FormInput componentClass="textarea" label={i18n('party.relation.sources')} {...source} />
                     </div>
@@ -142,6 +141,3 @@ export default reduxForm({
     fields: RelationClassForm.fields,
     validate: RelationClassForm.validateInline
 })(RelationClassForm)
-
-
-
