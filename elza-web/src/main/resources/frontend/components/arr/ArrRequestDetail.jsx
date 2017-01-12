@@ -26,7 +26,7 @@ import {fundOutputRemoveNodes, fundOutputAddNodes} from 'actions/arr/fundOutput.
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import * as arrRequestActions from 'actions/arr/arrRequestActions';
 import RequestInlineForm from "./RequestInlineForm";
-import {DIGITIZATION, DAO, getRequestType} from './ArrUtils.jsx'
+import {DIGITIZATION, DAO, DAO_LINK, getRequestType} from './ArrUtils.jsx'
 
 const ShortcutsManager = require('react-shortcuts');
 const Shortcuts = require('react-shortcuts/component');
@@ -117,6 +117,22 @@ class ArrRequestDetail extends AbstractReactComponent {
         }
     };
 
+    renderDaoLinkNode = (req) => {
+        let nodeInfo;
+        if (req.dao && req.dao.daoLink) {
+            const node = req.dao.daoLink.treeNodeClient;
+            nodeInfo = <NodeLabel inline node={node}/>;
+        } else {
+            nodeInfo = req.didCode;
+        }
+
+        return <div>
+            <div>
+                {nodeInfo}
+            </div>
+        </div>
+    };
+
     renderDaoNodes = (req) => {
         const NO_NODE_ID = "---";
         // Mapa id node na node objekt
@@ -173,7 +189,7 @@ class ArrRequestDetail extends AbstractReactComponent {
             const reqType = getRequestType(req);
             form = (
                 <div>
-                    <h2>{i18n("arr.request.title.digitizationRequest")}</h2>
+                    <h2>{i18n("arr.request.title.request")}</h2>
                     <div className="form-group">
                         <label>{i18n("arr.request.title.created")}</label> {dateTimeToString(new Date(req.create))}
                     </div>
@@ -190,11 +206,12 @@ class ArrRequestDetail extends AbstractReactComponent {
                         <label>{i18n("arr.request.title.daoRequest.type")}</label> {i18n("arr.request.title.type.dao." + req.type)}
                     </div>}
 
-                    <RequestInlineForm
+                    {reqType !== DAO_LINK && <RequestInlineForm
                         disabled={req.state != "OPEN"}
+                        reqType={reqType}
                         initData={req}
                         onSave={this.handleSaveRequest}
-                    />
+                    />}
 
                     {reqType === DIGITIZATION && <div>
                         <label className="control-label">{i18n("arr.request.title.nodes")}</label>
@@ -208,6 +225,10 @@ class ArrRequestDetail extends AbstractReactComponent {
                     {reqType === DAO && <div>
                         <label className="control-label">{i18n("arr.request.title.nodes")}</label>
                         {this.renderDaoNodes(req)}
+                    </div>}
+                    {reqType === DAO_LINK && <div>
+                        <label className="control-label">{i18n("arr.request.title.nodes")}</label>
+                        {this.renderDaoLinkNode(req)}
                     </div>}
                 </div>
             )

@@ -935,7 +935,7 @@ var messages = {
     "arr.request.dao.form.title": "Požadavek na delimitaci/skartaci",
     "arr.request.title.newRequest": "Nový",
     "arr.request.action.storeAndSend": "Uložit a odeslat",
-    "arr.request.title.digitizationRequest": "Požadavek",
+    "arr.request.title.request": "Požadavek",
     "arr.request.title.daoRequest.type": "Typ požadavku",
     "arr.request.title.created": "Vytvořen",
     "arr.request.title.queued": "Ve frontě",
