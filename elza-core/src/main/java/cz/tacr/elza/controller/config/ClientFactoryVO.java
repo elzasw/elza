@@ -1946,13 +1946,15 @@ public class ClientFactoryVO {
             case DAO: {
                 requestVO = new ArrDaoRequestVO();
                 // TODO
-                throw new NotImplementedException();
+                //throw new NotImplementedException();
+                break;
             }
 
             case DAO_LINK: {
                 requestVO = new ArrDaoLinkRequestVO();
                 // TODO
-                throw new NotImplementedException();
+                //throw new NotImplementedException();
+                break;
             }
 
             default: {
@@ -1971,12 +1973,14 @@ public class ClientFactoryVO {
 
             case DAO: {
                 // TODO
-                throw new NotImplementedException();
+                //throw new NotImplementedException();
+                break;
             }
 
             case DAO_LINK: {
                 // TODO
-                throw new NotImplementedException();
+                //throw new NotImplementedException();
+                break;
             }
 
             default: {

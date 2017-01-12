@@ -11,9 +11,8 @@ import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoLinkRequestRepository;
 import cz.tacr.elza.repository.DaoPackageRepository;
 import cz.tacr.elza.repository.DaoRepository;
-import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.EventId;
+import cz.tacr.elza.service.eventnotification.events.EventIdNodeIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.logging.Log;
@@ -108,11 +107,20 @@ public class DaoService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrDaoLink createOrFindDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion, ArrDao dao, ArrNode node) {
-        // kontrola, že ještě neexistuje
+        // kontrola, že ještě neexistuje vazba na zadaný node
         final List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaoAndNodeAndDeleteChangeIsNull(dao, node);
 
         final ArrDaoLink resultDaoLink;
         if (CollectionUtils.isEmpty(daoLinkList)) {
+            // Pokud má DAO jinou platnou vazbu, bude nejprve zneplatněna
+            final List<ArrDaoLink> linkList = daoLinkRepository.findByDaoAndDeleteChangeIsNull(dao);
+            if (CollectionUtils.isNotEmpty(linkList)) {
+                // měla by být jen jedna, ale cyklus ošetří i případnou chybu v datech
+                for (ArrDaoLink arrDaoLink : linkList) {
+                    deleteDaoLink(fundVersion, arrDaoLink);
+                }
+            }
+
             // vytvořit změnu
             final ArrChange createChange = arrangementService.createChange(ArrChange.Type.CREATE_DAO_LINK, node);
 
@@ -126,11 +134,12 @@ public class DaoService {
             resultDaoLink = daoLinkRepository.save(daoLink);
 
             // poslat i websockety o připojení
-            EventId event = EventFactory.createIdEvent(EventType.DAO_LINK_CREATE, fundVersion.getFundVersionId());
+            EventIdNodeIdInVersion event = new EventIdNodeIdInVersion(EventType.DAO_LINK_CREATE, fundVersion.getFundVersionId(),
+                    dao.getDaoId(), Collections.singletonList(node.getNodeId()));
             eventNotificationService.publishEvent(event);
 
             // vytvořit požadavek pro externí systém na připojení
-            final ArrDaoLinkRequest request = requestService.createDaoRequest(fundVersion, dao, createChange, Type.LINK, node);
+            final ArrDaoLinkRequest request = requestService.createDaoLinkRequest(fundVersion, dao, createChange, Type.LINK, node);
             requestQueueService.sendRequest(request, fundVersion);
 
         } else if (daoLinkList.size() == 1) {
@@ -174,11 +183,12 @@ public class DaoService {
 
         for (ArrFundVersion arrFundVersion : fundVersionList) {
             // poslat websockety o odpojení
-            EventId event = EventFactory.createIdEvent(EventType.DAO_LINK_DELETE, arrFundVersion.getFundVersionId());
+            EventIdNodeIdInVersion event = new EventIdNodeIdInVersion(EventType.DAO_LINK_DELETE, arrFundVersion.getFundVersionId(),
+                    daoLink.getDao().getDaoId(), Collections.singletonList(daoLink.getNode().getNodeId()));
             eventNotificationService.publishEvent(event);
 
             // vytvořit požadavek pro externí systém na odpojení
-            final ArrDaoLinkRequest request = requestService.createDaoRequest(arrFundVersion, daoLink.getDao(), deleteChange, Type.LINK, daoLink.getNode());
+            final ArrDaoLinkRequest request = requestService.createDaoLinkRequest(arrFundVersion, daoLink.getDao(), deleteChange, Type.LINK, daoLink.getNode());
             requestQueueService.sendRequest(request, arrFundVersion);
         }
 

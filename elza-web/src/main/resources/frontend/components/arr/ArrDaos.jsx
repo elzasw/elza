@@ -1,3 +1,6 @@
+/**
+ * Seznam balíčků se zobrazením detailu po kliknutí na balíček.
+ */
 require ('./ArrDaos.less');
 
 import React from "react";
@@ -19,21 +22,22 @@ class ArrDaos extends AbstractReactComponent {
         super(props);
 
         this.state = {
-            selectedItem: null,
+            selectedItemId: null,
         }
     }
 
     static PropTypes = {
+        type: React.PropTypes.oneOf(['PACKAGE', 'NODE', 'NODE_ASSIGN']).isRequired,
+        unassigned: React.PropTypes.bool,   // jen v případě packages
         fund: React.PropTypes.object.isRequired,
         selectedDaoId: React.PropTypes.object,
         nodeId: React.PropTypes.number,
         daoPackageId: React.PropTypes.number,
+        onSelect: React.PropTypes.func,
     };
 
-    refreshRows = () => {
-        if (this.refs.listbox) {
-            this.refs.listbox.reload();
-        }
+    static defaultProps = {
+        unassigned: false
     };
 
     componentDidMount() {
@@ -45,20 +49,38 @@ class ArrDaos extends AbstractReactComponent {
     }
 
     handleFetch = (prevProps, nextProps) => {
-        const {fund, nodeId, daoPackageId} = nextProps;
+        const {onSelect, type, unassigned, fund, nodeId, daoPackageId} = nextProps;
 
-        if (nodeId !== null) {
+        let prevDaoList;
+        let nextDaoList;
+        if (type === "NODE") {
+            if (prevProps.fund) {
+                prevDaoList = prevProps.fund.nodeDaoList;
+            }
+            nextDaoList = nextProps.fund.nodeDaoList;
             this.props.dispatch(daoActions.fetchNodeDaoListIfNeeded(fund.versionId, nodeId));
-        } else if (daoPackageId !== null) {
-            this.props.dispatch(daoActions.fetchDaoPackageDaoListIfNeeded(fund.versionId, daoPackageId));
+        } else if (type === "NODE_ASSIGN") {
+            if (prevProps.fund) {
+                prevDaoList = prevProps.fund.nodeDaoListAssign;
+            }
+            nextDaoList = nextProps.fund.nodeDaoListAssign;
+            this.props.dispatch(daoActions.fetchNodeDaoListAssignIfNeeded(fund.versionId, nodeId));
+        } else if (type === "PACKAGE") {
+            if (prevProps.fund) {
+                prevDaoList = prevProps.fund.packageDaoList;
+            }
+            nextDaoList = nextProps.fund.packageDaoList;
+            this.props.dispatch(daoActions.fetchDaoPackageDaoListIfNeeded(fund.versionId, daoPackageId, unassigned));
         }
 
-        if ((prevProps.fund && prevProps.fund.daoList.isFetching || !prevProps.fund) && nextProps.fund.daoList.fetched && !nextProps.fund.daoList.isFetching) {  // donačetl data, pokusíme se nastavit aktuálně vybranou položku
-            const index = indexById(nextProps.fund.daoList.rows, nextProps.selectedDaoId);
+        if ((prevProps.fund && prevDaoList.isFetching || !prevProps.fund) && nextDaoList.fetched && !nextDaoList.isFetching) {  // donačetl data, pokusíme se nastavit aktuálně vybranou položku
+            const index = indexById(nextDaoList.rows, nextProps.selectedDaoId);
             if (index !== null) {
+                const selectedItem = nextDaoList.rows[index];
                 this.setState({
-                    selectedItem: nextProps.fund.daoList.rows[index]
+                    selectedItemId: selectedItem.id
                 });
+                onSelect && onSelect(selectedItem);
             }
         }
     };
@@ -68,20 +90,39 @@ class ArrDaos extends AbstractReactComponent {
     };
 
     handleSelect = (item) => {
-        this.setState({ selectedItem: item });
+        const {onSelect} = this.props;
+        this.setState({ selectedItemId: item.id });
+        onSelect && onSelect(item);
+    };
+
+    handleUnlink = (dao) => {
+        const {fund} = this.props;
+        WebApi.deleteDaoLink(fund.versionId, dao.daoLink.id);
     };
 
     render() {
-        const {fund, fund: { daoList }, nodeId, daoPackageId} = this.props;
-        const {selectedItem} = this.state;
+        const {type, fund, nodeId, daoPackageId} = this.props;
+        const {selectedItemId} = this.state;
 
+        let daoList = {};
+        if (type === "NODE") {
+            daoList = fund.nodeDaoList;
+        } else if (type === "NODE_ASSIGN") {
+            daoList = fund.nodeDaoListAssign;
+        } else if (type === "PACKAGE") {
+            daoList = fund.packageDaoList;
+        }
         if (!daoList.fetched) {
             return <Loading/>;
         }
 
         let activeIndex;
-        if (selectedItem) {
-            activeIndex = indexById(daoList.rows, selectedItem.id);
+        let selectedItem;
+        if (selectedItemId !== null) {
+            activeIndex = indexById(daoList.rows, selectedItemId);
+            if (activeIndex !== null) {
+                selectedItem = daoList.rows[activeIndex];
+            }
         }
 
         return (
@@ -99,7 +140,7 @@ class ArrDaos extends AbstractReactComponent {
                     </div>
                 </div>
                 <div className="daos-detail">
-                    {selectedItem && <ArrDao fund={fund} dao={selectedItem} />}
+                    {selectedItem && <ArrDao fund={fund} dao={selectedItem} onUnlink={() => this.handleUnlink(selectedItem) } />}
                 </div>
             </div>
         );

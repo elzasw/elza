@@ -10,6 +10,8 @@ import {setSettings, getOneSettings} from "components/arr/ArrUtils.jsx";
 import {humanFileSize} from "components/Utils.jsx";
 import * as daoActions from 'actions/arr/daoActions.jsx';
 
+require("./ArrDaoPackages.less")
+
 class ArrDaoPackages extends AbstractReactComponent {
 
     constructor(props) {
@@ -68,7 +70,7 @@ class ArrDaoPackages extends AbstractReactComponent {
         }
 
         return (
-            <div>
+            <div className="dao-packages-container">
                 <Search
                     key="search"
                     placeholder={i18n('search.input.search')}

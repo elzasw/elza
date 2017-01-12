@@ -8,6 +8,7 @@ import {AbstractReactComponent, i18n, FormInput, Loading} from 'components/index
 import {isFundRootId} from 'components/arr/ArrUtils.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import './AddNodeForm.less';
+import {getSetFromIdsList} from "stores/app/utils.jsx";
 
 /**
  * Dialog pro přidání nové JP
@@ -18,17 +19,20 @@ import './AddNodeForm.less';
 class AddNodeForm extends AbstractReactComponent {
 
     static PropTypes = {
-        node: React.PropTypes.object.isRequired,
+        node: React.PropTypes.object.isRequired,    // node pro který se akce volá
+        parentNode: React.PropTypes.object.isRequired,  // nadřený node pro vstupní node
         initDirection: React.PropTypes.oneOf(['BEFORE', 'AFTER', 'CHILD', 'ATEND']),
         nodeSettings: React.PropTypes.object.isRequired,
-        selectedSubNodeIndex: React.PropTypes.number.isRequired
+        onSubmit: React.PropTypes.func.isRequired,
+        allowedDirections: React.PropTypes.arrayOf(React.PropTypes.oneOf(['BEFORE', 'AFTER', 'CHILD', 'ATEND'])),
     };
 
     state = { // initial states
         scenarios: undefined,
         loading: false,
         selectedDirection: this.props.initDirection,
-        selectedScenario: undefined
+        selectedScenario: undefined,
+        allowedDirections: ['BEFORE', 'AFTER', 'CHILD', 'ATEND']
     };
 
     /**
@@ -36,27 +40,31 @@ class AddNodeForm extends AbstractReactComponent {
      * - Přidání JP na konec se mění na přidání dítěte rodiči
      * @param {String} inDirection směr, kterým se má vytvořit nová JP
      * @param {Object} inNode uzel pro který je volána akce
+     * @param {Object} inParentNode nadřazený uzel k inNode
      */
-    formatDataForServer = (inDirection, inNode, inSelectedSubNodeIndex) => {
-        var di, no, pno;
-        if(inDirection == 'ATEND') { // prvek na konec seznamu
-            di = 'CHILD';
-            no = inNode;
-            pno = inNode;
-        } else {
-            di = inDirection;
-            // výběr node v akordeonu podle toho zda je otevřená JP nebo je akordeon zavřený
-            if(inNode.selectedSubNodeId != null) {
-                no = inNode.subNodeForm.data.parent;
-            } else {
-                no = inNode.childNodes[inSelectedSubNodeIndex];
-            }
-            pno = inNode;
-            if(inDirection == 'CHILD') {
-                pno = no;
-            }
+    formatDataForServer = (inDirection, inNode, inParentNode) => {
+        let direction, node, parentNode;
+
+        switch (inDirection) {
+            case "ATEND":
+                direction = "CHILD";
+                node = inParentNode;
+                parentNode = inParentNode;
+            break;
+            case "CHILD":
+                direction = inDirection;
+                node = inNode;
+                parentNode = inNode;
+            break;
+            case "BEFORE":
+            case "AFTER":
+                direction = inDirection;
+                node = inNode;
+                parentNode = inParentNode;
+            break;
         }
-        return {direction: di, activeNode: no, parentNode: pno}
+
+        return {direction: direction, activeNode: node, parentNode: parentNode}
     };
 
     /**
@@ -64,7 +72,7 @@ class AddNodeForm extends AbstractReactComponent {
      * resp. uloží je do state 'scenarios'
      */
     getDirectionScenarios = (newDirection) => {
-        if(newDirection === '') { // direction is not selected
+        if (newDirection === '') { // direction is not selected
             this.setState({
                 scenarios: undefined
             });
@@ -74,9 +82,9 @@ class AddNodeForm extends AbstractReactComponent {
         this.setState({
             loading: true
         });
-        const {node, selectedSubNodeIndex, versionId} = this.props;
+        const {node, parentNode, versionId} = this.props;
         // nastavi odpovidajiciho rodice a direction pro dotaz
-        var dataServ = this.formatDataForServer(newDirection, node, selectedSubNodeIndex)
+        var dataServ = this.formatDataForServer(newDirection, node, parentNode)
         // ajax dotaz na scenare
         WebApi.getNodeAddScenarios(dataServ.activeNode, versionId, dataServ.direction).then(
             (result) => { // resolved
@@ -132,13 +140,24 @@ class AddNodeForm extends AbstractReactComponent {
      */
     handleFormSubmit = (e) => {
         e.preventDefault();
-        const {node, selectedSubNodeIndex, versionId, initDirection, handlePostSubmitActions} = this.props;
-        var selDi = this.state.selectedDirection;
-        var selScn = this.state.selectedScenario;
+
+        const {onSubmit, node, parentNode, versionId, initDirection} = this.props;
+        const {selectedDirection, selectedScenario} = this.state;
+
         // nastavi odpovidajiciho rodice a direction pro dotaz
-        var dataServ = this.formatDataForServer(selDi, node, selectedSubNodeIndex);
-        this.dispatch(addNode(dataServ.activeNode, dataServ.parentNode, this.props.versionId, dataServ.direction, this.getDescItemTypeCopyIds(), selScn));
-        handlePostSubmitActions();
+        const dataServ = this.formatDataForServer(selectedDirection, node, parentNode);
+
+        // Data pro poslání do on submit - obsahují všechny informace pro založení
+        const submitData = {
+            indexNode: dataServ.activeNode,
+            parentNode: dataServ.parentNode,
+            versionId: versionId,
+            direction: dataServ.direction,
+            descItemCopyTypes: this.getDescItemTypeCopyIds(),
+            scenarioName: selectedScenario
+        };
+
+        onSubmit(submitData);
     };
 
     componentWillMount() {
@@ -147,9 +166,9 @@ class AddNodeForm extends AbstractReactComponent {
     }
 
     render() {
-        const {onClose, node, versionId, initDirection} = this.props;
+        const {allowedDirections, onClose, node, parentNode, versionId, initDirection} = this.props;
         const {scenarios, loading} = this.state;
-        const notRoot = !isFundRootId(node.id);
+        const notRoot = !isFundRootId(parentNode.id);
 
         var scnRadios= [];
         if(!loading) {
@@ -164,17 +183,22 @@ class AddNodeForm extends AbstractReactComponent {
             scnRadios.push(<div>{i18n('arr.fund.addNode.noDirection')}</div>);
         }
 
+        // Položky v select na směr
+        const allowedDirectionsMap = getSetFromIdsList(allowedDirections);
+        const canDirections = [];
+        if (isFundRootId(parentNode.id)) {
+            allowedDirectionsMap["CHILD"] && canDirections.push("CHILD");
+        } else {
+            ['BEFORE', 'AFTER', 'CHILD', 'ATEND'].forEach(d => {
+                allowedDirectionsMap[d] && canDirections.push(d);
+            });
+        }
+        const options = canDirections.map(d => <option value={d} key={d}>{i18n(`arr.fund.addNode.${d.toLowerCase()}`)}</option>)
+
         return <Form onSubmit={this.handleFormSubmit}>
             <Modal.Body>
                 <FormInput ref="selsel" componentClass='select' disabled={loading} label={i18n('arr.fund.addNode.direction')} defaultValue={initDirection} onChange={this.handleDirectionChange}>
-                    {notRoot && [
-                        <option value='BEFORE' key='BEFORE'>{i18n('arr.fund.addNode.before')}</option>,
-                        <option value='AFTER' key='AFTER'>{i18n('arr.fund.addNode.after')}</option>
-                    ]}
-                    <option value='CHILD' key='CHILD'>{i18n('arr.fund.addNode.child')}</option>
-                    {notRoot && [
-                        <option value='ATEND' key='ATEND'>{i18n('arr.fund.addNode.atEnd')}</option>
-                    ]}
+                    {options}
                 </FormInput>
                 <FormGroup>
                     <ControlLabel>{i18n('arr.fund.addNode.scenario')}</ControlLabel>

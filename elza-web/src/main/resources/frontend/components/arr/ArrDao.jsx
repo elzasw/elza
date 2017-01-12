@@ -2,7 +2,7 @@ require ('./ArrDao.less');
 
 import React from "react";
 import {connect} from "react-redux";
-import {FormInput, Icon, AbstractReactComponent, i18n, ListBox} from "components/index.jsx";
+import {NoFocusButton, FormInput, Icon, AbstractReactComponent, i18n, ListBox} from "components/index.jsx";
 import {indexById} from "stores/app/utils.jsx";
 import {Form, Button} from "react-bootstrap";
 import {dateToString} from "components/Utils.jsx";
@@ -10,6 +10,9 @@ import {userDetailsSaveSettings} from "actions/user/userDetail.jsx";
 import {fundChangeReadMode} from "actions/arr/fund.jsx";
 import {setSettings, getOneSettings} from "components/arr/ArrUtils.jsx";
 import {humanFileSize} from "components/Utils.jsx";
+import ArrRequestForm from "./ArrRequestForm";
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {WebApi} from 'actions/index.jsx';
 
 var classNames = require('classnames');
 
@@ -25,6 +28,7 @@ class ArrDao extends AbstractReactComponent {
     static PropTypes = {
         dao: React.PropTypes.object.isRequired,
         fund: React.PropTypes.object.isRequired,
+        onUnlink: React.PropTypes.func.isRequired,
     };
 
     componentDidMount() {
@@ -46,7 +50,7 @@ class ArrDao extends AbstractReactComponent {
     }
 
     renderFileDetail = (item) => {
-        return <Form inline className="dao-files-detail">
+        return <div className="dao-files-detail"><Form inline>
             {item.mimetype && <div><FormInput type="static" label={i18n("arr.daos.files.title.mimeType") + ":"}>{item.mimetype}</FormInput></div>}
             {item.size && <div><FormInput type="static" label={i18n("arr.daos.files.title.size") + ":"}>{humanFileSize(item.size)}</FormInput></div>}
             {item.duration && <div><FormInput type="static" label={i18n("arr.daos.files.title.duration") + ":"}>{item.duration}</FormInput></div>}
@@ -59,7 +63,30 @@ class ArrDao extends AbstractReactComponent {
                 </div>
             }
             {item.url && <div><FormInput type="static" label={i18n("arr.daos.files.title.url") + ":"}><a target="_blank" href={item.url}>{item.url}</a></FormInput></div>}
-        </Form>
+        </Form></div>
+    };
+
+    handleUnlink = () => {
+        const {onUnlink} = this.props;
+        if (confirm(i18n("arr.daos.unlink.confirm"))) {
+            onUnlink();
+        }
+    };
+
+    handleTrash = () => {
+        const {fund, dao} = this.props;
+
+        const form = <ArrRequestForm
+            fundVersionId={fund.versionId}
+            type="DAO"
+            onSubmitForm={(send, data) => {
+                WebApi.arrDaoRequestAddDaos(fund.versionId, data.digitizationRequestId, send, data.description, [dao.id], 'DESTRUCTION' /* TODO: nebo TRANSFER */)
+                    .then(() => {
+                        this.dispatch(modalDialogHide());
+                    });
+            }}
+        />;
+        this.dispatch(modalDialogShow(this, i18n('arr.request.dao.form.title'), form));
     };
 
     render() {
@@ -95,21 +122,28 @@ class ArrDao extends AbstractReactComponent {
         }
 
         return (
-                <div className="dao-container">
-                    <div className="dao-detail">
-                        <div className="title"><i>Digitalizát</i>: {dao.label}</div>
-                        <div className="info">
-                            <span>ID: {dao.code}</span><br />
-                            {dao.url && <span>Url: <a target="_blank" href={dao.url}>{dao.url}</a></span>}
-                        </div>
-                    </div>
-                    <div className="dao-files">
-                        <select size="2" className='dao-files-list' onChange={(e) => { this.handleSelect(filesMap[e.target.value]) }}>
-                            {options}
-                        </select>
-                        {selectedFile !== null && this.renderFileDetail(selectedFile)}
+            <div className="dao-container">
+                <div className="dao-detail">
+                    <div className="title"><i>Digitalizát</i>: {dao.label}</div>
+                    <NoFocusButton disabled={!dao.daoLink} onClick={this.handleUnlink}><Icon glyph='fa-unlink'/></NoFocusButton>
+                    <NoFocusButton onClick={this.handleTrash}><Icon glyph='fa-trash'/></NoFocusButton>
+                    <div className="info">
+                        <Form inline>
+                            <div><FormInput type="static" label={i18n("arr.daos.title.code") + ":"}>{dao.code}</FormInput></div>
+                            {dao.url && <div><FormInput type="static" label={i18n("arr.daos.title.url") + ":"}><a target="_blank" href={dao.url}>{dao.url}</a></FormInput></div>}
+                            {dao.daoLink && <div><FormInput type="static" label={i18n("arr.daos.title.node") + ":"}>{dao.daoLink.treeNodeClient.accordionLeft ? dao.daoLink.treeNodeClient.accordionLeft : i18n('accordion.title.left.name.undefined', dao.daoLink.treeNodeClient.id)}</FormInput></div>}
+                        </Form>
                     </div>
                 </div>
+                <div className="dao-files">
+                    <div className='dao-files-list'>
+                        <select size="2" onChange={(e) => { this.handleSelect(filesMap[e.target.value]) }}>
+                            {options}
+                        </select>
+                    </div>
+                    {selectedFile !== null && this.renderFileDetail(selectedFile)}
+                </div>
+            </div>
         );
     }
 }

@@ -64,7 +64,9 @@ export function fundInitState(fundWithVersion) {
         daoPackageList: SimpleListReducer(),   // seznam všech balíčků pro daný AS
         daoUnassignedPackageList: SimpleListReducer(),   // seznam nepřiřazených balíčků pro daný AS
         daoPackageDetail: DetailReducer(), // detail vybraného balíčků
-        daoList: SimpleListReducer(), // seznam DAO buď pro node nebo balíček
+        nodeDaoList: SimpleListReducer(), // seznam DAO pro node
+        nodeDaoListAssign: SimpleListReducer(), // seznam DAO pro node sloužící pro node, které jsou sekundární, např. pro přiřazení atp.
+        packageDaoList: SimpleListReducer(), // seznam DAO pro balíček
         reducer: fund,
     };
 
@@ -231,7 +233,9 @@ export function fund(state, action) {
                 daoPackageList: SimpleListReducer(),
                 daoUnassignedPackageList: SimpleListReducer(),
                 daoPackageDetail: DetailReducer(),
-                daoList: SimpleListReducer(),
+                nodeDaoList: SimpleListReducer(),
+                nodeDaoListAssign: SimpleListReducer(),
+                packageDaoList: SimpleListReducer(),
                 reducer: fund,
             }
         case types.STORE_SAVE:

@@ -459,11 +459,12 @@ class WebApi {
         return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/daopackages/' + versionId, { search, unassigned });
     }
 
-    getPackageDaos(versionId, daoPackageId, detail = false, from = 0, max = 10000) {
+    getPackageDaos(versionId, daoPackageId, unassigned, detail = false, from = 0, max = 10000) {
         return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/daos/' + versionId + "/" + daoPackageId, {
             detail,
             index: from,
             maxResults: max,
+            unassigned
         });
     }
 
@@ -564,17 +565,33 @@ class WebApi {
         return getData({}, 100);
     }
 
-    getDigitizationRequests(versionId, state) {
-        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/requests/' + versionId, { state });
+    findRequests(versionId, type, state, description, fromDate, toDate) {
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/requests/' + versionId, {
+            state,
+            type,
+            description,
+            fromDate,
+            toDate
+        });
     }
 
-    arrRequestAddNodes(versionId, reqId, send, description, nodeIds) {
+    arrDigitizationRequestAddNodes(versionId, reqId, send, description, nodeIds) {
         const data = {
             id: reqId,
             nodeIds,
             description
         };
         return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/requests/' + versionId + '/digitization/add', { send } , data);
+    }
+
+    arrDaoRequestAddDaos(versionId, reqId, send, description, daoIds, type) {
+        const data = {
+            id: reqId,
+            daoIds,
+            description,
+            type
+        };
+        return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/requests/' + versionId + '/dao/add', { send } , data);
     }
 
     arrRequestRemoveNodes(versionId, reqId, nodeIds) {
@@ -591,10 +608,6 @@ class WebApi {
 
     removeArrRequestQueueItem(id) {
         return AjaxUtils.ajaxDelete(WebApi.arrangementUrl + '/requests/' + id);
-    }
-
-    getArrRequests(versionId, type, description) {
-        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/requests/' + versionId, {type, description});
     }
 
     getArrRequest(versionId, id) {
@@ -691,6 +704,14 @@ class WebApi {
 
     deletePackage(code) {
         return AjaxUtils.ajaxGet(WebApi.ruleUrl + '/deletePackage/' + code);
+    }
+
+    createDaoLink(versionId, daoId, nodeId) {
+        return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/daos/' + versionId + "/" + daoId + "/" + nodeId + "/create", null, null);
+    }
+
+    deleteDaoLink(versionId, daoLinkId) {
+        return AjaxUtils.ajaxDelete(WebApi.arrangementUrl + '/daolinks/' + versionId + "/" + daoLinkId, null, null);
     }
 
     importPackage(data) {

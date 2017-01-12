@@ -2,7 +2,8 @@ import React from 'react';
 
 import {EmailSettingsActions, ApplicationActions} from 'actions/index.jsx';
 import {webSocketConnect, webSocketDisconnect} from 'actions/global/webSocket.jsx';
-import * as digitizationActions from 'actions/arr/digitizationActions';
+import * as arrRequestActions from 'actions/arr/arrRequestActions';
+import * as daoActions from 'actions/arr/daoActions';
 import {store} from 'stores/AppStore.jsx';
 import {addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
 import {i18n} from 'components'
@@ -229,6 +230,10 @@ function processEvents(values) {
 
         switch (value.eventType) {
 
+            case 'DAO_LINK_CREATE':
+            case 'DAO_LINK_DELETE':
+                daoLink(value);
+                break;
             case 'REQUEST_CHANGE':
                 arrRequest(value);
                 break;
@@ -509,11 +514,19 @@ function conformityInfo(value) {
 }
 
 /**
+ * Změna připojení digitalizátů k JP.
+ * @param value objekt
+ */
+function daoLink(value) {
+    store.dispatch(daoActions.changeAllDaos());
+}
+
+/**
  * Změna požadavků arr request.
  * @param value objekt
  */
 function arrRequest(value) {
-    store.dispatch(digitizationActions.changeRequests(value.versionId, value.entityId, value.nodeIds));
+    store.dispatch(arrRequestActions.changeRequests(value.versionId, value.entityId, value.nodeIds));
     store.dispatch(changeNodeRequests(value.versionId, value.nodeIds));
 }
 

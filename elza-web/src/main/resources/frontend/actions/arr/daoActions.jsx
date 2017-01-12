@@ -4,10 +4,31 @@ import * as SimpleListActions from "shared/list/simple/SimpleListActions";
 import * as DetailActions from "shared/detail/DetailActions";
 import {WebApi} from 'actions/index.jsx';
 
-const AREA_DAO_PACKAGE_LIST_SUFFIX = ".daoPackageList";
+const AREA_PACKAGE_LIST_SUFFIX = ".daoPackageList";
 const AREA_DAO_UNASSIGNED_PACKAGE_LIST_SUFFIX = ".daoUnassignedPackageList";
 const AREA_DAO_PACKAGE_DETAIL_SUFFIX = ".daoPackageDetail";
-const AREA_DAO_LIST_SUFFIX = ".daoList";
+const AREA_DAO_NODE_LIST_SUFFIX = ".nodeDaoList";
+const AREA_DAO_NODE_LIST_ASSIGN_SUFFIX = ".nodeDaoListAssign";
+const AREA_DAO_PACKAGE_LIST_SUFFIX = ".packageDaoList";
+
+/**
+ * Funkce na refresh všech seznamů DAO.
+ */
+export function changeAllDaos() {
+    return (dispatch, getState) => {
+        var state = getState();
+        const funds = state.arrRegion.funds;
+        funds.forEach(fund => {
+            const versionId = fund.versionId;
+            dispatch(SimpleListActions.invalidate("fund[" + versionId + "]" + AREA_PACKAGE_LIST_SUFFIX));
+            dispatch(SimpleListActions.invalidate("fund[" + versionId + "]" + AREA_DAO_UNASSIGNED_PACKAGE_LIST_SUFFIX));
+            dispatch(DetailActions.invalidate("fund[" + versionId + "]" + AREA_DAO_PACKAGE_DETAIL_SUFFIX));
+            dispatch(SimpleListActions.invalidate("fund[" + versionId + "]" + AREA_DAO_NODE_LIST_SUFFIX));
+            dispatch(SimpleListActions.invalidate("fund[" + versionId + "]" + AREA_DAO_NODE_LIST_ASSIGN_SUFFIX));
+            dispatch(SimpleListActions.invalidate("fund[" + versionId + "]" + AREA_DAO_PACKAGE_LIST_SUFFIX));
+        });
+    }
+}
 
 /**
  * Načtení DAO pro node.
@@ -15,7 +36,19 @@ const AREA_DAO_LIST_SUFFIX = ".daoList";
  * @param nodeId id node
  */
 export function fetchNodeDaoListIfNeeded(versionId, nodeId) {
-    return SimpleListActions.fetchIfNeeded("fund[" + versionId + "]" + AREA_DAO_LIST_SUFFIX, {versionId, nodeId}, (parent, filter) => {
+    return SimpleListActions.fetchIfNeeded("fund[" + versionId + "]" + AREA_DAO_NODE_LIST_SUFFIX, {versionId, nodeId}, (parent, filter) => {
+        return WebApi.getFundNodeDaos(versionId, nodeId, true)
+            .then(json => ({rows: json, count: 0}));
+    });
+}
+
+/**
+ * Načtení DAO pro node - alternativní.
+ * @param versionId verze AS
+ * @param nodeId id node
+ */
+export function fetchNodeDaoListAssignIfNeeded(versionId, nodeId) {
+    return SimpleListActions.fetchIfNeeded("fund[" + versionId + "]" + AREA_DAO_NODE_LIST_ASSIGN_SUFFIX, {versionId, nodeId}, (parent, filter) => {
         return WebApi.getFundNodeDaos(versionId, nodeId, true)
             .then(json => ({rows: json, count: 0}));
     });
@@ -25,10 +58,11 @@ export function fetchNodeDaoListIfNeeded(versionId, nodeId) {
  * Načtení DAO pro package.
  * @param versionId verze AS
  * @param nodeId id node
+ * @param unassigned mají se vracet pouze nepřiřazené (true) nebo všechny (false)
  */
-export function fetchDaoPackageDaoListIfNeeded(versionId, daoPackageId) {
-    return SimpleListActions.fetchIfNeeded("fund[" + versionId + "]" + AREA_DAO_LIST_SUFFIX, {versionId, daoPackageId}, (parent, filter) => {
-        return WebApi.getPackageDaos(versionId, daoPackageId, true)
+export function fetchDaoPackageDaoListIfNeeded(versionId, daoPackageId, unassigned) {
+    return SimpleListActions.fetchIfNeeded("fund[" + versionId + "]" + AREA_DAO_PACKAGE_LIST_SUFFIX, {versionId, daoPackageId, unassigned}, (parent, filter) => {
+        return WebApi.getPackageDaos(versionId, daoPackageId, unassigned, true)
             .then(json => ({rows: json, count: 0}));
     });
 }
@@ -38,7 +72,7 @@ export function fetchDaoPackageDaoListIfNeeded(versionId, daoPackageId) {
  * @param versionId verze AS
  */
 export function fetchDaoPackageListIfNeeded(versionId) {
-    return SimpleListActions.fetchIfNeeded("fund[" + versionId + "]" + AREA_DAO_PACKAGE_LIST_SUFFIX, versionId, (parent, filter) => {
+    return SimpleListActions.fetchIfNeeded("fund[" + versionId + "]" + AREA_PACKAGE_LIST_SUFFIX, versionId, (parent, filter) => {
         return WebApi.findDaoPackages(versionId, filter.fulltext, false)
             .then(json => ({rows: json, count: 0}));
     });
@@ -50,7 +84,7 @@ export function fetchDaoPackageListIfNeeded(versionId) {
  * @param filter filtr
  */
 export function filterDaoPackageList(versionId, filter) {
-    return SimpleListActions.filter("fund[" + versionId + "]" + AREA_DAO_PACKAGE_LIST_SUFFIX, filter);
+    return SimpleListActions.filter("fund[" + versionId + "]" + AREA_PACKAGE_LIST_SUFFIX, filter);
 }
 
 /**

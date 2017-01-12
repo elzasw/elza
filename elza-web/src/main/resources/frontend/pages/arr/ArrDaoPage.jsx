@@ -13,10 +13,11 @@ import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {FundSettingsForm, Tabs, Icon, Search, Ribbon, i18n, FundTreeDaos, ArrFundPanel, ArrDaos} from 'components/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
-import {getNodeParents, getNodeParent} from 'components/arr/ArrUtils.jsx'
+import {createFundRoot, getParentNode} from 'components/arr/ArrUtils.jsx'
 import {moveNodesUnder, moveNodesBefore, moveNodesAfter} from 'actions/arr/nodes.jsx'
-
+import {addNodeForm} from "actions/arr/addNodeForm.jsx"
 import ArrParentPage from "./ArrParentPage.jsx";
+import {fundTreeSelectNode} from 'actions/arr/fundTree.jsx'
 
 import {
     BulkActionsDialog,
@@ -49,7 +50,6 @@ import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {fundNodesPolicyFetchIfNeeded} from 'actions/arr/fundNodesPolicy.jsx'
 import {fundActionFormChange, fundActionFormShow} from 'actions/arr/fundAction.jsx'
 import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
-import {createFundRoot} from 'components/arr/ArrUtils.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {fundTreeFetchIfNeeded} from 'actions/arr/fundTree.jsx'
@@ -69,10 +69,14 @@ class ArrDaoPage extends ArrParentPage {
     constructor(props) {
         super(props, "dao-page");
 
-        this.state = {
-            selectedTab: 0
-        }
     }
+
+    state = {
+        selectedTab: 0,
+        selectedUnassignedPackage: null,
+        selectedPackage: null,
+        selectedDaoLeft: null,  // vybrané dao v levé části
+    };
 
     static PropTypes = {
         splitter: React.PropTypes.object.isRequired,
@@ -85,14 +89,12 @@ class ArrDaoPage extends ArrParentPage {
         focus: React.PropTypes.object.isRequired,
         userDetail: React.PropTypes.object.isRequired,
         ruleSet: React.PropTypes.object.isRequired,
-    }
+    };
 
     componentDidMount() {
-        super.componentDidMount();
     }
 
     componentWillReceiveProps(nextProps) {
-        super.componentWillReceiveProps(nextProps);
     }
 
     getDestNode() {
@@ -109,17 +111,46 @@ class ArrDaoPage extends ArrParentPage {
         super.handleShortcuts(action);
     }
 
-    handleCreateUnder = () => {
+    handleCreateUnderAndLink = () => {
+        const fund = this.getActiveFund(this.props);
+        const node = this.getDestNode();
+        const {selectedDaoLeft} = this.state;
+
+        let parentNode = getParentNode(node, fund.fundTreeDaosRight.nodes);
+        if (parentNode == null) {   // root
+            parentNode = createFundRoot(fund);
+        }
+
+        const afterCreateCallback = (versionId, node, parentNode) => {
+            // Připojení - link
+            WebApi.createDaoLink(fund.versionId, selectedDaoLeft.id, node.id);
+
+            // Výběr node ve stromu
+            this.props.dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_DAOS_RIGHT, fund.versionId, node.id, false, false, null, true));
+        };
+
+        this.props.dispatch(addNodeForm(
+            "CHILD",
+            node,
+            parentNode,
+            fund.versionId,
+            afterCreateCallback,
+            ["CHILD"]
+        ));
         console.log("handleCreateUnder");
     };
 
-    handlePinned = () => {
-        console.log("handlePinned");
+    handleLink = () => {
+        const fund = this.getActiveFund(this.props);
+        const {selectedDaoLeft} = this.state;
+
+        WebApi.createDaoLink(fund.versionId, selectedDaoLeft.id, fund.fundTreeDaosRight.selectedId);
     };
 
     handleTabSelect = (item) => {
         this.setState({
-            selectedTab: item.id
+            selectedTab: item.id,
+            selectedDaoLeft: null,
         });
     };
 
@@ -130,16 +161,16 @@ class ArrDaoPage extends ArrParentPage {
     buildRibbon = (readMode, closed) => {
         const activeFund = this.getActiveFund(this.props);
 
-        var altActions = [];
+        let altActions = [];
 
-        var itemActions = [];
+        let itemActions = [];
 
-        var altSection;
+        let altSection;
         if (altActions.length > 0) {
             altSection = <RibbonGroup key="alt" className="small">{altActions}</RibbonGroup>
         }
 
-        var itemSection;
+        let itemSection;
         if (itemActions.length > 0) {
             itemSection = <RibbonGroup key="item" className="small">{itemActions}</RibbonGroup>
         }
@@ -147,51 +178,78 @@ class ArrDaoPage extends ArrParentPage {
         return (
             <Ribbon arr subMenu fundId={activeFund ? activeFund.id : null} altSection={altSection} itemSection={itemSection}/>
         )
-    }
+    };
 
     hasPageShowRights = (userDetail, activeFund) => {
         return userDetail.hasArrPage(activeFund ? activeFund.id : null);
     };
 
+    handleSelectPackage = (pkg, unassigned) => {
+        const fund = this.getActiveFund(this.props);
+
+        if (unassigned) {
+            this.setState({selectedUnassignedPackage: pkg});
+        } else {
+            this.setState({selectedPackage: pkg});
+        }
+    };
+
+    _renderPackages = (unassigned, selectedPackage) => {
+        const fund = this.getActiveFund(this.props);
+
+        return <div className="packages-container" key={"daoPackages-" + unassigned}>
+            <ArrDaoPackages
+                unassigned={unassigned}
+                onSelect={(item) => this.handleSelectPackage(item, unassigned)}
+            />
+            {selectedPackage && <ArrDaos
+                type="PACKAGE"
+                unassigned={unassigned}
+                fund={fund}
+                daoPackageId={selectedPackage.id}
+                onSelect={item => { this.setState({selectedDaoLeft: item}) }}
+            />}
+        </div>
+    };
+
     renderUnassignedPackages = () => {
-        return <ArrDaoPackages
-            unassigned={true}
-        />
+        const {selectedUnassignedPackage} = this.state;
+
+        return this._renderPackages(true, selectedUnassignedPackage);
     };
 
     renderPackages = () => {
-        return <ArrDaoPackages
-            unassigned={false}
-        />
+        const {selectedPackage} = this.state;
+
+        return this._renderPackages(false, selectedPackage);
     };
 
     renderLeftTree = () => {
         const fund = this.getActiveFund(this.props);
 
-        return <FundTreeDaos
-            fund={fund}
-            versionId={fund.versionId}
-            area={types.FUND_TREE_AREA_DAOS_LEFT}
-            {...fund.fundTreeDaosLeft}
-        />;
-    };
-
-    handleRightNodeSelect = (node) => {
-        this.setState({nodeRight: node});
+        return <div className="tree-left-container">
+            <FundTreeDaos
+                fund={fund}
+                versionId={fund.versionId}
+                area={types.FUND_TREE_AREA_DAOS_LEFT}
+                {...fund.fundTreeDaosLeft}
+            />
+            {fund.fundTreeDaosLeft.selectedId !== null && <ArrDaos
+                type="NODE"
+                unassigned={false}
+                fund={fund}
+                nodeId={fund.fundTreeDaosLeft.selectedId}
+                onSelect={item => { this.setState({selectedDaoLeft: item}) }}
+            />}
+        </div>
     };
 
     renderCenterPanel = (readMode, closed) => {
-        const {userDetail} = this.props;
-        const {selectedTab} = this.state;
+        const {selectedDaoLeft, selectedTab} = this.state;
         const fund = this.getActiveFund(this.props);
 
         let rightHasSelection = fund.fundTreeDaosRight.selectedId != null;
         let active = rightHasSelection && !readMode && !fund.closed;
-        let node = this.getDestNode();
-        let classRight = "tree-right-container";
-        if (!rightHasSelection) {
-            classRight += " daos-hide";
-        }
 
         let tabs = [];
         tabs.push({
@@ -228,30 +286,40 @@ class ArrDaoPage extends ArrParentPage {
                 break;
         }
 
+        let canLink;
+        if (selectedDaoLeft && fund.fundTreeDaosRight.selectedId !== null) {
+            canLink = true;
+        }
+
         return (
             <div className="daos-content-container">
-                <div key={1} className='tree-left-container'>
+                <div key={1} className='left-container'>
                     <Tabs.Container ref='tabs' className='daos-tabs-container'>
                         <Tabs.Tabs items={tabs} activeItem={{id: selectedTab}} onSelect={this.handleTabSelect} />
                         <Tabs.Content>
                             {content}
                         </Tabs.Content>
                     </Tabs.Container>
-
-                    {false && <ArrDaos />}
                 </div>
-                <div key={2} className='tree-actions-container'>
-                    <Button onClick={this.handlePinned} disabled={!active}><Icon glyph="fa-thumb-tack"/><div>{i18n('arr.daos.pinned')}</div></Button>
-                    <Button onClick={this.handleCreateUnder} disabled={!active}><Icon glyph="ez-move-under"/><div>{i18n('arr.daos.create.under')}</div></Button>
+                <div key={2} className='actions-container'>
+                    <Button onClick={this.handleLink} disabled={!canLink}><Icon glyph="fa-thumb-tack"/><div>{i18n('arr.daos.link')}</div></Button>
+                    <Button onClick={this.handleCreateUnderAndLink} disabled={!canLink}><Icon glyph="ez-move-under"/><div>{i18n('arr.daos.createUnderAndLink')}</div></Button>
                 </div>
-                <div key={3} className={classRight}>
-                    <FundTreeDaos
-                        fund={fund}
-                        versionId={fund.versionId}
-                        area={types.FUND_TREE_AREA_DAOS_RIGHT}
-                        {...fund.fundTreeDaosRight}
-                    />
-                    {rightHasSelection && <ArrDaos node={node} versionId={fund.versionId} />}
+                <div key={3} className={"right-container"}>
+                    <div className="tree-right-container">
+                        <FundTreeDaos
+                            fund={fund}
+                            versionId={fund.versionId}
+                            area={types.FUND_TREE_AREA_DAOS_RIGHT}
+                            {...fund.fundTreeDaosRight}
+                        />
+                        {fund.fundTreeDaosRight.selectedId !== null && <ArrDaos
+                            type="NODE_ASSIGN"
+                            unassigned={false}
+                            fund={fund}
+                            nodeId={fund.fundTreeDaosRight.selectedId}
+                        />}
+                    </div>
                 </div>
             </div>
         )

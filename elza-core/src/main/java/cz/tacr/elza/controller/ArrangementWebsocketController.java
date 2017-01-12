@@ -26,6 +26,8 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -104,7 +106,7 @@ public class ArrangementWebsocketController {
         descItemResult.setParent(factoryVo.createArrNode(descItemUpdated.getNode()));
 
         // Odeslání dat zpět
-        websocketCallback.send(descItemResult, headerAccessor);
+        sendAfterCommit(descItemResult, headerAccessor);
     }
 
     /**
@@ -146,7 +148,22 @@ public class ArrangementWebsocketController {
         final ArrangementController.NodeWithParent result = new ArrangementController.NodeWithParent(factoryVo.createArrNode(newLevel.getNode()), nodeClients.iterator().next());
 
         // Odeslání dat zpět
-        websocketCallback.send(result, headerAccessor);
+        sendAfterCommit(result, headerAccessor);
+    }
+
+    /**
+     * Poslání dat zpět až po provedení commitu transakce.
+     * @param resultData data pro poslání
+     * @param headerAccessor geader sccessor
+     */
+    private void sendAfterCommit(final Object resultData, final SimpMessageHeaderAccessor headerAccessor) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                // Odeslání dat zpět
+                websocketCallback.send(resultData, headerAccessor);
+            }
+        });
     }
 
     /**
@@ -179,7 +196,7 @@ public class ArrangementWebsocketController {
         final ArrangementController.NodeWithParent result = new ArrangementController.NodeWithParent(factoryVo.createArrNode(deleteLevel.getNode()), nodeClients.iterator().next());
 
         // Odeslání dat zpět
-        websocketCallback.send(result, headerAccessor);
+        sendAfterCommit(result, headerAccessor);
     }
 
     // Pokus o jiný způsob vracení dat - problém s podíláním receipt id - necháno z důvodu připadného budoucího rozchození

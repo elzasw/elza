@@ -9,6 +9,7 @@ import cz.tacr.elza.domain.SysExternalSystem;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.DigitalRepositoryRepository;
 import cz.tacr.elza.repository.DigitizationFrontdeskRepository;
 import cz.tacr.elza.repository.ExternalSystemRepository;
 import cz.tacr.elza.repository.RegExternalSystemRepository;
@@ -37,6 +38,9 @@ public class ExternalSystemService {
 
     @Autowired
     private DigitizationFrontdeskRepository digitizationFrontdeskRepository;
+
+    @Autowired
+    private DigitalRepositoryRepository digitalRepositoryRepository;
 
     @Autowired
     private IEventNotificationService eventNotificationService;
@@ -170,4 +174,12 @@ public class ExternalSystemService {
         eventNotificationService.publishEvent(new ActionEvent(EventType.EXTERNAL_SYSTEM_CHANGE));
     }
 
+    /**
+     * Vyhledá všechny externí systémy typu - Uložiště digitalizátů.
+     *
+     * @return seznam uložišť digitalizátů
+     */
+    public List<ArrDigitalRepository> findDigitalRepository() {
+        return digitalRepositoryRepository.findAll();
+    }
 }
