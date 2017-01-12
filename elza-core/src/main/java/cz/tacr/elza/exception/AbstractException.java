@@ -53,7 +53,7 @@ public abstract class AbstractException extends RuntimeException {
     }
 
     @Override
-    public String getMessage() {
+    public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(errorCode.getType()).append(":").append(errorCode.getCode());
         if (properties != null) {

@@ -33,5 +33,15 @@ public enum DigitizationCode implements ErrorCode {
      */
     UNWANTED_REQUEST_TYPE,
 
+    /**
+     * Není vyplněn povinný externí identifikátor
+     */
+    NOT_FILLED_EXTERNAL_IDENTIRIER,
+
+    /**
+     * DAO má navázané aktivní requesty na externí systém
+     */
+    DAO_HAS_REQUEST,
+
 
 }

@@ -10,6 +10,7 @@ export function addToastr(title, message = null, style = "info", size = "lg", ti
     return {
         type: types.TOASTR_ADD,
         title,
+        extended: false,
         message,
         style,
         size,
@@ -17,6 +18,21 @@ export function addToastr(title, message = null, style = "info", size = "lg", ti
         visible: true
     }
 }
+
+export function addToastrExtended(title, messageComponent, messageComponentProps, style = "info", size = "lg", time = null) {
+    return {
+        type: types.TOASTR_ADD,
+        title,
+        extended: true,
+        messageComponent,
+        messageComponentProps,
+        style,
+        size,
+        time,
+        visible: true
+    }
+}
+
 export function addToastrDanger(title, message = null, size = "lg") {
     return addToastr(title, message, "danger", size, null);
 }
