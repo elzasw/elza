@@ -10,10 +10,11 @@
  * @since 19.10.2016
  */
 import React from 'react';
-import {i18n, Toastr, LongText} from 'components/index.jsx';
+import {i18n, Toastr, LongText, Exception} from 'components/index.jsx';
 import {lenToBytesStr, roughSizeOfObject} from 'components/Utils.jsx';
 import {store} from '../stores/AppStore.jsx';
-import {addToastrDanger, addToastrWarning, addToastrInfo} from 'components/shared/toastr/ToastrActions.jsx'
+import {addToastrDanger, addToastrWarning, addToastrInfo, addToastr} from 'components/shared/toastr/ToastrActions.jsx'
+import {createException} from 'components/ExceptionUtils.jsx';
 
 
 // Nastavení úrovně logování
@@ -39,88 +40,6 @@ function requestCounter(method, url, data) {
 }
 
 /**
- * Sestavení toastru.
- *
- * @param result data pro zobrazení toastru.
- */
-function createMessage(result) {
-    const messages = [];
-
-    let toaster;
-
-    if (result.type == 'BaseCode' && result.code == 'INSUFFICIENT_PERMISSIONS') {
-        messages.push(<small><b>{i18n('global.exception.permission.need')}:</b> {result.properties && result.properties.permission && result.properties.permission.map((item)=>i18n('permission.' + item)).join(", ")}</small>);
-        toaster = addToastrDanger(i18n('global.exception.permission.denied'), messages);
-    }
-
-    if (result.type == 'BaseCode' && result.code == 'OPTIMISTIC_LOCKING_ERROR') {
-        if (result.properties && result.properties.message) {
-            messages.push(<p><LongText text={result.properties.message}/></p>);
-        }
-        toaster = addToastrDanger(i18n('global.exception.optimistic.locking'), messages);
-    }
-
-    if (result.type == 'ArrangementCode' && result.code == 'PACKET_DELETE_ERROR') {
-        if (result.properties && result.properties.packets) {
-            messages.push(<p><LongText text={i18n('arr.exception.delete.packets', result.properties.packets.map((item)=>item).join(", "))}/></p>);
-        }
-        toaster = addToastrWarning(i18n('arr.fund.packets.action.delete.problem'), messages);
-    }
-
-    if (result.type == 'ArrangementCode' && result.code == 'VERSION_ALREADY_CLOSED') {
-        toaster = addToastrWarning(i18n('arr.exception.version.already.closed'), messages);
-    }
-
-    if (result.type == 'ArrangementCode' && result.code == 'FUND_NOT_FOUND') {
-        toaster = addToastrDanger(i18n('arr.exception.fund.not.found'), messages);
-    }
-
-    if (result.type == 'ArrangementCode' && result.code == 'FUND_VERSION_NOT_FOUND') {
-        toaster = addToastrDanger(i18n('arr.exception.fund.version.not.found'), messages);
-    }
-
-    if (result.type == 'ArrangementCode' && result.code == 'NODE_NOT_FOUND') {
-        toaster = addToastrWarning(i18n('arr.exception.node.not.found'), messages);
-    }
-
-    if (result.type == 'ArrangementCode' && result.code == 'VERSION_CANNOT_CLOSE_ACTION') {
-        toaster = addToastrInfo(i18n('arr.exception.version.cannot.close.action'), messages);
-    }
-
-    if (result.type == 'ArrangementCode' && result.code == 'VERSION_CANNOT_CLOSE_VALIDATION') {
-        toaster = addToastrInfo(i18n('arr.exception.version.cannot.close.validation'), messages);
-    }
-
-    if (result.type == 'ArrangementCode' && result.code == 'EXISTS_NEWER_CHANGE') {
-        toaster = addToastrWarning(i18n('arr.exception.exists.newer.change'), messages);
-    }
-
-    if (result.type == 'ArrangementCode' && result.code == 'EXISTS_BLOCKING_CHANGE') {
-        toaster = addToastrWarning(i18n('arr.exception.exists.blocking.change'), messages);
-    }
-
-    if (result.type == 'ArrangementCode' && result.code == 'ALREADY_ADDED') {
-        toaster = addToastrWarning(i18n('arr.exception.already.added'), messages);
-    }
-
-    if (result.type == 'ArrangementCode' && result.code == 'ALREADY_REMOVED') {
-        toaster = addToastrWarning(i18n('arr.exception.already.removed'), messages);
-    }
-
-    if (result.type == 'ArrangementCode' && result.code == 'ILLEGAL_COUNT_EXTERNAL_SYSTEM') {
-        toaster = addToastrWarning(i18n('arr.exception.illegal.count.external.system'), messages);
-    }
-
-    if (toaster == null) {
-        if (result.message) {
-            messages.push(<p><LongText text={result.message}/></p>);
-        }
-        toaster = addToastrDanger(i18n('global.exception.undefined'), messages);
-    }
-    store.dispatch(toaster);
-}
-
-/**
  * Vyřešení výjimky.
  *
  * @param status     stav
@@ -138,11 +57,9 @@ function resolveException(status, statusText, data) {
     } else if (status == 400) {
         result = {
             createToaster: true,
-            type: "BAD_REQUEST",
+            type: "BaseCode",
             code: "BAD_REQUEST",
-            // properties: data.properties,
-            message: statusText,
-            devMessage: statusText,
+            message: i18n('global.exception.bad.request.tech'),
             status: status,
             statusText: statusText
         };
@@ -166,7 +83,7 @@ function resolveException(status, statusText, data) {
     }
 
     if (result.createToaster) {
-        createMessage(result);
+        store.dispatch(createException(result));
     }
 
     return result;

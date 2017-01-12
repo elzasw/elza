@@ -21,6 +21,14 @@ var messages = {
 
     "global.title.processAction": "Opravdu chcete provést vybranou akci?",
 
+    "global.exception.detail": "Detail",
+    "global.exception.detail.code": "Kód chyby",
+    "global.exception.detail.message": "Technický popis",
+    "global.exception.detail.stack": "Stack",
+    "global.exception.detail.properties": "Rozšiřující parametry",
+    "global.exception.bad.request": "Neplatný požadavek",
+    "global.exception.bad.request.tech": "Syntaxe požadavku odeslaného na server je chybná",
+
     "global.error.ajax": "Při komunikaci nastala chyba",
     "global.error.ws": "Při komunikaci nastala chyba",
     "global.action.create": "Vytvořit",
@@ -944,6 +952,7 @@ var messages = {
     "arr.request.title.state.ACCEPTED": "přijmuto",
     "arr.request.title.state.REJECTED": "zamítnuto",
     "arr.request.title.nodes": "Seznam jednotek popisu",
+    "arr.request.title.nodes.daosWithoutNode": "Bez JP",
     "arr.request.title.nodesAdded": "JP byly přidány",
     "arr.request.title.type.dao.DESTRUCTION": "Požadavek na skartaci",
     "arr.request.title.type.dao.TRANSFER": "Požadavek na delimitaci",

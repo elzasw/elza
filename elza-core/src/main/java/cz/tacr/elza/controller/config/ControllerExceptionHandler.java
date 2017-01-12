@@ -42,7 +42,6 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseBody
     public ResponseEntity<ExceptionResponse> exception(final Throwable cause) {
         SystemException systemException = new SystemException(cause);
-        systemException.set("message", cause.getMessage());
         logger.warn("ControllerExceptionHandler->exception", systemException);
         return new ResponseEntity<>(new ExceptionResponse(systemException), HttpStatus.INTERNAL_SERVER_ERROR);
     }

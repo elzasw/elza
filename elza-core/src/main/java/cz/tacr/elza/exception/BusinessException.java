@@ -13,4 +13,8 @@ public class BusinessException extends AbstractException {
     public BusinessException(final ErrorCode errorCode) {
         super(errorCode);
     }
+
+    public BusinessException(final String message, final ErrorCode errorCode) {
+        super(message, errorCode);
+    }
 }

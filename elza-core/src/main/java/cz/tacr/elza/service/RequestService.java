@@ -249,14 +249,23 @@ public class RequestService {
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public void changeDigitizationRequest(@NotNull final ArrDigitizationRequest digitizationRequest,
-                                          @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
-                                          @Nullable final String description) {
-        if (!digitizationRequest.getState().equals(ArrRequest.State.OPEN)) {
-            throw new BusinessException(ArrangementCode.REQUEST_INVALID_STATE).set("state", digitizationRequest.getState());
+    public void changeRequest(@NotNull final ArrRequest request,
+                              @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                              @Nullable final String description) {
+        if (!request.getState().equals(ArrRequest.State.OPEN)) {
+            throw new BusinessException(ArrangementCode.REQUEST_INVALID_STATE).set("state", request.getState());
         }
-        digitizationRequest.setDescription(description);
-        sendNotification(fundVersion, digitizationRequest, EventType.REQUEST_CHANGE, null);
+        switch (request.getDiscriminator()) {
+            case DAO:
+                ((ArrDaoRequest)request).setDescription(description);
+                break;
+            case DIGITIZATION:
+                ((ArrDigitizationRequest)request).setDescription(description);
+                break;
+            default:
+                break;
+        }
+        sendNotification(fundVersion, request, EventType.REQUEST_CHANGE, null);
     }
 
     public ArrDigitizationRequest getDigitizationRequest(final Integer id) {
@@ -307,8 +316,13 @@ public class RequestService {
                     requestRepository.delete(request);
                     break;
                 }
+                case DAO: {
+                    daoRequestDaoRepository.deleteByDaoRequest((ArrDaoRequest) request);
+                    requestRepository.delete(request);
+                    break;
+                }
                 default:
-                    throw new IllegalStateException(request.getDiscriminator() != null ? request.getDiscriminator().toString() : "null");
+                    throw new IllegalStateException("Neimplementovaný typ požadavku: " + request.getDiscriminator());
             }
             sendNotification(openVersion, request, EventType.REQUEST_DELETE, null);
         }
