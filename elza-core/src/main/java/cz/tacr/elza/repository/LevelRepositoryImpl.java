@@ -142,7 +142,8 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         query.select(root).where(condition).orderBy(order);
 
         List<ArrLevel> resultList = entityManager.createQuery(query).setFirstResult(0).setMaxResults(1).getResultList();
-        return resultList.isEmpty() ? null : resultList.get(0);
+        final ArrLevel arrLevel = resultList.isEmpty() ? null : resultList.get(0);
+        return arrLevel;
     }
 
     /**

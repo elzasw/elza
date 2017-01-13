@@ -1,14 +1,13 @@
 package cz.tacr.elza.repository;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 
 /**
@@ -63,7 +62,6 @@ public interface LevelRepositoryCustom {
      * @return seznam uzlů s daným nodem (sdílené uzly)
      */
     List<ArrLevel> findByNode(ArrNode node, @Nullable ArrChange change);
-
 
     /**
      * Vrací počet potomků daného uzlu.

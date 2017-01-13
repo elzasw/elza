@@ -1,34 +1,16 @@
 package cz.tacr.elza.service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
+import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.UsrPermission;
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.api.vo.NodeTypeOperation;
-import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.repository.DescItemRepository;
@@ -36,6 +18,25 @@ import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventDeleteNode;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.CompareToBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -461,7 +462,8 @@ public class ArrMoveLevelService {
 
             ArrLevel newNode = createNewLevelVersion(shiftNode, change);
             newNode.setPosition(position++);
-            levelRepository.save(newNode);
+            levelRepository.saveAndFlush(newNode);
+
 
             if (needInsert && afterLevel != null && afterLevel.equals(shiftNode)) {
                 needInsert = false;
@@ -490,7 +492,7 @@ public class ArrMoveLevelService {
             ArrLevel newLevel = createNewLevelVersion(transportLevel, change);
             newLevel.setNodeParent(parentNode);
             newLevel.setPosition(position++);
-            levelRepository.save(newLevel);
+            levelRepository.saveAndFlush(newLevel);
         }
 
         return position;
@@ -692,8 +694,7 @@ public class ArrMoveLevelService {
         newNode.setCreateChange(change);
 
         node.setDeleteChange(change);
-        levelRepository.save(node);
-
+        levelRepository.saveAndFlush(node);
         return newNode;
     }
 
@@ -725,11 +726,22 @@ public class ArrMoveLevelService {
         Assert.notNull(nodesToShift);
         Assert.notNull(change);
 
-        int position = firstPosition;
-        for (ArrLevel node : nodesToShift) {
+        int position = firstPosition + nodesToShift.size() - 1;
+
+        List<ArrLevel> nodesToShiftList = new ArrayList<>(nodesToShift);
+        Collections.sort(nodesToShiftList, new Comparator<ArrLevel>() {
+            @Override
+            public int compare(ArrLevel o1, ArrLevel o2) {
+                return new CompareToBuilder()
+                        .append(o2.getPosition(), o1.getPosition())
+                        .toComparison();
+            }
+        });
+
+        for (ArrLevel node : nodesToShiftList) {
             ArrLevel newNode = createNewLevelVersion(node, change);
-            newNode.setPosition(position++);
-            levelRepository.save(newNode);
+            newNode.setPosition(position--);
+            levelRepository.saveAndFlush(newNode);
         }
     }
 

@@ -1,9 +1,16 @@
 package cz.tacr.elza.repository;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.UsrPermissionView;
+import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.enumeration.StringLength;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -16,18 +23,10 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Subquery;
 import javax.transaction.Transactional;
-
-import cz.tacr.elza.domain.UsrPermissionView;
-import cz.tacr.elza.domain.UsrUser;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.stereotype.Component;
-
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RegVariantRecord;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Implementace repository osob.
@@ -128,8 +127,8 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
         if (StringUtils.isNotBlank(searchString)) {
             condition.add(builder.or(
                     builder.like(builder.lower(record.get(RegRecord.RECORD)), searchValue),
-                    builder.like(builder.lower(record.get(RegRecord.CHARACTERISTICS)), searchValue),
-                    builder.like(builder.lower(record.get(RegRecord.NOTE)), searchValue),
+                    builder.like(builder.lower(builder.substring(record.get(RegRecord.CHARACTERISTICS), 1, StringLength.LENGTH_1000)), searchValue),
+                    builder.like(builder.lower(builder.substring(record.get(RegRecord.NOTE), 1, StringLength.LENGTH_1000)), searchValue),
                     builder.like(builder.lower(variantRecord.get(RegVariantRecord.RECORD)), searchValue)
                 )
             );

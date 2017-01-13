@@ -393,7 +393,7 @@ public class ArrangementService {
         level.setCreateChange(createChange);
         level.setNodeParent(parentNode);
         level.setNode(createNode(uuid, fund, createChange));
-        return levelRepository.save(level);
+        return levelRepository.saveAndFlush(level);
     }
 
     public ArrLevel createLevel(final ArrChange createChange,
@@ -407,7 +407,7 @@ public class ArrangementService {
         level.setCreateChange(createChange);
         level.setNodeParent(parentNode);
         level.setNode(createNode(fund, createChange));
-        return levelRepository.save(level);
+        return levelRepository.saveAndFlush(level);
     }
 
     public ArrLevel createLevel(final ArrChange createChange, final ArrNode node, final ArrNode parentNode, final int position) {
@@ -418,7 +418,7 @@ public class ArrangementService {
         level.setCreateChange(createChange);
         level.setNodeParent(parentNode);
         level.setNode(node);
-        return levelRepository.save(level);
+        return levelRepository.saveAndFlush(level);
     }
 
 
@@ -763,7 +763,7 @@ public class ArrangementService {
         nodeRepository.save(node);
 
         level.setDeleteChange(deleteChange);
-        return levelRepository.save(level);
+        return levelRepository.saveAndFlush(level);
     }
 
     private void deleteDescItemInner(final ArrDescItem descItem, final ArrChange deleteChange) {

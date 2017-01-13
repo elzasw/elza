@@ -1,8 +1,7 @@
 package cz.tacr.elza.repository;
 
-import java.util.List;
-
 import cz.tacr.elza.api.ArrBulkActionRun.State;
+import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,7 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.ArrBulkActionRun;
+import java.util.List;
 
 
 @Repository
@@ -45,8 +44,8 @@ public interface BulkActionRunRepository extends JpaRepository<ArrBulkActionRun,
     List<ArrBulkActionRun> findByFundVersionIdAndBulkActionCode(@Param(value = "fundVersionId") final Integer fundVersionId,
                                                                 @Param(value = "code") final String code);
 
-    @Query(value = "SELECT ba from arr_bulk_action_run ba WHERE ba.state = :state GROUP BY ba.fundVersion,ba.bulkActionRunId ORDER BY ba.bulkActionRunId ASC")
-    List<ArrBulkActionRun> findByStateGroupByFundOrderById(@Param(value = "state") final State state);
+    @Query(value = "SELECT ba.bulkActionRunId from arr_bulk_action_run ba WHERE ba.state = :state GROUP BY ba.fundVersion,ba.bulkActionRunId ORDER BY ba.bulkActionRunId ASC")
+    List<Integer> findIdByStateGroupByFundOrderById(@Param(value = "state") final State state);
 
     @Modifying
     @Query("UPDATE arr_bulk_action_run ba SET ba.state = :toState WHERE ba.state = :fromState")

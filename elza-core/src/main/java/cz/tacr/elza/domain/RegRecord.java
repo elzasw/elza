@@ -76,11 +76,11 @@ public class RegRecord extends AbstractVersionableEntity
     @JsonIgnore
     private String record;
 
-    @Column
+    @Column(length = StringLength.LENGTH_1000)
     @JsonIgnore
     private String characteristics;
 
-    @Column()
+    @Column(length = StringLength.LENGTH_1000)
     @JsonIgnore
     private String note;
 
