@@ -6,6 +6,7 @@
     <fund-views settings-type="FUND_VIEW" entity-type="RULE" entity-id="1" code="ZP2015">
         <ns2:default>
             <title>&lt;Není nastaveno&gt;</title>
+            <strict-mode>true</strict-mode>
             <tree>ZP2015_NAD ZP2015_TITLE ZP2015_UNIT_DATE</tree>
             <accordion-left>ZP2015_NAD ZP2015_TITLE ZP2015_UNIT_DATE</accordion-left>
             <accordion-right>ZP2015_FOLDER_TYPE ZP2015_STORAGE_ID</accordion-right>

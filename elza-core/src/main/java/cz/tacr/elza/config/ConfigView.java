@@ -118,6 +118,7 @@ public class ConfigView {
         ViewTitles tv = new ViewTitles();
 
         tv.setDefaultTitle(item.getTitle());
+        tv.setStrictMode(item.getStrictMode());
         tv.setAccordionLeft(item.getAccordionLeft() == null ? null : item.getAccordionLeft().getValues());
         tv.setAccordionRight(item.getAccordionRight() == null ? null : item.getAccordionRight().getValues());
         tv.setTreeItem(item.getTree() == null ? null : item.getTree().getValues());
@@ -186,6 +187,7 @@ public class ConfigView {
 
         private Map<String, Map<String, ConfigViewTitlesHierarchy>> hierarchy;
         private Map<String, ConfigViewTitlesHierarchy> levelHierarchy;
+        private Boolean strictMode;
 
         public List<String> getTreeItem() {
             return treeItem;
@@ -246,6 +248,14 @@ public class ConfigView {
 
         public void setDefaultTitle(final String defaultTitle) {
             this.defaultTitle = defaultTitle;
+        }
+
+        public void setStrictMode(final Boolean strictMode) {
+            this.strictMode = strictMode;
+        }
+
+        public Boolean getStrictMode() {
+            return strictMode;
         }
     }
 }

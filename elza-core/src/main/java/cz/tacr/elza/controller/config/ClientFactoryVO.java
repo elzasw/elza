@@ -3,6 +3,7 @@ package cz.tacr.elza.controller.config;
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.config.ConfigRules;
+import cz.tacr.elza.config.ConfigView;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
 import cz.tacr.elza.controller.vo.ArrDaoFileVO;
@@ -295,6 +296,9 @@ public class ClientFactoryVO {
 
     @Autowired
     private ItemSpecRepository itemSpecRepository;
+
+    @Autowired
+    private ConfigView configView;
 
     /**
      * Vytvoří objekt informací o přihlášeném uživateli.
@@ -942,6 +946,8 @@ public class ClientFactoryVO {
         Date createDate = Date.from(
                 fundVersion.getCreateChange().getChangeDate().atZone(ZoneId.systemDefault()).toInstant());
         fundVersionVO.setCreateDate(createDate);
+        ConfigView.ViewTitles viewTitles = configView.getViewTitles(fundVersion.getRuleSet().getCode(), fundVersion.getFund().getFundId());
+        fundVersionVO.setStrictMode(viewTitles.getStrictMode());
 
         ArrChange lockChange = fundVersion.getLockChange();
         if (lockChange != null) {

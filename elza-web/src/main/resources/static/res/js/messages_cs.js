@@ -313,6 +313,11 @@ var messages = {
     "arr.fund.files.action.delete": "Odebrat soubor",
 
     "arr.fund.settings.title": "Nastavení zobrazení archivního fondu",
+    "arr.fund.settings.rules": "Ostatní",
+    "arr.fund.settings.rules.strictMode": "Striktní mód",
+    "arr.fund.settings.rules.strictMode.default": "Výchozí nastavení",
+    "arr.fund.settings.rules.strictMode.true": "Zapnuto",
+    "arr.fund.settings.rules.strictMode.false": "Vypnuto",
     "arr.fund.settings.panel.center.title": "Hlavní panel",
     "arr.fund.settings.panel.center.parents": "Seznam rodičů jednotky popisu",
     "arr.fund.settings.panel.center.children": "Seznam potomků jednotky popisu",

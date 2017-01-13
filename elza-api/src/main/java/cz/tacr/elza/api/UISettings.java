@@ -70,6 +70,11 @@ public interface UISettings<U extends UsrUser> {
         FUND_CENTER_PANEL(EntityType.FUND),
 
         /**
+         * nastavení strictního módu pro uživatele (přepíše nastavení pravidel)
+         */
+        FUND_STRICT_MODE(EntityType.FUND),
+
+        /**
          * oblíbené specifikace u typu atributu
          */
         FAVORITE_ITEM_SPECS(EntityType.ITEM_TYPE),
