@@ -143,6 +143,7 @@ import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.GroupRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyNameComplementRepository;
@@ -299,6 +300,9 @@ public class ClientFactoryVO {
 
     @Autowired
     private ConfigView configView;
+
+    @Autowired
+    private NodeRepository nodeRepository;
 
     /**
      * Vytvoří objekt informací o přihlášeném uživateli.
@@ -1852,6 +1856,7 @@ public class ClientFactoryVO {
         List<ArrRequestVO> requestVOList = new ArrayList<>(requests.size());
         Set<ArrDigitizationRequest> requestForNodes = new HashSet<>();
         Set<ArrDaoRequest> requestForDaos = new HashSet<>();
+        Set<ArrDaoLinkRequest> requestForDaoLinks = new HashSet<>();
 
         Map<ArrRequest, ArrRequestQueueItem> requestQueuedMap = new HashMap<>();
         List<ArrRequestQueueItem> requestQueueItems = CollectionUtils.isEmpty(requests) ? Collections.emptyList() : requestQueueItemRepository.findByRequest(requests);
@@ -1860,7 +1865,7 @@ public class ClientFactoryVO {
         }
 
         for (ArrRequest request : requests) {
-            prepareRequest(requestForNodes, requestForDaos, request);
+            prepareRequest(requestForNodes, requestForDaos, requestForDaoLinks, request);
         }
 
         Map<ArrDigitizationRequest, Integer> countNodesRequestMap = Collections.emptyMap();
@@ -1885,10 +1890,16 @@ public class ClientFactoryVO {
             }
         }
 
+        Map<String, TreeNodeClient> codeTreeNodeClientMap = Collections.emptyMap();
+        if (requestForDaoLinks.size() > 0) {
+            if (detail) {
+                codeTreeNodeClientMap = fillDaoLinkDetailParams(fundVersion, requestForDaoLinks);
+            }
+        }
 
         for (ArrRequest request : requests) {
             ArrRequestVO requestVO;
-            requestVO = createRequestVO(countNodesRequestMap, nodesRequestMap, countDaosRequestMap, daosRequestMap, request, detail, fundVersion);
+            requestVO = createRequestVO(countNodesRequestMap, nodesRequestMap, countDaosRequestMap, daosRequestMap, codeTreeNodeClientMap, request, detail, fundVersion);
             convertRequest(mapper, request, requestQueuedMap.get(request), requestVO);
             requestVOList.add(requestVO);
         }
@@ -1899,10 +1910,11 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         Set<ArrDigitizationRequest> requestForNodes = new HashSet<>();
         Set<ArrDaoRequest> requestForDaos = new HashSet<>();
+        Set<ArrDaoLinkRequest> requestForDaoLinks = new HashSet<>();
 
         ArrRequestQueueItem requestQueueItem = requestQueueItemRepository.findByRequest(request);
 
-        prepareRequest(requestForNodes, requestForDaos, request);
+        prepareRequest(requestForNodes, requestForDaos, requestForDaoLinks, request);
 
         Map<ArrDigitizationRequest, Integer> countNodesRequestMap = Collections.emptyMap();
         Map<ArrDigitizationRequest, List<TreeNodeClient>> nodesRequestMap = new HashMap<>();
@@ -1926,11 +1938,40 @@ public class ClientFactoryVO {
             }
         }
 
+        Map<String, TreeNodeClient> codeTreeNodeClientMap = Collections.emptyMap();
+        if (requestForDaoLinks.size() > 0) {
+            if (detail) {
+                codeTreeNodeClientMap = fillDaoLinkDetailParams(fundVersion, requestForDaoLinks);
+            }
+        }
+
         ArrRequestVO requestVO;
-        requestVO = createRequestVO(countNodesRequestMap, nodesRequestMap, countDaosRequestMap, daosRequestMap, request, detail, fundVersion);
+        requestVO = createRequestVO(countNodesRequestMap, nodesRequestMap, countDaosRequestMap, daosRequestMap, codeTreeNodeClientMap, request, detail, fundVersion);
         convertRequest(mapper, request, requestQueueItem, requestVO);
 
         return requestVO;
+    }
+
+    private Map<String, TreeNodeClient> fillDaoLinkDetailParams(final ArrFundVersion fundVersion, final Set<ArrDaoLinkRequest> requestForDaoLinks) {
+        Map<String, TreeNodeClient> result = new HashMap<>();
+
+        Set<String> didCodes = new HashSet<>();
+        for (ArrDaoLinkRequest requestForDaoLink : requestForDaoLinks) {
+            didCodes.add(requestForDaoLink.getDidCode());
+        }
+
+        List<ArrNode> nodes = nodeRepository.findByUuid(didCodes);
+        Set<Integer> nodeIds = new HashSet<>();
+        for (ArrNode node : nodes) {
+            nodeIds.add(node.getNodeId());
+        }
+        Map<Integer, TreeNodeClient> treeNodeClientMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()).stream().collect(Collectors.toMap(TreeNodeClient::getId, Function.identity()));
+
+        for (ArrNode node : nodes) {
+            result.put(node.getUuid(), treeNodeClientMap.get(node.getNodeId()));
+        }
+
+        return result;
     }
 
     private Map<ArrDaoRequest, Integer> fillDaoDetailParams(final ArrFundVersion fundVersion,
@@ -2018,6 +2059,7 @@ public class ClientFactoryVO {
                                          final Map<ArrDigitizationRequest, List<TreeNodeClient>> nodesRequestMap,
                                          final Map<ArrDaoRequest, Integer> countDaosRequestMap,
                                          final Map<ArrDaoRequest, List<ArrDao>> daosRequestMap,
+                                         final Map<String, TreeNodeClient> codeTreeNodeClientMap,
                                          final ArrRequest request,
                                          final boolean detail,
                                          final ArrFundVersion fundVersion) {
@@ -2037,7 +2079,7 @@ public class ClientFactoryVO {
 
             case DAO_LINK: {
                 requestVO = new ArrDaoLinkRequestVO();
-                convertDaoLinkRequest((ArrDaoLinkRequest) request, (ArrDaoLinkRequestVO) requestVO, false, fundVersion);
+                convertDaoLinkRequest((ArrDaoLinkRequest) request, (ArrDaoLinkRequestVO) requestVO, false, fundVersion, codeTreeNodeClientMap);
                 break;
             }
 
@@ -2048,7 +2090,8 @@ public class ClientFactoryVO {
         return requestVO;
     }
 
-    private void prepareRequest(final Set<ArrDigitizationRequest> requestForNodes, final Set<ArrDaoRequest> requestForDaos, final ArrRequest request) {
+    private void prepareRequest(final Set<ArrDigitizationRequest> requestForNodes, final Set<ArrDaoRequest> requestForDaos,
+                                final Set<ArrDaoLinkRequest> requestForDaoLinks, final ArrRequest request) {
         switch (request.getDiscriminator()) {
             case DIGITIZATION: {
                 requestForNodes.add((ArrDigitizationRequest) request);
@@ -2061,8 +2104,7 @@ public class ClientFactoryVO {
             }
 
             case DAO_LINK: {
-                // TODO
-                //throw new NotImplementedException();
+                requestForDaoLinks.add((ArrDaoLinkRequest) request);
                 break;
             }
 
@@ -2076,10 +2118,12 @@ public class ClientFactoryVO {
     private void convertDaoLinkRequest(final ArrDaoLinkRequest request,
                                        final ArrDaoLinkRequestVO requestVO,
                                        final boolean detail,
-                                       final ArrFundVersion fundVersion) {
+                                       final ArrFundVersion fundVersion,
+                                       final Map<String, TreeNodeClient> codeTreeNodeClientMap) {
         requestVO.setDidCode(request.getDidCode());
         requestVO.setType(request.getType());
-        requestVO.setDao(createDao(request.getDao(), detail, fundVersion));
+        //requestVO.setDao(createDao(request.getDao(), detail, fundVersion));
+        requestVO.setNode(codeTreeNodeClientMap.get(request.getDidCode()));
     }
 
     private void convertDaoRequest(final ArrDaoRequest request,

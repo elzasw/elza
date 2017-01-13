@@ -17,6 +17,8 @@ public class ArrDaoLinkRequestVO extends ArrRequestVO {
 
     private String didCode;
 
+    private TreeNodeClient node;
+
     public ArrDaoVO getDao() {
         return dao;
     }
@@ -39,5 +41,13 @@ public class ArrDaoLinkRequestVO extends ArrRequestVO {
 
     public void setDidCode(final String didCode) {
         this.didCode = didCode;
+    }
+
+    public TreeNodeClient getNode() {
+        return node;
+    }
+
+    public void setNode(final TreeNodeClient node) {
+        this.node = node;
     }
 }

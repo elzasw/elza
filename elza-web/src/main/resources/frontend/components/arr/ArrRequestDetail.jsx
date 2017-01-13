@@ -119,8 +119,8 @@ class ArrRequestDetail extends AbstractReactComponent {
 
     renderDaoLinkNode = (req) => {
         let nodeInfo;
-        if (req.dao && req.dao.daoLink) {
-            const node = req.dao.daoLink.treeNodeClient;
+        if (req.node) {
+            const node = req.node;
             nodeInfo = <NodeLabel inline node={node}/>;
         } else {
             nodeInfo = req.didCode;
