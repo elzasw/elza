@@ -29,7 +29,6 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
-import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
@@ -42,6 +41,7 @@ import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulTemplate;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.ProcessException;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.NodeOutputRepository;
@@ -80,13 +80,7 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
     private ArrangementService arrangementService;
 
     @Autowired
-    private OutputRepository outputRepository;
-
-    @Autowired
     private OutputDefinitionRepository outputDefinitionRepository;
-
-    @Autowired
-    private NodeOutputRepository nodeOutputRepository;
 
     @Autowired
     private FundRepository fundRepository;
@@ -228,7 +222,7 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
         }
         if (task != null) {
             try {
-                ListenableFuture future = taskExecutor.submitListenable(task);
+                ListenableFuture<OutputGeneratorWorkerAbstract> future = taskExecutor.submitListenable(task);
                 //noinspection unchecked
                 future.addCallback(this);
             } catch (RejectedExecutionException e) {

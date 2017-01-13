@@ -35,7 +35,6 @@ import org.springframework.util.StringUtils;
 
 import com.google.common.collect.Sets;
 
-import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.config.ConfigView;
 import cz.tacr.elza.domain.ArrBulkActionRun;
@@ -45,6 +44,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
@@ -862,9 +862,9 @@ public class RevertingChangesService {
      * @param inputList seznam z databázového dotazu
      * @return typovaný seznam z databázového dotazu
      */
-    private List<ChangeResult> convertResults(final List inputList) {
+    private List<ChangeResult> convertResults(final List<Object[]> inputList) {
         List<ChangeResult> result = new ArrayList<>(inputList.size());
-        for (Object[] o : (List<Object[]>) inputList) {
+        for (Object[] o : inputList) {
             result.add(convertResult(o));
         }
         return result;

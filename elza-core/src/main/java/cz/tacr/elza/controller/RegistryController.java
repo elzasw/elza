@@ -151,7 +151,7 @@ public class RegistryController {
      * @return                  vybrané záznamy dle popisu seřazené za text hesla, nebo prázdná množina
      */
     @RequestMapping(value = "/", method = RequestMethod.GET)
-    public RegRecordWithCount findRecord(@RequestParam(required = false) @Nullable final String search,
+    public RegRecordWithCount<RegRecordVO> findRecord(@RequestParam(required = false) @Nullable final String search,
                                          @RequestParam final Integer from,
                                          @RequestParam final Integer count,
                                          @RequestParam(required = false) @Nullable final Integer registerTypeId,
@@ -159,7 +159,7 @@ public class RegistryController {
                                          @RequestParam(required = false) @Nullable final Integer versionId,
                                          @RequestParam(required = false) @Nullable final Integer itemSpecId) {
 
-        Set<Integer> registerTypeIdTree = Collections.EMPTY_SET;
+        Set<Integer> registerTypeIdTree = Collections.emptySet();
 
         if (itemSpecId != null && registerTypeId != null) {
             throw new IllegalArgumentException("Nelza použít specifikaci a typ rejstříku zároveň.");
@@ -236,7 +236,7 @@ public class RegistryController {
 //            parentVO.setHasChildren(!childrenVO.isEmpty());
 //        }
 
-        return new RegRecordWithCount(foundRecordVOList, foundRecordsCount);
+        return new RegRecordWithCount<>(foundRecordVOList, foundRecordsCount);
     }
 
 
@@ -252,7 +252,7 @@ public class RegistryController {
      * @return seznam rejstříkových hesel s počtem všech nalezených
      */
     @RequestMapping(value = "/findRecordForRelation", method = RequestMethod.GET)
-    public RegRecordWithCount findRecordForRelation(@RequestParam(required = false) @Nullable final String search,
+    public RegRecordWithCount<RegRecordSimple> findRecordForRelation(@RequestParam(required = false) @Nullable final String search,
                                                     @RequestParam final Integer from,
                                                     @RequestParam final Integer count,
                                                     @RequestParam final Integer roleTypeId,
@@ -282,7 +282,7 @@ public class RegistryController {
                 .findRegRecordByTextAndType(search, registerTypeIds, from, count, null, scopeIds, readAllScopes, user);
 
         List<RegRecordSimple> foundRecordsVO = factoryVo.createRegRecordsSimple(foundRecords);
-        return new RegRecordWithCount(foundRecordsVO, foundRecordsCount);
+        return new RegRecordWithCount<>(foundRecordsVO, foundRecordsCount);
     }
 
     /**
@@ -358,7 +358,7 @@ public class RegistryController {
         Assert.notNull(recordTest, "Nebyl nalezen záznam pro update s id " + record.getId());
 
         RegRecord recordDO = factoryDO.createRegRecord(record);
-        RegRecord newRecordDO = registryService.saveRecord(recordDO, false);
+        registryService.saveRecord(recordDO, false);
         return getRecord(record.getId());
     }
 
@@ -497,7 +497,7 @@ public class RegistryController {
 
         Set<Integer> scopeIdsByFund = registryService.getScopeIdsByFund(fund);
         if (scopeIdsByFund.isEmpty()) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         } else {
             List<RegScopeVO> result = factoryVo.createScopes(scopeRepository.findAll(scopeIdsByFund));
             result.sort((a, b) -> a.getCode().compareTo(b.getCode()));

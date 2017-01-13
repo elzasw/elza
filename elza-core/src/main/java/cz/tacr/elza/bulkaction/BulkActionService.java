@@ -335,7 +335,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     private void runWorker(final BulkActionWorker bulkActionWorker) {
         bulkActionWorker.setStateAndPublish(State.PLANNED);
         logger.info("Hromadná akce naplánována ke spuštění: " + bulkActionWorker);
-        ListenableFuture future = taskExecutor.submitListenable(bulkActionWorker);
+        ListenableFuture<BulkActionWorker> future = taskExecutor.submitListenable(bulkActionWorker);
         future.addCallback(this);
         eventPublishBulkAction(bulkActionWorker.getBulkActionRun());
     }
@@ -678,7 +678,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      */
     public List<RulAction> getBulkActionByCodes(final List<String> codes) {
         if (CollectionUtils.isEmpty(codes)) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         return actionRepository.findByFilename(codes.stream().map(code -> code + ".yaml").collect(Collectors.toList()));
     }

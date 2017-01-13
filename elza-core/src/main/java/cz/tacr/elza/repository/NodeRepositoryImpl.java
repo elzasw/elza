@@ -121,9 +121,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
         javax.persistence.Query query = entityManager.createQuery(hql);
 
-        List resultList = query.getResultList();
-
-        return resultList;
+        return query.getResultList();
     }
 
     /**
@@ -166,7 +164,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     private List<String> findDescItemIdsByLuceneQuery(final String queryText, final Integer fundId)
             throws InvalidQueryException{
         if (StringUtils.isBlank(queryText)) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         Class<ArrData> entityClass = ArrData.class;

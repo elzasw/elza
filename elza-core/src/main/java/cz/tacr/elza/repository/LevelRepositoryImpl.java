@@ -299,7 +299,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         Set<Integer> allIds = new HashSet<>();
         while (!leaves.isEmpty()){
 
-            List resultList = subTree(version, leaves);
+            List<Object[]> resultList = subTree(version, leaves);
             leaves.clear();
 
             for (Object[] row : (List<Object[]>) (List<?>) resultList) {

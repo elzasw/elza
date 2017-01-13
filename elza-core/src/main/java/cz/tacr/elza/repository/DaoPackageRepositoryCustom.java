@@ -1,8 +1,9 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ArrFundVersion;
-
 import java.util.List;
+
+import cz.tacr.elza.domain.ArrDaoPackage;
+import cz.tacr.elza.domain.ArrFundVersion;
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
@@ -19,5 +20,5 @@ public interface DaoPackageRepositoryCustom {
      * @param maxResults  maximální počet vyhledaných balíčků
      * @return  seznam balíčků, seřazení je podle ID balíčku sestupně (tzn. poslední vytvořené budou na začátku seznamu)
      */
-    List findDaoPackages(ArrFundVersion fundVersion, String search, Boolean unassigned, Integer maxResults);
+    List<ArrDaoPackage> findDaoPackages(ArrFundVersion fundVersion, String search, Boolean unassigned, Integer maxResults);
 }

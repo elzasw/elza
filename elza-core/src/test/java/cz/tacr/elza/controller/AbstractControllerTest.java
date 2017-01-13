@@ -2487,7 +2487,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param count  počet vrácených záznamů
      * @return seznam s celkovým počtem
      */
-    protected FilteredResultVO findGroup(final String search,
+    protected FilteredResultVO<UsrGroupVO> findGroup(final String search,
                                          final Integer from,
                                          final Integer count) {
         return get(spec -> spec.queryParam("search", search)
@@ -2516,7 +2516,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     * @param disabled mají se vracet zakázané osoby?
     * @return seznam s celkovým počtem
     */
-    protected FilteredResultVO findUser(@Nullable final String search,
+    protected FilteredResultVO<UsrUserVO> findUser(@Nullable final String search,
                                                     final Boolean active,
                                                     final Boolean disabled,
                                                     final Integer from,

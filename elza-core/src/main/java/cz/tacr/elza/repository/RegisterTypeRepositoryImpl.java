@@ -19,8 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class RegisterTypeRepositoryImpl implements RegisterTypeRepositoryCustom {
 
     @Autowired
-    private RegisterTypeRepository registerTypeRepository;
-    @Autowired
     private EntityManager entityManager;
 
     @Override
@@ -47,7 +45,7 @@ public class RegisterTypeRepositoryImpl implements RegisterTypeRepositoryCustom 
         leaves.addAll(registerTypeIds);
 
 
-        Consumer<Set> function = (ids) -> {
+        Consumer<Set<Integer>> function = (ids) -> {
             query.setParameter("ids", ids);
 
             leaves.clear();

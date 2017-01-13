@@ -1,5 +1,26 @@
 package cz.tacr.elza.service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
@@ -20,6 +41,7 @@ import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItemData;
 import cz.tacr.elza.domain.ArrItemFormattedText;
 import cz.tacr.elza.domain.ArrItemString;
 import cz.tacr.elza.domain.ArrItemText;
@@ -56,25 +78,6 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 
 /**
@@ -955,8 +958,8 @@ public class DescriptionItemService {
 
     public Map<Integer, Map<String, TitleValues>> createNodeValuesMap(final Set<Integer> subtreeNodeIds,
                                                                       @Nullable final TreeNode subtreeRoot,
-                                                                      Set<RulItemType> descItemTypes,
-                                                                      ArrFundVersion version) {
+                                                                      final Set<RulItemType> descItemTypes,
+                                                                      final ArrFundVersion version) {
         Map<Integer, Map<String, TitleValues>> valueMap = new HashMap<>();
 
         if (descItemTypes.isEmpty()) {
@@ -1246,8 +1249,8 @@ public class DescriptionItemService {
         return valueMap;
     }
 
-    private void addValuesToMap(Map<Integer, Map<String, TitleValues>> valueMap, final TitleValue titleValue, String code,
-                                String specCode, Integer nodeId, String iconValue, final Integer position) {
+    private void addValuesToMap(final Map<Integer, Map<String, TitleValues>> valueMap, final TitleValue titleValue, final String code,
+                                final String specCode, final Integer nodeId, final String iconValue, final Integer position) {
 
         if (titleValue == null && iconValue == null) {
             return;
@@ -1274,7 +1277,7 @@ public class DescriptionItemService {
     }
 
 
-    private String getIconValue(ArrData data) {
+    private String getIconValue(final ArrData data) {
         if (data.getItem().getItemSpec() != null) {
             return data.getItem().getItemSpec().getCode();
         }
@@ -1421,7 +1424,7 @@ public class DescriptionItemService {
 
             ArrData data = createDataByType(descItemType);
 
-            Class clazz = null;
+            Class<? extends ArrItemData> clazz = null;
             switch (descItemType.getDataType().getCode()) {
                 case "TEXT":
                     clazz = ArrItemText.class;

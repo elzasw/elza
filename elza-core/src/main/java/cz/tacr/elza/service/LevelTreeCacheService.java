@@ -21,13 +21,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.controller.vo.ArrDigitizationRequestVO;
-import cz.tacr.elza.controller.vo.ArrRequestVO;
-import cz.tacr.elza.domain.ArrDigitizationRequest;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrRequest;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -44,21 +37,27 @@ import cz.tacr.elza.config.ConfigView;
 import cz.tacr.elza.config.ConfigView.ViewTitles;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.ArrDigitizationRequestVO;
+import cz.tacr.elza.controller.vo.ArrRequestVO;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.domain.ArrDigitizationRequest;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformityExt;
+import cz.tacr.elza.domain.ArrRequest;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
-import cz.tacr.elza.repository.CalendarTypeRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.LevelRepositoryCustom;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import cz.tacr.elza.service.eventnotification.EventChangeMessage;
 import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
 import cz.tacr.elza.service.eventnotification.events.EventAddNode;
@@ -106,9 +105,6 @@ public class LevelTreeCacheService {
 
     @Autowired
     private NodeRepository nodeRepository;
-
-    @Autowired
-    private CalendarTypeRepository calendarTypeRepository;
 
     @Autowired
     private DescriptionItemService descriptionItemService;
@@ -386,7 +382,7 @@ public class LevelTreeCacheService {
                     + " nebyl nalezen node s id " + nodeId);
         }
 
-        LinkedList<Integer> parents = new LinkedList();
+        LinkedList<Integer> parents = new LinkedList<>();
 
         // procházím prvky přes rodiče až ke kořeni
         TreeNode parent = node.getParent();
@@ -418,7 +414,7 @@ public class LevelTreeCacheService {
         }
 
         LinkedHashMap<Integer, TreeNode> parentMap = new LinkedHashMap<>();
-        LinkedList<TreeNode> parents = new LinkedList();
+        LinkedList<TreeNode> parents = new LinkedList<>();
 
 
         TreeNode parent = node.getParent();
@@ -1280,7 +1276,7 @@ public class LevelTreeCacheService {
     private class CapacityMap<K, V> extends LinkedHashMap<K, V> {
 
         @Override
-        protected boolean removeEldestEntry(final Map.Entry eldest) {
+        protected boolean removeEldestEntry(final Map.Entry<K, V> eldest) {
             if (size() > MAX_CACHE_SIZE) {
                 logger.info("Překročena kapacita cache. Bude odpojena cache verze s id " + eldest.getKey());
                 return true;

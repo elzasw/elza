@@ -2186,7 +2186,7 @@ public class PackageService {
      * @param xmlStream   xml stream
      * @param <T>         typ pro převod
      */
-    private <T> T convertXmlStreamToObject(final Class classObject, final ByteArrayInputStream xmlStream) {
+    private <T> T convertXmlStreamToObject(final Class<T> classObject, final ByteArrayInputStream xmlStream) {
         if (xmlStream != null) {
             try {
                 JAXBContext jaxbContext = JAXBContext.newInstance(classObject);

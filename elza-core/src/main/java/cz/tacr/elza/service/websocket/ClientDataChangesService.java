@@ -22,7 +22,7 @@ public class ClientDataChangesService implements IClientDataChangesService {
 
 
     @Override
-	public void fireEvents(final Collection<AbstractEventSimple> events) {
+    public void fireEvents(final Collection<AbstractEventSimple> events) {
         messagingTemplate
                 .convertAndSend(API_CHANGES_DESTINATION, new WebsocketDataVO(WebsocketDataType.EVENT, events));
     }
