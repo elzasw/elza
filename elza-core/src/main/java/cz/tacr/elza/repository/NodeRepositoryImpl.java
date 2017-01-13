@@ -189,7 +189,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         }
 
         List<String> result = (List<String>) createFullTextQuery(query, entityClass).setProjection(
-                "descItemId").getResultList().stream().map(row ->
+                "itemId").getResultList().stream().map(row ->
                         ((Object[]) row)[0]
         ).collect(Collectors.toList());
 
