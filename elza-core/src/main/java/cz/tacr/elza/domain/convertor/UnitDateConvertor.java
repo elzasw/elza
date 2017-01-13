@@ -1,12 +1,5 @@
 package cz.tacr.elza.domain.convertor;
 
-import cz.tacr.elza.api.IUnitdate;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ParUnitdate;
-
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.StringUtils;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -15,6 +8,12 @@ import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.StringUtils;
+
+import cz.tacr.elza.api.IUnitdate;
+import cz.tacr.elza.domain.ParUnitdate;
 
 
 /**
@@ -103,7 +102,7 @@ public class UnitDateConvertor {
      * @param unitdate doplňovaný objekt
      * @return doplněný objekt
      */
-    public static <T extends IUnitdate<ArrCalendarType>> T convertToUnitDate(final String input, final T unitdate) {
+    public static <T extends IUnitdate> T convertToUnitDate(final String input, final T unitdate) {
 
         unitdate.setFormat("");
 
@@ -212,7 +211,7 @@ public class UnitDateConvertor {
      * @param unitdate doplňovaný objekt
      * @return výsledný řetězec
      */
-    private static String convertInterval(String format, IUnitdate unitdate) {
+    private static String convertInterval(final String format, final IUnitdate unitdate) {
 
         String[] data = format.split(DEFAULT_INTERVAL_DELIMITER);
 
@@ -244,7 +243,7 @@ public class UnitDateConvertor {
      * @param allow    povolit odhad?
      * @return výsledný řetězec
      */
-    private static String addEstimate(String format, IUnitdate unitdate, boolean first, final boolean allow) {
+    private static String addEstimate(String format, final IUnitdate unitdate, final boolean first, final boolean allow) {
         if (first) {
             if (BooleanUtils.isTrue(unitdate.getValueFromEstimated()) && allow) {
                 format = "[" + format + "]";
@@ -266,7 +265,7 @@ public class UnitDateConvertor {
      * @param allow      povolit odhad?
      * @return výsledný řetězec
      */
-    private static String convertToken(final String format, final IUnitdate unitdate, boolean first,
+    private static String convertToken(final String format, final IUnitdate unitdate, final boolean first,
                                        final boolean allow) {
 
         if (format.equals("")) {
@@ -311,7 +310,7 @@ public class UnitDateConvertor {
      * @param first    zda-li se jedná o první datum
      * @return výsledný řetězec
      */
-    private static String convertDateTime(String format, IUnitdate unitdate, boolean first) {
+    private static String convertDateTime(final String format, final IUnitdate unitdate, final boolean first) {
         if (first) {
             if (unitdate.getValueFrom() != null) {
                 LocalDateTime date = LocalDateTime.parse(unitdate.getValueFrom());
@@ -334,7 +333,7 @@ public class UnitDateConvertor {
      * @param first    zda-li se jedná o první datum
      * @return výsledný řetězec
      */
-    private static String convertDate(String format, IUnitdate unitdate, boolean first) {
+    private static String convertDate(final String format, final IUnitdate unitdate, final boolean first) {
         if (first) {
             if (unitdate.getValueFrom() != null) {
                 LocalDateTime date = LocalDateTime.parse(unitdate.getValueFrom());
@@ -357,7 +356,7 @@ public class UnitDateConvertor {
      * @param first    zda-li se jedná o první datum
      * @return výsledný řetězec
      */
-    private static String convertYearMonth(String format, IUnitdate unitdate, boolean first) {
+    private static String convertYearMonth(final String format, final IUnitdate unitdate, final boolean first) {
         if (first) {
             if (unitdate.getValueFrom() != null) {
                 LocalDateTime date = LocalDateTime.parse(unitdate.getValueFrom());
@@ -380,7 +379,7 @@ public class UnitDateConvertor {
      * @param first    zda-li se jedná o první datum
      * @return výsledný řetězec
      */
-    private static String convertYear(String format, IUnitdate unitdate, boolean first) {
+    private static String convertYear(final String format, final IUnitdate unitdate, final boolean first) {
         if (first) {
             if (unitdate.getValueFrom() != null) {
                 LocalDateTime date = LocalDateTime.parse(unitdate.getValueFrom());
@@ -403,7 +402,7 @@ public class UnitDateConvertor {
      * @param first    zda-li se jedná o první datum
      * @return výsledný řetězec
      */
-    private static String convertCentury(final String format, final IUnitdate unitdate, boolean first) {
+    private static String convertCentury(final String format, final IUnitdate unitdate, final boolean first) {
         if (first) {
             if (unitdate.getValueFrom() != null) {
                 LocalDateTime date = LocalDateTime.parse(unitdate.getValueFrom());
@@ -502,7 +501,7 @@ public class UnitDateConvertor {
      * @param unitdate        doplňovaný objekt
      * @return výsledný token
      */
-    private static Token parseYearMonth(String yearMonthString, IUnitdate unitdate) {
+    private static Token parseYearMonth(final String yearMonthString, final IUnitdate unitdate) {
         unitdate.formatAppend(YEAR_MONTH);
 
         Token token = new Token();
@@ -627,7 +626,7 @@ public class UnitDateConvertor {
      * @param s         řetězec
      * @return true - lze parsovat
      */
-    private static boolean tryParseDate(DateTimeFormatter formatter, String s) {
+    private static boolean tryParseDate(final DateTimeFormatter formatter, final String s) {
         try {
             formatter.withResolverStyle(ResolverStyle.STRICT);
             formatter.parse(s);
@@ -643,7 +642,7 @@ public class UnitDateConvertor {
      * @param input vstupní řetězec
      * @return true - jedná se o interval
      */
-    private static boolean isInterval(String input) {
+    private static boolean isInterval(final String input) {
         return input.contains(DEFAULT_INTERVAL_DELIMITER) || input.contains(ESTIMATE_INTERVAL_DELIMITER);
     }
 

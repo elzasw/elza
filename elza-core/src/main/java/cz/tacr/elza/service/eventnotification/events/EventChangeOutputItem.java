@@ -6,7 +6,7 @@ package cz.tacr.elza.service.eventnotification.events;
  * @author Martin Šlapa
  * @since 2.2.2016
  */
-public class EventChangeOutputItem extends EventVersion<EventChangeOutputItem> {
+public class EventChangeOutputItem extends EventVersion {
 
     /**
      * Object id hodnoty atributu.
@@ -50,7 +50,7 @@ public class EventChangeOutputItem extends EventVersion<EventChangeOutputItem> {
         return version;
     }
 
-    public void setVersion(Integer version) {
+    public void setVersion(final Integer version) {
         this.version = version;
     }
 }

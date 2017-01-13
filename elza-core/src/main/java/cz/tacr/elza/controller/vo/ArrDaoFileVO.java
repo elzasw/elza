@@ -1,9 +1,9 @@
 package cz.tacr.elza.controller.vo;
 
-import cz.tacr.elza.api.ArrDaoFile;
-import cz.tacr.elza.api.UnitOfMeasure;
-
 import java.time.LocalDateTime;
+
+import cz.tacr.elza.api.UnitOfMeasure;
+import cz.tacr.elza.domain.ArrDaoFile;
 
 /**
  * Value objekt {@link ArrDaoFile}
@@ -35,7 +35,7 @@ public class ArrDaoFileVO {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(final Integer id) {
         this.id = id;
     }
 
@@ -43,7 +43,7 @@ public class ArrDaoFileVO {
         return checksum;
     }
 
-    public void setChecksum(String checksum) {
+    public void setChecksum(final String checksum) {
         this.checksum = checksum;
     }
 
@@ -51,7 +51,7 @@ public class ArrDaoFileVO {
         return checksumType;
     }
 
-    public void setChecksumType(ArrDaoFile.ChecksumType checksumType) {
+    public void setChecksumType(final ArrDaoFile.ChecksumType checksumType) {
         this.checksumType = checksumType;
     }
 
@@ -59,7 +59,7 @@ public class ArrDaoFileVO {
         return created;
     }
 
-    public void setCreated(LocalDateTime created) {
+    public void setCreated(final LocalDateTime created) {
         this.created = created;
     }
 
@@ -67,7 +67,7 @@ public class ArrDaoFileVO {
         return mimetype;
     }
 
-    public void setMimetype(String mimetype) {
+    public void setMimetype(final String mimetype) {
         this.mimetype = mimetype;
     }
 
@@ -75,7 +75,7 @@ public class ArrDaoFileVO {
         return size;
     }
 
-    public void setSize(Long size) {
+    public void setSize(final Long size) {
         this.size = size;
     }
 
@@ -83,7 +83,7 @@ public class ArrDaoFileVO {
         return imageHeight;
     }
 
-    public void setImageHeight(Integer imageHeight) {
+    public void setImageHeight(final Integer imageHeight) {
         this.imageHeight = imageHeight;
     }
 
@@ -91,7 +91,7 @@ public class ArrDaoFileVO {
         return imageWidth;
     }
 
-    public void setImageWidth(Integer imageWidth) {
+    public void setImageWidth(final Integer imageWidth) {
         this.imageWidth = imageWidth;
     }
 
@@ -99,7 +99,7 @@ public class ArrDaoFileVO {
         return sourceXDimesionUnit;
     }
 
-    public void setSourceXDimesionUnit(UnitOfMeasure sourceXDimesionUnit) {
+    public void setSourceXDimesionUnit(final UnitOfMeasure sourceXDimesionUnit) {
         this.sourceXDimesionUnit = sourceXDimesionUnit;
     }
 
@@ -107,7 +107,7 @@ public class ArrDaoFileVO {
         return sourceXDimesionValue;
     }
 
-    public void setSourceXDimesionValue(Double sourceXDimesionValue) {
+    public void setSourceXDimesionValue(final Double sourceXDimesionValue) {
         this.sourceXDimesionValue = sourceXDimesionValue;
     }
 
@@ -115,7 +115,7 @@ public class ArrDaoFileVO {
         return sourceYDimesionUnit;
     }
 
-    public void setSourceYDimesionUnit(UnitOfMeasure sourceYDimesionUnit) {
+    public void setSourceYDimesionUnit(final UnitOfMeasure sourceYDimesionUnit) {
         this.sourceYDimesionUnit = sourceYDimesionUnit;
     }
 
@@ -123,7 +123,7 @@ public class ArrDaoFileVO {
         return sourceYDimesionValue;
     }
 
-    public void setSourceYDimesionValue(Double sourceYDimesionValue) {
+    public void setSourceYDimesionValue(final Double sourceYDimesionValue) {
         this.sourceYDimesionValue = sourceYDimesionValue;
     }
 
@@ -131,7 +131,7 @@ public class ArrDaoFileVO {
         return duration;
     }
 
-    public void setDuration(String duration) {
+    public void setDuration(final String duration) {
         this.duration = duration;
     }
 
@@ -139,7 +139,7 @@ public class ArrDaoFileVO {
         return code;
     }
 
-    public void setCode(String code) {
+    public void setCode(final String code) {
         this.code = code;
     }
 
@@ -147,7 +147,7 @@ public class ArrDaoFileVO {
         return url;
     }
 
-    public void setUrl(String url) {
+    public void setUrl(final String url) {
         this.url = url;
     }
 }

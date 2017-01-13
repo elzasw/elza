@@ -1,10 +1,8 @@
 package cz.tacr.elza.service.vo;
 
-import cz.tacr.elza.domain.ArrChange;
-import org.exolab.castor.types.DateTime;
-
-import java.time.LocalDateTime;
 import java.util.Date;
+
+import cz.tacr.elza.domain.ArrChange;
 
 /**
  * Value objekt konkrétní změny.

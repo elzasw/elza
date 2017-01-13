@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -16,7 +18,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import cz.tacr.elza.api.InterpiClass;
+import cz.tacr.elza.api.enums.InterpiClass;
 import cz.tacr.elza.domain.enumeration.StringLength;
 
 /**
@@ -28,7 +30,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Entity(name = "par_interpi_mapping")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table
-public class ParInterpiMapping implements cz.tacr.elza.api.ParInterpiMapping<ParRelationRoleType, ParRelationType> {
+public class ParInterpiMapping implements Serializable {
 
     @Id
     @GeneratedValue
@@ -56,62 +58,50 @@ public class ParInterpiMapping implements cz.tacr.elza.api.ParInterpiMapping<Par
     @Column(length = StringLength.LENGTH_250)
     private String interpiRoleType;
 
-    @Override
     public Integer getInterpiMappingId() {
         return interpiMappingId;
     }
 
-    @Override
     public void setInterpiMappingId(final Integer interpiMappingId) {
         this.interpiMappingId = interpiMappingId;
     }
 
-    @Override
     public ParRelationRoleType getRelationRoleType() {
         return relationRoleType;
     }
 
-    @Override
     public void setRelationRoleType(final ParRelationRoleType relationRoleType) {
         this.relationRoleType = relationRoleType;
     }
 
-    @Override
     public ParRelationType getRelationType() {
         return relationType;
     }
 
-    @Override
     public void setRelationType(final ParRelationType relationType) {
         this.relationType = relationType;
     }
 
-    @Override
     public InterpiClass getInterpiClass() {
         return interpiClass;
     }
 
-    @Override
     public void setInterpiClass(final InterpiClass interpiClass) {
         this.interpiClass = interpiClass;
     }
 
-    @Override
     public String getInterpiRelationType() {
         return interpiRelationType;
     }
 
-    @Override
     public void setInterpiRelationType(final String interpiRelationType) {
         this.interpiRelationType = interpiRelationType;
     }
 
-    @Override
     public String getInterpiRoleType() {
         return interpiRoleType;
     }
 
-    @Override
     public void setInterpiRoleType(final String interpiRoleType) {
         this.interpiRoleType = interpiRoleType;
     }

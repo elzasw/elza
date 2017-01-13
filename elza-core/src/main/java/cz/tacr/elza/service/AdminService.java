@@ -5,10 +5,6 @@ import java.util.concurrent.Future;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-import com.google.common.eventbus.EventBus;
-import cz.tacr.elza.annotation.AuthMethod;
-import cz.tacr.elza.api.UsrPermission;
-import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import org.hibernate.search.MassIndexer;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
@@ -16,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.search.IndexerProgressMonitor;
 
 /**

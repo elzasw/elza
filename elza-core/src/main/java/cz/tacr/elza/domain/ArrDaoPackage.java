@@ -1,6 +1,6 @@
 package cz.tacr.elza.domain;
 
-import cz.tacr.elza.domain.enumeration.StringLength;
+import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,16 +11,18 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import cz.tacr.elza.domain.enumeration.StringLength;
+
 
 /**
- * Implementace {@link cz.tacr.elza.api.ArrDaoPackage}
+ * Informační balíček digitalizátů (digitálních archivních objektů DAO).
  *
  * @author Martin Šlapa
  * @since 06.12.2016
  */
 @Table
 @Entity(name = "arr_dao_package")
-public class ArrDaoPackage implements cz.tacr.elza.api.ArrDaoPackage<ArrFund, ArrDigitalRepository, ArrDaoBatchInfo> {
+public class ArrDaoPackage implements Serializable {
 
     @Id
     @GeneratedValue
@@ -41,52 +43,42 @@ public class ArrDaoPackage implements cz.tacr.elza.api.ArrDaoPackage<ArrFund, Ar
     @Column(length = StringLength.LENGTH_50, unique = true)
     private String code;
 
-    @Override
     public Integer getDaoPackageId() {
         return daoPackageId;
     }
 
-    @Override
     public void setDaoPackageId(final Integer daoPackageId) {
         this.daoPackageId = daoPackageId;
     }
 
-    @Override
     public ArrFund getFund() {
         return fund;
     }
 
-    @Override
     public void setFund(final ArrFund fund) {
         this.fund = fund;
     }
 
-    @Override
     public ArrDigitalRepository getDigitalRepository() {
         return digitalRepository;
     }
 
-    @Override
     public void setDigitalRepository(final ArrDigitalRepository digitalRepository) {
         this.digitalRepository = digitalRepository;
     }
 
-    @Override
     public ArrDaoBatchInfo getDaoBatchInfo() {
         return daoBatchInfo;
     }
 
-    @Override
     public void setDaoBatchInfo(final ArrDaoBatchInfo daoBatchInfo) {
         this.daoBatchInfo = daoBatchInfo;
     }
 
-    @Override
     public String getCode() {
         return code;
     }
 
-    @Override
     public void setCode(final String code) {
         this.code = code;
     }

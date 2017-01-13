@@ -1,5 +1,13 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.CopyActionResult;
@@ -9,14 +17,6 @@ import cz.tacr.elza.domain.ArrItemData;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.utils.Yaml;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Akce pro kopírování hodnot atributů.

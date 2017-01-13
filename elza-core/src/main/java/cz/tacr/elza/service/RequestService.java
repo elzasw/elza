@@ -1,11 +1,27 @@
 package cz.tacr.elza.service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
-import cz.tacr.elza.api.UsrPermission;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLinkRequest;
+import cz.tacr.elza.domain.ArrDaoLinkRequest.Type;
 import cz.tacr.elza.domain.ArrDaoRequest;
 import cz.tacr.elza.domain.ArrDaoRequestDao;
 import cz.tacr.elza.domain.ArrDigitalRepository;
@@ -28,21 +44,6 @@ import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdDaoIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventIdNodeIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
-import static cz.tacr.elza.api.ArrDaoLinkRequest.*;
 
 /**
  * Servisní třída pro obsluhu a správu požadavků
@@ -159,8 +160,8 @@ public class RequestService {
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public ArrDaoLinkRequest createDaoLinkRequest(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion,
-                                                  ArrDao dao, ArrChange change, final Type type, ArrNode node) {
+    public ArrDaoLinkRequest createDaoLinkRequest(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                                                  final ArrDao dao, final ArrChange change, final Type type, final ArrNode node) {
         final ArrDaoLinkRequest request = new ArrDaoLinkRequest();
         request.setCreateChange(change);
         request.setDao(dao);

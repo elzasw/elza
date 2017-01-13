@@ -1,6 +1,6 @@
 package cz.tacr.elza.drools.model;
 
-import cz.tacr.elza.api.ArrPacket;
+import cz.tacr.elza.domain.ArrPacket;
 
 /**
  * Objekt obalu atributu.

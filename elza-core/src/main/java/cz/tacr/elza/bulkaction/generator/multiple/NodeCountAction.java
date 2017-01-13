@@ -1,5 +1,10 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
+import java.util.List;
+
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.NodeCountActionResult;
@@ -7,11 +12,6 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.utils.Yaml;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * Akce na počítání počtu uzlů.
@@ -52,7 +52,7 @@ public class NodeCountAction extends Action {
 
     @Override
     public boolean canApply(final TypeLevel typeLevel) {
-    	// we are counting only children
+        // we are counting only children
         if (typeLevel.equals(TypeLevel.CHILD) && applyChildren) {
             return true;
         }

@@ -17,14 +17,15 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
+ * Textový popis chyby {@link ArrNodeConformity}
+ *
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 19.11.2015
  */
 @Entity(name = "arr_node_conformity_missing")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrNodeConformityMissing implements cz.tacr.elza.api.ArrNodeConformityMissing<ArrNodeConformity
-        , RulItemType, RulItemSpec, RulPolicyType> {
+public class ArrNodeConformityMissing {
 
     @Id
     @GeneratedValue
@@ -52,62 +53,86 @@ public class ArrNodeConformityMissing implements cz.tacr.elza.api.ArrNodeConform
     @JoinColumn(name = "policyTypeId", nullable = true)
     private RulPolicyType policyType;
 
-    @Override
+    /**
+     * @return id textového popisu
+     */
     public Integer getNodeConformityMissingId() {
         return nodeConformityMissingId;
     }
 
-    @Override
+    /**
+     * @param nodeConformityMissingId id textového popisu
+     */
     public void setNodeConformityMissingId(final Integer nodeConformityMissingId) {
         this.nodeConformityMissingId = nodeConformityMissingId;
     }
 
-    @Override
+    /**
+     * @return stav uzlu
+     */
     public ArrNodeConformity getNodeConformity() {
         return nodeConformity;
     }
 
-    @Override
+    /**
+     * @param nodeConformityInfo stav uzlu
+     */
     public void setNodeConformity(final ArrNodeConformity nodeConformity) {
         this.nodeConformity = nodeConformity;
     }
 
-    @Override
+    /**
+     * @return typ atributu
+     */
     public RulItemType getItemType() {
         return itemType;
     }
 
-    @Override
+    /**
+     * @param itemType typ atributu
+     */
     public void setItemType(final RulItemType itemType) {
         this.itemType = itemType;
     }
 
-    @Override
+    /**
+     * @return specifikace typu atributu
+     */
     public RulItemSpec getItemSpec() {
         return descItemSpec;
     }
 
-    @Override
+    /**
+     * @param itemSpec specifikace typu atributu
+     */
     public void setItemSpec(final RulItemSpec itemSpec) {
         this.descItemSpec = itemSpec;
     }
 
-    @Override
+    /**
+     * @return Textový popis chyby
+     */
     public String getDescription() {
         return description;
     }
 
-    @Override
+    /**
+     * @param description Textový popis chyby
+     */
     public void setDescription(final String description) {
         this.description = description;
     }
 
-    @Override
+    /**
+     * @return typy kontrol, validací, archivního popisu
+     */
     public RulPolicyType getPolicyType() {
         return policyType;
     }
 
-    @Override
+    /**
+     * @param policyType typy kontrol, validací, archivního popisu
+     */
     public void setPolicyType(final RulPolicyType policyType) {
         this.policyType = policyType;
     }

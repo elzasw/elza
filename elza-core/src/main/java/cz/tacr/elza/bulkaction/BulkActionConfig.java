@@ -1,38 +1,52 @@
 package cz.tacr.elza.bulkaction;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import cz.tacr.elza.utils.Yaml;
 
 
 /**
- * Implementace konfigurace hromadné akce.
+ * Konfigurace hromadné akce.
  *
  * @author Martin Šlapa
  * @since 10.11.2015
  */
-public class BulkActionConfig implements cz.tacr.elza.api.vo.BulkActionConfig {
+public class BulkActionConfig {
 
     private String code;
 
-    @JsonIgnore
     private Yaml yaml = new Yaml();
 
-    @Override
+    /**
+     * Vrací kód hromadné akce.
+     *
+     * @return kód hromadné akce
+     */
     public String getCode() {
         return code;
     }
 
-    @Override
+    /**
+     * Nastavuje kód hromadné akce.
+     *
+     * @param code kód hromadné akce
+     */
     public void setCode(final String code) {
         this.code = code;
     }
 
-    @Override
+    /**
+     * Vrací konfiguraci formou textu - předpoklad je formát YAML.
+     *
+     * @return konfigurace
+     */
     public String getConfiguration() {
         return yaml.toString();
     }
 
-    @Override
+    /**
+     * Nastavuje konfiguraci.
+     *
+     * @param configuration konfigurace - text ve formátu YAML
+     */
     public void setConfiguration(final String configuration) {
         try {
             yaml.load(configuration);
@@ -45,7 +59,7 @@ public class BulkActionConfig implements cz.tacr.elza.api.vo.BulkActionConfig {
         return yaml;
     }
 
-    public void setYaml(Yaml yaml) {
+    public void setYaml(final Yaml yaml) {
         this.yaml = yaml;
     }
 

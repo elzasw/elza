@@ -1,6 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
-import cz.tacr.elza.api.ParRelationClassTypeRepeatabilityEnum;
+import cz.tacr.elza.api.enums.ParRelationClassTypeRepeatabilityEnum;
 
 /**
  * VO pro třídu typu vztahu.

@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity(name = "rul_package")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulPackage implements cz.tacr.elza.api.RulPackage {
+public class RulPackage {
 
     @Id
     @GeneratedValue
@@ -42,52 +42,72 @@ public class RulPackage implements cz.tacr.elza.api.RulPackage {
     private Integer version;
 
 
-    @Override
+    /**
+     * @return identifikátor entity
+     */
     public Integer getPackageId() {
         return packageId;
     }
 
-    @Override
+    /**
+     * @param packageId identifikátor entity
+     */
     public void setPackageId(final Integer packageId) {
         this.packageId = packageId;
     }
 
-    @Override
+    /**
+     * @return název balíčku
+     */
     public String getName() {
         return name;
     }
 
-    @Override
+    /**
+     * @param name název balíčku
+     */
     public void setName(final String name) {
         this.name = name;
     }
 
-    @Override
+    /**
+     * @return kód balíčku
+     */
     public String getCode() {
         return code;
     }
 
-    @Override
+    /**
+     * @param code kód balíčku
+     */
     public void setCode(final String code) {
         this.code = code;
     }
 
-    @Override
+    /**
+     * @return popis
+     */
     public String getDescription() {
         return description;
     }
 
-    @Override
+    /**
+     * @param description popis
+     */
     public void setDescription(final String description) {
         this.description = description;
     }
 
-    @Override
+    /**
+     * @return verze balíčku
+     */
     public Integer getVersion() {
         return version;
     }
 
-    @Override
+    /**
+     * @param version verze balíčku
+     */
     public void setVersion(final Integer version) {
         this.version = version;
     }

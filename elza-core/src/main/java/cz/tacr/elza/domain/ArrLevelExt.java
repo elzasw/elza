@@ -5,22 +5,26 @@ import java.util.List;
 
 
 /**
- *  Rozšíření {@link ArrLevel} o atributy archivního popisu včetně hodnot.
+ * Rozšíření {@link ArrLevel} o atributy archivního popisu včetně hodnot.
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
 
-public class ArrLevelExt extends ArrLevel implements cz.tacr.elza.api.ArrLevelExt<ArrChange, ArrNode, ArrDescItem> {
+public class ArrLevelExt extends ArrLevel {
 
     private ArrNodeConformityExt nodeConformityInfo;
 
     private List<ArrDescItem> descItemList = new LinkedList<>();
 
+    /**
+     *
+     * @return atributy archivního popisu včetně hodnot.
+     */
     public List<ArrDescItem> getDescItemList() {
         return descItemList;
     }
 
-    public void setDescItemList(List<ArrDescItem> descItemList) {
+    public void setDescItemList(final List<ArrDescItem> descItemList) {
         this.descItemList = descItemList;
     }
 

@@ -14,7 +14,7 @@ import javax.persistence.ManyToOne;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import cz.tacr.elza.api.UIPartyGroupTypeEnum;
+import cz.tacr.elza.api.enums.UIPartyGroupTypeEnum;
 import cz.tacr.elza.domain.enumeration.StringLength;
 
 /**
@@ -24,7 +24,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
  * @since 25. 10. 2016
  */
 @Entity(name = "ui_party_group")
-public class UIPartyGroup implements cz.tacr.elza.api.UIPartyGroup<ParPartyType> {
+public class UIPartyGroup {
 
     @Id
     @GeneratedValue
@@ -56,73 +56,59 @@ public class UIPartyGroup implements cz.tacr.elza.api.UIPartyGroup<ParPartyType>
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
-    @Override
-	public Integer getPartyGroupId() {
+    public Integer getPartyGroupId() {
         return partyGroupId;
     }
 
-    @Override
-	public void setPartyGroupId(final Integer partyGroupId) {
+    public void setPartyGroupId(final Integer partyGroupId) {
         this.partyGroupId = partyGroupId;
     }
 
-    @Override
-	public ParPartyType getPartyType() {
+    public ParPartyType getPartyType() {
         return partyType;
     }
 
-    @Override
-	public void setPartyType(final ParPartyType partyType) {
+    public void setPartyType(final ParPartyType partyType) {
         this.partyType = partyType;
     }
 
-    @Override
-	public String getCode() {
+    public String getCode() {
         return code;
     }
 
-    @Override
-	public void setCode(final String code) {
+    public void setCode(final String code) {
         this.code = code;
     }
 
-    @Override
-	public String getName() {
+    public String getName() {
         return name;
     }
 
-    @Override
-	public void setName(final String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
-    @Override
-	public Integer getViewOrder() {
+    public Integer getViewOrder() {
         return viewOrder;
     }
 
-    @Override
-	public void setViewOrder(final Integer viewOrder) {
+    public void setViewOrder(final Integer viewOrder) {
         this.viewOrder = viewOrder;
     }
 
-    @Override
-	public UIPartyGroupTypeEnum getType() {
+    public UIPartyGroupTypeEnum getType() {
         return type;
     }
 
-    @Override
-	public void setType(final UIPartyGroupTypeEnum type) {
+    public void setType(final UIPartyGroupTypeEnum type) {
         this.type = type;
     }
 
-    @Override
-	public String getContentDefinition() {
+    public String getContentDefinition() {
         return contentDefinition;
     }
 
-    @Override
-	public void setContentDefinition(final String contentDefinition) {
+    public void setContentDefinition(final String contentDefinition) {
         this.contentDefinition = contentDefinition;
     }
 

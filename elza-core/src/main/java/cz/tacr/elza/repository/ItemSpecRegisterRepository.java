@@ -1,12 +1,12 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemSpecRegister;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-
 import java.util.List;
 import java.util.Set;
+
+import org.springframework.data.jpa.repository.Query;
+
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemSpecRegister;
 
 /**
   * ItemSpecRegister repository

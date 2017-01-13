@@ -1,10 +1,10 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.RegCoordinates;
-import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.Query;
 
-import java.util.List;
+import cz.tacr.elza.domain.RegCoordinates;
 
 /**
  * Repository pro souřadnice rejstříkových hesel.

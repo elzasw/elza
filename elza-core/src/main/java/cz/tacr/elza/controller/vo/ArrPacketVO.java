@@ -1,7 +1,5 @@
 package cz.tacr.elza.controller.vo;
 
-import cz.tacr.elza.api.ArrPacket;
-
 /**
  * VO obalu.
  *
@@ -28,7 +26,7 @@ public class ArrPacketVO {
     /**
      * stav obalu
      */
-    private ArrPacket.State state;
+    private cz.tacr.elza.domain.ArrPacket.State state;
 
     public Integer getId() {
         return id;
@@ -54,11 +52,11 @@ public class ArrPacketVO {
         this.storageNumber = storageNumber;
     }
 
-    public ArrPacket.State getState() {
+    public cz.tacr.elza.domain.ArrPacket.State getState() {
         return state;
     }
 
-    public void setState(final ArrPacket.State state) {
+    public void setState(final cz.tacr.elza.domain.ArrPacket.State state) {
         this.state = state;
     }
 }

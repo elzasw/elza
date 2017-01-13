@@ -1,9 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -13,6 +9,11 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
@@ -24,7 +25,7 @@ import javax.persistence.Table;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParCreator implements cz.tacr.elza.api.ParCreator<ParParty> {
+public class ParCreator {
 
     public static final String PARTY = "party";
 
@@ -40,40 +41,41 @@ public class ParCreator implements cz.tacr.elza.api.ParCreator<ParParty> {
     @JoinColumn(name = "partyId", nullable = false)
     private ParParty party;
 
-
-    @Override
+    /**
+     * Vazba na osobu.
+     * @return osoba
+     */
     public ParParty getParty() {
         return party;
     }
 
-    @Override
+    /**
+     * Vazba na osobu.
+     * @param party osoba
+     */
     public void setParty(final ParParty party) {
         this.party = party;
     }
 
-    @Override
     public Integer getCreatorId() {
         return creatorId;
     }
 
-    @Override
     public void setCreatorId(final Integer creatorId) {
         this.creatorId = creatorId;
     }
 
-    @Override
     public ParParty getCreatorParty() {
         return creatorParty;
     }
 
-    @Override
     public void setCreatorParty(final ParParty creatorParty) {
         this.creatorParty = creatorParty;
     }
 
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof cz.tacr.elza.api.ParCreator)) {
+        if (!(obj instanceof ParCreator)) {
             return false;
         }
         if (this == obj) {

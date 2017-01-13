@@ -1,10 +1,10 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
@@ -12,20 +12,17 @@ import javax.persistence.Entity;
  */
 @Entity(name = "par_dynasty")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ParDynasty extends ParParty implements cz.tacr.elza.api.ParDynasty {
+public class ParDynasty extends ParParty {
 
     @Column(nullable = false)
     @JsonIgnore
     private String genealogy;
 
-
-    @Override
     public String getGenealogy() {
         return genealogy;
     }
 
-    @Override
-    public void setGenealogy(String genealogy) {
+    public void setGenealogy(final String genealogy) {
         this.genealogy = genealogy;
     }
 }

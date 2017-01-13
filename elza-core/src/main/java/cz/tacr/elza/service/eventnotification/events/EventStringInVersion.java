@@ -6,7 +6,7 @@ package cz.tacr.elza.service.eventnotification.events;
  * @author Petr Compel [<a href="mailto:petr.compel@marbes.cz">petr.compel@marbes.cz</a>]
  * @since 15.01.2016
  */
-public class EventStringInVersion extends EventVersion<EventStringInVersion> {
+public class EventStringInVersion extends EventVersion {
 
     /**
      * Id entity.

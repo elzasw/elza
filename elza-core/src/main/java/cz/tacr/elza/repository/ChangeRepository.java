@@ -1,9 +1,9 @@
 package cz.tacr.elza.repository;
 
+import org.springframework.stereotype.Repository;
+
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrNode;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
 
 /**

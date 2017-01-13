@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity(name = "rul_rule")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulRule implements cz.tacr.elza.api.RulRule<RulPackage, RulRuleSet, RulOutputType> {
+public class RulRule {
 
     @Id
     @GeneratedValue
@@ -47,64 +47,98 @@ public class RulRule implements cz.tacr.elza.api.RulRule<RulPackage, RulRuleSet,
     @Column(nullable = false)
     private Integer priority;
 
-    @Override
+    /**
+     * @return identifikátor entity
+     */
     public Integer getRuleId() {
         return ruleId;
     }
 
-    @Override
+    /**
+     * @param ruleId identifikátor entity
+     */
     public void setRuleId(final Integer ruleId) {
         this.ruleId = ruleId;
     }
 
-    @Override
+    /**
+     * @return pravidla
+     */
     public RulRuleSet getRuleSet() {
         return ruleSet;
     }
 
-    @Override
+    /**
+     * @param ruleSet pravidla
+     */
     public void setRuleSet(final RulRuleSet ruleSet) {
         this.ruleSet = ruleSet;
     }
 
-    @Override
+    /**
+     * @return balíček
+     */
     public RulPackage getPackage() {
         return rulPackage;
     }
 
-    @Override
+    /**
+     * @param rulPackage balíček
+     */
     public void setPackage(final RulPackage rulPackage) {
         this.rulPackage = rulPackage;
     }
 
-    @Override
+    /**
+     * @return název souboru
+     */
     public String getFilename() {
         return filename;
     }
 
-    @Override
+    /**
+     * @param filename název souboru
+     */
     public void setFilename(final String filename) {
         this.filename = filename;
     }
 
-    @Override
+    /**
+     * @return typ pravidel
+     */
     public RuleType getRuleType() {
         return ruleType;
     }
 
-    @Override
+    /**
+     * @param ruleType typ pravidel
+     */
     public void setRuleType(final RuleType ruleType) {
         this.ruleType = ruleType;
     }
 
-    @Override
+    /**
+     * @return priorita vykonávání
+     */
     public Integer getPriority() {
         return priority;
     }
 
-    @Override
+    /**
+     * @param priority priorita vykonávání
+     */
     public void setPriority(final Integer priority) {
         this.priority = priority;
     }
 
+    /**
+     * Typy pravidel.
+     */
+    public enum RuleType {
+        CONFORMITY_INFO,
+        CONFORMITY_IMPACT,
+        ATTRIBUTE_TYPES,
+        OUTPUT_ATTRIBUTE_TYPES,
+        NEW_LEVEL
+    }
 }

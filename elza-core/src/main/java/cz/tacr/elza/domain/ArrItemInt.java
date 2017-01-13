@@ -8,17 +8,15 @@ import java.util.Objects;
  * @author Martin Šlapa
  * @since 15.9.15
  */
-public class ArrItemInt extends ArrItemData implements cz.tacr.elza.api.ArrItemInt {
+public class ArrItemInt extends ArrItemData {
 
     private Integer value;
 
-    @Override
     public Integer getValue() {
         return value;
     }
 
-    @Override
-    public void setValue(Integer value) {
+    public void setValue(final Integer value) {
         this.value = value;
     }
 

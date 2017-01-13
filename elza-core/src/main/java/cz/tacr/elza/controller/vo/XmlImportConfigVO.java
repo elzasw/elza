@@ -1,7 +1,8 @@
 package cz.tacr.elza.controller.vo;
 
-import cz.tacr.elza.api.vo.XmlImportType;
 import org.springframework.web.multipart.MultipartFile;
+
+import cz.tacr.elza.domain.vo.XmlImportType;
 
 public class XmlImportConfigVO {
 

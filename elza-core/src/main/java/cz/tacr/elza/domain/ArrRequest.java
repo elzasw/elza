@@ -1,6 +1,6 @@
 package cz.tacr.elza.domain;
 
-import cz.tacr.elza.domain.enumeration.StringLength;
+import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorColumn;
@@ -16,10 +16,11 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.time.LocalDateTime;
+
+import cz.tacr.elza.domain.enumeration.StringLength;
 
 /**
- * Implementace {@link cz.tacr.elza.api.ArrRequest}
+ * Dotaz pro externí systémy.
  *
  * @author Martin Šlapa
  * @since 07.12.2016
@@ -31,7 +32,7 @@ import java.time.LocalDateTime;
         name="discriminator",
         discriminatorType= DiscriminatorType.STRING
 )
-public abstract class ArrRequest implements cz.tacr.elza.api.ArrRequest<ArrFund, ArrChange> {
+public abstract class ArrRequest {
 
     public enum ClassType {
         DAO_LINK(Values.DAO_LINK), DAO(Values.DAO), DIGITIZATION(Values.DIGITIZATION);
@@ -51,6 +52,35 @@ public abstract class ArrRequest implements cz.tacr.elza.api.ArrRequest<ArrFund,
             public static final String DAO = "DAO";
             public static final String DIGITIZATION = "DIGITIZATION";
         }
+    }
+
+    public enum State {
+
+        /**
+         * V přípravě.
+         */
+        OPEN,
+
+        /**
+         * Ve frontě.
+         */
+        QUEUED,
+
+        /**
+         * Odeslán.
+         */
+        SENT,
+
+        /**
+         * Přijat.
+         */
+        ACCEPTED,
+
+        /**
+         * Zamítnut.
+         */
+        REJECTED
+
     }
 
     @Id
@@ -82,62 +112,50 @@ public abstract class ArrRequest implements cz.tacr.elza.api.ArrRequest<ArrFund,
     @Enumerated(EnumType.STRING)
     private ClassType discriminator;
 
-    @Override
     public Integer getRequestId() {
         return requestId;
     }
 
-    @Override
     public void setRequestId(final Integer requestId) {
         this.requestId = requestId;
     }
 
-    @Override
     public ArrFund getFund() {
         return fund;
     }
 
-    @Override
     public void setFund(final ArrFund fund) {
         this.fund = fund;
     }
 
-    @Override
     public String getCode() {
         return code;
     }
 
-    @Override
     public void setCode(final String code) {
         this.code = code;
     }
 
-    @Override
     public State getState() {
         return state;
     }
 
-    @Override
     public void setState(final State state) {
         this.state = state;
     }
 
-    @Override
     public LocalDateTime getResponseExternalSystem() {
         return responseExternalSystem;
     }
 
-    @Override
     public void setResponseExternalSystem(final LocalDateTime responseExternalSystem) {
         this.responseExternalSystem = responseExternalSystem;
     }
 
-    @Override
     public String getRejectReason() {
         return rejectReason;
     }
 
-    @Override
     public void setRejectReason(final String rejectReason) {
         this.rejectReason = rejectReason;
     }

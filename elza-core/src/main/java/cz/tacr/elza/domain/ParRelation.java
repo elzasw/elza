@@ -1,5 +1,6 @@
 package cz.tacr.elza.domain;
 
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.List;
 
@@ -22,6 +23,7 @@ import org.springframework.data.rest.core.annotation.RestResource;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
+import cz.tacr.elza.domain.interfaces.Versionable;
 
 
 /**
@@ -33,7 +35,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParRelation extends AbstractVersionableEntity implements cz.tacr.elza.api.ParRelation<ParParty, ParRelationType, ParUnitdate, ParRelationEntity> {
+public class ParRelation extends AbstractVersionableEntity implements Versionable, Serializable {
 
     @Id
     @GeneratedValue
@@ -66,82 +68,66 @@ public class ParRelation extends AbstractVersionableEntity implements cz.tacr.el
     @OneToMany(mappedBy = "relation", fetch = FetchType.LAZY)
     private List<ParRelationEntity> relationEntities;
 
-    @Override
     public Integer getRelationId() {
         return relationId;
     }
 
-    @Override
     public void setRelationId(final Integer relationId) {
         this.relationId = relationId;
     }
 
-    @Override
     public ParParty getParty() {
         return party;
     }
 
-    @Override
     public void setParty(final ParParty party) {
         this.party = party;
     }
 
-    @Override
     public ParRelationType getRelationType() {
         return relationType;
     }
 
-    @Override
     public void setRelationType(final ParRelationType relationType) {
         this.relationType = relationType;
     }
 
-    @Override
     public ParUnitdate getFrom() {
         return from;
     }
 
-    @Override
     public void setFrom(final ParUnitdate from) {
         this.from = from;
     }
 
-    @Override
     public ParUnitdate getTo() {
         return to;
     }
 
-    @Override
     public void setTo(final ParUnitdate to) {
         this.to = to;
     }
 
-    @Override
     public String getNote() {
         return note;
     }
 
-    @Override
     public void setNote(final String note) {
         this.note = note;
     }
 
-    @Override
     public String getSource() {
         return source;
     }
 
-    @Override
     public void setSource(final String source) {
         this.source = source;
     }
 
-    @Override
     public List<ParRelationEntity> getRelationEntities() {
         return relationEntities;
     }
 
-    @Override
     public void setRelationEntities(final List<ParRelationEntity> relationEntities) {
         this.relationEntities = relationEntities;
     }

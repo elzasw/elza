@@ -8,17 +8,15 @@ import java.util.Objects;
  * @author Martin Šlapa
  * @since 15.9.15
  */
-public class ArrItemPacketRef extends ArrItemData implements cz.tacr.elza.api.ArrItemPacketRef<ArrPacket> {
+public class ArrItemPacketRef extends ArrItemData {
 
     private ArrPacket packet;
 
-    @Override
     public ArrPacket getPacket() {
         return packet;
     }
 
-    @Override
-    public void setPacket(ArrPacket packet) {
+    public void setPacket(final ArrPacket packet) {
         this.packet = packet;
     }
 

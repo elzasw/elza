@@ -1,12 +1,13 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.api.vo.XmlImportType;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.domain.vo.XmlImportType;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;

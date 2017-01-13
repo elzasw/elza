@@ -1,8 +1,9 @@
 package cz.tacr.elza.controller.vo;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import cz.tacr.elza.api.UISettings.SettingsType;
-import cz.tacr.elza.api.UISettings.EntityType;
+
+import cz.tacr.elza.domain.UISettings.EntityType;
+import cz.tacr.elza.domain.UISettings.SettingsType;
 
 /**
  * VO uživatelského nastavení.

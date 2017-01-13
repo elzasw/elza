@@ -23,8 +23,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity(name = "par_registry_role")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParRegistryRole
-        implements cz.tacr.elza.api.ParRegistryRole<RegRegisterType, ParRelationRoleType> {
+public class ParRegistryRole {
 
     @Id
     @GeneratedValue
@@ -42,34 +41,36 @@ public class ParRegistryRole
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
-    @Override
     public Integer getRegistryRoleId() {
         return registryRoleId;
     }
 
-    @Override
     public void setRegistryRoleId(final Integer registryRoleId) {
         this.registryRoleId = registryRoleId;
     }
 
-    @Override
     public RegRegisterType getRegisterType() {
         return registerType;
     }
 
-    @Override
     public void setRegisterType(final RegRegisterType registerType) {
         this.registerType = registerType;
     }
 
-    @Override
     public ParRelationRoleType getRoleType() {
         return roleType;
     }
 
-    @Override
     public void setRoleType(final ParRelationRoleType roleType) {
         this.roleType = roleType;
+    }
+
+    public RulPackage getRulPackage() {
+        return rulPackage;
+    }
+
+    public void setRulPackage(final RulPackage rulPackage) {
+        this.rulPackage = rulPackage;
     }
 
     @Override
@@ -103,13 +104,5 @@ public class ParRegistryRole
                 ", registerType=" + registerType +
                 ", roleType=" + roleType +
                 '}';
-    }
-
-    public RulPackage getRulPackage() {
-        return rulPackage;
-    }
-
-    public void setRulPackage(final RulPackage rulPackage) {
-        this.rulPackage = rulPackage;
     }
 }

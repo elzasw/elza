@@ -8,17 +8,15 @@ import java.util.Objects;
  * @author Martin Šlapa
  * @since 15.9.15
  */
-public class ArrItemPartyRef extends ArrItemData implements cz.tacr.elza.api.ArrItemPartyRef<ParParty> {
+public class ArrItemPartyRef extends ArrItemData {
 
     private ParParty party;
 
-    @Override
     public ParParty getParty() {
         return party;
     }
 
-    @Override
-    public void setParty(ParParty party) {
+    public void setParty(final ParParty party) {
         this.party = party;
     }
 

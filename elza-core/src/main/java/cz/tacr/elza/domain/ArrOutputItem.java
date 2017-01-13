@@ -15,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 
 /**
- * Implementace {@link cz.tacr.elza.api.ArrOutputItem}
+ * Atribut pro výstupy.
  *
  * @author Martin Šlapa
  * @since 20.06.2016
@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
-public class ArrOutputItem<T extends ArrItemData> extends ArrItem<T> implements cz.tacr.elza.api.ArrOutputItem<ArrOutputDefinition> {
+public class ArrOutputItem extends ArrItem {
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrOutputDefinition.class)
@@ -35,11 +35,11 @@ public class ArrOutputItem<T extends ArrItemData> extends ArrItem<T> implements 
     public ArrOutputItem() {
     }
 
-    public ArrOutputItem(final T item) {
+    public ArrOutputItem(final ArrItemData item) {
         super(item);
     }
 
-    public ArrOutputItem(final Class<T> clazz) throws IllegalAccessException, InstantiationException {
+    public ArrOutputItem(final Class<? extends ArrItemData> clazz) throws IllegalAccessException, InstantiationException {
         super(clazz.newInstance());
     }
 
@@ -48,7 +48,6 @@ public class ArrOutputItem<T extends ArrItemData> extends ArrItem<T> implements 
         return outputDefinition;
     }
 
-    @Override
     public void setOutputDefinition(final ArrOutputDefinition outputDefinition) {
         this.outputDefinition = outputDefinition;
     }

@@ -1,5 +1,10 @@
 package cz.tacr.elza.dbchangelog;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
+
 import liquibase.change.custom.CustomTaskChange;
 import liquibase.database.Database;
 import liquibase.database.jvm.JdbcConnection;
@@ -8,12 +13,6 @@ import liquibase.exception.DatabaseException;
 import liquibase.exception.SetupException;
 import liquibase.exception.ValidationErrors;
 import liquibase.resource.ResourceAccessor;
-
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Migrace dat pro změnu datace (odstranění polointervalů).
@@ -29,13 +28,13 @@ public class DbUpgrade1_64 implements CustomTaskChange {
     }
 
     @Override
-    public void setFileOpener(ResourceAccessor arg0) {}
+    public void setFileOpener(final ResourceAccessor arg0) {}
 
     @Override
     public void setUp() throws SetupException {}
 
     @Override
-    public ValidationErrors validate(Database arg0) {
+    public ValidationErrors validate(final Database arg0) {
         return null;
     }
 

@@ -1,18 +1,24 @@
 package cz.tacr.elza.domain;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import javax.persistence.*;
-
 /**
- * Implementace {@link cz.tacr.elza.api.ParInstitution}.
+ * Instituce.
  *
  * @author Martin Šlapa
  * @since 18.3.2016
  */
 @Entity(name = "par_institution")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ParInstitution implements cz.tacr.elza.api.ParInstitution<ParInstitutionType, ParParty> {
+public class ParInstitution {
 
     @Id
     @GeneratedValue
@@ -29,42 +35,58 @@ public class ParInstitution implements cz.tacr.elza.api.ParInstitution<ParInstit
     @JoinColumn(name = "partyId", nullable = false)
     private ParParty party;
 
-    @Override
+    /**
+     * @return identifikátor
+     */
     public Integer getInstitutionId() {
         return institutionId;
     }
 
-    @Override
+    /**
+     * @param institutionId identifikátor
+     */
     public void setInstitutionId(final Integer institutionId) {
         this.institutionId = institutionId;
     }
 
-    @Override
+    /**
+     * @return kód instituce
+     */
     public String getInternalCode() {
         return internalCode;
     }
 
-    @Override
+    /**
+     * @param internalCode kód instituce
+     */
     public void setInternalCode(final String internalCode) {
         this.internalCode = internalCode;
     }
 
-    @Override
+    /**
+     * @return typ instituce
+     */
     public ParInstitutionType getInstitutionType() {
         return institutionType;
     }
 
-    @Override
+    /**
+     * @param institutionType typ instituce
+     */
     public void setInstitutionType(final ParInstitutionType institutionType) {
         this.institutionType = institutionType;
     }
 
-    @Override
+    /**
+     * @return osoba
+     */
     public ParParty getParty() {
         return party;
     }
 
-    @Override
+    /**
+     * @param party osoba
+     */
     public void setParty(final ParParty party) {
         this.party = party;
     }

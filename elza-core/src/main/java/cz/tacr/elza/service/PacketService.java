@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
-import cz.tacr.elza.api.UsrPermission;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.DeleteException;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.exception.codes.ArrangementCode;

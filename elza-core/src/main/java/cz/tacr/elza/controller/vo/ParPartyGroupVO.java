@@ -2,8 +2,6 @@ package cz.tacr.elza.controller.vo;
 
 import java.util.List;
 
-import javax.persistence.Column;
-
 
 /**
  * Organizace nebo skupina osob, která se označuje konkrétním jménem a která vystupuje nebo může vystupovat jako entita.

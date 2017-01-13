@@ -171,7 +171,7 @@ public class RegistryService {
         }
 
         UsrUser user = userService.getLoggedUser();
-        boolean readAllScopes = userService.hasPermission(cz.tacr.elza.api.UsrPermission.Permission.REG_SCOPE_RD_ALL);
+        boolean readAllScopes = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_RD_ALL);
         return regRecordRepository.findRegRecordByTextAndType(searchRecord, registerTypeIds, firstResult,
                 maxResults, parentRecord, scopeIdsForRecord, readAllScopes, user);
     }
@@ -197,7 +197,7 @@ public class RegistryService {
         }
 
         UsrUser user = userService.getLoggedUser();
-        boolean readAllScopes = userService.hasPermission(cz.tacr.elza.api.UsrPermission.Permission.REG_SCOPE_RD_ALL);
+        boolean readAllScopes = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_RD_ALL);
 
         return regRecordRepository.findRegRecordByTextAndTypeCount(searchRecord, registerTypeIds, parentRecord, scopeIdsForRecord, readAllScopes, user);
     }

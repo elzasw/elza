@@ -1,6 +1,6 @@
 package cz.tacr.elza.bulkaction.generator;
 
-import cz.tacr.elza.api.ArrBulkActionRun.State;
+import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionInterruptedException;

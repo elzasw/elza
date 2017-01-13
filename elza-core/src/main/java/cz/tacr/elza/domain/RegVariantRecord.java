@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -11,18 +13,19 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import cz.tacr.elza.api.RegScope;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import cz.tacr.elza.api.interfaces.IRegScope;
 import cz.tacr.elza.domain.enumeration.StringLength;
+import cz.tacr.elza.domain.interfaces.Versionable;
 
 
 /**
- * Variantní rejstříková hesla.
+ * Variantní rejstříkové heslo.
  *
  * @author Martin Kužel [<a href="mailto:martin.kuzel@marbes.cz">martin.kuzel@marbes.cz</a>]
  * @since 21.8.2015
@@ -31,7 +34,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RegVariantRecord extends AbstractVersionableEntity implements  cz.tacr.elza.api.RegVariantRecord<RegRecord> {
+public class RegVariantRecord extends AbstractVersionableEntity implements Versionable, Serializable, IRegScope {
 
     @Id
     @GeneratedValue
@@ -42,10 +45,6 @@ public class RegVariantRecord extends AbstractVersionableEntity implements  cz.t
     @JoinColumn(name = "recordId", nullable = false)
     private RegRecord regRecord;
 
-//    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRecord.class)
-//    @JoinColumn(name = "recordId", nullable = false, insertable = false, updatable = false)
-//    private RegRecord regRecordPar;
-
     @Column(length = StringLength.LENGTH_1000)
     private String record;
 
@@ -53,49 +52,57 @@ public class RegVariantRecord extends AbstractVersionableEntity implements  cz.t
     public static final String RECORD = "record";
 
 
-    @Override
+    /**
+     * Vlastní ID.
+     * @return  id var. hesla
+     */
     public Integer getVariantRecordId() {
         return variantRecordId;
     }
 
-    @Override
+    /**
+     * Vlastní ID.
+     * @param variantRecordId id var. hesla
+     */
     public void setVariantRecordId(final Integer variantRecordId) {
         this.variantRecordId = variantRecordId;
     }
 
-    @Override
+    /**
+     * Vazba na heslo rejstříku.
+     * @return  objekt hesla
+     */
     public RegRecord getRegRecord() {
         return regRecord;
     }
 
-    @Override
+    /**
+     * Vazba na heslo rejstříku.
+     * @param regRecord objekt hesla
+     */
     public void setRegRecord(final RegRecord regRecord) {
         this.regRecord = regRecord;
     }
 
-    @Override
+    /**
+     * Obsah hesla.
+     * @return obsah variantního hesla
+     */
     public String getRecord() {
         return record;
     }
 
-    @Override
+    /**
+     * Obsah hesla.
+     * @param record obsah variantního hesla
+     */
     public void setRecord(final String record) {
         this.record = record;
     }
 
-//    @Override
-//    public RegRecord getRegRecordPar() {
-//        return regRecordPar;
-//    }
-//
-//    @Override
-//    public void setRegRecordPar(RegRecord regRecordPar) {
-//        this.regRecordPar = regRecordPar;
-//    }
-
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof cz.tacr.elza.api.RegVariantRecord)) {
+        if (!(obj instanceof RegVariantRecord)) {
             return false;
         }
         if (this == obj) {

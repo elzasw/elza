@@ -31,7 +31,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParPartyNameComplement implements cz.tacr.elza.api.ParPartyNameComplement<ParComplementType, ParPartyName> {
+public class ParPartyNameComplement {
 
     /* Konstanty pro vazby a fieldy. */
     public static final String PARTY_NAME_COMPLEMENT_ID = "partyNameComplementId";
@@ -54,56 +54,48 @@ public class ParPartyNameComplement implements cz.tacr.elza.api.ParPartyNameComp
     private String complement;
 
 
-    @Override
     public Integer getPartyNameComplementId() {
         return partyNameComplementId;
     }
 
-    @Override
     public void setPartyNameComplementId(final Integer partyNameComplementId) {
         this.partyNameComplementId = partyNameComplementId;
     }
 
-    @Override
     public ParComplementType getComplementType() {
         return complementType;
     }
 
-    @Override
     public void setComplementType(final ParComplementType complementType) {
         this.complementType = complementType;
     }
 
-    @Override
     public ParPartyName getPartyName() {
         return partyName;
     }
 
-    @Override
     public void setPartyName(final ParPartyName partyName) {
         this.partyName = partyName;
     }
 
-    @Override
     public String getComplement() {
         return complement;
     }
 
-    @Override
     public void setComplement(final String complement) {
         this.complement = complement;
     }
 
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof cz.tacr.elza.api.ParUnitdate)) {
+        if (!(obj instanceof ParPartyNameComplement)) {
             return false;
         }
         if (this == obj) {
             return true;
         }
 
-        cz.tacr.elza.api.ParPartyNameComplement<ParComplementType, ParPartyName> other = (cz.tacr.elza.api.ParPartyNameComplement<ParComplementType, ParPartyName>) obj;
+        ParPartyNameComplement other = (ParPartyNameComplement) obj;
 
         return new EqualsBuilder().append(partyNameComplementId, other.getPartyNameComplementId()).isEquals();
     }

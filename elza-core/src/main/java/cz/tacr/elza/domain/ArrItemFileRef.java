@@ -1,9 +1,10 @@
 package cz.tacr.elza.domain;
 
+import java.util.Objects;
+
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import java.util.Objects;
 
 /**
  * Rozšiřuje atribut archivního popisu o jeho hodnotu.
@@ -11,19 +12,17 @@ import java.util.Objects;
  * @author Petr Compel <petr.compel@marbes.cz>
  * @since 27.6.16
  */
-public class ArrItemFileRef extends ArrItemData implements cz.tacr.elza.api.ArrItemFileRef<ArrFile> {
+public class ArrItemFileRef extends ArrItemData {
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFile.class)
     @JoinColumn(name = "fileId", nullable = false)
     private ArrFile file;
 
-    @Override
     public ArrFile getFile() {
         return file;
     }
 
-    @Override
-    public void setFile(ArrFile packet) {
+    public void setFile(final ArrFile packet) {
         this.file = packet;
     }
 

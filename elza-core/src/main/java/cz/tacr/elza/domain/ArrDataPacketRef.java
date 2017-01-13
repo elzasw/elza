@@ -24,7 +24,7 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 @Entity(name = "arr_data_packet_ref")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrDataPacketRef extends ArrData implements cz.tacr.elza.api.ArrDataPacketRef<ArrPacket> {
+public class ArrDataPacketRef extends ArrData {
 
     public static final String PACKET = "packet";
 
@@ -41,12 +41,10 @@ public class ArrDataPacketRef extends ArrData implements cz.tacr.elza.api.ArrDat
         return packetType == null ? null : packetType.getPacketTypeId();
     }
 
-    @Override
     public ArrPacket getPacket() {
         return packet;
     }
 
-    @Override
     public void setPacket(final ArrPacket packet) {
         this.packet = packet;
     }
@@ -56,10 +54,10 @@ public class ArrDataPacketRef extends ArrData implements cz.tacr.elza.api.ArrDat
         RulPacketType packetType = packet.getPacketType();
         String fulltext = null;
         if (packetType == null) {
-        	fulltext = packet.getStorageNumber();
+            fulltext = packet.getStorageNumber();
         } else {
-        	fulltext = packetType.getName() + ": " + packet.getStorageNumber();
+            fulltext = packetType.getName() + ": " + packet.getStorageNumber();
         }
-		return fulltext;
+        return fulltext;
     }
 }

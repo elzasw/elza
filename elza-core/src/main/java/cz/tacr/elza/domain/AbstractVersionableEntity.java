@@ -4,7 +4,8 @@ import javax.persistence.MappedSuperclass;
 import javax.persistence.Version;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import cz.tacr.elza.api.Versionable;
+
+import cz.tacr.elza.domain.interfaces.Versionable;
 
 /**
  * Abstraktní předek pro prvky s verzí.

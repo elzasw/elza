@@ -8,18 +8,9 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.bulkaction.BulkActionService;
-import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulAction;
-import cz.tacr.elza.exception.ProcessException;
-import cz.tacr.elza.service.OutputService;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,25 +27,29 @@ import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
-import com.google.common.collect.Sets;
-
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
-import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
-import cz.tacr.elza.api.UsrPermission;
+import cz.tacr.elza.bulkaction.BulkActionService;
+import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrNodeOutput;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.domain.ArrOutputResult;
+import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulTemplate;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.exception.ProcessException;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.NodeOutputRepository;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -85,13 +80,7 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
     private ArrangementService arrangementService;
 
     @Autowired
-    private OutputRepository outputRepository;
-
-    @Autowired
     private OutputDefinitionRepository outputDefinitionRepository;
-
-    @Autowired
-    private NodeOutputRepository nodeOutputRepository;
 
     @Autowired
     private FundRepository fundRepository;
@@ -233,7 +222,7 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
         }
         if (task != null) {
             try {
-                ListenableFuture future = taskExecutor.submitListenable(task);
+                ListenableFuture<OutputGeneratorWorkerAbstract> future = taskExecutor.submitListenable(task);
                 //noinspection unchecked
                 future.addCallback(this);
             } catch (RejectedExecutionException e) {

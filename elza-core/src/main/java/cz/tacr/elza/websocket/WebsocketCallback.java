@@ -1,14 +1,14 @@
 package cz.tacr.elza.websocket;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Třída pro možnost poslání zpět zprávy klientovi s odpovědí operace- např. při založení dat jsou tímto callbackem
@@ -30,7 +30,7 @@ public class WebsocketCallback {
      */
     public void send(final Object resultData, final String receiptId) {
         Assert.notNull(receiptId);
-        final Map sendHeader = new HashMap();
+        final Map<String, Object> sendHeader = new HashMap<>();
         sendHeader.put("receipt-id", receiptId);
         messagingTemplate.convertAndSend("/topic/api/changes", resultData, sendHeader);
     }

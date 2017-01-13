@@ -1,7 +1,7 @@
 package cz.tacr.elza.service;
 
 import cz.tacr.elza.annotation.AuthMethod;
-import cz.tacr.elza.api.UsrPermission;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.domain.RegExternalSystem;

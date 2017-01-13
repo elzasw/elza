@@ -1,11 +1,19 @@
 package cz.tacr.elza.bulkaction.generator;
 
-import cz.tacr.elza.api.ArrBulkActionRun.State;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionInterruptedException;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.bulkaction.generator.result.SerialNumberResult;
 import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -18,13 +26,6 @@ import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-
-import java.util.List;
 
 
 /**
@@ -112,7 +113,7 @@ public class SerialNumberBulkAction extends BulkAction {
 
         String stopWhenType = (String) bulkActionConfig.getString("stop_when_type");
         if (stopWhenType != null) {
-        	descItemStopType = itemTypeRepository.getOneByCode(stopWhenType);
+            descItemStopType = itemTypeRepository.getOneByCode(stopWhenType);
             Assert.notNull(descItemStopType, "Description item not found: " + stopWhenType);
 
             String stopOnValue = (String) bulkActionConfig.getString(
@@ -135,7 +136,7 @@ public class SerialNumberBulkAction extends BulkAction {
             throw new BulkActionInterruptedException("Hromadná akce " + toString() + " byla přerušena.");
         }
         change = bulkActionRun.getChange();
-        
+
         // update serial number
         update(level);
 
@@ -151,42 +152,42 @@ public class SerialNumberBulkAction extends BulkAction {
      * Update number for given level
      * @param level Level to be updated
      */
-	private void update(ArrLevel level) {
-		ArrNode currNode = level.getNode();
-		
-		ArrDescItem<ArrItemInt> descItem = loadDescItem(currNode);
-		int sn = serialNumber.getNext();
+    private void update(final ArrLevel level) {
+        ArrNode currNode = level.getNode();
 
-		// vytvoření nového atributu
-		if (descItem == null) {
-			descItem = new ArrDescItem(new ArrItemInt());
-			descItem.setItemType(descItemType);
-			descItem.setNode(currNode);
-		}
+        ArrDescItem descItem = loadDescItem(currNode);
+        int sn = serialNumber.getNext();
 
-		if (!(descItem.getItem() instanceof ArrItemInt)) {
-			throw new IllegalStateException(descItemType.getCode() + " není typu ArrDescItemInt");
-		}
+        // vytvoření nového atributu
+        if (descItem == null) {
+            descItem = new ArrDescItem(new ArrItemInt());
+            descItem.setItemType(descItemType);
+            descItem.setNode(currNode);
+        }
 
-		ArrItemInt item = descItem.getItem();
+        if (!(descItem.getItem() instanceof ArrItemInt)) {
+            throw new IllegalStateException(descItemType.getCode() + " není typu ArrDescItemInt");
+        }
 
-		// uložit pouze při rozdílu
-		if (item.getValue() == null || sn != item.getValue()) {
-			item.setValue(sn);
-			ArrDescItem ret = saveDescItem(descItem, version, change);
-			level.setNode(ret.getNode());
-			countChanges++;
-		}
+        ArrItemInt item = (ArrItemInt) descItem.getItem();
 
-		if (descItemStopType != null) {
-			ArrDescItem descItemLevel = loadDescItem(level, descItemStopType, descItemStopSpec);
-			if (descItemLevel != null) {
-				return;
-			}
-		}
-	}
+        // uložit pouze při rozdílu
+        if (item.getValue() == null || sn != item.getValue()) {
+            item.setValue(sn);
+            ArrDescItem ret = saveDescItem(descItem, version, change);
+            level.setNode(ret.getNode());
+            countChanges++;
+        }
 
-	/**
+        if (descItemStopType != null) {
+            ArrDescItem descItemLevel = loadDescItem(level, descItemStopType, descItemStopSpec);
+            if (descItemLevel != null) {
+                return;
+            }
+        }
+    }
+
+    /**
      * Načtení požadovaného atributu
      *
      * @param node uzel

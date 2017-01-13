@@ -1,10 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.springframework.data.rest.core.annotation.RestResource;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -15,15 +10,23 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.springframework.data.rest.core.annotation.RestResource;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
- * popis {@link cz.tacr.elza.api.ArrLevel}.
+ * Úroveň hierarchického popisu. Úroveň sama o sobě není nositelem hodnoty. Vlastní hodnoty prvků
+ * popisu jsou zapsány v atributech archivního popisu {@link ArrDescItem}.
+ *
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
 @Entity(name = "arr_level")
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"position", "nodeIdParent", "deleteChangeId"}))
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrLevel implements cz.tacr.elza.api.ArrLevel<ArrChange, ArrNode> {
+public class ArrLevel {
 
     @Id
     @GeneratedValue
@@ -52,75 +55,105 @@ public class ArrLevel implements cz.tacr.elza.api.ArrLevel<ArrChange, ArrNode> {
     @Column(nullable = false)
     private Integer position;
 
-    @Override
     public Integer getLevelId() {
         return levelId;
     }
 
-    @Override
     public void setLevelId(final Integer levelId) {
         this.levelId = levelId;
     }
 
-    @Override
+    /**
+    *
+    * @return identifikátor uzlu, existuje více záznamů se stejným node_id, všechny reprezentují
+    *         stejný uzel stromu - v případě, že je uzel zařazený pouze do jedné AP (má jednoho
+    *         nadřízeného), tak je pouze jedno platné node_id - platné = nevyplněné node_id - pokud
+    *         je uzel přímo zařazený do jiné AP, tak existují 2 platné záznamy uzlu (nevyplněné
+    *         delete_change_id).
+    */
     public ArrNode getNode() {
         return node;
     }
 
-    @Override
-    public void setNode(ArrNode node) {
+    /**
+     * identifikátor uzlu, existuje více záznamů se stejným node_id, všechny reprezentují stejný
+     * uzel stromu - v případě, že je uzel zařazený pouze do jedné AP (má jednoho nadřízeného), tak
+     * je pouze jedno platné node_id - platné = nevyplněné node_id - pokud je uzel přímo zařazený do
+     * jiné AP, tak existují 2 platné záznamy uzlu (nevyplněné delete_change_id)
+     *
+     * @param node identifikátor uzlu.
+     */
+    public void setNode(final ArrNode node) {
         this.node = node;
     }
 
-    @Override
+    /**
+    *
+    * @return odkaz na nadřízený uzel stromu, v případě root levelu je NULL.
+    */
     public ArrNode getNodeParent() {
         return nodeParent;
     }
 
-    @Override
-    public void setNodeParent(ArrNode parentNode) {
+    /**
+    *
+    * @param parentNode odkaz na nadřízený uzel stromu, v případě root levelu je NULL.
+    */
+    public void setNodeParent(final ArrNode parentNode) {
         this.nodeParent = parentNode;
     }
 
-    @Override
+    /**
+     * @return číslo změny vytvoření uzlu.
+     */
     public ArrChange getCreateChange() {
         return createChange;
     }
 
-    @Override
-    public void setCreateChange(ArrChange createChange) {
+    /**
+     * @param createChange číslo změny vytvoření uzlu.
+     */
+    public void setCreateChange(final ArrChange createChange) {
         this.createChange = createChange;
     }
 
-    @Override
+    /**
+     * @return číslo změny smazání uzlu.
+     */
     public ArrChange getDeleteChange() {
         return deleteChange;
     }
 
-    @Override
+    /**
+     * @param deleteChange číslo změny smazání uzlu.
+     */
     public void setDeleteChange(final ArrChange deleteChange) {
         this.deleteChange = deleteChange;
     }
 
-    @Override
+    /**
+     * @return pozice uzlu mezi sourozenci.
+     */
     public Integer getPosition() {
         return position;
     }
 
-    @Override
+    /**
+     * @param position pozice uzlu mezi sourozenci.
+     */
     public void setPosition(final Integer position) {
         this.position = position;
     }
 
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof cz.tacr.elza.domain.ArrLevel)) {
+        if (!(obj instanceof ArrLevel)) {
             return false;
         }
         if (this == obj) {
             return true;
         }
-        cz.tacr.elza.domain.ArrLevel other = (cz.tacr.elza.domain.ArrLevel) obj;
+        ArrLevel other = (ArrLevel) obj;
         return EqualsBuilder.reflectionEquals(levelId, other.getLevelId());
     }
 

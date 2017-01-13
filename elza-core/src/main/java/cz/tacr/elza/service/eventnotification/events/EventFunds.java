@@ -8,7 +8,7 @@ import java.util.Set;
  * @author Martin Šlapa
  * @since 16.11.2016
  */
-public class EventFunds<T> extends AbstractEventSimple<T> {
+public class EventFunds extends AbstractEventSimple {
 
     private Set<Integer> fundIds;
 

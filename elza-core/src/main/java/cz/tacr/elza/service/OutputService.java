@@ -1,9 +1,30 @@
 package cz.tacr.elza.service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
+
+import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
-import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
-import cz.tacr.elza.api.UsrPermission;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.CopyActionResult;
@@ -30,6 +51,7 @@ import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrOutputResult;
@@ -62,26 +84,6 @@ import cz.tacr.elza.service.eventnotification.events.EventChangeOutputItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.OutputGeneratorService;
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Serviska pro práci s výstupy.
@@ -307,13 +309,13 @@ public class OutputService {
         final ArrChange change = newOutputDef.getOutputs().get(0).getCreateChange();
         final ArrayList<ArrNodeOutput> newNodes = new ArrayList<>();
         originalOutputDef.getOutputNodes().forEach(node -> {
-        	if (node.getDeleteChange() == null) {
-        		ArrNodeOutput newNode = new ArrNodeOutput();
-        		newNode.setCreateChange(change);
-        		newNode.setNode(node.getNode());
-        		newNode.setOutputDefinition(newOutputDef);
-        		newNodes.add(newNode);
-        	}
+            if (node.getDeleteChange() == null) {
+                ArrNodeOutput newNode = new ArrNodeOutput();
+                newNode.setCreateChange(change);
+                newNode.setNode(node.getNode());
+                newNode.setOutputDefinition(newOutputDef);
+                newNodes.add(newNode);
+            }
         });
 
         nodeOutputRepository.save(newNodes);
@@ -1564,7 +1566,7 @@ public class OutputService {
         for (ArrOutputDefinition outputDefinition : outputDefinitions) {
 
             if (result != null) {
-            	// Prepare set of ignored item types
+                // Prepare set of ignored item types
                 List<ArrItemSettings> itemSettingsList = itemSettingsRepository.findByOutputDefinition(outputDefinition);
                 Set<RulItemType> itemTypesIgnored = itemSettingsList.stream()
                         .filter(ArrItemSettings::getBlockActionResult)
@@ -1661,10 +1663,10 @@ public class OutputService {
             if(textAggregationActionResult.isCreateInOutput()) {
                 ArrItemText itemText = new ArrItemText();
                 itemText.setValue(textAggregationActionResult.getText());
-            	dataItems = Collections.singletonList(itemText);
+                dataItems = Collections.singletonList(itemText);
             } else {
-            	// no items will be created
-            	dataItems = Collections.emptyList();
+                // no items will be created
+                dataItems = Collections.emptyList();
             }
         } else if (actionResult instanceof UnitCountActionResult) {
             UnitCountActionResult unitCountActionResult = (UnitCountActionResult) actionResult;
@@ -1676,7 +1678,7 @@ public class OutputService {
         } else if (actionResult instanceof UnitIdResult) {
             return null; // tohle se nikam nepřeklápí zatím
         } else if (actionResult instanceof TestDataGeneratorResult) {
-        	return null; // tohle se nikam nepřeklápí zatím
+            return null; // tohle se nikam nepřeklápí zatím
         } else {
             throw new IllegalStateException("Nedefinovný typ výsledku: " + actionResult.getClass().getSimpleName());
         }

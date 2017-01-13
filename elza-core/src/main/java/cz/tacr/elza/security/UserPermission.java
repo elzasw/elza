@@ -1,10 +1,10 @@
 package cz.tacr.elza.security;
 
-import cz.tacr.elza.api.UsrPermission;
-
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+
+import cz.tacr.elza.domain.UsrPermission;
 
 /**
  * Oprávnění uživatele.

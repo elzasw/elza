@@ -6,7 +6,7 @@ package cz.tacr.elza.service.eventnotification.events;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.01.2016
  */
-public class EventVersion<T> extends AbstractEventSimple<T> {
+public class EventVersion extends AbstractEventSimple {
 
     /**
      * Id verze stromu.

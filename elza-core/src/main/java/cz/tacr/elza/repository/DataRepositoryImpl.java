@@ -204,10 +204,10 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
         SpecificationDataTypeHelper specHelper = new SpecificationDataTypeHelper() {
 
-            private Join packetTypeJoin;
+            private Join<ArrPacket, RulPacketType> packetTypeJoin;
 
             @Override
-            public void init(final Root root, final Join descItemJoin) {
+            public void init(final Root<? extends ArrData> root, final Join<? extends ArrData, ArrDescItem> descItemJoin) {
                 packetTypeJoin = root.join(ArrDataPacketRef.PACKET, JoinType.INNER)
                         .join(ArrPacket.PACKET_TYPE, JoinType.LEFT);
             }
@@ -238,7 +238,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             }
 
             @Override
-            public Path getSpecSelection() {
+            public Path<String> getSpecSelection() {
                 return packetTypeJoin.get(RulPacketType.NAME);
             }
         };
@@ -258,10 +258,10 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
         SpecificationDataTypeHelper specHelper = new SpecificationDataTypeHelper() {
 
-            private Join specJoin;
+            private Join<ArrDescItem, RulItemSpec> specJoin;
 
             @Override
-            public void init(final Root root, final Join descItemJoin) {
+            public void init(final Root<? extends ArrData> root, final Join<? extends ArrData, ArrDescItem> descItemJoin) {
                 specJoin = descItemJoin.join(ArrDescItem.ITEM_SPEC, JoinType.LEFT);
             }
 
@@ -288,7 +288,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             }
 
             @Override
-            public Path getSpecSelection() {
+            public Path<String> getSpecSelection() {
                 return specJoin.get("name");
             }
         };
@@ -319,13 +319,13 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Tuple> query = builder.createTupleQuery();
 
-        Root data = query.from(dataTypeClass);
+        Root<? extends ArrData> data = query.from(dataTypeClass);
         AbstractDescItemDataTypeHelper typeHelper = getDataTypeHelper(dataTypeClass, data);
 
 
-        Join item = data.join(ArrData.ITEM, JoinType.INNER);
+        Join<? extends ArrData, ArrDescItem> item = data.join(ArrData.ITEM, JoinType.INNER);
 
-        Join descItem = builder.treat(item, ArrDescItem.class);
+        Join<? extends ArrData, ArrDescItem> descItem = builder.treat(item, ArrDescItem.class);
 
         //Join node = descItem.join(ArrDescItem.NODE, JoinType.INNER);
 
@@ -359,12 +359,12 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
         //seznam vracených sloupců
         List<Selection<?>> selections = new LinkedList<>();
-        Expression valueSelection = typeHelper.getValueStringSelection(builder).as(String.class);    //hodnota pro select
+        Expression<String> valueSelection = typeHelper.getValueStringSelection(builder).as(String.class);    //hodnota pro select
         Expression valueExpression = createUniqueValueExpression(valueSelection, specificationDataTypeHelper, builder);
         selections.add(valueExpression);
 
         //oříznutá hodnota převedená na string, kvůli řazení
-        Expression substringValue = builder.substring(valueSelection.as(String.class), 0, 100);
+        Expression<String> substringValue = builder.substring(valueSelection.as(String.class), 0, 100);
         selections.add(substringValue);
 
 
@@ -418,7 +418,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                                                    final CriteriaBuilder builder) {
         Expression result;
         if (specHelper.useSpec()) {
-            Path specSelection = specHelper.getSpecSelection();
+            Path<String> specSelection = specHelper.getSpecSelection();
             Expression<String> concat = builder.concat(specSelection, ": ");
             result = builder.concat(concat, valuePath);
         } else {
@@ -450,7 +450,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                 }
 
                 @Override
-                public Path getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
+                public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
                     return targetJoin.get("value");
                 }
             };
@@ -458,13 +458,13 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             return new AbstractDescItemDataTypeHelper() {
                 @Override
                 protected void init() {
-                    Join party = dataRoot.join(ArrDataPartyRef.PARTY, JoinType.INNER);
-                    Join record = party.join(ParParty.RECORD, JoinType.INNER);
+                    Join<ArrDataPartyRef, ParParty> party = dataRoot.join(ArrDataPartyRef.PARTY, JoinType.INNER);
+                    Join<ParParty, RegRecord> record = party.join(ParParty.RECORD, JoinType.INNER);
                     targetJoin = record;
                 }
 
                 @Override
-                public Path getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
+                public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
                     return targetJoin.get(RegRecord.RECORD);
                 }
             };
@@ -476,7 +476,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                 }
 
                 @Override
-                public Path getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
+                public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
                     return targetJoin.get(RegRecord.RECORD);
                 }
             };
@@ -488,7 +488,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                 }
 
                 @Override
-                public Path getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
+                public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
                     return targetJoin.get(ArrPacket.STORAGE_NUMBER);
                 }
             };
@@ -510,23 +510,20 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
         protected abstract void init();
 
-
         /**
          * Vrací výraz pro získání hodnoty atributu z tabulky.
          * @return výraz
          */
-        public abstract Path getValueStringSelection(final CriteriaBuilder criteriaBuilder);
+        public abstract Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder);
     }
 
-    private interface SpecificationDataTypeHelper{
+    private interface SpecificationDataTypeHelper {
         boolean useSpec();
-         void init(Root root, Join descItemJoin);
+
+        void init(Root<? extends ArrData> root, Join<? extends ArrData, ArrDescItem> descItemJoin);
+
         Predicate getPredicate(CriteriaBuilder builder);
 
-        Path getSpecSelection();
-
-
-
+        Path<String> getSpecSelection();
     }
-
 }

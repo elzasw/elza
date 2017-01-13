@@ -27,8 +27,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.repository.DescItemRepository;

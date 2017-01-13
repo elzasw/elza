@@ -1,6 +1,6 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.api.ArrBulkActionRun.State;
+import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.BulkActionRunVO;

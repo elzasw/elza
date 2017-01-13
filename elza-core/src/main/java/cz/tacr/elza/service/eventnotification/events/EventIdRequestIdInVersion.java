@@ -1,6 +1,6 @@
 package cz.tacr.elza.service.eventnotification.events;
 
-public class EventIdRequestIdInVersion extends EventVersion<EventIdRequestIdInVersion> {
+public class EventIdRequestIdInVersion extends EventVersion {
 
     /**
      * Id entity.

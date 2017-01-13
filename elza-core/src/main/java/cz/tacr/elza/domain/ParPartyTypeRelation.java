@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -30,7 +32,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParPartyTypeRelation implements cz.tacr.elza.api.ParPartyTypeRelation<ParPartyType, ParRelationType> {
+public class ParPartyTypeRelation implements Serializable {
 
     @Id
     @GeneratedValue
@@ -60,63 +62,51 @@ public class ParPartyTypeRelation implements cz.tacr.elza.api.ParPartyTypeRelati
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
-    @Override
     public Integer getPartyTypeRelationId() {
         return partyTypeRelationId;
     }
 
-    @Override
     public void setPartyTypeRelationId(final Integer partyTypeRelationId) {
         this.partyTypeRelationId = partyTypeRelationId;
     }
 
-    @Override
     public ParRelationType getRelationType() {
         return relationType;
     }
 
-    @Override
     public void setRelationType(final ParRelationType relationType) {
         this.relationType = relationType;
     }
 
-    @Override
     public ParPartyType getPartyType() {
         return partyType;
     }
 
-    @Override
     public void setPartyType(final ParPartyType partyType) {
         this.partyType = partyType;
     }
 
-    @Override
-	public boolean isRepeatable() {
+    public boolean isRepeatable() {
         return repeatable;
     }
 
-    @Override
-	public void setRepeatable(final boolean repeatable) {
+    public void setRepeatable(final boolean repeatable) {
         this.repeatable = repeatable;
     }
 
-    @Override
-	public Integer getViewOrder() {
+    public Integer getViewOrder() {
         return viewOrder;
     }
 
-    @Override
-	public void setViewOrder(final Integer viewOrder) {
+    public void setViewOrder(final Integer viewOrder) {
         this.viewOrder = viewOrder;
     }
 
-    @Override
-	public String getName() {
+    public String getName() {
         return name;
     }
 
-    @Override
-	public void setName(final String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 

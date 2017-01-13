@@ -1,5 +1,34 @@
 package cz.tacr.elza.controller.config;
 
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.config.ConfigRules;
@@ -145,7 +174,6 @@ import cz.tacr.elza.repository.GroupRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
-import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyNameComplementRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
@@ -164,33 +192,6 @@ import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.SettingsService;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import javax.annotation.Nullable;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 
 /**
@@ -216,9 +217,6 @@ public class ClientFactoryVO {
 
     @Autowired
     private PartyNameRepository partyNameRepository;
-
-    @Autowired
-    private PartyGroupIdentifierRepository partyGroupIdentifierRepository;
 
     @Autowired
     private RelationRepository relationRepository;
@@ -459,7 +457,7 @@ public class ClientFactoryVO {
      */
     public List<ParPartyVO> createPartyList(final List<ParParty> parties) {
         if (CollectionUtils.isEmpty(parties)) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         //načtení dat do session
@@ -532,7 +530,7 @@ public class ClientFactoryVO {
     public List<ParRelationVO> createPartyRelations(final ParParty party) {
         List<ParRelation> relations = relationRepository.findByParty(party);
         if (CollectionUtils.isEmpty(relations)) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         relations.sort(new ParRelation.ParRelationComparator());
 
@@ -761,7 +759,7 @@ public class ClientFactoryVO {
                                                            final boolean checkPartyType,
                                                            @Nullable final ParPartyType partyType) {
         if (CollectionUtils.isEmpty(allTypes)) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         Map<Integer, RegRegisterTypeVO> typeMap = new HashMap<>();
@@ -862,7 +860,7 @@ public class ClientFactoryVO {
                                            final Class<VO> voTypes,
                                            @Nullable final Function<ITEM, VO> factory) {
         if (CollectionUtils.isEmpty(items)) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         MapperFacade mapper = mapperFactory.getMapperFacade();
@@ -891,10 +889,10 @@ public class ClientFactoryVO {
      * @param <VOTYPE>          třída VO objektu
      * @return nalezený nebo vytvořený VO
      */
-    public <VO, VOTYPE extends Class> VO getOrCreateVo(final Integer id,
+    public <VO> VO getOrCreateVo(final Integer id,
                                                        final Object source,
                                                        final Map<Integer, VO> processedItemsMap,
-                                                       final VOTYPE classType) {
+                                                       final Class<VO> classType) {
         VO item = processedItemsMap.get(id);
 
 
@@ -1677,7 +1675,6 @@ public class ClientFactoryVO {
      * @return seznam VO
      */
     public List<UsrGroupVO> createGroupList(final List<UsrGroup> groups, final boolean initPermissions, final boolean initUsers) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
         List<UsrGroupVO> result = new ArrayList<>();
         for (UsrGroup group : groups) {
             result.add(createGroup(group, initPermissions, initUsers));
@@ -2228,7 +2225,7 @@ public class ClientFactoryVO {
      * @param version
      * @return list VO
      */
-    public List<ArrDaoVO> createDaoList(final List<ArrDao> arrDaoList, final boolean detail, ArrFundVersion version) {
+    public List<ArrDaoVO> createDaoList(final List<ArrDao> arrDaoList, final boolean detail, final ArrFundVersion version) {
         List<ArrDaoVO> voList = new ArrayList<>();
         for (ArrDao arrDao : arrDaoList) {
             voList.add(createDao(arrDao, detail, version));
@@ -2259,7 +2256,7 @@ public class ClientFactoryVO {
      * @param version
      * @return vo
      */
-    private ArrDaoVO createDao(final ArrDao arrDao, final boolean detail, ArrFundVersion version) {
+    private ArrDaoVO createDao(final ArrDao arrDao, final boolean detail, final ArrFundVersion version) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrDaoVO vo = mapper.map(arrDao, ArrDaoVO.class);
 

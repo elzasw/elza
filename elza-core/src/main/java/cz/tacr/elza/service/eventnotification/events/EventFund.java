@@ -6,7 +6,7 @@ package cz.tacr.elza.service.eventnotification.events;
  * @author Martin Šlapa
  * @since 10.05.2016
  */
-public class EventFund<T> extends AbstractEventSimple<T> {
+public class EventFund extends AbstractEventSimple {
 
     /**
      * Id verze stromu.

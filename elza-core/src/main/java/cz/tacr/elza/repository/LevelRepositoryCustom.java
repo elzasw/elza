@@ -4,11 +4,11 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 
 
 /**

@@ -9,10 +9,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
-import org.hibernate.search.bridge.builtin.IntegerBridge;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -34,7 +32,7 @@ import cz.tacr.elza.search.ItemIndexingInterceptor;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
-public class ArrDescItem<T extends ArrItemData> extends ArrItem<T> implements cz.tacr.elza.api.ArrDescItem<ArrNode> {
+public class ArrDescItem extends ArrItem {
 
     public static final String NODE = "node";
     public static final String CREATE_CHANGE_ID = "createChangeId";
@@ -49,11 +47,11 @@ public class ArrDescItem<T extends ArrItemData> extends ArrItem<T> implements cz
 
     }
 
-    public ArrDescItem(final Class<T> clazz) throws IllegalAccessException, InstantiationException {
+    public ArrDescItem(final Class<? extends ArrItemData> clazz) throws IllegalAccessException, InstantiationException {
         super(clazz);
     }
 
-    public ArrDescItem(final T item) {
+    public ArrDescItem(final ArrItemData item) {
         this.item = item;
     }
 
@@ -83,7 +81,6 @@ public class ArrDescItem<T extends ArrItemData> extends ArrItem<T> implements cz
         return null; //throw new NotImplementedException();
     }
 
-    @Override
     public void setNode(final ArrNode node) {
         this.node = node;
     }

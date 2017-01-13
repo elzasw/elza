@@ -1,13 +1,25 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.*;
-import org.apache.commons.lang.StringUtils;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.criteria.*;
-import java.util.ArrayList;
-import java.util.List;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Order;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Subquery;
+
+import org.apache.commons.lang.StringUtils;
+
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.UsrGroupUser;
+import cz.tacr.elza.domain.UsrUser;
 
 /**
  * Rozšířené repository pro uživatele.
@@ -21,8 +33,8 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
     private EntityManager entityManager;
 
     private <T> Predicate prepareFindUserByTextAndStateCount(final String search, final Boolean active, final Boolean disabled, final CriteriaBuilder builder, final Root<UsrUser> user, final CriteriaQuery<T> query) {
-        Join party = user.join(UsrUser.PARTY, JoinType.INNER);
-        Join record = party.join(ParParty.RECORD, JoinType.INNER);
+        Join<UsrUser, ParParty> party = user.join(UsrUser.PARTY, JoinType.INNER);
+        Join<ParParty, RegRecord> record = party.join(ParParty.RECORD, JoinType.INNER);
 
         List<Predicate> conditions = new ArrayList<>();
 
@@ -66,8 +78,8 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         queryCount.select(builder.countDistinct(userCount));
 
         if (condition != null) {
-            Join party = user.join(UsrUser.PARTY, JoinType.INNER);
-            Join record = party.join(ParParty.RECORD, JoinType.INNER);
+            Join<UsrUser, ParParty> party = user.join(UsrUser.PARTY, JoinType.INNER);
+            Join<ParParty, RegRecord> record = party.join(ParParty.RECORD, JoinType.INNER);
             Order order1 = builder.asc(record.get(RegRecord.RECORD));
             Order order2 = builder.asc(user.get(UsrUser.USERNAME));
             query.where(condition).orderBy(order1, order2);

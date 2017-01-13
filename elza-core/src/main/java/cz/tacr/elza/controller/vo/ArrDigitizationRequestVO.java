@@ -1,10 +1,8 @@
 package cz.tacr.elza.controller.vo;
 
-import cz.tacr.elza.api.ArrDaoRequest;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.domain.ArrDigitizationRequest;
-
 import java.util.List;
+
+import cz.tacr.elza.domain.ArrDigitizationRequest;
 
 /**
  * Value objekt {@link ArrDigitizationRequest}

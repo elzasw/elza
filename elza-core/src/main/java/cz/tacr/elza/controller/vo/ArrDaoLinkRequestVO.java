@@ -1,7 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
-import cz.tacr.elza.api.ArrDaoRequest;
 import cz.tacr.elza.domain.ArrDaoLinkRequest;
+import cz.tacr.elza.domain.ArrDaoRequest;
 
 /**
  * Value objekt {@link ArrDaoLinkRequest}

@@ -4,14 +4,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import cz.tacr.elza.domain.RegRegisterType;
 
 
 /**
@@ -20,8 +18,6 @@ import cz.tacr.elza.domain.RegRegisterType;
  */
 public class RegisterTypeRepositoryImpl implements RegisterTypeRepositoryCustom {
 
-    @Autowired
-    private RegisterTypeRepository registerTypeRepository;
     @Autowired
     private EntityManager entityManager;
 
@@ -49,7 +45,7 @@ public class RegisterTypeRepositoryImpl implements RegisterTypeRepositoryCustom 
         leaves.addAll(registerTypeIds);
 
 
-        Consumer<Set> function = (ids) -> {
+        Consumer<Set<Integer>> function = (ids) -> {
             query.setParameter("ids", ids);
 
             leaves.clear();

@@ -1,5 +1,13 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.TextAggregationActionResult;
@@ -12,15 +20,6 @@ import cz.tacr.elza.domain.ArrItemText;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.utils.Yaml;
-
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Akce na agregaci textových hodnot.
@@ -57,9 +56,9 @@ public class TextAggregationAction extends Action {
      * Ignorovat duplikáty?
      */
     private boolean ignoreDuplicated;
-    
+
     /**
-     * Flag if text item should be created for empty result 
+     * Flag if text item should be created for empty result
      */
     private boolean createEmpty;
 
@@ -120,16 +119,16 @@ public class TextAggregationAction extends Action {
 
     @Override
     public ActionResult getResult() {
-    	// Prepare result
-    	String resultText = String.join(DELIMITER, texts);
+        // Prepare result
+        String resultText = String.join(DELIMITER, texts);
 
-    	// Create object with result
+        // Create object with result
         TextAggregationActionResult textAggregationActionResult = new TextAggregationActionResult();
         textAggregationActionResult.setItemType(outputItemType.getCode());
         textAggregationActionResult.setText(resultText);
         // check if not empty
         textAggregationActionResult.setCreateInOutput(createEmpty || !resultText.isEmpty());
-        
+
         return textAggregationActionResult;
     }
 

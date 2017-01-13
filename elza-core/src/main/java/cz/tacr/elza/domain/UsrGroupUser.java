@@ -1,15 +1,20 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import javax.persistence.*;
-import javax.persistence.criteria.Expression;
-import java.io.Serializable;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * Implementace {@link cz.tacr.elza.api.UsrGroupUser}.
+ * Seznam uživatelů ve skupině.
  *
  * @author Martin Šlapa
  * @since 11.04.2016
@@ -17,7 +22,7 @@ import java.io.Serializable;
 @Entity(name = "usr_group_user")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class UsrGroupUser implements cz.tacr.elza.api.UsrGroupUser<UsrUser, UsrGroup>, Serializable {
+public class UsrGroupUser {
 
     public static final String GROUP_USER_ID = "groupUserId";
     public static final String GROUP = "group";
@@ -43,33 +48,45 @@ public class UsrGroupUser implements cz.tacr.elza.api.UsrGroupUser<UsrUser, UsrG
     @Column(name = "userId", updatable = false, insertable = false)
     private Integer userId;
 
-    @Override
+    /**
+     * @return identifikátor entity
+     */
     public Integer getGroupUserId() {
         return groupUserId;
     }
 
-    @Override
+    /**
+     * @param groupUserId identifikátor entity
+     */
     public void setGroupUserId(final Integer groupUserId) {
         this.groupUserId = groupUserId;
     }
 
-    @Override
+    /**
+     * @return skupina
+     */
     public UsrGroup getGroup() {
         return group;
     }
 
-    @Override
+    /**
+     * @param group skupina
+     */
     public void setGroup(final UsrGroup group) {
         this.group = group;
         this.groupId = group.getGroupId();
     }
 
-    @Override
+    /**
+     * @return uživatel ve skupině
+     */
     public UsrUser getUser() {
         return user;
     }
 
-    @Override
+    /**
+     * @param user uživatel ve skupině
+     */
     public void setUser(final UsrUser user) {
         this.user = user;
         this.userId = user.getUserId();

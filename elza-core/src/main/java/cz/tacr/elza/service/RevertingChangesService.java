@@ -1,41 +1,5 @@
 package cz.tacr.elza.service;
 
-import com.google.common.collect.Sets;
-import cz.tacr.elza.api.ArrBulkActionRun;
-import cz.tacr.elza.api.UsrPermission;
-import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
-import cz.tacr.elza.config.ConfigView;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.domain.vo.TitleValue;
-import cz.tacr.elza.domain.vo.TitleValues;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.service.eventnotification.events.EventFunds;
-import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
-import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.service.vo.Change;
-import cz.tacr.elza.service.vo.ChangesResult;
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.TemporalType;
-import javax.validation.constraints.NotNull;
 import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -53,6 +17,45 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.TemporalType;
+import javax.validation.constraints.NotNull;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+
+import com.google.common.collect.Sets;
+
+import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
+import cz.tacr.elza.config.ConfigView;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.vo.TitleValue;
+import cz.tacr.elza.domain.vo.TitleValues;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.service.eventnotification.events.EventFunds;
+import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
+import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.service.vo.Change;
+import cz.tacr.elza.service.vo.ChangesResult;
 
 /**
  * Servisní třída pro práci s obnovou změn v archivní souboru - "UNDO".
@@ -859,9 +862,9 @@ public class RevertingChangesService {
      * @param inputList seznam z databázového dotazu
      * @return typovaný seznam z databázového dotazu
      */
-    private List<ChangeResult> convertResults(final List inputList) {
+    private List<ChangeResult> convertResults(final List<Object[]> inputList) {
         List<ChangeResult> result = new ArrayList<>(inputList.size());
-        for (Object[] o : (List<Object[]>) inputList) {
+        for (Object[] o : inputList) {
             result.add(convertResult(o));
         }
         return result;

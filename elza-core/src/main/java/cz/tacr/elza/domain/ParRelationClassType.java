@@ -13,7 +13,7 @@ import javax.persistence.ManyToOne;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import cz.tacr.elza.api.ParRelationClassTypeRepeatabilityEnum;
+import cz.tacr.elza.api.enums.ParRelationClassTypeRepeatabilityEnum;
 import cz.tacr.elza.domain.enumeration.StringLength;
 
 /**
@@ -24,7 +24,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
  */
 @Entity(name = "par_relation_class_type")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class ParRelationClassType implements cz.tacr.elza.api.ParRelationClassType {
+public class ParRelationClassType {
 
     public enum ClassType{
         VZNIK("B"),
@@ -60,42 +60,34 @@ public class ParRelationClassType implements cz.tacr.elza.api.ParRelationClassTy
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
-    @Override
     public Integer getRelationClassTypeId() {
         return relationClassTypeId;
     }
 
-    @Override
     public void setRelationClassTypeId(final Integer relationClassTypeId) {
         this.relationClassTypeId = relationClassTypeId;
     }
 
-    @Override
     public String getName() {
         return name;
     }
 
-    @Override
     public void setName(final String name) {
         this.name = name;
     }
 
-    @Override
     public String getCode() {
         return code;
     }
 
-    @Override
     public void setCode(final String code) {
         this.code = code;
     }
 
-    @Override
     public ParRelationClassTypeRepeatabilityEnum getRepeatability() {
         return repeatability;
     }
 
-    @Override
     public void setRepeatability(final ParRelationClassTypeRepeatabilityEnum repeatability) {
         this.repeatability = repeatability;
     }
