@@ -14,7 +14,8 @@ import {
     FundNodesSelectForm,
     FundNodesList,
     AbstractReactComponent,
-    FormInput
+    FormInput,
+    NodeLabel
 } from 'components/index.jsx';
 import {fundOutputDetailFetchIfNeeded, fundOutputEdit} from 'actions/arr/fundOutput.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
@@ -25,7 +26,7 @@ import {fundOutputRemoveNodes, fundOutputAddNodes} from 'actions/arr/fundOutput.
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import * as arrRequestActions from 'actions/arr/arrRequestActions';
 import RequestInlineForm from "./RequestInlineForm";
-import {DIGITIZATION, getRequestType} from './ArrUtils.jsx'
+import {DIGITIZATION, DAO, getRequestType} from './ArrUtils.jsx'
 
 const ShortcutsManager = require('react-shortcuts');
 const Shortcuts = require('react-shortcuts/component');
@@ -116,6 +117,48 @@ class ArrRequestDetail extends AbstractReactComponent {
         }
     };
 
+    renderDaoNodes = (req) => {
+        const NO_NODE_ID = "---";
+        // Mapa id node na node objekt
+        const nodeMap = {};
+        // Mapa id node na počet dao pod daným node
+        const countMap = {};
+
+        req.daos.forEach(dao => {
+            let refId;
+            if (dao.daoLink) {
+                const node = dao.daoLink.treeNodeClient;
+                nodeMap[node.id] = node;
+                refId = node.id;
+            } else {
+                refId = NO_NODE_ID;
+            }
+
+            if (typeof countMap[refId] === "undefined") {
+                countMap[refId] = 1;
+            } else {
+                countMap[refId]++;
+            }
+        });
+
+        const nodesInfo = [];
+        Object.keys(countMap).forEach(nodeId => {
+            if (nodeId !== NO_NODE_ID) {
+                const node = nodeMap[nodeId];
+                nodesInfo.push(<div>
+                    {<NodeLabel inline node={node}/>} ({countMap[node.id]})
+                </div>);
+            }
+        });
+
+        return <div>
+            {countMap[NO_NODE_ID] > 0 && <div>
+                {i18n("arr.request.title.nodes.daosWithoutNode")} ({countMap[NO_NODE_ID]})
+            </div>}
+            {nodesInfo}
+        </div>
+    };
+
     render() {
         const {requestDetail} = this.props;
 
@@ -126,38 +169,45 @@ class ArrRequestDetail extends AbstractReactComponent {
                 <div className="msg-text">{i18n('arr.request.noSelection.message')}</div>
             </div>;
         } else if (requestDetail.fetched) {
-            const digReq = requestDetail.data;
-            const reqType = getRequestType(digReq);
+            const req = requestDetail.data;
+            const reqType = getRequestType(req);
             form = (
                 <div>
                     <h2>{i18n("arr.request.title.digitizationRequest")}</h2>
                     <div className="form-group">
-                        <label>{i18n("arr.request.title.created")}</label> {dateTimeToString(new Date(digReq.create))}
+                        <label>{i18n("arr.request.title.created")}</label> {dateTimeToString(new Date(req.create))}
                     </div>
-                    {digReq.queued && <div className="form-group">
-                        <label>{i18n("arr.request.title.queued")}</label> {dateTimeToString(new Date(digReq.queued))}
+                    {req.queued && <div className="form-group">
+                        <label>{i18n("arr.request.title.queued")}</label> {dateTimeToString(new Date(req.queued))}
                     </div>}
-                    {digReq.send && <div className="form-group">
-                        <label>{digReq.state == "QUEUED" ? i18n("arr.request.title.trysend") : i18n("arr.request.title.send")}</label> {dateTimeToString(new Date(digReq.send))}
+                    {req.send && <div className="form-group">
+                        <label>{req.state == "QUEUED" ? i18n("arr.request.title.trysend") : i18n("arr.request.title.send")}</label> {dateTimeToString(new Date(req.send))}
                     </div>}
                     <div className="form-group">
                         <label>{i18n("arr.request.title.type")}</label> {i18n("arr.request.title.type." + reqType)}
                     </div>
+                    {reqType === DAO && <div className="form-group">
+                        <label>{i18n("arr.request.title.daoRequest.type")}</label> {i18n("arr.request.title.type.dao." + req.type)}
+                    </div>}
 
                     <RequestInlineForm
-                        disabled={digReq.state != "OPEN"}
-                        initData={digReq}
+                        disabled={req.state != "OPEN"}
+                        initData={req}
                         onSave={this.handleSaveRequest}
                     />
 
                     {reqType === DIGITIZATION && <div>
                         <label className="control-label">{i18n("arr.request.title.nodes")}</label>
                         <FundNodesList
-                            nodes={digReq.nodes}
+                            nodes={req.nodes}
                             onDeleteNode={this.handleRemoveNode}
                             onAddNode={this.handleAddNodes}
-                            readOnly={digReq.state != "OPEN"}
+                            readOnly={req.state != "OPEN"}
                         />
+                    </div>}
+                    {reqType === DAO && <div>
+                        <label className="control-label">{i18n("arr.request.title.nodes")}</label>
+                        {this.renderDaoNodes(req)}
                     </div>}
                 </div>
             )

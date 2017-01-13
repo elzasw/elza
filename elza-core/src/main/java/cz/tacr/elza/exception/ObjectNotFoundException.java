@@ -14,4 +14,8 @@ public class ObjectNotFoundException extends AbstractException {
     public ObjectNotFoundException(final ErrorCode errorCode) {
         super(errorCode);
     }
+
+    public ObjectNotFoundException(final String message, final ErrorCode errorCode) {
+        super(message, errorCode);
+    }
 }

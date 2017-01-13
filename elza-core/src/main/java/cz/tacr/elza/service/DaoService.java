@@ -29,12 +29,17 @@ import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrRequest;
-import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.domain.ArrDaoFileGroup;import cz.tacr.elza.domain.ArrDaoRequestDao;import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.DigitizationCode;
+import cz.tacr.elza.repository.DaoFileGroupRepository;
+import cz.tacr.elza.repository.DaoFileRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoLinkRequestRepository;
 import cz.tacr.elza.repository.DaoPackageRepository;
 import cz.tacr.elza.repository.DaoRepository;
+import cz.tacr.elza.repository.DaoRequestDaoRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdNodeIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -74,6 +79,16 @@ public class DaoService {
 
     @Autowired
     private DaoPackageRepository daoPackageRepository;
+
+    @Autowired
+    private DaoFileRepository daoFileRepository;
+
+    @Autowired
+    private DaoRequestDaoRepository daoRequestDaoRepository;
+
+    @Autowired
+    private DaoFileGroupRepository daoFileGroupRepository;
+
 
     /**
      * Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní jednotku popisu (JP) nebo nemá žádné napojení (pouze pod archivní souborem (AS)).
@@ -246,6 +261,56 @@ public class DaoService {
 
         return result;
     }
+
+    public void deleteDaoPackageWithCascade(String packageIdentifier, ArrDaoPackage arrDaoPackage) {
+            // kontrola, že neexistuje DAO navázané na požadavek ve stavu Příprava, Odesílaný, Odeslaný
+            final List<ArrDao> arrDaos = daoRepository.findByPackage(arrDaoPackage);
+            final List<ArrDaoLinkRequest> daoLinkRequests = daoLinkRequestRepository.findByDaosAndStates(arrDaos,
+                    Arrays.asList(ArrRequest.State.OPEN, ArrRequest.State.QUEUED, ArrRequest.State.SENT));
+
+            if (daoLinkRequests.size() > 0) {
+                logger.info("Nelze smazat package=" + packageIdentifier + ", počet otevřených požadavků: " + daoLinkRequests.size());
+                throw new SystemException(DigitizationCode.DAO_HAS_REQUEST);
+            }
+
+            for (ArrDao arrDao : arrDaos) {
+                // smazat arr_dao_link
+                final List<ArrDaoLink> arrDaoLinkList = daoLinkRepository.findByDao(arrDao);
+                for (ArrDaoLink arrDaoLink : arrDaoLinkList) {
+                    daoLinkRepository.delete(arrDaoLink);
+                }
+
+                // smazat arr_dao_file
+                final List<ArrDaoFile> daoFileList = daoFileRepository.findByDao(arrDao);
+                for (ArrDaoFile arrDaoFile : daoFileList) {
+                    daoFileRepository.delete(arrDaoFile);
+                }
+
+                // smazat arr_dao_file_group
+                final List<ArrDaoFileGroup> daoFileGroupList = daoFileGroupRepository.findByDaoOrderByCodeAsc(arrDao);
+                for (ArrDaoFileGroup arrDaoFileGroup : daoFileGroupList) {
+                    daoFileGroupRepository.delete(arrDaoFileGroup);
+                }
+
+                // smazat arr_dao_link_request
+                final List<ArrDaoLinkRequest> arrDaoLinkRequestList = daoLinkRequestRepository.findByDao(arrDao);
+                for (ArrDaoLinkRequest arrDaoLinkRequest : arrDaoLinkRequestList) {
+                    daoLinkRequestRepository.delete(arrDaoLinkRequest);
+                }
+
+                // smazat arr_dao_request_dao
+                final List<ArrDaoRequestDao> arrDaoRequestDaoList = daoRequestDaoRepository.findByDao(arrDao);
+                for (ArrDaoRequestDao arrDaoRequestDao : arrDaoRequestDaoList) {
+                    daoRequestDaoRepository.delete(arrDaoRequestDao);
+                }
+
+                // smazat dao
+                daoRepository.delete(arrDao);
+            }
+
+            // smazat package
+            daoPackageRepository.delete(arrDaoPackage);
+        }
 
     /**
      * Zneplatní DAO a zruší jejich návazné linky a pošle notifikace.

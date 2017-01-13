@@ -1,7 +1,8 @@
 @import '~variables.less';
 @import "~bootstrap/less/mixins/buttons.less";
 
-.relation-form {
+.dialog-3-col {
+    padding:0;
   .flex {
     display:block;
     .relation-class-select {
@@ -15,34 +16,36 @@
         flex:1;
       }
     }
+    .complement {
+      display: flex;
+      > div {
+        flex: 1
+      }
+    }
+    .col{
+        padding:15px;
+    }
+    .flex-2{
+        border-bottom: 1px solid #e5e5e5;
+    }
     .datation-group {
-      background: #b9b9b9;
-      margin: 15px -15px;
-      padding: 15px 15px;
+      background: #eeeeee;
       .btn-action {
-        .button-variant(#000, #b9b9b9, transparent);
+        .button-variant(#000, #eeeeee, transparent);
       }
     }
   }
   @media screen and (min-width: @screen-md-min) {
     .flex {
-      margin-left: -15px;
-      margin-right: -15px;
       align-items: stretch;
       display: flex;
       .flex-1 {
-        flex: 1;
-        padding-left: 15px;
-        padding-right: 15px;
+        max-width: 250px;
       }
       .flex-2 {
         flex: 2;
-        padding-left: 15px;
-        padding-right: 15px;
-      }
-      .datation-group {
-        margin: -15px 0;
-        padding: 15px;
+        border-bottom: 0;
+        border-right: 1px solid #e5e5e5;
       }
     }
   }

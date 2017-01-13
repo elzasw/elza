@@ -11,29 +11,48 @@ import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {storeFromArea} from "shared/utils";
 
-const AREA_PREPARED_DIGITIZATION_REQUESTS = "preparedRequestList";
+const AREA_PREPARED_REQUESTS = "preparedRequestList";
 const AREA_REQUEST_LIST_SUFFIX = ".requestList";
 const AREA_REQUEST_IN_QUEUE_LIST = "requestInQueueList";
 const AREA_REQUEST_DETAIL_SUFFIX = ".requestDetail";
 
 /**
- * Načtení seznamu NEODESLANÝCH požadavků na digitalizaci.
+ * Načtení seznamu NEODESLANÝCH požadavků.
  * @param versionId verze AS
  * @param type typ požadavků
  * @return {function(*, *)}
  */
 export function fetchPreparedListIfNeeded(versionId, type) {
-    return SimpleListActions.fetchIfNeeded(AREA_PREPARED_DIGITIZATION_REQUESTS, { versionId, type }, (parent, filter) => {
+    return SimpleListActions.fetchIfNeeded(AREA_PREPARED_REQUESTS, { versionId, type }, (parent, filter) => {
         return WebApi.findRequests(versionId, parent.type, "OPEN")
-            .then(json => ({rows: json, count: 0}));
+            .then(json => ({rows: json, count: 0}))
+            .then(data => {
+                if (parent.type === "DAO") {
+                    return {
+                        count: 0,
+                        rows: data.rows.filter(i => i.type === filter.daoType)
+                    }
+                } else {
+                    return data;
+                }
+            });
     });
 }
 
 /**
- * Invalidace NEODESLANÝCH požadavků na digitalizaci.
+ * Filtrování seznamu NEODESLANÝCH požadavků.
+ * @param versionId verze AS
+ * @param filter
+ */
+export function filterPreparedList(filter) {
+    return SimpleListActions.filter(AREA_PREPARED_REQUESTS, filter);
+}
+
+/**
+ * Invalidace NEODESLANÝCH požadavků.
  */
 export function preparedListInvalidate() {
-    return SimpleListActions.invalidate(AREA_PREPARED_DIGITIZATION_REQUESTS, null);
+    return SimpleListActions.invalidate(AREA_PREPARED_REQUESTS, null);
 }
 
 /**
@@ -94,7 +113,7 @@ export function changeRequests(versionId, reqId, nodeIds) {
         dispatch(SimpleListActions.invalidate("fund[" + versionId + "]" + AREA_REQUEST_LIST_SUFFIX, null));
 
         // Seznam otevřených požadavků pro přidání na pořádání
-        dispatch(SimpleListActions.invalidate(AREA_PREPARED_DIGITIZATION_REQUESTS, null));
+        dispatch(SimpleListActions.invalidate(AREA_PREPARED_REQUESTS, null));
 
         // Detail požadavku
         const detailArea = "fund[" + versionId + "]" + AREA_REQUEST_DETAIL_SUFFIX;

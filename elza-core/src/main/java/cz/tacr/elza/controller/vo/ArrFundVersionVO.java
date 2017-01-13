@@ -24,6 +24,8 @@ public class ArrFundVersionVO {
 
     private Integer ruleSetId;
 
+    private Boolean strictMode;
+
     private Integer packageId;
 
     public Integer getId() {
@@ -64,6 +66,14 @@ public class ArrFundVersionVO {
 
     public void setRuleSetId(final Integer ruleSetId) {
         this.ruleSetId = ruleSetId;
+    }
+
+    public Boolean getStrictMode() {
+        return strictMode;
+    }
+
+    public void setStrictMode(final Boolean strictMode) {
+        this.strictMode = strictMode;
     }
 
     public Integer getPackageId() {

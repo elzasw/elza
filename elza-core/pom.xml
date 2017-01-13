@@ -47,6 +47,11 @@
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
+            <groupId>cz.tacr.elza</groupId>
+            <artifactId>elza-ws-api</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
@@ -95,7 +100,7 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-messaging</artifactId>
-        </dependency>        
+        </dependency>
 
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -142,7 +147,7 @@
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-java8</artifactId>
-            </dependency>        
+            </dependency>
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-entitymanager</artifactId>

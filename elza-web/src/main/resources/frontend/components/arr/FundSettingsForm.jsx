@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n} from 'components/index.jsx';
-import {Modal, Button, Checkbox, Form} from 'react-bootstrap';
+import {Modal, Button, Checkbox, Form, ControlLabel, FormControl} from 'react-bootstrap';
 import {indexById, objectById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
 import {visiblePolicyFetchIfNeeded} from 'actions/arr/visiblePolicy.jsx'
@@ -24,7 +24,7 @@ class FundSettingsForm extends AbstractReactComponent {
     state = {};
 
     render() {
-        const {fields: {rightPanel: {tabs}, centerPanel: {panels}}, handleSubmit, onClose} = this.props;
+        const {fields: {rightPanel: {tabs}, centerPanel: {panels}, strictMode}, handleSubmit, onClose} = this.props;
         const submitForm = submitReduxForm.bind(this, FundSettingsForm.validate);
 
         return <Form onSubmit={handleSubmit(submitForm)}>
@@ -46,6 +46,15 @@ class FundSettingsForm extends AbstractReactComponent {
                                 </div>
                             )}
                         </div>
+                        <div className="rules">
+                            <h4>{i18n('arr.fund.settings.rules')}</h4>
+                            <ControlLabel>{i18n('arr.fund.settings.rules.strictMode')}</ControlLabel>
+                            <FormControl {...strictMode.value} componentClass="select" placeholder="select">
+                                <option value="">{i18n('arr.fund.settings.rules.strictMode.default')}</option>
+                                <option value="true">{i18n('arr.fund.settings.rules.strictMode.true')}</option>
+                                <option value="false">{i18n('arr.fund.settings.rules.strictMode.false')}</option>
+                            </FormControl>
+                        </div>
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
@@ -59,5 +68,6 @@ class FundSettingsForm extends AbstractReactComponent {
 export default reduxForm({
     form: 'fundSettingsForm',
     fields: ['rightPanel.tabs[].checked', 'rightPanel.tabs[].key', 'rightPanel.tabs[].name',
-             'centerPanel.panels[].checked', 'centerPanel.panels[].key', 'centerPanel.panels[].name']
+             'centerPanel.panels[].checked', 'centerPanel.panels[].key', 'centerPanel.panels[].name',
+             'strictMode.value', 'strictMode.key', 'strictMode.name']
 })(FundSettingsForm)

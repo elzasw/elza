@@ -64,7 +64,7 @@ public class DaoDigitizationServiceImpl implements DaoDigitizationService {
             logger.info("Finished operation digitizationRequestFinished");
         } catch (Exception e) {
             logger.error("Fail operation digitizationRequestFinished", e);
-            throw new CoreServiceException("Fail operation digitizationRequestFinished", e);
+            throw new CoreServiceException(e.getMessage(), e);
         }
     }
 
@@ -91,7 +91,7 @@ public class DaoDigitizationServiceImpl implements DaoDigitizationService {
             }
         } catch (Exception e) {
             logger.error("Fail operation digitizationRequestRevoked", e);
-            throw new CoreServiceException("Fail operation digitizationRequestRevoked", e);
+            throw new CoreServiceException(e.getMessage(), e);
         }
     }
 
