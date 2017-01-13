@@ -43,11 +43,6 @@
 
         <dependency>
             <groupId>cz.tacr.elza</groupId>
-            <artifactId>elza-api</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>cz.tacr.elza</groupId>
             <artifactId>elza-ws-api</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
