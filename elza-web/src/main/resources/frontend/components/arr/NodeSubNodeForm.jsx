@@ -20,6 +20,7 @@ import {getOneSettings} from 'components/arr/ArrUtils.jsx';
 import ArrHistoryForm from 'components/arr/ArrHistoryForm.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {WebApi} from 'actions/index.jsx';
+import {getMapFromList} from 'stores/app/utils.jsx'
 
 const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
     constructor(props) {
@@ -87,9 +88,10 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
      * Zobrazení formuláře historie JP.
      */
     handleShowHistory = () => {
-        const {versionId, fund} = this.props;
-        const node = fund.nodes[fund.activeIndex];
-        const form = <ArrHistoryForm versionId={versionId} node={node} onDeleteChanges={this.handleDeleteChanges} />
+        const {versionId, fund: {nodes}} = this.props;
+        const node = nodes.nodes[nodes.activeIndex];
+        const nodeObj = getMapFromList(node.allChildNodes)[node.selectedSubNodeId];
+        const form = <ArrHistoryForm versionId={versionId} node={nodeObj} onDeleteChanges={this.handleDeleteChanges} />
         this.dispatch(modalDialogShow(this, i18n('arr.history.title'), form, "dialog-lg"));
     }
 
