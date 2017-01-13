@@ -32,7 +32,7 @@ import cz.tacr.elza.search.ItemIndexingInterceptor;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
-public class ArrDescItem<T extends ArrItemData> extends ArrItem<T> {
+public class ArrDescItem extends ArrItem {
 
     public static final String NODE = "node";
     public static final String CREATE_CHANGE_ID = "createChangeId";
@@ -47,11 +47,11 @@ public class ArrDescItem<T extends ArrItemData> extends ArrItem<T> {
 
     }
 
-    public ArrDescItem(final Class<T> clazz) throws IllegalAccessException, InstantiationException {
+    public ArrDescItem(final Class<? extends ArrItemData> clazz) throws IllegalAccessException, InstantiationException {
         super(clazz);
     }
 
-    public ArrDescItem(final T item) {
+    public ArrDescItem(final ArrItemData item) {
         this.item = item;
     }
 

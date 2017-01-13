@@ -32,7 +32,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
-public abstract class ArrItem<T extends ArrItemData> {
+public abstract class ArrItem {
 
     public static final String ITEM_SPEC = "itemSpec";
     public static final String ITEM_TYPE = "itemType";
@@ -41,18 +41,18 @@ public abstract class ArrItem<T extends ArrItemData> {
 
     }
 
-    public ArrItem(final Class<T> clazz) throws IllegalAccessException, InstantiationException {
+    public ArrItem(final Class<? extends ArrItemData> clazz) throws IllegalAccessException, InstantiationException {
         this.item = clazz.newInstance();
     }
 
-    public ArrItem(final T item) {
+    public ArrItem(final ArrItemData item) {
         this.item = item;
     }
 
     @Transient
-    protected T item;
+    protected ArrItemData item;
 
-    public void setItem(final T item) {
+    public void setItem(final ArrItemData item) {
         this.item = item;
     }
 
@@ -233,7 +233,7 @@ public abstract class ArrItem<T extends ArrItemData> {
 
     public abstract ArrOutputDefinition getOutputDefinition();
 
-    public T getItem() {
+    public ArrItemData getItem() {
         return item;
     }
 }

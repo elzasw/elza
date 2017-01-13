@@ -71,7 +71,6 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItemJsonTable;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
@@ -730,7 +729,7 @@ public class ArrangementController {
         Assert.notNull(descItemTypeId);
 
         InputStream is = importFile.getInputStream();
-        ArrDescItem<ArrItemJsonTable> descItemCreated = arrIOService.csvDescImport(fundVersionId, nodeId, nodeVersion, descItemTypeId, is);
+        ArrDescItem descItemCreated = arrIOService.csvDescImport(fundVersionId, nodeId, nodeVersion, descItemTypeId, is);
         is.close();
 
         DescItemResult descItemResult = new DescItemResult();
@@ -763,7 +762,7 @@ public class ArrangementController {
         Assert.notNull(descItemTypeId);
 
         InputStream is = importFile.getInputStream();
-        ArrOutputItem<ArrItemJsonTable> outputItemCreated = arrIOService.csvOutputImport(fundVersionId, outputDefinitionId, outputDefinitionVersion, descItemTypeId, is);
+        ArrOutputItem outputItemCreated = arrIOService.csvOutputImport(fundVersionId, outputDefinitionId, outputDefinitionVersion, descItemTypeId, is);
         is.close();
 
         OutputItemResult outputItemResult = new OutputItemResult();

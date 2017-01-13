@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
-public class ArrOutputItem<T extends ArrItemData> extends ArrItem<T> {
+public class ArrOutputItem extends ArrItem {
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrOutputDefinition.class)
@@ -35,11 +35,11 @@ public class ArrOutputItem<T extends ArrItemData> extends ArrItem<T> {
     public ArrOutputItem() {
     }
 
-    public ArrOutputItem(final T item) {
+    public ArrOutputItem(final ArrItemData item) {
         super(item);
     }
 
-    public ArrOutputItem(final Class<T> clazz) throws IllegalAccessException, InstantiationException {
+    public ArrOutputItem(final Class<? extends ArrItemData> clazz) throws IllegalAccessException, InstantiationException {
         super(clazz.newInstance());
     }
 
