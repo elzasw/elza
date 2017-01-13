@@ -8,6 +8,7 @@ import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -67,7 +68,7 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
         TypedQuery<ArrRequest> query = entityManager.createQuery(q);
 
         List<ArrRequest> resultList = query.getResultList();
-        if (description != null) {
+        if (StringUtils.hasText(description)) {
             Iterator<ArrRequest> iterator = resultList.iterator();
             while (iterator.hasNext()) {
                 ArrRequest request = iterator.next();
