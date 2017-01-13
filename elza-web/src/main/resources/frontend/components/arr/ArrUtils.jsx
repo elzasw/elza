@@ -14,9 +14,10 @@ import {i18n} from 'components';
  * @param infoTypesMapInput infor types
  * @param refTypesMapInput ref types
  * @param infoGroups info group
+ * @param strictMode použít striktní mód a nezařazovat nemožné item type
  * @return {Array} strom
  */
-export function getDescItemsAddTree(descItemGroups, infoTypesMapInput, refTypesMapInput, infoGroups) {
+export function getDescItemsAddTree(descItemGroups, infoTypesMapInput, refTypesMapInput, infoGroups, strictMode = false) {
     // Pro přidání chceme jen ty, které zatím ještě nemáme
     var infoTypesMap = {...infoTypesMapInput};
     descItemGroups.forEach(group => {
@@ -48,7 +49,29 @@ export function getDescItemsAddTree(descItemGroups, infoTypesMapInput, refTypesM
         }
     });
 
-    return descItemTypes;
+    let descItemTypesFiltered;
+
+    if (strictMode) {
+        descItemTypesFiltered = [];
+        descItemTypes.forEach((group, gIndex) => {
+            let children = [];
+            if (group.children) {
+                group.children.forEach((item, iIndex) => {
+                    if (item.type !== 'IMPOSSIBLE') {
+                        children.push(descItemTypes[gIndex].children[iIndex]);
+                    }
+                });
+            }
+            if (children.length > 0) {
+                group.children = children;
+                descItemTypesFiltered.push(group);
+            }
+        });
+    } else {
+        descItemTypesFiltered = descItemTypes;
+    }
+
+    return descItemTypesFiltered;
 }
 
 export function getFundFromFundAndVersion(fund, version) {

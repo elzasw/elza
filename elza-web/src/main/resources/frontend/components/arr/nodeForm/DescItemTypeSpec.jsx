@@ -25,11 +25,11 @@ class DescItemTypeSpec extends AbstractReactComponent {
     }
 
     getStateFromProps = (props = this.props) => {
-        const {descItem, refType, infoType} = props;
+        const {descItem, refType, infoType, strictMode} = props;
         const value = this.getValueObj(descItem, refType, infoType);
 
         return {
-            items: this.getSpecItems(refType, infoType, value ? value.name : "")
+            items: this.getSpecItems(refType, infoType, value ? value.name : "", strictMode)
         }
     };
 
@@ -38,9 +38,9 @@ class DescItemTypeSpec extends AbstractReactComponent {
      * @param text
      */
     handleSearchChange = (text) => {
-        const {refType, infoType} = this.props;
+        const {refType, infoType, strictMode} = this.props;
         this.setState({
-            items: this.getSpecItems(refType, infoType, text)
+            items: this.getSpecItems(refType, infoType, text, strictMode)
         });
     };
 
@@ -50,7 +50,7 @@ class DescItemTypeSpec extends AbstractReactComponent {
      * @param infoType definice typu pro daný formulář
      * @param filterText filtrovací text, uvežuje se pouze v případě stromu
      */
-    getSpecItems = (refType, infoType, filterText) => {
+    getSpecItems = (refType, infoType, filterText, strictMode) => {
         let result;
 
         const lowerFilterText = filterText ? filterText.toLocaleLowerCase() : filterText;
@@ -70,8 +70,11 @@ class DescItemTypeSpec extends AbstractReactComponent {
             infoType.specs.forEach(spec => {
                 const refSpec = refType.descItemSpecsMap[spec.id];
                 if (!lowerFilterText || (lowerFilterText && refSpec.name.toLocaleLowerCase().indexOf(lowerFilterText) >= 0)) { // vypnutý filtr nebo položka vyhovuje filtru
+                    const infoSpec = infoType.descItemSpecsMap[spec.id];
                     result.push({
-                        ...refSpec, ...spec
+                        ...refSpec,
+                        ...spec,
+                        className: 'spec-' + infoSpec.type.toLowerCase()
                     });
                 }
             });
@@ -105,7 +108,18 @@ class DescItemTypeSpec extends AbstractReactComponent {
             }
         }
 
-        return result;
+        let filteredResult;
+        if (strictMode) {
+            filteredResult = [];
+            result.forEach((item, index) => {
+                if (item.type != 'IMPOSSIBLE' || item.group) {
+                    filteredResult.push(item);
+                }
+            });
+        } else {
+            filteredResult = result;
+        }
+        return filteredResult;
     };
 
     /**
