@@ -27,6 +27,7 @@ import adminRegion from './app/admin/adminRegion.jsx';
 import fundForm from './app/arr/form/fundForm.jsx';
 import inlineForm from './app/form/inlineForm.jsx';
 import addPacketForm from './app/arr/form/addPacketForm.jsx';
+import searchForm from './app/arr/form/searchForm.jsx';
 import stateRegion from './app/state/stateRegion.jsx';
 import userDetail from './app/user/userDetail.jsx';
 import router from './app/router.jsx';
@@ -87,6 +88,7 @@ const rootReducer = combineReducers({
         relationForm: relationForm,
         addRegistryForm: addRegistryForm,
         editRegistryForm: editRegistryForm,
+        searchForm,
         addUserForm,
     }).normalize({
         addPacketForm: {

@@ -14,6 +14,9 @@ public class UnitdateSearchParam extends SearchParam {
 
     private Integer calendarId;
 
+    public UnitdateSearchParam() {
+    }
+
     protected UnitdateSearchParam(final String value, final UnitdateCondition condition, final Integer calendarId) {
         super(SearchParamType.UNITDATE, value);
 
@@ -28,7 +31,15 @@ public class UnitdateSearchParam extends SearchParam {
         return condition;
     }
 
+    public void setCondition(final UnitdateCondition condition) {
+        this.condition = condition;
+    }
+
     public Integer getCalendarId() {
         return calendarId;
+    }
+
+    public void setCalendarId(final Integer calendarId) {
+        this.calendarId = calendarId;
     }
 }

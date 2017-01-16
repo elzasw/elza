@@ -63,7 +63,7 @@ var Search = class Search extends React.Component {
         }
     }
 
-    
+
     handleChange(e){
         this.setState({
             filterText: e.target.value                                  // uložení zadaného řezezce ve stavu komponenty
@@ -74,9 +74,11 @@ var Search = class Search extends React.Component {
     }
 
     render() {                          // metoda pro renderovani obsahu komponenty
-        const {textAreaInput, tabIndex, placeholder} = this.props
+        const {textAreaInput, tabIndex, placeholder, extendedSearch, onClickExtendedSearch, extendedReadOnly} = this.props;
 
-        var cls = "search-container";   // třída komponenty                 
+        const readOnly = extendedSearch && extendedReadOnly;
+
+        var cls = "search-container";   // třída komponenty
         if (this.props.className) {
             cls += " " + this.props.className;
         }
@@ -92,7 +94,13 @@ var Search = class Search extends React.Component {
 
         var actions = []
 
-        actions.push(<NoFocusButton key='handleSearch' className='search-button' onClick={this.handleSearch.bind(this, false, false)}><Icon glyph='fa-search'/></NoFocusButton>)
+        if (extendedSearch) {
+            actions.push(<NoFocusButton className="search-extended" onClick={onClickExtendedSearch}><Icon glyph='fa-search-plus'/></NoFocusButton>)
+        }
+
+        if (!readOnly) {
+            actions.push(<NoFocusButton key='handleSearch' className='search-button' onClick={this.handleSearch.bind(this, false, false)}><Icon glyph='fa-search'/></NoFocusButton>)
+        }
 
         if (this.state.filterText) {
             actions.push(<NoFocusButton key='handleClear' className='clear-search-button' onClick={this.handleClear}><Icon glyph='fa-close'/></NoFocusButton>)
@@ -122,6 +130,7 @@ var Search = class Search extends React.Component {
                         ref="input"
                         labelClassName="label-class"
                         placeholder={this.props.placeholder}
+                        readOnly={readOnly}
                         onChange={this.handleChange}
                         onKeyUp={this.handleKeyUp}
                     />}

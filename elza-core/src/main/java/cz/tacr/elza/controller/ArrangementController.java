@@ -19,6 +19,7 @@ import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
@@ -3016,6 +3017,7 @@ public class ArrangementController {
         private boolean luceneQuery;
 
         /** Parametry pro rozšířené vyhledávání. */
+        @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
         private List<SearchParam> searchParams;
 
         public String getFulltext() {
@@ -3064,7 +3066,9 @@ public class ArrangementController {
          * Hloubka v jaké se má hledat pokud je předáno nodeId.
          */
         private Depth depth;
+
         /** Parametry pro rozšířené vyhledávání. */
+        @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
         private List<SearchParam> searchParams;
 
         public Integer getVersionId() {

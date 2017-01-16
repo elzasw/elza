@@ -70,6 +70,7 @@ exports.ArrDaoPackages = require('components/arr/ArrDaoPackages.jsx');
 exports.NodeDaosForm = require('components/arr/NodeDaosForm.jsx');
 exports.FundNodesList = require('components/arr/FundNodesList.jsx');
 exports.FundNodesSelectForm = require('components/arr/FundNodesSelectForm.jsx');
+exports.ArrSearchForm = require('components/arr/ArrSearchForm.jsx');
 exports.AddOutputForm = require('components/arr/AddOutputForm.jsx');
 exports.ArrOutputDetail = require('components/arr/ArrOutputDetail.jsx');
 exports.ArrRequestDetail = require('components/arr/ArrRequestDetail.jsx');

@@ -29,6 +29,8 @@ const initialState = {
     descItemTypeId: null,   // id atributu právě editovaného řádku
     searchText: '',
     searchExtended: false,
+    luceneQuery: false,
+    data: {type: "FORM"},
     showFilterResult: false,
     searchedItems: [], // výsledky hledání dat
     searchedCurrentIndex: 0,    // index aktuálně vybrané položky ve výsledcích hledání
@@ -93,6 +95,7 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 searchedItems: [],
                 searchedCurrentIndex: 0,
                 cellFocus: {row: 0, col: 0},
+                data: {type: "FORM"},
             }
         case types.STORE_SAVE: {
             const {pageSize, initialised, pageIndex, filter, visibleColumns, columnsOrder, columnInfos} = state;
@@ -163,7 +166,9 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 ...state,
                 searchedItems: action.searchedItems,
                 searchText: action.filterText,
-                showFilterResult: action.filterText !== '',
+                showFilterResult: action.filterText !== '' || action.luceneQuery,
+                luceneQuery: action.luceneQuery,
+                data: action.data
             }
             return changeSearchedIndex(midState, 0)
         case types.FUND_FUND_DATA_GRID_FILTER_CLEAR_ALL:

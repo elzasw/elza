@@ -16,7 +16,8 @@ import {
     FundFilterSettings,
     DataGridPagination,
     FundDataGridCellForm,
-    SearchWithGoto
+    SearchWithGoto,
+    ArrSearchForm
 } from 'components/index.jsx';
 import {Button, MenuItem} from 'react-bootstrap';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
@@ -575,7 +576,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
 
     handleFulltextSearch(value) {
         const {versionId} = this.props;
-        this.dispatch(fundDataFulltextSearch(versionId, value))
+        this.dispatch(fundDataFulltextSearch(versionId, value, false, null, this.props.fundDataGrid.data))
     }
 
     handleFulltextPrevItem() {
@@ -619,6 +620,54 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         this.dispatch(fundDataFulltextExtended(versionId))
     }
 
+    handleExtendedSearch = () => {
+        this.dispatch(modalDialogShow(this, i18n('search.extended.title'),
+            <ArrSearchForm
+                onSubmitForm={this.handleExtendedSearchData}
+                initialValues={this.props.fundDataGrid.data}
+            />
+        ));
+    };
+
+    handleExtendedSearchData = (result) => {
+        const {versionId} = this.props;
+
+        let params = [];
+
+        let text = null;
+        switch (result.type) {
+            case "FORM": {
+                result.condition.forEach((conditionItem, index) => {
+                    let param = {};
+                    param.type = conditionItem.type;
+                    param.value = conditionItem.value;
+                    switch (conditionItem.type) {
+                        case "TEXT": {
+                            param["@class"] = ".TextSearchParam";
+                            break;
+                        }
+                        case "UNITDATE": {
+                            param["@class"] = ".UnitdateSearchParam";
+                            param.calendarId = parseInt(conditionItem.calendarId);
+                            param.condition = conditionItem.condition;
+                            break;
+                        }
+                    }
+                    params.push(param);
+                });
+                break;
+            }
+
+            case "TEXT": {
+                text = result.text;
+                break;
+            }
+        }
+
+        this.dispatch(fundDataFulltextSearch(versionId, text, true, params, result));
+        this.dispatch(modalDialogHide());
+    };
+
     render() {
         const {fundId, fund, fundDataGrid, versionId, rulDataTypes, descItemTypes, packetTypes, dispatch, readMode} = this.props;
         const {cols} = this.state;
@@ -634,15 +683,18 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                 itemsCount={fundDataGrid.searchedItems.length}
                 selIndex={fundDataGrid.searchedCurrentIndex}
                 textAreaInput={fundDataGrid.searchExtended}
-                filterText={fundDataGrid.searchText}
+                filterText={fundDataGrid.luceneQuery ? i18n('search.extended.label') : fundDataGrid.searchText}
                 placeholder={i18n(fundDataGrid.searchExtended ? 'arr.fund.extendedSearch.text' : 'search.input.search')}
                 showFilterResult={fundDataGrid.showFilterResult}
                 onFulltextSearch={this.handleFulltextSearch}
                 onFulltextChange={this.handleFulltextChange}
                 onFulltextPrevItem={this.handleFulltextPrevItem}
                 onFulltextNextItem={this.handleFulltextNextItem}
+                extendedSearch
+                extendedReadOnly={fundDataGrid.luceneQuery}
+                onClickExtendedSearch={this.handleExtendedSearch}
             />
-        )
+        );
 
         // ---
         return (
@@ -651,9 +703,6 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                     <div className='actions-container'>
                         <div className="actions-search">
                             {search}
-                            <Button onClick={this.handleToggleExtendedSearch}
-                                    title={i18n(fundDataGrid.searchExtended ? 'arr.fund.simpleSearch' : 'arr.fund.extendedSearch')}><Icon
-                                glyph={fundDataGrid.searchExtended ? 'fa-search-minus' : 'fa-search-plus'}/></Button>
                         </div>
                         <div className="actions-buttons">
                             <Button

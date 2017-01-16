@@ -694,8 +694,8 @@ class WebApi {
         return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/deleteDataValues/' + versionId, {descItemTypeId}, {nodes, specIds: specsIds})
     }
 
-    getFilteredFulltextNodes(versionId, fulltext, luceneQuery=false) {
-        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/getFilteredFulltext/' + versionId, {fulltext, luceneQuery})
+    getFilteredFulltextNodes(versionId, fulltext, luceneQuery = false, searchParams = null) {
+        return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/getFilteredFulltext/' + versionId, null, {fulltext, luceneQuery, searchParams})
     }
 
     getPackages() {

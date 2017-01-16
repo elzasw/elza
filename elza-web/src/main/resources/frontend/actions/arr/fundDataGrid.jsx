@@ -42,7 +42,7 @@ export function isFundDataGridAction(action) {
 
 export function fundBulkModifications(versionId, descItemTypeId, specsIds, operationType, findText, replaceText, replaceSpecId, nodes) {
     console.log('#####findAndReplace', versionId, descItemTypeId, specsIds, operationType, findText, replaceText, replaceSpecId, nodes)
-    
+
     return (dispatch, getState) => {
         switch (operationType) {
             case 'findAndReplace':
@@ -74,26 +74,22 @@ export function fundDataInitIfNeeded(versionId, initData) {
     }
 }
 
-export function fundDataFulltextSearch(versionId, filterText) {
+export function fundDataFulltextSearch(versionId, filterText, luceneQuery, searchParams, data) {
     return (dispatch, getState) => {
-        if (filterText !== '') {
-            const fundDataGrid = getFundDataGrid(getState, versionId)
-            if (fundDataGrid) {
-                WebApi.getFilteredFulltextNodes(versionId, filterText, fundDataGrid.searchExtended)
-                    .then(json => {
-                        dispatch(fundDataFulltextSearchResult(versionId, filterText, json))
-                    })
-            }
-        }
+        WebApi.getFilteredFulltextNodes(versionId, filterText, luceneQuery, searchParams).then(json => {
+            dispatch(fundDataFulltextSearchResult(versionId, filterText, luceneQuery, json, data));
+        });
     }
 }
 
-function fundDataFulltextSearchResult(versionId, filterText, searchedItems) {
+function fundDataFulltextSearchResult(versionId, filterText, luceneQuery, searchedItems, data) {
     return {
         type: types.FUND_FUND_DATA_GRID_FULLTEXT_RESULT,
         versionId,
         filterText,
+        luceneQuery,
         searchedItems,
+        data
     }
 }
 

@@ -8,6 +8,9 @@ package cz.tacr.elza.controller.vo.filter;
  */
 public class TextSearchParam extends SearchParam {
 
+    public TextSearchParam() {
+    }
+
     public TextSearchParam(final String value) {
         super(SearchParamType.TEXT, value);
     }

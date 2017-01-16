@@ -150,7 +150,7 @@ return true
         const {actionAddons, className, fund, cutLongLabels} = this.props;
 
         return (
-            <FundTreeLazy 
+            <FundTreeLazy
                 ref='tree'
                 className={className}
                 actionAddons={actionAddons}
@@ -164,6 +164,7 @@ return true
                 onFulltextPrevItem={this.handleFulltextPrevItem}
                 onFulltextNextItem={this.handleFulltextNextItem}
                 onCollapse={this.handleCollapse}
+                extendedSearch
             />
         )
     }
