@@ -148,13 +148,13 @@ class HomePage extends AbstractReactComponent {
             return this.renderHistoryItem(name, desc, 'ARR_REGION_FUND', x, index)
         });
 
-        if(arrItems.length === 0){
+        if (arrItems.length === 0) {
             arrItems.push(this.renderMessage(i18n('home.recent.fund.emptyList.title'), i18n('home.recent.fund.emptyList.message')));
         }
-        if(registryItems.length === 1){ //registryItems vzdy obsahuje 1 objekt
+        if (registryItems.length === 0) {
             registryItems.push(this.renderMessage(i18n('home.recent.registry.emptyList.title'), i18n('home.recent.registry.emptyList.message')));
         }
-        if(partyItems.length === 0){
+        if (partyItems.length === 0) {
             partyItems.push(this.renderMessage(i18n('home.recent.party.emptyList.title'), i18n('home.recent.party.emptyList.message')));
         }
 

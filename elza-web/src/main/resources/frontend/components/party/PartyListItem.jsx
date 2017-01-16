@@ -64,7 +64,7 @@ class PartyListItem extends AbstractReactComponent {
 
 
     render() {
-        const {relationTypesForClass, partyType, relations, record, className, ...otherProps} = this.props;
+        const {id, relationTypesForClass, partyType, relations, record, className, ...otherProps} = this.props;
 
         let icon = PartyListItem.partyIconByPartyTypeCode(partyType.code);
         const birth = relations == null ? "" : this.getDatationRelationString(relations.filter(i => (relationTypesForClass[RELATION_CLASS_CODES.BIRTH].indexOf(i.relationTypeId) !== -1) && ((i.from && i.from.value) || (i.to && i.to.value))),'*');
@@ -87,7 +87,7 @@ class PartyListItem extends AbstractReactComponent {
                 <span className="date">{datation}</span>
                 {record.externalId && record.externalSystem && record.externalSystem.name && <span className="description">{record.externalSystem.name + ':' + record.externalId}</span>}
                 {record.externalId && (!record.externalSystem || !record.externalSystem.name) && <span className="description">{'UNKNOWN:' + record.externalId}</span>}
-                {!record.externalId && <span className="description">{item.id}</span>}
+                {!record.externalId && <span className="description">{id}</span>}
             </div>
         </div>
     };

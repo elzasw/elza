@@ -125,12 +125,12 @@ class PartyList extends AbstractReactComponent {
                     filterText={partyList.filter.text}
                     showFilterResult={true}
                     type="INFO"
-                    itemsCount={partyList.filteredRows ? partyList.filteredRows.length : 0}
+                    itemsCount={partyList.rows ? partyList.rows.length : 0}
                     allItemsCount={partyList.count}
                 />
             </div>
             {list}
-            {isFetched && partyList.filteredRows.length > maxSize && <span className="items-count">{i18n('party.list.itemsVisibleCountFrom', partyList.filteredRows.length, partyList.count)}</span>}
+            {isFetched && partyList.rows.length > maxSize && <span className="items-count">{i18n('party.list.itemsVisibleCountFrom', partyList.filteredRows.length, partyList.count)}</span>}
         </div>
     }
 }
