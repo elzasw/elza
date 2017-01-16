@@ -1,9 +1,12 @@
 package cz.tacr.elza.repository;
 
 import java.text.NumberFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,12 +33,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
+import cz.tacr.elza.controller.vo.filter.SearchParamType;
+import cz.tacr.elza.controller.vo.filter.TextSearchParam;
+import cz.tacr.elza.controller.vo.filter.UnitdateCondition;
+import cz.tacr.elza.controller.vo.filter.UnitdateSearchParam;
+import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.convertor.CalendarConverter;
+import cz.tacr.elza.domain.convertor.CalendarConverter.CalendarType;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
@@ -55,6 +68,9 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
     @Autowired
     private LevelRepository levelRepository;
+
+    @Autowired
+    private CalendarTypeRepository calendarTypeRepository;
 
     private FullTextEntityManager fullTextEntityManager;
 
@@ -118,7 +134,53 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         Assert.notNull(fundId);
         Assert.notEmpty(searchParams);
 
-        List<String> descItemIds = findDescItemIdsBySearchParamsData(searchParams, fundId);
+        List<TextSearchParam> textParams = new LinkedList<>();
+        List<UnitdateSearchParam> dateParams = new LinkedList<>();
+        for (SearchParam searchParam : searchParams) {
+            if (SearchParamType.TEXT == searchParam.getType()) {
+                textParams.add((TextSearchParam) searchParam);
+            } else if (SearchParamType.UNITDATE == searchParam.getType()) {
+                dateParams.add((UnitdateSearchParam) searchParam);
+            }
+        }
+
+        Set<Integer> textNodeIds = null;
+        if (!textParams.isEmpty()) {
+            textNodeIds = findByTextSearchParamsAndVersionLockChangeId(textParams, fundId, lockChangeId);
+        }
+        Set<Integer> dateNodeIds = null;
+        if (!dateParams.isEmpty()) {
+            dateNodeIds = findByDateSearchParamsAndVersionLockChangeId(dateParams, fundId, lockChangeId);
+        }
+
+        Set<Integer> result;
+        if (textNodeIds != null && dateNodeIds != null) {
+            textNodeIds.retainAll(dateNodeIds);
+            result = textNodeIds;
+        } else if (textNodeIds != null) {
+            result = textNodeIds;
+        } else {
+            result = dateNodeIds;
+        }
+
+        return result;
+    }
+
+    /**
+     * Najde id nodů vyhovující předaným parametrům.
+     *
+     * @param searchParams podmínky
+     * @param fundId id archivního souboru
+     * @param lockChangeId id změny, může být null
+     *
+     * @return id nodů
+     */
+    private Set<Integer> findByTextSearchParamsAndVersionLockChangeId(final List<TextSearchParam> searchParams, final Integer fundId,
+            final Integer lockChangeId) {
+        Assert.notNull(fundId);
+        Assert.notEmpty(searchParams);
+
+        List<String> descItemIds = findDescItemIdsByTextSearchParamsData(searchParams, fundId);
         if (descItemIds.isEmpty()) {
             return Collections.emptySet();
         }
@@ -129,9 +191,151 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         return new HashSet<>(nodeIds);
     }
 
-    private List<String> findDescItemIdsBySearchParamsData(final List<SearchParam> searchParams, final Integer fundId) {
-        // TODO Auto-generated method stub
-        return null;
+    /**
+     * Najde id nodů vyhovující předaným parametrům.
+     *
+     * @param searchParams podmínky
+     * @param fundId id archivního souboru
+     * @param lockChangeId id změny, může být null
+     *
+     * @return id nodů
+     */
+    private Set<Integer> findByDateSearchParamsAndVersionLockChangeId(final List<UnitdateSearchParam> searchParams, final Integer fundId,
+            final Integer lockChangeId) {
+        Assert.notNull(fundId);
+        Assert.notEmpty(searchParams);
+
+        List<String> descItemIds = findDescItemIdsByDateSearchParamsData(searchParams, fundId);
+        if (descItemIds.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        String descItemIdsString = StringUtils.join(descItemIds, " ");
+        List<Integer> nodeIds = findNodeIdsByValidDescItems(lockChangeId, descItemIdsString);
+
+        return new HashSet<>(nodeIds);
+    }
+
+    /**
+     * Najde id atributů vyhovující předaným parametrům.
+     *
+     * @param searchParams podmínky
+     * @param fundId id archivního souboru
+     *
+     * @return id nodů
+     */
+    @SuppressWarnings("unchecked")
+    private List<String> findDescItemIdsByDateSearchParamsData(final List<UnitdateSearchParam> searchParams, final Integer fundId) {
+        Class<ArrData> entityClass = ArrData.class;
+        QueryBuilder queryBuilder = createQueryBuilder(entityClass);
+
+        BooleanJunction<BooleanJunction> dateBool = queryBuilder.bool();
+
+        for (UnitdateSearchParam searchParam : searchParams) {
+            String value = searchParam.getValue();
+            if (StringUtils.isNotBlank(value)) {
+                Query dateQuery = createDateQuery(value, searchParam.getCalendarId(), searchParam.getCondition(), queryBuilder);
+                dateBool.must(dateQuery);
+            }
+        }
+
+        if (dateBool.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Query fundIdQuery = queryBuilder.keyword().onField("fundId").matching(fundId).createQuery();
+        Query query = queryBuilder.bool().must(dateBool.createQuery()).must(fundIdQuery).createQuery();
+
+        return (List<String>) createFullTextQuery(query, entityClass).setProjection("itemId").
+                getResultList().
+                stream().
+                map(row -> ((Object[]) row)[0]).
+                collect(Collectors.toList());
+    }
+
+    /**
+     * Vytvoří lucene dotaz na hledání arr_data podle datace.
+     *
+     * @param value datace
+     * @param calendarId id typu kalendáře
+     * @param condition typ podmínky
+     * @param queryBuilder query builder
+     *
+     * @return dotaz
+     */
+    private Query createDateQuery(final String value, final Integer calendarId, final UnitdateCondition condition,
+            final QueryBuilder queryBuilder) {
+        Assert.notNull(value);
+        Assert.notNull(calendarId);
+        Assert.notNull(condition);
+
+        IUnitdate unitdate = new ArrDataUnitdate();
+        UnitDateConvertor.convertToUnitDate(value, unitdate);
+
+        ArrCalendarType arrCalendarType = calendarTypeRepository.getOneCheckExist(calendarId);
+        CalendarType calendarType = CalendarType.valueOf(arrCalendarType.getCode());
+
+        LocalDateTime fromDate = LocalDateTime.parse(unitdate.getValueFrom(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        long secondsFrom = CalendarConverter.toSeconds(calendarType, fromDate);
+
+        LocalDateTime toDate = LocalDateTime.parse(unitdate.getValueTo(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        long secondsTo = CalendarConverter.toSeconds(calendarType, toDate);
+
+        Query query;
+        switch (condition) {
+            case CONTAINS:
+                Query fromQuery = queryBuilder.range().onField("normalizedFrom").above(secondsFrom).createQuery();
+                Query toQuery = queryBuilder.range().onField("normalizedTo").below(secondsFrom).createQuery();
+                query = queryBuilder.bool().must(fromQuery).must(toQuery).createQuery();
+                break;
+            case GE:
+                query = queryBuilder.range().onField("normalizedTo").below(secondsFrom).createQuery();
+                break;
+            case LE:
+                query = queryBuilder.range().onField("normalizedTo").below(secondsTo).createQuery();
+                break;
+            default:
+                throw new IllegalStateException("Neznámý typ podmínky " + condition);
+        }
+
+        return query;
+    }
+
+    /**
+     * Najde id atributů vyhovující předaným parametrům.
+     *
+     * @param searchParams podmínky
+     * @param fundId id archivního souboru
+     *
+     * @return id nodů
+     */
+    @SuppressWarnings("unchecked")
+    private List<String> findDescItemIdsByTextSearchParamsData(final List<TextSearchParam> searchParams, final Integer fundId) {
+        Class<ArrData> entityClass = ArrData.class;
+        QueryBuilder queryBuilder = createQueryBuilder(entityClass);
+
+        BooleanJunction<BooleanJunction> textBool = queryBuilder.bool();
+
+        for (TextSearchParam searchParam : searchParams) {
+            String value = searchParam.getValue();
+            if (StringUtils.isNotBlank(value)) {
+                Query textQuery = createTextQuery(value, queryBuilder);
+                textBool.must(textQuery);
+            }
+        }
+
+        if (textBool.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Query fundIdQuery = queryBuilder.keyword().onField("fundId").matching(fundId).createQuery();
+        Query query = queryBuilder.bool().must(textBool.createQuery()).must(fundIdQuery).createQuery();
+
+        return (List<String>) createFullTextQuery(query, entityClass).setProjection("itemId").
+                getResultList().
+                stream().
+                map(row -> ((Object[]) row)[0]).
+                collect(Collectors.toList());
     }
 
     /**
