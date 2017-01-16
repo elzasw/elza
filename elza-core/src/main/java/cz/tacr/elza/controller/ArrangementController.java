@@ -21,6 +21,8 @@ import javax.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
@@ -150,6 +152,8 @@ import cz.tacr.elza.service.vo.ChangesResult;
 @RestController
 @RequestMapping("/api/arrangement")
 public class ArrangementController {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     /** Formát popisu atributu - krátká verze. */
     public static final String FORMAT_ATTRIBUTE_SHORT = "SHORT";
@@ -1155,6 +1159,7 @@ public class ArrangementController {
         try {
             itemTypes = ruleService.getDescriptionItemTypes(versionId, nodeId);
         } catch (Exception e) {
+            logger.error("Chyba v pravidlech", e);
             itemTypes = new ArrayList<>();
         }
 
