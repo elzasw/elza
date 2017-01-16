@@ -128,6 +128,7 @@ public class ArrMoveLevelService {
                                  final ArrLevel staticLevel,
                                  final List<ArrLevel> transportLevels,
                                  final ArrLevel transportLevelParent, final ArrChange change) {
+        levelRepository.CheckUniqueConstraint(false);
 
         Integer versionId = version.getFundVersionId();
         arrangementService.isValidAndOpenVersion(version);
@@ -178,8 +179,12 @@ public class ArrMoveLevelService {
         }
 
         entityManager.flush(); //aktualizace verzí v nodech
+
+        levelRepository.CheckUniqueConstraint(true);
+
         eventNotificationService.publishEvent(
                 EventFactory.createMoveEvent(EventType.MOVE_LEVEL_BEFORE, staticLevel, transportLevels, version));
+
 
     }
 
@@ -248,6 +253,7 @@ public class ArrMoveLevelService {
                                 final List<ArrLevel> transportLevels,
                                 final ArrLevel transportLevelParent, final ArrChange change) {
 
+        levelRepository.CheckUniqueConstraint(false);
         Integer versionId = version.getFundVersionId();
         arrangementService.isValidAndOpenVersion(version);
 
@@ -296,6 +302,8 @@ public class ArrMoveLevelService {
         entityManager.flush(); //aktualizace verzí v nodech
         eventNotificationService.publishEvent(
                 EventFactory.createMoveEvent(EventType.MOVE_LEVEL_AFTER, staticLevel, transportLevels, version));
+
+        levelRepository.CheckUniqueConstraint(true);
     }
 
 
@@ -312,6 +320,7 @@ public class ArrMoveLevelService {
                                 final ArrNode staticNode,
                                 final Collection<ArrNode> transportNodes,
                                 final ArrNode transportParentNode) {
+        levelRepository.CheckUniqueConstraint(false);
 
         ArrChange change = arrangementService.createChange(ArrChange.Type.MOVE_LEVEL, staticNode);
 
@@ -340,6 +349,8 @@ public class ArrMoveLevelService {
         checkCycle(transportLevels.get(0), staticLevel);
 
         moveLevelUnder(version, staticLevel, transportLevels, change);
+
+        levelRepository.CheckUniqueConstraint(true);
     }
 
 
@@ -402,6 +413,7 @@ public class ArrMoveLevelService {
         Assert.notNull(version);
         Assert.notNull(deleteNode);
 
+        levelRepository.CheckUniqueConstraint(false);
         ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_LEVEL, deleteNode);
 
         ArrLevel deleteLevel = arrangementService.lockNode(deleteNode, version, change);
@@ -428,6 +440,7 @@ public class ArrMoveLevelService {
                 version.getFundVersionId(),
                 deleteNode.getNodeId(),deleteNodeParent.getNodeId()));
 
+        levelRepository.CheckUniqueConstraint(true);
         return level;
     }
 

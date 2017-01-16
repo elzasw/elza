@@ -1,14 +1,18 @@
 package cz.tacr.elza.repository;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.vo.RelatedNodeDirection;
+import cz.tacr.elza.utils.ObjectListIterator;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
@@ -20,21 +24,15 @@ import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.vo.RelatedNodeDirection;
-import cz.tacr.elza.utils.ObjectListIterator;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -318,6 +316,20 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         allIds.remove(null);
 
         return findLevelInfoByIds(allIds);
+    }
+
+    @Override
+    public void CheckUniqueConstraint(boolean check) {
+        final String sql;
+        if (check) {
+            sql = "ALTER TABLE arr_level ADD  CONSTRAINT u_arr_level_ppd UNIQUE (position, node_id_parent, delete_change_id)";
+        } else {
+            sql = "ALTER TABLE arr_level DROP CONSTRAINT u_arr_level_ppd";
+        }
+
+        Query query = entityManager.createNativeQuery(sql);
+        query.executeUpdate();
+        levelRepository.flush();
     }
 
 

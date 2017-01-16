@@ -132,6 +132,13 @@ public interface LevelRepositoryCustom {
      */
     List<LevelInfo> readTree(ArrFundVersion version);
 
+    /**
+     * Smaže/založí constraint arr_level.u_arr_level_ppd.
+     * Na MSSQL brání zápisu do DB, protože zapisuje v jiném pořadí než ostatní DB.
+     * @param check
+     */
+    void CheckUniqueConstraint(boolean check);
+
 
     /**
      * Uzel stromu, obsahuje pouze základní informace.
