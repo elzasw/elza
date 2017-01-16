@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -78,14 +79,13 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      *
      * @param text The query text.
      */
-    @SuppressWarnings("unchecked")
     @Override
     public Set<Integer> findByFulltextAndVersionLockChangeId(final String text, final Integer fundId, final Integer lockChangeId) {
         Assert.notNull(fundId);
 
         List<String> descItemIds = findDescItemIdsByData(text, fundId);
         if (descItemIds.isEmpty()) {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
 
         String descItemIdsString = StringUtils.join(descItemIds, " ");
@@ -95,7 +95,6 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     }
 
 
-    @SuppressWarnings("unchecked")
     @Override
     public Set<Integer> findByLuceneQueryAndVersionLockChangeId(final String queryText, final Integer fundId, final Integer lockChangeId)
             throws InvalidQueryException {
@@ -103,13 +102,36 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
         List<String> descItemIds = findDescItemIdsByLuceneQuery(queryText, fundId);
         if (descItemIds.isEmpty()) {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
 
         String descItemIdsString = StringUtils.join(descItemIds, " ");
         List<Integer> nodeIds = findNodeIdsByValidDescItems(lockChangeId, descItemIdsString);
 
         return new HashSet<>(nodeIds);
+    }
+
+
+    @Override
+    public Set<Integer> findBySearchParamsAndVersionLockChangeId(final List<SearchParam> searchParams, final Integer fundId,
+            final Integer lockChangeId) {
+        Assert.notNull(fundId);
+        Assert.notEmpty(searchParams);
+
+        List<String> descItemIds = findDescItemIdsBySearchParamsData(searchParams, fundId);
+        if (descItemIds.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        String descItemIdsString = StringUtils.join(descItemIds, " ");
+        List<Integer> nodeIds = findNodeIdsByValidDescItems(lockChangeId, descItemIdsString);
+
+        return new HashSet<>(nodeIds);
+    }
+
+    private List<String> findDescItemIdsBySearchParamsData(final List<SearchParam> searchParams, final Integer fundId) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     /**
@@ -175,6 +197,8 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         parser.setAllowLeadingWildcard(true);
         HashMap<String, NumericConfig> stringNumericConfigHashMap = new HashMap<>();
         stringNumericConfigHashMap.put("specification", new NumericConfig(1, NumberFormat.getIntegerInstance(), FieldType.NumericType.INT));
+        stringNumericConfigHashMap.put("normalizedFrom", new NumericConfig(16, NumberFormat.getNumberInstance(), FieldType.NumericType.LONG));
+        stringNumericConfigHashMap.put("normalizedTo", new NumericConfig(16, NumberFormat.getNumberInstance(), FieldType.NumericType.LONG));
         parser.setNumericConfigMap(stringNumericConfigHashMap);
         Query query;
         try {

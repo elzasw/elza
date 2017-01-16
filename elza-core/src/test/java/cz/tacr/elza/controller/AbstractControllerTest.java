@@ -37,6 +37,7 @@ import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
 
 import cz.tacr.elza.AbstractTest;
+import cz.tacr.elza.controller.ArrangementController.FaFilteredFulltextParam;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
@@ -2333,10 +2334,13 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected List<FilterNodePosition> getFilteredFulltextNodes(final Integer versionId,
                                                                 final String fulltext,
                                                                 final Boolean luceneQuery) {
-        return Arrays.asList(get(spec -> spec
+        FaFilteredFulltextParam param = new FaFilteredFulltextParam();
+        param.setFulltext(fulltext);
+        param.setLuceneQuery(BooleanUtils.isTrue(luceneQuery));
+
+        return Arrays.asList(post(spec -> spec
                 .pathParameter("versionId", versionId)
-                .queryParameter("fulltext", fulltext)
-                .queryParameter("luceneQuery", luceneQuery), FILTERED_FULLTEXT_NODES).as(FilterNodePosition[].class));
+                .body(param), FILTERED_FULLTEXT_NODES).as(FilterNodePosition[].class));
     }
 
     protected ArrangementController.ValidationItems getValidation(final Integer fundVersionId,
