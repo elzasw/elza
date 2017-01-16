@@ -8,9 +8,12 @@ package cz.tacr.elza.controller.vo.filter;
  */
 public enum UnitdateCondition {
 
-    GT,
+    /** Od. */
+    GE,
 
-    LT,
+    /** Do. */
+    LE,
 
+    /** Během. */
     CONTAINS,
 }

@@ -2,8 +2,6 @@ package cz.tacr.elza.controller.vo.filter;
 
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.domain.convertor.CalendarConverter.CalendarType;
-
 /**
  * Hledání podle datace.
  *
@@ -12,25 +10,25 @@ import cz.tacr.elza.domain.convertor.CalendarConverter.CalendarType;
  */
 public class UnitdateSearchParam extends SearchParam {
 
-    private  UnitdateCondition condition;
+    private UnitdateCondition condition;
 
-    private  CalendarType calendarType;
+    private Integer calendarId;
 
-    protected UnitdateSearchParam(final String value, final UnitdateCondition condition, final CalendarType calendarType) {
+    protected UnitdateSearchParam(final String value, final UnitdateCondition condition, final Integer calendarId) {
         super(SearchParamType.UNITDATE, value);
 
         Assert.notNull(condition);
-        Assert.notNull(calendarType);
+        Assert.notNull(calendarId);
 
         this.condition = condition;
-        this.calendarType = calendarType;
+        this.calendarId = calendarId;
     }
 
     public UnitdateCondition getCondition() {
         return condition;
     }
 
-    public CalendarType getCalendarType() {
-        return calendarType;
+    public Integer getCalendarId() {
+        return calendarId;
     }
 }
