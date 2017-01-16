@@ -5,7 +5,7 @@ import {Autocomplete, AbstractReactComponent, i18n, Scope, FormInput} from 'comp
 import {Modal, Button, Form} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitReduxForm, submitReduxFormWithProp} from 'components/form/FormUtils.jsx'
-import {getRegistryRecordTypesIfNeeded, getRegistry} from 'actions/registry/registryRegionList.jsx'
+import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registry.jsx'
 import {WebApi} from 'actions/index.jsx';
 import {getTreeItemById} from "./registryUtils";
 
@@ -53,7 +53,7 @@ class AddRegistryForm extends AbstractReactComponent {
     }
 
     prepareState(props){
-        const {fields: {registerTypeId}, parentRecordId, registryRegion, registryRegionRecordTypes} = props;
+        const {fields: {registerTypeId}, parentRecordId, app:{registryList:{filter:{registryTypesId}}}, registryRegionRecordTypes} = props;
 
         // Pokud není nastaven typ rejstříku, pokusíme se ho nastavit
         if (!registerTypeId || registerTypeId.value === "") {
@@ -65,7 +65,7 @@ class AddRegistryForm extends AbstractReactComponent {
                 });
             } else {    //  pokud není předán parentRecordId, může se výběr rejstříku editovat
                 this.setState({disabled: false});
-                if (registryRegion.registryTypesId && this.isValueUseable(registryRegionRecordTypes.item, registryRegion.registryTypesId)){ // pokud o vybrání nějaké položky, která je uvedena v registryRegion.registryTypesId
+                if (registryList.registryTypesId && this.isValueUseable(registryRegionRecordTypes.item, registryRegion.registryTypesId)){ // pokud o vybrání nějaké položky, která je uvedena v registryRegion.registryTypesId
                     this.props.load({registerTypeId: registryRegion.registryTypesId});
                 }
             }

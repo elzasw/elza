@@ -1022,6 +1022,18 @@ class WebApi {
     findInterpiRecordRelations(recordId, relationsVO) {
         return AjaxUtils.ajaxPost(WebApi.registryUrl + '/interpi/' + recordId + '/relations/', null, relationsVO);
     }
+
+    getAllExtSystem() {
+        return AjaxUtils.ajaxGet(WebApi.adminUrl + '/externalSystems');
+    }
+
+    getExtSystem(id) {
+        return AjaxUtils.ajaxGet(WebApi.adminUrl + '/externalSystems/' + id);
+    }
+
+    specificationHasParty(itemSpecId) {
+        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/specificationHasParty/' + itemSpecId);
+    }
 }
 
 WebApi.baseUrl = '/api';

@@ -1,67 +1,55 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
+
+import {connect} from 'react-redux'
+import classNames from 'classnames';
+import {Splitter, ToggleContent} from 'components/index.jsx';
+import {splitterResize} from 'actions/global/splitter.jsx';
+
+import './PageLayout.less';
+
 /**
  * Standardní layout stránky, který ribbon, obsahuje levý panel, prostřední panel a pravý panel, které jsou odděleny splitterem.
  */
+class PageLayout extends React.Component {
 
-require ('./PageLayout.less');
+    state = {
+        ribbonOpened: true
+    };
 
-import React from 'react';
-import ReactDOM from 'react-dom';
-import {connect} from 'react-redux'
-var classNames = require('classnames');
-import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
-import {Link, IndexLink} from 'react-router';
-import {i18n} from 'components/index.jsx';
-import {Splitter, RibbonMenu, ToggleContent, FindindAidFileTree} from 'components/index.jsx';
-import {ModalDialog, NodeTabs} from 'components/index.jsx';
-import {ButtonGroup, Button} from 'react-bootstrap';
-import {splitterResize} from 'actions/global/splitter.jsx';
-
-var PageLayout = class PageLayout extends React.Component {
-    constructor(props) {
-        super(props);
-
-        this.handleRibbonShowHide = this.handleRibbonShowHide.bind(this);
-
-        this.state = {
-            ribbonOpened: true
-        };
-    }
-
-    componentDidMount() {
-    }
-
-    handleRibbonShowHide(opened) {
+    handleRibbonShowHide = (opened) => {
         this.setState({ribbonOpened: opened});
-    }
+    };
 
     render() {
-        var cls = classNames({
+        const {className, status, ribbon, appContentExt, splitter, leftPanel, centerPanel, rightPanel} = this.props;
+        const {ribbonOpened} = this.state;
+        const cls = classNames(className, {
             'app-container': true,
-            'app-exists-status': this.props.status != null,
-            noRibbon: !this.state.ribbonOpened,
-            [this.props.className]: true
+            'app-exists-status': status != null,
+            noRibbon: !ribbonOpened,
         });
 
         return (
             <div className={cls}>
                 <div className='app-header'>
-                    <ToggleContent className="ribbon-toggle-container" opened={this.state.ribbonOpened} onShowHide={this.handleRibbonShowHide}>
-                        {this.props.ribbon}
+                    <ToggleContent className="ribbon-toggle-container" opened={ribbonOpened} onShowHide={this.handleRibbonShowHide}>
+                        {ribbon}
                     </ToggleContent>
                 </div>
                 <div className='status-header'>
-                    {this.props.status}
+                    {status}
                 </div>
                 <div className='app-content'>
-                    {this.props.appContentExt}
+                    {appContentExt}
 
                     <Splitter
-                        leftSize={this.props.splitter.leftWidth}
-                        rightSize={this.props.splitter.rightWidth}
-                        onChange={(size) => {this.props.dispatch(splitterResize(size.leftSize, size.rightSize))}}
-                        left={this.props.leftPanel}
-                        center={this.props.centerPanel}
-                        right={this.props.rightPanel}
+                        leftSize={splitter.leftWidth}
+                        rightSize={splitter.rightWidth}
+                        onChange={({leftSize, rightSize}) => {this.props.dispatch(splitterResize(leftSize, rightSize))}}
+                        left={leftPanel}
+                        center={centerPanel}
+                        right={rightPanel}
                     />
                 </div>
             </div>
@@ -69,6 +57,6 @@ var PageLayout = class PageLayout extends React.Component {
     }
 }
 
-module.exports = connect()(PageLayout);
+export default connect()(PageLayout);
 
 

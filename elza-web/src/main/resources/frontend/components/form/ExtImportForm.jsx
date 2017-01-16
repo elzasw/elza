@@ -11,8 +11,7 @@ import {WebApi} from 'actions'
 import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
-import {registrySelect} from 'actions/registry/registryRegionList.jsx'
-import {registryRegionDataSelectRecord} from 'actions/registry/registryRegionData.jsx'
+import {registryDetailFetchIfNeeded} from 'actions/registry/registry.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import Scope from '../../components/shared/scope/Scope';
 import {regExtSystemListFetchIfNeeded} from 'actions/registry/regExtSystemList';
@@ -161,7 +160,7 @@ const ExtImportSearchComponent = reduxForm({
     fields: ['systemId', 'conditions[].condition', 'conditions[].value', 'conditions[].attType'],
     form: 'extImportSearch'
 }, (state, props) => ({
-    extSystems: state.app.regExtSystemList.fetched ? state.app.regExtSystemList.data : null,
+    extSystems: state.app.regExtSystemList.fetched ? state.app.regExtSystemList.rows : null,
     initialValues: {params:[{condition:null, value:props.firstValue || null, attType: null}]}
 }))(ExtImportSearch);
 
@@ -262,7 +261,7 @@ class ExtImportForm extends AbstractReactComponent {
             this.dispatch(modalDialogHide());
             this.dispatch(routerNavigate('party'));
         } else {
-            this.dispatch(registryRegionDataSelectRecord({selectedId: detailId}));
+            this.dispatch(registryDetailFetchIfNeeded(detailId));
             this.dispatch(modalDialogHide());
             this.dispatch(routerNavigate('registry'));
         }

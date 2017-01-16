@@ -9,6 +9,9 @@ import {routerNavigate} from 'actions/router.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {partyListInvalidate, partyDetailClear, partyDetailInvalidate} from 'actions/party/party.jsx'
 import {preparedListInvalidate, detailInvalidate, listInvalidate, queueListInvalidate, detailUnselect} from 'actions/arr/arrRequestActions.jsx'
+import {storeFromArea} from 'shared/utils'
+import {AREA_REGISTRY_LIST, AREA_REGISTRY_DETAIL, registryDetailInvalidate, registryListInvalidate} from 'actions/registry/registry.jsx'
+
 
 export function isFundChangeAction(action) {
     switch (action.type) {
@@ -175,10 +178,17 @@ export function changeMoveLevel(versionId) {
     }
 }
 
-export function changeRegistryRecord(changedIds) {
-    return {
-        type: types.CHANGE_REGISTRY_UPDATE,
-        changedIds
+export function changeRegistry(changedIds) {
+    return (dispatch, getState) => {
+        const store = getState();
+        const list = storeFromArea(store, AREA_REGISTRY_LIST);
+        const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
+        if (detail.id && changedIds.indexOf(detail.id) !== -1) {
+            dispatch(registryDetailInvalidate());
+        }
+        if (list.data && list.data.filter((n) => changedIds.indexOf(n) !== -1).length > 0) {
+            dispatch(registryListInvalidate());
+        }
     }
 }
 

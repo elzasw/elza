@@ -58,7 +58,6 @@ import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.RegCoordinatesVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.controller.vo.RegRecordWithCount;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.RegVariantRecordVO;
@@ -1936,8 +1935,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         params.put("from", from != null ? from : 0);
         params.put("count", count != null ? count : 20);
 
-        return get(spec -> spec.queryParameters(params), FIND_RECORD).getBody().as(
-                RegRecordWithCount.class).getRecordList();
+        return get(spec -> spec.queryParameters(params), FIND_RECORD).getBody().as(FilteredResultVO.class).getRows();
     }
 
 
@@ -2194,7 +2192,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         params.put("roleTypeId", roleTypeId);
         params.put("from", from != null ? from : 0);
         params.put("count", count != null ? count : 20);
-        return get(spec -> spec.queryParams(params), FIND_RECORD_FOR_RELATION).getBody().as(RegRecordWithCount.class).getRecordList();
+        return get(spec -> spec.queryParams(params), FIND_RECORD_FOR_RELATION).getBody().as(FilteredResultVO.class).getRows();
     }
 
     protected Response importXmlFile(final String transformationName,

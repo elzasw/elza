@@ -54,11 +54,16 @@ exports.FormInput = require('components/form/FormInput.jsx');
 
 exports.Ribbon = require('components/page/Ribbon.jsx');
 
-exports.RegistryPanel = require('components/registry/RegistryPanel.jsx');
+exports.RegistryDetail = require('components/registry/RegistryDetail.jsx');
+exports.RegistryList = require('components/registry/RegistryList.jsx');
+exports.RegistryListItem = require('components/registry/RegistryListItem.jsx');
+exports.RegistryDetailVariantRecords = require('components/registry/RegistryDetailVariantRecords.jsx');
+exports.RegistryDetailCoordinates = require('components/registry/RegistryDetailCoordinates.jsx');
+
 exports.AddRegistryForm = require('components/registry/AddRegistryForm.jsx');
 exports.EditRegistryForm = require('components/registry/EditRegistryForm.jsx');
 exports.RegistryLabel = require('components/registry/RegistryLabel.jsx');
-exports.RegistryCoordinates = require('components/registry/RegistryCoordinates.jsx');
+exports.RegistryCoordinate = require('components/registry/RegistryCoordinate.jsx');
 exports.RegistryField = require('components/registry/RegistryField.jsx');
 
 exports.FundDetail = require('components/fund/FundDetail.jsx');
@@ -112,6 +117,7 @@ exports.FundTreeDaos = require('components/arr/FundTreeDaos.jsx');
 exports.AddNodeCross = require('components/arr/AddNodeCross.jsx');
 
 exports.PartyList = require('components/party/PartyList.jsx');
+exports.PartyListItem = require('components/party/PartyListItem.jsx');
 exports.PartyDetail = require('components/party/PartyDetail.jsx');
 exports.PartyDetailNames = require('components/party/PartyDetailNames.jsx');
 exports.PartyDetailIdentifiers = require('components/party/PartyDetailIdentifiers.jsx');

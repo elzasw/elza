@@ -8,7 +8,7 @@ import {indexById} from 'stores/app/utils.jsx';
  * @return {*}
  */
 export default function storeFromArea(store, area, showErrors=true) {
-    var st;
+    let st;
 
     if (area.indexOf("shared.") === 0) {
         const useArea = area.substring("shared.".length);

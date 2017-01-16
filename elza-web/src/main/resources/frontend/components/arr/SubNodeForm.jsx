@@ -7,7 +7,7 @@ import {connect} from 'react-redux'
 import {indexById} from 'stores/app/utils.jsx'
 import DescItemType from './nodeForm/DescItemType.jsx'
 import {partyDetailFetchIfNeeded, partyAdd} from 'actions/party/party.jsx'
-import {registrySelect, registryAdd} from 'actions/registry/registryRegionList.jsx'
+import {registryDetailFetchIfNeeded, registryAdd} from 'actions/registry/registry.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {setInputFocus} from 'components/Utils.jsx'
 import {setFocus, canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
@@ -362,7 +362,7 @@ class SubNodeForm extends AbstractReactComponent {
 
         // Akce po vytvoření
         if (submitType === 'storeAndViewDetail') {  // přesměrování na detail
-            this.dispatch(registrySelect(data.id, fund));
+            this.dispatch(registryDetailFetchIfNeeded(data.id));
             this.dispatch(routerNavigate('registry'));
         } else {    // nastavení focus zpět na prvek
             var formData = subNodeForm.formData
@@ -382,7 +382,7 @@ class SubNodeForm extends AbstractReactComponent {
     handleDetailRecord(descItemGroupIndex, descItemTypeIndex, descItemIndex, recordId) {
         const {fund, singleDescItemTypeEdit} = this.props;
         singleDescItemTypeEdit && this.dispatch(modalDialogHide())
-        this.dispatch(registrySelect(recordId, fund));
+        this.dispatch(registryDetailFetchIfNeeded(recordId));
         this.dispatch(routerNavigate('registry'));
     }
 

@@ -16,6 +16,7 @@ const Shortcuts = require('react-shortcuts/component');
 import {Utils} from 'components/index.jsx';
 import {setFocus} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
+import {SelectPage} from 'pages'
 
 import './PartyPage.less';
 import {regExtSystemListFetchIfNeeded} from 'actions/registry/regExtSystemList';
@@ -44,7 +45,6 @@ class PartyPage extends AbstractReactComponent {
 
     static PropTypes = {
         splitter: React.PropTypes.object.isRequired,
-        partyRegion: React.PropTypes.object.isRequired,
         userDetail: React.PropTypes.object.isRequired,
         refTables: React.PropTypes.object.isRequired
     };
@@ -183,17 +183,24 @@ class PartyPage extends AbstractReactComponent {
      * Vykreslení stránky pro osoby
      */
     render() {
-        const {splitter} = this.props;
+        const {splitter, module, customRibbon, titles} = this.props;
 
         const leftPanel = <PartyList />;
 
-        const centerPanel = <PartyDetail />;
+        let centerPanel = <PartyDetail />;
+
+        if (module && titles) {
+            centerPanel = <div className="select-module">
+                {SelectPage.renderTitles(titles)}
+                {centerPanel}
+            </div>
+        }
 
         return <Shortcuts name='Party' handler={this.handleShortcuts}>
             <PageLayout
                 splitter={splitter}
                 className='party-page'
-                ribbon={this.buildRibbon()}
+                ribbon={module && customRibbon ? customRibbon : this.buildRibbon()}
                 leftPanel={leftPanel}
                 centerPanel={centerPanel}
             />
@@ -206,7 +213,7 @@ function mapStateToProps(state) {
     const {app:{partyList, partyDetail, regExtSystemList}, splitter, refTables, userDetail, focus} = state;
 
     return {
-        extSystems: regExtSystemList.fetched ? regExtSystemList.data : null,
+        extSystems: regExtSystemList.fetched ? regExtSystemList.rows : null,
         partyList,
         partyDetail,
         splitter,

@@ -32,17 +32,16 @@ var shortcutManager = new ShortcutsManager(keymap)
 
 var _gameRunner = null;
 
-var Layout = class Layout extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
+class Layout extends AbstractReactComponent {
 
-        this.bindMethods('handleShortcuts');
+    static childContextTypes = {
+        shortcuts: React.PropTypes.object.isRequired
+    };
 
-        this.state = {
-            showGame: false,
-            canStartGame: false,
-        }
-    }
+    state = {
+        showGame: false,
+        canStartGame: false,
+    };
 
     componentWillUnmount() {
         if (_gameRunner) {
@@ -54,30 +53,30 @@ var Layout = class Layout extends AbstractReactComponent {
         return { shortcuts: shortcutManager };
     }
 
-    handleShortcuts(action) {
+    handleShortcuts = (action) => {
         console.log("#handleShortcuts", '[' + action + ']', this);
         switch (action) {
             case 'home':
-                this.dispatch(routerNavigate('/'))
-                this.dispatch(setFocus('home', 1, 'list'))
-                break
+                this.dispatch(routerNavigate('/'));
+                this.dispatch(setFocus('home', 1, 'list'));
+                break;
             case 'arr':
-                this.dispatch(routerNavigate('/arr'))
-                this.dispatch(setFocus('arr', 1, 'tree'))
-                break
+                this.dispatch(routerNavigate('/arr'));
+                this.dispatch(setFocus('arr', 1, 'tree'));
+                break;
             case 'party':
-                this.dispatch(routerNavigate('/party'))
-                this.dispatch(setFocus('party', 1, 'tree'))
-                break
+                this.dispatch(routerNavigate('/party'));
+                this.dispatch(setFocus('party', 1, 'tree'));
+                break;
             case 'registry':
-                this.dispatch(routerNavigate('/registry'))
-                this.dispatch(setFocus('registry', 1, 'list'))
-                break
+                this.dispatch(routerNavigate('/registry'));
+                this.dispatch(setFocus('registry', 1, 'list'));
+                break;
             case 'admin':
-                this.dispatch(routerNavigate('/admin'))
-                break
+                this.dispatch(routerNavigate('/admin'));
+                break;
         }
-    }
+    };
 
     handleGameStartLeave = () => {
         if (_gameRunner) {
@@ -103,24 +102,22 @@ var Layout = class Layout extends AbstractReactComponent {
         if (showGame) {
             return <Tetris onClose={() => { this.setState({showGame: false, canStartGame: false}) }} />;
         }
-        return (
-            <Shortcuts name='Main' handler={this.handleShortcuts}>
-                <div className='root-container'>
-                    <div onClick={() => { canStartGame && this.setState({showGame: true}) }} onMouseEnter={this.handleGameStartOver} onMouseLeave={this.handleGameStartLeave} className={"game-placeholder " + (canStartGame ? "canStart" : "")}>
-                        &nbsp;
-                    </div>
-                    {this.props.children}
-                    <div style={{overflow:'hidden'}}>
-                        <Toastr.Toastr />
-                    </div>
-                    <ContextMenu {...this.props.contextMenu}/>
-                    <ModalDialog {...this.props.modalDialog}/>
-                    <WebSocket />
-                    <Login />
-                    <AppRouter/>
+        return <Shortcuts name='Main' handler={this.handleShortcuts}>
+            <div className='root-container'>
+                <div onClick={() => { canStartGame && this.setState({showGame: true}) }} onMouseEnter={this.handleGameStartOver} onMouseLeave={this.handleGameStartLeave} className={"game-placeholder " + (canStartGame ? "canStart" : "")}>
+                    &nbsp;
                 </div>
-            </Shortcuts>
-        )
+                {this.props.children}
+                <div style={{overflow:'hidden'}}>
+                    <Toastr.Toastr />
+                </div>
+                <ContextMenu {...this.props.contextMenu}/>
+                <ModalDialog {...this.props.modalDialog}/>
+                <WebSocket />
+                <Login />
+                <AppRouter/>
+            </div>
+        </Shortcuts>
     }
 }
 
@@ -132,8 +129,4 @@ function mapStateToProps(state) {
     }
 }
 
-Layout.childContextTypes = {
-    shortcuts: React.PropTypes.object.isRequired
-}
-
-module.exports = connect(mapStateToProps)(Layout);
+export default connect(mapStateToProps)(Layout);

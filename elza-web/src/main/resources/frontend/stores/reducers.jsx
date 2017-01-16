@@ -11,7 +11,6 @@ import {normalizeInt} from 'components/validate.jsx';
  */
 import arrRegion from './app/arr/arrRegion.jsx';
 import refTables from './app/refTables/refTables.jsx';
-import registryRegion from './app/registry/registryRegion.jsx';
 import registryRegionRecordTypes from './app/registry/registryRegionRecordTypes.jsx';
 import toastr from '../components/shared/toastr/ToastrStore.jsx';
 import fundRegion from './app/fund/fundRegion.jsx';
@@ -59,7 +58,6 @@ const rootReducer = combineReducers({
     app,
     arrRegion,
     refTables,
-    registryRegion,
     registryRegionRecordTypes,
     toastr,
     developer,

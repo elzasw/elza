@@ -24,7 +24,7 @@ import {
     changePartyCreate,
     changePartyDelete,
     changeMoveLevel,
-    changeRegistryRecord,
+    changeRegistry,
     changeFund,
     deleteFund,
     changeFundRecord,
@@ -68,6 +68,7 @@ export function stompDisconnect() {
 export function stompConnect() {
     stompClient = Stomp.client(wsUrl);
     stompClient = stompClient;
+    stompClient.debug = null
     stompClient.heartbeat.outgoing = 20000;
     stompClient.heartbeat.incoming = 20000;
     stompClient.onreceipt = receiptCallback;
@@ -465,7 +466,7 @@ function moveLevelUnderChange(value) {
 }
 
 function registryChange(value) {
-    store.dispatch(changeRegistryRecord(value.ids));
+    store.dispatch(changeRegistry(value.ids));
 }
 
 function fundChange(value) {

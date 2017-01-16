@@ -1,22 +1,25 @@
-exports.AdminPage = require('pages/admin/AdminPage.jsx');
-exports.AdminPackagesPage = require('pages/admin/AdminPackagesPage.jsx');
-exports.AdminFulltextPage = require('pages/admin/AdminFulltextPage.jsx');
-exports.AdminUserPage = require('pages/admin/AdminUserPage.jsx');
-exports.AdminGroupPage = require('pages/admin/AdminGroupPage.jsx');
-exports.AdminRequestsQueuePage = require('pages/admin/AdminRequestsQueuePage.jsx');
+export AdminPage from 'pages/admin/AdminPage.jsx';
+export AdminPackagesPage from 'pages/admin/AdminPackagesPage.jsx';
+export AdminFulltextPage from 'pages/admin/AdminFulltextPage.jsx';
+export AdminUserPage from 'pages/admin/AdminUserPage.jsx';
+export AdminGroupPage from 'pages/admin/AdminGroupPage.jsx';
+export AdminRequestsQueuePage from 'pages/admin/AdminRequestsQueuePage.jsx';
 
-exports.ArrPage = require('pages/arr/ArrPage.jsx');
-exports.ArrDataGridPage = require('pages/arr/ArrDataGridPage.jsx');
-exports.ArrMovementsPage = require('pages/arr/ArrMovementsPage.jsx');
-exports.ArrDaoPage = require('pages/arr/ArrDaoPage.jsx');
-exports.FundActionPage = require('pages/arr/FundActionPage.jsx');
-exports.ArrOutputPage = require('pages/arr/ArrOutputPage.jsx');
-exports.ArrRequestPage = require('pages/arr/ArrRequestPage.jsx');
+export ArrPage from 'pages/arr/ArrPage.jsx';
+export ArrDataGridPage from 'pages/arr/ArrDataGridPage.jsx';
+export ArrMovementsPage from 'pages/arr/ArrMovementsPage.jsx';
+export ArrDaoPage from 'pages/arr/ArrDaoPage.jsx';
+export FundActionPage from 'pages/arr/FundActionPage.jsx';
+export ArrOutputPage from 'pages/arr/ArrOutputPage.jsx';
+export ArrRequestPage from 'pages/arr/ArrRequestPage.jsx';
 
-exports.RegistryPage = require('pages/registry/RegistryPage.jsx');
-exports.PartyPage = require('pages/party/PartyPage.jsx');
-exports.HomePage = require('pages/home/HomePage.jsx');
-exports.FundPage = require('pages/fund/FundPage.jsx');
+export RegistryPage from 'pages/registry/RegistryPage.jsx';
+export PartyPage from 'pages/party/PartyPage.jsx';
+export HomePage from 'pages/home/HomePage.jsx';
+export FundPage from 'pages/fund/FundPage.jsx';
 
-exports.PageLayout = require('pages/shared/layout/PageLayout.jsx');
-exports.Layout = require('pages/Layout.jsx');
+export RegistrySelectPage from 'pages/select/RegistrySelectPage';
+export PartySelectPage from 'pages/select/PartySelectPage';
+
+export PageLayout from 'pages/shared/layout/PageLayout.jsx';
+export Layout from 'pages/Layout.jsx';

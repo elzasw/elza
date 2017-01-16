@@ -50,7 +50,8 @@ class DescItemRecordRef extends AbstractReactComponent {
                     itemSpecId={descItem.descItemSpecId}
                     value={value}
                     footer={!singleDescItemTypeEdit}
-                    detail={true}
+                    footerButtons={false}
+                    detail={!disabled}
                     {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, disabled, ['autocomplete-record'])}
                 />
             </ItemTooltipWrapper>

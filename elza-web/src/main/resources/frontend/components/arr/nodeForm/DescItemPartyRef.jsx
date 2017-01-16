@@ -28,12 +28,12 @@ class DescItemPartyRef extends AbstractReactComponent {
     };
 
     render() {
-        const {descItem, locked, singleDescItemTypeEdit, readMode, cal, ...otherProps} = this.props;
+        const {descItem, locked, singleDescItemTypeEdit, readMode, cal, onDetail, ...otherProps} = this.props;
         const value = descItem.party ? descItem.party : null;
 
         if (readMode) {
             if (value) {
-                return <DescItemLabel onClick={this.props.onDetail.bind(this, descItem.party.id)} value={value.record.record} />;
+                return <DescItemLabel onClick={onDetail.bind(this, descItem.party.id)} value={value.record.record} />;
             } else {
                 return <DescItemLabel value={cal ? i18n("subNodeForm.descItemType.calculable") : ""} cal={cal} />
             }
@@ -46,6 +46,7 @@ class DescItemPartyRef extends AbstractReactComponent {
                     {...otherProps}
                     value={value}
                     detail={true}
+                    footerButtons={false}
                     footer={!singleDescItemTypeEdit}
                     {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, ['autocomplete-party'])}
                 />

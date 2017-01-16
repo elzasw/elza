@@ -3,10 +3,7 @@ import {AbstractReactComponent} from 'components/index.jsx';
 import {Glyphicon} from 'react-bootstrap';
 import {propsEquals} from 'components/Utils.jsx'
 
-var Icon = class Icon extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
-    }
+class Icon extends AbstractReactComponent {
 
     shouldComponentUpdate(nextProps, nextState) {
         if (this.state !== nextState) {
@@ -17,7 +14,7 @@ var Icon = class Icon extends AbstractReactComponent {
     }
 
     render() {
-        const {glyph} = this.props;
+        const {glyph, ...otherProps} = this.props;
         if(glyph.indexOf("ez-")==0){
             var cls = 'icon ez ' + glyph;
         }
@@ -35,9 +32,9 @@ var Icon = class Icon extends AbstractReactComponent {
         }
 
         return (
-            <span {...props} className={cls}/>
+            <span {...props} className={cls} {...otherProps} />
         )
     }
 }
 
-module.exports = Icon;
+export default Icon;

@@ -8,7 +8,7 @@ import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFor
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRegionList.jsx'
+import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registry.jsx'
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
 import {submitReduxForm} from 'components/form/FormUtils.jsx'
 import {getTreeItemById} from "./../../components/registry/registryUtils";
@@ -350,7 +350,7 @@ class AddPartyForm extends AbstractReactComponent {
                                 <Row>
                                     <Col xs={6} md={12}>
                                         <DatationField fields={validFrom} label={i18n('party.name.validFrom')} labelTextual={i18n('party.name.validFrom.textDate')} labelNote={i18n('party.name.validFrom.note')} />
-                                    </Col>                                    
+                                    </Col>
                                     <Col xs={6} md={12}>
                                         <DatationField fields={validTo} label={i18n('party.name.validTo')} labelTextual={i18n('party.name.validTo.textDate')} labelNote={i18n('party.name.validTo.note')} />
                                     </Col>

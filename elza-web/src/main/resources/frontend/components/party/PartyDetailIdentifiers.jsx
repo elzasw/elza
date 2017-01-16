@@ -5,6 +5,7 @@ import {FormControl, Button} from 'react-bootstrap'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {i18n, AbstractReactComponent, Icon, PartyIdentifierForm} from 'components/index.jsx'
 import {indexById} from 'stores/app/utils.jsx'
+import {MODAL_DIALOG_VARIANT} from 'constants'
 
 import './PartyDetailIdentifiers.less'
 
@@ -83,12 +84,12 @@ class PartyDetailIdentifiers extends AbstractReactComponent {
     };
 
     handlePartyGroupIdentifierAdd = () => {
-        this.dispatch(modalDialogShow(this, i18n('party.detail.identifier.new') , <PartyIdentifierForm onSubmitForm={this.addIdentifier} />, 'dialog-lg'));
+        this.dispatch(modalDialogShow(this, i18n('party.detail.identifier.new') , <PartyIdentifierForm onSubmitForm={this.addIdentifier} />, MODAL_DIALOG_VARIANT.LARGE));
     };
 
 
     handlePartyGroupIdentifierUpdate = (partyGroupIdentifier) => {
-        this.dispatch(modalDialogShow(this, i18n('party.detail.identifier.update'), <PartyIdentifierForm initialValues={partyGroupIdentifier} onSubmitForm={this.update.bind(this, partyGroupIdentifier)} />, 'dialog-lg'));
+        this.dispatch(modalDialogShow(this, i18n('party.detail.identifier.update'), <PartyIdentifierForm initialValues={partyGroupIdentifier} onSubmitForm={this.update.bind(this, partyGroupIdentifier)} />, MODAL_DIALOG_VARIANT.LARGE));
     };
 
 

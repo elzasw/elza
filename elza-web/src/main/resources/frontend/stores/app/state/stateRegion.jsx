@@ -14,7 +14,7 @@ const initialState = {
 function updateFront(front, item, index) {
     let result;
 
-    if (index !== null) {  // je ve frontě, dáme ho na začátek  
+    if (index !== null) {  // je ve frontě, dáme ho na začátek
         var prevItem = front[index]
 
         var useItem = {...item}
@@ -67,16 +67,20 @@ export default function stateRegion(state = initialState, action) {
                     const index = indexById(result.partyDetailFront, action.app.partyDetail.id);
                     result.partyDetailFront = updateFront(result.partyDetailFront, action.app.partyDetail, index);
                 }
+                if (action.app.registryDetail && action.app.registryDetail.data) {
+                    const index = indexById(result.registryRegionFront, action.app.registryDetail.id);
+                    result.registryRegionFront = updateFront(result.registryRegionFront, action.app.registryDetail, index);
+                }
             }
 
             // if (action.partyRegion) {
             //     var index = indexById(result.partyRegionFront, action.partyRegion.selectedPartyID, 'selectedPartyID');
             //     result.partyRegionFront = updateFront(result.partyRegionFront, action.partyRegion, index);
             // }
-            if (action.registryRegion) {
-                const index = indexById(result.registryRegionFront, action.registryRegion.selectedId, 'selectedId');
-                result.registryRegionFront = updateFront(result.registryRegionFront, action.registryRegion, index);
-            }
+            // if (action.registryRegion) {
+            //     const index = indexById(result.registryRegionFront, action.registryRegion.selectedId, 'selectedId');
+            //     result.registryRegionFront = updateFront(result.registryRegionFront, action.registryRegion, index);
+            // }
             if (action.fundRegion) {
                 result.fundRegion = action.fundRegion
             }

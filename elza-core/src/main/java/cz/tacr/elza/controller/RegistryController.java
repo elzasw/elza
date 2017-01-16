@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.controller.vo.FilteredResultVO;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +35,6 @@ import cz.tacr.elza.controller.vo.RegCoordinatesVO;
 import cz.tacr.elza.controller.vo.RegExternalSystemVO;
 import cz.tacr.elza.controller.vo.RegRecordSimple;
 import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.controller.vo.RegRecordWithCount;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.RegVariantRecordVO;
@@ -151,13 +151,13 @@ public class RegistryController {
      * @return                  vybrané záznamy dle popisu seřazené za text hesla, nebo prázdná množina
      */
     @RequestMapping(value = "/", method = RequestMethod.GET)
-    public RegRecordWithCount<RegRecordVO> findRecord(@RequestParam(required = false) @Nullable final String search,
-                                         @RequestParam final Integer from,
-                                         @RequestParam final Integer count,
-                                         @RequestParam(required = false) @Nullable final Integer registerTypeId,
-                                         @RequestParam(required = false) @Nullable final Integer parentRecordId,
-                                         @RequestParam(required = false) @Nullable final Integer versionId,
-                                         @RequestParam(required = false) @Nullable final Integer itemSpecId) {
+    public FilteredResultVO<RegRecord> findRecord(@RequestParam(required = false) @Nullable final String search,
+                                       @RequestParam final Integer from,
+                                       @RequestParam final Integer count,
+                                       @RequestParam(required = false) @Nullable final Integer registerTypeId,
+                                       @RequestParam(required = false) @Nullable final Integer parentRecordId,
+                                       @RequestParam(required = false) @Nullable final Integer versionId,
+                                       @RequestParam(required = false) @Nullable final Integer itemSpecId) {
 
         Set<Integer> registerTypeIdTree = Collections.emptySet();
 
@@ -236,7 +236,7 @@ public class RegistryController {
 //            parentVO.setHasChildren(!childrenVO.isEmpty());
 //        }
 
-        return new RegRecordWithCount<>(foundRecordVOList, foundRecordsCount);
+        return new FilteredResultVO(foundRecordVOList, foundRecordsCount);
     }
 
 
@@ -252,7 +252,7 @@ public class RegistryController {
      * @return seznam rejstříkových hesel s počtem všech nalezených
      */
     @RequestMapping(value = "/findRecordForRelation", method = RequestMethod.GET)
-    public RegRecordWithCount<RegRecordSimple> findRecordForRelation(@RequestParam(required = false) @Nullable final String search,
+    public FilteredResultVO<RegRecord> findRecordForRelation(@RequestParam(required = false) @Nullable final String search,
                                                     @RequestParam final Integer from,
                                                     @RequestParam final Integer count,
                                                     @RequestParam final Integer roleTypeId,
@@ -282,7 +282,7 @@ public class RegistryController {
                 .findRegRecordByTextAndType(search, registerTypeIds, from, count, null, scopeIds, readAllScopes, user);
 
         List<RegRecordSimple> foundRecordsVO = factoryVo.createRegRecordsSimple(foundRecords);
-        return new RegRecordWithCount<>(foundRecordsVO, foundRecordsCount);
+        return new FilteredResultVO(foundRecordsVO, foundRecordsCount);
     }
 
     /**
@@ -301,6 +301,19 @@ public class RegistryController {
 
         ParParty recordParty = partyService.findParPartyByRecord(newRecordDO);
         return factoryVo.createRegRecord(newRecordDO, recordParty == null ? null : recordParty.getPartyId(), false);
+    }
+
+    @RequestMapping(value = "/specificationHasParty/{itemSpecId}", method = RequestMethod.GET)
+    public boolean canParty(@PathVariable final Integer itemSpecId) {
+        Assert.notNull(itemSpecId);
+
+        RulItemSpec spec = itemSpecRepository.getOneCheckExist(itemSpecId);
+        Set<Integer> registerTypeIds = itemSpecRegisterRepository.findIdsByItemSpecId(spec);
+        Set<Integer> registerTypeIdTree = registerTypeRepository.findSubtreeIds(registerTypeIds);
+
+        Integer byItemSpecId = registerTypeRepository.findCountPartyTypeNotNullByIds(registerTypeIdTree);
+
+        return byItemSpecId > 0;
     }
 
     /**

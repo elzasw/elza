@@ -1,13 +1,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {WebApi} from 'actions/index.jsx';
-import {Icon, i18n, AbstractReactComponent, Autocomplete, ExtImportForm} from 'components/index.jsx';
+import {Icon, i18n, TooltipTrigger, AbstractReactComponent, Autocomplete, ExtImportForm, RegistryListItem} from 'components/index.jsx';
+import {registryListFilter} from 'actions/registry/registry.jsx'
+
 import {Button} from 'react-bootstrap'
 import {connect} from 'react-redux'
 import * as perms from 'actions/user/Permission.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import RegistrySelectPage from 'pages/select/RegistrySelectPage.jsx'
+import {registryDetailFetchIfNeeded} from 'actions/registry/registry.jsx'
+import classNames from 'classnames';
 
-import {DEFAULT_LIST_SIZE} from 'constants'
+import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from 'constants'
 
 import './RegistryField.less'
 
@@ -18,6 +23,7 @@ class RegistryField extends AbstractReactComponent {
     static defaultProps = {
         detail: false,
         footer: false,
+        footerButtons: true,
         itemSpecId: null,
         registryParent: null,
         registerTypeId: null,
@@ -29,6 +35,7 @@ class RegistryField extends AbstractReactComponent {
     static PropTypes = {
         detail: React.PropTypes.bool.isRequired,
         footer: React.PropTypes.bool.isRequired,
+        footerButtons: React.PropTypes.bool,
         value: React.PropTypes.object,
         onChange: React.PropTypes.func.isRequired,
         onDetail: React.PropTypes.func,
@@ -41,7 +48,7 @@ class RegistryField extends AbstractReactComponent {
         versionId: React.PropTypes.number
     };
 
-    state = {registryList: [], count: null};
+    state = {registryList: [], count: null, searchText: null};
 
 
     focus = () => {
@@ -50,6 +57,7 @@ class RegistryField extends AbstractReactComponent {
 
     handleSearchChange = (text) => {
         text = text == "" ? null : text;
+        this.setState({searchText: text});
         const {roleTypeId, partyId, registryParent, registerTypeId, versionId, itemSpecId} = this.props;
         let promise = null;
         if (roleTypeId || partyId) {
@@ -59,14 +67,28 @@ class RegistryField extends AbstractReactComponent {
         }
         promise.then(json => {
             this.setState({
-                registryList: json.recordList,
+                registryList: json.rows,
                 count: json.count
             })
         })
     };
 
     handleDetail = (recordId) => {
-        this.props.onDetail(recordId);
+        const {searchText} = this.state;
+        const {onChange, onBlur, itemSpecId, registryList:{filter}} = this.props;
+        const open = (party) => {
+            this.dispatch(registryListFilter({...filter, text: searchText}));
+            this.dispatch(registryDetailFetchIfNeeded(recordId));
+            this.dispatch(modalDialogShow(this, null, <RegistrySelectPage hasParty={party} onChange={(data) => {
+                this.normalizeValue(onChange)(data);
+                this.normalizeValue(onBlur)(data);
+            }} />, classNames(MODAL_DIALOG_VARIANT.FULLSCREEN, MODAL_DIALOG_VARIANT.NO_HEADER)));
+        };
+        if (itemSpecId) {
+            WebApi.specificationHasParty(itemSpecId).then(open);
+        } else {
+            open(true);
+        }
     };
 
 
@@ -81,32 +103,37 @@ class RegistryField extends AbstractReactComponent {
         this.props.onCreateRecord();
     };
 
+    handleChange = () => {
+        this.setState({searchText: null});
+        this.normalizeValue(this.props.onChange)
+    };
+
+    handleBlur = () => {
+        this.setState({searchText: null});
+        this.normalizeValue(this.props.onBlur)
+    };
+
     renderFooter = () => {
+        const {footerButtons, userDetail} = this.props;
         return <div>
-            <div className="create-record">
+            {footerButtons && userDetail.hasOne(perms.REG_SCOPE_WR_ALL, perms.REG_SCOPE_WR) && <div className="create-record">
                 <Button onClick={this.handleCreateRecord} type="button"><Icon glyph='fa-plus'/>{i18n('registry.addNewRegistry')}</Button>
                 <Button onClick={this.handleImport} type="button"><Icon glyph='fa-plus' /> {i18n("ribbon.action.registry.importExt")}</Button>
-            </div>
+            </div>}
             {this.state.count !== null && this.state.count > AUTOCOMPLETE_REGISTRY_LIST_SIZE && <div className="items-count">
                 {i18n('registryField.visibleCount', this.state.registryList.length, this.state.count)}
             </div>}
         </div>
     };
 
-    renderRecord = (item, isHighlighted, isSelected) => {
-        let cls = 'item';
-        if (isHighlighted) {
-            cls += ' focus'
-        }
-        if (isSelected) {
-            cls += ' active'
-        }
+    renderRecord = (item, focus, active) => <RegistryListItem {...item} className={classNames({focus, active})} />;
+        /*<TooltipTrigger
+        content={item.characteristics}
+        holdOnHover
+        placement="horizontal"
+        className="tooltip-container"
+    ></TooltipTrigger>;*/
 
-        return <div className={cls} key={item.id} >
-            <div className="name" title={item.record}>{item.record}</div>
-            <div className="characteristics" title={item.characteristics}>{item.characteristics}</div>
-        </div>;
-    };
 
     normalizeValue = (call) => (obj,id) => {
         // změna typu aby se objekt dal použít jako návazný
@@ -118,27 +145,27 @@ class RegistryField extends AbstractReactComponent {
     };
 
     render() {
-        const {onChange, onBlur, footer, detail, userDetail, value, ...otherProps} = this.props;
+        const {onChange, onBlur, footer, detail, value, className, ...otherProps} = this.props;
 
         let footerRender = null;
         if (footer) {
-            if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, perms.REG_SCOPE_WR)) {
+            // if () {
                 footerRender = this.renderFooter();
-            }
+            // }
         }
 
         let actions = [];
         if (detail) {
-            if (value && userDetail.hasOne(perms.REG_SCOPE_RD_ALL, {type: perms.REG_SCOPE_RD, scopeId: value.scopeId})) {
-                actions.push(<div onClick={this.handleDetail.bind(this, value.id)}
+            // if (value && userDetail.hasOne(perms.REG_SCOPE_RD_ALL, {type: perms.REG_SCOPE_RD, scopeId: value.scopeId})) {
+                actions.push(<div onClick={this.handleDetail.bind(this, value ? value.id : null)}
                                   className={'btn btn-default detail'}><Icon glyph={'fa-user'}/></div>);
-            }
+            // }
         }
 
         return <Autocomplete
             ref='autocomplete'
             customFilter
-            className="autocomplete-record"
+            className={classNames("autocomplete-record", className)}
             footer={footerRender}
             items={this.state.registryList}
             getItemId={(item) => item ? item.id : null}
@@ -146,8 +173,8 @@ class RegistryField extends AbstractReactComponent {
             onSearchChange={this.handleSearchChange}
             renderItem={this.renderRecord}
             actions={[actions]}
-            onChange={this.normalizeValue(onChange)}
-            onBlur={this.normalizeValue(onBlur)}
+            onChange={this.handleChange}
+            onBlur={this.handleBlur}
             value={value}
             {...otherProps}
         />;
@@ -155,8 +182,9 @@ class RegistryField extends AbstractReactComponent {
 }
 
 export default connect((state) => {
-    const {userDetail} = state;
+    const {userDetail, app:{registryList}} = state;
     return {
         userDetail,
+        registryList
     }
 }, null, null, { withRef: true })(RegistryField);

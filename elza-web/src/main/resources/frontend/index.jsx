@@ -16,6 +16,13 @@ import {WebApi, WebApiCls} from 'actions/index.jsx';
 import {loginFail} from 'actions/global/login.jsx';
 import {userDetailChange} from 'actions/user/userDetail.jsx'
 
+
+// Přidání custom style bsStyle action
+import {Button} from 'react-bootstrap';
+import {bootstrapUtils} from 'react-bootstrap/lib/utils';
+bootstrapUtils.addStyle(Button, 'action');
+
+
 // Globální init
 Utils.init();
 // es6-symbol polyfill nefunguje s kodem vygenerovanym pres babel (for-of iterace), musime pouzit core-js

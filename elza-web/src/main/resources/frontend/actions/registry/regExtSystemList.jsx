@@ -1,5 +1,4 @@
 import {SimpleListActions} from 'shared/list'
-import {DetailActions} from 'shared/detail'
 
 import {WebApi} from 'actions/index.jsx';
 
@@ -9,7 +8,7 @@ export const AREA = 'regExtSystemList';
  * Načtení seznamu reg ext systémů
  */
 export function regExtSystemListFetchIfNeeded() {
-    return DetailActions.fetchIfNeeded(AREA, true, () => WebApi.getRegExternalSystems())
+    return SimpleListActions.fetchIfNeeded(AREA, true, () => WebApi.getRegExternalSystems().then(json => ({rows: json, count: 0})));
 }
 
 /**

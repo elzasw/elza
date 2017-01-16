@@ -35,6 +35,9 @@ export default function list(state = initialState, action = {}, config = null) {
         if (config.filter) {    // metoda pro filter
             state.filter = config.filter
         }
+        if (config.reducer) {    // metoda pro reducer
+            state.reducer = config.reducer
+        }
     }
 
     switch (action.type) {

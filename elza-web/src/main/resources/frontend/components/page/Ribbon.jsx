@@ -1,12 +1,7 @@
-/**
- * Ribbon aplikace - obsahuje základní globální akce v aplikaci.
- */
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
-import {Link, IndexLink} from 'react-router';
 import {Icon, i18n} from 'components/index.jsx';
 import {
     RibbonMenu,
@@ -19,7 +14,7 @@ import {
     ModalDialog,
     NodeTabs
 } from 'components/index.jsx';
-import {ButtonGroup, Button, DropdownButton, MenuItem, Dropdown} from 'react-bootstrap';
+import {Button, MenuItem, Dropdown} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {AppStore} from 'stores/index.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
@@ -31,53 +26,62 @@ import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {userPasswordChange} from 'actions/admin/user.jsx'
 import {routerNavigate} from "actions/router.jsx"
 
-const Ribbon = class Ribbon extends AbstractReactComponent {
+/**
+ * Ribbon aplikace - obsahuje základní globální akce v aplikaci.
+ */
+class Ribbon extends AbstractReactComponent {
 
-    static propTypes = {
+    static PropTypes = {
         subMenu: React.PropTypes.bool,
+        admin: React.PropTypes.bool,
+        arr: React.PropTypes.bool,
+        altSection: React.PropTypes.object,
+        itemSection: React.PropTypes.object,
+        fundId: React.PropTypes.number
     };
+
     static defaultProps = {
         subMenu: false,
     };
 
-    constructor(props) {
-        super(props);
-
-        this.bindMethods(
-            'trySetFocus',
-            'handleLogout',
-            'handlePasswordChangeForm',
-            'handlePasswordChange',
-            'handleBack'
-        );
-
-        this.state = {};
-    }
+    state = {};
 
     componentDidMount() {
-        this.trySetFocus(this.props)
+        this.trySetFocus()
     }
 
     componentWillReceiveProps(nextProps) {
         this.trySetFocus(nextProps)
     }
 
-    trySetFocus(props) {
-        const {focus} = props
+    trySetFocus = (props = this.props) => {
+        const {focus} = props;
 
         if (canSetFocus()) {
             if (isFocusFor(focus, null, null, 'ribbon')) {
                 this.setState({}, () => {
-                   ReactDOM.findDOMNode(this.refs.ribbonDefaultFocus).focus()
+                   ReactDOM.findDOMNode(this.refs.ribbonDefaultFocus).focus();
                    focusWasSet()
                 })
             }
         }
-    }
+    };
 
-    handleBack() {
+    handleBack = () => {
         this.dispatch(routerNavigate("/~arr"));
-    }
+    };
+
+    handleLogout = () => {
+        this.dispatch(logout());
+    };
+
+    handlePasswordChangeForm = () => {
+        this.dispatch(modalDialogShow(this, i18n('admin.user.passwordChange.title'), <PasswordForm onSubmitForm={this.handlePasswordChange} />))
+    };
+
+    handlePasswordChange = (data) => {
+        this.dispatch(userPasswordChange(data.oldPassword, data.password));
+    };
 
     render() {
         const {subMenu, userDetail, altSection, itemSection, fundId, status: {saveCounter}} = this.props;
@@ -109,26 +113,26 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
             }
         }
         if (this.props.arr) {
-            const arrParts = []
+            const arrParts = [];
             if (userDetail.hasRdPage(fundId)) {    // právo na čtení
-                arrParts.push(<IndexLinkContainer key="ribbon-btn-arr-index" to="/arr"><Button ref='ribbonDefaultFocus'><Icon glyph="fa-sitemap" /><div><span className="btnText">{i18n('ribbon.action.arr.arr')}</span></div></Button></IndexLinkContainer>)
-                arrParts.push(<LinkContainer key="ribbon-btn-arr-dataGrid" to="/arr/dataGrid"><Button><Icon glyph="fa-table" /><div><span className="btnText">{i18n('ribbon.action.arr.dataGrid')}</span></div></Button></LinkContainer>)                
+                arrParts.push(<IndexLinkContainer key="ribbon-btn-arr-index" to="/arr"><Button ref='ribbonDefaultFocus'><Icon glyph="fa-sitemap" /><div><span className="btnText">{i18n('ribbon.action.arr.arr')}</span></div></Button></IndexLinkContainer>);
+                arrParts.push(<LinkContainer key="ribbon-btn-arr-dataGrid" to="/arr/dataGrid"><Button><Icon glyph="fa-table" /><div><span className="btnText">{i18n('ribbon.action.arr.dataGrid')}</span></div></Button></LinkContainer>);
             }
-            if (userDetail.hasArrPage(fundId)) {    // právo na pořádání                
-                arrParts.push(<LinkContainer key="ribbon-btn-arr-movements" to="/arr/movements"><Button><Icon glyph="fa-exchange" /><div><span className="btnText">{i18n('ribbon.action.arr.movements')}</span></div></Button></LinkContainer>)
+            if (userDetail.hasArrPage(fundId)) {    // právo na pořádání
+                arrParts.push(<LinkContainer key="ribbon-btn-arr-movements" to="/arr/movements"><Button><Icon glyph="fa-exchange" /><div><span className="btnText">{i18n('ribbon.action.arr.movements')}</span></div></Button></LinkContainer>);
             }
 
             if (userDetail.hasArrOutputPage(fundId) && userDetail.hasArrPage(fundId)) {    // právo na výstupy
-                arrParts.push(<LinkContainer key="ribbon-btn-arr-output" to="/arr/output"><Button><Icon glyph="fa-print" /><div><span className="btnText">{i18n('ribbon.action.arr.output')}</span></div></Button></LinkContainer>)
+                arrParts.push(<LinkContainer key="ribbon-btn-arr-output" to="/arr/output"><Button><Icon glyph="fa-print" /><div><span className="btnText">{i18n('ribbon.action.arr.output')}</span></div></Button></LinkContainer>);
             }
 
-            if (userDetail.hasFundActionPage(fundId)) {    // právo na hromadné akce            
-                arrParts.push(<LinkContainer key="ribbon-btn-arr-actions" to="/arr/actions"><Button><Icon glyph="fa-calculator" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.bulkActions')}</span></div></Button></LinkContainer>)
+            if (userDetail.hasFundActionPage(fundId)) {    // právo na hromadné akce
+                arrParts.push(<LinkContainer key="ribbon-btn-arr-actions" to="/arr/actions"><Button><Icon glyph="fa-calculator" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.bulkActions')}</span></div></Button></LinkContainer>);
             }
 
             if (userDetail.hasArrPage(fundId)) {    // právo na pořádání
-                arrParts.push(<LinkContainer key="ribbon-btn-arr-requests" to="/arr/requests"><Button><Icon glyph="fa-shopping-basket" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.requests')}</span></div></Button></LinkContainer>)
-                arrParts.push(<LinkContainer key="ribbon-btn-arr-daos" to="/arr/daos"><Button><Icon glyph="fa-camera" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.daos')}</span></div></Button></LinkContainer>)
+                arrParts.push(<LinkContainer key="ribbon-btn-arr-requests" to="/arr/requests"><Button><Icon glyph="fa-shopping-basket" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.requests')}</span></div></Button></LinkContainer>);
+                arrParts.push(<LinkContainer key="ribbon-btn-arr-daos" to="/arr/daos"><Button><Icon glyph="fa-camera" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.daos')}</span></div></Button></LinkContainer>);
             }
 
             section = (
@@ -138,7 +142,7 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
             );
         }
 
-        const parts = []
+        const parts = [];
         if (subMenu) {  // submenu se šipkou zpět
             parts.push(
                 <RibbonGroup key="ribbon-group-main" className="large">
@@ -161,50 +165,36 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
         }
                 // <LinkContainer key="ribbon-btn-arr" to="/arr"><Button><Icon glyph="fa-file-text" /><div><span className="btnText">{i18n('ribbon.action.arr')}</span></div></Button></LinkContainer>
 
-        section && parts.push(section)
-        altSection && parts.push(altSection)
-        itemSection && parts.push(itemSection)
+        section && parts.push(section);
+        altSection && parts.push(altSection);
+        itemSection && parts.push(itemSection);
 
-        const partsWithSplit = []
+        const partsWithSplit = [];
         {parts.forEach((part, index) => {
-            partsWithSplit.push(part)
+            partsWithSplit.push(part);
             if (index + 1 < parts.length) {
                 partsWithSplit.push(<RibbonSplit key={"ribbon-spliter-"+index+1} />)
             }
         })}
 
-        return (
-            <RibbonMenu opened onShowHide={this.handleRibbonShowHide}>
-                {partsWithSplit}
-                <RibbonGroup className="small right">
-                    <Dropdown bsStyle='default' key='user-menu' id='user-menu'>
-                        <Dropdown.Toggle  noCaret>                            
-                            {userDetail.username}<Icon glyph="fa-user" />
-                        </Dropdown.Toggle>
-                        <Dropdown.Menu>
-                            <MenuItem eventKey="1" onClick={this.handlePasswordChangeForm}>{i18n('ribbon.action.admin.user.passwordChange')}</MenuItem>
-                            <MenuItem divider/>
-                            <MenuItem eventKey="2" onClick={this.handleLogout}>{i18n('ribbon.action.logout')}</MenuItem>
-                        </Dropdown.Menu>
-                    </Dropdown>
-                    {saveCounter > 0 && <div className="save-msg"><Icon glyph="fa-spinner fa-spin" />{i18n('ribbon.saving')}</div>}
-                </RibbonGroup>
-            </RibbonMenu>
-        )
+        return <RibbonMenu>
+            {partsWithSplit}
+            <RibbonGroup className="small right">
+                <Dropdown bsStyle='default' key='user-menu' id='user-menu'>
+                    <Dropdown.Toggle  noCaret>
+                        {userDetail.username}<Icon glyph="fa-user" />
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                        <MenuItem eventKey="1" onClick={this.handlePasswordChangeForm}>{i18n('ribbon.action.admin.user.passwordChange')}</MenuItem>
+                        <MenuItem divider/>
+                        <MenuItem eventKey="2" onClick={this.handleLogout}>{i18n('ribbon.action.logout')}</MenuItem>
+                    </Dropdown.Menu>
+                </Dropdown>
+                {saveCounter > 0 && <div className="save-msg"><Icon glyph="fa-spinner fa-spin" />{i18n('ribbon.saving')}</div>}
+            </RibbonGroup>
+        </RibbonMenu>
     }
-
-    handleLogout() {
-        this.dispatch(logout());
-    }
-
-    handlePasswordChangeForm() {
-        this.dispatch(modalDialogShow(this, i18n('admin.user.passwordChange.title'), <PasswordForm onSubmitForm={this.handlePasswordChange} />))
-    }
-
-    handlePasswordChange(data) {
-        this.dispatch(userPasswordChange(data.oldPassword, data.password));
-    }
-};
+}
 
 function mapStateToProps(state) {
     const {focus, login, userDetail, status} = state;

@@ -5,7 +5,6 @@ import {NodeDaosForm, Icon, i18n, AbstractReactComponent, Loading} from 'compone
 import {Button} from "react-bootstrap";
 import {connect} from 'react-redux'
 
-import {registrySelect, registryAdd} from 'actions/registry/registryRegionList.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 

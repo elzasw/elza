@@ -6,6 +6,8 @@ import {modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {WebApi} from 'actions/index.jsx';
 import {addToastrDanger, addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
 import {i18n} from 'components/index.jsx'
+import {registryListInvalidate} from 'actions/registry/registry.jsx'
+import {partyListInvalidate} from 'actions/party/party.jsx'
 
 export const ObjectInfo = class ObjectInfo {
     constructor() {
@@ -40,6 +42,17 @@ export function importForm(data, messageType) {
         savingApiWrapper(dispatch, WebApi.xmlImport(data)).then(() => {
             dispatch(modalDialogHide());
             dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.success' + messageType)));
+            switch (messageType) {
+                case 'Fund':
+                    break;
+                case 'Record':
+                    dispatch(registryListInvalidate);
+                    break;
+                case 'Party':
+                    dispatch(partyListInvalidate);
+                    dispatch(registryListInvalidate);
+                    break;
+            }
         }).catch(() => {
             dispatch(modalDialogHide());
         });

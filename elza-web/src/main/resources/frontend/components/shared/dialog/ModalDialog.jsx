@@ -12,13 +12,6 @@ import './ModalDialog.less'
  */
 class ModalDialog extends AbstractReactComponent {
 
-    shouldComponentUpdate(nextProps, nextState) {
-        if (this.state !== nextState) {
-            return true;
-        }
-        return this.props.items.length  !== nextProps.items.length; // || !propsEquals(this.props.items, nextProps, ['content', 'title']);
-    }
-
     /**
      *
      * @param closeType <ul>
@@ -47,11 +40,9 @@ class ModalDialog extends AbstractReactComponent {
                 })
             );
 
-            return (
-                <ModalDialogWrapper key={index} className={`${visible ? "dialog-visible" : "dialog-hidden"} ${dialog.dialogClassName}`} title={dialog.title} onHide={this.handleClose.bind(this, "DIALOG")}>
-                    {children}
-                </ModalDialogWrapper>
-            )
+            return <ModalDialogWrapper key={index} className={`${visible ? "dialog-visible" : "dialog-hidden"} ${dialog.dialogClassName}`} title={dialog.title} onHide={this.handleClose.bind(this, "DIALOG")}>
+                {children}
+            </ModalDialogWrapper>
         });
 
         return <div>

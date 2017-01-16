@@ -65,7 +65,7 @@ export function storeLoadData(type, data, switchView = true) {
                 }
                 break;
             case 'REGISTRY_REGION':
-                dispatch(storeLoad({registryRegion: data}));
+                dispatch(storeLoad({store:'app', ...data}));
                 if (switchView) {
                     dispatch(routerNavigate('/registry'));
                     dispatch(setFocus('registry', 1, 'list'))
