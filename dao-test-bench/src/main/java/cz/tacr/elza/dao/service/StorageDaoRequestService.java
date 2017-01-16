@@ -1,14 +1,5 @@
 package cz.tacr.elza.dao.service;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import cz.tacr.elza.dao.DCStorageConfig;
 import cz.tacr.elza.dao.bo.resource.DaoRequestInfo;
 import cz.tacr.elza.dao.bo.resource.DaoRequestInfoResource;
@@ -16,6 +7,14 @@ import cz.tacr.elza.dao.common.GlobalLock;
 import cz.tacr.elza.dao.common.PathResolver;
 import cz.tacr.elza.dao.exception.DaoComponentException;
 import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
 
 @Service
 public class StorageDaoRequestService {
