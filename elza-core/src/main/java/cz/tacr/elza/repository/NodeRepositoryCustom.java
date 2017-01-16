@@ -3,6 +3,7 @@ package cz.tacr.elza.repository;
 import java.util.List;
 import java.util.Set;
 
+import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
@@ -66,4 +67,16 @@ public interface NodeRepositoryCustom {
      * @return id nodů odpovídající parametrům
      */
     Set<Integer> findNodeIdsByFilters(ArrFundVersion version, List<DescItemTypeFilter> descItemFilters);
+
+    /**
+     * Vyhledání id nodů podle parametrů.
+     *
+     * @param searchParams parametry pro rozšířené vyhledávání
+     * @param fundId id fondu do kterého uzly patří
+     * @param lockChangeId id verze ve které se má hledat, může být null
+     *
+     * @return množina id uzlů které vyhovují parametrům
+     */
+    Set<Integer> findBySearchParamsAndVersionLockChangeId(List<SearchParam> searchParams, Integer fundId,
+            Integer lockChangeId);
 }

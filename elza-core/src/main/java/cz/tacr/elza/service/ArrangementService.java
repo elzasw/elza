@@ -45,6 +45,7 @@ import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
@@ -958,20 +959,46 @@ public class ArrangementService {
      * @param version     verze AP
      * @param nodeId      id uzlu pod kterým se má hledat, může být null
      * @param searchValue lucene dotaz (např: +specification:*čís* -fulltextValue:ddd)
-     * @param depth       hloubka v jaké se hledá pod předaným nodeId
      * @return seznam id uzlů které vyhovují parametrům
      * @throws InvalidQueryException neplatný lucene dotaz
      */
     public Set<Integer> findNodeIdsByLuceneQuery(final ArrFundVersion version, final Integer nodeId,
-                                                 final String searchValue, final Depth depth) throws InvalidQueryException {
+                                                 final String searchValue) throws InvalidQueryException {
         Assert.notNull(version);
-        Assert.notNull(depth);
 
         ArrChange lockChange = version.getLockChange();
         Integer lockChangeId = lockChange == null ? null : lockChange.getChangeId();
         Integer fundId = version.getFund().getFundId();
 
         return nodeRepository.findByLuceneQueryAndVersionLockChangeId(searchValue, fundId, lockChangeId);
+    }
+
+    /**
+     * Vyhledání id nodů podle parametrů.
+     *
+     * @param version     verze AP
+     * @param nodeId      id uzlu pod kterým se má hledat, může být null
+     * @param searchParams parametry pro rozšířené vyhledávání
+     * @param depth       hloubka v jaké se hledá pod předaným nodeId
+     *
+     * @return množina id uzlů které vyhovují parametrům
+     */
+    public Set<Integer> findNodeIdsBySearchParams(final ArrFundVersion version, final Integer nodeId,
+            final List<SearchParam> searchParams, final Depth depth) {
+        Assert.notNull(version);
+        Assert.notNull(depth);
+        Assert.notEmpty(searchParams);
+
+        ArrChange lockChange = version.getLockChange();
+        Integer lockChangeId = lockChange == null ? null : lockChange.getChangeId();
+        Integer fundId = version.getFund().getFundId();
+
+        Set<Integer> nodeIds = nodeRepository.findBySearchParamsAndVersionLockChangeId(searchParams, fundId, lockChangeId);
+
+        Set<Integer> versionNodeIds = levelTreeCacheService.getAllNodeIdsByVersionAndParent(version, nodeId, depth);
+        versionNodeIds.retainAll(nodeIds);
+
+        return versionNodeIds;
     }
 
     /**
@@ -1520,5 +1547,4 @@ public class ArrangementService {
             return nodeId;
         }
     }
-
 }

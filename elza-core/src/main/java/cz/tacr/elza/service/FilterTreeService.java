@@ -31,6 +31,7 @@ import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataPacketRef;
@@ -163,11 +164,12 @@ public class FilterTreeService {
      * @param version  verze stromu
      * @param fulltext fulltext
      * @param luceneQuery v hodnotě fulltext je lucene query (např: +specification:*čís* -fulltextValue:ddd), false - normální fulltext
+     * @param searchParams parametry pro rozšířené vyhledávání
      * @return seznam uzlů a jejich indexu v seznamu filtrovaných uzlů, seřazené podle indexu
      * @throws FilterExpiredException není nastaven filtr, nejprve zavolat {@link #filterData(ArrFundVersion, Object)}
      */
     public List<FilterNodePosition> getFilteredFulltextIds(final ArrFundVersion version, final String fulltext,
-                                                           final boolean luceneQuery)
+                                                           final boolean luceneQuery, final List<SearchParam> searchParams)
             throws FilterExpiredException {
         Assert.notNull(version);
 
@@ -184,12 +186,14 @@ public class FilterTreeService {
 
         //seznam id nalezených fulltextem
         Collection<Integer> fulltextIds;
-        if (StringUtils.isBlank(fulltext)) {
+        if (CollectionUtils.isNotEmpty(searchParams)) {
+            fulltextIds = arrangementService.findNodeIdsBySearchParams(version, null,
+                    searchParams, ArrangementController.Depth.SUBTREE);
+        } else if (StringUtils.isBlank(fulltext)) {
             fulltextIds = filteredIds;
         } else if (luceneQuery) {
             fulltextIds = arrangementService
-                    .findNodeIdsByLuceneQuery(version, version.getRootNode().getNodeId(), fulltext,
-                            ArrangementController.Depth.SUBTREE);
+                    .findNodeIdsByLuceneQuery(version, version.getRootNode().getNodeId(), fulltext);
         } else {
 
             fulltextIds = arrangementService

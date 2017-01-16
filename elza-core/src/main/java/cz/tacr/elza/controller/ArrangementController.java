@@ -56,6 +56,7 @@ import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.filter.Filters;
+import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
@@ -1508,8 +1509,16 @@ public class ArrangementController {
 
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(input.getVersionId());
 
-        Set<Integer> nodeIds = arrangementService.findNodeIdsByFulltext(version, input.getNodeId(),
-                input.getSearchValue(), input.getDepth());
+        Set<Integer> nodeIds;
+        List<SearchParam> searchParams = input.getSearchParams();
+        if (CollectionUtils.isNotEmpty(searchParams)) {
+            nodeIds = arrangementService.findNodeIdsBySearchParams(version, input.getNodeId(), searchParams,
+                    input.getDepth());
+        } else {
+            nodeIds = arrangementService.findNodeIdsByFulltext(version, input.getNodeId(),
+                    input.getSearchValue(), input.getDepth());
+        }
+
 
         return arrangementService.createTreeNodeFulltextList(nodeIds, version);
     }
@@ -1701,17 +1710,16 @@ public class ArrangementController {
      * @param versionId id verze stromu
      * @param fulltext  fulltext
      * @param luceneQuery v hodnotě fulltext je lucene query (např: +specification:*čís* -fulltextValue:ddd), false - normální fulltext
+     * @param searchParams parametry pro rozšířené vyhledávání
      * @return seznam uzlů a jejich indexu v seznamu filtrovaných uzlů, seřazené podle indexu
      * @throws FilterExpiredException není nastaven filtr, nejprve zavolat {@link FilterTreeService#filterData(ArrFundVersion, List)}
      */
-    @RequestMapping(value = "/getFilteredFulltext/{versionId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/getFilteredFulltext/{versionId}", method = RequestMethod.POST)
     public List<FilterNodePosition> getFilteredFulltextNodes(@PathVariable("versionId") final Integer versionId,
-                                                             @RequestParam("fulltext") final String fulltext,
-                                                             @RequestParam(value = "luceneQuery", required = false)
-                                                             final Boolean luceneQuery) {
+                                                             @RequestBody final FaFilteredFulltextParam param) {
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
 
-        return filterTreeService.getFilteredFulltextIds(version, fulltext, BooleanUtils.isTrue(luceneQuery));
+        return filterTreeService.getFilteredFulltextIds(version, param.getFulltext(), param.getLuceneQuery(), param.getSearchParams());
     }
 
     /**
@@ -2215,7 +2223,7 @@ public class ArrangementController {
     @Transactional
     public void requestChange(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                               @PathVariable(value = "requestId") final Integer digitizationId,
-                              @RequestBody DigitizationRequestParam param) {
+                              @RequestBody final DigitizationRequestParam param) {
         Assert.notNull(param);
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrRequest request = requestService.getRequest(digitizationId);
@@ -2993,6 +3001,43 @@ public class ArrangementController {
         }
     }
 
+    /** Vstupní parametry pro metodu /getFilteredFulltext/{versionId} {@link #getFilteredFulltextNodes(Integer, FaFilteredFulltextParam)}. */
+    public static class FaFilteredFulltextParam {
+
+        /** Hledaná hodnota. */
+        private String fulltext;
+
+        /** Příznak že v hodnotě fulltext je lucene query (např: +specification:*čís* -fulltextValue:ddd), false - normální fulltext */
+        private boolean luceneQuery;
+
+        /** Parametry pro rozšířené vyhledávání. */
+        private List<SearchParam> searchParams;
+
+        public String getFulltext() {
+            return fulltext;
+        }
+
+        public void setFulltext(final String fulltext) {
+            this.fulltext = fulltext;
+        }
+
+        public boolean getLuceneQuery() {
+            return luceneQuery;
+        }
+
+        public void setLuceneQuery(final boolean luceneQuery) {
+            this.luceneQuery = luceneQuery;
+        }
+
+        public List<SearchParam> getSearchParams() {
+            return searchParams;
+        }
+
+        public void setSearchParams(final List<SearchParam> searchParams) {
+            this.searchParams = searchParams;
+        }
+    }
+
     /**
      * Vstupní parametry pro metodu /fulltext {@link #fulltext(FaFulltextParam)}.
      */
@@ -3014,6 +3059,8 @@ public class ArrangementController {
          * Hloubka v jaké se má hledat pokud je předáno nodeId.
          */
         private Depth depth;
+        /** Parametry pro rozšířené vyhledávání. */
+        private List<SearchParam> searchParams;
 
         public Integer getVersionId() {
             return versionId;
@@ -3038,6 +3085,12 @@ public class ArrangementController {
         }
         public void setDepth(final Depth depth) {
             this.depth = depth;
+        }
+        public List<SearchParam> getSearchParams() {
+            return searchParams;
+        }
+        public void setSearchParams(final List<SearchParam> searchParams) {
+            this.searchParams = searchParams;
         }
 
     }
