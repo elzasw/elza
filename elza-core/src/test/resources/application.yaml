@@ -1,9 +1,9 @@
 spring:
   datasource:
-#    url: jdbc:h2:mem:scratchdb
-     url: jdbc:jtds:sqlserver://vyv-db/vyv_elza
-     username: vyv
-     password: vyv
+    url: jdbc:h2:mem:scratchdb
+#     url: jdbc:jtds:sqlserver://vyv-db/vyv_elza
+#     username: vyv
+#     password: vyv
 #     url: jdbc:postgresql://127.0.0.1/elza2
 #     username: app
 #     password: app
@@ -20,8 +20,8 @@ spring:
                   default:
                       indexBase: ${elza.workingDir}/lucene/indexes/
                       directory_provider: filesystem
-#              dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect
-              dialect: org.hibernate.spatial.dialect.sqlserver.SqlServer2008SpatialDialect
+              dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect
+#              dialect: org.hibernate.spatial.dialect.sqlserver.SqlServer2008SpatialDialect
 #              dialect: org.hibernate.spatial.dialect.postgis.PostgisDialect
 
 elza:

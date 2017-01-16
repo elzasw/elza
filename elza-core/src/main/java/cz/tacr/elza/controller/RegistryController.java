@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -496,7 +497,7 @@ public class RegistryController {
         }
 
         Set<Integer> scopeIdsByFund = registryService.getScopeIdsByFund(fund);
-        if (scopeIdsByFund.isEmpty()) {
+        if (CollectionUtils.isEmpty(scopeIdsByFund)) {
             return Collections.emptyList();
         } else {
             List<RegScopeVO> result = factoryVo.createScopes(scopeRepository.findAll(scopeIdsByFund));

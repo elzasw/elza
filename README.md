@@ -124,7 +124,7 @@ spring:
               # Oracle
               #dialect: org.hibernate.spatial.dialect.oracle.OracleSpatial10gDialect
               # MSSQL
-              #dialect: org.hibernate.dialect.SQLServer2008Dialect
+              #dialect: org.hibernate.spatial.dialect.sqlserver.SqlServer2008SpatialDialect
 ```
 
 ### Logování událostí

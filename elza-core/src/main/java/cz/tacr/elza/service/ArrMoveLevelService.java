@@ -152,7 +152,7 @@ public class ArrMoveLevelService {
             if (transportLevels.get(0).getPosition() > staticLevel.getPosition()) {
                 position = placeLevels(transportLevels, staticLevel.getNodeParent(), change,
                         staticLevel.getPosition());
-
+                // TODO Lebeda - tady spadne na: Violation of UNIQUE KEY constraint 'u_arr_level_ppd'. Cannot insert duplicate key in object 'dbo.arr_level'.
                 placeLevels(nodesToShiftDown, staticLevel.getNodeParent(), change, position);
             } else {
                 //posun up
