@@ -8,7 +8,7 @@ import cz.tacr.elza.service.eventnotification.events.vo.NodeInfo;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 25.01.2016
  */
-public class EventAddNode extends EventVersion<EventAddNode> {
+public class EventAddNode extends EventVersion {
 
     /**
      * Uzel, ke kterému přidáváme nový (před, za, pod)

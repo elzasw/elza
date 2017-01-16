@@ -1,21 +1,41 @@
 package cz.tacr.elza.drools.service;
 
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.domain.factory.DescItemFactory;
-import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
-import cz.tacr.elza.drools.DirectionLevel;
-import cz.tacr.elza.drools.model.*;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.LevelRepository;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
+
+import javax.annotation.Nullable;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import javax.annotation.Nullable;
-import java.util.*;
-import java.util.function.Consumer;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItemData;
+import cz.tacr.elza.domain.ArrItemInt;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.factory.DescItemFactory;
+import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
+import cz.tacr.elza.drools.DirectionLevel;
+import cz.tacr.elza.drools.model.ActiveLevel;
+import cz.tacr.elza.drools.model.DescItem;
+import cz.tacr.elza.drools.model.EventSource;
+import cz.tacr.elza.drools.model.Level;
+import cz.tacr.elza.drools.model.NewLevel;
+import cz.tacr.elza.drools.model.NewLevelApproach;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.LevelRepository;
 
 
 /**
@@ -168,36 +188,36 @@ public class ScriptModelFactory {
      * @param descItemVO Source description item
      * @return
      */
-	private ArrDescItem<? extends ArrItemData> createDescItem(DescItem descItemVO) {
-		RulItemType rulDescItemType = itemTypeRepository.getOneByCode(descItemVO.getType());
-		Assert.notNull(rulDescItemType, "Item does not exists: " + descItemVO.getType());
+    private ArrDescItem createDescItem(final DescItem descItemVO) {
+        RulItemType rulDescItemType = itemTypeRepository.getOneByCode(descItemVO.getType());
+        Assert.notNull(rulDescItemType, "Item does not exists: " + descItemVO.getType());
 
-		ArrDescItem<? extends ArrItemData> descItem = new ArrDescItem<ArrItemData>(descItemFactory.createItemByType(rulDescItemType.getDataType()));
-		descItem.setItemType(rulDescItemType);
+        ArrDescItem descItem = new ArrDescItem(descItemFactory.createItemByType(rulDescItemType.getDataType()));
+        descItem.setItemType(rulDescItemType);
 
-		// set specification
-		ArrItemData item = descItem.getItem();
-		if (descItemVO.getSpecCode() != null) {
-			RulItemSpec rulDescItemSpec = itemSpecRepository.getOneByCode(descItemVO.getSpecCode());
-			Assert.notNull(rulDescItemSpec, "Item specification does not exists: " + descItemVO.getSpecCode());
-			descItem.setItemSpec(rulDescItemSpec);
-		}
-		
-		// set initial value
-		if (descItemVO.getInteger() != null)
-		{
-			if(item instanceof ArrItemInt) {
-				// Set initial value
-				((ArrItemInt) item).setValue(descItemVO.getInteger());
-			} else {
-				throw new IllegalStateException("Initial value cannot be set for item: " + descItemVO.getType());
-			}
-		}
-		return descItem;
-	}
+        // set specification
+        ArrItemData item = descItem.getItem();
+        if (descItemVO.getSpecCode() != null) {
+            RulItemSpec rulDescItemSpec = itemSpecRepository.getOneByCode(descItemVO.getSpecCode());
+            Assert.notNull(rulDescItemSpec, "Item specification does not exists: " + descItemVO.getSpecCode());
+            descItem.setItemSpec(rulDescItemSpec);
+        }
+
+        // set initial value
+        if (descItemVO.getInteger() != null)
+        {
+            if(item instanceof ArrItemInt) {
+                // Set initial value
+                ((ArrItemInt) item).setValue(descItemVO.getInteger());
+            } else {
+                throw new IllegalStateException("Initial value cannot be set for item: " + descItemVO.getType());
+            }
+        }
+        return descItem;
+    }
 
 
-	/**
+    /**
      * Vytvoří fakta pro nově přidávaný level. Načte jeho sousedy.
      * @param level             referenční level
      * @param directionLevel    způsob přídání
@@ -206,15 +226,15 @@ public class ScriptModelFactory {
      * @return
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-	public List<Level> createFactsForNewLevel(
+    public List<Level> createFactsForNewLevel(
                                    final ArrLevel level,
                                    final DirectionLevel directionLevel, final ArrFundVersion version)
     {
-    	Level srcModelLevel = createLevelModel(level, version);
+        Level srcModelLevel = createLevelModel(level, version);
 
-    	DescItemReader descItemReader = new DescItemReader(descItemRepository, itemTypeRepository, descItemFactory);
+        DescItemReader descItemReader = new DescItemReader(descItemRepository, itemTypeRepository, descItemFactory);
 
-    	// Parent level
+        // Parent level
         Level parentLevel = null;
         EventSource eventSource = null;
         Level modelSiblingBefore = null;
@@ -226,57 +246,57 @@ public class ScriptModelFactory {
         int indexOfMainLevel;
 
         // Prepare data for new level
-		switch (directionLevel) {
-		case BEFORE:
-			siblings = levelRepository.findByParentNode(level.getNodeParent(), version.getLockChange());
-			if (srcModelLevel != null) {
-				parentLevel = srcModelLevel.getParent();
-			}
-			eventSource = EventSource.SIBLING_AFTER;
+        switch (directionLevel) {
+        case BEFORE:
+            siblings = levelRepository.findByParentNode(level.getNodeParent(), version.getLockChange());
+            if (srcModelLevel != null) {
+                parentLevel = srcModelLevel.getParent();
+            }
+            eventSource = EventSource.SIBLING_AFTER;
 
-			indexOfMainLevel = siblings.indexOf(level);
-			if (indexOfMainLevel > 0) {
-				siblingBefore = siblings.get(indexOfMainLevel - 1);
-				modelSiblingBefore = ModelFactory.createLevel(siblingBefore, version);
-				descItemReader.add(modelSiblingBefore, siblingBefore.getNode());
-			}
+            indexOfMainLevel = siblings.indexOf(level);
+            if (indexOfMainLevel > 0) {
+                siblingBefore = siblings.get(indexOfMainLevel - 1);
+                modelSiblingBefore = ModelFactory.createLevel(siblingBefore, version);
+                descItemReader.add(modelSiblingBefore, siblingBefore.getNode());
+            }
 
-			siblingAfter = level;
-			modelSiblingAfter = ModelFactory.createLevel(siblingAfter, version);
-			descItemReader.add(modelSiblingAfter, siblingAfter.getNode());
+            siblingAfter = level;
+            modelSiblingAfter = ModelFactory.createLevel(siblingAfter, version);
+            descItemReader.add(modelSiblingAfter, siblingAfter.getNode());
 
-			break;
-		case AFTER:
-			siblings = levelRepository.findByParentNode(level.getNodeParent(), version.getLockChange());
-			if (srcModelLevel != null) {
-				parentLevel = srcModelLevel.getParent();
-			}
-			eventSource = EventSource.SIBLING_BEFORE;
+            break;
+        case AFTER:
+            siblings = levelRepository.findByParentNode(level.getNodeParent(), version.getLockChange());
+            if (srcModelLevel != null) {
+                parentLevel = srcModelLevel.getParent();
+            }
+            eventSource = EventSource.SIBLING_BEFORE;
 
-			siblingBefore = level;
-			modelSiblingBefore = ModelFactory.createLevel(siblingBefore, version);
-			descItemReader.add(modelSiblingBefore, siblingBefore.getNode());
+            siblingBefore = level;
+            modelSiblingBefore = ModelFactory.createLevel(siblingBefore, version);
+            descItemReader.add(modelSiblingBefore, siblingBefore.getNode());
 
-			indexOfMainLevel = siblings.indexOf(level);
-			if (indexOfMainLevel < siblings.size() - 1) {
-				siblingAfter = siblings.get(indexOfMainLevel + 1);
-				modelSiblingAfter = ModelFactory.createLevel(siblingAfter, version);
-				descItemReader.add(modelSiblingAfter, siblingAfter.getNode());
-			}
+            indexOfMainLevel = siblings.indexOf(level);
+            if (indexOfMainLevel < siblings.size() - 1) {
+                siblingAfter = siblings.get(indexOfMainLevel + 1);
+                modelSiblingAfter = ModelFactory.createLevel(siblingAfter, version);
+                descItemReader.add(modelSiblingAfter, siblingAfter.getNode());
+            }
 
-			break;
+            break;
 
-		case CHILD:
-			parentLevel = srcModelLevel;
-			eventSource = EventSource.PARENT;
+        case CHILD:
+            parentLevel = srcModelLevel;
+            eventSource = EventSource.PARENT;
 
-			List<ArrLevel> childs = levelRepository.findByParentNode(level.getNode(), version.getLockChange());
-			if (childs.size() > 0) {
-				siblingBefore = childs.get(childs.size() - 1);
-				modelSiblingBefore = ModelFactory.createLevel(siblingBefore, version);
-				descItemReader.add(modelSiblingBefore, siblingBefore.getNode());
-			}
-			break;
+            List<ArrLevel> childs = levelRepository.findByParentNode(level.getNode(), version.getLockChange());
+            if (childs.size() > 0) {
+                siblingBefore = childs.get(childs.size() - 1);
+                modelSiblingBefore = ModelFactory.createLevel(siblingBefore, version);
+                descItemReader.add(modelSiblingBefore, siblingBefore.getNode());
+            }
+            break;
 
         case ROOT:
             // pokud je vytvářena AP, tak se root level vytváří automaticky
@@ -302,14 +322,14 @@ public class ScriptModelFactory {
         descItemReader.read(version);
 
         return levels;
-	}
+    }
 
     /**
      * Create active level for given level
      * @param modelLevel prepared model level
      * @return
      */
-    public ActiveLevel createActiveLevel(Level modelLevel,
+    public ActiveLevel createActiveLevel(final Level modelLevel,
                                          final ArrLevel level,
                                          final ArrFundVersion version) {
         DescItemReader descItemReader = new DescItemReader(descItemRepository, itemTypeRepository, descItemFactory);
@@ -364,7 +384,7 @@ public class ScriptModelFactory {
      *
      * @param level požadovaný level, ke kterému se budou efektivní atributu vytvářet
      */
-    private void addEffectiveDescItems(Level level) {
+    private void addEffectiveDescItems(final Level level) {
         Level tmpLevel = level.getParent();
         List<DescItem> descItemLevel = level.getDescItems();
         while (tmpLevel != null) {

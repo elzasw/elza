@@ -1,8 +1,6 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.DmsFile;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.stereotype.Component;
+import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -10,7 +8,11 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+import org.springframework.stereotype.Component;
+
+import cz.tacr.elza.domain.DmsFile;
 
 /**
  * Implementace repository pro DmsFile - Custom
@@ -24,7 +26,7 @@ abstract public class AbstractFileRepository<T extends DmsFile> {
     @PersistenceContext
     private EntityManager entityManager;
 
-    public Predicate prepareFileSearchPredicate(String searchText, Root file) {
+    public Predicate prepareFileSearchPredicate(final String searchText, final Root<T> file) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 
         if (StringUtils.isNotBlank(searchText)) {
@@ -37,7 +39,8 @@ abstract public class AbstractFileRepository<T extends DmsFile> {
         return null;
     }
 
-    public FilteredResult<T> getFilteredResult(CriteriaQuery query, CriteriaQuery<Long> queryCount, Root file, Root fileCount, Integer firstResult, Integer maxResults) {
+    public FilteredResult<T> getFilteredResult(final CriteriaQuery<T> query, final CriteriaQuery<Long> queryCount, final Root<T> file,
+            final Root<T> fileCount, final Integer firstResult, final Integer maxResults) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         query.select(file);
         queryCount.select(builder.countDistinct(fileCount));
@@ -49,17 +52,5 @@ abstract public class AbstractFileRepository<T extends DmsFile> {
         long count = entityManager.createQuery(queryCount).getSingleResult();
 
         return new FilteredResult<>(firstResult, maxResults, count, list);
-    }
-
-
-    Class getGenericClass() {
-        try {
-            // Načtení názvu entity z generic parametru rozhraní repository
-            Class<?> aClass = Class.forName(this.getClass().getTypeName());
-            //ParameterizedType pt = (ParameterizedType) aClass.getGenericInterfaces()[0];
-            return (Class) Class.forName(aClass.getSuperclass().getTypeParameters()[0].getClass().getTypeName());
-        } catch (ClassNotFoundException e) {
-            throw new IllegalStateException("Nelze automaticky zjistit název datového objektu, je nutné překrýt metodu getGenericClass!", e);
-        }
     }
 }

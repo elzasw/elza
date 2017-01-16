@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -30,7 +32,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParPartyGroupIdentifier implements cz.tacr.elza.api.ParPartyGroupIdentifier<ParUnitdate, ParPartyGroup> {
+public class ParPartyGroupIdentifier implements Serializable {
 
     @Id
     @GeneratedValue
@@ -61,72 +63,58 @@ public class ParPartyGroupIdentifier implements cz.tacr.elza.api.ParPartyGroupId
     private String identifier;
 
 
-    @Override
     public Integer getPartyGroupIdentifierId() {
         return partyGroupIdentifierId;
     }
 
-    @Override
     public void setPartyGroupIdentifierId(final Integer partyGroupIdentifierId) {
         this.partyGroupIdentifierId = partyGroupIdentifierId;
     }
 
-    @Override
     public ParUnitdate getTo() {
         return to;
     }
 
-    @Override
     public void setTo(final ParUnitdate to) {
         this.to = to;
     }
 
-    @Override
     public ParUnitdate getFrom() {
         return from;
     }
 
-    @Override
     public void setFrom(final ParUnitdate from) {
         this.from = from;
     }
 
-    @Override
     public ParPartyGroup getPartyGroup() {
         return partyGroup;
     }
 
-    @Override
     public void setPartyGroup(final ParPartyGroup partyGroup) {
         this.partyGroup = partyGroup;
     }
 
-    @Override
     public String getSource() {
         return source;
     }
 
-    @Override
     public void setSource(final String source) {
         this.source = source;
     }
 
-    @Override
     public String getNote() {
         return note;
     }
 
-    @Override
     public void setNote(final String note) {
         this.note = note;
     }
 
-    @Override
     public String getIdentifier() {
         return identifier;
     }
 
-    @Override
     public void setIdentifier(final String identifier) {
         this.identifier = identifier;
     }

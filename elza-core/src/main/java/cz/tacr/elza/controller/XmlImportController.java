@@ -1,7 +1,7 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.api.vo.XmlImportType;
 import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.vo.XmlImportType;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.XmlImportService;
 import cz.tacr.elza.service.exception.XmlImportException;

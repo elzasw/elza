@@ -1,15 +1,8 @@
 package cz.tacr.elza.aop;
 
-import cz.tacr.elza.annotation.AuthMethod;
-import cz.tacr.elza.annotation.AuthParam;
-import cz.tacr.elza.api.UsrPermission;
-import cz.tacr.elza.api.interfaces.IArrFund;
-import cz.tacr.elza.api.interfaces.IRegScope;
-import cz.tacr.elza.exception.AccessDeniedException;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.service.UserService;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -17,8 +10,16 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
+import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.api.interfaces.IArrFund;
+import cz.tacr.elza.api.interfaces.IRegScope;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.exception.AccessDeniedException;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.service.UserService;
 
 /**
  * Kontrola oprávnění přes AOP.
@@ -43,7 +44,7 @@ public class Authorization {
     private PartyRepository partyRepository;
 
     @Around("execution(* cz.tacr.elza..*.*(..)) && @annotation(cz.tacr.elza.annotation.AuthMethod)")
-    public Object auth(ProceedingJoinPoint pjp) throws Throwable {
+    public Object auth(final ProceedingJoinPoint pjp) throws Throwable {
         MethodSignature methodSignature = (MethodSignature)pjp.getSignature();
         Method method = methodSignature.getMethod();
         AuthMethod declaredAnnotation = method.getDeclaredAnnotation(AuthMethod.class);

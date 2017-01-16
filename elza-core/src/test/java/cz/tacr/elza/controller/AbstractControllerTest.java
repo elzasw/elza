@@ -1,14 +1,42 @@
 package cz.tacr.elza.controller;
 
+import static com.jayway.restassured.RestAssured.given;
+
+import java.io.File;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
+import org.junit.Assert;
+import org.junit.Before;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.EncoderConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
 import com.jayway.restassured.response.Header;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
+
 import cz.tacr.elza.AbstractTest;
-import cz.tacr.elza.api.ArrPacket;
-import cz.tacr.elza.api.vo.XmlImportType;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
@@ -67,37 +95,12 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.table.ElzaTable;
+import cz.tacr.elza.domain.vo.XmlImportType;
 import cz.tacr.elza.exception.FilterExpiredException;
 import cz.tacr.elza.service.ArrMoveLevelService;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-
-import javax.annotation.Nullable;
-import java.io.File;
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-
-import static com.jayway.restassured.RestAssured.given;
 
 
 public abstract class AbstractControllerTest extends AbstractTest {
@@ -309,6 +312,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     private static Map<String, String> cookies = null;
 
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
@@ -329,58 +333,58 @@ public abstract class AbstractControllerTest extends AbstractTest {
         cookies = response.getCookies();
     }
 
-    public static Response delete(Function<RequestSpecification, RequestSpecification> params, String url) {
+    public static Response delete(final Function<RequestSpecification, RequestSpecification> params, final String url) {
         return httpMethod(params, url, HttpMethod.DELETE, HttpStatus.OK);
     }
 
-    public static Response post(Function<RequestSpecification, RequestSpecification> params,
-                                String url,
-                                HttpStatus status) {
+    public static Response post(final Function<RequestSpecification, RequestSpecification> params,
+                                final String url,
+                                final HttpStatus status) {
         return httpMethod(params, url, HttpMethod.POST, status);
     }
 
-    public static Response post(Function<RequestSpecification, RequestSpecification> params, String url) {
+    public static Response post(final Function<RequestSpecification, RequestSpecification> params, final String url) {
         return httpMethod(params, url, HttpMethod.POST, HttpStatus.OK);
     }
 
-    public static Response put(Function<RequestSpecification, RequestSpecification> params, String url) {
+    public static Response put(final Function<RequestSpecification, RequestSpecification> params, final String url) {
         return httpMethod(params, url, HttpMethod.PUT, HttpStatus.OK);
     }
 
-    public static Response putError(Function<RequestSpecification, RequestSpecification> params, String url) {
+    public static Response putError(final Function<RequestSpecification, RequestSpecification> params, final String url) {
         return httpMethod(params, url, HttpMethod.PUT, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    public static Response put(Function<RequestSpecification, RequestSpecification> params,
-                               String url,
-                               HttpStatus status) {
+    public static Response put(final Function<RequestSpecification, RequestSpecification> params,
+                               final String url,
+                               final HttpStatus status) {
         return httpMethod(params, url, HttpMethod.PUT, status);
     }
 
-    public static Response get(Function<RequestSpecification, RequestSpecification> params, String url) {
+    public static Response get(final Function<RequestSpecification, RequestSpecification> params, final String url) {
         return httpMethod(params, url, HttpMethod.GET, HttpStatus.OK);
     }
 
-    public static Response getError(Function<RequestSpecification, RequestSpecification> params, String url) {
+    public static Response getError(final Function<RequestSpecification, RequestSpecification> params, final String url) {
         return httpMethod(params, url, HttpMethod.GET, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    public static Response get(String url) {
+    public static Response get(final String url) {
         return httpMethod((spec) -> spec, url, HttpMethod.GET, HttpStatus.OK);
     }
 
-    public static Response httpMethod(Function<RequestSpecification, RequestSpecification> params,
-                                      String url,
-                                      HttpMethod method,
-                                      HttpStatus status) {
+    public static Response httpMethod(final Function<RequestSpecification, RequestSpecification> params,
+                                      final String url,
+                                      final HttpMethod method,
+                                      final HttpStatus status) {
         return httpMethod(params, url, method, status, JSON_CT_HEADER);
     }
 
-    public static Response httpMethod(Function<RequestSpecification, RequestSpecification> params,
-                                      String url,
-                                      HttpMethod method,
-                                      HttpStatus status,
-                                      Header header) {
+    public static Response httpMethod(final Function<RequestSpecification, RequestSpecification> params,
+                                      final String url,
+                                      final HttpMethod method,
+                                      final HttpStatus status,
+                                      final Header header) {
         Assert.assertNotNull(params);
         Assert.assertNotNull(url);
         Assert.assertNotNull(method);
@@ -430,8 +434,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param url
      * @return
      */
-    protected static Response multipart(Function<RequestSpecification, RequestSpecification> params,
-                                        String url) {
+    protected static Response multipart(final Function<RequestSpecification, RequestSpecification> params,
+                                        final String url) {
         Assert.assertNotNull(params);
         Assert.assertNotNull(url);
 
@@ -463,7 +467,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return seznam pravidel
      * @param versionId verze AP
      */
-    protected List<RulOutputTypeVO> getOutputTypes(Integer versionId) {
+    protected List<RulOutputTypeVO> getOutputTypes(final Integer versionId) {
         Response response = get(spec -> spec.pathParam("versionId", versionId), OUTPUT_TYPES);
         return Arrays.asList(response.getBody().as(RulOutputTypeVO[].class));
     }
@@ -885,7 +889,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         return response.getBody().as(ArrangementController.DescItemResult.class);
     }
 
-    protected ArrangementController.OutputItemResult createOutputItem(ArrItemVO outputItemVO,
+    protected ArrangementController.OutputItemResult createOutputItem(final ArrItemVO outputItemVO,
                                                                    final Integer fundVersionId,
                                                                    final Integer itemTypeId,
                                                                    final Integer outputDefinitionId,
@@ -1306,7 +1310,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param fundId idedntifikátor fondu
      * @param input vstupní parametry
      */
-    protected void generatePackets(final Integer fundId, ArrangementController.PacketGenerateParam input) {
+    protected void generatePackets(final Integer fundId, final ArrangementController.PacketGenerateParam input) {
         put(spec -> spec.body(input).pathParameter("fundId", fundId), GENERATE_PACKETS);
     }
 
@@ -1561,7 +1565,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param list seznam typů
      * @return nalezený typ
      */
-    protected RegRegisterTypeVO getHierarchicalRegRegisterType(List<RegRegisterTypeVO> list, List<RegRegisterTypeVO> exclude) {
+    protected RegRegisterTypeVO getHierarchicalRegRegisterType(final List<RegRegisterTypeVO> list, List<RegRegisterTypeVO> exclude) {
         if (exclude == null) {
             exclude = new ArrayList<>();
         }
@@ -2108,7 +2112,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param relationVO relace k vytvoření
      * @return vytvořená relace
      */
-    protected ParRelationVO insertRelation(ParRelationVO relationVO) {
+    protected ParRelationVO insertRelation(final ParRelationVO relationVO) {
         return post(spec -> spec.body(relationVO), CREATE_RELATIONS).getBody().as(ParRelationVO.class);
     }
 
@@ -2118,7 +2122,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param relationVO relace k vytvoření
      * @return vytvořená relace
      */
-    protected ParRelationVO updateRelation(ParRelationVO relationVO) {
+    protected ParRelationVO updateRelation(final ParRelationVO relationVO) {
         return put(spec -> spec.body(relationVO).pathParam("relationId", relationVO.getId()), UPDATE_RELATIONS).getBody().as(ParRelationVO.class);
     }
 
@@ -2462,7 +2466,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param params parametry pro vytvoření skupiny
      * @return vytvořená skupina
      */
-    protected UsrGroupVO createGroup(UserController.CreateGroup params) {
+    protected UsrGroupVO createGroup(final UserController.CreateGroup params) {
         return post(spec -> spec.body(params), CREATE_GROUP).as(UsrGroupVO.class);
     }
 
@@ -2483,7 +2487,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param count  počet vrácených záznamů
      * @return seznam s celkovým počtem
      */
-    protected FilteredResultVO findGroup(final String search,
+    protected FilteredResultVO<UsrGroupVO> findGroup(final String search,
                                          final Integer from,
                                          final Integer count) {
         return get(spec -> spec.queryParam("search", search)
@@ -2512,7 +2516,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     * @param disabled mají se vracet zakázané osoby?
     * @return seznam s celkovým počtem
     */
-    protected FilteredResultVO findUser(@Nullable final String search,
+    protected FilteredResultVO<UsrUserVO> findUser(@Nullable final String search,
                                                     final Boolean active,
                                                     final Boolean disabled,
                                                     final Integer from,
@@ -2833,7 +2837,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param resourcePath cesta
      * @return soubor
      */
-    public static File getFile(String resourcePath) {
+    public static File getFile(final String resourcePath) {
         URL url = Thread.currentThread().getContextClassLoader().getResource(resourcePath);
         Assert.assertNotNull(url);
         return new File(url.getPath());

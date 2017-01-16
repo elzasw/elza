@@ -1,6 +1,5 @@
 package cz.tacr.elza.interpi.service.vo;
 
-import cz.tacr.elza.controller.vo.filter.Condition;
 import cz.tacr.elza.interpi.service.pqf.AttributeType;
 import cz.tacr.elza.interpi.service.pqf.ConditionType;
 

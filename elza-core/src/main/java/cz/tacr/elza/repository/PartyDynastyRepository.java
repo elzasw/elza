@@ -1,9 +1,9 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ParDynasty;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import cz.tacr.elza.domain.ParDynasty;
 
 /**
  * Repository pro rody.

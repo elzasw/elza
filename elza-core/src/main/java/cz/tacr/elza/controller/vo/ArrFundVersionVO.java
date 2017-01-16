@@ -1,6 +1,5 @@
 package cz.tacr.elza.controller.vo;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -25,13 +24,15 @@ public class ArrFundVersionVO {
 
     private Integer ruleSetId;
 
+    private Boolean strictMode;
+
     private Integer packageId;
 
     public Integer getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(final Integer id) {
         this.id = id;
     }
 
@@ -39,7 +40,7 @@ public class ArrFundVersionVO {
         return createDate;
     }
 
-    public void setCreateDate(Date createDate) {
+    public void setCreateDate(final Date createDate) {
         this.createDate = createDate;
     }
 
@@ -47,7 +48,7 @@ public class ArrFundVersionVO {
         return lockDate;
     }
 
-    public void setLockDate(Date lockDate) {
+    public void setLockDate(final Date lockDate) {
         this.lockDate = lockDate;
     }
 
@@ -55,7 +56,7 @@ public class ArrFundVersionVO {
         return dateRange;
     }
 
-    public void setDateRange(String dateRange) {
+    public void setDateRange(final String dateRange) {
         this.dateRange = dateRange;
     }
 
@@ -65,6 +66,14 @@ public class ArrFundVersionVO {
 
     public void setRuleSetId(final Integer ruleSetId) {
         this.ruleSetId = ruleSetId;
+    }
+
+    public Boolean getStrictMode() {
+        return strictMode;
+    }
+
+    public void setStrictMode(final Boolean strictMode) {
+        this.strictMode = strictMode;
     }
 
     public Integer getPackageId() {

@@ -1,11 +1,11 @@
 package cz.tacr.elza.repository;
 
+import java.util.List;
+import java.util.Set;
+
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
-
-import java.util.List;
-import java.util.Set;
 
 /**
  * Custom respozitory pro hromadné akce.
@@ -23,6 +23,6 @@ public interface BulkActionRunRepositoryCustom {
      * @param states        stavy, které se vyhledávají
      * @return seznam hromadných akcí
      */
-    List<ArrBulkActionRun> findBulkActionsByNodes(ArrFundVersion fundVersion, Set<ArrNode> nodes, cz.tacr.elza.api.ArrBulkActionRun.State... states);
+    List<ArrBulkActionRun> findBulkActionsByNodes(ArrFundVersion fundVersion, Set<ArrNode> nodes, ArrBulkActionRun.State... states);
 
 }

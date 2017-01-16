@@ -37,7 +37,6 @@ import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
 import cz.tacr.elza.annotation.AuthMethod;
-import cz.tacr.elza.api.vo.XmlImportType;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -93,6 +92,7 @@ import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.CalendarConverter.CalendarType;
 import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.domain.factory.DescItemFactory;
+import cz.tacr.elza.domain.vo.XmlImportType;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.DataRepository;

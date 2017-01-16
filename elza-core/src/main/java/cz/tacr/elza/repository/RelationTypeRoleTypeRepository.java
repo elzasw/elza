@@ -1,14 +1,11 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ParRelationRoleType;
-import cz.tacr.elza.domain.ParRelationType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import cz.tacr.elza.domain.ParRelationRoleType;
+import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.ParRelationTypeRoleType;
-
-import java.util.List;
-
 
 /**
  * Repozitory pro {@link ParRelationTypeRoleType}

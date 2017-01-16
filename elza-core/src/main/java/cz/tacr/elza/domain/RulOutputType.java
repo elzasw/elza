@@ -1,8 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.apache.commons.lang.builder.EqualsBuilder;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -11,6 +8,10 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
@@ -21,7 +22,7 @@ import javax.persistence.Table;
 @Entity(name = "rul_output_type")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulOutputType implements cz.tacr.elza.api.RulOutputType<RulPackage, RulRule> {
+public class RulOutputType {
 
     @Id
     @GeneratedValue
@@ -41,52 +42,42 @@ public class RulOutputType implements cz.tacr.elza.api.RulOutputType<RulPackage,
     @JoinColumn(name = "ruleId", nullable = true)
     private RulRule rule;
 
-    @Override
     public Integer getOutputTypeId() {
         return outputTypeId;
     }
 
-    @Override
-    public void setOutputTypeId(Integer outputTypeId) {
+    public void setOutputTypeId(final Integer outputTypeId) {
         this.outputTypeId = outputTypeId;
     }
 
-    @Override
     public String getCode() {
         return code;
     }
 
-    @Override
-    public void setCode(String code) {
+    public void setCode(final String code) {
         this.code = code;
     }
 
-    @Override
     public String getName() {
         return name;
     }
 
-    @Override
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
-    @Override
     public RulPackage getPackage() {
         return rulPackage;
     }
 
-    @Override
     public void setPackage(final RulPackage rulPackage) {
         this.rulPackage = rulPackage;
     }
 
-    @Override
     public RulRule getRule() {
         return rule;
     }
 
-    @Override
     public void setRule(final RulRule rule) {
         this.rule = rule;
     }

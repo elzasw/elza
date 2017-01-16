@@ -1,19 +1,25 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import javax.persistence.*;
 import java.io.Serializable;
 
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
- * Implementace {@link cz.tacr.elza.api.ArrBulkActionNode}
+ * Vazba nad kterými hromadná akce byla spuštěna - odkaz na root node podstromu.
  *
  * @author Martin Šlapa
  * @since 04.04.2016
  */
 @Entity(name = "arr_bulk_action_node")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrBulkActionNode implements cz.tacr.elza.api.ArrBulkActionNode<ArrNode, ArrBulkActionRun>, Serializable {
+public class ArrBulkActionNode implements Serializable {
 
     @Id
     @GeneratedValue
@@ -27,32 +33,44 @@ public class ArrBulkActionNode implements cz.tacr.elza.api.ArrBulkActionNode<Arr
     @JoinColumn(name = "bulkActionRunId", nullable = false)
     private ArrBulkActionRun bulkActionRun;
 
-    @Override
+    /**
+     * @return identifikátor entity
+     */
     public Integer getBulkActionNodeId() {
         return bulkActionNodeId;
     }
 
-    @Override
+    /**
+     * @param bulkActionNodeId identifikátor entity
+     */
     public void setBulkActionNodeId(final Integer bulkActionNodeId) {
         this.bulkActionNodeId = bulkActionNodeId;
     }
 
-    @Override
+    /**
+     * @return vazba na root podstromu
+     */
     public ArrNode getNode() {
         return node;
     }
 
-    @Override
+    /**
+     * @param node vazba na root podstromu
+     */
     public void setNode(final ArrNode node) {
         this.node = node;
     }
 
-    @Override
+    /**
+     * @return odkaz na dokončenou hromadnou akci
+     */
     public ArrBulkActionRun getBulkActionRun() {
         return bulkActionRun;
     }
 
-    @Override
+    /**
+     * @param bulkActionRun odkaz na dokončenou hromadnou akci
+     */
     public void setBulkActionRun(final ArrBulkActionRun bulkActionRun) {
         this.bulkActionRun = bulkActionRun;
     }

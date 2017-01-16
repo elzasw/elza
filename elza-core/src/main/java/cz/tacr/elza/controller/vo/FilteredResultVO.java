@@ -1,8 +1,8 @@
 package cz.tacr.elza.controller.vo;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
  * Třída obsahující seznam vrácený na základě hledání (ten může být omezen např. maximálním vráceným počtem), dále obsahuje

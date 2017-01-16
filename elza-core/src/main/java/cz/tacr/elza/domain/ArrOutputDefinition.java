@@ -1,20 +1,31 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
- * Implementace třídy {@link cz.tacr.elza.api.ArrOutputDefinition}
+ * Výstup z archivního souboru.
  *
  * @author Martin Šlapa
  * @since 01.04.2016
  */
 @Entity(name = "arr_output_definition")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrOutputDefinition extends AbstractVersionableEntity implements cz.tacr.elza.api.ArrOutputDefinition<ArrFund, ArrNodeOutput, ArrOutput, RulOutputType, RulTemplate, ArrOutputResult> {
+public class ArrOutputDefinition extends AbstractVersionableEntity {
 
     @Id
     @GeneratedValue
@@ -63,143 +74,219 @@ public class ArrOutputDefinition extends AbstractVersionableEntity implements cz
     @OneToOne(mappedBy = "outputDefinition", fetch = FetchType.LAZY)
     private ArrOutputResult outputResult;
 
-    @Override
+    /**
+     * @return identifikátor entity
+     */
     public Integer getOutputDefinitionId() {
         return outputDefinitionId;
     }
 
-    @Override
+    /**
+     * @param outputDefinitionId identifikátor entity
+     */
     public void setOutputDefinitionId(final Integer outputDefinitionId) {
         this.outputDefinitionId = outputDefinitionId;
     }
 
-    @Override
     public LocalDateTime getLastUpdate() {
         return lastUpdate;
     }
 
-    @Override
     public void setLastUpdate(final LocalDateTime lastUpdate) {
         this.lastUpdate = lastUpdate;
     }
 
-    @Override
+    /**
+     * @return archivní soubor
+     */
     public ArrFund getFund() {
         return fund;
     }
 
-    @Override
+    /**
+     * @param fund archivní soubor
+     */
     public void setFund(final ArrFund fund) {
         this.fund = fund;
     }
 
-    @Override
+    /**
+     * @return kód výstupu
+     */
     public String getInternalCode() {
         return internalCode;
     }
 
-    @Override
+    /**
+     * @param internalCode kód výstupu
+     */
     public void setInternalCode(final String internalCode) {
         this.internalCode = internalCode;
     }
 
-    @Override
+    /**
+     * @return jméno výstupu
+     */
     public String getName() {
         return name;
     }
 
-    @Override
+    /**
+     * @param name jméno výstupu
+     */
     public void setName(final String name) {
         this.name = name;
     }
 
-    @Override
+    /**
+     * @return stav
+     */
     public OutputState getState() {
         return state;
     }
 
-    @Override
-    public void setState(OutputState state) {
+    /**
+     * @param state stav
+     */
+    public void setState(final OutputState state) {
         this.state = state;
     }
 
-    @Override
+    /**
+     * @return příznak dočasného výstupu, lze použít pro Adhoc výstupy
+     */
     public Boolean getTemporary() {
         return temporary;
     }
 
-    @Override
+    /**
+     * @param temporary příznak dočasného výstupu, lze použít pro Adhoc výstupy
+     */
     public void setTemporary(final Boolean temporary) {
         this.temporary = temporary;
     }
 
-    @Override
+    /**
+     * @return příznak, že byl archivní fond smazán
+     */
     public Boolean getDeleted() {
         return deleted;
     }
 
-    @Override
+    /**
+     * @param deleted příznak, že byl archivní fond smazán
+     */
     public void setDeleted(final Boolean deleted) {
         this.deleted = deleted;
     }
 
-    @Override
+    /**
+     * @return List verzí outputů
+     */
     public List<ArrOutput> getOutputs() {
         return outputs;
     }
 
-    @Override
+    /**
+     * @param outputs List verzí outputů
+     */
     public void setOutputs(final List<ArrOutput> outputs) {
         this.outputs = outputs;
     }
 
-    @Override
+    /**
+     * @return List nodů outputu
+     */
     public List<ArrNodeOutput> getOutputNodes() {
         return outputNodes;
     }
 
-    @Override
+    /**
+     * @param outputNodes List nodů outputu
+     */
     public void setOutputNodes(final List<ArrNodeOutput> outputNodes) {
         this.outputNodes = outputNodes;
     }
 
-    @Override
+    /**
+     * @return Typ outputu
+     */
     public RulOutputType getOutputType() {
         return outputType;
     }
 
-    @Override
-    public void setOutputType(RulOutputType outputType) {
+    /**
+     * @param outputType Typ outputu
+     */
+    public void setOutputType(final RulOutputType outputType) {
         this.outputType = outputType;
     }
 
-    @Override
+    /**
+     * @return šablona outputu
+     */
     public RulTemplate getTemplate() {
         return template;
     }
 
-    @Override
-    public void setTemplate(RulTemplate template) {
+    /**
+     * @param template šablona outputu
+     */
+    public void setTemplate(final RulTemplate template) {
         this.template = template;
     }
 
-    @Override
+    /**
+     * @return Výsledek outputu
+     */
     public ArrOutputResult getOutputResult() {
         return outputResult;
     }
 
-    @Override
-    public void setOutputResult(ArrOutputResult outputResult) {
+    /**
+     * @param outputResult Výsledek outputu
+     */
+    public void setOutputResult(final ArrOutputResult outputResult) {
         this.outputResult = outputResult;
     }
 
-    @Override
+    /**
+     * @return Vrátí chybu outputu
+     */
     public String getError() {
         return error;
     }
 
-    @Override
-    public void setError(String error) {
+    /**
+     * @param error nastaví chybu outputu
+     */
+    public void setError(final String error) {
         this.error = error;
+    }
+
+    /**
+     * Stav outputu
+     */
+    public enum OutputState {
+        /**
+         * Rozpracovaný
+         */
+        OPEN,
+        /**
+         * Běží hromadná akce
+         */
+        COMPUTING,
+        /**
+         * Generování
+         */
+        GENERATING,
+        /**
+         * Vygenerovaný
+         */
+        FINISHED,
+        /**
+         * Vygenerovaný neaktuální
+         */
+        OUTDATED
     }
 }

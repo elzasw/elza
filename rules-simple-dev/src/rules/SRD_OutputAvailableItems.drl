@@ -1,6 +1,6 @@
 package SimpleDev;
 
-import cz.tacr.elza.api.RulItemSpec;
+import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulItemSpecExt;
 import cz.tacr.elza.drools.model.AvailableDescItems;
@@ -10,14 +10,14 @@ import cz.tacr.elza.drools.model.DescItem;
 
 import java.util.Arrays;
 import java.util.Set;
-import cz.tacr.elza.api.RulItemType;
+import cz.tacr.elza.domain.RulItemType;
 
 // Volitelné neopakovatelné prvky popisu
 rule "Jen vybrané jsou možné"
-no-loop 
+no-loop
 when
-	$itemType : RulItemTypeExt( code in ( 
-	"SRD_UNIT_COUNT", "SRD_UNIT_HIST", "SRD_STATISTICS", "ZP2015_UNIT_COUNT_TABLE") )
+    $itemType : RulItemTypeExt( code in (
+    "SRD_UNIT_COUNT", "SRD_UNIT_HIST", "SRD_STATISTICS", "ZP2015_UNIT_COUNT_TABLE") )
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
     $itemType.setRepeatable(false);
@@ -25,9 +25,9 @@ end
 
 // Povinné neopakovatelné prvky popisu
 rule "Povinné neopakovatelné prvky popisu"
-no-loop 
+no-loop
 when
-	$itemType : RulItemTypeExt( code in ("SRD_TITLE" ) )
+    $itemType : RulItemTypeExt( code in ("SRD_TITLE" ) )
 then
     $itemType.setType(RulItemType.Type.REQUIRED);
     $itemType.setRepeatable(false);

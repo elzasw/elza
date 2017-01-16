@@ -178,7 +178,7 @@ class DescItemType extends AbstractReactComponent {
      * @return {Object} view
      */
     renderDescItemSpec(key, descItem, descItemIndex, locked) {
-        const {infoType, refType, readMode} = this.props;
+        const {infoType, refType, readMode, strictMode} = this.props;
 
         return (
             <DescItemTypeSpec
@@ -192,6 +192,7 @@ class DescItemType extends AbstractReactComponent {
                 onChange={this.handleChangeSpec.bind(this, descItemIndex)}
                 onBlur={this.handleBlur.bind(this, descItemIndex)}
                 onFocus={this.handleFocus.bind(this, descItemIndex)}
+                strictMode={strictMode}
                 />
         )
     }
@@ -1013,6 +1014,7 @@ DescItemType.propTypes = {
     fundId: React.PropTypes.number.isRequired,
     userDetail: React.PropTypes.object.isRequired,
     showNodeAddons: React.PropTypes.bool.isRequired,
+    strictMode: React.PropTypes.bool.isRequired,
 }
 
 DescItemType.childContextTypes = {

@@ -13,7 +13,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
- * Implementace RulAction.
  *
  * @author Martin Šlapa
  * @since 14.12.2015
@@ -21,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity(name = "rul_action")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulAction implements cz.tacr.elza.api.RulAction<RulPackage> {
+public class RulAction {
 
     @Id
     @GeneratedValue
@@ -34,32 +33,44 @@ public class RulAction implements cz.tacr.elza.api.RulAction<RulPackage> {
     @Column(length = 250, nullable = false)
     private String filename;
 
-    @Override
+    /**
+     * @return identifikátor entity
+     */
     public Integer getActionId() {
         return actionId;
     }
 
-    @Override
+    /**
+     * @param actionId identifikátor entity
+     */
     public void setActionId(final Integer actionId) {
         this.actionId = actionId;
     }
 
-    @Override
+    /**
+     * @return balíček
+     */
     public RulPackage getPackage() {
         return rulPackage;
     }
 
-    @Override
+    /**
+     * @param rulPackage balíček
+     */
     public void setPackage(final RulPackage rulPackage) {
         this.rulPackage = rulPackage;
     }
 
-    @Override
+    /**
+     * @return název souboru
+     */
     public String getFilename() {
         return filename;
     }
 
-    @Override
+    /**
+     * @param filename název souboru
+     */
     public void setFilename(final String filename) {
         this.filename = filename;
     }

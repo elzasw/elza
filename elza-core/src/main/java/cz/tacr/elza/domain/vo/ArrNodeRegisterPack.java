@@ -1,15 +1,15 @@
 package cz.tacr.elza.domain.vo;
 
-import cz.tacr.elza.domain.ArrNodeRegister;
-
 import java.util.List;
+
+import cz.tacr.elza.domain.ArrNodeRegister;
 
 /**
  * Zapouzdření kolekcí k obsluze ukládání a mazání vazeb mezi uzlem a rejstříkovými hesly.
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
-public class ArrNodeRegisterPack implements cz.tacr.elza.api.vo.ArrNodeRegisterPack<ArrNodeRegister> {
+public class ArrNodeRegisterPack {
 
     /**
      * K vytvoření či modifikaci.
@@ -43,7 +43,6 @@ public class ArrNodeRegisterPack implements cz.tacr.elza.api.vo.ArrNodeRegisterP
      * List pro uložení/modifikaci.
      * @return  list pro uložení/modifikaci
      */
-    @Override
     public List<ArrNodeRegister> getSaveList() {
         return saveList;
     }
@@ -52,7 +51,6 @@ public class ArrNodeRegisterPack implements cz.tacr.elza.api.vo.ArrNodeRegisterP
      * List pro uložení/modifikaci.
      * @param saveList  list pro uložení/modifikaci
      */
-    @Override
     public void setSaveList(final List<ArrNodeRegister> saveList) {
         this.saveList = saveList;
     }
@@ -61,7 +59,6 @@ public class ArrNodeRegisterPack implements cz.tacr.elza.api.vo.ArrNodeRegisterP
      * List pro smazání.
      * @return      list pro smazání
      */
-    @Override
     public List<ArrNodeRegister> getDeleteList() {
         return deleteList;
     }
@@ -70,7 +67,6 @@ public class ArrNodeRegisterPack implements cz.tacr.elza.api.vo.ArrNodeRegisterP
      * List pro smazání.
      * @param deleteList    list pro smazání
      */
-    @Override
     public void setDeleteList(final List<ArrNodeRegister> deleteList) {
         this.deleteList = deleteList;
     }

@@ -11,7 +11,7 @@ import cz.tacr.elza.service.eventnotification.events.vo.NodeInfo;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.01.2016
  */
-public class EventNodeMove extends EventVersion<EventNodeMove> {
+public class EventNodeMove extends EventVersion {
 
     /**
      * Statický uzel před/za/pod který přesouváme.

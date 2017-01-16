@@ -1,8 +1,6 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.springframework.data.annotation.ReadOnlyProperty;
-import org.springframework.data.rest.core.annotation.RestResource;
+import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,12 +10,17 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import org.springframework.data.annotation.ReadOnlyProperty;
+import org.springframework.data.rest.core.annotation.RestResource;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * Přiřazení rejstříkových hesel k jednotce archivního popisu.
  */
 @Entity(name = "arr_node_register")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrNodeRegister implements cz.tacr.elza.api.ArrNodeRegister<ArrNode, RegRecord, ArrChange> {
+public class ArrNodeRegister implements Serializable {
 
     public static final String NODE_ID = "nodeId";
     public static final String NODE = "node";
@@ -52,54 +55,44 @@ public class ArrNodeRegister implements cz.tacr.elza.api.ArrNodeRegister<ArrNode
     @ReadOnlyProperty
     private Integer nodeId;
 
-    @Override
     public Integer getNodeRegisterId() {
         return nodeRegisterId;
     }
 
-    @Override
-    public void setNodeRegisterId(Integer nodeRegisterId) {
+    public void setNodeRegisterId(final Integer nodeRegisterId) {
         this.nodeRegisterId = nodeRegisterId;
     }
 
-    @Override
     public ArrNode getNode() {
         return node;
     }
 
-    @Override
-    public void setNode(ArrNode node) {
+    public void setNode(final ArrNode node) {
         this.node = node;
         this.nodeId = node != null ? node.getNodeId() : null;
     }
 
-    @Override
     public RegRecord getRecord() {
         return record;
     }
 
-    @Override
-    public void setRecord(RegRecord record) {
+    public void setRecord(final RegRecord record) {
         this.record = record;
     }
 
-    @Override
     public ArrChange getCreateChange() {
         return createChange;
     }
 
-    @Override
-    public void setCreateChange(ArrChange createChange) {
+    public void setCreateChange(final ArrChange createChange) {
         this.createChange = createChange;
     }
 
-    @Override
     public ArrChange getDeleteChange() {
         return deleteChange;
     }
 
-    @Override
-    public void setDeleteChange(ArrChange deleteChange) {
+    public void setDeleteChange(final ArrChange deleteChange) {
         this.deleteChange = deleteChange;
     }
 

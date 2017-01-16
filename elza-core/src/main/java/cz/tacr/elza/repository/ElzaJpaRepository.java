@@ -1,10 +1,10 @@
 package cz.tacr.elza.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.repository.NoRepositoryBean;
-
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.NoRepositoryBean;
 
 
 /**
@@ -23,7 +23,7 @@ public interface ElzaJpaRepository<T, ID extends Serializable> extends JpaReposi
      * @return nalezená instance objektu
      * @throws IllegalStateException objekt nebyl nalezen
      */
-    default T getOneCheckExist(ID id) throws IllegalStateException {
+    default T getOneCheckExist(final ID id) throws IllegalStateException {
         T result = findOne(id);
 
         if (result == null) {
@@ -43,7 +43,7 @@ public interface ElzaJpaRepository<T, ID extends Serializable> extends JpaReposi
         try {
             // Načtení názvu entity z generic parametru rozhraní repository
             ParameterizedType pt = (ParameterizedType) Class.forName(this.getClass().getGenericInterfaces()[0].getTypeName()).getGenericInterfaces()[0];
-            final String className = ((Class) pt.getActualTypeArguments()[0]).getSimpleName();
+            final String className = ((Class<T>) pt.getActualTypeArguments()[0]).getSimpleName();
             return className;
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException("Nelze automaticky zjistit název datového objektu, je nutné překrýt metodu getClassName!", e);

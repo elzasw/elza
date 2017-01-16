@@ -1,18 +1,25 @@
 package cz.tacr.elza.domain;
 
+import java.io.Serializable;
+
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import javax.persistence.*;
-
 /**
- * Implementace třídy {@link cz.tacr.elza.api.ArrOutput}
+ * Verze pojmenovaného výstupu z archivního výstupu.
  *
  * @author Martin Šlapa
  * @since 01.04.2016
  */
 @Entity(name = "arr_output")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrOutput implements cz.tacr.elza.api.ArrOutput<ArrOutputDefinition, ArrChange> {
+public class ArrOutput implements Serializable {
 
     @Id
     @GeneratedValue
@@ -30,42 +37,58 @@ public class ArrOutput implements cz.tacr.elza.api.ArrOutput<ArrOutputDefinition
     @JoinColumn(name = "lockChangeId")
     private ArrChange lockChange;
 
-    @Override
+    /**
+     * @return  identifikátor entity
+     */
     public Integer getOutputId() {
         return outputId;
     }
 
-    @Override
+    /**
+     * @param outputId  identifikátor entity
+     */
     public void setOutputId(final Integer outputId) {
         this.outputId = outputId;
     }
 
-    @Override
+    /**
+     * @return výstup z archivního souboru
+     */
     public ArrOutputDefinition getOutputDefinition() {
         return outputDefinition;
     }
 
-    @Override
+    /**
+     * @param outputDefinition výstup z archivního souboru
+     */
     public void getOutputDefinition(final ArrOutputDefinition outputDefinition) {
         this.outputDefinition = outputDefinition;
     }
 
-    @Override
+    /**
+     * @return změna vytvoření
+     */
     public ArrChange getCreateChange() {
         return createChange;
     }
 
-    @Override
+    /**
+     * @param createChange změna vytvoření
+     */
     public void setCreateChange(final ArrChange createChange) {
         this.createChange = createChange;
     }
 
-    @Override
+    /**
+     * @return změna uzamčení
+     */
     public ArrChange getLockChange() {
         return lockChange;
     }
 
-    @Override
+    /**
+     * @param lockChange změna uzamčení
+     */
     public void setLockChange(final ArrChange lockChange) {
         this.lockChange = lockChange;
     }

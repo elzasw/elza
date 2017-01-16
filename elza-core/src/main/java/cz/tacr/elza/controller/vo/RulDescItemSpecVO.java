@@ -3,7 +3,7 @@ package cz.tacr.elza.controller.vo;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import cz.tacr.elza.api.RulItemSpec;
+import cz.tacr.elza.domain.RulItemSpec;
 
 
 /**

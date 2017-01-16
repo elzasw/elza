@@ -8,17 +8,15 @@ import java.util.Objects;
  * @author Martin Šlapa
  * @since 15.9.15
  */
-public class ArrItemRecordRef extends ArrItemData implements cz.tacr.elza.api.ArrItemRecordRef<RegRecord> {
+public class ArrItemRecordRef extends ArrItemData {
 
     private RegRecord record;
 
-    @Override
     public RegRecord getRecord() {
         return record;
     }
 
-    @Override
-    public void setRecord(RegRecord record) {
+    public void setRecord(final RegRecord record) {
         this.record = record;
     }
 

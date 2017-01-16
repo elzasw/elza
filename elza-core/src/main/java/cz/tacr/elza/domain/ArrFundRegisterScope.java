@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity(name = "arr_fund_register_scope")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrFundRegisterScope implements cz.tacr.elza.api.ArrFundRegisterScope<ArrFund, RegScope> {
+public class ArrFundRegisterScope {
 
     @Id
     @GeneratedValue

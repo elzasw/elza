@@ -1,11 +1,27 @@
 package cz.tacr.elza.service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
-import cz.tacr.elza.api.UsrPermission;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLinkRequest;
+import cz.tacr.elza.domain.ArrDaoLinkRequest.Type;
 import cz.tacr.elza.domain.ArrDaoRequest;
 import cz.tacr.elza.domain.ArrDaoRequestDao;
 import cz.tacr.elza.domain.ArrDigitalRepository;
@@ -28,21 +44,6 @@ import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdDaoIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventIdNodeIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
-import static cz.tacr.elza.api.ArrDaoLinkRequest.*;
 
 /**
  * Servisní třída pro obsluhu a správu požadavků
@@ -159,8 +160,8 @@ public class RequestService {
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public ArrDaoLinkRequest createDaoLinkRequest(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion,
-                                                  ArrDao dao, ArrChange change, final Type type, ArrNode node) {
+    public ArrDaoLinkRequest createDaoLinkRequest(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                                                  final ArrDao dao, final ArrChange change, final Type type, final ArrNode node) {
         final ArrDaoLinkRequest request = new ArrDaoLinkRequest();
         request.setCreateChange(change);
         request.setDao(dao);
@@ -249,14 +250,23 @@ public class RequestService {
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public void changeDigitizationRequest(@NotNull final ArrDigitizationRequest digitizationRequest,
-                                          @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
-                                          @Nullable final String description) {
-        if (!digitizationRequest.getState().equals(ArrRequest.State.OPEN)) {
-            throw new BusinessException(ArrangementCode.REQUEST_INVALID_STATE).set("state", digitizationRequest.getState());
+    public void changeRequest(@NotNull final ArrRequest request,
+                              @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                              @Nullable final String description) {
+        if (!request.getState().equals(ArrRequest.State.OPEN)) {
+            throw new BusinessException(ArrangementCode.REQUEST_INVALID_STATE).set("state", request.getState());
         }
-        digitizationRequest.setDescription(description);
-        sendNotification(fundVersion, digitizationRequest, EventType.REQUEST_CHANGE, null);
+        switch (request.getDiscriminator()) {
+            case DAO:
+                ((ArrDaoRequest)request).setDescription(description);
+                break;
+            case DIGITIZATION:
+                ((ArrDigitizationRequest)request).setDescription(description);
+                break;
+            default:
+                break;
+        }
+        sendNotification(fundVersion, request, EventType.REQUEST_CHANGE, null);
     }
 
     public ArrDigitizationRequest getDigitizationRequest(final Integer id) {
@@ -307,8 +317,13 @@ public class RequestService {
                     requestRepository.delete(request);
                     break;
                 }
+                case DAO: {
+                    daoRequestDaoRepository.deleteByDaoRequest((ArrDaoRequest) request);
+                    requestRepository.delete(request);
+                    break;
+                }
                 default:
-                    throw new IllegalStateException(request.getDiscriminator() != null ? request.getDiscriminator().toString() : "null");
+                    throw new IllegalStateException("Neimplementovaný typ požadavku: " + request.getDiscriminator());
             }
             sendNotification(openVersion, request, EventType.REQUEST_DELETE, null);
         }

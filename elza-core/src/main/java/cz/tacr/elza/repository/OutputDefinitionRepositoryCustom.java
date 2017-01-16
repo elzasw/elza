@@ -1,12 +1,12 @@
 package cz.tacr.elza.repository;
 
+import java.util.List;
+import java.util.Set;
+
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
-
-import java.util.List;
-import java.util.Set;
+import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
 
 
 /**

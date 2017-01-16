@@ -1,12 +1,23 @@
 package cz.tacr.elza.bulkaction.generator;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionInterruptedException;
 import cz.tacr.elza.bulkaction.generator.multiple.Action;
 import cz.tacr.elza.bulkaction.generator.multiple.ActionFactory;
 import cz.tacr.elza.bulkaction.generator.multiple.ActionType;
 import cz.tacr.elza.bulkaction.generator.multiple.TypeLevel;
-import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
@@ -17,20 +28,6 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.service.ItemService;
 import cz.tacr.elza.utils.Yaml;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 /**
  * Vícenásobná hromadná akce prochází strom otevřené verze archivní pomůcky a doplňuje u položek požadované atributy.
@@ -117,32 +114,32 @@ public class MultipleBulkAction extends BulkAction {
         ArrNode rootNode = fundVersion.getRootNode();
         // prepare parent nodes
         for (ArrNode startingNode : startingNodes) {
-        	// read parents
-        	List<ArrLevel> levels = levelRepository.findAllParentsByNodeAndVersion(startingNode, fundVersion);
-        	Collections.reverse(levels);
-        	
-        	LevelWithItems parentLevel = null;        	
-        	for(ArrLevel level: levels) {
-        		LevelWithItems levelWithItems = prepareLevelWithItems(level, parentLevel); 
-        		
-        		nodesWithItems.put(level.getNode(), levelWithItems);
-        		parentLevel = levelWithItems;
-        	}
-        	// add starting node
-        	ArrLevel startingLevel = levelRepository.findNodeInRootTreeByNodeId(startingNode, rootNode, null);
-        	LevelWithItems startingLevelWithItems = prepareLevelWithItems(startingLevel, parentLevel);
-        	nodesWithItems.put(startingLevel.getNode(), startingLevelWithItems);
+            // read parents
+            List<ArrLevel> levels = levelRepository.findAllParentsByNodeAndVersion(startingNode, fundVersion);
+            Collections.reverse(levels);
 
-        	nodeStartingLevels.put(startingNode, startingLevelWithItems);            
+            LevelWithItems parentLevel = null;
+            for(ArrLevel level: levels) {
+                LevelWithItems levelWithItems = prepareLevelWithItems(level, parentLevel);
+
+                nodesWithItems.put(level.getNode(), levelWithItems);
+                parentLevel = levelWithItems;
+            }
+            // add starting node
+            ArrLevel startingLevel = levelRepository.findNodeInRootTreeByNodeId(startingNode, rootNode, null);
+            LevelWithItems startingLevelWithItems = prepareLevelWithItems(startingLevel, parentLevel);
+            nodesWithItems.put(startingLevel.getNode(), startingLevelWithItems);
+
+            nodeStartingLevels.put(startingNode, startingLevelWithItems);
         }
 
         // apply on all parentNodes
         for (Entry<ArrNode, LevelWithItems> entry : nodesWithItems.entrySet()) {
-        	ArrNode node = entry.getKey();
-        	// check if it is pure parent (not starting node)
-        	if(nodeStartingLevels.containsKey(node))
-        		continue;
-        	
+            ArrNode node = entry.getKey();
+            // check if it is pure parent (not starting node)
+            if(nodeStartingLevels.containsKey(node))
+                continue;
+
             LevelWithItems levelWithItems = entry.getValue();
 
             apply(node, levelWithItems.descItems, TypeLevel.PARENT, levelWithItems.getParent());
@@ -150,9 +147,9 @@ public class MultipleBulkAction extends BulkAction {
 
         // apply on all connected nodes
         for (ArrNode node : startingNodes) {
-        	
-        	LevelWithItems levelWithItems = nodeStartingLevels.get(node);
-        	Assert.notNull(levelWithItems);
+
+            LevelWithItems levelWithItems = nodeStartingLevels.get(node);
+            Assert.notNull(levelWithItems);
 
             generate(levelWithItems);
         }
@@ -160,7 +157,7 @@ public class MultipleBulkAction extends BulkAction {
         // Collect results
         Result result = new Result();
         for (Action action : actions) {
-        	result.getResults().add(action.getResult());
+            result.getResults().add(action.getResult());
         }
 
         bulkActionRun.setResult(result);
@@ -172,22 +169,22 @@ public class MultipleBulkAction extends BulkAction {
      * @param parentLevels Parent level to be set
      * @return Return loaded level
      */
-    private LevelWithItems prepareLevelWithItems(ArrLevel level, LevelWithItems parentLevels) {
-    	List<ArrDescItem> items = loadDescItems(level);
-    	return new LevelWithItems(level, parentLevels, items);
-	}
+    private LevelWithItems prepareLevelWithItems(final ArrLevel level, final LevelWithItems parentLevels) {
+        List<ArrDescItem> items = loadDescItems(level);
+        return new LevelWithItems(level, parentLevels, items);
+    }
 
 
-	/**
+    /**
      * Rekurzivní metody pro procházení JP ve stromu.
      *
      * @param node
      * @param level procházený uzel
      * @param parentNodeDescItems data předků
      */
-    private void generate(LevelWithItems levelWithItems) {
+    private void generate(final LevelWithItems levelWithItems) {
         if (bulkActionRun.isInterrupted()) {
-            bulkActionRun.setState(cz.tacr.elza.api.ArrBulkActionRun.State.INTERRUPTED);
+            bulkActionRun.setState(ArrBulkActionRun.State.INTERRUPTED);
             throw new BulkActionInterruptedException("Hromadná akce " + toString() + " byla přerušena.");
         }
 
@@ -195,14 +192,14 @@ public class MultipleBulkAction extends BulkAction {
         LevelWithItems parentLevel = levelWithItems.getParent();
         ArrLevel level = levelWithItems.getLevel();
         ArrNode node = level.getNode();
-        
+
         apply(node, levelWithItems.descItems, TypeLevel.CHILD, parentLevel);
 
         // apply on child nodes
         List<ArrLevel> childLevels = getChildren(level);
 
         for (ArrLevel childLevel : childLevels) {
-        	LevelWithItems childLevelWithItems = prepareLevelWithItems(childLevel, levelWithItems);
+            LevelWithItems childLevelWithItems = prepareLevelWithItems(childLevel, levelWithItems);
 
             generate(childLevelWithItems);
         }

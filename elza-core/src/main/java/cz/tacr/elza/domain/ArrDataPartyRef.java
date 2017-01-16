@@ -16,6 +16,8 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 
 
 /**
+ * Hodnota atributu archivního popisu typu ParParty.
+ *
  * @author Martin Šlapa
  * @since 1.9.2015
  */
@@ -23,7 +25,7 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 @Entity(name = "arr_data_party_ref")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrDataPartyRef extends ArrData implements cz.tacr.elza.api.ArrDataPartyRef<ParParty> {
+public class ArrDataPartyRef extends ArrData {
 
     public static final String PARTY = "party";
 
@@ -35,22 +37,18 @@ public class ArrDataPartyRef extends ArrData implements cz.tacr.elza.api.ArrData
     @Column(nullable = true)
     private Integer position;
 
-    @Override
     public Integer getPosition() {
         return position;
     }
 
-    @Override
     public void setPosition(final Integer position) {
         this.position = position;
     }
 
-    @Override
     public ParParty getParty() {
         return party;
     }
 
-    @Override
     public void setParty(final ParParty party) {
         this.party = party;
     }

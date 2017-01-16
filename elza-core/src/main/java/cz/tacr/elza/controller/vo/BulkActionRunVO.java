@@ -1,10 +1,9 @@
 package cz.tacr.elza.controller.vo;
 
-import cz.tacr.elza.api.ArrBulkActionRun.State;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-
 import java.util.Date;
 import java.util.List;
+
+import cz.tacr.elza.domain.ArrBulkActionRun.State;
 
 /**
  * Stav hromadných akcí
@@ -34,7 +33,7 @@ public class BulkActionRunVO {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(final Integer id) {
         this.id = id;
     }
 
@@ -42,7 +41,7 @@ public class BulkActionRunVO {
         return code;
     }
 
-    public void setCode(String code) {
+    public void setCode(final String code) {
         this.code = code;
     }
 
@@ -50,7 +49,7 @@ public class BulkActionRunVO {
         return state;
     }
 
-    public void setState(State state) {
+    public void setState(final State state) {
         this.state = state;
     }
 
@@ -58,7 +57,7 @@ public class BulkActionRunVO {
         return nodes;
     }
 
-    public void setNodes(List<TreeNodeClient> nodes) {
+    public void setNodes(final List<TreeNodeClient> nodes) {
         this.nodes = nodes;
     }
 
@@ -66,7 +65,7 @@ public class BulkActionRunVO {
         return datePlanned;
     }
 
-    public void setDatePlanned(Date datePlanned) {
+    public void setDatePlanned(final Date datePlanned) {
         this.datePlanned = datePlanned;
     }
 
@@ -74,7 +73,7 @@ public class BulkActionRunVO {
         return dateStarted;
     }
 
-    public void setDateStarted(Date dateStarted) {
+    public void setDateStarted(final Date dateStarted) {
         this.dateStarted = dateStarted;
     }
 
@@ -82,7 +81,7 @@ public class BulkActionRunVO {
         return dateFinished;
     }
 
-    public void setDateFinished(Date dateFinished) {
+    public void setDateFinished(final Date dateFinished) {
         this.dateFinished = dateFinished;
     }
 
@@ -90,7 +89,7 @@ public class BulkActionRunVO {
         return error;
     }
 
-    public void setError(String error) {
+    public void setError(final String error) {
         this.error = error;
     }
 }

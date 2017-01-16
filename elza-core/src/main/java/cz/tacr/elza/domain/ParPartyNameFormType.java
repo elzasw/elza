@@ -1,11 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -14,6 +8,13 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 
 /**
  * Typ formy jména.
@@ -21,7 +22,7 @@ import javax.persistence.ManyToOne;
 @Entity(name = "par_party_name_form_type")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ParPartyNameFormType implements cz.tacr.elza.api.ParPartyNameFormType {
+public class ParPartyNameFormType {
 
     @Id
     @GeneratedValue
@@ -37,32 +38,26 @@ public class ParPartyNameFormType implements cz.tacr.elza.api.ParPartyNameFormTy
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
-    @Override
     public Integer getNameFormTypeId() {
         return nameFormTypeId;
     }
 
-    @Override
     public void setNameFormTypeId(final Integer nameFormTypeId) {
         this.nameFormTypeId = nameFormTypeId;
     }
 
-    @Override
     public String getCode() {
         return this.code;
     }
 
-    @Override
     public void setCode(final String code) {
         this.code = code;
     }
 
-    @Override
     public String getName() {
         return this.name;
     }
 
-    @Override
     public void setName(final String name) {
         this.name = name;
     }
@@ -77,14 +72,14 @@ public class ParPartyNameFormType implements cz.tacr.elza.api.ParPartyNameFormTy
 
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof cz.tacr.elza.api.ParPartyNameFormType)) {
+        if (!(obj instanceof ParPartyNameFormType)) {
             return false;
         }
         if (this == obj) {
             return true;
         }
 
-        cz.tacr.elza.api.ParPartyNameFormType other = (cz.tacr.elza.api.ParPartyNameFormType) obj;
+        ParPartyNameFormType other = (ParPartyNameFormType) obj;
 
         return new EqualsBuilder().append(nameFormTypeId, other.getNameFormTypeId()).isEquals();
     }
@@ -98,5 +93,4 @@ public class ParPartyNameFormType implements cz.tacr.elza.api.ParPartyNameFormTy
     public String toString() {
         return "ParPartyNameFormType pk=" + nameFormTypeId;
     }
-
 }

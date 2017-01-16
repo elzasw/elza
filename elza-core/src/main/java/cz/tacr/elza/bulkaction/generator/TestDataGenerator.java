@@ -15,7 +15,6 @@ import org.springframework.util.Assert;
 
 import com.google.common.primitives.Ints;
 
-import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.bulkaction.generator.result.TestDataGeneratorResult;
@@ -25,6 +24,7 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.RuleService;

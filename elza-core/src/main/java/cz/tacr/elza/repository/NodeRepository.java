@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -49,5 +50,7 @@ public interface NodeRepository extends ElzaJpaRepository<ArrNode, Integer>, Nod
 
 
     ArrNode findOneByUuid(String uuid);
+
+    List<ArrNode> findByUuid(Collection<String> uuids);
 
 }

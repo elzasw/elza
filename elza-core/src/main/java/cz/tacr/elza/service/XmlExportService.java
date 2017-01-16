@@ -33,7 +33,6 @@ import com.vividsolutions.jts.io.WKTWriter;
 
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
-import cz.tacr.elza.api.ArrPacket.State;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -338,7 +337,7 @@ public class XmlExportService {
         if (packetType != null) {
             packet.setPacketTypeCode(packetType.getCode());
         }
-        State arrPacketState = arrPacket.getState();
+        cz.tacr.elza.domain.ArrPacket.State arrPacketState = arrPacket.getState();
         packet.setState(PacketState.valueOf(arrPacketState.name()));
 
         packet.setStorageNumber(arrPacket.getStorageNumber());

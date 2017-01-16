@@ -6,7 +6,6 @@ import org.springframework.messaging.SubscribableChannel;
 import org.springframework.messaging.simp.broker.AbstractBrokerMessageHandler;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
-import org.springframework.messaging.support.GenericMessage;
 import org.springframework.util.StringUtils;
 
 /**
@@ -15,39 +14,39 @@ import org.springframework.util.StringUtils;
  */
 public class StompExtensionMessageHandler extends AbstractBrokerMessageHandler {
 
-	private static final byte[] EMPTY_PAYLOAD = new byte[0];
+    private static final byte[] EMPTY_PAYLOAD = new byte[0];
 
-	public StompExtensionMessageHandler(SubscribableChannel inboundChannel, MessageChannel outboundChannel,
-										SubscribableChannel brokerChannel) {
-		super(inboundChannel, outboundChannel, brokerChannel);
-	}
+    public StompExtensionMessageHandler(final SubscribableChannel inboundChannel, final MessageChannel outboundChannel,
+                                        final SubscribableChannel brokerChannel) {
+        super(inboundChannel, outboundChannel, brokerChannel);
+    }
 
-	@Override
-	protected void handleMessageInternal(Message<?> message) {
+    @Override
+    protected void handleMessageInternal(final Message<?> message) {
 //		System.out.println("$$$$$$$$$ handleMessageInternal");
-		StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
-		if (accessor.getCommand() != null) {
-			handleStompMessage(accessor);
-		}
-	}
+        StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
+        if (accessor.getCommand() != null) {
+            handleStompMessage(accessor);
+        }
+    }
 
-	private void handleStompMessage(StompHeaderAccessor clientAccessor) {
-		if (StompCommand.SEND.equals(clientAccessor.getCommand())) {
-			if (StringUtils.hasLength(clientAccessor.getReceipt())) {
-				sendReceipt(clientAccessor);
-			}
-		}
-	}
+    private void handleStompMessage(final StompHeaderAccessor clientAccessor) {
+        if (StompCommand.SEND.equals(clientAccessor.getCommand())) {
+            if (StringUtils.hasLength(clientAccessor.getReceipt())) {
+                sendReceipt(clientAccessor);
+            }
+        }
+    }
 
-	private void sendReceipt(StompHeaderAccessor clientAccessor) {
-		StompHeaderAccessor accessor = StompHeaderAccessor.create(StompCommand.RECEIPT);
-		accessor.setSessionId(clientAccessor.getSessionId());
-		accessor.setUser(clientAccessor.getUser());
-		accessor.setReceiptId(clientAccessor.getReceipt());
+    private void sendReceipt(final StompHeaderAccessor clientAccessor) {
+        StompHeaderAccessor accessor = StompHeaderAccessor.create(StompCommand.RECEIPT);
+        accessor.setSessionId(clientAccessor.getSessionId());
+        accessor.setUser(clientAccessor.getUser());
+        accessor.setReceiptId(clientAccessor.getReceipt());
 
-		// Send message
+        // Send message
 //		getClientOutboundChannel().send(new GenericMessage<>(EMPTY_PAYLOAD, accessor.getMessageHeaders()));
 //		getClientOutboundChannel().send(new GenericMessage<>("ahoj".getBytes(), accessor.getMessageHeaders()));
 //		System.out.println("----------------------------------");
-	}
+    }
 }

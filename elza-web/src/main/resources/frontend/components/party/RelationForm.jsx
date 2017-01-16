@@ -81,9 +81,9 @@ class RelationForm extends AbstractReactComponent {
 
         const submit = submitReduxForm.bind(this, RelationForm.validate);
         return <Form onSubmit={handleSubmit(submit)}>
-            <Modal.Body className="relation-form">
+            <Modal.Body className="dialog-3-col relation-form">
                 <div className="flex">
-                    <div className="flex-2">
+                    <div className="flex-2 col">
                         <div className="block entity relations">
                             <div className="relation-entities">
                                 <label className="type">{i18n('party.relation.entityInRelation')}</label><Button bsStyle="action" onClick={() => relationEntities.addField({record:null, roleType: {id: null}})}><Icon glyph="fa-plus" /></Button>
@@ -103,7 +103,7 @@ class RelationForm extends AbstractReactComponent {
                             </div>
                         </div>
                     </div>
-                    {relationType.useUnitdate !== USE_UNITDATE_ENUM.NONE && <div className="datation-group flex-1">
+                    {relationType.useUnitdate !== USE_UNITDATE_ENUM.NONE && <div className="datation-group flex-1 col">
                         {(relationType.useUnitdate == USE_UNITDATE_ENUM.ONE) && <div>
                             <DatationField fields={from} label={i18n('party.relation.date')} labelTextual={i18n('party.relation.date.textDate')} labelNote={i18n('party.relation.date.note')} />
                         </div>}
@@ -114,7 +114,7 @@ class RelationForm extends AbstractReactComponent {
                             <DatationField fields={to} label={i18n('party.relation.to')} labelTextual={i18n('party.relation.to.textDate')} labelNote={i18n('party.relation.to.note')} />
                         </div>}
                     </div>}
-                    <div className="flex-1 footer">
+                    <div className="flex-1 footer col">
                         <FormInput type="text" label={i18n('party.relation.note')} {...note} />
                         <FormInput componentClass="textarea" label={i18n('party.relation.sources')} {...source} />
                     </div>

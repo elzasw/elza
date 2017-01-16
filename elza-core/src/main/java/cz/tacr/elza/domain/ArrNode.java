@@ -1,13 +1,25 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import cz.tacr.elza.domain.enumeration.StringLength;
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import javax.persistence.*;
-import java.time.LocalDateTime;
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import cz.tacr.elza.domain.enumeration.StringLength;
+import cz.tacr.elza.domain.interfaces.Versionable;
 
 
 /**
@@ -18,7 +30,7 @@ import java.util.List;
  */
 @Entity(name = "arr_node")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrNode extends AbstractVersionableEntity implements cz.tacr.elza.api.ArrNode<ArrFund>, Comparable<ArrNode> {
+public class ArrNode extends AbstractVersionableEntity implements Versionable, Serializable, Comparable<ArrNode> {
 
     public static final String FUND = "fund";
     public static final String NODE_ID = "nodeId";
@@ -43,42 +55,34 @@ public class ArrNode extends AbstractVersionableEntity implements cz.tacr.elza.a
     @OneToMany(mappedBy = "node", fetch = FetchType.LAZY)
     private List<ArrLevel> levels;
 
-    @Override
     public Integer getNodeId() {
         return nodeId;
     }
 
-    @Override
-    public void setNodeId(Integer nodeId) {
+    public void setNodeId(final Integer nodeId) {
         this.nodeId = nodeId;
     }
 
-    @Override
     public LocalDateTime getLastUpdate() {
         return lastUpdate;
     }
 
-    @Override
-    public void setLastUpdate(LocalDateTime lastUpdate) {
+    public void setLastUpdate(final LocalDateTime lastUpdate) {
         this.lastUpdate = lastUpdate;
     }
 
-    @Override
     public String getUuid() {
         return uuid;
     }
 
-    @Override
-    public void setUuid(String uuid) {
+    public void setUuid(final String uuid) {
         this.uuid = uuid;
     }
 
-    @Override
     public void setFund(final ArrFund fund) {
         this.fund = fund;
     }
 
-    @Override
     public ArrFund getFund() {
         return fund;
     }

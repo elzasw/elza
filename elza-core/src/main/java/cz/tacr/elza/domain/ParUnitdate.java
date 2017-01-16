@@ -21,6 +21,8 @@ import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import cz.tacr.elza.api.IUnitdate;
+
 
 /**
  * Hodnoty datace.
@@ -31,7 +33,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParUnitdate implements cz.tacr.elza.api.ParUnitdate<ArrCalendarType> {
+public class ParUnitdate implements IUnitdate {
 
     /* Konstanty pro vazby a fieldy. */
     public static final String UNITDATE_ID = "unitdateId";
@@ -84,12 +86,10 @@ public class ParUnitdate implements cz.tacr.elza.api.ParUnitdate<ArrCalendarType
     @org.hibernate.annotations.Type(type = "org.hibernate.type.TextType")
     private String note;
 
-    @Override
     public Integer getUnitdateId() {
         return unitdateId;
     }
 
-    @Override
     public void setUnitdateId(final Integer unitdateId) {
         this.unitdateId = unitdateId;
     }
@@ -154,12 +154,16 @@ public class ParUnitdate implements cz.tacr.elza.api.ParUnitdate<ArrCalendarType
         this.format = format;
     }
 
-    @Override
+    /**
+     * @return Text pokud není validní datace.
+     */
     public String getTextDate() {
         return textDate;
     }
 
-    @Override
+    /**
+     * @param textDate Text pokud není validní datace.
+     */
     public void setTextDate(final String textDate) {
         this.textDate = textDate;
     }
@@ -174,26 +178,30 @@ public class ParUnitdate implements cz.tacr.elza.api.ParUnitdate<ArrCalendarType
         return "ParUnitdate pk=" + unitdateId;
     }
 
-    @Override
+    /** @return poznámka */
     public String getNote() {
         return note;
     }
 
-    @Override
+    /**
+     * Poznámka
+     *
+     * @param note poznámka
+     */
     public void setNote(final String note) {
         this.note = note;
     }
 
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof cz.tacr.elza.api.ParUnitdate)) {
+        if (!(obj instanceof ParUnitdate)) {
             return false;
         }
         if (this == obj) {
             return true;
         }
 
-        cz.tacr.elza.api.ParUnitdate<ArrCalendarType> other = (cz.tacr.elza.api.ParUnitdate<ArrCalendarType>) obj;
+        ParUnitdate other = (ParUnitdate) obj;
 
         return new EqualsBuilder().append(unitdateId, other.getUnitdateId()).isEquals();
     }

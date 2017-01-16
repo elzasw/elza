@@ -1,7 +1,38 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
-import cz.tacr.elza.api.UsrPermission;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
@@ -40,13 +71,13 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItemJsonTable;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ArrRequest;
@@ -58,9 +89,11 @@ import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.DirectionLevel;
+import cz.tacr.elza.exception.ConcurrentUpdateException;
 import cz.tacr.elza.exception.FilterExpiredException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
@@ -105,37 +138,6 @@ import cz.tacr.elza.service.exception.DeleteFailedException;
 import cz.tacr.elza.service.output.OutputGeneratorService;
 import cz.tacr.elza.service.output.StatusGenerate;
 import cz.tacr.elza.service.vo.ChangesResult;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
-import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -333,9 +335,9 @@ public class ArrangementController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     List<ArrDaoPackageVO> findDaoPackages(
             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
-            @RequestParam(value = "search", required = false) String search,
-            @RequestParam(value = "unassigned", required = false, defaultValue = "false") Boolean unassigned,
-            @RequestParam(value = "maxResults", required = false, defaultValue = "200") Integer maxResults) {
+            @RequestParam(value = "search", required = false) final String search,
+            @RequestParam(value = "unassigned", required = false, defaultValue = "false") final Boolean unassigned,
+            @RequestParam(value = "maxResults", required = false, defaultValue = "200") final Integer maxResults) {
         Assert.notNull(fundVersionId);
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
 
@@ -359,10 +361,10 @@ public class ArrangementController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     List<ArrDaoVO> findDaos(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                            @RequestParam(value = "nodeId", required = false) Integer nodeId,
-                            @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail,
-                            @RequestParam(value = "index", required = false, defaultValue = "0") Integer index,
-                            @RequestParam(value = "maxResults", required = false, defaultValue = "99999") Integer maxResults) {
+                            @RequestParam(value = "nodeId", required = false) final Integer nodeId,
+                            @RequestParam(value = "detail", required = false, defaultValue = "false") final Boolean detail,
+                            @RequestParam(value = "index", required = false, defaultValue = "0") final Integer index,
+                            @RequestParam(value = "maxResults", required = false, defaultValue = "99999") final Integer maxResults) {
         Assert.notNull(fundVersionId);
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
 
@@ -391,11 +393,11 @@ public class ArrangementController {
                 consumes = MediaType.APPLICATION_JSON_VALUE,
                 produces = MediaType.APPLICATION_JSON_VALUE)
         List<ArrDaoVO> findDaosByPackage(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                         @PathVariable(value = "daoPackageId") Integer daoPackageId,
-                                         @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail,
-                                         @RequestParam(value = "unassigned", required = false, defaultValue = "false") Boolean unassigned,
-                                         @RequestParam(value = "index", required = false, defaultValue = "0") Integer index,
-                                         @RequestParam(value = "maxResults", required = false, defaultValue = "99999") Integer maxResults) {
+                                         @PathVariable(value = "daoPackageId") final Integer daoPackageId,
+                                         @RequestParam(value = "detail", required = false, defaultValue = "false") final Boolean detail,
+                                         @RequestParam(value = "unassigned", required = false, defaultValue = "false") final Boolean unassigned,
+                                         @RequestParam(value = "index", required = false, defaultValue = "0") final Integer index,
+                                         @RequestParam(value = "maxResults", required = false, defaultValue = "99999") final Integer maxResults) {
             Assert.notNull(fundVersionId);
             Assert.notNull(daoPackageId);
 
@@ -421,8 +423,8 @@ public class ArrangementController {
                 consumes = MediaType.APPLICATION_JSON_VALUE,
                 produces = MediaType.APPLICATION_JSON_VALUE)
     public void createDaoLink(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                              @PathVariable(value = "daoId") Integer daoId,
-                              @PathVariable(value = "nodeId") Integer nodeId) {
+                              @PathVariable(value = "daoId") final Integer daoId,
+                              @PathVariable(value = "nodeId") final Integer nodeId) {
         Assert.notNull(fundVersionId);
         Assert.notNull(daoId);
         Assert.notNull(nodeId);
@@ -444,7 +446,7 @@ public class ArrangementController {
                 consumes = MediaType.APPLICATION_JSON_VALUE,
                 produces = MediaType.APPLICATION_JSON_VALUE)
     public void deleteDaoLink(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                              @PathVariable(value = "daoLinkId") Integer daoLinkId) {
+                              @PathVariable(value = "daoLinkId") final Integer daoLinkId) {
         Assert.notNull(fundVersionId);
         Assert.notNull(daoLinkId);
 
@@ -727,7 +729,7 @@ public class ArrangementController {
         Assert.notNull(descItemTypeId);
 
         InputStream is = importFile.getInputStream();
-        ArrDescItem<ArrItemJsonTable> descItemCreated = arrIOService.csvDescImport(fundVersionId, nodeId, nodeVersion, descItemTypeId, is);
+        ArrDescItem descItemCreated = arrIOService.csvDescImport(fundVersionId, nodeId, nodeVersion, descItemTypeId, is);
         is.close();
 
         DescItemResult descItemResult = new DescItemResult();
@@ -760,7 +762,7 @@ public class ArrangementController {
         Assert.notNull(descItemTypeId);
 
         InputStream is = importFile.getInputStream();
-        ArrOutputItem<ArrItemJsonTable> outputItemCreated = arrIOService.csvOutputImport(fundVersionId, outputDefinitionId, outputDefinitionVersion, descItemTypeId, is);
+        ArrOutputItem outputItemCreated = arrIOService.csvOutputImport(fundVersionId, outputDefinitionId, outputDefinitionVersion, descItemTypeId, is);
         is.close();
 
         OutputItemResult outputItemResult = new OutputItemResult();
@@ -2123,8 +2125,8 @@ public class ArrangementController {
     @RequestMapping(value = "/requests/{fundVersionId}/digitization/add", method = RequestMethod.POST)
     @Transactional
     public void digitizationRequestAdd(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                       @RequestParam(name = "send", defaultValue = "false") Boolean send,
-                                       @RequestBody DigitizationRequestParam param) {
+                                       @RequestParam(name = "send", defaultValue = "false") final Boolean send,
+                                       @RequestBody final DigitizationRequestParam param) {
         Assert.notNull(param);
         Assert.notEmpty(param.nodeIds);
 
@@ -2159,8 +2161,8 @@ public class ArrangementController {
     @RequestMapping(value = "/requests/{fundVersionId}/dao/add", method = RequestMethod.POST)
     @Transactional
     public void daoRequestAdd(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                              @RequestParam(name = "send", defaultValue = "false") Boolean send,
-                              @RequestBody DaoRequestParam param) {
+                              @RequestParam(name = "send", defaultValue = "false") final Boolean send,
+                              @RequestBody final DaoRequestParam param) {
         Assert.notNull(param);
         Assert.notNull(param.type);
         Assert.notEmpty(param.daoIds);
@@ -2209,15 +2211,15 @@ public class ArrangementController {
      * @param fundVersionId identfikátor verze AS
      * @param param         parametry požadavku
      */
-    @RequestMapping(value = "/requests/{fundVersionId}/{digitizationId}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/requests/{fundVersionId}/{requestId}", method = RequestMethod.PUT)
     @Transactional
-    public void digitizationRequestChange(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                          @PathVariable(value = "digitizationId") final Integer digitizationId,
-                                          @RequestBody DigitizationRequestParam param) {
+    public void requestChange(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                              @PathVariable(value = "requestId") final Integer digitizationId,
+                              @RequestBody DigitizationRequestParam param) {
         Assert.notNull(param);
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        ArrDigitizationRequest digitizationRequest = requestService.getDigitizationRequest(digitizationId);
-        requestService.changeDigitizationRequest(digitizationRequest, fundVersion, param.getDescription());
+        ArrRequest request = requestService.getRequest(digitizationId);
+        requestService.changeRequest(request, fundVersion, param.getDescription());
     }
 
     /**
@@ -2229,7 +2231,7 @@ public class ArrangementController {
     @RequestMapping(value = "/requests/{fundVersionId}/digitization/remove", method = RequestMethod.POST)
     @Transactional
     public void digitizationRequestRemove(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                          @RequestBody DigitizationRequestParam param) {
+                                          @RequestBody final DigitizationRequestParam param) {
         Assert.notNull(param);
         Assert.notNull(param.id);
         Assert.notEmpty(param.nodeIds);
@@ -2256,10 +2258,10 @@ public class ArrangementController {
      */
     @RequestMapping(value = "/requests/{fundVersionId}", method = RequestMethod.GET)
     public List<ArrRequestVO> findRequests(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                           @RequestParam(value = "state", required = false) ArrRequest.State state,
-                                           @RequestParam(value = "type", required = false) ArrRequest.ClassType type,
-                                           @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail,
-                                           @RequestParam(value = "description", required = false) String description,
+                                           @RequestParam(value = "state", required = false) final ArrRequest.State state,
+                                           @RequestParam(value = "type", required = false) final ArrRequest.ClassType type,
+                                           @RequestParam(value = "detail", required = false, defaultValue = "false") final Boolean detail,
+                                           @RequestParam(value = "description", required = false) final String description,
                                            @RequestParam(value = "fromDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final LocalDateTime fromDate,
                                            @RequestParam(value = "toDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final LocalDateTime toDate) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
@@ -2287,7 +2289,7 @@ public class ArrangementController {
     public ArrRequestVO getRequest(
             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
             @PathVariable(value = "requestId") final Integer requestId,
-            @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail) {
+            @RequestParam(value = "detail", required = false, defaultValue = "false") final Boolean detail) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrRequest request = requestService.getRequest(requestId);
         return factoryVo.createRequest(request, detail, fundVersion);

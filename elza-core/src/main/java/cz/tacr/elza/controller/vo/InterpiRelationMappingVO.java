@@ -8,7 +8,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.api.InterpiClass;
+import cz.tacr.elza.api.enums.InterpiClass;
 
 /**
  * Mapování entity ve vztahu.

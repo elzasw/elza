@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -13,11 +15,14 @@ import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 
 
 /**
+ * Hodnota atributu archivního popisu typu strojově zpracovatelná datace.
+ *
  * @author Martin Šlapa
  * @since 1.9.2015
  */
@@ -25,7 +30,7 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 @Entity(name = "arr_data_unitdate")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrDataUnitdate extends ArrData implements cz.tacr.elza.api.ArrDataUnitdate<ArrCalendarType> {
+public class ArrDataUnitdate extends ArrData implements Serializable, IUnitdate {
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrCalendarType.class)
@@ -116,22 +121,30 @@ public class ArrDataUnitdate extends ArrData implements cz.tacr.elza.api.ArrData
         this.format = format;
     }
 
-    @Override
+    /**
+     * @return počet sekund v normalizačním kalendáři - od
+     */
     public Long getNormalizedFrom() {
         return normalizedFrom;
     }
 
-    @Override
+    /**
+     * @param normalizedFrom počet sekund v normalizačním kalendáři - od
+     */
     public void setNormalizedFrom(final Long normalizedFrom) {
         this.normalizedFrom = normalizedFrom;
     }
 
-    @Override
+    /**
+     * @return počet sekund v normalizačním kalendáři - do
+     */
     public Long getNormalizedTo() {
         return normalizedTo;
     }
 
-    @Override
+    /**
+     * @param normalizedFrom počet sekund v normalizačním kalendáři - do
+     */
     public void setNormalizedTo(final Long normalizedTo) {
         this.normalizedTo = normalizedTo;
     }

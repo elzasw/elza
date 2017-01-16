@@ -5,7 +5,7 @@ import {Modal, Button, Radio, FormGroup, ControlLabel, Form} from 'react-bootstr
 import {WebApi} from 'actions/index.jsx';
 import {addNode} from 'actions/arr/node.jsx';
 import {AbstractReactComponent, i18n, FormInput, Loading} from 'components/index.jsx';
-import {isFundRootId} from 'components/arr/ArrUtils.jsx'
+import {isFundRootId, getOneSettings} from 'components/arr/ArrUtils.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import './AddNodeForm.less';
 import {getSetFromIdsList} from "stores/app/utils.jsx";
@@ -166,7 +166,7 @@ class AddNodeForm extends AbstractReactComponent {
     }
 
     render() {
-        const {allowedDirections, onClose, node, parentNode, versionId, initDirection} = this.props;
+        const {allowedDirections, onClose, node, parentNode, versionId, initDirection, arrRegion, userDetail} = this.props;
         const {scenarios, loading} = this.state;
         const notRoot = !isFundRootId(parentNode.id);
 
@@ -178,7 +178,21 @@ class AddNodeForm extends AbstractReactComponent {
                     scnRadios.push(<Radio key={'scns-' + i} defaultChecked={i === 0} autoFocus={i === 0} name='scns' onChange={this.handleScenarioChange} value={scenarios[i].name}>{scenarios[i].name}</Radio>);
                 }
             }
-            scnRadios.push(<Radio key={'scns-' + i} defaultChecked={i === 0} autoFocus={i === 0} name='scns' onChange={this.handleScenarioChange} value={''}>{i18n('subNodeForm.add.noScenario')}</Radio>);
+
+            let strictMode = false;
+            const fund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
+            if (fund) {
+                strictMode = fund.activeVersion.strictMode;
+
+                let userStrictMode = getOneSettings(userDetail.settings, 'FUND_STRICT_MODE', 'FUND', fund.id);
+                if (userStrictMode && userStrictMode.value !== null) {
+                    strictMode = userStrictMode.value === 'true';
+                }
+            }
+
+            if (!strictMode || i === 0) {
+                scnRadios.push(<Radio key={'scns-' + i} defaultChecked={i === 0} autoFocus={i === 0} name='scns' onChange={this.handleScenarioChange} value={''}>{i18n('subNodeForm.add.noScenario')}</Radio>);
+            }
         } else {
             scnRadios.push(<div>{i18n('arr.fund.addNode.noDirection')}</div>);
         }
@@ -219,10 +233,12 @@ class AddNodeForm extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {arrRegion} = state;
+    const {arrRegion, userDetail} = state;
 
     return {
         nodeSettings: arrRegion.nodeSettings,
+        arrRegion: arrRegion,
+        userDetail: userDetail
     }
 }
 

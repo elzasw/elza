@@ -1,7 +1,10 @@
+@import '~variables.less';
 .modal {
-    &.dialog-lg {
-        .modal-dialog {
-            width: 90%;
+    &.dialog-lg {        
+        @media screen and (min-width: @screen-md-min) {
+          .modal-dialog {
+              width: 900px;
+          }
         }
     }
 }
@@ -15,5 +18,9 @@
 .modal {
     &.dialog-hidden {
         z-index: 1040;
+    }
+
+    &.top {
+        z-index: 9999;
     }
 }

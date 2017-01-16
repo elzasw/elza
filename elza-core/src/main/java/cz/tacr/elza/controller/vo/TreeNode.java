@@ -1,16 +1,10 @@
 package cz.tacr.elza.controller.vo;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
-import java.util.List;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 
 /**
  * Data uzlu uložené v cache.

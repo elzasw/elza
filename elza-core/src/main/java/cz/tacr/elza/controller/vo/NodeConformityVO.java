@@ -4,7 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import cz.tacr.elza.api.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrNodeConformity;
 
 /**
  * VO pro validace JP.

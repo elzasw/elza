@@ -1,13 +1,14 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.api.ArrRequest;
-import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoLinkRequest;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaoLinkRequest;
+import cz.tacr.elza.domain.ArrRequest;
 
 
 /**
@@ -22,4 +23,6 @@ public interface DaoLinkRequestRepository extends ElzaJpaRepository<ArrDaoLinkRe
 
     @Query("select r from arr_dao_link_request r where r.code = :code")
     List<ArrDaoLinkRequest> findByCode(@Param(value = "code") String code);
+
+    List<ArrDaoLinkRequest> findByDao(ArrDao arrDao);
 }

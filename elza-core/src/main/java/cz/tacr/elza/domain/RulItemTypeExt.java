@@ -1,27 +1,33 @@
 package cz.tacr.elza.domain;
 
-import cz.tacr.elza.domain.table.ElzaColumn;
-
 import java.util.LinkedList;
 import java.util.List;
 
 
 /**
- * popis {@link cz.tacr.elza.api.RulItemTypeExt}.
+ * Rozšíření {@link RulItemType} o podtypy a pravidla.
+ *
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */
 
-public class RulItemTypeExt extends RulItemType implements cz.tacr.elza.api.RulItemTypeExt<RulDataType, RulItemSpecExt, RulPackage, ElzaColumn> {
+public class RulItemTypeExt extends RulItemType {
 
     private List<RulItemSpecExt> rulItemSpecList = new LinkedList<>();
 
-    @Override
+    /**
+     *
+     * @return podtypy typů atributů.
+     */
     public List<RulItemSpecExt> getRulItemSpecList() {
         return this.rulItemSpecList;
     }
 
-    public void setRulItemSpecList(List<RulItemSpecExt> rulDescItemSpecList) {
+    /**
+     *
+     * @param rulDescItemSpecList podtypy typů atributů.
+     */
+    public void setRulItemSpecList(final List<RulItemSpecExt> rulDescItemSpecList) {
         this.rulItemSpecList = rulDescItemSpecList;
     }
 }

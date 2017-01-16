@@ -2,8 +2,8 @@ package SimpleDev;
 
 import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.drools.model.DescItemChange;
-import cz.tacr.elza.api.vo.RelatedNodeDirection;
-import cz.tacr.elza.api.vo.NodeTypeOperation;
+import cz.tacr.elza.domain.vo.RelatedNodeDirection;
+import cz.tacr.elza.domain.vo.NodeTypeOperation;
 
 global java.util.Set results;
 

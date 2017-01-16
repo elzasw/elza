@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import java.io.Serializable;
+
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -27,7 +29,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
- * popis {@link cz.tacr.elza.api.ArrData}.
+ * Tabulka pro evidenci hodnot atributů archivního popisu.
+ *
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */
@@ -40,7 +43,7 @@ filters = {
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public abstract class ArrData implements cz.tacr.elza.api.ArrData<RulDataType, ArrItem> {
+public abstract class ArrData implements Serializable {
 
     public static final String ITEM = "item";
 
@@ -97,32 +100,26 @@ public abstract class ArrData implements cz.tacr.elza.api.ArrData<RulDataType, A
         return descItemSpec.getItemSpecId();
     }
 
-    @Override
     public Integer getDataId() {
         return dataId;
     }
 
-    @Override
     public void setDataId(final Integer dataId) {
         this.dataId = dataId;
     }
 
-    @Override
     public RulDataType getDataType() {
         return dataType;
     }
 
-    @Override
     public void setDataType(final RulDataType dataType) {
         this.dataType = dataType;
     }
 
-    @Override
     public ArrItem getItem() {
         return item;
     }
 
-    @Override
     public void setItem(final ArrItem item) {
         this.item = item;
     }
@@ -150,5 +147,4 @@ public abstract class ArrData implements cz.tacr.elza.api.ArrData<RulDataType, A
     public String toString() {
         return "ArrData pk=" + dataId;
     }
-
 }

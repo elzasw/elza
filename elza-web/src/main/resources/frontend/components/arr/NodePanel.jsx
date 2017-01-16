@@ -298,7 +298,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             fundVersionId={versionId}
             type="DIGITIZATION"
             onSubmitForm={(send, data) => {
-                WebApi.arrDigitizationRequestAddNodes(versionId, data.digitizationRequestId, send, data.description, [nodeId])
+                WebApi.arrDigitizationRequestAddNodes(versionId, data.requestId, send, data.description, [nodeId])
                     .then(() => {
                         this.dispatch(modalDialogHide());
                     });
@@ -326,10 +326,16 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
      * Zobrazení dialogu pro přidání atributu.
      */
     handleAddDescItemType() {
-        const {node: {subNodeForm, selectedSubNodeId, routingKey}, versionId} = this.props;
+        const {node: {subNodeForm, selectedSubNodeId, routingKey}, versionId, fund, userDetail} = this.props;
+        let strictMode = fund.activeVersion.strictMode;
+
+        let userStrictMode = getOneSettings(userDetail.settings, 'FUND_STRICT_MODE', 'FUND', fund.id);
+        if (userStrictMode && userStrictMode.value !== null) {
+            strictMode = userStrictMode.value === 'true';
+        }
 
         const formData = subNodeForm.formData;
-        const descItemTypes = getDescItemsAddTree(formData.descItemGroups, subNodeForm.infoTypesMap, subNodeForm.refTypesMap, subNodeForm.infoGroups);
+        const descItemTypes = getDescItemsAddTree(formData.descItemGroups, subNodeForm.infoTypesMap, subNodeForm.refTypesMap, subNodeForm.infoGroups, strictMode);
 
         // Zatím zakomentováno, možná se bude ještě nějak řadit - zatím není jasné podle čeho řadit - podle uvedení v yaml nebo jinak?
         // function typeId(type) {

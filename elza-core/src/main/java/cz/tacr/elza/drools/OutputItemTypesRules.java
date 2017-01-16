@@ -1,21 +1,20 @@
 package cz.tacr.elza.drools;
 
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulRule;
-import cz.tacr.elza.domain.RulRuleSet;
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.LinkedList;
+import java.util.List;
+
 import org.kie.api.runtime.StatelessKieSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.LinkedList;
-import java.util.List;
+import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulRule;
 
 
 /**
@@ -42,8 +41,8 @@ public class OutputItemTypesRules extends Rules {
             throws Exception
     {
 
-    	LinkedList<Object> facts = new LinkedList<>();
-    	facts.addAll(rulDescItemTypeExtList);
+        LinkedList<Object> facts = new LinkedList<>();
+        facts.addAll(rulDescItemTypeExtList);
         facts.add(outputDefinition);
         facts.add(outputDefinition.getOutputType());
 

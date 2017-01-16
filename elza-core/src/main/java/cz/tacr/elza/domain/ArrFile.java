@@ -1,13 +1,14 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.springframework.data.rest.core.annotation.RestResource;
-
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+
+import org.springframework.data.rest.core.annotation.RestResource;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
@@ -18,7 +19,7 @@ import javax.persistence.ManyToOne;
  */
 @Entity(name = "arr_file")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrFile extends DmsFile implements cz.tacr.elza.api.ArrFile<ArrFund> {
+public class ArrFile extends DmsFile {
 
     public static final String FUND = "fund";
 
@@ -28,14 +29,11 @@ public class ArrFile extends DmsFile implements cz.tacr.elza.api.ArrFile<ArrFund
     @JsonIgnore
     private ArrFund fund;
 
-    @Override
     public ArrFund getFund() {
         return fund;
     }
 
-    @Override
     public void setFund(final ArrFund fund) {
         this.fund = fund;
     }
-
 }

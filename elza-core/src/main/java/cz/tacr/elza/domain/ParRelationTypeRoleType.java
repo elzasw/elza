@@ -1,21 +1,22 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.springframework.data.rest.core.annotation.RestResource;
+import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.springframework.data.rest.core.annotation.RestResource;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
@@ -27,7 +28,7 @@ import javax.persistence.Table;
 @Table
 //@Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParRelationTypeRoleType implements cz.tacr.elza.api.ParRelationTypeRoleType<ParRelationType, ParRelationRoleType> {
+public class ParRelationTypeRoleType implements Serializable {
 
     @Id
     @GeneratedValue
@@ -50,32 +51,26 @@ public class ParRelationTypeRoleType implements cz.tacr.elza.api.ParRelationType
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
-    @Override
     public Integer getRelationTypeRoleTypeId() {
         return relationTypeRoleTypeId;
     }
 
-    @Override
     public void setRelationTypeRoleTypeId(final Integer relationTypeRoleTypeId) {
         this.relationTypeRoleTypeId = relationTypeRoleTypeId;
     }
 
-    @Override
     public ParRelationType getRelationType() {
         return relationType;
     }
 
-    @Override
     public void setRelationType(final ParRelationType relationType) {
         this.relationType = relationType;
     }
 
-    @Override
     public ParRelationRoleType getRoleType() {
         return roleType;
     }
 
-    @Override
     public void setRoleType(final ParRelationRoleType roleType) {
         this.roleType = roleType;
     }
@@ -104,13 +99,11 @@ public class ParRelationTypeRoleType implements cz.tacr.elza.api.ParRelationType
         return "ParRelationTypeRoleType pk=" + relationTypeRoleTypeId;
     }
 
-    @Override
     public Boolean getRepeatable() {
         return repeatable;
     }
 
-    @Override
-    public void setRepeatable(Boolean repeatable) {
+    public void setRepeatable(final Boolean repeatable) {
         this.repeatable = repeatable;
     }
 

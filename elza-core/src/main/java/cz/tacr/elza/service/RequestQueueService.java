@@ -1,5 +1,26 @@
 package cz.tacr.elza.service;
 
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
+
+import org.apache.commons.lang.NotImplementedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.util.concurrent.ListenableFutureCallback;
+
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDaoLinkRequest;
 import cz.tacr.elza.domain.ArrDaoRequest;
@@ -23,26 +44,6 @@ import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdRequestIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.ws.WsClient;
-import org.apache.commons.lang.NotImplementedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
-import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.util.concurrent.ListenableFuture;
-import org.springframework.util.concurrent.ListenableFutureCallback;
-
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Callable;
 
 /**
  * Servisní třída pro obsluhu a správu požadavků
@@ -133,8 +134,8 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
         }
     }
 
-    private void addRequestToQueue(ArrRequest request,
-                                   ArrFundVersion fundVersion) {
+    private void addRequestToQueue(final ArrRequest request,
+                                   final ArrFundVersion fundVersion) {
         ArrChange createChange = arrangementService.createChange(ArrChange.Type.CREATE_REQUEST_QUEUE);
 
         ArrRequestQueueItem requestQueueItem = new ArrRequestQueueItem();
@@ -168,13 +169,13 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
         eventNotificationService.publishEvent(event);
     }
 
-    public boolean isRequestInQueue(ArrRequest request) {
+    public boolean isRequestInQueue(final ArrRequest request) {
         ArrRequestQueueItem requestQueueItem = requestQueueItemRepository.findByRequestAndSend(request, false);
         return requestQueueItem != null;
     }
 
-    public void deleteRequestFromQueue(ArrRequest request,
-                                       ArrFundVersion fundVersion) {
+    public void deleteRequestFromQueue(final ArrRequest request,
+                                       final ArrFundVersion fundVersion) {
         ArrRequestQueueItem requestQueueItem = requestQueueItemRepository.findByRequestAndSend(request, false);
         if (requestQueueItem == null) {
             throw new BusinessException(ArrangementCode.REQUEST_NOT_FOUND_IN_QUEUE);
@@ -315,18 +316,18 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
                 wsClient.postRequest(arrDigitizationRequest);
             } else if (ArrRequest.ClassType.DAO == queueItem.getRequest().getDiscriminator()) {
                 ArrDaoRequest arrDaoRequest = (ArrDaoRequest) queueItem.getRequest();
-                if (cz.tacr.elza.api.ArrDaoRequest.Type.DESTRUCTION == arrDaoRequest.getType()) {
+                if (ArrDaoRequest.Type.DESTRUCTION == arrDaoRequest.getType()) {
                     wsClient.postDestructionRequest(arrDaoRequest);
-                } else if (cz.tacr.elza.api.ArrDaoRequest.Type.DESTRUCTION == arrDaoRequest.getType()) {
+                } else if (ArrDaoRequest.Type.DESTRUCTION == arrDaoRequest.getType()) {
                     wsClient.postTransferRequest(arrDaoRequest);
                 } else {
                     throw new SystemException(BaseCode.SYSTEM_ERROR);
                 }
             } else if (ArrRequest.ClassType.DAO_LINK == queueItem.getRequest().getDiscriminator()) {
                 ArrDaoLinkRequest arrDaoLinkRequest = (ArrDaoLinkRequest) queueItem.getRequest();
-                if (cz.tacr.elza.api.ArrDaoLinkRequest.Type.LINK == arrDaoLinkRequest.getType()) {
+                if (ArrDaoLinkRequest.Type.LINK == arrDaoLinkRequest.getType()) {
                     wsClient.onDaoLinked(arrDaoLinkRequest);
-                } else if (cz.tacr.elza.api.ArrDaoLinkRequest.Type.UNLINK == arrDaoLinkRequest.getType()) {
+                } else if (ArrDaoLinkRequest.Type.UNLINK == arrDaoLinkRequest.getType()) {
                     wsClient.onDaoUnlinked(arrDaoLinkRequest);
                 } else {
                     throw new SystemException(BaseCode.SYSTEM_ERROR);

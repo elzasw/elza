@@ -30,12 +30,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.filter.condition.LuceneDescItemCondition;
@@ -121,9 +121,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
         javax.persistence.Query query = entityManager.createQuery(hql);
 
-        List resultList = query.getResultList();
-
-        return resultList;
+        return query.getResultList();
     }
 
     /**
@@ -166,7 +164,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     private List<String> findDescItemIdsByLuceneQuery(final String queryText, final Integer fundId)
             throws InvalidQueryException{
         if (StringUtils.isBlank(queryText)) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         Class<ArrData> entityClass = ArrData.class;
@@ -189,7 +187,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         }
 
         List<String> result = (List<String>) createFullTextQuery(query, entityClass).setProjection(
-                "descItemId").getResultList().stream().map(row ->
+                "itemId").getResultList().stream().map(row ->
                         ((Object[]) row)[0]
         ).collect(Collectors.toList());
 

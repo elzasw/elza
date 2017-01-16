@@ -1,8 +1,8 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import javax.persistence.Entity;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
@@ -11,6 +11,6 @@ import javax.persistence.Entity;
  */
 @Entity(name = "par_event")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ParEvent extends ParParty implements cz.tacr.elza.api.ParEvent {
+public class ParEvent extends ParParty {
 
 }

@@ -1,5 +1,6 @@
 package cz.tacr.elza.domain;
 
+import java.io.Serializable;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -31,8 +32,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParPartyName
-        implements cz.tacr.elza.api.ParPartyName<ParParty, ParUnitdate, ParPartyNameFormType> {
+public class ParPartyName implements Serializable {
 
     public static final String PARTY = "party";
 
@@ -75,102 +75,154 @@ public class ParPartyName
     @OneToMany(mappedBy = "partyName", fetch = FetchType.EAGER)
     private List<ParPartyNameComplement> partyNameComplements;
 
-    @Override
+    /**
+     * Vlastní ID.
+     * @return id
+     */
     public Integer getPartyNameId() {
         return partyNameId;
     }
 
-    @Override
+    /**
+     * Vlastní ID.
+     * @param partyNameId id
+     */
     public void setPartyNameId(final Integer partyNameId) {
         this.partyNameId = partyNameId;
     }
 
-    @Override
+    /**
+     * Vazba na osobu.
+     * @return osoba
+     */
     public ParParty getParty() {
         return party;
     }
 
-    @Override
+    /**
+     * Vazba na osobu.
+     * @param party osoba
+     */
     public void setParty(final ParParty party) {
         this.party = party;
     }
 
-    @Override
+    /**
+     * Hlavní část jména.
+     * @return hlavní část jména
+     */
     public String getMainPart() {
         return mainPart;
     }
 
-    @Override
+    /**
+     * Hlavní část jména.
+     * @param mainPart hlavní část jména
+     */
     public void setMainPart(final String mainPart) {
         this.mainPart = mainPart;
     }
 
-    @Override
+    /**
+     * Vedlejší část jména.
+     * @return vedlejší část jména
+     */
     public String getOtherPart() {
         return otherPart;
     }
 
-    @Override
+    /**
+     * Vedlejší část jména.
+     * @param otherPart vedlejší část jména
+     */
     public void setOtherPart(final String otherPart) {
         this.otherPart = otherPart;
     }
 
-    @Override
+    /**
+     * Titul před jménem.
+     * @return titul před jménem
+     */
     public String getDegreeBefore() {
         return degreeBefore;
     }
 
-    @Override
+    /**
+     * Titul před jménem.
+     * @param degreeBefore titul před jménem
+     */
     public void setDegreeBefore(final String degreeBefore) {
         this.degreeBefore = degreeBefore;
     }
 
-    @Override
+    /**
+     * Titul za jménem.
+     * @return titul za jménem
+     */
     public String getDegreeAfter() {
         return degreeAfter;
     }
 
-    @Override
+    /**
+     * Titul za jménem.
+     * @param degreeAfter titul za jménem
+     */
     public void setDegreeAfter(final String degreeAfter) {
         this.degreeAfter = degreeAfter;
     }
 
-    @Override
+    /**
+     * Platnost jména od.
+     * @return platnost jména od
+     */
     public ParUnitdate getValidFrom() {
         return validFrom;
     }
 
-    @Override
+    /**
+     * Platnost jména od.
+     * @param validFrom platnost jména od
+     */
     public void setValidFrom(final ParUnitdate validFrom) {
         this.validFrom = validFrom;
     }
 
-    @Override
+    /**
+     * Platnost jména do.
+     * @return platnost jména do
+     */
     public ParUnitdate getValidTo() {
         return validTo;
     }
 
-    @Override
+    /**
+     * Platnost jména do.
+     * @param validTo platnost jména do
+     */
     public void setValidTo(final ParUnitdate validTo) {
         this.validTo = validTo;
     }
 
-    @Override
     public ParPartyNameFormType getNameFormType() {
         return nameFormType;
     }
 
-    @Override
     public void setNameFormType(final ParPartyNameFormType nameFormType) {
         this.nameFormType = nameFormType;
     }
 
-    @Override
+    /**
+     * Poznámka - využije se v případě nutnosti doplnit informaci uvedenou v prvcích.
+     * @return poznámka - využije se v případě nutnosti doplnit informaci uvedenou v prvcích
+     */
     public String getNote() {
         return note;
     }
 
-    @Override
+    /**
+     * Poznámka - využije se v případě nutnosti doplnit informaci uvedenou v prvcích.
+     * @param note poznámka - využije se v případě nutnosti doplnit informaci uvedenou v prvcích
+     */
     public void setNote(final String note) {
         this.note = note;
     }
@@ -185,7 +237,7 @@ public class ParPartyName
 
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof cz.tacr.elza.api.ParPartyName)) {
+        if (!(obj instanceof ParPartyName)) {
             return false;
         }
         if (this == obj) {

@@ -1,6 +1,6 @@
 package cz.tacr.elza.exception;
 
-import cz.tacr.elza.api.UsrPermission;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.codes.BaseCode;
 
 /**

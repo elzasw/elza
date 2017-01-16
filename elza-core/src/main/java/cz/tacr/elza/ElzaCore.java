@@ -1,12 +1,14 @@
 package cz.tacr.elza;
 
-import com.google.common.eventbus.EventBus;
-import cz.tacr.elza.service.IClientDataChangesService;
-import cz.tacr.elza.service.websocket.ClientDataChangesService;
+import java.util.Map;
+import java.util.concurrent.Executor;
+
+import javax.annotation.PostConstruct;
+import javax.servlet.MultipartConfigElement;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.embedded.MultipartConfigFactory;
@@ -24,10 +26,10 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.MultipartConfigElement;
-import java.util.Map;
-import java.util.concurrent.Executor;
+import com.google.common.eventbus.EventBus;
+
+import cz.tacr.elza.service.IClientDataChangesService;
+import cz.tacr.elza.service.websocket.ClientDataChangesService;
 
 
 /**
@@ -50,7 +52,7 @@ public class ElzaCore {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         configure();
         SpringApplication.run(ElzaCore.class, args);
     }

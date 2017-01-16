@@ -6,7 +6,7 @@ package cz.tacr.elza.service.eventnotification.events;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 15.01.2016
  */
-public class EventIdInVersion extends EventVersion<EventIdInVersion> {
+public class EventIdInVersion extends EventVersion {
 
     /**
      * Id entity.

@@ -1,14 +1,17 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import javax.persistence.*;
-import java.io.Serializable;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * Implementace {@link cz.tacr.elza.api.UsrGroup}.
+ * Uživatelká skupina.
  *
  * @author Martin Šlapa
  * @since 11.04.2016
@@ -16,7 +19,7 @@ import java.io.Serializable;
 @Entity(name = "usr_group")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class UsrGroup implements cz.tacr.elza.api.UsrGroup, Serializable {
+public class UsrGroup {
 
     @Id
     @GeneratedValue
@@ -37,42 +40,58 @@ public class UsrGroup implements cz.tacr.elza.api.UsrGroup, Serializable {
     public static final String NAME = "name";
     public static final String DESCRIPTION = "description";
 
-    @Override
+    /**
+     * @return identifikátor entity
+     */
     public Integer getGroupId() {
         return groupId;
     }
 
-    @Override
+    /**
+     * @param groupId identifikátor entity
+     */
     public void setGroupId(final Integer groupId) {
         this.groupId = groupId;
     }
 
-    @Override
+    /**
+     * @return kód skupiny
+     */
     public String getCode() {
         return code;
     }
 
-    @Override
+    /**
+     * @param code kód skupiny
+     */
     public void setCode(final String code) {
         this.code = code;
     }
 
-    @Override
+    /**
+     * @return název skupiny
+     */
     public String getName() {
         return name;
     }
 
-    @Override
+    /**
+     * @param name název skupiny
+     */
     public void setName(final String name) {
         this.name = name;
     }
 
-    @Override
+    /**
+     * @return popis skupiny
+     */
     public String getDescription() {
         return description;
     }
 
-    @Override
+    /**
+     * @param description popis skupiny
+     */
     public void setDescription(final String description) {
         this.description = description;
     }

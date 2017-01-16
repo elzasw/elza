@@ -1,12 +1,14 @@
 package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDaoRequest;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -66,13 +68,18 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
         TypedQuery<ArrRequest> query = entityManager.createQuery(q);
 
         List<ArrRequest> resultList = query.getResultList();
-        if (description != null) {
+        if (StringUtils.hasText(description)) {
             Iterator<ArrRequest> iterator = resultList.iterator();
             while (iterator.hasNext()) {
                 ArrRequest request = iterator.next();
                 if (request.getDiscriminator() == ArrRequest.ClassType.DIGITIZATION) {
                     ArrDigitizationRequest digitizationRequest = (ArrDigitizationRequest) request;
                     if (digitizationRequest.getDescription() == null || !digitizationRequest.getDescription().matches(".*(" + description + ").*")) {
+                        iterator.remove();
+                    }
+                } else if (request.getDiscriminator() == ArrRequest.ClassType.DAO) {
+                    ArrDaoRequest daoRequest = (ArrDaoRequest) request;
+                    if (daoRequest.getDescription() == null || !daoRequest.getDescription().matches(".*(" + description + ").*")) {
                         iterator.remove();
                     }
                 } else {

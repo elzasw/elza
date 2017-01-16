@@ -2,7 +2,7 @@ package cz.tacr.elza.service;
 
 import com.google.common.eventbus.EventBus;
 import cz.tacr.elza.annotation.AuthMethod;
-import cz.tacr.elza.api.UsrPermission;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

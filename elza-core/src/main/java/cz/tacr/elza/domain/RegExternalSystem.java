@@ -23,18 +23,16 @@ import cz.tacr.elza.api.RegExternalSystemType;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @Table
-public class RegExternalSystem extends SysExternalSystem implements cz.tacr.elza.api.RegExternalSystem {
+public class RegExternalSystem extends SysExternalSystem {
 
     @Enumerated(EnumType.STRING)
     @Column
     private RegExternalSystemType type;
 
-    @Override
     public RegExternalSystemType getType() {
         return type;
     }
 
-    @Override
     public void setType(final RegExternalSystemType type) {
         this.type = type;
     }

@@ -1,21 +1,21 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
- * Implementace {@link cz.tacr.elza.api.ParInstitutionType}.
+ * Typ instituce.
  *
  * @author Martin Šlapa
  * @since 18.3.2016
  */
 @Entity(name = "par_institution_type")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ParInstitutionType implements cz.tacr.elza.api.ParInstitutionType {
+public class ParInstitutionType {
 
     @Id
     @GeneratedValue
@@ -27,32 +27,44 @@ public class ParInstitutionType implements cz.tacr.elza.api.ParInstitutionType {
     @Column(length = 250, nullable = false)
     private String name;
 
-    @Override
+    /**
+     * @return identifikátor
+     */
     public Integer getInstitutionTypeId() {
         return institutionTypeId;
     }
 
-    @Override
+    /**
+     * @param institutionTypeId identifikátor
+     */
     public void setInstitutionTypeId(final Integer institutionTypeId) {
         this.institutionTypeId = institutionTypeId;
     }
 
-    @Override
+    /**
+     * @return název typu instituce
+     */
     public String getName() {
         return name;
     }
 
-    @Override
+    /**
+     * @param name název typu instituce
+     */
     public void setName(final String name) {
         this.name = name;
     }
 
-    @Override
+    /**
+     * @return kód typu instituce
+     */
     public String getCode() {
         return code;
     }
 
-    @Override
+    /**
+     * @param code kód typu instituce
+     */
     public void setCode(final String code) {
         this.code = code;
     }

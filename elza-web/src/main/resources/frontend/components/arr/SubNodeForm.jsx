@@ -729,7 +729,7 @@ class SubNodeForm extends AbstractReactComponent {
      */
     renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex, nodeSetting) {
         const {fundId, subNodeForm, descItemCopyFromPrevEnabled, singleDescItemTypeEdit, rulDataTypes, calendarTypes, closed,
-                packetTypes, packets, showNodeAddons, conformityInfo, versionId, readMode} = this.props;
+                packetTypes, packets, showNodeAddons, conformityInfo, versionId, readMode, userDetail, arrRegion} = this.props;
 
         var refType = subNodeForm.refTypesMap[descItemType.id]
         var infoType = subNodeForm.infoTypesMap[descItemType.id]
@@ -753,6 +753,16 @@ class SubNodeForm extends AbstractReactComponent {
                 if (index >= 0) {
                     copy = true;
                 }
+            }
+        }
+
+        const fund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
+        let strictMode = false;
+        if (fund) {
+            strictMode = fund.activeVersion.strictMode;
+            let userStrictMode = getOneSettings(userDetail.settings, 'FUND_STRICT_MODE', 'FUND', fund.id);
+            if (userStrictMode && userStrictMode.value !== null) {
+                strictMode = userStrictMode.value === 'true';
             }
         }
 
@@ -799,6 +809,7 @@ class SubNodeForm extends AbstractReactComponent {
             versionId={versionId}
             fundId={fundId}
             readMode={readMode}
+            strictMode={strictMode}
         />
     }
 
@@ -825,9 +836,10 @@ class SubNodeForm extends AbstractReactComponent {
 }
 
 export default connect((state) => {
-    const {userDetail} = state;
+    const {userDetail, arrRegion} = state;
 
     return {
-        userDetail
+        userDetail,
+        arrRegion
     }
 }, null, null, { withRef: true })(SubNodeForm);

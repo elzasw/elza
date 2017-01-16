@@ -1,8 +1,8 @@
 package cz.tacr.elza.controller.vo;
 
-import cz.tacr.elza.api.ArrDaoRequest;
-
 import java.util.List;
+
+import cz.tacr.elza.domain.ArrDaoRequest;
 
 /**
  * Value objekt {@link ArrDaoRequest}
@@ -15,6 +15,8 @@ public class ArrDaoRequestVO extends ArrRequestVO {
     private ArrDaoRequest.Type type;
 
     private String description;
+
+    private Integer daosCount;
 
     private List<ArrDaoVO> daos;
 
@@ -32,6 +34,14 @@ public class ArrDaoRequestVO extends ArrRequestVO {
 
     public void setDescription(final String description) {
         this.description = description;
+    }
+
+    public Integer getDaosCount() {
+        return daosCount;
+    }
+
+    public void setDaosCount(final Integer daosCount) {
+        this.daosCount = daosCount;
     }
 
     public List<ArrDaoVO> getDaos() {

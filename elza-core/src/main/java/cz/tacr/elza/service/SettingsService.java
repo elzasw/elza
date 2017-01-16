@@ -1,18 +1,19 @@
 package cz.tacr.elza.service;
 
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.repository.SettingsRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import javax.validation.constraints.NotNull;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.repository.SettingsRepository;
 
 /**
  * Serviska pro nastavení.
@@ -44,7 +45,7 @@ public class SettingsService {
      * @param settingsList seznam nastavení
      */
     public void setSettings(@NotNull final UsrUser user,
-                            @NotNull List<UISettings> settingsList) {
+                            @NotNull final List<UISettings> settingsList) {
         List<UISettings> settingsListDB = settingsRepository.findByUser(user);
 
         Map<Integer, UISettings> settingsMap = settingsListDB.stream()

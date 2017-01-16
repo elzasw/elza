@@ -1,5 +1,11 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
+import java.util.List;
+import java.util.Set;
+
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
 import com.google.common.collect.Sets;
 
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
@@ -12,12 +18,6 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.utils.Yaml;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Akce na zjištění rozsahu datací.

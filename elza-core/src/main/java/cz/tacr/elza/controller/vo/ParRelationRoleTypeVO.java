@@ -1,7 +1,5 @@
 package cz.tacr.elza.controller.vo;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
-
 /**
  * VO Seznamu rolí entit ve vztahu.
  *
@@ -54,7 +52,7 @@ public class ParRelationRoleTypeVO {
         return repeatable;
     }
 
-    public void setRepeatable(Boolean repeatable) {
+    public void setRepeatable(final Boolean repeatable) {
         this.repeatable = repeatable;
     }
 }

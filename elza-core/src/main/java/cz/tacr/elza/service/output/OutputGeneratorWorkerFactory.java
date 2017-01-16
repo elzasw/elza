@@ -5,8 +5,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.api.RulTemplate.Engine;
 import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.RulTemplate.Engine;
 import cz.tacr.elza.print.Node;
 import cz.tacr.elza.print.NodeId;
 import cz.tacr.elza.print.Output;

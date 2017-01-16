@@ -14,7 +14,7 @@ import {submitReduxForm} from 'components/form/FormUtils.jsx'
 import {getTreeItemById} from "./../../components/registry/registryUtils";
 import {PARTY_TYPE_CODES} from 'actions/party/party.jsx'
 
-import './AddPartyForm.less'
+import './RelationForm.less'
 
 /**
  * Formulář nové osoby
@@ -276,9 +276,9 @@ class AddPartyForm extends AbstractReactComponent {
         const complementsList = complementsTypes && complementsTypes.map(i => <option value={i.complementTypeId} key={'index' + i.complementTypeId}>{i.name}</option>);
 
         return <Form>
-            <Modal.Body className="add-party-form">
+            <Modal.Body className="dialog-3-col add-party-form">
                 <div className="flex">
-                    <div className="flex-2">
+                    <div className="flex-2 col">
                         <Row>
                             <Col xs={12}>
                                 <div className="line">
@@ -344,13 +344,13 @@ class AddPartyForm extends AbstractReactComponent {
                             </Col>
                         </Row>
                     </div>
-                    <div className="datation-group flex-1">
+                    <div className="datation-group flex-1 col">
                         <Row>
                             <Col xs={12}>
                                 <Row>
                                     <Col xs={6} md={12}>
                                         <DatationField fields={validFrom} label={i18n('party.name.validFrom')} labelTextual={i18n('party.name.validFrom.textDate')} labelNote={i18n('party.name.validFrom.note')} />
-                                    </Col>
+                                    </Col>                                    
                                     <Col xs={6} md={12}>
                                         <DatationField fields={validTo} label={i18n('party.name.validTo')} labelTextual={i18n('party.name.validTo.textDate')} labelNote={i18n('party.name.validTo.note')} />
                                     </Col>
@@ -358,7 +358,7 @@ class AddPartyForm extends AbstractReactComponent {
                             </Col>
                         </Row>
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 col">
                         <Row>
                             <Col xs={12}>
                                 <FormInput componentClass="textarea" label={i18n('party.name.note')} {...note} />
