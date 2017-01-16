@@ -26,7 +26,6 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
             'handleSearchChange',
             'handleChange',
             'renderPacket',
-            'handleKeyUp',
             'handleFundPackets',
             'handleCreatePacket');
 
@@ -58,13 +57,6 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
 
     focus() {
         this.refs.focusEl.focus();
-    }
-
-
-    handleKeyUp(e){
-        if (e.keyCode == 13 && this.state.packets.length == 1){
-            this.props.onChange(this.state.packets[0]);
-        }
     }
 
     renderPacket(item, isHighlighted, isSelected) {
@@ -180,7 +172,6 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
                         {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, ['autocomplete-packet'])}
                         ref='focusEl'
                         customFilter
-                        onKeyUp={this.handleKeyUp}
                         onFocus={this.handleFocus}
                         onBlur={this.handleBlur}
                         value={packet}
