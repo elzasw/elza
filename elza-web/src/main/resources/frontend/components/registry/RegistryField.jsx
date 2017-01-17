@@ -11,6 +11,7 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import RegistrySelectPage from 'pages/select/RegistrySelectPage.jsx'
 import {registryDetailFetchIfNeeded} from 'actions/registry/registry.jsx'
 import classNames from 'classnames';
+import {debounce} from 'shared/utils'
 
 import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from 'constants'
 
@@ -55,7 +56,7 @@ class RegistryField extends AbstractReactComponent {
         this.refs.autocomplete.focus()
     };
 
-    handleSearchChange = (text) => {
+    handleSearchChange = debounce((text) => {
         text = text == "" ? null : text;
         this.setState({searchText: text});
         const {roleTypeId, partyId, registryParent, registerTypeId, versionId, itemSpecId} = this.props;
@@ -71,7 +72,7 @@ class RegistryField extends AbstractReactComponent {
                 count: json.count
             })
         })
-    };
+    }, 500);
 
     handleDetail = (recordId) => {
         const {searchText} = this.state;
@@ -126,7 +127,7 @@ class RegistryField extends AbstractReactComponent {
         </div>
     };
 
-    renderRecord = (item, focus, active) => <RegistryListItem {...item} className={classNames({focus, active})} />;
+    renderRecord = (item, focus, active) => <RegistryListItem {...item} className={classNames('item', {focus, active})} />;
         /*<TooltipTrigger
         content={item.characteristics}
         holdOnHover
@@ -149,16 +150,13 @@ class RegistryField extends AbstractReactComponent {
 
         let footerRender = null;
         if (footer) {
-            // if () {
-                footerRender = this.renderFooter();
-            // }
+            footerRender = this.renderFooter();
         }
 
         let actions = [];
         if (detail) {
             // if (value && userDetail.hasOne(perms.REG_SCOPE_RD_ALL, {type: perms.REG_SCOPE_RD, scopeId: value.scopeId})) {
-                actions.push(<div onClick={this.handleDetail.bind(this, value ? value.id : null)}
-                                  className={'btn btn-default detail'}><Icon glyph={'fa-user'}/></div>);
+                actions.push(<div onClick={this.handleDetail.bind(this, value ? value.id : null)} className={'btn btn-default detail'}><Icon glyph={'fa-user'}/></div>);
             // }
         }
 

@@ -25,38 +25,13 @@
 
     @record-item-padding: 5px;
     @max-width-container: 600px;
-
-    .item {
-        display: table-row;
-
+    .autocomplete-menu-container .autocomplete-menu-wrapper .autocomplete-menu .item {
+        display:block;
         &.active {
             font-weight: bold;
         }
         &.focus {
             background: #afafaf;
-        }
-
-        .name {
-            padding: @record-item-padding;
-            display: table-cell;
-        }
-
-        .type {
-            padding: @record-item-padding;
-            display: table-cell;;
-        }
-
-        .interval {
-            padding: @record-item-padding;
-            display: table-cell;
-        }
-
-        .characteristics {
-            padding: @record-item-padding;
-            max-width: 300px;
-            text-overflow: ellipsis;
-            display: table-cell;
-            overflow: hidden;
         }
     }
 

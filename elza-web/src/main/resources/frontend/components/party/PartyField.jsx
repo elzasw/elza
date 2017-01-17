@@ -13,6 +13,7 @@ import {routerNavigate} from 'actions/router.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from 'constants'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {debounce} from 'shared/utils'
 import classNames from 'classnames';
 
 import {PartySelectPage} from 'pages'
@@ -56,8 +57,7 @@ class PartyField extends AbstractReactComponent {
         this.refs.autocomplete.focus()
     };
 
-    handleSearchChange = (text) => {
-
+    handleSearchChange = debounce((text) => {
         text = text == "" ? null : text;
         this.setState({searchText: text});
         WebApi.findParty(text, this.props.versionId, this.props.partyTypeId, 0, AUTOCOMPLETE_PARTY_LIST_SIZE).then(json => {
@@ -66,7 +66,7 @@ class PartyField extends AbstractReactComponent {
                 count: json.count
             })
         })
-    };
+    });
 
     handleCreateParty = (partyTypeId) => {
         this.refs.autocomplete.closeMenu();

@@ -492,6 +492,9 @@ export default class Autocomplete extends AbstractReactComponent {
     maybeScrollItemIntoView() {
         if (this.state.isOpen === true && this.state.highlightedIndex !== null) {
             var itemNode = ReactDOM.findDOMNode(this.refs[`item-${this.state.highlightedIndex}`])
+            if (!itemNode) {
+                return;
+            }
             var menuNode = ReactDOM.findDOMNode(this.refs.menu).parentNode
             scrollIntoView(itemNode, menuNode, {onlyScrollIfNeeded: true})
         }
