@@ -1,5 +1,33 @@
-# Casti
+Struktura souborů 
+-----------------
+storage_file_structure.md
 
+Nastavení pro dao
+-----------------
+
+1) adresa na externí systém:
+	formát:		YAML, Map<String,String>
+	umístění:	${basePath}/${repositoryIdentifier}/external-systems-config.yaml
+	pozn.:		jeden záznam vyjadřuje "systemIdentifier: http://domain/services/"
+	
+2) konfigurace package:
+	formát:		YAML, cz.tacr.elza.dao.bo.resource.DaoPackageConfig
+	umístění:	${basePath}/${repositoryIdentifier}/packages/{packageIdentifier}/package-config.yaml
+	pozn.:		důležitý především "fundIdentifier: fund_uid"
+	
+3) konfigurace dao:
+	formát:		YAML, cz.tacr.elza.dao.bo.resource.DaoConfig
+	umístění:	${basePath}/${repositoryIdentifier}/packages/{packageIdentifier}/{daoIdentifier}/dao-config.yaml
+	pozn.:		# důležitý především "didIdentifier: did_uid"
+				# jakýkoliv soubor v dao složce je považován za platný DaoFile (mimo konfigurace a příznaku smazání)
+
+Pravidla
+--------
+1 Package -^- (0..1) AS
+1 DAO -^-  (0..1) Jednotka Popisu - bud je nebo neni k necemu prilinkovana
+				
+Poznamky pro implementaci
+-------------------------
 1. Radkova utilita - dtbCmd 
 (Faze 1)
 - umoznuje volat funkce Elza, zakladem je moznost importovat do Elzy neco z uloziste volanim metody "Import"
@@ -24,12 +52,3 @@
 3. "Digitalizacni linka" / dtbDigitizationService
 - frona Pozadavku - kazdy pozadavek je zarazen a je mu prideleno Id
    - lze take implementovat pozastaveni prijimani pozadavku a jejich odmitani s chybou
-
-Pravidla
---------
-1 Package -^- (0..1) AS
-1 DAO -^-  (0..1) Jednotka Popisu - bud je nebo neni k necemu prilinkovana
-
-Otazky
-------
-Ma Storage vedet ke kteremu AS patri Package?
