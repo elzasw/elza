@@ -20,12 +20,24 @@
                         background-color: @button-bg-hover;
                     }
                     .icon {
-                        color: #000000;
                         height: 1.35em;
                         line-height: 1.35em;
                         width: 1.35em;
                         vertical-align: middle;
                     }
+                }
+                @keyframes blink {
+                  0% { background-color: transparent; }
+                  25% { background-color: #FFDCDC; }
+                }
+                .update {
+                  animation: blink 1s linear infinite;
+                }
+                .update:disabled{
+                  animation: none;
+                }
+                .update:hover{
+                  animation:none;
                 }
             }
             .actions-search {
@@ -42,7 +54,7 @@
             .filtered {
                 background: @button-bg-hover;
             }
-            
+
             .cell-value-wrapper {
             }
             .header-container {
@@ -63,4 +75,3 @@
         }
     }
 }
-

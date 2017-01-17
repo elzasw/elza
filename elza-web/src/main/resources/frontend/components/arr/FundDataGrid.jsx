@@ -643,7 +643,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                 onFulltextNextItem={this.handleFulltextNextItem}
             />
         )
-
+        
         // ---
         return (
             <div ref='gridContainer' className='fund-datagrid-container-wrap'>
@@ -656,7 +656,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                                 glyph={fundDataGrid.searchExtended ? 'fa-search-minus' : 'fa-search-plus'}/></Button>
                         </div>
                         <div className="actions-buttons">
-                            <Button
+                            <Button className="update"
                                 disabled={!(fundDataGrid.rowsDirty || fundDataGrid.filterDirty)}
                                 onClick={this.handleFilterUpdateData}
                             ><Icon glyph='fa-refresh'/>{i18n('arr.fund.filterSettings.updateData.action')}</Button>
