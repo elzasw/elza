@@ -269,7 +269,7 @@ class ItemFormActions {
     /** Metoda pro volání API. */
     // @Abstract
     _callArrCoordinatesImport(versionId, parentId, parentVersionId, descItemTypeId, file) {}
-    
+
     /**
      * Akce přidání coordinates jako DescItem - Probíhá uploadem - doplnění hodnot pomocí WS
      * @param {int} versionId verze AS
@@ -580,6 +580,23 @@ class ItemFormActions {
     _callDeleteDescItemType(versionId, parentId, parentVersionId, descItemTypeId) {}
 
     /**
+     * Přidání PP (který je počítaný a ještě ve formuláři není) do formuláře
+     * @param versionId verze AS
+     * @param itemTypeId id typu PP
+     */
+    addCalculatedDescItem(versionId, itemTypeId) {
+        return (dispatch, getState) => {
+            const state = getState();
+            const fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
+            if (fundIndex !== null) {
+                const outputDefinitionId = state.arrRegion.funds[fundIndex].fundOutput.fundOutputDetail.subNodeForm.fetchingId;
+                WebApi.switchOutputCalculating(versionId, outputDefinitionId, itemTypeId).then(() => {
+                });
+            }
+        }
+    }
+
+    /**
      * Přepnutí počítání hodnot atributu uživatelské/automatické.
      *
      * @param {int} versionId identifikátor verze AS
@@ -591,21 +608,18 @@ class ItemFormActions {
         return (dispatch, getState) => {
             const state = getState();
             const fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
-            let outputDefinitionId;
             if (fundIndex !== null) {
-                outputDefinitionId = state.arrRegion.funds[fundIndex].fundOutput.fundOutputDetail.subNodeForm.fetchingId;
-            } else {
-                return null
+                const outputDefinitionId = state.arrRegion.funds[fundIndex].fundOutput.fundOutputDetail.subNodeForm.fetchingId;
+                WebApi.switchOutputCalculating(versionId, outputDefinitionId, itemTypeId).then(() => {
+                    dispatch({
+                        type: types.FUND_SUB_NODE_FORM_OUTPUT_CALC_SWITCH,
+                        area: this.area,
+                        versionId,
+                        routingKey,
+                        valueLocation
+                    })
+                });
             }
-            WebApi.switchOutputCalculating(versionId, outputDefinitionId, itemTypeId).then(() => {
-                dispatch({
-                    type: types.FUND_SUB_NODE_FORM_OUTPUT_CALC_SWITCH,
-                    area: this.area,
-                    versionId,
-                    routingKey,
-                    valueLocation
-                })
-            });
         }
     }
 

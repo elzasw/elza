@@ -238,6 +238,7 @@ var messages = {
     "arr.output.noSelection.message": "Prosím vyberte výstup ze seznamu nebo vytvořte nový. Pro vytvoření výstupu je potřeba povolit úpravy.",
     "arr.output.delete.confirm": "Opravdu chcete smazat výstup?",
     "arr.output.usageEnd.confirm": "Opravdu chcete ukončit používání výstupu?",
+    "arr.output.title.unusedGeneratedItems": "Nepoužité vygenerované prvky popisu ({0})",
     "arr.output.title.add": "Vytvoření nového výstupu",
     "arr.output.title.edit": "Upravení výstupu",
     "arr.output.title.added": "Výstup byl vytvořen",

@@ -1877,7 +1877,9 @@ public class OutputService {
 
             List<RulAction> actionByCodes = bulkActionService.getBulkActionByCodes(actionCodes);
 
-            rulItemTypes = itemTypeActionRepository.findByAction(actionByCodes);
+            if (!actionByCodes.isEmpty()) {
+                rulItemTypes = itemTypeActionRepository.findByAction(actionByCodes);
+            }
         }
 
         // ručně vypnuté typy atributů

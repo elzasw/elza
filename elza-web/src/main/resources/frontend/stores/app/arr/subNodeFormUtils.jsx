@@ -395,6 +395,9 @@ export function updateFormData(state, data, refTypesMap) {
         // Data přijatá ze serveru
         state.data = data
 
+        // Překopírování seznam id nepoužitých PP pro výstupy
+        state.unusedItemTypeIds = data.unusedItemTypeIds;
+
         // Info skupiny - ty, které jsou jako celek definované pro konkrétní JP - obsahují všechny atributy včetně např. typu - POSSIBLE atp.
         // Změna číselného typu na řetězec
         // Přidání do info skupin position

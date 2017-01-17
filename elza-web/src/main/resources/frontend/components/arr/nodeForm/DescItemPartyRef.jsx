@@ -89,6 +89,6 @@ export default connect((state) => {
     return {
         partyList,
         fundName: fund.name,
-        nodeName: subNode.name
+        nodeName: subNode ? subNode.name : null
     }
 }, null, null, { withRef: true })(DescItemPartyRef);
