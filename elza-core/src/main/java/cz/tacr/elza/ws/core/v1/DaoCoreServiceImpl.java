@@ -205,10 +205,10 @@ public class DaoCoreServiceImpl implements DaoService {
         ArrDigitalRepository repository = digitalRepositoryRepository.findOneByCode(daoPackage.getRepositoryIdentifier());
 
         if (fund == null) {
-            throw new ObjectNotFoundException(ArrangementCode.FUND_NOT_FOUND).set("uuid", daoPackage.getFundIdentifier());
+            throw new ObjectNotFoundException("Nepodařilo se dohledat AS: " + daoPackage.getFundIdentifier(), ArrangementCode.FUND_NOT_FOUND).set("uuid", daoPackage.getFundIdentifier());
         }
         if (repository == null) {
-            throw new ObjectNotFoundException(DigitizationCode.REPOSITORY_NOT_FOUND).set("code", daoPackage.getRepositoryIdentifier());
+            throw new ObjectNotFoundException("Nepodařilo se dohledat digitalRepository: " + daoPackage.getRepositoryIdentifier(), DigitizationCode.REPOSITORY_NOT_FOUND).set("code", daoPackage.getRepositoryIdentifier());
         }
         if (StringUtils.isBlank(daoPackage.getIdentifier())) {
             logger.error("Nebylo vyplněno povinné pole externího identifikátoru");
