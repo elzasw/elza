@@ -78,7 +78,7 @@ class ArrSearchForm extends AbstractReactComponent {
             }
 
             case TYPE_UNITDATE: {
-                return <div className="xz">
+                return <div className="unitdate">
                     <FormInput componentClass="select" {...condition.condition}>
                         <option value={GE} key={GE}>{i18n('search.extended.form.unitdate.type.ge')}</option>
                         <option value={LE} key={LE}>{i18n('search.extended.form.unitdate.type.le')}</option>
