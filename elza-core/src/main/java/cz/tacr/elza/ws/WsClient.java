@@ -146,21 +146,21 @@ public class WsClient {
     }
 
     private static DaoRequests getDaoRequests(ArrDigitalRepository digitalRepository) {
-        final String url = digitalRepository.getUrl();
+        final String url = digitalRepository.getUrl() + "DaoRequests";
         final String username = digitalRepository.getUsername();
         final String password = digitalRepository.getPassword();
         return getJaxWsRemoteInterface(DaoRequests.class, url, username, password);
     }
 
     private static DaoNotifications getDaoNotifications(ArrDigitalRepository digitalRepository) {
-        final String url = digitalRepository.getUrl();
+        final String url = digitalRepository.getUrl() + "DaoNotifications";
         final String username = digitalRepository.getUsername();
         final String password = digitalRepository.getPassword();
         return getJaxWsRemoteInterface(DaoNotifications.class, url, username, password);
     }
 
     private static DigitizationFrontdesk getDigitizationFrontdesk(ArrDigitizationFrontdesk digitalRepository) {
-        final String url = digitalRepository.getUrl();
+        final String url = digitalRepository.getUrl() + "DigitizationFrontdesk";
         final String username = digitalRepository.getUsername();
         final String password = digitalRepository.getPassword();
         return getJaxWsRemoteInterface(DigitizationFrontdesk.class, url, username, password);

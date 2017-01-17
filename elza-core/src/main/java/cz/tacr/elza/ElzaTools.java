@@ -1,5 +1,10 @@
 package cz.tacr.elza;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.ObjectUtils;
+import org.hibernate.proxy.HibernateProxy;
+
+import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
@@ -7,12 +12,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.ObjectUtils;
-import org.hibernate.proxy.HibernateProxy;
 
 
 /**
@@ -168,7 +167,9 @@ public class ElzaTools {
         Map<String, String> properties = new HashMap<>();
 
         public UrlParams add(final String key, final Object value) {
-            properties.put(key, value.toString());
+            if (value != null) {
+                properties.put(key, value.toString());
+            }
             return this;
         }
 
