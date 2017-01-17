@@ -14,15 +14,15 @@ class Icon extends AbstractReactComponent {
     }
 
     render() {
-        const {glyph, ...otherProps} = this.props;
+        const {glyph, className, ...otherProps} = this.props;
         if(glyph.indexOf("ez-")==0){
             var cls = 'icon ez ' + glyph;
         }
         else if(glyph.indexOf("fa-")==0){
             var cls = 'icon fa ' + glyph;
         }
-        if (this.props.className) {
-            cls += ' ' + this.props.className;
+        if (className) {
+            cls += ' ' + className;
         }
 
         var props = {};
