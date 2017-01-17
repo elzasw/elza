@@ -648,7 +648,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                         }
                         case "UNITDATE": {
                             param["@class"] = ".UnitdateSearchParam";
-                            param.calendarId = parseInt(conditionItem.calendarId);
+                            param.calendarId = parseInt(conditionItem.calendarTypeId);
                             param.condition = conditionItem.condition;
                             break;
                         }
