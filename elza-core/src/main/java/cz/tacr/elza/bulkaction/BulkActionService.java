@@ -680,7 +680,8 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         if (CollectionUtils.isEmpty(codes)) {
             return Collections.emptyList();
         }
-        return actionRepository.findByFilename(codes.stream().map(code -> code + ".yaml").collect(Collectors.toList()));
+        List<String> collect = codes.stream().map(code -> code + ".yaml").collect(Collectors.toList());
+        return actionRepository.findByFilenameIn(collect);
     }
 
     public Set<RulAction> getRecommendedActions(final RulOutputType outputType) {

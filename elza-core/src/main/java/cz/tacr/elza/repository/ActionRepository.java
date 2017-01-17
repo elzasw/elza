@@ -26,5 +26,5 @@ public interface ActionRepository extends JpaRepository<RulAction, Integer> {
 
     RulAction findOneByFilename(String name);
 
-    List<RulAction> findByFilename(List<String> names);
+    List<RulAction> findByFilenameIn(List<String> names);
 }

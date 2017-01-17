@@ -1875,10 +1875,13 @@ public class OutputService {
                 actionCodes.add(bulkActionRun.getBulkActionCode());
             }
 
-            List<RulAction> actionByCodes = bulkActionService.getBulkActionByCodes(actionCodes);
+            if (!actionCodes.isEmpty()) {
 
-            if (!actionByCodes.isEmpty()) {
-                rulItemTypes = itemTypeActionRepository.findByAction(actionByCodes);
+                List<RulAction> actionByCodes = bulkActionService.getBulkActionByCodes(actionCodes);
+
+                if (!actionByCodes.isEmpty()) {
+                    rulItemTypes = itemTypeActionRepository.findByAction(actionByCodes);
+                }
             }
         }
 
