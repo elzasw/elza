@@ -19,7 +19,6 @@ import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
@@ -35,6 +34,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
@@ -1519,6 +1520,9 @@ public class ArrangementController {
         List<SearchParam> searchParams = input.getSearchParams();
         if (CollectionUtils.isNotEmpty(searchParams)) {
             nodeIds = arrangementService.findNodeIdsBySearchParams(version, input.getNodeId(), searchParams,
+                    input.getDepth());
+        } else if (input.getLuceneQuery()) {
+            nodeIds = arrangementService.findNodeIdsByLuceneQuery(version, input.getNodeId(), input.getSearchValue(),
                     input.getDepth());
         } else {
             nodeIds = arrangementService.findNodeIdsByFulltext(version, input.getNodeId(),
@@ -3071,6 +3075,9 @@ public class ArrangementController {
         @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
         private List<SearchParam> searchParams;
 
+        /** Příznak že v hodnotě searchValue je lucene query (např: +specification:*čís* -fulltextValue:ddd), false - normální fulltext */
+        private boolean luceneQuery;
+
         public Integer getVersionId() {
             return versionId;
         }
@@ -3101,7 +3108,12 @@ public class ArrangementController {
         public void setSearchParams(final List<SearchParam> searchParams) {
             this.searchParams = searchParams;
         }
-
+        public boolean getLuceneQuery() {
+            return luceneQuery;
+        }
+        public void setLuceneQuery(final boolean luceneQuery) {
+            this.luceneQuery = luceneQuery;
+        }
     }
 
     /**

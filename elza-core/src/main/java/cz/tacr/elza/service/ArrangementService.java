@@ -959,18 +959,24 @@ public class ArrangementService {
      * @param version     verze AP
      * @param nodeId      id uzlu pod kterým se má hledat, může být null
      * @param searchValue lucene dotaz (např: +specification:*čís* -fulltextValue:ddd)
+     * @param depth hloubka v jaké se hledá pod předaným nodeId
      * @return seznam id uzlů které vyhovují parametrům
      * @throws InvalidQueryException neplatný lucene dotaz
      */
     public Set<Integer> findNodeIdsByLuceneQuery(final ArrFundVersion version, final Integer nodeId,
-                                                 final String searchValue) throws InvalidQueryException {
+                                                 final String searchValue, final Depth depth) throws InvalidQueryException {
         Assert.notNull(version);
 
         ArrChange lockChange = version.getLockChange();
         Integer lockChangeId = lockChange == null ? null : lockChange.getChangeId();
         Integer fundId = version.getFund().getFundId();
 
-        return nodeRepository.findByLuceneQueryAndVersionLockChangeId(searchValue, fundId, lockChangeId);
+        Set<Integer> nodeIds = nodeRepository.findByLuceneQueryAndVersionLockChangeId(searchValue, fundId, lockChangeId);
+
+        Set<Integer> versionNodeIds = levelTreeCacheService.getAllNodeIdsByVersionAndParent(version, nodeId, depth);
+        versionNodeIds.retainAll(nodeIds);
+
+        return versionNodeIds;
     }
 
     /**

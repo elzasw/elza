@@ -193,11 +193,12 @@ public class FilterTreeService {
             fulltextIds = filteredIds;
         } else if (luceneQuery) {
             fulltextIds = arrangementService
-                    .findNodeIdsByLuceneQuery(version, version.getRootNode().getNodeId(), fulltext);
+                    .findNodeIdsByLuceneQuery(version, null, fulltext,
+                            ArrangementController.Depth.SUBTREE);
         } else {
 
             fulltextIds = arrangementService
-                    .findNodeIdsByFulltext(version, version.getRootNode().getNodeId(), fulltext,
+                    .findNodeIdsByFulltext(version, null, fulltext,
                             ArrangementController.Depth.SUBTREE);
         }
 
