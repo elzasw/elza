@@ -16,6 +16,7 @@
     <modules>
         <module>elza-tomcat</module>
         <module>elza-war</module>
+        <module>dao-test-bench-war</module>
     </modules>
 
 </project>
