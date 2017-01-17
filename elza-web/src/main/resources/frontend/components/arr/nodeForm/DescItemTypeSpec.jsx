@@ -143,7 +143,7 @@ class DescItemTypeSpec extends AbstractReactComponent {
         }
 
         return {
-            id: treeNodeIndex.index++,
+            id: "g-" + (treeNodeIndex.index++),
             name: node.name,
             node: true,
             expanded: !!lowerFilterText,

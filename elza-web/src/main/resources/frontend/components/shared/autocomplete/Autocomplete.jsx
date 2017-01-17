@@ -735,12 +735,25 @@ export default class Autocomplete extends AbstractReactComponent {
         }
 
         // Pokud má favorite info a není nastaven filtr, vložíme favorite položky
+        let beforeTreeCount = 0;    // počet položek, které jsou před stromovými položkami - musíme o ně posunout informace o depth
         if (!inputStrValue && favoriteInfo.favoriteItems && favoriteInfo.favoriteItems.length > 0) {
+            beforeTreeCount += 2;   // oba titulky
+            beforeTreeCount += favoriteInfo.favoriteItems.length;   // oblíbené
             result.items = [
                 favoriteInfo.favoriteItemsTitleItem,
                 ...favoriteInfo.favoriteItems,
                 favoriteInfo.itemsTitleItem,
                 ...result.items,
+            ];
+        }
+        if (tree) { // posun depth pole
+            let arr = [];
+            for (let a=0; a<beforeTreeCount; a++) {
+                arr.push(0);
+            }
+            result.itemsDepth = [
+                ...arr,
+                ...result.itemsDepth
             ];
         }
 

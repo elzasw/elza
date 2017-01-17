@@ -52,10 +52,19 @@ export default class extends AbstractReactComponent {
             };
             treeItems.push(root);
             for (let b=0; b<10; b++) {
-                root.children.push({
+                const subNode = {
                     id: 1000 + a * 100 + b,
                     name: "polozka #" + a + "-" + b + "u"
-                });
+                };
+                root.children.push(subNode);
+                if (b === 0) {
+                    subNode.children = [
+                        {
+                            id: 20000,
+                            name: "xxxxxxxxxxxxxx"
+                        }
+                    ]
+                }
             }
         }
 
