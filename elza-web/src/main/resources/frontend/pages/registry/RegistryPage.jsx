@@ -12,7 +12,7 @@ import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 import {Button} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
-import {registryMoveStart, registryMove, registryMoveCancel, registryDelete, registryDetailFetchIfNeeded, registryAdd} from 'actions/registry/registry.jsx'
+import {registryMoveStart, registryMove, registryMoveCancel, registryDelete, registryDetailFetchIfNeeded, registryAdd, registryListInvalidate} from 'actions/registry/registry.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
 import ShortcutsManager from 'react-shortcuts';
@@ -175,6 +175,7 @@ class RegistryPage extends AbstractReactComponent {
 
     handleCallAddRegistry = (data) => {
         this.dispatch(registryDetailFetchIfNeeded(data.id));
+        this.dispatch(registryListInvalidate());
     };
 
     handleDeleteRegistry = () => {
@@ -215,36 +216,41 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     buildRibbon = () => {
-        const {registryDetail:{data}, userDetail, extSystems} = this.props;
+        const {registryDetail:{data}, userDetail, extSystems, module, customRibbon} = this.props;
 
-        const altActions = [];
+        const parts = module && customRibbon ? customRibbon : {altActions: [], itemActions: [], primarySection: null};
+
+        const altActions = [...parts.altActions];
 
         if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL)) {
             altActions.push(
-                <Button key='addRegistry' onClick={this.handleAddRegistry}><Icon glyph="fa-download"/>
+                <Button key='addRegistry' onClick={this.handleAddRegistry}>
+                    <Icon glyph="fa-download"/>
                     <div><span className="btnText">{i18n('registry.addNewRegistry')}</span></div>
                 </Button>
             );
             altActions.push(
-                <Button key='registryImport' onClick={this.handleRegistryImport}><Icon glyph='fa-download'/>
+                <Button key='registryImport' onClick={this.handleRegistryImport}>
+                    <Icon glyph='fa-download'/>
                     <div><span className="btnText">{i18n('ribbon.action.registry.import')}</span></div>
                 </Button>
             );
             if (extSystems && extSystems.length > 0) {
                 altActions.push(
-                    <Button key='registryExtImport' onClick={this.handleExtImport}><Icon glyph='fa-download'/>
+                    <Button key='registryExtImport' onClick={this.handleExtImport}>
+                        <Icon glyph='fa-download'/>
                         <div><span className="btnText">{i18n('ribbon.action.registry.importExt')}</span></div>
                     </Button>
                 );
             }
         }
 
-        const itemActions = [];
+        const itemActions = [...parts.itemActions];
         if (this.canDeleteRegistry()) {
             if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: data ? data.scopeId : null})) {
                 itemActions.push(
-                    <Button key='registryRemove' onClick={this.handleDeleteRegistry}><Icon
-                        glyph="fa-trash"/>
+                    <Button key='registryRemove' onClick={this.handleDeleteRegistry}>
+                        <Icon glyph="fa-trash"/>
                         <div><span className="btnText">{i18n('registry.deleteRegistry')}</span></div>
                     </Button>
                 );
@@ -253,7 +259,8 @@ class RegistryPage extends AbstractReactComponent {
         if (this.canMoveRegistry()) {
             if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: data ? data.scopeId : null})) {
                 itemActions.push(
-                    <Button key='registryMove' onClick={this.handleRegistryMoveStart}><Icon glyph="fa-share"/>
+                    <Button key='registryMove' onClick={this.handleRegistryMoveStart}>
+                        <Icon glyph="fa-share"/>
                         <div><span className="btnText">{i18n('registry.moveRegistry')}</span></div>
                     </Button>
                 );
@@ -262,13 +269,14 @@ class RegistryPage extends AbstractReactComponent {
         if (this.canMoveApplyCancelRegistry()) {
             if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: data ? data.scopeId : null})) {
                 itemActions.push(
-                    <Button key='registryMoveApply' onClick={this.handleRegistryMoveConfirm}><Icon
-                        glyph="fa-check-circle"/>
+                    <Button key='registryMoveApply' onClick={this.handleRegistryMoveConfirm}>
+                        <Icon glyph="fa-check-circle"/>
                         <div><span className="btnText">{i18n('registry.applyMove')}</span></div>
                     </Button>
                 );
                 itemActions.push(
-                    <Button key='registryMoveCancel' onClick={this.handleRegistryMoveCancel}><Icon glyph="fa-times"/>
+                    <Button key='registryMoveCancel' onClick={this.handleRegistryMoveCancel}>
+                        <Icon glyph="fa-times"/>
                         <div><span className="btnText">{i18n('registry.cancelMove')}</span></div>
                     </Button>
                 );
@@ -284,11 +292,11 @@ class RegistryPage extends AbstractReactComponent {
             itemSection = <RibbonGroup key="ribbon-item-actions" className="small">{itemActions}</RibbonGroup>
         }
 
-        return <Ribbon registry altSection={altSection} itemSection={itemSection} {...this.props} />
+        return <Ribbon primarySection={parts.primarySection} altSection={altSection} itemSection={itemSection} />
     };
 
     render() {
-        const {splitter, module, titles, customRibbon} = this.props;
+        const {splitter, module, titles} = this.props;
 
 
 
@@ -307,7 +315,7 @@ class RegistryPage extends AbstractReactComponent {
             <PageLayout
                 splitter={splitter}
                 key='registryPage'
-                ribbon={module && customRibbon ? customRibbon : this.buildRibbon()}
+                ribbon={this.buildRibbon()}
                 leftPanel={<RegistryList />}
                 centerPanel={centerPanel}
             />

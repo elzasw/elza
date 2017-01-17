@@ -33,6 +33,7 @@ class Ribbon extends AbstractReactComponent {
 
     static PropTypes = {
         subMenu: React.PropTypes.bool,
+        primarySection: React.PropTypes.object,
         admin: React.PropTypes.bool,
         arr: React.PropTypes.bool,
         altSection: React.PropTypes.object,
@@ -84,7 +85,7 @@ class Ribbon extends AbstractReactComponent {
     };
 
     render() {
-        const {subMenu, userDetail, altSection, itemSection, fundId, status: {saveCounter}} = this.props;
+        const {subMenu, userDetail, altSection, itemSection, primarySection, fundId, status: {saveCounter}} = this.props;
 
         let section = null;
 
@@ -151,6 +152,8 @@ class Ribbon extends AbstractReactComponent {
                     <Button className="large" onClick={this.handleBack} title={i18n('ribbon.action.back')}><Icon glyph="fa-arrow-circle-o-left" /></Button>
                 </RibbonGroup>
             )
+        } else if (primarySection) {
+            section = primarySection;
         } else {    // standardní menu s hlavním rozcestníkem
             parts.push(
                 <RibbonGroup key="ribbon-group-main" className="large">
@@ -173,7 +176,7 @@ class Ribbon extends AbstractReactComponent {
         {parts.forEach((part, index) => {
             partsWithSplit.push(part);
             if (index + 1 < parts.length) {
-                partsWithSplit.push(<RibbonSplit key={"ribbon-spliter-"+index+1} />)
+                partsWithSplit.push(<RibbonSplit key={"ribbon-spliter-"+(index+1)} />)
             }
         })}
 

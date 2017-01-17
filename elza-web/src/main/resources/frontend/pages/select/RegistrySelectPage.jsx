@@ -63,20 +63,32 @@ class RegistrySelectPage extends SelectPage {
         this.handleClose();
     };
 
-    buildRibbon() {
+    buildRibbonParts() {
         const {openPage} = this.state;
         const {hasParty} = this.props;
 
-        return super.buildRibbon(<RibbonGroup key="ribbon-group-items" className="large">
-            <Button className={classNames({active: openPage == OPEN_PAGE.REGISTRY})}
-                    onClick={this.handlePageChange.bind(this, OPEN_PAGE.REGISTRY)}>
-                <Icon glyph="fa-th-list" /><div><span className="btnText">{i18n('ribbon.action.registry')}</span></div>
-            </Button>
-            {hasParty && <Button className={classNames({active: openPage == OPEN_PAGE.PARTY})}
-                    onClick={this.handlePageChange.bind(this, OPEN_PAGE.PARTY)}>
+
+        const parts = super.buildRibbonParts();
+        parts.primarySection.push(<RibbonSplit key={"ribbon-spliter-pages"} />);
+        const items = [];
+        items.push(<Button className={classNames({active: openPage == OPEN_PAGE.REGISTRY})}
+                onClick={this.handlePageChange.bind(this, OPEN_PAGE.REGISTRY)}>
+            <Icon glyph="fa-th-list" /><div><span className="btnText">{i18n('ribbon.action.registry')}</span></div>
+        </Button>);
+
+        if (hasParty) {
+            items.push(<Button className={classNames({active: openPage == OPEN_PAGE.PARTY})} onClick={this.handlePageChange.bind(this, OPEN_PAGE.PARTY)}>
                 <Icon glyph="fa-users" /><div><span className="btnText">{i18n('ribbon.action.party')}</span></div>
-            </Button>}
-        </RibbonGroup>);
+            </Button>);
+        }
+
+        parts.primarySection.push(
+            <RibbonGroup key="ribbon-group-pages" className="large">
+                {items}
+            </RibbonGroup>
+        );
+
+        return parts;
     };
 
 
@@ -86,7 +98,7 @@ class RegistrySelectPage extends SelectPage {
         const {titles} = this.props;
 
         const props = {
-            customRibbon: this.buildRibbon(),
+            customRibbon: this.buildRibbonParts(),
             module: true,
             titles
         };

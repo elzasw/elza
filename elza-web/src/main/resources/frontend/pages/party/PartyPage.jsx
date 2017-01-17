@@ -132,10 +132,12 @@ class PartyPage extends AbstractReactComponent {
      * Sestavení Ribbon Menu - přidání položek pro osoby
      */
     buildRibbon = () => {
-        const {userDetail, partyDetail, refTables: {partyTypes}, extSystems} = this.props;
+        const {userDetail, partyDetail, refTables: {partyTypes}, extSystems, module, customRibbon} = this.props;
+
+        const parts = module && customRibbon ? customRibbon : {altActions: [], itemActions: [], primarySection: null};
 
         const isSelected = partyDetail.id !== null;
-        const altActions = [];
+        const altActions = [...parts.altActions];
         if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL)) {
             altActions.push(
                 <ControllableDropdownButton key='add-party' ref='addParty' id='add-party' title={<span className="dropContent"><Icon glyph='fa-download fa-fw' /><div><span className="btnText">{i18n('party.addParty')}</span></div></span>}>
@@ -154,7 +156,7 @@ class PartyPage extends AbstractReactComponent {
             }
         }
 
-        const itemActions = [];
+        const itemActions = [...parts.itemActions];
         if (isSelected && partyDetail.fetched && !partyDetail.isFetching) {
             if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: partyDetail.data.record.scopeId})) {
                 itemActions.push(
@@ -174,7 +176,7 @@ class PartyPage extends AbstractReactComponent {
             itemSection = <RibbonGroup key='item-actions' className="small">{itemActions}</RibbonGroup>
         }
 
-        return <Ribbon party altSection={altSection} itemSection={itemSection} {...this.props} />;
+        return <Ribbon primarySection={parts.primarySection} altSection={altSection} itemSection={itemSection} />;
     };
 
     /**
@@ -183,7 +185,7 @@ class PartyPage extends AbstractReactComponent {
      * Vykreslení stránky pro osoby
      */
     render() {
-        const {splitter, module, customRibbon, titles} = this.props;
+        const {splitter, module, titles} = this.props;
 
         const leftPanel = <PartyList />;
 
@@ -200,7 +202,7 @@ class PartyPage extends AbstractReactComponent {
             <PageLayout
                 splitter={splitter}
                 className='party-page'
-                ribbon={module && customRibbon ? customRibbon : this.buildRibbon()}
+                ribbon={this.buildRibbon()}
                 leftPanel={leftPanel}
                 centerPanel={centerPanel}
             />

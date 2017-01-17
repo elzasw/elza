@@ -39,19 +39,6 @@ class SelectPage extends AbstractReactComponent {
         }
     }
 
-    handleLogout = () => {
-        this.dispatch(logout());
-    };
-
-    handlePasswordChangeForm = () => {
-        this.dispatch(modalDialogShow(this, i18n('admin.user.passwordChange.title'), <PasswordForm
-            onSubmitForm={this.handlePasswordChange}/>))
-    };
-
-    handlePasswordChange = (data) => {
-        this.dispatch(userPasswordChange(data.oldPassword, data.password));
-    };
-
     handlePageChange = (page) => {
         if (this.state.openPage !== page) {
             this.setState({openPage: page});
@@ -75,35 +62,21 @@ class SelectPage extends AbstractReactComponent {
         return <div className="titles-header">{items}</div>
     };
 
-    buildRibbon(centerGroup) {
-        const {userDetail, status: {saveCounter}} = this.props;
-        return <RibbonMenu>
-            <RibbonGroup key="ribbon-group-main" className="large">
-                <Button onClick={this.handleClose} style={{borderRadius:'50%', background: '#CD5051', color: 'white'}}>
-                    <Icon glyph="fa-times" style={{fontSize: '3em'}}/>
-                </Button>
-                <Button onClick={this.handleConfirm} style={{borderRadius:'50%', background: '#86BB65', color: 'white'}}>
-                    <Icon glyph="fa-check" style={{fontSize: '3em'}}/>
-                </Button>
-            </RibbonGroup>
-            <RibbonSplit key="ribbon-spliter-1"/>
-            {centerGroup}
-            <RibbonGroup className="small right">
-                <Dropdown bsStyle='default' key='user-menu' id='user-menu'>
-                    <Dropdown.Toggle noCaret>
-                        {userDetail.username}<Icon glyph="fa-user"/>
-                    </Dropdown.Toggle>
-                    <Dropdown.Menu>
-                        <MenuItem eventKey="1"
-                                  onClick={this.handlePasswordChangeForm}>{i18n('ribbon.action.admin.user.passwordChange')}</MenuItem>
-                        <MenuItem divider/>
-                        <MenuItem eventKey="2" onClick={this.handleLogout}>{i18n('ribbon.action.logout')}</MenuItem>
-                    </Dropdown.Menu>
-                </Dropdown>
-                {saveCounter > 0 &&
-                <div className="save-msg"><Icon glyph="fa-spinner fa-spin"/>{i18n('ribbon.saving')}</div>}
-            </RibbonGroup>
-        </RibbonMenu>
+    buildRibbonParts() {
+        return {
+            altActions: [],
+            itemActions: [],
+            primarySection: [
+                <RibbonGroup key="ribbon-group-main" className="large">
+                    <Button onClick={this.handleClose} style={{borderRadius:'50%', background: '#CD5051', color: 'white'}}>
+                        <Icon glyph="fa-times" style={{fontSize: '3em'}}/>
+                    </Button>,
+                    <Button onClick={this.handleConfirm} style={{borderRadius:'50%', background: '#86BB65', color: 'white'}}>
+                        <Icon glyph="fa-check" style={{fontSize: '3em'}}/>
+                    </Button>
+                </RibbonGroup>
+            ]
+        }
     };
 }
 

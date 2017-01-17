@@ -33,20 +33,28 @@ class PartySelectPage extends SelectPage {
         if (!partyDetail.fetched || partyDetail.isFetching || !partyDetail.id) {
             return;
         }
-        onChange(partyDetail.data.record);
+        onChange(partyDetail.data);
         this.handleClose();
     };
 
-    buildRibbon() {
-        return super.buildRibbon(<RibbonGroup key="ribbon-group-items" className="large">
-            <Button className="active"><Icon glyph="fa-users" /><div><span className="btnText">{i18n('ribbon.action.party')}</span></div></Button>
-        </RibbonGroup>);
+    buildRibbonParts() {
+        const parts = super.buildRibbonParts();
+        parts.primarySection.push(<RibbonSplit key={"ribbon-spliter-pages"} />);
+        parts.primarySection.push(
+            <RibbonGroup key="ribbon-group-pages" className="large">
+                <Button className="active">
+                    <Icon glyph="fa-users" />
+                    <div><span className="btnText">{i18n('ribbon.action.party')}</span></div>
+                </Button>
+            </RibbonGroup>
+        );
+        return parts;
     };
 
     render() {
         const {titles} = this.props;
         const props = {
-            customRibbon: this.buildRibbon(),
+            customRibbon: this.buildRibbonParts(),
             module: true,
             titles
         };

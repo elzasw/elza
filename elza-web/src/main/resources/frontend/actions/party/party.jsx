@@ -138,7 +138,6 @@ export function relationCreate(relation) {
     return (dispatch, getState) => {
         return savingApiWrapper(dispatch, WebApi.createRelation(relation))
             .then(() => {
-                dispatch(modalDialogHide());
                 dispatch(partyDetailInvalidate());
                 const {app:{partyList}} = getState();
                 if (partyList.filteredRows && indexById(partyList.filteredRows, relation.partyId) !== null) {
@@ -170,7 +169,6 @@ export function relationUpdate(relation) {
     return (dispatch, getState) => {
         return savingApiWrapper(dispatch, WebApi.updateRelation(relation))
             .then(() => {
-                dispatch(modalDialogHide());
                 dispatch(partyDetailInvalidate());
                 const {app:{partyList}} = getState();
                 if (partyList.filteredRows && indexById(partyList.filteredRows, relation.partyId) !== null) {
