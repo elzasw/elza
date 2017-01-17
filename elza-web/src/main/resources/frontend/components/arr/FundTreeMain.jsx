@@ -5,7 +5,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, FundTreeLazy} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, FundTreeLazy, ArrSearchForm} from 'components/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
 import {AppActions} from 'stores/index.jsx';
 import {MenuItem} from 'react-bootstrap';
@@ -15,6 +15,7 @@ import {createFundRoot, getParentNode} from './ArrUtils.jsx'
 import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu.jsx'
 import {propsEquals} from 'components/Utils.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 
 var FundTreeMain = class FundTreeMain extends AbstractReactComponent {
     constructor(props) {
@@ -128,7 +129,8 @@ return true
     }
 
     handleFulltextSearch() {
-        this.dispatch(fundTreeFulltextSearch(types.FUND_TREE_AREA_MAIN, this.props.versionId));
+        const {fund} = this.props;
+        this.dispatch(fundTreeFulltextSearch(types.FUND_TREE_AREA_MAIN, this.props.versionId, null, fund.fundTree.searchFormData ? fund.fundTree.searchFormData : {type: "FORM"}));
     }
 
     handleFulltextPrevItem() {
@@ -145,6 +147,53 @@ return true
     handleCollapse() {
         this.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_MAIN, this.props.versionId, this.props.fund))
     }
+
+    handleExtendedSearch = () => {
+        const {fund} = this.props;
+        this.dispatch(modalDialogShow(this, i18n('search.extended.title'),
+            <ArrSearchForm
+                onSubmitForm={this.handleExtendedSearchData}
+                initialValues={fund.fundTree.searchFormData ? fund.fundTree.searchFormData : {type: "FORM"}}
+            />
+        ));
+    };
+
+    handleExtendedSearchData = (result) => {
+        const {versionId} = this.props;
+        let params = [];
+
+        switch (result.type) {
+            case "FORM": {
+                result.condition.forEach((conditionItem, index) => {
+                    let param = {};
+                    param.type = conditionItem.type;
+                    param.value = conditionItem.value;
+                    switch (conditionItem.type) {
+                        case "TEXT": {
+                            param["@class"] = ".TextSearchParam";
+                            break;
+                        }
+                        case "UNITDATE": {
+                            param["@class"] = ".UnitdateSearchParam";
+                            param.calendarId = parseInt(conditionItem.calendarId);
+                            param.condition = conditionItem.condition;
+                            break;
+                        }
+                    }
+                    params.push(param);
+                });
+                break;
+            }
+
+            case "TEXT": {
+                this.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_MAIN, this.props.versionId, result.text));
+                break;
+            }
+        }
+
+        this.dispatch(fundTreeFulltextSearch(types.FUND_TREE_AREA_MAIN, versionId, params, result, true));
+        this.dispatch(modalDialogHide());
+    };
 
     render() {
         const {actionAddons, className, fund, cutLongLabels} = this.props;
@@ -165,6 +214,9 @@ return true
                 onFulltextNextItem={this.handleFulltextNextItem}
                 onCollapse={this.handleCollapse}
                 extendedSearch
+                filterText={fund.fundTree.luceneQuery ? i18n('search.extended.label') : fund.fundTree.searchText}
+                extendedReadOnly={fund.fundTree.luceneQuery}
+                onClickExtendedSearch={this.handleExtendedSearch}
             />
         )
     }

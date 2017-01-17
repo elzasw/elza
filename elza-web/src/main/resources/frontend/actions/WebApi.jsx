@@ -79,12 +79,14 @@ class WebApi {
     constructor() {
     }
 
-    findInFundTree(versionId, nodeId, searchText, type) {
+    findInFundTree(versionId, nodeId, searchText, type, searchParams = null, luceneQuery = false) {
         const data = {
             versionId: versionId,
             nodeId: nodeId,
             searchValue: searchText,
             depth: type,
+            searchParams: searchParams,
+            luceneQuery: luceneQuery
         };
         return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/fulltext', null,  data);
     }

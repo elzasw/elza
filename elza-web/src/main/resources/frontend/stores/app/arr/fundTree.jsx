@@ -19,9 +19,10 @@ const initialState = {
     dirty: false,
     fetchingIncludeIds: {},   // jaké id aktuálně fetchuje - id na true
     nodes: [],
-    lastSelectedId: null, 
+    lastSelectedId: null,
     multipleSelection: false,
     multipleSelectionOneLevel: false,
+    luceneQuery: false,
 }
 
 function getOneSelectedIdIfExists(state) {
@@ -153,7 +154,7 @@ export default function fundTree(state = initialState, action = {}) {
                 expandedIds,
                 multipleSelection,
                 multipleSelectionOneLevel,
-            }     
+            }
         case types.GLOBAL_CONTEXT_MENU_HIDE:
             var result = {
                 ...state,
@@ -167,7 +168,8 @@ export default function fundTree(state = initialState, action = {}) {
                 filterText: action.filterText,
                 filterCurrentIndex: -1,
                 searchedIds: [],
-                searchedParents: []
+                searchedParents: [],
+                luceneQuery: false
             }
         case types.FUND_FUND_TREE_FULLTEXT_RESULT:
             if (state.filterText == action.filterText) {    // jen pokud výsledek odpovídá aktuálnímu stavu v hledací komponentě
@@ -184,7 +186,9 @@ export default function fundTree(state = initialState, action = {}) {
                     filterCurrentIndex: -1,
                     ensureItemVisible: false,
                     searchedIds: searchedIds,
-                    searchedParents: searchedParents
+                    searchedParents: searchedParents,
+                    searchFormData: action.searchFormData,
+                    luceneQuery: action.luceneQuery
                 }
             } else {
                 return state;
@@ -266,8 +270,8 @@ export default function fundTree(state = initialState, action = {}) {
                     }
 
                     return {
-                        ...state, 
-                        ensureItemVisible: action.ensureItemVisible, 
+                        ...state,
+                        ensureItemVisible: action.ensureItemVisible,
                         selectedId: action.nodeId,
                         filterCurrentIndex: newCurrentIndex
                     }

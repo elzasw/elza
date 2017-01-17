@@ -235,12 +235,12 @@ export function fundTreeFulltextPrevItem(area, versionId) {
  * {string} area jaký strom
  * {int} versionId verze AS
  */
-export function fundTreeFulltextSearch(area, versionId) {
+export function fundTreeFulltextSearch(area, versionId, params, result, luceneQuery) {
     return (dispatch, getState) => {
         var state = getState();
         var fundTree = getFundTreeForFund(state, area, versionId);
         if (fundTree) {
-            if (fundTree.filterText.length > 0) {
+            if ((fundTree.filterText && fundTree.filterText.length > 0) || luceneQuery) {
                 var searchParentNodeId
                 // V případě stromu, který má multi select hledáme v celém stromu
                 // V případě stromu, který má single select hledáme POD vybranou položkou
@@ -254,16 +254,16 @@ export function fundTreeFulltextSearch(area, versionId) {
                     }
                 }
 
-                return WebApi.findInFundTree(versionId, searchParentNodeId, fundTree.filterText, 'SUBTREE')
+                return WebApi.findInFundTree(versionId, searchParentNodeId, fundTree.filterText, 'SUBTREE', params, luceneQuery)
                     .then(json => {
-                        dispatch(fundTreeFulltextResult(area, versionId, fundTree.filterText, json, false))
+                        dispatch(fundTreeFulltextResult(area, versionId, fundTree.filterText, json, false, result, luceneQuery))
                         if (json.length > 0) {
                             var newFundTree = getFundTreeForFund(getState(), area, versionId)
                             changeCurrentIndex(dispatch, area, getFundForTree(state, area, versionId), versionId, newFundTree, 0);
                         }
                     });
             } else {
-                dispatch(fundTreeFulltextResult(area, versionId, fundTree.filterText, [], true))
+                dispatch(fundTreeFulltextResult(area, versionId, fundTree.filterText, [], true, null, false))
             }
         }
     }
@@ -277,14 +277,16 @@ export function fundTreeFulltextSearch(area, versionId) {
  * {Arraz} searchedData seznam nalezených node
  * {boolean} clearFilter jedná se o akci, která má pouze vymazat aktuální filtr?
  */
-function fundTreeFulltextResult(area, versionId, filterText, searchedData, clearFilter) {
+function fundTreeFulltextResult(area, versionId, filterText, searchedData, clearFilter, searchFormData, luceneQuery) {
     return {
         type: types.FUND_FUND_TREE_FULLTEXT_RESULT,
         area,
         versionId,
         filterText,
         searchedData,
-        clearFilter
+        clearFilter,
+        searchFormData,
+        luceneQuery
     }
 }
 
