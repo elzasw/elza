@@ -285,11 +285,11 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         switch (condition) {
             case CONTAINS:
                 Query fromQuery = queryBuilder.range().onField("normalizedFrom").above(secondsFrom).createQuery();
-                Query toQuery = queryBuilder.range().onField("normalizedTo").below(secondsFrom).createQuery();
+                Query toQuery = queryBuilder.range().onField("normalizedTo").below(secondsTo).createQuery();
                 query = queryBuilder.bool().must(fromQuery).must(toQuery).createQuery();
                 break;
             case GE:
-                query = queryBuilder.range().onField("normalizedTo").below(secondsFrom).createQuery();
+                query = queryBuilder.range().onField("normalizedFrom").above(secondsFrom).createQuery();
                 break;
             case LE:
                 query = queryBuilder.range().onField("normalizedTo").below(secondsTo).createQuery();
