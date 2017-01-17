@@ -185,18 +185,11 @@ class PartyPage extends AbstractReactComponent {
      * Vykreslení stránky pro osoby
      */
     render() {
-        const {splitter, module, titles} = this.props;
+        const {splitter, status} = this.props;
 
         const leftPanel = <PartyList />;
 
-        let centerPanel = <PartyDetail />;
-
-        if (module && titles) {
-            centerPanel = <div className="select-module">
-                {SelectPage.renderTitles(titles)}
-                {centerPanel}
-            </div>
-        }
+        const centerPanel = <PartyDetail />;
 
         return <Shortcuts name='Party' handler={this.handleShortcuts}>
             <PageLayout
@@ -205,6 +198,7 @@ class PartyPage extends AbstractReactComponent {
                 ribbon={this.buildRibbon()}
                 leftPanel={leftPanel}
                 centerPanel={centerPanel}
+                status={status}
             />
         </Shortcuts>;
     }

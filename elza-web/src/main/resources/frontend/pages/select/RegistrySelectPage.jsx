@@ -4,19 +4,12 @@ import {connect} from 'react-redux'
 
 import classNames from 'classnames';
 
-import {AbstractReactComponent, i18n, Loading} from 'components/index.jsx';
-import {Icon, RibbonGroup,Ribbon, ModalDialog, NodeTabs, ArrPanel,
-    SearchWithGoto, RegistryPanel, AddRegistryForm, ImportForm,
-    ListBox, Autocomplete, ExtImportForm, RegistryDetail, RibbonMenu,
-    RibbonSplit} from 'components';
-import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
-import {Button, Dropdown, MenuItem} from 'react-bootstrap';
+import {AbstractReactComponent, i18n, Loading, Icon, RibbonGroup, RibbonMenu, RibbonSplit} from 'components';
+import {Button} from 'react-bootstrap';
 import {RegistryPage, PartyPage} from 'pages/index.jsx';
-import {indexById} from 'stores/app/utils.jsx'
-import {logout} from 'actions/global/login.jsx';
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
-import {userPasswordChange} from 'actions/admin/user.jsx'
+import {AREA_PARTY_DETAIL} from 'actions/party/party.jsx';
+import {AREA_REGISTRY_DETAIL} from 'actions/registry/registry.jsx';
+import {storeFromArea} from 'shared/utils'
 import SelectPage from './SelectPage'
 
 const OPEN_PAGE = {
@@ -41,23 +34,29 @@ class RegistrySelectPage extends SelectPage {
         hasParty: true
     };
 
+    handlePageChange = (page) => {
+        if (this.state.openPage !== page) {
+            this.setState({openPage: page});
+        }
+    };
+
     /**
      * @override
      */
     handleConfirm = () => {
-        const {registryDetail, partyDetail, onChange} = this.props;
+        const {registryDetail, partyDetail, onSelect} = this.props;
         switch (this.state.openPage) {
             case OPEN_PAGE.PARTY:
                 if (!partyDetail.fetched || partyDetail.isFetching || !partyDetail.id) {
                     return;
                 }
-                onChange(partyDetail.data.record);
+                onSelect(partyDetail.data.record);
                 break;
             case OPEN_PAGE.REGISTRY:
                 if (!registryDetail.fetched || registryDetail.isFetching || !registryDetail.id) {
                     return;
                 }
-                onChange(registryDetail.data);
+                onSelect(registryDetail.data);
                 break;
         }
         this.handleClose();
@@ -94,14 +93,7 @@ class RegistrySelectPage extends SelectPage {
 
     render() {
         const {openPage} = this.state;
-
-        const {titles} = this.props;
-
-        const props = {
-            customRibbon: this.buildRibbonParts(),
-            module: true,
-            titles
-        };
+        const props = this.getPageProps();
 
         switch (openPage) {
             case OPEN_PAGE.REGISTRY:
@@ -113,13 +105,11 @@ class RegistrySelectPage extends SelectPage {
 }
 
 
-function mapStateToProps(state) {
-    const {app:{registryDetail, partyDetail}} = state;
+export default connect((state) => {
+    const registryDetail = storeFromArea(state, AREA_REGISTRY_DETAIL);
+    const partyDetail = storeFromArea(state, AREA_PARTY_DETAIL);
     return {
-        ...SelectPage.mapStateToProps(state),
         registryDetail,
         partyDetail
     }
-}
-
-export default connect(mapStateToProps)(RegistrySelectPage);
+})(RegistrySelectPage);

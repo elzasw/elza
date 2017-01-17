@@ -8,9 +8,9 @@ import {Button} from 'react-bootstrap'
 import {connect} from 'react-redux'
 import * as perms from 'actions/user/Permission.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import RegistrySelectPage from 'pages/select/RegistrySelectPage.jsx'
 import {registryDetailFetchIfNeeded} from 'actions/registry/registry.jsx'
 import classNames from 'classnames';
+import {routerNavigate} from 'actions/router.jsx'
 import {debounce} from 'shared/utils'
 
 import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from 'constants'
@@ -74,21 +74,23 @@ class RegistryField extends AbstractReactComponent {
         })
     }, 500);
 
-    handleDetail = (recordId) => {
+    handleDetail = (id) => {
         const {searchText} = this.state;
-        const {onChange, onBlur, itemSpecId, registryList:{filter}} = this.props;
-        const open = (party) => {
-            this.dispatch(registryListFilter({...filter, text: searchText}));
-            this.dispatch(registryDetailFetchIfNeeded(recordId));
-            this.dispatch(modalDialogShow(this, null, <RegistrySelectPage hasParty={party} onChange={(data) => {
-                this.normalizeValue(onChange)(data);
-                this.normalizeValue(onBlur)(data);
-            }} />, classNames(MODAL_DIALOG_VARIANT.FULLSCREEN, MODAL_DIALOG_VARIANT.NO_HEADER)));
-        };
-        if (itemSpecId) {
-            WebApi.specificationHasParty(itemSpecId).then(open);
+        const {onChange, onBlur, onDetail, onSelectModule, value} = this.props;
+        if (onSelectModule) {
+            onSelectModule({
+                onSelect: (data) => {
+                    this.handleChange(data);
+                    this.handleBlur(data);
+                },
+                filterText: searchText,
+                value
+            })
+        } else if (onDetail) {
+            onDetail(id);
         } else {
-            open(true);
+            this.dispatch(registryDetailFetchIfNeeded(id));
+            this.dispatch(routerNavigate('registry'));
         }
     };
 
@@ -104,14 +106,14 @@ class RegistryField extends AbstractReactComponent {
         this.props.onCreateRecord();
     };
 
-    handleChange = () => {
+    handleChange = (e) => {
         this.setState({searchText: null});
-        this.normalizeValue(this.props.onChange)
+        this.normalizeValue(this.props.onChange)(e)
     };
 
-    handleBlur = () => {
+    handleBlur = (e) => {
         this.setState({searchText: null});
-        this.normalizeValue(this.props.onBlur)
+        this.normalizeValue(this.props.onBlur)(e)
     };
 
     renderFooter = () => {
@@ -156,7 +158,7 @@ class RegistryField extends AbstractReactComponent {
         let actions = [];
         if (detail) {
             // if (value && userDetail.hasOne(perms.REG_SCOPE_RD_ALL, {type: perms.REG_SCOPE_RD, scopeId: value.scopeId})) {
-                actions.push(<div onClick={this.handleDetail.bind(this, value ? value.id : null)} className={'btn btn-default detail'}><Icon glyph={'fa-user'}/></div>);
+                actions.push(<div onClick={this.handleDetail.bind(this, value ? value.id : null)} className={'btn btn-default detail'}><Icon glyph={'fa-th-list'}/></div>);
             // }
         }
 
@@ -179,10 +181,4 @@ class RegistryField extends AbstractReactComponent {
     }
 }
 
-export default connect((state) => {
-    const {userDetail, app:{registryList}} = state;
-    return {
-        userDetail,
-        registryList
-    }
-}, null, null, { withRef: true })(RegistryField);
+export default connect(({userDetail}) => ({userDetail}), null, null, { withRef: true })(RegistryField);

@@ -555,10 +555,16 @@ class DescItemType extends AbstractReactComponent {
         }
 
         const itemComponentKey = 'value_' + key;
+        let specName = null;
         switch (rulDataType.code) {
             case 'PARTY_REF':
+                if (descItem.descItemSpecId) {
+                    specName = refType.descItemSpecsMap[descItem.descItemSpecId].name;
+                }
                 parts.push(<DescItemPartyRef key={itemComponentKey}
                                              {...descItemProps}
+                                             itemName={refType.shortcut}
+                                             specName={specName}
                                              singleDescItemTypeEdit={singleDescItemTypeEdit}
                                              onDetail={this.handleDetailParty.bind(this, descItemIndex)}
                                              onCreateParty={this.handleCreateParty.bind(this, descItemIndex)}
@@ -566,8 +572,13 @@ class DescItemType extends AbstractReactComponent {
                 />)
                 break;
             case 'RECORD_REF':
+                if (descItem.descItemSpecId) {
+                    specName = refType.descItemSpecsMap[descItem.descItemSpecId].name;
+                }
                 parts.push(<DescItemRecordRef key={itemComponentKey}
                                               {...descItemProps}
+                                              itemName={refType.shortcut}
+                                              specName={specName}
                                               singleDescItemTypeEdit={singleDescItemTypeEdit}
                                               onDetail={this.handleDetailRecord.bind(this, descItemIndex)}
                                               onCreateRecord={this.handleCreateRecord.bind(this, descItemIndex)}

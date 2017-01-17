@@ -8,6 +8,13 @@ import {decorateAutocompleteValue} from './DescItemUtils.jsx'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import DescItemLabel from './DescItemLabel.jsx'
 import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
+import {storeFromArea, objectById} from 'shared/utils'
+import {partyDetailFetchIfNeeded, partyListFilter, AREA_PARTY_LIST} from 'actions/party/party.jsx'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import classNames from 'classnames'
+import {MODAL_DIALOG_VARIANT} from 'constants'
+import {PartySelectPage} from 'pages'
+
 
 import './DescItemPartyRef.less'
 
@@ -25,6 +32,20 @@ class DescItemPartyRef extends AbstractReactComponent {
 
     focus = () => {
         this.refs.partyField.refs.wrappedInstance.focus();
+    };
+
+
+    handleSelectModule = ({onSelect, filterText, value}) => {
+        const {partyList:{filter},  fundName, nodeName, itemName, specName, hasSpecification} = this.props;
+        this.dispatch(partyListFilter({...filter, text:filterText}));
+        this.dispatch(partyDetailFetchIfNeeded(value ? value.id : null));
+        this.dispatch(modalDialogShow(this, null, <PartySelectPage
+            titles={[fundName, nodeName, itemName + (hasSpecification ? ': ' + specName : '')]}
+            onSelect={(data) => {
+                onSelect(data);
+                this.dispatch(modalDialogHide());
+            }}
+        />, classNames(MODAL_DIALOG_VARIANT.FULLSCREEN, MODAL_DIALOG_VARIANT.NO_HEADER)));
     };
 
     render() {
@@ -48,6 +69,7 @@ class DescItemPartyRef extends AbstractReactComponent {
                     detail={true}
                     footerButtons={false}
                     footer={!singleDescItemTypeEdit}
+                    onSelectModule={this.handleSelectModule}
                     {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, ['autocomplete-party'])}
                 />
             </ItemTooltipWrapper>
@@ -55,4 +77,18 @@ class DescItemPartyRef extends AbstractReactComponent {
     }
 }
 
-export default connect(null, null, null, { withRef: true })(DescItemPartyRef);
+export default connect((state) => {
+    const {arrRegion:{activeIndex,funds}} = state;
+    const partyList = storeFromArea(state, AREA_PARTY_LIST);
+    const fund = funds[activeIndex];
+    const {nodes} = fund;
+    const node = nodes.nodes[nodes.activeIndex];
+    const {selectedSubNodeId} = node;
+    const subNode = objectById(node.allChildNodes, selectedSubNodeId);
+
+    return {
+        partyList,
+        fundName: fund.name,
+        nodeName: subNode.name
+    }
+}, null, null, { withRef: true })(DescItemPartyRef);

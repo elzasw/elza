@@ -296,20 +296,13 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     render() {
-        const {splitter, module, titles} = this.props;
+        const {splitter, status} = this.props;
 
 
 
-        let centerPanel = <div className='registry-page'>
+        const centerPanel = <div className='registry-page'>
             <RegistryDetail />
         </div>;
-
-        if (module && titles) {
-            centerPanel = <div className="select-module">
-                {SelectPage.renderTitles(titles)}
-                {centerPanel}
-            </div>
-        }
 
         return <Shortcuts name='Registry' handler={this.handleShortcuts}>
             <PageLayout
@@ -318,6 +311,7 @@ class RegistryPage extends AbstractReactComponent {
                 ribbon={this.buildRibbon()}
                 leftPanel={<RegistryList />}
                 centerPanel={centerPanel}
+                status={status}
             />
         </Shortcuts>
     }

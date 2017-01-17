@@ -4,7 +4,6 @@ import ReactDOM from 'react-dom';
 import {WebApi} from 'actions/index.jsx';
 import {TooltipTrigger, Icon, i18n, AbstractReactComponent, Autocomplete, ExtImportForm, PartyListItem} from 'components/index.jsx';
 import {connect} from 'react-redux'
-//import {decorateAutocompleteValue} from './DescItemUtils.jsx'
 import {MenuItem, DropdownButton, Button} from 'react-bootstrap';
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import * as perms from 'actions/user/Permission.jsx';
@@ -120,18 +119,24 @@ class PartyField extends AbstractReactComponent {
         this.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={true} versionId={versionId}/>, "dialog-lg"));
     };
 
-    handleDetail = (partyId) => {
-        if (this.props.onDetail) {
-            this.props.onDetail(partyId);
+    handleDetail = (id) => {
+        const {searchText} = this.state;
+        const {onDetail, onSelectModule, value} = this.props;
+
+        if (onSelectModule) {
+            onSelectModule({
+                onSelect: (data) => {
+                    this.handleChange(data);
+                    this.handleBlur(data);
+                },
+                filterText: searchText,
+                value
+            })
+        } else if (onDetail) {
+            onDetail(id);
         } else {
-            const {onChange, onBlur, partyList:{filter}} = this.props;
-            const {searchText} = this.state;
-            this.dispatch(partyListFilter({...filter, text:searchText}))
-            this.dispatch(partyDetailFetchIfNeeded(partyId));
-            this.dispatch(modalDialogShow(this, null, <PartySelectPage onChange={(data) => {
-                onChange(data);
-                onBlur(data);
-            }} />, classNames(MODAL_DIALOG_VARIANT.FULLSCREEN, MODAL_DIALOG_VARIANT.NO_HEADER)));
+            this.dispatch(partyDetailFetchIfNeeded(id));
+            this.dispatch(routerNavigate('party'));
         }
     };
 
@@ -140,9 +145,7 @@ class PartyField extends AbstractReactComponent {
 
         let footerRender;
         if (footer) {
-            // if () {
-                footerRender = this.renderFooter();
-            // }
+            footerRender = this.renderFooter();
         }
 
         const actions = [];
@@ -172,11 +175,4 @@ class PartyField extends AbstractReactComponent {
     }
 }
 
-export default connect((state) => {
-    const {refTables, userDetail, app:{partyList}} = state;
-    return {
-        refTables,
-        userDetail,
-        partyList
-    }
-}, null, null, { withRef: true })(PartyField);
+export default connect(({refTables, userDetail}) => ({refTables, userDetail}), null, null, { withRef: true })(PartyField);

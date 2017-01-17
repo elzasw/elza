@@ -31,20 +31,6 @@ import './SelectPage.less'
  */
 class SelectPage extends AbstractReactComponent {
 
-    static mapStateToProps(state) {
-        const {userDetail, status} = state;
-        return {
-            userDetail,
-            status,
-        }
-    }
-
-    handlePageChange = (page) => {
-        if (this.state.openPage !== page) {
-            this.setState({openPage: page});
-        }
-    };
-
     handleConfirm() {
         throw "You have to override this method!!!"
     };
@@ -54,13 +40,23 @@ class SelectPage extends AbstractReactComponent {
     };
 
     static renderTitles = (titles) => {
-        const items = [];
+        const itemss = [];
         titles.map((i,index, self) => {
-            items.push(<div>{i}</div>)
-            (index+1) < self.length && items.push(<span>&nbsp;>&nbsp;</span>)
+            itemss.push(<div>{i}</div>);
+            (index+1) < self.length && itemss.push(<span>&nbsp;>&nbsp;</span>)
         });
-        return <div className="titles-header">{items}</div>
+        return <div className="titles-header">{itemss}</div>
     };
+
+    getPageProps() {
+        const {titles} = this.props;
+
+        return {
+            customRibbon: this.buildRibbonParts(),
+            module: true,
+            status: titles ? SelectPage.renderTitles(titles) : null
+        }
+    }
 
     buildRibbonParts() {
         return {
