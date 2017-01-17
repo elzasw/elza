@@ -79,17 +79,23 @@ class ArrSearchForm extends AbstractReactComponent {
 
             case TYPE_UNITDATE: {
                 return <div className="unitdate">
-                    <FormInput componentClass="select" {...condition.condition}>
-                        <option value={GE} key={GE}>{i18n('search.extended.form.unitdate.type.ge')}</option>
-                        <option value={LE} key={LE}>{i18n('search.extended.form.unitdate.type.le')}</option>
-                        <option value={CONTAINS} key={CONTAINS}>{i18n('search.extended.form.unitdate.type.contains')}</option>
-                    </FormInput>
-                    <FormInput componentClass="select" {...condition.calendarTypeId}>
-                        {calendarTypes && calendarTypes.fetched && calendarTypes.items.map((calendar, index) => {
-                            return <option value={calendar.id} key={calendar.id}>{i18n('search.extended.form.unitdate.calendar.' + calendar.code)}</option>
-                        })}
-                    </FormInput>
-                    <FormInput type="text" {...condition.value} />
+                    <div className="field">
+                        <FormInput componentClass="select" {...condition.condition}>
+                            <option value={GE} key={GE}>{i18n('search.extended.form.unitdate.type.ge')}</option>
+                            <option value={LE} key={LE}>{i18n('search.extended.form.unitdate.type.le')}</option>
+                            <option value={CONTAINS} key={CONTAINS}>{i18n('search.extended.form.unitdate.type.contains')}</option>
+                        </FormInput>
+                    </div>
+                    <div className="field">
+                        <FormInput componentClass="select" {...condition.calendarTypeId}>
+                            {calendarTypes && calendarTypes.fetched && calendarTypes.items.map((calendar, index) => {
+                                return <option value={calendar.id} key={calendar.id}>{i18n('search.extended.form.unitdate.calendar.' + calendar.code)}</option>
+                            })}
+                        </FormInput>
+                    </div>
+                    <div className="text">
+                        <FormInput type="text" {...condition.value} />
+                    </div>
                 </div>;
             }
         }
