@@ -967,6 +967,10 @@ public class ArrangementService {
                                                  final String searchValue, final Depth depth) throws InvalidQueryException {
         Assert.notNull(version);
 
+        if (StringUtils.isBlank(searchValue)) {
+            return levelTreeCacheService.getAllNodeIdsByVersionAndParent(version, nodeId, depth);
+        }
+
         ArrChange lockChange = version.getLockChange();
         Integer lockChangeId = lockChange == null ? null : lockChange.getChangeId();
         Integer fundId = version.getFund().getFundId();
