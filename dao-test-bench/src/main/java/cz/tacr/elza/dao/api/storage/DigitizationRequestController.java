@@ -51,7 +51,7 @@ public class DigitizationRequestController {
 			throws CoreServiceException {
 		DaoImport daoImport = resourceService.getDaoImport(packageIdentifiers);
 		DigitizationRequestResult result = new DigitizationRequestResult();
-		result.setIdentifier(requestIdentifier);
+		result.setIdentifier(storageDigitizationRequestService.getExtIdentifier(requestIdentifier));
 		result.setDaoImport(daoImport);
 		String systemIdentifier = storageDigitizationRequestService.getSystemIdentifier(requestIdentifier);
 		DaoDigitizationService service = CoreServiceProvider.getDaoDigitizationService(systemIdentifier);
@@ -79,7 +79,7 @@ public class DigitizationRequestController {
 	public void digiRequestRevoked(@PathVariable String requestIdentifier,
 			@RequestParam(required = false) String description) throws CoreServiceException {
 		RequestRevoked requestRevoked = new RequestRevoked();
-		requestRevoked.setIdentifier(requestIdentifier);
+		requestRevoked.setIdentifier(storageDigitizationRequestService.getExtIdentifier(requestIdentifier));
 		requestRevoked.setDescription(description);
 		String systemIdentifier = storageDigitizationRequestService.getSystemIdentifier(requestIdentifier);
 		DaoDigitizationService service = CoreServiceProvider.getDaoDigitizationService(systemIdentifier);

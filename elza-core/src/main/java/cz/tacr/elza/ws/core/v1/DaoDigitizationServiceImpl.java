@@ -56,10 +56,11 @@ public class DaoDigitizationServiceImpl implements DaoDigitizationService {
             logger.info("Executing operation digitizationRequestFinished for code=" + digitizationRequestResult.getIdentifier());
 
             ArrRequest request = requestRepository.findOneByCode(digitizationRequestResult.getIdentifier());
+            // TODO Lebeda - jen pro ladění
             requestService.setRequestState(request, ArrRequest.State.SENT, ArrRequest.State.ACCEPTED);
 
             // import
-            daoCoreService._import(digitizationRequestResult.getDaoImport());
+             daoCoreService._import(digitizationRequestResult.getDaoImport());
 
             logger.info("Finished operation digitizationRequestFinished");
         } catch (Exception e) {

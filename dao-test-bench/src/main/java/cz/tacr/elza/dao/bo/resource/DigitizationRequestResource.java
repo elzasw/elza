@@ -1,14 +1,14 @@
 package cz.tacr.elza.dao.bo.resource;
 
+import cz.tacr.elza.dao.common.PathResolver;
+import cz.tacr.elza.dao.common.XmlUtils;
+import cz.tacr.elza.ws.types.v1.DigitizationRequest;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-
-import cz.tacr.elza.dao.common.PathResolver;
-import cz.tacr.elza.dao.common.XmlUtils;
-import cz.tacr.elza.ws.types.v1.DigitizationRequest;
 
 public class DigitizationRequestResource extends AbstractStorageResource<DigitizationRequest> {
 
@@ -43,7 +43,7 @@ public class DigitizationRequestResource extends AbstractStorageResource<Digitiz
 			throws IOException {
 		Path filePath = PathResolver.createDigitizationRequestInfoPath(10);
 		Path dirPath = filePath.getParent();
-		Files.createDirectory(dirPath);
+		Files.createDirectories(dirPath);
 		try (OutputStream os = Files.newOutputStream(filePath)) {
 			XmlUtils.marshalXmlType(DigitizationRequest.class, digitizationRequest, os);
 		}

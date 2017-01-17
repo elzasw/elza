@@ -111,7 +111,7 @@ public class WsClient {
             final DestructionRequest destructionRequest = new DestructionRequest();
             destructionRequest.setIdentifier(arrDaoRequest.getCode());
             destructionRequest.setDescription(arrDaoRequest.getDescription());
-            destructionRequest.setSystemIdentifier(arrDaoRequest.getRequestId().toString());
+            destructionRequest.setSystemIdentifier(digitalRepository.getCode());
 
             final DaoIdentifiers daoIdentifiers = new DaoIdentifiers();
             final List<ArrDaoRequestDao> daos = daoRequestDaoRepository.findByDaoRequest(arrDaoRequest);
@@ -132,7 +132,7 @@ public class WsClient {
             final TransferRequest transferRequest = new TransferRequest();
             transferRequest.setIdentifier(arrDaoRequest.getCode());
             transferRequest.setDescription(arrDaoRequest.getDescription());
-            transferRequest.setSystemIdentifier(arrDaoRequest.getRequestId().toString());
+            transferRequest.setSystemIdentifier(digitalRepository.getCode());
 
             final DaoIdentifiers daoIdentifiers = new DaoIdentifiers();
             final List<ArrDaoRequestDao> daos = daoRequestDaoRepository.findByDaoRequest(arrDaoRequest);
@@ -174,7 +174,7 @@ public class WsClient {
             final DigitizationRequest digitizationRequest = new DigitizationRequest();
             digitizationRequest.setIdentifier(arrDigitizationRequest.getCode());
             digitizationRequest.setDescription(arrDigitizationRequest.getDescription());
-            digitizationRequest.setSystemIdentifier(arrDigitizationRequest.getRequestId().toString());
+            digitizationRequest.setSystemIdentifier(digitalRepository.getCode());
 
             final Materials materials = new Materials();
             final List<ArrDigitizationRequestNode> digitizationRequestNodes = daoDigitizationRequestNodeRepository.findByDigitizationRequest(arrDigitizationRequest);
@@ -197,7 +197,7 @@ public class WsClient {
         try {
             final OnDaoLinked daoLinked = new OnDaoLinked();
             daoLinked.setDaoIdentifier(arrDaoLinkRequest.getDao().getCode());
-            daoLinked.setSystemIdentifier(arrDaoLinkRequest.getRequestId().toString());
+            daoLinked.setSystemIdentifier(digitalRepository.getCode());
             final List<ArrDaoLink> daoLinks = daoLinkRepository.findByDaoAndDeleteChangeIsNull(arrDaoLinkRequest.getDao());
             if (CollectionUtils.isNotEmpty(daoLinks)) {
                 final ArrDaoLink arrDaoLink = daoLinks.iterator().next();
@@ -219,7 +219,7 @@ public class WsClient {
         try {
             final OnDaoUnlinked daoUnlinked = new OnDaoUnlinked();
             daoUnlinked.setDaoIdentifier(arrDaoLinkRequest.getDao().getCode());
-            daoUnlinked.setSystemIdentifier(arrDaoLinkRequest.getRequestId().toString());
+            daoUnlinked.setSystemIdentifier(digitalRepository.getCode());
             remoteInterface.onDaoUnlinked(daoUnlinked);
         } catch (DaoServiceException e) {
             throw new SystemException(e);
