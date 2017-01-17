@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
@@ -971,8 +972,11 @@ public class ArrangementController {
         try {
             itemTypes = ruleService.getOutputItemTypes(outputDefinition);
         } catch (Exception e) {
+            logger.error("Chyba při zpracování pravidel", e);
             itemTypes = new ArrayList<>();
         }
+
+        List<RulItemTypeExt> hiddenItemTypes = outputService.findHiddenItemTypes(version, outputDefinition, itemTypes, outputItems);
 
         Integer fundId = version.getFund().getFundId();
         String ruleCode = version.getRuleSet().getCode();
@@ -980,7 +984,8 @@ public class ArrangementController {
         ArrOutputDefinitionVO outputDefinitionVO = factoryVo.createArrOutputDefinition(outputDefinition);
         List<ItemGroupVO> itemGroupsVO = factoryVo.createItemGroupsNew(ruleCode, fundId, outputItems);
         List<ItemTypeGroupVO> itemTypeGroupsVO = factoryVo.createItemTypeGroupsNew(ruleCode, fundId, itemTypes);
-        return new OutputFormDataNewVO(outputDefinitionVO, itemGroupsVO, itemTypeGroupsVO);
+        return new OutputFormDataNewVO(outputDefinitionVO, itemGroupsVO, itemTypeGroupsVO,
+                hiddenItemTypes.stream().map(RulItemTypeExt::getItemTypeId).collect(Collectors.toList()));
     }
 
     /**
@@ -2538,11 +2543,17 @@ public class ArrangementController {
     public static class OutputFormDataNewVO extends FormDataNewVO<ArrOutputDefinitionVO> {
         private ArrOutputDefinitionVO parent;
 
+        List<Integer> unusedItemTypeIds;
+
         public OutputFormDataNewVO() {
         }
 
-        public OutputFormDataNewVO(final ArrOutputDefinitionVO parent, final List<ItemGroupVO> groups, final List<ItemTypeGroupVO> typeGroups) {
+        public OutputFormDataNewVO(final ArrOutputDefinitionVO parent,
+                                   final List<ItemGroupVO> groups,
+                                   final List<ItemTypeGroupVO> typeGroups,
+                                   final List<Integer> unusedItemTypeIds) {
             super(parent, groups, typeGroups);
+            this.unusedItemTypeIds = unusedItemTypeIds;
             this.parent = parent;
         }
 
@@ -2554,6 +2565,14 @@ public class ArrangementController {
         @Override
         public void setParent(final ArrOutputDefinitionVO parent) {
             this.parent = parent;
+        }
+
+        public List<Integer> getUnusedItemTypeIds() {
+            return unusedItemTypeIds;
+        }
+
+        public void setUnusedItemTypeIds(final List<Integer> unusedItemTypeIds) {
+            this.unusedItemTypeIds = unusedItemTypeIds;
         }
     }
 

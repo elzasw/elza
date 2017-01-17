@@ -85,6 +85,9 @@ import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.OutputGeneratorService;
 
+import static cz.tacr.elza.domain.RulItemType.Type.RECOMMENDED;
+import static cz.tacr.elza.domain.RulItemType.Type.REQUIRED;
+
 /**
  * Serviska pro práci s výstupy.
  *
@@ -1843,5 +1846,64 @@ public class OutputService {
                 throw new IllegalStateException("Tento atribut je počítán automaticky a nemůže být ručně editován");
             }
         }
+    }
+
+    /**
+     * Vyhledá typy atributů ručně smazané a mají dopočítávanou hodnotu.
+     */
+    public List<RulItemTypeExt> findHiddenItemTypes(final ArrFundVersion version,
+                                                    final ArrOutputDefinition outputDefinition,
+                                                    final List<RulItemTypeExt> itemTypes,
+                                                    final List<ArrOutputItem> outputItems) {
+        List<RulItemTypeExt> itemTypesResult = new ArrayList<>(itemTypes);
+        Iterator<RulItemTypeExt> itemTypeIterator = itemTypesResult.iterator();
+
+        final Set<ArrNode> nodes = outputDefinition.getOutputNodes().stream()
+                .filter(nodeOutput -> nodeOutput.getDeleteChange() == null)
+                .map(ArrNodeOutput::getNode)
+                .collect(Collectors.toSet());
+
+        List<RulItemType> rulItemTypes = new ArrayList<>();
+
+        if (nodes.size() != 0) {
+            List<ArrBulkActionRun> bulkActionsByNodes;
+            bulkActionsByNodes = bulkActionService.findBulkActionsByNodes(version, nodes);
+
+            // získám kódy hromadných akcí
+            List<String> actionCodes = new ArrayList<>(bulkActionsByNodes.size());
+            for (ArrBulkActionRun bulkActionRun : bulkActionsByNodes) {
+                actionCodes.add(bulkActionRun.getBulkActionCode());
+            }
+
+            List<RulAction> actionByCodes = bulkActionService.getBulkActionByCodes(actionCodes);
+
+            rulItemTypes = itemTypeActionRepository.findByAction(actionByCodes);
+        }
+
+        // ručně vypnuté typy atributů
+        List<ArrItemSettings> itemSettingses = itemSettingsRepository.findByOutputDefinition(outputDefinition);
+        for (ArrItemSettings itemSettingse : itemSettingses) {
+            if (itemSettingse.getBlockActionResult()) {
+                rulItemTypes.add(itemSettingse.getItemType());
+            }
+        }
+
+        List<RulItemType> rulItemTypesExists = new ArrayList<>();
+        for (ArrOutputItem outputItem : outputItems) {
+            rulItemTypesExists.add(outputItem.getItemType());
+        }
+
+        while (itemTypeIterator.hasNext()) {
+            RulItemTypeExt itemType = itemTypeIterator.next();
+            if (RECOMMENDED.equals(itemType.getType()) || REQUIRED.equals(itemType.getType())) {
+                itemTypeIterator.remove();
+            } else if (!rulItemTypes.contains(itemType)) {
+                itemTypeIterator.remove();
+            } else if (rulItemTypesExists.contains(itemType)) {
+                itemTypeIterator.remove();
+            }
+        }
+
+        return itemTypesResult;
     }
 }
