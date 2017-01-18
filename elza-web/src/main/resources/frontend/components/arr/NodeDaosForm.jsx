@@ -28,23 +28,21 @@ class NodeDaosForm extends AbstractReactComponent {
         const {fund, nodeId, daoId} = this.props;
 
         return (
-            <div>
-                <Form>
-                    <Modal.Body>
-                        <ArrDaos
-                            fund={fund}
-                            type="NODE"
-                            nodeId={nodeId}
-                            selectedDaoId={daoId}
-                            />
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button bsStyle="link" onClick={() => {
-                            this.props.dispatch(modalDialogHide())
-                        }}>{i18n('global.action.close')}</Button>
-                    </Modal.Footer>
-                </Form>
-            </div>
+            <Form>
+                <Modal.Body>
+                    <ArrDaos
+                        fund={fund}
+                        type="NODE"
+                        nodeId={nodeId}
+                        selectedDaoId={daoId}
+                        />
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button bsStyle="link" onClick={() => {
+                        this.props.dispatch(modalDialogHide())
+                    }}>{i18n('global.action.close')}</Button>
+                </Modal.Footer>
+            </Form>
         )
     }
 }

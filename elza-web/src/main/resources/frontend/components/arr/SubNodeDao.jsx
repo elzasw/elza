@@ -58,7 +58,8 @@ const SubNodeDao = class SubNodeDao extends AbstractReactComponent {
                 i18n('subNodeDao.dao.title.node'),
                 <NodeDaosForm
                     nodeId={selectedSubNodeId}
-                />
+                />,
+                "dialog-lg node-dao-dialog"
             )
         );
     };
@@ -73,7 +74,8 @@ const SubNodeDao = class SubNodeDao extends AbstractReactComponent {
                 <NodeDaosForm
                     nodeId={selectedSubNodeId}
                     daoId={dao.id}
-                />
+                />,
+                "dialog-lg node-dao-dialog"
             )
         );
     };
