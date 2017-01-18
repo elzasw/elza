@@ -41,9 +41,13 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
     private EntityManager entityManager;
 
     @Override
-    public List<ParParty> findPartyByTextAndType(final String searchRecord, final Integer partyTypeId,
-                                                 final Integer firstResult, final Integer maxResults,
-                                                 final Set<Integer> scopeIds, final boolean readAllScopes,
+    public List<ParParty> findPartyByTextAndType(final String searchRecord,
+                                                 final Integer partyTypeId,
+                                                 final Set<Integer> registerTypeIds,
+                                                 final Integer firstResult,
+                                                 final Integer maxResults,
+                                                 final Set<Integer> scopeIds,
+                                                 final boolean readAllScopes,
                                                  final UsrUser user) {
 
         if(CollectionUtils.isEmpty(scopeIds)) {
@@ -54,7 +58,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
         CriteriaQuery<ParParty> query = builder.createQuery(ParParty.class);
         Root<ParParty> party = query.from(ParParty.class);
 
-        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, partyTypeId, party, builder, scopeIds, readAllScopes, user, query);
+        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, partyTypeId, registerTypeIds, party, builder, scopeIds, readAllScopes, user, query);
 
         query.select(party);
         if (condition != null) {
@@ -73,8 +77,12 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
     }
 
     @Override
-    public long findPartyByTextAndTypeCount(final String searchRecord, final Integer partyTypeId,
-                                            final Set<Integer> scopeIds, final boolean readAllScopes, final UsrUser user) {
+    public long findPartyByTextAndTypeCount(final String searchRecord,
+                                            final Integer partyTypeId,
+                                            final Set<Integer> registerTypeIds,
+                                            final Set<Integer> scopeIds,
+                                            final boolean readAllScopes,
+                                            final UsrUser user) {
 
         if(CollectionUtils.isEmpty(scopeIds)){
             return 0;
@@ -84,7 +92,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
         CriteriaQuery<Long> query = builder.createQuery(Long.class);
         Root<ParParty> party = query.from(ParParty.class);
 
-        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, partyTypeId, party, builder, scopeIds, readAllScopes, user, query);
+        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, partyTypeId, registerTypeIds, party, builder, scopeIds, readAllScopes, user, query);
 
         query.select(builder.countDistinct(party));
         if (condition != null) {
@@ -107,6 +115,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
      */
     private <T> Predicate preparefindRegRecordByTextAndType(final String searchRecord,
                                                         final Integer partyTypeId,
+                                                        final Set<Integer> registerTypeIds,
                                                         final Root<ParParty> party,
                                                         final CriteriaBuilder builder,
                                                         final Set<Integer> scopeIds,
@@ -149,6 +158,11 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
             condition.add(scope.get(RegScope.SCOPE_ID).in(subquery));
         } else {
             condition.add(scope.get(RegScope.SCOPE_ID).in(scopeIds));
+        }
+
+        if (registerTypeIds != null) {
+            condition.add(record.get(RegRecord.REGISTER_TYPE).in(registerTypeIds));
+
         }
 
         return builder.and(condition.toArray(new Predicate[condition.size()]));

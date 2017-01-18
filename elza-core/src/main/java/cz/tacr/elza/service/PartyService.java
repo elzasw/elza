@@ -15,6 +15,9 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.repository.ItemSpecRegisterRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -166,6 +169,12 @@ public class PartyService {
     private InstitutionRepository institutionRepository;
 
     @Autowired
+    private ItemSpecRepository itemSpecRepository;
+
+    @Autowired
+    private ItemSpecRegisterRepository itemSpecRegisterRepository;
+
+    @Autowired
     private UserService userService;
 
     /**
@@ -209,33 +218,62 @@ public class PartyService {
      *
      * @param searchRecord hledaný řetězec, může být null
      * @param partyTypeId  typ záznamu
+     * @param itemSpecId specifikace
      * @param firstResult  první vrácená osoba
      * @param maxResults   max počet vrácených osob
      * @param fund   AP, ze které se použijí třídy rejstříků
      */
-    public List<ParParty> findPartyByTextAndType(final String searchRecord, final Integer partyTypeId,
-                                                 final Integer firstResult, final Integer maxResults,
+    public List<ParParty> findPartyByTextAndType(final String searchRecord,
+                                                 final Integer partyTypeId,
+                                                 final Integer itemSpecId,
+                                                 final Integer firstResult,
+                                                 final Integer maxResults,
                                                  @Nullable final ArrFund fund) {
         UsrUser user = userService.getLoggedUser();
         boolean readAllScopes = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_RD_ALL);
         Set<Integer> scopeIdsForRecord = registryService.getScopeIdsByFund(fund);
-        return partyRepository.findPartyByTextAndType(searchRecord, partyTypeId, firstResult, maxResults,
-                scopeIdsForRecord, readAllScopes, user);
+
+        Set<Integer> registerTypesIds = null;
+        if (itemSpecId != null) {
+            registerTypesIds = this.find(itemSpecId);
+        }
+
+        return partyRepository.findPartyByTextAndType(searchRecord, partyTypeId, registerTypesIds, firstResult, maxResults, scopeIdsForRecord, readAllScopes, user);
+    }
+
+    private Set<Integer> find(final Integer itemSpecId) {
+
+        Set<Integer> registerTypeIds = new HashSet<>();
+        if (itemSpecId != null) {
+            RulItemSpec spec = itemSpecRepository.getOneCheckExist(itemSpecId);
+            registerTypeIds.addAll(itemSpecRegisterRepository.findIdsByItemSpecId(spec));
+        }
+        return registerTypeRepository.findSubtreeIds(registerTypeIds);
     }
 
     /**
      * Vrátí počet osob vyhovující zadané frázi. Osobu vyhledává podle hesla v rejstříku včetně variantních hesel.
      * @param searchRecord hledaný řetězec, může být null
-     * @param registerTypeId typ záznamu
+     * @param partyTypeId typ osoby
+     * @param itemSpecId specifikace
      * @param fund   AP, ze které se použijí třídy rejstříků
      * @return
      */
-    public long findPartyByTextAndTypeCount(final String searchRecord, final Integer registerTypeId,
+    public long findPartyByTextAndTypeCount(final String searchRecord,
+                                            final Integer partyTypeId,
+                                            final Integer itemSpecId,
                                             @Nullable final ArrFund fund){
         UsrUser user = userService.getLoggedUser();
         boolean readAllScopes = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_RD_ALL);
         Set<Integer> scopeIdsForRecord = registryService.getScopeIdsByFund(fund);
-        return partyRepository.findPartyByTextAndTypeCount(searchRecord, registerTypeId, scopeIdsForRecord, readAllScopes, user);
+
+
+        Set<Integer> registerTypesIds = null;
+        if (itemSpecId != null) {
+            registerTypesIds = this.find(itemSpecId);
+        }
+
+        return partyRepository.findPartyByTextAndTypeCount(searchRecord, partyTypeId, registerTypesIds, scopeIdsForRecord, readAllScopes, user);
     }
 
     /**

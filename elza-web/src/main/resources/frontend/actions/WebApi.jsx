@@ -123,8 +123,8 @@ class WebApi {
         return AjaxUtils.ajaxGet(WebApi.partyUrl + '/' + partyId);
     }
 
-    findParty(search = null, versionId = null, partyTypeId = null, from = 0, count = DEFAULT_LIST_SIZE) {
-        return AjaxUtils.ajaxGet(WebApi.partyUrl + '/', {search, from, count, partyTypeId, versionId});
+    findParty(search = null, versionId = null, partyTypeId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE) {
+        return AjaxUtils.ajaxGet(WebApi.partyUrl + '/', {search, from, count, partyTypeId, versionId, itemSpecId});
     }
 
     findPartyForParty(partyId, search = null, from = 0, count = DEFAULT_LIST_SIZE) {

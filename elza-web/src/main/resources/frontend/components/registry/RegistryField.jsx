@@ -77,6 +77,9 @@ class RegistryField extends AbstractReactComponent {
     handleDetail = (id) => {
         const {searchText} = this.state;
         const {onChange, onBlur, onDetail, onSelectModule, value} = this.props;
+
+        this.refs.autocomplete.closeMenu();
+
         if (onSelectModule) {
             onSelectModule({
                 onSelect: (data) => {

@@ -66,7 +66,7 @@ class SelectPage extends AbstractReactComponent {
                 <RibbonGroup key="ribbon-group-main" className="large">
                     <Button onClick={this.handleClose} style={{borderRadius:'50%', background: '#CD5051', color: 'white'}}>
                         <Icon glyph="fa-times" style={{fontSize: '3em'}}/>
-                    </Button>,
+                    </Button>
                     <Button onClick={this.handleConfirm} style={{borderRadius:'50%', background: '#86BB65', color: 'white'}}>
                         <Icon glyph="fa-check" style={{fontSize: '3em'}}/>
                     </Button>

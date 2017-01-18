@@ -25,7 +25,7 @@ import {addToastrSuccess,addToastrDanger} from 'components/shared/toastr/ToastrA
  * @param size {number} počet položek v seznamu - velikost jedné stránky
  */
 export function registryListFetchIfNeeded(from = 0, size = DEFAULT_REGISTRY_LIST_MAX_SIZE) {
-    return SimpleListActions.fetchIfNeeded(AREA_REGISTRY_LIST, true, (parent, filter) => WebApi.findRegistry(filter.text, filter.registryParentId, filter.registryTypeId, filter.versionId, filter.itemSpec, from, size));
+    return SimpleListActions.fetchIfNeeded(AREA_REGISTRY_LIST, true, (parent, filter) => WebApi.findRegistry(filter.text, filter.registryParentId, filter.registryTypeId, filter.versionId, filter.itemSpecId, from, size));
 }
 
 /**

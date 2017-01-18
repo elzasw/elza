@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -13,6 +14,8 @@ import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
 import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +80,7 @@ import cz.tacr.elza.service.UserService;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 21.12.2015
  */
+@SuppressWarnings("SpringAutowiredFieldsWarningInspection")
 @RestController
 @RequestMapping(value = "/api/registry", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 public class RegistryController {
@@ -162,7 +166,7 @@ public class RegistryController {
         Set<Integer> registerTypeIdTree = Collections.emptySet();
 
         if (itemSpecId != null && registerTypeId != null) {
-            throw new IllegalArgumentException("Nelza použít specifikaci a typ rejstříku zároveň.");
+            throw new SystemException("Nelza použít specifikaci a typ rejstříku zároveň.", BaseCode.SYSTEM_ERROR);
         } else if (itemSpecId != null || registerTypeId != null) {
             Set<Integer> registerTypeIds = new HashSet<>();
             if (itemSpecId != null) {
@@ -178,21 +182,15 @@ public class RegistryController {
         if (versionId == null) {
             fund = null;
         } else {
-            ArrFundVersion version = fundVersionRepository.findOne(versionId);
-            Assert.notNull(version, "Nebyla nalezena verze archivní pomůcky s id " + versionId);
+            ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
             fund = version.getFund();
         }
 
-
-
-        RegRecord parentRecord;
         if(parentRecordId != null) {
-            parentRecord = regRecordRepository.findOne(parentRecordId);
-            Assert.notNull(parentRecord, "Nebylo nalezeno rejstříkové heslo s id " + parentRecordId);
+            regRecordRepository.getOneCheckExist(parentRecordId);
         }
 
-        final long foundRecordsCount = registryService.findRegRecordByTextAndTypeCount(search, registerTypeIdTree,
-                parentRecordId, fund);
+        final long foundRecordsCount = registryService.findRegRecordByTextAndTypeCount(search, registerTypeIdTree, parentRecordId, fund);
 
         List<RegRecord> foundRecords = registryService
                 .findRegRecordByTextAndType(search, registerTypeIdTree, from, count, parentRecordId, fund);
@@ -258,11 +256,9 @@ public class RegistryController {
                                                     @RequestParam final Integer roleTypeId,
                                                     @RequestParam final Integer partyId) {
 
-        ParParty party = partyRepository.findOne(partyId);
-        Assert.notNull(party, "Nebyla nalezena osoba s id " + partyId);
+        ParParty party = partyRepository.getOneCheckExist(partyId);
 
-        ParRelationRoleType relationRoleType = relationRoleTypeRepository.findOne(roleTypeId);
-        Assert.notNull(roleTypeId, "Nebyl nalezen typ vztahu s id " + roleTypeId);
+        ParRelationRoleType relationRoleType = relationRoleTypeRepository.getOneCheckExist(roleTypeId);
 
 
         Set<Integer> registerTypeIds = registerTypeRepository.findByRelationRoleType(relationRoleType)
@@ -513,7 +509,7 @@ public class RegistryController {
             return Collections.emptyList();
         } else {
             List<RegScopeVO> result = factoryVo.createScopes(scopeRepository.findAll(scopeIdsByFund));
-            result.sort((a, b) -> a.getCode().compareTo(b.getCode()));
+            result.sort(Comparator.comparing(RegScopeVO::getCode));
             return result;
         }
     }
@@ -712,7 +708,7 @@ public class RegistryController {
      * Načte vztahy daného záznamu.
      *
      * @param interpiRecordId id rejstříku v INTERPI
-     * @param systemId identifikátor externího systému
+     * @param relationSearchVO vyhledávávací kriteria
      *
      * @return vztahy a jejich mapování
      */

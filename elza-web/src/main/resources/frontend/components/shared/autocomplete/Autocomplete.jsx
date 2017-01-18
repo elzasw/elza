@@ -411,10 +411,11 @@ export default class Autocomplete extends AbstractReactComponent {
         var el1 = ReactDOM.findDOMNode(this.refs.input);
         var el2 = ReactDOM.findDOMNode(this.refs.menuParent);
         var el3 = ReactDOM.findDOMNode(this.refs.openClose);
+        const el4 = ReactDOM.findDOMNode(this.refs.actions);
         var el = e.target;
         var inside = false;
         while (el !== null) {
-            if (el === el1 || el === el2 || el === el3) {
+            if (el === el1 || el === el2 || el === el3 || el === el4) {
                 inside = true;
                 break;
             }
@@ -431,7 +432,7 @@ export default class Autocomplete extends AbstractReactComponent {
             }
             this._ignoreBlur = false;
             this.closeMenu();
-        } else if (this.state.hasFocus && (this.isUnderEl(el2, e.target) || this.isUnderEl(el3, e.target))) {
+        } else if (this.state.hasFocus && (this.isUnderEl(el2, e.target) || this.isUnderEl(el3, e.target) || this.isUnderEl(el4, e.target))) {
             this._ignoreBlur = true;
         } else {
             this._ignoreBlur = false;
@@ -1062,7 +1063,7 @@ export default class Autocomplete extends AbstractReactComponent {
                                  className={(this.state.isOpen ? 'btn btn-default opened' : 'btn btn-default closed') + (this.props.disabled ? " disabled" : "")}
                                  onClick={()=>{if (!this.props.disabled) {this.state.isOpen ? this.closeMenu() : this.openMenu()}}}><Icon
                                 glyph={glyph}/></div>}
-                            {this.props.actions}
+                            {this.props.actions && <div ref='actions'>{this.props.actions}</div>}
                             {!inline && hasError && <HelpBlock>{error}</HelpBlock>}
                         </div>
                         {this.state.isOpen && this.renderMenu()}

@@ -53,7 +53,7 @@ export const RELATION_CLASS_CODES = {
  * @param size {number} počet položek v seznamu - velikost jedné stránky
  */
 export function partyListFetchIfNeeded(versionId = null, from = 0, size = DEFAULT_PARTY_LIST_MAX_SIZE) {
-    return SimpleListActions.fetchIfNeeded(AREA_PARTY_LIST, versionId, (parent, filter) => WebApi.findParty(filter.text, versionId, filter.type, from, size))
+    return SimpleListActions.fetchIfNeeded(AREA_PARTY_LIST, versionId, (parent, filter) => WebApi.findParty(filter.text, versionId, filter.type, filter.itemSpecId, from, size))
 }
 
 /**

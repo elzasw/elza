@@ -706,6 +706,114 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
+  /registry/specificationHasParty/{itemSpecId}:
+    get:
+      summary: Tell you if specification contains also party
+      parameters:
+        - name: itemSpecId
+          in: path
+          description: ID
+          required: true
+          type: integer
+      tags:
+        - Registry
+        - Specification
+        - Party
+      responses:
+        200:
+          description: "Response true if specification contains party"
+          schema:
+            type: boolean
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /registry/externalSystems:
+    post:
+      summary: Return list of registry external systems
+      tags:
+        - Registry
+      responses:
+        200:
+          description: registry external systems list
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/RegExternalSystemVO'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /registry/interpi:
+    post:
+      summary: Search record in external system
+      parameters:
+        - name: interpiSearchVO
+          in: body
+          description: search criteria for external system
+          required: true
+          schema:
+            $ref: '#/definitions/InterpiSearchVO'
+      tags:
+        - Registry
+      responses:
+        200:
+          description: Found records
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ExternalRecordVO'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /registry/interpi/import:
+    post:
+      summary: Import record from external system
+      parameters:
+        - name: recordImportVO
+          in: body
+          description: import configuration
+          required: true
+          schema:
+            $ref: '#/definitions/RecordImportVO'
+      tags:
+        - Registry
+      responses:
+        200:
+          description: Imported record
+          schema:
+            $ref: '#/definitions/RegRecordVO'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /registry/interpi/{interpiRecordId}/relations:
+    post:
+      summary: Find interpi relation mapping for interpi record
+      parameters:
+        - name: interpiRecordId
+          in: path
+          description: interpi record id
+          required: true
+          type: integer
+        - name: relationSearchVO
+          in: body
+          description: search criteria for external system
+          required: true
+          schema:
+            $ref: '#/definitions/RelationSearchVO'
+      tags:
+        - Registry
+      responses:
+        200:
+          description: Found records
+          schema:
+            $ref: '#/definitions/InterpiMappingVO'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
 definitions:
   ParInstitutionVO:
     type: object
@@ -759,7 +867,19 @@ definitions:
     type: object
   RegRegisterTypeVO:
     type: object
+  InterpiSearchVO:
+    type: object
+  ExternalRecordVO:
+    type: object
+  RelationSearchVO:
+    type: object
+  InterpiMappingVO:
+    type: object
   RegScopeVO:
+    type: object
+  RecordImportVO:
+    type: object
+  RegExternalSystemVO:
     type: object
   Error:
     type: object

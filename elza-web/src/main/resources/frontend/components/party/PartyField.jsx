@@ -122,6 +122,8 @@ class PartyField extends AbstractReactComponent {
         const {searchText} = this.state;
         const {onDetail, onSelectModule, value} = this.props;
 
+        this.refs.autocomplete.closeMenu();
+
         if (onSelectModule) {
             onSelectModule({
                 onSelect: (data) => {

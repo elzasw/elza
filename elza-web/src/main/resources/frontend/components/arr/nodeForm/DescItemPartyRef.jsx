@@ -9,7 +9,7 @@ import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import DescItemLabel from './DescItemLabel.jsx'
 import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 import {storeFromArea, objectById} from 'shared/utils'
-import {partyDetailFetchIfNeeded, partyListFilter, AREA_PARTY_LIST} from 'actions/party/party.jsx'
+import {partyDetailFetchIfNeeded, partyListFilter, partyDetailClear, AREA_PARTY_LIST} from 'actions/party/party.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import classNames from 'classnames'
 import {MODAL_DIALOG_VARIANT} from 'constants'
@@ -43,6 +43,8 @@ class DescItemPartyRef extends AbstractReactComponent {
             titles={[fundName, nodeName, itemName + (hasSpecification ? ': ' + specName : '')]}
             onSelect={(data) => {
                 onSelect(data);
+                this.dispatch(partyListFilter({text:null, type:null, itemSpecId: null}));
+                this.dispatch(partyDetailClear());
                 this.dispatch(modalDialogHide());
             }}
         />, classNames(MODAL_DIALOG_VARIANT.FULLSCREEN, MODAL_DIALOG_VARIANT.NO_HEADER)));

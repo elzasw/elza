@@ -10,7 +10,8 @@ import './DescItemRecordRef.less'
 import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import RegistrySelectPage from 'pages/select/RegistrySelectPage.jsx'
-import {registryDetailFetchIfNeeded, registryListFilter, AREA_REGISTRY_LIST} from 'actions/registry/registry.jsx'
+import {registryDetailFetchIfNeeded, registryListFilter, registryDetailClear, AREA_REGISTRY_LIST} from 'actions/registry/registry.jsx'
+import {partyDetailFetchIfNeeded, partyListFilter, partyDetailClear, AREA_PARTY_LIST} from 'actions/party/party.jsx'
 import classNames from 'classnames'
 import {storeFromArea, objectById} from 'shared/utils'
 import {MODAL_DIALOG_VARIANT} from 'constants'
@@ -34,14 +35,26 @@ class DescItemRecordRef extends AbstractReactComponent {
     };
 
     handleSelectModule = ({onSelect, filterText, value}) => {
-        const {hasSpecification, descItem, registryList:{filter}, fundName, nodeName, itemName, specName} = this.props;
+        const {hasSpecification, descItem, registryList, partyList, fundName, nodeName, itemName, specName} = this.props;
+        console.log(filterText, "aaa");
         const open = (hasParty = false) => {
-            this.dispatch(registryListFilter({...filter, text: filterText}));
+            if (hasParty) {
+                this.dispatch(partyListFilter({...partyList.filter, text: filterText, itemSpecId: hasSpecification ? descItem.descItemSpecId : null}));
+                this.dispatch(partyDetailClear());
+
+            }
+            this.dispatch(registryListFilter({...registryList.filter, text: filterText, itemSpecId: hasSpecification ? descItem.descItemSpecId : null}));
             this.dispatch(registryDetailFetchIfNeeded(value ? value.id : null));
             this.dispatch(modalDialogShow(this, null, <RegistrySelectPage
                 titles={[fundName, nodeName, itemName + (hasSpecification ? ': ' + specName : '')]}
                 hasParty={hasParty} onSelect={(data) => {
                     onSelect(data);
+                    if (hasParty) {
+                        this.dispatch(partyListFilter({text:null, type:null, itemSpecId: null}));
+                        this.dispatch(partyDetailClear());
+                    }
+                    this.dispatch(registryListFilter({text: null, registryParentId: null, registryTypeId: null, versionId: null, itemSpecId: null, parents: [], typesToRoot: null}));
+                    this.dispatch(registryDetailClear());
                     this.dispatch(modalDialogHide());
             }}
             />, classNames(MODAL_DIALOG_VARIANT.FULLSCREEN, MODAL_DIALOG_VARIANT.NO_HEADER)));
@@ -105,8 +118,10 @@ export default connect((state, props) => {
     }
 
     const registryList = storeFromArea(state, AREA_REGISTRY_LIST);
+    const partyList = storeFromArea(state, AREA_PARTY_LIST);
     return {
         registryList,
+        partyList,
         fundName,
         nodeName
     }

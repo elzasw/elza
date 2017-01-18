@@ -77,6 +77,7 @@ import cz.tacr.elza.service.UserService;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 21.12.2015
  */
+@SuppressWarnings("SpringAutowiredFieldsWarningInspection")
 @RestController
 @RequestMapping(value = "/api/party", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 public class PartyController {
@@ -232,22 +233,21 @@ public class PartyController {
                                        @RequestParam final Integer from,
                                        @RequestParam final Integer count,
                                        @Nullable @RequestParam(required = false) final Integer partyTypeId,
+                                       @Nullable @RequestParam(required = false) final Integer itemSpecId,
                                        @RequestParam(required = false) @Nullable final Integer versionId) {
 
         ArrFund fund;
         if (versionId == null) {
             fund = null;
         } else {
-            ArrFundVersion version = fundVersionRepository.findOne(versionId);
-            Assert.notNull(version, "Nebyla nalezena verze archivní pomůcky s id " + versionId);
+            ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
             fund = version.getFund();
         }
 
-
-        List<ParParty> partyList = partyService.findPartyByTextAndType(search, partyTypeId, from, count, fund);
+        List<ParParty> partyList = partyService.findPartyByTextAndType(search, partyTypeId, itemSpecId, from, count, fund);
         List<ParPartyVO> resultVo = factoryVo.createPartyList(partyList);
 
-        long countAll = partyService.findPartyByTextAndTypeCount(search, partyTypeId, fund);
+        long countAll = partyService.findPartyByTextAndTypeCount(search, partyTypeId, itemSpecId, fund);
         return new FilteredResultVO<>(resultVo, countAll);
     }
 
@@ -275,11 +275,11 @@ public class PartyController {
 
         UsrUser user = userService.getLoggedUser();
         boolean readAllScopes = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_RD_ALL);
-        List<ParParty> partyList = partyRepository.findPartyByTextAndType(search, partyTypeId, from, count, scopeIds, readAllScopes, user);
+        List<ParParty> partyList = partyRepository.findPartyByTextAndType(search, partyTypeId, null, from, count, scopeIds, readAllScopes, user);
 
         List<ParPartyVO> resultVo = factoryVo.createPartyList(partyList);
 
-        long countAll = partyRepository.findPartyByTextAndTypeCount(search, partyTypeId, scopeIds, readAllScopes, user);
+        long countAll = partyRepository.findPartyByTextAndTypeCount(search, partyTypeId, null, scopeIds, readAllScopes, user);
         return new FilteredResultVO<>(resultVo, countAll);
     }
 
@@ -355,6 +355,7 @@ public class PartyController {
     @RequestMapping(value = "/partyTypes", method = RequestMethod.GET)
     public List<ParPartyTypeVO> getPartyTypes() {
         //načteme všechny záznamy, aby nedocházelo k samostatným dotazům v cyklech
+        //noinspection unused
         List<ParRelationType> relationTypes = relationTypeRepository.findAll();
 
         Map<Integer, ParPartyTypeVO> partyTypeVoMap = new HashMap<>();
@@ -380,6 +381,7 @@ public class PartyController {
 
 
         //načtení ParRelationTypeVO
+        //noinspection unused
         List<ParRelationRoleType> relationRoleTypes = relationRoleTypeRepository.findAll();
         Map<Integer, ParRelationRoleTypeVO> relationRoleTypeVoMap = new HashMap<>();
         for (ParRelationTypeRoleType parRelationTypeRoleType : relationTypeRoleTypeRepository.findAll()) {
@@ -399,6 +401,7 @@ public class PartyController {
         }
 
         //načtení ParComplementTypeVO
+        //noinspection unused
         List<ParComplementType> complementTypes = complementTypeRepository.findAll();
         Map<Integer, ParComplementTypeVO> complementTypeVOMap = new HashMap<>();
         for (ParPartyTypeComplementType partyTypeComplementType : partyTypeComplementTypeRepository.findAll()) {

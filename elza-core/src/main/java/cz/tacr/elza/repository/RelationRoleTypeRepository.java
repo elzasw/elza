@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
  * @since 22.12.2015
  */
 @Repository
-public interface RelationRoleTypeRepository extends JpaRepository<ParRelationRoleType, Integer>, Packaging<ParRelationRoleType> {
+public interface RelationRoleTypeRepository extends ElzaJpaRepository<ParRelationRoleType, Integer>, Packaging<ParRelationRoleType> {
 
     ParRelationRoleType findByCode(String roleTypeCode);
 

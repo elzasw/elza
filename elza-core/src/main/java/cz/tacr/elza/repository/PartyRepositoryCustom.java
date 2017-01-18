@@ -26,9 +26,14 @@ public interface PartyRepositoryCustom {
      * @param readAllScopes
      * @param user
      */
-    List<ParParty> findPartyByTextAndType(String searchRecord, Integer partyTypeId,
-                                          Integer firstResult, Integer maxResults,
-                                          Set<Integer> scopeIds, final boolean readAllScopes, final UsrUser user);
+    List<ParParty> findPartyByTextAndType(String searchRecord,
+                                          Integer partyTypeId,
+                                          Set<Integer> registerTypeIds,
+                                          Integer firstResult,
+                                          Integer maxResults,
+                                          Set<Integer> scopeIds,
+                                          final boolean readAllScopes,
+                                          final UsrUser user);
 
 
     /**
@@ -39,7 +44,7 @@ public interface PartyRepositoryCustom {
      * @param readAllScopes
      * @param user
      */
-    long findPartyByTextAndTypeCount(String searchRecord, Integer partyTypeId, Set<Integer> scopeIds, final boolean readAllScopes, final UsrUser user);
+    long findPartyByTextAndTypeCount(String searchRecord, Integer partyTypeId, Set<Integer> registerTypeIds, Set<Integer> scopeIds, final boolean readAllScopes, final UsrUser user);
 
 
     /**
