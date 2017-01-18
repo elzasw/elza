@@ -700,6 +700,7 @@ var messages = {
     "party.relation.errors.undefinedCalendarType": "Typ kalendáře musí být zadaný",
     "party.relation.errors.undefinedRecord": "U některé entity nebyla zadaná rejstříková položka",
     "party.relation.errors.undefinedRoleType": "U některé entity nebyla zadaná role rejstříkové položky",
+    "party.relation.errors.invalidNoteLength": "Maximální délka poznámky je {0} znaků.",
 
     "partyField.visibleCount": "Zobrazeno {0} z {1} záznamů",
 

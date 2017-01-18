@@ -75,6 +75,10 @@ class RelationClassForm extends AbstractReactComponent {
             delete errors.to
         }
 
+        if (values.note && values.note.length > 1000) {
+            errors.note = i18n('party.relation.errors.invalidNoteLength', 1000)
+        }
+
         return errors;
 
     };
@@ -126,7 +130,7 @@ class RelationClassForm extends AbstractReactComponent {
                         </div>}
                     </div>}
                     <div className="flex-1 col">
-                        <FormInput type="text" label={i18n('party.relation.note')} {...note} />
+                        <FormInput componentClass="textarea" label={i18n('party.relation.note')} {...note} />
                         <FormInput componentClass="textarea" label={i18n('party.relation.sources')} {...source} />
                     </div>
                 </div>
