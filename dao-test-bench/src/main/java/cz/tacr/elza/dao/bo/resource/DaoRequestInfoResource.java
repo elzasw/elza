@@ -1,13 +1,13 @@
 package cz.tacr.elza.dao.bo.resource;
 
+import cz.tacr.elza.dao.common.PathResolver;
+import cz.tacr.elza.dao.exception.DaoComponentException;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-
-import cz.tacr.elza.dao.common.PathResolver;
-import cz.tacr.elza.dao.exception.DaoComponentException;
 
 public class DaoRequestInfoResource extends YamlResource<DaoRequestInfo> {
 
@@ -46,7 +46,7 @@ public class DaoRequestInfoResource extends YamlResource<DaoRequestInfo> {
 			throws IOException {
 		Path filePath = PathResolver.createDaoRequestInfoPath(destrRequest, 10);
 		Path dirPath = filePath.getParent();
-		Files.createDirectory(dirPath);
+		Files.createDirectories(dirPath);
 		try (BufferedWriter bw = Files.newBufferedWriter(filePath, StandardOpenOption.WRITE,
 				StandardOpenOption.CREATE_NEW)) {
 			YAML_INSTANCE.dump(daoRequestInfo, bw);

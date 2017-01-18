@@ -32,6 +32,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.feature.FastInfosetFeature;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -48,6 +50,8 @@ import java.util.stream.Collectors;
  */
 @Service
 public class WsClient {
+
+    private static final Logger logger = LoggerFactory.getLogger(WsClient.class);
 
     @Autowired
     private DaoRequestDaoRepository daoRequestDaoRepository;
@@ -120,6 +124,7 @@ public class WsClient {
 
             return remoteInterface.postDestructionRequest(destructionRequest);
         } catch (DaoServiceException e) {
+            logger.error("Fail in call remote webservice.", e);
             throw new SystemException(e);
         }
     }
@@ -141,6 +146,7 @@ public class WsClient {
 
             return remoteInterface.postTransferRequest(transferRequest);
         } catch (DaoServiceException e) {
+            logger.error("Fail in call remote webservice.", e);
             throw new SystemException(e);
         }
     }
@@ -186,6 +192,7 @@ public class WsClient {
 
             return remoteInterface.postRequest(digitizationRequest);
         } catch (DigitizationServiceException e) {
+            logger.error("Fail in call remote webservice.", e);
             throw new SystemException(e);
         }
     }
@@ -208,6 +215,7 @@ public class WsClient {
 
             remoteInterface.onDaoLinked(daoLinked);
         } catch (DaoServiceException e) {
+            logger.error("Fail in call remote webservice.", e);
             throw new SystemException(e);
         }
     }
@@ -222,6 +230,7 @@ public class WsClient {
             daoUnlinked.setSystemIdentifier(digitalRepository.getCode());
             remoteInterface.onDaoUnlinked(daoUnlinked);
         } catch (DaoServiceException e) {
+            logger.error("Fail in call remote webservice.", e);
             throw new SystemException(e);
         }
     }
