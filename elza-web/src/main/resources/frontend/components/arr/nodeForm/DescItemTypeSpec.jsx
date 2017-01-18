@@ -109,46 +109,47 @@ class DescItemTypeSpec extends AbstractReactComponent {
      * @return {*}
      */
     getSpecTreeNode = (node, refType, infoType, lowerFilterText, treeNodeIndex, strictMode) => {
-        // Specifikace pro daný atribut v pro konkrétní formulář
-        const specChildren = [];
-        const nodeSpecIdsMap = getSetFromIdsList(node.specIds);
-        infoType.specs.forEach(infoSpec => {    // projdeme všechny specifikace pro daný atribut a formulář
-            if (nodeSpecIdsMap[infoSpec.id]) {   // v daném nodu má být konkrétní specifikace, může pro daný atribut být v daném formuláři
-                const refSpec = refType.descItemSpecsMap[infoSpec.id];
+        switch (node.type) {
+            case "GROUP":{
+                const newNode = {
+                    id: "g-" + (treeNodeIndex.index++),
+                    name: node.name,
+                    node: true,
+                    expanded: !!lowerFilterText,
+                    children: []
+                };
 
-                // Filtr
-                if (!lowerFilterText || (lowerFilterText && refSpec.name.toLocaleLowerCase().indexOf(lowerFilterText) >= 0)) { // vypnutý filtr nebo položka vyhovuje filtru
-                    if (!strictMode || (strictMode && infoSpec.type != 'IMPOSSIBLE')) {
-                        specChildren.push({
-                            ...refSpec,
-                            ...infoSpec,
-                            className: 'spec-' + infoSpec.type.toLowerCase()
-                        });
+                // Přidání potomků
+                node.children.forEach(child => {
+                    const newChild = this.getSpecTreeNode(child, refType, infoType, lowerFilterText, treeNodeIndex, strictMode);
+                    newChild && newNode.children.push(newChild);
+                });
+
+                if (newNode.children.length === 0) {   // nemá potomky, vůbec ho nechceme ve stromu
+                    return null;
+                }
+
+                return newNode;
+            }
+            case "ITEM": {
+                const infoSpec = infoType.descItemSpecsMap[node.specId];
+                if (infoSpec) { // jen když je pro daný formulář povolena
+                    const refSpec = refType.descItemSpecsMap[node.specId];
+
+                    // Filtr
+                    if (!lowerFilterText || (lowerFilterText && refSpec.name.toLocaleLowerCase().indexOf(lowerFilterText) >= 0)) { // vypnutý filtr nebo položka vyhovuje filtru
+                        if (!strictMode || (strictMode && infoSpec.type != 'IMPOSSIBLE')) {
+                            return {
+                                ...refSpec,
+                                ...infoSpec,
+                                className: 'spec-' + infoSpec.type.toLowerCase()
+                            }
+                        }
                     }
                 }
+                return null;
             }
-        });
-
-        // Podřízené nody
-        const children = [];
-        node.children && node.children.forEach(subNode => {
-            const newSubNode = this.getSpecTreeNode(subNode, refType, infoType, lowerFilterText, treeNodeIndex, strictMode);
-            if (newSubNode) {
-                children.push(newSubNode);
-            }
-        });
-
-        if (specChildren.length === 0 && children.length === 0) {   // nemá potomky, vůbec ho nechceme ve stromu
-            return null;
         }
-
-        return {
-            id: "g-" + (treeNodeIndex.index++),
-            name: node.name,
-            node: true,
-            expanded: !!lowerFilterText,
-            children: [...children, ...specChildren]
-        };
     };
 
     /**
