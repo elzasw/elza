@@ -1199,7 +1199,12 @@ public class InterpiFactory {
         entityMappingVO.setInterpiRoleType(interpiRole);
 
         OznaceniTyp preferovaneOznaceni = souvisejiciTyp.getPreferovaneOznaceni();
-        entityMappingVO.setInterpiEntityName(preferovaneOznaceni.getHlavniCast().getValue() + " " + preferovaneOznaceni.getVedlejsiCast().getValue());
+        String entityName = preferovaneOznaceni.getHlavniCast().getValue();
+        VedlejsiCastTyp vedlejsiCast = preferovaneOznaceni.getVedlejsiCast();
+        if (vedlejsiCast != null && StringUtils.isNotBlank(vedlejsiCast.getValue())) {
+            entityName += " " + vedlejsiCast.getValue();
+        }
+        entityMappingVO.setInterpiEntityName(entityName);
 
         String interpiIdentifier = getInterpiSouvIdentifier(souvisejiciTyp.getIdentifikator());
         entityMappingVO.setInterpiId(interpiIdentifier);
