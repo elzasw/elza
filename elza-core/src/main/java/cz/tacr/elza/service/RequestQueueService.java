@@ -143,7 +143,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
         requestQueueItem.setRequest(request);
         requestQueueItem.setSend(false);
 
-        requestQueueItemRepository.save(requestQueueItem);
+        requestQueueItemRepository.saveAndFlush(requestQueueItem);
         sendNotification(fundVersion, request, requestQueueItem, EventType.REQUEST_ITEM_QUEUE_CREATE);
 
         Integer externalSystemId;
@@ -271,15 +271,19 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
                 @Override
                 protected void doInTransactionWithoutResult(final TransactionStatus transactionStatus) {
                     ArrRequestQueueItem queueItem = requestQueueItemRepository.findOne(requestQueueItemId);
-                    try {
-                        queueItem.setAttemptToSend(LocalDateTime.now());
-                        execute(queueItem);
-                    } catch (Exception e) {
-                        throwable = e;
-                        queueItem.setSend(false);
-                        String error = extractError(e);
-                        queueItem.setError(error);
-                        requestQueueItemRepository.save(queueItem);
+                    if (queueItem != null) {
+                        try {
+                            queueItem.setAttemptToSend(LocalDateTime.now());
+                            execute(queueItem);
+                        } catch (Exception e) {
+                            throwable = e;
+                            queueItem.setSend(false);
+                            String error = extractError(e);
+                            queueItem.setError(error);
+                            requestQueueItemRepository.save(queueItem);
+                        }
+                    } else {
+                        logger.error("Nebyl nalezen request queue item s id: " + requestQueueItemId);
                     }
                 }
             });
