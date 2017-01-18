@@ -82,7 +82,7 @@ public class RulDescItemTypeVO {
     /**
      * Kategorie specifikací.
      */
-    private List<ItemSpecsCategory> itemSpecsTree;
+    private List<TreeItemSpecsItem> itemSpecsTree;
 
     /**
      * šířka atributu (0 - maximální počet sloupců, 1..N - počet sloupců)
@@ -201,11 +201,11 @@ public class RulDescItemTypeVO {
         this.columnsDefinition = columnsDefinition;
     }
 
-    public List<ItemSpecsCategory> getItemSpecsTree() {
+    public List<TreeItemSpecsItem> getItemSpecsTree() {
         return itemSpecsTree;
     }
 
-    public void setItemSpecsTree(final List<ItemSpecsCategory> itemSpecsTree) {
+    public void setItemSpecsTree(final List<TreeItemSpecsItem> itemSpecsTree) {
         this.itemSpecsTree = itemSpecsTree;
     }
 }
