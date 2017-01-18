@@ -49,7 +49,7 @@ class DescItemPartyRef extends AbstractReactComponent {
     };
 
     render() {
-        const {descItem, locked, singleDescItemTypeEdit, readMode, cal, onDetail, ...otherProps} = this.props;
+        const {descItem, locked, singleDescItemTypeEdit, readMode, cal, onDetail, typePrefix, ...otherProps} = this.props;
         const value = descItem.party ? descItem.party : null;
 
         if (readMode) {
@@ -66,7 +66,7 @@ class DescItemPartyRef extends AbstractReactComponent {
                     ref="partyField"
                     {...otherProps}
                     value={value}
-                    detail={true}
+                    detail={typePrefix != "output"}
                     footerButtons={false}
                     footer={!singleDescItemTypeEdit}
                     onSelectModule={this.handleSelectModule}
@@ -77,18 +77,23 @@ class DescItemPartyRef extends AbstractReactComponent {
     }
 }
 
-export default connect((state) => {
-    const {arrRegion:{activeIndex,funds}} = state;
-    const partyList = storeFromArea(state, AREA_PARTY_LIST);
-    const fund = funds[activeIndex];
-    const {nodes} = fund;
-    const node = nodes.nodes[nodes.activeIndex];
-    const {selectedSubNodeId} = node;
-    const subNode = objectById(node.allChildNodes, selectedSubNodeId);
+export default connect((state, props) => {
+    let fundName = null, nodeName = null;
+    if (props.typePrefix != "output") {
+        const {arrRegion:{activeIndex,funds}} = state;
+        const fund = funds[activeIndex];
+        fundName = fund.name;
+        const {nodes} = fund;
+        const node = nodes.nodes[nodes.activeIndex];
+        const {selectedSubNodeId} = node;
+        const subNode = objectById(node.allChildNodes, selectedSubNodeId);
+        subNode && subNode.name && (nodeName = subNode.name);
+    }
 
+    const partyList = storeFromArea(state, AREA_PARTY_LIST);
     return {
         partyList,
-        fundName: fund.name,
-        nodeName: subNode ? subNode.name : null
+        fundName,
+        nodeName
     }
 }, null, null, { withRef: true })(DescItemPartyRef);

@@ -505,7 +505,7 @@ class DescItemType extends AbstractReactComponent {
      * @return {Object} view
      */
     renderDescItem(descItemType, descItem, descItemIndex, actions, locked) {
-        const {refType, readMode, fundId, infoType, singleDescItemTypeEdit, rulDataType, calendarTypes, packets, packetTypes, versionId} = this.props;
+        const {refType, readMode, fundId, infoType, singleDescItemTypeEdit, rulDataType, calendarTypes, packets, packetTypes, versionId, typePrefix} = this.props;
 
         let cls = 'desc-item-type-desc-item-container';
         if (actions.length > 0) {
@@ -539,8 +539,9 @@ class DescItemType extends AbstractReactComponent {
             locked: locked,
             readMode: readMode,
             ref: key,
-            cal: infoType.cal && !infoType.calSt
-        }
+            cal: infoType.cal && !infoType.calSt,
+            typePrefix
+        };
 
         let dragProps;
         if (Utils.detectIE() || readMode) {

@@ -55,7 +55,7 @@ class DescItemRecordRef extends AbstractReactComponent {
     };
 
     render() {
-        const {descItem, locked, singleDescItemTypeEdit, hasSpecification, readMode, cal, onDetail, ...otherProps} = this.props;
+        const {descItem, locked, singleDescItemTypeEdit, hasSpecification, readMode, cal, onDetail, typePrefix, ...otherProps} = this.props;
         const value = descItem.record ? descItem.record : null;
 
         if (readMode) {
@@ -81,7 +81,7 @@ class DescItemRecordRef extends AbstractReactComponent {
                     value={value}
                     footer={!singleDescItemTypeEdit}
                     footerButtons={false}
-                    detail={!disabled}
+                    detail={typePrefix == "output" ? false : !disabled}
                     onSelectModule={this.handleSelectModule}
                     {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, disabled, ['autocomplete-record'])}
                 />
@@ -91,17 +91,23 @@ class DescItemRecordRef extends AbstractReactComponent {
 }
 
 
-export default connect((state) => {
-    const {arrRegion:{activeIndex,funds}} = state;
+export default connect((state, props) => {
+    let fundName = null, nodeName = null;
+    if (props.typePrefix != "output") {
+        const {arrRegion:{activeIndex,funds}} = state;
+        const fund = funds[activeIndex];
+        const {nodes} = fund;
+        fundName = fund.name;
+        const node = nodes.nodes[nodes.activeIndex];
+        const {selectedSubNodeId} = node;
+        const subNode = objectById(node.allChildNodes, selectedSubNodeId);
+        subNode && subNode.name && (nodeName = subNode.name);
+    }
+
     const registryList = storeFromArea(state, AREA_REGISTRY_LIST);
-    const fund = funds[activeIndex];
-    const {nodes} = fund;
-    const node = nodes.nodes[nodes.activeIndex];
-    const {selectedSubNodeId} = node;
-    const subNode = objectById(node.allChildNodes, selectedSubNodeId);
     return {
         registryList,
-        fundName: fund.name,
-        nodeName: subNode.name
+        fundName,
+        nodeName
     }
 }, null, null, { withRef: true })(DescItemRecordRef);
