@@ -20,9 +20,6 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import javax.xml.bind.JAXBException;
 
-import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.EventId;
-import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -122,6 +119,9 @@ import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventId;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.exception.FatalXmlImportException;
 import cz.tacr.elza.service.exception.InvalidDataException;
 import cz.tacr.elza.service.exception.LevelImportException;
@@ -294,7 +294,7 @@ public class XmlImportService {
         XmlImport xmlImport = readData(config);
 
         // najít použité rejstříky a osoby
-        Set<String> usedRecords = new HashSet<>();
+        Map<String, RecordVO> usedRecords = new HashMap<>();
         Set<String> usedParties = new HashSet<>();
         Set<String> usedPackets = new HashSet<>();
         boolean stopOnError = config.isStopOnError();
@@ -325,8 +325,9 @@ public class XmlImportService {
         }
 
         checkData(xmlImport, usedRecords, usedParties, usedPackets, importAllRecords, importAllParties, importFund);
+        pairRecords(usedRecords);
 
-        // rejstříky - párovat podle ext id a ext systému
+        // rejstříky - párovat podle uuid nebo ext id a ext systému
         Map<String, RegRecord> xmlIdIntIdRecordMap = importRecords(xmlImport, usedRecords, stopOnError, config.getRegScope());
 
         // osoby - zakládat nové
@@ -352,6 +353,54 @@ public class XmlImportService {
             Map<String, ArrPacket> xmlIdIntIdPacketMap = importPackets(xmlImport, usedPackets, stopOnError, fund);
             importFund(xmlImport.getFund(), change, rootNode, xmlIdIntIdRecordMap, xmlIdIntIdPartyMap, xmlIdIntIdPacketMap,
                     config, fund);
+        }
+    }
+
+    /** Napáruje rejstříky na ty v db. */
+    private void pairRecords(final Map<String, RecordVO> usedRecords) {
+        Map<String, RecordVO> uuidRecordMap = usedRecords.values().
+                stream().
+                filter(r -> StringUtils.isNotBlank(r.getUuid())).
+                collect(Collectors.toMap(RecordVO::getUuid, Function.identity()));
+
+        if (!uuidRecordMap.isEmpty()) {
+            List<Object[]> rows = recordRepository.findUuidAndRecordIdByUuid(uuidRecordMap.keySet());
+            for (Object[] row : rows) {
+                String uuid = (String) row[0];
+                Integer recordId = (Integer) row[1];
+
+                uuidRecordMap.get(uuid).setInternalId(recordId);
+            }
+        }
+
+        // externSystemCode -> externId -> recordVO
+        Map<String, Map<String, RecordVO>> systemCodeToExternalIdToRecorVOMap = new HashMap<>();
+        usedRecords.values().
+            stream().
+            filter(r -> r.getInternalId() == null).
+            filter(r -> StringUtils.isNotBlank(r.getExternSystemCode())).
+            filter(r -> StringUtils.isNotBlank(r.getExternId())).
+            forEach(r -> {
+                Map<String, RecordVO> externIdToRecordVOMap = systemCodeToExternalIdToRecorVOMap.get(r.getExternSystemCode());
+                if (externIdToRecordVOMap == null) {
+                    externIdToRecordVOMap = new HashMap<>();
+                    systemCodeToExternalIdToRecorVOMap.put(r.getExternSystemCode(), externIdToRecordVOMap);
+                }
+                externIdToRecordVOMap.put(r.getExternId(), r);
+            });
+
+        for (String systemCode : systemCodeToExternalIdToRecorVOMap.keySet()) {
+            Map<String, RecordVO> externIdToRecordVOMap = systemCodeToExternalIdToRecorVOMap.get(systemCode);
+            if (!externIdToRecordVOMap.isEmpty()) {
+                Set<String> externIds = externIdToRecordVOMap.keySet();
+                List<Object[]> rows = recordRepository.findExternIdAndRecordIdBySystemCodeAndExternalIds(systemCode, externIds);
+                for (Object[] row : rows) {
+                    String externalId = (String) row[0];
+                    Integer recordId = (Integer) row[1];
+
+                    externIdToRecordVOMap.get(externalId).setInternalId(recordId);
+                }
+            }
         }
     }
 
@@ -395,7 +444,7 @@ public class XmlImportService {
         return xmlIdIntIdPartyMap;
     }
 
-    private Map<String, RegRecord> importRecords(final XmlImport xmlImport, final Set<String> usedRecords, final boolean stopOnError,
+    private Map<String, RegRecord> importRecords(final XmlImport xmlImport, final Map<String, RecordVO> usedRecords, final boolean stopOnError,
             final RegScope regScope) throws NonFatalXmlImportException {
         Map<String, RegRecord> xmlIdIntIdRecordMap;
         try {
@@ -662,7 +711,6 @@ public class XmlImportService {
     private ArrFund createFund(final Fund fund, final ArrChange change, final XmlImportConfig config, final boolean stopOnError) throws FatalXmlImportException, InvalidDataException {
         RulRuleSet ruleSet;
         if (StringUtils.isBlank(config.getTransformationName())) {
-            String arrangementTypeCode = fund.getArrangementTypeCode();
             String ruleSetCode = fund.getRuleSetCode();
             ruleSet = ruleSetRepository.findByCode(ruleSetCode);
             if (ruleSet == null) {
@@ -701,7 +749,7 @@ public class XmlImportService {
         return institution;
     }
 
-    private void checkData(final XmlImport xmlImport, final Set<String> usedRecords, final Set<String> usedParties, final Set<String> usedPackets,
+    private void checkData(final XmlImport xmlImport, final Map<String, RecordVO> usedRecords, final Set<String> usedParties, final Set<String> usedPackets,
             final boolean importAllRecords, final boolean importAllParties, final boolean importFund) throws FatalXmlImportException {
         Fund fund = xmlImport.getFund();
         List<AbstractParty> parties = xmlImport.getParties();
@@ -732,12 +780,12 @@ public class XmlImportService {
         }
     }
 
-    private void addPartyRecords(final Set<String> usedRecords, final AbstractParty party) throws FatalXmlImportException {
+    private void addPartyRecords(final Map<String, RecordVO> usedRecords, final AbstractParty party) throws FatalXmlImportException {
         Record partyRecord = party.getRecord();
         if (partyRecord == null) {
             throw new FatalXmlImportException("Osoba s id " + party.getPartyId() + " nemá rejstřík.");
         }
-        usedRecords.add(partyRecord.getRecordId());
+        putRecordIntoMap(partyRecord, usedRecords);
         List<Relation> events = party.getEvents();
         if (events != null) {
             events.forEach(event -> {
@@ -746,7 +794,7 @@ public class XmlImportService {
                     roleTypes.forEach(roleType -> {
                         Record record = roleType.getRecord();
                         if (record != null) {
-                            usedRecords.add(record.getRecordId());
+                            putRecordIntoMap(record, usedRecords);
                         }
                     });
                 }
@@ -754,7 +802,7 @@ public class XmlImportService {
         }
     }
 
-    private boolean addUsedRecord(final Record record, final boolean importAllRecords, final Set<String> usedRecords) {
+    private boolean addUsedRecord(final Record record, final boolean importAllRecords, final Map<String, RecordVO> usedRecords) {
         boolean usedChild = false;
 
         if (record.getRecords() != null) {
@@ -766,20 +814,33 @@ public class XmlImportService {
         }
 
         if (usedChild || importAllRecords) {
-            usedRecords.add(record.getRecordId());
+            putRecordIntoMap(record, usedRecords);
 
             return true;
-        } else if (usedRecords.contains(record.getRecordId())) { // je použitý v FA - v uzlu nebo v atributu
+        } else if (usedRecords.containsKey(record.getRecordId())) { // je použitý v FA - v uzlu nebo v atributu
             return true;
         }
 
         return false;
     }
 
-    private void checkLevel(final Level level, final Set<String> usedRecords, final Set<String> usedParties, final Set<String> usedPackets) throws FatalXmlImportException {
+    private void putRecordIntoMap(final Record record, final Map<String, RecordVO> usedRecords) {
+        if (usedRecords.containsKey(record.getRecordId())) {
+            return;
+        }
+
+        RecordVO recordVO = new RecordVO();
+        recordVO.setExternId(record.getExternalId());
+        recordVO.setExternSystemCode(record.getExternalSystemCode());
+        recordVO.setUuid(record.getUuid());
+
+        usedRecords.put(record.getRecordId(), recordVO);
+    }
+
+    private void checkLevel(final Level level, final Map<String, RecordVO> usedRecords, final Set<String> usedParties, final Set<String> usedPackets) throws FatalXmlImportException {
         if (level.getRecords() != null) {
             level.getRecords().forEach(record -> {
-                usedRecords.add(record.getRecordId());
+                putRecordIntoMap(record, usedRecords);
             });
         }
 
@@ -787,7 +848,7 @@ public class XmlImportService {
             for (AbstractDescItem descItem : level.getDescItems()) {
                 if (descItem instanceof DescItemRecordRef) {
                     DescItemRecordRef recordRefItem = (DescItemRecordRef) descItem;
-                    usedRecords.add(recordRefItem.getRecord().getRecordId());
+                    putRecordIntoMap(recordRefItem.getRecord(), usedRecords);
                 } else if (descItem instanceof DescItemPartyRef) {
                     DescItemPartyRef partyRefItem = (DescItemPartyRef) descItem;
                     usedParties.add(partyRefItem.getParty().getPartyId());
@@ -1281,7 +1342,7 @@ public class XmlImportService {
      *
      * @return mapa externí id rejstříku -> interní id rejstříku
      */
-    private Map<String, RegRecord> importRecords(final List<Record> records, final Set<String> usedRecords, final boolean stopOnError,
+    private Map<String, RegRecord> importRecords(final List<Record> records, final Map<String, RecordVO> usedRecords, final boolean stopOnError,
             final RegScope regScope) throws NonFatalXmlImportException {
         Map<String, RegRecord> xmlIdIntIdRecordMap = new HashMap<>();
         if (CollectionUtils.isEmpty(records)) {
@@ -1289,7 +1350,7 @@ public class XmlImportService {
         }
 
         for (Record record : records) {
-            if (usedRecords.contains(record.getRecordId())) {
+            if (usedRecords.containsKey(record.getRecordId())) {
                 try {
                     importRecord(record, null, stopOnError, usedRecords, xmlIdIntIdRecordMap, regScope);
                 } catch (NonFatalXmlImportException e) {
@@ -1303,7 +1364,7 @@ public class XmlImportService {
         return xmlIdIntIdRecordMap;
     }
 
-    private void importRecord(final Record record, final RegRecord parent, final boolean stopOnError, final Set<String> usedRecords,
+    private void importRecord(final Record record, final RegRecord parent, final boolean stopOnError, final Map<String, RecordVO> usedRecords,
             final Map<String, RegRecord> xmlIdIntIdRecordMap, final RegScope regScope) throws RecordImportException, InvalidDataException {
         String uuid = record.getUuid();
         String externalId = record.getExternalId();
@@ -1311,7 +1372,8 @@ public class XmlImportService {
         boolean isNew = false;
         boolean update = false;
 
-        RegRecord regRecord = findExistingRecord(record.getRecordId(), uuid, externalId, externalSystemCode, regScope);
+        RecordVO recordVO = usedRecords.get(record.getRecordId());
+        RegRecord regRecord = findExistingRecord(recordVO);
 
         if (regRecord == null) { // nebyl nalezen podle uuid nebo externalId a externalSourceCode nebo nejsou vyplněné
             if (stopOnError) {
@@ -1335,7 +1397,7 @@ public class XmlImportService {
 
             if (record.getRecords() != null) {
                 for (Record subRecord : record.getRecords()) {
-                    if (usedRecords.contains(record.getRecordId())) {
+                    if (usedRecords.containsKey(record.getRecordId())) {
                         try {
                             importRecord(subRecord, regRecord, stopOnError, usedRecords, xmlIdIntIdRecordMap, regScope);
                         } catch (NonFatalXmlImportException e) {
@@ -1373,14 +1435,10 @@ public class XmlImportService {
         return isRecordInXmlNewer;
     }
 
-    private RegRecord findExistingRecord(final String recordId, final String uuid, final String externalId,
-            final String externalSystemCode, final RegScope regScope)
-        throws RecordImportException {
-        if (uuid != null) {
-            return recordRepository.findRegRecordByUuid(uuid);
-        } else if (externalId != null && externalSystemCode != null) {
-            return recordRepository.findRegRecordByExternalIdAndExternalSystemCodeAndScope(externalId, externalSystemCode,
-                    regScope);
+    private RegRecord findExistingRecord(final RecordVO recordVO) {
+        Integer internalId = recordVO.getInternalId();
+        if (internalId != null) {
+            return recordRepository.getOneCheckExist(internalId);
         }
 
         return null;
@@ -1683,5 +1741,49 @@ public class XmlImportService {
      */
     public List<String> getTransformationNames() {
         return XmlUtils.getTransformationNames(transformationsDirectory);
+    }
+
+    public static class RecordVO {
+
+        private String uuid;
+
+        private String externId;
+
+        private String externSystemCode;
+
+        /** Inerní id v ELZA. */
+        private Integer internalId;
+
+        public String getUuid() {
+            return uuid;
+        }
+
+        public void setUuid(final String uuid) {
+            this.uuid = uuid;
+        }
+
+        public String getExternId() {
+            return externId;
+        }
+
+        public void setExternId(final String externId) {
+            this.externId = externId;
+        }
+
+        public String getExternSystemCode() {
+            return externSystemCode;
+        }
+
+        public void setExternSystemCode(final String externSystemCode) {
+            this.externSystemCode = externSystemCode;
+        }
+
+        public Integer getInternalId() {
+            return internalId;
+        }
+
+        public void setInternalId(final Integer internalId) {
+            this.internalId = internalId;
+        }
     }
 }

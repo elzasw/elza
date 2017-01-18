@@ -83,4 +83,23 @@ public interface RegRecordRepository extends ElzaJpaRepository<RegRecord, Intege
      * @return rejstříkové heslo
      */
     RegRecord findRegRecordByUuid(String uuid);
+
+    /**
+     * Najde id hesel a uuid.
+     *
+     * @param uuid UUID
+     * @return seznam uuid, id hesla
+     */
+    @Query("SELECT uuid, recordId FROM reg_record WHERE uuid IN (?1)")
+    List<Object[]> findUuidAndRecordIdByUuid(Collection<String> uuid);
+
+    /**
+     * Najde id hesel a externí id.
+     *
+     * @param externalSystemCode kód externího systému
+     * @param externalIds externí id
+     * @return seznam externId, id hesla
+     */
+    @Query("SELECT r.externalId, r.recordId FROM reg_record r WHERE r.externalSystem.code = ?1 and r.externalId IN (?2)")
+    List<Object[]> findExternIdAndRecordIdBySystemCodeAndExternalIds(String externalSystemCode, Collection<String> externalIds);
 }
