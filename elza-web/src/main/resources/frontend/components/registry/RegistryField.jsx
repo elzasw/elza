@@ -129,13 +129,14 @@ class RegistryField extends AbstractReactComponent {
         </div>
     };
 
-    renderRecord = (item, focus, active) => <RegistryListItem {...item} className={classNames('item', {focus, active})} />;
-        /*<TooltipTrigger
-        content={item.characteristics}
-        holdOnHover
-        placement="horizontal"
-        className="tooltip-container"
-    ></TooltipTrigger>;*/
+    renderRecord = (item, focus, active) => <TooltipTrigger
+            content={item.characteristics}
+            holdOnHover
+            placement="horizontal"
+            className="tooltip-container"
+        >
+            <RegistryListItem {...item} className={classNames('item', {focus, active})} />
+        </TooltipTrigger>;
 
 
     normalizeValue = (call) => (obj,id) => {

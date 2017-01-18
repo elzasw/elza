@@ -75,15 +75,14 @@ class PartyField extends AbstractReactComponent {
     renderParty = (item, isHighlighted, isSelected) => {
         const {refTables:{partyTypes:{relationTypesForClass}}} = this.props;
 
-        return <PartyListItem {...item} className={classNames('item', {focus: isHighlighted, active: isSelected})} relationTypesForClass={relationTypesForClass} />;
-        /*<TooltipTrigger
+        return <TooltipTrigger
             content={item.characteristics}
             holdOnHover
             placement="horizontal"
             className="tooltip-container"
         >
-
-        </TooltipTrigger>*/
+            <PartyListItem {...item} className={classNames('item', {focus: isHighlighted, active: isSelected})} relationTypesForClass={relationTypesForClass} />
+        </TooltipTrigger>
     };
 
 

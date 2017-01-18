@@ -241,8 +241,22 @@ class TooltipTrigger extends AbstractReactComponent {
     }
 
     render() {
-        const {className, content, children} = this.props;
-        const {placement, maxWidth, maxHeight} = this.state;
+        const {
+            className,
+            content,
+            children,
+            placement,
+            holdOnHover,
+            holdOnFocus,
+            delay,
+            showDelay,
+            hideDelay,
+            focusDelay,
+            focusShowDelay,
+            focusHideDelay,
+            ...otherProps
+        } = this.props;
+        const {maxWidth, maxHeight} = this.state;
 
         return (
             <span
@@ -252,11 +266,12 @@ class TooltipTrigger extends AbstractReactComponent {
                 onBlur={() => this.handleFocus(false)}
                 onMouseOver={() => this.showTooltip(true, this.getDelay(true))}
                 onMouseLeave={() => this.showTooltip(false, this.getDelay(false))}
+                {...otherProps}
             >
                 {children}
                 {content && <Overlay
                     show={this.state.showTooltip}
-                    placement={placement}
+                    placement={this.state.placement}
                     target={() => this.refs.ttTarget}
                 >
                     <Tooltip
