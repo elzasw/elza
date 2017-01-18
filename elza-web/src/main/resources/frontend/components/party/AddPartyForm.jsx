@@ -315,7 +315,6 @@ class AddPartyForm extends AbstractReactComponent {
                                             onChange={item => registerTypeId.onChange(item ? item.id : null)}
                                             onBlur={item => registerTypeId.onBlur(item ? item.id : null)}
                                         />
-                                        {registerTypeId.touched && registerTypeId.error && <HelpBlock>{registerTypeId.error}</HelpBlock>}
                                     </FormGroup>
                                     <Scope versionId={versionId} label={i18n('party.recordScope')} {...scopeId} />
                                 </div>
@@ -370,7 +369,7 @@ class AddPartyForm extends AbstractReactComponent {
                                 <Row>
                                     <Col xs={6} md={12}>
                                         <DatationField fields={validFrom} label={i18n('party.name.validFrom')} labelTextual={i18n('party.name.validFrom.textDate')} labelNote={i18n('party.name.validFrom.note')} />
-                                    </Col>                                    
+                                    </Col>
                                     <Col xs={6} md={12}>
                                         <DatationField fields={validTo} label={i18n('party.name.validTo')} labelTextual={i18n('party.name.validTo.textDate')} labelNote={i18n('party.name.validTo.note')} />
                                     </Col>
