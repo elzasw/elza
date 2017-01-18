@@ -322,7 +322,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
                 ArrDaoRequest arrDaoRequest = (ArrDaoRequest) queueItem.getRequest();
                 if (ArrDaoRequest.Type.DESTRUCTION == arrDaoRequest.getType()) {
                     wsClient.postDestructionRequest(arrDaoRequest);
-                } else if (ArrDaoRequest.Type.DESTRUCTION == arrDaoRequest.getType()) {
+                } else if (ArrDaoRequest.Type.TRANSFER == arrDaoRequest.getType()) {
                     wsClient.postTransferRequest(arrDaoRequest);
                 } else {
                     throw new SystemException(BaseCode.SYSTEM_ERROR);
