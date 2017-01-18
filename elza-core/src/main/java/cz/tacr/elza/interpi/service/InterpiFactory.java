@@ -730,13 +730,15 @@ public class InterpiFactory {
         ParUnitdate unitdateTo = null;
         if (dataceFrom != null) {
             unitdateFrom = convertDataceToParUnitdate(dataceFrom);
-        } else if (dataceTo != null) {
-            unitdateTo = convertDataceToParUnitdate(dataceTo);
-        } else if (datace1 != null && unitdateFrom == null) {
+        } else if (datace1 != null) {
             unitdateFrom = convertDataceToParUnitdate(datace1);
-        } else if (datace1 != null && unitdateTo == null) {
+        }
+
+        if (dataceTo != null) {
+            unitdateTo = convertDataceToParUnitdate(dataceTo);
+        } else if (datace1 != null && dataceFrom != null) {
             unitdateTo = convertDataceToParUnitdate(datace1);
-        } else if (datace2 != null && unitdateTo == null) {
+        } else if (datace2 != null) {
             unitdateTo = convertDataceToParUnitdate(datace2);
         }
 
@@ -759,7 +761,16 @@ public class InterpiFactory {
     private ParUnitdate convertDataceToParUnitdate(final KomplexniDataceTyp dataceTyp) {
         ParUnitdate parUnitdate = new ParUnitdate();
 
-        UnitDateConvertor.convertToUnitDate(dataceTyp.getTextDatace(), parUnitdate);
+        String datace = dataceTyp.getTextDatace();
+        if (StringUtils.isBlank(datace)) {
+            return null;
+        }
+
+        datace = datace.replaceAll(" ", "");
+        if (StringUtils.isBlank(datace)) {
+            return null;
+        }
+        UnitDateConvertor.convertToUnitDate(datace, parUnitdate);
         parUnitdate.setNote(dataceTyp.getPoznamka());
 
         return parUnitdate;
@@ -904,8 +915,11 @@ public class InterpiFactory {
                 String datace = kodovaneTyp.getDatace();
                 if (StringUtils.isNotBlank(datace)) {
                     ParUnitdate parUnitdate = new ParUnitdate();
-                    UnitDateConvertor.convertToUnitDate(datace, parUnitdate);
-                    partyGroupIdentifier.setFrom(parUnitdate);
+                    datace = datace.replaceAll(" ", "");
+                    if (StringUtils.isNotBlank(datace)) {
+                        UnitDateConvertor.convertToUnitDate(datace, parUnitdate);
+                        partyGroupIdentifier.setFrom(parUnitdate);
+                    }
                 }
 
                 partyGroupIdentifier.setIdentifier(kodovaneTyp.getKod());
