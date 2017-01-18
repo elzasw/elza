@@ -56,7 +56,7 @@ import cz.tacr.elza.controller.vo.ArrRequestVO;
 import cz.tacr.elza.controller.vo.BulkActionRunVO;
 import cz.tacr.elza.controller.vo.BulkActionVO;
 import cz.tacr.elza.controller.vo.DmsFileVO;
-import cz.tacr.elza.controller.vo.ItemSpecsCategory;
+import cz.tacr.elza.controller.vo.TreeItemSpecsItem;
 import cz.tacr.elza.controller.vo.NodeConformityVO;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
@@ -1292,67 +1292,85 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         RulDescItemTypeExtVO descItemTypeVO = mapper.map(descItemType, RulDescItemTypeExtVO.class);
         descItemTypeVO.setDataTypeId(descItemType.getDataType().getDataTypeId());
-        descItemTypeVO.setItemSpecsTree(new ArrayList<>(1));
-        for (RulItemSpecExt rulItemSpecExt : descItemType.getRulItemSpecList()) {
-            if (StringUtils.isNotEmpty(rulItemSpecExt.getCategory())) {
-                String[] categories = rulItemSpecExt.getCategory().split("\\" + ItemTypeUpdater.CATEGORY_SEPARATOR);
-                recursiveAddCategory(categories, 0, descItemTypeVO.getItemSpecsTree(), rulItemSpecExt.getItemSpecId());
-            }
-        }
+        descItemTypeVO.setItemSpecsTree(createTree(descItemType.getRulItemSpecList()));
         return descItemTypeVO;
     }
 
-    /**
-     * Rekurzivní sestavení stromu kategorií.
-     *
-     * @param categories    cesta kategorií stromem
-     * @param depthIndex    index aktuální pozice cesty stromem
-     * @param itemSpecsTree seznam kategorií na aktuální pozici cesty stromem
-     * @param itemSpecId    přidávaný identifikátor specifikace
-     */
-    private void recursiveAddCategory(final String[] categories,
-                                      final int depthIndex,
-                                      final List<ItemSpecsCategory> itemSpecsTree,
-                                      final Integer itemSpecId) {
-        if (itemSpecsTree == null || depthIndex >= categories.length) {
-            return;
-        }
+    private List<TreeItemSpecsItem> createTree(final List<RulItemSpecExt> rulItemSpecList) {
+        List<TreeItemSpecsItem> result = new ArrayList<>();
 
-        String categoryName = categories[depthIndex];
+        String[] categories;
+        Integer specId;
 
-        ItemSpecsCategory category = null;
+        List<TreeItemSpecsItem> listLastTemp = new ArrayList<>();
 
-        // vyhledám kategorii
-        for (ItemSpecsCategory itemSpecsCategory : itemSpecsTree) {
-            if (itemSpecsCategory.getName().equals(categoryName)) {
-                category = itemSpecsCategory;
-                break;
+        for (RulItemSpecExt rulItemSpecExt : rulItemSpecList) {
+            if (StringUtils.isNotEmpty(rulItemSpecExt.getCategory())) {
+                categories = rulItemSpecExt.getCategory().split("\\" + ItemTypeUpdater.CATEGORY_SEPARATOR);
+                specId = rulItemSpecExt.getItemSpecId();
+
+                List<TreeItemSpecsItem> listTemp = new ArrayList<>();
+                for (String category : categories) {
+                    TreeItemSpecsItem treeItemSpecsItem = new TreeItemSpecsItem();
+                    treeItemSpecsItem.setType(TreeItemSpecsItem.Type.GROUP);
+                    treeItemSpecsItem.setName(category);
+                    listTemp.add(treeItemSpecsItem);
+                }
+
+                int index = findIndex(listTemp, listLastTemp);
+
+                TreeItemSpecsItem parent;
+
+                if (index < 0) {
+                    parent = listTemp.get(0);
+                    result.add(parent);
+                    listTemp = listTemp.subList(1, listTemp.size());
+                    listLastTemp = new ArrayList<>();
+                    listLastTemp.add(parent);
+                } else {
+                    parent = listLastTemp.get(index);
+                    listTemp = listTemp.subList(index + 1, listTemp.size());
+                    listLastTemp = listLastTemp.subList(0, index + 1);
+                }
+
+                for (TreeItemSpecsItem treeItemSpecsItem : listTemp) {
+                    List<TreeItemSpecsItem> children = parent.getChildren();
+                    if (children == null) {
+                        children = new ArrayList<>();
+                        parent.setChildren(children);
+                    }
+                    children.add(treeItemSpecsItem);
+                    parent = treeItemSpecsItem;
+                    listLastTemp.add(treeItemSpecsItem);
+                }
+
+                List<TreeItemSpecsItem> children = parent.getChildren();
+                if (children == null) {
+                    children = new ArrayList<>();
+                    parent.setChildren(children);
+                }
+
+                TreeItemSpecsItem treeItemSpecsItem = new TreeItemSpecsItem();
+                treeItemSpecsItem.setType(TreeItemSpecsItem.Type.ITEM);
+                treeItemSpecsItem.setSpecId(specId);
+
+                children.add(treeItemSpecsItem);
+
             }
         }
 
-        // pokud ještě neexistuje, vytvořím a přidám jí do seznamu
-        if (category == null) {
-            category = new ItemSpecsCategory();
-            category.setName(categoryName);
-            itemSpecsTree.add(category);
-        }
+        return result;
+    }
 
-        // pokud jsme na poslední úrovni, přidáme id do seznamu identifikátorů specifikace,
-        // pokud nejsme, procházíme do hlubší kategorie
-        if (depthIndex + 1 == categories.length) {
-            List<Integer> specIds = category.getSpecIds();
-            if (specIds == null) {
-                specIds = new ArrayList<>(1);
-                category.setSpecIds(specIds);
+    private int findIndex(final List<TreeItemSpecsItem> listTemp,
+                          final List<TreeItemSpecsItem> listLastTemp) {
+        int min = Math.min(listTemp.size(), listLastTemp.size());
+        for (int i = 0; i < min; i++) {
+            if (!listTemp.get(i).equals(listLastTemp.get(i))) {
+                return i - 1;
             }
-            specIds.add(itemSpecId);
-        } else {
-            if (category.getChildren() == null) {
-                category.setChildren(new ArrayList<>(1));
-            }
-            recursiveAddCategory(categories, depthIndex + 1, category.getChildren(), itemSpecId);
         }
-
+        return min - 1;
     }
 
     /**
