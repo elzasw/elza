@@ -167,7 +167,12 @@ public class UISettings {
         /**
          * Výchozí nastavení pro rejstříky.
          */
-        RECORD;
+        RECORD,
+
+        /**
+         * Nastavení sloupců / atributů pro zobrazení v gridu
+         */
+        GRID_VIEW(EntityType.RULE);
 
         /**
          * Typ oprávnění

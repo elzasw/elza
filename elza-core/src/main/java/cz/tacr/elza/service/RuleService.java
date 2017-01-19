@@ -16,6 +16,9 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
+import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.packageimport.xml.SettingGridView;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +30,6 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
-import cz.tacr.elza.config.ConfigRules;
 import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -54,7 +56,6 @@ import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.LockVersionChangeException;
-import cz.tacr.elza.repository.DefaultItemTypeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemSettingsRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
@@ -89,7 +90,9 @@ public class RuleService {
     @Autowired
     private RulesExecutor rulesExecutor;
     @Autowired
-    private ConfigRules elzaRules;
+    private SettingsService settingsService;
+    @Autowired
+    private PackageService packageService;
 
     @Autowired
     private LevelRepository levelRepository;
@@ -111,8 +114,6 @@ public class RuleService {
     private ItemSpecRepository itemSpecRepository;
     @Autowired
     private ItemTypeRepository itemTypeRepository;
-    @Autowired
-    private DefaultItemTypeRepository defaultItemTypeRepository;
     @Autowired
     private ArrDescItemsPostValidator descItemsPostValidator;
 
@@ -586,8 +587,20 @@ public class RuleService {
      * @param ruleSet pravidla
      * @return seznam kódů
      */
-    public List<String> getDefaultItemTypeCodes(final RulRuleSet ruleSet) {
-        return defaultItemTypeRepository.findItemTypeCodes(ruleSet);
+    public List<SettingGridView.ItemType> getGridView(final RulRuleSet ruleSet) {
+
+        // načtený globální oblíbených
+        List<UISettings> gridViews = settingsService.getGlobalSettings(UISettings.SettingsType.GRID_VIEW, UISettings.EntityType.RULE);
+
+        for (UISettings gridView : gridViews) {
+            if (gridView.getRulPackage().getPackageId().equals(ruleSet.getPackage().getPackageId()));
+            SettingGridView view = (SettingGridView) packageService.convertSetting(gridView);
+            if (CollectionUtils.isNotEmpty(view.getItemTypes())) {
+                return view.getItemTypes();
+            }
+        }
+
+        return null;
     }
 
     /**

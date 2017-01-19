@@ -34,6 +34,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
+import cz.tacr.elza.packageimport.xml.SettingGridView;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -42,8 +43,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-
-import com.google.common.collect.Maps;
 
 import cz.tacr.elza.api.UseUnitdateEnum;
 import cz.tacr.elza.api.enums.ParRelationClassTypeRepeatabilityEnum;
@@ -66,7 +65,6 @@ import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulActionRecommended;
 import cz.tacr.elza.domain.RulDataType;
-import cz.tacr.elza.domain.RulDefaultItemType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemSpecRegister;
 import cz.tacr.elza.domain.RulItemType;
@@ -145,7 +143,6 @@ import cz.tacr.elza.repository.ActionRecommendedRepository;
 import cz.tacr.elza.repository.ActionRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
-import cz.tacr.elza.repository.DefaultItemTypeRepository;
 import cz.tacr.elza.repository.ItemSpecRegisterRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeActionRepository;
@@ -288,9 +285,6 @@ public class PackageService {
 
     @Autowired
     private ItemTypeRepository itemTypeRepository;
-
-    @Autowired
-    private DefaultItemTypeRepository defaultItemTypeRepository;
 
     @Autowired
     private ItemSpecRepository itemSpecRepository;
@@ -445,10 +439,6 @@ public class PackageService {
 
             List<RulItemType> rulDescItemTypes = processItemTypes(itemTypes, itemSpecs, rulPackage);
             rulPackageActions = processPackageActions(packageActions, rulPackage, mapEntry, dirActions);
-
-            // Zde se může importovat vazba mezi pravidlem a atributem
-            processDefaultItemTypes(rulRuleSets, ruleSets, rulDescItemTypes);
-
 
             // OSOBY ---------------------------------------------------------------------------------------------------
 
@@ -1292,52 +1282,6 @@ public class PackageService {
     }
 
     /**
-     * Zpracování implicitních sloupců pro pravidla.
-     * @param rulRuleSets pravidla
-     * @param ruleSets xml pravidla, ze který se budou pravidla aktualizovat
-     * @param rulDescItemTypes aktuální seznam atributů
-     */
-    private void processDefaultItemTypes(final List<RulRuleSet> rulRuleSets, final RuleSets ruleSets, final List<RulItemType> rulDescItemTypes) {
-        if (rulRuleSets == null || rulRuleSets.isEmpty()
-                || ruleSets == null || ruleSets.getRuleSets() == null || ruleSets.getRuleSets().isEmpty()) {
-            // Nejsou žádná pravidla pro synchronizaci
-            return;
-        }
-
-        // Mapa kódu na xml pravidlo
-        final Map<String, RuleSet> xmlRuleSetMap = Maps.uniqueIndex(ruleSets.getRuleSets(), RuleSet::getCode);
-
-        // Mapa kódu na atribut
-        final Map<String, RulItemType> rulDescItemTypeMap = Maps.uniqueIndex(rulDescItemTypes, RulItemType::getCode);
-
-        // Synchronizace
-        rulRuleSets.forEach(rulRuleSet -> {
-            final RuleSet xmlRuleSet = xmlRuleSetMap.get(rulRuleSet.getCode());
-
-            // Smazání původních vazeb
-            List<RulDefaultItemType> currItems = defaultItemTypeRepository.findByRuleSet(rulRuleSet);
-            defaultItemTypeRepository.delete(currItems);
-
-            // Import nových vazeb
-            if (xmlRuleSet.getDefaultItemTypes() != null) {
-                xmlRuleSet.getDefaultItemTypes().getDefaultItemTypes().forEach(defaultItemType -> {
-                    RulItemType rulDescItem = rulDescItemTypeMap.get(defaultItemType.getCode());
-                    if (rulDescItem == null) {
-                        throw new IllegalStateException("Pravidlo s kódem " + rulRuleSet.getCode()
-                                + " obsahuje odkaz na neexistující atribut jednotky popisu (atribut s kódem "
-                                + defaultItemType.getCode() + " neexistuje).");
-                    }
-
-                    RulDefaultItemType rel = new RulDefaultItemType();
-                    rel.setItemType(rulDescItem);
-                    rel.setRuleSet(rulRuleSet);
-                    defaultItemTypeRepository.save(rel);
-                });
-            }
-        });
-    }
-
-    /**
      * Zpracování policy.
      *
      * @param policyTypes VO policy
@@ -2142,9 +2086,6 @@ public class PackageService {
      * @param rulRuleSet pravidlo
      */
     private void deleteRuleSet(final RulRuleSet rulRuleSet) {
-        // Smazání návazných záznamů
-        defaultItemTypeRepository.deleteByRuleSet(rulRuleSet);
-
         // Smazání instance
         ruleSetRepository.delete(rulRuleSet);
     }
@@ -2490,6 +2431,8 @@ public class PackageService {
             entity = settingFavoriteItemSpecs;
         } else if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.RECORD)) {
             entity = new SettingRecord();
+        } else if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.GRID_VIEW)) {
+            entity = new SettingGridView();
         } else {
             entity = new SettingBase();
         }
