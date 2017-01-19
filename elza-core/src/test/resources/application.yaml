@@ -7,6 +7,9 @@ spring:
 #     url: jdbc:postgresql://127.0.0.1/elza2
 #     username: app
 #     password: app
+
+# !!! při změně DB změnit i elza.data.url !!!
+
   jpa:
     show-sql: true
     #pametova databaze automaticky zapina hibernate.ddl-auto: create
@@ -25,6 +28,9 @@ spring:
 #              dialect: org.hibernate.spatial.dialect.postgis.PostgisDialect
 
 elza:
+  data:
+    url: jdbc:h2:mem:scratchdb
+
   treenode:
     defaultTitle: <Není nastaven popisek>
 
