@@ -20,9 +20,6 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import javax.xml.bind.JAXBException;
 
-import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.EventId;
-import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -122,6 +119,9 @@ import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventId;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.exception.FatalXmlImportException;
 import cz.tacr.elza.service.exception.InvalidDataException;
 import cz.tacr.elza.service.exception.LevelImportException;
@@ -296,7 +296,6 @@ public class XmlImportService {
         // najít použité rejstříky a osoby
         Set<String> usedRecords = new HashSet<>();
         Set<String> usedParties = new HashSet<>();
-        Set<String> usedPackets = new HashSet<>();
         boolean stopOnError = config.isStopOnError();
 
         boolean importFund;
@@ -324,7 +323,7 @@ public class XmlImportService {
                 throw new FatalXmlImportException("Neznánmý typ importu: " + xmlImportType);
         }
 
-        checkData(xmlImport, usedRecords, usedParties, usedPackets, importAllRecords, importAllParties, importFund);
+        checkData(xmlImport, usedRecords, usedParties, importAllRecords, importAllParties, importFund);
 
         // rejstříky - párovat podle ext id a ext systému
         Map<String, RegRecord> xmlIdIntIdRecordMap = importRecords(xmlImport, usedRecords, stopOnError, config.getRegScope());
@@ -349,7 +348,7 @@ public class XmlImportService {
             ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(fund.getFundId());
             ArrNode rootNode = fundVersion.getRootNode();
 
-            Map<String, ArrPacket> xmlIdIntIdPacketMap = importPackets(xmlImport, usedPackets, stopOnError, fund);
+            Map<String, ArrPacket> xmlIdIntIdPacketMap = importPackets(xmlImport, stopOnError, fund);
             importFund(xmlImport.getFund(), change, rootNode, xmlIdIntIdRecordMap, xmlIdIntIdPartyMap, xmlIdIntIdPacketMap,
                     config, fund);
         }
@@ -367,11 +366,11 @@ public class XmlImportService {
         }
     }
 
-    private Map<String, ArrPacket> importPackets(final XmlImport xmlImport, final Set<String> usedPackets, final boolean stopOnError,
+    private Map<String, ArrPacket> importPackets(final XmlImport xmlImport, final boolean stopOnError,
             final ArrFund fund) throws NonFatalXmlImportException {
         Map<String, ArrPacket> xmlIdIntIdPacketMap;
         try {
-            xmlIdIntIdPacketMap = importPackets(xmlImport.getPackets(), usedPackets, fund, stopOnError);
+            xmlIdIntIdPacketMap = importPackets(xmlImport.getPackets(), fund, stopOnError);
         } catch (NonFatalXmlImportException e) {
             if (stopOnError) {
                 throw e;
@@ -701,7 +700,7 @@ public class XmlImportService {
         return institution;
     }
 
-    private void checkData(final XmlImport xmlImport, final Set<String> usedRecords, final Set<String> usedParties, final Set<String> usedPackets,
+    private void checkData(final XmlImport xmlImport, final Set<String> usedRecords, final Set<String> usedParties,
             final boolean importAllRecords, final boolean importAllParties, final boolean importFund) throws FatalXmlImportException {
         Fund fund = xmlImport.getFund();
         List<AbstractParty> parties = xmlImport.getParties();
@@ -712,7 +711,7 @@ public class XmlImportService {
             }
 
             Level rootLevel = fund.getRootLevel();
-            checkLevel(rootLevel, usedRecords, usedParties, usedPackets);
+            checkLevel(rootLevel, usedRecords, usedParties);
         }
 
         if (importAllParties) {
@@ -776,7 +775,7 @@ public class XmlImportService {
         return false;
     }
 
-    private void checkLevel(final Level level, final Set<String> usedRecords, final Set<String> usedParties, final Set<String> usedPackets) throws FatalXmlImportException {
+    private void checkLevel(final Level level, final Set<String> usedRecords, final Set<String> usedParties) throws FatalXmlImportException {
         if (level.getRecords() != null) {
             level.getRecords().forEach(record -> {
                 usedRecords.add(record.getRecordId());
@@ -792,21 +791,18 @@ public class XmlImportService {
                     DescItemPartyRef partyRefItem = (DescItemPartyRef) descItem;
                     usedParties.add(partyRefItem.getParty().getPartyId());
                     addPartyRecords(usedRecords, partyRefItem.getParty());
-                } else if (descItem instanceof DescItemPacketRef) {
-                    DescItemPacketRef packetRefItem = (DescItemPacketRef) descItem;
-                    usedPackets.add(packetRefItem.getPacket().getStorageNumber());
                 }
             }
         }
 
         if (level.getSubLevels() != null) {
             for (Level l : level.getSubLevels()) {
-                checkLevel(l, usedRecords, usedParties, usedPackets);
+                checkLevel(l, usedRecords, usedParties);
             }
         }
     }
 
-    private Map<String, ArrPacket> importPackets(final List<Packet> packets, final Set<String> usedPackets, final ArrFund fund,
+    private Map<String, ArrPacket> importPackets(final List<Packet> packets, final ArrFund fund,
             final boolean stopOnError) throws InvalidDataException {
         Map<String, ArrPacket> xmlIdIntIdPacketMap = new HashMap<>();
         if (CollectionUtils.isEmpty(packets)) {
@@ -814,14 +810,12 @@ public class XmlImportService {
         }
 
         for (Packet packet : packets) {
-            if (usedPackets.contains(packet.getStorageNumber())) {
-                try {
-                    ArrPacket arrPacket = importPacket(packet, fund, stopOnError);
-                    xmlIdIntIdPacketMap.put(packet.getStorageNumber(), arrPacket);
-                } catch (NonFatalXmlImportException e) {
-                    if (stopOnError) {
-                        throw e;
-                    }
+            try {
+                ArrPacket arrPacket = importPacket(packet, fund, stopOnError);
+                xmlIdIntIdPacketMap.put(packet.getStorageNumber(), arrPacket);
+            } catch (NonFatalXmlImportException e) {
+                if (stopOnError) {
+                    throw e;
                 }
             }
         }
