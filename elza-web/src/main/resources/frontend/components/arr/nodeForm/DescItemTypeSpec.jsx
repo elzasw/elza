@@ -61,8 +61,11 @@ class DescItemTypeSpec extends AbstractReactComponent {
             infoType.specs.forEach(spec => {
                 const refSpec = refType.descItemSpecsMap[spec.id];
                 if (!lowerFilterText || (lowerFilterText && refSpec.name.toLocaleLowerCase().indexOf(lowerFilterText) >= 0)) { // vypnutý filtr nebo položka vyhovuje filtru
+                    const infoSpec = infoType.descItemSpecsMap[spec.id];
                     items.push({
-                        ...refSpec, ...spec
+                        ...refSpec,
+                        ...spec,
+                        className: 'spec-' + infoSpec.type.toLowerCase()
                     });
                 }
             });
@@ -100,44 +103,45 @@ class DescItemTypeSpec extends AbstractReactComponent {
      * @return {*}
      */
     getSpecTreeNode = (node, refType, infoType, lowerFilterText, treeNodeIndex) => {
-        // Specifikace pro daný atribut v pro konkrétní formulář
-        const specChildren = [];
-        const nodeSpecIdsMap = getSetFromIdsList(node.specIds);
-        infoType.specs.forEach(infoSpec => {    // projdeme všechny specifikace pro daný atribut a formulář
-            if (nodeSpecIdsMap[infoSpec.id]) {   // v daném nodu má být konkrétní specifikace, může pro daný atribut být v daném formuláři
-                const refSpec = refType.descItemSpecsMap[infoSpec.id];
+        switch (node.type) {
+            case "GROUP":{
+                const newNode = {
+                    id: "g-" + (treeNodeIndex.index++),
+                    name: node.name,
+                    node: true,
+                    expanded: !!lowerFilterText,
+                    children: []
+                };
 
-                // Filtr
-                if (!lowerFilterText || (lowerFilterText && refSpec.name.toLocaleLowerCase().indexOf(lowerFilterText) >= 0)) { // vypnutý filtr nebo položka vyhovuje filtru
-                    specChildren.push({
-                        ...refSpec,
-                        ...infoSpec,
-                        className: 'spec-' + infoSpec.type.toLowerCase()
-                    });
+                // Přidání potomků
+                node.children.forEach(child => {
+                    const newChild = this.getSpecTreeNode(child, refType, infoType, lowerFilterText, treeNodeIndex);
+                    newChild && newNode.children.push(newChild);
+                });
+
+                if (newNode.children.length === 0) {   // nemá potomky, vůbec ho nechceme ve stromu
+                    return null;
                 }
-            }
-        });
 
-        // Podřízené nody
-        const children = [];
-        node.children && node.children.forEach(subNode => {
-            const newSubNode = this.getSpecTreeNode(subNode, refType, infoType, lowerFilterText, treeNodeIndex);
-            if (newSubNode) {
-                children.push(newSubNode);
+                return newNode;
             }
-        });
+            case "ITEM": {
+                const infoSpec = infoType.descItemSpecsMap[node.specId];
+                if (infoSpec) { // jen když je pro daný formulář povolena
+                    const refSpec = refType.descItemSpecsMap[node.specId];
 
-        if (specChildren.length === 0 && children.length === 0) {   // nemá potomky, vůbec ho nechceme ve stromu
-            return null;
+                    // Filtr
+                    if (!lowerFilterText || (lowerFilterText && refSpec.name.toLocaleLowerCase().indexOf(lowerFilterText) >= 0)) { // vypnutý filtr nebo položka vyhovuje filtru
+                        return {
+                            ...refSpec,
+                            ...infoSpec,
+                            className: 'spec-' + infoSpec.type.toLowerCase()
+                        }
+                    }
+                }
+                return null;
+            }
         }
-
-        return {
-            id: treeNodeIndex.index++,
-            name: node.name,
-            node: true,
-            expanded: !!lowerFilterText,
-            children: [...children, ...specChildren]
-        };
     };
 
     /**
