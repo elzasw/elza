@@ -8,9 +8,11 @@ import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.utils.ObjectListIterator;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
@@ -50,6 +52,8 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     @Autowired
     private LevelRepository levelRepository;
 
+    @Value("${elza.data.url}")
+    private String dbConnectString;
 
     @Override
     public List<ArrLevel> findByParentNode(final ArrNode nodeParent, @Nullable final ArrChange change) {
@@ -409,7 +413,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     @Override
     public List<Integer> findNodeIdsSubtree(final ArrNode node, final ArrChange change) {
 
-        String sql = "WITH RECURSIVE treeData AS (SELECT t.* FROM arr_level t WHERE t.node_id = :nodeId UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) " +
+        String sql = "WITH " + getRecursivePart() + " treeData AS (SELECT t.* FROM arr_level t WHERE t.node_id = :nodeId UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) " +
                 "SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id WHERE t.delete_change_id IS NULL AND n.last_update > :date";
 
         Query query = entityManager.createNativeQuery(sql);
@@ -419,10 +423,20 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         return (List<Integer>) query.getResultList();
     }
 
+    private String getRecursivePart() {
+        final String recursive;
+        if (StringUtils.containsIgnoreCase(dbConnectString, "jtds:sqlserver")) {
+            recursive = "";
+        } else {
+            recursive = "RECURSIVE";
+        }
+        return recursive;
+    }
+
     @Override
     public List<Integer> findNodeIdsParent(final ArrNode node, final ArrChange change) {
 
-        String sql = "WITH RECURSIVE treeData AS (SELECT t.* FROM arr_level t WHERE t.node_id = :nodeId UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id_parent = t.node_id) " +
+        String sql = "WITH " + getRecursivePart() + " treeData AS (SELECT t.* FROM arr_level t WHERE t.node_id = :nodeId UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id_parent = t.node_id) " +
                 "SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id WHERE t.delete_change_id IS NULL AND n.last_update > :date";
 
         Query query = entityManager.createNativeQuery(sql);
