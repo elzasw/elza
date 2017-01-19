@@ -318,21 +318,6 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         return findLevelInfoByIds(allIds);
     }
 
-    @Override
-    public void CheckUniqueConstraint(boolean check) {
-        final String sql;
-        if (check) {
-            sql = "ALTER TABLE arr_level ADD  CONSTRAINT u_arr_level_ppd UNIQUE (position, node_id_parent, delete_change_id)";
-        } else {
-            sql = "ALTER TABLE arr_level DROP CONSTRAINT u_arr_level_ppd";
-        }
-
-        Query query = entityManager.createNativeQuery(sql);
-        query.executeUpdate();
-        levelRepository.flush();
-    }
-
-
     /**
      * Načte potomky daných uzlů. Vždy načítá 4 generace uzlů.
      *
