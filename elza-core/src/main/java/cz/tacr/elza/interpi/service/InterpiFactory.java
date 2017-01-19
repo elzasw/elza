@@ -761,19 +761,34 @@ public class InterpiFactory {
     private ParUnitdate convertDataceToParUnitdate(final KomplexniDataceTyp dataceTyp) {
         ParUnitdate parUnitdate = new ParUnitdate();
 
-        String datace = dataceTyp.getTextDatace();
-        if (StringUtils.isBlank(datace)) {
-            return null;
+        String dateFrom = convertDateFormat(dataceTyp.getDatumOd());
+        String dateTo = convertDateFormat(dataceTyp.getDatumDo());
+
+        if (StringUtils.isNotBlank(dateFrom) && StringUtils.isNotBlank(dateTo)) {
+            UnitDateConvertor.convertToUnitDate(dateFrom + "-" + dateTo, parUnitdate);
+        } else if (StringUtils.isNotBlank(dateFrom)) {
+            UnitDateConvertor.convertToUnitDate(dateFrom, parUnitdate);
+        } else if (StringUtils.isNotBlank(dateTo)) {
+            UnitDateConvertor.convertToUnitDate(dateTo, parUnitdate);
         }
 
-        datace = datace.replaceAll(" ", "");
-        if (StringUtils.isBlank(datace)) {
-            return null;
-        }
-        UnitDateConvertor.convertToUnitDate(datace, parUnitdate);
         parUnitdate.setNote(dataceTyp.getPoznamka());
+        parUnitdate.setTextDate(dataceTyp.getTextDatace());
 
         return parUnitdate;
+    }
+
+    /** Převede datum z formátu yyyy-m-d na d.m.yyyy */
+    private String convertDateFormat(final String date) {
+        if (StringUtils.isBlank(date) || date.startsWith("-")) { // datum je prázdný nebo záporný
+            return null;
+        }
+
+        String[] parts = date.replaceAll(" ", "").split("-");
+        List<String> partsList = Arrays.asList(parts);
+        Collections.reverse(partsList);
+
+        return StringUtils.join(partsList, ".");
     }
 
     /**
@@ -914,12 +929,10 @@ public class InterpiFactory {
 
                 String datace = kodovaneTyp.getDatace();
                 if (StringUtils.isNotBlank(datace)) {
-                    ParUnitdate parUnitdate = new ParUnitdate();
-                    datace = datace.replaceAll(" ", "");
-                    if (StringUtils.isNotBlank(datace)) {
-                        UnitDateConvertor.convertToUnitDate(datace, parUnitdate);
-                        partyGroupIdentifier.setFrom(parUnitdate);
-                    }
+                    // po dohodě s Honzou Vejskalem se to bude zatím nastavovat takto
+                    ParUnitdate validFrom = new ParUnitdate();
+                    validFrom.setTextDate(datace);
+                    partyGroupIdentifier.setFrom(validFrom);
                 }
 
                 partyGroupIdentifier.setIdentifier(kodovaneTyp.getKod());
