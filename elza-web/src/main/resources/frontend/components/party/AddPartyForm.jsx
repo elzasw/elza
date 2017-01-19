@@ -294,7 +294,6 @@ class AddPartyForm extends AbstractReactComponent {
                                             onChange={item => registerTypeId.onChange(item ? item.id : null)}
                                             onBlur={item => registerTypeId.onBlur(item ? item.id : null)}
                                         />
-                                        {registerTypeId.touched && registerTypeId.error && <HelpBlock>{registerTypeId.error}</HelpBlock>}
                                     </FormGroup>
                                     <Scope versionId={versionId} label={i18n('party.recordScope')} {...scopeId} />
                                 </div>
