@@ -1235,9 +1235,6 @@ public class InterpiFactory {
 
         entityMappingVO.setImportEntity(true);
 
-        entityMappingVO.setInterpiEntityName(entityMappingVO.getInterpiEntityName() + interpiEntityType);
-
-
         return entityMappingVO;
     }
 
@@ -1278,8 +1275,7 @@ public class InterpiFactory {
         String interpiRole = null;
         RoleTypA role = souvisejiciTyp.getRole();
         if (role == null) {
-//            interpiRole = "test"; // TODO nekomitovat
-            throw new IllegalStateException("Související entita nemá vyplněn typ role.");
+            interpiRole = "související entita";
         } else {
             interpiRole = role.value();
         }
