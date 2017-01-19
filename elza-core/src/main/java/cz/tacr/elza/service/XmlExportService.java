@@ -274,7 +274,7 @@ public class XmlExportService {
 
         Map<Integer, Record> recordMap = exportRecords(xmlImport, relatedEntities);
         exportParties(xmlImport, relatedEntities.getPartyDescItems(), recordMap);
-        exportPackets(xmlImport, relatedEntities.getPacketDescItems());
+        exportPackets(xmlImport, relatedEntities.getPacketDescItems(), arrFund);
 
         return xmlImport;
     }
@@ -284,21 +284,18 @@ public class XmlExportService {
      *
      * @param xmlImport exportovaná data
      * @param packetDescItems použité obaly a hodnoty atributů kde byly použity
+     * @param arrFund archivní soubor
      */
-    private void exportPackets(final XmlImport xmlImport, final Map<Integer, List<DescItemPacketRef>> packetDescItems) {
+    private void exportPackets(final XmlImport xmlImport, final Map<Integer, List<DescItemPacketRef>> packetDescItems, final ArrFund arrFund) {
         Assert.notNull(xmlImport);
-        Assert.notNull(packetDescItems);
+        Assert.notNull(arrFund);
 
-        List<Packet> packets = new ArrayList<>(packetDescItems.size());
-        ObjectListIterator<Integer> iterator = new ObjectListIterator<>(packetDescItems.keySet());
-        while (iterator.hasNext()) {
-            List<Integer> packetIds = iterator.next();
-            List<ArrPacket> arrPackets = packetRepository.findAll(packetIds);
-            for (ArrPacket arrPacket : arrPackets) {
-                Packet packet = createPacket(arrPacket);
-                packets.add(packet);
-                updateDescItemPacketReferences(arrPacket.getPacketId(), packet, packetDescItems);
-            }
+        List<ArrPacket> arrPackets = packetRepository.findByFund(arrFund);
+        List<Packet> packets = new ArrayList<>(arrPackets.size());
+        for (ArrPacket arrPacket : arrPackets) {
+            Packet packet = createPacket(arrPacket);
+            packets.add(packet);
+            updateDescItemPacketReferences(arrPacket.getPacketId(), packet, packetDescItems);
         }
 
         xmlImport.setPackets(packets);
@@ -515,7 +512,7 @@ public class XmlExportService {
         relation.setRelationTypeCode(parRelation.getRelationType().getCode());
 
 
-        List<ParRelationEntity> parRelationEntities = relationEntityRepository.findByParty(parRelation.getParty());
+        List<ParRelationEntity> parRelationEntities = relationEntityRepository.findByRelation(parRelation);
         relation.setRoleTypes(createRoleTypes(parRelationEntities, recordMap));
         relation.setSource(parRelation.getSource());
         relation.setToDate(XmlImportUtils.createComplexDate(parRelation.getTo()));

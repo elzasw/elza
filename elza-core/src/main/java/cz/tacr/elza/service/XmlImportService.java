@@ -296,7 +296,6 @@ public class XmlImportService {
         // najít použité rejstříky a osoby
         Map<String, RecordVO> usedRecords = new HashMap<>();
         Set<String> usedParties = new HashSet<>();
-        Set<String> usedPackets = new HashSet<>();
         boolean stopOnError = config.isStopOnError();
 
         boolean importFund;
@@ -324,7 +323,7 @@ public class XmlImportService {
                 throw new FatalXmlImportException("Neznánmý typ importu: " + xmlImportType);
         }
 
-        checkData(xmlImport, usedRecords, usedParties, usedPackets, importAllRecords, importAllParties, importFund);
+        checkData(xmlImport, usedRecords, usedParties, importAllRecords, importAllParties, importFund);
         pairRecords(usedRecords);
 
         // rejstříky - párovat podle uuid nebo ext id a ext systému
@@ -350,7 +349,7 @@ public class XmlImportService {
             ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(fund.getFundId());
             ArrNode rootNode = fundVersion.getRootNode();
 
-            Map<String, ArrPacket> xmlIdIntIdPacketMap = importPackets(xmlImport, usedPackets, stopOnError, fund);
+            Map<String, ArrPacket> xmlIdIntIdPacketMap = importPackets(xmlImport, stopOnError, fund);
             importFund(xmlImport.getFund(), change, rootNode, xmlIdIntIdRecordMap, xmlIdIntIdPartyMap, xmlIdIntIdPacketMap,
                     config, fund);
         }
@@ -416,11 +415,11 @@ public class XmlImportService {
         }
     }
 
-    private Map<String, ArrPacket> importPackets(final XmlImport xmlImport, final Set<String> usedPackets, final boolean stopOnError,
+    private Map<String, ArrPacket> importPackets(final XmlImport xmlImport, final boolean stopOnError,
             final ArrFund fund) throws NonFatalXmlImportException {
         Map<String, ArrPacket> xmlIdIntIdPacketMap;
         try {
-            xmlIdIntIdPacketMap = importPackets(xmlImport.getPackets(), usedPackets, fund, stopOnError);
+            xmlIdIntIdPacketMap = importPackets(xmlImport.getPackets(), fund, stopOnError);
         } catch (NonFatalXmlImportException e) {
             if (stopOnError) {
                 throw e;
@@ -749,7 +748,7 @@ public class XmlImportService {
         return institution;
     }
 
-    private void checkData(final XmlImport xmlImport, final Map<String, RecordVO> usedRecords, final Set<String> usedParties, final Set<String> usedPackets,
+    private void checkData(final XmlImport xmlImport, final Map<String, RecordVO> usedRecords, final Set<String> usedParties,
             final boolean importAllRecords, final boolean importAllParties, final boolean importFund) throws FatalXmlImportException {
         Fund fund = xmlImport.getFund();
         List<AbstractParty> parties = xmlImport.getParties();
@@ -760,7 +759,7 @@ public class XmlImportService {
             }
 
             Level rootLevel = fund.getRootLevel();
-            checkLevel(rootLevel, usedRecords, usedParties, usedPackets);
+            checkLevel(rootLevel, usedRecords, usedParties);
         }
 
         if (importAllParties) {
@@ -837,7 +836,7 @@ public class XmlImportService {
         usedRecords.put(record.getRecordId(), recordVO);
     }
 
-    private void checkLevel(final Level level, final Map<String, RecordVO> usedRecords, final Set<String> usedParties, final Set<String> usedPackets) throws FatalXmlImportException {
+    private void checkLevel(final Level level, final Map<String, RecordVO> usedRecords, final Set<String> usedParties) throws FatalXmlImportException {
         if (level.getRecords() != null) {
             level.getRecords().forEach(record -> {
                 putRecordIntoMap(record, usedRecords);
@@ -853,21 +852,18 @@ public class XmlImportService {
                     DescItemPartyRef partyRefItem = (DescItemPartyRef) descItem;
                     usedParties.add(partyRefItem.getParty().getPartyId());
                     addPartyRecords(usedRecords, partyRefItem.getParty());
-                } else if (descItem instanceof DescItemPacketRef) {
-                    DescItemPacketRef packetRefItem = (DescItemPacketRef) descItem;
-                    usedPackets.add(packetRefItem.getPacket().getStorageNumber());
                 }
             }
         }
 
         if (level.getSubLevels() != null) {
             for (Level l : level.getSubLevels()) {
-                checkLevel(l, usedRecords, usedParties, usedPackets);
+                checkLevel(l, usedRecords, usedParties);
             }
         }
     }
 
-    private Map<String, ArrPacket> importPackets(final List<Packet> packets, final Set<String> usedPackets, final ArrFund fund,
+    private Map<String, ArrPacket> importPackets(final List<Packet> packets, final ArrFund fund,
             final boolean stopOnError) throws InvalidDataException {
         Map<String, ArrPacket> xmlIdIntIdPacketMap = new HashMap<>();
         if (CollectionUtils.isEmpty(packets)) {
@@ -875,14 +871,12 @@ public class XmlImportService {
         }
 
         for (Packet packet : packets) {
-            if (usedPackets.contains(packet.getStorageNumber())) {
-                try {
-                    ArrPacket arrPacket = importPacket(packet, fund, stopOnError);
-                    xmlIdIntIdPacketMap.put(packet.getStorageNumber(), arrPacket);
-                } catch (NonFatalXmlImportException e) {
-                    if (stopOnError) {
-                        throw e;
-                    }
+            try {
+                ArrPacket arrPacket = importPacket(packet, fund, stopOnError);
+                xmlIdIntIdPacketMap.put(packet.getStorageNumber(), arrPacket);
+            } catch (NonFatalXmlImportException e) {
+                if (stopOnError) {
+                    throw e;
                 }
             }
         }
