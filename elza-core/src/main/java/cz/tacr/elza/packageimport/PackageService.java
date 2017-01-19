@@ -87,6 +87,7 @@ import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.PackageCode;
+import cz.tacr.elza.interpi.service.InterpiService;
 import cz.tacr.elza.packageimport.xml.ActionItemType;
 import cz.tacr.elza.packageimport.xml.ActionRecommended;
 import cz.tacr.elza.packageimport.xml.Category;
@@ -377,6 +378,9 @@ public class PackageService {
 
     @Autowired
     private CacheService cacheService;
+
+    @Autowired
+    private InterpiService interpiService;
 
     private List<RulTemplate> newRultemplates = null;
 
@@ -802,6 +806,10 @@ public class PackageService {
         List<ParRelationTypeRoleType> parRelationTypeRoleTypesDelete = new ArrayList<>(parRelationTypeRoleTypes);
         parRelationTypeRoleTypesDelete.removeAll(parRelationTypeRoleTypesNew);
         relationTypeRoleTypeRepository.delete(parRelationTypeRoleTypesDelete);
+
+        if (!parRelationTypeRoleTypesNew.isEmpty() || !parRelationTypeRoleTypesDelete.isEmpty()) {
+            interpiService.deleteInvalidMappings();
+        }
     }
 
     /**

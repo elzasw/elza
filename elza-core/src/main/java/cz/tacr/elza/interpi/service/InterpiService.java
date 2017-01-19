@@ -1,6 +1,7 @@
 package cz.tacr.elza.interpi.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,6 +17,9 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -28,6 +32,7 @@ import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.domain.ParInterpiMapping;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParRelationTypeRoleType;
 import cz.tacr.elza.domain.RegExternalSystem;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
@@ -47,6 +52,7 @@ import cz.tacr.elza.repository.RegExternalSystemRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.PartyService;
 
@@ -94,6 +100,9 @@ public class InterpiService {
     @Autowired
     private RelationRoleTypeRepository relationRoleTypeRepository;
 
+    @Autowired
+    private RelationTypeRoleTypeRepository relationTypeRoleTypeRepository;
+
     /**
      * Vyhledá záznamy v INTERPI.
      *
@@ -109,7 +118,6 @@ public class InterpiService {
             final Integer count,
             final Integer systemId) {
         Assert.notNull(systemId);
-
         String interpiRecordId = findIdCondition(conditions);
 
         RegExternalSystem regExternalSystem = regExternalSystemRepository.findOne(systemId);
@@ -320,47 +328,183 @@ public class InterpiService {
         relationTypeRepository.findAll(); // načtení do hibernate cache
         relationRoleTypeRepository.findAll(); // načtení do hibernate cache
 
+        Set<String> interpiKeys = new HashSet<>();
         List<MappingVO> mappingsToUse = new LinkedList<>();
-        List<ParInterpiMapping > mappingsToSave = new LinkedList<>();
+        Map<String, ParInterpiMapping> mappingsToSave = new HashMap<>();
         for (InterpiRelationMappingVO relationMappingVO : mappings) {
             List<InterpiEntityMappingVO> entities = relationMappingVO.getEntities();
             if (CollectionUtils.isEmpty(entities)) {
                 MappingVO mappingVO = createMappingVO(relationMappingVO, null);
-                ParInterpiMapping interpiMapping = createParInterpiMapping(relationMappingVO, null);
-
                 mappingsToUse.add(mappingVO);
-                if (relationMappingVO.getSave()) {
-                    ParInterpiMapping existingMapping = interpiMappingRepository.findByInterpiClassAndInterpiRelationTypeAndInterpiRoleType(interpiMapping.getInterpiClass(),
-                            interpiMapping.getInterpiRelationType(), interpiMapping.getInterpiRoleType());
-                    if (existingMapping != null && !existingMapping.getInterpiMappingId().equals(interpiMapping.getInterpiMappingId())) {
-                        interpiMappingRepository.delete(existingMapping);
-                    }
-                    mappingsToSave.add(interpiMapping);
+
+                if (relationMappingVO.getSave() && relationMappingVO.getImportRelation()) {
+                    String key = createMappingKey(relationMappingVO, null);
+                    ParInterpiMapping interpiMapping = createParInterpiMapping(relationMappingVO, null);
+                    mappingsToSave.put(key, interpiMapping);
                 }
             } else {
-                Set<String> savedRoleTypes = new HashSet<>();
                 for (InterpiEntityMappingVO entityMappingVO : entities) {
                     MappingVO mappingVO = createMappingVO(relationMappingVO, entityMappingVO);
-                    ParInterpiMapping interpiMapping = createParInterpiMapping(relationMappingVO, entityMappingVO);
-
                     mappingsToUse.add(mappingVO);
-                    if ((relationMappingVO.getSave() || entityMappingVO.getSave()) && !savedRoleTypes.contains(interpiMapping.getInterpiRoleType())) {
-                        ParInterpiMapping existingMapping = interpiMappingRepository.findByInterpiClassAndInterpiRelationTypeAndInterpiRoleType(interpiMapping.getInterpiClass(),
-                                interpiMapping.getInterpiRelationType(), interpiMapping.getInterpiRoleType());
-                        if (existingMapping != null && !existingMapping.getInterpiMappingId().equals(interpiMapping.getInterpiMappingId())) {
-                            interpiMappingRepository.delete(existingMapping);
-                        }
-                        savedRoleTypes.add(interpiMapping.getInterpiRoleType());
-                        mappingsToSave.add(interpiMapping);
+
+                    if (!isValidRelationRoleTypeCombination(mappingVO)) {
+                        continue;
+                    }
+
+                    String interpiKey = createInterpiKey(relationMappingVO, entityMappingVO);
+                    if ((relationMappingVO.getSave() || entityMappingVO.getSave()) && (relationMappingVO.getImportRelation() || entityMappingVO.getImportEntity()) &&
+                            !interpiKeys.contains(interpiKey)) {
+                        String key = createMappingKey(relationMappingVO, entityMappingVO);
+                        ParInterpiMapping interpiMapping = createParInterpiMapping(relationMappingVO, entityMappingVO);
+                        mappingsToSave.put(key, interpiMapping);
+
+                        interpiKeys.add(interpiKey);
                     }
                 }
             }
         }
 
-        interpiMappingRepository.save(mappingsToSave);
+        saveMappings(mappingsToSave.values());
 
         return mappingsToUse;
     }
+
+    /**
+     * Uloží nebo aktualizuje mapování.
+     *
+     * @param mappingsToSave seznam mapování
+     */
+    private void saveMappings(final Collection<ParInterpiMapping> mappingsToSave) {
+
+        for (ParInterpiMapping parInterpiMapping : mappingsToSave) {
+            List<ParInterpiMapping> existingMappings = interpiMappingRepository.findByInterpiRelationType(parInterpiMapping.getInterpiRelationType());
+            if (existingMappings.isEmpty()) {
+                interpiMappingRepository.save(parInterpiMapping);
+            } else {
+                boolean sameRelations = true; // mají všechny načtené záznamy stejý typ vztahu jako ukládáný záznam?
+                Integer relationId = parInterpiMapping.getRelationType().getRelationTypeId();
+                for (ParInterpiMapping existingMapping : existingMappings) {
+                    if (sameRelations && !relationId.equals(existingMapping.getRelationType().getRelationTypeId())) {
+                        sameRelations = false;
+                        break;
+                    }
+                }
+
+                if (sameRelations) {
+                    interpiMappingRepository.save(parInterpiMapping);
+                } else {
+                    existingMappings.remove(parInterpiMapping);
+                    interpiMappingRepository.delete(existingMappings);
+                    interpiMappingRepository.save(parInterpiMapping);
+                }
+            }
+        }
+    }
+
+    /** Zkontroluje zda pro typ vztahu a typ role existuje vazba. */
+    private boolean isValidRelationRoleTypeCombination(final MappingVO mappingVO) {
+        ParRelationTypeRoleType parRelationTypeRoleType = new ParRelationTypeRoleType();
+        parRelationTypeRoleType.setRelationType(mappingVO.getParRelationType());
+        parRelationTypeRoleType.setRoleType(mappingVO.getParRelationRoleType());
+
+        ExampleMatcher matcher = ExampleMatcher.matching()
+                .withMatcher("relationType", GenericPropertyMatchers.exact())
+                .withMatcher("roleType", GenericPropertyMatchers.exact());
+
+        Example<ParRelationTypeRoleType> example = Example.of(parRelationTypeRoleType, matcher);
+        return relationTypeRoleTypeRepository.exists(example);
+    }
+
+
+    /**
+     * @return klíč identifikující interpi vazby
+     */
+    private String createInterpiKey(final InterpiRelationMappingVO relationMappingVO,
+            final InterpiEntityMappingVO entityMappingVO) {
+        Assert.notNull(relationMappingVO);
+        Assert.notNull(entityMappingVO);
+
+        // klíč je ve tvaru interpiRelationType-%-%-interpiClass-%-%-interpiRoleType
+        String delimiter = "-%-%-";
+        return new StringBuilder(StringUtils.trimToEmpty(relationMappingVO.getInterpiRelationType())).
+                append(delimiter).
+                append(relationMappingVO.getInterpiClass()).
+                append(delimiter).
+                append(entityMappingVO.getInterpiRoleType()).
+                toString();
+    }
+
+
+    /**
+     * @return klíč identifikující mapování vztahu a role
+     */
+    private String createMappingKey(final InterpiRelationMappingVO relationMappingVO,
+            final InterpiEntityMappingVO entityMappingVO) {
+        Assert.notNull(relationMappingVO);
+
+        // klíč je ve tvaru interpiRelationType-%-%-elzaRelationTypeId-%-%-interpiRoleType-%-%-elzaRoleTypeId
+        String delimiter = "-%-%-";
+        StringBuilder sb = new StringBuilder(StringUtils.trimToEmpty(relationMappingVO.getInterpiRelationType())).
+                append(relationMappingVO.getRelationTypeId());
+
+        if (entityMappingVO != null) {
+            sb.append(delimiter).
+                append(entityMappingVO.getInterpiRoleType()).
+                append(delimiter).
+                append(entityMappingVO.getRelationRoleTypeId());
+        }
+        return sb.toString();
+    }
+
+//    private List<MappingVO> processMappings(final List<InterpiRelationMappingVO> mappings) {
+//    	if (CollectionUtils.isEmpty(mappings)) {
+//    		return getDefaultMappings();
+//    	}
+//
+//    	relationTypeRepository.findAll(); // načtení do hibernate cache
+//    	relationRoleTypeRepository.findAll(); // načtení do hibernate cache
+//
+//    	List<MappingVO> mappingsToUse = new LinkedList<>();
+//    	List<ParInterpiMapping > mappingsToSave = new LinkedList<>();
+//    	for (InterpiRelationMappingVO relationMappingVO : mappings) {
+//    		List<InterpiEntityMappingVO> entities = relationMappingVO.getEntities();
+//    		if (CollectionUtils.isEmpty(entities)) {
+//    			MappingVO mappingVO = createMappingVO(relationMappingVO, null);
+//    			ParInterpiMapping interpiMapping = createParInterpiMapping(relationMappingVO, null);
+//
+//    			mappingsToUse.add(mappingVO);
+//    			if (relationMappingVO.getSave()) {
+//    				ParInterpiMapping existingMapping = interpiMappingRepository.findByInterpiClassAndInterpiRelationTypeAndInterpiRoleType(interpiMapping.getInterpiClass(),
+//    						interpiMapping.getInterpiRelationType(), interpiMapping.getInterpiRoleType());
+//    				if (existingMapping != null && !existingMapping.getInterpiMappingId().equals(interpiMapping.getInterpiMappingId())) {
+//    					interpiMappingRepository.delete(existingMapping);
+//    				}
+//    				mappingsToSave.add(interpiMapping);
+//    			}
+//    		} else {
+//    			Set<String> savedRoleTypes = new HashSet<>();
+//    			for (InterpiEntityMappingVO entityMappingVO : entities) {
+//    				MappingVO mappingVO = createMappingVO(relationMappingVO, entityMappingVO);
+//    				ParInterpiMapping interpiMapping = createParInterpiMapping(relationMappingVO, entityMappingVO);
+//
+//    				mappingsToUse.add(mappingVO);
+//    				if ((relationMappingVO.getSave() || entityMappingVO.getSave()) && !savedRoleTypes.contains(interpiMapping.getInterpiRoleType())) {
+//    					ParInterpiMapping existingMapping = interpiMappingRepository.findByInterpiClassAndInterpiRelationTypeAndInterpiRoleType(interpiMapping.getInterpiClass(),
+//    							interpiMapping.getInterpiRelationType(), interpiMapping.getInterpiRoleType());
+//    					if (existingMapping != null && !existingMapping.getInterpiMappingId().equals(interpiMapping.getInterpiMappingId())) {
+//    						interpiMappingRepository.delete(existingMapping);
+//    					}
+//    					savedRoleTypes.add(interpiMapping.getInterpiRoleType());
+//    					mappingsToSave.add(interpiMapping);
+//    				}
+//    			}
+//    		}
+//    	}
+//
+//    	interpiMappingRepository.save(mappingsToSave);
+//
+//    	return mappingsToUse;
+//    }
 
     /**
      * Převede hierarchickou reprezentaci mapování z klienta na plochou strukturu pro import.
@@ -471,5 +615,13 @@ public class InterpiService {
                 }
             }
         }
+    }
+
+    /**
+     * Odstraní interpi mapování které mají neplatnou kombinaci vztahů a rolí.
+     */
+    public void deleteInvalidMappings() {
+        List<Integer> invalidMappingIds = interpiMappingRepository.findInvalidMappingIds();
+        invalidMappingIds.forEach(id -> interpiMappingRepository.delete(id));
     }
 }
