@@ -15,9 +15,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.repository.ItemSpecRegisterRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +24,6 @@ import org.springframework.util.Assert;
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
-import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrFund;
@@ -52,12 +48,16 @@ import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.DataPartyRefRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
+import cz.tacr.elza.repository.ItemSpecRegisterRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.PartyCreatorRepository;
 import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
@@ -200,7 +200,7 @@ public class PartyService {
      */
     public Map<Integer, Integer> findParPartyIdsByRecords(final Collection<RegRecord> records) {
         if (CollectionUtils.isEmpty(records)) {
-            return Collections.EMPTY_MAP;
+            return Collections.emptyMap();
         }
 
         List<Object[]> recordIdsAndPartyIds = partyRepository.findRecordIdAndPartyIdByRecords(records);
@@ -312,12 +312,12 @@ public class PartyService {
             ParPartyGroup savePartyGroup = (ParPartyGroup) saveParty;
             ParPartyGroup partyGroup = (ParPartyGroup) newParty;
             synchPartyGroupIdentifiers(savePartyGroup,
-                    partyGroup.getPartyGroupIdentifiers() == null ? Collections.EMPTY_LIST : partyGroup.getPartyGroupIdentifiers());
+                    partyGroup.getPartyGroupIdentifiers() == null ? Collections.emptyList() : partyGroup.getPartyGroupIdentifiers());
         }
 
 
         //synchronizace tvůrců osoby
-        synchCreators(saveParty, newParty.getPartyCreators() == null ? Collections.EMPTY_LIST : newParty.getPartyCreators());
+        synchCreators(saveParty, newParty.getPartyCreators() == null ? Collections.emptyList() : newParty.getPartyCreators());
 
         //synchronizace rejstříkového hesla
         synchRecord(saveParty);
@@ -418,7 +418,7 @@ public class PartyService {
         Assert.notNull(partyGroup);
 
 
-        Map<Integer, ParPartyGroupIdentifier> dbIdentifiersMap = Collections.EMPTY_MAP;
+        Map<Integer, ParPartyGroupIdentifier> dbIdentifiersMap = Collections.emptyMap();
         if(partyGroup.getPartyId() != null){
             dbIdentifiersMap = ElzaTools
                 .createEntityMap(partyGroupIdentifierRepository.findByParty(partyGroup), ParPartyGroupIdentifier::getPartyGroupIdentifierId);
@@ -511,7 +511,7 @@ public class PartyService {
 
             ParPartyName save = partyNameRepository.save(oldPartyName);
             save = synchComplementTypes(save, newPartyName.getPartyNameComplements() == null
-                                               ? Collections.EMPTY_LIST : newPartyName.getPartyNameComplements());
+                                               ? Collections.emptyList() : newPartyName.getPartyNameComplements());
             saved.add(save);
         }
 
@@ -794,7 +794,7 @@ public class PartyService {
     private List<ParRelationEntity> saveDeleteRelationEntities(final ParRelation relation,
                                                                @Nullable final Collection<ParRelationEntity> newRelationEntities) {
         if (newRelationEntities == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         Map<Integer, ParRelationEntity> relationEntityMap = ElzaTools
