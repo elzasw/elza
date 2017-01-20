@@ -159,9 +159,8 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
             condition.add(scope.get(RegScope.SCOPE_ID).in(scopeIds));
         }
 
-        if (registerTypeIds != null) {
+        if (CollectionUtils.isNotEmpty(registerTypeIds)) {
             condition.add(record.get(RegRecord.REGISTER_TYPE).in(registerTypeIds));
-
         }
 
         return builder.and(condition.toArray(new Predicate[condition.size()]));

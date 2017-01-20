@@ -59,7 +59,7 @@ class PartyField extends AbstractReactComponent {
     handleSearchChange = debounce((text) => {
         text = text == "" ? null : text;
         this.setState({searchText: text});
-        WebApi.findParty(text, this.props.versionId, this.props.partyTypeId, 0, AUTOCOMPLETE_PARTY_LIST_SIZE).then(json => {
+        WebApi.findParty(text, this.props.versionId, this.props.partyTypeId, null, AUTOCOMPLETE_PARTY_LIST_SIZE).then(json => {
             this.setState({
                 partyList: json.rows,
                 count: json.count
