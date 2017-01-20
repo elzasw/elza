@@ -1026,11 +1026,23 @@ class WebApi {
     }
 
     getAllExtSystem() {
-        return AjaxUtils.ajaxGet(WebApi.adminUrl + '/externalSystems');
+        return AjaxUtils.ajaxGet(WebApi.adminUrl + '/externalSystems', null)
     }
 
     getExtSystem(id) {
-        return AjaxUtils.ajaxGet(WebApi.adminUrl + '/externalSystems/' + id);
+        return AjaxUtils.ajaxGet(WebApi.adminUrl + '/externalSystems/' + id, null)
+    }
+
+    createExtSystem(extSystem) {
+        return AjaxUtils.ajaxPost(WebApi.adminUrl + '/externalSystems', null, extSystem);
+    }
+
+    updateExtSystem(id, extSystem) {
+        return AjaxUtils.ajaxPut(WebApi.adminUrl + '/externalSystems/' + id, null, extSystem);
+    }
+
+    deleteExtSystem(id) {
+        return AjaxUtils.ajaxDelete(WebApi.adminUrl + '/externalSystems/' + id, null);
     }
 
     specificationHasParty(itemSpecId) {

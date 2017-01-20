@@ -132,6 +132,10 @@ exports.PartyDetailRelationClass = require('components/party/PartyDetailRelation
 exports.DatationField = require('components/party/DatationField.jsx');
 
 exports.AdminPackagesList = require('components/admin/AdminPackagesList.jsx');
+exports.AdminExtSystemList = require('components/admin/AdminExtSystemList.jsx');
+exports.AdminExtSystemListItem = require('components/admin/AdminExtSystemListItem.jsx');
+exports.AdminExtSystemDetail = require('components/admin/AdminExtSystemDetail.jsx');
+exports.ExtSystemForm = require('components/admin/ExtSystemForm.jsx');
 exports.AdminPackagesUpload = require('components/admin/AdminPackagesUpload.jsx');
 exports.AdminFulltextReindex = require('components/admin/AdminFulltextReindex.jsx');
 exports.UserDetail = require('components/admin/UserDetail.jsx');

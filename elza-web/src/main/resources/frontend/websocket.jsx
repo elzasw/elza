@@ -23,6 +23,9 @@ import {
     changeParty,
     changePartyCreate,
     changePartyDelete,
+    changeExtSystem,
+    changeExtSystemCreate,
+    changeExtSystemDelete,
     changeMoveLevel,
     changeRegistry,
     changeFund,
@@ -269,6 +272,17 @@ function processEvents(values) {
             case 'PARTY_UPDATE':
                 partyUpdate(value);
                 break;
+
+            case 'EXT_SYSTEM_DELETE':
+                extSystemDelete(value);
+                break;
+            case 'EXT_SYSTEM_CREATE':
+                extSystemCreate(value);
+                break;
+            case 'EXTERNAL_SYSTEM_CHANGE':
+                extSystemUpdate(value);
+                break;
+
             case 'NODES_CHANGE':
                 nodesChange(value);
                 break;
@@ -593,6 +607,22 @@ function partyCreate(value){
 
 function partyDelete(value){
     store.dispatch(changePartyDelete(value.ids[0]));
+}
+
+/**
+ * Externí systémy
+ */
+
+function extSystemUpdate(value){
+    store.dispatch(changeExtSystem(value.ids[0]));
+}
+
+function extSystemCreate(value){
+    store.dispatch(changeExtSystemCreate(value.ids[0]));
+}
+
+function extSystemDelete(value){
+    store.dispatch(changeExtSystemDelete(value.ids[0]));
 }
 
 /**
