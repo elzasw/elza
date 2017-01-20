@@ -11,7 +11,7 @@ import cz.tacr.elza.exception.codes.ErrorCode;
  */
 public class ConcurrentUpdateException extends AbstractException {
 
-    public ConcurrentUpdateException(Exception e, ErrorCode errorCode) {
-        super(e, errorCode);
+    public ConcurrentUpdateException(String message, Exception e, ErrorCode errorCode) {
+        super(message, e, errorCode);
     }
 }

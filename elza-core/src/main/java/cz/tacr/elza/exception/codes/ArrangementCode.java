@@ -64,11 +64,6 @@ public enum ArrangementCode implements ErrorCode {
     ALREADY_REMOVED,
 
     /**
-     * Entitu nelze odeslat.
-     */
-    CANT_SEND,
-
-    /**
      * Neplatná verze.
      */
     INVALID_VERSION,

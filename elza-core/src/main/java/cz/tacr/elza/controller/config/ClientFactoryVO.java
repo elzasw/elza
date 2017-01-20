@@ -1411,7 +1411,7 @@ public class ClientFactoryVO {
      */
     public ArrNodeVO createArrNode(final ArrNode node) {
         if (node == null) {
-            throw new ObjectNotFoundException(ArrangementCode.NODE_NOT_FOUND);
+            throw new ObjectNotFoundException("Není vyplněna JP", ArrangementCode.NODE_NOT_FOUND);
         }
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrNodeVO result = mapper.map(node, ArrNodeVO.class);
@@ -2306,8 +2306,7 @@ public class ClientFactoryVO {
         final List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaoAndDeleteChangeIsNull(arrDao);
         if (CollectionUtils.isNotEmpty(daoLinkList)) {
             if (daoLinkList.size() > 1) {
-                logger.error("Nalezen více než jeden platný link pro arrDao ID=" + arrDao.getDaoId() + ".");
-                throw new SystemException();
+                throw new SystemException("Nalezen více než jeden platný link pro arrDao ID=" + arrDao.getDaoId() + ".");
             }
             final ArrDaoLink daoLink = daoLinkList.iterator().next();
 

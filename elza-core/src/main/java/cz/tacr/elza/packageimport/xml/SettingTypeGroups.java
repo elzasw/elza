@@ -63,7 +63,7 @@ public class SettingTypeGroups extends Setting {
         try {
             return objectMapper.writeValueAsString(this);
         } catch (JsonProcessingException e) {
-            throw new SystemException(e, BaseCode.JSON_PARSE);
+            throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
         }
     }
 
@@ -72,7 +72,7 @@ public class SettingTypeGroups extends Setting {
         try {
             items = objectMapper.readValue(value, SettingTypeGroups.class).getItems();
         } catch (IOException e) {
-            throw new SystemException(e, BaseCode.JSON_PARSE);
+            throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
         }
     }
 

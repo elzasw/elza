@@ -49,7 +49,7 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler({ObjectOptimisticLockingFailureException.class, StaleObjectStateException.class, OptimisticLockingFailureException.class})
     @ResponseBody
     public ResponseEntity<ExceptionResponse> lockingException(final Exception cause) {
-        ConcurrentUpdateException concurrentUpdateException = new ConcurrentUpdateException(cause, BaseCode.OPTIMISTIC_LOCKING_ERROR);
+        ConcurrentUpdateException concurrentUpdateException = new ConcurrentUpdateException(cause.getMessage(), cause, BaseCode.OPTIMISTIC_LOCKING_ERROR);
         concurrentUpdateException.set("message", cause.getMessage());
         logger.warn("ControllerExceptionHandler->lockingException", concurrentUpdateException);
         return new ResponseEntity<>(new ExceptionResponse(concurrentUpdateException), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -80,6 +80,8 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
 
         private String devMessage;
 
+        private String level;
+
         private Map<String, Object> properties;
 
         public ExceptionResponse(final AbstractException exception) {
@@ -88,6 +90,7 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
             this.code = errorCode.getCode();
             this.properties = exception.getProperties();
             this.message = exception.getMessage();
+            this.level = exception.getLevel().getLevel();
             if ("DEV".equalsIgnoreCase(buildType)) {
                 StringWriter sw = new StringWriter();
                 exception.printStackTrace(new PrintWriter(sw));
@@ -113,6 +116,10 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
 
         public Map<String, Object> getProperties() {
             return properties;
+        }
+
+        public String getLevel() {
+            return level;
         }
     }
 

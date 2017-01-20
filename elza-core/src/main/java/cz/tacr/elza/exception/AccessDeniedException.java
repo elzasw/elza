@@ -11,8 +11,8 @@ import cz.tacr.elza.exception.codes.BaseCode;
  */
 public class AccessDeniedException extends AbstractException {
 
-    public AccessDeniedException(final UsrPermission.Permission[] permission) {
-        super(BaseCode.INSUFFICIENT_PERMISSIONS);
+    public AccessDeniedException(final String message, final UsrPermission.Permission[] permission) {
+        super(message, BaseCode.INSUFFICIENT_PERMISSIONS);
         set("permission", permission);
     }
 

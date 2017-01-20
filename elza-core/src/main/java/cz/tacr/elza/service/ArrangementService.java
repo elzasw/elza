@@ -610,19 +610,19 @@ public class ArrangementService {
         ArrFund fund = version.getFund();
 
         if (!fundRepository.exists(fund.getFundId())) {
-            throw new ObjectNotFoundException(ArrangementCode.FUND_NOT_FOUND).set("id", fund.getFundId());
+            throw new ObjectNotFoundException("AS s ID=" + fund.getFundId() + " nebylo nalezeno", ArrangementCode.FUND_NOT_FOUND).set("id", fund.getFundId());
         }
 
         if (version.getLockChange() != null) {
-            throw new BusinessException(ArrangementCode.VERSION_ALREADY_CLOSED);
+            throw new BusinessException("Verze AS s ID=" + fund.getFundId() + " je již uzavřena", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
         if (bulkActionService.isRunning(version)) {
-            throw new BusinessException(ArrangementCode.VERSION_CANNOT_CLOSE_ACTION);
+            throw new BusinessException("Nelze uzavřít verzi AS s ID=" + fund.getFundId() + ", protože běží hromadná akce", ArrangementCode.VERSION_CANNOT_CLOSE_ACTION);
         }
 
         if (updateConformityInfoService.isRunning(version)) {
-            throw new BusinessException(ArrangementCode.VERSION_CANNOT_CLOSE_VALIDATION);
+            throw new BusinessException("Nelze uzavřít verzi AS s ID=" + fund.getFundId() + ", protože běží validace", ArrangementCode.VERSION_CANNOT_CLOSE_VALIDATION);
         }
 
         ArrChange change = createChange(null);

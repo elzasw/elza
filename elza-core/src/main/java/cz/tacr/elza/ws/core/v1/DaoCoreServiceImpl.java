@@ -165,13 +165,13 @@ public class DaoCoreServiceImpl implements DaoService {
 
         // daolink.daoIdentifier a didIdentifier existují a ukazují na shodný AS
         if (arrDao == null) {
-            throw new ObjectNotFoundException(DigitizationCode.DAO_NOT_FOUND).set("code", daoLink.getDaoIdentifier());
+            throw new ObjectNotFoundException("Digitalizát s ID=" + daoIdentifier + " nenalezen", DigitizationCode.DAO_NOT_FOUND).set("code", daoLink.getDaoIdentifier());
         }
         if (arrNode == null) {
-            throw new ObjectNotFoundException(ArrangementCode.NODE_NOT_FOUND).set("Uuid", daoLink.getDidIdentifier());
+            throw new ObjectNotFoundException("JP s ID=" + didIdentifier + " nenalezena", ArrangementCode.NODE_NOT_FOUND).set("Uuid", daoLink.getDidIdentifier());
         }
         if (!arrNode.getFund().equals(arrDao.getDaoPackage().getFund())) {
-            throw new BusinessException(DigitizationCode.DAO_AND_NODE_HAS_DIFFERENT_PACKAGE);
+            throw new BusinessException("DAO a Node okazují na různý package", DigitizationCode.DAO_AND_NODE_HAS_DIFFERENT_PACKAGE);
         }
 
         // kontrola existence linku, zrušení
@@ -211,8 +211,7 @@ public class DaoCoreServiceImpl implements DaoService {
             throw new ObjectNotFoundException("Nepodařilo se dohledat digitalRepository: " + daoPackage.getRepositoryIdentifier(), DigitizationCode.REPOSITORY_NOT_FOUND).set("code", daoPackage.getRepositoryIdentifier());
         }
         if (StringUtils.isBlank(daoPackage.getIdentifier())) {
-            logger.error("Nebylo vyplněno povinné pole externího identifikátoru");
-            throw new SystemException(DigitizationCode.NOT_FILLED_EXTERNAL_IDENTIRIER);
+            throw new SystemException("Nebylo vyplněno povinné pole externího identifikátoru", DigitizationCode.NOT_FILLED_EXTERNAL_IDENTIRIER);
         }
 
         ArrDaoPackage arrDaoPackage = new ArrDaoPackage();
@@ -272,8 +271,7 @@ public class DaoCoreServiceImpl implements DaoService {
     private ArrDaoFile createArrDaoFile(@Nullable final ArrDao arrDao, @Nullable final ArrDaoFileGroup arrDaoFileGroup, final File file) {
         ArrDaoFile arrDaoFile = new ArrDaoFile();
         if (StringUtils.isBlank(file.getIdentifier())) {
-            logger.error("Nebylo vyplněno povinné pole identifikátoru");
-            throw new SystemException(DigitizationCode.NOT_FILLED_EXTERNAL_IDENTIRIER);
+            throw new SystemException("Nebylo vyplněno povinné pole identifikátoru", DigitizationCode.NOT_FILLED_EXTERNAL_IDENTIRIER);
         }
         arrDaoFile.setCode(file.getIdentifier());
 
@@ -319,7 +317,7 @@ public class DaoCoreServiceImpl implements DaoService {
         switch (sourceDimensionUnit) {
             case IN: return cz.tacr.elza.api.UnitOfMeasure.IN;
             case MM: return cz.tacr.elza.api.UnitOfMeasure.MM;
-            default: throw new BusinessException(PackageCode.PARSE_ERROR);
+            default: throw new BusinessException("Neplatná jednotka: " + sourceDimensionUnit, PackageCode.PARSE_ERROR);
         }
     }
 
@@ -330,7 +328,7 @@ public class DaoCoreServiceImpl implements DaoService {
             case SHA_256: return ArrDaoFile.ChecksumType.SHA256;
             case SHA_384: return ArrDaoFile.ChecksumType.SHA384;
             case SHA_512: return ArrDaoFile.ChecksumType.SHA512;
-            default: throw new BusinessException(PackageCode.PARSE_ERROR);
+            default: throw new BusinessException("Neplatný checksum typ: " + checksumType, PackageCode.PARSE_ERROR);
         }
     }
 
@@ -363,7 +361,7 @@ public class DaoCoreServiceImpl implements DaoService {
 
             final ArrDaoPackage arrDaoPackage = daoPackageRepository.findOneByCode(packageIdentifier);
             if (arrDaoPackage == null) {
-                throw new ObjectNotFoundException(DigitizationCode.PACKAGE_NOT_FOUND).set("code", packageIdentifier);
+                throw new ObjectNotFoundException("Balíček digitalizátů s ID=" + packageIdentifier + " nenalezen", DigitizationCode.PACKAGE_NOT_FOUND).set("code", packageIdentifier);
             }
 
             // původní zneplatnění - nahrazeno skutečným kaskádovým smazáním - výslovně požadováno 10.1. LightCompem
@@ -408,7 +406,7 @@ public class DaoCoreServiceImpl implements DaoService {
 
             final ArrDao arrDao = daoRepository.findOneByCode(daoIdentifier);
             if (arrDao == null) {
-                throw new ObjectNotFoundException(DigitizationCode.DAO_NOT_FOUND).set("code", daoIdentifier);
+                throw new ObjectNotFoundException("Digitalizát s ID=" + daoIdentifier + " nenalezen", DigitizationCode.DAO_NOT_FOUND).set("code", daoIdentifier);
             }
 
             daoService.deleteDaosWithoutLinks(Collections.singletonList(arrDao));

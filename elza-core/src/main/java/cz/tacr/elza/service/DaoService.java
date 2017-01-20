@@ -174,7 +174,7 @@ public class DaoService {
             resultDaoLink = daoLinkList.get(0); // vrací jediný prvek
         } else {
             // Nalezeno více než jedno platné propojení mezi digitalizátem a uzlem popisu.
-            throw new BusinessException(ArrangementCode.ALREADY_ADDED);
+            throw new BusinessException("Propojení DAO(ID=" + dao.getDaoId() + ") a node(ID=" + node.getNodeId() + ") již existuje", ArrangementCode.ALREADY_ADDED);
         }
 
         return resultDaoLink;
@@ -269,8 +269,7 @@ public class DaoService {
                     Arrays.asList(ArrRequest.State.OPEN, ArrRequest.State.QUEUED, ArrRequest.State.SENT));
 
             if (daoLinkRequests.size() > 0) {
-                logger.info("Nelze smazat package=" + packageIdentifier + ", počet otevřených požadavků: " + daoLinkRequests.size());
-                throw new SystemException(DigitizationCode.DAO_HAS_REQUEST);
+                throw new SystemException("Nelze smazat package=" + packageIdentifier + ", počet otevřených požadavků: " + daoLinkRequests.size(), DigitizationCode.DAO_HAS_REQUEST);
             }
 
             for (ArrDao arrDao : arrDaos) {

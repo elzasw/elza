@@ -102,7 +102,7 @@ public class RequestService {
         digitizationRequest.setDescription(description);
         List<ArrDigitizationFrontdesk> digitizationFrontdeskList = externalSystemService.findDigitizationFrontdesk();
         if (digitizationFrontdeskList.size() != 1) {
-            throw new BusinessException(ArrangementCode.ILLEGAL_COUNT_EXTERNAL_SYSTEM);
+            throw new BusinessException("Neplatný počet externích systémů daného typu - musí být právě jeden", ArrangementCode.ILLEGAL_COUNT_EXTERNAL_SYSTEM);
         }
         digitizationRequest.setDigitizationFrontdesk(digitizationFrontdeskList.get(0));
         digitizationRequest.setFund(fundVersion.getFund());
@@ -135,7 +135,7 @@ public class RequestService {
         daoRequest.setDescription(description);
         List<ArrDigitalRepository> digitalRepositories = externalSystemService.findDigitalRepository();
         if (digitalRepositories.size() != 1) {
-            throw new BusinessException(ArrangementCode.ILLEGAL_COUNT_EXTERNAL_SYSTEM);
+            throw new BusinessException("Neplatný počet externích systémů daného typu - musí být právě jeden", ArrangementCode.ILLEGAL_COUNT_EXTERNAL_SYSTEM);
         }
         daoRequest.setDigitalRepository(digitalRepositories.get(0));
         daoRequest.setFund(fundVersion.getFund());
@@ -179,12 +179,12 @@ public class RequestService {
                                            @NotNull final List<ArrNode> nodes,
                                            @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion, final String description) {
         if (!digitizationRequest.getState().equals(ArrRequest.State.OPEN)) {
-            throw new BusinessException(ArrangementCode.REQUEST_INVALID_STATE).set("state", digitizationRequest.getState());
+            throw new BusinessException("Neplatný stav požadavku " + digitizationRequest + ": " + digitizationRequest.getState(), ArrangementCode.REQUEST_INVALID_STATE).set("state", digitizationRequest.getState());
         }
 
         List<ArrDigitizationRequestNode> digitizationRequestNodes = digitizationRequestNodeRepository.findByDigitizationRequestAndNode(digitizationRequest, nodes);
         if (digitizationRequestNodes.size() != 0) {
-            throw new BusinessException(ArrangementCode.ALREADY_ADDED);
+            throw new BusinessException("Požadavek již obsahuje přidávané JP", ArrangementCode.ALREADY_ADDED);
         }
 
         for (ArrNode node : nodes) {
@@ -208,12 +208,12 @@ public class RequestService {
                                  @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                  @Nullable final String description) {
         if (!daoRequest.getState().equals(ArrRequest.State.OPEN)) {
-            throw new BusinessException(ArrangementCode.REQUEST_INVALID_STATE).set("state", daoRequest.getState());
+            throw new BusinessException("Neplatný stav požadavku " + daoRequest + ": " + daoRequest.getState(), ArrangementCode.REQUEST_INVALID_STATE).set("state", daoRequest.getState());
         }
 
         List<ArrDaoRequestDao> daoRequestDaos = daoRequestDaoRepository.findByDaoRequestAndDao(daoRequest, daos);
         if (daoRequestDaos.size() != 0) {
-            throw new BusinessException(ArrangementCode.ALREADY_ADDED);
+            throw new BusinessException("Požadavek již obsahuje přidávaný digitalizát(y)", ArrangementCode.ALREADY_ADDED);
         }
 
         for (ArrDao dao : daos) {
@@ -237,12 +237,12 @@ public class RequestService {
                                               @NotNull final List<ArrNode> nodes,
                                               @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
         if (!digitizationRequest.getState().equals(ArrRequest.State.OPEN)) {
-            throw new BusinessException(ArrangementCode.REQUEST_INVALID_STATE).set("state", digitizationRequest.getState());
+            throw new BusinessException("Neplatný stav požadavku " + digitizationRequest + ": " + digitizationRequest.getState(), ArrangementCode.REQUEST_INVALID_STATE).set("state", digitizationRequest.getState());
         }
 
         List<ArrDigitizationRequestNode> digitizationRequestNodes = digitizationRequestNodeRepository.findByDigitizationRequestAndNode(digitizationRequest, nodes);
         if (digitizationRequestNodes.size() != nodes.size()) {
-            throw new BusinessException(ArrangementCode.ALREADY_REMOVED);
+            throw new BusinessException("Požadavek již neobsahuje odebírané JP", ArrangementCode.ALREADY_REMOVED);
         }
 
         digitizationRequestNodeRepository.delete(digitizationRequestNodes);
@@ -254,7 +254,7 @@ public class RequestService {
                               @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                               @Nullable final String description) {
         if (!request.getState().equals(ArrRequest.State.OPEN)) {
-            throw new BusinessException(ArrangementCode.REQUEST_INVALID_STATE).set("state", request.getState());
+            throw new BusinessException("Neplatný stav požadavku " + request + ": " + request.getState(), ArrangementCode.REQUEST_INVALID_STATE).set("state", request.getState());
         }
         switch (request.getDiscriminator()) {
             case DAO:
@@ -341,7 +341,7 @@ public class RequestService {
                                  final ArrRequest.State newState) {
         boolean success = requestRepository.setState(request, oldState, newState);
         if (!success) {
-            throw new BusinessException(ArrangementCode.REQUEST_INVALID_STATE).set("state", request.getState()).set("setState", newState);
+            throw new BusinessException("Neplatný stav požadavku " + request + ": " + request.getState(), ArrangementCode.REQUEST_INVALID_STATE).set("state", request.getState()).set("setState", newState);
         }
     }
 

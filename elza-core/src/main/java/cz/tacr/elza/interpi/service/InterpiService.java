@@ -290,7 +290,7 @@ public class InterpiService {
             RegRecord regRecord = recordRepository.findRegRecordByExternalIdAndExternalSystemCodeAndScope(interpiRecordId,
                     regExternalSystem.getCode(), regScope);
             if (regRecord != null) {
-                throw new BusinessException(ExternalCode.ALREADY_IMPORTED).set("id", interpiRecordId).set("scope", regScope.getName());
+                throw new BusinessException("Záznam již existuje " + regRecord, ExternalCode.ALREADY_IMPORTED).set("id", interpiRecordId).set("scope", regScope.getName());
             }
         } else {
             originalRecord = recordRepository.findOne(recordId);

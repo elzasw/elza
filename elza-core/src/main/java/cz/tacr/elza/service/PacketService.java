@@ -10,6 +10,7 @@ import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.DeleteException;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.DataPacketRefRepository;
 import cz.tacr.elza.utils.ObjectListIterator;
@@ -250,7 +251,7 @@ public class PacketService {
 
         if (usePackets.size() > 0) {
             throw new DeleteException("Není možné odstranit použíté obaly: " + usePackets, ArrangementCode.PACKET_DELETE_ERROR)
-                    .set("packets", usePackets.stream().map(ArrPacket::getStorageNumber).collect(Collectors.toList()));
+                    .set("packets", usePackets.stream().map(ArrPacket::getStorageNumber).collect(Collectors.toList())).level(Level.WARNING);
         }
 
         ObjectListIterator<Integer> packetIdsIterator = new ObjectListIterator<>(packetIdList);

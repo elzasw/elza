@@ -381,18 +381,18 @@ public class RevertingChangesService {
         ChangeResult lastChange = convertResult((Object[]) queryLastChange.getSingleResult());
 
         if (!fromChange.getChangeId().equals(lastChange.getChangeId())) {
-            throw new BusinessException(ArrangementCode.EXISTS_NEWER_CHANGE);
+            throw new BusinessException("Existuje novější verze", ArrangementCode.EXISTS_NEWER_CHANGE);
         }
 
         if (toChange.getType() != null && toChange.getType().equals(ArrChange.Type.CREATE_AS)) {
-            throw new BusinessException(ArrangementCode.EXISTS_BLOCKING_CHANGE);
+            throw new BusinessException("Existuje blokující změna v JP", ArrangementCode.EXISTS_BLOCKING_CHANGE);
         }
 
         if (nodeId != null) {
             Query findQueryCountBefore = createFindQueryCountBefore(fundId, nodeId, fromChange.getChangeId(), toChange.getChangeId());
             Integer countBefore = ((BigInteger) findQueryCountBefore.getSingleResult()).intValue();
             if (countBefore > 0) {
-                throw new BusinessException(ArrangementCode.EXISTS_BLOCKING_CHANGE);
+                throw new BusinessException("Existuje blokující změna v JP", ArrangementCode.EXISTS_BLOCKING_CHANGE);
             }
         }
     }

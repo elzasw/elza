@@ -31,6 +31,11 @@ public enum PackageCode implements ErrorCode {
     /**
      * Entita existuje již v jiném balíčku.
      */
-    OTHER_PACKAGE
+    OTHER_PACKAGE,
+
+    /**
+     * Balíček neexistuje.
+     */
+    PACKAGE_NOT_EXIST;
 
 }

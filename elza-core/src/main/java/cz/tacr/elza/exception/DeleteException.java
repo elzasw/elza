@@ -10,10 +10,6 @@ import cz.tacr.elza.exception.codes.ErrorCode;
  */
 public class DeleteException extends AbstractException {
 
-    public DeleteException(final ErrorCode errorCode) {
-        super(errorCode);
-    }
-
     public DeleteException(final String message, final ErrorCode errorCode) {
         super(message, errorCode);
     }

@@ -57,7 +57,7 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
 
         if (fromDate != null || toDate != null) {
             if (fromDate == null || toDate == null || toDate.isBefore(fromDate)) {
-                throw new BusinessException(ArrangementCode.REQUEST_INVALID).set("toDate", toDate).set("fromDate", fromDate);
+                throw new BusinessException("Neplatný požadavek", ArrangementCode.REQUEST_INVALID).set("toDate", toDate).set("fromDate", fromDate);
             }
 
             Predicate fundPredicate = cb.between(ch.get("changeDate"), fromDate, toDate);

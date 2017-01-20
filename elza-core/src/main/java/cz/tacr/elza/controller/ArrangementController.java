@@ -1154,11 +1154,11 @@ public class ArrangementController {
         ArrNode node = nodeRepository.findOne(nodeId);
 
         if (version == null) {
-            throw new ObjectNotFoundException(ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", versionId);
+            throw new ObjectNotFoundException("Nebyla nalezena verze AS s ID=" + versionId, ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", versionId);
         }
 
         if (node == null) {
-            throw new ObjectNotFoundException(ArrangementCode.NODE_NOT_FOUND).set("id", nodeId);
+            throw new ObjectNotFoundException("Nebyla nalezena JP s ID=" + nodeId, ArrangementCode.NODE_NOT_FOUND).set("id", nodeId);
         }
 
         List<ArrDescItem> descItems = arrangementService.getDescItems(version, node);
@@ -2157,7 +2157,7 @@ public class ArrangementController {
         List<ArrNode> nodes = nodeRepository.findAll(param.nodeIds);
 
         if (nodes.size() != param.nodeIds.size()) {
-            throw new SystemException(BaseCode.ID_NOT_EXIST);
+            throw new SystemException("Neplatný počet nalezených jednotek popisu (" + nodes.size() + ", " +  param.nodeIds.size() + ")", BaseCode.ID_NOT_EXIST);
         }
 
         ArrDigitizationRequest digitizationRequest;
@@ -2194,7 +2194,7 @@ public class ArrangementController {
         List<ArrDao> daos = daoRepository.findAll(param.daoIds);
 
         if (daos.size() != param.daoIds.size()) {
-            throw new SystemException(BaseCode.ID_NOT_EXIST);
+            throw new SystemException("Neplatný počet nalezených digitalizátů (" + daos.size() + ", " +  param.daoIds.size() + ")", BaseCode.ID_NOT_EXIST);
         }
 
         ArrDaoRequest daoRequest;
@@ -2223,7 +2223,7 @@ public class ArrangementController {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrRequest request = requestService.getRequest(requestId);
         if (!fundVersion.getFund().equals(request.getFund())) {
-            throw new SystemException(ArrangementCode.INVALID_VERSION);
+            throw new SystemException("Neplatná verze AS (" + fundVersion.getFundVersionId() + ")", ArrangementCode.INVALID_VERSION);
         }
         requestService.sendRequest(request, fundVersion);
     }
@@ -2263,7 +2263,7 @@ public class ArrangementController {
         List<ArrNode> nodes = nodeRepository.findAll(param.nodeIds);
 
         if (nodes.size() != param.nodeIds.size()) {
-            throw new SystemException(BaseCode.ID_NOT_EXIST);
+            throw new SystemException("Neplatný počet nalezených jednotek popisu (" + nodes.size() + ", " +  param.nodeIds.size() + ")", BaseCode.ID_NOT_EXIST);
         }
 
         ArrDigitizationRequest digitizationRequest = requestService.getDigitizationRequest(param.id);

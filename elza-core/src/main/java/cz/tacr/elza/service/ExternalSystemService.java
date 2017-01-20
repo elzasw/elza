@@ -143,26 +143,26 @@ public class ExternalSystemService {
     private void validateExternalSystem(final SysExternalSystem externalSystem, final boolean create) {
         if (create) {
             if (externalSystem.getExternalSystemId() != null) {
-                throw new SystemException(BaseCode.ID_EXIST).set("id", externalSystem.getExternalSystemId());
+                throw new SystemException("Identifikátor externího systému musí být při vytváření prázdný", BaseCode.ID_EXIST).set("id", externalSystem.getExternalSystemId());
             }
         } else {
             if (externalSystem.getExternalSystemId() == null) {
-                throw new SystemException(BaseCode.ID_NOT_EXIST);
+                throw new SystemException("Identifikátor externího systému musí být při editaci vyplněň", BaseCode.ID_NOT_EXIST);
             }
         }
 
         if (StringUtils.isEmpty(externalSystem.getCode())) {
-            throw new BusinessException(BaseCode.PROPERTY_NOT_EXIST).set("property", "code");
+            throw new BusinessException("Nevyplněno pole: code", BaseCode.PROPERTY_NOT_EXIST).set("property", "code");
         }
 
         if (StringUtils.isEmpty(externalSystem.getName())) {
-            throw new BusinessException(BaseCode.PROPERTY_NOT_EXIST).set("property", "name");
+            throw new BusinessException("Nevyplněno pole: name", BaseCode.PROPERTY_NOT_EXIST).set("property", "name");
         }
 
         // extra validace pro ArrDigitalRepository
         if (externalSystem instanceof ArrDigitalRepository) {
             if (((ArrDigitalRepository) externalSystem).getSendNotification() == null) {
-                throw new BusinessException(BaseCode.PROPERTY_NOT_EXIST).set("property", "sendNotification");
+                throw new BusinessException("Nevyplněno pole: sendNotification", BaseCode.PROPERTY_NOT_EXIST).set("property", "sendNotification");
             }
         }
     }

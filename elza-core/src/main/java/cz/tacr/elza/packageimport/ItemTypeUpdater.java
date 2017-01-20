@@ -343,7 +343,7 @@ public class ItemTypeUpdater {
         if (findItems.size() > 0) {
             item = findItems.get(0);
         } else {
-            throw new BusinessException(PackageCode.CODE_NOT_FOUND).set("code", itemSpec.getItemType() ).set("file", ITEM_TYPE_XML);
+            throw new BusinessException("Typ s kódem " + itemSpec.getItemType() + " nenalezen", PackageCode.CODE_NOT_FOUND).set("code", itemSpec.getItemType() ).set("file", ITEM_TYPE_XML);
         }
 
         if (CollectionUtils.isNotEmpty(itemSpec.getCategories())) {

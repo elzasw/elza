@@ -2,6 +2,7 @@ package cz.tacr.elza.aop;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.Arrays;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -90,7 +91,7 @@ public class Authorization {
             }
         }
 
-        throw new AccessDeniedException(declaredAnnotation.permission());
+        throw new AccessDeniedException("Chybějící oprávnění: " + Arrays.toString(declaredAnnotation.permission()), declaredAnnotation.permission());
     }
 
     /**
