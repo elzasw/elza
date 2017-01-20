@@ -1,19 +1,17 @@
 package cz.tacr.elza.repository;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.vo.ArrFundOpenVersion;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.vo.ArrFundOpenVersion;
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -28,12 +26,15 @@ public class FundRepositoryImpl implements FundRepositoryCustom {
     @Autowired
     private EntityManager entityManager;
 
+    @Autowired
+    private FundRepository fundRepository;
+
     @Override
     public List<ArrFundOpenVersion> findByFulltext(final String fulltext, final int max, final boolean readAllFunds, final UsrUser user) {
 
-        String hql = "SELECT f, max(v) FROM arr_fund f JOIN f.versions v "
+        String hql = "SELECT f.fundId, max(v) FROM arr_fund f JOIN f.versions v "
                 + createFulltextWhereClause(fulltext, readAllFunds, user);
-        hql += " GROUP BY f ORDER BY f.name";
+        hql += " GROUP BY f.fundId, f.name ORDER BY f.name";
 
         Query query = entityManager.createQuery(hql);
         if (StringUtils.isNotBlank(fulltext)) {
@@ -48,10 +49,11 @@ public class FundRepositoryImpl implements FundRepositoryCustom {
         query.setMaxResults(max);
         List<Object[]> arrayList = query.getResultList();
         List<ArrFundOpenVersion> result = new ArrayList<>(arrayList.size());
-        arrayList.forEach(array ->
-                        result.add(new ArrFundOpenVersion((ArrFund) array[0], (ArrFundVersion) array[1]))
-        );
-
+        for (Object[] array : arrayList) {
+            final int fundId = (int) array[0];
+            final ArrFund fund = fundRepository.getOneCheckExist(fundId);
+            result.add(new ArrFundOpenVersion(fund, (ArrFundVersion) array[1]));
+        }
         return result;
     }
 

@@ -16,6 +16,7 @@ import javax.transaction.Transactional;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -505,7 +506,7 @@ public class RegistryController {
         }
 
         Set<Integer> scopeIdsByFund = registryService.getScopeIdsByFund(fund);
-        if (scopeIdsByFund.isEmpty()) {
+        if (CollectionUtils.isEmpty(scopeIdsByFund)) {
             return Collections.emptyList();
         } else {
             List<RegScopeVO> result = factoryVo.createScopes(scopeRepository.findAll(scopeIdsByFund));

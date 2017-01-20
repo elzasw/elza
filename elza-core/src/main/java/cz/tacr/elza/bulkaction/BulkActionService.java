@@ -316,8 +316,8 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     private void runNextWorker() {
         (new TransactionTemplate(txManager)).execute(new TransactionCallbackWithoutResult() {
             @Override
-            protected void doInTransactionWithoutResult(final TransactionStatus status) {
-                List<ArrBulkActionRun> waitingActions = bulkActionRepository.findByStateGroupByFundOrderById(State.WAITING);
+            protected void doInTransactionWithoutResult(final TransactionStatus status) {List<Integer> waitingActionsId = bulkActionRepository.findIdByStateGroupByFundOrderById(State.WAITING);
+                List<ArrBulkActionRun> waitingActions = bulkActionRepository.findAll(waitingActionsId);
                 waitingActions.forEach(bulkActionRun -> {
                     if (canRun(bulkActionRun)) {
                         run(bulkActionRun);

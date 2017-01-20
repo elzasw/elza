@@ -1,14 +1,20 @@
 package cz.tacr.elza.repository;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.vo.RelatedNodeDirection;
+import cz.tacr.elza.utils.ObjectListIterator;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
@@ -20,21 +26,15 @@ import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.vo.RelatedNodeDirection;
-import cz.tacr.elza.utils.ObjectListIterator;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -52,6 +52,8 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     @Autowired
     private LevelRepository levelRepository;
 
+    @Value("${elza.data.url}")
+    private String dbConnectString;
 
     @Override
     public List<ArrLevel> findByParentNode(final ArrNode nodeParent, @Nullable final ArrChange change) {
@@ -138,7 +140,8 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         query.select(root).where(condition).orderBy(order);
 
         List<ArrLevel> resultList = entityManager.createQuery(query).setFirstResult(0).setMaxResults(1).getResultList();
-        return resultList.isEmpty() ? null : resultList.get(0);
+        final ArrLevel arrLevel = resultList.isEmpty() ? null : resultList.get(0);
+        return arrLevel;
     }
 
     /**
@@ -319,7 +322,6 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         return findLevelInfoByIds(allIds);
     }
 
-
     /**
      * Načte potomky daných uzlů. Vždy načítá 4 generace uzlů.
      *
@@ -411,7 +413,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     @Override
     public List<Integer> findNodeIdsSubtree(final ArrNode node, final ArrChange change) {
 
-        String sql = "WITH RECURSIVE treeData AS (SELECT t.* FROM arr_level t WHERE t.node_id = :nodeId UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) " +
+        String sql = "WITH " + getRecursivePart() + " treeData AS (SELECT t.* FROM arr_level t WHERE t.node_id = :nodeId UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) " +
                 "SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id WHERE t.delete_change_id IS NULL AND n.last_update > :date";
 
         Query query = entityManager.createNativeQuery(sql);
@@ -421,10 +423,20 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         return (List<Integer>) query.getResultList();
     }
 
+    private String getRecursivePart() {
+        final String recursive;
+        if (StringUtils.containsIgnoreCase(dbConnectString, "jtds:sqlserver")) {
+            recursive = "";
+        } else {
+            recursive = "RECURSIVE";
+        }
+        return recursive;
+    }
+
     @Override
     public List<Integer> findNodeIdsParent(final ArrNode node, final ArrChange change) {
 
-        String sql = "WITH RECURSIVE treeData AS (SELECT t.* FROM arr_level t WHERE t.node_id = :nodeId UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id_parent = t.node_id) " +
+        String sql = "WITH " + getRecursivePart() + " treeData AS (SELECT t.* FROM arr_level t WHERE t.node_id = :nodeId UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id_parent = t.node_id) " +
                 "SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id WHERE t.delete_change_id IS NULL AND n.last_update > :date";
 
         Query query = entityManager.createNativeQuery(sql);

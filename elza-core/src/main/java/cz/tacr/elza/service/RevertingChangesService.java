@@ -1,40 +1,6 @@
 package cz.tacr.elza.service;
 
-import java.math.BigInteger;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.TemporalType;
-import javax.validation.constraints.NotNull;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
-
 import com.google.common.collect.Sets;
-
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.config.ConfigView;
 import cz.tacr.elza.domain.ArrBulkActionRun;
@@ -56,6 +22,37 @@ import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.Change;
 import cz.tacr.elza.service.vo.ChangesResult;
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.TemporalType;
+import javax.validation.constraints.NotNull;
+import java.math.BigInteger;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Servisní třída pro práci s obnovou změn v archivní souboru - "UNDO".
@@ -127,7 +124,7 @@ public class RevertingChangesService {
         Query queryLastChange = createQueryLastChange(fundId, nodeId);
 
         ChangeResult lastChange = convertResult((Object[]) queryLastChange.getSingleResult());
-        Integer count = ((BigInteger) queryCount.getSingleResult()).intValue();
+        Integer count = ((Number) queryCount.getSingleResult()).intValue();
 
         // nalezené změny
         List<ChangeResult> sqlResult = convertResults(query.getResultList());
@@ -887,7 +884,7 @@ public class RevertingChangesService {
         change.setType(o[3] == null ? null : ((String) o[3]).trim());
         change.setPrimaryNodeId((Integer) o[4]);
         // pokud je váha (weights) rovna nule, nebyl ovlivněna žádná JP
-        change.setNodeChanges(((BigInteger) o[6]).intValue() == 0 ? BigInteger.ZERO : ((BigInteger) o[5]));
+        change.setNodeChanges(((Number) o[6]).intValue() == 0 ? BigInteger.ZERO : (BigInteger.valueOf(((Number) o[5]).intValue())));
         return change;
     }
 
@@ -931,7 +928,7 @@ public class RevertingChangesService {
      * @return SQL řetězec
      */
     private String createFindQuerySkeleton() {
-        return "SELECT\n" +
+        return "SELECT  \n" +
                 "%1$s\n" +
                 "FROM\n" +
                 "  arr_change ch\n" +
@@ -956,7 +953,8 @@ public class RevertingChangesService {
                 "      SELECT delete_change_id, node_id, 1 AS weight FROM arr_node_output WHERE node_id IN (%2$s)\n" +
                 "      UNION ALL\n" +
                 "      SELECT change_id, null, 0 AS weight FROM arr_bulk_action_run r JOIN arr_fund_version v ON r.fund_version_id = v.fund_version_id WHERE v.fund_id = :fundId AND r.state = '" + ArrBulkActionRun.State.FINISHED + "'\n" +
-                "    ) chlx ORDER BY change_id DESC\n" +
+//                "    ) chlx ORDER BY change_id DESC\n" +
+                "    ) chlx \n" +
                 "  ) chlxx GROUP BY change_id \n" +
                 ") chl\n" +
                 "ON\n" +
@@ -983,7 +981,7 @@ public class RevertingChangesService {
 
         // doplňující parametry dotazu
         String selectParams = "ch.change_id, ch.change_date, ch.user_id, ch.type, ch.primary_node_id, chl.node_changes, chl.weights";
-        String querySpecification = "GROUP BY ch.change_id, chl.node_changes, chl.weights ORDER BY ch.change_id DESC";
+        String querySpecification = "GROUP BY ch.change_id, ch.change_date, ch.user_id, ch.type, ch.primary_node_id, chl.node_changes, chl.weights ORDER BY ch.change_id DESC";
         if (fromChangeId != null) {
             querySpecification = "WHERE ch.change_id <= :fromChangeId " + querySpecification;
         }

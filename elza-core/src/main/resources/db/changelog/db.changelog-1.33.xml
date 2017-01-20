@@ -5,10 +5,10 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
     <changeSet id="34" author="slapa">
+        <validCheckSum>7:816875ae06f5fa051187c52a7df26056</validCheckSum>
 
-        <dropColumn tableName="arr_named_output">
-            <column name="code" />
-        </dropColumn>
+        <dropUniqueConstraint tableName="arr_named_output" constraintName="uq_arr_named_output_code"/>
+        <dropColumn tableName="arr_named_output" columnName="code" />
 
         <addColumn tableName="arr_named_output">
             <column name="internal_code" type="varchar(250)" />

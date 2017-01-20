@@ -9,4 +9,9 @@
                    tableName="rul_default_item_type"/>
     </changeSet>
 
+    <changeSet id="201701171411" author="lebeda">
+        <!-- Na MS SQL s constraintem nefunguje -->
+        <dropUniqueConstraint tableName="arr_level" constraintName="u_arr_level_ppd"/>
+    </changeSet>
+
 </databaseChangeLog>

@@ -5,6 +5,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
     <changeSet id="22" author="slapa">
+        <validCheckSum>7:f2631ea7a468d735dc2af20d99d939df</validCheckSum>
 
         <addColumn tableName="arr_data_unitdate">
             <column name="normalized_from" type="bigint" defaultValue="0">
