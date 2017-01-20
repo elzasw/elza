@@ -3,6 +3,7 @@ import {WebApi} from 'actions/index.jsx';
 import {userDetailChange, userDetailClear} from 'actions/user/userDetail.jsx'
 import {routerNavigate} from "actions/router.jsx"
 import {stompDisconnect, stompConnect} from "websocket"
+import {partyListInvalidate, partyDetailInvalidate, partyDetailClear} from 'actions/party/party.jsx'
 
 export function loginFail(callback) {
     return {
@@ -27,6 +28,9 @@ export function loginSuccess() {
                 }
                 if (state.userDetail.id != userDetail.id) {
                     dispatch(routerNavigate('/'));
+                    dispatch(partyListInvalidate());
+                    dispatch(partyDetailInvalidate());
+                    dispatch(partyDetailClear());
                     action.reset = true;
                 }
                 dispatch(action)
