@@ -40,5 +40,8 @@ public class DescItemRecordRef extends AbstractDescItem {
 
     public void setRecord(final Record record) {
         this.record = record;
+        if (record != null) {
+            recordId = record.getRecordId();
+        }
     }
 }

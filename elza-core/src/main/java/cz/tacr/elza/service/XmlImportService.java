@@ -20,9 +20,6 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import javax.xml.bind.JAXBException;
 
-import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.EventId;
-import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -36,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
+import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.api.vo.XmlImportType;
 import cz.tacr.elza.domain.ArrCalendarType;
@@ -122,6 +120,9 @@ import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventId;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.exception.FatalXmlImportException;
 import cz.tacr.elza.service.exception.InvalidDataException;
 import cz.tacr.elza.service.exception.LevelImportException;
@@ -296,7 +297,6 @@ public class XmlImportService {
         // najít použité rejstříky a osoby
         Set<String> usedRecords = new HashSet<>();
         Set<String> usedParties = new HashSet<>();
-        Set<String> usedPackets = new HashSet<>();
         boolean stopOnError = config.isStopOnError();
 
         boolean importFund;
@@ -324,7 +324,7 @@ public class XmlImportService {
                 throw new FatalXmlImportException("Neznánmý typ importu: " + xmlImportType);
         }
 
-        checkData(xmlImport, usedRecords, usedParties, usedPackets, importAllRecords, importAllParties, importFund);
+        checkData(xmlImport, usedRecords, usedParties, importAllRecords, importAllParties, importFund);
 
         // rejstříky - párovat podle ext id a ext systému
         Map<String, RegRecord> xmlIdIntIdRecordMap = importRecords(xmlImport, usedRecords, stopOnError, config.getRegScope());
@@ -349,7 +349,7 @@ public class XmlImportService {
             ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(fund.getFundId());
             ArrNode rootNode = fundVersion.getRootNode();
 
-            Map<String, ArrPacket> xmlIdIntIdPacketMap = importPackets(xmlImport, usedPackets, stopOnError, fund);
+            Map<String, ArrPacket> xmlIdIntIdPacketMap = importPackets(xmlImport, stopOnError, fund);
             importFund(xmlImport.getFund(), change, rootNode, xmlIdIntIdRecordMap, xmlIdIntIdPartyMap, xmlIdIntIdPacketMap,
                     config, fund);
         }
@@ -367,11 +367,11 @@ public class XmlImportService {
         }
     }
 
-    private Map<String, ArrPacket> importPackets(final XmlImport xmlImport, final Set<String> usedPackets, final boolean stopOnError,
+    private Map<String, ArrPacket> importPackets(final XmlImport xmlImport, final boolean stopOnError,
             final ArrFund fund) throws NonFatalXmlImportException {
         Map<String, ArrPacket> xmlIdIntIdPacketMap;
         try {
-            xmlIdIntIdPacketMap = importPackets(xmlImport.getPackets(), usedPackets, fund, stopOnError);
+            xmlIdIntIdPacketMap = importPackets(xmlImport.getPackets(), fund, stopOnError);
         } catch (NonFatalXmlImportException e) {
             if (stopOnError) {
                 throw e;
@@ -701,7 +701,7 @@ public class XmlImportService {
         return institution;
     }
 
-    private void checkData(final XmlImport xmlImport, final Set<String> usedRecords, final Set<String> usedParties, final Set<String> usedPackets,
+    private void checkData(final XmlImport xmlImport, final Set<String> usedRecords, final Set<String> usedParties,
             final boolean importAllRecords, final boolean importAllParties, final boolean importFund) throws FatalXmlImportException {
         Fund fund = xmlImport.getFund();
         List<AbstractParty> parties = xmlImport.getParties();
@@ -712,7 +712,7 @@ public class XmlImportService {
             }
 
             Level rootLevel = fund.getRootLevel();
-            checkLevel(rootLevel, usedRecords, usedParties, usedPackets);
+            checkLevel(rootLevel, usedRecords, usedParties);
         }
 
         if (importAllParties) {
@@ -776,7 +776,7 @@ public class XmlImportService {
         return false;
     }
 
-    private void checkLevel(final Level level, final Set<String> usedRecords, final Set<String> usedParties, final Set<String> usedPackets) throws FatalXmlImportException {
+    private void checkLevel(final Level level, final Set<String> usedRecords, final Set<String> usedParties) throws FatalXmlImportException {
         if (level.getRecords() != null) {
             level.getRecords().forEach(record -> {
                 usedRecords.add(record.getRecordId());
@@ -792,21 +792,18 @@ public class XmlImportService {
                     DescItemPartyRef partyRefItem = (DescItemPartyRef) descItem;
                     usedParties.add(partyRefItem.getParty().getPartyId());
                     addPartyRecords(usedRecords, partyRefItem.getParty());
-                } else if (descItem instanceof DescItemPacketRef) {
-                    DescItemPacketRef packetRefItem = (DescItemPacketRef) descItem;
-                    usedPackets.add(packetRefItem.getPacket().getStorageNumber());
                 }
             }
         }
 
         if (level.getSubLevels() != null) {
             for (Level l : level.getSubLevels()) {
-                checkLevel(l, usedRecords, usedParties, usedPackets);
+                checkLevel(l, usedRecords, usedParties);
             }
         }
     }
 
-    private Map<String, ArrPacket> importPackets(final List<Packet> packets, final Set<String> usedPackets, final ArrFund fund,
+    private Map<String, ArrPacket> importPackets(final List<Packet> packets, final ArrFund fund,
             final boolean stopOnError) throws InvalidDataException {
         Map<String, ArrPacket> xmlIdIntIdPacketMap = new HashMap<>();
         if (CollectionUtils.isEmpty(packets)) {
@@ -814,14 +811,12 @@ public class XmlImportService {
         }
 
         for (Packet packet : packets) {
-            if (usedPackets.contains(packet.getStorageNumber())) {
-                try {
-                    ArrPacket arrPacket = importPacket(packet, fund, stopOnError);
-                    xmlIdIntIdPacketMap.put(packet.getStorageNumber(), arrPacket);
-                } catch (NonFatalXmlImportException e) {
-                    if (stopOnError) {
-                        throw e;
-                    }
+            try {
+                ArrPacket arrPacket = importPacket(packet, fund, stopOnError);
+                xmlIdIntIdPacketMap.put(packet.getStorageNumber(), arrPacket);
+            } catch (NonFatalXmlImportException e) {
+                if (stopOnError) {
+                    throw e;
                 }
             }
         }
@@ -909,36 +904,67 @@ public class XmlImportService {
 
     private ParParty importParty(final AbstractParty party, final boolean stopOnError, final Map<String, RegRecord> xmlIdIntIdRecordMap)
         throws NonFatalXmlImportException {
-        ParParty parParty;
-        boolean isPartyGroup = false;
+        String recordId = party.getRecord().getRecordId();
+        RegRecord regRecord = xmlIdIntIdRecordMap.get(recordId);
+        if (regRecord == null) {
+            throw new IllegalStateException("Rejsříkové heslo s identifikátorem " + recordId + " nebylo nalezeno.");
+        }
+
+        boolean update = false;
+        ParParty parParty = partyService.findParPartyByRecord(regRecord);
+        if (parParty != null) {
+            update = true;
+            List<ParRelation> relations = new ArrayList<>(parParty.getRelations());
+            if (CollectionUtils.isNotEmpty(relations)) {
+                for (ParRelation relation : relations) {
+                    partyService.deleteRelation(relation);
+                }
+            }
+            parParty.setRelations(null);
+            partyService.saveParty(parParty);
+        } else {
+            if (party instanceof Dynasty) {
+                parParty = new ParDynasty();
+            } else if (party instanceof Event) {
+                parParty = new ParEvent();
+            } else if (party instanceof PartyGroup) {
+                parParty = new ParPartyGroup();
+            } else if (party instanceof Person) {
+                parParty = new ParPerson();
+            } else {
+                throw new PartyImportException("Neznámý typ osoby " + party);
+            }
+        }
 
         if (party instanceof Dynasty) {
+            ParDynasty parDynasty = ElzaTools.unproxyEntity(parParty, ParDynasty.class);
             Dynasty dynasty = (Dynasty) party;
-            parParty = createDynasty(dynasty, xmlIdIntIdRecordMap);
-        } else if (party instanceof Event) {
-            Event event = (Event) party;
-            parParty = createEvent(event, xmlIdIntIdRecordMap);
+
+            parDynasty.setGenealogy(dynasty.getGenealogy());
         } else if (party instanceof PartyGroup) {
+            ParPartyGroup parPartyGroup = ElzaTools.unproxyEntity(parParty, ParPartyGroup.class);
             PartyGroup partyGroup = (PartyGroup) party;
-            parParty = createPartyGroup(partyGroup, xmlIdIntIdRecordMap, stopOnError);
-            isPartyGroup = true;
-        } else if (party instanceof Person) {
-            Person person = (Person) party;
-            parParty = createPerson(person, xmlIdIntIdRecordMap);
-        } else {
-            throw new PartyImportException("Neznámý typ osoby " + party);
+
+            parPartyGroup.setFoundingNorm(XmlImportUtils.trimStringValue(partyGroup.getFoundingNorm(), StringLength.LENGTH_50, stopOnError));
+            parPartyGroup.setOrganization(XmlImportUtils.trimStringValue(partyGroup.getOrganization(), StringLength.LENGTH_1000, stopOnError));
+            parPartyGroup.setScope(XmlImportUtils.trimStringValue(partyGroup.getScope(), StringLength.LENGTH_1000, stopOnError));
+            parPartyGroup.setScopeNorm(XmlImportUtils.trimStringValue(partyGroup.getScopeNorm(), StringLength.LENGTH_250, stopOnError));
         }
+
+        fillCommonAttributes(parParty, party, xmlIdIntIdRecordMap);
 
         EventType type = parParty.getPartyId() == null ? EventType.PARTY_CREATE : EventType.PARTY_UPDATE;
         parParty = partyRepository.save(parParty);
 
-        importPartyNames(party, parParty, stopOnError);
+        importPartyNames(party, parParty, stopOnError, update);
+
         importEvents(party.getEvents(), parParty, stopOnError, xmlIdIntIdRecordMap);
 
-        if (isPartyGroup) {
+        if (party instanceof PartyGroup) {
             PartyGroup partyGroup = (PartyGroup) party;
-            ParPartyGroup parPartyGroup = (ParPartyGroup) parParty;
-            importPartyGroupIdentifiers(partyGroup, parPartyGroup, stopOnError);
+            ParPartyGroup parPartyGroup = ElzaTools.unproxyEntity(parParty, ParPartyGroup.class);
+
+            importPartyGroupIdentifiers(partyGroup, parPartyGroup, stopOnError, update);
         }
 
         importPartyInstitution(party, parParty, stopOnError);
@@ -1056,7 +1082,15 @@ public class XmlImportService {
         return parRelation;
     }
 
-    private void importPartyGroupIdentifiers(final PartyGroup partyGroup, final ParPartyGroup parPartyGroup, final boolean stopOnError) throws InvalidDataException {
+    private void importPartyGroupIdentifiers(final PartyGroup partyGroup, final ParPartyGroup parPartyGroup, final boolean stopOnError, final boolean update) throws InvalidDataException {
+        if (update) {
+            List<ParPartyGroupIdentifier> partyGroupIdentifiers = parPartyGroup.getPartyGroupIdentifiers();
+            partyGroupIdentifierRepository.delete(partyGroupIdentifiers);
+
+            parPartyGroup.setPartyGroupIdentifiers(null);
+            partyRepository.save(parPartyGroup);
+        }
+
         List<PartyGroupId> partyGroupIds = partyGroup.getPartyGroupIds();
         if (partyGroupIds != null) {
             List<ParPartyGroupIdentifier> parPartyGroupIdentifiers = new ArrayList<ParPartyGroupIdentifier>(partyGroupIds.size());
@@ -1105,7 +1139,12 @@ public class XmlImportService {
         return unitdateRepository.save(parUnitdate);
     }
 
-    private void importPartyNames(final AbstractParty party, final ParParty parParty, final boolean stopOnError) throws InvalidDataException, PartyImportException {
+    private void importPartyNames(final AbstractParty party, final ParParty parParty, final boolean stopOnError, final boolean update) throws InvalidDataException, PartyImportException {
+        List<ParPartyName> oldNames = null;
+        if (update) {
+            oldNames = parParty.getPartyNames();
+        }
+
         List<ParComplementType> partyComplementTypes = complementTypeRepository.findComplementTypesByPartyType(parParty.getPartyType());
 
         ParPartyName parPartyName = importPartyName(party.getPreferredName(), parParty, stopOnError, partyComplementTypes);
@@ -1125,49 +1164,10 @@ public class XmlImportService {
             }
         }
         partyRepository.save(parParty);
-    }
 
-    private ParPerson createPerson(final Person person, final Map<String, RegRecord> xmlIdIntIdRecordMap) throws NonFatalXmlImportException {
-        Assert.notNull(person);
-
-        ParPerson parPerson = new ParPerson();
-        fillCommonAttributes(parPerson, person, xmlIdIntIdRecordMap);
-
-        return parPerson;
-    }
-
-    private ParPartyGroup createPartyGroup(final PartyGroup partyGroup, final Map<String, RegRecord> xmlIdIntIdRecordMap, final boolean stopOnError) throws NonFatalXmlImportException {
-        Assert.notNull(partyGroup);
-
-        ParPartyGroup parPartyGroup = new ParPartyGroup();
-        fillCommonAttributes(parPartyGroup, partyGroup, xmlIdIntIdRecordMap);
-
-        parPartyGroup.setFoundingNorm(XmlImportUtils.trimStringValue(partyGroup.getFoundingNorm(), StringLength.LENGTH_50, stopOnError));
-        parPartyGroup.setOrganization(XmlImportUtils.trimStringValue(partyGroup.getOrganization(), StringLength.LENGTH_1000, stopOnError));
-        parPartyGroup.setScope(XmlImportUtils.trimStringValue(partyGroup.getScope(), StringLength.LENGTH_1000, stopOnError));
-        parPartyGroup.setScopeNorm(XmlImportUtils.trimStringValue(partyGroup.getScopeNorm(), StringLength.LENGTH_250, stopOnError));
-
-        return parPartyGroup;
-    }
-
-    private ParEvent createEvent(final Event event, final Map<String, RegRecord> xmlIdIntIdRecordMap) throws NonFatalXmlImportException {
-        Assert.notNull(event);
-
-        ParEvent parEvent = new ParEvent();
-        fillCommonAttributes(parEvent, event, xmlIdIntIdRecordMap);
-
-        return parEvent;
-    }
-
-    private ParDynasty createDynasty(final Dynasty dynasty, final Map<String, RegRecord> xmlIdIntIdRecordMap) throws NonFatalXmlImportException {
-        Assert.notNull(dynasty);
-
-        ParDynasty parDynasty = new ParDynasty();
-        fillCommonAttributes(parDynasty, dynasty, xmlIdIntIdRecordMap);
-
-        parDynasty.setGenealogy(dynasty.getGenealogy());
-
-        return parDynasty;
+        if (update && !oldNames.isEmpty()) {
+            partyNameRepository.delete(oldNames);
+        }
     }
 
     private void fillCommonAttributes(final ParParty parParty, final AbstractParty party,
@@ -1180,19 +1180,17 @@ public class XmlImportService {
         }
         parParty.setPartyType(partyType);
 
+        if (parParty.getRecord() == null) {
+            String recordId = party.getRecord().getRecordId();
+            RegRecord regRecord = xmlIdIntIdRecordMap.get(recordId);
 
-        String recordId = party.getRecord().getRecordId();
-        RegRecord regRecord = xmlIdIntIdRecordMap.get(recordId);
-        if (regRecord == null) {
-            throw new IllegalStateException("Rejsříkové heslo s identifikátorem " + recordId + " nebylo nalezeno.");
-        }
-
-        ParPartyType registerPartyType = regRecord.getRegisterType().getPartyType();
-        if (registerPartyType != null && !registerPartyType.equals(partyType)) {
-            throw new IllegalStateException("Typ osoby " + partyType.getCode()
+            ParPartyType registerPartyType = regRecord.getRegisterType().getPartyType();
+            if (registerPartyType != null && !registerPartyType.equals(partyType)) {
+                throw new IllegalStateException("Typ osoby " + partyType.getCode()
                 + " se neshoduje s typem osoby na rejstříku osoby " + registerPartyType.getCode());
+            }
+            parParty.setRecord(regRecord);
         }
-        parParty.setRecord(regRecord);
 
         String characteristics = party.getCharacteristics();
         if (characteristics != null && characteristics.length() > StringLength.LENGTH_1000) {

@@ -45,7 +45,7 @@ import cz.tacr.elza.controller.vo.ArrPacketVO;
 import cz.tacr.elza.controller.vo.BulkActionRunVO;
 import cz.tacr.elza.controller.vo.BulkActionVO;
 import cz.tacr.elza.controller.vo.DmsFileVO;
-import cz.tacr.elza.controller.vo.ItemSpecsCategory;
+import cz.tacr.elza.controller.vo.TreeItemSpecsItem;
 import cz.tacr.elza.controller.vo.NodeConformityVO;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
@@ -1223,67 +1223,105 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         RulDescItemTypeExtVO descItemTypeVO = mapper.map(descItemType, RulDescItemTypeExtVO.class);
         descItemTypeVO.setDataTypeId(descItemType.getDataType().getDataTypeId());
-        descItemTypeVO.setItemSpecsTree(new ArrayList<>(1));
-        for (RulItemSpecExt rulItemSpecExt : descItemType.getRulItemSpecList()) {
-            if (StringUtils.isNotEmpty(rulItemSpecExt.getCategory())) {
-                String[] categories = rulItemSpecExt.getCategory().split("\\" + ItemTypeUpdater.CATEGORY_SEPARATOR);
-                recursiveAddCategory(categories, 0, descItemTypeVO.getItemSpecsTree(), rulItemSpecExt.getItemSpecId());
-            }
-        }
+        descItemTypeVO.setItemSpecsTree(createTree(descItemType.getRulItemSpecList()));
         return descItemTypeVO;
     }
 
     /**
-     * Rekurzivní sestavení stromu kategorií.
+     * Vytvoří strom z kategorií u specifikací. Např. pro jazyky.
      *
-     * @param categories    cesta kategorií stromem
-     * @param depthIndex    index aktuální pozice cesty stromem
-     * @param itemSpecsTree seznam kategorií na aktuální pozici cesty stromem
-     * @param itemSpecId    přidávaný identifikátor specifikace
+     * @param rulItemSpecList
+     * @return
      */
-    private void recursiveAddCategory(final String[] categories,
-                                      final int depthIndex,
-                                      final List<ItemSpecsCategory> itemSpecsTree,
-                                      final Integer itemSpecId) {
-        if (itemSpecsTree == null || depthIndex >= categories.length) {
-            return;
-        }
+    private List<TreeItemSpecsItem> createTree(final List<RulItemSpecExt> rulItemSpecList) {
+        List<TreeItemSpecsItem> result = new ArrayList<>();
 
-        String categoryName = categories[depthIndex];
+        String[] categories;
+        Integer specId;
 
-        ItemSpecsCategory category = null;
+        List<TreeItemSpecsItem> listLastTemp = new ArrayList<>();
 
-        // vyhledám kategorii
-        for (ItemSpecsCategory itemSpecsCategory : itemSpecsTree) {
-            if (itemSpecsCategory.getName().equals(categoryName)) {
-                category = itemSpecsCategory;
-                break;
+        // procházím všechny specifikace
+        for (RulItemSpecExt rulItemSpecExt : rulItemSpecList) {
+
+            // pokud specifikace obsahuje kategorii
+            if (StringUtils.isNotEmpty(rulItemSpecExt.getCategory())) {
+                categories = rulItemSpecExt.getCategory().split("\\" + ItemTypeUpdater.CATEGORY_SEPARATOR);
+                specId = rulItemSpecExt.getItemSpecId();
+
+                // sestavím porovnávací vektor kategorií
+                List<TreeItemSpecsItem> listTemp = new ArrayList<>();
+                for (String category : categories) {
+                    TreeItemSpecsItem treeItemSpecsItem = new TreeItemSpecsItem();
+                    treeItemSpecsItem.setType(TreeItemSpecsItem.Type.GROUP);
+                    treeItemSpecsItem.setName(category);
+                    listTemp.add(treeItemSpecsItem);
+                }
+
+                // porovnám vektor s předchozí položkou a získám minimální společný index
+                int index = findIndex(listTemp, listLastTemp);
+
+                TreeItemSpecsItem parent;
+
+                if (index < 0) { // index je záporný, nemá nic společného, založím úplně nový řádek
+                    parent = listTemp.get(0);
+                    result.add(parent);
+                    listTemp = listTemp.subList(1, listTemp.size());
+                    listLastTemp = new ArrayList<>();
+                    listLastTemp.add(parent);
+                } else { // vektory mají n+1 shodných položek
+                    parent = listLastTemp.get(index);
+                    listTemp = listTemp.subList(index + 1, listTemp.size());
+                    listLastTemp = listLastTemp.subList(0, index + 1);
+                }
+
+                // procházím vektor a sestavuji nový podstrom
+                for (TreeItemSpecsItem treeItemSpecsItem : listTemp) {
+                    List<TreeItemSpecsItem> children = parent.getChildren();
+                    if (children == null) {
+                        children = new ArrayList<>();
+                        parent.setChildren(children);
+                    }
+                    children.add(treeItemSpecsItem);
+                    parent = treeItemSpecsItem;
+                    listLastTemp.add(treeItemSpecsItem);
+                }
+
+                // vytvořím a zařadím list (samotnou položku)
+                List<TreeItemSpecsItem> children = parent.getChildren();
+                if (children == null) {
+                    children = new ArrayList<>();
+                    parent.setChildren(children);
+                }
+
+                TreeItemSpecsItem treeItemSpecsItem = new TreeItemSpecsItem();
+                treeItemSpecsItem.setType(TreeItemSpecsItem.Type.ITEM);
+                treeItemSpecsItem.setSpecId(specId);
+
+                children.add(treeItemSpecsItem);
+
             }
         }
 
-        // pokud ještě neexistuje, vytvořím a přidám jí do seznamu
-        if (category == null) {
-            category = new ItemSpecsCategory();
-            category.setName(categoryName);
-            itemSpecsTree.add(category);
-        }
+        return result;
+    }
 
-        // pokud jsme na poslední úrovni, přidáme id do seznamu identifikátorů specifikace,
-        // pokud nejsme, procházíme do hlubší kategorie
-        if (depthIndex + 1 == categories.length) {
-            List<Integer> specIds = category.getSpecIds();
-            if (specIds == null) {
-                specIds = new ArrayList<>(1);
-                category.setSpecIds(specIds);
+    /**
+     * Vyhledá společný index dat při porovnání dvou polí.
+     *
+     * @param list1 první porovnávané pole
+     * @param list2 druhé porovnávané pole
+     * @return minimální společný index
+     */
+    private int findIndex(final List<TreeItemSpecsItem> list1,
+                          final List<TreeItemSpecsItem> list2) {
+        int min = Math.min(list1.size(), list2.size());
+        for (int i = 0; i < min; i++) {
+            if (!list1.get(i).equals(list2.get(i))) {
+                return i - 1;
             }
-            specIds.add(itemSpecId);
-        } else {
-            if (category.getChildren() == null) {
-                category.setChildren(new ArrayList<>(1));
-            }
-            recursiveAddCategory(categories, depthIndex + 1, category.getChildren(), itemSpecId);
         }
-
+        return min - 1;
     }
 
     /**

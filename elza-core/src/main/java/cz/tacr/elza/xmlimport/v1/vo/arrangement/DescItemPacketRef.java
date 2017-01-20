@@ -39,5 +39,8 @@ public class DescItemPacketRef extends AbstractDescItem {
 
     public void setPacket(final Packet packet) {
         this.packet = packet;
+        if (packet != null) {
+            packetId = packet.getStorageNumber();
+        }
     }
 }

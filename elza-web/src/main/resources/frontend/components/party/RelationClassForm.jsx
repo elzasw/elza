@@ -75,6 +75,10 @@ class RelationClassForm extends AbstractReactComponent {
             delete errors.to
         }
 
+        if (values.note && values.note.length > 1000) {
+            errors.note = i18n('party.relation.errors.invalidNoteLength', 1000)
+        }
+
         return errors;
 
     };
@@ -115,7 +119,10 @@ class RelationClassForm extends AbstractReactComponent {
                         </div>}
                     </div>
                     {relationType && relationType.useUnitdate !== USE_UNITDATE_ENUM.NONE && <div className="datation-group flex-1 col">
-                        {(relationType.useUnitdate === USE_UNITDATE_ENUM.INTERVAL || relationType.useUnitdate == USE_UNITDATE_ENUM.ONE) && <div>
+                        {(relationType.useUnitdate == USE_UNITDATE_ENUM.ONE) && <div>
+                            <DatationField fields={from} label={i18n('party.relation.date')} labelTextual={i18n('party.relation.date.textDate')} labelNote={i18n('party.relation.date.note')} />
+                        </div>}
+                        {(relationType.useUnitdate === USE_UNITDATE_ENUM.INTERVAL) && <div>
                             <DatationField fields={from} label={i18n('party.relation.from')} labelTextual={i18n('party.relation.from.textDate')} labelNote={i18n('party.relation.from.note')} />
                         </div>}
                         {relationType.useUnitdate === USE_UNITDATE_ENUM.INTERVAL && <div>
@@ -123,7 +130,7 @@ class RelationClassForm extends AbstractReactComponent {
                         </div>}
                     </div>}
                     <div className="flex-1 col">
-                        <FormInput type="text" label={i18n('party.relation.note')} {...note} />
+                        <FormInput componentClass="textarea" label={i18n('party.relation.note')} {...note} />
                         <FormInput componentClass="textarea" label={i18n('party.relation.sources')} {...source} />
                     </div>
                 </div>

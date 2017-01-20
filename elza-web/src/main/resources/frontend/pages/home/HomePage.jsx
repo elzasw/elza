@@ -20,6 +20,9 @@ import {storeLoadData, storeLoad} from 'actions/store/store.jsx'
 import {setInputFocus, dateToString} from 'components/Utils.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 
+// Testování
+// import AutocompleteTest from "./test/AutocompleteTest";
+
 const HomePage = class HomePage extends AbstractReactComponent {
     constructor(props) {
         super(props);
@@ -215,14 +218,10 @@ const HomePage = class HomePage extends AbstractReactComponent {
         );
     }
 
-    handleSearchChange = (x) => {
-        console.log(x);
-    }
-    handleChange = (id, obj) => {
-        console.log(id, obj);
-    }
-
     render() {
+        // Test komponent - jen pro vývojové účely
+        // return <AutocompleteTest/>
+
         const {splitter} = this.props;
 
         let centerPanel = (
