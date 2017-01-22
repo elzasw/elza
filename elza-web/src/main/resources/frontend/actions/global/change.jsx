@@ -172,44 +172,12 @@ export function changePartyDelete(partyId) {
     }
 }
 
-export function changeExtSystemCreate(id) {
+export function changeExtSystem() {
     return (dispatch, getState) => {
         dispatch(extSystemListInvalidate());
-        dispatch(extSystemDetailFetchIfNeeded(id));
-
+        dispatch(extSystemDetailInvalidate());
     }
 }
-
-export function changeExtSystem(id) {
-    return (dispatch, getState) => {
-        const store = getState();
-        const detail = storeFromArea(store, AREA_EXT_SYSTEM_DETAIL);
-        const list = storeFromArea(store, AREA_EXT_SYSTEM_LIST);
-        if (list.rows && indexById(list.rows, id) !== null) {
-            dispatch(extSystemListInvalidate())
-        }
-        if (detail.id == id) {
-            dispatch(extSystemDetailInvalidate());
-        }
-
-    }
-}
-
-export function changeExtSystemDelete(id) {
-    return (dispatch, getState) => {
-        const store = getState();
-        const detail = storeFromArea(store, AREA_EXT_SYSTEM_DETAIL);
-        const list = storeFromArea(store, AREA_EXT_SYSTEM_LIST);
-        if (list.rows && indexById(list.rows, id) !== null) {
-            dispatch(extSystemListInvalidate());
-        }
-        if (detail.id == id) {
-            dispatch(extSystemDetailClear());
-        }
-
-    }
-}
-
 
 export function changeApproveVersion(fundId, versionId) {
 
