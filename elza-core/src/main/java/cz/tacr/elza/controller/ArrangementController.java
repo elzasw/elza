@@ -20,6 +20,7 @@ import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.exception.BusinessException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
@@ -674,7 +675,10 @@ public class ArrangementController {
 
         ArrDescItem descItem = descItemRepository.findOpenDescItem(descItemObjectId);
         if (!"JSON_TABLE".equals(descItem.getItemType().getDataType().getCode())) {
-            throw new UnsupportedOperationException("Pouze typ JSON_TABLE může být exportován pomocí CSV.");
+            throw new SystemException("Pouze typ JSON_TABLE může být exportován pomocí CSV.", BaseCode.PROPERTY_HAS_INVALID_TYPE)
+                    .set("property", "descItemObjectId")
+                    .set("expected", "JSON_TABLE")
+                    .set("actual", descItem.getItemType().getDataType().getCode());
         }
 
         ArrDescItem arrDescItem = descItemFactory.getDescItem(descItem);
@@ -703,7 +707,10 @@ public class ArrangementController {
 
         ArrOutputItem outputItem = outputItemRepository.findOpenOutputItem(descItemObjectId);
         if (!"JSON_TABLE".equals(outputItem.getItemType().getDataType().getCode())) {
-            throw new UnsupportedOperationException("Pouze typ JSON_TABLE může být exportován pomocí CSV.");
+            throw new SystemException("Pouze typ JSON_TABLE může být exportován pomocí CSV.", BaseCode.PROPERTY_HAS_INVALID_TYPE)
+                    .set("property", "descItemObjectId")
+                    .set("expected", "JSON_TABLE")
+                    .set("actual", outputItem.getItemType().getDataType().getCode());
         }
 
         outputItem = itemService.loadData(outputItem);
@@ -1651,7 +1658,7 @@ public class ArrangementController {
 
         ArrFundVersion fundVersion = fundVersionRepository.findOne(versionId);
         if (fundVersion == null) {
-            throw new IllegalStateException("Neexistuje verze archivní pomůcky s id " + versionId);
+            throw new SystemException("Neexistuje verze archivní pomůcky s id " + versionId, ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", versionId);
         }
 
         List<ArrNodeConformity> validationErrors = arrangementService.findConformityErrors(fundVersion, showAll);
@@ -1672,7 +1679,7 @@ public class ArrangementController {
 
         ArrFundVersion fundVersion = fundVersionRepository.findOne(versionId);
         if (fundVersion == null) {
-            throw new IllegalStateException("Neexistuje verze archivní pomůcky s id " + versionId);
+            throw new SystemException("Neexistuje verze archivní pomůcky s id " + versionId, ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", versionId);
         }
 
         return arrangementService.getVersionErrorCount(fundVersion);
@@ -2070,7 +2077,7 @@ public class ArrangementController {
                                      @RequestParam(value = "nodeId", required = false) final Integer nodeId) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         if (fundVersion.getLockChange() != null) {
-            throw new IllegalStateException("Nelze prováděn změny v uzavřené verzi");
+            throw new BusinessException("Nelze prováděn změny v uzavřené verzi", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
         ArrChange change = null;
         if (changeId != null) {
@@ -2101,7 +2108,7 @@ public class ArrangementController {
                                            @RequestParam(value = "nodeId", required = false) final Integer nodeId) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         if (fundVersion.getLockChange() != null) {
-            throw new IllegalStateException("Nelze prováděn změny v uzavřené verzi");
+            throw new BusinessException("Nelze prováděn změny v uzavřené verzi", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
         ArrChange change = changeRepository.getOneCheckExist(changeId);
         ArrNode node = null;
@@ -2127,7 +2134,7 @@ public class ArrangementController {
                               @RequestParam(value = "nodeId", required = false) final Integer nodeId) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         if (fundVersion.getLockChange() != null) {
-            throw new IllegalStateException("Nelze prováděn změny v uzavřené verzi");
+            throw new BusinessException("Nelze prováděn změny v uzavřené verzi", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
         ArrChange fromChange = changeRepository.getOneCheckExist(fromChangeId);
         ArrChange toChange = changeRepository.getOneCheckExist(toChangeId);

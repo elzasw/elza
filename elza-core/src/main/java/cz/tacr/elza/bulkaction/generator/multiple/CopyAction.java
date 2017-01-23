@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -64,7 +66,7 @@ public class CopyAction extends Action {
         String code = outputItemType.getDataType().getCode();
         for (RulItemType inputItemType : inputItemTypes) {
             if (!inputItemType.getDataType().getCode().equals(code)) {
-                throw new IllegalArgumentException("Atributy " + inputItemType.getCode() + " a " + outputItemType.getCode() + " nemají stejný datový typ");
+                throw new BusinessException("Atributy " + inputItemType.getCode() + " a " + outputItemType.getCode() + " nemají stejný datový typ", BaseCode.ID_NOT_EXIST);
             }
         }
     }

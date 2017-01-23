@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+import cz.tacr.elza.exception.SystemException;
 import org.apache.commons.io.input.ReaderInputStream;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -67,7 +68,7 @@ class OutputGeneratorWorkerFreemarker extends OutputGeneratorWorkerAbstract {
 
             return new ReaderInputStream(in, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new IllegalStateException("Nepodařilo se uložit výstup.", e);
+            throw new SystemException("Nepodařilo se uložit výstup.", e);
         }
     }
 }

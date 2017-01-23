@@ -7,6 +7,8 @@ import java.util.concurrent.Callable;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.BulkActionRunRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +73,7 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
     public void init(final int bulkActionRunId) {
         bulkActionRun = bulkActionRunRepository.findOne(bulkActionRunId);
         if (bulkActionRun == null) {
-            throw new IllegalArgumentException("Proces hromadné akce" + bulkActionRunId + " nebyl nalezen");
+            throw new SystemException("Proces hromadné akce" + bulkActionRunId + " nebyl nalezen", BaseCode.ID_NOT_EXIST);
         }
         versionId = bulkActionRun.getFundVersionId();
         inputNodeIds = bulkActionService.getBulkActionNodeIds(bulkActionRun);
@@ -194,7 +196,7 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
-                throw new IllegalStateException("Chyba při ukončování vlákna hromadné akce.", e);
+                throw new SystemException("Chyba při ukončování vlákna hromadné akce.", e);
             }
         }
 

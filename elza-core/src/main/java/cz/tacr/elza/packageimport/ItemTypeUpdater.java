@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.PackageCode;
 import cz.tacr.elza.packageimport.xml.Category;
 import cz.tacr.elza.packageimport.xml.ItemSpecRegister;
@@ -200,7 +202,7 @@ public class ItemTypeUpdater {
 
 					Long countDescItems = descItemRepository.getCountByType(dbItemType);
 					if (countDescItems != null && countDescItems > 0) {
-						throw new IllegalStateException("Nelze změnit použití specifikace u typu " + dbItemType.getCode()
+						throw new SystemException("Nelze změnit použití specifikace u typu " + dbItemType.getCode()
 								+ ", protože existují záznamy, které typ využívají");
 					}
 				}
@@ -209,7 +211,7 @@ public class ItemTypeUpdater {
 						&& !equalsColumns(dbItemType.getColumnsDefinition(), itemType.getColumnsDefinition())) {
 					Long countDescItems = descItemRepository.getCountByType(dbItemType);
 					if (countDescItems != null && countDescItems > 0) {
-						throw new IllegalStateException("Nelze změnit definici sloupců (datový typ a kód) u typu "
+						throw new SystemException("Nelze změnit definici sloupců (datový typ a kód) u typu "
 								+ dbItemType.getCode() + ", protože existují záznamy, které typ využívají");
 					}
 				}
@@ -288,7 +290,7 @@ public class ItemTypeUpdater {
         if (findItems.size() > 0) {
             item = findItems.get(0);
         } else {
-            throw new IllegalStateException("Kód " + itemType.getDataType() + " neexistuje v RulDataType");
+            throw new SystemException("Kód " + itemType.getDataType() + " neexistuje v RulDataType", BaseCode.ID_NOT_EXIST);
         }
 
         rulDescItemType.setDataType(item);
@@ -436,8 +438,8 @@ public class ItemTypeUpdater {
         if (findItems.size() > 0) {
             item = findItems.get(0);
         } else {
-            throw new IllegalStateException(
-                    "Kód " + itemSpecRegister.getRegisterType() + " neexistuje v RegRegisterType");
+            throw new SystemException(
+                    "Kód " + itemSpecRegister.getRegisterType() + " neexistuje v RegRegisterType", BaseCode.ID_NOT_EXIST);
         }
 
         rulItemSpecRegister.setRegisterType(item);

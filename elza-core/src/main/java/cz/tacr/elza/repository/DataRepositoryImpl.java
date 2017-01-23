@@ -21,6 +21,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Selection;
 
+import cz.tacr.elza.exception.SystemException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
@@ -215,7 +216,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             @Override
             public boolean useSpec() {
                 if (!dataTypeClass.equals(ArrDataPacketRef.class)) {
-                    throw new IllegalArgumentException("Použitelné pouze pro data typu obalu.");
+                    throw new SystemException("Použitelné pouze pro data typu obalu.");
                 }
                 return true;
             }
@@ -223,7 +224,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             @Override
             public Predicate getPredicate(final CriteriaBuilder builder) {
                 if (CollectionUtils.isEmpty(packetTypes) && !withoutType) {
-                    throw new IllegalStateException("Musí být zadána alespoň jeden typ obalu.");
+                    throw new SystemException("Musí být zadána alespoň jeden typ obalu.");
                 }
 
                 if (!withoutType) {
@@ -273,7 +274,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             @Override
             public Predicate getPredicate(final CriteriaBuilder builder) {
                 if (CollectionUtils.isEmpty(specs) && !withoutSpec) {
-                    throw new IllegalStateException("Musí být zadána alespoň jedna specifikace.");
+                    throw new SystemException("Musí být zadána alespoň jedna specifikace.");
                 }
 
                 if (!withoutSpec) {

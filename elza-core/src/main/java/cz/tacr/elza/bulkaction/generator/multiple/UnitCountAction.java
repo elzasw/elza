@@ -14,6 +14,9 @@ import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.utils.Yaml;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -73,7 +76,7 @@ public class UnitCountAction extends Action {
      * Name of column where to store Unit type
      */
     private String outputColumnUnitName;
-    
+
     /**
      * Name of column where to store Unit count
      */
@@ -145,12 +148,15 @@ public class UnitCountAction extends Action {
                                   final Map<String, ElzaColumn> outputColumns) {
         ElzaColumn column = outputColumns.get(outputTableColumn);
         if (column == null) {
-            throw new IllegalArgumentException("Atribut " + outputItemType.getCode() + " nemá sloupec " + outputTableColumn);
+            throw new BusinessException("Atribut " + outputItemType.getCode() + " nemá sloupec " + outputTableColumn, BaseCode.ID_NOT_EXIST);
         }
         if (!column.getDataType().equals(expectedColumnType)) {
-            throw new IllegalArgumentException("Atribut " + outputItemType.getCode()
+            throw new BusinessException("Atribut " + outputItemType.getCode()
                     + " má sloupec " + column.getCode() + " jiného datového typu (" + outputItemType.getDataType().getCode()
-                    + "), než je nastaveno (" + expectedColumnType.name() + ").");
+                    + "), než je nastaveno (" + expectedColumnType.name() + ").", BaseCode.PROPERTY_HAS_INVALID_TYPE)
+                    .set("property", column.getCode())
+                    .set("expected", expectedColumnType.name())
+                    .set("actual", outputItemType.getDataType().getCode());
         }
     }
 
@@ -162,18 +168,18 @@ public class UnitCountAction extends Action {
     protected void loadTypeAndSpec(final String code) {
         String attribute = config.getString(code, null);
         if (attribute == null) {
-            throw new IllegalArgumentException("Neplatný atribut: " + attribute);
+            throw new BusinessException("Neplatný atribut: " + attribute, BaseCode.PROPERTY_NOT_EXIST).set("property", code);
         }
         String[] split = attribute.split(" ");
         if (split.length != 2) {
-            throw new IllegalArgumentException("Neplatný atribut: musí obsahovat kód typu a specifikace");
+            throw new BusinessException("Neplatný atribut: musí obsahovat kód typu a specifikace", BaseCode.PROPERTY_IS_INVALID).set("property", code);
         }
 
         RulItemType type = findItemType(split[0], code);
         RulItemSpec spec = findItemSpec(split[1]);
 
         if (!spec.getItemType().equals(type)) {
-            throw new IllegalArgumentException("Neplatný atribut: specifikace nepatří pod typ");
+            throw new BusinessException("Neplatný atribut: specifikace nepatří pod typ", BaseCode.PROPERTY_IS_INVALID).set("property", code);
         }
 
         itemTypes.put(code, type);
@@ -365,7 +371,7 @@ public class UnitCountAction extends Action {
         if (!isUnder) {
         	return;
         }
-        
+
         // Flag if item should be counted
         boolean canCount = !hasIgnoredParent(parentLevelWithItems);
         if(canCount) {
@@ -389,11 +395,11 @@ public class UnitCountAction extends Action {
     	{
     		if(descItem.getItemType().equals(unitType))
     		{
-    			// TODO: ignore some types    			
+    			// TODO: ignore some types
     			addToCount(descItem.getItemSpec().getShortcut(), 1);
     		}
     	}
-		
+
 	}
 
 	/**
@@ -407,7 +413,7 @@ public class UnitCountAction extends Action {
         	ArrNode arrNode = parentLevelWithItems.getLevel().getNode();
             if (ignoredNodeId.contains(arrNode.getNodeId())) {
                 return true;
-            }        	
+            }
             parentLevelWithItems = parentLevelWithItems.getParent();
     	}
         return false;

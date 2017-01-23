@@ -65,7 +65,7 @@ public class CalendarConverter {
                 converter = jcc;
                 break;
             default:
-                throw new IllegalStateException("Neimplementovaný typ kalendáře");
+                throw new IllegalStateException("Neimplementovaný typ kalendáře: " + type);
         }
         return converter;
     }

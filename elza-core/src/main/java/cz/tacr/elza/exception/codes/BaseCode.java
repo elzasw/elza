@@ -41,6 +41,26 @@ public enum BaseCode implements ErrorCode {
     /**
      * Pole entity musí být vyplněno.
      */
-    PROPERTY_NOT_EXIST
+    PROPERTY_NOT_EXIST,
+
+    /**
+     * Pole entity musí být správně vyplněno.
+     */
+    PROPERTY_IS_INVALID,
+
+    /**
+     * Problém s integritou databáze.
+     */
+    DB_INTEGRITY_PROBLEM,
+
+    /**
+     * Neplatný stav.
+     */
+    INVALID_STATE,
+
+    /**
+     * Pole entity není správného datového typu.
+     */
+    PROPERTY_HAS_INVALID_TYPE
 
 }

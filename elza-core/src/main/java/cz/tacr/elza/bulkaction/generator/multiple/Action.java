@@ -4,6 +4,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -92,7 +96,7 @@ public abstract class Action implements InitializingBean {
     public RulItemType findItemType(final String code, final String param) {
         RulItemType itemType = itemTypeRepository.findOneByCode(code);
         if (itemType == null) {
-            throw new IllegalArgumentException("Typ atributu neexistuje: " + param + " (" + code + ")");
+            throw new BusinessException("Typ atributu neexistuje: " + param + " (" + code + ")", BaseCode.ID_NOT_EXIST);
         }
         return itemType;
     }
@@ -106,7 +110,7 @@ public abstract class Action implements InitializingBean {
     public RulItemSpec findItemSpec(final String code) {
         RulItemSpec itemSpec = itemSpecRepository.findOneByCode(code);
         if (itemSpec == null) {
-            throw new IllegalArgumentException("Typ atributu neexistuje: " + code);
+            throw new BusinessException("Typ atributu neexistuje: " + code, BaseCode.ID_NOT_EXIST);
         }
         return itemSpec;
     }
@@ -120,7 +124,7 @@ public abstract class Action implements InitializingBean {
     public Set<RulItemType> findItemTypes(final Set<String> codes) {
         Set<RulItemType> itemTypes = itemTypeRepository.findByCode(codes);
         if (itemTypes.size() != codes.size()) {
-            throw new IllegalArgumentException("Některý atribut neexistuje -> potřeba: " + codes + ", nalezene:" + itemTypes);
+            throw new BusinessException("Některý atribut neexistuje -> potřeba: " + codes + ", nalezene:" + itemTypes, BaseCode.ID_NOT_EXIST);
         }
         return itemTypes;
     }
@@ -135,7 +139,7 @@ public abstract class Action implements InitializingBean {
         RulDataType dataType = inputItemType.getDataType();
         List<String> codeList = Arrays.asList(codes);
         if (!codeList.contains(dataType.getCode())) {
-            throw new IllegalArgumentException("Datový typ atributu musí být " + codeList + " (item type " + inputItemType.getCode() + ")");
+            throw new BusinessException("Datový typ atributu musí být " + codeList + " (item type " + inputItemType.getCode() + ")", BaseCode.ID_NOT_EXIST);
         }
     }
 

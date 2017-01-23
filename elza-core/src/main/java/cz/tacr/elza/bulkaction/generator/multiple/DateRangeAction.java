@@ -3,6 +3,8 @@ package cz.tacr.elza.bulkaction.generator.multiple;
 import java.util.List;
 import java.util.Set;
 
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -97,22 +99,22 @@ public class DateRangeAction extends Action {
     public void init() {
         String outputType = config.getString("output_type", null);
         if (outputType == null) {
-            throw new IllegalArgumentException("Není vyplněn parametr 'output_type' v akci.");
+            throw new BusinessException("Není vyplněn parametr 'output_type' v akci.", BaseCode.PROPERTY_NOT_EXIST).set("property", "output_type");
         }
 
         String inputType = config.getString("input_type", null);
         if (inputType == null) {
-            throw new IllegalArgumentException("Není vyplněn parametr 'input_type' v akci.");
+            throw new BusinessException("Není vyplněn parametr 'input_type' v akci.", BaseCode.PROPERTY_NOT_EXIST).set("property", "input_type");
         }
 
         String inputTypePrior = config.getString("input_type_prior", null);
         if (inputTypePrior == null) {
-            throw new IllegalArgumentException("Není vyplněn parametr 'input_type_prior' v akci.");
+            throw new BusinessException("Není vyplněn parametr 'input_type_prior' v akci.", BaseCode.PROPERTY_NOT_EXIST).set("property", "input_type_prior");
         }
 
         String inputTypePosterior = config.getString("input_type_posterior", null);
         if (inputTypePosterior == null) {
-            throw new IllegalArgumentException("Není vyplněn parametr 'input_type_posterior' v akci.");
+            throw new BusinessException("Není vyplněn parametr 'input_type_posterior' v akci.", BaseCode.PROPERTY_NOT_EXIST).set("property", "input_type_posterior");
         }
 
         Set<String> inputTypes = Sets.newHashSet(inputType, inputTypePrior, inputTypePosterior);

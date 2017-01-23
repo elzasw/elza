@@ -172,20 +172,18 @@ public class ConfigRules {
             return new ArrayList<>();
         }
 
-        if (typeGroups != null) {
-            Map<String, Map<String, TypesGroupConf>> fundGroups = typeGroups.get(code);
-            if (fundGroups != null) {
-                Map<String, TypesGroupConf> groups = fundGroups.get(FA_PREFIX + fundId);
-                if (groups == null) {
-                    groups = fundGroups.get(DEFAULT);
+        Map<String, Map<String, TypesGroupConf>> fundGroups = typeGroups.get(code);
+        if (fundGroups != null) {
+            Map<String, TypesGroupConf> groups = fundGroups.get(FA_PREFIX + fundId);
+            if (groups == null) {
+                groups = fundGroups.get(DEFAULT);
+            }
+            if (groups != null) {
+                TypesGroupConf typesGroupConf = groups.get(groupCode);
+                if (typesGroupConf == null) {
+                    return new ArrayList<>();
                 }
-                if (groups != null) {
-                    TypesGroupConf typesGroupConf = groups.get(groupCode);
-                    if (typesGroupConf == null) {
-                        return new ArrayList<>();
-                    }
-                    return typesGroupConf.getTypes().stream().map(s -> s.getCode()).collect(Collectors.toList());
-                }
+                return typesGroupConf.getTypes().stream().map(TypeInfo::getCode).collect(Collectors.toList());
             }
         }
 

@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
 
+import cz.tacr.elza.exception.SystemException;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -109,7 +110,6 @@ public class Authorization {
                 } else if (value instanceof IArrFund) {
                     return ((IArrFund) value).getFund().getFundId();
                 }
-                break;
             }
             case FUND_VERSION: {
                 if (value instanceof Integer) {
@@ -117,7 +117,6 @@ public class Authorization {
                 } else if (value instanceof IArrFund) {
                     return ((IArrFund) value).getFund().getFundId();
                 }
-                break;
             }
             case SCOPE: {
                 if (value instanceof Integer) {
@@ -125,7 +124,6 @@ public class Authorization {
                 } else if (value instanceof IRegScope) {
                     return ((IRegScope) value).getRegScope().getScopeId();
                 }
-                break;
             }
             case PARTY: {
                 if (value instanceof Integer) {
@@ -141,10 +139,8 @@ public class Authorization {
                     return ((IRegScope) value).getRegScope().getScopeId();
                 }
             }
+            default:
+                throw new IllegalStateException(type + ":" + value.getClass().getName());
         }
-
-        throw new IllegalStateException(type + ":" + value.getClass().getName());
     }
-
-
 }

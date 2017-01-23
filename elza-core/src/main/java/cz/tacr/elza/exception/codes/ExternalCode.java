@@ -11,6 +11,14 @@ public enum ExternalCode implements ErrorCode {
     /** Záznam nebyl nalezen. */
     RECORD_NOT_FOUND,
 
+    /** Selhání importu. */
+    IMPORT_FAIL,
+
+    /**
+     * Chyba z externího systému.
+     */
+    EXTERNAL_SYSTEM_ERROR,
+
     /** Záznam byl již importován. */
     ALREADY_IMPORTED;
 }

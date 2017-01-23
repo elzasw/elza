@@ -2,6 +2,8 @@ package cz.tacr.elza.controller;
 
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.vo.XmlImportType;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.XmlImportService;
 import cz.tacr.elza.service.exception.XmlImportException;
@@ -70,7 +72,7 @@ public class XmlImportController {
         try {
             xmlImportService.importData(config);
         } catch (XmlImportException e) {
-            throw new IllegalStateException(e);
+            throw new SystemException(e.getMessage(), e, ExternalCode.IMPORT_FAIL);
         }
     }
 

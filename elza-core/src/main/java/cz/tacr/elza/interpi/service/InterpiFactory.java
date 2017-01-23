@@ -17,6 +17,7 @@ import java.util.function.Predicate;
 
 import javax.annotation.PostConstruct;
 
+import cz.tacr.elza.exception.BusinessException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -197,7 +198,6 @@ public class InterpiFactory {
     /**
      * Import osoby.
      *
-     * @param valueMap INTERPI objekt
      * @param originalRecord původní rejstřík, může být null
      * @param interpiRecordId id INTERPI
      * @param isOriginator příznak zda je osoba původce
@@ -1037,7 +1037,6 @@ public class InterpiFactory {
      * Vytvoří osobu.
      *
      * @param regRecord rejstříkové heslo osoby
-     * @param valueMap data osoby
      * @param isOriginator příznak původce
      * @param regExternalSystem systém ze kterého je osoba
      * @param mappings mapování vztahů
@@ -1111,11 +1110,9 @@ public class InterpiFactory {
     /**
      * Načtení vztahů entity.
      *
-     * @param valueMap data entity
      * @param regExternalSystem externí systém
      * @param regScope třída
      *
-     * @param seznam mapování
      */
     public List<InterpiRelationMappingVO> getRelations(final InterpiEntity interpiEntity,
             final RegExternalSystem regExternalSystem, final RegScope regScope) {

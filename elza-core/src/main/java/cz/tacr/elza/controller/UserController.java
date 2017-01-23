@@ -12,6 +12,11 @@ import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.UserCode;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.SettingsService;
@@ -116,7 +121,7 @@ public class UserController {
         UsrUser user = userService.getUser(userId);
 
         if (user == null) {
-            throw new IllegalArgumentException("Uživatel neexistuje");
+            throw new ObjectNotFoundException("Uživatel neexistuje", UserCode.USER_NOT_FOUND).set("id", userId);
         }
 
         user = userService.changeUser(user, params.getUsername(), params.getPassword());
@@ -139,7 +144,7 @@ public class UserController {
         UsrUser user = userService.getUser(userId);
 
         if (user == null) {
-            throw new IllegalArgumentException("Uživatel neexistuje");
+            throw new ObjectNotFoundException("Uživatel neexistuje", UserCode.USER_NOT_FOUND).set("id", userId);
         }
 
         user = userService.changePassword(user, params.getNewPassword());
@@ -160,15 +165,15 @@ public class UserController {
         UsrUser user = userService.getLoggedUser();
 
         if (user == null) {
-            throw new IllegalArgumentException("Uživatel není přihlášen");
+            throw new SystemException("Uživatel není přihlášen", UserCode.USER_NOT_LOGGED);
         }
 
         if (StringUtils.isEmpty(params.getOldPassword())) {
-            throw new IllegalArgumentException("Je nutné zadat původní heslo");
+            throw new BusinessException("Je nutné zadat původní heslo", BaseCode.PROPERTY_NOT_EXIST).set("property", "oldPassword");
         }
 
         if (StringUtils.isEmpty(params.getNewPassword())) {
-            throw new IllegalArgumentException("Je nutné zadat nové heslo");
+            throw new BusinessException("Je nutné zadat nové heslo", BaseCode.PROPERTY_NOT_EXIST).set("property", "newPassword");
         }
 
         user = userService.changePassword(user, params.getOldPassword(), params.getNewPassword());

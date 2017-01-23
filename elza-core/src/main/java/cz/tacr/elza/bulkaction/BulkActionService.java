@@ -15,6 +15,11 @@ import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.PackageCode;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -237,7 +242,8 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         List<RulAction> byRulPackage = actionRepository.findByRulPackage(version.getRuleSet().getPackage());
         String actionFileName = bulkActionCode + bulkActionConfigManager.getExtension();
         if (byRulPackage.stream().noneMatch(i -> i.getFilename().equals(actionFileName))) {
-            throw new IllegalStateException("Hromadná akce nepatří do stejného balíčku pravidel jako pravidla verze AP.");
+            throw new BusinessException("Hromadná akce nepatří do stejného balíčku pravidel jako pravidla verze AP.", PackageCode.OTHER_PACKAGE)
+                    .set("code", bulkActionCode);
         }
 
         arrFundVersion.setFundVersionId(fundVersionId);
@@ -250,7 +256,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
             ArrBulkActionNode bulkActionNode = new ArrBulkActionNode();
             ArrNode arrNode = nodeRepository.findOne(nodeId);
             if (arrNode == null) {
-                throw new IllegalArgumentException("Uzel s id " + nodeId + " neexistuje!");
+                throw new SystemException("Uzel s id " + nodeId + " neexistuje!", BaseCode.ID_NOT_EXIST);
             }
             bulkActionNode.setNode(arrNode);
             bulkActionNode.setBulkActionRun(bulkActionRun);

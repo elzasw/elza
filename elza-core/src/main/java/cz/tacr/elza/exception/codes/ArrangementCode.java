@@ -59,6 +59,11 @@ public enum ArrangementCode implements ErrorCode {
     ALREADY_ADDED,
 
     /**
+     * Entita již byla vytvořena.
+     */
+    ALREADY_CREATED,
+
+    /**
      * Entita již byla odstraněna (obvykle z nějaké množiny).
      */
     ALREADY_REMOVED,
@@ -87,6 +92,11 @@ public enum ArrangementCode implements ErrorCode {
      * Existuje blokující změna v JP - obecně např. hromadná změna, import AS, atd.
      */
     EXISTS_BLOCKING_CHANGE,
+
+    /**
+     * Hromadná akce byla přerušena.
+     */
+    BULK_ACTION_INTERRUPTED,
 
     /**
      * Typ formy jména neexistuje.

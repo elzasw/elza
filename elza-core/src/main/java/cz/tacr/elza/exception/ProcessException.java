@@ -1,5 +1,9 @@
 package cz.tacr.elza.exception;
 
+import cz.tacr.elza.exception.codes.BaseCode;
+
+import javax.swing.*;
+
 /**
  * Exception pro workery
  * přenáší
@@ -9,17 +13,17 @@ package cz.tacr.elza.exception;
  * @author Petr Compel <petr.compel@marbes.cz>
  * @since 19.9.2016
  */
-public class ProcessException extends RuntimeException {
+public class ProcessException extends AbstractException {
 
     private Integer id;
 
     public ProcessException(Integer id, String message, Throwable cause) {
-        super(message, cause);
+        super(message, cause, BaseCode.SYSTEM_ERROR);
         this.id = id;
     }
 
     public ProcessException(Integer id, Throwable cause) {
-        super(cause);
+        super(cause.getMessage(), cause, BaseCode.SYSTEM_ERROR);
         this.id = id;
     }
 

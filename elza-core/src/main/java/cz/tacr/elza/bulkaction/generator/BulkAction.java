@@ -4,6 +4,8 @@ import java.util.List;
 
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.NodeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
@@ -103,7 +105,7 @@ public abstract class BulkAction {
     protected void checkVersion(ArrFundVersion version) {
         Assert.notNull(version);
         if (version.getLockChange() != null) {
-            throw new IllegalStateException("Nelze aplikovat na uzavřenou verzi archivní pomůcky");
+            throw new BusinessException("Nelze aplikovat na uzavřenou verzi archivní pomůcky", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
     }
 }

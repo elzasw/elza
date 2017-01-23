@@ -27,6 +27,7 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import cz.tacr.elza.exception.SystemException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -68,7 +69,7 @@ public class XmlUtils {
             xsltSource = getStreamSource(transformationResource.getFile());
             return transformData(xmlData, xsltSource);
         } catch (IOException e) {
-            throw new IllegalStateException("Chyba při transformaci vstupních dat.", e);
+            throw new SystemException("Chyba při transformaci vstupních dat.", e);
         } finally {
             if (xsltSource != null) {
                 try {

@@ -167,7 +167,7 @@ public class RegistryController {
         Set<Integer> registerTypeIdTree = Collections.emptySet();
 
         if (itemSpecId != null && registerTypeId != null) {
-            throw new SystemException("Nelza použít specifikaci a typ rejstříku zároveň.", BaseCode.SYSTEM_ERROR);
+            throw new SystemException("Nelze použít specifikaci a typ rejstříku zároveň.", BaseCode.SYSTEM_ERROR);
         } else if (itemSpecId != null || registerTypeId != null) {
             Set<Integer> registerTypeIds = new HashSet<>();
             if (itemSpecId != null) {

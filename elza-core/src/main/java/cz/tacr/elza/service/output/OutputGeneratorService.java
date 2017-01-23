@@ -11,6 +11,10 @@ import java.util.concurrent.RejectedExecutionException;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -135,11 +139,13 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
                                @AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
                                final boolean forced) {
         ArrOutputResult outputResult = outputResultRepository.findByOutputDefinition(arrOutput.getOutputDefinition());
-        Assert.isNull(outputResult, "Tento výstup byl již vygenerován.");
+        if (outputResult != null) {
+            throw new BusinessException("Tento výstup byl již vygenerován", ArrangementCode.ALREADY_CREATED);
+        }
 
         synchronized (lock) {
             if (outputQueue.stream().anyMatch(i -> arrOutput.getOutputId().equals(i.getArrOutputId()))) {
-                throw new IllegalStateException("Tento výstup je již ve frontě generování");
+                throw new BusinessException("Tento výstup je již ve frontě generování", BaseCode.INVALID_STATE);
             }
         }
 
@@ -153,7 +159,7 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
         }
 
         if (outputDefinition.getTemplate() == null) {
-            throw new IllegalStateException("Nelze spustit generování, protože výstup nemá vybranou šablonu");
+            throw new BusinessException("Nelze spustit generování, protože výstup nemá vybranou šablonu", BaseCode.PROPERTY_NOT_EXIST).set("property", "template");
         }
 
         setStateAndSave(outputDefinition, OutputState.GENERATING);
@@ -295,7 +301,7 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
      */
     private void saveFailStatus(final Integer outputId, final Throwable ex) {
         if (outputId == null) {
-            throw new IllegalStateException("Nepodařilo se uložit chybu k výstupu. ID není definováno.");
+            throw new SystemException("Nepodařilo se uložit chybu k výstupu. ID není definováno.", BaseCode.ID_NOT_EXIST);
         }
 
         (new TransactionTemplate(txManager)).execute(new TransactionCallbackWithoutResult() {

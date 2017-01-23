@@ -2189,7 +2189,7 @@ public class PackageService {
         RulPackage rulPackage = packageRepository.findTopByCode(code);
 
         if (rulPackage == null) {
-            throw new IllegalArgumentException("Balíček s kódem " + code + " neexistuje");
+            throw new ObjectNotFoundException("Balíček s kódem " + code + " neexistuje", BaseCode.ID_NOT_EXIST);
         }
 
         List<RulItemSpec> rulDescItemSpecs = itemSpecRepository.findByRulPackage(rulPackage);

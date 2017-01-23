@@ -8,6 +8,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.PolicyTypeRepository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -123,14 +125,14 @@ public class ValidationRules extends Rules {
 				case MISSING:
 					String missingTypeCode = validationResult.getTypeCode();
 					if (missingTypeCode == null) {
-						throw new IllegalStateException("Neni vyplnen kod chybejiciho typu.");
+						throw new SystemException("Neni vyplnen kod chybejiciho typu.", BaseCode.PROPERTY_NOT_EXIST).set("property", "typeCode");
 					}
 					validationResult.setType(itemTypeRepository.getOneByCode(missingTypeCode));
 					break;
 				case ERROR:
 					Integer descItemId = validationResult.getDescItemId();
 					if (descItemId == null) {
-						throw new IllegalStateException("Neni vyplneno id chybneho atributu.");
+						throw new SystemException("Neni vyplneno id chybneho atributu.", BaseCode.PROPERTY_NOT_EXIST).set("property", "descItemId");
 					}
 					validationResult.setDescItem(descItemRepository.findOne(descItemId));
 					break;

@@ -10,6 +10,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.BeanUtils;
@@ -543,19 +545,19 @@ public class DescItemFactory implements InitializingBean {
                                         final MappingContext context) {
 
                         if (arrItemUnitdate.getFormat() == null) {
-                            throw new IllegalArgumentException("Nebyl odeslán formát dat");
+                            throw new SystemException("Nebyl odeslán formát dat", BaseCode.PROPERTY_NOT_EXIST).set("property", "format");
                         } else {
                             String format = arrItemUnitdate.getFormat();
                             if (!format.matches(
                                     "(" + PATTERN_UNIT_DATA + ")|(" + PATTERN_UNIT_DATA + INTERVAL_DELIMITER_UNIT_DATA
                                             + PATTERN_UNIT_DATA + ")")) {
-                                throw new IllegalArgumentException("Neplatný formát dat");
+                                throw new SystemException("Neplatný formát dat", BaseCode.PROPERTY_IS_INVALID).set("property", "format");
                             }
                         }
                         arrDataUnitdate.setFormat(arrItemUnitdate.getFormat());
 
                         if (arrItemUnitdate.getCalendarType() == null) {
-                            throw new IllegalArgumentException("Nebyl zvolen kalendar");
+                            throw new SystemException("Nebyl zvolen kalendar", BaseCode.PROPERTY_NOT_EXIST).set("property", "calendarType");
                         }
                         arrDataUnitdate.setCalendarType(arrItemUnitdate.getCalendarType());
 
@@ -567,7 +569,7 @@ public class DescItemFactory implements InitializingBean {
                             }
                             arrDataUnitdate.setValueFrom(value);
                         } catch (DateTimeParseException e) {
-                            throw new IllegalArgumentException("Nebyl zadan platny format datumu 'od'", e);
+                            throw new SystemException("Nebyl zadan platny format datumu 'od'", e, BaseCode.PROPERTY_IS_INVALID).set("property", "valueFrom");
                         }
 
                         arrDataUnitdate.setValueFromEstimated(arrItemUnitdate.getValueFromEstimated());
@@ -580,7 +582,7 @@ public class DescItemFactory implements InitializingBean {
                             }
                             arrDataUnitdate.setValueTo(value);
                         } catch (DateTimeParseException e) {
-                            throw new IllegalArgumentException("Nebyl zadan platny format datumu 'do'", e);
+                            throw new SystemException("Nebyl zadan platny format datumu 'do'", e, BaseCode.PROPERTY_IS_INVALID).set("property", "valueTo");
                         }
 
                         if (arrItemUnitdate.getValueFrom() != null && arrItemUnitdate.getValueTo() != null) {
@@ -842,7 +844,7 @@ public class DescItemFactory implements InitializingBean {
     private ArrData getDataByDescItem(final ArrDescItem descItem) {
         List<ArrData> dataList = dataRepository.findByItem(descItem);
         if (dataList.size() != 1) {
-            throw new IllegalStateException("Hodnota musí být právě jedna");
+            throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
         }
         return dataList.get(0);
     }

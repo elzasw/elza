@@ -73,12 +73,14 @@ var messages = {
     "exception.arr.EXISTS_NEWER_CHANGE": "Existuje novější změna, je potřeba přenačíst seznam",
     "exception.arr.ILLEGAL_COUNT_EXTERNAL_SYSTEM": "Neplatný počet externích systémů",
     "exception.arr.ALREADY_ADDED": "Položka je již přidána",
+    "exception.arr.ALREADY_CREATED": "Entita je již vytvořena",
     "exception.arr.ALREADY_REMOVED": "Položka je již odebrána",
     "exception.arr.INVALID_VERSION": "Neplatná verze",
     "exception.arr.REQUEST_INVALID": "Neplatný požadavek",
     "exception.arr.REQUEST_INVALID_STATE": "Neplatný stav požadavku",
     "exception.arr.REQUEST_NOT_FOUND_IN_QUEUE": "Požadavek nenalezen ve frontě",
     "exception.arr.EXISTS_BLOCKING_CHANGE": "Nelze provést revert, protože existuje blokující změna v JP",
+    "exception.arr.BULK_ACTION_INTERRUPTED": "Hromadná akce '{code}' byla přerušena",
     "exception.arr.PARTY_NAME_FORM_TYPE_NOT_FOUND": "Typ formy jména neexistuje",
 
     "exception.base.INSUFFICIENT_PERMISSIONS": "Nedostatečná oprávnění",
@@ -89,7 +91,11 @@ var messages = {
     "exception.base.ID_EXIST": "Identifikátor entity nesmí existovat",
     "exception.base.ID_NOT_EXIST": "Identifikátor entity musí existovat",
     "exception.base.PROPERTY_NOT_EXIST": "Pole '{property}' musí být vyplněno",
+    "exception.base.PROPERTY_HAS_INVALID_TYPE": "Pole '{property}' není správného datového typu ({actual}, {expected})",
+    "exception.base.PROPERTY_IS_INVALID": "Pole '{property}' není správně vyplněno",
+    "exception.base.DB_INTEGRITY_PROBLEM": "Problém s integritou databáze",
     "exception.base.BAD_REQUEST": "Neplatný požadavek",
+    "exception.base.INVALID_STATE": "Neplatný stav",
 
     "exception.dig.REPOSITORY_NOT_FOUND": "Digitalizační repository neexistuje ({code})",
     "exception.dig.DAO_NOT_FOUND": "DAO neexistuje ({code})",
@@ -100,7 +106,9 @@ var messages = {
     "exception.dig.DAO_HAS_REQUEST": "DAO má navázané aktivní requesty na externí systém",
 
     "exception.ext.RECORD_NOT_FOUND": "Záznam nebyl nalezen",
+    "exception.ext.IMPORT_FAIL": "Selhání importu",
     "exception.ext.ALREADY_IMPORTED": "Záznam s identifikátorem '{id}' byl již importován do třídy rejstříku '{scope}'",
+    "exception.ext.EXTERNAL_SYSTEM_ERROR": "Chyba z externího systému",
 
     "exception.package.FILE_NOT_FOUND": "Nenalezen soubor '{file}'",
     "exception.package.CODE_NOT_FOUND": "Nenalezena entita podle kódu '{code}' v souboru '{file}'",
@@ -112,6 +120,8 @@ var messages = {
     "exception.reg.REGISTRY_TYPE_NOT_FOUND": "Nebyl nalezen typ rejstříku '{name}'",
 
     "exception.usr.USER_DELETE_ERROR": "Osobu nelze smazat, kvůli navázaným uživatelům",
+    "exception.usr.USER_NOT_FOUND": "Uživatel s ID={id} neexistuje",
+    "exception.usr.USER_NOT_LOGGED": "Uživatel není přihlášen",
 
     "search.input.search": "Vyhledat...",
     "search.not.found": "nenalezeno",

@@ -11,6 +11,16 @@ public enum UserCode implements ErrorCode {
     /**
      * Osobu nelze smazat, kvůli navázaným uživatelům.
      */
-    USER_DELETE_ERROR;
+    USER_DELETE_ERROR,
+
+    /**
+     * Uživatel neexistuje.
+     */
+    USER_NOT_FOUND,
+
+    /**
+     * Uživatel není přihlášen.
+     */
+    USER_NOT_LOGGED
 
 }
