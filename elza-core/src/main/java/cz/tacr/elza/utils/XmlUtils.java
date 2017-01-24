@@ -96,7 +96,7 @@ public class XmlUtils {
 
             byteArray = result.toByteArray();
         } catch (TransformerException ex) {
-            throw new IllegalStateException("Chyba při transformaci vstupních dat.", ex);
+            throw new SystemException("Chyba při transformaci vstupních dat.", ex);
         } finally {
             if (xmlSource != null) {
                 try {
@@ -152,7 +152,7 @@ public class XmlUtils {
         try {
             return new StreamSource(new FileInputStream(xmlFile));
         } catch (IOException ex) {
-            throw new IllegalStateException("Chyba při otevírání souboru " + xmlFile, ex);
+            throw new SystemException("Chyba při otevírání souboru " + xmlFile, ex);
         }
     }
 
@@ -173,7 +173,7 @@ public class XmlUtils {
 
             return outputStream.toByteArray();
         } catch (JAXBException e) {
-            throw new IllegalStateException(e);
+            throw new SystemException(e);
         }
     }
 
@@ -209,7 +209,7 @@ public class XmlUtils {
 
             byteArray = result.toByteArray();
         } catch (TransformerException ex) {
-            throw new IllegalStateException("Chyba při transformaci vstupních dat.", ex);
+            throw new SystemException("Chyba při transformaci vstupních dat.", ex);
         } finally {
             if (xmlSource != null) {
                 try {
@@ -252,7 +252,7 @@ public class XmlUtils {
             logger.info("Otevírání souboru " + xmlFile);
             return new StreamSource(xmlFile.getInputStream());
         } catch (IOException ex) {
-            throw new IllegalStateException("Chyba při otevírání souboru " + xmlFile, ex);
+            throw new SystemException("Chyba při otevírání souboru " + xmlFile, ex);
         }
     }
 
@@ -289,7 +289,7 @@ public class XmlUtils {
 
             return (T) jaxbIntrospector.getValue(unmarshal);
         } catch (JAXBException e) {
-            throw new IllegalStateException("Chyba při převodu dat z xml.", e);
+            throw new SystemException("Chyba při převodu dat z xml.", e);
         }
     }
 
@@ -318,12 +318,12 @@ public class XmlUtils {
         }
 
         if (!transformDir.isDirectory()) {
-            throw new IllegalStateException("Cesta " + transformDir.getAbsolutePath() + " není adresář.");
+            throw new SystemException("Cesta " + transformDir.getAbsolutePath() + " není adresář.");
         }
 
         File[] listFiles = transformDir.listFiles((dir, name) -> name.endsWith(XmlUtils.XSLT_EXTENSION));
         if (listFiles == null) {
-            throw new IllegalStateException("Chyba při načítání souborů z adresáře " + transformDir.getAbsolutePath());
+            throw new SystemException("Chyba při načítání souborů z adresáře " + transformDir.getAbsolutePath());
         }
         List<String> transformationNames = new ArrayList<>(listFiles.length);
         for (File file : listFiles) {
@@ -357,7 +357,7 @@ public class XmlUtils {
 
             return file;
         } catch (IOException e) {
-            throw new IllegalStateException(e);
+            throw new SystemException(e);
         }
     }
 
@@ -381,7 +381,7 @@ public class XmlUtils {
             transformer.transform(ss, result);
             return result.getWriter().toString();
         } catch (TransformerException e) {
-            throw new IllegalStateException("Chyba při formátování xml.", e);
+            throw new SystemException("Chyba při formátování xml.", e);
         }
     }
 }
