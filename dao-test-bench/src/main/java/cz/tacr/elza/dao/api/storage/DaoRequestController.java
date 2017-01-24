@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import cz.tacr.elza.dao.bo.resource.DaoRequestInfo;
 import cz.tacr.elza.dao.common.CoreServiceProvider;
 import cz.tacr.elza.dao.service.StorageDaoRequestService;
 import cz.tacr.elza.ws.core.v1.CoreServiceException;
@@ -35,16 +36,16 @@ public class DaoRequestController {
 
 	/**
 	 * Sends notification about confirmed destruction to external system.
-	 * This action should be called afters success of {@link #confirmDestrRequest(String)}.
+	 * This action should be called before {@link #confirmDestrRequest(String)}.
 	 * Connection to external system must be defined in /{repositoryIdentifier}/external-systems-config.yaml.
 	 */
 	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
 	@RequestMapping(value = "/destr/{requestIdentifier}/finished", method = RequestMethod.POST)
 	public void destrRequestFinished(@PathVariable String requestIdentifier) throws CoreServiceException {
-		String systemIdentifier = storageDaoRequestService.getSystemIdentifier(requestIdentifier, true);
-		DaoRequestsService service = CoreServiceProvider.getDaoRequestsService(systemIdentifier);
-		service.destructionRequestFinished(requestIdentifier);
+		DaoRequestInfo requestInfo = storageDaoRequestService.getRequestInfo(requestIdentifier, true);
+		DaoRequestsService service = CoreServiceProvider.getDaoRequestsService(requestInfo.getSystemIdentifier());
+		service.destructionRequestFinished(requestInfo.getRequestIdentifier());
 	}
 
 	/**
@@ -59,7 +60,7 @@ public class DaoRequestController {
 
 	/**
 	 * Sends notification about rejected destruction to external system.
-	 * This action should be called afters success of {@link #rejectDestrRequest(String)}.
+	 * This action should be called before {@link #rejectDestrRequest(String)}.
 	 * Connection to external system must be defined in /{repositoryIdentifier}/external-systems-config.yaml.
 	 */
 	@ResponseBody
@@ -67,11 +68,11 @@ public class DaoRequestController {
 	@RequestMapping(value = "/destr/{requestIdentifier}/revoked", method = RequestMethod.POST)
 	public void destrRequestRevoked(@PathVariable String requestIdentifier,
 			@RequestParam(required = false) String description) throws CoreServiceException {
-		RequestRevoked requestRevoked = new RequestRevoked();
-		requestRevoked.setIdentifier(requestIdentifier);
+		DaoRequestInfo requestInfo = storageDaoRequestService.getRequestInfo(requestIdentifier, true);
+		RequestRevoked requestRevoked = new RequestRevoked();		
+		requestRevoked.setIdentifier(requestInfo.getRequestIdentifier());
 		requestRevoked.setDescription(description);
-		String systemIdentifier = storageDaoRequestService.getSystemIdentifier(requestIdentifier, true);
-		DaoRequestsService service = CoreServiceProvider.getDaoRequestsService(systemIdentifier);
+		DaoRequestsService service = CoreServiceProvider.getDaoRequestsService(requestInfo.getSystemIdentifier());		
 		service.destructionRequestRevoked(requestRevoked);
 	}
 
@@ -87,16 +88,16 @@ public class DaoRequestController {
 
 	/**
 	 * Sends notification about confirmed transfer to external system.
-	 * This action should be called afters success of {@link #confirmTransRequest(String)}.
+	 * This action should be called before {@link #confirmTransRequest(String)}.
 	 * Connection to external system must be defined in /{repositoryIdentifier}/external-systems-config.yaml.
 	 */
 	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
 	@RequestMapping(value = "/trans/{requestIdentifier}/finished", method = RequestMethod.POST)
-	public void transRequestFinished(@PathVariable String requestIdentifier) throws CoreServiceException {
-		String systemIdentifier = storageDaoRequestService.getSystemIdentifier(requestIdentifier, false);
-		DaoRequestsService service = CoreServiceProvider.getDaoRequestsService(systemIdentifier);
-		service.transferRequestFinished(requestIdentifier);
+	public void transRequestFinished(@PathVariable String requestIdentifier) throws CoreServiceException {		
+		DaoRequestInfo requestInfo = storageDaoRequestService.getRequestInfo(requestIdentifier, false);
+		DaoRequestsService service = CoreServiceProvider.getDaoRequestsService(requestInfo.getSystemIdentifier());
+		service.transferRequestFinished(requestInfo.getRequestIdentifier());
 	}
 
 	/**
@@ -111,19 +112,19 @@ public class DaoRequestController {
 
 	/**
 	 * Sends notification about rejected transfer to external system.
-	 * This action should be called afters success of {@link #rejectTransRequest(String)}.
+	 * This action should be called before {@link #rejectTransRequest(String)}.
 	 * Connection to external system must be defined in /{repositoryIdentifier}/external-systems-config.yaml.
 	 */
 	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
 	@RequestMapping(value = "/trans/{requestIdentifier}/revoked", method = RequestMethod.POST)
 	public void transRequestRevoked(@PathVariable String requestIdentifier,
-			@RequestParam(required = false) String description) throws CoreServiceException {
-		RequestRevoked requestRevoked = new RequestRevoked();
-		requestRevoked.setIdentifier(requestIdentifier);
+			@RequestParam(required = false) String description) throws CoreServiceException {		
+		DaoRequestInfo requestInfo = storageDaoRequestService.getRequestInfo(requestIdentifier, false);
+		RequestRevoked requestRevoked = new RequestRevoked();		
+		requestRevoked.setIdentifier(requestInfo.getRequestIdentifier());
 		requestRevoked.setDescription(description);
-		String systemIdentifier = storageDaoRequestService.getSystemIdentifier(requestIdentifier, false);
-		DaoRequestsService service = CoreServiceProvider.getDaoRequestsService(systemIdentifier);
+		DaoRequestsService service = CoreServiceProvider.getDaoRequestsService(requestInfo.getSystemIdentifier());		
 		service.transferRequestRevoked(requestRevoked);
 	}
 }

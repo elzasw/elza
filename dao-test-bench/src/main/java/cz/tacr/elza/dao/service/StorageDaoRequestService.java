@@ -30,10 +30,10 @@ public class StorageDaoRequestService {
 	/**
 	 * @param destrRequest destruction request otherwise transfer request
 	 */
-	public String getSystemIdentifier(String requestIdentifier, boolean destrRequest) {
+	public DaoRequestInfo getRequestInfo(String requestIdentifier, boolean destrRequest) {
 		return GlobalLock.runAtomicFunction(() -> {
 			try {
-				return new DaoRequestInfoResource(requestIdentifier, destrRequest).getOrInit().getSystemIdentifier();
+				return new DaoRequestInfoResource(requestIdentifier, destrRequest).getOrInit();
 			} catch (Exception e) {
 				throw new DaoComponentException("dao request initialization failed", e);
 			}

@@ -45,14 +45,14 @@ public class WebServiceConfig {
 
     @Bean
     public Endpoint daoRequestsServiceEndpoint() {
-        EndpointImpl endpoint = new EndpointImpl(bus, daoCoreService);
+        EndpointImpl endpoint = new EndpointImpl(bus, daoRequestsService);
         endpoint.publish("/DaoRequestsService");
         return endpoint;
     }
 
     @Bean
     public Endpoint daoCoreServiceEndpoint() {
-        EndpointImpl endpoint = new EndpointImpl(bus, daoRequestsService);
+        EndpointImpl endpoint = new EndpointImpl(bus, daoCoreService);
         endpoint.publish("/DaoCoreService");
         return endpoint;
     }
