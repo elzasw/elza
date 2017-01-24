@@ -59,6 +59,11 @@ public enum BaseCode implements ErrorCode {
     INVALID_STATE,
 
     /**
+     * Byla detekována cyklická závislost.
+     */
+    CYCLE_DETECT,
+
+    /**
      * Pole entity není správného datového typu.
      */
     PROPERTY_HAS_INVALID_TYPE

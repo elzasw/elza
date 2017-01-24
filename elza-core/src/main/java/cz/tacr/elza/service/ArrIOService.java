@@ -17,9 +17,16 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.ParserConfigurationException;
 
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.ExternalCode;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.cxf.BusException;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -216,7 +223,7 @@ public class ArrIOService {
             item = clazz.newInstance();
             item.setItem(jsonTable);
         } catch (IllegalAccessException | InstantiationException e) {
-            throw new IllegalStateException(e);
+            throw new SystemException(e);
         }
 
         item.setItemType(descItemType);
@@ -264,10 +271,13 @@ public class ArrIOService {
                                                                 final Class<T> clazz) throws IOException, SAXException, ParserConfigurationException {
         RulItemType descItemType = itemTypeRepository.findOne(descItemTypeId);
         if (descItemType == null) {
-            throw new IllegalStateException("Typ s ID=" + descItemTypeId + " neexistuje");
+            throw new BusinessException("Typ s ID=" + descItemTypeId + " neexistuje", ArrangementCode.ITEM_TYPE_NOT_FOUND).set("id", descItemTypeId);
         }
         if (!"COORDINATES".equals(descItemType.getDataType().getCode())) {
-            throw new UnsupportedOperationException("Pouze typ COORDINATES může být importován pomocí KML.");
+            throw new SystemException("Pouze typ COORDINATES může být importován pomocí KML.", BaseCode.PROPERTY_HAS_INVALID_TYPE)
+                    .set("property", "descItemTypeId")
+                    .set("expected", "COORDINATES")
+                    .set("actual", descItemType.getDataType().getCode());
         }
 
         Parser parser = new Parser(new KMLConfiguration());
@@ -293,14 +303,14 @@ public class ArrIOService {
                 item = clazz.newInstance();
                 item.setItem(itemData);
             } catch (IllegalAccessException | InstantiationException e) {
-                throw new IllegalStateException(e);
+                throw new SystemException(e);
             }
             item.setItemType(descItemType);
             toCreate.add(item);
         }
 
         if (toCreate.isEmpty()) {
-            throw new IllegalStateException("Nebyli nalezeny souřadnice.");
+            throw new BusinessException("Nebyli nalezeny souřadnice.", BaseCode.PROPERTY_NOT_EXIST).set("property", "geometry");
         }
 
         List<Integer> ids = new ArrayList<>();
@@ -319,12 +329,12 @@ public class ArrIOService {
             }
 
             if (rule == null) {
-                throw new IllegalStateException("Pravidlo s ID=" + descItemTypeId + " neexistuje");
+                throw new ObjectNotFoundException("Typ atributu s ID=" + descItemTypeId + " neexistuje", ArrangementCode.ITEM_TYPE_NOT_FOUND).setId(descItemTypeId);
             }
 
             if (!rule.getRepeatable()) {
                 if (toCreate.size() > 1) {
-                    throw new IllegalStateException("Do neopakovatelného prvku lze importovat pouze jeden geoobjekt.");
+                    throw new BusinessException("Do neopakovatelného prvku lze importovat pouze jeden geoobjekt.", ArrangementCode.NOT_REPEATABLE);
                 }
 
                 outputService.deleteOutputItemsByTypeWithoutVersion(fundVersionId, parentId, descItemTypeId);
@@ -348,12 +358,12 @@ public class ArrIOService {
             }
 
             if (rule == null) {
-                throw new IllegalStateException("Pravidlo s ID=" + descItemTypeId + " neexistuje");
+                throw new ObjectNotFoundException("Pravidlo s ID=" + descItemTypeId + " neexistuje", ArrangementCode.ITEM_TYPE_NOT_FOUND).setId(descItemTypeId);
             }
 
             if (!rule.getRepeatable()) {
                 if (toCreate.size() > 1) {
-                    throw new IllegalStateException("Do neopakovatelného prvku lze importovat pouze jeden geoobjekt.");
+                    throw new BusinessException("Do neopakovatelného prvku lze importovat pouze jeden geoobjekt.", ArrangementCode.NOT_REPEATABLE);
                 }
 
                 descriptionItemService.deleteDescriptionItemsByTypeWithoutVersion(fundVersionId, parentId, parentVersion, descItemTypeId);
@@ -380,7 +390,7 @@ public class ArrIOService {
                 placemarks = features;
             }
         } catch (ClassCastException e) {
-            throw new IllegalArgumentException("Chybná data pro import. Nepodařilo se zpracovat.");
+            throw new SystemException("Chybná data pro import. Nepodařilo se zpracovat.", e, ExternalCode.IMPORT_FAIL);
         }
         return placemarks;
     }
@@ -421,7 +431,7 @@ public class ArrIOService {
         }
 
         if (items.size() < 1) {
-            throw new IllegalArgumentException("Neexistují data pro verzi:" + fundVersionId);
+            throw new SystemException("Neexistují data pro verzi:" + fundVersionId, BaseCode.DB_INTEGRITY_PROBLEM);
         }
 
         T one = items.get(items.size() - 1);
@@ -433,7 +443,10 @@ public class ArrIOService {
         ArrItemData item = one.getItem();
 
         if (!(item instanceof ArrItemCoordinates)) {
-            throw new UnsupportedOperationException("Pouze typ COORDINATES může být exportován do KML.");
+            throw new SystemException("Pouze typ COORDINATES může být importován pomocí KML.", BaseCode.PROPERTY_HAS_INVALID_TYPE)
+                    .set("property", "descItemObjectId")
+                    .set("expected", "COORDINATES")
+                    .set("actual", item.getClass().getSimpleName());
         }
         ArrItemCoordinates cords = (ArrItemCoordinates) item;
 

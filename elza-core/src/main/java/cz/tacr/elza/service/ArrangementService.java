@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.persistence.Query;
 
+import cz.tacr.elza.exception.SystemException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -1017,12 +1018,11 @@ public class ArrangementService {
      * @param version verze
      */
     public void isValidAndOpenVersion(final ArrFundVersion version) {
-        Assert.notNull(version);
         if (version == null) {
-            throw new IllegalArgumentException("Verze neexistuje");
+            throw new BusinessException("Verze neexistuje", ArrangementCode.FUND_VERSION_NOT_FOUND);
         }
         if (version.getLockChange() != null) {
-            throw new IllegalArgumentException("Aktuální verze je zamčená");
+            throw new BusinessException("Aktuální verze je zamčená", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
     }
 
@@ -1230,7 +1230,7 @@ public class ArrangementService {
         List<ArrNode> siblings = nodeRepository.findNodesByDirection(node, version, RelatedNodeDirection.ALL_SIBLINGS);
 
         if (around <= 0) {
-            throw new IllegalStateException("Velikost okolí musí být minimálně 1");
+            throw new SystemException("Velikost okolí musí být minimálně 1");
         }
 
         //požadujeme pouze nejbližšího sourozence před a za objektem
@@ -1295,7 +1295,8 @@ public class ArrangementService {
         }
 
         if (rootTreeNode == null) {
-            throw new IllegalArgumentException("Nenalezen kořen stromu ve verzi " + fundVersion.getFundVersionId());
+            throw new ObjectNotFoundException("Nenalezen kořen stromu ve verzi " + fundVersion.getFundVersionId(),
+                    ArrangementCode.NODE_NOT_FOUND).set("id", rootNodeId);
         }
 
         List<UIVisiblePolicy> policies = visiblePolicyRepository.findByFund(fundVersion.getFund());

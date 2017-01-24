@@ -7,6 +7,8 @@ const TYPE2GROUP = {
     'ArrangementCode': 'arr',
     'DigitizationCode': 'dig',
     'ExternalCode': 'ext',
+    'OutputCode': 'out',
+    'PackageCode': 'pkg',
     'RegistryCode': 'reg',
     'UserCode': 'usr'
 };

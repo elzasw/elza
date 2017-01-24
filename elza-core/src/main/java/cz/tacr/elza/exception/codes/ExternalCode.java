@@ -14,6 +14,9 @@ public enum ExternalCode implements ErrorCode {
     /** Selhání importu. */
     IMPORT_FAIL,
 
+    /** Nebyl nalezen vyexportovaný rejstřík s id {id} */
+    EXTERNAL_RECORD_NOT_FOUND,
+
     /**
      * Chyba z externího systému.
      */

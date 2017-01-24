@@ -14,4 +14,9 @@ public class ObjectNotFoundException extends AbstractException {
     public ObjectNotFoundException(final String message, final ErrorCode errorCode) {
         super(message, errorCode);
     }
+
+    public ObjectNotFoundException setId(Object value) {
+        set("id", value);
+        return this;
+    }
 }

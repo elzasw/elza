@@ -5,6 +5,7 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.ws.types.v1.Did;
 import liquibase.util.file.FilenameUtils;
@@ -97,7 +98,7 @@ public class GroovyScriptService {
                 logger.info("Vytvoření souboru " + createRecordFile.getAbsolutePath());
             }
         } catch (IOException e) {
-            throw new IllegalStateException("Nepodařilo se vytvořit soubor " + createRecordFile.getAbsolutePath());
+            throw new SystemException("Nepodařilo se vytvořit soubor " + createRecordFile.getAbsolutePath());
         }
     }
 

@@ -14,6 +14,11 @@ import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.RegistryCode;
+import cz.tacr.elza.exception.codes.UserCode;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -131,7 +136,7 @@ public class UserService {
             } else {
                 UsrPermission permissionDB = permissionMap.get(permission.getPermissionId());
                 if (permissionDB == null) {
-                    throw new IllegalArgumentException("Oprávnění neexistuje a proto nemůže být upraveno");
+                    throw new SystemException("Oprávnění neexistuje a proto nemůže být upraveno", UserCode.PERM_NOT_EXIST);
                 }
                 permissionDB.setPermission(permission.getPermission());
                 setFundRelation(permissionDB, permission.getFundId());
@@ -147,19 +152,19 @@ public class UserService {
             switch (permission.getPermission().getType()) {
                 case ALL: {
                     if (permission.getScopeId() != null || permission.getFundId() != null) {
-                        throw new IllegalArgumentException("Neplatný vstup oprávnění: ALL");
+                        throw new SystemException("Neplatný vstup oprávnění: ALL", UserCode.PERM_ILLEGAL_INPUT).set("type", "ALL");
                     }
                     break;
                 }
                 case SCOPE: {
                     if (permission.getScopeId() == null || permission.getFundId() != null) {
-                        throw new IllegalArgumentException("Neplatný vstup oprávnění: SCOPE");
+                        throw new SystemException("Neplatný vstup oprávnění: SCOPE", UserCode.PERM_ILLEGAL_INPUT).set("type", "SCOPE");
                     }
                     break;
                 }
                 case FUND: {
                     if (permission.getScopeId() != null || permission.getFundId() == null) {
-                        throw new IllegalArgumentException("Neplatný vstup oprávnění: FUND");
+                        throw new SystemException("Neplatný vstup oprávnění: FUND", UserCode.PERM_ILLEGAL_INPUT).set("type", "FUND");
                     }
                     break;
                 }
@@ -183,7 +188,7 @@ public class UserService {
         if (fundId != null) {
             ArrFund fund = fundRepository.findOne(fundId);
             if (fund == null) {
-                throw new IllegalArgumentException("Neplatný archivní soubor");
+                throw new SystemException("Neplatný archivní soubor", ArrangementCode.FUND_NOT_FOUND).set("id", fundId);
             }
             permission.setFund(fund);
         } else {
@@ -201,7 +206,7 @@ public class UserService {
         if (scopeId != null) {
             RegScope scope = scopeRepository.findOne(scopeId);
             if (scope == null) {
-                throw new IllegalArgumentException("Neplatný scope");
+                throw new SystemException("Neplatný scope", BaseCode.ID_NOT_EXIST);
             }
             permission.setScope(scope);
         } else {
@@ -254,7 +259,8 @@ public class UserService {
                 UsrGroupUser item = groupUserRepository.findOneByGroupAndUser(group, user);
 
                 if (item != null) {
-                    throw new IllegalArgumentException("Uživatel '" + user.getUsername() + "' je již členem skupiny '" + group.getName());
+                    throw new BusinessException("Uživatel '" + user.getUsername() + "' je již členem skupiny '" + group.getName() + "'",
+                            UserCode.ALREADY_IN_GROUP).set("user", user.getUsername()).set("group", group.getName());
                 }
 
                 item = new UsrGroupUser();
@@ -282,7 +288,8 @@ public class UserService {
         UsrGroupUser item = groupUserRepository.findOneByGroupAndUser(group, user);
 
         if (item == null) {
-            throw new IllegalArgumentException("Uživatel '" + user.getUsername() + "' není členem skupiny '" + group.getName());
+            throw new BusinessException("Uživatel '" + user.getUsername() + "' není členem skupiny '" + group.getName() + "'",
+                    UserCode.NOT_IN_GROUP).set("user", user.getUsername()).set("group", group.getName());
         }
 
         groupUserRepository.delete(item);
@@ -305,7 +312,7 @@ public class UserService {
                                 final String description) {
         UsrGroup group = groupRepository.findOneByCode(code);
         if (group != null) {
-            throw new IllegalArgumentException("Skupina s kódem již existuje");
+            throw new BusinessException("Skupina s kódem již existuje", UserCode.GROUP_CODE_EXISTS).set("code", code);
         }
 
         group = new UsrGroup();
@@ -409,12 +416,12 @@ public class UserService {
 
         ParParty party = partyService.getParty(partyId);
         if (party == null) {
-            throw new IllegalArgumentException("Osoba neexistuje");
+            throw new BusinessException("Osoba neexistuje", RegistryCode.PARTY_NOT_EXIST);
         }
 
         UsrUser user = findByUsername(username);
         if (user != null) {
-            throw new IllegalArgumentException("Uživatelské jméno již existuje");
+            throw new BusinessException("Uživatelské jméno již existuje", UserCode.USERNAME_EXISTS);
         }
 
         user = new UsrUser();
@@ -444,7 +451,7 @@ public class UserService {
             String oldPasswordHash = encodePassword(user.getUsername(), oldPassword);
 
             if (!oldPasswordHash.equals(user.getPassword())) {
-                throw new IllegalArgumentException("Původní heslo se neshoduje");
+                throw new BusinessException("Původní heslo se neshoduje", UserCode.PASSWORD_NOT_MATCH);
             }
         }
 

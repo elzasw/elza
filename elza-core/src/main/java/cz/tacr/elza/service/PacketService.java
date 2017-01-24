@@ -8,9 +8,11 @@ import java.util.stream.Collectors;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.DeleteException;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.exception.Level;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.DataPacketRefRepository;
 import cz.tacr.elza.utils.ObjectListIterator;
@@ -94,8 +96,9 @@ public class PacketService {
                 .findByFundAndStorageNumber(packet.getFund(), packet.getStorageNumber());
 
         if (packetDb != null && !packetDb.getPacketId().equals(packet.getPacketId())) {
-            throw new IllegalArgumentException(
-                    "Obal s " + packet.getStorageNumber() + " číslem pro tuto archivní pomůcku již existuje.");
+            throw new BusinessException(
+                    "Obal s " + packet.getStorageNumber() + " číslem pro tuto archivní pomůcku již existuje.",
+                    ArrangementCode.PACKET_DUPLICATE).set("storageNumber", packet.getStorageNumber());
         }
     }
 
@@ -195,7 +198,9 @@ public class PacketService {
      */
     private void checkStorageNumber(final List<String> storageNumbers, final String storageNumber) {
         if (storageNumbers.contains(storageNumber)) {
-            throw new IllegalStateException("Packet " + storageNumber + " již existuje!");
+            throw new BusinessException(
+                    "Obal s " + storageNumber + " číslem pro tuto archivní pomůcku již existuje.",
+                    ArrangementCode.PACKET_DUPLICATE).set("storageNumber", storageNumber);
         }
     }
 
@@ -296,7 +301,7 @@ public class PacketService {
             }
 
             if (count > 0) {
-                throw new IllegalArgumentException("V otevřené verzi fondu existuje přiřazený obal");
+                throw new SystemException("V otevřené verzi fondu existuje přiřazený obal");
             }
 
             for (ArrPacket packet : packets) {

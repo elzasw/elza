@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -62,7 +64,7 @@ public class SettingsService {
             } else {
                 UISettings settingsDB = settingsMap.get(settings.getSettingsId());
                 if (settingsDB == null) {
-                    throw new IllegalArgumentException("Entita s id=" + settings.getSettingsId() + " neexistuje v DB");
+                    throw new ObjectNotFoundException("Entita nastavení s id=" + settings.getSettingsId() + " neexistuje v DB", BaseCode.ID_NOT_EXIST);
                 }
                 settings.setUser(user);
                 settings.setEntityType(settingsDB.getEntityType());

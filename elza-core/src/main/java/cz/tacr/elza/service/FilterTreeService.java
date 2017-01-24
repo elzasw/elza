@@ -14,6 +14,8 @@ import java.util.TreeSet;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +45,6 @@ import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.vo.DescItemValues;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
-import cz.tacr.elza.exception.FilterExpiredException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
@@ -135,7 +136,7 @@ public class FilterTreeService {
                                                               final int page,
                                                               final int pageSize,
                                                               final Set<Integer> descItemTypeIds)
-            throws FilterExpiredException {
+            {
 
         Map<String, RulItemType> descItemTypeMap = new HashMap<>();
         for (RulItemType descItemType : itemTypeRepository.findAll(descItemTypeIds)) {
@@ -166,11 +167,9 @@ public class FilterTreeService {
      * @param luceneQuery v hodnotě fulltext je lucene query (např: +specification:*čís* -fulltextValue:ddd), false - normální fulltext
      * @param searchParams parametry pro rozšířené vyhledávání
      * @return seznam uzlů a jejich indexu v seznamu filtrovaných uzlů, seřazené podle indexu
-     * @throws FilterExpiredException není nastaven filtr, nejprve zavolat {@link #filterData(ArrFundVersion, Object)}
      */
     public List<FilterNodePosition> getFilteredFulltextIds(final ArrFundVersion version, final String fulltext,
-                                                           final boolean luceneQuery, final List<SearchParam> searchParams)
-            throws FilterExpiredException {
+                                                           final boolean luceneQuery, final List<SearchParam> searchParams) {
         Assert.notNull(version);
 
         TreeSet<FilterNodePosition> result = new TreeSet<>((a, b) -> a.getIndex().compareTo(b.getIndex()));
@@ -371,9 +370,9 @@ public class FilterTreeService {
         public FilterTreeSession() {
         }
 
-        public ArrayList<Integer> getFilteredIds(final Integer versionId) throws FilterExpiredException {
+        public ArrayList<Integer> getFilteredIds(final Integer versionId) {
             if (filteredIds == null || !this.versionId.equals(versionId)) {
-                throw new FilterExpiredException();
+                throw new BusinessException("Chyba když nejsou nastavené filtry stromu", ArrangementCode.FILTER_EXPIRED);
             }
 
             return filteredIds;

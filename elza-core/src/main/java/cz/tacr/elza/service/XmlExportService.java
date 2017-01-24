@@ -20,6 +20,9 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ExternalCode;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
@@ -244,7 +247,7 @@ public class XmlExportService {
 
             return new XmlExportResult(exportFile, downloadfileName, isCompressed);
         } catch (IOException e) {
-            throw new IllegalStateException("Chyba při zápisu exportovaných dat.", e);
+            throw new SystemException("Chyba při zápisu exportovaných dat.", e);
         }
     }
 
@@ -464,7 +467,8 @@ public class XmlExportService {
         RegRecord regRecord = parParty.getRecord();
         Record record = recordMap.get(regRecord.getRecordId());
         if (record == null) {
-            throw new IllegalStateException("Nebyl nalezen vyexportovaný rejstřík s id " + regRecord.getRecordId());
+            throw new BusinessException("Nebyl nalezen vyexportovaný rejstřík s id " + regRecord.getRecordId(),
+                    ExternalCode.EXTERNAL_RECORD_NOT_FOUND).set("id", regRecord.getRecordId());
         }
         party.setRecord(record);
 

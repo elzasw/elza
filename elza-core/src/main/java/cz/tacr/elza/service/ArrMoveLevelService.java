@@ -13,6 +13,7 @@ import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
@@ -99,12 +100,12 @@ public class ArrMoveLevelService {
                                       ? staticLevelParent : arrangementService.lockNode(transportNode, version, change);
 
             if (!transportLevel.getNodeParent().equals(transportParentNode)) {
-                throw new IllegalStateException("Všechny přesouvané uzly musejí mít stejného rodiče.");
+                throw new SystemException("Všechny přesouvané uzly musejí mít stejného rodiče.");
             }
 
 
             if (transportLevel.equals(staticLevel)) {
-                throw new IllegalStateException("Nelze vložit záznam na stejné místo ve stromu");
+                throw new SystemException("Nelze vložit záznam na stejné místo ve stromu");
             }
 
             transportLevels.add(transportLevel);
@@ -218,12 +219,12 @@ public class ArrMoveLevelService {
                                       ? staticLevelParent : arrangementService.lockNode(transportNode, version, change);
 
             if (!transportLevel.getNodeParent().equals(transportParentNode)) {
-                throw new IllegalStateException("Všechny přesouvané uzly musejí mít stejného rodiče.");
+                throw new SystemException("Všechny přesouvané uzly musejí mít stejného rodiče.");
             }
 
 
             if (transportLevel.equals(staticLevel)) {
-                throw new IllegalStateException("Nelze vložit záznam na stejné místo ve stromu");
+                throw new SystemException("Nelze vložit záznam na stejné místo ve stromu");
             }
 
             transportLevels.add(transportLevel);
@@ -324,13 +325,13 @@ public class ArrMoveLevelService {
 
         for (ArrNode transportNode : transportNodes) {
             if (transportNode.equals(staticNode)) {
-                throw new IllegalStateException("Nelze vložit záznam na stejné místo ve stromu");
+                throw new SystemException("Nelze vložit záznam na stejné místo ve stromu");
             }
 
             ArrLevel transportLevel = arrangementService.lockNode(transportNode, version, change);
 
             if (!transportLevel.getNodeParent().equals(transportParentNode)) {
-                throw new IllegalStateException("Všechny přesouvané uzly musejí mít stejného rodiče.");
+                throw new SystemException("Všechny přesouvané uzly musejí mít stejného rodiče.");
             }
 
             transportLevels.add(transportLevel);
@@ -410,7 +411,7 @@ public class ArrMoveLevelService {
             arrangementService.lockNode(deleteNodeParent, version, change);
 
             if(!ObjectUtils.equals(deleteLevel.getNodeParent(), deleteNodeParent)){
-                throw new IllegalArgumentException(
+                throw new SystemException(
                         "Uzel " + deleteNode.getNodeId() + " nemá rodiče s id " + deleteNodeParent.getNodeId());
             }
         }
@@ -670,7 +671,7 @@ public class ArrMoveLevelService {
         }
 
         if (movedNode.getNode().equals(targetNode.getNodeParent())) {
-            throw new IllegalStateException("Přesouvaný uzel je rodičem cílového uzlu. Přesun nelze provést.");
+            throw new SystemException("Přesouvaný uzel je rodičem cílového uzlu. Přesun nelze provést.");
         }
 
         List<ArrLevel> parentNodes = levelRepository.findByNodeAndDeleteChangeIsNull(targetNode.getNodeParent());

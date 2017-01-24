@@ -101,7 +101,6 @@ import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.ConcurrentUpdateException;
-import cz.tacr.elza.exception.FilterExpiredException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
@@ -1715,8 +1714,7 @@ public class ArrangementController {
     public List<FilterNode> getFilteredNodes(@PathVariable("versionId") final Integer versionId,
                                              @RequestParam("page") final Integer page,
                                              @RequestParam("pageSize") final Integer pageSize,
-                                             @RequestBody final Set<Integer> descItemTypeIds)
-            throws FilterExpiredException {
+                                             @RequestBody final Set<Integer> descItemTypeIds) {
 
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
 
@@ -1730,11 +1728,7 @@ public class ArrangementController {
      * filtrovaných uzlů.
      *
      * @param versionId id verze stromu
-     * @param fulltext  fulltext
-     * @param luceneQuery v hodnotě fulltext je lucene query (např: +specification:*čís* -fulltextValue:ddd), false - normální fulltext
-     * @param searchParams parametry pro rozšířené vyhledávání
      * @return seznam uzlů a jejich indexu v seznamu filtrovaných uzlů, seřazené podle indexu
-     * @throws FilterExpiredException není nastaven filtr, nejprve zavolat {@link FilterTreeService#filterData(ArrFundVersion, List)}
      */
     @RequestMapping(value = "/getFilteredFulltext/{versionId}", method = RequestMethod.POST)
     public List<FilterNodePosition> getFilteredFulltextNodes(@PathVariable("versionId") final Integer versionId,

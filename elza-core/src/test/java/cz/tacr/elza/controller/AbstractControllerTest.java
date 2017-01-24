@@ -99,7 +99,6 @@ import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.domain.vo.XmlImportType;
-import cz.tacr.elza.exception.FilterExpiredException;
 import cz.tacr.elza.service.ArrMoveLevelService;
 
 
@@ -2312,7 +2311,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                 final Integer page,
                                                 final Integer pageSize,
                                                 final Set<Integer> descItemTypeIds)
-            throws FilterExpiredException {
+             {
         return Arrays.asList(put(spec -> spec
                 .pathParameter("versionId", versionId)
                 .queryParameter("page", page)

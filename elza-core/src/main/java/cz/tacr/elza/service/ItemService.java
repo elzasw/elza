@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -15,6 +16,10 @@ import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
 import org.apache.commons.lang.NotImplementedException;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.BeanUtils;
@@ -191,7 +196,8 @@ public class ItemService implements InitializingBean {
             for (Map.Entry<String, String> entry : row.getValues().entrySet()) {
                 ElzaColumn.DataType dataType = typeMap.get(entry.getKey());
                 if (dataType == null) {
-                    throw new IllegalArgumentException("Sloupec s kódem '" + entry.getKey() +  "' neexistuje v definici tabulky");
+                    throw new BusinessException("Sloupec s kódem '" + entry.getKey() +  "' neexistuje v definici tabulky", BaseCode.PROPERTY_IS_INVALID)
+                            .set("property", entry.getKey());
                 }
 
                 switch (dataType) {
@@ -199,18 +205,24 @@ public class ItemService implements InitializingBean {
                         try {
                             Integer.parseInt(entry.getValue());
                         } catch (NumberFormatException e) {
-                            throw new IllegalArgumentException("Neplatný vstup: Hodnota sloupce '" + entry.getKey() + "' musí být celé číslo", e);
+                            throw new BusinessException("Neplatný vstup: Hodnota sloupce '" + entry.getKey() + "' musí být celé číslo", e,
+                                    BaseCode.PROPERTY_IS_INVALID)
+                                    .set("property", entry.getKey());
                         }
                         break;
 
                     case TEXT:
                         if (entry.getValue() == null) {
-                            throw new IllegalArgumentException("Neplatný vstup: Hodnota sloupce '" + entry.getKey() + "' nesmí být null");
+                            throw new BusinessException("Neplatný vstup: Hodnota sloupce '" + entry.getKey() + "' nesmí být null",
+                                    BaseCode.PROPERTY_IS_INVALID)
+                                    .set("property", entry.getKey());
                         }
                         break;
 
                     default:
-                        throw new IllegalStateException("Neznámý typ sloupce '" + dataType.name() + "' ve validaci JSON tabulky");
+                        throw new BusinessException("Neznámý typ sloupce '" + dataType.name() + "' ve validaci JSON tabulky",
+                                BaseCode.PROPERTY_IS_INVALID)
+                                .set("property", dataType.name());
                 }
             }
         }
@@ -219,7 +231,7 @@ public class ItemService implements InitializingBean {
     public ArrData getDataByItem(final ArrItem item) {
         List<ArrData> dataList = dataRepository.findByItem(item);
         if (dataList.size() != 1) {
-            throw new IllegalStateException("Hodnota musí být právě jedna");
+            throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
         }
         return dataList.get(0);
     }
@@ -288,7 +300,7 @@ public class ItemService implements InitializingBean {
             try {
                 itemNew = itemMove.getClass().getConstructor().newInstance(itemMove.getItem().getClass());
             } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
-                throw new IllegalStateException(e);
+                throw new SystemException(e);
             }
 
             BeanUtils.copyProperties(itemMove, itemNew, "itemId", "deleteChange");
@@ -693,19 +705,19 @@ public class ItemService implements InitializingBean {
                                         final MappingContext context) {
 
                         if (arrItemUnitdate.getFormat() == null) {
-                            throw new IllegalArgumentException("Nebyl odeslán formát dat");
+                            throw new BusinessException("Nebyl odeslán formát dat", BaseCode.PROPERTY_NOT_EXIST).set("property", "format");
                         } else {
                             String format = arrItemUnitdate.getFormat();
                             if (!format.matches(
                                     "(" + PATTERN_UNIT_DATA + ")|(" + PATTERN_UNIT_DATA + INTERVAL_DELIMITER_UNIT_DATA
                                             + PATTERN_UNIT_DATA + ")")) {
-                                throw new IllegalArgumentException("Neplatný formát dat");
+                                throw new BusinessException("Neplatný formát dat", BaseCode.PROPERTY_IS_INVALID).set("property", "format");
                             }
                         }
                         arrDataUnitdate.setFormat(arrItemUnitdate.getFormat());
 
                         if (arrItemUnitdate.getCalendarType() == null) {
-                            throw new IllegalArgumentException("Nebyl zvolen kalendar");
+                            throw new BusinessException("Nebyl zvolen kalendar", BaseCode.PROPERTY_NOT_EXIST).set("property", "calendarType");
                         }
                         arrDataUnitdate.setCalendarType(arrItemUnitdate.getCalendarType());
 
@@ -717,7 +729,7 @@ public class ItemService implements InitializingBean {
                             }
                             arrDataUnitdate.setValueFrom(value);
                         } catch (DateTimeParseException e) {
-                            throw new IllegalArgumentException("Nebyl zadan platny format datumu 'od'", e);
+                            throw new BusinessException("Nebyl zadan platny format datumu 'od'", e, BaseCode.PROPERTY_IS_INVALID).set("property", "valueFrom");
                         }
 
                         arrDataUnitdate.setValueFromEstimated(arrItemUnitdate.getValueFromEstimated());
@@ -730,7 +742,7 @@ public class ItemService implements InitializingBean {
                             }
                             arrDataUnitdate.setValueTo(value);
                         } catch (DateTimeParseException e) {
-                            throw new IllegalArgumentException("Nebyl zadan platny format datumu 'do'", e);
+                            throw new BusinessException("Nebyl zadan platny format datumu 'od'", e, BaseCode.PROPERTY_IS_INVALID).set("property", "valueTo");
                         }
 
                         if (arrItemUnitdate.getValueFrom() != null && arrItemUnitdate.getValueTo() != null) {
@@ -739,11 +751,11 @@ public class ItemService implements InitializingBean {
                             LocalDateTime to = LocalDateTime
                                     .parse(arrItemUnitdate.getValueTo(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
                             if (from.isAfter(to)) {
-                                throw new IllegalArgumentException("Neplatný interval ISO datumů: od > do");
+                                throw new BusinessException("Neplatný interval ISO datumů: od > do", BaseCode.PROPERTY_IS_INVALID).set("property", "valueFrom > valueTo");
                             }
                         } else if (arrItemUnitdate.getValueFrom() == null
                                 && arrItemUnitdate.getValueTo() == null) {
-                            throw new IllegalArgumentException("Nebyl zadán interval ISO datumů");
+                            throw new BusinessException("Neplatný interval ISO datumů: od > do", BaseCode.PROPERTY_NOT_EXIST).set("property", Arrays.asList("valueFrom", "valueTo"));
                         }
 
                         String codeCalendar = arrItemUnitdate.getCalendarType().getCode();
@@ -949,7 +961,7 @@ public class ItemService implements InitializingBean {
         List<ArrData> dataList = dataRepository.findByItem(dataFrom);
 
         if (dataList.size() != 1) {
-            throw new IllegalStateException("Hodnota musí být právě jedna");
+            throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
         }
 
         ArrData data = dataList.get(0);
@@ -960,7 +972,7 @@ public class ItemService implements InitializingBean {
             BeanUtils.copyProperties(data, dataNew, "dataId");
             dataNew.setItem(dataTo);
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new IllegalStateException(e.getCause());
+            throw new SystemException(e.getCause());
         }
 
         dataRepository.save(dataNew);
@@ -987,7 +999,7 @@ public class ItemService implements InitializingBean {
         if (itemSpec != null) {
             List<RulItemSpec> descItemSpecs = itemSpecRepository.findByItemType(itemType);
             if (!descItemSpecs.contains(itemSpec)) {
-                throw new IllegalStateException("Specifikace neodpovídá typu hodnoty atributu");
+                throw new SystemException("Specifikace neodpovídá typu hodnoty atributu");
             }
         }
     }
@@ -999,7 +1011,7 @@ public class ItemService implements InitializingBean {
      */
     public void checkFundVersionLock(final ArrFundVersion fundVersion) {
         if (fundVersion.getLockChange() != null) {
-            throw new IllegalArgumentException("Nelze provést verzovanou změnu v uzavřené verzi.");
+            throw new BusinessException("Nelze provést verzovanou změnu v uzavřené verzi.", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
     }
 

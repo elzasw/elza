@@ -21,6 +21,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -378,8 +380,8 @@ public class LevelTreeCacheService {
 
         TreeNode node = treeMap.get(nodeId);
         if (node == null) {
-            throw new IllegalArgumentException("Ve verzi " + fundVersion.getFundVersionId()
-                    + " nebyl nalezen node s id " + nodeId);
+            throw new SystemException("Ve verzi " + fundVersion.getFundVersionId()
+                    + " nebyl nalezen node s id " + nodeId, ArrangementCode.NODE_NOT_FOUND).set("id", nodeId);
         }
 
         LinkedList<Integer> parents = new LinkedList<>();
@@ -410,7 +412,7 @@ public class LevelTreeCacheService {
 
         TreeNode node = treeMap.get(nodeId);
         if (node == null) {
-            throw new IllegalArgumentException("Ve verzi " + versionId + " nebyl nalezen node s id " + nodeId);
+            throw new SystemException("Ve verzi " + versionId + " nebyl nalezen node s id " + nodeId, ArrangementCode.NODE_NOT_FOUND).set("id", nodeId);
         }
 
         LinkedHashMap<Integer, TreeNode> parentMap = new LinkedHashMap<>();
