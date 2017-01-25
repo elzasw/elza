@@ -103,9 +103,9 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 		</wsdl:operation>
 	</wsdl:portType>
 	<wsdl:binding name="DaoRequestsService" type="tns:DaoRequestsService">
-		<soap:binding style="document" transport="http://tacr.elza.cz/ws/dao-service/requests"/>
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
 		<wsdl:operation name="DestructionRequestFinished">
-			<soap:operation style="document"/>
+			<soap:operation soapAction="DestructionRequestFinished" style="document"/>
 			<wsdl:input name="requestIdentifier">
 				<soap:body use="literal"/>
 			</wsdl:input>
@@ -114,7 +114,7 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 			</wsdl:fault>
 		</wsdl:operation>
 		<wsdl:operation name="DestructionRequestRevoked">
-			<soap:operation style="document"/>
+			<soap:operation soapAction="DestructionRequestRevoked" style="document"/>
 			<wsdl:input name="requestRevoked">
 				<soap:body use="literal"/>
 			</wsdl:input>
@@ -123,7 +123,7 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 			</wsdl:fault>
 		</wsdl:operation>
 		<wsdl:operation name="TransferRequestFinished">
-			<soap:operation style="document"/>
+			<soap:operation soapAction="TransferRequestFinished" style="document"/>
 			<wsdl:input name="requestIdentifier">
 				<soap:body use="literal"/>
 			</wsdl:input>
@@ -132,7 +132,7 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 			</wsdl:fault>
 		</wsdl:operation>
 		<wsdl:operation name="TransferRequestRevoked">
-			<soap:operation style="document"/>
+			<soap:operation soapAction="TransferRequestRevoked" style="document"/>
 			<wsdl:input name="requestRevoked">
 				<soap:body use="literal"/>
 			</wsdl:input>
@@ -142,9 +142,9 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 		</wsdl:operation>
 	</wsdl:binding>
 	<wsdl:binding name="DaoDigitizationService" type="tns:DaoDigitizationService">
-		<soap:binding style="document" transport="http://tacr.elza.cz/ws/dao-service/digitization"/>
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
 		<wsdl:operation name="DigitizationRequestFinished">
-			<soap:operation style="document"/>
+			<soap:operation soapAction="DigitizationRequestFinished" style="document"/>
 			<wsdl:input name="digitizationRequestResult">
 				<soap:body use="literal"/>
 			</wsdl:input>
@@ -153,7 +153,7 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 			</wsdl:fault>
 		</wsdl:operation>
 		<wsdl:operation name="DigitizationRequestRevoked">
-			<soap:operation style="document"/>
+			<soap:operation soapAction="DigitizationRequestRevoked" style="document"/>
 			<wsdl:input name="requestRevoked">
 				<soap:body use="literal"/>
 			</wsdl:input>
@@ -163,11 +163,11 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 		</wsdl:operation>
 	</wsdl:binding>
 	<wsdl:binding name="DaoService" type="tns:DaoService">
-		<soap:binding style="document" transport="http://tacr.elza.cz/ws/dao-service/base"/>
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
 		<wsdl:operation name="GetDid">
 			<wsdl:documentation>Return current description of given did.
 Function will throw error if didIdentifier is not valid.</wsdl:documentation>
-			<soap:operation style="document"/>
+			<soap:operation soapAction="GetDid" style="document"/>
 			<wsdl:input name="didIdentifier">
 				<soap:body use="literal"/>
 			</wsdl:input>
@@ -181,7 +181,7 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 		</wsdl:operation>
 		<wsdl:operation name="RemoveDao">
 			<wsdl:documentation>Remove digital archival object from system. Throw exception if digital archival object does not exists in the system.</wsdl:documentation>
-			<soap:operation style="document"/>
+			<soap:operation soapAction="RemoveDao" style="document"/>
 			<wsdl:input name="daoIdentifier">
 				<wsdl:documentation>ELZA internal identifier of given DAO</wsdl:documentation>
 				<soap:body use="literal"/>
@@ -191,7 +191,7 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 			</wsdl:fault>
 		</wsdl:operation>
 		<wsdl:operation name="AddPackage">
-			<soap:operation style="document"/>
+			<soap:operation soapAction="AddPackage" style="document"/>
 			<wsdl:input name="daoPackage">
 				<soap:body use="literal"/>
 			</wsdl:input>
@@ -205,7 +205,7 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 		</wsdl:operation>
 		<wsdl:operation name="Import">
 			<wsdl:documentation>Import one or more packages. Import will also create corresponding links to described material. If this method is used each package need to have specified fundIdentifier for each daoPackage.</wsdl:documentation>
-			<soap:operation style="document"/>
+			<soap:operation soapAction="Import" style="document"/>
 			<wsdl:input name="daoImport">
 				<soap:body use="literal"/>
 			</wsdl:input>
@@ -214,7 +214,7 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 			</wsdl:fault>
 		</wsdl:operation>
 		<wsdl:operation name="Link">
-			<soap:operation style="document"/>
+			<soap:operation soapAction="Link" style="document"/>
 			<wsdl:input name="daoLink">
 				<soap:body use="literal"/>
 			</wsdl:input>
@@ -224,7 +224,7 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 		</wsdl:operation>
 		<wsdl:operation name="RemovePackage">
 			<wsdl:documentation>Remove package</wsdl:documentation>
-			<soap:operation style="document"/>
+			<soap:operation soapAction="RemovePackage" style="document"/>
 			<wsdl:input name="DaoPackageIdentifier">
 				<wsdl:documentation>ID of package in given system</wsdl:documentation>
 				<soap:body use="literal"/>

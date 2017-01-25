@@ -46,9 +46,9 @@
 		</wsdl:operation>
 	</wsdl:portType>
 	<wsdl:binding name="DaoRequests" type="tns:DaoRequests">
-		<soap:binding style="document" transport="http://tacr.elza.cz/ws/dao-provider/requests"/>
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
 		<wsdl:operation name="PostDestructionRequest">
-			<soap:operation style="document"/>
+			<soap:operation soapAction="PostDestructionRequest" style="document"/>
 			<wsdl:input name="destructionRequest">
 				<soap:body use="literal"/>
 			</wsdl:input>
@@ -60,7 +60,7 @@
 			</wsdl:fault>
 		</wsdl:operation>
 		<wsdl:operation name="PostTransferRequest">
-			<soap:operation style="document"/>
+			<soap:operation soapAction="PostTransferRequest" style="document"/>
 			<wsdl:input name="transferRequest">
 				<soap:body use="literal"/>
 			</wsdl:input>
@@ -73,9 +73,9 @@
 		</wsdl:operation>
 	</wsdl:binding>
 	<wsdl:binding name="DaoNotifications" type="tns:DaoNotifications">
-		<soap:binding style="document" transport="http://tacr.elza.cz/ws/dao-provider/notifications"/>
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
 		<wsdl:operation name="OnDaoLinked">
-			<soap:operation style="document"/>
+			<soap:operation soapAction="OnDaoLinked" style="document"/>
 			<wsdl:input name="onDaoLinked">
 				<soap:body use="literal"/>
 			</wsdl:input>
@@ -84,7 +84,7 @@
 			</wsdl:fault>
 		</wsdl:operation>
 		<wsdl:operation name="OnDaoUnlinked">
-			<soap:operation style="document"/>
+			<soap:operation soapAction="OnDaoUnlinked" style="document"/>
 			<wsdl:input name="onDaoUnlinked">
 				<soap:body use="literal"/>
 			</wsdl:input>
