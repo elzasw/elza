@@ -17,12 +17,13 @@ import cz.tacr.elza.ws.core.v1.DaoDigitizationService;
 import cz.tacr.elza.ws.core.v1.DaoRequestsService;
 import cz.tacr.elza.ws.core.v1.DaoService;
 
+@SuppressWarnings("unchecked")
 public class CoreServiceProvider {
 
 	private static final Map<String, String> EXTERNAL_SYSTEMS_CONFIG;
 	static {
 		Path path = PathResolver.resolveExternalSystemsConfigPath();
-		try (InputStream os = Files.newInputStream(path)) {
+		try (InputStream os = Files.newInputStream(path)) { 
 			Object config = new Yaml().load(os);
 			EXTERNAL_SYSTEMS_CONFIG = config != null ? (Map<String, String>) config : new HashMap<>();
 		} catch (Exception e) {

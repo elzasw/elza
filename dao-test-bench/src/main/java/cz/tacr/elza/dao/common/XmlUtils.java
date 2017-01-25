@@ -61,11 +61,13 @@ public class XmlUtils {
 			throw new DaoComponentException("cannot unmarshal xml object", e);
 		}
 	}
-
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static void marshalXmlType(Class<?> type, Object element, OutputStream os) {
-		JAXBElement<Class<?>> root = new JAXBElement(new QName(type.getSimpleName()), type, element);
-		marshalXmlRoot(type, root, os);
+	
+	public static <T> JAXBElement<T> wrapElement(String name, Class<T> type, T element) {
+		return new JAXBElement<>(new QName(name), type, element);
+	}
+	
+	public static <T> void marshalXmlType(Class<T> type, T element, OutputStream os) {
+		marshalXmlRoot(type, wrapElement(type.getSimpleName(), type, element), os);
 	}
 
 	public static void marshalXmlRoot(Class<?> type, Object element, OutputStream os) {

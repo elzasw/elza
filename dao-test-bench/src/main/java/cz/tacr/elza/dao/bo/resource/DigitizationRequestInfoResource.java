@@ -6,6 +6,8 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import javax.xml.bind.JAXBElement;
+
 import cz.tacr.elza.dao.common.PathResolver;
 import cz.tacr.elza.dao.common.XmlUtils;
 import cz.tacr.elza.ws.types.v1.DigitizationRequest;
@@ -42,14 +44,18 @@ public class DigitizationRequestInfoResource extends AbstractStorageResource<Dig
 		}
 	}
 
-	public static DigitizationRequestInfoResource create(DigitizationRequest digitizationRequest)
+	public static DigitizationRequestInfoResource create(DigitizationRequest request)
 			throws IOException {
 		Path filePath = PathResolver.createDigitizationRequestInfoPath(10);
 		Path dirPath = filePath.getParent();
 		Files.createDirectories(dirPath);
 		try (OutputStream os = Files.newOutputStream(filePath)) {
-			XmlUtils.marshalXmlType(DigitizationRequest.class, digitizationRequest, os);
+			XmlUtils.marshalXmlRoot(DigitizationRequestInfo.class, wrapRequest(request), os);
 		}
 		return new DigitizationRequestInfoResource(filePath);
+	}
+	
+	private static JAXBElement<DigitizationRequest> wrapRequest(DigitizationRequest request) {
+		return XmlUtils.wrapElement(DigitizationRequestInfo.NAME, DigitizationRequest.class, request);
 	}
 }

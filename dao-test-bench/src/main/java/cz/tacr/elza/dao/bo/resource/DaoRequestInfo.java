@@ -9,8 +9,6 @@ public class DaoRequestInfo {
 		PENDING, FINISHED, REVOKED;
 	}
 
-	private String identifier;
-
 	private String requestIdentifier;
 
 	private String systemIdentifier;
@@ -21,7 +19,7 @@ public class DaoRequestInfo {
 
 	private String description;
 
-	private Status status = Status.PENDING;
+	private Status status;
 
 	public String getRequestIdentifier() {
 		return requestIdentifier;
@@ -64,7 +62,7 @@ public class DaoRequestInfo {
 	}
 
 	public Status getStatus() {
-		return status;
+		return status != null ? status : Status.PENDING;
 	}
 
 	public void setStatus(Status status) {

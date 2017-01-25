@@ -50,6 +50,7 @@
 							<defaultOptions>
 								<extraargs>
 									<extraarg>-verbose</extraarg>
+									<extraarg>-autoNameResolution</extraarg>
 									<extraarg>-wsdlLocation</extraarg>
 									<wsdlurl />
 								</extraargs>
