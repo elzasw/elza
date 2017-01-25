@@ -1,20 +1,22 @@
 package cz.tacr.elza.dao.service;
 
-import cz.tacr.elza.dao.DCStorageConfig;
-import cz.tacr.elza.dao.bo.resource.DaoRequestInfo;
-import cz.tacr.elza.dao.bo.resource.DaoRequestInfoResource;
-import cz.tacr.elza.dao.common.GlobalLock;
-import cz.tacr.elza.dao.common.PathResolver;
-import cz.tacr.elza.dao.exception.DaoComponentException;
-import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
+import cz.tacr.elza.dao.DCStorageConfig;
+import cz.tacr.elza.dao.bo.resource.DaoRequestInfo;
+import cz.tacr.elza.dao.bo.resource.DaoRequestInfo.Status;
+import cz.tacr.elza.dao.bo.resource.DaoRequestInfoResource;
+import cz.tacr.elza.dao.common.GlobalLock;
+import cz.tacr.elza.dao.common.PathResolver;
+import cz.tacr.elza.dao.exception.DaoComponentException;
+import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
 
 @Service
 public class StorageDaoRequestService {
@@ -26,19 +28,6 @@ public class StorageDaoRequestService {
 
 	@Autowired
 	private StorageDaoService storageDaoService;
-
-	/**
-	 * @param destrRequest destruction request otherwise transfer request
-	 */
-	public DaoRequestInfo getRequestInfo(String requestIdentifier, boolean destrRequest) {
-		return GlobalLock.runAtomicFunction(() -> {
-			try {
-				return new DaoRequestInfoResource(requestIdentifier, destrRequest).getOrInit();
-			} catch (Exception e) {
-				throw new DaoComponentException("dao request initialization failed", e);
-			}
-		});
-	}
 
 	/**
 	 * @param destrRequest destruction request otherwise transfer request
@@ -55,19 +44,29 @@ public class StorageDaoRequestService {
 
 	/**
 	 * @param destrRequest destruction request otherwise transfer request
+	 * @return finished dao request info
 	 */
-	public void confirmRequest(String requestIdentifier, boolean destrRequest) {
-		GlobalLock.runAtomicAction(() -> {
+	public DaoRequestInfo confirmRequest(String requestIdentifier, boolean destrRequest) {
+		return GlobalLock.runAtomicFunction(() -> {
 			DaoRequestInfoResource resource = new DaoRequestInfoResource(requestIdentifier, destrRequest);
 			try {
-				List<String> daoIdentifiers = resource.getOrInit().getDaoIdentifiers();
-				for (String daoUId : daoIdentifiers) {
-					Path rrp = PathResolver.resolveRelativeDaoRequestPath(requestIdentifier, destrRequest);
-					if (!storageDaoService.deleteDao(daoUId, rrp.toString())) {
-						LOG.error("dao already deleted, uid:" + daoUId);
+				DaoRequestInfo requestInfo = resource.getOrInit();
+				if (requestInfo.getStatus() == Status.FINISHED) {
+					LOG.info("dao request already finished, requestIdentifier:" + requestIdentifier);
+				} else if (requestInfo.getStatus() == Status.REVOKED) {
+					throw new IllegalStateException("dao request is revoked, requestIdentifier:" + requestIdentifier);
+				} else {
+					List<String> daoIdentifiers = resource.getOrInit().getDaoIdentifiers();
+					for (String daoUId : daoIdentifiers) {
+						Path path = PathResolver.resolveDaoRequestInfoRelativePath(requestIdentifier, destrRequest);
+						if (!storageDaoService.deleteDao(daoUId, path.toString())) {
+							LOG.error("dao already deleted, uid:" + daoUId);
+						}
 					}
+					requestInfo.setStatus(Status.FINISHED);
+					resource.save();
 				}
-				resource.delete();
+				return requestInfo;
 			} catch (Exception e) {
 				throw new DaoComponentException("dao request confirmation failed", e);
 			}
@@ -76,13 +75,24 @@ public class StorageDaoRequestService {
 
 	/**
 	 * @param destrRequest destruction request otherwise transfer request
+	 * @return finished dao request info
 	 */
-	public void deleteRequest(String requestIdentifier, boolean destrRequest) {
-		GlobalLock.runAtomicAction(() -> {
+	public DaoRequestInfo rejectRequest(String requestIdentifier, boolean destrRequest) {
+		return GlobalLock.runAtomicFunction(() -> {
+			DaoRequestInfoResource resource = new DaoRequestInfoResource(requestIdentifier, destrRequest);
 			try {
-				new DaoRequestInfoResource(requestIdentifier, destrRequest).delete();
-			} catch (IOException e) {
-				throw new DaoComponentException("dao request deletion failed", e);
+				DaoRequestInfo requestInfo = resource.getOrInit();
+				if (requestInfo.getStatus() == Status.REVOKED) {
+					LOG.info("dao request already revoked, requestIdentifier:" + requestIdentifier);
+				} else if (requestInfo.getStatus() == Status.FINISHED) {
+					throw new IllegalStateException("dao request is finished, requestIdentifier:" + requestIdentifier);
+				} else {
+					requestInfo.setStatus(Status.REVOKED);
+					resource.save();
+				}
+				return requestInfo;
+			} catch (Exception e) {
+				throw new DaoComponentException("dao request rejection failed", e);
 			}
 		});
 	}

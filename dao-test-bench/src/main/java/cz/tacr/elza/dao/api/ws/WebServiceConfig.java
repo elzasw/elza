@@ -3,11 +3,11 @@ package cz.tacr.elza.dao.api.ws;
 import javax.annotation.PostConstruct;
 
 import org.apache.cxf.Bus;
-import org.apache.cxf.interceptor.LoggingOutInterceptor;
+import org.apache.cxf.interceptor.LoggingInInterceptor;
 import org.apache.cxf.jaxws.EndpointImpl;
 import org.apache.cxf.transport.servlet.CXFServlet;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.embedded.ServletRegistrationBean;
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
@@ -35,10 +35,9 @@ public class WebServiceConfig {
 
 	@PostConstruct
     private void init() {
-        LoggingOutInterceptor loggingOutInterceptor = new LoggingOutInterceptor();
-        bus.getOutInterceptors().add(loggingOutInterceptor);
+        bus.getInInterceptors().add(new LoggingInInterceptor());
     }
-	
+
 	@Bean
 	public EndpointImpl daoNotificationsEndpoint() {
 		EndpointImpl endpoint = new EndpointImpl(bus, daoNotifications);

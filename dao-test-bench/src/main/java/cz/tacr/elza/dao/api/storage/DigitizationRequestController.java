@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import cz.tacr.elza.dao.bo.resource.DigitizationRequestInfo;
 import cz.tacr.elza.dao.common.CoreServiceProvider;
 import cz.tacr.elza.dao.service.ResourceService;
 import cz.tacr.elza.dao.service.StorageDigitizationRequestService;
@@ -30,59 +31,38 @@ public class DigitizationRequestController {
 	private ResourceService resourceService;
 
 	/**
-	 * Confirms digitization request only for storage (no notification send to external system).
-	 */
-	@ResponseBody
-	@ResponseStatus(HttpStatus.ACCEPTED)
-	@RequestMapping(value = "/{requestIdentifier}/confirm", method = RequestMethod.PUT)
-	public void confirmDigiRequest(@PathVariable String requestIdentifier) {
-		storageDigitizationRequestService.deleteRequest(requestIdentifier);
-	}
-
-	/**
-	 * Sends notification about confirmed digitization to external system. Resulting packages must be specified.
-	 * This action should be called afters success of {@link #confirmDigiRequest(String)}.
+	 * Confirms digitization request and sends notification to external system. Digitalized packages must be specified.
 	 * Connection to external system must be defined in /{repositoryIdentifier}/external-systems-config.yaml.
 	 */
 	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
-	@RequestMapping(value = "/{requestIdentifier}/finished/{packageIdentifiers}", method = RequestMethod.POST)
+	@RequestMapping(value = "/{requestIdentifier}/confirm/{packageIdentifiers}", method = RequestMethod.POST)
 	public void digiRequestFinished(@PathVariable String requestIdentifier, @PathVariable String[] packageIdentifiers)
 			throws CoreServiceException {
+		DigitizationRequestInfo requestInfo = storageDigitizationRequestService.confirmRequest(requestIdentifier);
 		DaoImport daoImport = resourceService.getDaoImport(packageIdentifiers);
 		DigitizationRequestResult result = new DigitizationRequestResult();
-		result.setIdentifier(storageDigitizationRequestService.getExtIdentifier(requestIdentifier));
+		result.setIdentifier(requestInfo.getIdentifier());
 		result.setDaoImport(daoImport);
-		String systemIdentifier = storageDigitizationRequestService.getSystemIdentifier(requestIdentifier);
-		DaoDigitizationService service = CoreServiceProvider.getDaoDigitizationService(systemIdentifier);
+		DaoDigitizationService service = CoreServiceProvider.getDaoDigitizationService(requestInfo.getSystemIdentifier());
 		service.digitizationRequestFinished(result);
 	}
 
 	/**
-	 * Rejects digitization request only for storage (no notification send to external system).
-	 */
-	@ResponseBody
-	@ResponseStatus(HttpStatus.ACCEPTED)
-	@RequestMapping(value = "/{requestIdentifier}/reject", method = RequestMethod.PUT)
-	public void rejectDigiRequest(@PathVariable String requestIdentifier) {
-		storageDigitizationRequestService.deleteRequest(requestIdentifier);
-	}
-
-	/**
-	 * Sends notification about rejected digitization to external system.
-	 * This action should be called afters success of {@link #rejectDigiRequest(String)}.
+	 * Rejects digitization request and sends notification to external system.
 	 * Connection to external system must be defined in /{repositoryIdentifier}/external-systems-config.yaml.
 	 */
 	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
-	@RequestMapping(value = "/{requestIdentifier}/revoked", method = RequestMethod.POST)
-	public void digiRequestRevoked(@PathVariable String requestIdentifier,
-			@RequestParam(required = false) String description) throws CoreServiceException {
+	@RequestMapping(value = "/{requestIdentifier}/reject", method = RequestMethod.POST)
+	public void digiRequestFinished(@PathVariable String requestIdentifier,
+			@RequestParam(required = false) String description)
+			throws CoreServiceException {
+		DigitizationRequestInfo requestInfo = storageDigitizationRequestService.rejectRequest(requestIdentifier);
 		RequestRevoked requestRevoked = new RequestRevoked();
-		requestRevoked.setIdentifier(storageDigitizationRequestService.getExtIdentifier(requestIdentifier));
+		requestRevoked.setIdentifier(requestInfo.getIdentifier());
 		requestRevoked.setDescription(description);
-		String systemIdentifier = storageDigitizationRequestService.getSystemIdentifier(requestIdentifier);
-		DaoDigitizationService service = CoreServiceProvider.getDaoDigitizationService(systemIdentifier);
+		DaoDigitizationService service = CoreServiceProvider.getDaoDigitizationService(requestInfo.getSystemIdentifier());
 		service.digitizationRequestRevoked(requestRevoked);
 	}
 }

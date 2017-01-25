@@ -1,13 +1,13 @@
 package cz.tacr.elza.dao.bo.resource;
 
-import cz.tacr.elza.dao.common.PathResolver;
-import cz.tacr.elza.dao.exception.DaoComponentException;
-
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+
+import cz.tacr.elza.dao.common.PathResolver;
+import cz.tacr.elza.dao.exception.DaoComponentException;
 
 public class DaoRequestInfoResource extends YamlResource<DaoRequestInfo> {
 
@@ -23,13 +23,7 @@ public class DaoRequestInfoResource extends YamlResource<DaoRequestInfo> {
 	}
 
 	public String getIdentifier() {
-		return resourcePath.getParent().getFileName().toString();
-	}
-
-	public void delete() throws IOException {
-		Files.delete(resourcePath);
-		Files.delete(resourcePath.getParent());
-		clearCached();
+		return PathResolver.getDaoRequestInfoName(resourcePath);
 	}
 
 	@Override

@@ -50,8 +50,7 @@ public abstract class YamlResource<T> extends AbstractStorageResource<T> {
 
 	private static class NotNullRepresenter extends Representer {
 		@Override
-		protected NodeTuple representJavaBeanProperty(Object javaBean, Property property, Object propertyValue,
-				Tag customTag) {
+		protected NodeTuple representJavaBeanProperty(Object javaBean, Property property, Object propertyValue, Tag customTag) {
 			if (propertyValue == null) {
 				return null;
 			} else {

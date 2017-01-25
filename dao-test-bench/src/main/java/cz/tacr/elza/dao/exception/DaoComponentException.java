@@ -2,8 +2,8 @@ package cz.tacr.elza.dao.exception;
 
 public class DaoComponentException extends RuntimeException {
 
-	public DaoComponentException(Throwable t) {
-		super(t);
+	public DaoComponentException(Throwable cause) {
+		super(cause);
 	}
 
 	public DaoComponentException(String message) {

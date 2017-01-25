@@ -1,15 +1,16 @@
 package cz.tacr.elza.dao.api.ws;
 
+import javax.jws.WebService;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import cz.tacr.elza.dao.exception.DaoComponentException;
 import cz.tacr.elza.dao.service.StorageDaoService;
 import cz.tacr.elza.ws.dao_service.v1.DaoNotifications;
 import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
 import cz.tacr.elza.ws.types.v1.OnDaoLinked;
 import cz.tacr.elza.ws.types.v1.OnDaoUnlinked;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import javax.jws.WebService;
 
 @Service
 @WebService(name = DaoNotificationsImpl.NAME,
@@ -28,15 +29,10 @@ public class DaoNotificationsImpl implements DaoNotifications {
 	public void onDaoLinked(OnDaoLinked onDaoLinked) throws DaoServiceException {
 		storageDaoService.checkRejectMode();
 		try {
-
-			final String didIdentifier;
-			if (onDaoLinked.getDid() != null) {
-				didIdentifier = onDaoLinked.getDid().getIdentifier();
-			} else {
-				didIdentifier = null; // = unlink
+			if (onDaoLinked.getDid() == null) {
+				throw new DaoComponentException("did identifier not set, daoIdentifier:" + onDaoLinked.getDaoIdentifier());
 			}
-
-			storageDaoService.linkDao(onDaoLinked.getDaoIdentifier(), didIdentifier);
+			storageDaoService.linkDao(onDaoLinked.getDaoIdentifier(), onDaoLinked.getDid().getIdentifier());
 		} catch (DaoComponentException e) {
 			throw new DaoServiceException(e.getMessage(), e.getCause());
 		}

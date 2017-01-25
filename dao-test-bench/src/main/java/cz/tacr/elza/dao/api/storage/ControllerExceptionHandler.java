@@ -46,7 +46,7 @@ public class ControllerExceptionHandler {
 			sb.append(t.getMessage());
 			sb.append("<br/>");
 			StackTraceElement[] st = t.getStackTrace();
-			int max = Math.min(st.length, 10);
+			int max = Math.min(st.length, 12);
 			for (int i = 0; i < max; i++) {
 				sb.append(spacer);
 				sb.append("at ");

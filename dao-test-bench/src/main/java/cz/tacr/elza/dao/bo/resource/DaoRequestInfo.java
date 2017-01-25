@@ -5,6 +5,12 @@ import java.util.List;
 
 public class DaoRequestInfo {
 
+	public enum Status {
+		PENDING, FINISHED, REVOKED;
+	}
+
+	private String identifier;
+
 	private String requestIdentifier;
 
 	private String systemIdentifier;
@@ -14,6 +20,8 @@ public class DaoRequestInfo {
 	private String targetFund;
 
 	private String description;
+
+	private Status status = Status.PENDING;
 
 	public String getRequestIdentifier() {
 		return requestIdentifier;
@@ -53,5 +61,13 @@ public class DaoRequestInfo {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public Status getStatus() {
+		return status;
+	}
+
+	public void setStatus(Status status) {
+		this.status = status;
 	}
 }

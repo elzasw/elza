@@ -60,16 +60,17 @@ public class FileController {
 			throws IOException {
 		Collection<DaoFileBo> daoFiles = dcsResourceService.getDaoFiles(packageIdentifier, daoIdentifier);
 
-		StringBuilder sb = new StringBuilder("<!DOCTYPE html>\n<head><meta charset='UTF-8'/><title>Dao files</title></head>\n");
-		sb.append("<body><div style='white-space:nowrap'>\nrepositoryIdentifier: ");
+		StringBuilder sb = new StringBuilder("<!DOCTYPE html><head><meta charset='UTF-8'/><title>Dao files</title>");
+		sb.append("<style>th{text-align:left}td{padding-right:60px;}</style></head>");
+		sb.append("<body><div style='white-space:nowrap'>repositoryIdentifier: ");
 		sb.append(DCStorageConfig.get().getRepositoryIdentifier());
-		sb.append("<br/>\npackageIdentifier: ");
+		sb.append("<br/>packageIdentifier: ");
 		sb.append(packageIdentifier);
-		sb.append("<br/>\ndaoIdentifier: ");
+		sb.append("<br/>daoIdentifier: ");
 		sb.append(daoIdentifier);
-		sb.append("<br/>\n");
+		sb.append("</div><br/><table><tr><th>Files</th><th>Created</th><th>Size[kB]</th></tr>");
 		for (DaoFileBo daoFile : daoFiles) {
-			sb.append("<br/># <a style='display:inline-block;margin-right:80px' href='/");
+			sb.append("<tr><td><a href='/");
 			sb.append(DCStorageConfig.get().getRepositoryIdentifier());
 			sb.append("/file/");
 			sb.append(packageIdentifier);
@@ -79,13 +80,13 @@ public class FileController {
 			sb.append(daoFile.getIdentifier());
 			sb.append("' target='_blank'>");
 			sb.append(daoFile.getIdentifier());
-			sb.append("</a>");
+			sb.append("</a></td><td>");
 			sb.append(daoFile.getFileInfo().getCreated());
-			sb.append(' ');
+			sb.append("</td><td>");
 			sb.append(daoFile.getFileInfo().getSize() / 1000f);
-			sb.append("kB");
+			sb.append("</td></tr>");
 		}
-		sb.append("</div><body></html>");
+		sb.append("</table><body></html>");
 		return sb.toString();
 	}
 }
