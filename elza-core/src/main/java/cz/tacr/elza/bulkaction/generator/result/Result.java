@@ -4,21 +4,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Implementace {@link cz.tacr.elza.api.vo.result.Result}
+ * Výsledek hromadné akce.
  *
  * @author Martin Šlapa
  * @since 30.06.2016
  */
-public class Result implements cz.tacr.elza.api.vo.result.Result<ActionResult> {
+public class Result {
 
     private List<ActionResult> results = new ArrayList<>();
 
-    @Override
+    /**
+     * @return seznam výsledků akcí
+     */
     public List<ActionResult> getResults() {
         return results;
     }
 
-    @Override
+    /**
+     * @param results seznam výsledků akcí
+     */
     public void setResults(final List<ActionResult> results) {
         this.results = results;
     }

@@ -4,7 +4,7 @@ import {REQUEST, RESPONSE, FILTER, SELECT_PARENT, INVALIDATE} from './SimpleList
 const simpleFilter = (rows, filter) => rows;
 
 function getDataKey() {
-    return "" + this.parent + "_" + JSON.stringify(this.filter);
+    return "" + (typeof this.parent === "object" ? JSON.stringify(this.parent) : this.parent)  + "_" + JSON.stringify(this.filter);
 }
 
 const initialState = {
@@ -35,6 +35,9 @@ export default function list(state = initialState, action = {}, config = null) {
         if (config.filter) {    // metoda pro filter
             state.filter = config.filter
         }
+        if (config.reducer) {    // metoda pro reducer
+            state.reducer = config.reducer
+        }
     }
 
     switch (action.type) {
@@ -52,8 +55,7 @@ export default function list(state = initialState, action = {}, config = null) {
         case INVALIDATE: {
             return {
                 ...state,
-                currentDataKey: initialState.currentDataKey,
-                fetched: false
+                currentDataKey: initialState.currentDataKey
             }
         }
         case RESPONSE: {

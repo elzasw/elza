@@ -21,32 +21,28 @@ function getIndexBefore(pathPrefix) {
     return -1;
 }
 
-var AppRouter = class AppRouter extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
+class AppRouter extends AbstractReactComponent {
 
-        this.bindMethods(
-            'changeRouteIfNeeded',
-            "handleRouterListener"
-        );
-    }
-    
     componentDidMount() {
         this.changeRouteIfNeeded(this.props.router);
 
         this.context.router.listen(this.handleRouterListener)
     }
 
-    handleRouterListener(info) {
+    static contextTypes = {
+        router: React.PropTypes.object.isRequired
+    };
+
+    handleRouterListener = (info) => {
         const {pathname} = info;
         localRouterHistory.push(pathname);
-    }
+    };
 
     componentWillReceiveProps(nextProps) {
         this.changeRouteIfNeeded(nextProps.router);
     }
 
-    changeRouteIfNeeded(router) {
+    changeRouteIfNeeded = (router) => {
         const navigateTo = router.navigateTo;
 
         if (navigateTo) {
@@ -65,19 +61,13 @@ var AppRouter = class AppRouter extends AbstractReactComponent {
                 this.dispatch(routerNavigateFinish());
             }
         }
-    }
+    };
 
     render() {
-        return (
-            <div style={{display: 'none'}}>
-            </div>
-        )
+        return <div style={{display: 'none'}}></div>
     }
 }
 
-AppRouter.contextTypes = {
-    router: React.PropTypes.object.isRequired
-}
 
 function mapStateToProps(state) {
     const {router} = state
@@ -86,4 +76,4 @@ function mapStateToProps(state) {
     }
 }
 
-module.exports = connect(mapStateToProps)(AppRouter);
+export default connect(mapStateToProps)(AppRouter);

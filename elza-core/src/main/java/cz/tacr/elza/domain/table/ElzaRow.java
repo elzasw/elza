@@ -1,23 +1,23 @@
 package cz.tacr.elza.domain.table;
 
-import org.apache.commons.lang.StringUtils;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
- * Implementace {@link cz.tacr.elza.api.table.ElzaRow}
+ * Řádek v tabulce.
  *
  * @author Martin Šlapa
  * @since 21.06.2016
  */
-public class ElzaRow implements cz.tacr.elza.api.table.ElzaRow {
+public class ElzaRow {
 
     private Map<String, String> values;
 
     @SafeVarargs
-    public ElzaRow(Map.Entry<String, String>... cells) {
+    public ElzaRow(final Map.Entry<String, String>... cells) {
         values = new HashMap<>();
         for (Map.Entry<String, String> cell : cells) {
             values.put(cell.getKey(), cell.getValue());
@@ -27,17 +27,14 @@ public class ElzaRow implements cz.tacr.elza.api.table.ElzaRow {
     public ElzaRow() {
     }
 
-    @Override
     public Map<String, String> getValues() {
         return values;
     }
 
-    @Override
     public void setValues(final Map<String, String> values) {
         this.values = values;
     }
 
-    @Override
     public void setValue(final String key, final String value) {
         if (values == null) {
             values = new HashMap<>();

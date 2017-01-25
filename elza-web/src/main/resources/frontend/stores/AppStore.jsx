@@ -523,7 +523,6 @@ if (_logStoreSize) {
  */
 import app from './app/app.jsx';
 import arrRegion from './app/arr/arrRegion.jsx';
-import registryRegion from './app/registry/registryRegion.jsx';
 import fundRegion from './app/fund/fundRegion.jsx';
 import splitter from './app/global/splitter.jsx';
 import adminRegion from './app/admin/adminRegion.jsx';
@@ -541,7 +540,6 @@ const save = function(store) {
 
     const result = {
         app: app(store.app, action),
-        registryRegion: registryRegion(store.registryRegion, action),
         arrRegion: arrRegion(store.arrRegion, action),
         fundRegion: fundRegion(store.fundRegion, action),
         adminRegion: adminRegion(store.adminRegion, action),

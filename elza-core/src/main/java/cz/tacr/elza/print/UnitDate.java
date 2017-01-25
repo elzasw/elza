@@ -6,8 +6,8 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
-import cz.tacr.elza.api.ArrCalendarType;
 import cz.tacr.elza.api.IUnitdate;
+import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 
 /**

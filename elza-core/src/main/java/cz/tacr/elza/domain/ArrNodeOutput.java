@@ -1,18 +1,25 @@
 package cz.tacr.elza.domain;
 
+import java.io.Serializable;
+
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import javax.persistence.*;
-
 /**
- * Implementace třídy {@link cz.tacr.elza.api.ArrNodeOutput}
+ * Vazba výstupu na podstromy archivního popisu.
  *
  * @author Martin Šlapa
  * @since 01.04.2016
  */
 @Entity(name = "arr_node_output")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrNodeOutput implements cz.tacr.elza.api.ArrNodeOutput<ArrOutputDefinition, ArrChange, ArrNode> {
+public class ArrNodeOutput implements Serializable {
 
     @Id
     @GeneratedValue
@@ -34,51 +41,72 @@ public class ArrNodeOutput implements cz.tacr.elza.api.ArrNodeOutput<ArrOutputDe
     @JoinColumn(name = "deleteChangeId")
     private ArrChange deleteChange;
 
-    @Override
+    /**
+     * @return  identifikátor entity
+     */
     public Integer getNodeOutputId() {
         return nodeOutputId;
     }
 
-    @Override
+    /**
+     * @param nodeOutputId identifikátor entity
+     */
     public void setNodeOutputId(final Integer nodeOutputId) {
         this.nodeOutputId = nodeOutputId;
     }
 
+    /**
+     * @return pojmenovaný výstup z archivního souboru
+     */
     public ArrOutputDefinition getOutputDefinition() {
         return outputDefinition;
     }
 
-    @Override
+    /**
+     * @param outputDefinition pojmenovaný výstup z archivního souboru
+     */
     public void setOutputDefinition(final ArrOutputDefinition outputDefinition) {
         this.outputDefinition = outputDefinition;
     }
 
-    @Override
+    /**
+     * @return navázaný uzel
+     */
     public ArrNode getNode() {
         return node;
     }
 
-    @Override
+    /**
+     * @param node navázaný uzel
+     */
     public void setNode(final ArrNode node) {
         this.node = node;
     }
 
-    @Override
+    /**
+     * @return změna vytvoření
+     */
     public ArrChange getCreateChange() {
         return createChange;
     }
 
-    @Override
+    /**
+     * @param createChange změna vytvoření
+     */
     public void setCreateChange(final ArrChange createChange) {
         this.createChange = createChange;
     }
 
-    @Override
+    /**
+     * @return změna smazání
+     */
     public ArrChange getDeleteChange() {
         return deleteChange;
     }
 
-    @Override
+    /**
+     * @param deleteChange změna smazání
+     */
     public void setDeleteChange(final ArrChange deleteChange) {
         this.deleteChange = deleteChange;
     }

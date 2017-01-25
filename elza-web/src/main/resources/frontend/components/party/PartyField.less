@@ -1,47 +1,27 @@
 @import "~variables.less";
 
-    .autocomplete-party {
+.autocomplete-party {
 
-        @party-item-padding: 5px;
+    @party-item-padding: 5px;
 
-        .item {
-            display: table-row;
+    .autocomplete-menu-footer {
 
-            .name {
-                padding: @party-item-padding;
-                display: table-cell;
-            }
-
-            .type {
-                padding: @party-item-padding;
-                display: table-cell;;
-            }
-
-            .interval {
-                padding: @party-item-padding;
-                display: table-cell;
-            }
-
-            .characteristics {
-                padding: @party-item-padding;
-                max-width: 300px;
-                text-overflow: ellipsis;
-                display: table-cell;
-                overflow: hidden;
+        .create-party {
+            position: fixed;
+            padding: 5px;
+            .create-party-label {
+                margin-left: 3px;
             }
         }
 
-        .autocomplete-menu-footer {
-
-            .create-party {
-                position: fixed;
-                padding: 5px;
-                .create-party-label {
-                    margin-left: 3px;
-                }
-            }
+        .items-count {
+            text-align: right;
+            vertical-align: middle;
+            line-height: 27px;
+            padding: 5px;
         }
-
     }
+
+}
 
 

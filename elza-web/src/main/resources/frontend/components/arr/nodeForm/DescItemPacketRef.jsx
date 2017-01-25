@@ -10,6 +10,7 @@ import {indexById} from 'stores/app/utils.jsx';
 import {Button} from 'react-bootstrap';
 import DescItemLabel from './DescItemLabel.jsx'
 import PacketFormatter from 'components/arr/packets/PacketFormatter.jsx';
+import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 
 var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
     constructor(props) {
@@ -25,7 +26,6 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
             'handleSearchChange',
             'handleChange',
             'renderPacket',
-            'handleKeyUp',
             'handleFundPackets',
             'handleCreatePacket');
 
@@ -57,13 +57,6 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
 
     focus() {
         this.refs.focusEl.focus();
-    }
-
-
-    handleKeyUp(e){
-        if (e.keyCode == 13 && this.state.packets.length == 1){
-            this.props.onChange(this.state.packets[0]);
-        }
     }
 
     renderPacket(item, isHighlighted, isSelected) {
@@ -174,25 +167,24 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
                     ))}
                 </select>*/}
 
-
-                <Autocomplete
-                    {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, ['autocomplete-packet'])}
-                    ref='focusEl'
-                    customFilter
-                    onKeyUp={this.handleKeyUp}
-                    onFocus={this.handleFocus}
-                    onBlur={this.handleBlur}
-                    value={packet}
-                    disabled={locked}
-                    items={this.state.packets}
-                    onSearchChange={this.handleSearchChange}
-                    onChange={onChange}
-                    onBlur={onBlur}
-                    renderItem={this.renderPacket}
-                    getItemName={(item) => this.getPacketName(item)}
-                    footer={footer}
-                />
-
+                <ItemTooltipWrapper tooltipTitle="dataType.packetRef.format">
+                    <Autocomplete
+                        {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, ['autocomplete-packet'])}
+                        ref='focusEl'
+                        customFilter
+                        onFocus={this.handleFocus}
+                        onBlur={this.handleBlur}
+                        value={packet}
+                        disabled={locked}
+                        items={this.state.packets}
+                        onSearchChange={this.handleSearchChange}
+                        onChange={onChange}
+                        onBlur={onBlur}
+                        renderItem={this.renderPacket}
+                        getItemName={(item) => this.getPacketName(item)}
+                        footer={footer}
+                    />
+                </ItemTooltipWrapper>
             </div>
         )
     }

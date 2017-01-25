@@ -34,12 +34,23 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
-import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
-import cz.tacr.elza.api.ParRelationClassTypeRepeatabilityEnum;
-import cz.tacr.elza.api.UIPartyGroupTypeEnum;
+import cz.tacr.elza.packageimport.xml.SettingGridView;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import cz.tacr.elza.api.UseUnitdateEnum;
+import cz.tacr.elza.api.enums.ParRelationClassTypeRepeatabilityEnum;
+import cz.tacr.elza.api.enums.UIPartyGroupTypeEnum;
+import cz.tacr.elza.bulkaction.BulkActionConfigManager;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParPartyNameFormType;
 import cz.tacr.elza.domain.ParPartyType;
@@ -51,74 +62,9 @@ import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.ParRelationTypeRoleType;
 import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.UIPartyGroup;
-import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.exception.AbstractException;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.PackageCode;
-import cz.tacr.elza.packageimport.xml.Category;
-import cz.tacr.elza.packageimport.xml.ComplementType;
-import cz.tacr.elza.packageimport.xml.ComplementTypes;
-import cz.tacr.elza.packageimport.xml.PartyGroup;
-import cz.tacr.elza.packageimport.xml.PartyGroups;
-import cz.tacr.elza.packageimport.xml.PartyNameFormType;
-import cz.tacr.elza.packageimport.xml.PartyNameFormTypes;
-import cz.tacr.elza.packageimport.xml.PartyTypeComplementType;
-import cz.tacr.elza.packageimport.xml.PartyTypeComplementTypes;
-import cz.tacr.elza.packageimport.xml.PartyTypeRelation;
-import cz.tacr.elza.packageimport.xml.PartyTypeRelations;
-import cz.tacr.elza.packageimport.xml.RegisterType;
-import cz.tacr.elza.packageimport.xml.RegisterTypes;
-import cz.tacr.elza.packageimport.xml.RegistryRole;
-import cz.tacr.elza.packageimport.xml.RegistryRoles;
-import cz.tacr.elza.packageimport.xml.RelationClassType;
-import cz.tacr.elza.packageimport.xml.RelationClassTypes;
-import cz.tacr.elza.packageimport.xml.RelationRoleType;
-import cz.tacr.elza.packageimport.xml.RelationRoleTypes;
-import cz.tacr.elza.packageimport.xml.RelationType;
-import cz.tacr.elza.packageimport.xml.RelationTypeRoleType;
-import cz.tacr.elza.packageimport.xml.RelationTypeRoleTypes;
-import cz.tacr.elza.packageimport.xml.RelationTypes;
-import cz.tacr.elza.packageimport.xml.Setting;
-import cz.tacr.elza.packageimport.xml.SettingBase;
-import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
-import cz.tacr.elza.packageimport.xml.SettingFundViews;
-import cz.tacr.elza.packageimport.xml.SettingRecord;
-import cz.tacr.elza.packageimport.xml.SettingTypeGroups;
-import cz.tacr.elza.packageimport.xml.Settings;
-import cz.tacr.elza.repository.ComplementTypeRepository;
-import cz.tacr.elza.repository.OutputDefinitionRepository;
-import cz.tacr.elza.repository.Packaging;
-import cz.tacr.elza.repository.PartyNameFormTypeRepository;
-import cz.tacr.elza.repository.PartyRelationClassTypeRepository;
-import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
-import cz.tacr.elza.repository.PartyTypeRelationRepository;
-import cz.tacr.elza.repository.PartyTypeRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
-import cz.tacr.elza.repository.RegistryRoleRepository;
-import cz.tacr.elza.repository.RelationRoleTypeRepository;
-import cz.tacr.elza.repository.RelationTypeRepository;
-import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
-import cz.tacr.elza.repository.SettingsRepository;
-import cz.tacr.elza.repository.UIPartyGroupRepository;
-import cz.tacr.elza.service.AdminService;
-import cz.tacr.elza.service.CacheService;
-import cz.tacr.elza.service.event.CacheInvalidateEvent;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
-import com.google.common.collect.Maps;
-
-import cz.tacr.elza.bulkaction.BulkActionConfigManager;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulActionRecommended;
 import cz.tacr.elza.domain.RulDataType;
-import cz.tacr.elza.domain.RulDefaultItemType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemSpecRegister;
 import cz.tacr.elza.domain.RulItemType;
@@ -130,13 +76,24 @@ import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulTemplate;
+import cz.tacr.elza.domain.RulTemplate.Engine;
+import cz.tacr.elza.domain.UIPartyGroup;
+import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.drools.RulesExecutor;
+import cz.tacr.elza.exception.AbstractException;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.PackageCode;
+import cz.tacr.elza.interpi.service.InterpiService;
 import cz.tacr.elza.packageimport.xml.ActionItemType;
 import cz.tacr.elza.packageimport.xml.ActionRecommended;
+import cz.tacr.elza.packageimport.xml.Category;
 import cz.tacr.elza.packageimport.xml.Column;
-import cz.tacr.elza.packageimport.xml.DescItemSpecRegister;
+import cz.tacr.elza.packageimport.xml.ComplementType;
+import cz.tacr.elza.packageimport.xml.ComplementTypes;
 import cz.tacr.elza.packageimport.xml.ItemSpec;
+import cz.tacr.elza.packageimport.xml.ItemSpecRegister;
 import cz.tacr.elza.packageimport.xml.ItemSpecs;
 import cz.tacr.elza.packageimport.xml.ItemType;
 import cz.tacr.elza.packageimport.xml.ItemTypes;
@@ -149,34 +106,75 @@ import cz.tacr.elza.packageimport.xml.PackageRule;
 import cz.tacr.elza.packageimport.xml.PackageRules;
 import cz.tacr.elza.packageimport.xml.PacketType;
 import cz.tacr.elza.packageimport.xml.PacketTypes;
+import cz.tacr.elza.packageimport.xml.PartyGroup;
+import cz.tacr.elza.packageimport.xml.PartyGroups;
+import cz.tacr.elza.packageimport.xml.PartyNameFormType;
+import cz.tacr.elza.packageimport.xml.PartyNameFormTypes;
+import cz.tacr.elza.packageimport.xml.PartyTypeComplementType;
+import cz.tacr.elza.packageimport.xml.PartyTypeComplementTypes;
+import cz.tacr.elza.packageimport.xml.PartyTypeRelation;
+import cz.tacr.elza.packageimport.xml.PartyTypeRelations;
 import cz.tacr.elza.packageimport.xml.PolicyType;
 import cz.tacr.elza.packageimport.xml.PolicyTypes;
+import cz.tacr.elza.packageimport.xml.RegisterType;
+import cz.tacr.elza.packageimport.xml.RegisterTypes;
+import cz.tacr.elza.packageimport.xml.RegistryRole;
+import cz.tacr.elza.packageimport.xml.RegistryRoles;
+import cz.tacr.elza.packageimport.xml.RelationClassType;
+import cz.tacr.elza.packageimport.xml.RelationClassTypes;
+import cz.tacr.elza.packageimport.xml.RelationRoleType;
+import cz.tacr.elza.packageimport.xml.RelationRoleTypes;
+import cz.tacr.elza.packageimport.xml.RelationType;
+import cz.tacr.elza.packageimport.xml.RelationTypeRoleType;
+import cz.tacr.elza.packageimport.xml.RelationTypeRoleTypes;
+import cz.tacr.elza.packageimport.xml.RelationTypes;
 import cz.tacr.elza.packageimport.xml.RuleSet;
 import cz.tacr.elza.packageimport.xml.RuleSets;
+import cz.tacr.elza.packageimport.xml.Setting;
+import cz.tacr.elza.packageimport.xml.SettingBase;
+import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
+import cz.tacr.elza.packageimport.xml.SettingFundViews;
+import cz.tacr.elza.packageimport.xml.SettingRecord;
+import cz.tacr.elza.packageimport.xml.SettingTypeGroups;
+import cz.tacr.elza.packageimport.xml.Settings;
 import cz.tacr.elza.packageimport.xml.Template;
 import cz.tacr.elza.packageimport.xml.Templates;
 import cz.tacr.elza.repository.ActionRecommendedRepository;
 import cz.tacr.elza.repository.ActionRepository;
+import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
-import cz.tacr.elza.repository.DefaultItemTypeRepository;
 import cz.tacr.elza.repository.ItemSpecRegisterRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeActionRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.repository.OutputTypeRepository;
 import cz.tacr.elza.repository.PackageRepository;
+import cz.tacr.elza.repository.Packaging;
 import cz.tacr.elza.repository.PacketTypeRepository;
+import cz.tacr.elza.repository.PartyNameFormTypeRepository;
+import cz.tacr.elza.repository.PartyRelationClassTypeRepository;
+import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
+import cz.tacr.elza.repository.PartyTypeRelationRepository;
+import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.PolicyTypeRepository;
+import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.RegistryRoleRepository;
+import cz.tacr.elza.repository.RelationRoleTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.RuleRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.SettingsRepository;
 import cz.tacr.elza.repository.TemplateRepository;
+import cz.tacr.elza.repository.UIPartyGroupRepository;
+import cz.tacr.elza.service.CacheService;
+import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.ActionEvent;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.OutputGeneratorService;
 import cz.tacr.elza.utils.AppContext;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 
 /**
@@ -289,9 +287,6 @@ public class PackageService {
     private ItemTypeRepository itemTypeRepository;
 
     @Autowired
-    private DefaultItemTypeRepository defaultItemTypeRepository;
-
-    @Autowired
     private ItemSpecRepository itemSpecRepository;
 
     @Autowired
@@ -378,6 +373,9 @@ public class PackageService {
     @Autowired
     private CacheService cacheService;
 
+    @Autowired
+    private InterpiService interpiService;
+
     private List<RulTemplate> newRultemplates = null;
 
     /**
@@ -441,10 +439,6 @@ public class PackageService {
 
             List<RulItemType> rulDescItemTypes = processItemTypes(itemTypes, itemSpecs, rulPackage);
             rulPackageActions = processPackageActions(packageActions, rulPackage, mapEntry, dirActions);
-
-            // Zde se může importovat vazba mezi pravidlem a atributem
-            processDefaultItemTypes(rulRuleSets, ruleSets, rulDescItemTypes);
-
 
             // OSOBY ---------------------------------------------------------------------------------------------------
 
@@ -802,6 +796,10 @@ public class PackageService {
         List<ParRelationTypeRoleType> parRelationTypeRoleTypesDelete = new ArrayList<>(parRelationTypeRoleTypes);
         parRelationTypeRoleTypesDelete.removeAll(parRelationTypeRoleTypesNew);
         relationTypeRoleTypeRepository.delete(parRelationTypeRoleTypesDelete);
+
+        if (!parRelationTypeRoleTypesNew.isEmpty() || !parRelationTypeRoleTypesDelete.isEmpty()) {
+            interpiService.deleteInvalidMappings();
+        }
     }
 
     /**
@@ -1281,52 +1279,6 @@ public class PackageService {
                 cleanBackupFiles(dirFile);
             }
         }
-    }
-
-    /**
-     * Zpracování implicitních sloupců pro pravidla.
-     * @param rulRuleSets pravidla
-     * @param ruleSets xml pravidla, ze který se budou pravidla aktualizovat
-     * @param rulDescItemTypes aktuální seznam atributů
-     */
-    private void processDefaultItemTypes(final List<RulRuleSet> rulRuleSets, final RuleSets ruleSets, final List<RulItemType> rulDescItemTypes) {
-        if (rulRuleSets == null || rulRuleSets.isEmpty()
-                || ruleSets == null || ruleSets.getRuleSets() == null || ruleSets.getRuleSets().isEmpty()) {
-            // Nejsou žádná pravidla pro synchronizaci
-            return;
-        }
-
-        // Mapa kódu na xml pravidlo
-        final Map<String, RuleSet> xmlRuleSetMap = Maps.uniqueIndex(ruleSets.getRuleSets(), RuleSet::getCode);
-
-        // Mapa kódu na atribut
-        final Map<String, RulItemType> rulDescItemTypeMap = Maps.uniqueIndex(rulDescItemTypes, RulItemType::getCode);
-
-        // Synchronizace
-        rulRuleSets.forEach(rulRuleSet -> {
-            final RuleSet xmlRuleSet = xmlRuleSetMap.get(rulRuleSet.getCode());
-
-            // Smazání původních vazeb
-            List<RulDefaultItemType> currItems = defaultItemTypeRepository.findByRuleSet(rulRuleSet);
-            defaultItemTypeRepository.delete(currItems);
-
-            // Import nových vazeb
-            if (xmlRuleSet.getDefaultItemTypes() != null) {
-                xmlRuleSet.getDefaultItemTypes().getDefaultItemTypes().forEach(defaultItemType -> {
-                    RulItemType rulDescItem = rulDescItemTypeMap.get(defaultItemType.getCode());
-                    if (rulDescItem == null) {
-                        throw new IllegalStateException("Pravidlo s kódem " + rulRuleSet.getCode()
-                                + " obsahuje odkaz na neexistující atribut jednotky popisu (atribut s kódem "
-                                + defaultItemType.getCode() + " neexistuje).");
-                    }
-
-                    RulDefaultItemType rel = new RulDefaultItemType();
-                    rel.setItemType(rulDescItem);
-                    rel.setRuleSet(rulRuleSet);
-                    defaultItemTypeRepository.save(rel);
-                });
-            }
-        });
     }
 
     /**
@@ -1869,11 +1821,11 @@ public class PackageService {
     private List<RulItemType> processItemTypes(final ItemTypes itemTypes,
                                                final ItemSpecs itemSpecs,
                                                final RulPackage rulPackage) {
-    	List<RulDataType> rulDataTypes = dataTypeRepository.findAll();
-    	
-    	ItemTypeUpdater updater = AppContext.getBean(ItemTypeUpdater.class);
-    	
-    	return updater.update(rulDataTypes, rulPackage, itemTypes, itemSpecs);
+        List<RulDataType> rulDataTypes = dataTypeRepository.findAll();
+
+        ItemTypeUpdater updater = AppContext.getBean(ItemTypeUpdater.class);
+
+        return updater.update(rulDataTypes, rulPackage, itemTypes, itemSpecs);
     }
 
     /**
@@ -1974,18 +1926,18 @@ public class PackageService {
         List<RulTemplate> rulTemplateToDelete = new ArrayList<>(rulTemplate);
         rulTemplateToDelete.removeAll(rulTemplateNew);
         if (!rulTemplateToDelete.isEmpty()) {
-        	// Check if there exists non deleted templates
+            // Check if there exists non deleted templates
             List<ArrOutputDefinition> byTemplate = outputDefinitionRepository.findNonDeletedByTemplatesAndStates(rulTemplateToDelete, Arrays.asList(OutputState.OPEN, OutputState.GENERATING, OutputState.COMPUTING));
             if (!byTemplate.isEmpty()) {
-            	StringBuilder sb = new StringBuilder().append("Existuje výstup(y), který nebyl vygenerován či smazán a je navázán na šablonu, která je v novém balíčku smazána.");
-            	byTemplate.forEach((a) -> { 
-            		ArrFund fund = a.getFund();            		
-            		sb.append("\noutputDefinitionId: ").append(a.getOutputDefinitionId())
-            				.append(", outputName: ").append(a.getName())
-            				.append(", fundId: ").append(fund.getFundId())
-            				.append(", fundName: ").append(fund.getName()).toString();
-            				
-            	});
+                StringBuilder sb = new StringBuilder().append("Existuje výstup(y), který nebyl vygenerován či smazán a je navázán na šablonu, která je v novém balíčku smazána.");
+                byTemplate.forEach((a) -> {
+                    ArrFund fund = a.getFund();
+                    sb.append("\noutputDefinitionId: ").append(a.getOutputDefinitionId())
+                            .append(", outputName: ").append(a.getName())
+                            .append(", fundId: ").append(fund.getFundId())
+                            .append(", fundName: ").append(fund.getName()).toString();
+
+                });
                 throw new IllegalStateException(sb.toString());
             }
             templateRepository.updateDeleted(rulTemplateToDelete, true);
@@ -2066,7 +2018,7 @@ public class PackageService {
     private void convertRulTemplate(final RulPackage rulPackage, final Template template, final RulTemplate rulTemplate, final List<RulOutputType> rulOutputTypes) {
         rulTemplate.setName(template.getName());
         rulTemplate.setCode(template.getCode());
-        rulTemplate.setEngine(cz.tacr.elza.api.RulTemplate.Engine.valueOf(template.getEngine()));
+        rulTemplate.setEngine(Engine.valueOf(template.getEngine()));
         rulTemplate.setPackage(rulPackage);
         rulTemplate.setDirectory(template.getDirectory());
         rulTemplate.setMimeType(template.getMimeType());
@@ -2134,9 +2086,6 @@ public class PackageService {
      * @param rulRuleSet pravidlo
      */
     private void deleteRuleSet(final RulRuleSet rulRuleSet) {
-        // Smazání návazných záznamů
-        defaultItemTypeRepository.deleteByRuleSet(rulRuleSet);
-
         // Smazání instance
         ruleSetRepository.delete(rulRuleSet);
     }
@@ -2186,7 +2135,7 @@ public class PackageService {
      * @param xmlStream   xml stream
      * @param <T>         typ pro převod
      */
-    private <T> T convertXmlStreamToObject(final Class classObject, final ByteArrayInputStream xmlStream) {
+    private <T> T convertXmlStreamToObject(final Class<T> classObject, final ByteArrayInputStream xmlStream) {
         if (xmlStream != null) {
             try {
                 JAXBContext jaxbContext = JAXBContext.newInstance(classObject);
@@ -2482,6 +2431,8 @@ public class PackageService {
             entity = settingFavoriteItemSpecs;
         } else if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.RECORD)) {
             entity = new SettingRecord();
+        } else if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.GRID_VIEW)) {
+            entity = new SettingGridView();
         } else {
             entity = new SettingBase();
         }
@@ -3059,15 +3010,15 @@ public class PackageService {
         List<RulItemSpecRegister> rulItemSpecRegisters = itemSpecRegisterRepository
                 .findByDescItemSpecId(rulDescItemSpec);
 
-        List<DescItemSpecRegister> descItemSpecRegisterList = new ArrayList<>(rulItemSpecRegisters.size());
+        List<ItemSpecRegister> itemSpecRegisterList = new ArrayList<>(rulItemSpecRegisters.size());
 
         for (RulItemSpecRegister rulItemSpecRegister : rulItemSpecRegisters) {
-            DescItemSpecRegister descItemSpecRegister = new DescItemSpecRegister();
-            convertDescItemSpecRegister(rulItemSpecRegister, descItemSpecRegister);
-            descItemSpecRegisterList.add(descItemSpecRegister);
+            ItemSpecRegister itemSpecRegister = new ItemSpecRegister();
+            convertDescItemSpecRegister(rulItemSpecRegister, itemSpecRegister);
+            itemSpecRegisterList.add(itemSpecRegister);
         }
 
-        itemSpec.setDescItemSpecRegisters(descItemSpecRegisterList);
+        itemSpec.setItemSpecRegisters(itemSpecRegisterList);
 
         if (StringUtils.isNotEmpty(rulDescItemSpec.getCategory())) {
             String[] categoriesString = rulDescItemSpec.getCategory().split("\\" + ItemTypeUpdater.CATEGORY_SEPARATOR);
@@ -3082,11 +3033,11 @@ public class PackageService {
      * Převod DAO na VO napojení specifikací na reg.
      *
      * @param rulItemSpecRegister DAO napojení specifikací
-     * @param descItemSpecRegister    VO napojení specifikací
+     * @param itemSpecRegister    VO napojení specifikací
      */
     private void convertDescItemSpecRegister(final RulItemSpecRegister rulItemSpecRegister,
-                                             final DescItemSpecRegister descItemSpecRegister) {
-        descItemSpecRegister.setRegisterType(rulItemSpecRegister.getRegisterType().getCode());
+                                             final ItemSpecRegister itemSpecRegister) {
+        itemSpecRegister.setRegisterType(rulItemSpecRegister.getRegisterType().getCode());
     }
 
     /**

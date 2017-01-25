@@ -11,7 +11,7 @@ import {connect} from 'react-redux'
 import {TooltipTrigger, Icon, ListBox, AbstractReactComponent, i18n, Loading, NodeSubNodeForm, Accordion, SubNodeRegister, NodeActionsBar,
         VisiblePolicyForm, SubNodeDao} from 'components';
 import {Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
-import {addNodeForm} from 'actions/arr/addNodeForm.jsx';
+import {addNodeFormArr} from 'actions/arr/addNodeForm.jsx';
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {fundSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister.jsx'
 import {fundSubNodeDaosFetchIfNeeded} from 'actions/arr/subNodeDaos.jsx'
@@ -29,7 +29,7 @@ import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {Utils} from 'components/index.jsx';
-import DigitizationRequestForm from "./DigitizationRequestForm"
+import ArrRequestForm from "./ArrRequestForm";
 import {WebApi} from 'actions/index.jsx';
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
@@ -266,22 +266,22 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 break
             case 'addNodeAfter':
                 if (!readMode) {
-                    this.dispatch(addNodeForm('AFTER', node, focusItemIndex, versionId));
+                    this.dispatch(addNodeFormArr('AFTER', node, focusItemIndex, versionId));
                 }
                 break
             case 'addNodeBefore':
                 if (!readMode) {
-                    this.dispatch(addNodeForm('BEFORE', node, focusItemIndex, versionId));
+                    this.dispatch(addNodeFormArr('BEFORE', node, focusItemIndex, versionId));
                 }
                 break
             case 'addNodeChild':
                 if (!readMode) {
-                    this.dispatch(addNodeForm('CHILD', node, focusItemIndex, versionId));
+                    this.dispatch(addNodeFormArr('CHILD', node, focusItemIndex, versionId));
                 }
                 break
             case 'addNodeEnd':
                 if (!readMode) {
-                    this.dispatch(addNodeForm('ATEND', node, focusItemIndex, versionId));
+                    this.dispatch(addNodeFormArr('ATEND', node, focusItemIndex, versionId));
                 }
                 break
         }
@@ -294,14 +294,17 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         const {node, versionId} = this.props;
         const nodeId = node.selectedSubNodeId;
 
-        const form = <DigitizationRequestForm nodeId={nodeId} fundVersionId={versionId} onSubmitForm={(send, data) => {
-            {/*WebApi.addNodeToDigitization(versionId, nodeId, data.digitizationRequestId, send, data.description)*/}
-            WebApi.arrRequestAddNodes(versionId, data.digitizationRequestId, send, data.description, [nodeId])
-                .then(() => {
-                    this.dispatch(modalDialogHide());
-                });
-        }} />;
-        this.dispatch(modalDialogShow(this, i18n('digitizationRequest.form.title'), form));
+        const form = <ArrRequestForm
+            fundVersionId={versionId}
+            type="DIGITIZATION"
+            onSubmitForm={(send, data) => {
+                WebApi.arrDigitizationRequestAddNodes(versionId, data.requestId, send, data.description, [nodeId])
+                    .then(() => {
+                        this.dispatch(modalDialogHide());
+                    });
+            }}
+        />;
+        this.dispatch(modalDialogShow(this, i18n('arr.request.digitizationRequest.form.title'), form));
     }
 
     handleVisiblePolicy() {
@@ -323,10 +326,16 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
      * Zobrazení dialogu pro přidání atributu.
      */
     handleAddDescItemType() {
-        const {node: {subNodeForm, selectedSubNodeId, routingKey}, versionId} = this.props;
+        const {node: {subNodeForm, selectedSubNodeId, routingKey}, versionId, fund, userDetail} = this.props;
+        let strictMode = fund.activeVersion.strictMode;
+
+        let userStrictMode = getOneSettings(userDetail.settings, 'FUND_STRICT_MODE', 'FUND', fund.id);
+        if (userStrictMode && userStrictMode.value !== null) {
+            strictMode = userStrictMode.value === 'true';
+        }
 
         const formData = subNodeForm.formData;
-        const descItemTypes = getDescItemsAddTree(formData.descItemGroups, subNodeForm.infoTypesMap, subNodeForm.refTypesMap, subNodeForm.infoGroups);
+        const descItemTypes = getDescItemsAddTree(formData.descItemGroups, subNodeForm.infoTypesMap, subNodeForm.refTypesMap, subNodeForm.infoGroups, strictMode);
 
         // Zatím zakomentováno, možná se bude ještě nějak řadit - zatím není jasné podle čeho řadit - podle uvedení v yaml nebo jinak?
         // function typeId(type) {

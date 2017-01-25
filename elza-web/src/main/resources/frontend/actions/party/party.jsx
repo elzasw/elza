@@ -7,13 +7,19 @@ import {i18n, AddPartyForm} from 'components/index.jsx';
 import {getPartyTypeById} from 'actions/refTables/partyTypes.jsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
-import {objectById, indexById} from 'stores/app/utils.jsx'
+import {storeFromArea, indexById, objectById} from 'shared/utils'
+
+
+import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from 'constants'
 
 import {SimpleListActions} from 'shared/list'
 import {DetailActions} from 'shared/detail'
 
 export const AREA_PARTY_LIST = 'partyList';
 export const AREA_PARTY_DETAIL = 'partyDetail';
+
+
+export const DEFAULT_PARTY_LIST_MAX_SIZE = DEFAULT_LIST_SIZE;
 
 export const PARTY_TYPE_CODES = {
     GROUP_PARTY: 'GROUP_PARTY',
@@ -42,11 +48,12 @@ export const RELATION_CLASS_CODES = {
 /**
  * Načtení seznamu osob dle filtru
  *
- * @param filter {Object} - objekt filtru
  * @param versionId int - versionId
+ * @param from {number} od kolikáté položky se má posílat seznam - stránkování
+ * @param size {number} počet položek v seznamu - velikost jedné stránky
  */
-export function partyListFetchIfNeeded(filter, versionId = null) {
-    return SimpleListActions.fetchIfNeeded(AREA_PARTY_LIST, versionId, () => WebApi.findParty(filter.text, versionId, filter.type))
+export function partyListFetchIfNeeded(versionId = null, from = 0, size = DEFAULT_PARTY_LIST_MAX_SIZE) {
+    return SimpleListActions.fetchIfNeeded(AREA_PARTY_LIST, versionId, (parent, filter) => WebApi.findParty(filter.text, versionId, filter.type, filter.itemSpecId, from, size))
 }
 
 /**
@@ -81,12 +88,17 @@ export function partyDetailClear() {
     return partyDetailFetchIfNeeded(null);
 }
 
-export function partyUpdate(party) {
+export function partyUpdate(obj) {
     return (dispatch, getState) => {
-        return savingApiWrapper(dispatch, WebApi.updateParty(party)).then(() => {
-            dispatch(partyDetailInvalidate());
-            const {app:{partyList}} = getState();
-            if (partyList.filteredRows && indexById(partyList.filteredRows, party.id) !== null) {
+        return savingApiWrapper(dispatch, WebApi.updateParty(obj)).then(() => {
+            const store = getState();
+            const detail = storeFromArea(store, AREA_PARTY_DETAIL);
+            const list = storeFromArea(store, AREA_PARTY_LIST);
+            if (detail.id == obj.id) {
+                dispatch(partyDetailInvalidate());
+            }
+
+            if (list.filteredRows && indexById(list.filteredRows, obj.id) !== null) {
                 dispatch(partyListInvalidate())
             }
         });
@@ -104,12 +116,17 @@ export function partyCreate(party) {
     }
 }
 
-export function partyDelete(partyId) {
+export function partyDelete(id) {
     return (dispatch, getState) => {
-        WebApi.deleteParty(partyId).then(() => {
-            dispatch(partyDetailClear());
-            const {app:{partyList}} = getState();
-            if (partyList.filteredRows && indexById(partyList.filteredRows, partyId) !== null) {
+        WebApi.deleteParty(id).then(() => {
+            const store = getState();
+            const detail = storeFromArea(store, AREA_PARTY_DETAIL);
+            const list = storeFromArea(store, AREA_PARTY_LIST);
+            if (detail.id == id) {
+                dispatch(partyDetailClear());
+            }
+
+            if (list.filteredRows && indexById(list.filteredRows, id) !== null) {
                 dispatch(partyListInvalidate())
             }
         })
@@ -121,7 +138,6 @@ export function relationCreate(relation) {
     return (dispatch, getState) => {
         return savingApiWrapper(dispatch, WebApi.createRelation(relation))
             .then(() => {
-                dispatch(modalDialogHide());
                 dispatch(partyDetailInvalidate());
                 const {app:{partyList}} = getState();
                 if (partyList.filteredRows && indexById(partyList.filteredRows, relation.partyId) !== null) {
@@ -129,7 +145,7 @@ export function relationCreate(relation) {
                 }
             })
             .catch(error => {
-                dispatch(clearPartyDetail());
+                dispatch(partyDetailClear());
             });
     };
 }
@@ -137,9 +153,12 @@ export function relationCreate(relation) {
 export function relationDelete(relationId) {
     return (dispatch, getState) => {
         WebApi.deleteRelation(relationId).then(() => {
+            const store = getState();
+            const detail = storeFromArea(store, AREA_PARTY_DETAIL);
+            const list = storeFromArea(store, AREA_PARTY_LIST);
             dispatch(partyDetailInvalidate());
-            const {app:{partyList, partyDetail}} = getState();
-            if (partyList.filteredRows && indexById(partyList.filteredRows, partyDetail.id) !== null) {
+
+            if (list.filteredRows && indexById(list.filteredRows, detail.id) !== null) {
                 dispatch(partyListInvalidate())
             }
         });
@@ -150,7 +169,6 @@ export function relationUpdate(relation) {
     return (dispatch, getState) => {
         return savingApiWrapper(dispatch, WebApi.updateRelation(relation))
             .then(() => {
-                dispatch(modalDialogHide());
                 dispatch(partyDetailInvalidate());
                 const {app:{partyList}} = getState();
                 if (partyList.filteredRows && indexById(partyList.filteredRows, relation.partyId) !== null) {
@@ -173,7 +191,16 @@ export function partyAdd(partyTypeId, versionId, callback, showSubmitTypes = fal
             label = i18n('party.addParty');
         }
 
-        dispatch(modalDialogShow(this, label, <AddPartyForm partyType={partyType} showSubmitTypes={showSubmitTypes} versionId={versionId} onSubmitForm={partyAddSubmit.bind(null, callback, dispatch)} />, 'dialog-lg'));
+        dispatch(modalDialogShow(
+            this,
+            label,
+            <AddPartyForm
+                partyType={partyType}
+                showSubmitTypes={showSubmitTypes}
+                versionId={versionId}
+                onSubmitForm={partyAddSubmit.bind(null, callback, dispatch)} />,
+            MODAL_DIALOG_VARIANT.LARGE
+        ));
     }
 }
 

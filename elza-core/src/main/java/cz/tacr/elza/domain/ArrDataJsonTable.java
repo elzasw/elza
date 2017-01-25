@@ -1,20 +1,24 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.tacr.elza.domain.table.ElzaTable;
-import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
-import org.hibernate.search.annotations.Indexed;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import org.hibernate.search.annotations.Indexed;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import cz.tacr.elza.domain.table.ElzaTable;
+import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
+
 
 /**
+ * Hodnota atributu archivního popisu typu JsonTable.
+ *
  * @author Martin Šlapa
  * @since 21.06.2016
  */
@@ -22,7 +26,7 @@ import javax.persistence.Table;
 @Entity(name = "arr_data_json_table")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrDataJsonTable extends ArrData implements cz.tacr.elza.api.ArrDataJsonTable<ElzaTable> {
+public class ArrDataJsonTable extends ArrData  {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -31,12 +35,10 @@ public class ArrDataJsonTable extends ArrData implements cz.tacr.elza.api.ArrDat
     @Column(nullable = false)
     private String value;
 
-    @Override
     public ElzaTable getValue() {
         return ElzaTable.fromJsonString(value);
     }
 
-    @Override
     public void setValue(final ElzaTable value) {
         try {
             this.value = objectMapper.writeValueAsString(value);

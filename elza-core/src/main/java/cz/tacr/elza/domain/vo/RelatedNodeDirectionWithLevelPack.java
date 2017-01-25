@@ -2,38 +2,43 @@ package cz.tacr.elza.domain.vo;
 
 import java.util.Collection;
 
-import cz.tacr.elza.api.vo.RelatedNodeDirection;
-
 
 /**
- * Implementace rozšíření balíčku uzlů o seznam dopadů na uzel.
+ * Rozšíření balíčku uzlů o seznam dopadů na uzel.
  *
  * @author Martin Šlapa
  * @since 27.11.2015
  */
-public class RelatedNodeDirectionWithLevelPack
-        implements cz.tacr.elza.api.vo.RelatedNodeDirectionWithLevelPack<ArrLevelWithExtraNode, RelatedNodeDirection> {
+public class RelatedNodeDirectionWithLevelPack {
 
     private ArrLevelWithExtraNode arrLevelWithExtraNode;
 
     private Collection<Collection<RelatedNodeDirection>> relatedNodeDirections;
 
-    @Override
+    /**
+     * @return balíček uzlů
+     */
     public ArrLevelWithExtraNode getArrLevelPack() {
         return arrLevelWithExtraNode;
     }
 
-    @Override
+    /**
+     * @param arrLevelPack balíček uzlů
+     */
     public void setArrLevelPack(final ArrLevelWithExtraNode arrLevelWithExtraNode) {
         this.arrLevelWithExtraNode = arrLevelWithExtraNode;
     }
 
-    @Override
+    /**
+     * @return seznam seznamů změn dopadů na uzel
+     */
     public Collection<Collection<RelatedNodeDirection>> getRelatedNodeDirections() {
         return relatedNodeDirections;
     }
 
-    @Override
+    /**
+     * @param relatedNodeDirections seznam seznamů změn dopadů na uzel
+     */
     public void setRelatedNodeDirections(final Collection<Collection<RelatedNodeDirection>> relatedNodeDirections) {
         this.relatedNodeDirections = relatedNodeDirections;
     }

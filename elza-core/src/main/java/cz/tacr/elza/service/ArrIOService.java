@@ -1,15 +1,22 @@
 package cz.tacr.elza.service;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.Polygon;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.domain.factory.DescItemFactory;
-import cz.tacr.elza.domain.table.ElzaColumn;
-import cz.tacr.elza.domain.table.ElzaRow;
-import cz.tacr.elza.domain.table.ElzaTable;
-import cz.tacr.elza.repository.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
+
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
@@ -29,16 +36,30 @@ import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 import org.xml.sax.SAXException;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.function.BiFunction;
-import java.util.stream.Collectors;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
+
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrItemCoordinates;
+import cz.tacr.elza.domain.ArrItemData;
+import cz.tacr.elza.domain.ArrItemJsonTable;
+import cz.tacr.elza.domain.ArrOutputItem;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.factory.DescItemFactory;
+import cz.tacr.elza.domain.table.ElzaColumn;
+import cz.tacr.elza.domain.table.ElzaRow;
+import cz.tacr.elza.domain.table.ElzaTable;
+import cz.tacr.elza.repository.DataTypeRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.OutputItemRepository;
 
 /**
  * Serviska pro import/export dat pro ArrItem.
@@ -143,7 +164,7 @@ public class ArrIOService {
         try (
                 Reader in = new InputStreamReader(is, CSV_EXCEL_ENCODING);
         ) {
-            ArrDescItem<ArrItemJsonTable> descItem = csvImport(descItemTypeId, in, ArrDescItem.class);
+            ArrDescItem descItem = csvImport(descItemTypeId, in, ArrDescItem.class);
 
             // Vyvoření nové s naimportovanými daty
             return descriptionItemService.createDescriptionItem(descItem, nodeId, nodeVersion, fundVersionId);
@@ -169,7 +190,7 @@ public class ArrIOService {
         try (
                 Reader in = new InputStreamReader(is, CSV_EXCEL_ENCODING);
         ) {
-            ArrOutputItem<ArrItemJsonTable> outputItem = csvImport(descItemTypeId, in, ArrOutputItem.class);
+            ArrOutputItem outputItem = csvImport(descItemTypeId, in, ArrOutputItem.class);
 
             // Vyvoření nové s naimportovanými daty
             return outputService.createOutputItem(outputItem, outputDefinitionId, outputDefinitionVersion, fundVersionId);
@@ -184,7 +205,7 @@ public class ArrIOService {
      * @param clazz          třída, pro kterou importuju
      * @return vytvořená položka
      */
-    private <T extends ArrItem<ArrItemJsonTable>> T csvImport(final Integer descItemTypeId, final Reader in, final Class<T> clazz) throws IOException {
+    private <T extends ArrItem> T csvImport(final Integer descItemTypeId, final Reader in, final Class<T> clazz) throws IOException {
         // Vytvoření instance nové položky
         RulItemType descItemType = itemTypeRepository.getOneCheckExist(descItemTypeId);
 
@@ -200,7 +221,7 @@ public class ArrIOService {
 
         item.setItemType(descItemType);
         ElzaTable table = new ElzaTable();
-        item.getItem().setValue(table);
+        ((ArrItemJsonTable) item.getItem()).setValue(table);
 
         // Načtení CSV a naplnění tabulky
         Iterable<CSVRecord> records = CSV_EXCEL_FORMAT.withFirstRecordAsHeader().parse(in);
@@ -348,7 +369,7 @@ public class ArrIOService {
         return ids;
     }
 
-    public Collection<SimpleFeature> getPlacemars(SimpleFeature document) throws IllegalArgumentException {
+    public Collection<SimpleFeature> getPlacemars(final SimpleFeature document) throws IllegalArgumentException {
         Collection<SimpleFeature> placemarks;
         Collection<SimpleFeature> features;
         try {
@@ -424,7 +445,7 @@ public class ArrIOService {
     }
 
 
-    public void toKml(HttpServletResponse response, Geometry geometry) throws IOException {
+    public void toKml(final HttpServletResponse response, final Geometry geometry) throws IOException {
         response.setHeader("Content-Disposition", "attachment;filename=export.kml");
 
         ServletOutputStream out = response.getOutputStream();

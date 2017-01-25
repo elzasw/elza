@@ -1,0 +1,22 @@
+.titles-header {
+    display: flex;
+    background-color: #ddd;
+    padding:10px;
+    box-sizing:border-box;
+    width: 100%;
+    overflow: hidden;
+    vertical-align: middle;
+    font-size: 13px;
+    font-weight: bold;
+
+    > div {
+        flex-shrink: 1;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow: ellipsis;
+        //min-width: 50px;
+    }
+    > div:last-of-type {
+        flex-shrink: 0;
+    }
+}

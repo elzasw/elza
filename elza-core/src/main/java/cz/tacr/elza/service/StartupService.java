@@ -1,29 +1,32 @@
 package cz.tacr.elza.service;
 
-import cz.tacr.elza.api.ArrBulkActionRun;
-import cz.tacr.elza.api.ArrOutputDefinition;
-import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.repository.BulkActionRunRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.OutputDefinitionRepository;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.annotation.PostConstruct;
-import java.util.*;
-
-import static cz.tacr.elza.api.ArrOutputDefinition.*;
+import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
+import cz.tacr.elza.repository.BulkActionRunRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.OutputDefinitionRepository;
 
 /**
  * Serviska pro úlohy, které je nutné spustit těsně po spuštění.
@@ -55,11 +58,22 @@ public class StartupService {
     @Autowired
     private OutputDefinitionRepository outputDefinitionRepository;
 
+    @Autowired
+    private RequestQueueService requestQueueService;
+
     @PostConstruct
     private void init() {
         clearBulkActions();
         revalidateNodes();
         clearOutputGeneration();
+        runQueuedRequests();
+    }
+
+    /**
+     * Provede spuštění neodeslaných požadavků ve frontě na externí systémy.
+     */
+    private void runQueuedRequests() {
+        requestQueueService.restartQueuedRequests();
     }
 
     /**
@@ -71,7 +85,7 @@ public class StartupService {
         // načítání dat v samostatné transakci
         tmpl.execute(new TransactionCallbackWithoutResult() {
             @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
+            protected void doInTransactionWithoutResult(final TransactionStatus status) {
                 int count = outputDefinitionRepository.setStateFromStateWithError(Arrays.asList(OutputState.GENERATING, OutputState.COMPUTING), OutputState.OPEN, "Server se restartoval v průběhu zpracování");
                 if (count > 0) {
                     logger.warn("Bylo změněn stav " + count + " outputů na stav Otevřený z důvodu restartování serveru při jejich zpracování.");
@@ -95,7 +109,7 @@ public class StartupService {
         // načítání dat v samostatné transakci
         tmpl.execute(new TransactionCallbackWithoutResult() {
             @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
+            protected void doInTransactionWithoutResult(final TransactionStatus status) {
 
                 // zjištění všech uzlů, které nemají validaci
                 List<ArrNode> nodes = nodeRepository.findByNodeConformityIsNull();
@@ -136,7 +150,7 @@ public class StartupService {
             tmpl = new TransactionTemplate(txManager);
             tmpl.execute(new TransactionCallbackWithoutResult() {
                 @Override
-                protected void doInTransactionWithoutResult(TransactionStatus status) {
+                protected void doInTransactionWithoutResult(final TransactionStatus status) {
                     logger.info("Přidání " + entry.getValue().size() + " uzlů do fronty pro zvalidování");
                     updateConformityInfoService.updateInfoForNodesAfterCommit(entry.getValue(), version);
                 }
@@ -148,7 +162,7 @@ public class StartupService {
         TransactionTemplate tmpl = new TransactionTemplate(txManager);
         tmpl.execute(new TransactionCallbackWithoutResult() {
             @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
+            protected void doInTransactionWithoutResult(final TransactionStatus status) {
                 bulkActionRunRepository.updateFromStateToState(ArrBulkActionRun.State.RUNNING, ArrBulkActionRun.State.ERROR);
             }
         });

@@ -5,6 +5,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
     <changeSet id="13" author="slapa">
+        <validCheckSum>7:0dfeb2689eed7bf82dd3db68fbb70147</validCheckSum>
 
         <!-- Table -->
 
@@ -66,8 +67,12 @@
                       tableName="arr_fund_version"/>
 
 
-        <dropColumn columnName="root_level_id"
-                    tableName="arr_fund_version"/>
+        <!--
+        <addForeignKeyConstraint constraintName="fk_faVersion_level"
+                                         baseTableName="arr_finding_aid_version"
+        -->
+        <dropForeignKeyConstraint baseTableName="arr_fund_version" constraintName="fk_faVersion_level"/>
+        <dropColumn columnName="root_level_id" tableName="arr_fund_version"/>
 
         <addColumn tableName="arr_fund_version">
             <column name="root_node_id" type="int">

@@ -1,11 +1,16 @@
 package cz.tacr.elza.repository;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.UsrPermissionView;
+import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.enumeration.StringLength;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -18,18 +23,12 @@ import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Subquery;
-
-import cz.tacr.elza.domain.UsrPermissionView;
-import cz.tacr.elza.domain.UsrUser;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RegVariantRecord;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Implementace respozitory pro regrecord.
@@ -67,7 +66,8 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
             }
         }
 
-        query.select(record).distinct(true);
+        // TODO Lebeda - kompatibilita dotazu !!!! nelze použít distinct na Text
+        // query.select(record).distinct(true);
         if (condition != null) {
             Order order = builder.asc(record.get(RegRecord.RECORD));
             query.where(condition).orderBy(order);
@@ -147,8 +147,8 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
             final String searchValue = "%" + searchRecord.toLowerCase() + "%";
             condition =  builder.or(
                     builder.like(builder.lower(record.get(RegRecord.RECORD)), searchValue),
-                    builder.like(builder.lower(record.get(RegRecord.CHARACTERISTICS)), searchValue),
-                    builder.like(builder.lower(record.get(RegRecord.NOTE)), searchValue),
+                    builder.like(builder.lower(builder.substring(record.get(RegRecord.CHARACTERISTICS), 1, StringLength.LENGTH_1000)), searchValue),
+                    builder.like(builder.lower(builder.substring(record.get(RegRecord.NOTE), 1, StringLength.LENGTH_1000)), searchValue),
                     builder.like(builder.lower(variantRecord.get(RegVariantRecord.RECORD)), searchValue)
             );
         }

@@ -5,7 +5,7 @@ import {Autocomplete, AbstractReactComponent, i18n, Scope, FormInput} from 'comp
 import {Modal, Button, Form} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitReduxForm, submitReduxFormWithProp} from 'components/form/FormUtils.jsx'
-import {getRegistryRecordTypesIfNeeded, getRegistry} from 'actions/registry/registryRegionList.jsx'
+import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registry.jsx'
 import {WebApi} from 'actions/index.jsx';
 import {getTreeItemById} from "./registryUtils";
 
@@ -53,7 +53,7 @@ class AddRegistryForm extends AbstractReactComponent {
     }
 
     prepareState(props){
-        const {fields: {registerTypeId}, parentRecordId, registryRegion, registryRegionRecordTypes} = props;
+        const {fields: {registerTypeId}, parentRecordId, registryList:{filter:{registryTypeId}}, registryRegionRecordTypes} = props;
 
         // Pokud není nastaven typ rejstříku, pokusíme se ho nastavit
         if (!registerTypeId || registerTypeId.value === "") {
@@ -65,8 +65,8 @@ class AddRegistryForm extends AbstractReactComponent {
                 });
             } else {    //  pokud není předán parentRecordId, může se výběr rejstříku editovat
                 this.setState({disabled: false});
-                if (registryRegion.registryTypesId && this.isValueUseable(registryRegionRecordTypes.item, registryRegion.registryTypesId)){ // pokud o vybrání nějaké položky, která je uvedena v registryRegion.registryTypesId
-                    this.props.load({registerTypeId: registryRegion.registryTypesId});
+                if (registryTypeId && this.isValueUseable(registryRegionRecordTypes.item, registryTypeId)){ // pokud o vybrání nějaké položky, která je uvedena v registryRegion.registryTypesId
+                    this.props.load({registerTypeId: registryTypeId});
                 }
             }
         }
@@ -146,7 +146,7 @@ export default reduxForm({
 },state => ({
     initialValues: state.form.addRegistryForm.initialValues,
     refTables: state.refTables,
-    registryRegion: state.registryRegion,
+    registryList: state.app.registryList,
     registryRegionRecordTypes: state.registryRegionRecordTypes
 }),
 {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'addRegistryForm', data})}

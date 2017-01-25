@@ -2,7 +2,6 @@ package cz.tacr.elza.bulkaction;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -12,11 +11,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cz.tacr.elza.utils.Yaml;
-import liquibase.util.file.FilenameUtils;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import cz.tacr.elza.utils.Yaml;
+import liquibase.util.file.FilenameUtils;
 
 
 /**
@@ -78,16 +77,16 @@ public class BulkActionConfigManager {
         File[] files = dir.listFiles((dir1, name) -> name.endsWith(extension));
 
         for (File file : files) {
-        	try {
-        		InputStream ios = new FileInputStream(file);
-        		BulkActionConfig bulkActionConfig = new BulkActionConfig();
-        		bulkActionConfig.setCode(FilenameUtils.getBaseName(file.getName()));
-        		bulkActionConfig.getYaml().load(ios);
-        		ios.close();
-        		bulkActionConfigMap.put(bulkActionConfig.getCode(), bulkActionConfig);
-        	} catch(Yaml.YAMLInvalidContentException ye) {
-        		throw new IllegalArgumentException("Failed to read configuration file: "+file.getAbsolutePath(), ye);
-        	}
+            try {
+                InputStream ios = new FileInputStream(file);
+                BulkActionConfig bulkActionConfig = new BulkActionConfig();
+                bulkActionConfig.setCode(FilenameUtils.getBaseName(file.getName()));
+                bulkActionConfig.getYaml().load(ios);
+                ios.close();
+                bulkActionConfigMap.put(bulkActionConfig.getCode(), bulkActionConfig);
+            } catch(Yaml.YAMLInvalidContentException ye) {
+                throw new IllegalArgumentException("Failed to read configuration file: "+file.getAbsolutePath(), ye);
+            }
         }
 
     }

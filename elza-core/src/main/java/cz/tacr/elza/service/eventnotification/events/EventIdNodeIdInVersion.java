@@ -2,7 +2,7 @@ package cz.tacr.elza.service.eventnotification.events;
 
 import java.util.List;
 
-public class EventIdNodeIdInVersion extends EventVersion<EventIdNodeIdInVersion> {
+public class EventIdNodeIdInVersion extends EventVersion {
 
     /**
      * Id entity.

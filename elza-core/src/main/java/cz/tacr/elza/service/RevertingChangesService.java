@@ -1,16 +1,16 @@
 package cz.tacr.elza.service;
 
 import com.google.common.collect.Sets;
-import cz.tacr.elza.api.ArrBulkActionRun;
-import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.config.ConfigView;
+import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
@@ -124,7 +124,7 @@ public class RevertingChangesService {
         Query queryLastChange = createQueryLastChange(fundId, nodeId);
 
         ChangeResult lastChange = convertResult((Object[]) queryLastChange.getSingleResult());
-        Integer count = ((BigInteger) queryCount.getSingleResult()).intValue();
+        Integer count = ((Number) queryCount.getSingleResult()).intValue();
 
         // nalezené změny
         List<ChangeResult> sqlResult = convertResults(query.getResultList());
@@ -859,9 +859,9 @@ public class RevertingChangesService {
      * @param inputList seznam z databázového dotazu
      * @return typovaný seznam z databázového dotazu
      */
-    private List<ChangeResult> convertResults(final List inputList) {
+    private List<ChangeResult> convertResults(final List<Object[]> inputList) {
         List<ChangeResult> result = new ArrayList<>(inputList.size());
-        for (Object[] o : (List<Object[]>) inputList) {
+        for (Object[] o : inputList) {
             result.add(convertResult(o));
         }
         return result;
@@ -884,7 +884,7 @@ public class RevertingChangesService {
         change.setType(o[3] == null ? null : ((String) o[3]).trim());
         change.setPrimaryNodeId((Integer) o[4]);
         // pokud je váha (weights) rovna nule, nebyl ovlivněna žádná JP
-        change.setNodeChanges(((BigInteger) o[6]).intValue() == 0 ? BigInteger.ZERO : ((BigInteger) o[5]));
+        change.setNodeChanges(((Number) o[6]).intValue() == 0 ? BigInteger.ZERO : (BigInteger.valueOf(((Number) o[5]).intValue())));
         return change;
     }
 
@@ -928,7 +928,7 @@ public class RevertingChangesService {
      * @return SQL řetězec
      */
     private String createFindQuerySkeleton() {
-        return "SELECT\n" +
+        return "SELECT  \n" +
                 "%1$s\n" +
                 "FROM\n" +
                 "  arr_change ch\n" +
@@ -953,7 +953,8 @@ public class RevertingChangesService {
                 "      SELECT delete_change_id, node_id, 1 AS weight FROM arr_node_output WHERE node_id IN (%2$s)\n" +
                 "      UNION ALL\n" +
                 "      SELECT change_id, null, 0 AS weight FROM arr_bulk_action_run r JOIN arr_fund_version v ON r.fund_version_id = v.fund_version_id WHERE v.fund_id = :fundId AND r.state = '" + ArrBulkActionRun.State.FINISHED + "'\n" +
-                "    ) chlx ORDER BY change_id DESC\n" +
+//                "    ) chlx ORDER BY change_id DESC\n" +
+                "    ) chlx \n" +
                 "  ) chlxx GROUP BY change_id \n" +
                 ") chl\n" +
                 "ON\n" +
@@ -980,7 +981,7 @@ public class RevertingChangesService {
 
         // doplňující parametry dotazu
         String selectParams = "ch.change_id, ch.change_date, ch.user_id, ch.type, ch.primary_node_id, chl.node_changes, chl.weights";
-        String querySpecification = "GROUP BY ch.change_id, chl.node_changes, chl.weights ORDER BY ch.change_id DESC";
+        String querySpecification = "GROUP BY ch.change_id, ch.change_date, ch.user_id, ch.type, ch.primary_node_id, chl.node_changes, chl.weights ORDER BY ch.change_id DESC";
         if (fromChangeId != null) {
             querySpecification = "WHERE ch.change_id <= :fromChangeId " + querySpecification;
         }

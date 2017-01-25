@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity(name = "rul_packet_type")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class RulPacketType implements cz.tacr.elza.api.RulPacketType<RulPackage> {
+public class RulPacketType {
 
     public final static String PACKET_TYPE_ID = "packetTypeId";
     public static final String NAME = "name";
@@ -35,10 +35,10 @@ public class RulPacketType implements cz.tacr.elza.api.RulPacketType<RulPackage>
 
     @Column(length = 50, nullable = false)
     private String code;
-    
+
     @Column(length = 250, nullable = false)
     private String name;
-    
+
     @Column(length = 50, nullable = false)
     private String shortcut;
 
@@ -46,52 +46,42 @@ public class RulPacketType implements cz.tacr.elza.api.RulPacketType<RulPackage>
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
-    @Override
     public Integer getPacketTypeId() {
         return packetTypeId;
     }
 
-    @Override
-    public void setPacketTypeId(Integer packetTypeId) {
+    public void setPacketTypeId(final Integer packetTypeId) {
         this.packetTypeId = packetTypeId;
     }
 
-    @Override
     public String getCode() {
         return code;
     }
 
-    @Override
-    public void setCode(String code) {
+    public void setCode(final String code) {
         this.code = code;
     }
 
-    @Override
     public String getName() {
         return name;
     }
 
-    @Override
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
-    @Override
     public String getShortcut() {
         return shortcut;
     }
 
-    @Override
-    public void setShortcut(String shortcut) {
+    public void setShortcut(final String shortcut) {
         this.shortcut = shortcut;
     }
 
-    @Override
     public RulPackage getPackage() {
         return rulPackage;
     }
 
-    @Override
     public void setPackage(final RulPackage rulPackage) {
         this.rulPackage = rulPackage;
     }

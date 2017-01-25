@@ -1,6 +1,7 @@
 package cz.tacr.elza.ws;
 
 import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDaoLinkRequest;
 import cz.tacr.elza.domain.ArrDaoRequest;
 import cz.tacr.elza.domain.ArrDaoRequestDao;
@@ -8,9 +9,12 @@ import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrDigitizationRequestNode;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.DaoDigitizationRequestNodeRepository;
+import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoRequestDaoRepository;
+import cz.tacr.elza.service.GroovyScriptService;
 import cz.tacr.elza.ws.dao_service.v1.DaoNotifications;
 import cz.tacr.elza.ws.dao_service.v1.DaoRequests;
 import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
@@ -24,11 +28,17 @@ import cz.tacr.elza.ws.types.v1.Materials;
 import cz.tacr.elza.ws.types.v1.OnDaoLinked;
 import cz.tacr.elza.ws.types.v1.OnDaoUnlinked;
 import cz.tacr.elza.ws.types.v1.TransferRequest;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.feature.FastInfosetFeature;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
+import javax.annotation.Nullable;
 import javax.xml.bind.helpers.DefaultValidationEventHandler;
 import java.util.HashMap;
 import java.util.List;
@@ -41,20 +51,32 @@ import java.util.stream.Collectors;
 @Service
 public class WsClient {
 
+    private static final Logger logger = LoggerFactory.getLogger(WsClient.class);
+
     @Autowired
     private DaoRequestDaoRepository daoRequestDaoRepository;
 
     @Autowired
+    private GroovyScriptService groovyScriptService;
+
+    @Autowired
     private DaoDigitizationRequestNodeRepository daoDigitizationRequestNodeRepository;
+
+    @Autowired
+    private DaoLinkRepository daoLinkRepository;
 
     /**
      * Vytvoří JaxWs klienta webové služby a vrátí proxy rozhraní.
      *
      * @param wsInterface třída rozhraní webové služby
      * @param url         adresa webové služby (bez wsdl)
+     * @param loginName   Nepovinné uživatelské jméno pro přihlášení k webové službě
+     * @param password    Nepovinné heslo pro přihlášení k webové službě
      * @return proxy rozhraní webové služby
      */
-    private static <T> T getJaxWsRemoteInterface(Class<T> wsInterface, String url, String loginName, String password) {
+    private static <T> T getJaxWsRemoteInterface(Class<T> wsInterface, String url, @Nullable String loginName, @Nullable String password) {
+        Assert.notNull(wsInterface, "Nebyla zadána třída webové služby.");
+        Assert.hasText(url, "Nebylo zadáno url pro volání webové služby.");
 
         try {
             JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
@@ -68,8 +90,12 @@ public class WsClient {
             factory.setProperties(properties);
 
             //prihlaseni ke vzdalene sluzbe
-            factory.setUsername(loginName);
-            factory.setPassword(password);
+            if (StringUtils.isNotBlank(loginName)) {
+                factory.setUsername(loginName);
+            }
+            if (StringUtils.isNotBlank(password)) {
+                factory.setPassword(password);
+            }
 
             Object service = factory.create();
 
@@ -89,7 +115,7 @@ public class WsClient {
             final DestructionRequest destructionRequest = new DestructionRequest();
             destructionRequest.setIdentifier(arrDaoRequest.getCode());
             destructionRequest.setDescription(arrDaoRequest.getDescription());
-            destructionRequest.setSystemIdentifier(arrDaoRequest.getRequestId().toString()); // TODO Lebeda - co nasetovat jako system identifier??
+            destructionRequest.setSystemIdentifier(digitalRepository.getCode());
 
             final DaoIdentifiers daoIdentifiers = new DaoIdentifiers();
             final List<ArrDaoRequestDao> daos = daoRequestDaoRepository.findByDaoRequest(arrDaoRequest);
@@ -98,6 +124,7 @@ public class WsClient {
 
             return remoteInterface.postDestructionRequest(destructionRequest);
         } catch (DaoServiceException e) {
+            logger.error("Fail in call remote webservice.", e);
             throw new SystemException(e);
         }
     }
@@ -110,7 +137,7 @@ public class WsClient {
             final TransferRequest transferRequest = new TransferRequest();
             transferRequest.setIdentifier(arrDaoRequest.getCode());
             transferRequest.setDescription(arrDaoRequest.getDescription());
-            transferRequest.setSystemIdentifier(arrDaoRequest.getRequestId().toString());
+            transferRequest.setSystemIdentifier(digitalRepository.getCode());
 
             final DaoIdentifiers daoIdentifiers = new DaoIdentifiers();
             final List<ArrDaoRequestDao> daos = daoRequestDaoRepository.findByDaoRequest(arrDaoRequest);
@@ -119,26 +146,27 @@ public class WsClient {
 
             return remoteInterface.postTransferRequest(transferRequest);
         } catch (DaoServiceException e) {
+            logger.error("Fail in call remote webservice.", e);
             throw new SystemException(e);
         }
     }
 
     private static DaoRequests getDaoRequests(ArrDigitalRepository digitalRepository) {
-        final String url = digitalRepository.getUrl();
+        final String url = digitalRepository.getUrl() + "DaoRequests";
         final String username = digitalRepository.getUsername();
         final String password = digitalRepository.getPassword();
         return getJaxWsRemoteInterface(DaoRequests.class, url, username, password);
     }
 
     private static DaoNotifications getDaoNotifications(ArrDigitalRepository digitalRepository) {
-        final String url = digitalRepository.getUrl();
+        final String url = digitalRepository.getUrl() + "DaoNotifications";
         final String username = digitalRepository.getUsername();
         final String password = digitalRepository.getPassword();
         return getJaxWsRemoteInterface(DaoNotifications.class, url, username, password);
     }
 
     private static DigitizationFrontdesk getDigitizationFrontdesk(ArrDigitizationFrontdesk digitalRepository) {
-        final String url = digitalRepository.getUrl();
+        final String url = digitalRepository.getUrl() + "DigitizationFrontdesk";
         final String username = digitalRepository.getUsername();
         final String password = digitalRepository.getPassword();
         return getJaxWsRemoteInterface(DigitizationFrontdesk.class, url, username, password);
@@ -152,18 +180,19 @@ public class WsClient {
             final DigitizationRequest digitizationRequest = new DigitizationRequest();
             digitizationRequest.setIdentifier(arrDigitizationRequest.getCode());
             digitizationRequest.setDescription(arrDigitizationRequest.getDescription());
-            digitizationRequest.setSystemIdentifier(arrDigitizationRequest.getRequestId().toString());
+            digitizationRequest.setSystemIdentifier(digitalRepository.getCode());
 
             final Materials materials = new Materials();
             final List<ArrDigitizationRequestNode> digitizationRequestNodes = daoDigitizationRequestNodeRepository.findByDigitizationRequest(arrDigitizationRequest);
             for (ArrDigitizationRequestNode arrDigitizationRequestNode : digitizationRequestNodes) {
-                final Did did = new Did(); // TODO Lebeda - jak se dostanu ke správné hodnotě
+                final Did did = groovyScriptService.createDid(arrDigitizationRequestNode.getNode());
                 materials.getDid().add(did);
             }
             digitizationRequest.setMaterials(materials);
 
             return remoteInterface.postRequest(digitizationRequest);
         } catch (DigitizationServiceException e) {
+            logger.error("Fail in call remote webservice.", e);
             throw new SystemException(e);
         }
     }
@@ -175,15 +204,18 @@ public class WsClient {
         try {
             final OnDaoLinked daoLinked = new OnDaoLinked();
             daoLinked.setDaoIdentifier(arrDaoLinkRequest.getDao().getCode());
-            daoLinked.setSystemIdentifier(arrDaoLinkRequest.getRequestId().toString());
-            final Did did = new Did();  // TODO Lebeda - jak se dostanu ke správné hodnotě
-//                    did.setIdentifier();
-//                    did.setAbstract();
-//                    did.setUnitdatestructured();
-            daoLinked.setDid(did);
+            daoLinked.setSystemIdentifier(digitalRepository.getCode());
+            final List<ArrDaoLink> daoLinks = daoLinkRepository.findByDaoAndDeleteChangeIsNull(arrDaoLinkRequest.getDao());
+            if (CollectionUtils.isNotEmpty(daoLinks)) {
+                final ArrDaoLink arrDaoLink = daoLinks.iterator().next();
+                final ArrNode arrNode = arrDaoLink.getNode();
+                final Did did = groovyScriptService.createDid(arrNode);
+                daoLinked.setDid(did);
+            }
 
             remoteInterface.onDaoLinked(daoLinked);
         } catch (DaoServiceException e) {
+            logger.error("Fail in call remote webservice.", e);
             throw new SystemException(e);
         }
     }
@@ -195,9 +227,10 @@ public class WsClient {
         try {
             final OnDaoUnlinked daoUnlinked = new OnDaoUnlinked();
             daoUnlinked.setDaoIdentifier(arrDaoLinkRequest.getDao().getCode());
-            daoUnlinked.setSystemIdentifier(arrDaoLinkRequest.getRequestId().toString());
+            daoUnlinked.setSystemIdentifier(digitalRepository.getCode());
             remoteInterface.onDaoUnlinked(daoUnlinked);
         } catch (DaoServiceException e) {
+            logger.error("Fail in call remote webservice.", e);
             throw new SystemException(e);
         }
     }

@@ -5,6 +5,8 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
     <changeSet id="1479997033" author="vanek">
+        <validCheckSum>7:62699fc3a29fa6fbb1270cae2525cc04</validCheckSum>
+
         <createTable tableName="sys_external_system">
             <column name="external_system_id" type="int">
                 <constraints primaryKey="true"/>
@@ -34,9 +36,11 @@
                 <constraints nullable="true" foreignKeyName="fk_reg_external_system" referencedTableName="reg_external_system" referencedColumnNames="external_system_id"/>
             </column>
         </addColumn>
+
+        <dropForeignKeyConstraint baseTableName="reg_record" constraintName="fk_record_regExternalSource"/>
         <dropColumn tableName="reg_record" columnName="external_source_id"/>
 
-        <dropTable tableName="reg_external_source"/>
+        <dropTable tableName="reg_external_source" cascadeConstraints="true"/>
     </changeSet>
 
     <changeSet id="1480407643" author="vanek">
@@ -455,12 +459,15 @@
     </changeSet>
 
     <changeSet id="20161207152100" author="slapa">
+        <validCheckSum>7:26203ba4403eb8c05dbf242fd108b150</validCheckSum>
+
         <addColumn tableName="arr_dao_link_request">
             <column name="did_code" type="varchar(50)">
                 <constraints nullable="false"/>
             </column>
         </addColumn>
 
+        <dropForeignKeyConstraint baseTableName="arr_dao_link_request" constraintName="fk_dao_link_request_node"/>
         <dropColumn tableName="arr_dao_link_request" columnName="node_id" />
         <dropColumn tableName="arr_request" columnName="create" />
         <dropColumn tableName="arr_request_queue_item" columnName="create" />
@@ -547,7 +554,16 @@
     </changeSet>
 
     <changeSet id="201612220713" author="lebeda">
+        <validCheckSum>7:b52178a692e3dbb432bea46df78f098c</validCheckSum>
+
+        <addColumn tableName="arr_fund">
+            <column name="uuid" type="char(36)"/>
+        </addColumn>
+
         <customChange class="cz.tacr.elza.dbchangelog.DbUpgrade_201612220713" />
+
+        <addNotNullConstraint tableName="arr_fund"  columnName="uuid" columnDataType="char(36)"/>
+        <addUniqueConstraint  tableName="arr_fund" columnNames="uuid"/>
     </changeSet>
 
     <changeSet id="201612221346" author="lebeda">
@@ -566,6 +582,12 @@
                                  referencedTableName="arr_digital_repository"
                                  referencedColumnNames="external_system_id"
                                  onDelete="NO ACTION"/>
+    </changeSet>
+
+    <changeSet id="201701041340" author="vanek">
+        <dropNotNullConstraint tableName="par_interpi_mapping" columnName="relation_role_type_id" columnDataType="int"/>
+        <dropNotNullConstraint tableName="par_dynasty" columnName="genealogy" columnDataType="text"/>
+        <dropNotNullConstraint tableName="par_party_group" columnName="scope" columnDataType="varchar(1000)"/>
     </changeSet>
 
 </databaseChangeLog>

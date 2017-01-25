@@ -219,8 +219,15 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
         const subNodeForm = fundOutputDetail.subNodeForm;
 
+        let strictMode = fund.activeVersion.strictMode;
+
+        let userStrictMode = getOneSettings(this.props.userDetail.settings, 'FUND_STRICT_MODE', 'FUND', fund.id);
+        if (userStrictMode && userStrictMode.value !== null) {
+            strictMode = userStrictMode.value === 'true';
+        }
+
         const formData = subNodeForm.formData;
-        const descItemTypes = getDescItemsAddTree(formData.descItemGroups, subNodeForm.infoTypesMap, subNodeForm.refTypesMap, subNodeForm.infoGroups);
+        const descItemTypes = getDescItemsAddTree(formData.descItemGroups, subNodeForm.infoTypesMap, subNodeForm.refTypesMap, subNodeForm.infoGroups, strictMode);
 
         // Zatím zakomentováno, možná se bude ještě nějak řadit - zatím není jasné podle čeho řadit - podle uvedení v yaml nebo jinak?
         // function typeId(type) {
@@ -244,7 +251,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
             this.dispatch(modalDialogHide());
             this.dispatch(outputFormActions.fundSubNodeFormDescItemTypeAdd(fund.versionId, null, data.descItemTypeId.id));
         };
-        
+
         // Modální dialog
         var form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit}/>;
         this.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), form));

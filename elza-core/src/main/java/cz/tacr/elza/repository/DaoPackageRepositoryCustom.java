@@ -1,9 +1,9 @@
 package cz.tacr.elza.repository;
 
+import java.util.List;
+
 import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrFundVersion;
-
-import java.util.List;
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>

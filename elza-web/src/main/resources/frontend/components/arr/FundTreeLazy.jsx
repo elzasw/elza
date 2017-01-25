@@ -214,7 +214,9 @@ class FundTreeLazy extends AbstractReactComponent {
     };
 
     render() {
-        const {className, actionAddons, multipleSelection, onFulltextNextItem, onFulltextPrevItem, onFulltextSearch, onFulltextChange, filterText, searchedIds, filterCurrentIndex, filterResult} = this.props;
+        const {className, actionAddons, multipleSelection, onFulltextNextItem, onFulltextPrevItem, onFulltextSearch,
+            onFulltextChange, filterText, searchedIds, filterCurrentIndex, filterResult,
+            extendedSearch, onClickExtendedSearch, extendedReadOnly} = this.props;
 
         let index;
         if (this.props.ensureItemVisible) {
@@ -243,6 +245,9 @@ class FundTreeLazy extends AbstractReactComponent {
                     onFulltextSearch={onFulltextSearch}
                     onFulltextNextItem={onFulltextNextItem}
                     onFulltextPrevItem={onFulltextPrevItem}
+                    extendedSearch={extendedSearch}
+                    extendedReadOnly={extendedReadOnly}
+                    onClickExtendedSearch={onClickExtendedSearch}
                 />
             </div>
             <div className="fa-tree-lazy-actions">

@@ -1,12 +1,43 @@
 package cz.tacr.elza.controller.config;
 
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.config.ConfigRules;
+import cz.tacr.elza.config.ConfigView;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
 import cz.tacr.elza.controller.vo.ArrDaoFileVO;
 import cz.tacr.elza.controller.vo.ArrDaoLinkRequestVO;
+import cz.tacr.elza.controller.vo.ArrDaoLinkVO;
 import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
 import cz.tacr.elza.controller.vo.ArrDaoRequestVO;
 import cz.tacr.elza.controller.vo.ArrDaoVO;
@@ -25,7 +56,7 @@ import cz.tacr.elza.controller.vo.ArrRequestVO;
 import cz.tacr.elza.controller.vo.BulkActionRunVO;
 import cz.tacr.elza.controller.vo.BulkActionVO;
 import cz.tacr.elza.controller.vo.DmsFileVO;
-import cz.tacr.elza.controller.vo.ItemSpecsCategory;
+import cz.tacr.elza.controller.vo.TreeItemSpecsItem;
 import cz.tacr.elza.controller.vo.NodeConformityVO;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
@@ -70,8 +101,13 @@ import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoBatchInfo;
 import cz.tacr.elza.domain.ArrDaoFile;
 import cz.tacr.elza.domain.ArrDaoFileGroup;
+import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrDaoLinkRequest;
 import cz.tacr.elza.domain.ArrDaoPackage;
+import cz.tacr.elza.domain.ArrDaoRequest;
+import cz.tacr.elza.domain.ArrDaoRequestDao;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrDigitizationRequestNode;
 import cz.tacr.elza.domain.ArrFile;
@@ -120,6 +156,7 @@ import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.packageimport.ItemTypeUpdater;
 import cz.tacr.elza.packageimport.PackageService;
@@ -130,12 +167,13 @@ import cz.tacr.elza.repository.DaoFileGroupRepository;
 import cz.tacr.elza.repository.DaoFileRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoRepository;
+import cz.tacr.elza.repository.DaoRequestDaoRepository;
 import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.GroupRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
-import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyNameComplementRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
@@ -148,37 +186,12 @@ import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.SettingsService;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import javax.annotation.Nullable;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 
 /**
@@ -190,6 +203,8 @@ import java.util.stream.Collectors;
 @Service
 public class ClientFactoryVO {
 
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
     @Autowired
     @Qualifier("configVOMapper")
     private MapperFactory mapperFactory;
@@ -198,10 +213,10 @@ public class ClientFactoryVO {
     private PartyNameComplementRepository partyNameComplementRepository;
 
     @Autowired
-    private PartyNameRepository partyNameRepository;
+    private DaoService daoService;
 
     @Autowired
-    private PartyGroupIdentifierRepository partyGroupIdentifierRepository;
+    private PartyNameRepository partyNameRepository;
 
     @Autowired
     private RelationRepository relationRepository;
@@ -270,6 +285,9 @@ public class ClientFactoryVO {
     private DaoRepository daoRepository;
 
     @Autowired
+    private DaoRequestDaoRepository daoRequestDaoRepository;
+
+    @Autowired
     private DaoFileGroupRepository daoFileGroupRepository;
 
     @Autowired
@@ -277,6 +295,12 @@ public class ClientFactoryVO {
 
     @Autowired
     private ItemSpecRepository itemSpecRepository;
+
+    @Autowired
+    private ConfigView configView;
+
+    @Autowired
+    private NodeRepository nodeRepository;
 
     /**
      * Vytvoří objekt informací o přihlášeném uživateli.
@@ -433,7 +457,7 @@ public class ClientFactoryVO {
      */
     public List<ParPartyVO> createPartyList(final List<ParParty> parties) {
         if (CollectionUtils.isEmpty(parties)) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         //načtení dat do session
@@ -506,7 +530,7 @@ public class ClientFactoryVO {
     public List<ParRelationVO> createPartyRelations(final ParParty party) {
         List<ParRelation> relations = relationRepository.findByParty(party);
         if (CollectionUtils.isEmpty(relations)) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         relations.sort(new ParRelation.ParRelationComparator());
 
@@ -735,7 +759,7 @@ public class ClientFactoryVO {
                                                            final boolean checkPartyType,
                                                            @Nullable final ParPartyType partyType) {
         if (CollectionUtils.isEmpty(allTypes)) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         Map<Integer, RegRegisterTypeVO> typeMap = new HashMap<>();
@@ -836,7 +860,7 @@ public class ClientFactoryVO {
                                            final Class<VO> voTypes,
                                            @Nullable final Function<ITEM, VO> factory) {
         if (CollectionUtils.isEmpty(items)) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         MapperFacade mapper = mapperFactory.getMapperFacade();
@@ -865,10 +889,10 @@ public class ClientFactoryVO {
      * @param <VOTYPE>          třída VO objektu
      * @return nalezený nebo vytvořený VO
      */
-    public <VO, VOTYPE extends Class> VO getOrCreateVo(final Integer id,
+    public <VO> VO getOrCreateVo(final Integer id,
                                                        final Object source,
                                                        final Map<Integer, VO> processedItemsMap,
-                                                       final VOTYPE classType) {
+                                                       final Class<VO> classType) {
         VO item = processedItemsMap.get(id);
 
 
@@ -924,6 +948,8 @@ public class ClientFactoryVO {
         Date createDate = Date.from(
                 fundVersion.getCreateChange().getChangeDate().atZone(ZoneId.systemDefault()).toInstant());
         fundVersionVO.setCreateDate(createDate);
+        ConfigView.ViewTitles viewTitles = configView.getViewTitles(fundVersion.getRuleSet().getCode(), fundVersion.getFund().getFundId());
+        fundVersionVO.setStrictMode(viewTitles.getStrictMode());
 
         ArrChange lockChange = fundVersion.getLockChange();
         if (lockChange != null) {
@@ -1266,67 +1292,105 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         RulDescItemTypeExtVO descItemTypeVO = mapper.map(descItemType, RulDescItemTypeExtVO.class);
         descItemTypeVO.setDataTypeId(descItemType.getDataType().getDataTypeId());
-        descItemTypeVO.setItemSpecsTree(new ArrayList<>(1));
-        for (RulItemSpecExt rulItemSpecExt : descItemType.getRulItemSpecList()) {
-            if (StringUtils.isNotEmpty(rulItemSpecExt.getCategory())) {
-                String[] categories = rulItemSpecExt.getCategory().split("\\" + ItemTypeUpdater.CATEGORY_SEPARATOR);
-                recursiveAddCategory(categories, 0, descItemTypeVO.getItemSpecsTree(), rulItemSpecExt.getItemSpecId());
-            }
-        }
+        descItemTypeVO.setItemSpecsTree(createTree(descItemType.getRulItemSpecList()));
         return descItemTypeVO;
     }
 
     /**
-     * Rekurzivní sestavení stromu kategorií.
+     * Vytvoří strom z kategorií u specifikací. Např. pro jazyky.
      *
-     * @param categories    cesta kategorií stromem
-     * @param depthIndex    index aktuální pozice cesty stromem
-     * @param itemSpecsTree seznam kategorií na aktuální pozici cesty stromem
-     * @param itemSpecId    přidávaný identifikátor specifikace
+     * @param rulItemSpecList
+     * @return
      */
-    private void recursiveAddCategory(final String[] categories,
-                                      final int depthIndex,
-                                      final List<ItemSpecsCategory> itemSpecsTree,
-                                      final Integer itemSpecId) {
-        if (itemSpecsTree == null || depthIndex >= categories.length) {
-            return;
-        }
+    private List<TreeItemSpecsItem> createTree(final List<RulItemSpecExt> rulItemSpecList) {
+        List<TreeItemSpecsItem> result = new ArrayList<>();
 
-        String categoryName = categories[depthIndex];
+        String[] categories;
+        Integer specId;
 
-        ItemSpecsCategory category = null;
+        List<TreeItemSpecsItem> listLastTemp = new ArrayList<>();
 
-        // vyhledám kategorii
-        for (ItemSpecsCategory itemSpecsCategory : itemSpecsTree) {
-            if (itemSpecsCategory.getName().equals(categoryName)) {
-                category = itemSpecsCategory;
-                break;
+        // procházím všechny specifikace
+        for (RulItemSpecExt rulItemSpecExt : rulItemSpecList) {
+
+            // pokud specifikace obsahuje kategorii
+            if (StringUtils.isNotEmpty(rulItemSpecExt.getCategory())) {
+                categories = rulItemSpecExt.getCategory().split("\\" + ItemTypeUpdater.CATEGORY_SEPARATOR);
+                specId = rulItemSpecExt.getItemSpecId();
+
+                // sestavím porovnávací vektor kategorií
+                List<TreeItemSpecsItem> listTemp = new ArrayList<>();
+                for (String category : categories) {
+                    TreeItemSpecsItem treeItemSpecsItem = new TreeItemSpecsItem();
+                    treeItemSpecsItem.setType(TreeItemSpecsItem.Type.GROUP);
+                    treeItemSpecsItem.setName(category);
+                    listTemp.add(treeItemSpecsItem);
+                }
+
+                // porovnám vektor s předchozí položkou a získám minimální společný index
+                int index = findIndex(listTemp, listLastTemp);
+
+                TreeItemSpecsItem parent;
+
+                if (index < 0) { // index je záporný, nemá nic společného, založím úplně nový řádek
+                    parent = listTemp.get(0);
+                    result.add(parent);
+                    listTemp = listTemp.subList(1, listTemp.size());
+                    listLastTemp = new ArrayList<>();
+                    listLastTemp.add(parent);
+                } else { // vektory mají n+1 shodných položek
+                    parent = listLastTemp.get(index);
+                    listTemp = listTemp.subList(index + 1, listTemp.size());
+                    listLastTemp = listLastTemp.subList(0, index + 1);
+                }
+
+                // procházím vektor a sestavuji nový podstrom
+                for (TreeItemSpecsItem treeItemSpecsItem : listTemp) {
+                    List<TreeItemSpecsItem> children = parent.getChildren();
+                    if (children == null) {
+                        children = new ArrayList<>();
+                        parent.setChildren(children);
+                    }
+                    children.add(treeItemSpecsItem);
+                    parent = treeItemSpecsItem;
+                    listLastTemp.add(treeItemSpecsItem);
+                }
+
+                // vytvořím a zařadím list (samotnou položku)
+                List<TreeItemSpecsItem> children = parent.getChildren();
+                if (children == null) {
+                    children = new ArrayList<>();
+                    parent.setChildren(children);
+                }
+
+                TreeItemSpecsItem treeItemSpecsItem = new TreeItemSpecsItem();
+                treeItemSpecsItem.setType(TreeItemSpecsItem.Type.ITEM);
+                treeItemSpecsItem.setSpecId(specId);
+
+                children.add(treeItemSpecsItem);
+
             }
         }
 
-        // pokud ještě neexistuje, vytvořím a přidám jí do seznamu
-        if (category == null) {
-            category = new ItemSpecsCategory();
-            category.setName(categoryName);
-            itemSpecsTree.add(category);
-        }
+        return result;
+    }
 
-        // pokud jsme na poslední úrovni, přidáme id do seznamu identifikátorů specifikace,
-        // pokud nejsme, procházíme do hlubší kategorie
-        if (depthIndex + 1 == categories.length) {
-            List<Integer> specIds = category.getSpecIds();
-            if (specIds == null) {
-                specIds = new ArrayList<>(1);
-                category.setSpecIds(specIds);
+    /**
+     * Vyhledá společný index dat při porovnání dvou polí.
+     *
+     * @param list1 první porovnávané pole
+     * @param list2 druhé porovnávané pole
+     * @return minimální společný index
+     */
+    private int findIndex(final List<TreeItemSpecsItem> list1,
+                          final List<TreeItemSpecsItem> list2) {
+        int min = Math.min(list1.size(), list2.size());
+        for (int i = 0; i < min; i++) {
+            if (!list1.get(i).equals(list2.get(i))) {
+                return i - 1;
             }
-            specIds.add(itemSpecId);
-        } else {
-            if (category.getChildren() == null) {
-                category.setChildren(new ArrayList<>(1));
-            }
-            recursiveAddCategory(categories, depthIndex + 1, category.getChildren(), itemSpecId);
         }
-
+        return min - 1;
     }
 
     /**
@@ -1649,7 +1713,6 @@ public class ClientFactoryVO {
      * @return seznam VO
      */
     public List<UsrGroupVO> createGroupList(final List<UsrGroup> groups, final boolean initPermissions, final boolean initUsers) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
         List<UsrGroupVO> result = new ArrayList<>();
         for (UsrGroup group : groups) {
             result.add(createGroup(group, initPermissions, initUsers));
@@ -1827,6 +1890,8 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         List<ArrRequestVO> requestVOList = new ArrayList<>(requests.size());
         Set<ArrDigitizationRequest> requestForNodes = new HashSet<>();
+        Set<ArrDaoRequest> requestForDaos = new HashSet<>();
+        Set<ArrDaoLinkRequest> requestForDaoLinks = new HashSet<>();
 
         Map<ArrRequest, ArrRequestQueueItem> requestQueuedMap = new HashMap<>();
         List<ArrRequestQueueItem> requestQueueItems = CollectionUtils.isEmpty(requests) ? Collections.emptyList() : requestQueueItemRepository.findByRequest(requests);
@@ -1835,21 +1900,41 @@ public class ClientFactoryVO {
         }
 
         for (ArrRequest request : requests) {
-            prepareRequest(requestForNodes, request);
+            prepareRequest(requestForNodes, requestForDaos, requestForDaoLinks, request);
         }
 
-        Map<ArrDigitizationRequest, Integer> countNodesRequestMap;
+        Map<ArrDigitizationRequest, Integer> countNodesRequestMap = Collections.emptyMap();
         Map<ArrDigitizationRequest, List<TreeNodeClient>> nodesRequestMap = new HashMap<>();
-        if (detail) {
-            countNodesRequestMap = fillDetailParams(fundVersion, requestForNodes, nodesRequestMap);
 
-        } else {
-            countNodesRequestMap = digitizationRequestNodeRepository.countByRequests(requestForNodes);
+        if (requestForNodes.size() > 0) {
+            if (detail) {
+                countNodesRequestMap = fillDigitizationDetailParams(fundVersion, requestForNodes, nodesRequestMap);
+            } else {
+                countNodesRequestMap = digitizationRequestNodeRepository.countByRequests(requestForNodes);
+            }
+        }
+
+        Map<ArrDaoRequest, Integer> countDaosRequestMap = Collections.emptyMap();
+        Map<ArrDaoRequest, List<ArrDao>> daosRequestMap = new HashMap<>();
+
+        if (requestForDaos.size() > 0) {
+            if (detail) {
+                countDaosRequestMap = fillDaoDetailParams(fundVersion, requestForDaos, daosRequestMap);
+            } else {
+                countDaosRequestMap = daoRequestDaoRepository.countByRequests(requestForDaos);
+            }
+        }
+
+        Map<String, TreeNodeClient> codeTreeNodeClientMap = Collections.emptyMap();
+        if (requestForDaoLinks.size() > 0) {
+            if (detail) {
+                codeTreeNodeClientMap = fillDaoLinkDetailParams(fundVersion, requestForDaoLinks);
+            }
         }
 
         for (ArrRequest request : requests) {
             ArrRequestVO requestVO;
-            requestVO = createRequestVO(countNodesRequestMap, nodesRequestMap, request);
+            requestVO = createRequestVO(countNodesRequestMap, nodesRequestMap, countDaosRequestMap, daosRequestMap, codeTreeNodeClientMap, request, detail, fundVersion);
             convertRequest(mapper, request, requestQueuedMap.get(request), requestVO);
             requestVOList.add(requestVO);
         }
@@ -1859,26 +1944,106 @@ public class ClientFactoryVO {
     public ArrRequestVO createRequest(final ArrRequest request, final boolean detail, final ArrFundVersion fundVersion) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         Set<ArrDigitizationRequest> requestForNodes = new HashSet<>();
+        Set<ArrDaoRequest> requestForDaos = new HashSet<>();
+        Set<ArrDaoLinkRequest> requestForDaoLinks = new HashSet<>();
+
         ArrRequestQueueItem requestQueueItem = requestQueueItemRepository.findByRequest(request);
 
-        prepareRequest(requestForNodes, request);
+        prepareRequest(requestForNodes, requestForDaos, requestForDaoLinks, request);
 
-        Map<ArrDigitizationRequest, Integer> countNodesRequestMap;
+        Map<ArrDigitizationRequest, Integer> countNodesRequestMap = Collections.emptyMap();
         Map<ArrDigitizationRequest, List<TreeNodeClient>> nodesRequestMap = new HashMap<>();
-        if (detail) {
-            countNodesRequestMap = fillDetailParams(fundVersion, requestForNodes, nodesRequestMap);
-        } else {
-            countNodesRequestMap = digitizationRequestNodeRepository.countByRequests(requestForNodes);
+
+        if (requestForNodes.size() > 0) {
+            if (detail) {
+                countNodesRequestMap = fillDigitizationDetailParams(fundVersion, requestForNodes, nodesRequestMap);
+            } else {
+                countNodesRequestMap = digitizationRequestNodeRepository.countByRequests(requestForNodes);
+            }
+        }
+
+        Map<ArrDaoRequest, Integer> countDaosRequestMap = Collections.emptyMap();
+        Map<ArrDaoRequest, List<ArrDao>> daosRequestMap = new HashMap<>();
+
+        if (requestForDaos.size() > 0) {
+            if (detail) {
+                countDaosRequestMap = fillDaoDetailParams(fundVersion, requestForDaos, daosRequestMap);
+            } else {
+                countDaosRequestMap = daoRequestDaoRepository.countByRequests(requestForDaos);
+            }
+        }
+
+        Map<String, TreeNodeClient> codeTreeNodeClientMap = Collections.emptyMap();
+        if (requestForDaoLinks.size() > 0) {
+            if (detail) {
+                codeTreeNodeClientMap = fillDaoLinkDetailParams(fundVersion, requestForDaoLinks);
+            }
         }
 
         ArrRequestVO requestVO;
-        requestVO = createRequestVO(countNodesRequestMap, nodesRequestMap, request);
+        requestVO = createRequestVO(countNodesRequestMap, nodesRequestMap, countDaosRequestMap, daosRequestMap, codeTreeNodeClientMap, request, detail, fundVersion);
         convertRequest(mapper, request, requestQueueItem, requestVO);
 
         return requestVO;
     }
 
-    private Map<ArrDigitizationRequest, Integer> fillDetailParams(final ArrFundVersion fundVersion, final Set<ArrDigitizationRequest> requestForNodes, final Map<ArrDigitizationRequest, List<TreeNodeClient>> nodesRequestMap) {
+    private Map<String, TreeNodeClient> fillDaoLinkDetailParams(final ArrFundVersion fundVersion, final Set<ArrDaoLinkRequest> requestForDaoLinks) {
+        Map<String, TreeNodeClient> result = new HashMap<>();
+
+        Set<String> didCodes = new HashSet<>();
+        for (ArrDaoLinkRequest requestForDaoLink : requestForDaoLinks) {
+            didCodes.add(requestForDaoLink.getDidCode());
+        }
+
+        List<ArrNode> nodes = nodeRepository.findByUuid(didCodes);
+        Set<Integer> nodeIds = new HashSet<>();
+        for (ArrNode node : nodes) {
+            nodeIds.add(node.getNodeId());
+        }
+        Map<Integer, TreeNodeClient> treeNodeClientMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()).stream().collect(Collectors.toMap(TreeNodeClient::getId, Function.identity()));
+
+        for (ArrNode node : nodes) {
+            result.put(node.getUuid(), treeNodeClientMap.get(node.getNodeId()));
+        }
+
+        return result;
+    }
+
+    private Map<ArrDaoRequest, Integer> fillDaoDetailParams(final ArrFundVersion fundVersion,
+                                                            final Set<ArrDaoRequest> requestForDaos,
+                                                            final Map<ArrDaoRequest, List<ArrDao>> daosRequestMap) {
+        Map<ArrDaoRequest, Integer> countDaosRequestMap;
+        countDaosRequestMap = new HashMap<>();
+        List<ArrDaoRequestDao> daoRequestDaos = daoRequestDaoRepository.findByDaoRequest(requestForDaos);
+
+        Set<Integer> daoIds = new HashSet<>();
+        for (ArrDaoRequestDao daoRequestDao : daoRequestDaos) {
+            daoIds.add(daoRequestDao.getDao().getDaoId());
+        }
+
+        List<ArrDao> arrDaos = daoRepository.findAll(daoIds);
+        Map<Integer, ArrDao> daosMap = new HashMap<>(arrDaos.size());
+        for (ArrDao arrDao : arrDaos) {
+            daosMap.put(arrDao.getDaoId(), arrDao);
+        }
+
+        for (ArrDaoRequestDao daoRequestDao : daoRequestDaos) {
+            Integer daoId = daoRequestDao.getDao().getDaoId();
+            List<ArrDao> daos = daosRequestMap.get(daoRequestDao.getDaoRequest());
+            if (daos == null) {
+                daos = new ArrayList<>();
+                daosRequestMap.put(daoRequestDao.getDaoRequest(), daos);
+            }
+            daos.add(daosMap.get(daoId));
+        }
+
+        for (Map.Entry<ArrDaoRequest, List<ArrDao>> entry : daosRequestMap.entrySet()) {
+            countDaosRequestMap.put(entry.getKey(), entry.getValue().size());
+        }
+        return countDaosRequestMap;
+    }
+
+    private Map<ArrDigitizationRequest, Integer> fillDigitizationDetailParams(final ArrFundVersion fundVersion, final Set<ArrDigitizationRequest> requestForNodes, final Map<ArrDigitizationRequest, List<TreeNodeClient>> nodesRequestMap) {
         Map<ArrDigitizationRequest, Integer> countNodesRequestMap;
         countNodesRequestMap = new HashMap<>();
         List<ArrDigitizationRequestNode> digitizationRequestNodes = digitizationRequestNodeRepository.findByDigitizationRequest(requestForNodes);
@@ -1907,7 +2072,10 @@ public class ClientFactoryVO {
         return countNodesRequestMap;
     }
 
-    private void convertRequest(final MapperFacade mapper, final ArrRequest request, final ArrRequestQueueItem requestQueueItem, final ArrRequestVO requestVO) {
+    private void convertRequest(final MapperFacade mapper,
+                                final ArrRequest request,
+                                final ArrRequestQueueItem requestQueueItem,
+                                final ArrRequestVO requestVO) {
         ArrChange createChange = request.getCreateChange();
         requestVO.setCode(request.getCode());
         requestVO.setId(request.getRequestId());
@@ -1922,7 +2090,14 @@ public class ClientFactoryVO {
         requestVO.setUsername(createChange.getUser() == null ? null : createChange.getUser().getUsername());
     }
 
-    private ArrRequestVO createRequestVO(final Map<ArrDigitizationRequest, Integer> countNodesRequestMap, final Map<ArrDigitizationRequest, List<TreeNodeClient>> nodesRequestMap, final ArrRequest request) {
+    private ArrRequestVO createRequestVO(final Map<ArrDigitizationRequest, Integer> countNodesRequestMap,
+                                         final Map<ArrDigitizationRequest, List<TreeNodeClient>> nodesRequestMap,
+                                         final Map<ArrDaoRequest, Integer> countDaosRequestMap,
+                                         final Map<ArrDaoRequest, List<ArrDao>> daosRequestMap,
+                                         final Map<String, TreeNodeClient> codeTreeNodeClientMap,
+                                         final ArrRequest request,
+                                         final boolean detail,
+                                         final ArrFundVersion fundVersion) {
         ArrRequestVO requestVO;
         switch (request.getDiscriminator()) {
             case DIGITIZATION: {
@@ -1933,14 +2108,14 @@ public class ClientFactoryVO {
 
             case DAO: {
                 requestVO = new ArrDaoRequestVO();
-                // TODO
-                throw new NotImplementedException();
+                convertDaoRequest((ArrDaoRequest) request, (ArrDaoRequestVO) requestVO, countDaosRequestMap.get(request), daosRequestMap.get(request), detail, fundVersion);
+                break;
             }
 
             case DAO_LINK: {
                 requestVO = new ArrDaoLinkRequestVO();
-                // TODO
-                throw new NotImplementedException();
+                convertDaoLinkRequest((ArrDaoLinkRequest) request, (ArrDaoLinkRequestVO) requestVO, false, fundVersion, codeTreeNodeClientMap);
+                break;
             }
 
             default: {
@@ -1950,7 +2125,8 @@ public class ClientFactoryVO {
         return requestVO;
     }
 
-    private void prepareRequest(final Set<ArrDigitizationRequest> requestForNodes, final ArrRequest request) {
+    private void prepareRequest(final Set<ArrDigitizationRequest> requestForNodes, final Set<ArrDaoRequest> requestForDaos,
+                                final Set<ArrDaoLinkRequest> requestForDaoLinks, final ArrRequest request) {
         switch (request.getDiscriminator()) {
             case DIGITIZATION: {
                 requestForNodes.add((ArrDigitizationRequest) request);
@@ -1958,18 +2134,44 @@ public class ClientFactoryVO {
             }
 
             case DAO: {
-                // TODO
-                throw new NotImplementedException();
+                requestForDaos.add((ArrDaoRequest) request);
+                break;
             }
 
             case DAO_LINK: {
-                // TODO
-                throw new NotImplementedException();
+                requestForDaoLinks.add((ArrDaoLinkRequest) request);
+                break;
             }
 
             default: {
                 throw new IllegalStateException(String.valueOf(request.getDiscriminator()));
             }
+        }
+    }
+
+
+    private void convertDaoLinkRequest(final ArrDaoLinkRequest request,
+                                       final ArrDaoLinkRequestVO requestVO,
+                                       final boolean detail,
+                                       final ArrFundVersion fundVersion,
+                                       final Map<String, TreeNodeClient> codeTreeNodeClientMap) {
+        requestVO.setDidCode(request.getDidCode());
+        requestVO.setType(request.getType());
+        //requestVO.setDao(createDao(request.getDao(), detail, fundVersion));
+        requestVO.setNode(codeTreeNodeClientMap.get(request.getDidCode()));
+    }
+
+    private void convertDaoRequest(final ArrDaoRequest request,
+                                   final ArrDaoRequestVO requestVO,
+                                   final Integer daoCount,
+                                   final List<ArrDao> daos,
+                                   final boolean detail,
+                                   final ArrFundVersion fundVersion) {
+        requestVO.setDescription(request.getDescription());
+        requestVO.setDaosCount(daoCount);
+        requestVO.setType(request.getType());
+        if (daos != null) {
+            requestVO.setDaos(createDaoList(daos, detail, fundVersion));
         }
     }
 
@@ -2058,14 +2260,30 @@ public class ClientFactoryVO {
      *
      * @param arrDaoList DO ke konverzi
      * @param detail příznak, zda se mají naplnit seznamy na VO, pokud ne, jsou naplněny pouze počty podřízených záznamů v DB
+     * @param version
      * @return list VO
      */
-    public List<ArrDaoVO> createDaoList(final List<ArrDao> arrDaoList, final boolean detail) {
+    public List<ArrDaoVO> createDaoList(final List<ArrDao> arrDaoList, final boolean detail, final ArrFundVersion version) {
         List<ArrDaoVO> voList = new ArrayList<>();
         for (ArrDao arrDao : arrDaoList) {
-            voList.add(createDao(arrDao, detail));
+            voList.add(createDao(arrDao, detail, version));
         }
         return voList;
+    }
+
+    /**
+     * Vytvoření VO z DO.
+     * @param daoFile do
+     * @return VO
+     */
+    private ArrDaoFileVO createDaoFile(final ArrDaoFile daoFile) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        ArrDaoFileVO result = mapper.map(daoFile, ArrDaoFileVO.class);
+
+        ArrDigitalRepository digitalRepository = daoFile.getDao().getDaoPackage().getDigitalRepository();
+        result.setUrl(daoService.getDaoFileUrl(daoFile, digitalRepository));
+
+        return result;
     }
 
     /**
@@ -2073,24 +2291,38 @@ public class ClientFactoryVO {
      *
      * @param arrDao DO
      * @param detail příznak, zda se mají naplnit seznamy na VO, pokud ne, jsou naplněny pouze počty podřízených záznamů v DB
+     * @param version
      * @return vo
      */
-    private ArrDaoVO createDao(final ArrDao arrDao, final boolean detail) {
+    private ArrDaoVO createDao(final ArrDao arrDao, final boolean detail, final ArrFundVersion version) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrDaoVO vo = mapper.map(arrDao, ArrDaoVO.class);
 
-        String viewDaoUrl = arrDao.getDaoPackage().getDigitalRepository().getViewDaoUrl();
-        ElzaTools.UrlParams params = ElzaTools.createUrlParams()
-                .add("code", arrDao.getCode())
-                .add("label", arrDao.getLabel())
-                .add("id", arrDao.getDaoId());
-        vo.setUrl(ElzaTools.bindingUrlParams(viewDaoUrl, params));
+        ArrDigitalRepository digitalRepository = arrDao.getDaoPackage().getDigitalRepository();
 
-        vo.setDaoLinkCount(daoLinkRepository.countByDaoAndDeleteChangeIsNull(arrDao));
+        vo.setUrl(daoService.getDaoUrl(arrDao, digitalRepository));
+
+
+        final List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaoAndDeleteChangeIsNull(arrDao);
+        if (CollectionUtils.isNotEmpty(daoLinkList)) {
+            if (daoLinkList.size() > 1) {
+                logger.error("Nalezen více než jeden platný link pro arrDao ID=" + arrDao.getDaoId() + ".");
+                throw new SystemException();
+            }
+            final ArrDaoLink daoLink = daoLinkList.iterator().next();
+
+            ArrDaoLinkVO daoLinkVo = new ArrDaoLinkVO();
+            daoLinkVo.setId(daoLink.getDaoLinkId());
+            final List<TreeNodeClient> nodesByIds = levelTreeCacheService.getNodesByIds(Collections.singletonList(daoLink.getNode().getNodeId()), version.getFundVersionId());
+            daoLinkVo.setTreeNodeClient(nodesByIds.iterator().next());
+
+            vo.setDaoLink(daoLinkVo);
+        }
+
 
         if (detail) {
             final List<ArrDaoFile> daoFileList = daoFileRepository.findByDaoAndDaoFileGroupIsNull(arrDao);
-            final List<ArrDaoFileVO> daoFileVOList = mapper.mapAsList(daoFileList, ArrDaoFileVO.class);
+            final List<ArrDaoFileVO> daoFileVOList = daoFileList.stream().map(this::createDaoFile).collect(Collectors.toList());
             vo.addAllFile(daoFileVOList);
 
             final List<ArrDaoFileGroup> daoFileGroups = daoFileGroupRepository.findByDaoOrderByCodeAsc(arrDao);
@@ -2098,7 +2330,8 @@ public class ClientFactoryVO {
             for (ArrDaoFileGroup daoFileGroup : daoFileGroups) {
                 final ArrDaoFileGroupVO daoFileGroupVO = mapper.map(daoFileGroup, ArrDaoFileGroupVO.class);
                 final List<ArrDaoFile> arrDaoFileList = daoFileRepository.findByDaoAndDaoFileGroup(arrDao, daoFileGroup);
-                daoFileGroupVO.addAllFile(mapper.mapAsList(arrDaoFileList, ArrDaoFileVO.class));
+                final List<ArrDaoFileVO> groupDaoFileVOList = arrDaoFileList.stream().map(this::createDaoFile).collect(Collectors.toList());
+                daoFileGroupVO.setFiles(groupDaoFileVOList);
                 daoFileGroupVOList.add(daoFileGroupVO);
             }
 

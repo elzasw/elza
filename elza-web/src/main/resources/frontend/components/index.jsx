@@ -1,6 +1,7 @@
 exports.AbstractReactComponent = require('components/AbstractReactComponent.jsx');
 
 exports.AjaxUtils = require('components/AjaxUtils.jsx');
+exports.ExceptionUtils = require('components/ExceptionUtils.jsx');
 exports.i18n = require('components/i18n.jsx');
 exports.LongText = require('components/LongText.jsx');
 exports.Utils = require('components/Utils.jsx');
@@ -39,6 +40,8 @@ exports.DataGridPagination = require('components/shared/datagrid/DataGridPaginat
 exports.DataGridColumnsSettings = require('components/shared/datagrid/DataGridColumnsSettings.jsx');
 exports.Resizer = require('components/shared/resizer/Resizer.jsx');
 exports.CollapsablePanel = require('components/shared/collapsable-panel/CollapsablePanel.jsx');
+exports.Exception = require('components/shared/exception/Exception.jsx');
+exports.ExceptionDetail = require('components/shared/exception/ExceptionDetail.jsx');
 
 exports.TooltipTrigger = require('components/shared/tooltip/TooltipTrigger.jsx');
 
@@ -46,23 +49,33 @@ exports.FormUtils = require('components/form/FormUtils.jsx');
 exports.ImportForm = require('components/form/ImportForm.jsx');
 exports.ExportForm = require('components/form/ExportForm.jsx');
 exports.ExtImportForm = require('components/form/ExtImportForm.jsx');
+exports.ExtMapperForm = require('components/form/ExtMapperForm.jsx');
 exports.FormInput = require('components/form/FormInput.jsx');
 
 exports.Ribbon = require('components/page/Ribbon.jsx');
 
-exports.RegistryPanel = require('components/registry/RegistryPanel.jsx');
+exports.RegistryDetail = require('components/registry/RegistryDetail.jsx');
+exports.RegistryList = require('components/registry/RegistryList.jsx');
+exports.RegistryListItem = require('components/registry/RegistryListItem.jsx');
+exports.RegistryDetailVariantRecords = require('components/registry/RegistryDetailVariantRecords.jsx');
+exports.RegistryDetailCoordinates = require('components/registry/RegistryDetailCoordinates.jsx');
+
 exports.AddRegistryForm = require('components/registry/AddRegistryForm.jsx');
 exports.EditRegistryForm = require('components/registry/EditRegistryForm.jsx');
 exports.RegistryLabel = require('components/registry/RegistryLabel.jsx');
-exports.RegistryCoordinates = require('components/registry/RegistryCoordinates.jsx');
+exports.RegistryCoordinate = require('components/registry/RegistryCoordinate.jsx');
 exports.RegistryField = require('components/registry/RegistryField.jsx');
 
 exports.FundDetail = require('components/fund/FundDetail.jsx');
 exports.FundDetailExt = require('components/fund/FundDetailExt.jsx');
 exports.FundDetailTree = require('components/fund/FundDetailTree.jsx');
 
+exports.NodeLabel = require('components/arr/NodeLabel.jsx');
+exports.ArrDaoPackages = require('components/arr/ArrDaoPackages.jsx');
+exports.NodeDaosForm = require('components/arr/NodeDaosForm.jsx');
 exports.FundNodesList = require('components/arr/FundNodesList.jsx');
 exports.FundNodesSelectForm = require('components/arr/FundNodesSelectForm.jsx');
+exports.ArrSearchForm = require('components/arr/ArrSearchForm.jsx');
 exports.AddOutputForm = require('components/arr/AddOutputForm.jsx');
 exports.ArrOutputDetail = require('components/arr/ArrOutputDetail.jsx');
 exports.ArrRequestDetail = require('components/arr/ArrRequestDetail.jsx');
@@ -104,6 +117,7 @@ exports.FundTreeDaos = require('components/arr/FundTreeDaos.jsx');
 exports.AddNodeCross = require('components/arr/AddNodeCross.jsx');
 
 exports.PartyList = require('components/party/PartyList.jsx');
+exports.PartyListItem = require('components/party/PartyListItem.jsx');
 exports.PartyDetail = require('components/party/PartyDetail.jsx');
 exports.PartyDetailNames = require('components/party/PartyDetailNames.jsx');
 exports.PartyDetailIdentifiers = require('components/party/PartyDetailIdentifiers.jsx');

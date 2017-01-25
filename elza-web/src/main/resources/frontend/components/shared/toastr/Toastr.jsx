@@ -16,9 +16,10 @@ require("./Toastr.less")
  *      addToastrSuccess('title', 'message,...)
  *  Warning:
  *      addToastrWarning('title', 'message,...)
-**/
+ **/
 
 import React from 'react'
+import {createElement} from "react";
 import {Icon, i18n, AbstractReactComponent} from 'components/index.jsx';
 import {Alert} from 'react-bootstrap';
 import {connect} from 'react-redux'
@@ -39,13 +40,13 @@ const Toastr = class Toastr extends AbstractReactComponent {
     static getIconStyle(style) {
         switch (style) {
             case 'success':
-                return <Icon glyph="fa-check" />;
+                return <Icon glyph="fa-check"/>;
             case 'warning':
-                return <Icon glyph="fa-exclamation" />;
+                return <Icon glyph="fa-exclamation"/>;
             case 'info':
-                return <Icon glyph="fa-info-circle" />;
+                return <Icon glyph="fa-info-circle"/>;
             case 'danger':
-                return <Icon glyph="fa-exclamation-circle" />;
+                return <Icon glyph="fa-exclamation-circle"/>;
         }
     }
 
@@ -54,19 +55,29 @@ const Toastr = class Toastr extends AbstractReactComponent {
             if (t.time != null) {
                 setTimeout(() => this.handleDismiss(index), t.time);
             }
+
+            let message;
+            if (t.extended) {
+                message = <div>
+                    {createElement(t.messageComponent, {...t.messageComponentProps, onClose: () => this.handleDismiss(index)})}
+                </div>
+            } else {
+                message = <div>{t.message}</div>;
+            }
+
             return <Alert
-                    key={'toast-' + index}
-                    bsStyle={t.style}
-                    bsSize={t.size ? t.size : "lg"}
-                    className={t.visible && "fade"}
-                    closeLabel={i18n('global.action.close')}
-                    onDismiss={() => (this.handleDismiss(index))}
-                >
-                    {Toastr.getIconStyle(t.style)}
-                    <div className="content">
-                        <h4>{t.title}</h4>
-                        <div>{t.message}</div>
-                    </div>
+                key={'toast-' + index}
+                bsStyle={t.style}
+                bsSize={t.size ? t.size : "lg"}
+                className={t.visible && "fade"}
+                closeLabel={i18n('global.action.close')}
+                onDismiss={() => (this.handleDismiss(index))}
+            >
+                <div className="icon-container">{Toastr.getIconStyle(t.style)}</div>
+                <div className="content">
+                    <h4>{t.title}</h4>
+                    {message}
+                </div>
             </Alert>
         });
 

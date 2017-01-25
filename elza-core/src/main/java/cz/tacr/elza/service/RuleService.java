@@ -1,10 +1,35 @@
 package cz.tacr.elza.service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+
+import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.packageimport.xml.SettingGridView;
+import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.api.vo.NodeTypeOperation;
-import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
-import cz.tacr.elza.config.ConfigRules;
 import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -24,38 +49,27 @@ import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPolicyType;
-import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.vo.DataValidationResult;
+import cz.tacr.elza.domain.vo.NodeTypeOperation;
+import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.LockVersionChangeException;
-import cz.tacr.elza.repository.*;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.ItemSettingsRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeActionRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NodeConformityErrorRepository;
+import cz.tacr.elza.repository.NodeConformityMissingRepository;
+import cz.tacr.elza.repository.NodeConformityRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.OutputTypeRepository;
+import cz.tacr.elza.repository.TemplateRepository;
 import cz.tacr.elza.utils.ObjectListIterator;
 import cz.tacr.elza.validation.ArrDescItemsPostValidator;
-import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 
 /**
@@ -76,7 +90,9 @@ public class RuleService {
     @Autowired
     private RulesExecutor rulesExecutor;
     @Autowired
-    private ConfigRules elzaRules;
+    private SettingsService settingsService;
+    @Autowired
+    private PackageService packageService;
 
     @Autowired
     private LevelRepository levelRepository;
@@ -98,8 +114,6 @@ public class RuleService {
     private ItemSpecRepository itemSpecRepository;
     @Autowired
     private ItemTypeRepository itemTypeRepository;
-    @Autowired
-    private DefaultItemTypeRepository defaultItemTypeRepository;
     @Autowired
     private ArrDescItemsPostValidator descItemsPostValidator;
 
@@ -573,8 +587,20 @@ public class RuleService {
      * @param ruleSet pravidla
      * @return seznam kódů
      */
-    public List<String> getDefaultItemTypeCodes(final RulRuleSet ruleSet) {
-        return defaultItemTypeRepository.findItemTypeCodes(ruleSet);
+    public List<SettingGridView.ItemType> getGridView(final RulRuleSet ruleSet) {
+
+        // načtený globální oblíbených
+        List<UISettings> gridViews = settingsService.getGlobalSettings(UISettings.SettingsType.GRID_VIEW, UISettings.EntityType.RULE);
+
+        for (UISettings gridView : gridViews) {
+            if (gridView.getRulPackage().getPackageId().equals(ruleSet.getPackage().getPackageId()));
+            SettingGridView view = (SettingGridView) packageService.convertSetting(gridView);
+            if (CollectionUtils.isNotEmpty(view.getItemTypes())) {
+                return view.getItemTypes();
+            }
+        }
+
+        return null;
     }
 
     /**

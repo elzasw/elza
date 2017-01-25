@@ -25,7 +25,7 @@ export default class ModalDialogWrapper extends React.Component {
 
     render() {
         const {title, onHide, className, children} = this.props;
-        
+
         const renderHeader = title !== null;
 
         return (
@@ -34,7 +34,7 @@ export default class ModalDialogWrapper extends React.Component {
                     <Modal.Title>{title}</Modal.Title>
                 </Modal.Header>}
 
-                <div ref="modalBody">
+                <div ref="modalBody" className="modal-body-container">
                     {children}
                 </div>
             </Modal>

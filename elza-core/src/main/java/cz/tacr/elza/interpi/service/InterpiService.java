@@ -1,46 +1,63 @@
 package cz.tacr.elza.interpi.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
+import cz.tacr.elza.api.enums.InterpiClass;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.InterpiEntityMappingVO;
+import cz.tacr.elza.controller.vo.InterpiMappingVO;
+import cz.tacr.elza.controller.vo.InterpiRelationMappingVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
+import cz.tacr.elza.domain.ParInterpiMapping;
 import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParRelation;
+import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParRelationTypeRoleType;
 import cz.tacr.elza.domain.RegExternalSystem;
 import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.ExternalCode;
+import cz.tacr.elza.interpi.service.InterpiSessionHolder.InterpiEntitySession;
+import cz.tacr.elza.interpi.service.pqf.AttributeType;
 import cz.tacr.elza.interpi.service.vo.ConditionVO;
-import cz.tacr.elza.interpi.service.vo.EntityValueType;
 import cz.tacr.elza.interpi.service.vo.ExternalRecordVO;
+import cz.tacr.elza.interpi.service.vo.InterpiEntity;
+import cz.tacr.elza.interpi.service.vo.MappingVO;
 import cz.tacr.elza.interpi.service.vo.PairedRecordVO;
-import cz.tacr.elza.interpi.ws.WssoapSoap;
 import cz.tacr.elza.interpi.ws.wo.EntitaTyp;
-import cz.tacr.elza.interpi.ws.wo.SetTyp;
+import cz.tacr.elza.repository.InterpiMappingRepository;
 import cz.tacr.elza.repository.RegExternalSystemRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.RelationRoleTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.service.PartyService;
-import cz.tacr.elza.service.RegistryService;
-import cz.tacr.elza.utils.WSUtils;
-import cz.tacr.elza.utils.XmlUtils;
 
 /**
- *
+ * Služba pro práci s INTERPI.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 27. 11. 2016
@@ -48,24 +65,25 @@ import cz.tacr.elza.utils.XmlUtils;
 @Service
 public class InterpiService {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    /** Oddělovač v klíči pro unikátnost mapování. */
+    private static final String DELIMITER = "-%-%-";
 
-    /** Stránkování. */
-    private static final String FROM = "1";
-    private static final String TO = "500";
-    private static final Integer TO_INT = Integer.valueOf(TO);
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private ClientFactoryVO factoryVO;
 
     @Autowired
-    private PartyService partyService;
-
-    @Autowired
-    private RegistryService registryService;
+    private InterpiSessionHolder interpiSessionHolder;
 
     @Autowired
     private InterpiFactory interpiFactory;
+
+    @Autowired
+    private InterpiClient interpiClient;
+
+    @Autowired
+    private PartyService partyService;
 
     @Autowired
     private RegExternalSystemRepository regExternalSystemRepository;
@@ -77,7 +95,16 @@ public class InterpiService {
     private RegRecordRepository recordRepository;
 
     @Autowired
-    private VariantRecordRepository variantRecordRepository;
+    private InterpiMappingRepository interpiMappingRepository;
+
+    @Autowired
+    private RelationTypeRepository relationTypeRepository;
+
+    @Autowired
+    private RelationRoleTypeRepository relationRoleTypeRepository;
+
+    @Autowired
+    private RelationTypeRoleTypeRepository relationTypeRoleTypeRepository;
 
     /**
      * Vyhledá záznamy v INTERPI.
@@ -93,24 +120,25 @@ public class InterpiService {
             final List<ConditionVO> conditions,
             final Integer count,
             final Integer systemId) {
-        Assert.assertNotNull(systemId);
+        Assert.notNull(systemId);
+        String interpiRecordId = findIdCondition(conditions);
 
-        String query = interpiFactory.createSearchQuery(conditions, isParty);
-        if (StringUtils.isBlank(query)) {
-            return Collections.emptyList();
+        RegExternalSystem regExternalSystem = regExternalSystemRepository.findOne(systemId);
+        List<EntitaTyp> records;
+        if (StringUtils.isNotBlank(interpiRecordId)) {
+            EntitaTyp entitaTyp = getRecordById(interpiRecordId, regExternalSystem);
+
+            records = Collections.singletonList(entitaTyp);
+        } else {
+            String query = interpiFactory.createSearchQuery(conditions, isParty);
+            if (StringUtils.isBlank(query)) {
+                return Collections.emptyList();
+            }
+
+            records = interpiClient.findRecords(query, count, regExternalSystem);
         }
 
-        Integer maxCount = count == null ? TO_INT : count;
-        RegExternalSystem regExternalSystem = getExternalSystem(systemId);
-
-        WssoapSoap client = createClient(regExternalSystem);
-        logger.info("Vyhledávání v interpi: " + query);
-        String searchResult = client.findData(query, null, FROM, maxCount.toString(),
-                regExternalSystem.getUsername(), regExternalSystem.getPassword());
-
-        SetTyp setTyp = unmarshall(searchResult);
-
-        Map<String, ExternalRecordVO> result = convertSearchResults(setTyp.getEntita(), maxCount, false);
+        Map<String, ExternalRecordVO> result = convertSearchResults(records, false);
         if (!result.isEmpty()) {
             matchWithExistingRecords(regExternalSystem, result);
         }
@@ -118,45 +146,120 @@ public class InterpiService {
         return new ArrayList<>(result.values());
     }
 
-    private Map<String, ExternalRecordVO> convertSearchResults(final List<EntitaTyp> entitaList, final Integer maxCount,
-            final boolean generateVariantNames) {
-        int searchResultCount = entitaList.size() > maxCount ? maxCount : entitaList.size();
-        List<EntitaTyp> searchResults = new ArrayList<>(searchResultCount);
-        for (EntitaTyp entitaTyp : entitaList) {
-            searchResults.add(entitaTyp);
-            if (searchResults.size() == searchResultCount) {
-                break; // INTERPI neumí stránkovat
+    /**
+     * Zjistí zda je v podmínkách podmínka na id. Když ano tak ho vrátí.
+     *
+     * @param conditions podmínky
+     *
+     * @return id pokud je v podmínkách
+     */
+    private String findIdCondition(final List<ConditionVO> conditions) {
+        if (conditions == null) {
+            return null;
+        }
+
+        String id = null;
+        for (ConditionVO condition : conditions) {
+            if (condition.getAttType() == AttributeType.ID) {
+                id = condition.getValue();
+                break;
             }
         }
 
-        List<ExternalRecordVO> recordVOList = interpiFactory.convertToExternalRecordVO(searchResults, generateVariantNames);
-        Map<String, ExternalRecordVO> result = new HashMap<>();
-        for (ExternalRecordVO externalRecordVO : recordVOList) {
-            result.put(externalRecordVO.getRecordId(), externalRecordVO);
-        }
+        return id;
+    }
 
-        return result;
+    /**
+     * Převod záznamů z INTERPI.
+     *
+     * @param records INTERPI záznamy
+     * @param generateVariantNames příznak zda se mají generovat variantní jména
+     *
+     * @return mapa externí id rejstříku -> převedený záznam
+     */
+    private Map<String, ExternalRecordVO> convertSearchResults(final List<EntitaTyp> records, final boolean generateVariantNames) {
+        return interpiFactory.convertToExternalRecordVO(records, generateVariantNames).
+                stream().
+                collect(Collectors.toMap(ExternalRecordVO::getRecordId, Function.identity()));
     }
 
     /**
      * Načte konkrétní záznam podle externího id.
      *
-     * @param id id v externím systému
-     * @param systemId id externího systému
+     * @param interpiRecordId id v externím systému
+     * @param interpiSystem externí systém
      *
      * @return požadovaný záznam
      */
-    public ExternalRecordVO getRecordById(final String id, final Integer systemId) {
-        Assert.assertNotNull(id);
-        Assert.assertNotNull(systemId);
+    private EntitaTyp getRecordById(final String interpiRecordId, final RegExternalSystem regExternalSystem) {
+        Assert.notNull(interpiRecordId);
+        Assert.notNull(regExternalSystem);
 
-        RegExternalSystem interpiSystem = getExternalSystem(systemId);
-        EntitaTyp entitaTyp = findOneRecord(id, interpiSystem);
+        return interpiClient.findOneRecord(interpiRecordId, regExternalSystem);
+    }
 
-        ExternalRecordVO recordVO = interpiFactory.convertToExternalRecordVO(Collections.singletonList(entitaTyp), false).iterator().next();
-        matchWithExistingRecords(interpiSystem, Collections.singletonMap(recordVO.getRecordId(), recordVO));
+    /**
+     * Načte vztahy a jejich mapování.
+     *
+     * @param interpiRecordId id záznamu v INTERPI
+     * @param systemId id systému
+     * @param scopeId
+     *
+     * @return vztahy záznamu a jejich mapování
+     */
+    public InterpiMappingVO findInterpiRecordRelations(final String interpiRecordId, final Integer systemId, final Integer scopeId) {
+        Assert.notNull(interpiRecordId);
+        Assert.notNull(systemId);
+        Assert.notNull(scopeId);
 
-        return recordVO;
+        RegExternalSystem regExternalSystem = regExternalSystemRepository.findOne(systemId);
+        EntitaTyp entitaTyp = interpiClient.findOneRecord(interpiRecordId, regExternalSystem);
+        InterpiEntitySession interpiEntitySession = interpiSessionHolder.getInterpiEntitySession();
+        interpiEntitySession.setEntitaTyp(entitaTyp);
+
+        RegScope regScope = scopeRepository.findOne(scopeId);
+        InterpiEntity interpiEntity = new InterpiEntity(entitaTyp);
+
+        RegRegisterType regRegisterType = interpiFactory.getRegisterType(interpiEntity);
+        ParPartyType partyType = regRegisterType.getPartyType();
+        if (partyType == null) {
+            throw new IllegalStateException("Vztahy lze mapovat jen pro osoby.");
+        }
+
+        List<InterpiRelationMappingVO> mappings = interpiFactory.getRelations(interpiEntity, regExternalSystem, regScope);
+
+        List<ParInterpiMapping> interpiMappings = interpiMappingRepository.findAll(); // načtení do hibernate cache
+        for (InterpiRelationMappingVO relationMappingVO : mappings) {
+            InterpiClass interpiClass = relationMappingVO.getInterpiClass();
+            String interpiRelationType = relationMappingVO.getInterpiRelationType();
+
+            List<InterpiEntityMappingVO> entities = relationMappingVO.getEntities();
+            if (CollectionUtils.isNotEmpty(entities)) {
+                for (InterpiEntityMappingVO entityMappingVO : entities) {
+                    String interpiRoleType = entityMappingVO.getInterpiRoleType();
+
+                    ParInterpiMapping mapping = interpiMappingRepository.findByInterpiClassAndInterpiRelationTypeAndInterpiRoleType(
+                            interpiClass, interpiRelationType, interpiRoleType);
+
+                    if (mapping != null) {
+                        entityMappingVO.setId(mapping.getInterpiMappingId());
+                        entityMappingVO.setRelationRoleTypeId(mapping.getRelationRoleType().getRoleTypeId());
+                        relationMappingVO.setRelationTypeId(mapping.getRelationType().getRelationTypeId());
+                    }
+                }
+            } else {
+                ParInterpiMapping mapping = interpiMappingRepository.findByInterpiClassAndInterpiRelationTypeAndInterpiRoleType(
+                        interpiClass, interpiRelationType, null);
+
+                if (mapping != null) {
+                    relationMappingVO.setRelationTypeId(mapping.getRelationType().getRelationTypeId());
+                    relationMappingVO.setId(mapping.getInterpiMappingId());
+                }
+            }
+
+        }
+
+        return new InterpiMappingVO(partyType.getPartyTypeId(), mappings);
     }
 
     /**
@@ -166,17 +269,20 @@ public class InterpiService {
      * @param interpiRecordId id záznamu v INTERPI
      * @param scopeId id scope
      * @param systemId id systému
+     * @param importRelations příznak zda se mají importovat i vztahy
+     * @param mappings mapování vztahů
      *
      * @return nový/aktualizovaný rejstřík
      */
-    public RegRecord importRecord(final Integer recordId, final String interpiRecordId, final Integer scopeId, final Integer systemId, final boolean isOriginator) {
-        Assert.assertNotNull(interpiRecordId);
-        Assert.assertNotNull(scopeId);
-        Assert.assertNotNull(systemId);
+    public RegRecord importRecord(final Integer recordId, final String interpiRecordId, final Integer scopeId, final Integer systemId, final boolean isOriginator,
+            final List<InterpiRelationMappingVO> mappings) {
+        Assert.notNull(interpiRecordId);
+        Assert.notNull(scopeId);
+        Assert.notNull(systemId);
 
         logger.info("Import záznamu s identifikátorem " + interpiRecordId + " z interpi.");
 
-        RegExternalSystem regExternalSystem = getExternalSystem(systemId);
+        RegExternalSystem regExternalSystem = regExternalSystemRepository.findOne(systemId);
         RegScope regScope = scopeRepository.findOne(scopeId);
 
         RegRecord originalRecord = null;
@@ -184,26 +290,250 @@ public class InterpiService {
             RegRecord regRecord = recordRepository.findRegRecordByExternalIdAndExternalSystemCodeAndScope(interpiRecordId,
                     regExternalSystem.getCode(), regScope);
             if (regRecord != null) {
-                throw new IllegalStateException("Nelze naimportovat existující rejstříkové heslo. Heslo s externím identifikátorem "
-                        + interpiRecordId + " již existuje ve třídě " + regScope.getName());
+                throw new BusinessException(ExternalCode.ALREADY_IMPORTED).set("id", interpiRecordId).set("scope", regScope.getName());
             }
         } else {
             originalRecord = recordRepository.findOne(recordId);
         }
 
-        EntitaTyp entitaTyp = findOneRecord(interpiRecordId, regExternalSystem);
-        Map<EntityValueType, List<Object>> valueMap = interpiFactory.convertToMap(entitaTyp);
+        InterpiEntitySession interpiEntitySession = interpiSessionHolder.getInterpiEntitySession();
+        EntitaTyp entitaTyp = interpiEntitySession.getEntitaTyp();
+        if (entitaTyp == null) {
+            entitaTyp = interpiClient.findOneRecord(interpiRecordId, regExternalSystem);
+        }
+        InterpiEntity interpiEntity = new InterpiEntity(entitaTyp);
 
         RegRecord result;
-        if (interpiFactory.isParty(valueMap)) {
-            result = importParty(valueMap, originalRecord, interpiRecordId, isOriginator, regScope, regExternalSystem);
+        if (interpiFactory.isParty(interpiEntity)) {
+            List<MappingVO> updatedMappings = processMappings(mappings);
+            result = interpiFactory.importParty(interpiEntity, originalRecord, interpiRecordId, isOriginator, regScope, regExternalSystem, updatedMappings);
         } else {
-            result = importRecord(entitaTyp, originalRecord, interpiRecordId, regScope, regExternalSystem);
+            result = interpiFactory.importRecord(entitaTyp, originalRecord, interpiRecordId, regScope, regExternalSystem);
         }
+
+        interpiEntitySession.clear();
 
         return result;
     }
 
+    /**
+     * Zpracuje změny v nastavení mapování a donačte výchozí(nezměněná) mapování.
+     *
+     * @param mappings mapování z klienta
+     *
+     * @return nová a výchozí mapování
+     */
+    private List<MappingVO> processMappings(final List<InterpiRelationMappingVO> mappings) {
+        if (CollectionUtils.isEmpty(mappings)) {
+            return getDefaultMappings();
+        }
+
+        relationTypeRepository.findAll(); // načtení do hibernate cache
+        relationRoleTypeRepository.findAll(); // načtení do hibernate cache
+
+        Set<String> interpiKeys = new HashSet<>();
+        List<MappingVO> mappingsToUse = new LinkedList<>();
+        Map<String, ParInterpiMapping> mappingsToSave = new HashMap<>();
+        for (InterpiRelationMappingVO relationMappingVO : mappings) {
+            List<InterpiEntityMappingVO> entities = relationMappingVO.getEntities();
+            if (CollectionUtils.isEmpty(entities)) {
+                MappingVO mappingVO = createMappingVO(relationMappingVO, null);
+                mappingsToUse.add(mappingVO);
+
+                if (relationMappingVO.getSave() && relationMappingVO.getImportRelation()) {
+                    String key = createMappingKey(relationMappingVO, null);
+                    ParInterpiMapping interpiMapping = createParInterpiMapping(relationMappingVO, null);
+                    mappingsToSave.put(key, interpiMapping);
+                }
+            } else {
+                for (InterpiEntityMappingVO entityMappingVO : entities) {
+                    MappingVO mappingVO = createMappingVO(relationMappingVO, entityMappingVO);
+                    mappingsToUse.add(mappingVO);
+
+                    if (!isValidRelationRoleTypeCombination(mappingVO)) {
+                        continue;
+                    }
+
+                    String interpiKey = createInterpiKey(relationMappingVO, entityMappingVO);
+                    if ((relationMappingVO.getSave() || entityMappingVO.getSave()) && (relationMappingVO.getImportRelation() || entityMappingVO.getImportEntity()) &&
+                            !interpiKeys.contains(interpiKey)) {
+                        String key = createMappingKey(relationMappingVO, entityMappingVO);
+                        ParInterpiMapping interpiMapping = createParInterpiMapping(relationMappingVO, entityMappingVO);
+                        mappingsToSave.put(key, interpiMapping);
+
+                        interpiKeys.add(interpiKey);
+                    }
+                }
+            }
+        }
+
+        saveMappings(mappingsToSave.values());
+
+        return mappingsToUse;
+    }
+
+    /**
+     * Uloží nebo aktualizuje mapování.
+     *
+     * @param mappingsToSave seznam mapování
+     */
+    private void saveMappings(final Collection<ParInterpiMapping> mappingsToSave) {
+
+        for (ParInterpiMapping parInterpiMapping : mappingsToSave) {
+            List<ParInterpiMapping> existingMappings = interpiMappingRepository.findByInterpiRelationType(parInterpiMapping.getInterpiRelationType());
+            if (existingMappings.isEmpty()) {
+                interpiMappingRepository.save(parInterpiMapping);
+            } else {
+                boolean sameRelations = true; // mají všechny načtené záznamy stejý typ vztahu jako ukládáný záznam?
+                Integer relationId = parInterpiMapping.getRelationType().getRelationTypeId();
+                for (ParInterpiMapping existingMapping : existingMappings) {
+                    if (sameRelations && !relationId.equals(existingMapping.getRelationType().getRelationTypeId())) {
+                        sameRelations = false;
+                        break;
+                    }
+                }
+
+                if (sameRelations) {
+                    interpiMappingRepository.save(parInterpiMapping);
+                } else {
+                    existingMappings.remove(parInterpiMapping);
+                    interpiMappingRepository.delete(existingMappings);
+                    interpiMappingRepository.save(parInterpiMapping);
+                }
+            }
+        }
+    }
+
+    /** Zkontroluje zda pro typ vztahu a typ role existuje vazba. */
+    private boolean isValidRelationRoleTypeCombination(final MappingVO mappingVO) {
+        ParRelationTypeRoleType parRelationTypeRoleType = new ParRelationTypeRoleType();
+        parRelationTypeRoleType.setRelationType(mappingVO.getParRelationType());
+        parRelationTypeRoleType.setRoleType(mappingVO.getParRelationRoleType());
+
+        ExampleMatcher matcher = ExampleMatcher.matching()
+                .withMatcher("relationType", GenericPropertyMatchers.exact())
+                .withMatcher("roleType", GenericPropertyMatchers.exact());
+
+        Example<ParRelationTypeRoleType> example = Example.of(parRelationTypeRoleType, matcher);
+        return relationTypeRoleTypeRepository.exists(example);
+    }
+
+
+    /**
+     * @return klíč identifikující interpi vazby
+     */
+    private String createInterpiKey(final InterpiRelationMappingVO relationMappingVO,
+            final InterpiEntityMappingVO entityMappingVO) {
+        Assert.notNull(relationMappingVO);
+        Assert.notNull(entityMappingVO);
+
+        // klíč je ve tvaru interpiRelationType-%-%-interpiClass-%-%-interpiRoleType
+        return new StringBuilder(StringUtils.trimToEmpty(relationMappingVO.getInterpiRelationType())).
+                append(DELIMITER).
+                append(relationMappingVO.getInterpiClass()).
+                append(DELIMITER).
+                append(entityMappingVO.getInterpiRoleType()).
+                toString();
+    }
+
+
+    /**
+     * @return klíč identifikující mapování vztahu a role
+     */
+    private String createMappingKey(final InterpiRelationMappingVO relationMappingVO,
+            final InterpiEntityMappingVO entityMappingVO) {
+        Assert.notNull(relationMappingVO);
+
+        // klíč je ve tvaru interpiRelationType-%-%-elzaRelationTypeId-%-%-interpiRoleType-%-%-elzaRoleTypeId
+        StringBuilder sb = new StringBuilder(StringUtils.trimToEmpty(relationMappingVO.getInterpiRelationType())).
+                append(DELIMITER).
+                append(relationMappingVO.getRelationTypeId());
+
+        if (entityMappingVO != null) {
+            sb.append(DELIMITER).
+                append(entityMappingVO.getInterpiRoleType()).
+                append(DELIMITER).
+                append(entityMappingVO.getRelationRoleTypeId());
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Převede hierarchickou reprezentaci mapování z klienta na plochou strukturu pro import.
+     *
+     * @param relationMappingVO informace o vztahu
+     * @param entityMappingVO informace o entitě ve vztahu, může být null
+     *
+     * @return plochá reprezentace mapování
+     */
+    private MappingVO createMappingVO(final InterpiRelationMappingVO relationMappingVO,
+            final InterpiEntityMappingVO entityMappingVO) {
+        MappingVO mappingVO = new MappingVO();
+
+        if (entityMappingVO != null) {
+            mappingVO.setInterpiRoleType(entityMappingVO.getInterpiRoleType());
+            mappingVO.setParRelationRoleType(relationRoleTypeRepository.findOne(entityMappingVO.getRelationRoleTypeId()));
+            mappingVO.setImportRelation(entityMappingVO.getImportEntity());
+            mappingVO.setInterpiId(entityMappingVO.getInterpiId());
+        } else {
+            mappingVO.setImportRelation(relationMappingVO.getImportRelation());
+        }
+
+        mappingVO.setInterpiClass(relationMappingVO.getInterpiClass());
+        mappingVO.setInterpiRelationType(relationMappingVO.getInterpiRelationType());
+        mappingVO.setParRelationType(relationTypeRepository.findOne(relationMappingVO.getRelationTypeId()));
+
+        return mappingVO;
+    }
+
+    /**
+     * Převede hierarchickou reprezentaci mapování z klienta na plochou strukturu pro uložení do db.
+     *
+     * @param relationMappingVO informace o vztahu
+     * @param entityMappingVO informace o entitě ve vztahu, může být null
+     *
+     * @return plochá reprezentace mapování
+     */
+    private ParInterpiMapping createParInterpiMapping(final InterpiRelationMappingVO relationMappingVO,
+            final InterpiEntityMappingVO entityMappingVO) {
+        ParInterpiMapping interpiMapping = new ParInterpiMapping();
+
+        if (entityMappingVO != null) {
+            interpiMapping.setInterpiMappingId(entityMappingVO.getId());
+            interpiMapping.setInterpiRoleType(entityMappingVO.getInterpiRoleType());
+            interpiMapping.setRelationRoleType(relationRoleTypeRepository.findOne(entityMappingVO.getRelationRoleTypeId()));
+        } else {
+            interpiMapping.setInterpiMappingId(relationMappingVO.getId());
+        }
+
+        interpiMapping.setInterpiClass(relationMappingVO.getInterpiClass());
+        interpiMapping.setInterpiRelationType(relationMappingVO.getInterpiRelationType());
+        interpiMapping.setRelationType(relationTypeRepository.findOne(relationMappingVO.getRelationTypeId()));
+
+        return interpiMapping;
+    }
+
+    /**
+     * Načtení mapování z db.
+     */
+    private List<MappingVO> getDefaultMappings() { //Předělat aby se tam dostávalo interpi id entity
+        List<ParInterpiMapping> interpiMappings = interpiMappingRepository.findAll();
+        List<MappingVO> defaultMappings = new ArrayList<>(interpiMappings.size());
+        for (ParInterpiMapping parInterpiMapping : interpiMappings) {
+            MappingVO mappingVO = new MappingVO();
+
+            mappingVO.setImportRelation(true);
+            mappingVO.setInterpiClass(parInterpiMapping.getInterpiClass());
+            mappingVO.setInterpiRelationType(parInterpiMapping.getInterpiRelationType());
+            mappingVO.setInterpiRoleType(parInterpiMapping.getInterpiRoleType());
+            mappingVO.setParRelationRoleType(parInterpiMapping.getRelationRoleType());
+            mappingVO.setParRelationType(parInterpiMapping.getRelationType());
+
+            defaultMappings.add(mappingVO);
+        }
+
+        return defaultMappings;
+    }
 
     /**
      * Dohledání existujících rejstříkových hesel pro vyhledané záznamy.
@@ -226,7 +556,13 @@ public class InterpiService {
                     RegScope regScope = existingRecord.getScope();
                     RegScopeVO regScopeVO = factoryVO.getOrCreateVo(regScope.getScopeId(), regScope, convertedScopes, RegScopeVO.class);
 
-                    PairedRecordVO pairedRecordVO = new PairedRecordVO(regScopeVO, existingRecord.getRecordId());
+                    Integer recordId = existingRecord.getRecordId();
+                    Integer partyId = null;
+                    ParParty existingParty = partyService.findParPartyByRecord(existingRecord);
+                    if (existingParty != null) {
+                        partyId = existingParty.getPartyId();
+                    }
+                    PairedRecordVO pairedRecordVO = new PairedRecordVO(regScopeVO, recordId, partyId);
                     recordVO.addPairedRecord(pairedRecordVO);
                 }
             }
@@ -234,106 +570,10 @@ public class InterpiService {
     }
 
     /**
-     * Import rejstříkového hesla.
-     *
-     * @param entitaTyp INTERPI objekt
-     * @param originalRecord původní rejstřík, může být null
-     * @param interpiRecordId id INTERPI
-     * @param regScope třída rejstříku
-     * @param regExternalSystem externí systém
-     *
-     * @return uložené rejstříkové heslo
+     * Odstraní interpi mapování které mají neplatnou kombinaci vztahů a rolí.
      */
-    private RegRecord importRecord(final EntitaTyp entitaTyp, final RegRecord originalRecord,
-            final String interpiRecordId,  final RegScope regScope, final RegExternalSystem regExternalSystem) {
-        RegRecord regRecord = interpiFactory.createRecord(entitaTyp, interpiRecordId, regExternalSystem, regScope, true);
-        if (originalRecord != null) {
-            regRecord.setRecordId(originalRecord.getRecordId());
-            regRecord.setVersion(originalRecord.getVersion());
-            regRecord.setUuid(originalRecord.getUuid());
-
-            //smazání variantních hesel
-            List<RegVariantRecord> oldVariants = variantRecordRepository.findByRegRecordId(originalRecord.getRecordId());
-            variantRecordRepository.delete(oldVariants);
-        }
-
-        List<RegVariantRecord> variantRecordList = regRecord.getVariantRecordList();
-        regRecord = registryService.saveRecord(regRecord, false);
-        for (RegVariantRecord variantRecord : variantRecordList) {
-            registryService.saveVariantRecord(variantRecord);
-        }
-
-        return regRecord;
-    }
-
-    /**
-     * Import osoby.
-     *
-     * @param valueMap INTERPI objekt
-     * @param originalRecord původní rejstřík, může být null
-     * @param interpiRecordId id INTERPI
-     * @param isOriginator příznak zda je osoba původce
-     * @param regScope třída rejstříku
-     * @param regExternalSystem externí systém
-     *
-     * @return uložené rejstříkové heslo osoby
-     */
-    private RegRecord importParty(final Map<EntityValueType, List<Object>> valueMap, final RegRecord originalRecord,
-            final String interpiRecordId, final boolean isOriginator, final RegScope regScope,
-            final RegExternalSystem regExternalSystem) {
-        RegRecord regRecord = interpiFactory.createPartyRecord(valueMap, interpiRecordId, regExternalSystem, regScope);
-        ParParty newParty = interpiFactory.createParty(regRecord, valueMap, isOriginator);
-
-        if (originalRecord != null) {
-            regRecord.setRecordId(originalRecord.getRecordId());
-            regRecord.setVersion(originalRecord.getVersion());
-
-            ParParty originalParty = partyService.findParPartyByRecord(originalRecord);
-            newParty.setPartyId(originalParty.getPartyId());
-            newParty.setVersion(originalParty.getVersion());
-
-            List<ParRelation> relations = originalParty.getRelations();
-            if (CollectionUtils.isNotEmpty(relations)) {
-                for (ParRelation relation : relations) {
-                    partyService.deleteRelation(relation);
-                }
-            }
-        }
-
-        ParParty parParty = partyService.saveParty(newParty);
-        List<ParRelation> relations = parParty.getRelations();
-        if (CollectionUtils.isNotEmpty(relations)) {
-            for (ParRelation relation : relations) {
-                partyService.saveRelation(relation, null);
-            }
-        }
-
-        return parParty.getRecord();
-    }
-
-    private EntitaTyp findOneRecord(final String id, final RegExternalSystem regExternalSystem) {
-        WssoapSoap client = createClient(regExternalSystem);
-
-        logger.info("Načítání záznamu s identifikátorem " + id + " z interpi.");
-        String oneRecord = client.getOneRecord(id, regExternalSystem.getUsername(), regExternalSystem.getPassword());
-        SetTyp setTyp = unmarshall(oneRecord);
-
-        if (setTyp.getEntita().isEmpty()) {
-            throw new IllegalStateException("Záznam s identifikátorem " + id + " nebyl nalezen v systému " + regExternalSystem);
-        }
-
-        return setTyp.getEntita().iterator().next();
-    }
-
-    private WssoapSoap createClient(final RegExternalSystem regExternalSystem) {
-        return WSUtils.createClient(regExternalSystem.getUrl(), WssoapSoap.class);
-    }
-
-    private RegExternalSystem getExternalSystem(final Integer systemId) {
-        return regExternalSystemRepository.findOne(systemId);
-    }
-
-    private SetTyp unmarshall(final String oneRecord) {
-        return XmlUtils.unmarshallDataWithIntrospector(oneRecord, SetTyp.class);
+    public void deleteInvalidMappings() {
+        List<Integer> invalidMappingIds = interpiMappingRepository.findInvalidMappingIds();
+        invalidMappingIds.forEach(id -> interpiMappingRepository.delete(id));
     }
 }

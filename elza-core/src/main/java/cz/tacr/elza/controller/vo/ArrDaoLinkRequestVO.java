@@ -1,7 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
-import cz.tacr.elza.api.ArrDaoRequest;
 import cz.tacr.elza.domain.ArrDaoLinkRequest;
+import cz.tacr.elza.domain.ArrDaoRequest;
 
 /**
  * Value objekt {@link ArrDaoLinkRequest}
@@ -13,9 +13,11 @@ public class ArrDaoLinkRequestVO extends ArrRequestVO {
 
     private ArrDaoVO dao;
 
-    private ArrDaoRequest.Type type;
+    private ArrDaoLinkRequest.Type type;
 
     private String didCode;
+
+    private TreeNodeClient node;
 
     public ArrDaoVO getDao() {
         return dao;
@@ -25,11 +27,11 @@ public class ArrDaoLinkRequestVO extends ArrRequestVO {
         this.dao = dao;
     }
 
-    public ArrDaoRequest.Type getType() {
+    public ArrDaoLinkRequest.Type getType() {
         return type;
     }
 
-    public void setType(final ArrDaoRequest.Type type) {
+    public void setType(final ArrDaoLinkRequest.Type type) {
         this.type = type;
     }
 
@@ -39,5 +41,13 @@ public class ArrDaoLinkRequestVO extends ArrRequestVO {
 
     public void setDidCode(final String didCode) {
         this.didCode = didCode;
+    }
+
+    public TreeNodeClient getNode() {
+        return node;
+    }
+
+    public void setNode(final TreeNodeClient node) {
+        this.node = node;
     }
 }

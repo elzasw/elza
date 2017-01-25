@@ -12,7 +12,6 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 
-import cz.tacr.elza.domain.enumeration.StringLength;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.hibernate.annotations.Cache;
@@ -20,6 +19,8 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import cz.tacr.elza.domain.enumeration.StringLength;
 
 
 /**
@@ -36,7 +37,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
         @UniqueConstraint(columnNames = {"viewOrder"})})
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class RulItemSpec implements cz.tacr.elza.api.RulItemSpec<RulItemType, RulPackage> {
+public class RulItemSpec {
 
     @Id
     @GeneratedValue
@@ -80,122 +81,138 @@ public class RulItemSpec implements cz.tacr.elza.api.RulItemSpec<RulItemType, Ru
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
-    @Override
     public Integer getItemSpecId() {
         return itemSpecId;
     }
 
-    @Override
     public void setItemSpecId(final Integer itemSpecId) {
         this.itemSpecId = itemSpecId;
     }
 
-    @Override
     public RulItemType getItemType() {
         return itemType;
     }
 
-    @Override
     public void setItemType(final RulItemType itemType) {
         this.itemType = itemType;
     }
 
-    @Override
     public String getCode() {
         return code;
     }
 
-    @Override
     public void setCode(final String code) {
         this.code = code;
     }
 
-    @Override
     public String getName() {
         return name;
     }
 
-    @Override
     public void setName(final String name) {
         this.name = name;
     }
 
-    @Override
     public String getShortcut() {
         return shortcut;
     }
 
-    @Override
     public void setShortcut(final String shortcut) {
         this.shortcut = shortcut;
     }
 
-    @Override
     public String getDescription() {
         return description;
     }
 
-    @Override
     public void setDescription(final String description) {
         this.description = description;
     }
 
-    @Override
+    /**
+     * @return pořadí zobrazení.
+     */
     public Integer getViewOrder() {
         return viewOrder;
     }
 
-    @Override
+    /**
+     * @param viewOrder pořadí zobrazení.
+     */
     public void setViewOrder(final Integer viewOrder) {
         this.viewOrder = viewOrder;
     }
 
-    @Override
+    /**
+     * @return typ udává, zda je povinné/doporučené/... vyplnit hodnotu atributu.
+     */
     public Type getType() {
         return type;
     }
 
-    @Override
+    /**
+     * Typ udává, zda je povinné/doporučené/... vyplnit hodnotu atributu.
+     *
+     * @param type typ
+     */
     public void setType(final Type type) {
         this.type = type;
     }
 
-    @Override
+    /**
+     * @return příznak udává, zda je atribut opakovatelný
+     */
     public Boolean getRepeatable() {
         return repeatable;
     }
 
-    @Override
+    /**
+     * Příznak udává, zda je atribut opakovatelný.
+     *
+     * @param repeatable opakovatelnost
+     */
     public void setRepeatable(final Boolean repeatable) {
         this.repeatable = repeatable;
     }
 
-    @Override
+    /**
+     * @return typ kód typu kontroly
+     */
     public String getPolicyTypeCode() {
         return policyTypeCode;
     }
 
-    @Override
+    /**
+     * @param policyTypeCode kód typu kontroly
+     */
     public void setPolicyTypeCode(final String policyTypeCode) {
         this.policyTypeCode = policyTypeCode;
     }
 
-    @Override
+    /**
+     * @return kategorie umožňující vytvoření stromu v UI ("Indoevropské|Slovanské")
+     */
     public String getCategory() {
         return category;
     }
 
-    @Override
+    /**
+     * @param category kategorie umožňující vytvoření stromu v UI ("Indoevropské|Slovanské")
+     */
     public void setCategory(final String category) {
         this.category = category;
     }
 
-    @Override
+    /**
+     * @return balíček
+     */
     public RulPackage getPackage() {
         return rulPackage;
     }
 
-    @Override
+    /**
+     * @param rulPackage balíček
+     */
     public void setPackage(final RulPackage rulPackage) {
         this.rulPackage = rulPackage;
     }
@@ -222,5 +239,27 @@ public class RulItemSpec implements cz.tacr.elza.api.RulItemSpec<RulItemType, Ru
     @Override
     public String toString() {
         return "RulItemSpec pk=" + itemSpecId;
+    }
+
+    public enum Type {
+        /**
+         * Povinný
+         */
+        REQUIRED,
+
+        /**
+         * Doporučený
+         */
+        RECOMMENDED,
+
+        /**
+         * Možný
+         */
+        POSSIBLE,
+
+        /**
+         * Nemožný
+         */
+        IMPOSSIBLE
     }
 }

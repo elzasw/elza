@@ -1,9 +1,9 @@
 package cz.tacr.elza.controller.vo;
 
-import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
-
 import java.util.Date;
 import java.util.List;
+
+import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
 
 /**
  * VO Výstup z archivního souboru.
@@ -76,11 +76,11 @@ public class ArrOutputDefinitionVO {
         return error;
     }
 
-    public void setError(String error) {
+    public void setError(final String error) {
         this.error = error;
     }
 
-    public void setState(OutputState state) {
+    public void setState(final OutputState state) {
         this.state = state;
     }
 
@@ -120,7 +120,7 @@ public class ArrOutputDefinitionVO {
         return outputTypeId;
     }
 
-    public void setOutputTypeId(Integer outputTypeId) {
+    public void setOutputTypeId(final Integer outputTypeId) {
         this.outputTypeId = outputTypeId;
     }
 
@@ -136,7 +136,7 @@ public class ArrOutputDefinitionVO {
         return templateId;
     }
 
-    public void setTemplateId(Integer templateId) {
+    public void setTemplateId(final Integer templateId) {
         this.templateId = templateId;
     }
 
@@ -144,7 +144,7 @@ public class ArrOutputDefinitionVO {
         return outputResultId;
     }
 
-    public void setOutputResultId(Integer outputResultId) {
+    public void setOutputResultId(final Integer outputResultId) {
         this.outputResultId = outputResultId;
     }
 
@@ -152,7 +152,7 @@ public class ArrOutputDefinitionVO {
         return generatedDate;
     }
 
-    public void setGeneratedDate(Date generatedDate) {
+    public void setGeneratedDate(final Date generatedDate) {
         this.generatedDate = generatedDate;
     }
 }

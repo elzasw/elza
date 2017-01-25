@@ -1,7 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -10,15 +8,17 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
- * Implementace {@link cz.tacr.elza.api.ArrItemSettings}
+ * Nastavení pro atribut výstupu.
  *
  * @author Martin Šlapa
  * @since 27.06.2016
  */
 @Entity(name = "arr_item_settings")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrItemSettings implements cz.tacr.elza.api.ArrItemSettings<RulItemType, ArrOutputDefinition> {
+public class ArrItemSettings {
 
     @Id
     @GeneratedValue
@@ -35,42 +35,58 @@ public class ArrItemSettings implements cz.tacr.elza.api.ArrItemSettings<RulItem
     @Column(nullable = false)
     private Boolean blockActionResult;
 
-    @Override
+    /**
+     * @return identifikátor entity
+     */
     public Integer getItemSettingsId() {
         return itemSettingsId;
     }
 
-    @Override
+    /**
+     * @param itemSettingsId identifikátor entity
+     */
     public void setItemSettingsId(final Integer itemSettingsId) {
         this.itemSettingsId = itemSettingsId;
     }
 
-    @Override
+    /**
+     * @return typ atributu
+     */
     public RulItemType getItemType() {
         return itemType;
     }
 
-    @Override
+    /**
+     * @param itemType typ atributu
+     */
     public void setItemType(final RulItemType itemType) {
         this.itemType = itemType;
     }
 
-    @Override
+    /**
+     * @return výstup
+     */
     public ArrOutputDefinition getOutputDefinition() {
         return outputDefinition;
     }
 
-    @Override
+    /**
+     * @param outputDefinition výstup
+     */
     public void setOutputDefinition(final ArrOutputDefinition outputDefinition) {
         this.outputDefinition = outputDefinition;
     }
 
-    @Override
+    /**
+     * @return výsledek
+     */
     public Boolean getBlockActionResult() {
         return blockActionResult;
     }
 
-    @Override
+    /**
+     * @param blockActionResult výsledek
+     */
     public void setBlockActionResult(final Boolean blockActionResult) {
         this.blockActionResult = blockActionResult;
     }

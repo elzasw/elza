@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParPartyTypeComplementType implements cz.tacr.elza.api.ParPartyTypeComplementType<ParPartyType, ParComplementType> {
+public class ParPartyTypeComplementType {
 
     @Id
     @GeneratedValue
@@ -51,56 +51,48 @@ public class ParPartyTypeComplementType implements cz.tacr.elza.api.ParPartyType
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
-    @Override
     public Integer getPartyTypeComplementTypeId() {
         return partyTypeComplementTypeId;
     }
 
-    @Override
     public void setPartyTypeComplementTypeId(final Integer parPartyTypeComplementTypeId) {
         this.partyTypeComplementTypeId = parPartyTypeComplementTypeId;
     }
 
-    @Override
     public ParComplementType getComplementType() {
         return complementType;
     }
 
-    @Override
     public void setComplementType(final ParComplementType complementType) {
         this.complementType = complementType;
     }
 
-    @Override
     public ParPartyType getPartyType() {
         return partyType;
     }
 
-    @Override
     public void setPartyType(final ParPartyType partyType) {
         this.partyType = partyType;
     }
 
-    @Override
     public boolean isRepeatable() {
         return repeatable;
     }
 
-    @Override
-	public void setRepeatable(final boolean repeatable) {
+    public void setRepeatable(final boolean repeatable) {
         this.repeatable = repeatable;
     }
 
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof cz.tacr.elza.api.ParPartyTypeComplementType)) {
+        if (!(obj instanceof ParPartyTypeComplementType)) {
             return false;
         }
         if (this == obj) {
             return true;
         }
 
-        cz.tacr.elza.api.ParPartyTypeComplementType other = (cz.tacr.elza.api.ParPartyTypeComplementType) obj;
+        ParPartyTypeComplementType other = (ParPartyTypeComplementType) obj;
 
         return new EqualsBuilder().append(partyTypeComplementTypeId, other.getPartyTypeComplementTypeId()).isEquals();
     }

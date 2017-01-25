@@ -15,6 +15,8 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 
 
 /**
+ * Hodnota atributu archivního popisu typu RegRecord.
+ *
  * @author Martin Šlapa
  * @since 1.9.2015
  */
@@ -22,7 +24,7 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 @Entity(name = "arr_data_record_ref")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrDataRecordRef extends ArrData implements cz.tacr.elza.api.ArrDataRecordRef<RegRecord> {
+public class ArrDataRecordRef extends ArrData {
 
     public static final String RECORD = "record";
 
@@ -31,12 +33,10 @@ public class ArrDataRecordRef extends ArrData implements cz.tacr.elza.api.ArrDat
     @JoinColumn(name = "recordId", nullable = false)
     private RegRecord record;
 
-    @Override
     public RegRecord getRecord() {
         return record;
     }
 
-    @Override
     public void setRecord(final RegRecord record) {
         this.record = record;
     }

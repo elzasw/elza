@@ -1,5 +1,36 @@
 package cz.tacr.elza.service;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.NotEmpty;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.util.Assert;
+
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ParParty;
@@ -8,6 +39,7 @@ import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrGroupUser;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.GroupRepository;
@@ -19,29 +51,6 @@ import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.security.UserPermission;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import org.hibernate.validator.constraints.NotEmpty;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.session.SessionInformation;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-import org.springframework.web.context.request.RequestContextHolder;
-
-import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Serviska pro uživatele.
@@ -82,12 +91,25 @@ public class UserService {
     @Value("${elza.security.salt:kdFss=+4Df_%}")
     private String SALT;
 
+    private Object synchObj = new Object();
+
     private ShaPasswordEncoder encoder = new ShaPasswordEncoder(256);
 
-    /**
-     * Seznam session id, pro které se má přepočítat oprávnění
-     */
-    private Set<String> reCalcSessionIds = new HashSet<>();
+    /** Cache pro nakešování oprávnění uživatele. */
+    private LoadingCache<Integer, Collection<UserPermission>> userPermissionsCache;
+
+    public UserService() {
+        userPermissionsCache = CacheBuilder.newBuilder()
+                .maximumSize(150)
+                .expireAfterAccess(10, TimeUnit.MINUTES)
+                .build(new CacheLoader<Integer, Collection<UserPermission>>() {
+                    @Override
+                    public Collection<UserPermission> load(final Integer userId) throws Exception {
+                        final UsrUser user = getUser(userId);
+                        return calcUserPermission(user);
+                    }
+                });
+    }
 
     private void changePermission(final @NotNull UsrUser user,
                                   final @NotNull UsrGroup group,
@@ -200,7 +222,7 @@ public class UserService {
                                      @NotNull final List<UsrPermission> permissions) {
         List<UsrPermission> permissionsDB = permissionRepository.findByUserOrderByPermissionIdAsc(user);
         changePermission(user, null, permissions, permissionsDB);
-        recalcUserPermission(user);
+        invalidateCache(user);
         changeUserEvent(user);
     }
 
@@ -209,12 +231,13 @@ public class UserService {
      *
      * @param user uživatel, kterému přepočítáváme práva
      */
-    public void recalcUserPermission(@NotNull final UsrUser user) {
-        List<SessionInformation> infoSessions = sessionRegistry.getAllSessions(user.getUsername(), false);
-        for (SessionInformation infoSession : infoSessions) {
-            String sessionId = infoSession.getSessionId();
-            reCalcSessionIds.add(sessionId);
-        }
+    public void invalidateCache(@NotNull final UsrUser user) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                userPermissionsCache.invalidate(user.getUserId());
+            }
+        });
     }
 
     /**
@@ -240,7 +263,7 @@ public class UserService {
 
                 groupUserRepository.save(item);
             }
-            recalcUserPermission(user);
+            invalidateCache(user);
         }
 
         changeUsersEvent(users);
@@ -263,7 +286,7 @@ public class UserService {
         }
 
         groupUserRepository.delete(item);
-        recalcUserPermission(user);
+        invalidateCache(user);
         changeUserEvent(user);
         changeGroupEvent(group);
     }
@@ -497,20 +520,23 @@ public class UserService {
      * @return detail přihlášeného uživatele (null pokud není nikdo přihlášený)
      */
     public UserDetail getLoggedUserDetail() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null) {
-            return null;
-        }
-        String sessionId = RequestContextHolder.currentRequestAttributes().getSessionId();
-
-        UserDetail details = (UserDetail) auth.getDetails();
-        if (reCalcSessionIds.contains(sessionId)) {
-            reCalcSessionIds.remove(sessionId);
+        synchronized (synchObj) {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null) {
+                return null;
+            }
+            UserDetail details = (UserDetail) auth.getDetails();
             UsrUser user = userRepository.findByUsername(details.getUsername());
-            details.getUserPermission().clear();
-            details.getUserPermission().addAll(calcUserPermission(user));
+            if (user != null) { // pokud je null, jedná se o virtuální admin účet, který má nastaveno oprávnění ADMIN
+                try {
+                    details.getUserPermission().clear();
+                    details.getUserPermission().addAll(userPermissionsCache.get(user.getUserId()));
+                } catch (ExecutionException e) {
+                    throw new SystemException(e);
+                }
+            }
+            return details;
         }
-        return details;
     }
 
     /**
@@ -597,7 +623,7 @@ public class UserService {
      * @param permission typ oprávnění
      * @return má oprávnění?
      */
-    public boolean hasPermission(UsrPermission.Permission permission) {
+    public boolean hasPermission(final UsrPermission.Permission permission) {
         for (UserPermission userPermission : getUserPermission()) {
             if (userPermission.getPermission().equals(permission) || userPermission.getPermission().equals(UsrPermission.Permission.ADMIN)) {
                 return true;

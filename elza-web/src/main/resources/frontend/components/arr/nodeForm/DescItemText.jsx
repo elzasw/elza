@@ -10,6 +10,7 @@ import {AbstractReactComponent, i18n} from 'components/index.jsx';
 import {connect} from 'react-redux'
 import {decorateValue} from './DescItemUtils.jsx'
 import DescItemLabel from './DescItemLabel.jsx'
+import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 
 var DescItemText = class DescItemText extends AbstractReactComponent {
     constructor(props) {
@@ -39,14 +40,16 @@ var DescItemText = class DescItemText extends AbstractReactComponent {
 
         return (
             <div className='desc-item-value'>
-                <textarea
-                    {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
-                    ref='focusEl'
-                    type="text"
-                    disabled={locked}
-                    value={value}
-                    onChange={(e) => this.props.onChange(e.target.value)}
-                />
+                <ItemTooltipWrapper tooltipTitle="dataType.text.format">
+                    <textarea
+                        {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
+                        ref='focusEl'
+                        type="text"
+                        disabled={locked}
+                        value={value}
+                        onChange={(e) => this.props.onChange(e.target.value)}
+                    />
+                </ItemTooltipWrapper>
             </div>
         )
     }

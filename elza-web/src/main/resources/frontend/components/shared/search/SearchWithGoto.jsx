@@ -20,6 +20,9 @@ class SearchWithGoto extends AbstractReactComponent {
         onFulltextNextItem: React.PropTypes.func,
         onFulltextPrevItem: React.PropTypes.func,
         type: React.PropTypes.string.isRequired,
+        extendedSearch: React.PropTypes.bool,
+        extendedReadOnly: React.PropTypes.bool,
+        onClickExtendedSearch: React.PropTypes.func,
     };
 
     static defaultProps = {
@@ -36,7 +39,7 @@ class SearchWithGoto extends AbstractReactComponent {
         if (nextProps.filterText !== 'undefined' && nextProps.filterText !== this.props.filterText) {
             filterText = nextProps.filterText
         }
-        
+
         this.setState({
             filterText: filterText,
             showFilterResult: typeof nextProps.showFilterResult !== 'undefined' ? nextProps.showFilterResult : this.state.showFilterResult,
@@ -91,7 +94,8 @@ class SearchWithGoto extends AbstractReactComponent {
     };
 
     render() {
-        const {type, itemsCount, allItemsCount, textAreaInput, placeholder, selIndex, onFulltextNextItem, onFulltextPrevItem} = this.props;
+        const {type, itemsCount, allItemsCount, textAreaInput, placeholder, selIndex, onFulltextNextItem, onFulltextPrevItem,
+            extendedSearch, onClickExtendedSearch, extendedReadOnly} = this.props;
         const {filterText, showFilterResult} = this.state;
 
         const actionAddons = [];
@@ -154,6 +158,9 @@ class SearchWithGoto extends AbstractReactComponent {
             onClear={this.handleClear}
             onSearch={this.handleOnSearch}
             actionAddons={actionAddons}
+            extendedSearch={extendedSearch}
+            onClickExtendedSearch={onClickExtendedSearch}
+            extendedReadOnly={extendedReadOnly}
         />
     }
 }

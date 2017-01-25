@@ -17,7 +17,7 @@ const TOOLTIP_WINDOW_PADDING = 40;
 class TooltipTrigger extends AbstractReactComponent {
 
     static PropTypes = {
-        content: React.PropTypes.object.isRequired,
+        content: React.PropTypes.object,
         placement: React.PropTypes.oneOf(['left', 'right', 'top', 'bottom', 'vertical', 'horizontal', 'auto']),
         holdOnHover: React.PropTypes.bool,
         holdOnFocus: React.PropTypes.bool,
@@ -241,8 +241,22 @@ class TooltipTrigger extends AbstractReactComponent {
     }
 
     render() {
-        const {className, content, children} = this.props;
-        const {placement, maxWidth, maxHeight} = this.state;
+        const {
+            className,
+            content,
+            children,
+            placement,
+            holdOnHover,
+            holdOnFocus,
+            delay,
+            showDelay,
+            hideDelay,
+            focusDelay,
+            focusShowDelay,
+            focusHideDelay,
+            ...otherProps
+        } = this.props;
+        const {maxWidth, maxHeight} = this.state;
 
         return (
             <span
@@ -252,11 +266,12 @@ class TooltipTrigger extends AbstractReactComponent {
                 onBlur={() => this.handleFocus(false)}
                 onMouseOver={() => this.showTooltip(true, this.getDelay(true))}
                 onMouseLeave={() => this.showTooltip(false, this.getDelay(false))}
+                {...otherProps}
             >
                 {children}
-                <Overlay
+                {content && <Overlay
                     show={this.state.showTooltip}
-                    placement={placement}
+                    placement={this.state.placement}
                     target={() => this.refs.ttTarget}
                 >
                     <Tooltip
@@ -268,7 +283,7 @@ class TooltipTrigger extends AbstractReactComponent {
                             {content}
                         </div>
                     </Tooltip>
-                </Overlay>
+                </Overlay>}
             </span>
         )
     }

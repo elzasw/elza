@@ -1,5 +1,12 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -10,13 +17,6 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.utils.Yaml;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Akce pro vícenásobnou hromadnou akci.

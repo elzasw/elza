@@ -1,7 +1,3 @@
-/**
- * Atribut - desc item type.
- */
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {TooltipTrigger, Autocomplete, Utils, Icon, i18n, AbstractReactComponent, NoFocusButton, FormInput} from 'components/index.jsx';
@@ -24,14 +20,14 @@ import {propsEquals} from 'components/Utils.jsx'
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx'
 import {indexById} from 'stores/app/utils.jsx'
-const classNames = require('classnames');
+import classNames from 'classnames';
 import * as perms from 'actions/user/Permission.jsx';
 const ShortcutsManager = require('react-shortcuts');
 const Shortcuts = require('react-shortcuts/component')
 import {getSetFromIdsList} from "stores/app/utils.jsx";
 import DescItemTypeSpec from "./DescItemTypeSpec";
 
-require('./AbstractDescItem.less')
+import './AbstractDescItem.less'
 
 const keyModifier = Utils.getKeyModifier()
 
@@ -43,13 +39,17 @@ const keymap = {
         addDescItem: keyModifier + 'i',
         deleteDescItem: keyModifier + 'd',
     },
-}
-const shortcutManager = new ShortcutsManager(keymap)
+};
+
+const shortcutManager = new ShortcutsManager(keymap);
 
 const placeholder = document.createElement("div");
 placeholder.className = "placeholder";
 
-const DescItemType = class DescItemType extends AbstractReactComponent {
+/**
+ * Atribut - desc item type.
+ */
+class DescItemType extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -173,12 +173,12 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
      * Renderování specifikace atributu.
      * @param key {Object} key pro hodnotu
      * @param descItem {Object} objekt hodnoty atributu
-     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
+     * @param descItemIndex {number} index hodnoty atributu v seznamu
      * @param locked {Boolean}
      * @return {Object} view
      */
     renderDescItemSpec(key, descItem, descItemIndex, locked) {
-        const {infoType, refType, readMode} = this.props;
+        const {infoType, refType, readMode, strictMode} = this.props;
 
         return (
             <DescItemTypeSpec
@@ -192,13 +192,14 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
                 onChange={this.handleChangeSpec.bind(this, descItemIndex)}
                 onBlur={this.handleBlur.bind(this, descItemIndex)}
                 onFocus={this.handleFocus.bind(this, descItemIndex)}
+                strictMode={strictMode}
                 />
         )
     }
 
     /**
      * Změna hodnoty atributu.
-     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
+     * @param descItemIndex {number} index hodnoty atributu v seznamu
      * @param value {Object} nová hodnota atibutu
      */
     handleChange(descItemIndex, value) {
@@ -208,7 +209,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
     /**
      * Vytvoření nového hesla.
      *
-     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
+     * @param descItemIndex {number} index hodnoty atributu v seznamu
      */
     handleCreateRecord(descItemIndex) {
         this.props.onCreateRecord(descItemIndex);
@@ -217,8 +218,8 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
     /**
      * Zobrazení detailu rejstříku
      *
-     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
-     * @param recordId {Integer} identifikátor typu osoby
+     * @param descItemIndex {number} index hodnoty atributu v seznamu
+     * @param recordId {number} identifikátor typu osoby
      */
     handleDetailRecord(descItemIndex, recordId) {
         this.props.onDetailRecord(descItemIndex, recordId);
@@ -227,7 +228,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
     /**
      * Vytvoření nového obalu.
      *
-     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
+     * @param descItemIndex {number} index hodnoty atributu v seznamu
      */
     handleCreatePacket(descItemIndex) {
         this.props.onCreatePacket(descItemIndex);
@@ -236,7 +237,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
     /**
      * Zobrazení seznamu obalů
      *
-     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
+     * @param descItemIndex {number} index hodnoty atributu v seznamu
      */
     handleFundPackets(descItemIndex) {
         this.props.onFundPackets(descItemIndex);
@@ -245,7 +246,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
     /**
      * Vytvoření nového souboru.
      *
-     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
+     * @param descItemIndex {number} index hodnoty atributu v seznamu
      */
     handleCreateFile(descItemIndex) {
         this.props.onCreateFile(descItemIndex);
@@ -254,7 +255,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
     /**
      * Zobrazení seznamu souborů
      *
-     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
+     * @param descItemIndex {number} index hodnoty atributu v seznamu
      */
     handleFundFiles(descItemIndex) {
         this.props.onFundFiles(descItemIndex);
@@ -263,8 +264,8 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
     /**
      * Vytvoření nové osoby.
      *
-     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
-     * @param partyTypeId {Integer} identifikátor typu osoby
+     * @param descItemIndex {number} index hodnoty atributu v seznamu
+     * @param partyTypeId {number} identifikátor typu osoby
      */
     handleCreateParty(descItemIndex, partyTypeId) {
         this.props.onCreateParty(descItemIndex, partyTypeId);
@@ -273,8 +274,8 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
     /**
      * Zobrazení detailu osoby
      *
-     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
-     * @param partyId {Integer} identifikátor osoby
+     * @param descItemIndex {number} index hodnoty atributu v seznamu
+     * @param partyId {number} identifikátor osoby
      */
     handleDetailParty(descItemIndex, partyId) {
         this.props.onDetailParty(descItemIndex, partyId);
@@ -282,7 +283,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
 
     /**
      * Změna hodnoty specifikace atributu.
-     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
+     * @param descItemIndex {number} index hodnoty atributu v seznamu
      * @param eventOrValue {Object} event nebo hodnota od prvku
      */
     handleChangeSpec(descItemIndex, eventOrValue) {
@@ -301,7 +302,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
 
     /**
      * Opuštení focusu hodnoty atributu.
-     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
+     * @param descItemIndex {number} index hodnoty atributu v seznamu
      */
     handleBlur(descItemIndex) {
         this.props.onBlur(descItemIndex);
@@ -309,7 +310,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
 
     /**
      * Získání focusu na hodnotu atributu.
-     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
+     * @param descItemIndex {number} index hodnoty atributu v seznamu
      */
     handleFocus(descItemIndex) {
         this.props.onFocus(descItemIndex);
@@ -498,13 +499,13 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
      * Renderování hodnoty atributu.
      * @param descItemType {Object} atribut
      * @param descItem {Object} objekt hodnoty atributu
-     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
+     * @param descItemIndex {number} index hodnoty atributu v seznamu
      * @param actions {Array} pole akcí
      * @param locked {Boolean} je atribut uzamčen?
      * @return {Object} view
      */
     renderDescItem(descItemType, descItem, descItemIndex, actions, locked) {
-        const {refType, readMode, fundId, infoType, singleDescItemTypeEdit, rulDataType, calendarTypes, packets, packetTypes, versionId} = this.props;
+        const {refType, readMode, fundId, infoType, singleDescItemTypeEdit, rulDataType, calendarTypes, packets, packetTypes, versionId, typePrefix} = this.props;
 
         let cls = 'desc-item-type-desc-item-container';
         if (actions.length > 0) {
@@ -530,6 +531,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
         partsCls += " dt" + rulDataType.code;
 
         const descItemProps = {
+            hasSpecification: refType.useSpecification,
             descItem: descItem,
             onChange: this.handleChange.bind(this, descItemIndex),
             onBlur: this.handleBlur.bind(this, descItemIndex),
@@ -537,8 +539,9 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
             locked: locked,
             readMode: readMode,
             ref: key,
-            cal: infoType.cal && !infoType.calSt
-        }
+            cal: infoType.cal && !infoType.calSt,
+            typePrefix
+        };
 
         let dragProps;
         if (Utils.detectIE() || readMode) {
@@ -553,10 +556,16 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
         }
 
         const itemComponentKey = 'value_' + key;
+        let specName = null;
         switch (rulDataType.code) {
             case 'PARTY_REF':
+                if (descItem.descItemSpecId) {
+                    specName = refType.descItemSpecsMap[descItem.descItemSpecId].name;
+                }
                 parts.push(<DescItemPartyRef key={itemComponentKey}
                                              {...descItemProps}
+                                             itemName={refType.shortcut}
+                                             specName={specName}
                                              singleDescItemTypeEdit={singleDescItemTypeEdit}
                                              onDetail={this.handleDetailParty.bind(this, descItemIndex)}
                                              onCreateParty={this.handleCreateParty.bind(this, descItemIndex)}
@@ -564,8 +573,13 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
                 />)
                 break;
             case 'RECORD_REF':
+                if (descItem.descItemSpecId) {
+                    specName = refType.descItemSpecsMap[descItem.descItemSpecId].name;
+                }
                 parts.push(<DescItemRecordRef key={itemComponentKey}
                                               {...descItemProps}
+                                              itemName={refType.shortcut}
+                                              specName={specName}
                                               singleDescItemTypeEdit={singleDescItemTypeEdit}
                                               onDetail={this.handleDetailRecord.bind(this, descItemIndex)}
                                               onCreateRecord={this.handleCreateRecord.bind(this, descItemIndex)}
@@ -1012,6 +1026,7 @@ DescItemType.propTypes = {
     fundId: React.PropTypes.number.isRequired,
     userDetail: React.PropTypes.object.isRequired,
     showNodeAddons: React.PropTypes.bool.isRequired,
+    strictMode: React.PropTypes.bool.isRequired,
 }
 
 DescItemType.childContextTypes = {

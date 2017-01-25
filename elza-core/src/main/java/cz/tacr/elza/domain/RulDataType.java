@@ -17,8 +17,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
- * evidence možných datových typů atributů archivního popisu.
- * evidence je společná pro všechny archivní pomůcky.
+ * Evidence možných datových typů atributů archivního popisu.
+ * Evidence je společná pro všechny archivní pomůcky.
  *
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Table
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulDataType implements cz.tacr.elza.api.RulDataType {
+public class RulDataType {
 
     @Id
     @GeneratedValue
@@ -53,72 +53,76 @@ public class RulDataType implements cz.tacr.elza.api.RulDataType {
     @Column(length = 250, nullable = false)
     private String storageTable;
 
-    @Override
     public Integer getDataTypeId() {
         return dataTypeId;
     }
 
-    @Override
     public void setDataTypeId(final Integer dataTypeId) {
         this.dataTypeId = dataTypeId;
     }
 
-    @Override
     public String getCode() {
         return code;
     }
 
-    @Override
     public void setCode(final String code) {
         this.code = code;
     }
 
-    @Override
     public String getName() {
         return name;
     }
 
-    @Override
     public void setName(final String name) {
         this.name = name;
     }
 
-    @Override
     public String getDescription() {
         return description;
     }
 
-    @Override
     public void setDescription(final String description) {
         this.description = description;
     }
 
-    @Override
+    /**
+     * @return příznak, zda je možná u datového typu kontrola na regulární výraz.
+     */
     public Boolean getRegexpUse() {
         return regexpUse;
     }
 
-    @Override
+    /**
+     * @param regexpUse příznak, zda je možná u datového typu kontrola na regulární výraz.
+     */
     public void setRegexpUse(final Boolean regexpUse) {
         this.regexpUse = regexpUse;
     }
 
-    @Override
+    /**
+     * @return příznak, zda je možná u datového typu kontrola na maximální možnou délku textového řetězce.
+     */
     public Boolean getTextLengthLimitUse() {
         return textLengthLimitUse;
     }
 
-    @Override
+    /**
+     * @param textLengthLimitUse příznak, zda je možná u datového typu kontrola na maximální možnou délku textového řetězce.
+     */
     public void setTextLengthLimitUse(final Boolean textLengthLimitUse) {
         this.textLengthLimitUse = textLengthLimitUse;
     }
 
-    @Override
+    /**
+     * @return informace, kde je ulozena hodnota (arr_data_xxx).
+     */
     public String getStorageTable() {
         return storageTable;
     }
 
-    @Override
+    /**
+     * @param storageTable informace, kde je ulozena hodnota (arr_data_xxx).
+     */
     public void setStorageTable(final String storageTable) {
         this.storageTable = storageTable;
     }

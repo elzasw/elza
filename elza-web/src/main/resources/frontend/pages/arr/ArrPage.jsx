@@ -288,6 +288,9 @@ class ArrPage extends ArrParentPage {
         var settings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', fundId);
         var dataCenter = settings.value ? JSON.parse(settings.value) : null;
 
+        var settings = getOneSettings(userDetail.settings, 'FUND_STRICT_MODE', 'FUND', fundId);
+        var dataStrictMode = settings.value ? settings.value === 'true' : null;
+
         var init = {
             rightPanel: {
                 tabs: [
@@ -303,8 +306,9 @@ class ArrPage extends ArrParentPage {
                     {name: i18n('arr.fund.settings.panel.center.children'), key: 'children', checked: dataCenter && dataCenter.children !== undefined ? dataCenter.children : true},
                     {name: i18n('arr.fund.settings.panel.rightPanel'), key: 'rightPanel', checked: dataCenter && dataCenter.rightPanel !== undefined ? dataCenter.rightPanel : true},
                 ]
-            }
-        }
+            },
+            strictMode: {name: i18n('arr.fund.settings.rules.strictMode'), key: 'strictMode', value: dataStrictMode},
+        };
 
         var form = <FundSettingsForm initialValues={init} onSubmitForm={this.handleChangeFundSettingsSubmit.bind(this)} />;
         this.dispatch(modalDialogShow(this, i18n('arr.fund.settings.title'), form));
@@ -328,6 +332,10 @@ class ArrPage extends ArrParentPage {
         data.centerPanel.panels.map((item) => {value[item.key] = item.checked;});
         centerPanelItem.value = JSON.stringify(value);
         settings = setSettings(settings, centerPanelItem.id, centerPanelItem);
+
+        let strictMode = getOneSettings(settings, 'FUND_STRICT_MODE', 'FUND', fundId);
+        strictMode.value = data.strictMode.value === "" ? null : data.strictMode.value;
+        settings = setSettings(settings, strictMode.id, strictMode);
 
         this.dispatch(userDetailsSaveSettings(settings));
     }

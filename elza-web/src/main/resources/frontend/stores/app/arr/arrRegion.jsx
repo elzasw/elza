@@ -200,6 +200,7 @@ export default function arrRegion(state = initialState, action) {
         case types.FUND_EXTENDED_VIEW:
             var result = {...state, extendedView: action.enable}
             return consolidateState(state, result);
+        case types.FUND_NODE_INCREASE_VERSION:
         case types.FUND_NODE_CHANGE:
         case types.FUND_NODES_RECEIVE:
         case types.FUND_NODES_REQUEST:
@@ -361,6 +362,7 @@ export default function arrRegion(state = initialState, action) {
                 packets
             }
         case types.CHANGE_CONFORMITY_INFO:
+        case types.CHANGE_NODE_REQUESTS:
             var index = indexById(state.funds, action.fundVersionId, "versionId");
 
             // změna se ho netýká, vracím původní stav

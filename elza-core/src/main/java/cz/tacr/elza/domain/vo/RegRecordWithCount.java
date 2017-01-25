@@ -1,16 +1,16 @@
 package cz.tacr.elza.domain.vo;
 
-import cz.tacr.elza.domain.RegRecord;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import cz.tacr.elza.domain.RegRecord;
 
 /**
  * Zapouzdření kolekce vracených záznamů rejstříku a jejich celkového počtu za danou vyhledávací podmínku.
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
-public class RegRecordWithCount implements cz.tacr.elza.api.vo.RegRecordWithCount<RegRecord> {
+public class RegRecordWithCount {
 
     /**
      * Seznam osob.

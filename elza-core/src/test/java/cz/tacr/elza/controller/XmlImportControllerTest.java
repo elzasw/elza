@@ -1,7 +1,8 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.api.vo.XmlImportType;
 import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.domain.vo.XmlImportType;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;

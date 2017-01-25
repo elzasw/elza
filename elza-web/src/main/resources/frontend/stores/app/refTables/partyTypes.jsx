@@ -1,4 +1,5 @@
 import * as types from 'actions/constants/ActionTypes.js';
+import {RELATION_CLASS_CODES} from 'actions/party/party.jsx';
 
 const initialState = {
     isFetching: false,
@@ -16,13 +17,19 @@ export default function partyTypes(state = initialState, action = {}) {
             }
         }
         case types.REF_PARTY_TYPES_RECEIVE:{
+            const relationType = [].concat.apply(...action.items.map(i => i.relationTypes));
+
             return {
                 ...state,
                 isFetching: false,
                 fetched: true,
                 dirty: false,
                 items: action.items,
-                lastUpdated: action.receivedAt
+                lastUpdated: action.receivedAt,
+                relationTypesForClass: {
+                    [RELATION_CLASS_CODES.BIRTH]: relationType.filter(i => i.relationClassType && i.relationClassType.code == RELATION_CLASS_CODES.BIRTH).map(i => i.id).filter((i, index, self) => index == self.indexOf(i)),
+                    [RELATION_CLASS_CODES.EXTINCTION]: relationType.filter(i => i.relationClassType && i.relationClassType.code == RELATION_CLASS_CODES.EXTINCTION).map(i => i.id).filter((i, index, self) => index == self.indexOf(i))
+                },
             }
         }
         default:

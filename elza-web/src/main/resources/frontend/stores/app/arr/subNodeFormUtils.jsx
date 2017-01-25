@@ -391,9 +391,12 @@ export function updateFormData(state, data, refTypesMap) {
     // # Vytvoření formuláře se všemi povinnými a doporučenými položkami, které jsou doplněné reálnými daty ze serveru
     // # Případně promítnutí merge.
     // ##
-    if (currentNodeVersionId <= newNodeVersionId) { // rovno musí být, protože i když mám danou verzi, nemusím mít nově přidané povinné položky na základě aktuálně upravené mnou
+    if (currentNodeVersionId <= newNodeVersionId) { // rovno musí být, protože i když mám danou verzi, nemusím mít nově přidané povinné položky (nastává i v případě umělého klientského zvednutí nodeVersionId po zápisové operaci) na základě aktuálně upravené mnou
         // Data přijatá ze serveru
         state.data = data
+
+        // Překopírování seznam id nepoužitých PP pro výstupy
+        state.unusedItemTypeIds = data.unusedItemTypeIds;
 
         // Info skupiny - ty, které jsou jako celek definované pro konkrétní JP - obsahují všechny atributy včetně např. typu - POSSIBLE atp.
         // Změna číselného typu na řetězec

@@ -25,7 +25,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table
-public abstract class SysExternalSystem implements cz.tacr.elza.api.SysExternalSystem {
+public abstract class SysExternalSystem {
 
     @Id
     @GeneratedValue
@@ -46,62 +46,50 @@ public abstract class SysExternalSystem implements cz.tacr.elza.api.SysExternalS
     @Column(length = StringLength.LENGTH_50)
     private String password;
 
-    @Override
     public Integer getExternalSystemId() {
         return externalSystemId;
     }
 
-    @Override
     public void setExternalSystemId(final Integer externalSystemId) {
         this.externalSystemId = externalSystemId;
     }
 
-    @Override
     public String getCode() {
         return code;
     }
 
-    @Override
     public void setCode(final String code) {
         this.code = code;
     }
 
-    @Override
     public String getName() {
         return name;
     }
 
-    @Override
     public void setName(final String name) {
         this.name = name;
     }
 
-    @Override
     public String getUrl() {
         return url;
     }
 
-    @Override
     public void setUrl(final String url) {
         this.url = url;
     }
 
-    @Override
     public String getUsername() {
         return username;
     }
 
-    @Override
     public void setUsername(final String username) {
         this.username = username;
     }
 
-    @Override
     public String getPassword() {
         return password;
     }
 
-    @Override
     public void setPassword(final String password) {
         this.password = password;
     }

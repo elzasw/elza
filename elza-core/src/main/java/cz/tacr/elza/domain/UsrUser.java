@@ -1,16 +1,20 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.springframework.data.rest.core.annotation.RestResource;
 
-import javax.persistence.*;
-import java.io.Serializable;
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * Implementace {@link cz.tacr.elza.api.UsrUser}.
+ * Uživatel.
  *
  * @author Martin Šlapa
  * @since 11.04.2016
@@ -18,7 +22,7 @@ import java.util.List;
 @Entity(name = "usr_user")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class UsrUser implements cz.tacr.elza.api.UsrUser<ParParty>, Serializable {
+public class UsrUser {
 
     @Id
     @GeneratedValue
@@ -47,62 +51,86 @@ public class UsrUser implements cz.tacr.elza.api.UsrUser<ParParty>, Serializable
     public static final String DESCRIPTION = "description";
     public static final String ACTIVE = "active";
 
-    @Override
+    /**
+     * @return identifikátor entity
+     */
     public Integer getUserId() {
         return userId;
     }
 
-    @Override
+    /**
+     * @param userId identifikátor entity
+     */
     public void setUserId(final Integer userId) {
         this.userId = userId;
     }
 
-    @Override
+    /**
+     * @return vazba na osobu
+     */
     public ParParty getParty() {
         return party;
     }
 
-    @Override
+    /**
+     * @param party vazba na osobu
+     */
     public void setParty(final ParParty party) {
         this.party = party;
     }
 
-    @Override
+    /**
+     * @return uživatelské jméno
+     */
     public String getUsername() {
         return username;
     }
 
-    @Override
+    /**
+     * @param username uživatelské jméno
+     */
     public void setUsername(final String username) {
         this.username = username;
     }
 
-    @Override
+    /**
+     * @return uživatelské heslo
+     */
     public String getPassword() {
         return password;
     }
 
-    @Override
+    /**
+     * @param password uživatelské heslo
+     */
     public void setPassword(final String password) {
         this.password = password;
     }
 
-    @Override
+    /**
+     * @return je účet aktivní?
+     */
     public Boolean getActive() {
         return active;
     }
 
-    @Override
+    /**
+     * @param active je účet aktivní?
+     */
     public void setActive(final Boolean active) {
         this.active = active;
     }
 
-    @Override
+    /**
+     * @return poznámka u uživateli
+     */
     public String getDescription() {
         return description;
     }
 
-    @Override
+    /**
+     * @param description poznámka u uživateli
+     */
     public void setDescription(final String description) {
         this.description = description;
     }

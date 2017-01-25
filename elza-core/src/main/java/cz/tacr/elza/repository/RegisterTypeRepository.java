@@ -1,6 +1,7 @@
 package cz.tacr.elza.repository;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -95,4 +96,7 @@ public interface RegisterTypeRepository extends JpaRepository<RegRegisterType, I
      * @return typ rejstříkového hesla
      */
     RegRegisterType findRegisterTypeByName(String registerTypeName);
+
+    @Query("SELECT count(t) FROM reg_register_type t WHERE t.partyType IS NOT NULL AND t.registerTypeId IN (:ids)")
+    Integer findCountPartyTypeNotNullByIds(@Param("ids") Set<Integer> ids);
 }

@@ -1,12 +1,26 @@
 package cz.tacr.elza.domain;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import javax.persistence.*;
-
+/**
+ * Typy kontrol, validací, archivního popisu. Každá chyba validace má přiřazen právě jeden typ kontroly (validace),
+ * který je k chybě přiřazen na výstupu z pravidel (drools).
+ *
+ * @author Martin Šlapa
+ * @since 22.3.2016
+ *
+ */
 @Entity(name = "rul_policy_type")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class RulPolicyType implements cz.tacr.elza.api.RulPolicyType<RulPackage, RulRuleSet> {
+public class RulPolicyType {
 
     @Id
     @GeneratedValue
@@ -26,52 +40,72 @@ public class RulPolicyType implements cz.tacr.elza.api.RulPolicyType<RulPackage,
     @JoinColumn(name = "ruleSetId", nullable = false)
     private RulRuleSet ruleSet;
 
-    @Override
+    /**
+     * @return identifikátor položky
+     */
     public Integer getPolicyTypeId() {
         return policyTypeId;
     }
 
-    @Override
+    /**
+     * @param policyTypeId identifikátor položky
+     */
     public void setPolicyTypeId(final Integer policyTypeId) {
         this.policyTypeId = policyTypeId;
     }
 
-    @Override
+    /**
+     * @return kód typu
+     */
     public String getCode() {
         return code;
     }
 
-    @Override
+    /**
+     * @param code kód typu
+     */
     public void setCode(final String code) {
         this.code = code;
     }
 
-    @Override
+    /**
+     * @return název typu
+     */
     public String getName() {
         return name;
     }
 
-    @Override
+    /**
+     * @param name název typu
+     */
     public void setName(final String name) {
         this.name = name;
     }
 
-    @Override
+    /**
+     * @return balíček pravidel
+     */
     public RulPackage getRulPackage() {
         return rulPackage;
     }
 
-    @Override
+    /**
+     * @param rulPackage balíček pravidel
+     */
     public void setRulPackage(final RulPackage rulPackage) {
         this.rulPackage = rulPackage;
     }
 
-    @Override
+    /**
+     * @return pravidla
+     */
     public RulRuleSet getRuleSet() {
         return ruleSet;
     }
 
-    @Override
+    /**
+     * @param ruleSet pravidla
+     */
     public void setRuleSet(final RulRuleSet ruleSet) {
         this.ruleSet = ruleSet;
     }

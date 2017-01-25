@@ -21,8 +21,8 @@ public class RulRuleSetVO {
 
     private String name;
 
-    /** Kódy atributů pro zobrazení v gridu hromadných úprav - jaké jsou implicitní atributy a jaké je jejich pořadí. */
-    private List<String> defaultItemTypeCodes;
+    /** Kódy atributů pro zobrazení v gridu hromadných úprav */
+    private List<GridView> gridViews;
 
     /**
      * Všechny kódy atributů.
@@ -68,19 +68,62 @@ public class RulRuleSetVO {
         return ToStringBuilder.reflectionToString(this);
     }
 
-    public List<String> getDefaultItemTypeCodes() {
-        return defaultItemTypeCodes;
-    }
-
-    public void setDefaultItemTypeCodes(final List<String> defaultItemTypeCodes) {
-        this.defaultItemTypeCodes = defaultItemTypeCodes;
-    }
-
     public List<String> getItemTypeCodes() {
         return itemTypeCodes;
     }
 
     public void setItemTypeCodes(final List<String> itemTypeCodes) {
         this.itemTypeCodes = itemTypeCodes;
+    }
+
+    public List<GridView> getGridViews() {
+        return gridViews;
+    }
+
+    public void setGridViews(final List<GridView> gridViews) {
+        this.gridViews = gridViews;
+    }
+
+    public static class GridView {
+
+        /**
+         * Kód atributu.
+         */
+        private String code;
+
+        /**
+         * Zobrazit ve výchozím zobrazení?
+         */
+        private Boolean showDefault;
+
+        /**
+         * Výchozí šířka.
+         */
+        private Integer width;
+
+        public String getCode() {
+            return code;
+        }
+
+        public void setCode(final String code) {
+            this.code = code;
+        }
+
+        public Boolean getShowDefault() {
+            return showDefault;
+        }
+
+        public void setShowDefault(final Boolean showDefault) {
+            this.showDefault = showDefault;
+        }
+
+        public Integer getWidth() {
+            return width;
+        }
+
+        public void setWidth(final Integer width) {
+            this.width = width;
+        }
+
     }
 }

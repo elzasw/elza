@@ -1,6 +1,6 @@
 package ZP2015;
 
-import cz.tacr.elza.api.RulItemSpec;
+import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulItemSpecExt;
 import cz.tacr.elza.drools.model.AvailableDescItems;
@@ -10,11 +10,11 @@ import cz.tacr.elza.drools.model.DescItem;
 
 import java.util.Arrays;
 import java.util.Set;
-import cz.tacr.elza.api.RulItemType;
+import cz.tacr.elza.domain.RulItemType;
 
 rule "Všechny jsou možný a neopakovatelný"
 when
-	$itemType : RulItemTypeExt()
+    $itemType : RulItemTypeExt()
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
     $itemType.setRepeatable(false);

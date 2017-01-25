@@ -1,7 +1,5 @@
 package cz.tacr.elza.domain;
 
-import cz.tacr.elza.domain.enumeration.StringLength;
-
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
@@ -12,8 +10,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import cz.tacr.elza.domain.enumeration.StringLength;
+
 /**
- * Implementace {@link cz.tacr.elza.api.ArrDigitizationRequest}
+ * Dotaz pro externí systémy - připojení / odpojení DAO k JP.
  *
  * @author Martin Šlapa
  * @since 07.12.2016
@@ -21,7 +21,7 @@ import javax.persistence.Table;
 @Entity(name = "arr_dao_link_request")
 @Table
 @DiscriminatorValue(value = ArrRequest.ClassType.Values.DAO_LINK)
-public class ArrDaoLinkRequest extends ArrRequest implements cz.tacr.elza.api.ArrDaoLinkRequest<ArrDigitalRepository, ArrDao> {
+public class ArrDaoLinkRequest extends ArrRequest {
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrDigitalRepository.class)
     @JoinColumn(name = "digitalRepositoryId", nullable = false)
@@ -38,43 +38,48 @@ public class ArrDaoLinkRequest extends ArrRequest implements cz.tacr.elza.api.Ar
     @Column(length = 10, nullable = false)
     private Type type;
 
-    @Override
     public ArrDigitalRepository getDigitalRepository() {
         return digitalRepository;
     }
 
-    @Override
     public void setDigitalRepository(final ArrDigitalRepository digitalRepository) {
         this.digitalRepository = digitalRepository;
     }
 
-    @Override
     public ArrDao getDao() {
         return dao;
     }
 
-    @Override
     public void setDao(final ArrDao dao) {
         this.dao = dao;
     }
 
-    @Override
     public String getDidCode() {
         return didCode;
     }
 
-    @Override
     public void setDidCode(final String didCode) {
         this.didCode = didCode;
     }
 
-    @Override
     public Type getType() {
         return type;
     }
 
-    @Override
     public void setType(final Type type) {
         this.type = type;
+    }
+
+    public enum Type {
+
+        /**
+         * Připojení k JP.
+         */
+        LINK,
+
+        /**
+         * Odpojení od JP.
+         */
+        UNLINK
     }
 }

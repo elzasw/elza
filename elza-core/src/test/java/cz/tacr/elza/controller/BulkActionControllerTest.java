@@ -1,19 +1,24 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.api.ArrBulkActionRun.State;
-import cz.tacr.elza.api.vo.XmlImportType;
-import cz.tacr.elza.controller.vo.*;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.BulkActionRunVO;
+import cz.tacr.elza.controller.vo.BulkActionVO;
+import cz.tacr.elza.controller.vo.RegScopeVO;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.domain.ArrBulkActionRun.State;
+import cz.tacr.elza.domain.vo.XmlImportType;
 
 
 /**
@@ -84,11 +89,11 @@ public class BulkActionControllerTest extends AbstractControllerTest {
         Assert.assertTrue("Hromadna akce " + BULK_ACTION_FUND_VALIDATION + " neni v seznamu", fa);
     }
 
-    private List<BulkActionRunVO> getBulkActionList(int versionId) {
+    private List<BulkActionRunVO> getBulkActionList(final int versionId) {
         return Arrays.asList(get(spec -> spec.pathParam("versionId", versionId), BULK_ACTIONS_LIST).getBody().as(BulkActionRunVO[].class));
     }
 
-    private BulkActionRunVO getBulkActionState(int fundVersionId, String code) {
+    private BulkActionRunVO getBulkActionState(final int fundVersionId, final String code) {
         for (BulkActionRunVO state : getBulkActionList(fundVersionId)) {
             if (state.getCode().equals(code)) {
                 return state;
@@ -162,7 +167,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
      * @param code verze archivní kod hromadné akce hromadné akce
      * @return stav
      */
-    private BulkActionRunVO runBulkAction(int fundVersionId, String code) throws InterruptedException {
+    private BulkActionRunVO runBulkAction(final int fundVersionId, final String code) throws InterruptedException {
         BulkActionRunVO state;
 
         get((spec) -> spec.pathParameter("versionId", fundVersionId).pathParam("code", code), BULK_ACTION_QUEUE);

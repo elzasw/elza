@@ -25,7 +25,10 @@ export default function toastr(state = initialState, action = {}) {
                     {
                         style: action.style,
                         title: action.title,
+                        extended: action.extended,
                         message: action.message,
+                        messageComponent: action.messageComponent,
+                        messageComponentProps: action.messageComponentProps,
                         size: action.size,
                         time: action.time,
                         key: key + 1,

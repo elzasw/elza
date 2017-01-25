@@ -11,6 +11,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface RequestQueueItemRepositoryCustom {
 
-    ArrRequestQueueItem findNext();
+    ArrRequestQueueItem findNext(final Integer externalSystemId);
 
 }

@@ -18,7 +18,10 @@ public enum AttributeType {
     TYPE(" @attr 1=2051 "),
 
     /** Pravostranný like na hledané výrazy ve jménech. */
-    EXTEND(" @attr 5=1 ");
+    EXTEND(" @attr 5=1 "),
+
+    /** Id záznamu. */
+    ID(null);
 
     private String att;
 

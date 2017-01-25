@@ -1,9 +1,5 @@
 package cz.tacr.elza.controller.vo.nodes;
 
-
-import java.time.LocalDateTime;
-
-
 /**
  * VO uzlu archivní pomůcky.
  *

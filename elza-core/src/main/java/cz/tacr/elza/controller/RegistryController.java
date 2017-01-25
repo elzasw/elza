@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -12,7 +13,13 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -25,16 +32,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.InterpiMappingVO;
 import cz.tacr.elza.controller.vo.InterpiSearchVO;
 import cz.tacr.elza.controller.vo.RecordImportVO;
 import cz.tacr.elza.controller.vo.RegCoordinatesVO;
 import cz.tacr.elza.controller.vo.RegExternalSystemVO;
 import cz.tacr.elza.controller.vo.RegRecordSimple;
 import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.controller.vo.RegRecordWithCount;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.RegVariantRecordVO;
+import cz.tacr.elza.controller.vo.RelationSearchVO;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ParParty;
@@ -45,10 +53,14 @@ import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.interpi.service.InterpiService;
 import cz.tacr.elza.interpi.service.vo.ExternalRecordVO;
 import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.ItemSpecRegisterRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RegCoordinatesRepository;
@@ -69,9 +81,12 @@ import cz.tacr.elza.service.UserService;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 21.12.2015
  */
+@SuppressWarnings("SpringAutowiredFieldsWarningInspection")
 @RestController
 @RequestMapping(value = "/api/registry", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 public class RegistryController {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private RegRecordRepository regRecordRepository;
@@ -119,6 +134,12 @@ public class RegistryController {
     private UserService userService;
 
     @Autowired
+    private ItemSpecRepository itemSpecRepository;
+
+    @Autowired
+    private ItemSpecRegisterRepository itemSpecRegisterRepository;
+
+    @Autowired
     private InterpiService interpiService;
 
     /**
@@ -131,21 +152,30 @@ public class RegistryController {
      * @param registerTypeId   IDčka typu záznamu, může být null
      * @param parentRecordId    id rodiče, pokud je null načtou se všechny záznamy, jinak potomci daného rejstříku
      * @param versionId   id verze, podle které se budou filtrovat třídy rejstříků, null - výchozí třídy
+     * @param itemSpecId   id specifikace
      * @return                  vybrané záznamy dle popisu seřazené za text hesla, nebo prázdná množina
      */
     @RequestMapping(value = "/", method = RequestMethod.GET)
-    public RegRecordWithCount findRecord(@RequestParam(required = false) @Nullable final String search,
-                                         @RequestParam final Integer from,
-                                         @RequestParam final Integer count,
-                                         @RequestParam(required = false) @Nullable final Integer registerTypeId,
-                                         @RequestParam(required = false) @Nullable final Integer parentRecordId,
-                                         @RequestParam(required = false) @Nullable final Integer versionId) {
+    public FilteredResultVO<RegRecord> findRecord(@RequestParam(required = false) @Nullable final String search,
+                                       @RequestParam final Integer from,
+                                       @RequestParam final Integer count,
+                                       @RequestParam(required = false) @Nullable final Integer registerTypeId,
+                                       @RequestParam(required = false) @Nullable final Integer parentRecordId,
+                                       @RequestParam(required = false) @Nullable final Integer versionId,
+                                       @RequestParam(required = false) @Nullable final Integer itemSpecId) {
 
-        Set<Integer> registerTypeIdTree = Collections.EMPTY_SET;
-        if (registerTypeId != null) {
+        Set<Integer> registerTypeIdTree = Collections.emptySet();
+
+        if (itemSpecId != null && registerTypeId != null) {
+            throw new SystemException("Nelza použít specifikaci a typ rejstříku zároveň.", BaseCode.SYSTEM_ERROR);
+        } else if (itemSpecId != null || registerTypeId != null) {
             Set<Integer> registerTypeIds = new HashSet<>();
-            registerTypeIds.add(registerTypeId);
-
+            if (itemSpecId != null) {
+                RulItemSpec spec = itemSpecRepository.getOneCheckExist(itemSpecId);
+                registerTypeIds.addAll(itemSpecRegisterRepository.findIdsByItemSpecId(spec));
+            } else {
+                registerTypeIds.add(registerTypeId);
+            }
             registerTypeIdTree = registerTypeRepository.findSubtreeIds(registerTypeIds);
         }
 
@@ -153,21 +183,15 @@ public class RegistryController {
         if (versionId == null) {
             fund = null;
         } else {
-            ArrFundVersion version = fundVersionRepository.findOne(versionId);
-            Assert.notNull(version, "Nebyla nalezena verze archivní pomůcky s id " + versionId);
+            ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
             fund = version.getFund();
         }
 
-
-
-        RegRecord parentRecord;
         if(parentRecordId != null) {
-            parentRecord = regRecordRepository.findOne(parentRecordId);
-            Assert.notNull(parentRecord, "Nebylo nalezeno rejstříkové heslo s id " + parentRecordId);
+            regRecordRepository.getOneCheckExist(parentRecordId);
         }
 
-        final long foundRecordsCount = registryService.findRegRecordByTextAndTypeCount(search, registerTypeIdTree,
-                parentRecordId, fund);
+        final long foundRecordsCount = registryService.findRegRecordByTextAndTypeCount(search, registerTypeIdTree, parentRecordId, fund);
 
         List<RegRecord> foundRecords = registryService
                 .findRegRecordByTextAndType(search, registerTypeIdTree, from, count, parentRecordId, fund);
@@ -211,7 +235,7 @@ public class RegistryController {
 //            parentVO.setHasChildren(!childrenVO.isEmpty());
 //        }
 
-        return new RegRecordWithCount(foundRecordVOList, foundRecordsCount);
+        return new FilteredResultVO(foundRecordVOList, foundRecordsCount);
     }
 
 
@@ -227,17 +251,16 @@ public class RegistryController {
      * @return seznam rejstříkových hesel s počtem všech nalezených
      */
     @RequestMapping(value = "/findRecordForRelation", method = RequestMethod.GET)
-    public RegRecordWithCount findRecordForRelation(@RequestParam(required = false) @Nullable final String search,
+    public FilteredResultVO<RegRecord> findRecordForRelation(@RequestParam(required = false) @Nullable final String search,
                                                     @RequestParam final Integer from,
                                                     @RequestParam final Integer count,
                                                     @RequestParam final Integer roleTypeId,
                                                     @RequestParam final Integer partyId) {
 
-        ParParty party = partyRepository.findOne(partyId);
-        Assert.notNull(party, "Nebyla nalezena osoba s id " + partyId);
+        ParParty party = partyRepository.getOneCheckExist(partyId);
 
-        ParRelationRoleType relationRoleType = relationRoleTypeRepository.findOne(roleTypeId);
-        Assert.notNull(roleTypeId, "Nebyl nalezen typ vztahu s id " + roleTypeId);
+        ParRelationRoleType relationRoleType = relationRoleTypeRepository.getOneCheckExist(roleTypeId);
+
 
         Set<Integer> registerTypeIds = registerTypeRepository.findByRelationRoleType(relationRoleType)
                 .stream().map(RegRegisterType::getRegisterTypeId).collect(Collectors.toSet());
@@ -247,7 +270,7 @@ public class RegistryController {
         scopeIds.add(party.getRecord().getScope().getScopeId());
 
         UsrUser user = userService.getLoggedUser();
-        boolean readAllScopes = userService.hasPermission(cz.tacr.elza.api.UsrPermission.Permission.REG_SCOPE_RD_ALL);
+        boolean readAllScopes = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_RD_ALL);
 
         final long foundRecordsCount = regRecordRepository
                 .findRegRecordByTextAndTypeCount(search, registerTypeIds, null, scopeIds, readAllScopes, user);
@@ -256,7 +279,7 @@ public class RegistryController {
                 .findRegRecordByTextAndType(search, registerTypeIds, from, count, null, scopeIds, readAllScopes, user);
 
         List<RegRecordSimple> foundRecordsVO = factoryVo.createRegRecordsSimple(foundRecords);
-        return new RegRecordWithCount(foundRecordsVO, foundRecordsCount);
+        return new FilteredResultVO(foundRecordsVO, foundRecordsCount);
     }
 
     /**
@@ -275,6 +298,19 @@ public class RegistryController {
 
         ParParty recordParty = partyService.findParPartyByRecord(newRecordDO);
         return factoryVo.createRegRecord(newRecordDO, recordParty == null ? null : recordParty.getPartyId(), false);
+    }
+
+    @RequestMapping(value = "/specificationHasParty/{itemSpecId}", method = RequestMethod.GET)
+    public boolean canParty(@PathVariable final Integer itemSpecId) {
+        Assert.notNull(itemSpecId);
+
+        RulItemSpec spec = itemSpecRepository.getOneCheckExist(itemSpecId);
+        Set<Integer> registerTypeIds = itemSpecRegisterRepository.findIdsByItemSpecId(spec);
+        Set<Integer> registerTypeIdTree = registerTypeRepository.findSubtreeIds(registerTypeIds);
+
+        Integer byItemSpecId = registerTypeRepository.findCountPartyTypeNotNullByIds(registerTypeIdTree);
+
+        return byItemSpecId > 0;
     }
 
     /**
@@ -332,7 +368,7 @@ public class RegistryController {
         Assert.notNull(recordTest, "Nebyl nalezen záznam pro update s id " + record.getId());
 
         RegRecord recordDO = factoryDO.createRegRecord(record);
-        RegRecord newRecordDO = registryService.saveRecord(recordDO, false);
+        registryService.saveRecord(recordDO, false);
         return getRecord(record.getId());
     }
 
@@ -470,11 +506,11 @@ public class RegistryController {
         }
 
         Set<Integer> scopeIdsByFund = registryService.getScopeIdsByFund(fund);
-        if (scopeIdsByFund.isEmpty()) {
-            return Collections.EMPTY_LIST;
+        if (CollectionUtils.isEmpty(scopeIdsByFund)) {
+            return Collections.emptyList();
         } else {
             List<RegScopeVO> result = factoryVo.createScopes(scopeRepository.findAll(scopeIdsByFund));
-            result.sort((a, b) -> a.getCode().compareTo(b.getCode()));
+            result.sort(Comparator.comparing(RegScopeVO::getCode));
             return result;
         }
     }
@@ -616,7 +652,7 @@ public class RegistryController {
      */
     @RequestMapping(value = "/interpi/import/{recordId}", method = RequestMethod.PUT)
     @Transactional
-    public RegRecordVO importRecord(@PathVariable final Integer recordId, @RequestBody final RecordImportVO recordImportVO) {
+    public RegRecordVO updateRecord(@PathVariable final Integer recordId, @RequestBody final RecordImportVO recordImportVO) {
         Assert.notNull(recordId);
         Assert.notNull(recordImportVO);
         Assert.notNull(recordImportVO.getInterpiRecordId());
@@ -624,7 +660,7 @@ public class RegistryController {
         Assert.notNull(recordImportVO.getSystemId());
 
         interpiService.importRecord(recordId, recordImportVO.getInterpiRecordId(), recordImportVO.getScopeId(),
-                recordImportVO.getSystemId(), recordImportVO.isOriginator());
+                recordImportVO.getSystemId(), recordImportVO.getOriginator(), recordImportVO.getMappings());
 
         return getRecord(recordId);
     }
@@ -642,26 +678,9 @@ public class RegistryController {
         Assert.notNull(recordImportVO.getSystemId());
 
         RegRecord regRecord = interpiService.importRecord(null, recordImportVO.getInterpiRecordId(), recordImportVO.getScopeId(),
-                recordImportVO.getSystemId(), recordImportVO.isOriginator());
+                recordImportVO.getSystemId(), recordImportVO.getOriginator(), recordImportVO.getMappings());
 
         return getRecord(regRecord.getRecordId());
-    }
-
-    /**
-     * Načte rejstřík z externího systému.
-     *
-     * @param recordId id rejstříku
-     * @param systemId identifikátor externího systému
-     *
-     * @return rejstřík z externího systému
-     */
-    @Transactional
-    @RequestMapping(value = "/interpi/{recordId}", method = RequestMethod.GET)
-    public ExternalRecordVO findInterpiRecord(@PathVariable final String recordId, @RequestBody final Integer systemId) {
-        Assert.notNull(recordId);
-        Assert.notNull(systemId);
-
-        return interpiService.getRecordById(recordId, systemId);
     }
 
     /**
@@ -677,6 +696,30 @@ public class RegistryController {
         Assert.notNull(interpiSearchVO);
         Assert.notNull(interpiSearchVO.getSystemId());
 
-        return interpiService.findRecords(interpiSearchVO.isParty(), interpiSearchVO.getConditions(), interpiSearchVO.getCount(), interpiSearchVO.getSystemId());
+        long start = System.currentTimeMillis();
+        List<ExternalRecordVO> records = interpiService.findRecords(interpiSearchVO.isParty(), interpiSearchVO.getConditions(),
+                interpiSearchVO.getCount(), interpiSearchVO.getSystemId());
+        long end = System.currentTimeMillis();
+        logger.debug("Nalezení " + records.size() + " záznamů, trvalo " + (end - start) + " ms.");
+
+        return records;
+    }
+
+    /**
+     * Načte vztahy daného záznamu.
+     *
+     * @param interpiRecordId id rejstříku v INTERPI
+     * @param relationSearchVO vyhledávávací kriteria
+     *
+     * @return vztahy a jejich mapování
+     */
+    @RequestMapping(value = "/interpi/{interpiRecordId}/relations", method = RequestMethod.POST)
+    public InterpiMappingVO findInterpiRecordRelations(@PathVariable final String interpiRecordId, @RequestBody final RelationSearchVO relationSearchVO) {
+        Assert.notNull(interpiRecordId);
+        Assert.notNull(relationSearchVO);
+        Assert.notNull(relationSearchVO.getScopeId());
+        Assert.notNull(relationSearchVO.getSystemId());
+
+        return interpiService.findInterpiRecordRelations(interpiRecordId, relationSearchVO.getSystemId(), relationSearchVO.getScopeId());
     }
 }

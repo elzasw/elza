@@ -1,18 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {connect} from 'react-redux'
+
 import {reduxForm} from 'redux-form'
-import {Form, Button, FormControl, Table, Modal, OverlayTrigger, Tooltip} from 'react-bootstrap'
-import {AbstractReactComponent, FormInput, i18n, Icon, Loading} from '../index.jsx';
+import {Form, Button, FormControl, Table, Modal, OverlayTrigger, Tooltip, Checkbox} from 'react-bootstrap'
+import {AbstractReactComponent, FormInput, i18n, Icon, Loading, ExtMapperForm} from '../index.jsx';
 import objectById from '../../shared/utils/objectById'
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx';
 import {submitForm} from 'components/form/FormUtils.jsx'
 import {WebApi} from 'actions'
-import {modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
-import {registrySelect} from 'actions/registry/registryRegionList.jsx'
-import {registryRegionDataSelectRecord} from 'actions/registry/registryRegionData.jsx'
+import {registryDetailFetchIfNeeded} from 'actions/registry/registry.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import Scope from '../../components/shared/scope/Scope';
 import {regExtSystemListFetchIfNeeded} from 'actions/registry/regExtSystemList';
@@ -33,11 +32,13 @@ const CONDITIONS = [
 const ATTRIBUTE_TYPE = {
     PREFFERED_NAME: "PREFFERED_NAME",
     ALL_NAMES: "ALL_NAMES",
+    ID: "ID",
 };
 
 const ATTRIBUTE_TYPES = [
     {val: ATTRIBUTE_TYPE.PREFFERED_NAME, name: i18n('extImport.attType.PREFFERED_NAME')},
     {val: ATTRIBUTE_TYPE.ALL_NAMES, name: i18n('extImport.attType.ALL_NAMES')},
+    {val: ATTRIBUTE_TYPE.ID, name: i18n('extImport.attType.ID')},
 ];
 
 class ExtImportSearch extends AbstractReactComponent {
@@ -159,7 +160,7 @@ const ExtImportSearchComponent = reduxForm({
     fields: ['systemId', 'conditions[].condition', 'conditions[].value', 'conditions[].attType'],
     form: 'extImportSearch'
 }, (state, props) => ({
-    extSystems: state.app.regExtSystemList.fetched ? state.app.regExtSystemList.data : null,
+    extSystems: state.app.regExtSystemList.fetched ? state.app.regExtSystemList.rows : null,
     initialValues: {params:[{condition:null, value:props.firstValue || null, attType: null}]}
 }))(ExtImportSearch);
 
@@ -203,16 +204,36 @@ class ExtImportForm extends AbstractReactComponent {
         }
 
         const importVO = {...data, scopeId: parseInt(data.scopeId), systemId: parseInt(systemId)};
+        const relationsVO = {scopeId: parseInt(data.scopeId), systemId: parseInt(systemId)};
 
-        const promise = update ? WebApi.importRecordUpdate(recordId, importVO) : WebApi.importRecord(importVO);
+        const send = (data, update, recordId = null) => {
+            const promise = update ? WebApi.importRecordUpdate(recordId, data) : WebApi.importRecord(data);
 
-        promise.then(e => {
-            this.dispatch(modalDialogHide());
-            this.dispatch(addToastrSuccess(i18n("extImport.done.title"), i18n(update ? "extImport.done.messageImport" : "extImport.done.messageUpdate")));
-            this.props.onSubmitForm && this.props.onSubmitForm(e);
-        });
+            promise.then(e => {
+                this.dispatch(modalDialogHide());
+                this.dispatch(addToastrSuccess(i18n("extImport.done.title"), i18n(update ? "extImport.done.messageImport" : "extImport.done.messageUpdate")));
+                this.props.onSubmitForm && this.props.onSubmitForm(e);
+            });
 
-        return promise;
+            return promise;
+        };
+
+        if (importVO.originator) {
+            return WebApi.findInterpiRecordRelations(importVO.interpiRecordId, relationsVO).then(mapping => {
+                this.dispatch(modalDialogHide());
+                this.dispatch(modalDialogShow(this, i18n('extMapperForm.title'), <ExtMapperForm
+                    initialValues={mapping}
+                    record={record}
+                    isUpdate={update}
+                    onSubmit={(data) => {
+                        importVO.mappings = data.mappings;
+                        return send(importVO, update, recordId);
+                    }
+                } />, "dialog-lg"));
+            });
+        } else {
+            return send(importVO, update, recordId);
+        }
     };
 
     componentWillReceiveProps(nextProps) {
@@ -240,7 +261,7 @@ class ExtImportForm extends AbstractReactComponent {
             this.dispatch(modalDialogHide());
             this.dispatch(routerNavigate('party'));
         } else {
-            this.dispatch(registryRegionDataSelectRecord({selectedId: detailId}));
+            this.dispatch(registryDetailFetchIfNeeded(detailId));
             this.dispatch(modalDialogHide());
             this.dispatch(routerNavigate('registry'));
         }
@@ -248,7 +269,7 @@ class ExtImportForm extends AbstractReactComponent {
 
     render() {
         const {searched, results} = this.state;
-        const {autocomplete, onClose, fields:{scopeId, interpiRecordId}, handleSubmit, submitting, versionId} = this.props;
+        const {autocomplete, onClose, fields:{scopeId, interpiRecordId, originator}, handleSubmit, submitting, versionId, isParty} = this.props;
 
         let record = null;
         if (interpiRecordId.value) {
@@ -257,15 +278,17 @@ class ExtImportForm extends AbstractReactComponent {
 
         let showDetail = false;
         let detailId = null;
-        let visibleSubmit = false;
 
         if (record && scopeId.value) {
-            visibleSubmit = true;
             if (record.pairedRecords) {
                 for (let pairedRec of record.pairedRecords) {
                     if (pairedRec.scope.id == scopeId.value) {
                         showDetail = true;
-                        detailId = pairedRec.recordId;
+                        if (isParty) {
+                            detailId = pairedRec.partyId;
+                        } else {
+                            detailId = pairedRec.recordId;
+                        }
                         break;
                     }
                 }
@@ -315,6 +338,11 @@ class ExtImportForm extends AbstractReactComponent {
                                 <div>
                                     <Scope label={i18n('extImport.scopeId')} {...scopeId} versionId={versionId} />
                                 </div>
+                                {isParty && <div>
+                                    <Checkbox {...originator}>
+                                        {i18n('extImport.originator')}
+                                    </Checkbox>
+                                </div>}
                             </div>
                         </div>}
                     </div>}
@@ -334,7 +362,7 @@ class ExtImportForm extends AbstractReactComponent {
 }
 
 export default reduxForm({
-    fields: ['scopeId', 'interpiRecordId'],
+    fields: ['scopeId', 'interpiRecordId', 'originator'],
     form: 'extImportForm'
 })(ExtImportForm);
 

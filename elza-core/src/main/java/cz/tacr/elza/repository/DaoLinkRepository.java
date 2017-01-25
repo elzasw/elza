@@ -19,5 +19,5 @@ public interface DaoLinkRepository extends ElzaJpaRepository<ArrDaoLink, Integer
 
     List<ArrDaoLink> findByDaoAndDeleteChangeIsNull(ArrDao dao);
 
-    long countByDaoAndDeleteChangeIsNull(ArrDao arrDao);
+    List<ArrDaoLink> findByDao(ArrDao arrDao);
 }

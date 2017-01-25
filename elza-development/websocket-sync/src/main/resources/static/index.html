@@ -7,7 +7,7 @@
 		<script type="text/javascript">
 			var stompClient = null;
 			var receiptId = -1;
-			
+
 			function setConnected(connected) {
 				document.getElementById('connect').disabled = connected;
 				document.getElementById('disconnect').disabled = !connected;
@@ -17,31 +17,35 @@
 					var response = document.getElementById('response');
 					for (var i = response.rows.length - 1; i > 0; i--) {
 						response.deleteRow(i);
-			        } 
+			        }
 				}
 			}
-		
+
 			var connectedCallback = function (frame) {
 				setConnected(true);
-				console.log('Connected: ' + frame);
+				console.log('#connectedCallback Connected: ' + frame);
 				// subscribe for public chat
 				stompClient.subscribe('/fundNotification/chat', function(message) {
+					console.log("@@@@@@@@@@@@@@@ /fundNotification/chat", message);
+					console.log("Message headers:", message.headers);
 					showMessage(JSON.parse(message.body));
 				});
 				// subscribe for user chat
 				stompClient.subscribe('/user/fundNotification/chat', function(message) {
+					console.log("@@@@@@@@@@@@@@@ /user/fundNotification/chat", message);
+					console.log("Message headers:", message.headers);
 					showMessage(JSON.parse(message.body));
 				});
 			}
-			
+
 			var receiptCallback = function (frame) {
-				alert("Woohoo new receipt id: " + frame.headers["receipt-id"]);
+//				alert("Woohoo new receipt id: " + frame.headers["receipt-id"]);
 			}
-			
+
 			var errorCallback = function (frame) {
 				setConnected(false);
 				if (!frame.body) {
-					alert(frame.headers.message);
+					alert(frame);
 				} else {
 					var body = JSON.parse(frame.body);
 					var desc = body.message + ':\n';
@@ -54,7 +58,7 @@
 					alert(desc);
 				}
 			}
-			
+
 			function connect() {
 				stompClient = Stomp.client('ws://localhost:8080/stomp');
 				stompClient.heartbeat.outgoing = 20000;
@@ -62,7 +66,7 @@
 				stompClient.onreceipt = receiptCallback;
 				stompClient.connect({}, connectedCallback, errorCallback);
 			}
-		
+
 			function disconnect() {
 				if (stompClient != null) {
 					stompClient.disconnect();
@@ -70,7 +74,7 @@
 				setConnected(false);
 				console.log('Disconnected');
 			}
-		
+
 			function sendMessage(headers) {
 				var recipient = document.getElementById('recipient').value;
 				var text = document.getElementById('text').value;
@@ -83,12 +87,12 @@
 					'sent' : new Date().getTime()
 				}));
 			}
-			
+
 			function sendMessageWithReceipt(headers) {
-				headers.receipt = ++receiptId;
+				headers.receipt = "XXX-" + (++receiptId);
 				sendMessage(headers);
 			}
-			
+
 			function sendTrafficMessage() {
 				var cnt = prompt('Enter number of messages:', 10000);
 				if (!isNaN(cnt)) {
@@ -100,11 +104,11 @@
 					}
 				}
 			}
-			
+
 			function sendErrorMessage() {
 				stompClient.send('/fund/error', {}, null);
 			}
-			
+
 			function sendMalformedMessage() {
 				// var part1 = 'SEND\r\n' +
 				// 'destination:/fund/traffic\r\ncontent-';
@@ -113,7 +117,7 @@
 				// stompClient.ws.send(part1);
 				stompClient.ws.send(part2);
 			}
-			
+
 			function showMessage(message) {
 				var response = document.getElementById('response');
 				var tr = document.createElement('tr');
@@ -127,7 +131,7 @@
 				response.appendChild(tr);
 				response.insertBefore(tr, response.childNodes[2]);
 			}
-			
+
 			function createTd(message) {
 				var td = document.createElement('td');
 				td.textContent = message;
@@ -140,6 +144,11 @@
 		</style>
 	</head>
 	<body onload="disconnect()">
+
+	<form action="/logout" method="post">
+		<input type="submit" value="Logout" />
+	</form>
+
 		<div>
 			<div>
 				<button id="connect" onclick="connect();">Connect</button>
@@ -169,3 +178,28 @@
 		</div>
 	</body>
 </html>
+
+<!--<!DOCTYPE html>-->
+<!--<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">-->
+<!--<head>-->
+	<!--<title>Hello Spring Security</title>-->
+	<!--<meta charset="utf-8" />-->
+	<!--<link rel="stylesheet" href="/css/main.css" th:href="@{/css/main.css}" />-->
+<!--</head>-->
+<!--<body>-->
+<!--<div th:fragment="logout" class="logout" sec:authorize="isAuthenticated()">-->
+	<!--Logged in user: <span sec:authentication="name"></span> |-->
+	<!--Roles: <span sec:authentication="principal.authorities"></span>-->
+	<!--<div>-->
+		<!--<form action="/logout" th:action="@{/logout}" method="post">-->
+			<!--<input type="submit" value="Logout" />-->
+		<!--</form>-->
+	<!--</div>-->
+<!--</div>-->
+<!--<h1>Hello Spring Security</h1>-->
+<!--<p>This is an unsecured page, but you can access the secured pages after authenticating.</p>-->
+<!--<ul>-->
+	<!--<li>Go to the <a href="/user/index" th:href="@{/user/index}">secured pages</a></li>-->
+<!--</ul>-->
+<!--</body>-->
+<!--</html>-->

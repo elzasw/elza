@@ -19,7 +19,14 @@ const initialState = {
     reducer: detail,
 }
 
-export default function detail(state = initialState, action = {}) {
+export default function detail(state = initialState, action = {}, config = null) {
+    // Konfigurace
+    if (config) {
+        state = {...state};
+        if (config.reducer) {    // metoda pro reducer
+            state.reducer = config.reducer
+        }
+    }
     switch (action.type) {
         case REQUEST:
             return {

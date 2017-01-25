@@ -1,7 +1,5 @@
 package cz.tacr.elza.security;
 
-import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +12,10 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.annotation.web.servlet.configuration.EnableWebMvcSecurity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.session.SessionRegistry;
@@ -25,6 +24,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.stereotype.Component;
 
+import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.service.UserService;
+
 /**
  * Autentikační třída pro API.
  *
@@ -32,7 +34,9 @@ import org.springframework.stereotype.Component;
  * @since 11.04.2016
  */
 @Component
-@EnableWebMvcSecurity
+//@EnableWebMvcSecurity
+@EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 @Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
 public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
 
@@ -73,7 +77,7 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
     }
 
     @Override
-    protected void configure(AuthenticationManagerBuilder builder) throws Exception {
+    protected void configure(final AuthenticationManagerBuilder builder) throws Exception {
         builder.authenticationProvider(new AuthenticationProvider() {
             @Override
             public Authentication authenticate(final Authentication authentication) throws AuthenticationException {
@@ -118,7 +122,7 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
     }
 
     @Override
-    protected void configure(HttpSecurity http) throws Exception {
+    protected void configure(final HttpSecurity http) throws Exception {
         http.authorizeRequests().antMatchers("/api/**").authenticated();
         http.csrf().disable();
         http.sessionManagement()

@@ -6,7 +6,7 @@ package cz.tacr.elza.service.eventnotification.events;
  * @author Martin Šlapa
  * @since 12.2.2016
  */
-public class EventVisiblePolicy extends EventVersion<EventVisiblePolicy> {
+public class EventVisiblePolicy extends EventVersion {
 
     public enum InvalidateNodes {
         LIST, // pouze uzly v seznamu

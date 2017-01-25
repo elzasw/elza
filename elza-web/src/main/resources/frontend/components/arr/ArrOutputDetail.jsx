@@ -183,7 +183,7 @@ class ArrOutputDetail extends AbstractReactComponent {
             return <div className='arr-output-detail-container'><Loading/></div>
         }
 
-        let form
+        let form;
         if (fundOutputDetail.subNodeForm.fetched && calendarTypes.fetched && descItemTypes.fetched) {
             form = (
                 <OutputSubNodeForm
@@ -200,7 +200,7 @@ class ArrOutputDetail extends AbstractReactComponent {
                     focus={focus}
                     readMode={closed || readMode}
                 />
-            )
+            );
         } else {
             form = <Loading value={i18n('global.data.loading.form')}/>
         }

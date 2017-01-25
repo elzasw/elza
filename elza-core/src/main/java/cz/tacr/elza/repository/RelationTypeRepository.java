@@ -2,10 +2,9 @@ package cz.tacr.elza.repository;
 
 import java.util.List;
 
-import cz.tacr.elza.domain.ParRelationClassType;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import cz.tacr.elza.domain.ParRelationClassType;
 import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.ParRelationType;
 

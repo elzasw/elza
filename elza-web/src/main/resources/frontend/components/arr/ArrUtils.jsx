@@ -14,9 +14,10 @@ import {i18n} from 'components';
  * @param infoTypesMapInput infor types
  * @param refTypesMapInput ref types
  * @param infoGroups info group
+ * @param strictMode použít striktní mód a nezařazovat nemožné item type
  * @return {Array} strom
  */
-export function getDescItemsAddTree(descItemGroups, infoTypesMapInput, refTypesMapInput, infoGroups) {
+export function getDescItemsAddTree(descItemGroups, infoTypesMapInput, refTypesMapInput, infoGroups, strictMode = false) {
     // Pro přidání chceme jen ty, které zatím ještě nemáme
     var infoTypesMap = {...infoTypesMapInput};
     descItemGroups.forEach(group => {
@@ -48,7 +49,29 @@ export function getDescItemsAddTree(descItemGroups, infoTypesMapInput, refTypesM
         }
     });
 
-    return descItemTypes;
+    let descItemTypesFiltered;
+
+    if (strictMode) {
+        descItemTypesFiltered = [];
+        descItemTypes.forEach((group, gIndex) => {
+            let children = [];
+            if (group.children) {
+                group.children.forEach((item, iIndex) => {
+                    if (item.type !== 'IMPOSSIBLE') {
+                        children.push(descItemTypes[gIndex].children[iIndex]);
+                    }
+                });
+            }
+            if (children.length > 0) {
+                group.children = children;
+                descItemTypesFiltered.push(group);
+            }
+        });
+    } else {
+        descItemTypesFiltered = descItemTypes;
+    }
+
+    return descItemTypesFiltered;
 }
 
 export function getFundFromFundAndVersion(fund, version) {
@@ -391,31 +414,17 @@ export function getGlyph(type) {
     }
 }
 
-export const REQ_DIGITIZATION_REQUEST = "DIGITIZATION_REQUEST";
-export const REQ_LINK = "LINK";
-export const REQ_UNLINK = "UNLINK";
-export const REQ_DESTRUCTION = "DESTRUCTION";
-export const REQ_TRANSFER = "TRANSFER";
+export const DIGITIZATION = "DIGITIZATION";
+export const DAO = "DAO";
+export const DAO_LINK = "DAO_LINK";
 export function getRequestType(digReq) {
     switch (digReq["@class"]) {
         case ".ArrDigitizationRequestVO":
-            return REQ_DIGITIZATION_REQUEST;
-        case ".ArrDaoLinkRequest":
-            switch (digReq.type) {
-                case "LINK":
-                    return REQ_LINK;
-                case "UNLINK":
-                    return REQ_UNLINK;
-            }
-            break;
+            return DIGITIZATION;
+        case ".ArrDaoLinkRequestVO":
+            return DAO_LINK;
         case ".ArrDaoRequestVO":
-            switch (digReq.type) {
-                case "DESTRUCTION":
-                    return REQ_DESTRUCTION;
-                case "TRANSFER":
-                    return REQ_TRANSFER;
-            }
-            break;
+            return DAO;
     }
     return null;
 }

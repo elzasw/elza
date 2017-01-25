@@ -24,7 +24,6 @@ import org.springframework.util.Assert;
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
-import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrFund;
@@ -49,12 +48,16 @@ import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.DataPartyRefRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
+import cz.tacr.elza.repository.ItemSpecRegisterRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.PartyCreatorRepository;
 import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
@@ -166,6 +169,12 @@ public class PartyService {
     private InstitutionRepository institutionRepository;
 
     @Autowired
+    private ItemSpecRepository itemSpecRepository;
+
+    @Autowired
+    private ItemSpecRegisterRepository itemSpecRegisterRepository;
+
+    @Autowired
     private UserService userService;
 
     /**
@@ -191,7 +200,7 @@ public class PartyService {
      */
     public Map<Integer, Integer> findParPartyIdsByRecords(final Collection<RegRecord> records) {
         if (CollectionUtils.isEmpty(records)) {
-            return Collections.EMPTY_MAP;
+            return Collections.emptyMap();
         }
 
         List<Object[]> recordIdsAndPartyIds = partyRepository.findRecordIdAndPartyIdByRecords(records);
@@ -209,33 +218,62 @@ public class PartyService {
      *
      * @param searchRecord hledaný řetězec, může být null
      * @param partyTypeId  typ záznamu
+     * @param itemSpecId specifikace
      * @param firstResult  první vrácená osoba
      * @param maxResults   max počet vrácených osob
      * @param fund   AP, ze které se použijí třídy rejstříků
      */
-    public List<ParParty> findPartyByTextAndType(final String searchRecord, final Integer partyTypeId,
-                                                 final Integer firstResult, final Integer maxResults,
+    public List<ParParty> findPartyByTextAndType(final String searchRecord,
+                                                 final Integer partyTypeId,
+                                                 final Integer itemSpecId,
+                                                 final Integer firstResult,
+                                                 final Integer maxResults,
                                                  @Nullable final ArrFund fund) {
         UsrUser user = userService.getLoggedUser();
         boolean readAllScopes = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_RD_ALL);
         Set<Integer> scopeIdsForRecord = registryService.getScopeIdsByFund(fund);
-        return partyRepository.findPartyByTextAndType(searchRecord, partyTypeId, firstResult, maxResults,
-                scopeIdsForRecord, readAllScopes, user);
+
+        Set<Integer> registerTypesIds = null;
+        if (itemSpecId != null) {
+            registerTypesIds = this.find(itemSpecId);
+        }
+
+        return partyRepository.findPartyByTextAndType(searchRecord, partyTypeId, registerTypesIds, firstResult, maxResults, scopeIdsForRecord, readAllScopes, user);
+    }
+
+    private Set<Integer> find(final Integer itemSpecId) {
+
+        Set<Integer> registerTypeIds = new HashSet<>();
+        if (itemSpecId != null) {
+            RulItemSpec spec = itemSpecRepository.getOneCheckExist(itemSpecId);
+            registerTypeIds.addAll(itemSpecRegisterRepository.findIdsByItemSpecId(spec));
+        }
+        return registerTypeRepository.findSubtreeIds(registerTypeIds);
     }
 
     /**
      * Vrátí počet osob vyhovující zadané frázi. Osobu vyhledává podle hesla v rejstříku včetně variantních hesel.
      * @param searchRecord hledaný řetězec, může být null
-     * @param registerTypeId typ záznamu
+     * @param partyTypeId typ osoby
+     * @param itemSpecId specifikace
      * @param fund   AP, ze které se použijí třídy rejstříků
      * @return
      */
-    public long findPartyByTextAndTypeCount(final String searchRecord, final Integer registerTypeId,
+    public long findPartyByTextAndTypeCount(final String searchRecord,
+                                            final Integer partyTypeId,
+                                            final Integer itemSpecId,
                                             @Nullable final ArrFund fund){
         UsrUser user = userService.getLoggedUser();
         boolean readAllScopes = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_RD_ALL);
         Set<Integer> scopeIdsForRecord = registryService.getScopeIdsByFund(fund);
-        return partyRepository.findPartyByTextAndTypeCount(searchRecord, registerTypeId, scopeIdsForRecord, readAllScopes, user);
+
+
+        Set<Integer> registerTypesIds = null;
+        if (itemSpecId != null) {
+            registerTypesIds = this.find(itemSpecId);
+        }
+
+        return partyRepository.findPartyByTextAndTypeCount(searchRecord, partyTypeId, registerTypesIds, scopeIdsForRecord, readAllScopes, user);
     }
 
     /**
@@ -274,12 +312,12 @@ public class PartyService {
             ParPartyGroup savePartyGroup = (ParPartyGroup) saveParty;
             ParPartyGroup partyGroup = (ParPartyGroup) newParty;
             synchPartyGroupIdentifiers(savePartyGroup,
-                    partyGroup.getPartyGroupIdentifiers() == null ? Collections.EMPTY_LIST : partyGroup.getPartyGroupIdentifiers());
+                    partyGroup.getPartyGroupIdentifiers() == null ? Collections.emptyList() : partyGroup.getPartyGroupIdentifiers());
         }
 
 
         //synchronizace tvůrců osoby
-        synchCreators(saveParty, newParty.getPartyCreators() == null ? Collections.EMPTY_LIST : newParty.getPartyCreators());
+        synchCreators(saveParty, newParty.getPartyCreators() == null ? Collections.emptyList() : newParty.getPartyCreators());
 
         //synchronizace rejstříkového hesla
         synchRecord(saveParty);
@@ -380,7 +418,7 @@ public class PartyService {
         Assert.notNull(partyGroup);
 
 
-        Map<Integer, ParPartyGroupIdentifier> dbIdentifiersMap = Collections.EMPTY_MAP;
+        Map<Integer, ParPartyGroupIdentifier> dbIdentifiersMap = Collections.emptyMap();
         if(partyGroup.getPartyId() != null){
             dbIdentifiersMap = ElzaTools
                 .createEntityMap(partyGroupIdentifierRepository.findByParty(partyGroup), ParPartyGroupIdentifier::getPartyGroupIdentifierId);
@@ -473,7 +511,7 @@ public class PartyService {
 
             ParPartyName save = partyNameRepository.save(oldPartyName);
             save = synchComplementTypes(save, newPartyName.getPartyNameComplements() == null
-                                               ? Collections.EMPTY_LIST : newPartyName.getPartyNameComplements());
+                                               ? Collections.emptyList() : newPartyName.getPartyNameComplements());
             saved.add(save);
         }
 
@@ -581,6 +619,8 @@ public class PartyService {
 
         checkPartyUsage(party);
 
+        partyRelationRepository.findByParty(party).forEach(this::deleteRelation);
+
         List<ParPartyName> partyNames = new ArrayList<>(partyNameRepository.findByParty(party));
 
         party.setPreferredName(null);
@@ -591,7 +631,6 @@ public class PartyService {
         partyCreatorRepository.deleteByPartyBoth(party);
 
 
-        partyRelationRepository.findByParty(party).forEach(this::deleteRelation);
 
         ParPartyGroup partyGroup = partyGroupRepository.findOne(party.getPartyId());
         if (partyGroup != null) {
@@ -755,7 +794,7 @@ public class PartyService {
     private List<ParRelationEntity> saveDeleteRelationEntities(final ParRelation relation,
                                                                @Nullable final Collection<ParRelationEntity> newRelationEntities) {
         if (newRelationEntities == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         Map<Integer, ParRelationEntity> relationEntityMap = ElzaTools

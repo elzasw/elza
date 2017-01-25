@@ -6,6 +6,7 @@ import {connect} from 'react-redux'
 import {decorateValue} from './DescItemUtils.jsx'
 import {Button, OverlayTrigger, Tooltip} from 'react-bootstrap';
 import DescItemLabel from './DescItemLabel.jsx'
+import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 
 import './DescItemCoordinates.less';
 
@@ -62,19 +63,13 @@ class DescItemCoordinates extends AbstractReactComponent {
             return <DescItemLabel value={value} cal={cal} />
         }
 
-        const tooltip = <div>{i18n('subNodeForm.formatPointCoordinates')}</div>;
         return (
             <div className="desc-item-value-coordinates">
                 <div className='desc-item-value'  key='cords'>
                     <Button bsStyle="default" disabled>{wktType(this.state.type)}</Button>
                     {
                         this.state.type == "POINT" ?
-                            <TooltipTrigger
-                                content={tooltip}
-                                holdOnHover
-                                holdOnFocus
-                                placement="vertical"
-                            >
+                            <ItemTooltipWrapper tooltipTitle="dataType.coordinates.format">
                                 <input
                                     {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
                                     ref='focusEl'
@@ -82,7 +77,7 @@ class DescItemCoordinates extends AbstractReactComponent {
                                     onChange={this.handleChangeData}
                                     value={this.state.data}
                                 />
-                            </TooltipTrigger>
+                            </ItemTooltipWrapper>
                             : <span className="textvalue">{i18n('subNodeForm.countOfCoordinates', this.state.data)}</span>
                     }
                     { descItem.descItemObjectId && <div className='desc-item-coordinates-action' key='download-action'><NoFocusButton onClick={this.props.onDownload}>

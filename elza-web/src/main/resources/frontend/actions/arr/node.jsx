@@ -138,7 +138,6 @@ export function fundNodeSubNodeFulltextSearch(filterText) {
             WebApi.findInFundTree(activeFund.versionId, nodeId, filterText, 'ONE_LEVEL')
                 .then(json => {
                     dispatch(fundNodeSubNodeFulltextResult(activeFund.versionId, activeNode.id, activeNode.routingKey, json));
-                    console.log(999, json)
                     if (json.length > 0) {
                         var subNodeParentNode = json[0].parent
                         if (subNodeParentNode == null) {
@@ -155,6 +154,23 @@ export function fundNodeSubNodeFulltextSearch(filterText) {
 }
 
 /**
+ * Provedení umělého navýšení verze pro konkrétní node. Zvýšení probíhá o 1.
+ * @param versionId verze AS
+ * @param nodeId id node
+ * @param nodeVersionId jaké id verze se má povýšit - pokud node již bude mít jinou verzi, nebude se zvyšovat
+ */
+export function increaseNodeVersion(versionId, nodeId, nodeVersionId) {
+    return (dispatch) => {
+        dispatch({
+            type: types.FUND_NODE_INCREASE_VERSION,
+            versionId,
+            nodeId,
+            nodeVersionId
+        })
+    }
+}
+
+/**
  * Přidání uzlu před, za na konec a pod.
  * @param {Object} indexNode uzel, pro který je volána akce - před, za a pod který se akce volá
  * @param {Object} parentNode nadřazený uzel k indexNode, pokud je přidáváno jako 'CHILD', je stejný jako indexNode
@@ -162,8 +178,9 @@ export function fundNodeSubNodeFulltextSearch(filterText) {
  * @param {string} direction směr přidání, řetězec 'BEFORE', 'AFTER' nebo 'CHILD'
  * @param {Array} descItemCopyTypes seznam id atributů, pro které se mají zkopírovat hodnoty z bezprostředně předcházejícího uzlu, který je před aktuálně přidávaným
  * @param {string} scenarioName název scénáře, který má být použit
+ * @param {func} callback, který je volán po úspěšném založení, předpis: function (versionId, node, parentNode), node je nově založený node a parentNode je jeho aktualizovaný nadřazený node
  */
-export function addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes = null, scenarioName = null) {
+export function addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes = null, scenarioName = null, afterCreateCallback = null) {
     return (dispatch) => {
         parentNode = {
             id: parentNode.id,
@@ -175,9 +192,14 @@ export function addNode(indexNode, parentNode, versionId, direction, descItemCop
             lastUpdate: indexNode.lastUpdate,
             version: indexNode.version
         };
+
+        // Umělé zvednutí id verze node na klientovi na očekávané po operaci
+        dispatch(increaseNodeVersion(versionId, parentNode.id, parentNode.version));
+
+        // Reálné provedení operace
         return savingApiWrapper(dispatch, WebApi.addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes, scenarioName)).then((json) => {
             dispatch(fundNodeChangeAdd(versionId, json.node, indexNode, json.parentNode, direction));
-            dispatch(fundSelectSubNode(versionId, json.node.id, json.parentNode));
+            afterCreateCallback && afterCreateCallback(versionId, json.node, json.parentNode);
         });
     }
 }
@@ -200,6 +222,11 @@ export function deleteNode(node, parentNode, versionId) {
             lastUpdate: node.lastUpdate,
             version: node.version
         };
+
+        // Umělé zvednutí id verze node na klientovi na očekávané po operaci
+        dispatch(increaseNodeVersion(versionId, parentNode.id, parentNode.version));
+
+        // Reálné provedení operace
         return WebApi.deleteNode(node, parentNode, versionId).then((json) => {
             dispatch(fundNodeChangeDelete(versionId, json.node, json.parentNode));
         });

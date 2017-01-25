@@ -1,7 +1,43 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
-import cz.tacr.elza.api.UsrPermission;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
@@ -25,6 +61,7 @@ import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.filter.Filters;
+import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
@@ -35,17 +72,18 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDaoPackage;
+import cz.tacr.elza.domain.ArrDaoRequest;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItemJsonTable;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ArrRequest;
@@ -57,9 +95,11 @@ import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.DirectionLevel;
+import cz.tacr.elza.exception.ConcurrentUpdateException;
 import cz.tacr.elza.exception.FilterExpiredException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
@@ -69,6 +109,7 @@ import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.DaoPackageRepository;
 import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
@@ -103,37 +144,6 @@ import cz.tacr.elza.service.exception.DeleteFailedException;
 import cz.tacr.elza.service.output.OutputGeneratorService;
 import cz.tacr.elza.service.output.StatusGenerate;
 import cz.tacr.elza.service.vo.ChangesResult;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
-import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -146,6 +156,8 @@ import java.util.Set;
 @RequestMapping("/api/arrangement")
 public class ArrangementController {
 
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
     /** Formát popisu atributu - krátká verze. */
     public static final String FORMAT_ATTRIBUTE_SHORT = "SHORT";
 
@@ -157,6 +169,9 @@ public class ArrangementController {
 
     @Autowired
     private NodeRepository nodeRepository;
+
+    @Autowired
+    private DaoPackageRepository daoPackageRepository;
 
     @Autowired
     private DaoLinkRepository daoLinkRepository;
@@ -314,7 +329,7 @@ public class ArrangementController {
     }
 
     /**
-     *  Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní jednotku popisu (JP) nebo nemá žádné napojení (pouze pod archivní souborem (AS)).
+     *  Poskytuje seznam balíčků digitalizátů pouze pod archivní souborem (AS).
      *
      * @param fundVersionId   id archivního souboru
      * @param search   vyhledává (použití LIKE) nad kódem balíčku, kódem a labelem arr_dao (přirazený k balíčku), kódem a labelem arr_dao_batch_info
@@ -328,9 +343,9 @@ public class ArrangementController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     List<ArrDaoPackageVO> findDaoPackages(
             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
-            @RequestParam(value = "search", required = false) String search,
-            @RequestParam(value = "unassigned", required = false, defaultValue = "false") Boolean unassigned,
-            @RequestParam(value = "maxResults", required = false, defaultValue = "200") Integer maxResults) {
+            @RequestParam(value = "search", required = false) final String search,
+            @RequestParam(value = "unassigned", required = false, defaultValue = "false") final Boolean unassigned,
+            @RequestParam(value = "maxResults", required = false, defaultValue = "200") final Integer maxResults) {
         Assert.notNull(fundVersionId);
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
 
@@ -354,10 +369,10 @@ public class ArrangementController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     List<ArrDaoVO> findDaos(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                            @RequestParam(value = "nodeId", required = false) Integer nodeId,
-                            @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail,
-                            @RequestParam(value = "index", required = false, defaultValue = "0") Integer index,
-                            @RequestParam(value = "maxResults", required = false, defaultValue = "20") Integer maxResults) {
+                            @RequestParam(value = "nodeId", required = false) final Integer nodeId,
+                            @RequestParam(value = "detail", required = false, defaultValue = "false") final Boolean detail,
+                            @RequestParam(value = "index", required = false, defaultValue = "0") final Integer index,
+                            @RequestParam(value = "maxResults", required = false, defaultValue = "99999") final Integer maxResults) {
         Assert.notNull(fundVersionId);
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
 
@@ -368,8 +383,42 @@ public class ArrangementController {
 
         final List<ArrDao> arrDaoList = daoService.findDaos(fundVersion, node, index, maxResults);
 
-        return factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail));
+        return factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail), fundVersion);
     }
+
+        /**
+         * Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní balíček.
+         *
+         * @param fundVersionId id archivního souboru
+         * @param daoPackageId  id package
+         * @param unassigned mají-li se získávat pouze balíčky, které obsahují DAO, které nejsou nikam přirazené (unassigned = true), a nebo úplně všechny (unassigned = false)
+         * @param index         počáteční pozice pro načtení
+         * @param maxResults    počet načítaných výsledků
+         * @return seznam digitálních entit (DAO)
+         */
+        @RequestMapping(value = "/daos/{fundVersionId}/{daoPackageId}",
+                method = RequestMethod.GET,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
+        List<ArrDaoVO> findDaosByPackage(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                         @PathVariable(value = "daoPackageId") final Integer daoPackageId,
+                                         @RequestParam(value = "detail", required = false, defaultValue = "false") final Boolean detail,
+                                         @RequestParam(value = "unassigned", required = false, defaultValue = "false") final Boolean unassigned,
+                                         @RequestParam(value = "index", required = false, defaultValue = "0") final Integer index,
+                                         @RequestParam(value = "maxResults", required = false, defaultValue = "99999") final Integer maxResults) {
+            Assert.notNull(fundVersionId);
+            Assert.notNull(daoPackageId);
+
+            ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+            final ArrDaoPackage arrDaoPackage = daoPackageRepository.getOneCheckExist(daoPackageId);
+
+
+            final List<ArrDao> arrDaoList = daoService.findDaosByPackage(fundVersion, arrDaoPackage, index, maxResults,
+                    BooleanUtils.isTrue(unassigned));
+
+            final List<ArrDaoVO> daoList = factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail), fundVersion);
+            return daoList;
+        }
 
     /**
      * připojení digitalizát na JP (vytvoření záznamu v arr_dao_link)
@@ -382,8 +431,8 @@ public class ArrangementController {
                 consumes = MediaType.APPLICATION_JSON_VALUE,
                 produces = MediaType.APPLICATION_JSON_VALUE)
     public void createDaoLink(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                              @PathVariable(value = "daoId") Integer daoId,
-                              @PathVariable(value = "nodeId") Integer nodeId) {
+                              @PathVariable(value = "daoId") final Integer daoId,
+                              @PathVariable(value = "nodeId") final Integer nodeId) {
         Assert.notNull(fundVersionId);
         Assert.notNull(daoId);
         Assert.notNull(nodeId);
@@ -400,12 +449,12 @@ public class ArrangementController {
      * @param daoLinkId ID požadovaného linku k rozpojení
      */
     @Transactional
-    @RequestMapping(value = "/daolinks/{fundVersionId}/{daoLinkId}/delete",
+    @RequestMapping(value = "/daolinks/{fundVersionId}/{daoLinkId}",
                 method = RequestMethod.DELETE,
                 consumes = MediaType.APPLICATION_JSON_VALUE,
                 produces = MediaType.APPLICATION_JSON_VALUE)
     public void deleteDaoLink(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                              @PathVariable(value = "daoLinkId") Integer daoLinkId) {
+                              @PathVariable(value = "daoLinkId") final Integer daoLinkId) {
         Assert.notNull(fundVersionId);
         Assert.notNull(daoLinkId);
 
@@ -688,7 +737,7 @@ public class ArrangementController {
         Assert.notNull(descItemTypeId);
 
         InputStream is = importFile.getInputStream();
-        ArrDescItem<ArrItemJsonTable> descItemCreated = arrIOService.csvDescImport(fundVersionId, nodeId, nodeVersion, descItemTypeId, is);
+        ArrDescItem descItemCreated = arrIOService.csvDescImport(fundVersionId, nodeId, nodeVersion, descItemTypeId, is);
         is.close();
 
         DescItemResult descItemResult = new DescItemResult();
@@ -721,7 +770,7 @@ public class ArrangementController {
         Assert.notNull(descItemTypeId);
 
         InputStream is = importFile.getInputStream();
-        ArrOutputItem<ArrItemJsonTable> outputItemCreated = arrIOService.csvOutputImport(fundVersionId, outputDefinitionId, outputDefinitionVersion, descItemTypeId, is);
+        ArrOutputItem outputItemCreated = arrIOService.csvOutputImport(fundVersionId, outputDefinitionId, outputDefinitionVersion, descItemTypeId, is);
         is.close();
 
         OutputItemResult outputItemResult = new OutputItemResult();
@@ -923,8 +972,11 @@ public class ArrangementController {
         try {
             itemTypes = ruleService.getOutputItemTypes(outputDefinition);
         } catch (Exception e) {
+            logger.error("Chyba při zpracování pravidel", e);
             itemTypes = new ArrayList<>();
         }
+
+        List<RulItemTypeExt> hiddenItemTypes = outputService.findHiddenItemTypes(version, outputDefinition, itemTypes, outputItems);
 
         Integer fundId = version.getFund().getFundId();
         String ruleCode = version.getRuleSet().getCode();
@@ -932,7 +984,8 @@ public class ArrangementController {
         ArrOutputDefinitionVO outputDefinitionVO = factoryVo.createArrOutputDefinition(outputDefinition);
         List<ItemGroupVO> itemGroupsVO = factoryVo.createItemGroupsNew(ruleCode, fundId, outputItems);
         List<ItemTypeGroupVO> itemTypeGroupsVO = factoryVo.createItemTypeGroupsNew(ruleCode, fundId, itemTypes);
-        return new OutputFormDataNewVO(outputDefinitionVO, itemGroupsVO, itemTypeGroupsVO);
+        return new OutputFormDataNewVO(outputDefinitionVO, itemGroupsVO, itemTypeGroupsVO,
+                hiddenItemTypes.stream().map(RulItemTypeExt::getItemTypeId).collect(Collectors.toList()));
     }
 
     /**
@@ -1113,6 +1166,7 @@ public class ArrangementController {
         try {
             itemTypes = ruleService.getDescriptionItemTypes(versionId, nodeId);
         } catch (Exception e) {
+            logger.error("Chyba v pravidlech", e);
             itemTypes = new ArrayList<>();
         }
 
@@ -1420,7 +1474,6 @@ public class ArrangementController {
         return new NodeWithParent(factoryVo.createArrNode(deleteLevel.getNode()), nodeClients.iterator().next());
     }
 
-
     /**
      * Provede zkopírování atributu daného typu ze staršího bratra uzlu.
      *
@@ -1468,8 +1521,19 @@ public class ArrangementController {
 
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(input.getVersionId());
 
-        Set<Integer> nodeIds = arrangementService.findNodeIdsByFulltext(version, input.getNodeId(),
-                input.getSearchValue(), input.getDepth());
+        Set<Integer> nodeIds;
+        List<SearchParam> searchParams = input.getSearchParams();
+        if (CollectionUtils.isNotEmpty(searchParams)) {
+            nodeIds = arrangementService.findNodeIdsBySearchParams(version, input.getNodeId(), searchParams,
+                    input.getDepth());
+        } else if (input.getLuceneQuery()) {
+            nodeIds = arrangementService.findNodeIdsByLuceneQuery(version, input.getNodeId(), input.getSearchValue(),
+                    input.getDepth());
+        } else {
+            nodeIds = arrangementService.findNodeIdsByFulltext(version, input.getNodeId(),
+                    input.getSearchValue(), input.getDepth());
+        }
+
 
         return arrangementService.createTreeNodeFulltextList(nodeIds, version);
     }
@@ -1661,17 +1725,16 @@ public class ArrangementController {
      * @param versionId id verze stromu
      * @param fulltext  fulltext
      * @param luceneQuery v hodnotě fulltext je lucene query (např: +specification:*čís* -fulltextValue:ddd), false - normální fulltext
+     * @param searchParams parametry pro rozšířené vyhledávání
      * @return seznam uzlů a jejich indexu v seznamu filtrovaných uzlů, seřazené podle indexu
      * @throws FilterExpiredException není nastaven filtr, nejprve zavolat {@link FilterTreeService#filterData(ArrFundVersion, List)}
      */
-    @RequestMapping(value = "/getFilteredFulltext/{versionId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/getFilteredFulltext/{versionId}", method = RequestMethod.POST)
     public List<FilterNodePosition> getFilteredFulltextNodes(@PathVariable("versionId") final Integer versionId,
-                                                             @RequestParam("fulltext") final String fulltext,
-                                                             @RequestParam(value = "luceneQuery", required = false)
-                                                             final Boolean luceneQuery) {
+                                                             @RequestBody final FaFilteredFulltextParam param) {
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
 
-        return filterTreeService.getFilteredFulltextIds(version, fulltext, BooleanUtils.isTrue(luceneQuery));
+        return filterTreeService.getFilteredFulltextIds(version, param.getFulltext(), param.getLuceneQuery(), param.getSearchParams());
     }
 
     /**
@@ -2085,8 +2148,8 @@ public class ArrangementController {
     @RequestMapping(value = "/requests/{fundVersionId}/digitization/add", method = RequestMethod.POST)
     @Transactional
     public void digitizationRequestAdd(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                       @RequestParam(name = "send", defaultValue = "false") Boolean send,
-                                       @RequestBody DigitizationRequestParam param) {
+                                       @RequestParam(name = "send", defaultValue = "false") final Boolean send,
+                                       @RequestBody final DigitizationRequestParam param) {
         Assert.notNull(param);
         Assert.notEmpty(param.nodeIds);
 
@@ -2110,22 +2173,59 @@ public class ArrangementController {
         }
     }
 
+
+    /**
+     * Vytvoření požadavku nebo přidání DAO k existujícímu požadavku.
+     *
+     * @param fundVersionId identifikátor verze AS
+     * @param send          současně odeslat požadavek?
+     * @param param         parametry požadavku
+     */
+    @RequestMapping(value = "/requests/{fundVersionId}/dao/add", method = RequestMethod.POST)
+    @Transactional
+    public void daoRequestAdd(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                              @RequestParam(name = "send", defaultValue = "false") final Boolean send,
+                              @RequestBody final DaoRequestParam param) {
+        Assert.notNull(param);
+        Assert.notNull(param.type);
+        Assert.notEmpty(param.daoIds);
+
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        List<ArrDao> daos = daoRepository.findAll(param.daoIds);
+
+        if (daos.size() != param.daoIds.size()) {
+            throw new SystemException(BaseCode.ID_NOT_EXIST);
+        }
+
+        ArrDaoRequest daoRequest;
+        if (param.id == null) {
+            daoRequest = requestService.createDaoRequest(daos, param.description, param.type, fundVersion);
+        } else {
+            daoRequest = requestService.getDaoRequest(param.id);
+            requestService.addDaoDaoRequest(daoRequest, daos, fundVersion, param.getDescription());
+        }
+
+        if (BooleanUtils.isTrue(send)) {
+            requestService.sendRequest(daoRequest, fundVersion);
+        }
+    }
+
     /**
      * Odeslání požadavku.
      *
-     * @param fundVersionId  identifikátor verze AS
-     * @param digitizationId identifikátor požadavku
+     * @param fundVersionId identifikátor verze AS
+     * @param requestId     identifikátor požadavku
      */
-    @RequestMapping(value = "/requests/{fundVersionId}/{digitizationId}/send", method = RequestMethod.POST)
+    @RequestMapping(value = "/requests/{fundVersionId}/{requestId}/send", method = RequestMethod.POST)
     @Transactional
-    public void digitizationRequestSend(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                        @PathVariable(value = "digitizationId") final Integer digitizationId) {
+    public void requestSend(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                            @PathVariable(value = "requestId") final Integer requestId) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        ArrDigitizationRequest digitizationRequest = requestService.getDigitizationRequest(digitizationId);
-        if (!fundVersion.getFund().equals(digitizationRequest.getFund())) {
+        ArrRequest request = requestService.getRequest(requestId);
+        if (!fundVersion.getFund().equals(request.getFund())) {
             throw new SystemException(ArrangementCode.INVALID_VERSION);
         }
-        requestService.sendRequest(digitizationRequest, fundVersion);
+        requestService.sendRequest(request, fundVersion);
     }
 
     /**
@@ -2134,15 +2234,15 @@ public class ArrangementController {
      * @param fundVersionId identfikátor verze AS
      * @param param         parametry požadavku
      */
-    @RequestMapping(value = "/requests/{fundVersionId}/{digitizationId}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/requests/{fundVersionId}/{requestId}", method = RequestMethod.PUT)
     @Transactional
-    public void digitizationRequestChange(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                          @PathVariable(value = "digitizationId") final Integer digitizationId,
-                                          @RequestBody DigitizationRequestParam param) {
+    public void requestChange(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                              @PathVariable(value = "requestId") final Integer digitizationId,
+                              @RequestBody final DigitizationRequestParam param) {
         Assert.notNull(param);
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        ArrDigitizationRequest digitizationRequest = requestService.getDigitizationRequest(digitizationId);
-        requestService.changeDigitizationRequest(digitizationRequest, fundVersion, param.getDescription());
+        ArrRequest request = requestService.getRequest(digitizationId);
+        requestService.changeRequest(request, fundVersion, param.getDescription());
     }
 
     /**
@@ -2154,7 +2254,7 @@ public class ArrangementController {
     @RequestMapping(value = "/requests/{fundVersionId}/digitization/remove", method = RequestMethod.POST)
     @Transactional
     public void digitizationRequestRemove(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                          @RequestBody DigitizationRequestParam param) {
+                                          @RequestBody final DigitizationRequestParam param) {
         Assert.notNull(param);
         Assert.notNull(param.id);
         Assert.notEmpty(param.nodeIds);
@@ -2181,11 +2281,14 @@ public class ArrangementController {
      */
     @RequestMapping(value = "/requests/{fundVersionId}", method = RequestMethod.GET)
     public List<ArrRequestVO> findRequests(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                           @RequestParam(value = "state", required = false) ArrRequest.State state,
-                                           @RequestParam(value = "type", required = false) ArrRequest.ClassType type,
-                                           @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail) {
+                                           @RequestParam(value = "state", required = false) final ArrRequest.State state,
+                                           @RequestParam(value = "type", required = false) final ArrRequest.ClassType type,
+                                           @RequestParam(value = "detail", required = false, defaultValue = "false") final Boolean detail,
+                                           @RequestParam(value = "description", required = false) final String description,
+                                           @RequestParam(value = "fromDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final LocalDateTime fromDate,
+                                           @RequestParam(value = "toDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final LocalDateTime toDate) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        List<ArrRequest> requests = requestService.findRequests(fundVersion.getFund(), state, type);
+        List<ArrRequest> requests = requestService.findRequests(fundVersion.getFund(), state, type, description, fromDate, toDate);
         return factoryVo.createRequest(requests, detail, fundVersion);
     }
 
@@ -2209,7 +2312,7 @@ public class ArrangementController {
     public ArrRequestVO getRequest(
             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
             @PathVariable(value = "requestId") final Integer requestId,
-            @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail) {
+            @RequestParam(value = "detail", required = false, defaultValue = "false") final Boolean detail) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrRequest request = requestService.getRequest(requestId);
         return factoryVo.createRequest(request, detail, fundVersion);
@@ -2217,9 +2320,9 @@ public class ArrangementController {
 
     @Transactional
     @RequestMapping(value = "/requests/{requestId}", method = RequestMethod.DELETE)
-    public void removeQueuedRequest(@PathVariable(value = "requestId") final Integer requestId) {
+    public void deleteRequest(@PathVariable(value = "requestId") final Integer requestId) {
         ArrRequest request = requestService.getRequest(requestId);
-        requestService.removeQueuedRequest(request);
+        requestService.deleteRequest(request);
     }
 
 
@@ -2440,11 +2543,17 @@ public class ArrangementController {
     public static class OutputFormDataNewVO extends FormDataNewVO<ArrOutputDefinitionVO> {
         private ArrOutputDefinitionVO parent;
 
+        List<Integer> unusedItemTypeIds;
+
         public OutputFormDataNewVO() {
         }
 
-        public OutputFormDataNewVO(final ArrOutputDefinitionVO parent, final List<ItemGroupVO> groups, final List<ItemTypeGroupVO> typeGroups) {
+        public OutputFormDataNewVO(final ArrOutputDefinitionVO parent,
+                                   final List<ItemGroupVO> groups,
+                                   final List<ItemTypeGroupVO> typeGroups,
+                                   final List<Integer> unusedItemTypeIds) {
             super(parent, groups, typeGroups);
+            this.unusedItemTypeIds = unusedItemTypeIds;
             this.parent = parent;
         }
 
@@ -2456,6 +2565,14 @@ public class ArrangementController {
         @Override
         public void setParent(final ArrOutputDefinitionVO parent) {
             this.parent = parent;
+        }
+
+        public List<Integer> getUnusedItemTypeIds() {
+            return unusedItemTypeIds;
+        }
+
+        public void setUnusedItemTypeIds(final List<Integer> unusedItemTypeIds) {
+            this.unusedItemTypeIds = unusedItemTypeIds;
         }
     }
 
@@ -2913,6 +3030,44 @@ public class ArrangementController {
         }
     }
 
+    /** Vstupní parametry pro metodu /getFilteredFulltext/{versionId} {@link #getFilteredFulltextNodes(Integer, FaFilteredFulltextParam)}. */
+    public static class FaFilteredFulltextParam {
+
+        /** Hledaná hodnota. */
+        private String fulltext;
+
+        /** Příznak že v hodnotě fulltext je lucene query (např: +specification:*čís* -fulltextValue:ddd), false - normální fulltext */
+        private boolean luceneQuery;
+
+        /** Parametry pro rozšířené vyhledávání. */
+        @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
+        private List<SearchParam> searchParams;
+
+        public String getFulltext() {
+            return fulltext;
+        }
+
+        public void setFulltext(final String fulltext) {
+            this.fulltext = fulltext;
+        }
+
+        public boolean getLuceneQuery() {
+            return luceneQuery;
+        }
+
+        public void setLuceneQuery(final boolean luceneQuery) {
+            this.luceneQuery = luceneQuery;
+        }
+
+        public List<SearchParam> getSearchParams() {
+            return searchParams;
+        }
+
+        public void setSearchParams(final List<SearchParam> searchParams) {
+            this.searchParams = searchParams;
+        }
+    }
+
     /**
      * Vstupní parametry pro metodu /fulltext {@link #fulltext(FaFulltextParam)}.
      */
@@ -2934,6 +3089,13 @@ public class ArrangementController {
          * Hloubka v jaké se má hledat pokud je předáno nodeId.
          */
         private Depth depth;
+
+        /** Parametry pro rozšířené vyhledávání. */
+        @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
+        private List<SearchParam> searchParams;
+
+        /** Příznak že v hodnotě searchValue je lucene query (např: +specification:*čís* -fulltextValue:ddd), false - normální fulltext */
+        private boolean luceneQuery;
 
         public Integer getVersionId() {
             return versionId;
@@ -2959,7 +3121,18 @@ public class ArrangementController {
         public void setDepth(final Depth depth) {
             this.depth = depth;
         }
-
+        public List<SearchParam> getSearchParams() {
+            return searchParams;
+        }
+        public void setSearchParams(final List<SearchParam> searchParams) {
+            this.searchParams = searchParams;
+        }
+        public boolean getLuceneQuery() {
+            return luceneQuery;
+        }
+        public void setLuceneQuery(final boolean luceneQuery) {
+            this.luceneQuery = luceneQuery;
+        }
     }
 
     /**
@@ -3253,6 +3426,49 @@ public class ArrangementController {
 
         public void setDescription(final String description) {
             this.description = description;
+        }
+    }
+
+    public static class DaoRequestParam {
+
+        private Integer id;
+
+        private List<Integer> daoIds;
+
+        private String description;
+
+        private ArrDaoRequest.Type type;
+
+        public Integer getId() {
+            return id;
+        }
+
+        public void setId(final Integer id) {
+            this.id = id;
+        }
+
+        public List<Integer> getDaoIds() {
+            return daoIds;
+        }
+
+        public void setDaoIds(final List<Integer> daoIds) {
+            this.daoIds = daoIds;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(final String description) {
+            this.description = description;
+        }
+
+        public ArrDaoRequest.Type getType() {
+            return type;
+        }
+
+        public void setType(final ArrDaoRequest.Type type) {
+            this.type = type;
         }
     }
 }

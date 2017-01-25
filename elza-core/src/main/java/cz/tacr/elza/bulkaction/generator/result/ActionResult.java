@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * @since 29.06.2016
  */
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
-public abstract class ActionResult implements cz.tacr.elza.api.vo.result.ActionResult {
+public abstract class ActionResult {
 
 
 

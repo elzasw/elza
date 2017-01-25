@@ -1,12 +1,21 @@
 package cz.tacr.elza.domain;
 
+import java.io.File;
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import javax.persistence.*;
-import java.io.File;
-
 /**
- * Dms Soubor
+ * Dms Soubor.
  *
  * @author Petr Compel <petr.compel@marbes.cz>
  * @since 17.6.2016
@@ -15,7 +24,7 @@ import java.io.File;
 @Entity(name = "dms_file")
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class DmsFile implements cz.tacr.elza.api.DmsFile {
+public class DmsFile implements Serializable {
 
     public static final String NAME = "name";
 
@@ -43,63 +52,88 @@ public class DmsFile implements cz.tacr.elza.api.DmsFile {
     @Transient
     private File file;
 
-    @Override
+    /**
+     * @return id souboru
+     */
     public Integer getFileId() {
         return fileId;
     }
 
-    @Override
-    public void setFileId(Integer fileId) {
+    /**
+     * Nastaví id souboru
+     * @param fileId id souboru
+     */
+    public void setFileId(final Integer fileId) {
         this.fileId = fileId;
     }
 
-    @Override
+    /**
+     * @return název souboru
+     */
     public String getName() {
         return name;
     }
 
-    @Override
-    public void setName(String name) {
+    /**
+     * @param name název souboru
+     */
+    public void setName(final String name) {
         this.name = name;
     }
 
-    @Override
+    /**
+     * @return Reálný název souboru
+     */
     public String getFileName() {
         return fileName;
     }
 
-    @Override
-    public void setFileName(String fileName) {
+    /**
+     * @param fileName Reálný název souboru
+     */
+    public void setFileName(final String fileName) {
         this.fileName = fileName;
     }
 
-    @Override
+    /**
+     * @return velikost
+     */
     public Integer getFileSize() {
         return fileSize;
     }
 
-    @Override
-    public void setFileSize(Integer fileSize) {
+    /**
+     * @param fileSize velikost
+     */
+    public void setFileSize(final Integer fileSize) {
         this.fileSize = fileSize;
     }
 
-    @Override
+    /**
+     * @return mime
+     */
     public String getMimeType() {
         return mimeType;
     }
 
-    @Override
-    public void setMimeType(String mimeType) {
+    /**
+     * @param mimeType mime
+     */
+    public void setMimeType(final String mimeType) {
         this.mimeType = mimeType;
     }
 
-    @Override
+    /**
+     * @return Počet stran (pouze u pdf)
+     */
     public Integer getPagesCount() {
         return pagesCount;
     }
 
-    @Override
-    public void setPagesCount(Integer pagesCount) {
+    /**
+     * @param pagesCount Počet stran (pouze u pdf)
+     */
+    public void setPagesCount(final Integer pagesCount) {
         this.pagesCount = pagesCount;
     }
 
@@ -112,7 +146,7 @@ public class DmsFile implements cz.tacr.elza.api.DmsFile {
         return file;
     }
 
-    public void setFile(File file) {
+    public void setFile(final File file) {
         this.file = file;
     }
 }

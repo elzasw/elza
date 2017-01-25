@@ -40,5 +40,8 @@ public class DescItemPartyRef extends AbstractDescItem {
 
     public void setParty(final AbstractParty party) {
         this.party = party;
+        if (party != null) {
+            partyId = party.getPartyId();
+        }
     }
 }

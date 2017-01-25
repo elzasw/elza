@@ -6,7 +6,7 @@
     <parent>
         <artifactId>elza</artifactId>
         <groupId>cz.tacr.elza</groupId>
-        <version>0.10-SNAPSHOT</version>
+        <version>0.11-SNAPSHOT</version>
     </parent>
 
     <artifactId>distrib</artifactId>
@@ -16,6 +16,7 @@
     <modules>
         <module>elza-tomcat</module>
         <module>elza-war</module>
+        <module>dao-test-bench-war</module>
     </modules>
 
 </project>

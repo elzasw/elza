@@ -1,4 +1,5 @@
 export * as commons from './commons'
+export debounce from './debounce'
 export defaultImport from './defaultImport'
 export getMapFromList from './getMapFromList'
 export storeFromArea from './storeFromArea'

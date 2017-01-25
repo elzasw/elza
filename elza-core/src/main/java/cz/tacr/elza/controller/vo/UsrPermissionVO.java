@@ -1,6 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
-import cz.tacr.elza.api.UsrPermission;
+import cz.tacr.elza.domain.UsrPermission;
 
 /**
  * VO objektu jednoho oprávnění uživatele nebo skupiny.

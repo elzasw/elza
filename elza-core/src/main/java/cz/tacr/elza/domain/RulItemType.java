@@ -1,17 +1,7 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.tacr.elza.domain.table.ElzaColumn;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.data.rest.core.annotation.RestResource;
+import java.io.IOException;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -24,12 +14,27 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
-import java.io.IOException;
-import java.util.List;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.rest.core.annotation.RestResource;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import cz.tacr.elza.domain.table.ElzaColumn;
 
 
 /**
- * popis {@link cz.tacr.elza.api.RulItemType}.
+ *
+ * Evidence typů atributů archivního popisu. evidence je společná pro všechny archivní pomůcky.
+ *
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */
@@ -39,7 +44,7 @@ import java.util.List;
         @UniqueConstraint(columnNames = {"viewOrder"})})
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulItemType implements cz.tacr.elza.api.RulItemType<RulDataType, RulPackage, ElzaColumn> {
+public class RulItemType {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -111,157 +116,212 @@ public class RulItemType implements cz.tacr.elza.api.RulItemType<RulDataType, Ru
         this.itemTypeId = descItemTypeId;
     }
 
-    @Override
     public RulDataType getDataType() {
         return dataType;
     }
 
-    @Override
     public void setDataType(final RulDataType dataType) {
         this.dataType = dataType;
     }
 
-    @Override
     public String getCode() {
         return code;
     }
 
-    @Override
     public void setCode(final String code) {
         this.code = code;
     }
 
-    @Override
     public String getName() {
         return name;
     }
 
-    @Override
     public void setName(final String name) {
         this.name = name;
     }
 
-    @Override
     public String getShortcut() {
         return shortcut;
     }
 
-    @Override
     public void setShortcut(final String shortcut) {
         this.shortcut = shortcut;
     }
 
-    @Override
+    /**
+     * @return popis atributu, který slouží zároveň jako nápověda v aplikaci o jaký typ se jedná a jak se sním zachází.
+     */
     public String getDescription() {
         return description;
     }
 
-    @Override
+    /**
+     * popis atributu, který slouží zároveň jako nápověda v aplikaci o jaký typ se jedná a jak se sním zachází.
+     *
+     * @param description popis atributu.
+     */
     public void setDescription(final String description) {
         this.description = description;
     }
 
-    @Override
+    /**
+     * @return příznak, zda je hodnota atributu při použití tohoto typu jedinečná v rámci celé archivní pomůcky.
+     */
     public Boolean getIsValueUnique() {
         return isValueUnique;
     }
 
-    @Override
+    /**
+     * příznak, zda je hodnota atributu při použití tohoto typu jedinečná v rámci celé archivní pomůcky.
+     *
+     * @param isValueUnique příznak.
+     */
     public void setIsValueUnique(final Boolean isValueUnique) {
         this.isValueUnique = isValueUnique;
     }
 
-    @Override
+    /**
+     * @return příznak, zda je možné dle tohoto typu atributu setřídit archivní popis. zatím nebude aplikačně využíváno
+     */
     public Boolean getCanBeOrdered() {
         return canBeOrdered;
     }
 
-    @Override
+    /**
+     * nastaví příznak, zda je možné dle tohoto typu atributu setřídit archivní popis.
+     *
+     * @param canBeOrdered příznak, zda je možné dle tohoto typu atributu setřídit archivní popis.
+     */
     public void setCanBeOrdered(final Boolean canBeOrdered) {
         this.canBeOrdered = canBeOrdered;
     }
 
-    @Override
+    /**
+     * @return příznak, zda se u typu atributu používají specifikace hodnot jako např. u druhů
+     * jednotek popisu nebo u rolí entit. true = povinná specifikace, false = specifikace
+     * neexistují. specifikace jsou uvedeny v číselníku rul_desc_item_spe.
+     */
     public Boolean getUseSpecification() {
         return useSpecification;
     }
 
-    @Override
+    /**
+     * příznak, zda se u typu atributu používají specifikace hodnot jako např. u druhů jednotek
+     * popisu nebo u rolí entit. true = povinná specifikace, false = specifikace neexistují.
+     * specifikace jsou uvedeny v číselníku rul_desc_item_spe.
+     *
+     * @param useSpecification příznak, zda se u typu atributu používají specifikace hodnot.
+     */
     public void setUseSpecification(final Boolean useSpecification) {
         this.useSpecification = useSpecification;
     }
 
-    @Override
+    /**
+     * @return pořadí typu atributu pro zobrazení v ui. pokud není pořadí uvedeno nebo je u více
+     * typů uvedeno stejné pořadí, bude výsledné pořadí náhodné.
+     */
     public Integer getViewOrder() {
         return viewOrder;
     }
 
-    @Override
+    /**
+     * nastaví pořadí typu atributu pro zobrazení v ui. pokud není pořadí uvedeno nebo je u více
+     * typů uvedeno stejné pořadí, bude výsledné pořadí náhodné..
+     *
+     * @param viewOrder pořadí typu atributu pro zobrazení v ui.
+     */
     public void setViewOrder(final Integer viewOrder) {
         this.viewOrder = viewOrder;
     }
 
-    @Override
+    /**
+     * @return typ udává, zda je povinné/doporučené/... vyplnit hodnotu atributu.
+     */
     public Type getType() {
         return type;
     }
 
-    @Override
+    /**
+     * Typ udává, zda je povinné/doporučené/... vyplnit hodnotu atributu.
+     *
+     * @param type typ
+     */
     public void setType(final Type type) {
         this.type = type;
     }
 
-    @Override
+    /**
+     * @return příznak udává, zda je atribut opakovatelný
+     */
     public Boolean getRepeatable() {
         return repeatable;
     }
 
-    @Override
+    /**
+     * Příznak udává, zda je atribut opakovatelný.
+     *
+     * @param repeatable opakovatelnost
+     */
     public void setRepeatable(final Boolean repeatable) {
         this.repeatable = repeatable;
     }
 
-    @Override
+    /**
+     * @return počítaný atribut
+     */
     public Boolean getCalculable() {
         return calculable;
     }
 
-    @Override
+    /**
+     * @param calculable počítaný atribut
+     */
     public void setCalculable(final Boolean calculable) {
         this.calculable = calculable;
     }
 
-    @Override
+    /**
+     * @return stav kalkulace?
+     */
     public Boolean getCalculableState() {
         return calculableState;
     }
 
-    @Override
+    /**
+     * @param calculableState stav kalkulace?
+     */
     public void setCalculableState(final Boolean calculableState) {
         this.calculableState = calculableState;
     }
 
-    @Override
+    /**
+     * @return balíček
+     */
     public RulPackage getPackage() {
         return rulPackage;
     }
 
-    @Override
+    /**
+     * @param rulPackage balíček
+     */
     public void setPackage(final RulPackage rulPackage) {
         this.rulPackage = rulPackage;
     }
 
-    @Override
+    /**
+     * @return typ kód typu kontroly
+     */
     public String getPolicyTypeCode() {
         return policyTypeCode;
     }
 
-    @Override
+    /**
+     * @param policyTypeCode kód typu kontroly
+     */
     public void setPolicyTypeCode(final String policyTypeCode) {
         this.policyTypeCode = policyTypeCode;
     }
 
-    @Override
     public List<ElzaColumn> getColumnsDefinition() {
         if (columnsDefinition == null) {
             return null;
@@ -273,7 +333,6 @@ public class RulItemType implements cz.tacr.elza.api.RulItemType<RulDataType, Ru
         }
     }
 
-    @Override
     public void setColumnsDefinition(final List<ElzaColumn> columns) {
         try {
             columnsDefinition = objectMapper.writeValueAsString(columns);
@@ -310,5 +369,27 @@ public class RulItemType implements cz.tacr.elza.api.RulItemType<RulDataType, Ru
     @Override
     public String toString() {
         return "RulItemType pk=" + itemTypeId + ", code=" + code;
+    }
+
+    public enum Type {
+        /**
+         * Povinný
+         */
+        REQUIRED,
+
+        /**
+         * Doporučený
+         */
+        RECOMMENDED,
+
+        /**
+         * Možný
+         */
+        POSSIBLE,
+
+        /**
+         * Nemožný
+         */
+        IMPOSSIBLE
     }
 }

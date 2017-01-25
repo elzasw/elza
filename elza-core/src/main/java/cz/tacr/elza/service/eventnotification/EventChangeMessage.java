@@ -1,10 +1,8 @@
 package cz.tacr.elza.service.eventnotification;
 
 import java.util.List;
-import java.util.Map;
 
 import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
-import cz.tacr.elza.service.eventnotification.events.EventType;
 
 
 /**

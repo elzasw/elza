@@ -3,14 +3,12 @@ package cz.tacr.elza.controller;
 import java.util.HashMap;
 import java.util.List;
 
-import cz.tacr.elza.api.UseUnitdateEnum;
-import cz.tacr.elza.domain.ParPartyType.PartyTypeEnum;
-import cz.tacr.elza.domain.ParRelationType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.api.UseUnitdateEnum;
 import cz.tacr.elza.controller.vo.ParDynastyVO;
 import cz.tacr.elza.controller.vo.ParEventVO;
 import cz.tacr.elza.controller.vo.ParPartyGroupVO;
@@ -21,6 +19,8 @@ import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.ParUnitdateVO;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParPartyType.PartyTypeEnum;
+import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
@@ -49,7 +49,7 @@ public class ValidationVOService {
     /**
      * Mapa Typů osob na třídy
      */
-    private final static HashMap<PartyTypeEnum, Class> partyTypeToClass = new HashMap<>(4);
+    private final static HashMap<PartyTypeEnum, Class<? extends ParPartyVO>> partyTypeToClass = new HashMap<>(4);
 
 
     static {
@@ -67,7 +67,7 @@ public class ValidationVOService {
      * @param checkedClass třída
      * @param checkedEnum typ enum.3
      */
-    private void partyCheckerHelper(final ParPartyVO party, final ParPartyType partyType, final Class checkedClass, final PartyTypeEnum checkedEnum) {
+    private void partyCheckerHelper(final ParPartyVO party, final ParPartyType partyType, final Class<? extends ParPartyVO> checkedClass, final PartyTypeEnum checkedEnum) {
         if (checkedClass.isInstance(party) && !checkedEnum.equals(partyType.getPartyTypeEnum())) {
             throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
         }

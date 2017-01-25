@@ -63,6 +63,10 @@ module.exports = {
         net: "empty",
         tls: "empty"
     },
+    watchOptions: {
+        aggregateTimeout: 300,
+        poll: 1000
+    },
     externals: {
     },
     resolve: {

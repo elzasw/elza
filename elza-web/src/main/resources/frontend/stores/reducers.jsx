@@ -11,7 +11,6 @@ import {normalizeInt} from 'components/validate.jsx';
  */
 import arrRegion from './app/arr/arrRegion.jsx';
 import refTables from './app/refTables/refTables.jsx';
-import registryRegion from './app/registry/registryRegion.jsx';
 import registryRegionRecordTypes from './app/registry/registryRegionRecordTypes.jsx';
 import toastr from '../components/shared/toastr/ToastrStore.jsx';
 import fundRegion from './app/fund/fundRegion.jsx';
@@ -27,6 +26,7 @@ import adminRegion from './app/admin/adminRegion.jsx';
 import fundForm from './app/arr/form/fundForm.jsx';
 import inlineForm from './app/form/inlineForm.jsx';
 import addPacketForm from './app/arr/form/addPacketForm.jsx';
+import searchForm from './app/arr/form/searchForm.jsx';
 import stateRegion from './app/state/stateRegion.jsx';
 import userDetail from './app/user/userDetail.jsx';
 import router from './app/router.jsx';
@@ -58,7 +58,6 @@ const rootReducer = combineReducers({
     app,
     arrRegion,
     refTables,
-    registryRegion,
     registryRegionRecordTypes,
     toastr,
     developer,
@@ -87,6 +86,7 @@ const rootReducer = combineReducers({
         relationForm: relationForm,
         addRegistryForm: addRegistryForm,
         editRegistryForm: editRegistryForm,
+        searchForm,
         addUserForm,
     }).normalize({
         addPacketForm: {

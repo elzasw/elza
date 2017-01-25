@@ -14,6 +14,8 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import cz.tacr.elza.api.interfaces.IRegScope;
+
 
 /**
  * Třída rejstříku.
@@ -25,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"code"}))
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RegScope implements cz.tacr.elza.api.RegScope {
+public class RegScope implements IRegScope {
 
     public static final String SCOPE_ID = "scopeId";
 
@@ -39,32 +41,38 @@ public class RegScope implements cz.tacr.elza.api.RegScope {
     @Column(length = 250, nullable = false)
     private String name;
 
-    @Override
     public Integer getScopeId() {
         return scopeId;
     }
 
-    @Override
     public void setScopeId(final Integer scopeId) {
         this.scopeId = scopeId;
     }
 
-    @Override
+    /**
+     * @return Kód třídy rejstříku.
+     */
     public String getCode() {
         return code;
     }
 
-    @Override
+    /**
+     * @param code Kód třídy rejstříku.
+     */
     public void setCode(final String code) {
         this.code = code;
     }
 
-    @Override
+    /**
+     * @return Název třídy rejstříku.
+     */
     public String getName() {
         return name;
     }
 
-    @Override
+    /**
+     * @param name Název třídy rejstříku.
+     */
     public void setName(final String name) {
         this.name = name;
     }

@@ -36,27 +36,27 @@ public class YamlProperties extends Properties {
     /**
      * Načtené hodnoty z Yaml souboru
      */
-    private Map map = new HashMap();
+    private Map<Object, Object> map = new HashMap<>();
 
 
     @Override
-    public synchronized void load(Reader reader) throws IOException {
-        map = (Map) yaml.load(reader);
+    public synchronized void load(final Reader reader) throws IOException {
+        map = (Map<Object, Object>) yaml.load(reader);
     }
 
     @Override
-    public synchronized void load(InputStream inStream) throws IOException {
-        map = (Map) yaml.load(inStream);
+    public synchronized void load(final InputStream inStream) throws IOException {
+        map = (Map<Object, Object>) yaml.load(inStream);
     }
 
     @Override
-    public void store(Writer writer, String comments) throws IOException {
+    public void store(final Writer writer, final String comments) throws IOException {
         String yamlContent = yaml.dumpAs(map, Tag.MAP, DumperOptions.FlowStyle.BLOCK);
         writer.write(yamlContent);
     }
 
     @Override
-    public void store(OutputStream out, String comments) throws IOException {
+    public void store(final OutputStream out, final String comments) throws IOException {
         String yamlContent = yaml.dumpAs(map, Tag.MAP, DumperOptions.FlowStyle.BLOCK);
         PrintStream printStream = new PrintStream(out, true, "utf-8");
         printStream.print(yamlContent);
@@ -64,8 +64,8 @@ public class YamlProperties extends Properties {
     }
 
     @Override
-    public String getProperty(String key) {
-        Map actualMap = getLastMapFromYamlTree(key);
+    public String getProperty(final String key) {
+        Map<Object, Object> actualMap = getLastMapFromYamlTree(key);
         String lastName = getLastName(key);
 
         Object value = actualMap.get(lastName);
@@ -78,25 +78,25 @@ public class YamlProperties extends Properties {
         return null;
     }
 
-    private Map getLastMapFromYamlTree(String key) {
+    private Map<Object, Object> getLastMapFromYamlTree(final String key) {
         String[] names = StringUtils.split(key, '.');
         //String propertyName = names[names.length - 1];
 
         Object[] path = ArrayUtils.subarray(names, 0, names.length - 1);
 
-        Map actualMap = map;
+        Map<Object, Object> actualMap = map;
         for (Object name : path) {
             Object o = actualMap.get(name);
             if (o instanceof Map) {
-                actualMap = (Map) o;
+                actualMap = (Map<Object, Object>) o;
             }
         }
         return actualMap;
     }
 
     @Override
-    public String getProperty(String key, String defaultValue) {
-        Map actualMap = getLastMapFromYamlTree(key);
+    public String getProperty(final String key, final String defaultValue) {
+        Map<Object, Object> actualMap = getLastMapFromYamlTree(key);
         String lastName = getLastName(key);
 
         Object value = actualMap.get(lastName);
@@ -106,20 +106,20 @@ public class YamlProperties extends Properties {
         return defaultValue;
     }
 
-    private String getLastName(String key) {
+    private String getLastName(final String key) {
         return StringUtils.contains(key, '.') ? StringUtils.substringAfterLast(key, ".") : key;
     }
 
     @Override
-    public synchronized boolean containsKey(Object key) {
-        Map actualMap = getLastMapFromYamlTree((String) key);
+    public synchronized boolean containsKey(final Object key) {
+        Map<Object, Object> actualMap = getLastMapFromYamlTree((String) key);
         String lastName = getLastName((String) key);
         return actualMap.containsKey(lastName);
     }
 
     @Override
-    public synchronized Object setProperty(String key, String value) {
-        Map actualMap = getLastMapFromYamlTree(key);
+    public synchronized Object setProperty(final String key, final String value) {
+        Map<Object, Object> actualMap = getLastMapFromYamlTree(key);
         String lastName = getLastName(key);
         return actualMap.put(lastName, value);
 
@@ -145,7 +145,7 @@ public class YamlProperties extends Properties {
      * @param propertiesFile properties soubor
      * @return true - ano je
      */
-    public static boolean isYamlFile(File propertiesFile) {
+    public static boolean isYamlFile(final File propertiesFile) {
         return FilenameUtils.isExtension(propertiesFile.getPath(), "yaml");
     }
 

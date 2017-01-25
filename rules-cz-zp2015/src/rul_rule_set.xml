@@ -1,15 +1,5 @@
 <rule-sets>
     <rule-set code="ZP2015">
         <name>Základní pravidla 2015</name>
-        <!-- Výchozí prvky pro tabulkové zobrazení -->
-        <default-item-types>
-            <item-type code="ZP2015_UNIT_ID" />
-            <item-type code="ZP2015_SERIAL_NUMBER" />
-            <item-type code="ZP2015_STORAGE_ID" />
-            <item-type code="ZP2015_LEVEL_TYPE" />
-            <item-type code="ZP2015_TITLE" />
-            <item-type code="ZP2015_FOLDER_TYPE" />
-            <item-type code="ZP2015_UNIT_TYPE" />
-        </default-item-types>
     </rule-set>
 </rule-sets>

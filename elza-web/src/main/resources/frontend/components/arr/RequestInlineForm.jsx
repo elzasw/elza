@@ -24,6 +24,7 @@ class RequestInlineForm extends AbstractReactComponent {
 
     static PropTypes = {
         initData: React.PropTypes.object,
+        reqType: React.PropTypes.object.isRequired,
         onSave: React.PropTypes.func.isRequired,
     };
 

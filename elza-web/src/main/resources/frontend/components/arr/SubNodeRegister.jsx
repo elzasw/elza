@@ -12,7 +12,7 @@ import {
     fundSubNodeRegisterValueBlur,
     fundSubNodeRegisterValueChange
 } from 'actions/arr/subNodeRegister.jsx'
-import {registrySelect, registryAdd} from 'actions/registry/registryRegionList.jsx'
+import {registryDetailFetchIfNeeded, registryAdd} from 'actions/registry/registry.jsx'
 import NodeRegister from './registerForm/NodeRegister.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import DescItemLabel from './nodeForm/DescItemLabel.jsx'
@@ -54,7 +54,7 @@ const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
 
         // Akce po vytvoření
         if (submitType === 'storeAndViewDetail') {  // přesměrování na detail
-            this.dispatch(registrySelect(data.id, fund));
+            this.dispatch(registryDetailFetchIfNeeded(data.id));
             this.dispatch(routerNavigate('registry'));
         } else {    // nastavení focus zpět na prvek
         }
@@ -69,8 +69,7 @@ const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
     }
 
     handleDetail(recordId) {
-        const {fund} = this.props;
-        this.dispatch(registrySelect(recordId, fund));
+        this.dispatch(registryDetailFetchIfNeeded(recordId));
         this.dispatch(routerNavigate('registry'));
     }
 

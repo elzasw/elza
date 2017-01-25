@@ -1,17 +1,12 @@
 package cz.tacr.elza.service.eventnotification.events;
 
-import cz.tacr.elza.service.eventnotification.events.vo.NodeInfo;
-
-import java.util.List;
-
-
 /**
  * Událost, která která nastala nad Node s ID nad konkrétní verzí stromu a je potřeba změnit verzi node
  *
  * @author Petr Compel [<a href="mailto:petr.compel@marbes.cz">petr.compel@marbes.cz</a>]
  * @since 12.02.2016
  */
-public class EventNodeIdVersionInVersion extends EventVersion<EventNodeIdVersionInVersion> {
+public class EventNodeIdVersionInVersion extends EventVersion {
 
     /**
      * Node id
@@ -36,7 +31,7 @@ public class EventNodeIdVersionInVersion extends EventVersion<EventNodeIdVersion
         return nodeId;
     }
 
-    public void setNodeId(Integer nodeId) {
+    public void setNodeId(final Integer nodeId) {
         this.nodeId = nodeId;
     }
 
@@ -44,7 +39,7 @@ public class EventNodeIdVersionInVersion extends EventVersion<EventNodeIdVersion
         return version;
     }
 
-    public void setVersion(Integer version) {
+    public void setVersion(final Integer version) {
         this.version = version;
     }
 

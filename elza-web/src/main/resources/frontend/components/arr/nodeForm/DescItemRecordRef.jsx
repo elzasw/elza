@@ -2,142 +2,127 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import {WebApi} from 'actions/index.jsx';
-import {Icon, i18n, AbstractReactComponent, NoFocusButton, Autocomplete, ExtImportForm} from 'components/index.jsx';
+import {Icon, i18n, AbstractReactComponent, RegistryField} from 'components/index.jsx';
 import {connect} from 'react-redux'
 import {decorateAutocompleteValue} from './DescItemUtils.jsx'
-import {MenuItem, Button} from 'react-bootstrap';
-import * as perms from 'actions/user/Permission.jsx';
 import DescItemLabel from './DescItemLabel.jsx'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-
 import './DescItemRecordRef.less'
+import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import RegistrySelectPage from 'pages/select/RegistrySelectPage.jsx'
+import {registryDetailFetchIfNeeded, registryListFilter, registryDetailClear, AREA_REGISTRY_LIST} from 'actions/registry/registry.jsx'
+import {partyDetailFetchIfNeeded, partyListFilter, partyDetailClear, AREA_PARTY_LIST} from 'actions/party/party.jsx'
+import classNames from 'classnames'
+import {storeFromArea, objectById} from 'shared/utils'
+import {MODAL_DIALOG_VARIANT} from 'constants'
+
 
 class DescItemRecordRef extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
-        this.bindMethods('handleChange', 'renderRecord', 'handleSearchChange',
-            'renderFooter', 'handleCreateRecord', 'focus');
-
-        this.state = {recordList: []};
-    }
 
     focus() {
-        this.refs.autocomplete.focus()
+        this.refs.registryField.refs.wrappedInstance.focus()
     }
 
-    handleSearchChange(text) {
-
-        text = text == "" ? null : text;
-
-        WebApi.findRegistry(text, null, null, this.props.versionId)
-                .then(json => {
-                    this.setState({
-                        recordList: json.recordList.map(record => {
-                            return record
-                        })
-                    })
-                })
-    }
-
-    handleCreateRecord() {
-        this.refs.autocomplete.closeMenu();
-        this.props.onCreateRecord();
-    }
-
-    handleDetail(recordId) {
-        this.props.onDetail(recordId);
-    }
-
-    handleImport = () => {
-        const {versionId} = this.props;
-        this.refs.autocomplete.closeMenu();
-        this.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={false} versionId={versionId}/>, "dialog-lg"));
+    static defaultProps = {
+        hasSpecification: false,
     };
 
-    renderRecord(item, isHighlighted, isSelected) {
-        var cls = 'item';
-        if (isHighlighted) {
-            cls += ' focus'
-        }
-        if (isSelected) {
-            cls += ' active'
-        }
+    static PropTypes = {
+        descItem: React.PropTypes.object.isRequired,
+        hasSpecification: React.PropTypes.bool,
+        itemName: React.PropTypes.string,
+        specName: React.PropTypes.string
+    };
 
-        return (
-                <div className={cls} key={item.id} >
-                    <div className="name" title={item.record}>{item.record}</div>
-                    <div className="characteristics" title={item.characteristics}>{item.characteristics}</div>
-                </div>
-        )
-    }
+    handleSelectModule = ({onSelect, filterText, value}) => {
+        const {hasSpecification, descItem, registryList, partyList, fundName, nodeName, itemName, specName} = this.props;
+        console.log(filterText, "aaa");
+        const open = (hasParty = false) => {
+            if (hasParty) {
+                this.dispatch(partyListFilter({...partyList.filter, text: filterText, itemSpecId: hasSpecification ? descItem.descItemSpecId : null}));
+                this.dispatch(partyDetailClear());
 
-    renderFooter() {
-        return (
-            <div className="create-record">
-                <Button onClick={this.handleCreateRecord}><Icon glyph='fa-plus'/>{i18n('registry.addNewRegistry')}</Button>
-                <Button onClick={this.handleImport}><Icon glyph='fa-plus' /> {i18n("ribbon.action.registry.importExt")}</Button>
-            </div>
-        )
-    }
+            }
+            this.dispatch(registryListFilter({...registryList.filter, text: filterText, itemSpecId: hasSpecification ? descItem.descItemSpecId : null}));
+            this.dispatch(registryDetailFetchIfNeeded(value ? value.id : null));
+            this.dispatch(modalDialogShow(this, null, <RegistrySelectPage
+                titles={[fundName, nodeName, itemName + (hasSpecification ? ': ' + specName : '')]}
+                hasParty={hasParty} onSelect={(data) => {
+                    onSelect(data);
+                    if (hasParty) {
+                        this.dispatch(partyListFilter({text:null, type:null, itemSpecId: null}));
+                        this.dispatch(partyDetailClear());
+                    }
+                    this.dispatch(registryListFilter({text: null, registryParentId: null, registryTypeId: null, versionId: null, itemSpecId: null, parents: [], typesToRoot: null}));
+                    this.dispatch(registryDetailClear());
+                    this.dispatch(modalDialogHide());
+            }}
+            />, classNames(MODAL_DIALOG_VARIANT.FULLSCREEN, MODAL_DIALOG_VARIANT.NO_HEADER)));
+        };
+
+        if (hasSpecification) {
+            WebApi.specificationHasParty(descItem.descItemSpecId).then(open);
+        } else {
+            open();
+        }
+    };
 
     render() {
-        const {userDetail, onChange, onBlur, descItem, locked, singleDescItemTypeEdit, readMode, cal} = this.props;
-        var value = descItem.record ? descItem.record : null;
+        const {descItem, locked, singleDescItemTypeEdit, hasSpecification, readMode, cal, onDetail, typePrefix, ...otherProps} = this.props;
+        const value = descItem.record ? descItem.record : null;
 
         if (readMode) {
             if (value) {
-                return (
-                    <DescItemLabel onClick={this.handleDetail.bind(this, descItem.record.recordId)} value={value.record} />
-                )
+                return <DescItemLabel onClick={onDetail.bind(this, descItem.record.recordId)} value={value.record} />
             } else {
-                return (
-                    <DescItemLabel value={cal ? i18n("subNodeForm.descItemType.calculable") : ""} cal={cal} />
-                )
+                return <DescItemLabel value={cal ? i18n("subNodeForm.descItemType.calculable") : ""} cal={cal} />
             }
         }
 
-        var footer
-        if (!singleDescItemTypeEdit) {
-            if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, perms.REG_SCOPE_WR)) {
-                footer = this.renderFooter();
-            }
+
+        let disabled = locked;
+        if (hasSpecification && !descItem.descItemSpecId) {
+            disabled = true;
         }
 
-        var actions = new Array;
-        if (descItem.record) {
-            if (userDetail.hasOne(perms.REG_SCOPE_RD_ALL, {type: perms.REG_SCOPE_RD, scopeId: descItem.record.scopeId})) {
-                actions.push(<div onClick={this.handleDetail.bind(this, descItem.record.recordId)}
-                                  className={'btn btn-default detail'}><Icon glyph={'fa-user'}/></div>);
-            }
-        }
-
-        return (
-                <div className='desc-item-value desc-item-value-parts'>
-                    <Autocomplete
-                            {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, ['autocomplete-record'])}
-                            ref='autocomplete'
-                            customFilter
-                            footer={footer}
-                            value={value}
-                            items={this.state.recordList}
-                            getItemId={(item) => item ? item.id : null}
-                            getItemName={(item) => item ? item.record : ''}
-                            onSearchChange={this.handleSearchChange}
-                            onChange={onChange}
-                            onBlur={onBlur}
-                            renderItem={this.renderRecord}
-                            actions={[actions]}
-                    />
-                </div>
-        )
+        return <div className='desc-item-value desc-item-value-parts'>
+            <ItemTooltipWrapper tooltipTitle="dataType.recordRef.format" className="tooltipWrapper">
+                <RegistryField
+                    ref='registryField'
+                    {...otherProps}
+                    itemSpecId={descItem.descItemSpecId}
+                    value={value}
+                    footer={!singleDescItemTypeEdit}
+                    footerButtons={false}
+                    detail={typePrefix == "output" ? false : !disabled}
+                    onSelectModule={this.handleSelectModule}
+                    {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, disabled, ['autocomplete-record'])}
+                />
+            </ItemTooltipWrapper>
+        </div>
     }
 }
 
-function mapStateToProps(state) {
-    const {userDetail} = state
+
+export default connect((state, props) => {
+    let fundName = null, nodeName = null;
+    if (props.typePrefix != "output") {
+        const {arrRegion:{activeIndex,funds}} = state;
+        const fund = funds[activeIndex];
+        const {nodes} = fund;
+        fundName = fund.name;
+        const node = nodes.nodes[nodes.activeIndex];
+        const {selectedSubNodeId} = node;
+        const subNode = objectById(node.allChildNodes, selectedSubNodeId);
+        subNode && subNode.name && (nodeName = subNode.name);
+    }
+
+    const registryList = storeFromArea(state, AREA_REGISTRY_LIST);
+    const partyList = storeFromArea(state, AREA_PARTY_LIST);
     return {
-        userDetail,
+        registryList,
+        partyList,
+        fundName,
+        nodeName
     }
-}
-
-export default connect(mapStateToProps, null, null, { withRef: true })(DescItemRecordRef);
+}, null, null, { withRef: true })(DescItemRecordRef);

@@ -4,13 +4,23 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 
-import cz.tacr.elza.domain.enumeration.StringLength;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import cz.tacr.elza.api.interfaces.IArrFund;
+import cz.tacr.elza.domain.enumeration.StringLength;
+import cz.tacr.elza.domain.interfaces.Versionable;
 
 /**
  * Archivní pomůcka. Archivní pomůcka je lineárně verzována pomocí {@link ArrFundVersion}.
@@ -20,7 +30,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity(name = "arr_fund")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrFund extends AbstractVersionableEntity implements cz.tacr.elza.api.ArrFund<ParInstitution>, Serializable {
+public class ArrFund extends AbstractVersionableEntity implements Versionable, Serializable, IArrFund {
 
     @Id
     @GeneratedValue
@@ -48,52 +58,42 @@ public class ArrFund extends AbstractVersionableEntity implements cz.tacr.elza.a
     @OneToMany(mappedBy = "fund", fetch = FetchType.LAZY)
     private List<ArrOutputDefinition> outputDefinitions;
 
-    @Override
     public Integer getFundId() {
         return fundId;
     }
 
-    @Override
     public void setFundId(final Integer fundId) {
         this.fundId = fundId;
     }
 
-    @Override
     public String getName() {
         return name;
     }
 
-    @Override
     public void setName(final String name) {
         this.name = name;
     }
 
-    @Override
     public LocalDateTime getCreateDate() {
         return createDate;
     }
 
-    @Override
     public void setCreateDate(final LocalDateTime createDate) {
         this.createDate = createDate;
     }
 
-    @Override
     public String getInternalCode() {
         return internalCode;
     }
 
-    @Override
     public void setInternalCode(final String internalCode) {
         this.internalCode = internalCode;
     }
 
-    @Override
     public ParInstitution getInstitution() {
         return institution;
     }
 
-    @Override
     public void setInstitution(final ParInstitution institution) {
         this.institution = institution;
     }
@@ -116,13 +116,11 @@ public class ArrFund extends AbstractVersionableEntity implements cz.tacr.elza.a
         return this;
     }
 
-    @Override
     public String getUuid() {
         return uuid;
     }
 
-    @Override
-    public void setUuid(String uuid) {
+    public void setUuid(final String uuid) {
         this.uuid = uuid;
     }
 
@@ -130,7 +128,7 @@ public class ArrFund extends AbstractVersionableEntity implements cz.tacr.elza.a
         return outputDefinitions;
     }
 
-    public void setOutputDefinitions(List<ArrOutputDefinition> outputDefinitions) {
+    public void setOutputDefinitions(final List<ArrOutputDefinition> outputDefinitions) {
         this.outputDefinitions = outputDefinitions;
     }
 }

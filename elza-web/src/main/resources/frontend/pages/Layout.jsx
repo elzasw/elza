@@ -14,6 +14,7 @@ var keyModifier = Utils.getKeyModifier()
 import {Utils} from 'components/index.jsx';
 import {routerNavigate} from 'actions/router.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
+import Tetris from "components/game/Tetris.jsx";
 
 require('./Layout.less');
 
@@ -29,58 +30,94 @@ var keymap = {
 }
 var shortcutManager = new ShortcutsManager(keymap)
 
-var Layout = class Layout extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
+var _gameRunner = null;
 
-        this.bindMethods('handleShortcuts');
+class Layout extends AbstractReactComponent {
+
+    static childContextTypes = {
+        shortcuts: React.PropTypes.object.isRequired
+    };
+
+    state = {
+        showGame: false,
+        canStartGame: false,
+    };
+
+    componentWillUnmount() {
+        if (_gameRunner) {
+            clearTimeout(_gameRunner);
+        }
     }
 
     getChildContext() {
         return { shortcuts: shortcutManager };
     }
 
-    handleShortcuts(action) {
+    handleShortcuts = (action) => {
         console.log("#handleShortcuts", '[' + action + ']', this);
         switch (action) {
             case 'home':
-                this.dispatch(routerNavigate('/'))
-                this.dispatch(setFocus('home', 1, 'list'))
-                break
+                this.dispatch(routerNavigate('/'));
+                this.dispatch(setFocus('home', 1, 'list'));
+                break;
             case 'arr':
-                this.dispatch(routerNavigate('/arr'))
-                this.dispatch(setFocus('arr', 1, 'tree'))
-                break
+                this.dispatch(routerNavigate('/arr'));
+                this.dispatch(setFocus('arr', 1, 'tree'));
+                break;
             case 'party':
-                this.dispatch(routerNavigate('/party'))
-                this.dispatch(setFocus('party', 1, 'tree'))
-                break
+                this.dispatch(routerNavigate('/party'));
+                this.dispatch(setFocus('party', 1, 'tree'));
+                break;
             case 'registry':
-                this.dispatch(routerNavigate('/registry'))
-                this.dispatch(setFocus('registry', 1, 'list'))
-                break
+                this.dispatch(routerNavigate('/registry'));
+                this.dispatch(setFocus('registry', 1, 'list'));
+                break;
             case 'admin':
-                this.dispatch(routerNavigate('/admin'))
-                break
+                this.dispatch(routerNavigate('/admin'));
+                break;
         }
-    }
+    };
+
+    handleGameStartLeave = () => {
+        if (_gameRunner) {
+            clearTimeout(_gameRunner);
+            _gameRunner = null;
+        }
+        this.setState({canStartGame: false});
+    };
+
+    handleGameStartOver = () => {
+        if (_gameRunner) {
+            clearTimeout(_gameRunner);
+            _gameRunner = null;
+        }
+        _gameRunner = setTimeout(() => {
+            this.setState({canStartGame: true});
+        }, 1000);
+    };
 
     render() {
-        return (
-            <Shortcuts name='Main' handler={this.handleShortcuts}>
-                <div className='root-container'>
-                    {this.props.children}
-                    <div style={{overflow:'hidden'}}>
-                        <Toastr.Toastr />
-                    </div>
-                    <ContextMenu {...this.props.contextMenu}/>
-                    <ModalDialog {...this.props.modalDialog}/>
-                    <WebSocket />
-                    <Login />
-                    <AppRouter/>
+        const {canStartGame, showGame} = this.state;
+
+        if (showGame) {
+            return <Tetris onClose={() => { this.setState({showGame: false, canStartGame: false}) }} />;
+        }
+        return <Shortcuts name='Main' handler={this.handleShortcuts}>
+            <div className='root-container'>
+                <div onClick={() => { canStartGame && this.setState({showGame: true}) }} onMouseEnter={this.handleGameStartOver} onMouseLeave={this.handleGameStartLeave} className={"game-placeholder " + (canStartGame ? "canStart" : "")}>
+                    &nbsp;
                 </div>
-            </Shortcuts>
-        )
+                {this.props.children}
+                <div style={{overflow:'hidden'}}>
+                    <Toastr.Toastr />
+                </div>
+                <ContextMenu {...this.props.contextMenu}/>
+                <ModalDialog {...this.props.modalDialog}/>
+                <WebSocket />
+                <Login />
+                <AppRouter/>
+            </div>
+        </Shortcuts>
     }
 }
 
@@ -92,8 +129,4 @@ function mapStateToProps(state) {
     }
 }
 
-Layout.childContextTypes = {
-    shortcuts: React.PropTypes.object.isRequired
-}
-
-module.exports = connect(mapStateToProps)(Layout);
+export default connect(mapStateToProps)(Layout);

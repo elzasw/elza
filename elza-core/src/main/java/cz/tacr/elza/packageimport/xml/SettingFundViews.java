@@ -93,6 +93,9 @@ public class SettingFundViews extends Setting {
         @XmlElement(name = "tree", required = true)
         private Tree tree;
 
+        @XmlElement(name = "strict-mode", defaultValue = "false")
+        private Boolean strictMode;
+
         @XmlElement(name = "accordion-left", required = true)
         private AccordionLeft accordionLeft;
 
@@ -116,6 +119,14 @@ public class SettingFundViews extends Setting {
 
         public void setTree(final Tree tree) {
             this.tree = tree;
+        }
+
+        public Boolean getStrictMode() {
+            return strictMode;
+        }
+
+        public void setStrictMode(final Boolean strictMode) {
+            this.strictMode = strictMode;
         }
 
         public AccordionLeft getAccordionLeft() {

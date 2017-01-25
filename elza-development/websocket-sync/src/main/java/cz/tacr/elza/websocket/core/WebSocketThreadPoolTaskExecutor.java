@@ -83,6 +83,7 @@ public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
 		MessageHandlingRunnable mhr = (MessageHandlingRunnable) task;
 		String sessionId = SimpMessageHeaderAccessor.getSessionId(mhr.getMessage().getHeaders());
 		synchronized (this) {
+			System.out.println("Processing session id " + sessionId + ", " + mhr);
 			WebSocketTaskProcessor processor = webSocketTaskProcessors.get(sessionId);
 			if (processor == null) {
 				throw new IllegalStateException("WebSocket session does not exist, id:" + sessionId);
