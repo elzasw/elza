@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import cz.tacr.elza.exception.SystemException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -83,7 +84,7 @@ public class RulesExecutor implements InitializingBean {
             logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
             return rulDescItemTypeExtList;
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new SystemException(e);
         }
     }
 
@@ -102,7 +103,7 @@ public class RulesExecutor implements InitializingBean {
             logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
             return rulDescItemTypeExtList;
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new SystemException(e);
         }
     }
 
@@ -128,7 +129,7 @@ public class RulesExecutor implements InitializingBean {
             logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
             return new HashSet<>();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new SystemException(e);
         }
     }
 
@@ -147,7 +148,7 @@ public class RulesExecutor implements InitializingBean {
             logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
             return Collections.emptyList();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new SystemException(e);
         }
     }
 
@@ -160,7 +161,7 @@ public class RulesExecutor implements InitializingBean {
             logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
             return Collections.emptyList();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new SystemException(e);
         }
     }
 

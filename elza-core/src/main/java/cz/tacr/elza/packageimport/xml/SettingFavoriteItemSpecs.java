@@ -59,7 +59,7 @@ public class SettingFavoriteItemSpecs extends Setting {
         try {
             return objectMapper.writeValueAsString(this);
         } catch (JsonProcessingException e) {
-            throw new SystemException(e, BaseCode.JSON_PARSE);
+            throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
         }
     }
 
@@ -68,7 +68,7 @@ public class SettingFavoriteItemSpecs extends Setting {
         try {
             specCodes = objectMapper.readValue(value, SettingFavoriteItemSpecs.class).getSpecCodes();
         } catch (IOException e) {
-            throw new SystemException(e, BaseCode.JSON_PARSE);
+            throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
         }
     }
 

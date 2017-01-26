@@ -9,6 +9,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 import javax.xml.parsers.ParserConfigurationException;
 
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import org.geotools.kml.KMLConfiguration;
 import org.geotools.xml.Parser;
 import org.opengis.feature.simple.SimpleFeature;
@@ -94,7 +96,7 @@ public class KmlController {
 
         RegRecord record = regRecordRepository.findOne(regRecordId);
         if (record == null) {
-            throw new IllegalStateException("Typ s ID=" + regRecordId + " neexistuje");
+            throw new SystemException("Typ s ID=" + regRecordId + " neexistuje", BaseCode.ID_NOT_EXIST);
         }
 
         Parser parser = new Parser(new KMLConfiguration());

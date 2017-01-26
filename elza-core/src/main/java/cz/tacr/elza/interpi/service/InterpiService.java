@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.exception.codes.BaseCode;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -187,7 +188,6 @@ public class InterpiService {
      * Načte konkrétní záznam podle externího id.
      *
      * @param interpiRecordId id v externím systému
-     * @param interpiSystem externí systém
      *
      * @return požadovaný záznam
      */
@@ -223,7 +223,7 @@ public class InterpiService {
         RegRegisterType regRegisterType = interpiFactory.getRegisterType(interpiEntity);
         ParPartyType partyType = regRegisterType.getPartyType();
         if (partyType == null) {
-            throw new IllegalStateException("Vztahy lze mapovat jen pro osoby.");
+            throw new BusinessException("Vztahy lze mapovat jen pro osoby.", BaseCode.PROPERTY_IS_INVALID).set("property", "partyType");
         }
 
         List<InterpiRelationMappingVO> mappings = interpiFactory.getRelations(interpiEntity, regExternalSystem, regScope);
@@ -269,7 +269,6 @@ public class InterpiService {
      * @param interpiRecordId id záznamu v INTERPI
      * @param scopeId id scope
      * @param systemId id systému
-     * @param importRelations příznak zda se mají importovat i vztahy
      * @param mappings mapování vztahů
      *
      * @return nový/aktualizovaný rejstřík
@@ -290,7 +289,7 @@ public class InterpiService {
             RegRecord regRecord = recordRepository.findRegRecordByExternalIdAndExternalSystemCodeAndScope(interpiRecordId,
                     regExternalSystem.getCode(), regScope);
             if (regRecord != null) {
-                throw new BusinessException(ExternalCode.ALREADY_IMPORTED).set("id", interpiRecordId).set("scope", regScope.getName());
+                throw new BusinessException("Záznam již existuje " + regRecord, ExternalCode.ALREADY_IMPORTED).set("id", interpiRecordId).set("scope", regScope.getName());
             }
         } else {
             originalRecord = recordRepository.findOne(recordId);

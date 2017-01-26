@@ -2,6 +2,7 @@ package cz.tacr.elza.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -13,6 +14,12 @@ import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
+import com.fasterxml.jackson.databind.deser.Deserializers;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.OutputCode;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.slf4j.Logger;
@@ -199,20 +206,20 @@ public class OutputService {
         Assert.notNull(outputDefinition);
 
         if (fundVersion.getLockChange() != null) {
-            throw new IllegalArgumentException("Nelze smazat výstup v uzavřené verzi AS");
+            throw new BusinessException("Nelze smazat výstup v uzavřené verzi AS", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
         checkFund(fundVersion, outputDefinition);
 
         if (outputDefinition.getDeleted()) {
-            throw new IllegalArgumentException("Nelze smazat již smazaný výstup");
+            throw new BusinessException("Nelze smazat již smazaný výstup", OutputCode.ALREADY_DELETED);
         }
 
+        List<OutputState> allowedState = Arrays.asList(OutputState.OPEN, OutputState.FINISHED, OutputState.OUTDATED);
 
-        if (outputDefinition.getState() != OutputState.OPEN &&
-                outputDefinition.getState() != OutputState.FINISHED &&
-                outputDefinition.getState() != OutputState.OUTDATED) {
-            throw new IllegalArgumentException("Nelze smazat výstup v tomto stavu.");
+        if (!allowedState.contains(outputDefinition.getState())) {
+            throw new BusinessException("Nelze smazat výstup v tomto stavu: " + outputDefinition.getState(),
+                    OutputCode.CANNOT_DELETED_IN_STATE).set("state", outputDefinition.getState());
         }
 
         outputDefinition.setDeleted(true);
@@ -239,17 +246,18 @@ public class OutputService {
         Assert.notNull(outputDefinition);
 
         if (fundVersion.getLockChange() != null) {
-            throw new IllegalArgumentException("Nelze vrátit do přípravy výstup v uzavřené verzi AS");
+            throw new BusinessException("Nelze vrátit do přípravy výstup v uzavřené verzi AS", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
         checkFund(fundVersion, outputDefinition);
 
         if (outputDefinition.getDeleted()) {
-            throw new IllegalArgumentException("Nelze vrátit do přípravy smazaný výstup");
+            throw new BusinessException("Nelze vrátit do přípravy smazaný výstup", OutputCode.CANNOT_CHANGE_STATE);
         }
 
-        if (outputDefinition.getState() != OutputState.OUTDATED && outputDefinition.getState() != OutputState.FINISHED) {
-            throw new IllegalArgumentException("Do stavu \"V přípravě\" lze vrátit pouze \"Neaktuální\" či \"Vygenerované\" výstupy");
+        List<OutputState> allowedState = Arrays.asList(OutputState.FINISHED, OutputState.OUTDATED);
+        if (!allowedState.contains(outputDefinition.getState())) {
+            throw new BusinessException("Do stavu \"V přípravě\" lze vrátit pouze \"Neaktuální\" či \"Vygenerované\" výstupy", OutputCode.CANNOT_CHANGE_STATE);
         }
 
         outputDefinition.setState(OutputState.OPEN);
@@ -287,7 +295,7 @@ public class OutputService {
         checkFund(fundVersion, originalOutputDef);
 
         if (originalOutputDef.getDeleted()) {
-            throw new IllegalArgumentException("Nelze klonovat smazaný výstup");
+            throw new BusinessException("Nelze klonovat smazaný výstup", OutputCode.CANNOT_CLONE_DELETED);
         }
 
         String copy = " - kopie";
@@ -367,13 +375,13 @@ public class OutputService {
         Assert.notNull(change);
 
         if (fundVersion.getLockChange() != null) {
-            throw new IllegalArgumentException("Nelze zamknout výstup v uzavřené verzi AS");
+            throw new BusinessException("Nelze zamknout výstup v uzavřené verzi AS", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
         checkFund(fundVersion, output.getOutputDefinition());
 
         if (output.getLockChange() != null) {
-            throw new IllegalArgumentException("Výstup je již zamknutý");
+            throw new BusinessException("Výstup je již zamknutý", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
         output.setLockChange(change);
@@ -409,7 +417,7 @@ public class OutputService {
         Assert.notNull(outputTypeId);
 
         if (fundVersion.getLockChange() != null) {
-            throw new IllegalArgumentException("Nelze vytvořit výstup v uzavřené verzi AS");
+            throw new BusinessException("Nelze vytvořit výstup v uzavřené verzi AS", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
         ArrOutputDefinition outputDefinition = new ArrOutputDefinition();
@@ -498,17 +506,18 @@ public class OutputService {
         Assert.notNull(change);
 
         if (fundVersion.getLockChange() != null) {
-            throw new IllegalArgumentException("Nelze odebrat uzly u výstupu v uzavřené verzi AS");
+            throw new BusinessException("Nelze odebrat uzly u výstupu v uzavřené verzi AS", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
         if (output.getLockChange() != null) {
-            throw new IllegalArgumentException("Nelze odebrat uzly u zamčeného výstupu");
+            throw new BusinessException("Nelze odebrat uzly u zamčeného výstupu", OutputCode.LOCKED);
         }
 
         final ArrOutputDefinition outputDefinition = output.getOutputDefinition();
 
-        if (outputDefinition.getState() != OutputState.OPEN) {
-            throw new IllegalArgumentException("Nelze odebrat uzly z výstupu, který není ve stavu otevřený");
+        List<OutputState> allowedState = Collections.singletonList(OutputState.OPEN);
+        if (!allowedState.contains(outputDefinition.getState())) {
+            throw new BusinessException("Nelze odebrat uzly z výstupu, který není ve stavu otevřený", OutputCode.NOT_PROCESS_IN_STATE);
         }
 
         checkFund(fundVersion, outputDefinition);
@@ -529,7 +538,7 @@ public class OutputService {
         }
 
         if (nodeIds.size() != nodeOutputs.size()) {
-            throw new IllegalArgumentException("Byl předán seznam s neplatným identifikátorem uzlu: " + nodeIds);
+            throw new BusinessException("Byl předán seznam s neplatným identifikátorem uzlu: " + nodeIds, ArrangementCode.NODE_NOT_FOUND).set("id", nodeIds);
         }
 
         nodeOutputRepository.save(nodeOutputs);
@@ -567,18 +576,18 @@ public class OutputService {
         Assert.notNull(name);
 
         if (fundVersion.getLockChange() != null) {
-            throw new IllegalArgumentException("Nelze upravovat výstup v uzavřené verzi AS");
+            throw new BusinessException("Nelze upravovat výstup v uzavřené verzi AS", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
         if (output.getLockChange() != null) {
-            throw new IllegalArgumentException("Nelze upravit uzavřený výstup");
+            throw new BusinessException("Nelze upravit uzavřený výstup", OutputCode.LOCKED);
         }
 
         final ArrOutputDefinition outputDefinition = output.getOutputDefinition();
 
-
-        if (outputDefinition.getState() != OutputState.OPEN) {
-            throw new IllegalArgumentException("Nelze upravit výstupu, který není ve stavu otevřený");
+        List<OutputState> allowedState = Collections.singletonList(OutputState.OPEN);
+        if (!allowedState.contains(outputDefinition.getState())) {
+            throw new BusinessException("Nelze upravit výstupu, který není ve stavu otevřený", OutputCode.NOT_PROCESS_IN_STATE);
         }
 
         outputDefinition.setName(name);
@@ -606,7 +615,7 @@ public class OutputService {
      */
     private void checkFund(final ArrFundVersion fundVersion, final ArrOutputDefinition outputDefinition) {
         if (!outputDefinition.getFund().equals(fundVersion.getFund())) {
-            throw new IllegalArgumentException("Output a verze AS nemají společný AS");
+            throw new SystemException("Output a verze AS nemají společný AS", BaseCode.DB_INTEGRITY_PROBLEM);
         }
     }
 
@@ -644,17 +653,18 @@ public class OutputService {
         Assert.notNull(change);
 
         if (fundVersion.getLockChange() != null) {
-            throw new IllegalArgumentException("Nelze přidat uzly k výstupu v uzavřené verzi AS");
+            throw new BusinessException("Nelze přidat uzly k výstupu v uzavřené verzi AS", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
         if (output.getLockChange() != null) {
-            throw new IllegalArgumentException("Nelze přidat uzly u zamčeného výstupu");
+            throw new BusinessException("Nelze přidat uzly u zamčeného výstupu", OutputCode.LOCKED);
         }
 
         final ArrOutputDefinition outputDefinition = output.getOutputDefinition();
 
-        if (outputDefinition.getState() != OutputState.OPEN) {
-            throw new IllegalArgumentException("Nelze přidat uzly k výstupu, který není ve stavu otevřený");
+        List<OutputState> allowedState = Collections.singletonList(OutputState.OPEN);
+        if (!allowedState.contains(outputDefinition.getState())) {
+            throw new BusinessException("Nelze přidat uzly k výstupu, který není ve stavu otevřený", OutputCode.NOT_PROCESS_IN_STATE);
         }
 
         checkFund(fundVersion, outputDefinition);
@@ -670,7 +680,7 @@ public class OutputService {
         for (Integer nodeId : nodesIdsDb) {
             for (Integer nodeIdAdd : nodeIds) {
                 if (nodeId.equals(nodeIdAdd)) {
-                    throw new IllegalArgumentException("Nelze přidat již přidaný uzel. (ID=" + nodeIdAdd + ")");
+                    throw new BusinessException("Nelze přidat již přidaný uzel. (ID=" + nodeIdAdd + ")", ArrangementCode.ALREADY_ADDED);
                 }
             }
         }
@@ -678,7 +688,7 @@ public class OutputService {
         List<ArrNode> nodes = nodeRepository.findAll(nodeIds);
 
         if (nodes.size() != nodeIds.size()) {
-            throw new IllegalArgumentException("Byl předán seznam s neplatným identifikátorem uzlu: " + nodeIds);
+            throw new BusinessException("Byl předán seznam s neplatným identifikátorem uzlu: " + nodeIds, ArrangementCode.NODE_NOT_FOUND).set("id", nodeIds);
         }
 
         List<ArrNodeOutput> nodeOutputs = new ArrayList<>(nodes.size());
@@ -865,8 +875,9 @@ public class OutputService {
         outputDefinition.setVersion(outputDefinitionVersion);
         saveOutputDefinition(outputDefinition);
 
-        if (outputDefinition.getState() != OutputState.OPEN) {
-            throw new IllegalArgumentException("Nelze upravit výstupu, který není ve stavu otevřený");
+        List<OutputState> allowedState = Collections.singletonList(OutputState.OPEN);
+        if (!allowedState.contains(outputDefinition.getState())) {
+            throw new BusinessException("Nelze upravit výstupu, který není ve stavu otevřený", OutputCode.NOT_PROCESS_IN_STATE);
         }
 
         checkCalculatingAttribute(outputDefinition, item.getItemType());
@@ -997,9 +1008,9 @@ public class OutputService {
         List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(descItemObjectId);
 
         if (outputItems.size() > 1) {
-            throw new IllegalStateException("Hodnota musí být právě jedna");
+            throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
         } else if (outputItems.size() == 0) {
-            throw new IllegalStateException("Hodnota neexistuje, pravděpodobně byla již smazána");
+            throw new SystemException("Hodnota neexistuje, pravděpodobně byla již smazána");
         }
 
         ArrOutputItem outputItem = outputItems.get(0);
@@ -1015,8 +1026,9 @@ public class OutputService {
 
         saveOutputDefinition(outputDefinition);
 
-        if (outputItem.getOutputDefinition().getState() != OutputState.OPEN) {
-            throw new IllegalArgumentException("Nelze upravit výstupu, který není ve stavu otevřený");
+        List<OutputState> allowedState = Collections.singletonList(OutputState.OPEN);
+        if (!allowedState.contains(outputDefinition.getState())) {
+            throw new BusinessException("Nelze upravit výstupu, který není ve stavu otevřený", OutputCode.NOT_PROCESS_IN_STATE);
         }
 
         ArrOutputItem outputItemDeleted = deleteOutputItem(outputItem, fundVersion, change, true);
@@ -1089,17 +1101,18 @@ public class OutputService {
         List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(outputItem.getDescItemObjectId());
 
         if (outputItems.size() > 1) {
-            throw new IllegalStateException("Hodnota musí být právě jedna");
+            throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
         } else if (outputItems.size() == 0) {
-            throw new IllegalStateException("Hodnota neexistuje, pravděpodobně byla již smazána");
+            throw new SystemException("Hodnota neexistuje, pravděpodobně byla již smazána");
         }
         ArrOutputItem outputItemDB = outputItems.get(0);
 
         final ArrOutputDefinition outputDefinition = outputItemDB.getOutputDefinition();
         Assert.notNull(outputDefinition);
 
-        if (outputDefinition.getState() != OutputState.OPEN) {
-            throw new IllegalArgumentException("Nelze upravit výstupu, který není ve stavu otevřený");
+        List<OutputState> allowedState = Collections.singletonList(OutputState.OPEN);
+        if (!allowedState.contains(outputDefinition.getState())) {
+            throw new BusinessException("Nelze upravit výstupu, který není ve stavu otevřený", OutputCode.NOT_PROCESS_IN_STATE);
         }
 
         checkCalculatingAttribute(outputDefinition, outputItemDB.getItemType());
@@ -1136,11 +1149,11 @@ public class OutputService {
                                           final Boolean createNewVersion) {
 
         if (createNewVersion ^ change != null) {
-            throw new IllegalArgumentException("Pokud vytvářím novou verzi, musí být předaná reference změny. Pokud verzi nevytvářím, musí být reference změny null.");
+            throw new SystemException("Pokud vytvářím novou verzi, musí být předaná reference změny. Pokud verzi nevytvářím, musí být reference změny null.");
         }
 
         if (createNewVersion && version.getLockChange() != null) {
-            throw new IllegalArgumentException("Nelze provést verzovanou změnu v uzavřené verzi.");
+            throw new SystemException("Nelze provést verzovanou změnu v uzavřené verzi.");
         }
 
         ArrOutputItem outputItemOrig;
@@ -1148,9 +1161,9 @@ public class OutputService {
             List<ArrOutputItem> descItems = outputItemRepository.findOpenOutputItems(outputItem.getDescItemObjectId());
 
             if (descItems.size() > 1) {
-                throw new IllegalStateException("Hodnota musí být právě jedna");
+                throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
             } else if (descItems.size() == 0) {
-                throw new IllegalStateException("Hodnota neexistuje, pravděpodobně byla již smazána");
+                throw new SystemException("Hodnota neexistuje, pravděpodobně byla již smazána");
             }
 
             outputItemOrig = descItems.get(0);
@@ -1204,7 +1217,7 @@ public class OutputService {
                 itemService.save(outputItemOrig, true);
                 outputItemUpdated = itemService.save(descItemNew, true);
             } catch (Exception e) {
-                throw new IllegalStateException(e);
+                throw new SystemException(e);
             }
         } else {
             itemService.copyPropertiesSubclass(outputItem, outputItemOrig, ArrOutputItem.class);
@@ -1345,8 +1358,9 @@ public class OutputService {
                                                  final ArrOutputDefinition outputDefinition,
                                                  final ArrFundVersion version,
                                                  @Nullable final ArrChange createChange) {
-        if (outputDefinition.getState() != OutputState.OPEN) {
-            throw new IllegalArgumentException("Nelze upravit výstupu, který není ve stavu otevřený");
+        List<OutputState> allowStates = Collections.singletonList(OutputState.OPEN);
+        if (!allowStates.contains(outputDefinition.getState())) {
+            throw new BusinessException("Nelze upravit výstupu, který není ve stavu otevřený", OutputCode.NOT_PROCESS_IN_STATE);
         }
         ArrChange change = createChange == null ? arrangementService.createChange(null) : createChange;
         List<ArrOutputItem> createdItems = new ArrayList<>();
@@ -1386,8 +1400,9 @@ public class OutputService {
         Assert.notNull(descItemType, "Typ hodnoty atributu neexistuje");
 
         final ArrOutputDefinition outputDefinition = findOutputDefinition(outputDefinitionId);
-        if (outputDefinition.getState() != OutputState.OPEN) {
-            throw new IllegalArgumentException("Nelze upravit výstupu, který není ve stavu otevřený");
+        List<OutputState> allowStates = Collections.singletonList(OutputState.OPEN);
+        if (!allowStates.contains(outputDefinition.getState())) {
+            throw new BusinessException("Nelze upravit výstupu, který není ve stavu otevřený", OutputCode.NOT_PROCESS_IN_STATE);
         }
 
         List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(descItemType, outputDefinition);
@@ -1428,8 +1443,9 @@ public class OutputService {
         ArrOutputDefinition outputDefinition = outputDefinitionRepository.findOne(outputDefinitionId);
         Assert.notNull(outputDefinition);
 
-        if (outputDefinition.getState() != OutputState.OPEN) {
-            throw new IllegalArgumentException("Nelze upravit výstupu, který není ve stavu otevřený");
+        List<OutputState> allowStates = Collections.singletonList(OutputState.OPEN);
+        if (!allowStates.contains(outputDefinition.getState())) {
+            throw new BusinessException("Nelze upravit výstup, který není ve stavu otevřený", OutputCode.NOT_PROCESS_IN_STATE);
         }
 
         checkCalculatingAttribute(outputDefinition, itemType);
@@ -1804,8 +1820,9 @@ public class OutputService {
         Assert.notNull(fundVersion, "Neplatná verze fondu");
         Assert.notNull(itemType, "Neplatný typ atributu");
 
-        if (outputDefinition.getState() != OutputState.OPEN) {
-            throw new IllegalArgumentException("Nelze upravit výstupu, který není ve stavu otevřený");
+        List<OutputState> allowStates = Collections.singletonList(OutputState.OPEN);
+        if (!allowStates.contains(outputDefinition.getState())) {
+            throw new BusinessException("Nelze upravit výstup, který není ve stavu otevřený", OutputCode.NOT_PROCESS_IN_STATE);
         }
 
         ArrItemSettings itemSettings = itemSettingsRepository.findOneByOutputDefinitionAndItemType(outputDefinition, itemType);
@@ -1843,7 +1860,7 @@ public class OutputService {
         if (itemTypeActionList != null && !itemTypeActionList.isEmpty()) {
             ArrItemSettings itemSettings = itemSettingsRepository.findOneByOutputDefinitionAndItemType(outputDefinition, itemType);
             if (itemSettings == null || !itemSettings.getBlockActionResult()) {
-                throw new IllegalStateException("Tento atribut je počítán automaticky a nemůže být ručně editován");
+                throw new BusinessException("Tento atribut je počítán automaticky a nemůže být ručně editován", OutputCode.ITEM_TYPE_CALC);
             }
         }
     }

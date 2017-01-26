@@ -2,6 +2,9 @@ package cz.tacr.elza.interpi.service;
 
 import java.util.List;
 
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.ExternalCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -60,12 +63,12 @@ public class InterpiClient {
         logger.debug("Dotaz do INTERPI trval " + (end - start) + " ms.");
 
         if (oneRecord.startsWith(ERROR_PREFIX)) {
-             throw new IllegalStateException("Nastala chyba " + oneRecord + " při hledání záznamu s identifikátorem " + id + " v systému " + regExternalSystem);
+             throw new SystemException("Nastala chyba " + oneRecord + " při hledání záznamu s identifikátorem " + id + " v systému " + regExternalSystem, ExternalCode.EXTERNAL_SYSTEM_ERROR);
         }
         SetTyp setTyp = unmarshall(oneRecord);
 
         if (setTyp.getEntita().isEmpty()) {
-            throw new IllegalStateException("Záznam s identifikátorem " + id + " nebyl nalezen v systému " + regExternalSystem);
+            throw new SystemException("Záznam s identifikátorem " + id + " nebyl nalezen v systému " + regExternalSystem);
         }
 
         return setTyp.getEntita().iterator().next();

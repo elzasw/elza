@@ -11,6 +11,9 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.exception.Level;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -150,7 +153,7 @@ public class PartyController {
         Assert.notNull(partyVO);
 
         if(partyVO.getId() != null){
-            throw new IllegalArgumentException("Nová osoba nesmí mít nastaveno ID");
+            throw new SystemException("Nová osoba nesmí mít nastaveno ID", BaseCode.ID_EXIST).set("id", partyVO.getId());
         }
 
         //CHECK
@@ -212,7 +215,7 @@ public class PartyController {
         ParParty party = partyRepository.getOneCheckExist(partyId);
 
         if (!userService.findUsersByParty(party).isEmpty()) {
-            throw new DeleteException(UserCode.USER_DELETE_ERROR);
+            throw new DeleteException("Osobu nelze smazat, kvůli navázaným uživatelům", UserCode.USER_DELETE_ERROR).level(Level.WARNING);
         }
 
         partyService.deleteParty(party);

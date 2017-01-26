@@ -11,12 +11,8 @@ import cz.tacr.elza.exception.codes.ErrorCode;
  */
 public class SystemException extends AbstractException {
 
-    public SystemException() {
-        super(BaseCode.SYSTEM_ERROR);
-    }
-
-    public SystemException(final ErrorCode errorCode) {
-        super(errorCode);
+    public SystemException(String message) {
+        super(message, BaseCode.SYSTEM_ERROR);
     }
 
     public SystemException(final String message, final ErrorCode errorCode) {
@@ -29,10 +25,6 @@ public class SystemException extends AbstractException {
 
     public SystemException(final String message, final Throwable cause) {
         super(message, cause, BaseCode.SYSTEM_ERROR);
-    }
-
-    public SystemException(final Throwable e, final ErrorCode parseError) {
-        super(e, parseError);
     }
 
     public SystemException(final String message, final Throwable e, final ErrorCode parseError) {

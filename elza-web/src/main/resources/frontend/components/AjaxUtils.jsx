@@ -59,6 +59,7 @@ function resolveException(status, statusText, data) {
             createToaster: true,
             type: "BaseCode",
             code: "BAD_REQUEST",
+            level: "danger",
             message: i18n('global.exception.bad.request.tech'),
             status: status,
             statusText: statusText
@@ -74,6 +75,7 @@ function resolveException(status, statusText, data) {
             createToaster: true,
             type: data.type,
             code: data.code,
+            level: data.level,
             properties: data.properties,
             message: data.message,
             devMessage: data.devMessage,

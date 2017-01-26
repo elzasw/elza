@@ -28,7 +28,7 @@ import {
     AdminPackagesPage,
     AdminUserPage,
     AdminGroupPage,
-    AdminFulltextPage,
+    AdminExtSystemPage,
     AdminRequestsQueuePage,
     Layout
 } from 'pages/index.jsx';
@@ -52,8 +52,8 @@ const routes = <Route name="layout" path="/" component={Layout}>
         <Route path="user" component={AdminUserPage} />
         <Route path="group" component={AdminGroupPage} />
         <Route path="packages" component={AdminPackagesPage} />
-        <Route path="fulltext" component={AdminFulltextPage} />
         <Route path="requestsQueue" component={AdminRequestsQueuePage} />
+        <Route path="extSystem" component={AdminExtSystemPage} />
     </Route>
 </Route>;
 

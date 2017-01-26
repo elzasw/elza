@@ -20,6 +20,7 @@ import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.exception.BusinessException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
@@ -100,7 +101,6 @@ import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.ConcurrentUpdateException;
-import cz.tacr.elza.exception.FilterExpiredException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
@@ -674,7 +674,10 @@ public class ArrangementController {
 
         ArrDescItem descItem = descItemRepository.findOpenDescItem(descItemObjectId);
         if (!"JSON_TABLE".equals(descItem.getItemType().getDataType().getCode())) {
-            throw new UnsupportedOperationException("Pouze typ JSON_TABLE může být exportován pomocí CSV.");
+            throw new SystemException("Pouze typ JSON_TABLE může být exportován pomocí CSV.", BaseCode.PROPERTY_HAS_INVALID_TYPE)
+                    .set("property", "descItemObjectId")
+                    .set("expected", "JSON_TABLE")
+                    .set("actual", descItem.getItemType().getDataType().getCode());
         }
 
         ArrDescItem arrDescItem = descItemFactory.getDescItem(descItem);
@@ -703,7 +706,10 @@ public class ArrangementController {
 
         ArrOutputItem outputItem = outputItemRepository.findOpenOutputItem(descItemObjectId);
         if (!"JSON_TABLE".equals(outputItem.getItemType().getDataType().getCode())) {
-            throw new UnsupportedOperationException("Pouze typ JSON_TABLE může být exportován pomocí CSV.");
+            throw new SystemException("Pouze typ JSON_TABLE může být exportován pomocí CSV.", BaseCode.PROPERTY_HAS_INVALID_TYPE)
+                    .set("property", "descItemObjectId")
+                    .set("expected", "JSON_TABLE")
+                    .set("actual", outputItem.getItemType().getDataType().getCode());
         }
 
         outputItem = itemService.loadData(outputItem);
@@ -1154,11 +1160,11 @@ public class ArrangementController {
         ArrNode node = nodeRepository.findOne(nodeId);
 
         if (version == null) {
-            throw new ObjectNotFoundException(ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", versionId);
+            throw new ObjectNotFoundException("Nebyla nalezena verze AS s ID=" + versionId, ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", versionId);
         }
 
         if (node == null) {
-            throw new ObjectNotFoundException(ArrangementCode.NODE_NOT_FOUND).set("id", nodeId);
+            throw new ObjectNotFoundException("Nebyla nalezena JP s ID=" + nodeId, ArrangementCode.NODE_NOT_FOUND).set("id", nodeId);
         }
 
         List<ArrDescItem> descItems = arrangementService.getDescItems(version, node);
@@ -1651,7 +1657,7 @@ public class ArrangementController {
 
         ArrFundVersion fundVersion = fundVersionRepository.findOne(versionId);
         if (fundVersion == null) {
-            throw new IllegalStateException("Neexistuje verze archivní pomůcky s id " + versionId);
+            throw new SystemException("Neexistuje verze archivní pomůcky s id " + versionId, ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", versionId);
         }
 
         List<ArrNodeConformity> validationErrors = arrangementService.findConformityErrors(fundVersion, showAll);
@@ -1672,7 +1678,7 @@ public class ArrangementController {
 
         ArrFundVersion fundVersion = fundVersionRepository.findOne(versionId);
         if (fundVersion == null) {
-            throw new IllegalStateException("Neexistuje verze archivní pomůcky s id " + versionId);
+            throw new SystemException("Neexistuje verze archivní pomůcky s id " + versionId, ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", versionId);
         }
 
         return arrangementService.getVersionErrorCount(fundVersion);
@@ -1708,8 +1714,7 @@ public class ArrangementController {
     public List<FilterNode> getFilteredNodes(@PathVariable("versionId") final Integer versionId,
                                              @RequestParam("page") final Integer page,
                                              @RequestParam("pageSize") final Integer pageSize,
-                                             @RequestBody final Set<Integer> descItemTypeIds)
-            throws FilterExpiredException {
+                                             @RequestBody final Set<Integer> descItemTypeIds) {
 
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
 
@@ -1723,11 +1728,7 @@ public class ArrangementController {
      * filtrovaných uzlů.
      *
      * @param versionId id verze stromu
-     * @param fulltext  fulltext
-     * @param luceneQuery v hodnotě fulltext je lucene query (např: +specification:*čís* -fulltextValue:ddd), false - normální fulltext
-     * @param searchParams parametry pro rozšířené vyhledávání
      * @return seznam uzlů a jejich indexu v seznamu filtrovaných uzlů, seřazené podle indexu
-     * @throws FilterExpiredException není nastaven filtr, nejprve zavolat {@link FilterTreeService#filterData(ArrFundVersion, List)}
      */
     @RequestMapping(value = "/getFilteredFulltext/{versionId}", method = RequestMethod.POST)
     public List<FilterNodePosition> getFilteredFulltextNodes(@PathVariable("versionId") final Integer versionId,
@@ -2070,7 +2071,7 @@ public class ArrangementController {
                                      @RequestParam(value = "nodeId", required = false) final Integer nodeId) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         if (fundVersion.getLockChange() != null) {
-            throw new IllegalStateException("Nelze prováděn změny v uzavřené verzi");
+            throw new BusinessException("Nelze prováděn změny v uzavřené verzi", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
         ArrChange change = null;
         if (changeId != null) {
@@ -2101,7 +2102,7 @@ public class ArrangementController {
                                            @RequestParam(value = "nodeId", required = false) final Integer nodeId) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         if (fundVersion.getLockChange() != null) {
-            throw new IllegalStateException("Nelze prováděn změny v uzavřené verzi");
+            throw new BusinessException("Nelze prováděn změny v uzavřené verzi", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
         ArrChange change = changeRepository.getOneCheckExist(changeId);
         ArrNode node = null;
@@ -2127,7 +2128,7 @@ public class ArrangementController {
                               @RequestParam(value = "nodeId", required = false) final Integer nodeId) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         if (fundVersion.getLockChange() != null) {
-            throw new IllegalStateException("Nelze prováděn změny v uzavřené verzi");
+            throw new BusinessException("Nelze prováděn změny v uzavřené verzi", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
         ArrChange fromChange = changeRepository.getOneCheckExist(fromChangeId);
         ArrChange toChange = changeRepository.getOneCheckExist(toChangeId);
@@ -2157,7 +2158,7 @@ public class ArrangementController {
         List<ArrNode> nodes = nodeRepository.findAll(param.nodeIds);
 
         if (nodes.size() != param.nodeIds.size()) {
-            throw new SystemException(BaseCode.ID_NOT_EXIST);
+            throw new SystemException("Neplatný počet nalezených jednotek popisu (" + nodes.size() + ", " +  param.nodeIds.size() + ")", BaseCode.ID_NOT_EXIST);
         }
 
         ArrDigitizationRequest digitizationRequest;
@@ -2194,7 +2195,7 @@ public class ArrangementController {
         List<ArrDao> daos = daoRepository.findAll(param.daoIds);
 
         if (daos.size() != param.daoIds.size()) {
-            throw new SystemException(BaseCode.ID_NOT_EXIST);
+            throw new SystemException("Neplatný počet nalezených digitalizátů (" + daos.size() + ", " +  param.daoIds.size() + ")", BaseCode.ID_NOT_EXIST);
         }
 
         ArrDaoRequest daoRequest;
@@ -2223,7 +2224,7 @@ public class ArrangementController {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrRequest request = requestService.getRequest(requestId);
         if (!fundVersion.getFund().equals(request.getFund())) {
-            throw new SystemException(ArrangementCode.INVALID_VERSION);
+            throw new SystemException("Neplatná verze AS (" + fundVersion.getFundVersionId() + ")", ArrangementCode.INVALID_VERSION);
         }
         requestService.sendRequest(request, fundVersion);
     }
@@ -2263,7 +2264,7 @@ public class ArrangementController {
         List<ArrNode> nodes = nodeRepository.findAll(param.nodeIds);
 
         if (nodes.size() != param.nodeIds.size()) {
-            throw new SystemException(BaseCode.ID_NOT_EXIST);
+            throw new SystemException("Neplatný počet nalezených jednotek popisu (" + nodes.size() + ", " +  param.nodeIds.size() + ")", BaseCode.ID_NOT_EXIST);
         }
 
         ArrDigitizationRequest digitizationRequest = requestService.getDigitizationRequest(param.id);

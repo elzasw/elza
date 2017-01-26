@@ -28,7 +28,7 @@ public class OptimisticLockingFailureExceptionHandler {
         try {
             return pjp.proceed();
         } catch (OptimisticLockingFailureException e) {
-            throw new ConcurrentUpdateException(e, BaseCode.OPTIMISTIC_LOCKING_ERROR);
+            throw new ConcurrentUpdateException(e.getMessage(), e, BaseCode.OPTIMISTIC_LOCKING_ERROR);
         }
     }
 }

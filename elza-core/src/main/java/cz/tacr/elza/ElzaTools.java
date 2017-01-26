@@ -97,21 +97,6 @@ public class ElzaTools {
         return LocalDateTime.now().toString();
     }
 
-
-    /**
-     * Pokud se nerovanjí objekty, vyhodí výjimku.
-     * @param valueA objekt A
-     * @param valueB objekt B
-     * @param message zpráva výjimky
-     */
-    public static void checkEquals(final Object valueA, final Object valueB, final String message)
-            throws IllegalArgumentException {
-        if (!ObjectUtils.equals(valueA, valueB)) {
-            throw new IllegalArgumentException(message);
-        }
-    }
-
-
     /**
      * Pokud je entity z DB typu {@link HibernateProxy}, je převedena na DO objekt.
      *

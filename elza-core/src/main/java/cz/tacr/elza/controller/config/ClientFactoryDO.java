@@ -13,6 +13,9 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -249,14 +252,14 @@ public class ClientFactoryDO {
 
         RulItemType descItemType = itemTypeRepository.findOne(descItemTypeId);
         if (descItemType == null) {
-            throw new IllegalStateException("Typ s ID=" + descItemVO.getDescItemSpecId() + " neexistuje");
+            throw new SystemException("Typ s ID=" + descItemVO.getDescItemSpecId() + " neexistuje", BaseCode.ID_NOT_EXIST);
         }
         descItem.setItemType(descItemType);
 
         if (descItemVO.getDescItemSpecId() != null) {
             RulItemSpec descItemSpec = itemSpecRepository.findOne(descItemVO.getDescItemSpecId());
             if (descItemSpec == null) {
-                throw new IllegalStateException("Specifikace s ID=" + descItemVO.getDescItemSpecId() + " neexistuje");
+                throw new SystemException("Specifikace s ID=" + descItemVO.getDescItemSpecId() + " neexistuje", BaseCode.ID_NOT_EXIST);
             }
             descItem.setItemSpec(descItemSpec);
         }
@@ -309,7 +312,7 @@ public class ClientFactoryDO {
         if (descItemVO.getDescItemSpecId() != null) {
             RulItemSpec descItemSpec = itemSpecRepository.findOne(descItemVO.getDescItemSpecId());
             if (descItemSpec == null) {
-                throw new IllegalStateException("Specifikace s ID=" + descItemVO.getDescItemSpecId() + " neexistuje");
+                throw new SystemException("Specifikace s ID=" + descItemVO.getDescItemSpecId() + " neexistuje", BaseCode.ID_NOT_EXIST);
             }
             descItem.setItemSpec(descItemSpec);
         }
@@ -631,7 +634,7 @@ public class ClientFactoryDO {
 
     private <T> T getConditionValue(final List<String> conditions, final Class<T> cls) {
         if (CollectionUtils.isEmpty(conditions) || StringUtils.isBlank(conditions.iterator().next())) {
-            throw new IllegalArgumentException("Není předána hodnota podmínky.");
+            throw new BusinessException("Není předána hodnota podmínky.", BaseCode.PROPERTY_IS_INVALID).set("property", "conditions");
         }
 
         String value = conditions.iterator().next();
@@ -641,7 +644,7 @@ public class ClientFactoryDO {
 
     private <T> Interval<T> getConditionValueInterval(final List<String> conditions, final Class<T> cls) {
         if (CollectionUtils.isEmpty(conditions) || StringUtils.isBlank(conditions.iterator().next())) {
-            throw new IllegalArgumentException("Není předána hodnota podmínky.");
+            throw new BusinessException("Není předána hodnota podmínky.", BaseCode.PROPERTY_IS_INVALID).set("property", "conditions");
         }
 
         Iterator<String> iterator = conditions.iterator();
@@ -651,7 +654,7 @@ public class ClientFactoryDO {
 
         String toString = iterator.next();
         if (StringUtils.isBlank(toString)) {
-            throw new IllegalArgumentException("Není předána druhá hodnota intervalu.");
+            throw new BusinessException("Není předána druhá hodnota intervalu.", BaseCode.PROPERTY_IS_INVALID).set("property", "toString");
         }
 
         T to = getConditionValue(toString, cls);
@@ -735,7 +738,7 @@ public class ClientFactoryDO {
     private ArrDataUnitdate getConditionValueUnitdate(final List<String> conditions) {
         if (CollectionUtils.isEmpty(conditions) || StringUtils.isBlank(conditions.iterator().next())
                 || conditions.size() < 2) {
-            throw new IllegalArgumentException("Není předána hodnota podmínky.");
+            throw new BusinessException("Není předána hodnota podmínky.", BaseCode.PROPERTY_IS_INVALID).set("property", "conditions");
         }
 
         Iterator<String> iterator = conditions.iterator();
@@ -808,7 +811,6 @@ public class ClientFactoryDO {
      * @param values id specifikací
      * @param attName název atributu na který se podmínka aplikuje
      * @param isPacketRef
-     * @param conditions seznam podmínek do kterého se přidají nové podmínky
      */
     private List<DescItemCondition> createSpecificationsEnumCondition(final ValuesTypes valuesTypes, final List<Integer> values,
             final String attName, final boolean isPacketRef) {
@@ -887,14 +889,14 @@ public class ClientFactoryDO {
 
         RulItemType descItemType = itemTypeRepository.findOne(itemTypeId);
         if (descItemType == null) {
-            throw new IllegalStateException("Typ s ID=" + outputItemVO.getDescItemSpecId() + " neexistuje");
+            throw new SystemException("Typ s ID=" + outputItemVO.getDescItemSpecId() + " neexistuje", BaseCode.ID_NOT_EXIST);
         }
         outputItem.setItemType(descItemType);
 
         if (outputItemVO.getDescItemSpecId() != null) {
             RulItemSpec descItemSpec = itemSpecRepository.findOne(outputItemVO.getDescItemSpecId());
             if (descItemSpec == null) {
-                throw new IllegalStateException("Specifikace s ID=" + outputItemVO.getDescItemSpecId() + " neexistuje");
+                throw new SystemException("Specifikace s ID=" + outputItemVO.getDescItemSpecId() + " neexistuje", BaseCode.ID_NOT_EXIST);
             }
             outputItem.setItemSpec(descItemSpec);
         }
@@ -912,7 +914,7 @@ public class ClientFactoryDO {
         if (descItemVO.getDescItemSpecId() != null) {
             RulItemSpec descItemSpec = itemSpecRepository.findOne(descItemVO.getDescItemSpecId());
             if (descItemSpec == null) {
-                throw new IllegalStateException("Specifikace s ID=" + descItemVO.getDescItemSpecId() + " neexistuje");
+                throw new SystemException("Specifikace s ID=" + descItemVO.getDescItemSpecId() + " neexistuje", BaseCode.ID_NOT_EXIST);
             }
             outputItem.setItemSpec(descItemSpec);
         }

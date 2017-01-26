@@ -7,6 +7,8 @@ import java.util.Objects;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 
 /**
  * Tabulka.
@@ -53,7 +55,7 @@ public class ElzaTable {
         try {
             return objectMapper.writeValueAsString(table);
         } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException("Problém při parsování JSON", e);
+            throw new SystemException("Problém při parsování JSON", e, BaseCode.JSON_PARSE);
         }
     }
 
@@ -61,7 +63,7 @@ public class ElzaTable {
         try {
             return objectMapper.readValue(value, ElzaTable.class);
         } catch (IOException e) {
-            throw new IllegalArgumentException("Problém při generování JSON", e);
+            throw new SystemException("Problém při generování JSON", e, BaseCode.JSON_PARSE);
         }
     }
 

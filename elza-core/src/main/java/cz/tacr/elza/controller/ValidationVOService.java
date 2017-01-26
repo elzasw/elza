@@ -3,6 +3,10 @@ package cz.tacr.elza.controller;
 import java.util.HashMap;
 import java.util.List;
 
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -69,7 +73,7 @@ public class ValidationVOService {
      */
     private void partyCheckerHelper(final ParPartyVO party, final ParPartyType partyType, final Class<? extends ParPartyVO> checkedClass, final PartyTypeEnum checkedEnum) {
         if (checkedClass.isInstance(party) && !checkedEnum.equals(partyType.getPartyTypeEnum())) {
-            throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
+            throw new ObjectNotFoundException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode(), BaseCode.ID_NOT_EXIST);
         }
     }
 
@@ -85,7 +89,7 @@ public class ValidationVOService {
 
         List<RegRegisterType> regRegisterTypes = registerTypeRepository.findRegisterTypeByPartyType(partyType);
         if (CollectionUtils.isEmpty(regRegisterTypes)) {
-            throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
+            throw new ObjectNotFoundException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode(), BaseCode.ID_NOT_EXIST);
         }
 
         checkPreferredNameExist(partyVO.getPartyNames());
@@ -96,7 +100,7 @@ public class ValidationVOService {
         ParPartyType partyType = partyTypeRepository.getOneCheckExist(partyVO.getPartyType().getId());
 
         if (partyVO.getId() == null) {
-            throw new IllegalArgumentException("Není vyplněno id existující entity pro update.");
+            throw new SystemException("Není vyplněno id existující entity pro update.", BaseCode.ID_NOT_EXIST);
         }
 
         ParParty parParty = partyRepository.getOneCheckExist(partyVO.getId());
@@ -106,7 +110,7 @@ public class ValidationVOService {
 
         List<RegRegisterType> regRegisterTypes = registerTypeRepository.findRegisterTypeByPartyType(partyType);
         if (CollectionUtils.isEmpty(regRegisterTypes)) {
-            throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
+            throw new ObjectNotFoundException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode(), BaseCode.ID_NOT_EXIST);
         }
 
         if (partyVO.getPartyNames() != null) {
@@ -150,6 +154,6 @@ public class ValidationVOService {
                 return;
             }
         }
-        throw new IllegalArgumentException("Není přítomno žádné preferované jméno osoby.");
+        throw new BusinessException("Není přítomno žádné preferované jméno osoby.", BaseCode.PROPERTY_NOT_EXIST).set("property", "partyName");
     }
 }

@@ -92,7 +92,7 @@ public class DaoRequestsServiceImpl implements DaoRequestsService {
                 if (ArrDaoRequest.Type.TRANSFER.equals(arrDaoRequest.getType())) {
                     finishDaoRequest(arrDaoRequest);
                 } else {
-                    throw new BusinessException(DigitizationCode.UNWANTED_REQUEST_TYPE);
+                    throw new BusinessException("DAO Request je neočekávaného typu", DigitizationCode.UNWANTED_REQUEST_TYPE);
                 }
             }
 
@@ -145,7 +145,7 @@ public class DaoRequestsServiceImpl implements DaoRequestsService {
                 if (ArrDaoRequest.Type.DESTRUCTION.equals(arrDaoRequest.getType())) {
                     finishDaoRequest(arrDaoRequest);
                 } else {
-                    throw new BusinessException(DigitizationCode.UNWANTED_REQUEST_TYPE);
+                    throw new BusinessException("DAO Request je neočekávaného typu", DigitizationCode.UNWANTED_REQUEST_TYPE);
                 }
             }
 

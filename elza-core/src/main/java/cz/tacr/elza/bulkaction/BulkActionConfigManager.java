@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -157,7 +159,7 @@ public class BulkActionConfigManager {
         BulkActionConfig bulkActionConfigOrig = get(bulkActionConfig.getCode());
 
         if (bulkActionConfigOrig == null) {
-            throw new IllegalArgumentException("Hromadná akce neexistuje!");
+            throw new SystemException("Hromadná akce '" + bulkActionConfig.getCode() + "' neexistuje!", BaseCode.ID_NOT_EXIST);
         }
 
         // uložení do souboru
@@ -178,13 +180,13 @@ public class BulkActionConfigManager {
     public void delete(final BulkActionConfig bulkActionConfig) {
         BulkActionConfig bulkActionConfigOrig = get(bulkActionConfig.getCode());
         if (bulkActionConfigOrig == null) {
-            throw new IllegalArgumentException("Hromadná akce neexistuje!");
+            throw new SystemException("Hromadná akce '" + bulkActionConfig.getCode() + "' neexistuje!", BaseCode.ID_NOT_EXIST);
         }
         String name = getFileName(bulkActionConfigOrig);
         File file = new File(name);
 
         if (!file.exists()) {
-            throw new IllegalArgumentException("Soubor hromadné akce neexistuje!");
+            throw new SystemException("Soubor hromadné akce neexistuje!");
         }
 
         file.delete();

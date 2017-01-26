@@ -17,6 +17,7 @@ import java.util.function.Predicate;
 
 import javax.annotation.PostConstruct;
 
+import cz.tacr.elza.exception.BusinessException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -197,7 +198,6 @@ public class InterpiFactory {
     /**
      * Import osoby.
      *
-     * @param valueMap INTERPI objekt
      * @param originalRecord původní rejstřík, může být null
      * @param interpiRecordId id INTERPI
      * @param isOriginator příznak zda je osoba původce
@@ -274,7 +274,7 @@ public class InterpiFactory {
         String interpiRecordId = getInterpiIdentifier(identifikace);
 
         if (interpiRecordId == null) {
-            throw new SystemException(BaseCode.ID_NOT_EXIST);
+            throw new SystemException("Záznam v INTERPI neexistuje", BaseCode.ID_NOT_EXIST);
         }
         return interpiRecordId;
     }
@@ -311,7 +311,7 @@ public class InterpiFactory {
         }
 
         if (interpiRecordId == null) {
-            throw new SystemException(BaseCode.ID_NOT_EXIST);
+            throw new SystemException("Záznam v INTERPI neexistuje", BaseCode.ID_NOT_EXIST);
         }
 
         return interpiRecordId;
@@ -444,7 +444,7 @@ public class InterpiFactory {
 
         RegRegisterType regRegisterType = registerTypeRepository.findRegisterTypeByName(registryTypeName);
         if (regRegisterType == null) {
-            throw new ObjectNotFoundException(RegistryCode.REGISTRY_TYPE_NOT_FOUND).set("name", registryTypeName);
+            throw new ObjectNotFoundException("Typ jména " + registryTypeName + " neexistuje", RegistryCode.REGISTRY_TYPE_NOT_FOUND).set("name", registryTypeName);
         }
 
         return regRegisterType;
@@ -957,7 +957,7 @@ public class InterpiFactory {
             String partyNameFormTypeName = typ.value();
             parPartyNameFormType = partyNameFormTypeRepository.findByName(partyNameFormTypeName);
             if (parPartyNameFormType == null) {
-                throw new ObjectNotFoundException(ArrangementCode.PARTY_NAME_FORM_TYPE_NOT_FOUND).set("name", partyNameFormTypeName);
+                throw new ObjectNotFoundException("Nebyl nalezen typ formy jména podle " + partyNameFormTypeName, ArrangementCode.PARTY_NAME_FORM_TYPE_NOT_FOUND).set("name", partyNameFormTypeName);
             }
         }
         partyName.setNameFormType(parPartyNameFormType);
@@ -1037,7 +1037,6 @@ public class InterpiFactory {
      * Vytvoří osobu.
      *
      * @param regRecord rejstříkové heslo osoby
-     * @param valueMap data osoby
      * @param isOriginator příznak původce
      * @param regExternalSystem systém ze kterého je osoba
      * @param mappings mapování vztahů
@@ -1111,11 +1110,9 @@ public class InterpiFactory {
     /**
      * Načtení vztahů entity.
      *
-     * @param valueMap data entity
      * @param regExternalSystem externí systém
      * @param regScope třída
      *
-     * @param seznam mapování
      */
     public List<InterpiRelationMappingVO> getRelations(final InterpiEntity interpiEntity,
             final RegExternalSystem regExternalSystem, final RegScope regScope) {

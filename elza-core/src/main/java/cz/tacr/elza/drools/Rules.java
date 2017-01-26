@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cz.tacr.elza.exception.SystemException;
 import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.StatelessKieSession;
 import org.kie.internal.KnowledgeBase;
@@ -63,7 +64,7 @@ public abstract class Rules {
                 ResourceType.DRL);
 
         if (kbuilder.hasErrors()) {
-            throw new RuntimeException("Fail to parse rule: " + kbuilder.getErrors());
+            throw new SystemException("Fail to parse rule: " + kbuilder.getErrors());
         }
         KnowledgeBase tmpKbase = KnowledgeBaseFactory.newKnowledgeBase();
         tmpKbase.addKnowledgePackages(kbuilder.getKnowledgePackages());

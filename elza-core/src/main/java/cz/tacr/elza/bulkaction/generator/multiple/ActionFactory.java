@@ -47,7 +47,7 @@ public class ActionFactory {
             }
 
             default:
-                throw new IllegalStateException("Neexistující akce");
+                throw new IllegalStateException("Neexistující akce: " + type);
         }
     }
 

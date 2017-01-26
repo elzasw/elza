@@ -17,6 +17,10 @@ import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
 import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.OutputCode;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingGridView;
 import org.apache.commons.collections4.CollectionUtils;
@@ -153,7 +157,7 @@ public class RuleService {
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 
         if (!arrangementService.validLevelInVersion(level, version)) {
-            throw new IllegalArgumentException("Level s id " + faLevelId + " nespadá do verze s id " + fundVersionId);
+            throw new SystemException("Level s id " + faLevelId + " nespadá do verze s id " + fundVersionId);
         }
 
         List<DataValidationResult> validationResults = rulesExecutor.executeDescItemValidationRules(level, version);
@@ -403,7 +407,7 @@ public class RuleService {
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 
         if (version == null) {
-            throw new IllegalArgumentException("Verze archivni pomucky neexistuje");
+            throw new ObjectNotFoundException("Nebyla nalezena verze AS s ID=" + fundVersionId, ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", fundVersionId);
         }
 
         return rulesExecutor
@@ -489,13 +493,13 @@ public class RuleService {
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 
         if (version == null) {
-            throw new IllegalArgumentException("Verze archivni pomucky neexistuje");
+            throw new ObjectNotFoundException("Nebyla nalezena verze AS s ID=" + fundVersionId, ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", fundVersionId);
         }
 
         ArrNode node = nodeRepository.findOne(nodeId);
 
         if (node == null) {
-            throw new IllegalArgumentException("Uzel neexistuje");
+            throw new ObjectNotFoundException("Nebyla nalezena JP s ID=" + nodeId, ArrangementCode.NODE_NOT_FOUND).set("id", nodeId);
         }
 
         return getDescriptionItemTypes(version, node);
@@ -651,7 +655,7 @@ public class RuleService {
         ArrOutputDefinition outputDefinition = outputService.findOutputDefinition(outputDefinitionId);
 
         if (outputDefinition == null) {
-            throw new IllegalArgumentException("Výstup neexistuje");
+            throw new ObjectNotFoundException("Nebyl nalezen výstup s ID=" + outputDefinitionId, OutputCode.OUTPUT_NOT_EXISTS).set("id", outputDefinitionId);
         }
 
         return getOutputItemTypes(outputDefinition);

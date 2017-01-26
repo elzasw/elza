@@ -10,6 +10,8 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,7 +77,7 @@ public class FundValidationBulkAction extends BulkAction {
     private void generate(final ArrLevel level) {
         if (bulkActionRun.isInterrupted()) {
             bulkActionRun.setState(State.INTERRUPTED);
-            throw new BulkActionInterruptedException("Hromadná akce " + toString() + " byla přerušena.");
+            throw new BusinessException("Hromadná akce " + toString() + " byla přerušena.", ArrangementCode.BULK_ACTION_INTERRUPTED).set("code", bulkActionRun.getBulkActionCode());
         }
 
         List<ArrLevel> childLevels = getChildren(level);

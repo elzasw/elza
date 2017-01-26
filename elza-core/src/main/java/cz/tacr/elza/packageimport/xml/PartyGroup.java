@@ -101,7 +101,7 @@ public class PartyGroup {
         try {
             return objectMapper.writeValueAsString(contentDefinitions);
         } catch (JsonProcessingException e) {
-            throw new SystemException(e, BaseCode.JSON_PARSE);
+            throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
         }
     }
 
@@ -110,7 +110,7 @@ public class PartyGroup {
             TypeReference<HashMap<String,ContentDefinition>> typeRef = new TypeReference<HashMap<String,ContentDefinition>>() {};
             setContentDefinitions(objectMapper.readValue(contentDefinitions, typeRef));
         } catch (IOException e) {
-            throw new SystemException(e, BaseCode.JSON_PARSE);
+            throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
         }
     }
 }

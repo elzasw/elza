@@ -12,6 +12,11 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -145,7 +150,7 @@ public class DescriptionItemService {
      */
     private void checkFundVersionLock(final ArrFundVersion fundVersion) {
         if (fundVersion.getLockChange() != null) {
-            throw new IllegalArgumentException("Nelze provést verzovanou změnu v uzavřené verzi.");
+            throw new BusinessException("Nelze provést verzovanou změnu v uzavřené verzi.", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
     }
 
@@ -185,9 +190,9 @@ public class DescriptionItemService {
         List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItemObjectId);
 
         if (descItems.size() > 1) {
-            throw new IllegalStateException("Hodnota musí být právě jedna");
+            throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
         } else if (descItems.size() == 0) {
-            throw new IllegalStateException("Hodnota neexistuje, pravděpodobně byla již smazána");
+            throw new SystemException("Hodnota neexistuje, pravděpodobně byla již smazána");
         }
 
         ArrDescItem descItem = descItems.get(0);
@@ -240,7 +245,7 @@ public class DescriptionItemService {
         List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItemType, node);
 
         if (descItems.size() == 0) {
-            throw new IllegalStateException("Nebyla nalezena žádná hodnota atributu ke smazání");
+            throw new SystemException("Nebyla nalezena žádná hodnota atributu ke smazání");
         }
 
         List<ArrDescItem> descItemsDeleted = new ArrayList<>(descItems.size());
@@ -284,7 +289,7 @@ public class DescriptionItemService {
         List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItemType, node);
 
         if (descItems.size() == 0) {
-            throw new IllegalStateException("Nebyla nalezena žádná hodnota atributu ke smazání");
+            throw new SystemException("Nebyla nalezena žádná hodnota atributu ke smazání");
         }
 
         List<ArrDescItem> descItemsDeleted = new ArrayList<>(descItems.size());
@@ -482,7 +487,7 @@ public class DescriptionItemService {
             try {
                 descItemNew = new ArrDescItem(descItemMove.getItem().getClass());
             } catch (InstantiationException | IllegalAccessException e) {
-                throw new IllegalStateException(e);
+                throw new SystemException(e);
             }
 
             BeanUtils.copyProperties(descItemMove, descItemNew);
@@ -521,7 +526,7 @@ public class DescriptionItemService {
         if (descItemSpec != null) {
             List<RulItemSpec> descItemSpecs = itemSpecRepository.findByItemType(descItemType);
             if (!descItemSpecs.contains(descItemSpec)) {
-                throw new IllegalStateException("Specifikace neodpovídá typu hodnoty atributu");
+                throw new SystemException("Specifikace neodpovídá typu hodnoty atributu");
             }
         }
     }
@@ -667,7 +672,7 @@ public class DescriptionItemService {
         List<ArrData> dataList = dataRepository.findByItem(descItemFrom);
 
         if (dataList.size() != 1) {
-            throw new IllegalStateException("Hodnota musí být právě jedna");
+            throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
         }
 
         ArrData data = dataList.get(0);
@@ -692,7 +697,7 @@ public class DescriptionItemService {
             dataNew.setItem(newDescItem);
             return dataNew;
         } catch (Exception e) {
-            throw new IllegalStateException(e.getCause());
+            throw new SystemException(e.getCause());
         }
     }
 
@@ -723,9 +728,9 @@ public class DescriptionItemService {
         List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItem.getDescItemObjectId());
 
         if (descItems.size() > 1) {
-            throw new IllegalStateException("Hodnota musí být právě jedna");
+            throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
         } else if (descItems.size() == 0) {
-            throw new IllegalStateException("Hodnota neexistuje, pravděpodobně byla již smazána");
+            throw new SystemException("Hodnota neexistuje, pravděpodobně byla již smazána");
         }
         ArrDescItem descItemDB = descItems.get(0);
 
@@ -778,7 +783,7 @@ public class DescriptionItemService {
             }
         }
 
-        throw new IllegalArgumentException("Nebyl nalezen scénář s názvem " + scenarionName);
+        throw new ObjectNotFoundException("Nebyl nalezen scénář s názvem " + scenarionName, BaseCode.ID_NOT_EXIST).setId(scenarionName);
     }
 
     /**
@@ -840,9 +845,9 @@ public class DescriptionItemService {
         List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItem.getDescItemObjectId());
 
         if (descItems.size() > 1) {
-            throw new IllegalStateException("Hodnota musí být právě jedna");
+            throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
         } else if (descItems.size() == 0) {
-            throw new IllegalStateException("Hodnota neexistuje, pravděpodobně byla již smazána");
+            throw new SystemException("Hodnota neexistuje, pravděpodobně byla již smazána");
         }
         ArrDescItem descItemDB = descItems.get(0);
 
@@ -872,11 +877,11 @@ public class DescriptionItemService {
                                                      final Boolean createNewVersion) {
 
         if (createNewVersion ^ change != null) {
-            throw new IllegalArgumentException("Pokud vytvářím novou verzi, musí být předaná reference změny. Pokud verzi nevytvářím, musí být reference změny null.");
+            throw new SystemException("Pokud vytvářím novou verzi, musí být předaná reference změny. Pokud verzi nevytvářím, musí být reference změny null.");
         }
 
         if (createNewVersion && version.getLockChange() != null) {
-            throw new IllegalArgumentException("Nelze provést verzovanou změnu v uzavřené verzi.");
+            throw new SystemException("Nelze provést verzovanou změnu v uzavřené verzi.");
         }
 
         ArrDescItem descItemOrig;
@@ -884,9 +889,9 @@ public class DescriptionItemService {
             List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItem.getDescItemObjectId());
 
             if (descItems.size() > 1) {
-                throw new IllegalStateException("Hodnota musí být právě jedna");
+                throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
             } else if (descItems.size() == 0) {
-                throw new IllegalStateException("Hodnota neexistuje, pravděpodobně byla již smazána");
+                throw new SystemException("Hodnota neexistuje, pravděpodobně byla již smazána");
             }
 
             descItemOrig = descItems.get(0);
@@ -941,7 +946,7 @@ public class DescriptionItemService {
                 descItemFactory.saveDescItem(descItemOrig);
                 descItemUpdated = descItemFactory.saveDescItemWithData(descItemNew, true);
             } catch (Exception e) {
-                throw new IllegalStateException(e);
+                throw new SystemException(e);
             }
         } else {
             itemService.copyPropertiesSubclass(descItem, descItemOrig, ArrDescItem.class);
@@ -1366,7 +1371,7 @@ public class DescriptionItemService {
         try {
             return dataTypeClass.newInstance();
         } catch (Exception e) {
-            throw new IllegalStateException(e);
+            throw new SystemException(e);
         }
     }
 
@@ -1388,7 +1393,7 @@ public class DescriptionItemService {
         Assert.hasText(text);
         Assert.isTrue(!descItemType.getUseSpecification() || newItemSpecification != null);
         if (descItemType.getUseSpecification() && CollectionUtils.isEmpty(specifications)) {
-            throw new IllegalArgumentException("Musí být zadána alespoň jedna filtrovaná specifikace.");
+            throw new BusinessException("Musí být zadána alespoň jedna filtrovaná specifikace.", BaseCode.PROPERTY_NOT_EXIST).set("property", "specifications");
         }
 
 
@@ -1449,7 +1454,7 @@ public class DescriptionItemService {
             try {
                 newDescItem = new ArrDescItem(clazz);
             } catch (InstantiationException | IllegalAccessException e) {
-                throw new IllegalStateException(e);
+                throw new SystemException(e);
             }
 
             newDescItem.setNode(dbNode);
@@ -1525,7 +1530,7 @@ public class DescriptionItemService {
         Assert.notNull(version);
         Assert.notNull(descItemType);
         if (descItemType.getUseSpecification() && CollectionUtils.isEmpty(specifications)) {
-            throw new IllegalArgumentException("Musí být zadána alespoň jedna filtrovaná specifikace.");
+            throw new BusinessException("Musí být zadána alespoň jedna filtrovaná specifikace.", BaseCode.PROPERTY_NOT_EXIST).set("property", specifications);
         }
 
 

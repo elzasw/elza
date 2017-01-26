@@ -2,6 +2,10 @@ package cz.tacr.elza.bulkaction.generator;
 
 import java.util.List;
 
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -133,7 +137,7 @@ public class SerialNumberBulkAction extends BulkAction {
     private void generate(final ArrLevel level, final ArrNode rootNode) {
         if (bulkActionRun.isInterrupted()) {
             bulkActionRun.setState(State.INTERRUPTED);
-            throw new BulkActionInterruptedException("Hromadná akce " + toString() + " byla přerušena.");
+            throw new BusinessException("Hromadná akce " + toString() + " byla přerušena.", ArrangementCode.BULK_ACTION_INTERRUPTED).set("code", bulkActionRun.getBulkActionCode());
         }
         change = bulkActionRun.getChange();
 
@@ -166,7 +170,10 @@ public class SerialNumberBulkAction extends BulkAction {
         }
 
         if (!(descItem.getItem() instanceof ArrItemInt)) {
-            throw new IllegalStateException(descItemType.getCode() + " není typu ArrDescItemInt");
+            throw new BusinessException(descItemType.getCode() + " není typu ArrDescItemInt", BaseCode.PROPERTY_HAS_INVALID_TYPE)
+                    .set("property", descItemType.getCode())
+                    .set("expected", "ArrItemInt")
+                    .set("actual", descItem.getItem().getClass().getSimpleName());
         }
 
         ArrItemInt item = (ArrItemInt) descItem.getItem();
@@ -200,8 +207,9 @@ public class SerialNumberBulkAction extends BulkAction {
             return null;
         }
         if (descItems.size() > 1) {
-            throw new IllegalStateException(
-                    descItemType.getCode() + " nemuže být více než jeden (" + descItems.size() + ")");
+            throw new SystemException(
+                    descItemType.getCode() + " nemuže být více než jeden (" + descItems.size() + ")",
+                    BaseCode.DB_INTEGRITY_PROBLEM);
         }
         return descItemFactory.getDescItem(descItems.get(0));
     }
@@ -224,8 +232,9 @@ public class SerialNumberBulkAction extends BulkAction {
             return null;
         }
         if (descItems.size() > 1) {
-            throw new IllegalStateException(
-                    rulDescItemType.getCode() + " nemuže být více než jeden (" + descItems.size() + ")");
+            throw new SystemException(
+                    rulDescItemType.getCode() + " nemuže být více než jeden (" + descItems.size() + ")",
+                    BaseCode.DB_INTEGRITY_PROBLEM);
         }
         return descItemFactory.getDescItem(descItems.get(0));
     }

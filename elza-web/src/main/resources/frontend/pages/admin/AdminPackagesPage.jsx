@@ -1,47 +1,88 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
+
+import {connect} from 'react-redux'
+import {Ribbon, AdminPackagesList, AdminPackagesUpload, i18n, Icon, RibbonGroup} from 'components';
+import {PageLayout} from 'pages/index.jsx';
+import {UrlFactory} from 'actions/index.jsx';
+import {Button} from 'react-bootstrap'
+
+import './AdminPackagesPage.less';
+
 /**
  * Stránka pro správu importovaných balíčků
  *
  * @author Martin Šlapa
  * @since 22.12.2015
  */
-import React from 'react';
-import ReactDOM from 'react-dom';
+class AdminPackagesPage extends React.Component {
 
-require ('./AdminPackagesPage.less');
+    handleImportPackage = () => {
+        if(confirm(i18n('global.title.processAction'))) {
+            console.log('importPackage');
+        }
+    };
+    handleExportPackage = () => {
+        if(confirm(i18n('global.title.processAction'))) {
+            console.log('exportPackage');
+        }
+    };
+    handleDeletePackage = () => {
+        if(confirm(i18n('global.title.processAction'))) {
+            console.log('deletePackage');
+        }
+    };
 
-import {connect} from 'react-redux'
-import {Ribbon, AdminPackagesList, AdminPackagesUpload} from 'components/index.jsx';
-import {PageLayout} from 'pages/index.jsx';
-import {UrlFactory} from 'actions/index.jsx';
+    buildRibbon = () => {
+        const altActions = [];
+        const itemActions = [];
 
-var AdminPackagesPage = class AdminPackagesPage extends React.Component {
-    constructor(props) {
-        super(props);
+        altActions.push(
+            <Button key="import-package" onClick={this.handleImportPackage} title={i18n('ribbon.action.admin.package.import.title')}>
+                <Icon glyph="fa-download"/>
+                <div><span className="btnText">{i18n('ribbon.action.admin.package.import')}</span></div>
+            </Button>
+        );
+        itemActions.push(
+            <Button key="export-package" onClick={this.handleExportPackage} title={i18n('ribbon.action.admin.package.export.title')}>
+                <Icon glyph="fa-upload"/>
+                <div><span className="btnText">{i18n('ribbon.action.admin.package.export')}</span></div>
+            </Button>
+        );
 
-        this.buildRibbon = this.buildRibbon.bind(this);
-    }
+        itemActions.push(
+            <Button key="delete-package" onClick={this.handleDeletePackage} title={i18n('ribbon.action.admin.package.delete.title')}>
+                <Icon glyph="fa-minus-circle"/>
+                <div><span className="btnText">{i18n('ribbon.action.admin.package.delete')}</span></div>
+            </Button>
+        );
 
-    buildRibbon() {
-        return (
-            <Ribbon admin {...this.props} />
-        )
-    }
+        let altSection;
+        if (altActions.length > 0) {
+            altSection = <RibbonGroup key='alt-actions' className="small">{altActions}</RibbonGroup>
+        }
+
+        let itemSection;
+        if (itemActions.length > 0) {
+            itemSection = <RibbonGroup key='item-actions' className="small">{itemActions}</RibbonGroup>
+        }
+        return <Ribbon admin altSection={altSection} itemSection={itemSection} {...this.props} />;
+    };
 
     render() {
         const {splitter} = this.props;
 
-        var centerPanel = (
-            <div>
-                <AdminPackagesList getExportUrl={UrlFactory.exportPackage} {...this.props.packages} />
-                <AdminPackagesUpload />
-            </div>
-        )
+        const centerPanel = <div>
+            <AdminPackagesList getExportUrl={UrlFactory.exportPackage} {...this.props.packages} />
+            <AdminPackagesUpload />
+        </div>;
 
         return (
             <PageLayout
                 splitter={splitter}
                 className='admin-packages-page'
                 ribbon={this.buildRibbon()}
+                leftPanel={<div>aaa</div>}
                 centerPanel={centerPanel}
             />
         )
@@ -55,11 +96,11 @@ var AdminPackagesPage = class AdminPackagesPage extends React.Component {
  * @returns {{packages: *}}
  */
 function mapStateToProps(state) {
-    const {splitter, adminRegion: {packages}} = state
+    const {splitter, adminRegion: {packages}} = state;
     return {
         splitter,
         packages
     }
 }
 
-module.exports = connect(mapStateToProps)(AdminPackagesPage);
+export default connect(mapStateToProps)(AdminPackagesPage);

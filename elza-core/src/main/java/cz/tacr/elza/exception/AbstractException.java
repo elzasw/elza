@@ -1,6 +1,7 @@
 package cz.tacr.elza.exception;
 
 import cz.tacr.elza.exception.codes.ErrorCode;
+import org.castor.core.util.Assert;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,10 +18,7 @@ public abstract class AbstractException extends RuntimeException {
 
     private Map<String, Object> properties;
 
-    public AbstractException(final Throwable cause, final ErrorCode errorCode) {
-        super(cause);
-        this.errorCode = errorCode;
-    }
+    private Level level = Level.DANGER;
 
     public AbstractException(final String message, final ErrorCode errorCode) {
         super(message);
@@ -32,12 +30,12 @@ public abstract class AbstractException extends RuntimeException {
         this.errorCode = errorCode;
     }
 
-    public AbstractException(final ErrorCode errorCode) {
-        this.errorCode = errorCode;
-    }
-
     public ErrorCode getErrorCode() {
         return errorCode;
+    }
+
+    public Level getLevel() {
+        return level;
     }
 
     public Map<String, Object> getProperties() {
@@ -49,6 +47,12 @@ public abstract class AbstractException extends RuntimeException {
             properties = new HashMap<>();
         }
         properties.put(key, value);
+        return this;
+    }
+
+    public AbstractException level(final Level level) {
+        Assert.notNull(level, "Level musí být vyplněn");
+        this.level = level;
         return this;
     }
 

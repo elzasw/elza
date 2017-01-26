@@ -6,6 +6,7 @@ import java.util.Set;
 
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.exception.SystemException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -177,7 +178,7 @@ public class UpdateConformityInfoWorker implements Runnable {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
-                throw new IllegalStateException("Chyba při ukončování vlákna pro validaci uzlů.", e);
+                throw new SystemException("Chyba při ukončování vlákna pro validaci uzlů.", e);
             }
         }
     }

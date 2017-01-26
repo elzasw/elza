@@ -1,5 +1,6 @@
 package cz.tacr.elza.exception;
 
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.ErrorCode;
 
 /**
@@ -10,11 +11,11 @@ import cz.tacr.elza.exception.codes.ErrorCode;
  */
 public class BusinessException extends AbstractException {
 
-    public BusinessException(final ErrorCode errorCode) {
-        super(errorCode);
-    }
-
     public BusinessException(final String message, final ErrorCode errorCode) {
         super(message, errorCode);
+    }
+
+    public BusinessException(final String message, final Throwable throwable, final ErrorCode errorCode) {
+        super(message, throwable, errorCode);
     }
 }

@@ -9,6 +9,8 @@ import java.time.format.ResolverStyle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -152,7 +154,7 @@ public class UnitDateConvertor {
 
         } catch (Exception e) {
             unitdate.setFormat("");
-            throw new IllegalStateException("Vstupní řetězec není validní");
+            throw new SystemException("Vstupní řetězec není validní", BaseCode.PROPERTY_IS_INVALID).set("property", "format");
         }
 
         return unitdate;

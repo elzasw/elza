@@ -123,13 +123,13 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
             List<ArrDigitizationRequestNode> digitizationRequestNodes =
                     digitizationRequestNodeRepository.findByDigitizationRequest(Collections.singletonList((ArrDigitizationRequest) request));
             if (digitizationRequestNodes.size() == 0) {
-                throw new BusinessException(ArrangementCode.REQUEST_INVALID);
+                throw new BusinessException("Neplatný požadavek, nejsou navázané žádné JP", ArrangementCode.REQUEST_INVALID);
             }
         } else if (request instanceof ArrDaoRequest) { // kontroluje, že obsahuje alespoň jedno navázané DAO
             List<ArrDaoRequestDao> daoRequestDaos =
                     daoRequestDaoRepository.findByDaoRequest((ArrDaoRequest) request);
             if (daoRequestDaos.size() == 0) {
-                throw new BusinessException(ArrangementCode.REQUEST_INVALID);
+                throw new BusinessException("Neplatný požadavek, nejsou navázané žádné DAO", ArrangementCode.REQUEST_INVALID);
             }
         }
     }
@@ -178,7 +178,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
                                        final ArrFundVersion fundVersion) {
         ArrRequestQueueItem requestQueueItem = requestQueueItemRepository.findByRequestAndSend(request, false);
         if (requestQueueItem == null) {
-            throw new BusinessException(ArrangementCode.REQUEST_NOT_FOUND_IN_QUEUE);
+            throw new BusinessException("Požadavek " + request + " nenalezen ve frontě", ArrangementCode.REQUEST_NOT_FOUND_IN_QUEUE);
         }
 
         requestService.setRequestState(request, ArrRequest.State.QUEUED, ArrRequest.State.REJECTED);
@@ -325,7 +325,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
                 } else if (ArrDaoRequest.Type.TRANSFER == arrDaoRequest.getType()) {
                     wsClient.postTransferRequest(arrDaoRequest);
                 } else {
-                    throw new SystemException(BaseCode.SYSTEM_ERROR);
+                    throw new SystemException("Neplatný typ: " + arrDaoRequest.getType(), BaseCode.SYSTEM_ERROR);
                 }
             } else if (ArrRequest.ClassType.DAO_LINK == queueItem.getRequest().getDiscriminator()) {
                 ArrDaoLinkRequest arrDaoLinkRequest = (ArrDaoLinkRequest) queueItem.getRequest();
@@ -334,10 +334,10 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
                 } else if (ArrDaoLinkRequest.Type.UNLINK == arrDaoLinkRequest.getType()) {
                     wsClient.onDaoUnlinked(arrDaoLinkRequest);
                 } else {
-                    throw new SystemException(BaseCode.SYSTEM_ERROR);
+                    throw new SystemException("Neplatný typ: " + arrDaoLinkRequest.getType(), BaseCode.SYSTEM_ERROR);
                 }
             } else {
-                throw new SystemException(BaseCode.SYSTEM_ERROR);
+                throw new SystemException("Neplatný objekt: " + queueItem.getRequest().getDiscriminator(), BaseCode.SYSTEM_ERROR);
             }
 
             requestService.setRequestState(queueItem.getRequest(), ArrRequest.State.QUEUED, ArrRequest.State.SENT);

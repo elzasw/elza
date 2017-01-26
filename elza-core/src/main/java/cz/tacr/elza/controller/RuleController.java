@@ -13,6 +13,7 @@ import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulTemplate;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -131,7 +132,7 @@ public class RuleController {
             IOUtils.copy(is, response.getOutputStream());
             response.flushBuffer();
         } catch (IOException ex) {
-            throw new RuntimeException("Problem pri zapisu souboru", ex);
+            throw new SystemException("Problem pri zapisu souboru", ex);
         }
     }
 
@@ -229,7 +230,7 @@ public class RuleController {
             }
             packageService.importPackage(temp);
         } catch (IOException e) {
-            throw new IllegalStateException("Nepodařilo se vytvořit dočasný soubor pro import", e);
+            throw new SystemException("Nepodařilo se vytvořit dočasný soubor pro import", e);
         } finally {
             if (temp != null) {
                 temp.deleteOnExit();

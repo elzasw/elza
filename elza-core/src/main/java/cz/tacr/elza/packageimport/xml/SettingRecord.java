@@ -49,7 +49,7 @@ public class SettingRecord extends Setting {
         try {
             return objectMapper.writeValueAsString(scopeCode);
         } catch (JsonProcessingException e) {
-            throw new SystemException(e, BaseCode.JSON_PARSE);
+            throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
         }
     }
 
@@ -58,7 +58,7 @@ public class SettingRecord extends Setting {
         try {
             scopeCode = objectMapper.readValue(value, ScopeCode.class);
         } catch (IOException e) {
-            throw new SystemException(e, BaseCode.JSON_PARSE);
+            throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
         }
     }
 

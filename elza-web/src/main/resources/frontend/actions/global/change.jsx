@@ -8,9 +8,21 @@ import {fundOutputSelectOutput} from 'actions/arr/fundOutput.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {partyListInvalidate, partyDetailClear, partyDetailInvalidate} from 'actions/party/party.jsx'
-import {preparedListInvalidate, detailInvalidate, listInvalidate, queueListInvalidate, detailUnselect} from 'actions/arr/arrRequestActions.jsx'
+import {extSystemListInvalidate, extSystemDetailClear, extSystemDetailInvalidate, extSystemDetailFetchIfNeeded, AREA_EXT_SYSTEM_LIST, AREA_EXT_SYSTEM_DETAIL} from 'actions/admin/extSystem.jsx'
+import {
+    preparedListInvalidate,
+    detailInvalidate,
+    listInvalidate,
+    queueListInvalidate,
+    detailUnselect
+} from 'actions/arr/arrRequestActions.jsx'
 import {storeFromArea} from 'shared/utils'
-import {AREA_REGISTRY_LIST, AREA_REGISTRY_DETAIL, registryDetailInvalidate, registryListInvalidate} from 'actions/registry/registry.jsx'
+import {
+    AREA_REGISTRY_LIST,
+    AREA_REGISTRY_DETAIL,
+    registryDetailInvalidate,
+    registryListInvalidate
+} from 'actions/registry/registry.jsx'
 
 
 export function isFundChangeAction(action) {
@@ -160,6 +172,12 @@ export function changePartyDelete(partyId) {
     }
 }
 
+export function changeExtSystem() {
+    return (dispatch, getState) => {
+        dispatch(extSystemListInvalidate());
+        dispatch(extSystemDetailInvalidate());
+    }
+}
 
 export function changeApproveVersion(fundId, versionId) {
 
@@ -277,13 +295,13 @@ export function fundOutputStateChangeToastr(versionId, entityId, state) {
 
             switch (state) {
                 case 'GENERATING':
-                    return dispatch(addToastrInfo(i18n('change.arr.output.generating.title'),showBtn));
+                    return dispatch(addToastrInfo(i18n('change.arr.output.generating.title'), showBtn));
                 case 'OUTDATED':
-                    return dispatch(addToastrSuccess(i18n('change.arr.output.outdated.title'),showBtn));
+                    return dispatch(addToastrSuccess(i18n('change.arr.output.outdated.title'), showBtn));
                 case 'FINISHED':
-                    return dispatch(addToastrSuccess(i18n('change.arr.output.finished.title'),showBtn));
+                    return dispatch(addToastrSuccess(i18n('change.arr.output.finished.title'), showBtn));
                 case 'ERROR':
-                    return dispatch(addToastrDanger(i18n('change.arr.output.error.title'),showBtn));
+                    return dispatch(addToastrDanger(i18n('change.arr.output.error.title'), showBtn));
                 default:
                     return;
             }

@@ -19,6 +19,11 @@ public enum ArrangementCode implements ErrorCode {
     PACKET_DELETE_ERROR,
 
     /**
+     * Obal s {storageNumber} číslem pro tuto archivní pomůcku již existuje.
+     */
+    PACKET_DUPLICATE,
+
+    /**
      * Archivní fond neexistuje.
      */
     FUND_NOT_FOUND,
@@ -44,6 +49,11 @@ public enum ArrangementCode implements ErrorCode {
     NODE_NOT_FOUND,
 
     /**
+     * Typ atributu neexistuje.
+     */
+    ITEM_TYPE_NOT_FOUND,
+
+    /**
      * Existuje novější změna v AS/JP.
      */
     EXISTS_NEWER_CHANGE,
@@ -59,14 +69,14 @@ public enum ArrangementCode implements ErrorCode {
     ALREADY_ADDED,
 
     /**
+     * Entita již byla vytvořena.
+     */
+    ALREADY_CREATED,
+
+    /**
      * Entita již byla odstraněna (obvykle z nějaké množiny).
      */
     ALREADY_REMOVED,
-
-    /**
-     * Entitu nelze odeslat.
-     */
-    CANT_SEND,
 
     /**
      * Neplatná verze.
@@ -92,6 +102,21 @@ public enum ArrangementCode implements ErrorCode {
      * Existuje blokující změna v JP - obecně např. hromadná změna, import AS, atd.
      */
     EXISTS_BLOCKING_CHANGE,
+
+    /**
+     * Hromadná akce byla přerušena.
+     */
+    BULK_ACTION_INTERRUPTED,
+
+    /**
+     * Neopakovatelná položka.
+     */
+    NOT_REPEATABLE,
+
+    /**
+     * Chyba když nejsou nastavené filtry stromu.
+     */
+    FILTER_EXPIRED,
 
     /**
      * Typ formy jména neexistuje.

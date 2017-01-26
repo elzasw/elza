@@ -34,6 +34,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.packageimport.xml.SettingGridView;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -404,7 +406,7 @@ public class PackageService {
             // načtení info o importu
             PackageInfo packageInfo = convertXmlStreamToObject(PackageInfo.class, mapEntry.get(PACKAGE_XML));
             if (packageInfo == null) {
-                throw new BusinessException(PackageCode.FILE_NOT_FOUND).set("file", PACKAGE_XML);
+                throw new BusinessException("Soubor " + PACKAGE_XML + " nenalezen", PackageCode.FILE_NOT_FOUND).set("file", PACKAGE_XML);
             }
 
             RulPackage rulPackage = processRulPackage(packageInfo);
@@ -580,7 +582,7 @@ public class PackageService {
                 if (uiSetting == null) {
                     uiSetting = new UISettings();
                 } else if(!uiSetting.getRulPackage().equals(rulPackage)) {
-                    throw new SystemException(PackageCode.OTHER_PACKAGE).set("code", uiSetting.getRulPackage().getCode());
+                    throw new SystemException("Entita existuje již v jiném balíčku (" + uiSetting.getRulPackage().getCode() + ", " + rulPackage.getCode() + ")", PackageCode.OTHER_PACKAGE).set("code", uiSetting.getRulPackage().getCode());
                 }
                 convertUISettings(rulPackage, setting, uiSetting, rulRuleSetsAll, rulItemTypes);
                 uiSettingsNew.add(uiSetting);
@@ -622,7 +624,7 @@ public class PackageService {
     private void setItemTypeToSetting(final List<RulItemType> rulItemTypes, final String code, final UISettings uiSetting) {
         RulItemType entity = findEntity(rulItemTypes, code, RulItemType::getCode);
         if (entity == null) {
-            throw new BusinessException(PackageCode.CODE_NOT_FOUND).set("code", code).set("file", SETTING_XML);
+            throw new BusinessException("RulItemType s code=" + code + " nenalezen", PackageCode.CODE_NOT_FOUND).set("code", code).set("file", SETTING_XML);
         }
         uiSetting.setEntityId(entity.getItemTypeId());
     }
@@ -630,7 +632,7 @@ public class PackageService {
     private void setRuleSetToSetting(final Collection<RulRuleSet> rulRuleSets, final String code, final UISettings uiSetting) {
         RulRuleSet entity = findEntity(rulRuleSets, code, RulRuleSet::getCode);
         if (entity == null) {
-            throw new BusinessException(PackageCode.CODE_NOT_FOUND).set("code", code).set("file", SETTING_XML);
+            throw new BusinessException("RulRuleSet s code=" + code + " nenalezen", PackageCode.CODE_NOT_FOUND).set("code", code).set("file", SETTING_XML);
         }
         uiSetting.setEntityId(entity.getRuleSetId());
     }
@@ -687,12 +689,12 @@ public class PackageService {
         parRegistryRole.setRulPackage(rulPackage);
         ParRelationRoleType parRelationRoleType = findEntity(parRelationRoleTypes, registryRole.getRoleType(), ParRelationRoleType::getCode);
         if (parRelationRoleType == null) {
-            throw new BusinessException(PackageCode.CODE_NOT_FOUND).set("code", registryRole.getRoleType()).set("file", REGISTRY_ROLE_XML);
+            throw new BusinessException("ParRelationRoleType s code=" + registryRole.getRoleType() + " nenalezen", PackageCode.CODE_NOT_FOUND).set("code", registryRole.getRoleType()).set("file", REGISTRY_ROLE_XML);
         }
         parRegistryRole.setRoleType(parRelationRoleType);
         RegRegisterType regRegisterType = findEntity(regRegisterTypes, registryRole.getRegisterType(), RegRegisterType::getCode);
         if (regRegisterType == null) {
-            throw new BusinessException(PackageCode.CODE_NOT_FOUND).set("code", registryRole.getRoleType()).set("file", REGISTRY_ROLE_XML);
+            throw new BusinessException("RegRegisterType s code=" + registryRole.getRoleType() + " nenalezen", PackageCode.CODE_NOT_FOUND).set("code", registryRole.getRoleType()).set("file", REGISTRY_ROLE_XML);
         }
         parRegistryRole.setRegisterType(regRegisterType);
     }
@@ -762,7 +764,7 @@ public class PackageService {
         if (registerType.getPartyType() != null) {
             ParPartyType parPartyType = findEntity(parPartyTypes, registerType.getPartyType(), ParPartyType::getCode);
             if (parPartyType == null) {
-                throw new BusinessException(PackageCode.CODE_NOT_FOUND).set("code", registerType.getPartyType()).set("file", REGISTER_TYPE_XML);
+                throw new BusinessException("ParPartyType s code=" + registerType.getPartyType() + " nenalezen", PackageCode.CODE_NOT_FOUND).set("code", registerType.getPartyType()).set("file", REGISTER_TYPE_XML);
             }
             regRegisterType.setPartyType(parPartyType);
         }
@@ -815,12 +817,12 @@ public class PackageService {
         //parRelationTypeRoleType.setViewOrder(relationTypeRoleType.getViewOrder());
         ParRelationType parRelationType = findEntity(parRelationTypes, relationTypeRoleType.getRelationType(), ParRelationType::getCode);
         if (parRelationType == null) {
-            throw new BusinessException(PackageCode.CODE_NOT_FOUND).set("code", relationTypeRoleType.getRelationType()).set("file", RELATION_TYPE_ROLE_TYPE_XML);
+            throw new BusinessException("ParRelationType s code=" + relationTypeRoleType.getRelationType() + " nenalezen", PackageCode.CODE_NOT_FOUND).set("code", relationTypeRoleType.getRelationType()).set("file", RELATION_TYPE_ROLE_TYPE_XML);
         }
         parRelationTypeRoleType.setRelationType(parRelationType);
         ParRelationRoleType parRelationRoleType = findEntity(parRelationRoleTypes, relationTypeRoleType.getRoleType(), ParRelationRoleType::getCode);
         if (parRelationRoleType == null) {
-            throw new BusinessException(PackageCode.CODE_NOT_FOUND).set("code", relationTypeRoleType.getRoleType()).set("file", RELATION_TYPE_ROLE_TYPE_XML);
+            throw new BusinessException("ParRelationRoleType s code=" + relationTypeRoleType.getRoleType() + " nenalezen", PackageCode.CODE_NOT_FOUND).set("code", relationTypeRoleType.getRoleType()).set("file", RELATION_TYPE_ROLE_TYPE_XML);
         }
         parRelationTypeRoleType.setRoleType(parRelationRoleType);
     }
@@ -868,12 +870,12 @@ public class PackageService {
         parPartyTypeRelation.setName(partyTypeRelation.getName());
         ParRelationType parRelationType = findEntity(parRelationTypes, partyTypeRelation.getRelationType(), ParRelationType::getCode);
         if (parRelationType == null) {
-            throw new BusinessException(PackageCode.CODE_NOT_FOUND).set("code", partyTypeRelation.getRelationType()).set("file", PARTY_TYPE_RELATION_XML);
+            throw new BusinessException("ParRelationType s code=" + partyTypeRelation.getRelationType() + " nenalezen", PackageCode.CODE_NOT_FOUND).set("code", partyTypeRelation.getRelationType()).set("file", PARTY_TYPE_RELATION_XML);
         }
         parPartyTypeRelation.setRelationType(parRelationType);
         ParPartyType parPartyType = findEntity(parPartyTypes, partyTypeRelation.getPartyType(), ParPartyType::getCode);
         if (parPartyType == null) {
-            throw new BusinessException(PackageCode.CODE_NOT_FOUND).set("code", partyTypeRelation.getPartyType()).set("file", PARTY_TYPE_RELATION_XML);
+            throw new BusinessException("ParPartyType s code=" + partyTypeRelation.getPartyType() + " nenalezen", PackageCode.CODE_NOT_FOUND).set("code", partyTypeRelation.getPartyType()).set("file", PARTY_TYPE_RELATION_XML);
         }
         parPartyTypeRelation.setPartyType(parPartyType);
     }
@@ -924,7 +926,7 @@ public class PackageService {
         parRelationType.setUseUnitdate(UseUnitdateEnum.valueOf(relationType.getUseUnitdate()));
         ParRelationClassType parRelationClassType = findEntity(parRelationClassTypes, relationType.getRelatioClassType(), ParRelationClassType::getCode);
         if (parRelationClassType == null) {
-            throw new BusinessException(PackageCode.CODE_NOT_FOUND).set("code", relationType.getRelatioClassType()).set("file", RELATION_TYPE_XML);
+            throw new BusinessException("ParRelationClassType s code=" + relationType.getRelatioClassType() + " nenalezen", PackageCode.CODE_NOT_FOUND).set("code", relationType.getRelatioClassType()).set("file", RELATION_TYPE_XML);
         }
         parRelationType.setRelationClassType(parRelationClassType);
     }
@@ -970,12 +972,12 @@ public class PackageService {
         parPartyTypeComplementType.setRulPackage(rulPackage);
         ParComplementType parComplementType = findEntity(parComplementTypes, partyTypeComplementType.getComplementType(), ParComplementType::getCode);
         if (parComplementType == null) {
-            throw new BusinessException(PackageCode.CODE_NOT_FOUND).set("code", partyTypeComplementType.getComplementType()).set("file", PARTY_TYPE_COMPLEMENT_TYPE_XML);
+            throw new BusinessException("ParComplementType s code=" + partyTypeComplementType.getComplementType() + " nenalezen", PackageCode.CODE_NOT_FOUND).set("code", partyTypeComplementType.getComplementType()).set("file", PARTY_TYPE_COMPLEMENT_TYPE_XML);
         }
         parPartyTypeComplementType.setComplementType(parComplementType);
         ParPartyType parPartyType = findEntity(parPartyTypes, partyTypeComplementType.getPartyType(), ParPartyType::getCode);
         if (parPartyType == null) {
-            throw new BusinessException(PackageCode.CODE_NOT_FOUND).set("code", partyTypeComplementType.getPartyType()).set("file", PARTY_TYPE_COMPLEMENT_TYPE_XML);
+            throw new BusinessException("ParPartyType s code=" + partyTypeComplementType.getPartyType() + " nenalezen", PackageCode.CODE_NOT_FOUND).set("code", partyTypeComplementType.getPartyType()).set("file", PARTY_TYPE_COMPLEMENT_TYPE_XML);
         }
         parPartyTypeComplementType.setPartyType(parPartyType);
         parPartyTypeComplementType.setRepeatable(partyTypeComplementType.getRepeatable());
@@ -1024,7 +1026,7 @@ public class PackageService {
         if (partyGroup.getPartyType() != null) {
             ParPartyType parPartyType = findEntity(parPartyTypes, partyGroup.getPartyType(), ParPartyType::getCode);
             if (parPartyType == null) {
-                throw new BusinessException(PackageCode.CODE_NOT_FOUND).set("code", partyGroup.getPartyType());
+                throw new BusinessException("ParPartyType s code=" + partyGroup.getPartyType() + " nenalezen", PackageCode.CODE_NOT_FOUND).set("code", partyGroup.getPartyType());
             }
             parComplementType.setPartyType(parPartyType);
         }
@@ -1331,7 +1333,7 @@ public class PackageService {
                                        final RulPolicyType rulPolicyType,
                                        final List<RulRuleSet> rulRuleSets) {
         if (rulRuleSets == null) {
-            throw new BusinessException(PackageCode.FILE_NOT_FOUND).set("file", RULE_SET_XML);
+            throw new BusinessException("Soubor " + RULE_SET_XML + " nenalezen", PackageCode.FILE_NOT_FOUND).set("file", RULE_SET_XML);
         }
 
         rulPolicyType.setCode(policyType.getCode());
@@ -1347,7 +1349,7 @@ public class PackageService {
         if (findItems.size() > 0) {
             item = findItems.get(0);
         } else {
-            throw new BusinessException(PackageCode.CODE_NOT_FOUND).set("code", policyType.getRuleSet()).set("file", RULE_SET_XML);
+            throw new BusinessException("RulRuleSet s kódem " + policyType.getRuleSet() + " nenalezen", PackageCode.CODE_NOT_FOUND).set("code", policyType.getRuleSet()).set("file", RULE_SET_XML);
         }
 
         rulPolicyType.setRuleSet(item);
@@ -1416,7 +1418,7 @@ public class PackageService {
                                       final RulOutputType rulOutputType,
                                       final List<RulRule> rulRuleList) {
         if (rulRuleList == null) {
-            throw new BusinessException(PackageCode.FILE_NOT_FOUND).set("file", PACKAGE_RULES_XML);
+            throw new BusinessException("Soubor " + PACKAGE_RULES_XML + " nenalezen", PackageCode.FILE_NOT_FOUND).set("file", PACKAGE_RULES_XML);
         }
 
         rulOutputType.setPackage(rulPackage);
@@ -1430,7 +1432,7 @@ public class PackageService {
                     .findFirst().orElse(null);
 
             if (rule == null) {
-                throw new BusinessException(PackageCode.CODE_NOT_FOUND).set("code", filename).set("file", RULE_SET_XML);
+                throw new BusinessException("RulRule s kódem " + filename + " nenalezen", PackageCode.CODE_NOT_FOUND).set("code", filename).set("file", RULE_SET_XML);
             }
             /*if (!rule.getRuleType().equals(RulRule.RuleType.OUTPUT_ATTRIBUTE_TYPES)) {
                 throw new IllegalStateException("Typ u souboru '" + filename + "' musí být OUTPUT_ATTRIBUTE_TYPES");
@@ -1514,7 +1516,7 @@ public class PackageService {
                                        final RulRule rulPackageRule,
                                        final List<RulRuleSet> rulRuleSets) {
         if (rulRuleSets == null) {
-            throw new BusinessException(PackageCode.FILE_NOT_FOUND).set("file", RULE_SET_XML);
+            throw new BusinessException("Soubor " + RULE_SET_XML + " nenalezen", PackageCode.FILE_NOT_FOUND).set("file", RULE_SET_XML);
         }
 
         rulPackageRule.setPackage(rulPackage);
@@ -1529,7 +1531,7 @@ public class PackageService {
                     .findFirst().orElse(null);
 
             if (ruleSet == null) {
-                throw new BusinessException(PackageCode.CODE_NOT_FOUND).set("code", ruleSetCode).set("file", RULE_SET_XML);
+                throw new BusinessException("RulRuleSet s code=" + ruleSetCode + " nenalezen", PackageCode.CODE_NOT_FOUND).set("code", ruleSetCode).set("file", RULE_SET_XML);
             }
             rulPackageRule.setRuleSet(ruleSet);
         } else {
@@ -1593,7 +1595,7 @@ public class PackageService {
                         RulItemType rulItemType = itemTypeRepository.findOneByCode(actionItemType.getItemType());
 
                         if (rulItemType == null) {
-                            throw new BusinessException(PackageCode.CODE_NOT_FOUND).set("code", actionItemType.getItemType() ).set("file", ITEM_TYPE_XML);
+                            throw new BusinessException("RulItemType s code=" + actionItemType.getItemType() + " nenalezen", PackageCode.CODE_NOT_FOUND).set("code", actionItemType.getItemType() ).set("file", ITEM_TYPE_XML);
                         }
 
                         // pokud typ z balíčku ještě neexistuje v DB
@@ -1623,7 +1625,7 @@ public class PackageService {
                         RulOutputType rulOutputType = outputTypeRepository.findOneByCode(actionRecommended.getOutputType());
 
                         if (rulOutputType == null) {
-                            throw new BusinessException(PackageCode.CODE_NOT_FOUND).set("code", actionRecommended.getOutputType()).set("file", OUTPUT_TYPE_XML);
+                            throw new BusinessException("RulOutputType s code=" + actionRecommended.getOutputType() + " nenalezen", PackageCode.CODE_NOT_FOUND).set("code", actionRecommended.getOutputType()).set("file", OUTPUT_TYPE_XML);
                         }
 
                         // pokud vazba na doporučenou akci ještě neexistuje v DB
@@ -2115,7 +2117,7 @@ public class PackageService {
             rulPackage = new RulPackage();
         } else {
             if (BooleanUtils.isNotTrue(getTesting()) && rulPackage.getVersion().equals(packageInfo.getVersion())) {
-                throw new BusinessException(PackageCode.VERSION_APPLIED).set("code", rulPackage.getCode())
+                throw new BusinessException("Verze (" + packageInfo.getVersion() + ") balíčku (" + rulPackage.getCode() + ") byla již aplikována", PackageCode.VERSION_APPLIED).set("code", rulPackage.getCode()).set("version", packageInfo.getVersion())
                         .set("version", rulPackage.getVersion());
             }
         }
@@ -2143,7 +2145,7 @@ public class PackageService {
                 T xml = (T) unmarshaller.unmarshal(xmlStream);
                 return xml;
             } catch (Exception e) {
-                throw new SystemException(e, PackageCode.PARSE_ERROR).set("class", classObject.toString());
+                throw new SystemException("Nepodařilo se načíst objekt " + classObject.getSimpleName() + " ze streamu", e, PackageCode.PARSE_ERROR).set("class", classObject.toString());
             }
         }
         return null;
@@ -2187,7 +2189,7 @@ public class PackageService {
         RulPackage rulPackage = packageRepository.findTopByCode(code);
 
         if (rulPackage == null) {
-            throw new IllegalArgumentException("Balíček s kódem " + code + " neexistuje");
+            throw new ObjectNotFoundException("Balíček s kódem " + code + " neexistuje", BaseCode.ID_NOT_EXIST);
         }
 
         List<RulItemSpec> rulDescItemSpecs = itemSpecRepository.findByRulPackage(rulPackage);
@@ -2280,9 +2282,9 @@ public class PackageService {
                 rollBackFiles(dirRules);
 
                 bulkActionConfigManager.load();
-                throw new IllegalStateException(e);
+                throw new SystemException("Nastala chyba během importu balíčku", e);
             } catch (IOException e1) {
-                throw new IllegalStateException(e);
+                throw new SystemException("Nastala chyba během obnovy souborů po selhání importu balíčku", e);
             }
         }
 
@@ -2316,7 +2318,7 @@ public class PackageService {
         RulPackage rulPackage = packageRepository.findTopByCode(code);
 
         if (rulPackage == null) {
-            throw new IllegalArgumentException("Balíček s kódem " + code + " neexistuje");
+            throw new ObjectNotFoundException("Balíček s kódem " + code + " neexistuje", PackageCode.PACKAGE_NOT_EXIST).set("code", code);
         }
 
         File file = null;

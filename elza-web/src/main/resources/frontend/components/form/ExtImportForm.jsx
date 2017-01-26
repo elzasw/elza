@@ -15,9 +15,7 @@ import {registryDetailFetchIfNeeded} from 'actions/registry/registry.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import Scope from '../../components/shared/scope/Scope';
 import {regExtSystemListFetchIfNeeded} from 'actions/registry/regExtSystemList';
-
-
-const EXT_SYSTEM_CODE_INTERPI = 'INTERPI';
+import {REG_EXT_SYSTEM_TYPE} from 'constants';
 
 const CONDITION_TYPE = {
     AND: "AND",
@@ -52,7 +50,7 @@ class ExtImportSearch extends AbstractReactComponent {
             errors.systemId = i18n('global.validation.required');
         } else {
             const sys = objectById(extSystems, values.systemId);
-            if (sys.type !== EXT_SYSTEM_CODE_INTERPI) {
+            if (sys.type !== REG_EXT_SYSTEM_TYPE.INTERPI) {
                 errors.systemId = i18n('extImport.validation.notInterpi');
             }
         }
@@ -142,7 +140,7 @@ class ExtImportSearch extends AbstractReactComponent {
                 {extSystems.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
             </FormInput>
             {system != null && system && <div>
-                {system.type === EXT_SYSTEM_CODE_INTERPI ? <div>
+                {system.type === REG_EXT_SYSTEM_TYPE.INTERPI ? <div>
                     <label>Hledané parametry</label>
                     {conditions.map(this.renderParam)}
                     <Button bsStyle="action" onClick={() => conditions.addField({condition: CONDITION_TYPE.AND, value:null, attType: null})}>

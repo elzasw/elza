@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
+import cz.tacr.elza.exception.SystemException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -857,7 +858,7 @@ public class PartyService {
         ParRelationRoleType roleType = relationEntity.getRoleType();
         List<ParRelationType> possibleRelationTypes = relationTypeRepository.findByRelationRoleType(roleType);
         if (!possibleRelationTypes.contains(relationEntity.getRelation().getRelationType())) {
-            throw new IllegalArgumentException(
+            throw new SystemException(
                     "Typ role entity " + roleType.getName() + " nespadá do typu vztahu " + relationEntity.getRelation()
                             .getRelationType().getName());
         }
@@ -866,9 +867,9 @@ public class PartyService {
         //navázaná entita stejné scope jako osoba sama
         RegScope entityScope = relationEntity.getRecord().getScope();
         if (!relationEntity.getRelation().getParty().getRecord().getScope().equals(entityScope)) {
-            throw new IllegalArgumentException(
+            throw new SystemException(
                     "Navázaná entita musí mít stejnou třídu rejstříkového hesla jako osoba, ke které entitu navazujeme.");
-        }
+    }
 
         //navázaná entita povoleného typu rejstříku dle par_registry_role (mělo by to ideálně i dědit)
         RegRegisterType entityRegisterType = relationEntity.getRecord().getRegisterType();
@@ -876,7 +877,7 @@ public class PartyService {
                 .stream().map(RegRegisterType::getRegisterTypeId).collect(Collectors.toSet());
         registerTypeIds = registerTypeRepository.findSubtreeIds(registerTypeIds);
         if (!registerTypeIds.contains(entityRegisterType.getRegisterTypeId())) {
-            throw new IllegalArgumentException(
+            throw new SystemException(
                     "Navázaná entita musí mít typ rejstříku nebo podtyp, který je navázaný na roli entity.");
         }
 
@@ -890,17 +891,17 @@ public class PartyService {
         // vazby ( arr_node_register, ArrDataRecordRef, ArrDataPartyRef),
         Long pocet = dataPartyRefRepository.getCountByParty(party);
         if (pocet > 0) {
-            throw new IllegalStateException("Nalezeno použití party v tabulce ArrDataPartyRef.");
+            throw new SystemException("Nalezeno použití party v tabulce ArrDataPartyRef.");
         }
 
         List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByRecord(party.getRecord());
         if (CollectionUtils.isNotEmpty(dataRecordRefList)) {
-            throw new IllegalStateException("Nalezeno použití hesla v tabulce ArrDataRecordRef.");
+            throw new SystemException("Nalezeno použití hesla v tabulce ArrDataRecordRef.");
         }
 
         List<ArrNodeRegister> nodeRegisterList = nodeRegisterRepository.findByRecordId(party.getRecord());
         if (CollectionUtils.isNotEmpty(nodeRegisterList)) {
-            throw new IllegalStateException("Nalezeno použití hesla v tabulce ArrDataRecordRef.");
+            throw new SystemException("Nalezeno použití hesla v tabulce ArrDataRecordRef.");
         }
     }
 

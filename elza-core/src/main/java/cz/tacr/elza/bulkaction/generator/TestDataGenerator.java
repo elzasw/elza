@@ -9,6 +9,9 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -34,27 +37,27 @@ import cz.tacr.elza.utils.Yaml;
 
 /**
  * Bulk action to generate test data
- *  
+ *
  * @author Petr Pytelka
  *
  */
 public class TestDataGenerator extends BulkAction {
-	
+
     /**
      * Action type
      */
     public static final String TYPE = "TEST_DATA_GENERATOR";
-    
+
     /**
      * Number of units to generate on given level
      */
     int [] unitsToGenerate = {10};
     int activeLevel = 0;
-    
+
     /**
      * Změna
      */
-    private ArrChange change;    
+    private ArrChange change;
 
 	private ArrFundVersion version;
 
@@ -65,28 +68,28 @@ public class TestDataGenerator extends BulkAction {
     @Autowired
     private IEventNotificationService eventNotificationService;
     @Autowired
-    private RuleService ruleService;    
+    private RuleService ruleService;
 
 	@Override
 	@Transactional
 	public void run(List<Integer> inputNodeIds, BulkActionConfig bulkActionConfig, ArrBulkActionRun bulkActionRun) {
 		init(bulkActionConfig);
-		
+
 		this.change = bulkActionRun.getChange();
 		this.version = bulkActionRun.getFundVersion();
 
         Assert.notNull(version);
         checkVersion(version);
 		ArrNode rootNode = version.getRootNode();
-		
+
 		for(Integer nodeId: inputNodeIds)
-		{			
+		{
 			// get node
             ArrNode node = nodeRepository.findOne(nodeId);
             Assert.notNull(nodeId, "Node s nodeId=" + nodeId + " neexistuje");
             ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, rootNode, null);
             Assert.notNull(level, "Level neexistuje, nodeId=" + node.getNodeId() + ", rootNodeId=" + rootNode.getNodeId());
-                        
+
             generate(level);
 		}
 
@@ -96,45 +99,45 @@ public class TestDataGenerator extends BulkAction {
         //result.setCountChanges(countChanges);
         resultBA.getResults().add(result);
         bulkActionRun.setResult(resultBA);
-		
+
 	}
 
 	private void generate(ArrLevel parentLevel) {
 		// prepare list of source nodes
 		List<ArrLevel> childNodes = this.getChildren(parentLevel);
-		
+
         if(childNodes.size()==0) {
-        	throw new IllegalArgumentException("Selected node has no sub items to copy.");
+        	throw new SystemException("Selected node has no sub items to copy.");
         }
-		
+
         List<ArrLevel> createdLevels = makeCopies(parentLevel, childNodes);
-        
+
         entityManager.flush(); //aktualizace verzí v nodech
         for(ArrLevel createdLevel: createdLevels) {
         	// Do final notifications to client
         	ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(createdLevel.getNode().getNodeId()),
-                NodeTypeOperation.CONNECT_NODE, null, null, null);        	
+                NodeTypeOperation.CONNECT_NODE, null, null, null);
         }
 	}
 
 	/**
-	 * Function 
+	 * Function
 	 * @param futureParent
 	 * @param srcChildren
-	 * @return 
+	 * @return
 	 */
 	private List<ArrLevel> makeCopies(ArrLevel futureParent, List<ArrLevel> srcChildren) {
-		// 
+		//
 		int copiesCount = unitsToGenerate[activeLevel%unitsToGenerate.length];
-		
+
 		// get current children
 		List<ArrLevel> currChildNodes = this.getChildren(futureParent);
 		// positions are numbered from 1
 		int pos = currChildNodes.size()+1;
-		
+
 		List<ArrLevel> result = new LinkedList<>();
-		
-		activeLevel++;		
+
+		activeLevel++;
 		for(int i = 0; i<copiesCount; i++)
 		{
 			// make single copy
@@ -142,36 +145,36 @@ public class TestDataGenerator extends BulkAction {
 			pos+=srcChildren.size();
 		}
 		activeLevel--;
-		
+
 		return result;
 	}
 
 	private Collection<? extends ArrLevel> copyLevels(List<ArrLevel> childLevels, int startPos, ArrLevel parentLevel) {
-		
+
 		List<ArrLevel> result = new LinkedList<>();
-		
+
 		int pos = startPos;
 		// Copy child nodes
 		for(ArrLevel srcLevel: childLevels)
 		{
 			ArrLevel newLevel = this.arrangementService.createLevel(this.change, parentLevel.getNode(), pos, version.getFund());
-			
+
         	eventNotificationService
             .publishEvent(EventFactory.createAddNodeEvent(EventType.ADD_LEVEL_UNDER, version, parentLevel, newLevel));
-			
+
 			result.add(newLevel);
-			
+
 			// copy descr.items
 			this.copyDescrItems(srcLevel, newLevel);
-			
+
 			// copy childLevels
 			List<ArrLevel> subLevels = this.getChildren(srcLevel);
-			if(subLevels.size()>0) {				
+			if(subLevels.size()>0) {
 				makeCopies(newLevel, subLevels);
 			}
 			pos++;
 		}
-		
+
 		return result;
 	}
 
@@ -182,19 +185,20 @@ public class TestDataGenerator extends BulkAction {
 	 */
 	private void copyDescrItems(ArrLevel srcLevel, ArrLevel trgLevel) {
 		List<ArrDescItem> sourceDescItems = arrangementService.getArrDescItems(version, srcLevel.getNode());
-		descriptionItemService.copyDescItemWithDataToNode(trgLevel.getNode(), sourceDescItems, this.change, version);		
+		descriptionItemService.copyDescItemWithDataToNode(trgLevel.getNode(), sourceDescItems, this.change, version);
 	}
 
 	private void init(BulkActionConfig bulkActionConfig) {
         Assert.notNull(bulkActionConfig);
-		
+
 		Yaml config = bulkActionConfig.getYaml();
-		List<Integer> unitsCount = config.getIntList("items_to_generate", Collections.singletonList(10));		
+		List<Integer> unitsCount = config.getIntList("items_to_generate", Collections.singletonList(10));
 		unitsToGenerate = Ints.toArray(unitsCount);
 		if(unitsToGenerate.length==0) {
-			throw new IllegalArgumentException("empty configuration of items_to_generate");
+			throw new BusinessException("empty configuration of items_to_generate", BaseCode.PROPERTY_NOT_EXIST)
+					.set("property", "items_to_generate");
 		}
-		
+
 	}
 
 	@Override

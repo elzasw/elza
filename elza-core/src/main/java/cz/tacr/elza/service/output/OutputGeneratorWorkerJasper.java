@@ -11,6 +11,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
@@ -79,9 +82,9 @@ class OutputGeneratorWorkerJasper extends OutputGeneratorWorkerAbstract {
 
             return inm;
         } catch (JRException e) {
-            throw new IllegalStateException("Nepodařilo se vytisknout report.", e);
+            throw new SystemException("Nepodařilo se vytisknout report.", e);
         } catch (IOException e) {
-            throw new IllegalStateException("Nepodařilo se uložit výstup.", e);
+            throw new SystemException("Nepodařilo se uložit výstup.", e);
         }
     }
 
@@ -92,7 +95,7 @@ class OutputGeneratorWorkerJasper extends OutputGeneratorWorkerAbstract {
             try {
                 parameters.put(FilenameUtils.getBaseName(file.getAbsolutePath()), JasperCompileManager.compileReport(file.getAbsolutePath()));
             } catch (JRException e) {
-                throw new IllegalStateException("Chyba kompilace subšablony reportu " + file.getAbsolutePath(), e);
+                throw new SystemException("Chyba kompilace subšablony reportu " + file.getAbsolutePath(), e);
             }
         });
     }
@@ -113,7 +116,7 @@ class OutputGeneratorWorkerJasper extends OutputGeneratorWorkerAbstract {
                     try {
                         ut.addSource(file);
                     } catch (FileNotFoundException e) {
-                        throw new IllegalStateException(e);
+                        throw new SystemException(e);
                     }
                 });
         ut.setDestinationStream(outm);
@@ -121,7 +124,7 @@ class OutputGeneratorWorkerJasper extends OutputGeneratorWorkerAbstract {
             ut.mergeDocuments(MemoryUsageSetting.setupMixed(MAX_MERGE_MAIN_MEMORY_BYTES));
             outm.close();
         } catch (IOException e) {
-            throw new IllegalStateException(e);
+            throw new SystemException(e);
         }
     }
 
@@ -130,7 +133,7 @@ class OutputGeneratorWorkerJasper extends OutputGeneratorWorkerAbstract {
             JasperExportManager.exportReportToPdfStream(jasperPrint, out);
             out.close();
         } catch (JRException | IOException e) {
-            throw new IllegalStateException("Nepodařilo se vyrenderovat PDF ze šablony " + mainJasperTemplate.getAbsolutePath() + ".", e);
+            throw new SystemException("Nepodařilo se vyrenderovat PDF ze šablony " + mainJasperTemplate.getAbsolutePath() + ".", e);
         }
     }
 }

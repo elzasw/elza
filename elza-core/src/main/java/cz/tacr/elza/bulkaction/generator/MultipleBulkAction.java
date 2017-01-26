@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -185,7 +187,7 @@ public class MultipleBulkAction extends BulkAction {
     private void generate(final LevelWithItems levelWithItems) {
         if (bulkActionRun.isInterrupted()) {
             bulkActionRun.setState(ArrBulkActionRun.State.INTERRUPTED);
-            throw new BulkActionInterruptedException("Hromadná akce " + toString() + " byla přerušena.");
+            throw new BusinessException("Hromadná akce " + toString() + " byla přerušena.", ArrangementCode.BULK_ACTION_INTERRUPTED).set("code", bulkActionRun.getBulkActionCode());
         }
 
         // apply on current node

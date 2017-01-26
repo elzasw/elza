@@ -23,6 +23,7 @@ import {
     changeParty,
     changePartyCreate,
     changePartyDelete,
+    changeExtSystem,
     changeMoveLevel,
     changeRegistry,
     changeFund,
@@ -269,6 +270,11 @@ function processEvents(values) {
             case 'PARTY_UPDATE':
                 partyUpdate(value);
                 break;
+
+            case 'EXTERNAL_SYSTEM_CHANGE':
+                extSystemUpdate(value);
+                break;
+
             case 'NODES_CHANGE':
                 nodesChange(value);
                 break;
@@ -595,6 +601,13 @@ function partyDelete(value){
     store.dispatch(changePartyDelete(value.ids[0]));
 }
 
+/**
+ * Externí systémy
+ */
+
+function extSystemUpdate(){
+    store.dispatch(changeExtSystem());
+}
 /**
  * Zpracování validací.
  *

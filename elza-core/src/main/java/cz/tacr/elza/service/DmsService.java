@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.service.exception.DeleteFailedException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -90,7 +92,7 @@ public class DmsService {
 
         File outputFile = new File(getFilePath(dmsFile));
         if (outputFile.exists()) {
-            throw new IOException("Nelze soubor již existuje");
+            throw new SystemException("Nelze soubor již existuje", ArrangementCode.ALREADY_CREATED);
         }
         saveFile(dmsFile, fileStream, outputFile);
 
@@ -161,7 +163,7 @@ public class DmsService {
         if (fileStream != null) {
             File outputFile = new File(getFilePath(dbFile));
             if (outputFile.exists() && !outputFile.delete()) {
-                throw new IOException("Nelze odstranit existující soubor");
+                throw new SystemException("Nelze odstranit existující soubor");
             }
             saveFile(dbFile, fileStream, outputFile);
 
@@ -181,16 +183,16 @@ public class DmsService {
 
         File outputFile = new File(getFilePath(dmsFile));
         if (!outputFile.exists()) {
-            throw new IllegalStateException("Požadovaný soubor neexistuje");
+            throw new SystemException("Požadovaný soubor neexistuje");
         }
         if (!outputFile.isFile()) {
-            throw new IllegalStateException("Požadovaný soubor není souborem ale složkou");
+            throw new SystemException("Požadovaný soubor není souborem ale složkou");
         }
 
         try {
             return new BufferedInputStream(new FileInputStream(outputFile));
         } catch (FileNotFoundException e) {
-            throw new IllegalStateException("Požadovaný soubor nebyl nalezen");
+            throw new SystemException("Požadovaný soubor nebyl nalezen");
         }
     }
 
@@ -242,7 +244,7 @@ public class DmsService {
 
         File outputFile = new File(getFilePath(dmsFile));
         if (outputFile.exists() && !outputFile.delete()) {
-            throw new IOException("Nelze odstranit existující soubor");
+            throw new SystemException("Nelze odstranit existující soubor");
         }
         publishFileChange(dmsFile);
     }

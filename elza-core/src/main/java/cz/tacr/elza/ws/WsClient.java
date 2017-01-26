@@ -103,7 +103,7 @@ public class WsClient {
             return (T) service;
 
         } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
+            throw new SystemException(e.getMessage(), e);
         }
     }
 

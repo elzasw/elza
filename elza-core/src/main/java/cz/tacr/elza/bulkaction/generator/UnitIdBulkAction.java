@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -165,7 +167,7 @@ public class UnitIdBulkAction extends BulkAction {
     private void generate(final ArrLevel level, final ArrNode rootNode, UnitId unitId, final String parentSpecCode) {
         if (bulkActionRun.isInterrupted()) {
             bulkActionRun.setState(State.INTERRUPTED);
-            throw new BulkActionInterruptedException("Hromadná akce " + toString() + " byla přerušena.");
+            throw new BusinessException("Hromadná akce " + toString() + " byla přerušena.", ArrangementCode.BULK_ACTION_INTERRUPTED).set("code", bulkActionRun.getBulkActionCode());
         }
         change = bulkActionRun.getChange();
 
