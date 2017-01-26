@@ -704,7 +704,7 @@ class ArrPage extends ArrParentPage {
 
     renderPanel() {
         const {developer, arrRegion, userDetail, tab} = this.props;
-        let selected = tab.values['arr-as'] ? tab.values['arr-as'] : 0;
+
         var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
 
         var node
@@ -722,6 +722,7 @@ class ArrPage extends ArrParentPage {
         var centerSettings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', activeFund.id);
         var settingsValues = settings.value ? JSON.parse(settings.value) : null;
         var centerSettingsValues = centerSettings.value ? JSON.parse(centerSettings.value) : null;
+        let selected = tab.values['arr-as'] && settingsValues[tab.values['arr-as']] ? tab.values['arr-as'] : null;        
         if(settings.value && (settings.value.indexOf("true")<0 || !centerSettingsValues.rightPanel))
         {
             return false;
@@ -729,40 +730,70 @@ class ArrPage extends ArrParentPage {
 
         if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId: activeFund.id})) {
             if (settingsValues == null || settingsValues.packets) {
-                items.push({id: tabIndex, title: i18n('arr.panel.title.packets')});
-                if (selected === tabIndex) tabContent = this.renderFundPackets(activeFund);
-                tabIndex++;
+                var thisTab = {id:"packets",title:i18n('arr.panel.title.packets')};
+                items.push(thisTab);
+                if (selected == null) {
+                  selected = thisTab.id;
+                }
+                if (selected === thisTab.id) {
+                  tabContent = this.renderFundPackets(activeFund);
+                }
             }
         }
         if (settingsValues == null || settingsValues.files) {
-            items.push({id: tabIndex, title: i18n('arr.panel.title.files')});
-            if (selected === tabIndex) tabContent = this.renderFundFiles(activeFund)
-            tabIndex++;
+            var thisTab = {id:"files",title:i18n('arr.panel.title.files')};
+            items.push(thisTab);
+            if (selected == null) {
+              selected = thisTab.id;
+            }
+            if (selected === thisTab.id) {
+              tabContent = this.renderFundFiles(activeFund);
+            }
         }
 
         if (settingsValues == null || settingsValues.discrepancies) {
-            items.push({id: tabIndex, title: i18n('arr.panel.title.discrepancies')});
-            if (selected === tabIndex) tabContent = this.renderFundErrors(activeFund)
-            tabIndex++;
+            var thisTab = {id:"discrepancies",title:i18n('arr.panel.title.discrepancies')};
+            items.push(thisTab);
+            if (selected == null) {
+              selected = thisTab.id;
+            }
+            if (selected === thisTab.id) {
+              tabContent = this.renderFundErrors(activeFund);
+            }
         }
 
         if (settingsValues == null || settingsValues.visiblePolicies) {
-            items.push({id: tabIndex, title: i18n('arr.panel.title.visiblePolicies')});
-            if (selected === tabIndex) tabContent = this.renderFundVisiblePolicies(activeFund)
-            tabIndex++;
+            var thisTab = {id:"visiblePolicies",title:i18n('arr.panel.title.visiblePolicies')};
+            items.push(thisTab);
+            if (selected == null) {
+              selected = thisTab.id;
+            }
+            if (selected === thisTab.id) {
+              tabContent = this.renderFundVisiblePolicies(activeFund);
+            }
         }
 
 
 
         // pouze v developer modu
         if (developer.enabled && node) {
-            items.push({id: tabIndex, title: i18n('developer.title.descItems')});
-            if (selected === tabIndex) tabContent = this.renderDeveloperDescItems(activeFund, node)
-            tabIndex++;
+            var thisTab = {id:"descItems",title:i18n('developer.title.descItems')};
+            items.push(thisTab);
+            if (selected == null) {
+              selected = thisTab.id;
+            }
+            if (selected === thisTab.id) {
+              tabContent = this.renderDeveloperDescItems(activeFund, node)
+            }
 
-            items.push({id: tabIndex, title: i18n('developer.title.scenarios')});
-            if (selected === tabIndex) tabContent = this.renderDeveloperScenarios(activeFund, node)
-            tabIndex++;
+            thisTab = {id:"scenarios",title:i18n('developer.title.scenarios')};
+            items.push(thisTab);
+            if (selected == null) {
+              selected = thisTab.id;
+            }
+            if (selected === thisTab.id) {
+              tabContent = tabContent = this.renderDeveloperScenarios(activeFund, node)
+            }
         }
         // -----------
 

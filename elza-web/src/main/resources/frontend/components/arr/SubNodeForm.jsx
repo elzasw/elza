@@ -460,17 +460,15 @@ class SubNodeForm extends AbstractReactComponent {
         var settings = getOneSettings(userDetail.settings, 'FUND_RIGHT_PANEL', 'FUND', fundId);
         console.warn(0, userDetail.settings);
         var dataRight = settings.value ? JSON.parse(settings.value) : null;
-
-        var tabExists = dataRight && dataRight[2] !== undefined ? dataRight[2] : true;
-
+        var tabExists = dataRight && dataRight.packets;
         if (!tabExists) {
             if (confirm(i18n('subNodeForm.packets.confirm'))) {
                 var value = {};
                 if (dataRight) {
-                    dataRight[2] = true;
+                    dataRight.packets = true;
                     value = dataRight;
                 } else {
-                    value[2] = true;
+                    value.packets = true;
                 }
                 settings.value = JSON.stringify(value);
                 settings = setSettings(userDetail.settings, settings.id, settings);
@@ -482,7 +480,7 @@ class SubNodeForm extends AbstractReactComponent {
         }
 
         this.dispatch(routerNavigate('/arr'));
-        this.dispatch(selectTab('arr-as', 2));
+        this.dispatch(selectTab('arr-as', "packets"));
         this.dispatch(setFocus('arr', 3, null, null));
 
     }

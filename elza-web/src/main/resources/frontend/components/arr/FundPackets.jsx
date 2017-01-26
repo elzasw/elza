@@ -92,10 +92,21 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
     }
 
     handleChangeNumbers() {
-        const {fundId, selectedIds} = this.props
+        const {fundId, selectedIds, packets} = this.props
+        var type = null;
+        for(var i=0;i<selectedIds.length;i++){
+          var id = packets.filter(function(obj){
+            return obj.id == selectedIds[i];
+          })
+          type = type === null || id[0].packetTypeId === type ? id[0].packetTypeId : -1;
+          if(type<0) {
+            type = "";
+            break;
+          }
 
+        }
         const form = <AddPacketForm
-            initData={{count: selectedIds.length}}
+            initData={{count: selectedIds.length},{packetTypeId: type}}
             changeNumbers
             fundId={fundId}
             onSubmitForm={this.handleChangePacketNumberSubmit.bind(this, selectedIds)}
