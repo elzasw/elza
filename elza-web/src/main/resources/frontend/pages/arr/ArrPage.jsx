@@ -106,7 +106,6 @@ class ArrPage extends ArrParentPage {
         super.componentDidMount();
         this.trySetFocus(this.props)
     }
-
     componentWillReceiveProps(nextProps) {
         super.componentWillReceiveProps(nextProps);
         const {tab} = this.props;
@@ -156,19 +155,19 @@ class ArrPage extends ArrParentPage {
             console.log("trySetFocus, canSetFocus")
             if (isFocusFor(focus, 'arr', 3)) {
                 switch (selected) {
-                    case 0:
+                    case "discrepancies":
                         this.refs.fundErrors && this.setState({}, () => {
                             ReactDOM.findDOMNode(this.refs.fundErrors).focus()
                             focusWasSet()
                         })
                         break
-                    case 1:
+                    case "visiblePolicies":
                         this.refs.fundVisiblePolicies && this.setState({}, () => {
                             ReactDOM.findDOMNode(this.refs.fundVisiblePolicies).focus()
                             focusWasSet()
                         })
                         break
-                    case 2:
+                    case "packets":
                         if (this.refs.fundPackets) {
                             this.setState({}, () => {
                                 if (this.refs.fundPackets.getWrappedInstance().focus()) {
@@ -177,7 +176,7 @@ class ArrPage extends ArrParentPage {
                             })
                         }
                         break
-                    case 3:
+                    case "files":
                         if (this.refs.fundFiles) {
                             this.setState({}, () => {
                                 if (this.refs.fundFiles.getWrappedInstance().focus()) {
@@ -684,8 +683,9 @@ class ArrPage extends ArrParentPage {
 
     renderPanel() {
         const {developer, arrRegion, userDetail, tab} = this.props;
-
         var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
+        var settings = getOneSettings(userDetail.settings, 'FUND_RIGHT_PANEL', 'FUND', activeFund.id);
+        var centerSettings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', activeFund.id);
 
         var node
         if (activeFund.nodes && activeFund.nodes.activeIndex !== null) {
@@ -698,11 +698,9 @@ class ArrPage extends ArrParentPage {
         var tabContent
         var tabIndex = 0
 
-        var settings = getOneSettings(userDetail.settings, 'FUND_RIGHT_PANEL', 'FUND', activeFund.id);
-        var centerSettings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', activeFund.id);
         var settingsValues = settings.value ? JSON.parse(settings.value) : null;
         var centerSettingsValues = centerSettings.value ? JSON.parse(centerSettings.value) : null;
-        let selected = tab.values['arr-as'] && settingsValues[tab.values['arr-as']] ? tab.values['arr-as'] : null;        
+        let selected = tab.values['arr-as'] && (settingsValues !== null && settingsValues[tab.values['arr-as']] || settingsValues === null) ? tab.values['arr-as'] : null;
         if(settings.value && (settings.value.indexOf("true")<0 || !centerSettingsValues.rightPanel))
         {
             return false;
@@ -776,7 +774,6 @@ class ArrPage extends ArrParentPage {
             }
         }
         // -----------
-
         return (
             <Tabs.Container>
 

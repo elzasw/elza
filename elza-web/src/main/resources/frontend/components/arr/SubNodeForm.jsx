@@ -447,31 +447,38 @@ class SubNodeForm extends AbstractReactComponent {
     handleFundPackets(descItemGroupIndex, descItemTypeIndex, descItemIndex) {
         const {fundId, userDetail} = this.props;
         var settings = getOneSettings(userDetail.settings, 'FUND_RIGHT_PANEL', 'FUND', fundId);
+        var centerSettings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', fundId);
         console.warn(0, userDetail.settings);
-        var dataRight = settings.value ? JSON.parse(settings.value) : null;
-        var tabExists = dataRight && dataRight.packets;
-        if (!tabExists) {
-            if (confirm(i18n('subNodeForm.packets.confirm'))) {
-                var value = {};
-                if (dataRight) {
-                    dataRight.packets = true;
-                    value = dataRight;
-                } else {
-                    value.packets = true;
-                }
-                settings.value = JSON.stringify(value);
-                settings = setSettings(userDetail.settings, settings.id, settings);
-                console.warn(1, settings);
-                this.dispatch(userDetailsSaveSettings(settings));
-            } else {
-                return;
-            }
-        }
 
+        var dataRight = settings.value ? JSON.parse(settings.value) : null;
+        var dataCenter = centerSettings.value ? JSON.parse(centerSettings.value) : null;
+
+        var tabExists = dataRight !== null ? dataRight.packets : true;
+        var panelExists = dataCenter !== null ? dataCenter.rightPanel : true;
+
+
+        if (!tabExists || !panelExists) {
+            var rightValue = {};
+            var centerValue = {};
+            if (dataRight && dataCenter) {
+                dataRight.packets = true;
+                dataCenter.rightPanel = true;
+                rightValue = dataRight;
+                centerValue = dataCenter;
+            } else {
+                rightValue.packets = true;
+                centerValue.rightPanel = true;
+            }
+            settings.value = JSON.stringify(rightValue);
+            centerSettings.value = JSON.stringify(centerValue);
+            settings = setSettings(userDetail.settings, settings.id, settings);
+            settings = setSettings(settings, centerSettings.id, centerSettings);
+            console.warn(1, settings);
+            this.dispatch(userDetailsSaveSettings(settings));
+        }
         this.dispatch(routerNavigate('/arr'));
         this.dispatch(selectTab('arr-as', "packets"));
         this.dispatch(setFocus('arr', 3, null, null));
-
     }
 
     /**
