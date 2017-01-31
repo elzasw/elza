@@ -1,5 +1,6 @@
 package cz.tacr.elza.domain;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Inheritance;
@@ -30,7 +31,7 @@ import cz.tacr.elza.search.ItemIndexingInterceptor;
 @Entity(name = "arr_desc_item")
 @Table
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
 public class ArrDescItem extends ArrItem {
 
@@ -42,6 +43,9 @@ public class ArrDescItem extends ArrItem {
     @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrNode.class)
     @JoinColumn(name = "nodeId", nullable = false)
     private ArrNode node;
+
+    @Column(name = "nodeId", updatable = false, insertable = false)
+    private Integer nodeId;
 
     public ArrDescItem() {
 
@@ -63,12 +67,16 @@ public class ArrDescItem extends ArrItem {
     @Override
     @Field(store = Store.YES)
     public Integer getNodeId() {
-        return node.getNodeId();
+        return nodeId;
+    }
+
+    public void setNodeId(final Integer nodeId) {
+        this.nodeId = nodeId;
     }
 
     @Override
     public Integer getFundId() {
-        return node.getFund().getFundId();
+        return node.getFundId();
     }
 
     @Override
@@ -83,6 +91,7 @@ public class ArrDescItem extends ArrItem {
 
     public void setNode(final ArrNode node) {
         this.node = node;
+        this.nodeId = node == null ? null : node.getNodeId();
     }
 
     @Override

@@ -23,6 +23,8 @@ public class ArrItemUnitdate extends ArrItemData implements IUnitdate {
 
     private ArrCalendarType calendarType;
 
+    private Integer calendarTypeId;
+
     private String format;
 
     private Long normalizedTo;
@@ -77,6 +79,7 @@ public class ArrItemUnitdate extends ArrItemData implements IUnitdate {
     @Override
     public void setCalendarType(final ArrCalendarType calendarType) {
         this.calendarType = calendarType;
+        this.calendarTypeId = calendarType == null ? null : calendarType.getCalendarTypeId();
     }
 
     @Override
@@ -130,6 +133,14 @@ public class ArrItemUnitdate extends ArrItemData implements IUnitdate {
 
     public Long getNormalizedFrom() {
         return normalizedFrom;
+    }
+
+    public Integer getCalendarTypeId() {
+        return calendarTypeId;
+    }
+
+    public void setCalendarTypeId(final Integer calendarTypeId) {
+        this.calendarTypeId = calendarTypeId;
     }
 
     @Override

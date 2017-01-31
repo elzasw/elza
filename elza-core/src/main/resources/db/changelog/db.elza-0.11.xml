@@ -14,4 +14,19 @@
         <dropUniqueConstraint tableName="arr_level" constraintName="u_arr_level_ppd"/>
     </changeSet>
 
+    <changeSet id="20170127090300" author="slapa">
+        <createTable tableName="arr_cached_node">
+            <column name="cached_node_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="node_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_arr_cached_node_node" referencedTableName="arr_node"
+                             referencedColumnNames="node_id"/>
+            </column>
+            <column name="data" type="text">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>

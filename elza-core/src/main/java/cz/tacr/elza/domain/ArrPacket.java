@@ -48,7 +48,7 @@ public class ArrPacket implements IArrFund, Serializable {
     private Integer packetId;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPacketType.class)
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = RulPacketType.class)
     @JoinColumn(name = "packetTypeId", nullable = true)
     @JsonIgnore
     private RulPacketType packetType;

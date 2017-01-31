@@ -3,6 +3,7 @@ package cz.tacr.elza.domain;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import cz.tacr.elza.service.cache.NodeCacheSerializable;
 
 /**
  * Abstraktní datový objekt.
@@ -11,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * @since 15.9.15
  */
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
-public abstract class ArrItemData {
+public abstract class ArrItemData implements NodeCacheSerializable {
 
     protected RulItemSpec spec;
 

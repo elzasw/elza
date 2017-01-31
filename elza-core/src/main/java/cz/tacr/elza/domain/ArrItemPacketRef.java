@@ -12,12 +12,23 @@ public class ArrItemPacketRef extends ArrItemData {
 
     private ArrPacket packet;
 
+    private Integer packetId;
+
     public ArrPacket getPacket() {
         return packet;
     }
 
     public void setPacket(final ArrPacket packet) {
         this.packet = packet;
+        this.packetId = packet == null ? null : packet.getPacketId();
+    }
+
+    public Integer getPacketId() {
+        return packetId;
+    }
+
+    public void setPacketId(final Integer packetId) {
+        this.packetId = packetId;
     }
 
     @Override

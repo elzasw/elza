@@ -2,6 +2,7 @@ package cz.tacr.elza.domain;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -25,21 +26,33 @@ public class ArrDaoLink implements Serializable {
     @GeneratedValue
     private Integer daoLinkId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNode.class)
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrNode.class)
     @JoinColumn(name = "nodeId", nullable = false)
     private ArrNode node;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrDao.class)
+    @Column(name = "nodeId", updatable = false, insertable = false)
+    private Integer nodeId;
+
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrDao.class)
     @JoinColumn(name = "daoId", nullable = false)
     private ArrDao dao;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
+    @Column(name = "daoId", updatable = false, insertable = false)
+    private Integer daoId;
+
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrChange.class)
     @JoinColumn(name = "createChangeId", nullable = false)
     private ArrChange createChange;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
+    @Column(name = "createChangeId", updatable = false, insertable = false)
+    private Integer createChangeId;
+
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrChange.class)
     @JoinColumn(name = "deleteChangeId")
     private ArrChange deleteChange;
+
+    @Column(name = "deleteChangeId", updatable = false, insertable = false)
+    private Integer deleteChangeId;
 
     public Integer getDaoLinkId() {
         return daoLinkId;
@@ -55,6 +68,7 @@ public class ArrDaoLink implements Serializable {
 
     public void setNode(final ArrNode node) {
         this.node = node;
+        this.nodeId = node == null ? null : node.getNodeId();
     }
 
     public ArrDao getDao() {
@@ -63,6 +77,7 @@ public class ArrDaoLink implements Serializable {
 
     public void setDao(final ArrDao dao) {
         this.dao = dao;
+        this.daoId = dao == null ? null : dao.getDaoId();
     }
 
     public ArrChange getCreateChange() {
@@ -71,6 +86,7 @@ public class ArrDaoLink implements Serializable {
 
     public void setCreateChange(final ArrChange createChange) {
         this.createChange = createChange;
+        this.createChangeId = createChange == null ? null : createChange.getChangeId();
     }
 
     public ArrChange getDeleteChange() {
@@ -79,5 +95,38 @@ public class ArrDaoLink implements Serializable {
 
     public void setDeleteChange(final ArrChange deleteChange) {
         this.deleteChange = deleteChange;
+        this.deleteChangeId = deleteChange == null ? null : deleteChange.getChangeId();
+    }
+
+    public Integer getNodeId() {
+        return nodeId;
+    }
+
+    public void setNodeId(final Integer nodeId) {
+        this.nodeId = nodeId;
+    }
+
+    public Integer getDaoId() {
+        return daoId;
+    }
+
+    public void setDaoId(final Integer daoId) {
+        this.daoId = daoId;
+    }
+
+    public Integer getCreateChangeId() {
+        return createChangeId;
+    }
+
+    public void setCreateChangeId(final Integer createChangeId) {
+        this.createChangeId = createChangeId;
+    }
+
+    public Integer getDeleteChangeId() {
+        return deleteChangeId;
+    }
+
+    public void setDeleteChangeId(final Integer deleteChangeId) {
+        this.deleteChangeId = deleteChangeId;
     }
 }

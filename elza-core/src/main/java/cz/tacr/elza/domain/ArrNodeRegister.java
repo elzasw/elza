@@ -32,28 +32,36 @@ public class ArrNodeRegister implements Serializable {
     private Integer nodeRegisterId;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNode.class)
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrNode.class)
     @JoinColumn(name = "nodeId", nullable = false)
     private ArrNode node;
 
+    @Column(name = "nodeId", updatable = false, insertable = false)
+    private Integer nodeId;
+
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRecord.class)
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = RegRecord.class)
     @JoinColumn(name = "recordId", nullable = false)
     private RegRecord record;
 
+    @Column(name = "recordId", updatable = false, insertable = false)
+    private Integer recordId;
+
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrChange.class)
     @JoinColumn(name = "createChangeId", nullable = false)
     private ArrChange createChange;
 
+    @Column(name = "createChangeId", updatable = false, insertable = false)
+    private Integer createChangeId;
+
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrChange.class)
     @JoinColumn(name = "deleteChangeId", nullable = true)
     private ArrChange deleteChange;
 
-    @Column(insertable = false, updatable = false)
-    @ReadOnlyProperty
-    private Integer nodeId;
+    @Column(name = "deleteChangeId", updatable = false, insertable = false)
+    private Integer deleteChangeId;
 
     public Integer getNodeRegisterId() {
         return nodeRegisterId;
@@ -78,6 +86,7 @@ public class ArrNodeRegister implements Serializable {
 
     public void setRecord(final RegRecord record) {
         this.record = record;
+        this.recordId = record != null ? record.getRecordId() : null;
     }
 
     public ArrChange getCreateChange() {
@@ -86,6 +95,7 @@ public class ArrNodeRegister implements Serializable {
 
     public void setCreateChange(final ArrChange createChange) {
         this.createChange = createChange;
+        this.createChangeId = createChange != null ? createChange.getChangeId() : null;
     }
 
     public ArrChange getDeleteChange() {
@@ -94,6 +104,7 @@ public class ArrNodeRegister implements Serializable {
 
     public void setDeleteChange(final ArrChange deleteChange) {
         this.deleteChange = deleteChange;
+        this.deleteChangeId = deleteChange != null ? deleteChange.getChangeId() : null;
     }
 
     @Override
@@ -103,5 +114,33 @@ public class ArrNodeRegister implements Serializable {
 
     public Integer getNodeId() {
         return nodeId;
+    }
+
+    public void setNodeId(final Integer nodeId) {
+        this.nodeId = nodeId;
+    }
+
+    public Integer getRecordId() {
+        return recordId;
+    }
+
+    public void setRecordId(final Integer recordId) {
+        this.recordId = recordId;
+    }
+
+    public Integer getCreateChangeId() {
+        return createChangeId;
+    }
+
+    public void setCreateChangeId(final Integer createChangeId) {
+        this.createChangeId = createChangeId;
+    }
+
+    public Integer getDeleteChangeId() {
+        return deleteChangeId;
+    }
+
+    public void setDeleteChangeId(final Integer deleteChangeId) {
+        this.deleteChangeId = deleteChangeId;
     }
 }

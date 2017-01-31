@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 
 
@@ -50,4 +51,5 @@ public interface NodeRegisterRepository extends JpaRepository<ArrNodeRegister, I
     @Query("SELECT record FROM arr_node_register nr WHERE nr.node = ?1")
     List<RegRecord> findRecordsByNode(ArrNode node);
 
+    List<ArrNodeRegister> findByNodeIdInAndDeleteChangeIsNull(Collection<Integer> nodeIds);
 }

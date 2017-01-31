@@ -5,6 +5,7 @@ import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrNode;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -20,4 +21,6 @@ public interface DaoLinkRepository extends ElzaJpaRepository<ArrDaoLink, Integer
     List<ArrDaoLink> findByDaoAndDeleteChangeIsNull(ArrDao dao);
 
     List<ArrDaoLink> findByDao(ArrDao arrDao);
+
+    List<ArrDaoLink> findByNodeIdInAndDeleteChangeIsNull(Collection<Integer> nodeIds);
 }

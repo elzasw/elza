@@ -12,12 +12,23 @@ public class ArrItemRecordRef extends ArrItemData {
 
     private RegRecord record;
 
+    private Integer recordId;
+
     public RegRecord getRecord() {
         return record;
     }
 
     public void setRecord(final RegRecord record) {
         this.record = record;
+        this.recordId = record == null ? null : record.getRecordId();
+    }
+
+    public Integer getRecordId() {
+        return recordId;
+    }
+
+    public void setRecordId(final Integer recordId) {
+        this.recordId = recordId;
     }
 
     @Override
