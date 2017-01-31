@@ -7,24 +7,35 @@ import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
 import com.google.common.collect.Lists;
 import cz.tacr.elza.domain.ArrCachedNode;
+import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFile;
+import cz.tacr.elza.domain.ArrItemFileRef;
 import cz.tacr.elza.domain.ArrItemPacketRef;
-import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrItemPartyRef;
+import cz.tacr.elza.domain.ArrItemRecordRef;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PacketRepository;
+import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.service.ItemService;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,10 +57,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Serviska pro cachování dat jednotky popisu.
- * <p>
- * - sestavuje jednotný objekt {@link CachedNode}, který se při ukládání do DB serializuje do JSON
- * - pro určení, co se má serializovat se využívá interface {@link NodeCacheSerializable} + základní primitivní typy
- * - při spuštění synchronizace {@link #syncCache()} je zamknuta cache pro čtení
+ *
+ * * sestavuje jednotný objekt {@link CachedNode}, který se při ukládání do DB serializuje do JSON
+ * * pro určení, co se má serializovat se využívá interface {@link NodeCacheSerializable} + základní primitivní typy
+ * * při spuštění synchronizace {@link #syncCache()} je zamknuta cache pro čtení
  *
  * @author Martin Šlapa
  * @since 26.01.2017
@@ -65,7 +76,10 @@ public class NodeCacheService {
 
     private final ObjectMapper mapper;
 
-    private static final int SYNC_BATCH_NODE_SIZE = 1000;
+    /**
+     * Maximální počet JP, které se mají dávkově zpracovávat pro synchronizaci.
+     */
+    private static final int SYNC_BATCH_NODE_SIZE = 800;
 
     @Autowired
     private ItemTypeRepository itemTypeRepository;
@@ -83,6 +97,18 @@ public class NodeCacheService {
     private PacketRepository packetRepository;
 
     @Autowired
+    private PartyRepository partyRepository;
+
+    @Autowired
+    private RegRecordRepository regRecordRepository;
+
+    @Autowired
+    private FundFileRepository fundFileRepository;
+
+    @Autowired
+    private DaoRepository daoRepository;
+
+    @Autowired
     private NodeRepository nodeRepository;
 
     @Autowired
@@ -96,9 +122,13 @@ public class NodeCacheService {
 
     public NodeCacheService() {
         mapper = new ObjectMapper();
-        mapper.setVisibility(new InterfaceVisibilityChecker(NodeCacheSerializable.class));
+        mapper.setVisibility(new InterfaceVisibilityChecker(NodeCacheSerializable.class,
+                String.class, Number.class, Boolean.class, Iterable.class));
     }
 
+    /**
+     * Synchronizace záznamů v databázi.
+     */
     @Async("syncCacheTaskExecutor")
     @Transactional
     public void syncCache() {
@@ -112,6 +142,81 @@ public class NodeCacheService {
         }
     }
 
+    /**
+     * Získání sestavené cachované JP.
+     *
+     * @param nodeId identifikátor JP
+     * @return JP
+     */
+    @Transactional
+    public CachedNode getNode(final Integer nodeId) {
+        readLock.lock();
+        try {
+            logger.debug(">getNode(nodeId:" + nodeId + ")");
+            CachedNode nodeInternal = getNodeInternal(nodeId);
+            logger.debug("<getNode(nodeId:" + nodeId + ")");
+            return nodeInternal;
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    /**
+     * Získání sestavených cachovaných JP.
+     *
+     * @param nodeIds identifikátory JP
+     * @return seznam JP
+     */
+    @Transactional
+    public Map<Integer, CachedNode> getNodes(final Collection<Integer> nodeIds) {
+        readLock.lock();
+        try {
+            logger.debug(">getNodes(nodeIds:" + nodeIds + ")");
+            Map<Integer, CachedNode> nodesInternal = getNodesInternal(nodeIds);
+            logger.debug("<getNodes(nodeIds:" + nodeIds + ")");
+            return nodesInternal;
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    /**
+     * Založení nových záznamů v cache pro JP.
+     *
+     * @param cachedNodes seznam zakládaných objektů
+     */
+    @Transactional
+    public void createNodes(final Collection<CachedNode> cachedNodes) {
+        readLock.lock();
+        try {
+            logger.debug(">createNodes(" + cachedNodes + ")");
+            createNodesInternal(cachedNodes);
+            logger.debug("<createNodes(" + cachedNodes + ")");
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    /**
+     * Uložení záznamů.
+     *
+     * @param cachedNodes seznam ukládaných objektů
+     */
+    @Transactional
+    public void saveNodes(final Collection<CachedNode> cachedNodes) {
+        readLock.lock();
+        try {
+            logger.debug(">saveNodes(" + cachedNodes + ")");
+            saveNodesInternal(cachedNodes);
+            logger.debug("<saveNodes(" + cachedNodes + ")");
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    /**
+     * Synchronizace záznamů v databázi.
+     */
     private void syncCacheInternal() {
         Map<Integer, List<Integer>> uncachedNodes = nodeRepository.findUncachedNodes();
 
@@ -136,6 +241,12 @@ public class NodeCacheService {
         }
     }
 
+    /**
+     * Vytvoření nových záznamů podle identifikátorů JP v aktuální podobně.
+     *
+     * @param nodeIds seznam identifikátorů JP
+     * @return seznam cache databázových objektů
+     */
     private List<ArrCachedNode> createCachedNodes(final List<Integer> nodeIds) {
         List<ArrCachedNode> result = new ArrayList<>(nodeIds.size());
 
@@ -151,7 +262,6 @@ public class NodeCacheService {
             }
             items.add(descItem);
         }
-
 
         List<ArrNodeRegister> nodeRegisters = nodeRegisterRepository.findByNodeIdInAndDeleteChangeIsNull(nodeIds);
 
@@ -179,8 +289,8 @@ public class NodeCacheService {
 
         for (Integer nodeId : nodeIds) {
             ArrCachedNode cachedNode = new ArrCachedNode();
-            ArrNode node = nodeRepository.getOne(nodeId);
-            cachedNode.setNode(node);
+            //ArrNode node = nodeRepository.getOne(nodeId);
+            cachedNode.setNodeId(nodeId);
             CachedNode cn = new CachedNode(nodeId);
             cn.setDescItems(nodeIdItems.get(nodeId));
             cn.setNodeRegisters(nodeIdNodeRegisters.get(nodeId));
@@ -192,30 +302,12 @@ public class NodeCacheService {
         return result;
     }
 
-    public CachedNode getNode(final Integer nodeId) {
-        readLock.lock();
-        try {
-            logger.debug(">getNode(nodeId:" + nodeId + ")");
-            CachedNode nodeInternal = getNodeInternal(nodeId);
-            logger.debug("<getNode(nodeId:" + nodeId + ")");
-            return nodeInternal;
-        } finally {
-            readLock.unlock();
-        }
-    }
-
-    public Map<Integer, CachedNode> getNodes(final Collection<Integer> nodeIds) {
-        readLock.lock();
-        try {
-            logger.debug(">getNodes(nodeIds:" + nodeIds + ")");
-            Map<Integer, CachedNode> nodesInternal = getNodesInternal(nodeIds);
-            logger.debug("<getNodes(nodeIds:" + nodeIds + ")");
-            return nodesInternal;
-        } finally {
-            readLock.unlock();
-        }
-    }
-
+    /**
+     * Získání sestavené cachované JP.
+     *
+     * @param nodeId identifikátor JP
+     * @return JP
+     */
     private CachedNode getNodeInternal(final Integer nodeId) {
         ArrCachedNode cachedNode = cachedNodeRepository.findOneByNodeId(nodeId);
         CachedNode result = deserialize(cachedNode.getData());
@@ -223,6 +315,12 @@ public class NodeCacheService {
         return result;
     }
 
+    /**
+     * Získání sestavených cachovaných JP.
+     *
+     * @param nodeIds identifikátory JP
+     * @return seznam JP
+     */
     private Map<Integer, CachedNode> getNodesInternal(final Collection<Integer> nodeIds) {
         List<ArrCachedNode> cachedNodes = cachedNodeRepository.findByNodeIdIn(nodeIds);
         Map<Integer, CachedNode> result = new HashMap<>(cachedNodes.size());
@@ -233,35 +331,181 @@ public class NodeCacheService {
         return result;
     }
 
+    /**
+     * Metoda projde předané JP a provede donačtené návazných entit.
+     *
+     * @param cachedNodes seznam JP, kterým se doplňují návazné entity
+     */
     private void reloadCachedNodes(final Collection<CachedNode> cachedNodes) {
 
         Map<ArrDescItem, Integer> itemTypesMap = new HashMap<>();
         Map<ArrDescItem, Integer> itemSpecsMap = new HashMap<>();
-
         Map<ArrDescItem, Integer> itemPacketsMap = new HashMap<>();
+        Map<ArrDescItem, Integer> itemPartiesMap = new HashMap<>();
+        Map<ArrDescItem, Integer> itemRecordsMap = new HashMap<>();
+        Map<ArrDescItem, Integer> itemFilesMap = new HashMap<>();
+        Map<ArrDaoLink, Integer> daoLinksMap = new HashMap<>();
+        Map<ArrNodeRegister, Integer> nodeRegistersMap = new HashMap<>();
 
         for (CachedNode cachedNode : cachedNodes) {
-            for (ArrDescItem descItem : cachedNode.getDescItems()) {
-                if (descItem.getItemTypeId() != null) {
-                    itemTypesMap.put(descItem, descItem.getItemTypeId());
-                }
-                if (descItem.getItemSpecId() != null) {
-                    itemSpecsMap.put(descItem, descItem.getItemSpecId());
-                }
+            if (CollectionUtils.isNotEmpty(cachedNode.getDescItems())) {
+                for (ArrDescItem descItem : cachedNode.getDescItems()) {
+                    if (descItem.getItemTypeId() != null) {
+                        itemTypesMap.put(descItem, descItem.getItemTypeId());
+                    }
 
-                if (descItem.getItem() instanceof ArrItemPacketRef) {
-                    itemPacketsMap.put(descItem, ((ArrItemPacketRef) descItem.getItem()).getPacketId());
-                }
+                    if (descItem.getItemSpecId() != null) {
+                        itemSpecsMap.put(descItem, descItem.getItemSpecId());
+                    }
 
+                    if (descItem.getItem() instanceof ArrItemPacketRef) {
+                        itemPacketsMap.put(descItem, ((ArrItemPacketRef) descItem.getItem()).getPacketId());
+                    } else if (descItem.getItem() instanceof ArrItemPartyRef) {
+                        itemPartiesMap.put(descItem, ((ArrItemPartyRef) descItem.getItem()).getPartyId());
+                    } else if (descItem.getItem() instanceof ArrItemRecordRef) {
+                        itemRecordsMap.put(descItem, ((ArrItemRecordRef) descItem.getItem()).getRecordId());
+                    } else if (descItem.getItem() instanceof ArrItemFileRef) {
+                        itemFilesMap.put(descItem, ((ArrItemFileRef) descItem.getItem()).getFileId());
+                    }
+                }
+            }
+            if (CollectionUtils.isNotEmpty(cachedNode.getDaoLinks())) {
+                for (ArrDaoLink daoLink : cachedNode.getDaoLinks()) {
+                    daoLinksMap.put(daoLink, daoLink.getDaoId());
+                }
+            }
+            if (CollectionUtils.isNotEmpty(cachedNode.getNodeRegisters())) {
+                for (ArrNodeRegister nodeRegister : cachedNode.getNodeRegisters()) {
+                    nodeRegistersMap.put(nodeRegister, nodeRegister.getRecordId());
+                }
             }
         }
 
         fillRulItemTypes(itemTypesMap);
         fillRulItemSpecs(itemSpecsMap);
         fillArrPackets(itemPacketsMap);
+        fillParParties(itemPartiesMap);
+        fillRegRecords(itemRecordsMap);
+        fillArrFiles(itemFilesMap);
+        fillArrDaoLinks(daoLinksMap);
+        fillArrNodeRegisters(nodeRegistersMap);
     }
 
+    /**
+     * Vyplnění návazných entity {@link RegRecord}.
+     *
+     * @param nodeRegistersMap mapa entit k vyplnění
+     */
+    private void fillArrNodeRegisters(final Map<ArrNodeRegister, Integer> nodeRegistersMap) {
+        if (nodeRegistersMap.size() == 0) {
+            return;
+        }
+        List<RegRecord> records = regRecordRepository.findAll(nodeRegistersMap.values());
+        Map<Integer, RegRecord> recordsMapFound = new HashMap<>();
+        for (RegRecord record : records) {
+            recordsMapFound.put(record.getRecordId(), record);
+        }
+
+        for (Map.Entry<ArrNodeRegister, Integer> entry : nodeRegistersMap.entrySet()) {
+            ArrNodeRegister nodeRegister = entry.getKey();
+            nodeRegister.setRecord(recordsMapFound.get(entry.getValue()));
+        }
+    }
+
+    /**
+     * Vyplnění návazných entity {@link ArrDao}.
+     *
+     * @param daoLinksMap mapa entit k vyplnění
+     */
+    private void fillArrDaoLinks(final Map<ArrDaoLink, Integer> daoLinksMap) {
+        if (daoLinksMap.size() == 0) {
+            return;
+        }
+        List<ArrDao> daos = daoRepository.findAll(daoLinksMap.values());
+        Map<Integer, ArrDao> daosMapFound = new HashMap<>();
+        for (ArrDao dao : daos) {
+            daosMapFound.put(dao.getDaoId(), dao);
+        }
+
+        for (Map.Entry<ArrDaoLink, Integer> entry : daoLinksMap.entrySet()) {
+            ArrDaoLink daoLink = entry.getKey();
+            daoLink.setDao(daosMapFound.get(entry.getValue()));
+        }
+    }
+
+    /**
+     * Vyplnění návazných entity {@link ArrFile}.
+     *
+     * @param itemFilesMap mapa entit k vyplnění
+     */
+    private void fillArrFiles(final Map<ArrDescItem, Integer> itemFilesMap) {
+        if (itemFilesMap.size() == 0) {
+            return;
+        }
+        List<ArrFile> files = fundFileRepository.findAll(itemFilesMap.values());
+        Map<Integer, ArrFile> itemFilesMapFound = new HashMap<>();
+        for (ArrFile file : files) {
+            itemFilesMapFound.put(file.getFileId(), file);
+        }
+
+        for (Map.Entry<ArrDescItem, Integer> entry : itemFilesMap.entrySet()) {
+            ArrDescItem descItem = entry.getKey();
+            ((ArrItemFileRef) descItem.getItem()).setFile(itemFilesMapFound.get(entry.getValue()));
+        }
+    }
+
+
+    /**
+     * Vyplnění návazných entity {@link RegRecord}.
+     *
+     * @param itemRecordsMap mapa entit k vyplnění
+     */
+    private void fillRegRecords(final Map<ArrDescItem, Integer> itemRecordsMap) {
+        if (itemRecordsMap.size() == 0) {
+            return;
+        }
+        List<RegRecord> records = regRecordRepository.findAll(itemRecordsMap.values());
+        Map<Integer, RegRecord> recordsMapFound = new HashMap<>();
+        for (RegRecord record : records) {
+            recordsMapFound.put(record.getRecordId(), record);
+        }
+
+        for (Map.Entry<ArrDescItem, Integer> entry : itemRecordsMap.entrySet()) {
+            ArrDescItem descItem = entry.getKey();
+            ((ArrItemRecordRef) descItem.getItem()).setRecord(recordsMapFound.get(entry.getValue()));
+        }
+    }
+
+    /**
+     * Vyplnění návazných entity {@link ParParty}.
+     *
+     * @param itemPartiesMap mapa entit k vyplnění
+     */
+    private void fillParParties(final Map<ArrDescItem, Integer> itemPartiesMap) {
+        if (itemPartiesMap.size() == 0) {
+            return;
+        }
+        List<ParParty> parties = partyRepository.findAll(itemPartiesMap.values());
+        Map<Integer, ParParty> partiesMapFound = new HashMap<>();
+        for (ParParty party : parties) {
+            partiesMapFound.put(party.getPartyId(), party);
+        }
+
+        for (Map.Entry<ArrDescItem, Integer> entry : itemPartiesMap.entrySet()) {
+            ArrDescItem descItem = entry.getKey();
+            ((ArrItemPartyRef) descItem.getItem()).setParty(partiesMapFound.get(entry.getValue()));
+        }
+    }
+
+    /**
+     * Vyplnění návazných entity {@link ArrPacket}.
+     *
+     * @param itemPacketsMap mapa entit k vyplnění
+     */
     private void fillArrPackets(final Map<ArrDescItem, Integer> itemPacketsMap) {
+        if (itemPacketsMap.size() == 0) {
+            return;
+        }
         List<ArrPacket> packets = packetRepository.findAll(itemPacketsMap.values());
         Map<Integer, ArrPacket> packetsMapFound = new HashMap<>();
         for (ArrPacket packet : packets) {
@@ -274,7 +518,15 @@ public class NodeCacheService {
         }
     }
 
+    /**
+     * Vyplnění návazných entity {@link RulItemSpec}.
+     *
+     * @param itemSpecsMap mapa entit k vyplnění
+     */
     private void fillRulItemSpecs(final Map<ArrDescItem, Integer> itemSpecsMap) {
+        if (itemSpecsMap.size() == 0) {
+            return;
+        }
         List<RulItemSpec> itemSpecs = itemSpecRepository.findAll(itemSpecsMap.values());
         Map<Integer, RulItemSpec> itemSpecsMapFound = new HashMap<>();
         for (RulItemSpec itemSpec : itemSpecs) {
@@ -287,7 +539,15 @@ public class NodeCacheService {
         }
     }
 
+    /**
+     * Vyplnění návazných entity {@link RulItemType}.
+     *
+     * @param itemTypesMap mapa entit k vyplnění
+     */
     private void fillRulItemTypes(final Map<ArrDescItem, Integer> itemTypesMap) {
+        if (itemTypesMap.size() == 0) {
+            return;
+        }
         List<RulItemType> itemTypes = itemTypeRepository.findAll(itemTypesMap.values());
         Map<Integer, RulItemType> itemTypesMapFound = new HashMap<>();
         for (RulItemType itemType : itemTypes) {
@@ -300,50 +560,53 @@ public class NodeCacheService {
         }
     }
 
-    public void createNode(final Integer nodeId) {
-        readLock.lock();
-        try {
-            logger.debug(">createNode(nodeId:" + nodeId + ")");
-            createNodeInternal(nodeId);
-            logger.debug("<createNode(nodeId:" + nodeId + ")");
-        } finally {
-            readLock.unlock();
+    /**
+     * Uložení záznamů.
+     *
+     * @param cachedNodes seznam ukládaných objektů
+     */
+    private void saveNodesInternal(final Collection<CachedNode> cachedNodes) {
+        Map<Integer, CachedNode> cachedNodeMap = new HashMap<>(cachedNodes.size());
+        for (CachedNode cachedNode : cachedNodes) {
+            cachedNodeMap.put(cachedNode.getNodeId(), cachedNode);
         }
+
+        List<ArrCachedNode> records = cachedNodeRepository.findByNodeIdIn(cachedNodeMap.keySet());
+
+        if (records.size() != cachedNodes.size()) {
+            throw new SystemException("Počet ukládaných JP neodpovídá počtu nalezených v cache!")
+                    .set("saveCount", cachedNodes.size())
+                    .set("foundCount", records.size());
+        }
+
+        for (ArrCachedNode record : records) {
+            record.setData(serialize(cachedNodeMap.get(record.getNodeId())));
+        }
+        cachedNodeRepository.save(records);
     }
 
-    private void createNodeInternal(final Integer nodeId) {
-
+    /**
+     * Založení nových záznamů v cache pro JP.
+     *
+     * @param cachedNodes seznam zakládaných objektů
+     */
+    private void createNodesInternal(final Collection<CachedNode> cachedNodes) {
+        List<ArrCachedNode> records = new ArrayList<>(cachedNodes.size());
+        for (CachedNode cachedNode : cachedNodes) {
+            ArrCachedNode record = new ArrCachedNode();
+            record.setNodeId(cachedNode.getNodeId());
+            record.setData(serialize(cachedNode));
+            records.add(record);
+        }
+        cachedNodeRepository.save(records);
     }
 
-/*
-    public CachedNode changeNode() {
-        return null;
-    }
-
-    public void deleteNode() {
-
-    }
-
-    public CachedNode createAttribute() {
-        return null;
-    }
-
-    public CachedNode changeAttribute() {
-        return null;
-    }
-
-    public void deleteAttribute() {
-
-    }
-
-    public CachedNode changeRegisterLink() {
-        return null;
-    }
-
-    public CachedNode changeDaoLink() {
-        return null;
-    }*/
-
+    /**
+     * Serializace objektu.
+     *
+     * @param cachedNode serializovaný objekt
+     * @return výsledek serializace
+     */
     private String serialize(final CachedNode cachedNode) {
         try {
             return mapper.writeValueAsString(cachedNode);
@@ -352,6 +615,12 @@ public class NodeCacheService {
         }
     }
 
+    /**
+     * Deserializace objektu.
+     *
+     * @param data serializovaný objekt
+     * @return sestavený objekt
+     */
     private CachedNode deserialize(final String data) {
         try {
             return mapper.readValue(data, CachedNode.class);
@@ -360,23 +629,25 @@ public class NodeCacheService {
         }
     }
 
-    public static class InterfaceVisibilityChecker extends VisibilityChecker.Std {
+    /**
+     * Třída pro serializaci potřebných objektů.
+     */
+    private static class InterfaceVisibilityChecker extends VisibilityChecker.Std {
 
+        /**
+         * Seznam tříd, které se můžou serializovat.
+         */
         private final Set<Class> classes;
 
-        public InterfaceVisibilityChecker(Class<?>... clazzes) {
+        public InterfaceVisibilityChecker(final Class<?>... clazzes) {
             super(JsonAutoDetect.Visibility.PUBLIC_ONLY);
             classes = new HashSet<>();
             Collections.addAll(classes, clazzes);
-            classes.add(String.class);
-            classes.add(Number.class);
-            classes.add(Boolean.class);
-            classes.add(Iterable.class);
         }
 
         @Override
         public boolean isGetterVisible(Method m) {
-            for (Class aClass1 : classes) {
+            for (Class<?> aClass1 : classes) {
                 if (aClass1.isAssignableFrom(m.getReturnType())) {
                     return true;
                 }

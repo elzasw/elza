@@ -29,4 +29,8 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="20170131084500" author="slapa">
+        <addUniqueConstraint columnNames="node_id" tableName="arr_cached_node"/>
+    </changeSet>
+
 </databaseChangeLog>

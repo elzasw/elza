@@ -29,11 +29,11 @@ public class ArrCachedNode implements Serializable {
     @GeneratedValue
     private Integer cachedNodeId;
 
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrNode.class)
+    /*@ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrNode.class)
     @JoinColumn(name = "nodeId", nullable = false)
-    private ArrNode node;
+    private ArrNode node;*/
 
-    @Column(insertable = false, updatable = false)
+    @Column(updatable = false)
     private Integer nodeId;
 
     @Lob
@@ -49,19 +49,23 @@ public class ArrCachedNode implements Serializable {
         this.cachedNodeId = cachedNodeId;
     }
 
-    public ArrNode getNode() {
+    /*public ArrNode getNode() {
         return node;
-    }
+    }*/
 
-    public void setNode(final ArrNode node) {
+    /*public void setNode(final ArrNode node) {
         this.node = node;
         if (node != null) {
             nodeId = node.getNodeId();
         }
-    }
+    }*/
 
     public Integer getNodeId() {
         return nodeId;
+    }
+
+    public void setNodeId(final Integer nodeId) {
+        this.nodeId = nodeId;
     }
 
     public String getData() {
@@ -78,21 +82,21 @@ public class ArrCachedNode implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
         ArrCachedNode that = (ArrCachedNode) o;
         return Objects.equals(cachedNodeId, that.cachedNodeId) &&
-                Objects.equals(node, that.node) &&
+                //Objects.equals(node, that.node) &&
                 Objects.equals(nodeId, that.nodeId) &&
                 Objects.equals(data, that.data);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(cachedNodeId, node, nodeId, data);
+        return Objects.hash(cachedNodeId, /*node, */nodeId, data);
     }
 
     @Override
     public String toString() {
         return "ArrCachedNode{" +
                 "cachedNodeId=" + cachedNodeId +
-                ", node=" + node +
+                //", node=" + node +
                 ", nodeId=" + nodeId +
                 ", data='" + data + '\'' +
                 '}';

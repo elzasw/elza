@@ -92,7 +92,7 @@ public class DescItemReader {
                 levelDescItems = descItemsMap.get(level.getNodeId());
             //}
             List<DescItem> items = ModelFactory.createDescItems(levelDescItems,
-            		descItemTypesForPackets, descItemTypesForIntegers, descItemFactory, version.getLockChange() == null);
+            		descItemTypesForPackets, descItemTypesForIntegers, descItemFactory, /*version.getLockChange() == null*/ false);
             level.setDescItems(items);
         }
 

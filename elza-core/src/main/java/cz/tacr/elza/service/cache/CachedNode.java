@@ -72,4 +72,11 @@ public class CachedNode implements NodeCacheSerializable {
     public void setDaoLinks(final List<ArrDaoLink> daoLinks) {
         this.daoLinks = daoLinks;
     }
+
+    @Override
+    public String toString() {
+        return "CachedNode{" +
+                "nodeId=" + nodeId +
+                '}';
+    }
 }
