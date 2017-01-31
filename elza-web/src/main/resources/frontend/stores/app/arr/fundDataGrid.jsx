@@ -111,8 +111,9 @@ export default function fundDataGrid(state = initialState, action = {}) {
             }
         }
         case types.FUND_FUND_DATA_GRID_INIT: {
-            let visibleColumns;
-                visibleColumns = {}
+            let visibleColumns = {};
+            let columnInfos = {};
+
             // Pokud visible column již jsou, nechají se, jinak se inicializují z akce, kde jsou implcitní nastavené v pravidlech
             if (state.visibleColumns && Object.keys(state.visibleColumns) > 0) {    // je definovaný
                 visibleColumns = state.visibleColumns;
@@ -123,10 +124,20 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 })
             }
 
+            // Pokud je informace o sloupcích již jsou, nechají se, jinak se inicializují z akce, kde jsou nastavené v pravidlech
+            if (state.columnInfos && Object.keys(state.columnInfos) > 0) {    // je definovaný
+                columnInfos = state.columnInfos;
+            } else {    // není definováno, vezmeme z nastavení v pravidlech
+                columnInfos = action.initData.columnInfos || {};
+            }
+
+            // ---
+
             return {
                 ...state,
                 initialised: true,
-                visibleColumns: visibleColumns,
+                visibleColumns,
+                columnInfos,
                 currentDataKey: '',
                 isFetchingFilter: false,
                 fetchedFilter: false,

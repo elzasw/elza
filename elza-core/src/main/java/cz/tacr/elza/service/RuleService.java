@@ -597,10 +597,11 @@ public class RuleService {
         List<UISettings> gridViews = settingsService.getGlobalSettings(UISettings.SettingsType.GRID_VIEW, UISettings.EntityType.RULE);
 
         for (UISettings gridView : gridViews) {
-            if (gridView.getRulPackage().getPackageId().equals(ruleSet.getPackage().getPackageId()));
-            SettingGridView view = (SettingGridView) packageService.convertSetting(gridView);
-            if (CollectionUtils.isNotEmpty(view.getItemTypes())) {
-                return view.getItemTypes();
+            if (gridView.getRulPackage().getPackageId().equals(ruleSet.getPackage().getPackageId())) {
+                SettingGridView view = (SettingGridView) packageService.convertSetting(gridView);
+                if (CollectionUtils.isNotEmpty(view.getItemTypes())) {
+                    return view.getItemTypes();
+                }
             }
         }
 
