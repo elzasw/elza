@@ -1071,7 +1071,7 @@ public class PackageService {
         parComplementType.setRulPackage(rulPackage);
         parComplementType.setCode(complementType.getCode());
         parComplementType.setName(complementType.getName());
-        parComplementType.setViewOrder(parComplementType.getViewOrder());
+        parComplementType.setViewOrder(complementType.getViewOrder());
     }
 
     /**
