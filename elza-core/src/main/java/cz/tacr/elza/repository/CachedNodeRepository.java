@@ -19,4 +19,6 @@ public interface CachedNodeRepository extends ElzaJpaRepository<ArrCachedNode, I
     ArrCachedNode findOneByNodeId(Integer nodeId);
 
     List<ArrCachedNode> findByNodeIdIn(Collection<Integer> nodeIds);
+
+    void deleteByNodeIdIn(Collection<Integer> nodeIds);
 }

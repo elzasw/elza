@@ -187,6 +187,7 @@ public abstract class ArrItem implements NodeCacheSerializable {
      */
     public void setItemType(final RulItemType itemType) {
         this.itemType = itemType;
+        this.itemTypeId = itemType == null ? null : itemType.getItemTypeId();
     }
 
     /**

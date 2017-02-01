@@ -1,5 +1,6 @@
 package cz.tacr.elza.drools.service;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -73,26 +74,26 @@ public class DescItemReader {
         Map<Integer, List<ArrDescItem>> descItemsMap = null;
         Map<Integer, CachedNode> cachedNodes = null;
 
-        //if (version.getLockChange() == null) {
-        //    Collection<Integer> nodeIds = new ArrayList<>(nodes.size());
-        //    for (ArrNode node : nodes) {
-        //        nodeIds.add(node.getNodeId());
-        //    }
-        //    cachedNodes = nodeCacheService.getNodes(nodeIds);
-        //} else {
+        if (version.getLockChange() == null) {
+            Collection<Integer> nodeIds = new ArrayList<>(nodes.size());
+            for (ArrNode node : nodes) {
+                nodeIds.add(node.getNodeId());
+            }
+            cachedNodes = nodeCacheService.getNodes(nodeIds);
+        } else {
             List<ArrDescItem> descItems = descItemRepository.findByNodes(nodes, version.getLockChange());
             descItemsMap = ElzaTools.createGroupMap(descItems, p -> p.getNode().getNodeId());
-        //}
+        }
 
         for (Level level : levels) {
             List<ArrDescItem> levelDescItems;
-            //if (version.getLockChange() == null) {
-            //    levelDescItems = cachedNodes.get(level.getNodeId()).getDescItems();
-            //} else {
+            if (version.getLockChange() == null) {
+                levelDescItems = cachedNodes.get(level.getNodeId()).getDescItems();
+            } else {
                 levelDescItems = descItemsMap.get(level.getNodeId());
-            //}
+            }
             List<DescItem> items = ModelFactory.createDescItems(levelDescItems,
-            		descItemTypesForPackets, descItemTypesForIntegers, descItemFactory, /*version.getLockChange() == null*/ false);
+            		descItemTypesForPackets, descItemTypesForIntegers, descItemFactory, version.getLockChange() == null);
             level.setDescItems(items);
         }
 

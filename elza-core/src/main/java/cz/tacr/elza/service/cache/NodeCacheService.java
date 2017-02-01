@@ -15,6 +15,7 @@ import cz.tacr.elza.domain.ArrItemFileRef;
 import cz.tacr.elza.domain.ArrItemPacketRef;
 import cz.tacr.elza.domain.ArrItemPartyRef;
 import cz.tacr.elza.domain.ArrItemRecordRef;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParParty;
@@ -36,6 +37,7 @@ import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.service.ItemService;
 import org.apache.commons.collections.CollectionUtils;
+import org.castor.core.util.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -214,6 +216,50 @@ public class NodeCacheService {
         }
     }
 
+
+    /**
+     * Uložení záznamu.
+     *
+     * @param cachedNode ukládaný objekt
+     */
+    @Transactional
+    public void saveNode(final CachedNode cachedNode) {
+        readLock.lock();
+        try {
+            logger.debug(">saveNode(" + cachedNode + ")");
+            saveNodeInternal(cachedNode);
+            logger.debug("<saveNode(" + cachedNode + ")");
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    /**
+     * Odstranění JP.
+     *
+     * @param nodeIds seznam identifikátorů mazaných JP
+     */
+    @Transactional
+    public void deleteNodes(final Collection<Integer> nodeIds) {
+        readLock.lock();
+        try {
+            logger.debug(">deleteNodes(" + nodeIds + ")");
+            deleteNodesInternal(nodeIds);
+            logger.debug("<deleteNodes(" + nodeIds + ")");
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    /**
+     * Odstranění JP.
+     *
+     * @param nodeIds seznam identifikátorů mazaných JP
+     */
+    private void deleteNodesInternal(final Collection<Integer> nodeIds) {
+        cachedNodeRepository.deleteByNodeIdIn(nodeIds);
+    }
+
     /**
      * Synchronizace záznamů v databázi.
      */
@@ -309,6 +355,7 @@ public class NodeCacheService {
      * @return JP
      */
     private CachedNode getNodeInternal(final Integer nodeId) {
+        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
         ArrCachedNode cachedNode = cachedNodeRepository.findOneByNodeId(nodeId);
         CachedNode result = deserialize(cachedNode.getData());
         reloadCachedNodes(Collections.singletonList(result));
@@ -348,8 +395,11 @@ public class NodeCacheService {
         Map<ArrNodeRegister, Integer> nodeRegistersMap = new HashMap<>();
 
         for (CachedNode cachedNode : cachedNodes) {
+            ArrNode node = nodeRepository.getOne(cachedNode.getNodeId());
             if (CollectionUtils.isNotEmpty(cachedNode.getDescItems())) {
                 for (ArrDescItem descItem : cachedNode.getDescItems()) {
+                    descItem.setNode(node);
+
                     if (descItem.getItemTypeId() != null) {
                         itemTypesMap.put(descItem, descItem.getItemTypeId());
                     }
@@ -581,8 +631,18 @@ public class NodeCacheService {
 
         for (ArrCachedNode record : records) {
             record.setData(serialize(cachedNodeMap.get(record.getNodeId())));
+            cachedNodeRepository.saveAndFlush(record);
         }
-        cachedNodeRepository.save(records);
+    }
+
+
+    /**
+     * Uložení záznamu.
+     *
+     * @param cachedNode ukládaný objekt
+     */
+    private void saveNodeInternal(final CachedNode cachedNode) {
+        saveNodesInternal(Collections.singletonList(cachedNode));
     }
 
     /**

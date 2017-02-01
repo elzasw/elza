@@ -143,6 +143,8 @@ public abstract class AbstractTest {
     protected GroupRepository groupRepository;
     @Autowired
     private UtilsTest utilsTest;
+    @Autowired
+    private CachedNodeRepository cachedNodeRepository;
 
     @Autowired
     protected ExternalSystemRepository externalSystemRepository;
@@ -230,7 +232,7 @@ public abstract class AbstractTest {
     }
 
     protected void deleteTables() {
-        // TODO: dopsat vsechny potrebne tabulky
+        cachedNodeRepository.deleteAll();
         permissionRepository.deleteAll();
         groupUserRepository.deleteAll();
         groupRepository.deleteAll();

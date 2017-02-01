@@ -206,6 +206,9 @@ public class ArrangementService {
     @Autowired
     private RevertingChangesService revertingChangesService;
 
+    @Autowired
+    private ArrangementCacheService arrangementCacheService;
+
     /**
      * Vytvoření archivního souboru.
      *
@@ -441,7 +444,9 @@ public class ArrangementService {
         node.setLastUpdate(createChange.getChangeDate());
         node.setUuid(generateUuid());
         node.setFund(fund);
-        return nodeRepository.save(node);
+        nodeRepository.save(node);
+        arrangementCacheService.createNode(node.getNodeId());
+        return node;
     }
 
     public ArrNode createNode(final String uuid,
@@ -454,7 +459,9 @@ public class ArrangementService {
         node.setLastUpdate(change.getChangeDate());
         node.setUuid(uuid);
         node.setFund(fund);
-        return nodeRepository.save(node);
+        nodeRepository.save(node);
+        arrangementCacheService.createNode(node.getNodeId());
+        return node;
     }
 
     /**
@@ -575,6 +582,7 @@ public class ArrangementService {
         nodeConformityInfoRepository.findByNode(node).forEach(conformityInfo -> {
             deleteConformityInfo(conformityInfo);
         });
+        arrangementCacheService.deleteNode(node.getNodeId());
         nodeRepository.delete(node);
 
         dmsService.deleteFilesByFund(fund);
@@ -681,6 +689,11 @@ public class ArrangementService {
         Set<ArrNode> nodesToDelete = new HashSet<>();
         deleteLevelCascadeForce(rootLevel, nodesToDelete);
 
+        List<Integer> nodeIds = new ArrayList<>(nodesToDelete.size());
+        for (ArrNode node : nodesToDelete) {
+            nodeIds.add(node.getNodeId());
+        }
+        arrangementCacheService.deleteNodes(nodeIds);
         nodesToDelete.forEach(this::deleteNodeForce);
     }
 
@@ -888,11 +901,12 @@ public class ArrangementService {
             List<ArrDescItem> nodeDescItems = descItemRepository.findOpenByNodeAndTypes(level.getNode(), typeSet);
 
             if (CollectionUtils.isNotEmpty(nodeDescItems)) {
+                List<Integer> descItemObjectIdsDeleted = new ArrayList<>(nodeDescItems.size());
                 for (ArrDescItem nodeDescItem : nodeDescItems) {
-                    descriptionItemService.deleteDescriptionItem(nodeDescItem, version, change, false);
+                    descItemObjectIdsDeleted.add(descriptionItemService.deleteDescriptionItem(nodeDescItem, version, change, false).getDescItemObjectId());
                 }
+                arrangementCacheService.deleteDescItems(nodeDescItems.get(0).getNodeId(), descItemObjectIdsDeleted);
             }
-
 
             descriptionItemService
                     .copyDescItemWithDataToNode(level.getNode(), siblingDescItems, change, version);

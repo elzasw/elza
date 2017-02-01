@@ -127,6 +127,9 @@ public class RegistryService {
     @Autowired
     private PackageService packageService;
 
+    @Autowired
+    private ArrangementCacheService arrangementCacheService;
+
     /**
      * Kody tříd rejstříků nastavené v konfiguraci elzy.
      */
@@ -634,7 +637,11 @@ public class RegistryService {
         nodeRegister.setNode(node);
         nodeRegister.setCreateChange(change);
         eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FUND_RECORD_CHANGE, versionId, nodeRegister.getNode().getNodeId(), nodeRegister.getNode().getVersion()));
-        return nodeRegisterRepository.save(nodeRegister);
+
+        nodeRegisterRepository.saveAndFlush(nodeRegister);
+        arrangementCacheService.createNodeRegister(nodeId, nodeRegister);
+
+        return nodeRegister;
     }
 
     /**
@@ -673,7 +680,10 @@ public class RegistryService {
         nodeRegister.setRecord(nodeRegister.getRecord());
         nodeRegister.setCreateChange(change);
         eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FUND_RECORD_CHANGE, versionId, nodeRegister.getNode().getNodeId(), nodeRegister.getNode().getVersion()));
-        return nodeRegisterRepository.save(nodeRegister);
+
+        nodeRegisterRepository.save(nodeRegister);
+        arrangementCacheService.changeNodeRegister(nodeId, nodeRegisterDB, nodeRegister);
+        return nodeRegister;
     }
 
     /**
@@ -705,7 +715,10 @@ public class RegistryService {
         nodeRegisterDB.setDeleteChange(change);
 
         eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FUND_RECORD_CHANGE, versionId, node.getNodeId(), node.getVersion()));
-        return nodeRegisterRepository.save(nodeRegisterDB);
+
+        nodeRegisterRepository.save(nodeRegisterDB);
+        arrangementCacheService.deleteNodeRegister(nodeId, nodeRegisterDB.getNodeRegisterId());
+        return nodeRegisterDB;
     }
 
     /**

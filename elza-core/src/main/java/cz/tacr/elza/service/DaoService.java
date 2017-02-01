@@ -89,6 +89,8 @@ public class DaoService {
     @Autowired
     private DaoFileGroupRepository daoFileGroupRepository;
 
+    @Autowired
+    private ArrangementCacheService arrangementCacheService;
 
     /**
      * Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní jednotku popisu (JP) nebo nemá žádné napojení (pouze pod archivní souborem (AS)).
@@ -160,6 +162,8 @@ public class DaoService {
             logger.debug("Založeno nové propojení mezi DAO(ID=" + dao.getDaoId() + ") a node(ID=" + node.getNodeId() + ").");
             resultDaoLink = daoLinkRepository.save(daoLink);
 
+            arrangementCacheService.createDaoLink(daoLink.getNodeId(), resultDaoLink);
+
             // poslat i websockety o připojení
             EventIdNodeIdInVersion event = new EventIdNodeIdInVersion(EventType.DAO_LINK_CREATE, fundVersion.getFundVersionId(),
                     dao.getDaoId(), Collections.singletonList(node.getNodeId()));
@@ -209,6 +213,11 @@ public class DaoService {
         final ArrDaoLink resultDaoLink = daoLinkRepository.save(daoLink);
 
         for (ArrFundVersion arrFundVersion : fundVersionList) {
+
+            if (arrFundVersion.getLockChange() == null) {
+                arrangementCacheService.deleteDaoLink(daoLink.getNodeId(), daoLink.getDaoLinkId());
+            }
+
             // poslat websockety o odpojení
             EventIdNodeIdInVersion event = new EventIdNodeIdInVersion(EventType.DAO_LINK_DELETE, arrFundVersion.getFundVersionId(),
                     daoLink.getDao().getDaoId(), Collections.singletonList(daoLink.getNode().getNodeId()));
