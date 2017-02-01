@@ -17,6 +17,7 @@ import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.events.EventFunds;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -91,6 +92,9 @@ public class RevertingChangesService {
 
     @Autowired
     private DescriptionItemService descriptionItemService;
+
+    @Autowired
+    private NodeCacheService nodeCacheService;
 
     /**
      * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.
@@ -285,6 +289,7 @@ public class RevertingChangesService {
         deleteNotUseChangesQuery.executeUpdate();
 
         Set<Integer> deleteNodeIds = getNodeIdsToDelete();
+        nodeCacheService.deleteNodes(deleteNodeIds);
 
         Query deleteNotUseNodesQuery = createDeleteNotUseNodesQuery();
         deleteNotUseNodesQuery.executeUpdate();

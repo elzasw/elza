@@ -145,6 +145,24 @@ public class NodeCacheService {
     }
 
     /**
+     * Synchronizace požadovaných JP.
+     *
+     * @param nodeIds seznam požadovaných JP k synchronizaci
+     */
+    @Async("syncCacheTaskExecutor")
+    @Transactional
+    public void syncNodes(final Collection<Integer> nodeIds) {
+        writeLock.lock();
+        try {
+            logger.debug(">syncNodes(nodeIds:" + nodeIds + ")");
+            syncNodesInternal(nodeIds);
+            logger.debug(">syncNodes(nodeIds:" + nodeIds + ")");
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    /**
      * Získání sestavené cachované JP.
      *
      * @param nodeId identifikátor JP
@@ -241,13 +259,30 @@ public class NodeCacheService {
      */
     @Transactional
     public void deleteNodes(final Collection<Integer> nodeIds) {
-        readLock.lock();
+        writeLock.lock();
         try {
             logger.debug(">deleteNodes(" + nodeIds + ")");
             deleteNodesInternal(nodeIds);
             logger.debug("<deleteNodes(" + nodeIds + ")");
         } finally {
-            readLock.unlock();
+            writeLock.unlock();
+        }
+    }
+
+    /**
+     * Synchronizace požadovaných JP.
+     *
+     * @param nodeIds seznam požadovaných JP k synchronizaci
+     */
+    private void syncNodesInternal(final Collection<Integer> nodeIds) {
+        List<ArrCachedNode> cachedNodes = cachedNodeRepository.findByNodeIdIn(nodeIds);
+
+        logger.debug("Synchronizace požadovaných JP: " + cachedNodes.size());
+        int i = 0;
+        for (List<ArrCachedNode> partCachedNodes : Lists.partition(cachedNodes, SYNC_BATCH_NODE_SIZE)) {
+            i++;
+            logger.debug("Sestavuji JP " + ((i - 1) * SYNC_BATCH_NODE_SIZE + 1) + "-" + ((i * SYNC_BATCH_NODE_SIZE) < nodeIds.size() ? (i * SYNC_BATCH_NODE_SIZE) : nodeIds.size()));
+            cachedNodeRepository.save(updateCachedNodes(partCachedNodes));
         }
     }
 
@@ -258,6 +293,7 @@ public class NodeCacheService {
      */
     private void deleteNodesInternal(final Collection<Integer> nodeIds) {
         cachedNodeRepository.deleteByNodeIdIn(nodeIds);
+        cachedNodeRepository.flush();
     }
 
     /**
@@ -296,42 +332,9 @@ public class NodeCacheService {
     private List<ArrCachedNode> createCachedNodes(final List<Integer> nodeIds) {
         List<ArrCachedNode> result = new ArrayList<>(nodeIds.size());
 
-        List<ArrDescItem> descItems = descItemRepository.findByNodeIdsAndDeleteChangeIsNull(nodeIds);
-        itemService.loadData(descItems);
-
-        Map<Integer, List<ArrDescItem>> nodeIdItems = new HashMap<>();
-        for (ArrDescItem descItem : descItems) {
-            List<ArrDescItem> items = nodeIdItems.get(descItem.getNodeId());
-            if (items == null) {
-                items = new ArrayList<>();
-                nodeIdItems.put(descItem.getNodeId(), items);
-            }
-            items.add(descItem);
-        }
-
-        List<ArrNodeRegister> nodeRegisters = nodeRegisterRepository.findByNodeIdInAndDeleteChangeIsNull(nodeIds);
-
-        Map<Integer, List<ArrNodeRegister>> nodeIdNodeRegisters = new HashMap<>();
-        for (ArrNodeRegister nodeRegister : nodeRegisters) {
-            List<ArrNodeRegister> registers = nodeIdNodeRegisters.get(nodeRegister.getNodeId());
-            if (registers == null) {
-                registers = new ArrayList<>();
-                nodeIdNodeRegisters.put(nodeRegister.getNodeId(), registers);
-            }
-            registers.add(nodeRegister);
-        }
-
-        List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdInAndDeleteChangeIsNull(nodeIds);
-
-        Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = new HashMap<>();
-        for (ArrDaoLink daoLink : daoLinks) {
-            List<ArrDaoLink> links = nodeIdDaoLinks.get(daoLink.getNodeId());
-            if (links == null) {
-                links = new ArrayList<>();
-                nodeIdDaoLinks.put(daoLink.getNodeId(), links);
-            }
-            links.add(daoLink);
-        }
+        Map<Integer, List<ArrDescItem>> nodeIdItems = createNodeDescItemMap(nodeIds);
+        Map<Integer, List<ArrNodeRegister>> nodeIdNodeRegisters = createNodeNodeRegisterMap(nodeIds);
+        Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = createNodeDaoLinkMap(nodeIds);
 
         for (Integer nodeId : nodeIds) {
             ArrCachedNode cachedNode = new ArrCachedNode();
@@ -346,6 +349,80 @@ public class NodeCacheService {
         }
 
         return result;
+    }
+
+    /**
+     *
+     * @param cachedNodes
+     * @return
+     */
+    private List<ArrCachedNode> updateCachedNodes(final List<ArrCachedNode> cachedNodes) {
+        Map<Integer, ArrCachedNode> nodeCachedNodes = new HashMap<>();
+        for (ArrCachedNode cachedNode : cachedNodes) {
+            nodeCachedNodes.put(cachedNode.getNodeId(), cachedNode);
+        }
+
+        Set<Integer> nodeIds = nodeCachedNodes.keySet();
+        Map<Integer, List<ArrDescItem>> nodeIdItems = createNodeDescItemMap(nodeIds);
+        Map<Integer, List<ArrNodeRegister>> nodeIdNodeRegisters = createNodeNodeRegisterMap(nodeIds);
+        Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = createNodeDaoLinkMap(nodeIds);
+
+        for (Map.Entry<Integer, ArrCachedNode> entry : nodeCachedNodes.entrySet()) {
+            Integer nodeId = entry.getKey();
+            CachedNode cn = new CachedNode(nodeId);
+            cn.setDescItems(nodeIdItems.get(nodeId));
+            cn.setNodeRegisters(nodeIdNodeRegisters.get(nodeId));
+            cn.setDaoLinks(nodeIdDaoLinks.get(nodeId));
+            entry.getValue().setData(serialize(cn));
+        }
+
+        return cachedNodes;
+    }
+
+    private Map<Integer, List<ArrDaoLink>> createNodeDaoLinkMap(final Collection<Integer> nodeIds) {
+        List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdInAndDeleteChangeIsNull(nodeIds);
+
+        Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = new HashMap<>();
+        for (ArrDaoLink daoLink : daoLinks) {
+            List<ArrDaoLink> links = nodeIdDaoLinks.get(daoLink.getNodeId());
+            if (links == null) {
+                links = new ArrayList<>();
+                nodeIdDaoLinks.put(daoLink.getNodeId(), links);
+            }
+            links.add(daoLink);
+        }
+        return nodeIdDaoLinks;
+    }
+
+    private Map<Integer, List<ArrNodeRegister>> createNodeNodeRegisterMap(final Collection<Integer> nodeIds) {
+        List<ArrNodeRegister> nodeRegisters = nodeRegisterRepository.findByNodeIdInAndDeleteChangeIsNull(nodeIds);
+
+        Map<Integer, List<ArrNodeRegister>> nodeIdNodeRegisters = new HashMap<>();
+        for (ArrNodeRegister nodeRegister : nodeRegisters) {
+            List<ArrNodeRegister> registers = nodeIdNodeRegisters.get(nodeRegister.getNodeId());
+            if (registers == null) {
+                registers = new ArrayList<>();
+                nodeIdNodeRegisters.put(nodeRegister.getNodeId(), registers);
+            }
+            registers.add(nodeRegister);
+        }
+        return nodeIdNodeRegisters;
+    }
+
+    private Map<Integer, List<ArrDescItem>> createNodeDescItemMap(final Collection<Integer> nodeIds) {
+        List<ArrDescItem> descItems = descItemRepository.findByNodeIdsAndDeleteChangeIsNull(nodeIds);
+        itemService.loadData(descItems);
+
+        Map<Integer, List<ArrDescItem>> nodeIdItems = new HashMap<>();
+        for (ArrDescItem descItem : descItems) {
+            List<ArrDescItem> items = nodeIdItems.get(descItem.getNodeId());
+            if (items == null) {
+                items = new ArrayList<>();
+                nodeIdItems.put(descItem.getNodeId(), items);
+            }
+            items.add(descItem);
+        }
+        return nodeIdItems;
     }
 
     /**
