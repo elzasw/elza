@@ -28,6 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -237,6 +239,9 @@ public class RevertingChangesService {
         // zastavení probíhajících výpočtů pro validaci uzlů u verzí
         stopConformityInfFundVersions(fund);
 
+        Query nodeIdsQuery = findChangeNodeIdsQuery(fund, node, toChange);
+        Set<Integer> nodeIdsChange = new HashSet<>(nodeIdsQuery.getResultList());
+
         Query updateEntityQuery;
         Query deleteEntityQuery;
 
@@ -289,6 +294,15 @@ public class RevertingChangesService {
         deleteNotUseChangesQuery.executeUpdate();
 
         Set<Integer> deleteNodeIds = getNodeIdsToDelete();
+        nodeIdsChange.removeAll(deleteNodeIds);
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                nodeCacheService.syncNodes(nodeIdsChange);
+            }
+        });
+
         nodeCacheService.deleteNodes(deleteNodeIds);
 
         Query deleteNotUseNodesQuery = createDeleteNotUseNodesQuery();
@@ -620,6 +634,37 @@ public class RevertingChangesService {
 
         String hqlSubSelect = String.format("SELECT i FROM %1$s i WHERE %2$s IN (%3$s)", table, changeNameColumn, nodesHql);
         String hql = String.format("DELETE FROM %1$s WHERE %2$s IN (%3$s)", subTable, joinNameColumn, hqlSubSelect);
+
+        Query query = entityManager.createQuery(hql);
+
+        // nastavení parametrů dotazu
+        query.setParameter("fund", fund);
+        query.setParameter("change", change);
+        if (node != null) {
+            query.setParameter("node", node);
+        }
+
+        return query;
+    }
+
+    private Query findChangeNodeIdsQuery(@NotNull final ArrFund fund,
+                                         @Nullable final ArrNode node,
+                                         @NotNull final ArrChange change) {
+        String[][] tables = new String[][]{
+                {"arr_level", "node"},
+                {"arr_node_register", "node"},
+                {"arr_dao_link", "node"},
+                {"arr_desc_item", "node"},
+        };
+
+        List<String> hqls = new ArrayList<>();
+        for (String[] table : tables) {
+            String nodesHql = createHQLFindChanges("createChange", table[0], createHqlSubNodeQuery(fund, node));
+            String hql = String.format("SELECT i.nodeId FROM %1$s i WHERE %2$s IN (%3$s)", table[0], "createChange", nodesHql);
+            hqls.add(hql);
+        }
+
+        String hql = "SELECT DISTINCT n.nodeId FROM arr_node n WHERE n.nodeId IN (" + String.join(") OR n.nodeId IN (", hqls) + ")";
 
         Query query = entityManager.createQuery(hql);
 
