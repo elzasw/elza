@@ -13,6 +13,7 @@ require ('./FixedDropDownButton.less');
 var FixedDropDownButton = class FixedDropDownButton extends AbstractReactComponent {
     constructor(props) {
         super(props);
+        this.bindMethods("setSizes");
         this.state = {marginSide: 0, marginTop: 0};
     }
 
