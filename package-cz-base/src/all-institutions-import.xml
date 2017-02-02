@@ -1085,13 +1085,13 @@
     <party-list>
         <party-group party-id="CZ000000010" record-id="r-CZ000000010">
             <institution internal-code="000000010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Achivní správa Ministerstva vnitra České republiky</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>AS MV ČR</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1099,13 +1099,13 @@
         </party-group>
         <party-group party-id="CZ100000010" record-id="r-CZ100000010">
             <institution internal-code="100000010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Národní archiv</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Národní archiv</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1113,13 +1113,13 @@
         </party-group>
         <party-group party-id="CZ211000010" record-id="r-CZ211000010">
             <institution internal-code="211000010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní oblastní archiv v Praze</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOA v Praze</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1127,13 +1127,13 @@
         </party-group>
         <party-group party-id="CZ212000010" record-id="r-CZ212000010">
             <institution internal-code="212000010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní oblastní archiv v Třeboni</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOA v Třeboni</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1141,13 +1141,13 @@
         </party-group>
         <party-group party-id="CZ213000010" record-id="r-CZ213000010">
             <institution internal-code="213000010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní oblastní archiv v Plzni</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOA v Plzni</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1155,13 +1155,13 @@
         </party-group>
         <party-group party-id="CZ214000010" record-id="r-CZ214000010">
             <institution internal-code="214000010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní oblastní archiv v Litoměřicích</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOA v Litoměřicích</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1169,13 +1169,13 @@
         </party-group>
         <party-group party-id="CZ215000010" record-id="r-CZ215000010">
             <institution internal-code="215000010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní oblastní archiv v Zámrsku</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOA v Zámrsku</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1183,13 +1183,13 @@
         </party-group>
         <party-group party-id="CZ216000010" record-id="r-CZ216000010">
             <institution internal-code="216000010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Moravský zemský archiv v Brně</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>MZA v Brně</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1197,13 +1197,13 @@
         </party-group>
         <party-group party-id="CZ217000010" record-id="r-CZ217000010">
             <institution internal-code="217000010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Zemský archiv v Opavě</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>ZA v Opavě</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1211,13 +1211,13 @@
         </party-group>
         <party-group party-id="CZ321100010" record-id="r-CZ321100010">
             <institution internal-code="321100010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv hlavního města Prahy</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>AHMP</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1225,13 +1225,13 @@
         </party-group>
         <party-group party-id="CZ323103010" record-id="r-CZ323103010">
             <institution internal-code="323103010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv města Plzně</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>AM Plzně</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1239,13 +1239,13 @@
         </party-group>
         <party-group party-id="CZ324107010" record-id="r-CZ324107010">
             <institution internal-code="324107010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv města Ústí nad Labem</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>AM Ústí nad Labem</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1253,13 +1253,13 @@
         </party-group>
         <party-group party-id="CZ326202010" record-id="r-CZ326202010">
             <institution internal-code="326202010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv města Brna</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>AM Brna</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1267,13 +1267,13 @@
         </party-group>
         <party-group party-id="CZ327206010" record-id="r-CZ327206010">
             <institution internal-code="327206010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv města Ostravy</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>AM Ostravy</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1281,13 +1281,13 @@
         </party-group>
         <party-group party-id="CZ221201010" record-id="r-CZ221201010">
             <institution internal-code="221201010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Benešov</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Benešov</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1295,13 +1295,13 @@
         </party-group>
         <party-group party-id="CZ221202010" record-id="r-CZ221202010">
             <institution internal-code="221202010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Beroun</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Beroun</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1309,13 +1309,13 @@
         </party-group>
         <party-group party-id="CZ221203010" record-id="r-CZ221203010">
             <institution internal-code="221203010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Kladno</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Kladno</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1323,13 +1323,13 @@
         </party-group>
         <party-group party-id="CZ221204010" record-id="r-CZ221204010">
             <institution internal-code="221204010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Kolín</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Kolín</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1337,13 +1337,13 @@
         </party-group>
         <party-group party-id="CZ221205010" record-id="r-CZ221205010">
             <institution internal-code="221205010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Kutná Hora</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Kutná Hora</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1351,13 +1351,13 @@
         </party-group>
         <party-group party-id="CZ221206010" record-id="r-CZ221206010">
             <institution internal-code="221206010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Mělník</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Mělník</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1365,13 +1365,13 @@
         </party-group>
         <party-group party-id="CZ221207010" record-id="r-CZ221207010">
             <institution internal-code="221207010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Mladá Boleslav</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Mladá Boleslav</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1379,13 +1379,13 @@
         </party-group>
         <party-group party-id="CZ221208010" record-id="r-CZ221208010">
             <institution internal-code="221208010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Nymburk se sídlem v Lysé nad Labem</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Nymburk</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1393,13 +1393,13 @@
         </party-group>
         <party-group party-id="CZ221209010" record-id="r-CZ221209010">
             <institution internal-code="221209010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Praha-východ se sídlem v Přemyšlení</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Praha-východ</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1407,13 +1407,13 @@
         </party-group>
         <party-group party-id="CZ221210010" record-id="r-CZ221210010">
             <institution internal-code="221210010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Praha-západ se sídlem v Dobřichovicích</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Praha-západ</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1421,13 +1421,13 @@
         </party-group>
         <party-group party-id="CZ221211010" record-id="r-CZ221211010">
             <institution internal-code="221211010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Příbram</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Příbram</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1435,13 +1435,13 @@
         </party-group>
         <party-group party-id="CZ221212010" record-id="r-CZ221212010">
             <institution internal-code="221212010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Rakovník</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Rakovník</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1449,13 +1449,13 @@
         </party-group>
         <party-group party-id="CZ222101010" record-id="r-CZ222101010">
             <institution internal-code="222101010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv České Budějovice</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Čes. Budějovice</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1463,13 +1463,13 @@
         </party-group>
         <party-group party-id="CZ222102010" record-id="r-CZ222102010">
             <institution internal-code="222102010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Český Krumlov</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Český Krumlov</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1477,13 +1477,13 @@
         </party-group>
         <party-group party-id="CZ222103010" record-id="r-CZ222103010">
             <institution internal-code="222103010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Jindřichův Hradec</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Jindřichův Hradec</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1491,13 +1491,13 @@
         </party-group>
         <party-group party-id="CZ222104010" record-id="r-CZ222104010">
             <institution internal-code="222104010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Písek</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Písek</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1505,13 +1505,13 @@
         </party-group>
         <party-group party-id="CZ222105010" record-id="r-CZ222105010">
             <institution internal-code="222105010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Prachatice</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Prachatice</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1519,13 +1519,13 @@
         </party-group>
         <party-group party-id="CZ222106010" record-id="r-CZ222106010">
             <institution internal-code="222106010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Strakonice</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Strakonice</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1533,13 +1533,13 @@
         </party-group>
         <party-group party-id="CZ222107010" record-id="r-CZ222107010">
             <institution internal-code="222107010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Tábor</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Tábor</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1547,13 +1547,13 @@
         </party-group>
         <party-group party-id="CZ223101010" record-id="r-CZ223101010">
             <institution internal-code="223101010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Domažlice se sídlem v Horšovském Týně</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Domažlice</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1561,13 +1561,13 @@
         </party-group>
         <party-group party-id="CZ223201010" record-id="r-CZ223201010">
             <institution internal-code="223201010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Cheb</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Cheb</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1575,13 +1575,13 @@
         </party-group>
         <party-group party-id="CZ223202010" record-id="r-CZ223202010">
             <institution internal-code="223202010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Karlovy Vary</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Karlovy Vary</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1589,13 +1589,13 @@
         </party-group>
         <party-group party-id="CZ223102010" record-id="r-CZ223102010">
             <institution internal-code="223102010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Klatovy</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Klatovy</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1603,13 +1603,13 @@
         </party-group>
         <party-group party-id="CZ223104010" record-id="r-CZ223104010">
             <institution internal-code="223104010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Plzeň-jih se sídlem v Blovicích</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Plzeň-jih</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1617,13 +1617,13 @@
         </party-group>
         <party-group party-id="CZ223105010" record-id="r-CZ223105010">
             <institution internal-code="223105010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Plzeň-sever se sídlem v Plasích</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Plzeň-sever</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1631,13 +1631,13 @@
         </party-group>
         <party-group party-id="CZ223106010" record-id="r-CZ223106010">
             <institution internal-code="223106010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Rokycany</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Rokycany</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1645,13 +1645,13 @@
         </party-group>
         <party-group party-id="CZ223203010" record-id="r-CZ223203010">
             <institution internal-code="223203010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Sokolov se sídlem v Jindřichovicích</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Sokolov</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1659,13 +1659,13 @@
         </party-group>
         <party-group party-id="CZ223107010" record-id="r-CZ223107010">
             <institution internal-code="223107010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Tachov</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Tachov</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1673,13 +1673,13 @@
         </party-group>
         <party-group party-id="CZ224201010" record-id="r-CZ224201010">
             <institution internal-code="224201010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Česká Lípa</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Česká Lípa</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1687,13 +1687,13 @@
         </party-group>
         <party-group party-id="CZ224101010" record-id="r-CZ224101010">
             <institution internal-code="224101010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Děčín</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Děčín</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1701,13 +1701,13 @@
         </party-group>
         <party-group party-id="CZ224102010" record-id="r-CZ224102010">
             <institution internal-code="224102010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Chomutov se sídlem v Kadani</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Chomutov</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1715,13 +1715,13 @@
         </party-group>
         <party-group party-id="CZ224202010" record-id="r-CZ224202010">
             <institution internal-code="224202010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Jablonec nad Nisou</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Jablonec nad N.</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1729,13 +1729,13 @@
         </party-group>
         <party-group party-id="CZ224203010" record-id="r-CZ224203010">
             <institution internal-code="224203010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Liberec</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Liberec</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1743,13 +1743,13 @@
         </party-group>
         <party-group party-id="CZ224103010" record-id="r-CZ224103010">
             <institution internal-code="224103010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Litoměřice se sídlem v Lovosicích</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Litoměřice</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1757,13 +1757,13 @@
         </party-group>
         <party-group party-id="CZ224104010" record-id="r-CZ224104010">
             <institution internal-code="224104010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Louny</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Louny</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1771,13 +1771,13 @@
         </party-group>
         <party-group party-id="CZ224105010" record-id="r-CZ224105010">
             <institution internal-code="224105010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Most</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Most</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1785,13 +1785,13 @@
         </party-group>
         <party-group party-id="CZ224106010" record-id="r-CZ224106010">
             <institution internal-code="224106010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Teplice</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Teplice</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1799,13 +1799,13 @@
         </party-group>
         <party-group party-id="CZ225101010" record-id="r-CZ225101010">
             <institution internal-code="225101010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Hradec Králové</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Hradec Králové</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1813,13 +1813,13 @@
         </party-group>
         <party-group party-id="CZ225201010" record-id="r-CZ225201010">
             <institution internal-code="225201010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Chrudim</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Chrudim</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1827,13 +1827,13 @@
         </party-group>
         <party-group party-id="CZ225102010" record-id="r-CZ225102010">
             <institution internal-code="225102010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Jičín</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Jičín</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1841,13 +1841,13 @@
         </party-group>
         <party-group party-id="CZ225103010" record-id="r-CZ225103010">
             <institution internal-code="225103010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Náchod</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Náchod</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1855,13 +1855,13 @@
         </party-group>
         <party-group party-id="CZ225202010" record-id="r-CZ225202010">
             <institution internal-code="225202010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Pardubice</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Pardubice</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1869,13 +1869,13 @@
         </party-group>
         <party-group party-id="CZ225104010" record-id="r-CZ225104010">
             <institution internal-code="225104010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Rychnov nad Kněžnou</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Rychnov nad Kn.</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1883,13 +1883,13 @@
         </party-group>
         <party-group party-id="CZ225203010" record-id="r-CZ225203010">
             <institution internal-code="225203010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Svitavy se sídlem v Litomyšli</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Svitavy</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1897,13 +1897,13 @@
         </party-group>
         <party-group party-id="CZ225105010" record-id="r-CZ225105010">
             <institution internal-code="225105010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Trutnov</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Trutnov</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1911,13 +1911,13 @@
         </party-group>
         <party-group party-id="CZ225204010" record-id="r-CZ225204010">
             <institution internal-code="225204010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Ústí nad Orlicí</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Ústí nad Orlicí</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1925,13 +1925,13 @@
         </party-group>
         <party-group party-id="CZ226201010" record-id="r-CZ226201010">
             <institution internal-code="226201010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Blansko</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Blansko</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1939,13 +1939,13 @@
         </party-group>
         <party-group party-id="CZ226203010" record-id="r-CZ226203010">
             <institution internal-code="226203010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Brno-venkov se sídlem v Rajhradě</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Brno-venkov</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1953,13 +1953,13 @@
         </party-group>
         <party-group party-id="CZ226204010" record-id="r-CZ226204010">
             <institution internal-code="226204010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Břeclav se sídlem v Mikulově</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Břeclav</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1967,13 +1967,13 @@
         </party-group>
         <party-group party-id="CZ226304010" record-id="r-CZ226304010">
             <institution internal-code="226304010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Zlín</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Zlín</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1981,13 +1981,13 @@
         </party-group>
         <party-group party-id="CZ226205010" record-id="r-CZ226205010">
             <institution internal-code="226205010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Hodonín</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Hodonín</main-part>
                 </variant-name>
             </variant-name-list>
@@ -1995,13 +1995,13 @@
         </party-group>
         <party-group party-id="CZ226102010" record-id="r-CZ226102010">
             <institution internal-code="226102010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Jihlava</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Jihlava</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2009,13 +2009,13 @@
         </party-group>
         <party-group party-id="CZ226301010" record-id="r-CZ226301010">
             <institution internal-code="226301010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Kroměříž</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Kroměříž</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2023,13 +2023,13 @@
         </party-group>
         <party-group party-id="CZ226104010" record-id="r-CZ226104010">
             <institution internal-code="226104010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Třebíč</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Třebíč</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2037,13 +2037,13 @@
         </party-group>
         <party-group party-id="CZ226302010" record-id="r-CZ226302010">
             <institution internal-code="226302010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Uherské Hradiště</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Uherské Hradiště</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2051,13 +2051,13 @@
         </party-group>
         <party-group party-id="CZ226206010" record-id="r-CZ226206010">
             <institution internal-code="226206010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Vyškov se sídlem ve Slavkově u Brna</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Vyškov</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2065,13 +2065,13 @@
         </party-group>
         <party-group party-id="CZ226207010" record-id="r-CZ226207010">
             <institution internal-code="226207010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Znojmo</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Znojmo</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2079,13 +2079,13 @@
         </party-group>
         <party-group party-id="CZ226105010" record-id="r-CZ226105010">
             <institution internal-code="226105010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Žďár nad Sázavou</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Žďár nad Sázavou</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2093,13 +2093,13 @@
         </party-group>
         <party-group party-id="CZ227201010" record-id="r-CZ227201010">
             <institution internal-code="227201010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Bruntál se sídlem v Krnově</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Bruntál</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2107,13 +2107,13 @@
         </party-group>
         <party-group party-id="CZ227202010" record-id="r-CZ227202010">
             <institution internal-code="227202010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Frýdek-Místek</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Frýdek-Místek</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2121,13 +2121,13 @@
         </party-group>
         <party-group party-id="CZ227203010" record-id="r-CZ227203010">
             <institution internal-code="227203010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Karviná</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Karviná</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2135,13 +2135,13 @@
         </party-group>
         <party-group party-id="CZ227204010" record-id="r-CZ227204010">
             <institution internal-code="227204010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Nový Jičín</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Nový Jičín</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2149,13 +2149,13 @@
         </party-group>
         <party-group party-id="CZ227102010" record-id="r-CZ227102010">
             <institution internal-code="227102010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Olomouc</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Olomouc</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2163,13 +2163,13 @@
         </party-group>
         <party-group party-id="CZ227205010" record-id="r-CZ227205010">
             <institution internal-code="227205010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Opava</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Opava</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2177,13 +2177,13 @@
         </party-group>
         <party-group party-id="CZ227104010" record-id="r-CZ227104010">
             <institution internal-code="227104010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Přerov</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Přerov</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2191,13 +2191,13 @@
         </party-group>
         <party-group party-id="CZ227105010" record-id="r-CZ227105010">
             <institution internal-code="227105010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Šumperk</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Šumperk</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2205,13 +2205,13 @@
         </party-group>
         <party-group party-id="CZ227101010" record-id="r-CZ227101010">
             <institution internal-code="227101010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Jeseník</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Jeseník</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2219,13 +2219,13 @@
         </party-group>
         <party-group party-id="CZ610000010" record-id="r-CZ610000010">
             <institution internal-code="610000010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Kanceláře prezidenta republiky</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv KPR</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2233,13 +2233,13 @@
         </party-group>
         <party-group party-id="CZ610000020" record-id="r-CZ610000020">
             <institution internal-code="610000020" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Pražského hradu</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv Pražského hradu</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2247,13 +2247,13 @@
         </party-group>
         <party-group party-id="CZ610000030" record-id="r-CZ610000030">
             <institution internal-code="610000030" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Odbor administrativy a zpracování informací MZV - Archiv MZV</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv MZV Praha</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2261,13 +2261,13 @@
         </party-group>
         <party-group party-id="CZ610000040" record-id="r-CZ610000040">
             <institution internal-code="610000040" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Vojenský historický archiv</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>VHA Praha</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2275,13 +2275,13 @@
         </party-group>
         <party-group party-id="CZ610000050" record-id="r-CZ610000050">
             <institution internal-code="610000050" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Českého rozhlasu</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv ČRO</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2289,13 +2289,13 @@
         </party-group>
         <party-group party-id="CZ610000060" record-id="r-CZ610000060">
             <institution internal-code="610000060" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv České televize</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv České televize</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2303,13 +2303,13 @@
         </party-group>
         <party-group party-id="CZ610000070" record-id="r-CZ610000070">
             <institution internal-code="610000070" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Akademie věd České republiky</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv AV ČR</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2317,13 +2317,13 @@
         </party-group>
         <party-group party-id="CZ610000080" record-id="r-CZ610000080">
             <institution internal-code="610000080" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Poslanecké sněmovny</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv PS</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2331,13 +2331,13 @@
         </party-group>
         <party-group party-id="CZ620000010" record-id="r-CZ620000010">
             <institution internal-code="620000010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Ústav dějin Univerzity Karlovy – Archiv Univerzity Karlovy</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv UK Praha</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2345,13 +2345,13 @@
         </party-group>
         <party-group party-id="CZ620000020" record-id="r-CZ620000020">
             <institution internal-code="620000020" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Českého vysokého učení technického v Praze</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv ČVUT Praha</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2359,13 +2359,13 @@
         </party-group>
         <party-group party-id="CZ630000010" record-id="r-CZ630000010">
             <institution internal-code="630000010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Národního muzea</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>ANM</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2373,13 +2373,13 @@
         </party-group>
         <party-group party-id="CZ630000020" record-id="r-CZ630000020">
             <institution internal-code="630000020" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Literární archiv Památníku národního písemnictví</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>LA PNP Praha</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2387,13 +2387,13 @@
         </party-group>
         <party-group party-id="CZ610000110" record-id="r-CZ610000110">
             <institution internal-code="610000110" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Ústřední archiv zeměměřictví a katastru</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>ÚA ZAK Praha</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2401,13 +2401,13 @@
         </party-group>
         <party-group party-id="CZ610000130" record-id="r-CZ610000130">
             <institution internal-code="610000130" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Národní filmový archiv</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>NFA Praha</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2415,13 +2415,13 @@
         </party-group>
         <party-group party-id="CZ620000030" record-id="r-CZ620000030">
             <institution internal-code="620000030" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Masarykovy univerzity v Brně</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv AMU Brno</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2429,13 +2429,13 @@
         </party-group>
         <party-group party-id="CZ620000040" record-id="r-CZ620000040">
             <institution internal-code="620000040" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Vysokého učení technického v Brně</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv VUT Brno</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2443,13 +2443,13 @@
         </party-group>
         <party-group party-id="CZ630000040" record-id="r-CZ630000040">
             <institution internal-code="630000040" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Národní galerie</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv NG Praha</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2457,13 +2457,13 @@
         </party-group>
         <party-group party-id="CZ630000050" record-id="r-CZ630000050">
             <institution internal-code="630000050" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Národní knihovny</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv NK Praha</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2471,13 +2471,13 @@
         </party-group>
         <party-group party-id="CZ640000010" record-id="r-CZ640000010">
             <institution internal-code="640000010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv DIAMO</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv DIAMO</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2485,13 +2485,13 @@
         </party-group>
         <party-group party-id="CZ700000020" record-id="r-CZ700000020">
             <institution internal-code="700000020" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Bezpečnostní informační služby</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv BIS</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2499,13 +2499,13 @@
         </party-group>
         <party-group party-id="CZ521100010" record-id="r-CZ521100010">
             <institution internal-code="521100010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Všeodborový archiv Českomoravské konfederace odborových svazů</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Všeodborový archiv</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2513,13 +2513,13 @@
         </party-group>
         <party-group party-id="CZ630000060" record-id="r-CZ630000060">
             <institution internal-code="630000060" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Národního technického muzea</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv NTM v Praze</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2527,13 +2527,13 @@
         </party-group>
         <party-group party-id="CZ521100030" record-id="r-CZ521100030">
             <institution internal-code="521100030" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Židovského muzea v Praze</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv ŽM v Praze</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2541,13 +2541,13 @@
         </party-group>
         <party-group party-id="CZ610000100" record-id="r-CZ610000100">
             <institution internal-code="610000100" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv České národní banky</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv ČNB</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2555,13 +2555,13 @@
         </party-group>
         <party-group party-id="CZ226103010" record-id="r-CZ226103010">
             <institution internal-code="226103010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Pelhřimov</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Pelhřimov</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2569,13 +2569,13 @@
         </party-group>
         <party-group party-id="CZ226101010" record-id="r-CZ226101010">
             <institution internal-code="226101010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Havlíčkův Brod</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Havlíčkův Brod</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2583,13 +2583,13 @@
         </party-group>
         <party-group party-id="CZ226303010" record-id="r-CZ226303010">
             <institution internal-code="226303010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Vsetín</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Vsetín</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2597,13 +2597,13 @@
         </party-group>
         <party-group party-id="CZ224204010" record-id="r-CZ224204010">
             <institution internal-code="224204010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Semily</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Semily</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2611,13 +2611,13 @@
         </party-group>
         <party-group party-id="CZ227103010" record-id="r-CZ227103010">
             <institution internal-code="227103010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Státní okresní archiv Prostějov</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>SOkA Prostějov</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2625,13 +2625,13 @@
         </party-group>
         <party-group party-id="CZ610000090" record-id="r-CZ610000090">
             <institution internal-code="610000090" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Senátu</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv Senátu</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2639,13 +2639,13 @@
         </party-group>
         <party-group party-id="CZ700000030" record-id="r-CZ700000030">
             <institution internal-code="700000030" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Úřadu pro zahraniční styky a informace</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv ÚZI</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2653,13 +2653,13 @@
         </party-group>
         <party-group party-id="CZ521100020" record-id="r-CZ521100020">
             <institution internal-code="521100020" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv České strany sociálně demokratické</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv ČSSD</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2667,13 +2667,13 @@
         </party-group>
         <party-group party-id="CZ700000040" record-id="r-CZ700000040">
             <institution internal-code="700000040" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Národního bezpečnostního úřadu</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv NBÚ</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2681,13 +2681,13 @@
         </party-group>
         <party-group party-id="CZ620000050" record-id="r-CZ620000050">
             <institution internal-code="620000050" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Univerzity Hradec Králové</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv UHK</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2695,13 +2695,13 @@
         </party-group>
         <party-group party-id="CZ513103010" record-id="r-CZ513103010">
             <institution internal-code="513103010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv společnosti Plzeňský Prazdroj, a.s.</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Plzeňský Prazdroj</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2709,13 +2709,13 @@
         </party-group>
         <party-group party-id="CZ620000060" record-id="r-CZ620000060">
             <institution internal-code="620000060" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Univerzity Palackého v Olomouci</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv UP Olomouc</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2723,13 +2723,13 @@
         </party-group>
         <party-group party-id="CZ517206010" record-id="r-CZ517206010">
             <institution internal-code="517206010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv OKD a. s. , Ostrava</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv OKD</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2737,13 +2737,13 @@
         </party-group>
         <party-group party-id="CZ517206020" record-id="r-CZ517206020">
             <institution internal-code="517206020" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Vítkovice, a.s.</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv Vítkovice</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2751,13 +2751,13 @@
         </party-group>
         <party-group party-id="CZ517206040" record-id="r-CZ517206040">
             <institution internal-code="517206040" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv ArcelorMittal Ostrava a. s.</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv ArcelorMittal</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2765,13 +2765,13 @@
         </party-group>
         <party-group party-id="CZ620000070" record-id="r-CZ620000070">
             <institution internal-code="620000070" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Akademie výtvarných umění v Praze</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv AVU Praha</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2779,13 +2779,13 @@
         </party-group>
         <party-group party-id="CZ630000070" record-id="r-CZ630000070">
             <institution internal-code="630000070" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Moravské galerie v Brně</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv MG v Brně</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2793,13 +2793,13 @@
         </party-group>
         <party-group party-id="CZ511207010" record-id="r-CZ511207010">
             <institution internal-code="511207010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv společnosti Škoda Auto</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv Škoda Auto</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2807,13 +2807,13 @@
         </party-group>
         <party-group party-id="CZ526101010" record-id="r-CZ526101010">
             <institution internal-code="526101010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Centra hasičského hnutí Přibyslav</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv CHH Přibyslav</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2821,13 +2821,13 @@
         </party-group>
         <party-group party-id="CZ513203010" record-id="r-CZ513203010">
             <institution internal-code="513203010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv společnosti Sokolovská uhelná a. s.</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Arch. Sokolovská uhel.</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2835,13 +2835,13 @@
         </party-group>
         <party-group party-id="CZ620000080" record-id="r-CZ620000080">
             <institution internal-code="620000080" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Vysoké školy báňské - Technické univerzity Ostrava</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv VŠB Ostrava</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2849,13 +2849,13 @@
         </party-group>
         <party-group party-id="CZ620000090" record-id="r-CZ620000090">
             <institution internal-code="620000090" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Slezské univerzity v Opavě</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv SU v Opavě</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2863,13 +2863,13 @@
         </party-group>
         <party-group party-id="CZ100000020" record-id="r-CZ100000020">
             <institution internal-code="100000020" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv bezpečnostních složek</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>ABS</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2877,13 +2877,13 @@
         </party-group>
         <party-group party-id="CZ620000100" record-id="r-CZ620000100">
             <institution internal-code="620000100" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Mendelovy univerzity v Brně</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv MENDELU</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2891,13 +2891,13 @@
         </party-group>
         <party-group party-id="CZ700000050" record-id="r-CZ700000050">
             <institution internal-code="700000050" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Bezpečnostní archiv Vojenského zpravodajství</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>BA Vojen.zpravodajství</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2905,13 +2905,13 @@
         </party-group>
         <party-group party-id="CZ700000060" record-id="r-CZ700000060">
             <institution internal-code="700000060" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Policie České republiky</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>BAP ČR</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2919,13 +2919,13 @@
         </party-group>
         <party-group party-id="CZ536000010" record-id="r-CZ536000010">
             <institution internal-code="536000010" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Biskupství brněnského</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>ABB</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2933,13 +2933,13 @@
         </party-group>
         <party-group party-id="CZ700000070" record-id="r-CZ700000070">
             <institution internal-code="700000070" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Ministerstva vnitra ČR</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>Archiv MV</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2947,13 +2947,13 @@
         </party-group>
         <party-group party-id="CZ610000140" record-id="r-CZ610000140">
             <institution internal-code="610000140" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Národního bezpečnostního úřadu - specializovaný</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>ANBU-S</main-part>
                 </variant-name>
             </variant-name-list>
@@ -2961,13 +2961,13 @@
         </party-group>
         <party-group party-id="CZ620000110" record-id="r-CZ620000110">
             <institution internal-code="620000110" type-code="DEFAULT"/>
-            <preferred-name party-name-form-type-code="3">
+            <preferred-name party-name-form-type-code="LEGAL">
                 <main-part>Archiv Veterinární a farmaceutické univerzity Brno</main-part>
                 <other-part></other-part>
                 <note></note>
             </preferred-name>
             <variant-name-list>
-                <variant-name party-name-form-type-code="2">
+                <variant-name party-name-form-type-code="ABBRV">
                     <main-part>AVFU Brno</main-part>
                 </variant-name>
             </variant-name-list>
