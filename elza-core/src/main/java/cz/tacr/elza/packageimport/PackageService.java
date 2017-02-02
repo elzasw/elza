@@ -1739,8 +1739,10 @@ public class PackageService {
 
         File[] files = dir.listFiles((dir1, name) -> name.endsWith(".bck"));
 
-        for (File file : files) {
-            file.delete();
+        if (files != null) {
+            for (File file : files) {
+                file.delete();
+            }
         }
     }
 
@@ -1753,12 +1755,14 @@ public class PackageService {
 
         File[] files = dir.listFiles((dir1, name) -> name.endsWith(".bck"));
 
-        for (File file : files) {
-            File fileMove = new File(StringUtils.stripEnd(file.getPath(), ".bck"));
-            if (fileMove.exists()) {
-                fileMove.delete();
+        if (files != null) {
+            for (File file : files) {
+                File fileMove = new File(StringUtils.stripEnd(file.getPath(), ".bck"));
+                if (fileMove.exists()) {
+                    fileMove.delete();
+                }
+                Files.move(file.toPath(), fileMove.toPath());
             }
-            Files.move(file.toPath(), fileMove.toPath());
         }
     }
 
