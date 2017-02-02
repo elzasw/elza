@@ -74,7 +74,7 @@
         <hierarchical>false</hierarchical>
         <add-record>true</add-record>
     </register-type>
-    <register-type code="FICTIVE_INDIVIDUAL" party-type="PERSON" parent-register-type="PERSON">
+    <register-type code="FICTIVE_INDIVIDUAL" parent-register-type="PERSON">
         <name>fiktivní fyzická osoba</name>
         <hierarchical>false</hierarchical>
         <add-record>true</add-record>
@@ -99,7 +99,7 @@
         <hierarchical>false</hierarchical>
         <add-record>true</add-record>
     </register-type>
-    <register-type code="FICTIVE_DYNASTY" party-type="DYNASTY" parent-register-type="PERSON">
+    <register-type code="FICTIVE_DYNASTY" parent-register-type="PERSON">
         <name>fiktivní rod</name>
         <hierarchical>false</hierarchical>
         <add-record>true</add-record>
