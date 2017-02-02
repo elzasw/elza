@@ -412,8 +412,19 @@ public class PackageService {
             RulPackage rulPackage = processRulPackage(packageInfo);
 
             dirActions = new File(bulkActionConfigManager.getFunctionsDir(rulPackage.getCode()));
+            if (!dirActions.exists()) {
+                dirActions.mkdirs();
+            }
+
             dirRules = new File(rulesExecutor.getDroolsDir(rulPackage.getCode()));
+            if (!dirRules.exists()) {
+                dirRules.mkdirs();
+            }
+
             dirTemplates = new File(outputGeneratorService.getTemplatesDir(rulPackage.getCode()));
+            if (!dirTemplates.exists()) {
+                dirTemplates.mkdirs();
+            }
 
             originalRulTemplates = templateRepository.findByRulPackage(rulPackage);
 
@@ -3165,3 +3176,4 @@ public class PackageService {
         this.testing = testing;
     }
 }
+
