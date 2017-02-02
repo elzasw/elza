@@ -84,6 +84,7 @@ var messages = {
     "exception.arr.EXISTS_BLOCKING_CHANGE": "Nelze provést revert, protože existuje blokující změna v JP",
     "exception.arr.BULK_ACTION_INTERRUPTED": "Hromadná akce '{code}' byla přerušena",
     "exception.arr.PARTY_NAME_FORM_TYPE_NOT_FOUND": "Typ formy jména neexistuje",
+    "exception.arr.INVALID_DAO": "Nelze připojit digitální entitu k JP, protože je nevalidní",
     "exception.arr.NOT_REPEATABLE": "Neopakovatelná položka",
 
     "exception.base.INSUFFICIENT_PERMISSIONS": "Nedostatečná oprávnění",
