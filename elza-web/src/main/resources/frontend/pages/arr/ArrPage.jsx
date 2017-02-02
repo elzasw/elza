@@ -113,7 +113,7 @@ class ArrPage extends ArrParentPage {
         let selected = tab.values['arr-as'];
         var activeFund = this.getActiveFund(nextProps);
         if (activeFund !== null) {
-            if (selected === 1) {
+            if (selected === 'visiblePolicies') {
                 this.dispatch(fundNodesPolicyFetchIfNeeded(activeFund.versionId));
             }
             if (nextProps.developer.enabled) {
@@ -722,7 +722,7 @@ class ArrPage extends ArrParentPage {
         var centerSettings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', activeFund.id);
         var settingsValues = settings.value ? JSON.parse(settings.value) : null;
         var centerSettingsValues = centerSettings.value ? JSON.parse(centerSettings.value) : null;
-        let selected = tab.values['arr-as'] && settingsValues[tab.values['arr-as']] ? tab.values['arr-as'] : null;        
+        let selected = tab.values['arr-as'] ? tab.values['arr-as'] : null;
         if(settings.value && (settings.value.indexOf("true")<0 || !centerSettingsValues.rightPanel))
         {
             return false;
