@@ -172,6 +172,7 @@ import cz.tacr.elza.repository.TemplateRepository;
 import cz.tacr.elza.repository.UIPartyGroupRepository;
 import cz.tacr.elza.service.CacheService;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
+import org.apache.commons.lang3.tuple.Pair;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.ActionEvent;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -777,20 +778,37 @@ public class PackageService {
                                               @NotNull final RulPackage rulPackage,
                                               @NotNull final List<ParRelationRoleType> parRelationRoleTypes,
                                               @NotNull final List<ParRelationType> parRelationTypes) {
+    	
         List<ParRelationTypeRoleType> parRelationTypeRoleTypes = relationTypeRoleTypeRepository.findByRulPackage(rulPackage);
         List<ParRelationTypeRoleType> parRelationTypeRoleTypesNew = new ArrayList<>();
 
-        if (relationTypeRoleTypes != null && !CollectionUtils.isEmpty(relationTypeRoleTypes.getRelationTypeRoleTypes())) {
-            for (RelationTypeRoleType relationTypeRoleType : relationTypeRoleTypes.getRelationTypeRoleTypes()) {
-                ParRelationTypeRoleType parRelationTypeRoleType = findEntity(parRelationTypeRoleTypes,
-                        relationTypeRoleType.getRelationType(), relationTypeRoleType.getRoleType(),
-                        i -> i.getRelationType().getCode(), i -> i.getRoleType().getCode());
-                if (parRelationTypeRoleType == null) {
-                    parRelationTypeRoleType = new ParRelationTypeRoleType();
-                }
-                convertParRelationTypeRoleTypes(rulPackage, relationTypeRoleType, parRelationTypeRoleType, parRelationTypes, parRelationRoleTypes);
-                parRelationTypeRoleTypesNew.add(parRelationTypeRoleType);
-            }
+        if (relationTypeRoleTypes != null)
+        {
+        	List<RelationTypeRoleType> types = relationTypeRoleTypes.getRelationTypeRoleTypes();
+        	if(types!=null)
+        	{        	
+        		// set to check if input items is not multiple times in collection
+        		Set<Pair<String,String>> uniqueRelations = new HashSet<>();
+        	
+        		for (RelationTypeRoleType relation : relationTypeRoleTypes.getRelationTypeRoleTypes()) {
+        			
+        			// Check if exists
+        			Pair<String, String> uniqueRelation = Pair.of(relation.getRelationType(), relation.getRoleType());
+        			if(!uniqueRelations.add(uniqueRelation)) {
+         				throw new BusinessException(PackageCode.PARSE_ERROR).set("code", uniqueRelation.getLeft() + ";" + uniqueRelation.getRight()).set("file", RELATION_TYPE_ROLE_TYPE_XML);
+        			}
+        			
+        			// Find in DB
+        			ParRelationTypeRoleType parRelationTypeRoleType = findEntity(parRelationTypeRoleTypes,
+        					relation.getRelationType(), relation.getRoleType(),
+        					i -> i.getRelationType().getCode(), i -> i.getRoleType().getCode());
+        			if (parRelationTypeRoleType == null) {
+        				parRelationTypeRoleType = new ParRelationTypeRoleType();
+        			}
+        			convertParRelationTypeRoleTypes(rulPackage, relation, parRelationTypeRoleType, parRelationTypes, parRelationRoleTypes);
+        			parRelationTypeRoleTypesNew.add(parRelationTypeRoleType);
+        		}
+        	}
         }
 
         parRelationTypeRoleTypesNew = relationTypeRoleTypeRepository.save(parRelationTypeRoleTypesNew);
@@ -1072,7 +1090,7 @@ public class PackageService {
         parComplementType.setRulPackage(rulPackage);
         parComplementType.setCode(complementType.getCode());
         parComplementType.setName(complementType.getName());
-        parComplementType.setViewOrder(parComplementType.getViewOrder());
+        parComplementType.setViewOrder(complementType.getViewOrder());
     }
 
     /**

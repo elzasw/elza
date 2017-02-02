@@ -92,7 +92,7 @@ class AddPacketForm extends AbstractReactComponent {
                 packetTypeHelp = i18n('arr.packet.changeNumbers.packetType.empty')
             } else {
                 const packetType = getMapFromList(packetTypeItems)[packetTypeId.value]
-                packetTypeHelp = i18n('arr.packet.changeNumbers.packetType.notEmpty', packetType.name)
+                packetTypeHelp = packetType && i18n('arr.packet.changeNumbers.packetType.notEmpty', packetType.name);                
             }
         }
 

@@ -1,117 +1,133 @@
 <registry-roles>
-    <registry-role register-type="PERSON" role-type="4"/>
-    <registry-role register-type="PERSON" role-type="5"/>
-    <registry-role register-type="PERSON" role-type="6"/>
-    <registry-role register-type="PERSON" role-type="7"/>
-    <registry-role register-type="PERSON" role-type="36"/>
-    <registry-role register-type="PERSON" role-type="45"/>
-    <registry-role register-type="PERSON" role-type="47"/>
-    <registry-role register-type="PERSON" role-type="48"/>
-    <registry-role register-type="PERSON" role-type="49"/>
-    <registry-role register-type="FAMILY" role-type="1"/>
-    <registry-role register-type="FAMILY_BRANCH" role-type="1"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="1"/>
-    <registry-role register-type="FAMILY" role-type="2"/>
-    <registry-role register-type="FAMILY_BRANCH" role-type="2"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="2"/>
-    <registry-role register-type="TERM" role-type="4"/>
-    <registry-role register-type="TERM" role-type="5"/>
-    <registry-role register-type="TERM" role-type="6"/>
-    <registry-role register-type="TERM" role-type="7"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="9"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="10"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="11"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="12"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="13"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="14"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="15"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="16"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="17"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="18"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="19"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="21"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="22"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="23"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="24"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="25"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="26"/>
-    <registry-role register-type="FAMILY" role-type="27"/>
-    <registry-role register-type="FAMILY_BRANCH" role-type="27"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="27"/>
-    <registry-role register-type="FAMILY" role-type="28"/>
-    <registry-role register-type="FAMILY_BRANCH" role-type="28"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="28"/>
-    <registry-role register-type="FAMILY" role-type="29"/>
-    <registry-role register-type="FAMILY_BRANCH" role-type="29"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="29"/>
-    <registry-role register-type="FAMILY" role-type="35"/>
-    <registry-role register-type="FAMILY_BRANCH" role-type="35"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="35"/>
-    <registry-role register-type="TERM" role-type="36"/>
-    <registry-role register-type="FICTIVE_INDIVIDUAL" role-type="37"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="37"/>
-    <registry-role register-type="FICTIVE_INDIVIDUAL" role-type="38"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="38"/>
-    <registry-role register-type="FICTIVE_INDIVIDUAL" role-type="39"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="39"/>
-    <registry-role register-type="FAMILY_BRANCH" role-type="40"/>
-    <registry-role register-type="FAMILY" role-type="41"/>
-    <registry-role register-type="FAMILY_BRANCH" role-type="41"/>
-    <registry-role register-type="FAMILY" role-type="42"/>
-    <registry-role register-type="FAMILY_BRANCH" role-type="42"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="42"/>
+    <registry-role register-type="PERSON" role-type="RELATED"/>
+    <!-- Dočasně vypnuto, pravděpodobně shodné s RELATED -->
+    <!--  <registry-role register-type="PERSON" role-type="5"/> -->
+    <registry-role register-type="PERSON" role-type="SUPERIOR"/>
+    <registry-role register-type="PERSON" role-type="SUBORDINATE"/>
+    <registry-role register-type="PERSON" role-type="NAMED_AFTER"/>
+    <registry-role register-type="PERSON" role-type="PREDECESSOR"/>
+    <registry-role register-type="PERSON" role-type="UNIT"/>
+    <!-- pravděpodobně synonymum s UNIT, docasne vypnuto -->
+    <!-- <registry-role register-type="PERSON" role-type="GROUP"/>-->
+    <registry-role register-type="PERSON" role-type="SUCCESSOR"/>
+    <registry-role register-type="FAMILY" role-type="PARTY_GROUP_MEMBER"/>
+    <registry-role register-type="FAMILY_BRANCH" role-type="PARTY_GROUP_MEMBER"/>
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="PARTY_GROUP_MEMBER"/>
+    <registry-role register-type="FAMILY" role-type="FAMILY_MEMBER"/>
+    <registry-role register-type="FAMILY_BRANCH" role-type="FAMILY_MEMBER"/>
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="FAMILY_MEMBER"/>
+    <registry-role register-type="TERM" role-type="RELATED"/>
+    <!-- Dočasně vypnuto, pravděpodobně shodné s RELATED -->
+    <!--  <registry-role register-type="TERM" role-type="5"/>-->
+    <registry-role register-type="TERM" role-type="SUPERIOR"/>
+    <registry-role register-type="TERM" role-type="SUBORDINATE"/>
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="OTHER_IDENTITY"/>
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="BROTHER"/>
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="SISTER"/>
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="FATHER"/>
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="MOTHER"/>
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="OTHER_RELATIVE"/>
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="SON"/>
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="DAUGHTER"/>
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="SPOUSE"/>
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="FRIEND"/>
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="TEACHER"/>
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="SCHOOLMATE"/>
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="WORKPLACE"/>
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="SUPERIOR_PERSON"/>
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="SUBORDINATE_PERSON"/>
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="COLLEAGUE"/>
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="EMPLOYEE"/>
+    <registry-role register-type="FAMILY" role-type="EMPLOYER"/>
+    <registry-role register-type="FAMILY_BRANCH" role-type="EMPLOYER"/>
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="EMPLOYER"/>
+    <registry-role register-type="FAMILY" role-type="RECEIVER"/>
+    <registry-role register-type="FAMILY_BRANCH" role-type="RECEIVER"/>
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="RECEIVER"/>
+    <registry-role register-type="FAMILY" role-type="AWARDED_BY"/>
+    <registry-role register-type="FAMILY_BRANCH" role-type="AWARDED_BY"/>
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="AWARDED_BY"/>
+    <registry-role register-type="FAMILY" role-type="OWNER"/>
+    <registry-role register-type="FAMILY_BRANCH" role-type="OWNER"/>
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="OWNER"/>
+    <registry-role register-type="TERM" role-type="NAMED_AFTER"/>
+    <registry-role register-type="FICTIVE_INDIVIDUAL" role-type="FIRST_MEMBER"/>
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="FIRST_MEMBER"/>
+    <registry-role register-type="FICTIVE_INDIVIDUAL" role-type="LAST_MEMBER"/>
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="LAST_MEMBER"/>
+    <registry-role register-type="FICTIVE_INDIVIDUAL" role-type="FOUNDER"/>
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="FOUNDER"/>
+    <registry-role register-type="FAMILY_BRANCH" role-type="FAMILY_BRANCH"/>
+    <registry-role register-type="FAMILY" role-type="RELATED_FAMILY"/>
+    <registry-role register-type="FAMILY_BRANCH" role-type="RELATED_FAMILY"/>
+    <registry-role register-type="FAMILY" role-type="ORGANIZER"/>
+    <registry-role register-type="FAMILY_BRANCH" role-type="ORGANIZER"/>
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="ORGANIZER"/>
+    <!-- pravděpodobně synonymum s ORGANIZER, docasne vypnuto -->
+    <!--
     <registry-role register-type="FAMILY" role-type="44"/>
     <registry-role register-type="FAMILY_BRANCH" role-type="44"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="44"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="46"/>
-    <registry-role register-type="TERM" role-type="47"/>
-    <registry-role register-type="TERM" role-type="48"/>
-    <registry-role register-type="GEO" role-type="4"/>
-    <registry-role register-type="GEO" role-type="5"/>
-    <registry-role register-type="GEO" role-type="6"/>
-    <registry-role register-type="GEO" role-type="7"/>
-    <registry-role register-type="GEO" role-type="8"/>
-    <registry-role register-type="GEO" role-type="32"/>
-    <registry-role register-type="GEO" role-type="36"/>
-    <registry-role register-type="GEO" role-type="47"/>
-    <registry-role register-type="GEO" role-type="48"/>
-    <registry-role register-type="ARTWORK" role-type="4"/>
-    <registry-role register-type="ARTWORK" role-type="5"/>
-    <registry-role register-type="ARTWORK" role-type="6"/>
-    <registry-role register-type="ARTWORK" role-type="7"/>
-    <registry-role register-type="ARTWORK" role-type="30"/>
-    <registry-role register-type="ARTWORK" role-type="33"/>
-    <registry-role register-type="ARTWORK" role-type="34"/>
-    <registry-role register-type="ARTWORK" role-type="36"/>
-    <registry-role register-type="ARTWORK" role-type="47"/>
-    <registry-role register-type="ARTWORK" role-type="48"/>
-    <registry-role register-type="EVENT" role-type="4"/>
-    <registry-role register-type="EVENT" role-type="5"/>
-    <registry-role register-type="EVENT" role-type="6"/>
-    <registry-role register-type="EVENT" role-type="7"/>
-    <registry-role register-type="EVENT" role-type="30"/>
-    <registry-role register-type="EVENT" role-type="33"/>
-    <registry-role register-type="EVENT" role-type="34"/>
-    <registry-role register-type="EVENT" role-type="47"/>
-    <registry-role register-type="EVENT" role-type="48"/>
-    <registry-role register-type="PARTY_GROUP" role-type="1"/>
-    <registry-role register-type="PARTY_GROUP" role-type="2"/>
-    <registry-role register-type="PARTY_GROUP" role-type="3"/>
-    <registry-role register-type="PARTY_GROUP" role-type="4"/>
-    <registry-role register-type="PARTY_GROUP" role-type="5"/>
-    <registry-role register-type="PARTY_GROUP" role-type="6"/>
-    <registry-role register-type="PARTY_GROUP" role-type="7"/>
-    <registry-role register-type="PARTY_GROUP" role-type="20"/>
-    <registry-role register-type="PARTY_GROUP" role-type="27"/>
-    <registry-role register-type="PARTY_GROUP" role-type="28"/>
-    <registry-role register-type="PARTY_GROUP" role-type="29"/>
-    <registry-role register-type="PARTY_GROUP" role-type="35"/>
-    <registry-role register-type="PARTY_GROUP" role-type="36"/>
-    <registry-role register-type="PARTY_GROUP" role-type="42"/>
-    <registry-role register-type="PARTY_GROUP" role-type="44"/>
-    <registry-role register-type="PARTY_GROUP" role-type="45"/>
-    <registry-role register-type="PARTY_GROUP" role-type="46"/>
-    <registry-role register-type="PARTY_GROUP" role-type="47"/>
-    <registry-role register-type="PARTY_GROUP" role-type="48"/>
-    <registry-role register-type="PARTY_GROUP" role-type="49"/>
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="44"/> -->
+    <registry-role register-type="PERSON_INDIVIDUAL" role-type="LIQUIDATOR"/>
+    <registry-role register-type="TERM" role-type="UNIT"/>
+    <!-- pravděpodobně synonymum s UNIT, docasne vypnuto -->
+    <!-- <registry-role register-type="TERM" role-type="GROUP"/>-->
+    <registry-role register-type="GEO" role-type="RELATED"/>
+    <!-- Dočasně vypnuto, pravděpodobně shodné s RELATED -->
+    <!-- <registry-role register-type="GEO" role-type="5"/> -->
+    <registry-role register-type="GEO" role-type="SUPERIOR"/>
+    <registry-role register-type="GEO" role-type="SUBORDINATE"/>
+    <registry-role register-type="GEO" role-type="PLACE"/>
+    <registry-role register-type="GEO" role-type="RESIDENCY"/>
+    <registry-role register-type="GEO" role-type="NAMED_AFTER"/>
+    <registry-role register-type="GEO" role-type="UNIT"/>
+    <!-- pravděpodobně synonymum s UNIT, docasne vypnuto -->
+    <!-- <registry-role register-type="GEO" role-type="GROUP"/>-->
+    <registry-role register-type="ARTWORK" role-type="RELATED"/>
+    <!-- Dočasně vypnuto, pravděpodobně shodné s RELATED -->
+    <!-- <registry-role register-type="ARTWORK" role-type="5"/>-->
+    <registry-role register-type="ARTWORK" role-type="SUPERIOR"/>
+    <registry-role register-type="ARTWORK" role-type="SUBORDINATE"/>
+    <registry-role register-type="ARTWORK" role-type="AWARD"/>
+    <registry-role register-type="ARTWORK" role-type="DOCUMENT"/>
+    <registry-role register-type="ARTWORK" role-type="CREATION"/>
+    <registry-role register-type="ARTWORK" role-type="NAMED_AFTER"/>
+    <registry-role register-type="ARTWORK" role-type="UNIT"/>
+    <!-- pravděpodobně synonymum s UNIT, docasne vypnuto -->
+    <!--  <registry-role register-type="ARTWORK" role-type="GROUP"/>-->
+    <registry-role register-type="EVENT" role-type="RELATED"/>
+    <!-- Dočasně vypnuto, pravděpodobně shodné s RELATED -->
+    <!-- <registry-role register-type="EVENT" role-type="5"/> -->
+    <registry-role register-type="EVENT" role-type="SUPERIOR"/>
+    <registry-role register-type="EVENT" role-type="SUBORDINATE"/>
+    <registry-role register-type="EVENT" role-type="AWARD"/>
+    <registry-role register-type="EVENT" role-type="DOCUMENT"/>
+    <registry-role register-type="EVENT" role-type="CREATION"/>
+    <registry-role register-type="EVENT" role-type="UNIT"/>
+    <registry-role register-type="EVENT" role-type="CEREMONY"/>
+    <!-- pravděpodobně synonymum s UNIT, docasne vypnuto -->
+    <!-- <registry-role register-type="EVENT" role-type="GROUP"/>-->
+    <registry-role register-type="PARTY_GROUP" role-type="PARTY_GROUP_MEMBER"/>
+    <registry-role register-type="PARTY_GROUP" role-type="FAMILY_MEMBER"/>
+    <registry-role register-type="PARTY_GROUP" role-type="MEMBER_OF"/>
+    <registry-role register-type="PARTY_GROUP" role-type="RELATED"/>
+    <!-- Dočasně vypnuto, pravděpodobně shodné s RELATED -->
+    <!--  <registry-role register-type="PARTY_GROUP" role-type="5"/> -->
+    <registry-role register-type="PARTY_GROUP" role-type="SUPERIOR"/>
+    <registry-role register-type="PARTY_GROUP" role-type="SUBORDINATE"/>
+    <registry-role register-type="PARTY_GROUP" role-type="SCHOOL"/>
+    <registry-role register-type="PARTY_GROUP" role-type="EMPLOYER"/>
+    <registry-role register-type="PARTY_GROUP" role-type="RECEIVER"/>
+    <registry-role register-type="PARTY_GROUP" role-type="AWARDED_BY"/>
+    <registry-role register-type="PARTY_GROUP" role-type="OWNER"/>
+    <registry-role register-type="PARTY_GROUP" role-type="NAMED_AFTER"/>
+    <registry-role register-type="PARTY_GROUP" role-type="ORGANIZER"/>
+    <!-- pravděpodobně synonymum s ORGANIZER, docasne vypnuto -->
+    <!--  <registry-role register-type="PARTY_GROUP" role-type="44"/> -->
+    <registry-role register-type="PARTY_GROUP" role-type="PREDECESSOR"/>
+    <registry-role register-type="PARTY_GROUP" role-type="LIQUIDATOR"/>
+    <registry-role register-type="PARTY_GROUP" role-type="UNIT"/>
+    <!-- pravděpodobně synonymum s UNIT, docasne vypnuto -->
+    <!-- <registry-role register-type="PARTY_GROUP" role-type="GROUP"/>-->
+    <registry-role register-type="PARTY_GROUP" role-type="SUCCESSOR"/>
 </registry-roles>
