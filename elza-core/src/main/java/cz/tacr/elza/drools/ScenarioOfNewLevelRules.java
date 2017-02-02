@@ -47,7 +47,7 @@ public class ScenarioOfNewLevelRules extends Rules {
                 version.getRuleSet(), RulRule.RuleType.NEW_LEVEL);
 
         for (RulRule rulPackageRule : rulPackageRules) {
-            path = Paths.get(rulesExecutor.getRootPath() + File.separator + rulPackageRule.getFilename());
+            path = Paths.get(rulesExecutor.getDroolsDir(rulPackageRule.getPackage().getCode()) + File.separator + rulPackageRule.getFilename());
 
             StatelessKieSession session = createNewStatelessKieSession(path);
             session.setGlobal("results", newLevelApproaches);

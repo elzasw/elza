@@ -11,13 +11,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.ActionRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.utils.Yaml;
 import liquibase.util.file.FilenameUtils;
+
+import javax.transaction.Transactional;
 
 
 /**
@@ -31,10 +36,18 @@ import liquibase.util.file.FilenameUtils;
 public class BulkActionConfigManager {
 
     /**
-     * Cesta adresáře pro konfiguraci hromadných akcí.
+     * Název složky v pravidlech.
      */
-    @Value("${elza.bulkactions.bulkactionsDir}")
-    private String path;
+    public final static String FOLDER = "functions";
+
+    /**
+     * Cesta adresáře pro konfiguraci pravidel.
+     */
+    @Value("${elza.rulesDir}")
+    private String rulesDir;
+
+    @Autowired
+    private ActionRepository actionRepository;
 
     /**
      * Podporovaný formát souborů pro konfiguraci - použité pro ukládání nových a vyhledání v adresáři.
@@ -47,10 +60,10 @@ public class BulkActionConfigManager {
     private Map<String, BulkActionConfig> bulkActionConfigMap = new HashMap<>();
 
     /**
-     * @return cesta
+     * @return cesta k pravidlům
      */
-    public String getPath() {
-        return path;
+    public String getRulesDir() {
+        return rulesDir;
     }
 
     /**
@@ -63,20 +76,30 @@ public class BulkActionConfigManager {
     /**
      * Načtení hromadných akcí z adresáře.
      */
+    @Transactional
     public void load() throws IOException {
 
         bulkActionConfigMap = new HashMap<>();
 
-        File dir = new File(path);
+        File dir = new File(rulesDir);
 
         if (!dir.exists()) {
             dir.mkdirs();
         }
 
-        //copyDefaultFromResources(dir);
+        List<RulAction> actions = actionRepository.findAll();
 
         // vyhledání souborů v adresáři
-        File[] files = dir.listFiles((dir1, name) -> name.endsWith(extension));
+        File[] files = new File[actions.size()];
+
+        for (int i = 0; i < actions.size(); i++) {
+            RulAction action = actions.get(i);
+            String filePath = getFunctionsDir(action.getPackage().getCode()) + File.separator + action.getFilename();
+            files[i] = new File(filePath);
+            if (!files[i].exists()) {
+                throw new SystemException("Soubor neexistuje: " + filePath);
+            }
+        }
 
         for (File file : files) {
             try {
@@ -224,7 +247,16 @@ public class BulkActionConfigManager {
      * @return cesta k souboru
      */
     private String getFileName(final BulkActionConfig bulkActionConfig) {
-        return path + File.separator + bulkActionConfig.getCode() + extension;
+        return rulesDir + File.separator + bulkActionConfig.getCode() + extension;
     }
 
+    /**
+     * Vrací úplnou cestu k adresáři funkcí podle balíčku.
+     *
+     * @param code kód balíčku (pravidel)
+     * @return cesta k adresáři funkcí
+     */
+    public String getFunctionsDir(final String code) {
+        return rulesDir + File.separator + code + File.separator + FOLDER;
+    }
 }

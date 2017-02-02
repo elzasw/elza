@@ -35,8 +35,12 @@ import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 @Service
 public class RulesExecutor implements InitializingBean {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    /**
+     * Název složky v drools.
+     */
+    public static final String FOLDER = "drools";
 
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private ValidationRules descItemValidationRules;
@@ -54,10 +58,10 @@ public class RulesExecutor implements InitializingBean {
     private ScenarioOfNewLevelRules scenarioOfNewLevelRules;
 
     /**
-     * Cesta adresáře pro konfiguraci pravidel
+     * Cesta adresáře pro konfiguraci pravidel.
      */
     @Value("${elza.rulesDir}")
-    private String rootPath;
+    private String rulesDir;
 
     /**
      * Přípona souborů pravidel
@@ -168,7 +172,7 @@ public class RulesExecutor implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        File dir = new File(rootPath);
+        File dir = new File(rulesDir);
 
         if (!dir.exists()) {
             dir.mkdirs();
@@ -177,7 +181,17 @@ public class RulesExecutor implements InitializingBean {
         //copyDefaultFromResources(dir);
     }
 
-    public String getRootPath() {
-        return rootPath;
+    public String getRulesDir() {
+        return rulesDir;
+    }
+
+    /**
+     * Vrací úplnou cestu k adresáři drools podle balíčku.
+     *
+     * @param code kód balíčku (pravidel)
+     * @return cesta k adresáři drools
+     */
+    public String getDroolsDir(final String code) {
+        return rulesDir + File.separator + code + File.separator + FOLDER;
     }
 }

@@ -1,5 +1,6 @@
 package cz.tacr.elza.service.output;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -71,6 +72,11 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
 
     public static final String OUTPUT_WEBSOCKET_ERROR_STATE = "ERROR";
 
+    /**
+     * Název složky v pravidlech.
+     */
+    public static final String FOLDER = "templates";
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private Queue<OutputGeneratorWorkerAbstract> outputQueue = new LinkedList<>(); // fronta outputů ke zpracování
@@ -108,8 +114,11 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
     @Qualifier("threadPoolTaskExecutorOG")
     private ThreadPoolTaskExecutor taskExecutor;
 
-    @Value("${elza.templates.templatesDir}")
-    private String templatesDir;
+    /**
+     * Cesta adresáře pro konfiguraci pravidel.
+     */
+    @Value("${elza.rulesDir}")
+    private String rulesDir;
 
     @Autowired
     @Qualifier("transactionManager")
@@ -120,8 +129,8 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
      *
      * @return cesta ke složce šablon
      */
-    public String getTemplatesDir() {
-        return templatesDir;
+    public String getTemplatesDir(final String code) {
+        return rulesDir + File.separator + code + File.separator + FOLDER;
     }
 
     /**
@@ -321,6 +330,14 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
                 publishOutputStateEvent(outputDefinition, OutputGeneratorService.OUTPUT_WEBSOCKET_ERROR_STATE);
             }
         });
+    }
+
+    public String getRulesDir() {
+        return rulesDir;
+    }
+
+    public void setRulesDir(final String rulesDir) {
+        this.rulesDir = rulesDir;
     }
 
     @Override
