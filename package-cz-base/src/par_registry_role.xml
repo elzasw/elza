@@ -104,6 +104,7 @@
     <registry-role register-type="EVENT" role-type="DOCUMENT"/>
     <registry-role register-type="EVENT" role-type="CREATION"/>
     <registry-role register-type="EVENT" role-type="UNIT"/>
+    <registry-role register-type="EVENT" role-type="CEREMONY"/>
     <!-- pravděpodobně synonymum s UNIT, docasne vypnuto -->
     <!-- <registry-role register-type="EVENT" role-type="GROUP"/>-->
     <registry-role register-type="PARTY_GROUP" role-type="PARTY_GROUP_MEMBER"/>
