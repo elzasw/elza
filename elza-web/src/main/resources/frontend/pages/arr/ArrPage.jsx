@@ -329,9 +329,10 @@ class ArrPage extends ArrParentPage {
      * Zobrazení formuláře historie.
      * @param versionId verze AS
      */
-    handleShowFundHistory = (versionId) => {
+    handleShowFundHistory = (versionId, locked) => {
         const form = <ArrHistoryForm
             versionId={versionId}
+            locked={locked}
             onDeleteChanges={this.handleDeleteChanges}
         />
         this.dispatch(modalDialogShow(this, i18n('arr.history.title'), form, "dialog-lg"));
@@ -389,7 +390,7 @@ class ArrPage extends ArrParentPage {
             // Zobrazení historie změn
             if (userDetail.hasOne(perms.FUND_ADMIN, {type: perms.FUND_VER_WR, fundId: activeFund.id}, perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId: activeFund.id})) {
                 altActions.push(
-                    <Button onClick={() => this.handleShowFundHistory(activeFund.versionId)} key="show-fund-history">
+                    <Button onClick={() => this.handleShowFundHistory(activeFund.versionId, readMode)} key="show-fund-history">
                         <Icon glyph="fa-clock-o"/>
                         <div>
                             <span className="btnText">{i18n('ribbon.action.showFundHistory')}</span>
@@ -702,7 +703,7 @@ class ArrPage extends ArrParentPage {
         var centerSettings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', activeFund.id);
         var settingsValues = settings.value ? JSON.parse(settings.value) : null;
         var centerSettingsValues = centerSettings.value ? JSON.parse(centerSettings.value) : null;
-        let selected = tab.values['arr-as'] && settingsValues[tab.values['arr-as']] ? tab.values['arr-as'] : null;        
+        let selected = tab.values['arr-as'] && settingsValues[tab.values['arr-as']] ? tab.values['arr-as'] : null;
         if(settings.value && (settings.value.indexOf("true")<0 || !centerSettingsValues.rightPanel))
         {
             return false;

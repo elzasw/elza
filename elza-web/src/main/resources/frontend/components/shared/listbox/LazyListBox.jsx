@@ -452,9 +452,9 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
     focus() {
         ReactDOM.findDOMNode(this.refs.mainContainer).focus()
     }
-    
+
     render() {
-        const {className, items, renderItemContent} = this.props;
+        const {className, items, renderItemContent, fetching} = this.props;
         const {scrollToIndex, activeIndex, activeIndexes} = this.state;
 
         var cls = "lazy-listbox-container listbox-container";
@@ -473,7 +473,8 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
                     itemHeight={this.props.itemHeight}
                     onViewChange={this.handleViewChange}
                     scrollToIndex={scrollToIndex}
-                    />
+                    fetching={fetching && fetching === true}
+                />
             </div>
         )
     }
