@@ -9,7 +9,7 @@ import {fundChangeReadMode} from "actions/arr/fund.jsx";
 import {setSettings, getOneSettings} from "components/arr/ArrUtils.jsx";
 import {humanFileSize} from "components/Utils.jsx";
 import * as daoActions from 'actions/arr/daoActions.jsx';
-
+import classNames from 'classnames';
 require("./ArrDaoPackages.less")
 
 class ArrDaoPackages extends AbstractReactComponent {
@@ -56,12 +56,12 @@ class ArrDaoPackages extends AbstractReactComponent {
         this.handleSearch(null);
     };
 
-    handleSelect = (item) => {
-        this.props.onSelect(item);
+    handleSelect = (item, index) => {
+        this.props.onSelect(item, index);
     };
 
     render() {
-        const {fund, unassigned} = this.props;
+        const {fund, unassigned, activeIndex} = this.props;
 
         const list = unassigned ? fund.daoUnassignedPackageList : fund.daoPackageList;
 
@@ -78,7 +78,14 @@ class ArrDaoPackages extends AbstractReactComponent {
                     key="list"
                     items={list.rows}
                     onFocus={this.handleSelect}
-                    renderItemContent={(item, isActive, index) => <div>{item.code}</div>}
+                    activeIndex={activeIndex}
+                    renderItemContent={(item, isActive, index) => {
+                        console.warn(item, isActive)
+                        const cls = classNames({
+                            active: isActive,
+                        });
+                        return <div className={cls}>{item.code}</div>
+                    }}
                 />}
                 {!list.fetched && <Loading/>}
             </div>

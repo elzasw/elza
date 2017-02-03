@@ -184,23 +184,25 @@ class ArrDaoPage extends ArrParentPage {
         return userDetail.hasArrPage(activeFund ? activeFund.id : null);
     };
 
-    handleSelectPackage = (pkg, unassigned) => {
+    handleSelectPackage = (pkg, unassigned, selectedIndex) => {
         const fund = this.getActiveFund(this.props);
 
         if (unassigned) {
-            this.setState({selectedUnassignedPackage: pkg});
+            this.setState({selectedUnassignedPackage: pkg, selectedIndex});
         } else {
-            this.setState({selectedPackage: pkg});
+            this.setState({selectedPackage: pkg, selectedIndex});
         }
     };
 
     _renderPackages = (unassigned, selectedPackage) => {
+        const {selectedIndex} = this.state;
         const fund = this.getActiveFund(this.props);
 
         return <div className="packages-container" key={"daoPackages-" + unassigned}>
             <ArrDaoPackages
+                activeIndex={selectedIndex}
                 unassigned={unassigned}
-                onSelect={(item) => this.handleSelectPackage(item, unassigned)}
+                onSelect={(item, index) => this.handleSelectPackage(item, unassigned, index)}
             />
             {/*selectedPackage && */<ArrDaos
                 type="PACKAGE"
