@@ -202,11 +202,11 @@ class ArrDaoPage extends ArrParentPage {
                 unassigned={unassigned}
                 onSelect={(item) => this.handleSelectPackage(item, unassigned)}
             />
-            {selectedPackage && <ArrDaos
+            {/*selectedPackage && */<ArrDaos
                 type="PACKAGE"
                 unassigned={unassigned}
                 fund={fund}
-                daoPackageId={selectedPackage.id}
+                daoPackageId={selectedPackage ? selectedPackage.id : null}
                 onSelect={item => { this.setState({selectedDaoLeft: item}) }}
             />}
         </div>
@@ -234,11 +234,11 @@ class ArrDaoPage extends ArrParentPage {
                 area={types.FUND_TREE_AREA_DAOS_LEFT}
                 {...fund.fundTreeDaosLeft}
             />
-            {fund.fundTreeDaosLeft.selectedId !== null && <ArrDaos
+            {/*fund.fundTreeDaosLeft.selectedId !== null &&*/ <ArrDaos
                 type="NODE"
                 unassigned={false}
                 fund={fund}
-                nodeId={fund.fundTreeDaosLeft.selectedId}
+                nodeId={fund.fundTreeDaosLeft.selectedId ? fund.fundTreeDaosLeft.selectedId : null}
                 onSelect={item => { this.setState({selectedDaoLeft: item}) }}
             />}
         </div>
@@ -313,11 +313,11 @@ class ArrDaoPage extends ArrParentPage {
                             area={types.FUND_TREE_AREA_DAOS_RIGHT}
                             {...fund.fundTreeDaosRight}
                         />
-                        {fund.fundTreeDaosRight.selectedId !== null && <ArrDaos
+                        {/*fund.fundTreeDaosRight.selectedId !== null &&*/ <ArrDaos
                             type="NODE_ASSIGN"
                             unassigned={false}
                             fund={fund}
-                            nodeId={fund.fundTreeDaosRight.selectedId}
+                            nodeId={fund.fundTreeDaosRight.selectedId ? fund.fundTreeDaosRight.selectedId : null}
                         />}
                     </div>
                 </div>

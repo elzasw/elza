@@ -65,10 +65,6 @@ class ArrDaoPackages extends AbstractReactComponent {
 
         const list = unassigned ? fund.daoUnassignedPackageList : fund.daoPackageList;
 
-        if (!list.fetched) {
-            return <Loading/>;
-        }
-
         return (
             <div className="dao-packages-container">
                 <Search
@@ -78,12 +74,13 @@ class ArrDaoPackages extends AbstractReactComponent {
                     onSearch={this.handleSearch}
                     onClear={this.handleClear}
                 />
-                <ListBox
+                {list.fetched && <ListBox
                     key="list"
                     items={list.rows}
                     onFocus={this.handleSelect}
                     renderItemContent={(item, isActive, index) => <div>{item.code}</div>}
-                    />
+                />}
+                {!list.fetched && <Loading/>}
             </div>
         );
     }
