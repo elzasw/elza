@@ -112,6 +112,9 @@ public abstract class ArrRequest {
     @Enumerated(EnumType.STRING)
     private ClassType discriminator;
 
+    @Column(length = StringLength.LENGTH_1000)
+    private String externalSystemCode;
+
     public Integer getRequestId() {
         return requestId;
     }
@@ -170,5 +173,13 @@ public abstract class ArrRequest {
 
     public ClassType getDiscriminator() {
         return discriminator;
+    }
+
+    public String getExternalSystemCode() {
+        return externalSystemCode;
+    }
+
+    public void setExternalSystemCode(final String externalSystemCode) {
+        this.externalSystemCode = externalSystemCode;
     }
 }
