@@ -16,7 +16,12 @@ require("./ArrHistoryForm.less");
  * Formulář zobrazení hostorie.
  */
 class ArrHistoryForm extends AbstractReactComponent {
+
     static PropTypes = {};
+
+    static defaultProps = {
+        locked: false
+    };
 
     constructor(props) {
         super(props);
@@ -29,6 +34,7 @@ class ArrHistoryForm extends AbstractReactComponent {
             selectedItem: null,
             selectedIndex: null,
             activeIndex: null,
+            fetching: false,
             showHistoryForNode: props.node ? true : false,  // pro node je true, globalni je false
         }
     }
@@ -63,7 +69,7 @@ class ArrHistoryForm extends AbstractReactComponent {
     getItemTypeText(item) {
         return i18n(`arr.history.change.title.${item.type || 'unknown'}`);
     }
-    
+
     getItemDescription(item) {
         switch (item.type || '') {
             case 'BULK_ACTION':
@@ -91,6 +97,11 @@ class ArrHistoryForm extends AbstractReactComponent {
         const {changeId, node, showHistoryForNode} = this.state;
 
         const useNodeId = showHistoryForNode ? ( node ? node.id : null ) : null;
+
+        this.setState({
+            fetching: true
+        });
+
         return WebApi.findChanges(versionId, useNodeId, fromIndex, toIndex - fromIndex, changeId)
             .then(json => {
                 if (json.totalCount > 0 && changeId === null) {    // pokud nemáme uložen první changeId, uložíme si ho do state
@@ -103,30 +114,45 @@ class ArrHistoryForm extends AbstractReactComponent {
                     items: json.changes,
                     count: json.totalCount,
                     outdated: json.outdated
-                }
+                };
+
+                this.setState({
+                    fetching: false
+                });
+
                 return lbData;
-            })
+            }).catch(e => {
+                this.setState({
+                    fetching: false
+                });
+            });
     }
 
     handleSelect = (item, index) => {
-        if (item.revert) {
-            this.setState({
-                selectedIndex: index,
-                activeIndex: index,
-                selectedItem: item,
-            })
-        } else {
-            this.setState({
-                activeIndex: index,
-            })
+        if (!this.props.locked) {
+            if (item.revert) {
+                this.setState({
+                    selectedIndex: index,
+                    activeIndex: index,
+                    selectedItem: item,
+                })
+            } else {
+                this.setState({
+                    activeIndex: index,
+                })
+            }
         }
     }
 
     handleShowSelectedItem = () => {
-        const {selectedIndex, activeIndex} = this.state;
-        this.setState({
-            activeIndex: selectedIndex
-        }, () => { this.refs.listbox.ensureItemVisible(selectedIndex) })
+        if (!this.props.locked) {
+            const {selectedIndex, activeIndex} = this.state;
+            this.setState({
+                activeIndex: selectedIndex
+            }, () => {
+                this.refs.listbox.ensureItemVisible(selectedIndex)
+            })
+        }
     }
 
     renderSelectedItemInfo = () => {
@@ -178,7 +204,10 @@ class ArrHistoryForm extends AbstractReactComponent {
     }
 
     refreshRows = () => {
-        this.refs.listbox.reload();
+        const {showHistoryForNode, node} = this.state;
+        if (!(showHistoryForNode == true && node == null)) {
+            this.refs.listbox.reload();
+        }
     }
 
     handleDeleteChanges = () => {
@@ -232,19 +261,37 @@ class ArrHistoryForm extends AbstractReactComponent {
     }
 
     render() {
-        const {goToDateValue, goToDate, selectedItem, node, showHistoryForNode, selectedIndex, activeIndex} = this.state;
-        const {onClose} = this.props;
+        const {goToDateValue, goToDate, selectedItem, node, showHistoryForNode, selectedIndex, activeIndex, fetching} = this.state;
+        const {onClose, locked} = this.props;
+
+        let content;
+
+        if (showHistoryForNode == true && node == null) {
+            content = <div className="lazy-listbox-container listbox-container data-container loading">{i18n("arr.history.title.selectNode")}</div>
+        } else {
+            content = <LazyListBox
+                ref="listbox"
+                className="data-container"
+                selectedIndex={selectedIndex}
+                activeIndex={activeIndex}
+                getItems={this.getItems}
+                itemHeight={24} // nutne dat stejne cislo i do css jako .pokusny-listbox-container .listbox-item { height: 24px; }
+                renderItemContent={this.renderItemContent}
+                onSelect={this.handleSelect}
+                fetching={fetching}
+            />;
+        }
 
         return (
             <div className="arr-history-form-container">
                 <Modal.Body>
                     <FormGroup>
-                        <FormInput type="radio" checked={!showHistoryForNode} onClick={() => this.onChangeRadio(false)} label={i18n('arr.history.title.globalChanges')}/>
+                        <FormInput disabled={fetching} type="radio" checked={!showHistoryForNode} onClick={() => this.onChangeRadio(false)} label={i18n('arr.history.title.globalChanges')}/>
                         <div className="selected-node-container">
-                            <FormInput type="radio" checked={showHistoryForNode} onClick={() => this.onChangeRadio(true)} label={i18n('arr.history.title.nodeChanges')}/>
+                            <FormInput disabled={fetching} type="radio" checked={showHistoryForNode} onClick={() => this.onChangeRadio(true)} label={i18n('arr.history.title.nodeChanges')}/>
                             <FormInput className="selected-node-info-container" type="static" label={false}>
                                 <input type="text" value={node ? node.name : ""} disabled />
-                                <Button disabled={!showHistoryForNode} onClick={this.handleChooseNode}>{i18n("global.action.choose")}</Button>
+                                <Button disabled={!showHistoryForNode || fetching} onClick={this.handleChooseNode}>{i18n("global.action.choose")}</Button>
                             </FormInput>
                         </div>
                         <div className="go-to-date-container">
@@ -261,22 +308,13 @@ class ArrHistoryForm extends AbstractReactComponent {
                             <div className="col col5">{i18n("arr.history.title.change.user")}</div>
                             <div className="colScrollbar" style={{width: getScrollbarWidth()}}></div>
                         </div>
-                        <LazyListBox
-                            ref="listbox"
-                            className="data-container"
-                            selectedIndex={selectedIndex}
-                            activeIndex={activeIndex}
-                            getItems={this.getItems}
-                            itemHeight={24} // nutne dat stejne cislo i do css jako .pokusny-listbox-container .listbox-item { height: 24px; }
-                            renderItemContent={this.renderItemContent}
-                            onSelect={this.handleSelect}
-                        />
+                        {content}
                     </div>
-                    {this.renderSelectedItemInfo()}
+                    {!locked && this.renderSelectedItemInfo()}
                 </Modal.Body>
                 <Modal.Footer>
                     {selectedIndex !== null ? i18n("arr.history.title.changesForDelete", selectedIndex + 1) + " " : ""}
-                    <Button disabled={selectedItem === null || (showHistoryForNode && !node)} type="submit" onClick={this.handleDeleteChanges}>{i18n('arr.history.action.deleteChanges')}</Button>
+                    {!locked && <Button disabled={selectedItem === null || (showHistoryForNode && !node)} type="submit" onClick={this.handleDeleteChanges}>{i18n('arr.history.action.deleteChanges')}</Button>}
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>

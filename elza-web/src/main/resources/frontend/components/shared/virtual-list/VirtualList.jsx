@@ -2,6 +2,8 @@ var React = require('react');
 var ReactDOM = require('react-dom');
 var utils = require('./utils');
 
+import {Loading} from "components";
+
 var VirtualList = React.createClass({
     propTypes: {
         items: React.PropTypes.array,   // v případě, že máme položky na klientovi, je zde seznam všech položek
@@ -37,7 +39,7 @@ var VirtualList = React.createClass({
 
         // early return if nothing to render
         if (typeof props.container === 'undefined' || itemsCount === 0 || props.itemHeight <= 0 || !isMounted) return state;
-        
+
         state.height = itemsCount * props.itemHeight;
 
         var container = props.container;
@@ -47,10 +49,10 @@ var VirtualList = React.createClass({
         // Při změně položek ve virtuallistu je problém, že se nepřekreslí, pokud si virtual list "myslí", že je oblast pro kreslení velká, začne vše fungovat
         // console.log(container)   // doresime pozdeji
         // viewHeight = 100000;
-        
+
         // no space to render
         if (viewHeight <= 0) return state;
-        
+
         //var list = this.getDOMNode();
         var list = ReactDOM.findDOMNode(this)
 
@@ -135,12 +137,12 @@ return true;
     },
     componentDidMount: function() {
         var state = this.getVirtualState(this.props, true, this.state);
-        
+
         this.setState({
             ...state,
             isMounted: true
         })
-        
+
         this.props.container.addEventListener('scroll', this.onScrollDebounced);
     },
     componentWillUnmount: function() {
@@ -148,7 +150,7 @@ return true;
     },
     onScroll: function() {
         var state = this.getVirtualState(this.props, this.state.isMounted, this.state);
-        
+
         this.setState(state);
     },
     // in case you need to get the currently visible items
@@ -156,17 +158,23 @@ return true;
         return this.state.items;
     },
     render: function() {
+        let content;
+        if (this.props.fetching && this.props.fetching === true) {
+            content = <Loading />;
+        } else {
+            content = this.state.items.map(this.props.renderItem);
+        }
         return (
         <this.props.tagName className="virtual-list" ref='box' {...this.props} style={{boxSizing: 'border-box', height: this.state.height, paddingTop: this.state.bufferStart}} >
-            {this.state.items.map(this.props.renderItem)}
+            {content}
         </this.props.tagName>
-        );				
+        );
     }
 });
 
 VirtualList.getBox = function(view, list) {
     list.height = list.height || list.bottom - list.top;
-    
+
     return {
         top: Math.max(0, Math.min(view.top - list.top)),
         bottom: Math.max(0, Math.min(list.height, view.bottom - list.top))
@@ -177,43 +185,43 @@ VirtualList.getItems = function(viewTop, viewHeight, listTop, itemHeight, itemCo
     if (itemCount === 0 || itemHeight === 0) return {
         itemsInView: 0
     };
-    
+
     var listHeight = itemHeight * itemCount;
-    
+
     var listBox = {
         top: listTop,
         height: listHeight,
         bottom: listTop + listHeight
     };
-    
+
     var bufferHeight = itemBuffer * itemHeight;
     viewTop -= bufferHeight;
     viewHeight += bufferHeight * 2;
-    
+
     var viewBox = {
         top: viewTop,
         bottom: viewTop + viewHeight
     };
-    
+
     // list is below viewport
     if (viewBox.bottom < listBox.top) return {
         //firstItemIndex: 0,
         itemsInView: 0,
         //lastItemIndex: 0
     };
-    
+
     // list is above viewport
     if (viewBox.top > listBox.bottom) return {
         firstItemIndex: 0,
         itemsInView: 0,
         lastItemIndex: 0
     };
-    
+
     var listViewBox = VirtualList.getBox(viewBox, listBox);
-    
+
     var firstItemIndex = Math.max(0,  Math.floor(listViewBox.top / itemHeight));
     var lastItemIndex = Math.ceil(listViewBox.bottom / itemHeight) - 1;
-    
+
     var itemsInView = lastItemIndex - firstItemIndex + 1;
 
     var result = {
@@ -221,7 +229,7 @@ VirtualList.getItems = function(viewTop, viewHeight, listTop, itemHeight, itemCo
         lastItemIndex: lastItemIndex,
         itemsInView: itemsInView,
     };
-    
+
     return result;
 };
 

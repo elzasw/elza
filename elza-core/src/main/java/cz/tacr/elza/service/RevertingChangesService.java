@@ -1123,7 +1123,7 @@ public class RevertingChangesService {
 
         // doplňující parametry dotazu
         String selectParams = "COUNT(*)";
-        String querySpecification = "WHERE ch.change_id <= :fromChangeId AND ch.change_date > :changeDate";
+        String querySpecification = "WHERE ch.change_id < :fromChangeId AND ch.change_date >= :changeDate";
 
         // vnoření parametrů a vytvoření query objektu
         String queryString = String.format(querySkeleton, selectParams, createSubNodeQuery(fundId, nodeId), querySpecification);
