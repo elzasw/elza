@@ -837,7 +837,7 @@ class SubNodeForm extends AbstractReactComponent {
     };
 
     render() {
-        const {nodeSetting, fundId, subNodeForm, closed, singleDescItemTypeEdit} = this.props;
+        const {nodeSetting, fundId, subNodeForm, closed, singleDescItemTypeEdit, readMode} = this.props;
         const {unusedItemTypeIds} = this.state;
         const formData = subNodeForm.formData
 
@@ -847,7 +847,11 @@ class SubNodeForm extends AbstractReactComponent {
                 <Panel header={i18n("arr.output.title.unusedGeneratedItems", unusedItemTypeIds.length)} eventKey="1">
                     {unusedItemTypeIds.map((itemTypeId, index) => {
                         const refType = subNodeForm.refTypesMap[itemTypeId];
-                        return <a className="add-link btn btn-link" key={itemTypeId} onClick={() => this.handleAddUnusedItem(itemTypeId, index)}><Icon glyph="fa-plus" /> {refType.name}</a>
+                        if (!readMode && !closed) {
+                            return <a className="add-link btn btn-link" key={itemTypeId} onClick={() => this.handleAddUnusedItem(itemTypeId, index)}><Icon glyph="fa-plus" /> {refType.name}</a>
+                        } else {
+                            return <span className="space" key={itemTypeId}>{refType.name} </span>
+                        }
                     })}
                 </Panel>
             </Accordion>
