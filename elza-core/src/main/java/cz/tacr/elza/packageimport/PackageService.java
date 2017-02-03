@@ -795,7 +795,10 @@ public class PackageService {
         			// Check if exists
         			Pair<String, String> uniqueRelation = Pair.of(relation.getRelationType(), relation.getRoleType());
         			if(!uniqueRelations.add(uniqueRelation)) {
-         				throw new BusinessException(PackageCode.PARSE_ERROR).set("code", uniqueRelation.getLeft() + ";" + uniqueRelation.getRight()).set("file", RELATION_TYPE_ROLE_TYPE_XML);
+         				throw new BusinessException("Multiple relation with same types.", PackageCode.PARSE_ERROR)
+         						.set("relationType", relation.getRelationType())
+         						.set("roleType", relation.getRoleType())
+         						.set("file", RELATION_TYPE_ROLE_TYPE_XML);
         			}
         			
         			// Find in DB
