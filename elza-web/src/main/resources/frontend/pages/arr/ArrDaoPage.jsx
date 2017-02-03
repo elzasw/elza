@@ -258,7 +258,7 @@ class ArrDaoPage extends ArrParentPage {
             id: 0,
             key: 0,
             title: 'Nepřiřazené entity',
-            desc: 'zbývá 300'
+            /*desc: 'zbývá 300'*/
         });
 
         tabs.push({
