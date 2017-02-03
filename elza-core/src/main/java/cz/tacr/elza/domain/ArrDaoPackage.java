@@ -40,7 +40,7 @@ public class ArrDaoPackage implements Serializable {
     @JoinColumn(name = "daoBatchInfoId")
     private ArrDaoBatchInfo daoBatchInfo;
 
-    @Column(length = StringLength.LENGTH_50, unique = true)
+    @Column(length = StringLength.LENGTH_1000, unique = true)
     private String code;
 
     public Integer getDaoPackageId() {

@@ -33,4 +33,27 @@
         <addUniqueConstraint columnNames="node_id" tableName="arr_cached_node"/>
     </changeSet>
 
+    <changeSet id="20170203110700" author="slapa">
+        <modifyDataType
+                columnName="code"
+                newDataType="varchar(1000)"
+                tableName="arr_dao_package" />
+        <modifyDataType
+                columnName="code"
+                newDataType="varchar(1000)"
+                tableName="arr_dao_batch_info" />
+        <modifyDataType
+                columnName="code"
+                newDataType="varchar(1000)"
+                tableName="arr_dao" />
+        <modifyDataType
+                columnName="code"
+                newDataType="varchar(1000)"
+                tableName="arr_dao_file" />
+        <modifyDataType
+                columnName="code"
+                newDataType="varchar(1000)"
+                tableName="arr_dao_file_group" />
+    </changeSet>
+
 </databaseChangeLog>

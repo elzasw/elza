@@ -25,7 +25,7 @@ public class ArrDaoBatchInfo implements Serializable {
     @GeneratedValue
     private Integer daoBatchInfoId;
 
-    @Column(nullable = false, length = StringLength.LENGTH_50, unique = true)
+    @Column(nullable = false, length = StringLength.LENGTH_1000, unique = true)
     private String code;
 
     @Column(length = StringLength.LENGTH_250)
