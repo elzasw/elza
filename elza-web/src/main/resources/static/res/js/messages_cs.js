@@ -489,6 +489,7 @@ var messages = {
     "arr.history.title.change.description": "Změna",
     "arr.history.title.change.type": "Typ změny",
     "arr.history.title.change.user": "Uživatel",
+    "arr.history.title.selectNode": "Je potřeba vybrat konkrétní JP",
     "arr.history.title.deleteFrom": "Záznam, od kterého (včetně) budou odstraněny změny",
     "arr.history.title.changesForDelete": "Změn k odstranění: {0}",
     "arr.history.title.globalChanges": "Globální",
