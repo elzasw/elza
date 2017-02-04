@@ -28,7 +28,7 @@ public class DaoRepositoryImpl implements DaoRepositoryCustom {
         String hql = "SELECT d FROM arr_dao d "
                 + "join d.daoPackage p "
                 + "join p.fund f "
-                + "WHERE f.fundId = :fundId ";
+                + "WHERE f.fundId = :fundId and d.valid = true";
 
         if (node != null) {
             hql += " and exists (select l from arr_dao_link l  join l.node n "
@@ -60,7 +60,7 @@ public class DaoRepositoryImpl implements DaoRepositoryCustom {
         String hql = "SELECT d FROM arr_dao d "
                 + "  join d.daoPackage p "
                 + "  join p.fund f "
-                + " WHERE f.fundId = :fundId "
+                + " WHERE f.fundId = :fundId and d.valid = true "
                 + "   and p = :daoPackage ";
 
 

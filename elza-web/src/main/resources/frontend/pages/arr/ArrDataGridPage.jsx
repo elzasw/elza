@@ -13,6 +13,7 @@ import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {FundSettingsForm, Tabs, Icon, FundDataGrid, Ribbon, i18n, ArrFundPanel} from 'components/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
+import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 
 import ArrParentPage from "./ArrParentPage.jsx";
 
@@ -69,10 +70,12 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
     }
 
     componentDidMount() {
+        this.dispatch(refRuleSetFetchIfNeeded());
         super.componentDidMount();
     }
 
     componentWillReceiveProps(nextProps) {
+        this.dispatch(refRuleSetFetchIfNeeded());
         super.componentWillReceiveProps(nextProps);
     }
 
@@ -121,23 +124,27 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
         const {packetTypes, descItemTypes, calendarTypes, rulDataTypes, ruleSet, userDetail} = this.props;
         const fund = this.getActiveFund(this.props);
 
-        return (
-            <div className="datagrid-content-container">
-                <FundDataGrid
-                    versionId={fund.versionId}
-                    fundId={fund.id}
-                    fund={fund}
-                    closed={fund.closed}
-                    readMode={readMode}
-                    fundDataGrid={fund.fundDataGrid}
-                    descItemTypes={descItemTypes}
-                    packetTypes={packetTypes}
-                    calendarTypes={calendarTypes}
-                    rulDataTypes={rulDataTypes}
-                    ruleSet={ruleSet}
-                />
-            </div>
-        )
+        if (ruleSet.fetched) {
+            return (
+                <div className="datagrid-content-container">
+                    <FundDataGrid
+                        versionId={fund.versionId}
+                        fundId={fund.id}
+                        fund={fund}
+                        closed={fund.closed}
+                        readMode={readMode}
+                        fundDataGrid={fund.fundDataGrid}
+                        descItemTypes={descItemTypes}
+                        packetTypes={packetTypes}
+                        calendarTypes={calendarTypes}
+                        rulDataTypes={rulDataTypes}
+                        ruleSet={ruleSet}
+                    />
+                </div>
+            )
+        } else {
+            return <div className="datagrid-content-container"></div>
+        }
     }
 }
 

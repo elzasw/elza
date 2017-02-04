@@ -20,18 +20,18 @@ const SubNodeDao = class SubNodeDao extends AbstractReactComponent {
     renderDao = (dao, index) => {
         let filesLabel = 'subNodeDao.dao.files.more';
 
-        if (dao.filesCount == 1) {
+        if (dao.fileCount == 1) {
             filesLabel = 'subNodeDao.dao.files.one';
-        } else if (dao.filesCount < 5 && dao.filesCount > 1) {
+        } else if (dao.fileCount < 5 && dao.fileCount > 1) {
             filesLabel = 'subNodeDao.dao.files.few';
         }
 
         let daoResults = [];
 
         if (dao.url) {
-            daoResults.push(<div className="link"><a target="_blank" href={dao.url} >{i18n('subNodeDao.dao.label')}: {dao.label}, {i18n('subNodeDao.dao.code')}: {dao.code} - {dao.filesCount} {i18n(filesLabel)}</a></div>);
+            daoResults.push(<div className="link"><a target="_blank" href={dao.url} >{dao.label}, {dao.code} - {dao.fileCount} {i18n(filesLabel)}</a></div>);
         } else {
-            daoResults.push(<div className="link">{i18n('subNodeDao.dao.label')}: {dao.label}, {i18n('subNodeDao.dao.code')}: {dao.code} - {dao.filesCount} {i18n(filesLabel)}</div>);
+            daoResults.push(<div className="link">{dao.label}, {dao.code} - {dao.fileCount} {i18n(filesLabel)}</div>);
         }
 
         let actions = [];

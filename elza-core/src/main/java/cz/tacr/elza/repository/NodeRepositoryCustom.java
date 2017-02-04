@@ -1,6 +1,7 @@
 package cz.tacr.elza.repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import cz.tacr.elza.controller.vo.filter.SearchParam;
@@ -79,4 +80,6 @@ public interface NodeRepositoryCustom {
      */
     Set<Integer> findBySearchParamsAndVersionLockChangeId(List<SearchParam> searchParams, Integer fundId,
             Integer lockChangeId);
+
+    Map<Integer, List<Integer>> findUncachedNodes();
 }

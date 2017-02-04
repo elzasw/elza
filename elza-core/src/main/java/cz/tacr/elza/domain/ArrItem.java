@@ -12,6 +12,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import cz.tacr.elza.service.cache.NodeCacheSerializable;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.NumericField;
@@ -32,7 +33,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
-public abstract class ArrItem {
+public abstract class ArrItem implements NodeCacheSerializable {
 
     public static final String ITEM_SPEC = "itemSpec";
     public static final String ITEM_TYPE = "itemType";
@@ -84,10 +85,16 @@ public abstract class ArrItem {
     @JoinColumn(name = "itemTypeId", nullable = false)
     private RulItemType itemType;
 
+    @Column(name = "itemTypeId", nullable = false, updatable = false, insertable = false)
+    private Integer itemTypeId;
+
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.EAGER, targetEntity = RulItemSpec.class)
-    @JoinColumn(name = "itemSpecId", nullable = true)
+    @JoinColumn(name = "itemSpecId")
     private RulItemSpec itemSpec;
+
+    @Column(name = "itemSpecId", updatable = false, insertable = false)
+    private Integer itemSpecId;
 
     @Column(nullable = false)
     private Integer position;
@@ -118,9 +125,7 @@ public abstract class ArrItem {
 
     public void setCreateChange(final ArrChange createChange) {
         this.createChange = createChange;
-        if (createChange != null) {
-            createChangeId = createChange.getChangeId();
-        }
+        this.createChangeId = createChange == null ? null : createChange.getChangeId();
     }
 
     public ArrChange getDeleteChange() {
@@ -129,9 +134,7 @@ public abstract class ArrItem {
 
     public void setDeleteChange(final ArrChange deleteChange) {
         this.deleteChange = deleteChange;
-        if (deleteChange != null) {
-            deleteChangeId = deleteChange.getChangeId();
-        }
+        this.deleteChangeId = deleteChange == null ? null : deleteChange.getChangeId();
     }
 
     /**
@@ -184,6 +187,7 @@ public abstract class ArrItem {
      */
     public void setItemType(final RulItemType itemType) {
         this.itemType = itemType;
+        this.itemTypeId = itemType == null ? null : itemType.getItemTypeId();
     }
 
     /**
@@ -200,6 +204,7 @@ public abstract class ArrItem {
      */
     public void setItemSpec(final RulItemSpec itemSpec) {
         this.itemSpec = itemSpec;
+        this.itemSpecId = itemSpec == null ? null : itemSpec.getItemSpecId();
     }
 
     @Override
@@ -235,5 +240,29 @@ public abstract class ArrItem {
 
     public ArrItemData getItem() {
         return item;
+    }
+
+    public void setCreateChangeId(final Integer createChangeId) {
+        this.createChangeId = createChangeId;
+    }
+
+    public void setDeleteChangeId(final Integer deleteChangeId) {
+        this.deleteChangeId = deleteChangeId;
+    }
+
+    public Integer getItemTypeId() {
+        return itemTypeId;
+    }
+
+    public void setItemTypeId(final Integer itemTypeId) {
+        this.itemTypeId = itemTypeId;
+    }
+
+    public Integer getItemSpecId() {
+        return itemSpecId;
+    }
+
+    public void setItemSpecId(final Integer itemSpecId) {
+        this.itemSpecId = itemSpecId;
     }
 }

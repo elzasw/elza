@@ -8,6 +8,7 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import cz.tacr.elza.service.cache.NodeCacheService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,12 +62,23 @@ public class StartupService {
     @Autowired
     private RequestQueueService requestQueueService;
 
+    @Autowired
+    private NodeCacheService nodeCacheService;
+
     @PostConstruct
     private void init() {
+        syncNodeCacheService();
         clearBulkActions();
         revalidateNodes();
         clearOutputGeneration();
         runQueuedRequests();
+    }
+
+    /**
+     * Provede spuštění synchronizace cache pro JP.
+     */
+    private void syncNodeCacheService() {
+        nodeCacheService.syncCache();
     }
 
     /**

@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.exception.Level;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -89,6 +90,8 @@ public class DaoService {
     @Autowired
     private DaoFileGroupRepository daoFileGroupRepository;
 
+    @Autowired
+    private ArrangementCacheService arrangementCacheService;
 
     /**
      * Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní jednotku popisu (JP) nebo nemá žádné napojení (pouze pod archivní souborem (AS)).
@@ -134,6 +137,10 @@ public class DaoService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrDaoLink createOrFindDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion, final ArrDao dao, final ArrNode node) {
+        if (!dao.getValid()) {
+            throw new BusinessException("Nelze připojit digitální entitu k JP, protože je nevalidní", ArrangementCode.INVALID_DAO).level(Level.WARNING);
+        }
+
         // kontrola, že ještě neexistuje vazba na zadaný node
         final List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaoAndNodeAndDeleteChangeIsNull(dao, node);
 
@@ -159,6 +166,8 @@ public class DaoService {
 
             logger.debug("Založeno nové propojení mezi DAO(ID=" + dao.getDaoId() + ") a node(ID=" + node.getNodeId() + ").");
             resultDaoLink = daoLinkRepository.save(daoLink);
+
+            arrangementCacheService.createDaoLink(daoLink.getNodeId(), resultDaoLink);
 
             // poslat i websockety o připojení
             EventIdNodeIdInVersion event = new EventIdNodeIdInVersion(EventType.DAO_LINK_CREATE, fundVersion.getFundVersionId(),
@@ -209,6 +218,11 @@ public class DaoService {
         final ArrDaoLink resultDaoLink = daoLinkRepository.save(daoLink);
 
         for (ArrFundVersion arrFundVersion : fundVersionList) {
+
+            if (arrFundVersion.getLockChange() == null) {
+                arrangementCacheService.deleteDaoLink(daoLink.getNodeId(), daoLink.getDaoLinkId());
+            }
+
             // poslat websockety o odpojení
             EventIdNodeIdInVersion event = new EventIdNodeIdInVersion(EventType.DAO_LINK_DELETE, arrFundVersion.getFundVersionId(),
                     daoLink.getDao().getDaoId(), Collections.singletonList(daoLink.getNode().getNodeId()));

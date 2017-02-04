@@ -80,11 +80,11 @@ public abstract class BulkAction {
      * @param change   změna
      * @return finální atribut
      */
-    protected ArrDescItem deleteDescItem(final ArrDescItem descItem,
+    /*protected ArrDescItem deleteDescItem(final ArrDescItem descItem,
                                          final ArrFundVersion version,
                                          final ArrChange change) {
         return descriptionItemService.deleteDescriptionItem(descItem, version, change, true);
-    }
+    }*/
 
 
     /**

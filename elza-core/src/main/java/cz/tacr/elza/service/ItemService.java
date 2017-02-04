@@ -20,6 +20,7 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.FundFileRepository;
 import org.apache.commons.lang.NotImplementedException;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.BeanUtils;
@@ -64,7 +65,6 @@ import cz.tacr.elza.domain.ArrItemText;
 import cz.tacr.elza.domain.ArrItemUnitdate;
 import cz.tacr.elza.domain.ArrItemUnitid;
 import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -87,7 +87,6 @@ import cz.tacr.elza.repository.DataStringRepository;
 import cz.tacr.elza.repository.DataTextRepository;
 import cz.tacr.elza.repository.DataUnitdateRepository;
 import cz.tacr.elza.repository.DataUnitidRepository;
-import cz.tacr.elza.repository.FileRepository;
 import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.PacketRepository;
@@ -178,7 +177,7 @@ public class ItemService implements InitializingBean {
     private PacketRepository packetRepository;
 
     @Autowired
-    private FileRepository fileRepository;
+    private FundFileRepository fundFileRepository;
 
     @Autowired
     private RegRecordRepository recordRepository;
@@ -1138,9 +1137,9 @@ public class ItemService implements InitializingBean {
         }
 
         Set<Integer> fileIds = partyMap.keySet();
-        List<DmsFile> fileEntities = fileRepository.findAll(fileIds);
-        for (DmsFile fileEntity : fileEntities) {
-            fileMap.get(fileEntity.getFileId()).setFile((ArrFile) fileEntity);
+        List<ArrFile> fileEntities = fundFileRepository.findAll(fileIds);
+        for (ArrFile fileEntity : fileEntities) {
+            fileMap.get(fileEntity.getFileId()).setFile(fileEntity);
         }
 
         Set<Integer> recordIds = recordMap.keySet();

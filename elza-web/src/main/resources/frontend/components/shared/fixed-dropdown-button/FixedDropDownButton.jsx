@@ -13,7 +13,7 @@ require ('./FixedDropDownButton.less');
 var FixedDropDownButton = class FixedDropDownButton extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.bindMethods("setSizes")
+        this.bindMethods("setSizes");
         this.state = {marginSide: 0, marginTop: 0};
     }
 
@@ -29,7 +29,7 @@ var FixedDropDownButton = class FixedDropDownButton extends AbstractReactCompone
 
         dropMenu[1].style.display = "block";
         const calHeight = dropMenu[1].offsetHeight;
-        dropMenu[1].style.display = null;
+        dropMenu[1].style.display = "";
 
         const newState = {
             marginSide: this.props.pullRight ?

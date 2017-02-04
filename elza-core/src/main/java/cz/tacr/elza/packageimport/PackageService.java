@@ -387,9 +387,9 @@ public class PackageService {
      * @param file soubor balíčku
      */
     public void importPackage(final File file) {
-        File dirActions = new File(bulkActionConfigManager.getPath());
-        File dirRules = new File(rulesExecutor.getRootPath());
-        File dirTemplates = new File(outputGeneratorService.getTemplatesDir());
+        File dirActions = null;
+        File dirRules = null;
+        File dirTemplates = null;
 
         ZipFile zipFile = null;
         List<RulAction> rulPackageActions = null;
@@ -411,6 +411,21 @@ public class PackageService {
             }
 
             RulPackage rulPackage = processRulPackage(packageInfo);
+
+            dirActions = new File(bulkActionConfigManager.getFunctionsDir(rulPackage.getCode()));
+            if (!dirActions.exists()) {
+                dirActions.mkdirs();
+            }
+
+            dirRules = new File(rulesExecutor.getDroolsDir(rulPackage.getCode()));
+            if (!dirRules.exists()) {
+                dirRules.mkdirs();
+            }
+
+            dirTemplates = new File(outputGeneratorService.getTemplatesDir(rulPackage.getCode()));
+            if (!dirTemplates.exists()) {
+                dirTemplates.mkdirs();
+            }
 
             originalRulTemplates = templateRepository.findByRulPackage(rulPackage);
 
@@ -492,14 +507,21 @@ public class PackageService {
 
             entityManager.flush();
 
-            cleanBackupFiles(dirActions);
-            cleanBackupFiles(dirRules);
-
-            if (originalRulTemplates != null) {
-                cleanBackupTemplates(dirTemplates, originalRulTemplates);
+            if (dirActions != null) {
+                cleanBackupFiles(dirActions);
             }
-            if (newRultemplates != null) {
-                cleanBackupTemplates(dirTemplates, newRultemplates);
+
+            if (dirRules != null) {
+                cleanBackupFiles(dirRules);
+            }
+
+            if (dirTemplates != null) {
+                if (originalRulTemplates != null) {
+                    cleanBackupTemplates(dirTemplates, originalRulTemplates);
+                }
+                if (newRultemplates != null) {
+                    cleanBackupTemplates(dirTemplates, newRultemplates);
+                }
             }
 
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
@@ -538,8 +560,14 @@ public class PackageService {
                     }
                 }
 
-                rollBackFiles(dirActions);
-                rollBackFiles(dirRules);
+                if (dirActions != null) {
+                    rollBackFiles(dirActions);
+                }
+
+                if (dirRules != null) {
+                    rollBackFiles(dirRules);
+                }
+
                 bulkActionConfigManager.load();
 
                 if (e instanceof AbstractException) {
@@ -1743,8 +1771,10 @@ public class PackageService {
 
         File[] files = dir.listFiles((dir1, name) -> name.endsWith(".bck"));
 
-        for (File file : files) {
-            file.delete();
+        if (files != null) {
+            for (File file : files) {
+                file.delete();
+            }
         }
     }
 
@@ -1757,12 +1787,14 @@ public class PackageService {
 
         File[] files = dir.listFiles((dir1, name) -> name.endsWith(".bck"));
 
-        for (File file : files) {
-            File fileMove = new File(StringUtils.stripEnd(file.getPath(), ".bck"));
-            if (fileMove.exists()) {
-                fileMove.delete();
+        if (files != null) {
+            for (File file : files) {
+                File fileMove = new File(StringUtils.stripEnd(file.getPath(), ".bck"));
+                if (fileMove.exists()) {
+                    fileMove.delete();
+                }
+                Files.move(file.toPath(), fileMove.toPath());
             }
-            Files.move(file.toPath(), fileMove.toPath());
         }
     }
 
@@ -2219,8 +2251,8 @@ public class PackageService {
         }
         itemSpecRepository.delete(rulDescItemSpecs);
 
-        File dirActions = new File(bulkActionConfigManager.getPath());
-        File dirRules = new File(rulesExecutor.getRootPath());
+        File dirActions = new File(bulkActionConfigManager.getFunctionsDir(rulPackage.getCode()));
+        File dirRules = new File(rulesExecutor.getDroolsDir(rulPackage.getCode()));
 
 
         try {
@@ -2756,7 +2788,7 @@ public class PackageService {
             Template outputType = new Template();
             convertTemplate(rulOutputType, outputType);
             ruleSetList.add(outputType);
-            File dir = new File(outputGeneratorService.getTemplatesDir() + File.separator + rulOutputType.getDirectory() + File.separator);
+            File dir = new File(outputGeneratorService.getTemplatesDir(rulPackage.getCode()) + File.separator + rulOutputType.getDirectory() + File.separator);
             for (File dirFile : dir.listFiles()) {
                 addToZipFile(ZIP_DIR_TEMPLATES + "/" + rulOutputType.getDirectory() + "/" + dirFile.getName(), dirFile, zos);
             }
@@ -2850,7 +2882,7 @@ public class PackageService {
             convertPackageRule(rulPackageRule, packageRule);
             packageRuleList.add(packageRule);
 
-            addToZipFile(ZIP_DIR_RULES + "/" + rulPackageRule.getFilename(), new File(rulesExecutor.getRootPath()
+            addToZipFile(ZIP_DIR_RULES + "/" + rulPackageRule.getFilename(), new File(rulesExecutor.getDroolsDir(rulPackage.getCode())
                     + File.separator + rulPackageRule.getFilename()), zos);
 
         }
@@ -2879,7 +2911,7 @@ public class PackageService {
             packageActionList.add(packageAction);
 
             addToZipFile(ZIP_DIR_ACTIONS + "/" + rulPackageAction.getFilename(),
-                    new File(bulkActionConfigManager.getPath() + File.separator + rulPackageAction.getFilename()), zos);
+                    new File(bulkActionConfigManager.getFunctionsDir(rulPackage.getCode()) + File.separator + rulPackageAction.getFilename()), zos);
         }
 
         addObjectToZipFile(packageActions, zos, PACKAGE_ACTIONS_XML);
@@ -3165,3 +3197,4 @@ public class PackageService {
         this.testing = testing;
     }
 }
+

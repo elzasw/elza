@@ -58,19 +58,25 @@ class ArrDaos extends AbstractReactComponent {
                 prevDaoList = prevProps.fund.nodeDaoList;
             }
             nextDaoList = nextProps.fund.nodeDaoList;
-            this.props.dispatch(daoActions.fetchNodeDaoListIfNeeded(fund.versionId, nodeId));
+            if (nodeId != null) {
+                this.props.dispatch(daoActions.fetchNodeDaoListIfNeeded(fund.versionId, nodeId));
+            }
         } else if (type === "NODE_ASSIGN") {
             if (prevProps.fund) {
                 prevDaoList = prevProps.fund.nodeDaoListAssign;
             }
             nextDaoList = nextProps.fund.nodeDaoListAssign;
-            this.props.dispatch(daoActions.fetchNodeDaoListAssignIfNeeded(fund.versionId, nodeId));
+            if (nodeId != null) {
+                this.props.dispatch(daoActions.fetchNodeDaoListAssignIfNeeded(fund.versionId, nodeId));
+            }
         } else if (type === "PACKAGE") {
             if (prevProps.fund) {
                 prevDaoList = prevProps.fund.packageDaoList;
             }
             nextDaoList = nextProps.fund.packageDaoList;
-            this.props.dispatch(daoActions.fetchDaoPackageDaoListIfNeeded(fund.versionId, daoPackageId, unassigned));
+            if (daoPackageId != null) {
+                this.props.dispatch(daoActions.fetchDaoPackageDaoListIfNeeded(fund.versionId, daoPackageId, unassigned));
+            }
         }
 
         if ((prevProps.fund && prevDaoList.isFetching || !prevProps.fund) && nextDaoList.fetched && !nextDaoList.isFetching) {  // donačetl data, pokusíme se nastavit aktuálně vybranou položku
@@ -112,9 +118,6 @@ class ArrDaos extends AbstractReactComponent {
         } else if (type === "PACKAGE") {
             daoList = fund.packageDaoList;
         }
-        if (!daoList.fetched) {
-            return <Loading/>;
-        }
 
         let activeIndex;
         let selectedItem;
@@ -130,17 +133,18 @@ class ArrDaos extends AbstractReactComponent {
                 <div className="daos-list">
                     <div className="title">Digitální entity</div>
                     <div className="daos-list-items">
-                        <ListBox
+                        {!(!daoList.fetched && daoPackageId) && <ListBox
                             activeIndex={activeIndex}
                             className="data-container"
                             items={daoList.rows}
                             renderItemContent={this.renderItem}
                             onFocus={this.handleSelect}
-                        />
+                        />}
+                        {!daoList.fetched && daoPackageId && <Loading/>}
                     </div>
                 </div>
                 <div className="daos-detail">
-                    {selectedItem && <ArrDao fund={fund} dao={selectedItem} onUnlink={() => this.handleUnlink(selectedItem) } />}
+                    {/*selectedItem &&*/ <ArrDao fund={fund} dao={selectedItem} onUnlink={() => this.handleUnlink(selectedItem) } />}
                 </div>
             </div>
         );

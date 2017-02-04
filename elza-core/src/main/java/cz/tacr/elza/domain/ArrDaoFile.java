@@ -79,7 +79,7 @@ public class ArrDaoFile implements Serializable {
     @Column(length = StringLength.LENGTH_250)
     private String duration;
 
-    @Column(nullable = false, length = StringLength.LENGTH_50, unique = true)
+    @Column(nullable = false, length = StringLength.LENGTH_1000, unique = true)
     private String code;
 
     public Integer getDaoFileId() {

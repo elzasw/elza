@@ -18,12 +18,23 @@ public class ArrItemFileRef extends ArrItemData {
     @JoinColumn(name = "fileId", nullable = false)
     private ArrFile file;
 
+    private Integer fileId;
+
     public ArrFile getFile() {
         return file;
     }
 
-    public void setFile(final ArrFile packet) {
-        this.file = packet;
+    public void setFile(final ArrFile file) {
+        this.file = file;
+        this.fileId = file == null ? null : file.getFileId();
+    }
+
+    public Integer getFileId() {
+        return fileId;
+    }
+
+    public void setFileId(final Integer fileId) {
+        this.fileId = fileId;
     }
 
     @Override

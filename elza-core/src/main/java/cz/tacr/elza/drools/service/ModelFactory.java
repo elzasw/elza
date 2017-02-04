@@ -17,7 +17,7 @@ import cz.tacr.elza.drools.model.Packet;
 /**
  * Factory method for the base Drools model objects.
  * This class contains only static methods.
- * 
+ *
  * @author Petr Pytelka
  */
 public class ModelFactory {
@@ -36,7 +36,7 @@ public class ModelFactory {
 
         return item;
     }
-    
+
     /**
      * Vytvoří level.
      *
@@ -51,18 +51,19 @@ public class ModelFactory {
 
         return result;
     }
-    
+
     /**
      * Vytvoří hodnoty atributu.
      *
      * @param descItems hodnoty atributu
+     * @param lastVersion
      * @return seznam vo hodnot atributu
      */
     static public List<DescItem> createDescItems(@Nullable final List<ArrDescItem> descItems,
-    		Set<RulItemType> descItemTypesForPackets,
-    		Set<RulItemType> descItemTypesForIntegers,
-    		DescItemFactory descItemFactory
-    		) 
+                                                 Set<RulItemType> descItemTypesForPackets,
+                                                 Set<RulItemType> descItemTypesForIntegers,
+                                                 DescItemFactory descItemFactory,
+                                                 final boolean lastVersion)
     {
     	if(descItems==null) {
     		return new ArrayList<>();
@@ -73,14 +74,11 @@ public class ModelFactory {
             result.add(voDescItem);
 
             if (descItemTypesForPackets.contains(descItem.getItemType())) {
-                ArrItemPacketRef packetRef = (ArrItemPacketRef) descItemFactory.getDescItem(descItem).getItem();
-
+                ArrItemPacketRef packetRef = lastVersion ? (ArrItemPacketRef) descItem.getItem() : (ArrItemPacketRef) descItemFactory.getDescItem(descItem).getItem();
                 ArrPacket packet = packetRef.getPacket();
-                if (packet != null) {
-                    voDescItem.setPacket(createPacket(packet));
-                }
+                voDescItem.setPacket(createPacket(packet));
             } else if (descItemTypesForIntegers.contains(descItem.getItemType())) {
-                ArrItemInt integer = (ArrItemInt) descItemFactory.getDescItem(descItem).getItem();
+                ArrItemInt integer = lastVersion ? (ArrItemInt) descItem.getItem() : (ArrItemInt) descItemFactory.getDescItem(descItem).getItem();
                 voDescItem.setInteger(integer.getValue());
             }
         }
@@ -120,6 +118,6 @@ public class ModelFactory {
 			facts.add(level);
 			level = level.getParent();
 		}
-		
+
 	}
 }

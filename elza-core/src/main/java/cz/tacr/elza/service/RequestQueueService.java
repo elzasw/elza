@@ -303,7 +303,8 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
 
         private void execute(final ArrRequestQueueItem queueItem) {
 
-            List<ArrFundVersion> versions = queueItem.getRequest().getFund().getVersions();
+            ArrRequest request = queueItem.getRequest();
+            List<ArrFundVersion> versions = request.getFund().getVersions();
 
             ArrFundVersion openVersion = null;
             for (ArrFundVersion version : versions) {
@@ -313,22 +314,23 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
                 }
             }
 
-            sendNotification(openVersion, queueItem.getRequest(), queueItem, EventType.REQUEST_ITEM_QUEUE_CHANGE);
+            sendNotification(openVersion, request, queueItem, EventType.REQUEST_ITEM_QUEUE_CHANGE);
 
-            if (ArrRequest.ClassType.DIGITIZATION == queueItem.getRequest().getDiscriminator()) {
-                ArrDigitizationRequest arrDigitizationRequest = (ArrDigitizationRequest) queueItem.getRequest();
-                wsClient.postRequest(arrDigitizationRequest);
-            } else if (ArrRequest.ClassType.DAO == queueItem.getRequest().getDiscriminator()) {
-                ArrDaoRequest arrDaoRequest = (ArrDaoRequest) queueItem.getRequest();
+            String externalSystemCode = null;
+            if (ArrRequest.ClassType.DIGITIZATION == request.getDiscriminator()) {
+                ArrDigitizationRequest arrDigitizationRequest = (ArrDigitizationRequest) request;
+                externalSystemCode = wsClient.postRequest(arrDigitizationRequest);
+            } else if (ArrRequest.ClassType.DAO == request.getDiscriminator()) {
+                ArrDaoRequest arrDaoRequest = (ArrDaoRequest) request;
                 if (ArrDaoRequest.Type.DESTRUCTION == arrDaoRequest.getType()) {
-                    wsClient.postDestructionRequest(arrDaoRequest);
+                    externalSystemCode = wsClient.postDestructionRequest(arrDaoRequest);
                 } else if (ArrDaoRequest.Type.TRANSFER == arrDaoRequest.getType()) {
-                    wsClient.postTransferRequest(arrDaoRequest);
+                    externalSystemCode = wsClient.postTransferRequest(arrDaoRequest);
                 } else {
                     throw new SystemException("Neplatný typ: " + arrDaoRequest.getType(), BaseCode.SYSTEM_ERROR);
                 }
-            } else if (ArrRequest.ClassType.DAO_LINK == queueItem.getRequest().getDiscriminator()) {
-                ArrDaoLinkRequest arrDaoLinkRequest = (ArrDaoLinkRequest) queueItem.getRequest();
+            } else if (ArrRequest.ClassType.DAO_LINK == request.getDiscriminator()) {
+                ArrDaoLinkRequest arrDaoLinkRequest = (ArrDaoLinkRequest) request;
                 if (ArrDaoLinkRequest.Type.LINK == arrDaoLinkRequest.getType()) {
                     wsClient.onDaoLinked(arrDaoLinkRequest);
                 } else if (ArrDaoLinkRequest.Type.UNLINK == arrDaoLinkRequest.getType()) {
@@ -337,12 +339,15 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
                     throw new SystemException("Neplatný typ: " + arrDaoLinkRequest.getType(), BaseCode.SYSTEM_ERROR);
                 }
             } else {
-                throw new SystemException("Neplatný objekt: " + queueItem.getRequest().getDiscriminator(), BaseCode.SYSTEM_ERROR);
+                throw new SystemException("Neplatný objekt: " + request.getDiscriminator(), BaseCode.SYSTEM_ERROR);
             }
 
-            requestService.setRequestState(queueItem.getRequest(), ArrRequest.State.QUEUED, ArrRequest.State.SENT);
+            request.setExternalSystemCode(externalSystemCode);
+
+            requestService.setRequestState(request, ArrRequest.State.QUEUED, ArrRequest.State.SENT);
             queueItem.setSend(true);
             queueItem.setError(null);
+            requestRepository.save(request);
             requestQueueItemRepository.save(queueItem);
         }
 

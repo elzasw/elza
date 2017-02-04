@@ -35,7 +35,7 @@ public class ArrDaoFileGroup implements Serializable {
     @Column(length = StringLength.LENGTH_250)
     private String label;
 
-    @Column(length = StringLength.LENGTH_50, unique = true)
+    @Column(length = StringLength.LENGTH_1000, unique = true)
     private String code;
 
     public Integer getDaoFileGroupId() {

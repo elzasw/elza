@@ -12,12 +12,23 @@ public class ArrItemPartyRef extends ArrItemData {
 
     private ParParty party;
 
+    private Integer partyId;
+
     public ParParty getParty() {
         return party;
     }
 
     public void setParty(final ParParty party) {
         this.party = party;
+        this.partyId = party == null ? null : party.getPartyId();
+    }
+
+    public Integer getPartyId() {
+        return partyId;
+    }
+
+    public void setPartyId(final Integer partyId) {
+        this.partyId = partyId;
     }
 
     @Override

@@ -56,7 +56,7 @@ public class OutputItemTypesRules extends Rules {
                 throw new IllegalStateException("Neplatný typ pravidel pro výstup: " + rule.getRuleType().name());
             }
 
-            Path path = Paths.get(rulesExecutor.getRootPath() + File.separator + rule.getFilename());
+            Path path = Paths.get(rulesExecutor.getDroolsDir(rule.getPackage().getCode()) + File.separator + rule.getFilename());
             StatelessKieSession session = createNewStatelessKieSession(path);
             execute(session, facts);
         }

@@ -119,6 +119,11 @@ public enum ArrangementCode implements ErrorCode {
     FILTER_EXPIRED,
 
     /**
+     * Nelze připojit digitální entitu k JP, protože je nevalidní.
+     */
+    INVALID_DAO,
+
+    /**
      * Typ formy jména neexistuje.
      */
     PARTY_NAME_FORM_TYPE_NOT_FOUND

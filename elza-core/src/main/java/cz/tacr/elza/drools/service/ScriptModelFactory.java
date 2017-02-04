@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.service.cache.NodeCacheService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -68,6 +69,9 @@ public class ScriptModelFactory {
     @Autowired
     private DescItemRepository descItemRepository;
 
+    @Autowired
+    private NodeCacheService nodeCacheService;
+
     /**
      * Převede stromovou strukturu na seznam.
      *
@@ -101,7 +105,7 @@ public class ScriptModelFactory {
      * @param descItems hodnoty atributu
      * @return seznam vo hodnot atributu
      */
-    public List<DescItem> createDescItems(@Nullable final List<ArrDescItem> descItems) {
+    public List<DescItem> createDescItems(@Nullable final List<ArrDescItem> descItems, final boolean lastVersion) {
         if (descItems == null) {
             return Collections.emptyList();
         }
@@ -109,7 +113,7 @@ public class ScriptModelFactory {
         Set<RulItemType> descItemTypesForPackets = itemTypeRepository.findDescItemTypesForPackets();
         Set<RulItemType> descItemTypesForIntegers = itemTypeRepository.findDescItemTypesForIntegers();
 
-        return ModelFactory.createDescItems(descItems, descItemTypesForPackets, descItemTypesForIntegers, descItemFactory);
+        return ModelFactory.createDescItems(descItems, descItemTypesForPackets, descItemTypesForIntegers, descItemFactory, lastVersion);
     }
 
     /**
@@ -124,7 +128,7 @@ public class ScriptModelFactory {
         Set<ArrNode> nodes = new HashSet<>();
         nodes.add(level.getNode());
 
-        DescItemReader descItemReader = new DescItemReader(descItemRepository, itemTypeRepository, descItemFactory);
+        DescItemReader descItemReader = new DescItemReader(descItemRepository, itemTypeRepository, descItemFactory, nodeCacheService);
 
         Level mainLevel = ModelFactory.createLevel(level, version);
         descItemReader.add(mainLevel, level.getNode());
@@ -232,7 +236,7 @@ public class ScriptModelFactory {
     {
         Level srcModelLevel = createLevelModel(level, version);
 
-        DescItemReader descItemReader = new DescItemReader(descItemRepository, itemTypeRepository, descItemFactory);
+        DescItemReader descItemReader = new DescItemReader(descItemRepository, itemTypeRepository, descItemFactory, nodeCacheService);
 
         // Parent level
         Level parentLevel = null;
@@ -332,7 +336,7 @@ public class ScriptModelFactory {
     public ActiveLevel createActiveLevel(final Level modelLevel,
                                          final ArrLevel level,
                                          final ArrFundVersion version) {
-        DescItemReader descItemReader = new DescItemReader(descItemRepository, itemTypeRepository, descItemFactory);
+        DescItemReader descItemReader = new DescItemReader(descItemRepository, itemTypeRepository, descItemFactory, nodeCacheService);
 
         ActiveLevel activeLevel = new ActiveLevel(modelLevel);
 

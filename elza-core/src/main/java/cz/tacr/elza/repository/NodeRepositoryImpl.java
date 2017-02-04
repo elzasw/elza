@@ -3,6 +3,7 @@ package cz.tacr.elza.repository;
 import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -161,6 +162,33 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
             result = textNodeIds;
         } else {
             result = dateNodeIds;
+        }
+
+        return result;
+    }
+
+    @Override
+    public Map<Integer, List<Integer>> findUncachedNodes() {
+
+        String hql = "SELECT n.fundId, n.nodeId FROM arr_node n WHERE n.nodeId NOT IN (SELECT cn.nodeId FROM arr_cached_node cn)";
+
+        javax.persistence.Query query = entityManager.createQuery(hql);
+
+
+        List<Object[]> resultList = (List<Object[]>) query.getResultList();
+
+        Map<Integer, List<Integer>> result = new HashMap<>();
+        for (Object[] o : resultList) {
+            Integer fundId = ((Number)o[0]).intValue();
+            Integer nodeId = ((Number)o[1]).intValue();
+
+            List<Integer> nodeIds = result.get(fundId);
+            if (nodeIds == null) {
+                nodeIds = new ArrayList<>();
+                result.put(fundId, nodeIds);
+            }
+
+            nodeIds.add(nodeId);
         }
 
         return result;

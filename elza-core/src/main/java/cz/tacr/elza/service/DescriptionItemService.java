@@ -143,6 +143,9 @@ public class DescriptionItemService {
     @Autowired
     private ItemService itemService;
 
+    @Autowired
+    private ArrangementCacheService arrangementCacheService;
+
     /**
      * Kontrola otevřené verze.
      *
@@ -203,6 +206,7 @@ public class DescriptionItemService {
         saveNode(descItem.getNode(), change);
 
         ArrDescItem descItemDeleted = deleteDescriptionItem(descItem, fundVersion, change, true);
+        arrangementCacheService.deleteDescItem(descItem.getNodeId(), descItemObjectId);
 
         // validace uzlu
         ruleService.conformityInfo(fundVersionId, Arrays.asList(descItem.getNode().getNodeId()),
@@ -249,9 +253,14 @@ public class DescriptionItemService {
         }
 
         List<ArrDescItem> descItemsDeleted = new ArrayList<>(descItems.size());
+        List<Integer> descItemObjectIds = new ArrayList<>(descItems.size());
         for (ArrDescItem descItem : descItems) {
-            descItemsDeleted.add(deleteDescriptionItem(descItem, fundVersion, change, false));
+            ArrDescItem arrDescItem = deleteDescriptionItem(descItem, fundVersion, change, false);
+            descItemObjectIds.add(arrDescItem.getDescItemObjectId());
+            descItemsDeleted.add(arrDescItem);
         }
+
+        arrangementCacheService.deleteDescItems(nodeId, descItemObjectIds);
 
         // validace uzlu
         ruleService.conformityInfo(fundVersionId, Arrays.asList(node.getNodeId()),
@@ -293,9 +302,14 @@ public class DescriptionItemService {
         }
 
         List<ArrDescItem> descItemsDeleted = new ArrayList<>(descItems.size());
+        List<Integer> descItemObjectIds = new ArrayList<>(descItems.size());
         for (ArrDescItem descItem : descItems) {
-            descItemsDeleted.add(deleteDescriptionItem(descItem, fundVersion, change, false));
+            ArrDescItem arrDescItem = deleteDescriptionItem(descItem, fundVersion, change, false);
+            descItemObjectIds.add(arrDescItem.getDescItemObjectId());
+            descItemsDeleted.add(arrDescItem);
         }
+
+        arrangementCacheService.deleteDescItems(nodeId, descItemObjectIds);
 
         // validace uzlu
         ruleService.conformityInfo(fundVersionId, Arrays.asList(node.getNodeId()),
@@ -478,6 +492,7 @@ public class DescriptionItemService {
                 descItem.getNode(),
                 descItem.getPosition() - 1);
 
+        List<ArrDescItem> descItemNews = new ArrayList<>(descItems.size());
         for (ArrDescItem descItemMove : descItems) {
 
             descItemMove.setDeleteChange(change);
@@ -498,12 +513,21 @@ public class DescriptionItemService {
 
             descItemRepository.save(descItemNew);
 
+            descItemNews.add(descItemNew);
+
             // pro odverzovanou hodnotu atributu je nutné vytvořit kopii dat
             copyDescItemData(descItemMove, descItemNew);
         }
 
+        if (CollectionUtils.isNotEmpty(descItemNews)) {
+            arrangementCacheService.changeDescItems(descItemNews.get(0).getNodeId(), descItemNews, true);
+        }
+
         descItem.setCreateChange(change);
-        return descItemFactory.saveDescItemWithData(descItem, true);
+        descItemFactory.saveDescItemWithData(descItem, true);
+
+        arrangementCacheService.createDescItem(descItem.getNodeId(), descItem);
+        return descItem;
     }
 
     /**
@@ -578,6 +602,7 @@ public class DescriptionItemService {
      */
     private void copyDescItemsWithData(final ArrChange change, final List<ArrDescItem> descItems, final Integer diff,
                                        final ArrFundVersion version) {
+        List<ArrDescItem> descItemNews = new ArrayList<>(descItems.size());
         for (ArrDescItem descItemMove : descItems) {
 
             ArrDescItem descItemNew = copyDescItem(change, descItemMove, descItemMove.getPosition() + diff);
@@ -587,6 +612,10 @@ public class DescriptionItemService {
 
             // pro odverzovanou hodnotu atributu je nutné vytvořit kopii dat
             copyDescItemData(descItemMove, descItemNew);
+        }
+
+        if (CollectionUtils.isNotEmpty(descItemNews)) {
+            arrangementCacheService.changeDescItems(descItemNews.get(0).getNodeId(), descItemNews, true);
         }
     }
 
@@ -953,6 +982,8 @@ public class DescriptionItemService {
             descItemOrig.setItemSpec(descItem.getItemSpec());
             descItemUpdated = descItemFactory.saveDescItemWithData(descItemOrig, false);
         }
+
+        arrangementCacheService.changeDescItem(descItemUpdated.getNodeId(), descItemUpdated, false);
 
         // sockety
         publishChangeDescItem(version, descItemUpdated);
@@ -1407,8 +1438,19 @@ public class DescriptionItemService {
 
         ArrChange change = arrangementService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
 
+        Map<Integer, List<Integer>> nodeDescItems = new HashMap<>();
         for (ArrDescItem descItem : descItems) {
+            List<Integer> descItemList = nodeDescItems.get(descItem.getNodeId());
+            if (descItemList == null) {
+                descItemList = new ArrayList<>();
+                nodeDescItems.put(descItem.getNodeId(), descItemList);
+            }
+            descItemList.add(descItem.getDescItemObjectId());
             deleteDescriptionItem(descItem, version, change, false);
+        }
+
+        for (Map.Entry<Integer, List<Integer>> entry : nodeDescItems.entrySet()) {
+            arrangementCacheService.deleteDescItems(entry.getKey(), entry.getValue());
         }
 
         //pokud má specifikaci a není opakovatelný, musíme zkontrolovat,
@@ -1427,36 +1469,32 @@ public class DescriptionItemService {
 
             arrangementService.lockNode(dbNode, nodesMap.get(dbNode.getNodeId()), change);
 
-            ArrData data = createDataByType(descItemType);
+            ArrItemData itemData;
 
             Class<? extends ArrItemData> clazz = null;
             switch (descItemType.getDataType().getCode()) {
                 case "TEXT":
-                    clazz = ArrItemText.class;
+                    ArrItemText itemText = new ArrItemText();
+                    itemText.setValue(text);
+                    itemData = itemText;
+                    break;
                 case "FORMATTED_TEXT":
-                    if (clazz == null) {
-                        clazz = ArrItemFormattedText.class;
-                    }
-                    ArrDataText textData = (ArrDataText) data;
-                    textData.setValue(text);
+                    ArrItemFormattedText itemFormattedText = new ArrItemFormattedText();
+                    itemFormattedText.setValue(text);
+                    itemData = itemFormattedText;
                     break;
                 case "STRING":
-                    clazz = ArrItemString.class;
-                    ArrDataString stringData = (ArrDataString) data;
-                    stringData.setValue(text);
+                    ArrItemString itemString = new ArrItemString();
+                    itemString.setValue(text);
+                    itemData = itemString;
                     break;
                 default:
                     throw new IllegalStateException("Neplatný typ atributu " + descItemType.getDataType().getCode()
                             + ". Pouze textové hodnoty jdou nahradit.");
             }
 
-            ArrDescItem newDescItem = null;
-            try {
-                newDescItem = new ArrDescItem(clazz);
-            } catch (InstantiationException | IllegalAccessException e) {
-                throw new SystemException(e);
-            }
-
+            ArrDescItem newDescItem = new ArrDescItem(descItemFactory.createItemByType(descItemType.getDataType()));
+            newDescItem.setItem(itemData);
             newDescItem.setNode(dbNode);
             newDescItem.setItemType(descItemType);
             newDescItem.setItemSpec(newItemSpecification);
@@ -1464,13 +1502,9 @@ public class DescriptionItemService {
             newDescItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
             newDescItem.setPosition(1);
 
-            newDescItem = descItemRepository.save(newDescItem);
-
+            descItemFactory.saveDescItemWithData(newDescItem, true);
+            arrangementCacheService.createDescItem(newDescItem.getNodeId(), newDescItem);
             publishChangeDescItem(version, newDescItem);
-
-            data.setItem(newDescItem);
-            data.setDataType(descItemType.getDataType());
-            dataRepository.save(data);
         }
     }
 
@@ -1541,8 +1575,20 @@ public class DescriptionItemService {
         if (!descItems.isEmpty()) {
             ArrChange change = arrangementService.createChange(ArrChange.Type.BATCH_DELETE_DESC_ITEM);
 
+            Map<Integer, List<Integer>> nodeDescItems = new HashMap<>();
+
             for (ArrDescItem descItem : descItems) {
+                List<Integer> descItemList = nodeDescItems.get(descItem.getNodeId());
+                if (descItemList == null) {
+                    descItemList = new ArrayList<>();
+                    nodeDescItems.put(descItem.getNodeId(), descItemList);
+                }
+                descItemList.add(descItem.getDescItemObjectId());
                 deleteDescriptionItem(descItem, version, change, false);
+            }
+
+            for (Map.Entry<Integer, List<Integer>> entry : nodeDescItems.entrySet()) {
+                arrangementCacheService.deleteDescItems(entry.getKey(), entry.getValue());
             }
         }
     }

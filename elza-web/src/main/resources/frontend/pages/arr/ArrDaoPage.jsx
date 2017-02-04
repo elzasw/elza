@@ -184,29 +184,31 @@ class ArrDaoPage extends ArrParentPage {
         return userDetail.hasArrPage(activeFund ? activeFund.id : null);
     };
 
-    handleSelectPackage = (pkg, unassigned) => {
+    handleSelectPackage = (pkg, unassigned, selectedIndex) => {
         const fund = this.getActiveFund(this.props);
 
         if (unassigned) {
-            this.setState({selectedUnassignedPackage: pkg});
+            this.setState({selectedUnassignedPackage: pkg, selectedIndex});
         } else {
-            this.setState({selectedPackage: pkg});
+            this.setState({selectedPackage: pkg, selectedIndex});
         }
     };
 
     _renderPackages = (unassigned, selectedPackage) => {
+        const {selectedIndex} = this.state;
         const fund = this.getActiveFund(this.props);
 
         return <div className="packages-container" key={"daoPackages-" + unassigned}>
             <ArrDaoPackages
+                activeIndex={selectedIndex}
                 unassigned={unassigned}
-                onSelect={(item) => this.handleSelectPackage(item, unassigned)}
+                onSelect={(item, index) => this.handleSelectPackage(item, unassigned, index)}
             />
-            {selectedPackage && <ArrDaos
+            {/*selectedPackage && */<ArrDaos
                 type="PACKAGE"
                 unassigned={unassigned}
                 fund={fund}
-                daoPackageId={selectedPackage.id}
+                daoPackageId={selectedPackage ? selectedPackage.id : null}
                 onSelect={item => { this.setState({selectedDaoLeft: item}) }}
             />}
         </div>
@@ -234,11 +236,11 @@ class ArrDaoPage extends ArrParentPage {
                 area={types.FUND_TREE_AREA_DAOS_LEFT}
                 {...fund.fundTreeDaosLeft}
             />
-            {fund.fundTreeDaosLeft.selectedId !== null && <ArrDaos
+            {/*fund.fundTreeDaosLeft.selectedId !== null &&*/ <ArrDaos
                 type="NODE"
                 unassigned={false}
                 fund={fund}
-                nodeId={fund.fundTreeDaosLeft.selectedId}
+                nodeId={fund.fundTreeDaosLeft.selectedId ? fund.fundTreeDaosLeft.selectedId : null}
                 onSelect={item => { this.setState({selectedDaoLeft: item}) }}
             />}
         </div>
@@ -256,7 +258,7 @@ class ArrDaoPage extends ArrParentPage {
             id: 0,
             key: 0,
             title: 'Nepřiřazené entity',
-            desc: 'zbývá 300'
+            /*desc: 'zbývá 300'*/
         });
 
         tabs.push({
@@ -313,11 +315,11 @@ class ArrDaoPage extends ArrParentPage {
                             area={types.FUND_TREE_AREA_DAOS_RIGHT}
                             {...fund.fundTreeDaosRight}
                         />
-                        {fund.fundTreeDaosRight.selectedId !== null && <ArrDaos
+                        {/*fund.fundTreeDaosRight.selectedId !== null &&*/ <ArrDaos
                             type="NODE_ASSIGN"
                             unassigned={false}
                             fund={fund}
-                            nodeId={fund.fundTreeDaosRight.selectedId}
+                            nodeId={fund.fundTreeDaosRight.selectedId ? fund.fundTreeDaosRight.selectedId : null}
                         />}
                     </div>
                 </div>

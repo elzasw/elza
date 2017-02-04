@@ -1,8 +1,10 @@
 package cz.tacr.elza.domain;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import cz.tacr.elza.domain.enumeration.StringLength;
+import cz.tacr.elza.domain.interfaces.Versionable;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,14 +14,9 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import cz.tacr.elza.domain.enumeration.StringLength;
-import cz.tacr.elza.domain.interfaces.Versionable;
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.List;
 
 
 /**
@@ -48,6 +45,9 @@ public class ArrNode extends AbstractVersionableEntity implements Versionable, S
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFund.class)
     @JoinColumn(name = "fundId", nullable = false)
     private ArrFund fund;
+
+    @Column(name = "fundId", insertable = false, updatable = false)
+    private Integer fundId;
 
     @OneToMany(mappedBy = "node", fetch = FetchType.LAZY)
     private List<UIVisiblePolicy> policies;
@@ -81,10 +81,15 @@ public class ArrNode extends AbstractVersionableEntity implements Versionable, S
 
     public void setFund(final ArrFund fund) {
         this.fund = fund;
+        this.fundId = fund == null ? null : fund.getFundId();
     }
 
     public ArrFund getFund() {
         return fund;
+    }
+
+    public Integer getFundId() {
+        return fundId;
     }
 
     @Override
