@@ -60,6 +60,13 @@
         <addColumn tableName="arr_request">
             <column name="external_system_code" type="varchar(1000)" />
         </addColumn>
-    </changeSet>    
+    </changeSet>
+
+    <changeSet id="20170206102800" author="slapa">
+        <update tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="par_complement_type|complement_type_id" />
+            <where>sequence_name = 'par_complement_type|par_complement_type_id'</where>
+        </update>
+    </changeSet>
 
 </databaseChangeLog>
