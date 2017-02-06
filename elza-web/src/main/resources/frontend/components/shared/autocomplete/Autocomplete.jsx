@@ -230,6 +230,11 @@ export default class Autocomplete extends AbstractReactComponent {
     getNextFocusableItem = (index, loop) => {
         const {allowFocusItem, getItemId} = this.props;
         const items = this.getFilteredItems();
+
+        if (items == null) {
+            return null;
+        }
+
         const start = index !== null ? index : 0;
         var ii = index != null ? start + 1 : start;
         if (ii >= items.length) {   // na konci přejdeme na začátek
@@ -265,6 +270,11 @@ export default class Autocomplete extends AbstractReactComponent {
     getPrevFocusableItem = (index, loop) => {
         const {allowFocusItem, getItemId} = this.props;
         const items = this.getFilteredItems();
+
+        if (items == null) {
+            return null;
+        }
+
         const start = index !== null ? index : items.length - 1;
         var ii = index !== null ? index - 1 : start;
         if (ii < 0) {   // na konci přejdeme na začátek
