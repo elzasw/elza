@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 
@@ -107,7 +107,7 @@ public class PartyGroup {
 
     public void setContentDefinitionsString(final String contentDefinitions) {
         try {
-            TypeReference<HashMap<String,ContentDefinition>> typeRef = new TypeReference<HashMap<String,ContentDefinition>>() {};
+            TypeReference<LinkedHashMap<String,ContentDefinition>> typeRef = new TypeReference<LinkedHashMap<String,ContentDefinition>>() {};
             setContentDefinitions(objectMapper.readValue(contentDefinitions, typeRef));
         } catch (IOException e) {
             throw new SystemException(e, BaseCode.JSON_PARSE);
