@@ -978,10 +978,12 @@ export default class Autocomplete extends AbstractReactComponent {
 
         this.changeState({
             ...result,
-            isOpen: true,
             highlightedIndex
         }, () => {
-
+            this.changeState({
+                isOpen: true,
+            });
+            this.focus();
         });
     }
 
@@ -1011,6 +1013,7 @@ export default class Autocomplete extends AbstractReactComponent {
                 onBlur && onBlur(value);
             }
         })
+        this.focus();
     }
 
     render() {
