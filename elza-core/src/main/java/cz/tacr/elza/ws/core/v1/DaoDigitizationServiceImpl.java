@@ -56,7 +56,7 @@ public class DaoDigitizationServiceImpl implements DaoDigitizationService {
             logger.info("Executing operation digitizationRequestFinished for code=" + digitizationRequestResult.getIdentifier());
 
             ArrRequest request = requestRepository.findOneByCode(digitizationRequestResult.getIdentifier());
-            requestService.setRequestState(request, ArrRequest.State.SENT, ArrRequest.State.ACCEPTED);
+            requestService.setRequestState(request, ArrRequest.State.SENT, ArrRequest.State.PROCESSED);
 
             // import
              daoCoreService._import(digitizationRequestResult.getDaoImport());

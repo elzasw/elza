@@ -72,12 +72,12 @@ public abstract class ArrRequest {
         SENT,
 
         /**
-         * Přijat.
+         * Processed in other system.
          */
-        ACCEPTED,
+        PROCESSED,
 
         /**
-         * Zamítnut.
+         * Request was rejected / failed.
          */
         REJECTED
 

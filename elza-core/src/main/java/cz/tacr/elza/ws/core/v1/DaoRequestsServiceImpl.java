@@ -158,7 +158,7 @@ public class DaoRequestsServiceImpl implements DaoRequestsService {
     }
 
     private void finishDaoRequest(final ArrDaoRequest arrDaoRequest) {
-        requestService.setRequestState(arrDaoRequest, arrDaoRequest.getState(), ArrRequest.State.ACCEPTED);
+        requestService.setRequestState(arrDaoRequest, arrDaoRequest.getState(), ArrRequest.State.PROCESSED);
 
         // Označí všechny DAO z požadavku jako neplatné a ukončí jeho případné linky na JP bez notifikace
         final List<ArrDaoRequestDao> arrDaoRequestDaoList = daoRequestDaoRepository.findByDaoRequest(arrDaoRequest);
