@@ -135,7 +135,8 @@ export default function refTables(state = initialState, action = {}) {
                 ruleSet: ruleSet(state.ruleSet, action),
                 descItemTypes: descItemTypes(state.descItemTypes, action),
                 outputTypes: outputTypes(state.outputTypes, action),
-                templates: templates(state.templates, action)
+                templates: templates(state.templates, action),
+                partyTypes: partyTypes(state.partyTypes, action)
             }
         }
         default:

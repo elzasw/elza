@@ -92,6 +92,14 @@ class AddPartyForm extends AbstractReactComponent {
         if (errors.prefferedName.validFrom == null && errors.prefferedName.validTo == null) {
             delete errors.prefferedName;
         }
+
+        if (values.record && !values.record.scopeId) {
+            if (!errors.record) {
+                errors.record = {};
+            }
+            errors.record.scopeId = i18n('global.validation.required');
+        }
+
         return errors;
 
     };
@@ -185,7 +193,8 @@ class AddPartyForm extends AbstractReactComponent {
         const {recordTypes, refTables: {partyNameFormTypes, scopesData:{scopes}, calendarTypes}, partyType} = props;
 
         const registerTypeId = this.getPreselectRecordTypeId(recordTypes);
-        const scopeId = scopes.filter(i => i.versionId === null)[0].scopes[0].id;
+        const filteredScopes = scopes.filter(i => i.versionId === null)[0].scopes;
+        const scopeId = filteredScopes && filteredScopes[0] && filteredScopes[0].id ? filteredScopes[0].id : null;
         const complementsTypes = partyType.complementTypes;
         const firstCalId = calendarTypes.items[0].id;
 
