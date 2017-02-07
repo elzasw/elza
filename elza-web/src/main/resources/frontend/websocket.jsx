@@ -39,6 +39,7 @@ import {
     nodesDelete
 } from 'actions/global/change.jsx';
 
+import {reloadUserDetail} from 'actions/user/userDetail'
 
 var SockJS = require('sockjs-client');
 var Stomp = require('stompjs');
@@ -208,7 +209,7 @@ function processEvents(values) {
             case 'FUND_DELETE':
                 fundDelete(value);
                 break;
-            
+
             case 'OUTPUT_STATE_CHANGE':
                 outputStateChange(value);
                 break;
@@ -253,7 +254,8 @@ function processEvents(values) {
  * @param value
  */
 function changeUser(value) {
-    store.dispatch(userChange(value.ids))
+    store.dispatch(userChange(value.ids));
+    store.dispatch(reloadUserDetail(value.ids));
 }
 function changeGroup(value) {
     store.dispatch(groupChange(value.ids))
