@@ -5,12 +5,13 @@ import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.Lob;
 import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import cz.tacr.elza.domain.enumeration.StringLength;
+import org.hibernate.annotations.Type;
 
 
 /**
@@ -20,19 +21,27 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ParPartyGroup extends ParParty implements cz.tacr.elza.api.ParPartyGroup {
 
-    @Column(length = StringLength.LENGTH_1000, nullable = false)
+    @Column
+    @Lob
+    @Type(type = "org.hibernate.type.TextType")
     @JsonIgnore
     private String scope;
 
-    @Column(length = StringLength.LENGTH_50)
+    @Column
+    @Lob
+    @Type(type = "org.hibernate.type.TextType")
     @JsonIgnore
     private String foundingNorm;
 
-    @Column(length = StringLength.LENGTH_250)
+    @Column
+    @Lob
+    @Type(type = "org.hibernate.type.TextType")
     @JsonIgnore
     private String scopeNorm;
 
-    @Column(length = StringLength.LENGTH_1000)
+    @Column
+    @Lob
+    @Type(type = "org.hibernate.type.TextType")
     @JsonIgnore
     private String organization;
 
