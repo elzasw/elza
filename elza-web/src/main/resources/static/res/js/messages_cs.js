@@ -892,6 +892,7 @@ var messages = {
     "admin.extSystem.url": "URL",
     "admin.extSystem.username": "Username",
     "admin.extSystem.password": "Heslo",
+    "admin.extSystem.elzaCode": "Kód ELZA",
     "admin.extSystem.type": "Typ",
     "admin.extSystem.interpi": "Interpi",
     "admin.extSystem.viewDaoUrl": "DaoURL",

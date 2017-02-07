@@ -33,7 +33,8 @@ const FIELDS = {
         'name',
         'url',
         'username',
-        'password'
+        'password',
+        'elzaCode'
     ],
     [EXT_SYSTEM_CLASS.RegExternalSystem]: [
         'type',
@@ -97,7 +98,7 @@ class ExtSystemForm extends AbstractReactComponent {
     };
 
     render() {
-        const {fields: {id, type, viewDaoUrl, viewFileUrl, sendNotification, code, name, url, username, password}, handleSubmit, submitting} = this.props;
+        const {fields: {id, type, viewDaoUrl, viewFileUrl, sendNotification, code, name, url, username, password, elzaCode}, handleSubmit, submitting} = this.props;
         const classJ = this.props.fields['@class'];
         const isUpdate = !!id.value;
 
@@ -129,6 +130,7 @@ class ExtSystemForm extends AbstractReactComponent {
                 <FormInput type="text" label={i18n('admin.extSystem.url')} {...url} />
                 <FormInput type="text" label={i18n('admin.extSystem.username')} {...username} />
                 <FormInput type="text" label={i18n('admin.extSystem.password')} {...password} />
+                <FormInput type="text" label={i18n('admin.extSystem.elzaCode')} {...elzaCode} />
 
 
             </Modal.Body>

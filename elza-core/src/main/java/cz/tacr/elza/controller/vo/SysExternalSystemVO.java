@@ -23,6 +23,8 @@ public abstract class SysExternalSystemVO {
 
     private String password;
 
+    private String elzaCode;
+
     public Integer getId() {
         return id;
     }
@@ -69,5 +71,13 @@ public abstract class SysExternalSystemVO {
 
     public void setPassword(final String password) {
         this.password = password;
+    }
+
+    public String getElzaCode() {
+        return elzaCode;
+    }
+
+    public void setElzaCode(String elzaCode) {
+        this.elzaCode = elzaCode;
     }
 }
