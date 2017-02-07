@@ -23,8 +23,6 @@ class AddPartyForm extends AbstractReactComponent {
 
     static fields = [
         'partyType', // skrýté pole updated při loadu
-        'scope', // Pole pouze pro korporace
-        'genealogy', // Pole pouze pro rod
         'record.registerTypeId',
         'record.scopeId',
         'prefferedName.nameFormType.id',
@@ -247,8 +245,6 @@ class AddPartyForm extends AbstractReactComponent {
 
         const {
             fields: {
-                scope,
-                genealogy,
                 record: {
                     registerTypeId,
                     scopeId
@@ -290,31 +286,20 @@ class AddPartyForm extends AbstractReactComponent {
                     <div className="flex-2 col">
                         <Row>
                             <Col xs={12}>
-                                <div className="line">
-                                    <FormGroup validationState={registerTypeId.touched && registerTypeId.error ? 'error' : null}>
-                                        <Autocomplete
-                                            label={i18n('party.recordType')}
-                                            items={treeItems}
-                                            tree
-                                            alwaysExpanded
-                                            allowSelectItem={(id, item) => item.addRecord}
-                                            {...registerTypeId}
-                                            value={value}
-                                            onChange={item => registerTypeId.onChange(item ? item.id : null)}
-                                            onBlur={item => registerTypeId.onBlur(item ? item.id : null)}
-                                        />
-                                    </FormGroup>
-                                    <Scope versionId={versionId} label={i18n('party.recordScope')} {...scopeId} />
-                                </div>
-                                <hr />
-                                {partyType.code == PARTY_TYPE_CODES.GROUP_PARTY && <div>
-                                    <FormInput componentClass="textarea" label={i18n('party.scope')} {...scope}/>
-                                    <hr/>
-                                </div>}
-                                {partyType.code == PARTY_TYPE_CODES.DYNASTY && <div>
-                                    <FormInput componentClass="textarea" label={i18n('party.genealogy')} {...genealogy}/>
-                                    <hr/>
-                                </div>}
+                                <FormGroup validationState={registerTypeId.touched && registerTypeId.error ? 'error' : null}>
+                                    <Autocomplete
+                                        label={i18n('party.recordType')}
+                                        items={treeItems}
+                                        tree
+                                        alwaysExpanded
+                                        allowSelectItem={(id, item) => item.addRecord}
+                                        {...registerTypeId}
+                                        value={value}
+                                        onChange={item => registerTypeId.onChange(item ? item.id : null)}
+                                        onBlur={item => registerTypeId.onBlur(item ? item.id : null)}
+                                    />
+                                </FormGroup>
+                                <Scope versionId={versionId} label={i18n('party.recordScope')} {...scopeId} />
                             </Col>
                             <Col xs={12} md={6}>
                                 <FormInput type="text" label={i18n('party.name.mainPart')} {...mainPart} />

@@ -1,7 +1,10 @@
 package cz.tacr.elza.domain;
 
+import org.hibernate.annotations.Type;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Lob;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -14,7 +17,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class ParDynasty extends ParParty {
 
-    @Column(nullable = false)
+    @Lob
+    @Column
+    @Type(type="org.hibernate.type.TextType")
     @JsonIgnore
     private String genealogy;
 

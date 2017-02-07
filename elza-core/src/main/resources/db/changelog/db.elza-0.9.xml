@@ -40,4 +40,35 @@
     <changeSet id="20170109110532" author="slapa">
         <sql>UPDATE db_hibernate_sequences SET next_val = next_val+20</sql>
     </changeSet>
+
+    <changeSet id="20170207093900" author="slapa">
+        <dropNotNullConstraint columnDataType="text"
+                               columnName="genealogy"
+                               tableName="par_dynasty"/>
+    </changeSet>
+
+    <changeSet id="20170207094200" author="slapa">
+        <dropNotNullConstraint columnDataType="varchar(1000)"
+                               columnName="scope"
+                               tableName="par_party_group"/>
+    </changeSet>
+
+    <changeSet id="20170207095700" author="slapa">
+        <modifyDataType columnName="characteristics"
+                        newDataType="text"
+                        tableName="par_party"/>
+        <modifyDataType columnName="scope"
+                        newDataType="text"
+                        tableName="par_party_group"/>
+        <modifyDataType columnName="founding_norm"
+                        newDataType="text"
+                        tableName="par_party_group"/>
+        <modifyDataType columnName="scope_norm"
+                        newDataType="text"
+                        tableName="par_party_group"/>
+        <modifyDataType columnName="organization"
+                        newDataType="text"
+                        tableName="par_party_group"/>
+    </changeSet>
+
 </databaseChangeLog>
