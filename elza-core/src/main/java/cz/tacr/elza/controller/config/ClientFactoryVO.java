@@ -1235,8 +1235,9 @@ public class ClientFactoryVO {
         Map<Integer, List<Integer>> typeSpecsMap = new HashMap<>();
         for (UISettings favoritesItemType : favoritesItemTypes) {
             SettingFavoriteItemSpecs setting = (SettingFavoriteItemSpecs) packageServise.convertSetting(favoritesItemType);
-            if (CollectionUtils.isNotEmpty(setting.getSpecCodes())) {
-                List<RulItemSpec> itemSpecs = itemSpecRepository.findOneByCodes(setting.getSpecCodes());
+            if (CollectionUtils.isNotEmpty(setting.getFavoriteItems())) {
+                List<RulItemSpec> itemSpecs = itemSpecRepository.findOneByCodes(setting.getFavoriteItems().stream()
+                        .map(SettingFavoriteItemSpecs.FavoriteItem::getValue).collect(Collectors.toList()));
                 List<Integer> itemSpecsIds = new ArrayList<>(itemSpecs.size());
                 for (RulItemSpec itemSpec : itemSpecs) {
                     itemSpecsIds.add(itemSpec.getItemSpecId());

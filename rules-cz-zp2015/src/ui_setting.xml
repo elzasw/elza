@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <settings xmlns:ns2="fund-views" xmlns:ns3="type-groups">
     <favorite-item-specs code="ZP2015_LANGUAGE">
-        ZP2015_LANGUAGE_43 ZP2015_LANGUAGE_8
+        <favorite-item>ZP2015_LANGUAGE_43</favorite-item>
+        <favorite-item>ZP2015_LANGUAGE_8</favorite-item>
     </favorite-item-specs>
     <fund-views settings-type="FUND_VIEW" entity-type="RULE" code="ZP2015">
         <ns2:default>

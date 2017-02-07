@@ -33,9 +33,8 @@ public class SettingFavoriteItemSpecs extends Setting {
 
     private static final ObjectMapper objectMapper = Jackson2ObjectMapperBuilder.json().build();
 
-    @XmlValue
-    @XmlList
-    private List<String> specCodes;
+    @XmlElement(name = "favorite-item", required = true)
+    private List<FavoriteItem> favoriteItems;
 
     @XmlAttribute(name = "code", required = true)
     @JsonIgnore
@@ -46,12 +45,12 @@ public class SettingFavoriteItemSpecs extends Setting {
         setEntityType(UISettings.EntityType.ITEM_TYPE);
     }
 
-    public List<String> getSpecCodes() {
-        return specCodes;
+    public List<FavoriteItem> getFavoriteItems() {
+        return favoriteItems;
     }
 
-    public void setSpecCodes(final List<String> specCodes) {
-        this.specCodes = specCodes;
+    public void setFavoriteItems(final List<FavoriteItem> favoriteItems) {
+        this.favoriteItems = favoriteItems;
     }
 
     @Override
@@ -66,7 +65,7 @@ public class SettingFavoriteItemSpecs extends Setting {
     @Override
     public void setValue(final String value) {
         try {
-            specCodes = objectMapper.readValue(value, SettingFavoriteItemSpecs.class).getSpecCodes();
+            favoriteItems = objectMapper.readValue(value, SettingFavoriteItemSpecs.class).getFavoriteItems();
         } catch (IOException e) {
             throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
         }
@@ -289,5 +288,21 @@ public class SettingFavoriteItemSpecs extends Setting {
             this.values = values;
         }
 
+    }
+
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "favorite-item")
+    public static class FavoriteItem {
+
+        @XmlValue
+        private String value;
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(final String value) {
+            this.value = value;
+        }
     }
 }
