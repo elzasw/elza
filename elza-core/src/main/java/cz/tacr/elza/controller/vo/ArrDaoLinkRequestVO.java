@@ -1,7 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
 import cz.tacr.elza.domain.ArrDaoLinkRequest;
-import cz.tacr.elza.domain.ArrDaoRequest;
 
 /**
  * Value objekt {@link ArrDaoLinkRequest}
@@ -18,6 +17,8 @@ public class ArrDaoLinkRequestVO extends ArrRequestVO {
     private String didCode;
 
     private TreeNodeClient node;
+
+    private Integer digitalRepositoryId;
 
     public ArrDaoVO getDao() {
         return dao;
@@ -49,5 +50,13 @@ public class ArrDaoLinkRequestVO extends ArrRequestVO {
 
     public void setNode(final TreeNodeClient node) {
         this.node = node;
+    }
+
+    public Integer getDigitalRepositoryId() {
+        return digitalRepositoryId;
+    }
+
+    public void setDigitalRepositoryId(final Integer digitalRepositoryId) {
+        this.digitalRepositoryId = digitalRepositoryId;
     }
 }

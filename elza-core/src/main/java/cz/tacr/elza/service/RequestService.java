@@ -95,16 +95,14 @@ public class RequestService {
 
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrDigitizationRequest createDigitizationRequest(@NotNull final List<ArrNode> nodes,
+                                                            @NotNull final ArrDigitizationFrontdesk digitizationFrontdesk,
                                                             @Nullable final String description,
                                                             @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
         ArrDigitizationRequest digitizationRequest = new ArrDigitizationRequest();
         digitizationRequest.setCode(generateCode());
         digitizationRequest.setDescription(description);
-        List<ArrDigitizationFrontdesk> digitizationFrontdeskList = externalSystemService.findDigitizationFrontdesk();
-        if (digitizationFrontdeskList.size() != 1) {
-            throw new BusinessException("Neplatný počet externích systémů daného typu - musí být právě jeden", ArrangementCode.ILLEGAL_COUNT_EXTERNAL_SYSTEM);
-        }
-        digitizationRequest.setDigitizationFrontdesk(digitizationFrontdeskList.get(0));
+
+        digitizationRequest.setDigitizationFrontdesk(digitizationFrontdesk);
         digitizationRequest.setFund(fundVersion.getFund());
         digitizationRequest.setCreateChange(arrangementService.createChange(ArrChange.Type.CREATE_DIGI_REQUEST));
         digitizationRequest.setState(ArrRequest.State.OPEN);
@@ -133,11 +131,7 @@ public class RequestService {
         ArrDaoRequest daoRequest = new ArrDaoRequest();
         daoRequest.setCode(generateCode());
         daoRequest.setDescription(description);
-        List<ArrDigitalRepository> digitalRepositories = externalSystemService.findDigitalRepository();
-        if (digitalRepositories.size() != 1) {
-            throw new BusinessException("Neplatný počet externích systémů daného typu - musí být právě jeden", ArrangementCode.ILLEGAL_COUNT_EXTERNAL_SYSTEM);
-        }
-        daoRequest.setDigitalRepository(digitalRepositories.get(0));
+        daoRequest.setDigitalRepository(daos.get(0).getDaoPackage().getDigitalRepository());
         daoRequest.setFund(fundVersion.getFund());
         daoRequest.setCreateChange(arrangementService.createChange(ArrChange.Type.CREATE_DAO_REQUEST));
         daoRequest.setState(ArrRequest.State.OPEN);
@@ -145,6 +139,10 @@ public class RequestService {
 
         List<ArrDaoRequestDao> requestDaos = new ArrayList<>(daos.size());
         for (ArrDao dao : daos) {
+            if (!dao.getDaoPackage().getDigitalRepository().getExternalSystemId()
+                    .equals(daoRequest.getDigitalRepository().getExternalSystemId())) {
+                throw new BusinessException("Požadavek má jiné uložiště než má dao", ArrangementCode.INVALID_REQUEST_DIGITAL_REPOSITORY_DAO);
+            }
             ArrDaoRequestDao requestDao = new ArrDaoRequestDao();
             requestDao.setDao(dao);
             requestDao.setDaoRequest(daoRequest);
@@ -177,6 +175,7 @@ public class RequestService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void addNodeDigitizationRequest(@NotNull final ArrDigitizationRequest digitizationRequest,
                                            @NotNull final List<ArrNode> nodes,
+                                           @NotNull final ArrDigitizationFrontdesk digitizationFrontdesk,
                                            @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion, final String description) {
         if (!digitizationRequest.getState().equals(ArrRequest.State.OPEN)) {
             throw new BusinessException("Neplatný stav požadavku " + digitizationRequest + ": " + digitizationRequest.getState(), ArrangementCode.REQUEST_INVALID_STATE).set("state", digitizationRequest.getState());
@@ -197,6 +196,9 @@ public class RequestService {
         if (description != null) {
             digitizationRequest.setDescription(description);
         }
+
+        digitizationRequest.setDigitizationFrontdesk(digitizationFrontdesk);
+
         digitizationRequestRepository.save(digitizationRequest);
         digitizationRequestNodeRepository.save(digitizationRequestNodes);
         sendNotification(fundVersion, digitizationRequest, EventType.REQUEST_CHANGE, nodes);
@@ -217,6 +219,10 @@ public class RequestService {
         }
 
         for (ArrDao dao : daos) {
+            if (!dao.getDaoPackage().getDigitalRepository().getExternalSystemId()
+                    .equals(daoRequest.getDigitalRepository().getExternalSystemId())) {
+                throw new BusinessException("Požadavek má jiné uložiště než má dao", ArrangementCode.INVALID_REQUEST_DIGITAL_REPOSITORY_DAO);
+            }
             ArrDaoRequestDao requestDao = new ArrDaoRequestDao();
             requestDao.setDao(dao);
             requestDao.setDaoRequest(daoRequest);

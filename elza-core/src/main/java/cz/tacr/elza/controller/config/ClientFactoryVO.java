@@ -2157,6 +2157,7 @@ public class ClientFactoryVO {
                                        final ArrFundVersion fundVersion,
                                        final Map<String, TreeNodeClient> codeTreeNodeClientMap) {
         requestVO.setDidCode(request.getDidCode());
+        requestVO.setDigitalRepositoryId(request.getDigitalRepository().getExternalSystemId());
         requestVO.setType(request.getType());
         //requestVO.setDao(createDao(request.getDao(), detail, fundVersion));
         requestVO.setNode(codeTreeNodeClientMap.get(request.getDidCode()));
@@ -2170,6 +2171,7 @@ public class ClientFactoryVO {
                                    final ArrFundVersion fundVersion) {
         requestVO.setDescription(request.getDescription());
         requestVO.setDaosCount(daoCount);
+        requestVO.setDigitalRepositoryId(request.getDigitalRepository().getExternalSystemId());
         requestVO.setType(request.getType());
         if (daos != null) {
             requestVO.setDaos(createDaoList(daos, detail, fundVersion));
@@ -2182,6 +2184,7 @@ public class ClientFactoryVO {
                                             final List<TreeNodeClient> treeNodeClients) {
         requestVO.setDescription(request.getDescription());
         requestVO.setNodesCount(nodeCount);
+        requestVO.setDigitizationFrontdeskId(request.getDigitizationFrontdesk().getExternalSystemId());
         if (treeNodeClients != null) {
             treeNodeClients.sort((o1, o2) -> {
                 for (int i = 0; i < o1.getReferenceMarkInt().length; i++) {

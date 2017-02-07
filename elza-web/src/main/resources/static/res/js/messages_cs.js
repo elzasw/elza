@@ -86,6 +86,8 @@ var messages = {
     "exception.arr.PARTY_NAME_FORM_TYPE_NOT_FOUND": "Typ formy jména neexistuje",
     "exception.arr.INVALID_DAO": "Nelze připojit digitální entitu k JP, protože je nevalidní",
     "exception.arr.NOT_REPEATABLE": "Neopakovatelná položka",
+    "exception.arr.INVALID_REQUEST_DIGITAL_REPOSITORY_DAO": "Nelze připojit digitální entitu k JP, protože je požadavek pro jiné digitální uložiště",
+
 
     "exception.base.INSUFFICIENT_PERMISSIONS": "Nedostatečná oprávnění",
     "exception.base.INSUFFICIENT_PERMISSIONS.detail": "Požadované oprávnění",
@@ -1084,6 +1086,8 @@ var messages = {
     "arr.request.action.storeAndSend": "Uložit a odeslat",
     "arr.request.title.request": "Požadavek",
     "arr.request.title.daoRequest.type": "Typ požadavku",
+    "arr.request.title.daoRequest.digitizationFrontdesk": "Digitalizační linka",
+    "arr.request.title.daoRequest.system": "Ext. systém",
     "arr.request.title.created": "Vytvořen",
     "arr.request.title.queued": "Ve frontě",
     "arr.request.title.send": "Odeslán",

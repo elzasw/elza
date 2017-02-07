@@ -577,11 +577,12 @@ class WebApi {
         });
     }
 
-    arrDigitizationRequestAddNodes(versionId, reqId, send, description, nodeIds) {
+    arrDigitizationRequestAddNodes(versionId, reqId, send, description, nodeIds, digitizationFrontdeskId) {
         const data = {
             id: reqId,
             nodeIds,
-            description
+            description,
+            digitizationFrontdeskId
         };
         return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/requests/' + versionId + '/digitization/add', { send } , data);
     }
@@ -652,6 +653,10 @@ class WebApi {
 
     getPartyTypes() {
         return AjaxUtils.ajaxGet(WebApi.partyUrl + '/partyTypes');
+    }
+
+    getExternalSystemsSimple() {
+        return AjaxUtils.ajaxGet(WebApi.adminUrl + '/externalSystems/simple');
     }
 
     getRuleSets() {
