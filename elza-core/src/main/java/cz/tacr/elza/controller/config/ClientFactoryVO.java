@@ -367,7 +367,7 @@ public class ClientFactoryVO {
             nameBuilderHelper(nameBuilder, geoAddon);
             nameBuilderHelper(nameBuilder, addon);
 
-            if (prefferedName.getDegreeAfter() != null) {
+            if (prefferedName.getDegreeAfter() != null && !prefferedName.getDegreeAfter().isEmpty()) {
                 nameBuilder.deleteCharAt(nameBuilder.length()-1);
                 nameBuilder.append(", ");
                 nameBuilder.append(prefferedName.getDegreeAfter());
