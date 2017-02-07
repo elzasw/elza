@@ -346,7 +346,7 @@ public class PartyController {
 
         ParRelation relation = relationRepository.findOne(relationId);
         if (relation != null) {
-            partyService.deleteRelation(relation);
+            partyService.deleteRelationAndSync(relation);
         }
     }
 

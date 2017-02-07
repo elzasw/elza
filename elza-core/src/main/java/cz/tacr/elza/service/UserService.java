@@ -573,7 +573,7 @@ public class UserService {
             }
         }
 
-        return userPermissions.values();
+        return new HashSet<>(userPermissions.values());
     }
 
     /**

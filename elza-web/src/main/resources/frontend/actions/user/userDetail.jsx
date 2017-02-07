@@ -9,6 +9,19 @@ export function userDetailChange(userDetail) {
     }
 }
 
+export function reloadUserDetail(userIds) {
+    return (dispatch, getState) => {
+        const state = getState();
+        const userDetail = state.userDetail;
+        if (userIds.indexOf(userDetail.id) !== -1) {
+            WebApi.getUserDetail()
+                .then(userDetail => {
+                    dispatch(userDetailChange(userDetail))
+                });
+        }
+    }
+}
+
 export function userDetailClear() {
     return {
         type: types.USER_DETAIL_CLEAR,

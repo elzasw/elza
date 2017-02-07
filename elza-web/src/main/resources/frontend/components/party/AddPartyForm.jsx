@@ -352,27 +352,6 @@ class AddPartyForm extends AbstractReactComponent {
                             </Col>
                         </Row>
                     </div>
-                    <div className="datation-group flex-1 col">
-                        <Row>
-                            <Col xs={12}>
-                                <Row>
-                                    <Col xs={6} md={12}>
-                                        <DatationField fields={validFrom} label={i18n('party.name.validFrom')} labelTextual={i18n('party.name.validFrom.textDate')} labelNote={i18n('party.name.validFrom.note')} />
-                                    </Col>
-                                    <Col xs={6} md={12}>
-                                        <DatationField fields={validTo} label={i18n('party.name.validTo')} labelTextual={i18n('party.name.validTo.textDate')} labelNote={i18n('party.name.validTo.note')} />
-                                    </Col>
-                                </Row>
-                            </Col>
-                        </Row>
-                    </div>
-                    <div className="flex-1 col">
-                        <Row>
-                            <Col xs={12}>
-                                <FormInput componentClass="textarea" label={i18n('party.name.note')} {...note} />
-                            </Col>
-                        </Row>
-                    </div>
                 </div>
             </Modal.Body>
             <Modal.Footer>

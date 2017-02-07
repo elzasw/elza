@@ -2,6 +2,7 @@ package cz.tacr.elza.packageimport.xml;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -14,7 +15,7 @@ public class ContentDefinitionAdapter extends XmlAdapter<ContentDefinitions, Map
 
     @Override
     public Map<String, ContentDefinition> unmarshal(final ContentDefinitions contentDefinitions) throws Exception {
-        HashMap<String, ContentDefinition> result = new HashMap<>();
+        HashMap<String, ContentDefinition> result = new LinkedHashMap<>();
         for (ContentDefinition contentDefinition : contentDefinitions.entries()) {
             result.put(contentDefinition.getCode(), contentDefinition);
         }

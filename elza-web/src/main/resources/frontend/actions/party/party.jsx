@@ -198,8 +198,7 @@ export function partyAdd(partyTypeId, versionId, callback, showSubmitTypes = fal
                 partyType={partyType}
                 showSubmitTypes={showSubmitTypes}
                 versionId={versionId}
-                onSubmitForm={partyAddSubmit.bind(null, callback, dispatch)} />,
-            MODAL_DIALOG_VARIANT.LARGE
+                onSubmitForm={partyAddSubmit.bind(null, callback, dispatch)} />
         ));
     }
 }

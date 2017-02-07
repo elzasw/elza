@@ -50,6 +50,8 @@ import {
 import Stomp from 'stompjs';
 import URLParse from "url-parse";
 
+import {reloadUserDetail} from 'actions/user/userDetail'
+
 const url = new URLParse(serverContextPath + '/stomp');
 const wsUrl = "ws://" + url.host + url.pathname;
 console.log("Websocekt URL", wsUrl)
@@ -410,7 +412,8 @@ function processEvents(values) {
  * @param value
  */
 function changeUser(value) {
-    store.dispatch(userChange(value.ids))
+    store.dispatch(userChange(value.ids));
+    store.dispatch(reloadUserDetail(value.ids));
 }
 function changeGroup(value) {
     store.dispatch(groupChange(value.ids))
