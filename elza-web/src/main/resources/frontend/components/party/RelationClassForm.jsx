@@ -87,7 +87,6 @@ class RelationClassForm extends AbstractReactComponent {
         const {relationTypes, onClose, handleSubmit, fields: {from, to, relationEntities, note, source, relationTypeId}, partyId, submitting} = this.props;
 
         let relationType = null;
-        console.warn(relationTypeId, relationTypes)
         if (relationTypeId.value !== null) {
             relationType = objectById(relationTypes, relationTypeId.value);
         }
