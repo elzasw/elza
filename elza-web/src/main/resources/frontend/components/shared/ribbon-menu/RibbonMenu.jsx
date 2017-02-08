@@ -11,9 +11,7 @@ class RibbonMenu extends React.Component {
 
     render() {
         return <ButtonToolbar className="ribbon-menu">
-            <div className="content">
-                {this.props.children}
-            </div>
+                {this.props.children}            
         </ButtonToolbar>
     }
 }
