@@ -34,6 +34,7 @@ import com.vividsolutions.jts.io.WKTWriter;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.ArrPacket.State;
+import cz.tacr.elza.api.RegExternalSource;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -66,7 +67,6 @@ import cz.tacr.elza.domain.ParPartyNameComplement;
 import cz.tacr.elza.domain.ParPerson;
 import cz.tacr.elza.domain.ParRelation;
 import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.RegExternalSource;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -933,7 +933,6 @@ public class XmlExportService {
             record.setExternalSourceCode(externalSource.getCode());
         }
 
-        record.setLocal(false);
         record.setNote(regRecord.getNote());
         record.setPreferredName(regRecord.getRecord());
 //        record.setRecordCoordinates(); //zatím se s nimi nepracuje

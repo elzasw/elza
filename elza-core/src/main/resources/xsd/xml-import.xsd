@@ -240,7 +240,6 @@
     <xs:attribute name="register-type-code" type="xs:string" use="required"/>
     <xs:attribute name="external-source-code" type="xs:string"/>
     <xs:attribute name="external-id" type="xs:string" use="required"/>
-    <xs:attribute name="local" type="xs:boolean" use="required"/>
     <xs:attribute name="uuid" type="xs:string"/>
   </xs:complexType>
 
@@ -388,7 +387,7 @@
     <xs:complexContent>
       <xs:extension base="tns:abstract-party">
         <xs:sequence>
-          <xs:element name="genealogy" type="xs:string"/>
+          <xs:element minOccurs="0" name="genealogy" type="xs:string"/>
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
