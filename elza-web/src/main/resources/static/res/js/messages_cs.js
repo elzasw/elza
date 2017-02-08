@@ -1030,7 +1030,7 @@ var messages = {
     "extImport.validation.missingConditions": "Nutno zadat podmínky pro vyhledávání",
     "extImport.search": "Vyhledat",
     "extImport.condition": "Podmínka",
-    "extImport.attType": "Attribut",
+    "extImport.attType": "Atribut",
     "extImport.value": "Hodnota",
     "extImport.source": "Zdroj",
     "extImport.noResults": "Nebyli nalezeny žádné výsledky",
