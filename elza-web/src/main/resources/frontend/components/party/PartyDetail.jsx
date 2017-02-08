@@ -241,7 +241,7 @@ class PartyDetail extends AbstractReactComponent {
         };
         let newSettings = this.props.userDetail.settings ? [...this.props.userDetail.settings] : [];
         newSettings = setSettings(newSettings, newVisibilitySettings.id, newVisibilitySettings);
-        this.dispatch(userDetailsSaveSettings(newSettings))
+        this.dispatch(userDetailsSaveSettings(newSettings, false))
     };
 
 
