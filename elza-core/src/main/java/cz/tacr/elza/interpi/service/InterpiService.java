@@ -334,6 +334,9 @@ public class InterpiService {
         List<MappingVO> mappingsToUse = new LinkedList<>();
         Map<String, ParInterpiMapping> mappingsToSave = new HashMap<>();
         for (InterpiRelationMappingVO relationMappingVO : mappings) {
+            if (!relationMappingVO.getImportRelation()) {
+                continue;
+            }
             List<InterpiEntityMappingVO> entities = relationMappingVO.getEntities();
             if (CollectionUtils.isEmpty(entities)) {
                 MappingVO mappingVO = createMappingVO(relationMappingVO, null);
