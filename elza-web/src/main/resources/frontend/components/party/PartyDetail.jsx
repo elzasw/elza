@@ -317,7 +317,7 @@ class PartyDetail extends AbstractReactComponent {
                             return <div key={index}>
                                 <CollapsablePanel tabIndex={0} isOpen={activeIndexes && activeIndexes[key] === true} pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true} header={i.name} eventKey={key} {...events}>
                                     <FormInput componentClass="textarea" {...sourceInformation} label={i18n("party.detail.sources")} />
-                                    <label>{i18n("party.detail.creators")}{canEdit && <Button bsStyle="action" onClick={() => creators.addField({})}><Icon glyph="fa-plus" /></Button>}</label>
+                                    <label className="group-label">{i18n("party.detail.creators")}{canEdit && <Button bsStyle="action" onClick={() => creators.addField({})}><Icon glyph="fa-plus" /></Button>}</label>
                                     {creators.map((creator, index) => <div key={index + "-" + creator.id} className="value-group">
                                         <div className='desc-item-value desc-item-value-parts'>
                                             <PartyField onCreate={this.handleAddParty.bind(this, creator)} {...creator} />

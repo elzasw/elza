@@ -109,7 +109,7 @@ class PartyDetailRelations extends AbstractReactComponent {
         return (
             <div className="party-detail-relations">
                 <div>
-                    <label>{label}</label>
+                    <label className="group-label">{label}</label>
                     {addButton}
                 </div>
                 {relationsArray.map((relation, index) =>
@@ -145,7 +145,7 @@ class PartyDetailRelations extends AbstractReactComponent {
                     </div>
                     <div className="actions">
                         <Button bsStyle="action" onClick={() => this.handleRelationUpdate(relation)}><Icon glyph="fa-pencil" /></Button>
-                        <Button bsStyle="action" onClick={() => this.handleRelationDelete(relation.id)}><Icon glyph="fa-times" /></Button>
+                        <Button className="delete" bsStyle="action" onClick={() => this.handleRelationDelete(relation.id)}><Icon glyph="fa-trash" /></Button>
                     </div>
                 </div>)}
             </div>)
