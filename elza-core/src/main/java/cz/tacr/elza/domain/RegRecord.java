@@ -50,6 +50,9 @@ public class RegRecord extends AbstractVersionableEntity
     @JsonIgnore
     private RegRegisterType registerType;
 
+    @Column(name = "registerTypeId", nullable = false, updatable = false, insertable = false)
+    private Integer registerTypeId;
+
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRecord.class)
     @JoinColumn(name = "parentRecordId")
@@ -130,6 +133,7 @@ public class RegRecord extends AbstractVersionableEntity
 
     @Override
     public void setRegisterType(final RegRegisterType registerType) {
+        this.registerTypeId = registerType == null ? null : registerType.getRegisterTypeId();
         this.registerType = registerType;
     }
 
@@ -251,6 +255,14 @@ public class RegRecord extends AbstractVersionableEntity
         RegRecord other = (RegRecord) obj;
 
         return new EqualsBuilder().append(recordId, other.getRecordId()).isEquals();
+    }
+
+    public Integer getRegisterTypeId() {
+        return registerTypeId;
+    }
+
+    public void setRegisterTypeId(final Integer registerTypeId) {
+        this.registerTypeId = registerTypeId;
     }
 
     @Override
