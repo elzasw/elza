@@ -32,6 +32,8 @@ export default function partyTypes(state = initialState, action = {}) {
                 },
             }
         }
+        case types.CHANGE_PACKAGE:
+            return initialState;
         default:
             return state
     }

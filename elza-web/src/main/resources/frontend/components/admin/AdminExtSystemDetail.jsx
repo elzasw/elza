@@ -115,6 +115,9 @@ class AdminExtSystemDetail extends AbstractReactComponent {
 
                 <h4>{i18n('admin.extSystem.password')}</h4>
                 <span>{extSystem.password}</span>
+
+                <h4>{i18n('admin.extSystem.elzaCode')}</h4>
+                <span>{extSystem.elzaCode}</span>
             </div>
         </div>;
     }

@@ -38,7 +38,7 @@ class CollapsablePanel extends AbstractReactComponent {
             <Panel eventKey={true}
                    header={<div tabIndex={tabIndex} onKeyDown={this.handleHeaderKeyDown}>
                        {header}
-                       <NoFocusButton className={"pull-right" + (pinned ? "" : " hover-button")} onClick={() => onPin(eventKey)}>
+                       <NoFocusButton className={"btn-action pull-right" + (pinned ? " pinned" : " hover-button")} onClick={() => onPin(eventKey)}>
                            <Icon glyph="fa-thumb-tack" />
                        </NoFocusButton>
                    </div>}>

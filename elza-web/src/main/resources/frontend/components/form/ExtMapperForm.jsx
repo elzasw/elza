@@ -8,6 +8,7 @@ import {Modal, Form, Table, Checkbox, FormControl, Button} from 'react-bootstrap
 import objectById from '../../shared/utils/objectById'
 import * as perms from 'actions/user/Permission.jsx';
 
+require('./ExtMapperForm.less');
 
 const INTERPI_CLASS = {
     POCATEK_EXISTENCE: 'POCATEK_EXISTENCE',
@@ -29,6 +30,11 @@ class ExtMapperForm extends AbstractReactComponent {
     static validate = (data) => {
         const error = {};
         error.mappings = data.mappings.map(i => {
+
+            if (!i.importRelation) {
+                return null;
+            }
+
             const entities = i.entities ? i.entities.map(e => !e.relationRoleTypeId ? {relationRoleTypeId: i18n('global.validation.required')} : null) : [];
             const relationTypeId = !i.relationTypeId ? i18n('global.validation.required') : null;
             const isEntitiesOk = entities.length === 0;
@@ -84,7 +90,7 @@ class ExtMapperForm extends AbstractReactComponent {
                                 <tr>
                                     <th colSpan={5}>{i18n('extMapperForm.import')}</th>
                                 </tr>
-                                <tr>
+                                <tr className="import-relation">
                                     <td><Checkbox {...i.importRelation}/></td>
                                     <td>{i.interpiRelationType.value}</td>
                                     <td><Icon glyph="fa-arrow-right" /></td>
@@ -101,7 +107,7 @@ class ExtMapperForm extends AbstractReactComponent {
                                     </td>
                                 </tr>
 
-                                {i.entities && i.entities.map(e => <tr>
+                                {i.entities && i.entities.map(e => <tr className="import-relation">
                                     <td><Checkbox {...e.importEntity}/></td>
                                     <td>{e.interpiEntityName.value}</td>
                                     <td>{e.interpiRoleType.value}</td>

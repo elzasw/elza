@@ -16,6 +16,8 @@ public class ArrDigitizationRequestVO extends ArrRequestVO {
 
     private Integer nodesCount;
 
+    private Integer digitizationFrontdeskId;
+
     private List<TreeNodeClient> nodes;
 
     public String getDescription() {
@@ -40,5 +42,13 @@ public class ArrDigitizationRequestVO extends ArrRequestVO {
 
     public void setNodes(final List<TreeNodeClient> nodes) {
         this.nodes = nodes;
+    }
+
+    public Integer getDigitizationFrontdeskId() {
+        return digitizationFrontdeskId;
+    }
+
+    public void setDigitizationFrontdeskId(final Integer digitizationFrontdeskId) {
+        this.digitizationFrontdeskId = digitizationFrontdeskId;
     }
 }

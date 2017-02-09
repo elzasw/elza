@@ -41,6 +41,7 @@ class PartyDetailRelations extends AbstractReactComponent {
             from: isNotBlankObject(newRelation.from) ? normalizeDatation(newRelation.from) : null,
             to: isNotBlankObject(newRelation.to) ? normalizeDatation(newRelation.to) : null,
         }));
+        console.warn("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
         this.dispatch(modalDialogHide());
     };
 
@@ -74,7 +75,7 @@ class PartyDetailRelations extends AbstractReactComponent {
         return (
             <div className="party-detail-relations">
                 <div>
-                    <label>{label}</label>
+                    <label className="group-label">{label}</label>
                     {addButton}
                 </div>
                 {relations.map((relation, index) =>
@@ -108,8 +109,8 @@ class PartyDetailRelations extends AbstractReactComponent {
                         {relation.note && <div className="note">{relation.note}</div>}
                     </div>
                     <div className="actions">
-                        <Button onClick={() => this.handleRelationUpdate(relation)}><Icon glyph="fa-pencil" /></Button>
-                        <Button onClick={() => this.handleRelationDelete(relation.id)}><Icon glyph="fa-times" /></Button>
+                        <Button bsStyle="action" onClick={() => this.handleRelationUpdate(relation)}><Icon glyph="fa-pencil" /></Button>
+                        <Button className="delete" bsStyle="action" onClick={() => this.handleRelationDelete(relation.id)}><Icon glyph="fa-trash" /></Button>
                     </div>
                 </div>)}
             </div>);

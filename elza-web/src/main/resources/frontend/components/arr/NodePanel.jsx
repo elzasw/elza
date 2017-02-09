@@ -298,7 +298,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             fundVersionId={versionId}
             type="DIGITIZATION"
             onSubmitForm={(send, data) => {
-                WebApi.arrDigitizationRequestAddNodes(versionId, data.requestId, send, data.description, [nodeId])
+                WebApi.arrDigitizationRequestAddNodes(versionId, data.requestId, send, data.description, [nodeId], parseInt(data.digitizationFrontdesk))
                     .then(() => {
                         this.dispatch(modalDialogHide());
                     });
@@ -767,7 +767,11 @@ return true
 
         settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fundId);
         settingsValues = settings.value != 'false';
-        const readMode = closed || settingsValues;
+
+        let readMode = closed || settingsValues;
+        if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
+            readMode = true;
+        }
 
         var parents = showParents ? this.renderParents(this.getParentNodes().reverse()) : null;
         var children;

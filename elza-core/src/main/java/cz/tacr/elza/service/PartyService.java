@@ -763,8 +763,12 @@ public class PartyService {
         return unitdateRepository.save(unitdate);
     }
 
+    public void deleteRelationAndSync(final ParRelation relation) {
+        ParParty parParty = deleteRelation(relation);
+        synchRecord(parParty);
+    }
 
-    public void deleteRelation(final ParRelation relation) {
+    private ParParty deleteRelation(final ParRelation relation) {
 
         ParParty party = relation.getParty();
 
@@ -781,7 +785,7 @@ public class PartyService {
         deleteUnitDates(from, to);
         entityManager.flush();      //aktualizace seznamu vztahů
 
-        synchRecord(party);
+        return party;
     }
 
 

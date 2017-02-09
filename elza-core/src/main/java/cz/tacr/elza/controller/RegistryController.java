@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
 import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.RegExternalSystemSimpleVO;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import org.apache.commons.collections4.CollectionUtils;
@@ -641,8 +642,8 @@ public class RegistryController {
      * @return seznam externích systémů
      */
     @RequestMapping(value = "/externalSystems", method = RequestMethod.GET)
-    public List<RegExternalSystemVO> findAllExternalSystems() {
-        return factoryVo.createSimpleEntity(externalSystemService.findAllRegSystem(), RegExternalSystemVO.class);
+    public List<RegExternalSystemSimpleVO> findAllExternalSystems() {
+        return factoryVo.createSimpleEntity(externalSystemService.findAllRegSystem(), RegExternalSystemSimpleVO.class);
     }
 
     /**

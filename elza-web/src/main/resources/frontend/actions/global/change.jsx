@@ -23,7 +23,7 @@ import {
     registryDetailInvalidate,
     registryListInvalidate
 } from 'actions/registry/registry.jsx'
-
+import {refExternalSystemsInvalid} from 'actions/refTables/externalSystems'
 
 export function isFundChangeAction(action) {
     switch (action.type) {
@@ -176,6 +176,7 @@ export function changeExtSystem() {
     return (dispatch, getState) => {
         dispatch(extSystemListInvalidate());
         dispatch(extSystemDetailInvalidate());
+        dispatch(refExternalSystemsInvalid());
     }
 }
 

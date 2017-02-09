@@ -15,24 +15,24 @@ require('./RibbonMenu.less');
  * className: large = velká tlačítka v řadě
  * className: small = jednořádková tlačítka pod sebou, max 3 tlačítka na jednu skupinu
  */
+const GROUP_COLUMN_LINES = 3;
 const RibbonGroup = class RibbonGroup extends React.Component {
 
     render() {
-        const {className} = this.props
-
+        const {className, right} = this.props
         const classes = "ribbonGroup " + className;
-        
+        var rightClass = right ? "right" : "";  //Pokud má příznak "right"
         if (className.indexOf("small") !== -1) {
             var parts = []
-            var right = className.indexOf('right') !== -1 ? "right" : "";  //Pokud className obsahuje "right" pak se tato třída vloží i do výsledného divu
-            for (let a=0; a<this.props.children.length; a += 3) {
-                const sub = this.props.children.slice(a, a + 3)
+
+            for (let a=0; a<this.props.children.length; a += GROUP_COLUMN_LINES) {
+                const sub = this.props.children.slice(a, a + GROUP_COLUMN_LINES)
                 parts.push(<div key={"part-" + a} className={classes}>{sub}</div>)
             }
-            return <div className={"ribbonSmallGroupsContainer " +  right } key="small-container">{parts}</div>
+            return <div className={"ribbonSmallGroupsContainer " +  rightClass } key="small-container">{parts}</div>
         } else {
             return (
-                <div className={classes}>
+                <div className={classes +" "+ rightClass}>
                     {this.props.children}
                 </div>
             )

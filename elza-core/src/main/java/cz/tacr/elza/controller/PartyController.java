@@ -346,7 +346,7 @@ public class PartyController {
 
         ParRelation relation = relationRepository.findOne(relationId);
         if (relation != null) {
-            partyService.deleteRelation(relation);
+            partyService.deleteRelationAndSync(relation);
         }
     }
 
@@ -367,6 +367,9 @@ public class PartyController {
             factoryVo.getOrCreateVo(partyType.getPartyTypeId(), partyType, partyTypeVoMap, ParPartyTypeVO.class);
         }
 
+        //načtení ParRelationTypeVO
+        //noinspection unused
+        List<ParRelationRoleType> relationRoleTypes = relationRoleTypeRepository.findAll();
 
         //načtení ParRelationTypeVO
         Map<Integer, ParRelationTypeVO> relationTypeVoMap = new HashMap<>();
@@ -380,27 +383,21 @@ public class PartyController {
             ParRelationTypeVO relationTypeVO = factoryVo.createParRelationType(relationType, partyTypeRelation,
                     relationTypeVoMap);
             partyTypeVO.addRelationType(relationTypeVO);
-        }
 
+            Map<Integer, ParRelationRoleTypeVO> relationRoleTypeVoMap = new HashMap<>();
+            for (ParRelationTypeRoleType parRelationTypeRoleType : relationTypeRoleTypeRepository.findAll()) {
 
-        //načtení ParRelationTypeVO
-        //noinspection unused
-        List<ParRelationRoleType> relationRoleTypes = relationRoleTypeRepository.findAll();
-        Map<Integer, ParRelationRoleTypeVO> relationRoleTypeVoMap = new HashMap<>();
-        for (ParRelationTypeRoleType parRelationTypeRoleType : relationTypeRoleTypeRepository.findAll()) {
+                if (!parRelationTypeRoleType.getRelationType().getRelationTypeId().equals(relationType.getRelationTypeId())) {
+                    continue;
+                }
 
-            ParRelationType relationType = parRelationTypeRoleType.getRelationType();
-            ParRelationTypeVO relationTypeVO = factoryVo
-                    .getOrCreateVo(relationType.getRelationTypeId(), relationType, relationTypeVoMap,
-                            ParRelationTypeVO.class);
-
-
-            ParRelationRoleType relationRoleType = parRelationTypeRoleType.getRoleType();
-            ParRelationRoleTypeVO relationRoleTypeVO = factoryVo
-                    .getOrCreateVo(relationRoleType.getRoleTypeId(), relationRoleType, relationRoleTypeVoMap,
-                            ParRelationRoleTypeVO.class);
-            relationRoleTypeVO.setRepeatable(parRelationTypeRoleType.getRepeatable());
-            relationTypeVO.addRelationRoleType(relationRoleTypeVO);
+                ParRelationRoleType relationRoleType = parRelationTypeRoleType.getRoleType();
+                ParRelationRoleTypeVO relationRoleTypeVO = factoryVo
+                        .getOrCreateVo(relationRoleType.getRoleTypeId(), relationRoleType, relationRoleTypeVoMap,
+                                ParRelationRoleTypeVO.class);
+                relationRoleTypeVO.setRepeatable(parRelationTypeRoleType.getRepeatable());
+                relationTypeVO.addRelationRoleType(relationRoleTypeVO);
+            }
         }
 
         //načtení ParComplementTypeVO

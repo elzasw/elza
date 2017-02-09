@@ -213,9 +213,9 @@ export function requestEdit(versionId, id, data) {
  * @param request požadavek
  * @param nodeIds seznam id node pro přidání
  */
-export function addNodes(versionId, request, nodeIds) {
+export function addNodes(versionId, request, nodeIds, digitizationFrontdeskId) {
     return (dispatch, getState) => {
-        WebApi.arrDigitizationRequestAddNodes(versionId, request.id, false, request.description, nodeIds)
+        WebApi.arrDigitizationRequestAddNodes(versionId, request.id, false, request.description, nodeIds, digitizationFrontdeskId)
             .then((json) => {
                 dispatch(addToastrSuccess(i18n("arr.request.title.nodesAdded")));
                 dispatch(modalDialogHide());

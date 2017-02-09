@@ -9,21 +9,13 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * @since 05.12.2016
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
-public abstract class SysExternalSystemVO {
+public abstract class SysExternalSystemSimpleVO {
 
     private Integer id;
 
     private String code;
 
     private String name;
-
-    private String url;
-
-    private String username;
-
-    private String password;
-
-    private String elzaCode;
 
     public Integer getId() {
         return id;
@@ -49,35 +41,4 @@ public abstract class SysExternalSystemVO {
         this.name = name;
     }
 
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(final String url) {
-        this.url = url;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(final String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(final String password) {
-        this.password = password;
-    }
-
-    public String getElzaCode() {
-        return elzaCode;
-    }
-
-    public void setElzaCode(String elzaCode) {
-        this.elzaCode = elzaCode;
-    }
 }

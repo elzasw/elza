@@ -18,6 +18,8 @@ public class ArrDaoRequestVO extends ArrRequestVO {
 
     private Integer daosCount;
 
+    private Integer digitalRepositoryId;
+
     private List<ArrDaoVO> daos;
 
     public ArrDaoRequest.Type getType() {
@@ -50,5 +52,13 @@ public class ArrDaoRequestVO extends ArrRequestVO {
 
     public void setDaos(final List<ArrDaoVO> daos) {
         this.daos = daos;
+    }
+
+    public Integer getDigitalRepositoryId() {
+        return digitalRepositoryId;
+    }
+
+    public void setDigitalRepositoryId(final Integer digitalRepositoryId) {
+        this.digitalRepositoryId = digitalRepositoryId;
     }
 }

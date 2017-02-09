@@ -27,11 +27,11 @@ import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import * as arrRequestActions from 'actions/arr/arrRequestActions';
 import RequestInlineForm from "./RequestInlineForm";
 import {DIGITIZATION, DAO, DAO_LINK, getRequestType} from './ArrUtils.jsx'
+import {refExternalSystemsFetchIfNeeded} from 'actions/refTables/externalSystems';
 
 const ShortcutsManager = require('react-shortcuts');
 const Shortcuts = require('react-shortcuts/component');
 const keyModifier = Utils.getKeyModifier();
-
 
 const keymap = {
     ArrRequestDetail: {
@@ -58,6 +58,7 @@ class ArrRequestDetail extends AbstractReactComponent {
 
     componentDidMount() {
         const {versionId, requestDetail} = this.props;
+        this.dispatch(refExternalSystemsFetchIfNeeded());
 
         requestDetail.id !== null && this.dispatch(arrRequestActions.fetchDetailIfNeeded(versionId, requestDetail.id));
 
@@ -104,7 +105,7 @@ class ArrRequestDetail extends AbstractReactComponent {
         this.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
             <FundNodesSelectForm
                 onSubmitForm={(ids, nodes) => {
-                    this.dispatch(arrRequestActions.addNodes(versionId, requestDetail, ids))
+                    this.dispatch(arrRequestActions.addNodes(versionId, requestDetail, ids, requestDetail.digitizationFrontdeskId))
                 }}
             />))
     };
@@ -140,7 +141,7 @@ class ArrRequestDetail extends AbstractReactComponent {
         // Mapa id node na počet dao pod daným node
         const countMap = {};
 
-        req.daos.forEach(dao => {
+        req.daos && req.daos.forEach(dao => {
             let refId;
             if (dao.daoLink) {
                 const node = dao.daoLink.treeNodeClient;
@@ -176,7 +177,7 @@ class ArrRequestDetail extends AbstractReactComponent {
     };
 
     render() {
-        const {requestDetail} = this.props;
+        const {requestDetail, externalSystems} = this.props;
 
         let form;
         if (requestDetail.id === null) {
@@ -184,9 +185,22 @@ class ArrRequestDetail extends AbstractReactComponent {
                 <div className="title">{i18n('arr.request.noSelection.title')}</div>
                 <div className="msg-text">{i18n('arr.request.noSelection.message')}</div>
             </div>;
-        } else if (requestDetail.fetched) {
+        } else if (requestDetail.fetched && externalSystems.fetched) {
+
+            let externalSystemsMap = {};
+
+            externalSystems.items.forEach((item) => externalSystemsMap[item.id] = item);
+
             const req = requestDetail.data;
             const reqType = getRequestType(req);
+
+            let extSystem = {};
+            if (reqType === DIGITIZATION) {
+                extSystem = externalSystemsMap[req.digitizationFrontdeskId];
+            } else {
+                extSystem = externalSystemsMap[req.digitalRepositoryId]
+            }
+
             form = (
                 <div>
                     <h2>{i18n("arr.request.title.request")}</h2>
@@ -202,6 +216,11 @@ class ArrRequestDetail extends AbstractReactComponent {
                     <div className="form-group">
                         <label>{i18n("arr.request.title.type")}</label> {i18n("arr.request.title.type." + reqType)}
                     </div>
+
+                    <div className="form-group">
+                        <label>{i18n("arr.request.title.daoRequest.system")}</label> {extSystem.name}
+                    </div>
+
                     {reqType === DAO && <div className="form-group">
                         <label>{i18n("arr.request.title.daoRequest.type")}</label> {i18n("arr.request.title.type.dao." + req.type)}
                     </div>}
@@ -245,8 +264,9 @@ class ArrRequestDetail extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {focus, userDetail} = state;
+    const {focus, userDetail, refTables} = state;
     return {
+        externalSystems: refTables.externalSystems,
         focus,
         userDetail,
     }

@@ -101,18 +101,22 @@ class PartyDetailIdentifiers extends AbstractReactComponent {
 
     render() {
         const {party, canEdit} = this.props;
-        return <div className="party-detail-identifiers">
+        var hasValues = party.partyGroupIdentifiers.length > 0;
+        console.log(hasValues);
+        return <div className="party-detail-names">
             <div>
-                <label>{i18n("party.detail.partyGroupIdentifiers")}</label>
+                <label className="group-label">{i18n("party.detail.partyGroupIdentifiers")}</label>
                 {canEdit && <Button bsStyle="action" onClick={this.handlePartyGroupIdentifierAdd}><Icon glyph="fa-plus" /></Button>}
             </div>
-            {party.partyGroupIdentifiers.map((partyGroupIdentifier, index) => <div key={partyGroupIdentifier.id} className="value-group">
-                <div className="value">{partyGroupIdentifier.identifier}</div>
-                {canEdit && <div className="actions">
-                    <Button bsStyle="action" onClick={() => this.handlePartyGroupIdentifierUpdate(partyGroupIdentifier)}><Icon glyph="fa-pencil" /></Button>
-                    <Button bsStyle="action" onClick={() => this.partyGroupIdentifierDelete(partyGroupIdentifier.id)}><Icon glyph="fa-times" /></Button>
-                </div>}
-            </div>)}
+            {hasValues && <div className="name-group">
+                {party.partyGroupIdentifiers.map((partyGroupIdentifier, index) => <div key={partyGroupIdentifier.id} className="value-group">
+                    <div className="value">{partyGroupIdentifier.identifier}</div>
+                    {canEdit && <div className="actions">
+                        <Button bsStyle="action" onClick={() => this.handlePartyGroupIdentifierUpdate(partyGroupIdentifier)}><Icon glyph="fa-pencil" /></Button>
+                        <Button className="delete" bsStyle="action" onClick={() => this.partyGroupIdentifierDelete(partyGroupIdentifier.id)}><Icon glyph="fa-trash" /></Button>
+                    </div>}
+                </div>)}
+            </div>}
         </div>
     }
 }

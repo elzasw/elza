@@ -36,6 +36,7 @@ import com.vividsolutions.jts.io.WKTWriter;
 
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.domain.RegExternalSystem;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -942,7 +943,6 @@ public class XmlExportService {
             record.setExternalSystemCode(externalSystem.getCode());
         }
 
-        record.setLocal(false);
         record.setNote(regRecord.getNote());
         record.setPreferredName(regRecord.getRecord());
 //        record.setRecordCoordinates(); //zatím se s nimi nepracuje

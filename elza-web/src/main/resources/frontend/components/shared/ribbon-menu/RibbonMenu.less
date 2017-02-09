@@ -1,218 +1,217 @@
 @import "~variables.less";
 
-@ribbon-font-size: 12px;
-@ribbon-icon-font-size: 20px;
-@ribbon-large-icon-font-size: 46px;
-@ribbon-large-btn-height: 54px;
-@ribbon-large-btn-width: 54px;
-@ribbon-btn-padding: 2px;
-@ribbon-line-height: @ribbon-btn-padding + @ribbon-font-size;
-@ribbon-small-btn-height: @ribbon-large-btn-height / 3;
 
-.ribbon-menu {
-    padding: 4px 0 4px 6px;
+//---- Size -----
+
+@ribbon-height: 5em;
+@ribbon-font-size: 1em;
+@ribbon-lg-icon-size: 1.7em;
+@ribbon-lg-btn-height: 100%;
+@ribbon-lg-btn-width: auto;
+@ribbon-sm-grp-lines: 3; //mělo by odpovídat počtu tlačítek na sloupec v komponentě RibbonGroup
+@ribbon-sm-btn-height: 100% / @ribbon-sm-grp-lines;
+
+//---- Colors ----
+
+@ribbon-btn-bg: transparent;
+@ribbon-btn-col: inherit;
+@ribbon-btn-hover-bg: #ccc;
+@ribbon-btn-focus-bg: @ribbon-btn-hover-bg;
+@ribbon-btn-active-bg: #bbb;
+
+@ribbon-user-btn-bg: #333;
+@ribbon-user-btn-col: #ddd;
+@ribbon-user-btn-hover-bg: #333;
+
+@ribbon-splitter-col: #ddd;
+
+
+.ribbon-menu.btn-toolbar{
     background: @ribbon-bg;
-    height: 63px;
-    .content {
+    height: @ribbon-height;
+    font-size:@ribbon-font-size;
+    display:flex;
+    margin: 0; //vynuluje margin-left u btn-toolbar, který je react-bootstrap dává defaultně -5px
+
+    .ribbonSmallGroupsContainer {
         display: flex;
-        flex-direction: row;
-
-        .ribbonSmallGroupsContainer {
-            display: flex;           
-        }
-
-        .ribbonGroup {
-            margin-right: 5px;
-            display: flex;
-
-            .btn-default {
-                border: none;
-                margin: 0 2px 0 2px;
-                background: @ribbon-button-bg;
-                &:hover, &.active {
-                    background: @ribbon-button-active-bg;
-                }
+    }
+    .ribbonGroup {
+        display:flex;
+        height:100%;
+        flex-shrink:0;
+        flex-grow:0;
+        .btn-default {
+            line-height: 1em;
+            border: none;
+            margin: 0 0;
+            background: @ribbon-button-bg;
+            color:@ribbon-btn-col;
+            overflow:hidden;
+            //transition:all 100ms ease-out;
+            &:hover, &.active:hover, &:focus{
+                background: @ribbon-btn-hover-bg;
             }
-
-            span.icon {
-                padding: 1px;
-                font-size: @ribbon-icon-font-size;
-            }
-
-            span.btnText {
-                display: inline-block;
-                font-size: @ribbon-font-size;
-                line-height: @ribbon-line-height;
-
-                overflow: hidden;
-
-                word-wrap: break-word;
-                white-space: normal;
+            &.active {
+                background: @ribbon-btn-active-bg;
             }
         }
-        .ribbonGroup.right {
-            margin-left: auto;
-        }
-
-        .ribbonGroup.large {
-            flex-direction: row;
-
-            .btn, .dropdown, .dropdown-toggle > span.dropContent {
-                position: relative;
-                height: @ribbon-large-btn-height;
-                min-width: @ribbon-large-btn-width;
-                max-width: @ribbon-large-btn-width * 1.5;
-
-                padding: @ribbon-btn-padding;
-
-                > div {
-                    line-height: 2 * @ribbon-line-height;
-                    vertical-align: middle;
-                    overflow: hidden;
-                    max-height: 2 * @ribbon-line-height;
-                }
-
-                span.icon {
-                    font-size: @ribbon-icon-font-size;
-                }
-
-                &.large {
-                    span.icon {
-                        font-size: @ribbon-large-icon-font-size;
-                    }
-                }
-            }
-
-            .dropdown-toggle {
-                > span.dropContent {
-                    padding: 0;
-                    display: block;
-                    height: @ribbon-large-btn-height - (2* @ribbon-btn-padding);
-                }
-
-                span.caret {
-                    position: absolute;
-                    bottom: @ribbon-btn-padding;
-                    left: 50% - 2*@ribbon-btn-padding;
-                }
-            }
-        }
-
-        .ribbonGroup.small {
-            flex-direction: column;
-
-            .btn{
-                position: relative;
-            }
-
-            .btn, .dropdown, .dropdown-toggle > span.dropContent {
-                line-height: @ribbon-small-btn-height;
-                vertical-align: middle;
-                height: @ribbon-small-btn-height;
-                text-align: left;
-                padding: @ribbon-btn-padding;
-
-
-                > div {
-                    display: inline-block;
-                    padding: 0 5px;
-                }
-
-                span.icon {
-                    padding: 0 1px;
-                    height: @ribbon-small-btn-height;
-                    display: inline-block;
-                    vertical-align: top;
-                    font-size: @ribbon-icon-font-size * 0.6;
-                }
-            }
-
-            .dropdown-toggle {
-                > span.dropContent {
-                    padding: 0;
-                    padding-right: 8px;
-                }
-
-                span.caret{
-                    position: absolute;
-                    right: @ribbon-btn-padding;
-                    top: @ribbon-small-btn-height / 2 - @ribbon-btn-padding;                
-                }
-            }
-        }
-
-        .ribbonSplit{
-            padding: 2px;
-            height: @ribbon-large-btn-height;
-            border-left: solid 1px @btn-default-border;
-        }
-        .right {    //Styly pro pravou část ribbonu            
-            margin-left: auto;
-            .ribbonGroup{
-                display:flex;                                                
-                .btn, .dropdown{   
-                    text-align: right;
-                    width: auto;                   
-                    max-width: none;
-                    margin: 0;
-                    margin-left:auto;
-                    position: absolute;
-                    right: 0;
-                    top: 0;
-                    font-size:12px;
-                    right:0;
-                    
-                    box-sizing: content-box;
-                    
-                    .dropdown-toggle{
-                        display:inline-block;                        
-                        padding:5px 10px;
-                        //margin-top: -6px;
-                        //margin-right: -8px;
-                        margin-left:auto;
-                        color: #ddd;
-                        background-color: #444;
-                        &:hover{
-                            background-color: #666;
-                        }
-                    }
-                    .icon{
-                        margin-left:5px;
-                        margin-top:2px;                        
-                    }
-                
-                    span{
-                        margin-top:-5px;
-                    }
-                               
-                }
-                .dropdown span{
-                    //margin-top: -10px;
-                }
-                .dropdown-menu{
-                    right:0;
-                    left:auto;                    
-                    min-width: 100%;  
-                    margin-top:100%;  
-
-                    .icon{
-                        margin-left: 0;
-                        margin-right: 5px; 
-                    }                
-                }
-                .save-msg{
-                    color:#888;
-                    margin-top:auto;
-                    margin-right:20px;
-                    text-align: right;
-                    font-size: 1em;
-                    font-style: italic;
-                    .icon{                        
-                        margin-right: 5px; 
-                        font-size: 1em;
-                    }           
-                }
+        .dropdown, .btn,{
+            &:focus{
+                outline: 1px @focus-border-color solid !important;
+                outline-offset:-1px;
+                z-index:50;
             }
         }
     }
+    .ribbonGroup.large {
+        flex-shrink: 1;
+        .dropdown, .btn{
+            height:@ribbon-lg-btn-height;
+            width: @ribbon-lg-btn-width;
+            max-width: 7em;
+            min-width: 5em;
+            flex-grow: 1;
+            flex-shrink: 1;
+        }
+        .dropdown{
+            .btn{
+                height:100%;
+                width:100%;
+            }
+        }
+        .btn{
+            padding: 0.5em 0.5em;
+            padding-top: 0.6em;
+            white-space: pre-wrap;
+            display:flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            .icon {
+                font-size: @ribbon-lg-icon-size;
+            }
+            .btnText{
+                padding-top: 0.3em;
+                max-width: 100%;
+                line-height: 1.1em;
+            }
+        }
+    }
+
+    .ribbonGroup.small {
+        flex-wrap:nowrap;
+        flex-direction: column;
+        font-size: @ribbon-font-size; //potřeba zadat, jelikož react-bootstrap již zavádí třídu .small, která zmenšuje velikost fontu.
+        .dropdown, .btn,{
+            height:@ribbon-sm-btn-height; // 1/3 výšky obalujícího elementu - max 3 tlačítka nad sebou
+            flex-grow: 0;
+            flex-shrink: 0;
+        }
+        .dropdown{
+            .btn{
+                height:100%;
+                width:100%;
+            }
+        }
+        .btn{
+            white-space: nowrap;
+            text-align: left;
+            padding:0 0.4em;
+            div{
+                display:inline;
+            }
+            .btnText{
+                margin:0 0.2em;
+            }
+            .icon {
+                font-size: 1.1em;
+                margin:0 0.2em;
+                width: 1em;
+            }
+        }
+
+        .dropdown-toggle {
+            > span.dropContent {
+                display:inline-block;
+            }
+        }
+    }
+    .ribbonGroup.big-icon{
+        .btn{
+            align-items:center;
+            justify-content: center;
+            .icon{
+                font-size: 4em;
+            }
+        }
+    }
+    .ribbonSplit{
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        display:inline-block;
+        width: 1px;
+        background-color: @ribbon-splitter-col;
+        flex-shrink:0;
+        flex-grow:0;
+    }
+
+    .right{
+        flex-grow:1;
+        justify-content: flex-end;
+            &.large{
+                .user-menu.dropdown{
+                    height:100%;
+                }
+            }
+            .small{
+                .user-menu.dropdown{
+                    flex-shrink:1;
+                    height:50%;
+                }
+            }
+            .user-menu.dropdown{
+                .dropdown-menu{
+                        right:0px;
+                        left:auto;
+                        min-width: 100%;
+                }
+                .btn{
+                    background: @ribbon-user-btn-bg;
+                    color: @ribbon-user-btn-col;
+                    &:hover, &.active:hover, &:focus{
+                        background: @ribbon-user-btn-hover-bg;
+                    }
+                    .btnText{
+                        margin:0 0.2em;
+                    }
+                    .icon{
+                        margin:0 0.2em;
+                    }
+                }
+            }
+            .save-msg-container{
+                position:relative;
+                height:50%;
+                .save-msg{
+                    white-space: nowrap;
+                    display:inline-block;
+                    position: absolute;
+                    right:2em;
+                    bottom:2%;
+                    color:#888;
+                    text-align: right;
+                    font-size: 1em;
+                    font-style: italic;
+                    .icon{
+                        font-size: 1em;
+                        margin-right:0.2em;
+                    }
+
+                }
+            }
+
+    }
+
 }

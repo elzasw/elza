@@ -78,9 +78,6 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
 
     private Throwable exception;
 
-    @Value("${elza.templates.templatesDir}")
-    protected String templatesDir;
-
     private Integer arrOutputId;
     private Integer userId;
     private ArrChange change;
@@ -271,7 +268,7 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
 
     protected File getTemplatesDir(final RulTemplate rulTemplate) {
         final String rulTemplateDirectory = rulTemplate.getDirectory();
-        final File templateDir = Paths.get(templatesDir, rulTemplateDirectory).toFile();
+        final File templateDir = Paths.get(outputGeneratorService.getTemplatesDir(rulTemplate.getPackage().getCode()), rulTemplateDirectory).toFile();
         Assert.isTrue(templateDir.exists() && templateDir.isDirectory(), "Nepodařilo se najít adresář s definicí šablony: " + templateDir.getAbsolutePath());
         return templateDir;
     }

@@ -959,7 +959,7 @@ public class XmlImportService {
             List<ParRelation> relations = new ArrayList<>(parParty.getRelations());
             if (CollectionUtils.isNotEmpty(relations)) {
                 for (ParRelation relation : relations) {
-                    partyService.deleteRelation(relation);
+                    partyService.deleteRelationAndSync(relation);
                 }
             }
             parParty.setRelations(null);

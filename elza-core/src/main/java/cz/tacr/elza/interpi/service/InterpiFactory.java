@@ -222,7 +222,7 @@ public class InterpiFactory {
             List<ParRelation> relations = new ArrayList<>(originalParty.getRelations());
             if (CollectionUtils.isNotEmpty(relations)) {
                 for (ParRelation relation : relations) {
-                    partyService.deleteRelation(relation);
+                    partyService.deleteRelationAndSync(relation);
                 }
             }
             originalParty.setRelations(null);

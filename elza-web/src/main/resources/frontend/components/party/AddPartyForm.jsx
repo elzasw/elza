@@ -23,8 +23,6 @@ class AddPartyForm extends AbstractReactComponent {
 
     static fields = [
         'partyType', // skrýté pole updated při loadu
-        'scope', // Pole pouze pro korporace
-        'genealogy', // Pole pouze pro rod
         'record.registerTypeId',
         'record.scopeId',
         'prefferedName.nameFormType.id',
@@ -92,6 +90,14 @@ class AddPartyForm extends AbstractReactComponent {
         if (errors.prefferedName.validFrom == null && errors.prefferedName.validTo == null) {
             delete errors.prefferedName;
         }
+
+        if (values.record && !values.record.scopeId) {
+            if (!errors.record) {
+                errors.record = {};
+            }
+            errors.record.scopeId = i18n('global.validation.required');
+        }
+
         return errors;
 
     };
@@ -185,7 +191,8 @@ class AddPartyForm extends AbstractReactComponent {
         const {recordTypes, refTables: {partyNameFormTypes, scopesData:{scopes}, calendarTypes}, partyType} = props;
 
         const registerTypeId = this.getPreselectRecordTypeId(recordTypes);
-        const scopeId = scopes.filter(i => i.versionId === null)[0].scopes[0].id;
+        const filteredScopes = scopes.filter(i => i.versionId === null)[0].scopes;
+        const scopeId = filteredScopes && filteredScopes[0] && filteredScopes[0].id ? filteredScopes[0].id : null;
         const complementsTypes = partyType.complementTypes;
         const firstCalId = calendarTypes.items[0].id;
 
@@ -238,8 +245,6 @@ class AddPartyForm extends AbstractReactComponent {
 
         const {
             fields: {
-                scope,
-                genealogy,
                 record: {
                     registerTypeId,
                     scopeId
@@ -281,31 +286,20 @@ class AddPartyForm extends AbstractReactComponent {
                     <div className="flex-2 col">
                         <Row>
                             <Col xs={12}>
-                                <div className="line">
-                                    <FormGroup validationState={registerTypeId.touched && registerTypeId.error ? 'error' : null}>
-                                        <Autocomplete
-                                            label={i18n('party.recordType')}
-                                            items={treeItems}
-                                            tree
-                                            alwaysExpanded
-                                            allowSelectItem={(id, item) => item.addRecord}
-                                            {...registerTypeId}
-                                            value={value}
-                                            onChange={item => registerTypeId.onChange(item ? item.id : null)}
-                                            onBlur={item => registerTypeId.onBlur(item ? item.id : null)}
-                                        />
-                                    </FormGroup>
-                                    <Scope versionId={versionId} label={i18n('party.recordScope')} {...scopeId} />
-                                </div>
-                                <hr />
-                                {partyType.code == PARTY_TYPE_CODES.GROUP_PARTY && <div>
-                                    <FormInput componentClass="textarea" label={i18n('party.scope')} {...scope}/>
-                                    <hr/>
-                                </div>}
-                                {partyType.code == PARTY_TYPE_CODES.DYNASTY && <div>
-                                    <FormInput componentClass="textarea" label={i18n('party.genealogy')} {...genealogy}/>
-                                    <hr/>
-                                </div>}
+                                <FormGroup validationState={registerTypeId.touched && registerTypeId.error ? 'error' : null}>
+                                    <Autocomplete
+                                        label={i18n('party.recordType')}
+                                        items={treeItems}
+                                        tree
+                                        alwaysExpanded
+                                        allowSelectItem={(id, item) => item.addRecord}
+                                        {...registerTypeId}
+                                        value={value}
+                                        onChange={item => registerTypeId.onChange(item ? item.id : null)}
+                                        onBlur={item => registerTypeId.onBlur(item ? item.id : null)}
+                                    />
+                                </FormGroup>
+                                <Scope versionId={versionId} label={i18n('party.recordScope')} {...scopeId} />
                             </Col>
                             <Col xs={12} md={6}>
                                 <FormInput type="text" label={i18n('party.name.mainPart')} {...mainPart} />
@@ -340,27 +334,6 @@ class AddPartyForm extends AbstractReactComponent {
                                     <option key="null" />
                                     {partyNameFormTypes.items.map((i) => <option value={i.id} key={i.id}>{i.name}</option>)}
                                 </FormInput>
-                            </Col>
-                        </Row>
-                    </div>
-                    <div className="datation-group flex-1 col">
-                        <Row>
-                            <Col xs={12}>
-                                <Row>
-                                    <Col xs={6} md={12}>
-                                        <DatationField fields={validFrom} label={i18n('party.name.validFrom')} labelTextual={i18n('party.name.validFrom.textDate')} labelNote={i18n('party.name.validFrom.note')} />
-                                    </Col>
-                                    <Col xs={6} md={12}>
-                                        <DatationField fields={validTo} label={i18n('party.name.validTo')} labelTextual={i18n('party.name.validTo.textDate')} labelNote={i18n('party.name.validTo.note')} />
-                                    </Col>
-                                </Row>
-                            </Col>
-                        </Row>
-                    </div>
-                    <div className="flex-1 col">
-                        <Row>
-                            <Col xs={12}>
-                                <FormInput componentClass="textarea" label={i18n('party.name.note')} {...note} />
                             </Col>
                         </Row>
                     </div>

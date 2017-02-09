@@ -7,6 +7,9 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import cz.tacr.elza.controller.vo.ArrDigitalRepositorySimpleVO;
+import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskSimpleVO;
+import cz.tacr.elza.controller.vo.RegExternalSystemSimpleVO;
 import cz.tacr.elza.packageimport.xml.SettingGridView;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -739,9 +742,14 @@ public class ConfigMapperConfiguration {
                 }).byDefault().register();
         mapperFactory.classMap(RegRecord.class, RegRecordSimple.class).field("recordId", "id").byDefault().register();
 
-        mapperFactory.classMap(RegExternalSystem.class, RegExternalSystemVO.class).field("externalSystemId", "id").exclude("username").exclude("password").exclude("url").byDefault().register();
+        mapperFactory.classMap(RegExternalSystem.class, RegExternalSystemVO.class).field("externalSystemId", "id").byDefault().register();
         mapperFactory.classMap(ArrDigitizationFrontdesk.class, ArrDigitizationFrontdeskVO.class).field("externalSystemId", "id").byDefault().register();
         mapperFactory.classMap(ArrDigitalRepository.class, ArrDigitalRepositoryVO.class).field("externalSystemId", "id").byDefault().register();
+
+        mapperFactory.classMap(RegExternalSystem.class, RegExternalSystemSimpleVO.class).field("externalSystemId", "id").byDefault().register();
+        mapperFactory.classMap(ArrDigitizationFrontdesk.class, ArrDigitizationFrontdeskSimpleVO.class).field("externalSystemId", "id").byDefault().register();
+        mapperFactory.classMap(ArrDigitalRepository.class, ArrDigitalRepositorySimpleVO.class).field("externalSystemId", "id").byDefault().register();
+
 
         mapperFactory.classMap(RegRegisterType.class, RegRegisterTypeVO.class).customize(
                 new CustomMapper<RegRegisterType, RegRegisterTypeVO>() {

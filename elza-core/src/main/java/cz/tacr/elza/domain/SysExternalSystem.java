@@ -1,5 +1,11 @@
 package cz.tacr.elza.domain;
 
+import cz.tacr.elza.domain.enumeration.StringLength;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -7,13 +13,6 @@ import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.Table;
-
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
-import cz.tacr.elza.domain.enumeration.StringLength;
 
 /**
  * Číselník externích systémů.
@@ -45,6 +44,9 @@ public abstract class SysExternalSystem {
 
     @Column(length = StringLength.LENGTH_50)
     private String password;
+
+    @Column(length = StringLength.LENGTH_50)
+    private String elzaCode;
 
     public Integer getExternalSystemId() {
         return externalSystemId;
@@ -92,6 +94,14 @@ public abstract class SysExternalSystem {
 
     public void setPassword(final String password) {
         this.password = password;
+    }
+
+    public String getElzaCode() {
+        return elzaCode;
+    }
+
+    public void setElzaCode(String elzaCode) {
+        this.elzaCode = elzaCode;
     }
 
     @Override

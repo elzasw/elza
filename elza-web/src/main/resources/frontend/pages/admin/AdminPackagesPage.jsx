@@ -82,7 +82,6 @@ class AdminPackagesPage extends React.Component {
                 splitter={splitter}
                 className='admin-packages-page'
                 ribbon={this.buildRibbon()}
-                leftPanel={<div>aaa</div>}
                 centerPanel={centerPanel}
             />
         )

@@ -135,21 +135,25 @@ class PartyDetailNames extends AbstractReactComponent {
         const {party, partyType, canEdit} = this.props;
 
         return <div className="party-detail-names">
-            <div>
-                <label>{i18n("party.detail.formNames")}</label>
+            <div >
+                <label className="group-label">{i18n("party.detail.formNames")}</label>
                 {canEdit && <Button bsStyle="action" onClick={this.handlePartyNameAdd}><Icon glyph="fa-plus" /></Button>}
             </div>
-            {party.partyNames.map((partyName, index) => <div key={partyName.id} className="value-group">
-                <div className="value">{this.getPartyName(partyName, partyType)}</div>
-                <div className="actions">
-                    <Button onClick={() => this.handlePartyNameUpdate(partyName)}><Icon glyph="fa-pencil" /></Button>
-                    {partyName.prefferedName && i18n('party.detail.formNames.prefferedName')}
-                    {canEdit && !partyName.prefferedName && <span>
-                        <Button bsStyle="action" onClick={() => this.handleDelete(partyName.id)}><Icon glyph="fa-times" /></Button>
-                        <Button bsStyle="action" onClick={() => this.handleSelectPreffered(partyName.id)}><Icon glyph="fa-check" /></Button>
-                    </span>}
-                </div>
-            </div>)}
+            <div className="name-group">
+                {party.partyNames.map((partyName, index) =>
+                    <div key={partyName.id} className={partyName.prefferedName ? "preffered value-group" : "value-group"}>
+                        <div className="value">{this.getPartyName(partyName, partyType)}</div>
+                        <div className="actions">
+                            <Button  bsStyle="action" onClick={() => this.handlePartyNameUpdate(partyName)}><Icon glyph="fa-pencil" /></Button>
+                            {canEdit
+                            && !partyName.prefferedName
+                            && <span>
+                                <Button className="delete" bsStyle="action" onClick={() => this.handleDelete(partyName.id)}><Icon glyph="fa-trash" /></Button>
+                                <Button bsStyle="action" onClick={() => this.handleSelectPreffered(partyName.id)}><Icon glyph="fa-star" /></Button>
+                            </span>}
+                        </div>
+                    </div>)}
+            </div>
         </div>
     }
 }

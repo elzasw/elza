@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import {reduxForm} from 'redux-form'
-import {Form, Button, FormControl, Table, Modal, OverlayTrigger, Tooltip, Checkbox} from 'react-bootstrap'
+import {Form, Button, FormControl, Table, Modal, OverlayTrigger, Tooltip, Checkbox, ControlLabel} from 'react-bootstrap'
 import {AbstractReactComponent, FormInput, i18n, Icon, Loading, ExtMapperForm} from '../index.jsx';
 import objectById from '../../shared/utils/objectById'
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx';
@@ -107,17 +107,16 @@ class ExtImportSearch extends AbstractReactComponent {
 
     renderParam = (fields, index, self) => {
         const {value, attType} = fields;
-        return <div className="flex" key={index}>
+        return <div className="flex" style={{marginBottom: '10px'}} key={index}>
             <div className="flex-1">
-                <FormInput componentClass="select" {...attType} label={i18n('extImport.attType')}>
-                    <option key="null" />
+                <FormInput componentClass="select" {...attType} >
                     {ATTRIBUTE_TYPES.map((i,x) => <option key={x} value={i.val}>{i.name}</option>)}
                 </FormInput>
             </div>
             <div className="flex-1">
-                <FormInput type="text" {...value} label={i18n('extImport.value')}/>
+                <FormInput type="text" {...value}/>
             </div>
-            <Button bsStyle="action" style={{marginTop:'25px'}} onClick={()=>self.removeField(index)}><Icon glyph="fa-times"/></Button>
+            <Button bsStyle="action" onClick={()=>self.removeField(index)}><Icon glyph="fa-times"/></Button>
         </div>
     };
 
@@ -136,12 +135,19 @@ class ExtImportSearch extends AbstractReactComponent {
         return <Form onSubmit={handleSubmit(submit)}>
             {error && <p className="text-danger">{error}</p>}
             <FormInput componentClass="select" label={i18n('extImport.source')} {...systemId}>
-                <option key="null" />
                 {extSystems.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
             </FormInput>
             {system != null && system && <div>
                 {system.type === REG_EXT_SYSTEM_TYPE.INTERPI ? <div>
                     <label>Hledané parametry</label>
+                        {conditions.length > 0 && <div className="flex">
+                            <ControlLabel className="flex-1">
+                                {i18n('extImport.attType')}
+                            </ControlLabel>
+                            <ControlLabel className="flex-1">
+                                {i18n('extImport.value')}
+                            </ControlLabel>
+                        </div>}
                     {conditions.map(this.renderParam)}
                     <Button bsStyle="action" onClick={() => conditions.addField({condition: CONDITION_TYPE.AND, value:null, attType: null})}>
                         <Icon glyph="fa-plus" /></Button>
@@ -159,7 +165,7 @@ const ExtImportSearchComponent = reduxForm({
     form: 'extImportSearch'
 }, (state, props) => ({
     extSystems: state.app.regExtSystemList.fetched ? state.app.regExtSystemList.rows : null,
-    initialValues: {params:[{condition:null, value:props.firstValue || null, attType: null}]}
+    initialValues: {conditions:[{condition: CONDITION_TYPE.AND, value:props.firstValue || null, attType: ATTRIBUTE_TYPES[0].val}]}
 }))(ExtImportSearch);
 
 
@@ -224,7 +230,15 @@ class ExtImportForm extends AbstractReactComponent {
                     record={record}
                     isUpdate={update}
                     onSubmit={(data) => {
-                        importVO.mappings = data.mappings;
+
+                        importVO.mappings = [];
+
+                        data.mappings.forEach((mapping) => {
+                            if (mapping.importRelation) {
+                                importVO.mappings.push(mapping);
+                            }
+                        });
+
                         return send(importVO, update, recordId);
                     }
                 } />, "dialog-lg"));
@@ -314,7 +328,7 @@ class ExtImportForm extends AbstractReactComponent {
                                             </tr>
                                             </thead>
                                             <tbody>
-                                                {results.map(i => <tr className={record && record.recordId == i.recordId ? "active" : null} onClick={() => interpiRecordId.onChange(i.recordId)}>
+                                                {results.map(i => <tr style={{cursor: 'pointer'}} className={record && record.recordId == i.recordId ? "active" : null} onClick={() => interpiRecordId.onChange(i.recordId)}>
                                                     <td>{i.recordId}</td>
                                                     <td>{i.name}</td>
                                                     <td>{i.pairedRecords && i.pairedRecords.length > 0 ? <OverlayTrigger overlay={<Tooltip id='tt'>{i.pairedRecords.map((x,index) => (index != 0 ? ', ' : '') + x.scope.name)}</Tooltip>} placement="top">

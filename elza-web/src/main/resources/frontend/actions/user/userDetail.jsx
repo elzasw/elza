@@ -9,19 +9,38 @@ export function userDetailChange(userDetail) {
     }
 }
 
+export function reloadUserDetail(userIds) {
+    return (dispatch, getState) => {
+        const state = getState();
+        const userDetail = state.userDetail;
+        if (userIds.indexOf(userDetail.id) !== -1) {
+            WebApi.getUserDetail()
+                .then(userDetail => {
+                    dispatch(userDetailChange(userDetail))
+                });
+        }
+    }
+}
+
 export function userDetailClear() {
     return {
         type: types.USER_DETAIL_CLEAR,
     }
 }
 
-export function userDetailsSaveSettings(settings) {
+/**
+ * @param settings nastavení
+ * @param hideDialog uzavřít dialog po úspěšném dokončení?
+ */
+export function userDetailsSaveSettings(settings, hideDialog = true) {
     return (dispatch) => {
         dispatch(userDetailRequestSettings(settings))
         WebApi.setUserSettings(settings)
             .then(data => {
                 dispatch(userDetailResponseSettings(data));
-                dispatch(modalDialogHide());
+                if (hideDialog === true) {
+                    dispatch(modalDialogHide());
+                }
             });
     }
 }

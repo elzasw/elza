@@ -106,6 +106,10 @@ class ArrPage extends ArrParentPage {
         super.componentDidMount();
         this.trySetFocus(this.props)
     }
+    componentWillMount(){
+        this.registerTabs(this.props);
+    }
+
     componentWillReceiveProps(nextProps) {
         super.componentWillReceiveProps(nextProps);
         const {tab} = this.props;
@@ -144,50 +148,38 @@ class ArrPage extends ArrParentPage {
         } else {
             this.setState({fundNodesError: null});
         }
-
-        this.trySetFocus(nextProps)
+        this.registerTabs(nextProps);
+        console.log(this.state);
+        this.trySetFocus(nextProps);
     }
-
+    wrappedFocus = (ref) => {
+        if (this.refs[ref]) {
+            this.setState({}, () => {
+                if (this.refs[ref].getWrappedInstance().focus()) {
+                    focusWasSet();
+                }
+            })
+        }
+    }
+    refFocus = (ref) => {
+        if(this.refs[ref]){
+             this.setState({}, () => {
+                ReactDOM.findDOMNode(this.refs[ref]).focus();
+                focusWasSet();
+            })
+        }
+    }
     trySetFocus(props) {
         var {focus, tab} = props
-        let selected = tab.values['arr-as'];
+        let selectedTab = this.state.tabs[tab.values['arr-as']];
         if (canSetFocus()) {
-            console.log("trySetFocus, canSetFocus")
             if (isFocusFor(focus, 'arr', 3)) {
-                switch (selected) {
-                    case "discrepancies":
-                        this.refs.fundErrors && this.setState({}, () => {
-                            ReactDOM.findDOMNode(this.refs.fundErrors).focus()
-                            focusWasSet()
-                        })
-                        break
-                    case "visiblePolicies":
-                        this.refs.fundVisiblePolicies && this.setState({}, () => {
-                            ReactDOM.findDOMNode(this.refs.fundVisiblePolicies).focus()
-                            focusWasSet()
-                        })
-                        break
-                    case "packets":
-                        if (this.refs.fundPackets) {
-                            this.setState({}, () => {
-                                if (this.refs.fundPackets.getWrappedInstance().focus()) {
-                                    focusWasSet()
-                                }
-                            })
-                        }
-                        break
-                    case "files":
-                        if (this.refs.fundFiles) {
-                            this.setState({}, () => {
-                                if (this.refs.fundFiles.getWrappedInstance().focus()) {
-                                    focusWasSet()
-                                }
-                            })
-                        }
-                        break
-                    default:
-                        focusWasSet()
-                        break
+                if(!selectedTab.focus && !selectedTab.ref){ //Pokud tab nemá zadánu funkci pro focus ani ref
+                    focusWasSet();
+                } else if (!selectedTab.focus){ //Pokud tab nemá zadánu funkci pro focus
+                    this.refFocus(selectedTab.ref);
+                } else {
+                    selectedTab.focus();
                 }
             }
         }
@@ -275,7 +267,31 @@ class ArrPage extends ArrParentPage {
         this.dispatch(fundActionFormShow(versionId));
         this.dispatch(routerNavigate('/arr/actions'));
     }
-
+    /**
+     *   getTabs
+     *   @param tabs {Object} - Objekt obsahující vlastnosti záložek
+     *   @param settingsValues {Object} - objekt s nastavením
+     *   @param selectedTab {String} - id/key záložky
+     *   @param ignoreSettings {Bool} - určuje, zda se bere v potaz nastavení. Při použití false vypíše všechny možné hodnoty splňující podmínku záložky.
+     *
+     *   Vrátí objekt obsahující identifikátor vybrané záložky a objekt obsahující objekty záložek.
+     */
+    getTabs = (tabs,settingsValues,selectedTab = null,ignoreSettings = false) => {
+        var items = [];
+        for(var tab in tabs){
+            var condition = tabs[tab].condition;
+            if(ignoreSettings || tabs[tab].notFromSettings || settingsValues === null || settingsValues[tabs[tab].id]){
+                if(typeof condition === "undefined" || condition){
+                    var checked = settingsValues && settingsValues[tab] !== undefined ? settingsValues[tab] : true;
+                    tabs[tab].checked = checked;
+                    items.push(tabs[tab]);
+                    selectedTab = this.selectIfNull(selectedTab, tabs[tab].id);
+                }
+            }
+        }
+        console.log(selectedTab);
+        return {items: items,selectedTab: selectedTab};
+    }
     handleChangeFundSettings() {
         const {userDetail} = this.props;
         var activeInfo = this.getActiveInfo();
@@ -290,23 +306,32 @@ class ArrPage extends ArrParentPage {
         var settings = getOneSettings(userDetail.settings, 'FUND_STRICT_MODE', 'FUND', fundId);
         var dataStrictMode = settings.value ? settings.value === 'true' : null;
 
+        var tabsArray = this.getTabs(this.state.tabs,dataRight,null,true).items;
+
         var init = {
             rightPanel: {
-                tabs: [
-                    {name: i18n('arr.panel.title.packets'), key: "packets", checked: dataRight && dataRight.packets !== undefined ? dataRight.packets : true},
-                    {name: i18n('arr.panel.title.files'), key: "files", checked: dataRight && dataRight.files !== undefined ? dataRight.files : true},
-                    {name: i18n('arr.panel.title.discrepancies'), key: "discrepancies", checked: dataRight && dataRight.discrepancies !== undefined ? dataRight.discrepancies : true},
-                    {name: i18n('arr.panel.title.visiblePolicies'), key: "visiblePolicies", checked: dataRight && dataRight.visiblePolicies !== undefined ? dataRight.visiblePolicies : true},
-                ]
+                tabs: tabsArray
             },
             centerPanel: {
                 panels: [
-                    {name: i18n('arr.fund.settings.panel.center.parents'), key: 'parents', checked: dataCenter && dataCenter.parents !== undefined ? dataCenter.parents : true},
-                    {name: i18n('arr.fund.settings.panel.center.children'), key: 'children', checked: dataCenter && dataCenter.children !== undefined ? dataCenter.children : true},
-                    {name: i18n('arr.fund.settings.panel.rightPanel'), key: 'rightPanel', checked: dataCenter && dataCenter.rightPanel !== undefined ? dataCenter.rightPanel : true},
+                    {
+                        name: i18n('arr.fund.settings.panel.center.parents'),
+                        key: 'parents',
+                        checked: dataCenter && dataCenter.parents !== undefined ? dataCenter.parents : true},
+                    {
+                        name: i18n('arr.fund.settings.panel.center.children'),
+                        key: 'children',
+                        checked: dataCenter && dataCenter.children !== undefined ? dataCenter.children : true},
+                    {
+                        name: i18n('arr.fund.settings.panel.rightPanel'),
+                        key: 'rightPanel',
+                        checked: dataCenter && dataCenter.rightPanel !== undefined ? dataCenter.rightPanel : true},
                 ]
             },
-            strictMode: {name: i18n('arr.fund.settings.rules.strictMode'), key: 'strictMode', value: dataStrictMode},
+            strictMode: {
+                    name: i18n('arr.fund.settings.rules.strictMode'),
+                    key: 'strictMode',
+                    value: dataStrictMode},
         };
 
         var form = <FundSettingsForm initialValues={init} onSubmitForm={this.handleChangeFundSettingsSubmit.bind(this)} />;
@@ -695,111 +720,156 @@ class ArrPage extends ArrParentPage {
         const {arrRegion, tab} = this.props;
 
         this.dispatch(selectTab('arr-as', item.id));
+        if (item.update) {  //Pokud má záložka definovánu funkci update(), pak se tato funkce zavolá.
+            item.update();
+        }
 
-        if (item.id === 1) {
-            var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
-            this.dispatch(fundNodesPolicyFetchIfNeeded(activeFund.versionId));
+    }
+    /**
+     *   selectIfNull
+     *   @param selectedTab {String} - id/key záložky
+     *   @param tabId {String}- záložka k vybrání
+     *
+     *   Pokud není definována vybraná záložka, vrátí druhou předanou, pokud ne, vrátí zpět původní.
+     */
+    selectIfNull = (selectedTab,tabId) => {
+        if (!selectedTab) {
+            return tabId;
+        } else{
+            return selectedTab;
         }
     }
+    /**
+    *   checkTabEnabled
+    *   @param selectedTab {String} - id/key záložky
+    *   @param settingsValues {Object}- hodnoty nastavení
+    *
+    *   Zjišťuje, zda je vybraná záložka povolená. Pokud ano, vrátí jí zpátky, pokud ne, vrátí null.
+    */
+    checkTabEnabled = (selectedTab, settingsValues) => {
+        if(selectedTab){
+            if(settingsValues){
+                if(!settingsValues[selectedTab]){
+                    return null;
+                }
+            }
+        }
+        return selectedTab;
+    }
+    /**
+    *   registerTabs
+    *   @param props {Object}
+    *
+    *   Funkce pro definici záložek pravého panelu. Záložky se uloží do state.
+    */
+    registerTabs = (props) => {
+        const {developer, arrRegion, userDetail} = props;
+        var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
+
+        var node;
+        if (activeFund.nodes && activeFund.nodes.activeIndex !== null) {
+            node = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
+        }
+        /**
+         *  Vlastnosti objektu záložky
+         *
+         *  @prop id {String} identifikátor záložky
+         *  @prop key {String} identifikátor záložky
+         *  @prop name {String} Nadpis záložky
+         *  @prop ref {String} odkaz na záložku
+         *  @func render() funkce pro vykreslení obsahu záložky
+         *  @func focus() funkce pro získání focusu záložky
+         *  @func update() funkce určená pro aktualizaci
+         *  @prop condition {Bool} podmínka, která určuje jestli se záložka vykreslí
+         *
+         */
+        var tabs = {
+                    "packets":{
+                        id: "packets",
+                        key: "packets",
+                        name: i18n('arr.panel.title.packets'),
+                        ref: "fundPackets",
+                        render:() => this.renderFundPackets(activeFund),
+                        focus: () => this.wrappedFocus("fundPackets"),
+                        condition: userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId: activeFund.id}),
+                        permissionRestrictions: []
+                    },
+                    "files":{
+                        id: "files" ,
+                        key: "files" ,
+                        name: i18n('arr.panel.title.files'),
+                        ref: "fundFiles",
+                        render:() => this.renderFundFiles(activeFund),
+                        focus: () => this.wrappedFocus("fundFiles"),
+                        condition: userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId: activeFund.id})
+                    },
+                    "discrepancies":{
+                        id: "discrepancies" ,
+                        key: "discrepancies" ,
+                        ref: "fundErrors",
+                        name: i18n('arr.panel.title.discrepancies'),
+                        render:() => this.renderFundErrors(activeFund)
+                    },
+                    "visiblePolicies":{
+                        id: "visiblePolicies",
+                        key: "visiblePolicies",
+                        ref: "fundVisiblePolicies",
+                        name: i18n('arr.panel.title.visiblePolicies'),
+                        render:() => this.renderFundVisiblePolicies(activeFund),
+                        update:() => this.dispatch(fundNodesPolicyFetchIfNeeded(activeFund.versionId))
+                    },
+                    "descItems":{
+                        id: "descItems" ,
+                        key: "descItems" ,
+                        name: i18n('developer.title.descItems'),
+                        render:() => this.renderDeveloperDescItems(activeFund, node),
+                        condition: developer.enabled && node
+                    },
+                    "scenarios":{
+                        id: "scenarios" ,
+                        key: "scenarios" ,
+                        name: i18n('developer.title.scenarios'),
+                        render:() => this.renderDeveloperScenarios(activeFund, node),
+                        condition: developer.enabled && node
+                    },
+                    "someNewTab":{
+                        id: "someNewTab",
+                        key: "someNewTab",
+                        ref: "fundErrors",
+                        name: "Some New Tab",
+                        render:() => this.renderFundErrors(activeFund)
+                    }
+        };
+        this.setState({tabs:tabs});
+    }
+
 
     renderPanel() {
-        const {developer, arrRegion, userDetail, tab} = this.props;
+        const {arrRegion, userDetail, tab} = this.props;
+
         var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
+
         var settings = getOneSettings(userDetail.settings, 'FUND_RIGHT_PANEL', 'FUND', activeFund.id);
         var centerSettings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', activeFund.id);
-
-        var node
-        if (activeFund.nodes && activeFund.nodes.activeIndex !== null) {
-            node = activeFund.nodes.nodes[activeFund.nodes.activeIndex]
-        }
-
-        // -----------
-        // Záložky a obsah aktuálně vybrané založky
-        var items = [];
-        var tabContent
-        var tabIndex = 0
-
         var settingsValues = settings.value ? JSON.parse(settings.value) : null;
         var centerSettingsValues = centerSettings.value ? JSON.parse(centerSettings.value) : null;
-        let selected = tab.values['arr-as'] && (settingsValues !== null && settingsValues[tab.values['arr-as']] || settingsValues === null) ? tab.values['arr-as'] : null;
-        if(settings.value && (settings.value.indexOf("true")<0 || !centerSettingsValues.rightPanel))
-        {
+        var selectedTab =  this.checkTabEnabled(tab.values['arr-as'], settingsValues);
+
+        var tabsObject = this.state.tabs;
+        var tabs = this.getTabs(tabsObject,settingsValues,selectedTab);
+        var tabsItems = tabs.items;
+        selectedTab = tabs.selectedTab;
+
+        if(!selectedTab || (centerSettingsValues && !centerSettingsValues.rightPanel)){ //pokud neexistuje žádná vybratelná záložka nebo je vypnutý pravý panel
             return false;
         }
 
-        if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId: activeFund.id})) {
-            if (settingsValues == null || settingsValues.packets) {
-                var thisTab = {id:"packets",title:i18n('arr.panel.title.packets')};
-                items.push(thisTab);
-                if (selected == null) {
-                  selected = thisTab.id;
-                }
-                if (selected === thisTab.id) {
-                  tabContent = this.renderFundPackets(activeFund);
-                }
-            }
-        }
-        if (settingsValues == null || settingsValues.files) {
-            var thisTab = {id:"files",title:i18n('arr.panel.title.files')};
-            items.push(thisTab);
-            if (selected == null) {
-              selected = thisTab.id;
-            }
-            if (selected === thisTab.id) {
-              tabContent = this.renderFundFiles(activeFund);
-            }
-        }
+        var tabContent = tabsObject[selectedTab].render();
 
-        if (settingsValues == null || settingsValues.discrepancies) {
-            var thisTab = {id:"discrepancies",title:i18n('arr.panel.title.discrepancies')};
-            items.push(thisTab);
-            if (selected == null) {
-              selected = thisTab.id;
-            }
-            if (selected === thisTab.id) {
-              tabContent = this.renderFundErrors(activeFund);
-            }
-        }
-
-        if (settingsValues == null || settingsValues.visiblePolicies) {
-            var thisTab = {id:"visiblePolicies",title:i18n('arr.panel.title.visiblePolicies')};
-            items.push(thisTab);
-            if (selected == null) {
-              selected = thisTab.id;
-            }
-            if (selected === thisTab.id) {
-              tabContent = this.renderFundVisiblePolicies(activeFund);
-            }
-        }
-
-
-
-        // pouze v developer modu
-        if (developer.enabled && node) {
-            var thisTab = {id:"descItems",title:i18n('developer.title.descItems')};
-            items.push(thisTab);
-            if (selected == null) {
-              selected = thisTab.id;
-            }
-            if (selected === thisTab.id) {
-              tabContent = this.renderDeveloperDescItems(activeFund, node)
-            }
-
-            thisTab = {id:"scenarios",title:i18n('developer.title.scenarios')};
-            items.push(thisTab);
-            if (selected == null) {
-              selected = thisTab.id;
-            }
-            if (selected === thisTab.id) {
-              tabContent = tabContent = this.renderDeveloperScenarios(activeFund, node)
-            }
-        }
-        // -----------
         return (
             <Tabs.Container>
-
-                <Tabs.Tabs items={items}
-                           activeItem={{id: selected}}
+                <Tabs.Tabs items={tabsItems}
+                           activeItem={{id: selectedTab}}
                            onSelect={this.handleTabSelect}
                 />
                 <Tabs.Content>
