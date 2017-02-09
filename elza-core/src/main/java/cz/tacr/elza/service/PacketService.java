@@ -5,33 +5,33 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.DeleteException;
-import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.DataPacketRefRepository;
-import cz.tacr.elza.utils.ObjectListIterator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import org.springframework.util.StringUtils;
-
-import javax.annotation.Nullable;
+import cz.tacr.elza.utils.ObjectListIterator;
 
 
 /**
@@ -93,7 +93,7 @@ public class PacketService {
      */
     private void checkPacketDuplicate(final ArrPacket packet) {
         ArrPacket packetDb = packetRepository
-                .findByFundAndStorageNumber(packet.getFund(), packet.getStorageNumber());
+                .findByFundAndStorageNumberAndPacketType(packet.getFund(), packet.getStorageNumber(), packet.getPacketType());
 
         if (packetDb != null && !packetDb.getPacketId().equals(packet.getPacketId())) {
             throw new BusinessException(

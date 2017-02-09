@@ -75,4 +75,9 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20170208161823" author="vanek">
+        <customChange class="cz.tacr.elza.dbchangelog.DbUpgrade_20170208161823" />
+        <addUniqueConstraint constraintName="arr_packet_unique_col" tableName="arr_packet" columnNames="fund_id, storage_number, packet_type_id" />
+    </changeSet>
+
 </databaseChangeLog>

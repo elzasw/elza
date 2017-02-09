@@ -34,7 +34,8 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Entity(name = "arr_packet")
 @Table(uniqueConstraints = {
         @UniqueConstraint(columnNames = {"fundId"}),
-        @UniqueConstraint(columnNames = {"storageNumber"})})
+        @UniqueConstraint(columnNames = {"storageNumber"}),
+        @UniqueConstraint(columnNames = {"packetTypeId"})})
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class ArrPacket implements IArrFund, Serializable {

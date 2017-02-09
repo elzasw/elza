@@ -20,18 +20,6 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import javax.xml.bind.JAXBException;
 
-import cz.tacr.elza.domain.ArrItemCoordinates;
-import cz.tacr.elza.domain.ArrItemData;
-import cz.tacr.elza.domain.ArrItemDecimal;
-import cz.tacr.elza.domain.ArrItemEnum;
-import cz.tacr.elza.domain.ArrItemInt;
-import cz.tacr.elza.domain.ArrItemPacketRef;
-import cz.tacr.elza.domain.ArrItemPartyRef;
-import cz.tacr.elza.domain.ArrItemRecordRef;
-import cz.tacr.elza.domain.ArrItemString;
-import cz.tacr.elza.domain.ArrItemText;
-import cz.tacr.elza.domain.ArrItemUnitdate;
-import cz.tacr.elza.domain.ArrItemUnitid;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
@@ -50,22 +38,21 @@ import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataCoordinates;
-import cz.tacr.elza.domain.ArrDataDecimal;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataJsonTable;
-import cz.tacr.elza.domain.ArrDataNull;
-import cz.tacr.elza.domain.ArrDataPacketRef;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItemCoordinates;
+import cz.tacr.elza.domain.ArrItemData;
+import cz.tacr.elza.domain.ArrItemDecimal;
+import cz.tacr.elza.domain.ArrItemEnum;
+import cz.tacr.elza.domain.ArrItemInt;
+import cz.tacr.elza.domain.ArrItemPacketRef;
+import cz.tacr.elza.domain.ArrItemPartyRef;
+import cz.tacr.elza.domain.ArrItemRecordRef;
+import cz.tacr.elza.domain.ArrItemString;
+import cz.tacr.elza.domain.ArrItemText;
+import cz.tacr.elza.domain.ArrItemUnitdate;
+import cz.tacr.elza.domain.ArrItemUnitid;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrPacket;
@@ -93,7 +80,6 @@ import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RegVariantRecord;
-import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPacketType;
@@ -106,15 +92,11 @@ import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.XmlImportType;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
-import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.DataTypeRepository;
-import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.InstitutionTypeRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.PartyCreatorRepository;
 import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
@@ -153,7 +135,6 @@ import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemDecimal;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemEnum;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemFormattedText;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemInteger;
-import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemJsonTable;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemPacketRef;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemPartyRef;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemRecordRef;
@@ -207,6 +188,9 @@ public class XmlImportService {
     private RegExternalSystemRepository regExternalSystemRepository;
 
     @Autowired
+    private PacketService packetService;
+
+    @Autowired
     private RegRecordRepository recordRepository;
 
     @Autowired
@@ -228,9 +212,6 @@ public class XmlImportService {
     private PartyTypeRepository partyTypeRepository;
 
     @Autowired
-    private PacketRepository packetRepository;
-
-    @Autowired
     private PacketTypeRepository packetTypeRepository;
 
     @Autowired
@@ -244,15 +225,6 @@ public class XmlImportService {
 
     @Autowired
     private CalendarTypeRepository calendarTypeRepository;
-
-    @Autowired
-    private DescItemRepository descItemRepository;
-
-    @Autowired
-    private DataTypeRepository dataTypeRepository;
-
-    @Autowired
-    private DataRepository dataRepository;
 
     @Autowired
     private InstitutionRepository institutionRepository;
@@ -567,8 +539,8 @@ public class XmlImportService {
                 } else if (descItem instanceof DescItemPacketRef) {
                     DescItemPacketRef descItemPacketRef = (DescItemPacketRef) descItem;
                     ArrItemPacketRef itemPacketRef = new ArrItemPacketRef();
-                    String storageNumber = descItemPacketRef.getPacket().getStorageNumber();
-                    itemPacketRef.setPacket(xmlIdIntIdPacketMap.get(storageNumber));
+                    String packetId = descItemPacketRef.getPacket().getPacketId();
+                    itemPacketRef.setPacket(xmlIdIntIdPacketMap.get(packetId));
                     itemData = itemPacketRef;
                 } else if (descItem instanceof DescItemPartyRef) {
                     DescItemPartyRef descItemPartyRef = (DescItemPartyRef) descItem;
@@ -852,10 +824,11 @@ public class XmlImportService {
             return xmlIdIntIdPacketMap;
         }
 
+        Map<RulPacketType, Map<String, ArrPacket>> importedPackets = new HashMap<>();
         for (Packet packet : packets) {
             try {
-                ArrPacket arrPacket = importPacket(packet, fund, stopOnError);
-                xmlIdIntIdPacketMap.put(packet.getStorageNumber(), arrPacket);
+                ArrPacket arrPacket = importPacket(packet, fund, stopOnError, importedPackets);
+                xmlIdIntIdPacketMap.put(packet.getPacketId(), arrPacket);
             } catch (NonFatalXmlImportException e) {
                 if (stopOnError) {
                     throw e;
@@ -866,21 +839,59 @@ public class XmlImportService {
         return xmlIdIntIdPacketMap;
     }
 
-    private ArrPacket importPacket(final Packet packet, final ArrFund fund, final boolean stopOnError) throws InvalidDataException {
+    private ArrPacket importPacket(final Packet packet, final ArrFund fund, final boolean stopOnError, final Map<RulPacketType, Map<String, ArrPacket>> importedPackets)
+        throws InvalidDataException {
+        RulPacketType arrPacketType = findRulPacketType(packet);
+        String storageNumber = XmlImportUtils.trimStringValue(packet.getStorageNumber(), StringLength.LENGTH_50, stopOnError);
+
+        ArrPacket importedPacket = checkPacketAlreadyImported(arrPacketType, storageNumber, importedPackets);
+        if (importedPacket != null) {
+            return importedPacket;
+        }
+
         ArrPacket arrPacket = new ArrPacket();
         arrPacket.setFund(fund);
+        arrPacket.setPacketType(arrPacketType);
+        arrPacket.setStorageNumber(storageNumber);
 
         PacketState packetState = packet.getState();
         arrPacket.setState(ArrPacket.State.valueOf(packetState.name()));
 
+        addImportedPacket(arrPacket, importedPackets);
+
+        return packetService.insertPacket(arrPacket);
+    }
+
+    private void addImportedPacket(final ArrPacket arrPacket, final Map<RulPacketType, Map<String, ArrPacket>> importedPackets) {
+        RulPacketType arrPacketType = arrPacket.getPacketType();
+        Map<String, ArrPacket> typePackets = importedPackets.get(arrPacketType);
+        if (typePackets == null) {
+            typePackets = new HashMap<>();
+            importedPackets.put(arrPacketType, typePackets);
+        }
+        typePackets.put(arrPacket.getStorageNumber(), arrPacket);
+    }
+
+    private ArrPacket checkPacketAlreadyImported(final RulPacketType arrPacketType, final String storageNumber, final Map<RulPacketType, Map<String, ArrPacket>> importedPackets) {
+        Map<String, ArrPacket> typePackets = importedPackets.get(arrPacketType);
+
+        if (typePackets != null) {
+            return typePackets.get(storageNumber);
+        }
+
+        return null;
+    }
+
+    private RulPacketType findRulPacketType(final Packet packet) {
+        RulPacketType arrPacketType = null;
         String packetTypeCode = packet.getPacketTypeCode();
         if (packetTypeCode != null) {
-            RulPacketType arrPacketType = packetTypeRepository.findByCode(packetTypeCode);
-            arrPacket.setPacketType(arrPacketType);
+            arrPacketType = packetTypeRepository.findByCode(packetTypeCode);
+            if (arrPacketType == null) {
+                throw new InvalidDataException("Obal má neexistující kód typu obalu " + arrPacketType);
+            }
         }
-        arrPacket.setStorageNumber(XmlImportUtils.trimStringValue(packet.getStorageNumber(), StringLength.LENGTH_50, stopOnError));
-
-        return packetRepository.save(arrPacket);
+        return arrPacketType;
     }
 
     private Map<String, ParParty> importParties(final List<AbstractParty> parties, final Set<String> usedParties, final boolean stopOnError,
@@ -1706,7 +1717,7 @@ public class XmlImportService {
         }
 
         return packets.stream().collect(
-                Collectors.toMap(Packet::getStorageNumber, Function.identity()));
+                Collectors.toMap(Packet::getPacketId, Function.identity()));
     }
 
     private File getTransformationFileByName(final String transformationName) {
