@@ -20,6 +20,7 @@ class RelationClassForm extends AbstractReactComponent {
 
     static PropTypes = {
         relationTypes: React.PropTypes.array.isRequired,
+        registerTypes: React.PropTypes.object.isRequired,
         partyId: React.PropTypes.number
     };
 
@@ -84,7 +85,7 @@ class RelationClassForm extends AbstractReactComponent {
     };
 
     render() {
-        const {relationTypes, onClose, handleSubmit, fields: {from, to, relationEntities, note, source, relationTypeId}, partyId, submitting} = this.props;
+        const {relationTypes, onClose, handleSubmit, fields: {from, to, relationEntities, note, source, relationTypeId}, partyId, submitting, registerTypesMap} = this.props;
 
         let relationType = null;
         if (relationTypeId.value !== null) {
@@ -107,7 +108,17 @@ class RelationClassForm extends AbstractReactComponent {
                                 <div className="type">
                                     <FormInput componentClass="select" {...i.roleType.id}>
                                         <option key={0}/>
-                                        {roleTypesList && roleTypesList.filter(t => t.id == i.roleType.id.value || t.repeatable || usedRoles.indexOf(t.id) === -1).map(i => <option value={i.id} key={i.id}>{i.name}</option>)}
+                                        {roleTypesList && roleTypesList.filter(t => t.id == i.roleType.id.value || t.repeatable || usedRoles.indexOf(t.id) === -1).map(v => {
+                                            let disabled = false;
+
+                                            if (i.record != null && i.record.value != null && i.record.value.registerTypeId != null) {
+                                                let registerTypeId = i.record.value.registerTypeId;
+                                                if (registerTypesMap[registerTypeId] == null || registerTypesMap[registerTypeId].indexOf(v.id) === -1) {
+                                                    disabled = true;
+                                                }
+                                            }
+
+                                            return <option disabled={(disabled) ? "disabled" : ""} value={v.id} key={v.id}>{v.name}</option>})}
                                     </FormInput>
                                 </div>
                                 <div className="record">

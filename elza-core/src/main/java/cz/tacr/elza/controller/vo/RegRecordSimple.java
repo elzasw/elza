@@ -11,6 +11,7 @@ public class RegRecordSimple extends AbstractRegRecord {
     private Integer id;
     private String record;
     private String characteristics;
+    private Integer registerTypeId;
 
     public Integer getId() {
         return id;
@@ -34,5 +35,13 @@ public class RegRecordSimple extends AbstractRegRecord {
 
     public void setCharacteristics(final String characteristics) {
         this.characteristics = characteristics;
+    }
+
+    public Integer getRegisterTypeId() {
+        return registerTypeId;
+    }
+
+    public void setRegisterTypeId(final Integer registerTypeId) {
+        this.registerTypeId = registerTypeId;
     }
 }

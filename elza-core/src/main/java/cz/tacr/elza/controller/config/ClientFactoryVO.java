@@ -17,6 +17,11 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.domain.ParRegistryRole;
+import cz.tacr.elza.repository.RegistryRoleRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.ObjectUtils;
@@ -214,6 +219,9 @@ public class ClientFactoryVO {
 
     @Autowired
     private DaoService daoService;
+
+    @Autowired
+    private RegistryRoleRepository registryRoleRepository;
 
     @Autowired
     private PartyNameRepository partyNameRepository;
@@ -762,13 +770,27 @@ public class ClientFactoryVO {
             return Collections.emptyList();
         }
 
+        Map<Integer, List<Integer>> registryRolesMap = new HashMap<>();
+
+        List<ParRegistryRole> registryRoles = registryRoleRepository.findAll();
+
+        for (ParRegistryRole registryRole : registryRoles) {
+            Integer registerTypeId = registryRole.getRegisterType().getRegisterTypeId();
+            List<Integer> roles = registryRolesMap.get(registerTypeId);
+            if (roles == null) {
+                roles = new ArrayList<>();
+                registryRolesMap.put(registerTypeId, roles);
+            }
+            roles.add(registryRole.getRoleType().getRoleTypeId());
+        }
+
         Map<Integer, RegRegisterTypeVO> typeMap = new HashMap<>();
         List<RegRegisterTypeVO> roots = new LinkedList<>();
         for (final RegRegisterType registerType : allTypes) {
             if (checkPartyType) {
-                createRegisterTypeTreeForPartyType(registerType, partyType, typeMap, roots);
+                createRegisterTypeTreeForPartyType(registerType, partyType, typeMap, roots, registryRolesMap);
             }else{
-                createRegisterTypeTree(registerType, typeMap, roots);
+                createRegisterTypeTree(registerType, typeMap, roots, registryRolesMap);
             }
         }
 
@@ -781,11 +803,12 @@ public class ClientFactoryVO {
      * @param registerType typ hesla
      * @param typeMap      mapa všech typů (id typu ->typ)
      * @param roots     kořeny stromu
+     * @param registryRolesMap
      * @return typ rejstříkového hesla
      */
     private RegRegisterTypeVO createRegisterTypeTree(final RegRegisterType registerType,
                                                      final Map<Integer, RegRegisterTypeVO> typeMap,
-                                                     final List<RegRegisterTypeVO> roots) {
+                                                     final List<RegRegisterTypeVO> roots, final Map<Integer, List<Integer>> registryRolesMap) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
         RegRegisterTypeVO result = typeMap.get(registerType.getRegisterTypeId());
@@ -794,11 +817,12 @@ public class ClientFactoryVO {
         }
 
         result = mapper.map(registerType, RegRegisterTypeVO.class);
+        result.setRelationRoleTypIds(registryRolesMap.get(registerType.getRegisterTypeId()));
         typeMap.put(result.getId(), result);
         if (registerType.getParentRegisterType() == null) {
             roots.add(result);
         }else{
-            RegRegisterTypeVO parent = createRegisterTypeTree(registerType.getParentRegisterType(), typeMap, roots);
+            RegRegisterTypeVO parent = createRegisterTypeTree(registerType.getParentRegisterType(), typeMap, roots, registryRolesMap);
             parent.addChild(result);
             result.addParent(parent.getName());
             result.addParents(parent.getParents());
@@ -814,12 +838,13 @@ public class ClientFactoryVO {
      * @param parPartyType typ osoby, který musí mít nastaven typ rejstříku, jinak nelze vkládat nové záznamy
      * @param typeMap      mapa všech typů (id typu ->typ)
      * @param roots        kořeny stromu
+     * @param registryRolesMap
      * @return typ rejstříkového hesla
      */
     private RegRegisterTypeVO createRegisterTypeTreeForPartyType(final RegRegisterType registerType,
                                                                  @Nullable final ParPartyType parPartyType,
                                                                  final Map<Integer, RegRegisterTypeVO> typeMap,
-                                                                 final List<RegRegisterTypeVO> roots) {
+                                                                 final List<RegRegisterTypeVO> roots, final Map<Integer, List<Integer>> registryRolesMap) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
         RegRegisterTypeVO result = typeMap.get(registerType.getRegisterTypeId());
@@ -829,13 +854,14 @@ public class ClientFactoryVO {
         boolean addRecord = registerType.getAddRecord() && ObjectUtils.equals(registerType.getPartyType(), parPartyType);
         result = mapper.map(registerType, RegRegisterTypeVO.class);
         result.setAddRecord(addRecord);
+        result.setRelationRoleTypIds(registryRolesMap.get(registerType.getRegisterTypeId()));
 
         typeMap.put(result.getId(), result);
         if (registerType.getParentRegisterType() == null) {
             roots.add(result);
         }else{
             RegRegisterTypeVO parent = createRegisterTypeTreeForPartyType(registerType.getParentRegisterType(),
-                    parPartyType, typeMap, roots);
+                    parPartyType, typeMap, roots, registryRolesMap);
             parent.addChild(result);
 
             result.addParent(parent.getName());

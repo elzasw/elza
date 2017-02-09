@@ -19,6 +19,7 @@ class RelationForm extends AbstractReactComponent {
 
     static PropTypes = {
         relationType: React.PropTypes.object.isRequired,
+        registerTypesMap: React.PropTypes.object.isRequired,
         partyId: React.PropTypes.number
     };
 
@@ -77,11 +78,10 @@ class RelationForm extends AbstractReactComponent {
     };
 
     render() {
-        const {relationType, onClose, handleSubmit, fields: {from, to, relationEntities, note, source}, partyId} = this.props;
+        const {relationType, onClose, handleSubmit, fields: {from, to, relationEntities, note, source}, partyId, registerTypesMap} = this.props;
         const {relationRoleTypes} = relationType;
         const roleTypesList = relationRoleTypes ? relationRoleTypes : null;
         const usedRoles = relationEntities.map(i => parseInt(i.roleType.id.value));
-
 
         const submit = submitReduxForm.bind(this, RelationForm.validate);
         return <Form onSubmit={handleSubmit(submit)}>
@@ -91,12 +91,20 @@ class RelationForm extends AbstractReactComponent {
                         <div className="block entity relations">
                             <div className="relation-entities">
                                 <label className="type">{i18n('party.relation.entityInRelation')}</label><Button bsStyle="action" onClick={() => relationEntities.addField({record:null, roleType: {id: null}})}><Icon glyph="fa-plus" /></Button>
-                                {/* TODO @compel unikátnost vazby entity */}
                                 {relationEntities.map((i,index) => <div className="relation-row" key={index}>
                                     <div className="type">
                                         <FormInput componentClass="select" {...i.roleType.id}>
-                                            <option key={0}/>
-                                            {roleTypesList && roleTypesList.filter(t => t.id == i.roleType.id.value || t.repeatable || usedRoles.indexOf(t.id) === -1).map(i => <option value={i.id} key={i.id}>{i.name}</option>)}
+                                            <option key={0} />
+                                            {roleTypesList && roleTypesList.filter(t => t.id == i.roleType.id.value || t.repeatable || usedRoles.indexOf(t.id) === -1).map(v => {
+                                                let disabled = false;
+
+                                                if (i.record != null && i.record.value != null && i.record.value.registerTypeId != null) {
+                                                    let registerTypeId = i.record.value.registerTypeId;
+                                                    if (registerTypesMap[registerTypeId] == null || registerTypesMap[registerTypeId].indexOf(v.id) === -1) {
+                                                        disabled = true;
+                                                    }
+                                                }
+                                                return <option disabled={(disabled) ? "disabled" : ""} value={v.id} key={v.id}>{v.name}</option>})}
                                         </FormInput>
                                     </div>
                                     <div className="record">
