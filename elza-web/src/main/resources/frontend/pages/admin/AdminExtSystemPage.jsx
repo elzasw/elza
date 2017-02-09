@@ -65,8 +65,7 @@ class AdminExtSystemPage extends AbstractReactComponent {
      * Kliknutí na tlačítko pro smazání systému
      */
     handleDeleteExtSystem = () => {
-        const {id} = this.props.extSystemDetail.data;
-        confirm(i18n('extSystem.delete.confirm')) && this.dispatch(extSystemDelete(id));
+        confirm(i18n('admin.extSystem.delete.confirm')) && this.dispatch(extSystemDelete(this.props.extSystemDetail.data.id));
     };
 
     /**

@@ -3,6 +3,7 @@ import {WebApi} from 'actions/index.jsx';
 import {SimpleListActions} from 'shared/list'
 import {DetailActions} from 'shared/detail'
 import {storeFromArea, indexById, objectById} from 'shared/utils'
+import {refExternalSystemListInvalidate} from 'actions/refTables/externalSystems';
 
 export const AREA_EXT_SYSTEM_LIST = 'extSystemList';
 export const AREA_EXT_SYSTEM_DETAIL = 'extSystemDetail';
@@ -23,7 +24,7 @@ export function extSystemListFetchIfNeeded() {
 export function extSystemDetailFetchIfNeeded(id) {
     return (dispatch, getState) => {
         dispatch(DetailActions.fetchIfNeeded(AREA_EXT_SYSTEM_DETAIL, id, () => {
-            return WebApi.getExtSystem(id).catch(()=>dispatch(extSystemDetailClear()));
+            return WebApi.getExtSystem(id).catch(() => dispatch(extSystemDetailClear()));
         }));
     }
 }
@@ -59,7 +60,8 @@ export function extSystemCreate(data) {
         WebApi.createExtSystem(data).then(response => {
             dispatch(extSystemListInvalidate());
             dispatch(extSystemDetailFetchIfNeeded(response.id));
-        })
+            dispatch(refExternalSystemListInvalidate());
+        });
     }
 }
 /**
@@ -79,6 +81,7 @@ export function extSystemUpdate(data) {
             if (list.rows && indexById(list.rows, response.id) !== null) {
                 dispatch(extSystemListInvalidate())
             }
+            dispatch(refExternalSystemListInvalidate());
         })
     }
 }
@@ -99,6 +102,7 @@ export function extSystemDelete(id) {
             if (list.rows && indexById(list.rows, id) !== null) {
                 dispatch(extSystemListInvalidate());
             }
+            dispatch(refExternalSystemListInvalidate());
         })
     }
 }

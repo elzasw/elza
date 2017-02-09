@@ -912,6 +912,7 @@ var messages = {
     "admin.extSystem.add.title": "Vytvoření externího systému",
     "admin.extSystem.edit.title": "Upravení externího systému",
     "admin.extSystem.detail.finding": "Načítání...",
+    "admin.extSystem.delete.confirm": "Opravdu chcete externí systém odstranit?",
 
     "admin.packages.action.export": "Stáhnout",
     "admin.packages.action.delete": "Smazat",
