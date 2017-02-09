@@ -69,4 +69,10 @@
         </update>
     </changeSet>
 
+    <changeSet id="20170207083044" author="lebeda">
+        <addColumn tableName="sys_external_system">
+            <column name="elza_code" type="varchar(50)"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

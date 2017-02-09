@@ -41,6 +41,7 @@ class PartyDetailRelations extends AbstractReactComponent {
             from: isNotBlankObject(newRelation.from) ? normalizeDatation(newRelation.from) : null,
             to: isNotBlankObject(newRelation.to) ? normalizeDatation(newRelation.to) : null,
         }));
+        console.warn("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
         this.dispatch(modalDialogHide());
     };
 

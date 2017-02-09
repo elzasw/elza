@@ -746,11 +746,11 @@ public class RegistryService {
             if (uiSettingsList.size() > 0) {
                 uiSettingsList.forEach(uiSettings -> {
                     SettingRecord setting = (SettingRecord) packageService.convertSetting(uiSettings);
-                    SettingRecord.ScopeCode scopeCode = setting.getScopeCode();
-                    if (scopeCode != null) {
-                        scopeCodes = scopeCode.getValues();
+                    List<SettingRecord.ScopeCode> scopeCodes = setting.getScopeCodes();
+                    if (CollectionUtils.isEmpty(scopeCodes)) {
+                        this.scopeCodes = new ArrayList<>();
                     } else {
-                        scopeCodes = new ArrayList<>();
+                        this.scopeCodes = scopeCodes.stream().map(SettingRecord.ScopeCode::getValue).collect(Collectors.toList());
                     }
                 });
             }

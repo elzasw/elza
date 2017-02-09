@@ -2,6 +2,7 @@ package cz.tacr.elza.controller;
 
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.SysExternalSystemSimpleVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.domain.SysExternalSystem;
 import cz.tacr.elza.service.AdminService;
@@ -116,5 +117,15 @@ public class AdminController {
     @Transactional
     public void deleteExternalSystemById(@PathVariable("externalSystemId") final Integer externalSystemId) {
         externalSystemService.delete(externalSystemId);
+    }
+
+    /**
+     * Vyhledá všechny externí systémy.
+     *
+     * @return seznam externích systémů
+     */
+    @RequestMapping(value = "/externalSystems/simple", method = RequestMethod.GET)
+    public List<SysExternalSystemSimpleVO> findAllExternalSystemsSimple() {
+        return factoryVo.createSimpleEntity(externalSystemService.findAllWithoutPermission(), SysExternalSystemSimpleVO.class);
     }
 }

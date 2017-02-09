@@ -5,11 +5,12 @@
 import React from 'react';
 import {connect} from 'react-redux'
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, FormInput, Loading} from 'components/index.jsx';
 import {Modal, Button, Input, Form} from 'react-bootstrap';
 import {createDigitizationName} from './ArrUtils.jsx'
 import {indexById} from 'stores/app/utils.jsx';
 import * as arrRequestActions from "actions/arr/arrRequestActions";
+import {refExternalSystemsFetchIfNeeded} from 'actions/refTables/externalSystems';
 
 const ArrRequestForm = class extends AbstractReactComponent {
     constructor(props) {
@@ -23,21 +24,39 @@ const ArrRequestForm = class extends AbstractReactComponent {
 
     static fields = [
         'requestId',
+        'digitizationFrontdesk',
         'daoType',
         'description',
     ];
 
+    static validate = (values, props) => {
+        const errors = {};
+        if (props.type === "DIGITIZATION") {
+            if (values.digitizationFrontdesk === "") {
+                errors.digitizationFrontdesk = i18n('global.validation.required');
+            }
+        }
+        if (props.type === "DAO") {
+            if (values.daoType === "") {
+                errors.daoType = i18n('global.validation.required');
+            }
+        }
+        return errors;
+    };
+
     componentDidMount() {
+        this.dispatch(refExternalSystemsFetchIfNeeded());
         this.fetchDigitizationRequestList({}, this.props);
         this.trySelectRequest(this.props);
     }
 
     componentWillReceiveProps(nextProps) {
+        this.dispatch(refExternalSystemsFetchIfNeeded());
         this.fetchDigitizationRequestList(this.props, nextProps);
     }
 
     trySelectRequest = (props) => {
-        const {preparedRequestList, fields: {requestId, description}} = props;
+        const {preparedRequestList, fields: {requestId, description, digitizationFrontdesk}} = props;
         if (preparedRequestList.rows.length > 0 && requestId.value === "") {
             let index = -1;
             for (let i = 0; i < preparedRequestList.rows.length; i++) {
@@ -48,14 +67,35 @@ const ArrRequestForm = class extends AbstractReactComponent {
                 }
             }
             if (index >= 0) {
-                requestId.onChange(preparedRequestList.rows[index].id);
-                description.onChange(preparedRequestList.rows[index].description);
+                const digReq = preparedRequestList.rows[index];
+                requestId.onChange(digReq.id);
+                description.onChange(digReq.description);
+                digitizationFrontdesk.onChange(digReq.digitizationFrontdeskId)
             }
         } else {
             requestId.onChange("");
             description.onChange("");
+            const digitizationFrontdesks = this.getDigitizationFrontdesks();
+            if (digitizationFrontdesks.length == 1) {
+                digitizationFrontdesk.onChange(digitizationFrontdesks[0].id)
+            } else {
+                digitizationFrontdesk.onChange(-1);
+            }
         }
     }
+
+    getDigitizationFrontdesks = () => {
+        const {externalSystems} = this.props;
+        let digitizationFrontdesks = [];
+        if (externalSystems.fetched) {
+            externalSystems.items.forEach((item) => {
+                if (item['@class'] === '.ArrDigitizationFrontdeskSimpleVO') {
+                    digitizationFrontdesks.push(item);
+                }
+            });
+        }
+        return digitizationFrontdesks;
+    };
 
     fetchDigitizationRequestList = (prevProps, nextProps) => {
         this.props.dispatch(arrRequestActions.fetchPreparedListIfNeeded(nextProps.fundVersionId, nextProps.type));
@@ -77,26 +117,46 @@ const ArrRequestForm = class extends AbstractReactComponent {
         this.trySelectRequest(this.props);
     };
 
-    handleRequestChange = (e) => {
-        const {preparedRequestList, fields: {requestId, description}} = this.props;
+    handleDigitizationFrontdeskChange = (e) => {
+        const {fields: {digitizationFrontdesk}} = this.props;
         const id = e.target.value;
+        digitizationFrontdesk.onChange(id);
+    };
+
+    handleRequestChange = (e) => {
+        const {preparedRequestList, fields: {requestId, description, digitizationFrontdesk}} = this.props;
+        const id = e.target.value;
+
+        requestId.onChange(e);
 
         if (id !== "") {  // vybrána nějaká možnost, převezmeme z ní popis
             const digReq = preparedRequestList.rows[indexById(preparedRequestList.rows, id)];
-            requestId.onChange(e);
+            digitizationFrontdesk.onChange(digReq.digitizationFrontdeskId);
             description.onChange(digReq.description);
         } else {    // vybrána možnost nového požadavku, vynulujeme popis
-            requestId.onChange(e);
             description.onChange("");
+            const digitizationFrontdesks = this.getDigitizationFrontdesks();
+            if (digitizationFrontdesks.length == 1) {
+                digitizationFrontdesk.onChange(digitizationFrontdesks[0].id)
+            } else {
+                digitizationFrontdesk.onChange(-1);
+            }
         }
     };
 
     render() {
-        const {type, handleSubmit, onSubmitForm, userDetail, preparedRequestList, onClose, fields: {requestId, daoType, description}} = this.props;
+        const {type, handleSubmit, onSubmitForm, userDetail, preparedRequestList, onClose, fields: {requestId, daoType, description, digitizationFrontdesk}, externalSystems} = this.props;
         const requestFetched = preparedRequestList.fetched && !preparedRequestList.isFetching;
 
         const showDaoTypeSelect = type === "DAO";
+        const showDigitizationFrontdeskSelect = type === "DIGITIZATION";
         const showRequestFields = (type === "DAO" && daoType.value || type !== "DAO");
+
+        let digitizationFrontdesks = [];
+
+        if (showDigitizationFrontdeskSelect) {
+            digitizationFrontdesks = this.getDigitizationFrontdesks();
+        }
 
         const form = (
             <div>
@@ -116,6 +176,15 @@ const ArrRequestForm = class extends AbstractReactComponent {
                     {preparedRequestList.fetched
                     && !preparedRequestList.isFetching
                     && preparedRequestList.rows.map(digReq => <option value={digReq.id} key={digReq.id}>{createDigitizationName(digReq, userDetail)}</option>)}
+                </FormInput>}
+                {showDigitizationFrontdeskSelect && <FormInput
+                    label={i18n("arr.request.title.daoRequest.digitizationFrontdesk")}
+                    componentClass="select" {...digitizationFrontdesk}
+                    onChange={this.handleDigitizationFrontdeskChange}
+                    disabled={!requestFetched}
+                >
+                    <option key={-1} value=""></option>
+                    {digitizationFrontdesks.map(digFrontdesk => <option value={digFrontdesk.id} key={digFrontdesk.id}>{digFrontdesk.name}</option>)}
                 </FormInput>}
                 {showRequestFields && <FormInput label={i18n("arr.request.title.description")} componentClass="textarea" {...description} disabled={!requestFetched} />}
             </div>
@@ -140,7 +209,7 @@ function mapStateToProps(state) {
     const {arrRegion, refTables, userDetail} = state
     return {
         funds: arrRegion.funds,
-        refTables,
+        externalSystems: refTables.externalSystems,
         packets: arrRegion.packets,
         userDetail,
         preparedRequestList: state.app.preparedRequestList,
@@ -151,5 +220,6 @@ function mapStateToProps(state) {
 export default reduxForm({
         form: 'arrRequestForm',
         fields: ArrRequestForm.fields,
+        validate: ArrRequestForm.validate
     }, mapStateToProps
 )(ArrRequestForm)

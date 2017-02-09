@@ -41,11 +41,11 @@ module.exports = {
             },
             {
                 test: /\.css$/,
-                loader: 'style-loader!css-loader?outputStyle=expanded&indentedSyntax'
+                loader: 'style-loader!css-loader'
             },
             {
                 test: /\.less$/,
-                loader: "style!css!less?outputStyle=expanded&indentedSyntax"
+                loader: "style!css!less"
             },
             {
                 test: /\.scss$/,

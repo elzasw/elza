@@ -124,6 +124,11 @@ public enum ArrangementCode implements ErrorCode {
     INVALID_DAO,
 
     /**
+     * Nelze připojit digitální entitu k JP, protože je požadavek pro jiné digitální uložiště.
+     */
+    INVALID_REQUEST_DIGITAL_REPOSITORY_DAO,
+
+    /**
      * Typ formy jména neexistuje.
      */
     PARTY_NAME_FORM_TYPE_NOT_FOUND

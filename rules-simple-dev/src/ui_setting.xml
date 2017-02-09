@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <settings xmlns:ns2="fund-views" xmlns:ns3="type-groups">
     <favorite-item-specs code="SRD_LANGUAGE">
-        SRD_LANGUAGE_43 SRD_LANGUAGE_8
+        <favorite-item>SRD_LANGUAGE_43</favorite-item>
+        <favorite-item>SRD_LANGUAGE_8</favorite-item>
     </favorite-item-specs>
 </settings>

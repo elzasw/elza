@@ -10,10 +10,10 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -30,24 +30,24 @@ public class SettingRecord extends Setting {
     private static final ObjectMapper objectMapper = Jackson2ObjectMapperBuilder.json().build();
 
     @XmlElement(name = "scope-code", required = true)
-    private ScopeCode scopeCode;
+    private List<ScopeCode> scopeCodes;
 
     public SettingRecord() {
         setSettingsType(UISettings.SettingsType.RECORD);
     }
 
-    public ScopeCode getScopeCode() {
-        return scopeCode;
+    public List<ScopeCode> getScopeCodes() {
+        return scopeCodes;
     }
 
-    public void setScopeCode(final ScopeCode scopeCode) {
-        this.scopeCode = scopeCode;
+    public void setScopeCodes(final List<ScopeCode> scopeCodes) {
+        this.scopeCodes = scopeCodes;
     }
 
     @Override
     public String getValue() {
         try {
-            return objectMapper.writeValueAsString(scopeCode);
+            return objectMapper.writeValueAsString(scopeCodes);
         } catch (JsonProcessingException e) {
             throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
         }
@@ -56,7 +56,7 @@ public class SettingRecord extends Setting {
     @Override
     public void setValue(final String value) {
         try {
-            scopeCode = objectMapper.readValue(value, ScopeCode.class);
+            scopeCodes = Arrays.asList(objectMapper.readValue(value, ScopeCode[].class));
         } catch (IOException e) {
             throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
         }
@@ -67,15 +67,14 @@ public class SettingRecord extends Setting {
     public static class ScopeCode {
 
         @XmlValue
-        @XmlList
-        private List<String> values;
+        private String value;
 
-        public List<String> getValues() {
-            return values;
+        public String getValue() {
+            return value;
         }
 
-        public void setValues(final List<String> values) {
-            this.values = values;
+        public void setValue(final String value) {
+            this.value = value;
         }
     }
 

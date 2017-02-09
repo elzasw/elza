@@ -53,13 +53,6 @@ public class Record {
     @XmlElement(name = "note")
     private String note;
 
-    /**
-     * Příznak, zda se jedná o lokální nebo globální rejstříkové heslo. Lokální heslo je přiřazené pouze konkrétnímu
-     * archivnímu popisu/pomůcce.
-     */
-    @XmlAttribute(name = "local", required = true)
-    private boolean local;
-
     /** Datum poslední aktualizace. */
     @XmlElement(name = "last-update")
     private Date lastUpdate;
@@ -136,14 +129,6 @@ public class Record {
 
     public void setNote(final String note) {
         this.note = note;
-    }
-
-    public boolean isLocal() {
-        return local;
-    }
-
-    public void setLocal(final boolean local) {
-        this.local = local;
     }
 
     public Date getLastUpdate() {

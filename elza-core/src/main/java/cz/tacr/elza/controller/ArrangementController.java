@@ -20,7 +20,9 @@ import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.service.ExternalSystemService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
@@ -271,6 +273,9 @@ public class ArrangementController {
 
     @Autowired
     private RequestQueueService requestQueueService;
+
+    @Autowired
+    private ExternalSystemService externalSystemService;
 
     /**
      * Seznam typů obalů.
@@ -2157,16 +2162,18 @@ public class ArrangementController {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         List<ArrNode> nodes = nodeRepository.findAll(param.nodeIds);
 
+        ArrDigitizationFrontdesk digitizationFrontdesk = externalSystemService.findDigitizationFrontdesk(param.digitizationFrontdeskId);
+
         if (nodes.size() != param.nodeIds.size()) {
             throw new SystemException("Neplatný počet nalezených jednotek popisu (" + nodes.size() + ", " +  param.nodeIds.size() + ")", BaseCode.ID_NOT_EXIST);
         }
 
         ArrDigitizationRequest digitizationRequest;
         if (param.id == null) {
-            digitizationRequest = requestService.createDigitizationRequest(nodes, param.description, fundVersion);
+            digitizationRequest = requestService.createDigitizationRequest(nodes, digitizationFrontdesk, param.description, fundVersion);
         } else {
             digitizationRequest = requestService.getDigitizationRequest(param.id);
-            requestService.addNodeDigitizationRequest(digitizationRequest, nodes, fundVersion, param.getDescription());
+            requestService.addNodeDigitizationRequest(digitizationRequest, nodes, digitizationFrontdesk, fundVersion, param.getDescription());
         }
 
         if (BooleanUtils.isTrue(send)) {
@@ -3405,6 +3412,8 @@ public class ArrangementController {
 
         private String description;
 
+        private Integer digitizationFrontdeskId;
+
         public Integer getId() {
             return id;
         }
@@ -3427,6 +3436,14 @@ public class ArrangementController {
 
         public void setDescription(final String description) {
             this.description = description;
+        }
+
+        public Integer getDigitizationFrontdeskId() {
+            return digitizationFrontdeskId;
+        }
+
+        public void setDigitizationFrontdeskId(final Integer digitizationFrontdeskId) {
+            this.digitizationFrontdeskId = digitizationFrontdeskId;
         }
     }
 

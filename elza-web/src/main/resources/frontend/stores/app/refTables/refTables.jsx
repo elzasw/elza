@@ -14,6 +14,7 @@ import descItemTypes from './descItemTypes.jsx';
 import visiblePolicyTypes from './visiblePolicyTypes.jsx';
 import outputTypes from './outputTypes.jsx';
 import templates from './templates.jsx';
+import externalSystems from './externalSystems.jsx';
 
 const initialState = {
     ruleSet: ruleSet(),
@@ -30,6 +31,7 @@ const initialState = {
     visiblePolicyTypes: visiblePolicyTypes(),
     outputTypes: outputTypes(),
     templates: templates(),
+    externalSystems: externalSystems(),
 };
 
 export default function refTables(state = initialState, action = {}) {
@@ -128,6 +130,16 @@ export default function refTables(state = initialState, action = {}) {
                 outputTypes: outputTypes(state.outputTypes, action)
             }
         }
+
+        case types.REF_EXTERNAL_SYSTEMS_INVALID:
+        case types.REF_EXTERNAL_SYSTEMS_REQUEST:
+        case types.REF_EXTERNAL_SYSTEMS_RECEIVE:{
+            return {
+                ...state,
+                externalSystems: externalSystems(state.externalSystems, action)
+            }
+        }
+
         case types.CHANGE_PACKAGE:{
             return {
                 ...state,

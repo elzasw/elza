@@ -113,12 +113,20 @@ public class ExternalSystemService {
     }
 
     /**
-     * Vyhledá všechny externí systémy typu - Digitalizační linka.
+     * Externí systém typu - Digitalizační linka.
      *
-     * @return seznam digitalizačních linek
+     * @return digitalizační linka
+     * @param digitizationFrontdeskId
      */
-    public List<ArrDigitizationFrontdesk> findDigitizationFrontdesk() {
-        return digitizationFrontdeskRepository.findAll();
+    public ArrDigitizationFrontdesk findDigitizationFrontdesk(final Integer digitizationFrontdeskId) {
+        return digitizationFrontdeskRepository.getOneCheckExist(digitizationFrontdeskId);
+    }
+
+    /**
+     * @return digitalizační linky
+     */
+    public List<SysExternalSystem> findAllWithoutPermission() {
+        return externalSystemRepository.findAll();
     }
 
     /**
