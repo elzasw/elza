@@ -538,7 +538,7 @@ function conformityInfo(value) {
  * @param value objekt
  */
 function daoLink(value) {
-    store.dispatch(daoActions.changeAllDaos());
+    store.dispatch(daoActions.changeAllDaos(value.nodeIds));
 }
 
 /**

@@ -427,3 +427,4 @@ export const STATUS_SAVED = 'STATUS_SAVED'
  */
 export const NODES_DELETE = 'NODES_DELETE'
 
+export const CHANGE_DAOS = 'CHANGE_DAOS'
