@@ -28,6 +28,12 @@ export default function subNodeDaos(state = initialState, action = {}) {
                 data: action.data
             };
 
+        // ------ WebSocket -----
+        case types.CHANGE_DAOS:
+            return {
+                ...state,currentDataKey: false
+            };
+
         default:
             return state
     }

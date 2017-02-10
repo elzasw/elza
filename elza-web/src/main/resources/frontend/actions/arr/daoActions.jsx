@@ -3,6 +3,7 @@
 import * as SimpleListActions from "shared/list/simple/SimpleListActions";
 import * as DetailActions from "shared/detail/DetailActions";
 import {WebApi} from 'actions/index.jsx';
+import {fundSubNodeDaosInvalidate} from 'actions/arr/subNodeDaos.jsx'
 
 const AREA_PACKAGE_LIST_SUFFIX = ".daoPackageList";
 const AREA_DAO_UNASSIGNED_PACKAGE_LIST_SUFFIX = ".daoUnassignedPackageList";
@@ -14,7 +15,7 @@ const AREA_DAO_PACKAGE_LIST_SUFFIX = ".packageDaoList";
 /**
  * Funkce na refresh všech seznamů DAO.
  */
-export function changeAllDaos() {
+export function changeAllDaos(nodeIds) {
     return (dispatch, getState) => {
         var state = getState();
         const funds = state.arrRegion.funds;
@@ -26,6 +27,8 @@ export function changeAllDaos() {
             dispatch(SimpleListActions.invalidate("fund[" + versionId + "]" + AREA_DAO_NODE_LIST_SUFFIX));
             dispatch(SimpleListActions.invalidate("fund[" + versionId + "]" + AREA_DAO_NODE_LIST_ASSIGN_SUFFIX));
             dispatch(SimpleListActions.invalidate("fund[" + versionId + "]" + AREA_DAO_PACKAGE_LIST_SUFFIX));
+            dispatch(SimpleListActions.invalidate("fund[" + versionId + "]" + AREA_DAO_PACKAGE_LIST_SUFFIX));
+            dispatch(fundSubNodeDaosInvalidate(versionId, nodeIds));
         });
     }
 }

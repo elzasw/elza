@@ -48,6 +48,19 @@ export default function nodes(state = nodesInitialState, action) {
         || isDeveloperScenariosAction(action)
         || nodeFormActions.isSubNodeFormCacheAction(action, "NODE")
     ) {
+
+        if (action.type === types.CHANGE_DAOS) {
+            let result = {...state,
+                nodes: state.nodes.map(nodeObj => {
+                    if (nodeObj.id === action.nodeId) {
+                        return node(nodeObj, action);
+                    } else {
+                        return nodeObj;
+                    }
+                })};
+            return consolidateState(state, result);
+        }
+
         var r = findByRoutingKeyInNodes(state, action.versionId, action.routingKey);
         if (r) {
             var index = r.nodeIndex;

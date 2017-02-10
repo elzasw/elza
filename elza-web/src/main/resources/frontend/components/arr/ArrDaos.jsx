@@ -34,6 +34,7 @@ class ArrDaos extends AbstractReactComponent {
         nodeId: React.PropTypes.number,
         daoPackageId: React.PropTypes.number,
         onSelect: React.PropTypes.func,
+        readMode: React.PropTypes.bool.isRequired
     };
 
     static defaultProps = {
@@ -107,7 +108,7 @@ class ArrDaos extends AbstractReactComponent {
     };
 
     render() {
-        const {type, fund, nodeId, daoPackageId} = this.props;
+        const {type, fund, nodeId, daoPackageId, readMode} = this.props;
         const {selectedItemId} = this.state;
 
         let daoList = {};
@@ -144,7 +145,7 @@ class ArrDaos extends AbstractReactComponent {
                     </div>
                 </div>
                 <div className="daos-detail">
-                    {/*selectedItem &&*/ <ArrDao fund={fund} dao={selectedItem} onUnlink={() => this.handleUnlink(selectedItem) } />}
+                    {/*selectedItem &&*/ <ArrDao fund={fund} readMode={readMode} dao={selectedItem} onUnlink={() => this.handleUnlink(selectedItem) } />}
                 </div>
             </div>
         );

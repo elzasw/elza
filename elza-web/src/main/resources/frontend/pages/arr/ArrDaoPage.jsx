@@ -194,7 +194,7 @@ class ArrDaoPage extends ArrParentPage {
         }
     };
 
-    _renderPackages = (unassigned, selectedPackage) => {
+    _renderPackages = (unassigned, selectedPackage, readMode) => {
         const {selectedIndex} = this.state;
         const fund = this.getActiveFund(this.props);
 
@@ -208,25 +208,26 @@ class ArrDaoPage extends ArrParentPage {
                 type="PACKAGE"
                 unassigned={unassigned}
                 fund={fund}
+                readMode={readMode}
                 daoPackageId={selectedPackage ? selectedPackage.id : null}
                 onSelect={item => { this.setState({selectedDaoLeft: item}) }}
             />}
         </div>
     };
 
-    renderUnassignedPackages = () => {
+    renderUnassignedPackages = (readMode) => {
         const {selectedUnassignedPackage} = this.state;
 
-        return this._renderPackages(true, selectedUnassignedPackage);
+        return this._renderPackages(true, selectedUnassignedPackage, readMode);
     };
 
-    renderPackages = () => {
+    renderPackages = (readMode) => {
         const {selectedPackage} = this.state;
 
-        return this._renderPackages(false, selectedPackage);
+        return this._renderPackages(false, selectedPackage, readMode);
     };
 
-    renderLeftTree = () => {
+    renderLeftTree = (readMode) => {
         const fund = this.getActiveFund(this.props);
 
         return <div className="tree-left-container">
@@ -240,6 +241,7 @@ class ArrDaoPage extends ArrParentPage {
                 type="NODE"
                 unassigned={false}
                 fund={fund}
+                readMode={readMode}
                 nodeId={fund.fundTreeDaosLeft.selectedId ? fund.fundTreeDaosLeft.selectedId : null}
                 onSelect={item => { this.setState({selectedDaoLeft: item}) }}
             />}
@@ -276,20 +278,20 @@ class ArrDaoPage extends ArrParentPage {
         let content;
         switch (selectedTab) {
             case 0:
-                content = this.renderUnassignedPackages();
+                content = this.renderUnassignedPackages(readMode);
                 break;
             case 1:
-                content = this.renderPackages();
+                content = this.renderPackages(readMode);
                 break;
             case 2:
-                content = this.renderLeftTree();
+                content = this.renderLeftTree(readMode);
                 break;
             default:
                 break;
         }
 
         let canLink;
-        if (selectedDaoLeft && fund.fundTreeDaosRight.selectedId !== null) {
+        if (selectedDaoLeft && fund.fundTreeDaosRight.selectedId !== null && !readMode) {
             canLink = true;
         }
 
@@ -319,6 +321,7 @@ class ArrDaoPage extends ArrParentPage {
                             type="NODE_ASSIGN"
                             unassigned={false}
                             fund={fund}
+                            readMode={readMode}
                             nodeId={fund.fundTreeDaosRight.selectedId ? fund.fundTreeDaosRight.selectedId : null}
                         />}
                     </div>

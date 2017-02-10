@@ -45,6 +45,8 @@ public class RegRegisterTypeVO {
      */
     private List<RegRegisterTypeVO> children;
 
+    private List<Integer> relationRoleTypIds;
+
     /**
      * Seznam rodičů seřazený od přímého rodiče po kořen.
      */
@@ -143,5 +145,13 @@ public class RegRegisterTypeVO {
         if(nextParents != null){
             parents.addAll(nextParents);
         }
+    }
+
+    public List<Integer> getRelationRoleTypIds() {
+        return relationRoleTypIds;
+    }
+
+    public void setRelationRoleTypIds(final List<Integer> relationRoleTypIds) {
+        this.relationRoleTypIds = relationRoleTypIds;
     }
 }

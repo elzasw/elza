@@ -7,6 +7,7 @@ export function isSubNodeDaosAction(action) {
     switch (action.type) {
         case types.FUND_SUB_NODE_DAOS_REQUEST:
         case types.FUND_SUB_NODE_DAOS_RECEIVE:
+        case types.CHANGE_DAOS:
             return true;
         default:
             return false
@@ -86,4 +87,12 @@ function getNode(state, versionId, routingKey) {
     }
 
     return null;
+}
+
+export function fundSubNodeDaosInvalidate(versionId, nodeIds) {
+    return {
+        type: types.CHANGE_DAOS,
+        versionId,
+        nodeId: nodeIds[0]
+    }
 }

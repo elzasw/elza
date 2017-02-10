@@ -12,7 +12,11 @@ import {
 import {Form, Button} from 'react-bootstrap';
 import {AppActions} from 'stores/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
-import {findExtSystemFetchIfNeeded, extSystemDetailFetchIfNeeded, AREA_EXT_SYSTEM_DETAIL} from 'actions/admin/extSystem.jsx'
+import {
+    findExtSystemFetchIfNeeded,
+    extSystemDetailFetchIfNeeded,
+    AREA_EXT_SYSTEM_DETAIL
+} from 'actions/admin/extSystem.jsx'
 import {Utils} from 'components/index.jsx';
 import {objectById, indexById} from 'stores/app/utils.jsx';
 import {setInputFocus, dateTimeToString} from 'components/Utils.jsx'
@@ -75,28 +79,34 @@ class AdminExtSystemDetail extends AbstractReactComponent {
 
         return <div tabIndex={0} ref='extSystemDetail' className="ext-system-detail">
 
-            {classJ == EXT_SYSTEM_CLASS.RegExternalSystem && <div>
+            {classJ == EXT_SYSTEM_CLASS.RegExternalSystem &&
+            <div>
                 <h4>{i18n('admin.extSystem.class')}</h4>
                 <span>{EXT_SYSTEM_CLASS_LABEL[EXT_SYSTEM_CLASS.RegExternalSystem]}</span>
 
                 <h4>{i18n('admin.extSystem.type')}</h4>
                 <span>{extSystem.type}</span>
             </div>}
-
-            {classJ == EXT_SYSTEM_CLASS.ArrDigitalRepository && <div>
+            {classJ == EXT_SYSTEM_CLASS.ArrDigitalRepository &&
+            <div>
                 <h4>{i18n('admin.extSystem.class')}</h4>
                 <span>{EXT_SYSTEM_CLASS_LABEL[EXT_SYSTEM_CLASS.ArrDigitalRepository]}</span>
 
-                <h4>{i18n('admin.extSystem.viewDaoUrl')}</h4>
+                {extSystem.viewDaoUrl != '' &&
+                <h4>{i18n('admin.extSystem.viewDaoUrl')}</h4> &&
                 <span>{extSystem.viewDaoUrl}</span>
+                }
 
-                <h4>{i18n('admin.extSystem.viewFileUrl')}</h4>
+                {extSystem.viewFileUrl &&
+                <h4>{i18n('admin.extSystem.viewFileUrl')}</h4> &&
                 <span>{extSystem.viewFileUrl}</span>
+                }
 
                 <h4>{i18n('admin.extSystem.sendNotification')}</h4>
                 <span>{extSystem.sendNotification ? i18n('admin.extSystem.sendNotification.true') : i18n('admin.extSystem.sendNotification.false')}</span>
             </div>}
-            {classJ == EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk && <div>
+            {classJ == EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk &&
+            <div>
                 <h4>{i18n('admin.extSystem.class')}</h4>
                 <span>{EXT_SYSTEM_CLASS_LABEL[EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]}</span>
             </div>}
@@ -107,17 +117,33 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                 <h4>{i18n('admin.extSystem.code')}</h4>
                 <span>{extSystem.code}</span>
 
-                <h4>{i18n('admin.extSystem.url')}</h4>
-                <span>{extSystem.url}</span>
+                {extSystem.url &&
+                    <div>
+                        <h4>{i18n('admin.extSystem.url')}</h4>
+                        <span>{extSystem.url}</span>
+                    </div>
+                }
 
-                <h4>{i18n('admin.extSystem.username')}</h4>
-                <span>{extSystem.username}</span>
+                {extSystem.username &&
+                    <div>
+                        <h4>{i18n('admin.extSystem.username')}</h4>
+                        <span>{extSystem.username}</span>
+                    </div>
+                }
 
-                <h4>{i18n('admin.extSystem.password')}</h4>
-                <span>{extSystem.password}</span>
+                {extSystem.password &&
+                    <div>
+                        <h4>{i18n('admin.extSystem.password')}</h4>
+                        <span>{extSystem.password}</span>
+                    </div>
+                }
 
-                <h4>{i18n('admin.extSystem.elzaCode')}</h4>
-                <span>{extSystem.elzaCode}</span>
+                {extSystem.elzaCode &&
+                    <div>
+                        <h4>{i18n('admin.extSystem.elzaCode')}</h4>
+                        <span>{extSystem.elzaCode}</span>
+                    </div>
+                }
             </div>
         </div>;
     }

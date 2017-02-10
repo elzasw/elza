@@ -35,7 +35,7 @@ import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {initForm} from "actions/form/inlineForm.jsx"
 import {getMapFromList} from 'stores/app/utils.jsx'
-
+import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
 
 const keyModifier = Utils.getKeyModifier();
 
@@ -189,6 +189,7 @@ class PartyDetail extends AbstractReactComponent {
         const {partyDetail: {id}} = props;
         this.dispatch(refPartyTypesFetchIfNeeded());    // nacteni typu osob (osoba, rod, událost, ...)
         this.dispatch(calendarTypesFetchIfNeeded());    // načtení typů kalendářů (gregoriánský, juliánský, ...)
+        this.dispatch(refRecordTypesFetchIfNeeded());
         if (id) {
             this.dispatch(partyDetailFetchIfNeeded(id));
         }
@@ -260,8 +261,20 @@ class PartyDetail extends AbstractReactComponent {
         this.dispatch(partyAdd(partyTypeId, null, this.partyAdded.bind(this, field), false));
     };
 
+    registerTypesToMap = (registerTypes, map, parent) => {
+        if (registerTypes != null) {
+            registerTypes.forEach((item) => {
+                map[item.id] = [...parent];
+                if (item.relationRoleTypIds != null) {
+                    map[item.id] = [...map[item.id], ...item.relationRoleTypIds];
+                }
+                this.registerTypesToMap(item.children, map, map[item.id]);
+            });
+        }
+    };
+
     render() {
-        const {userDetail, partyDetail, fields} = this.props;
+        const {userDetail, partyDetail, fields, recordTypes} = this.props;
         const {sourceInformation, creators} = fields;
         const party = partyDetail.data;
         const {activeIndexes, visibilitySettingsValue} = this.state;
@@ -360,6 +373,8 @@ class PartyDetail extends AbstractReactComponent {
                                                 )
                                             ) {
                                                 let element = null;
+                                                let registerTypesMap = {};
+                                                this.registerTypesToMap(recordTypes.items, registerTypesMap, []);
 
                                                 if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.TEXT) {
                                                     element = <FormInput {...inputProps} type="text" disabled={!canEdit} />
@@ -368,13 +383,13 @@ class PartyDetail extends AbstractReactComponent {
                                                 } else if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.RELATION) {
                                                     const type = objectById(partyType.relationTypes, item.definition, 'code');
                                                     if (type) {
-                                                        element = <PartyDetailRelations party={party} relationType={type} label={item.name} canEdit={canEdit} />
+                                                        element = <PartyDetailRelations party={party} relationType={type} registerTypesMap={registerTypesMap} label={item.name} canEdit={canEdit} />
                                                     } else {
                                                         element = i18n('party.detail.ui.unknownRelation')
                                                     }
                                                 } else if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.RELATION_CLASS) {
                                                     if (relationClassTypes[item.definition]) {
-                                                        element = <PartyDetailRelationClass party={party} partyType={partyType} relationClassType={relationClassTypes[item.definition]} label={item.name} canEdit={canEdit} />
+                                                        element = <PartyDetailRelationClass party={party} partyType={partyType} registerTypesMap={registerTypesMap} relationClassType={relationClassTypes[item.definition]} label={item.name} canEdit={canEdit} />
                                                     } else {
                                                         element = i18n('party.detail.ui.unknownRelation')
                                                     }
@@ -415,11 +430,12 @@ export default reduxForm({
         fields: PartyDetail.fields,
         validate: PartyDetail.validate
     },(state) => {
-        const {app: {partyDetail}, userDetail, refTables: {partyTypes}, focus} = state;
+        const {app: {partyDetail}, userDetail, refTables: {partyTypes, recordTypes}, focus} = state;
         return {
             partyDetail,
             userDetail,
             partyTypes,
+            recordTypes,
             _focus: focus,
             initialValues: partyDetail.fetched ? partyDetail.data : {}
         }

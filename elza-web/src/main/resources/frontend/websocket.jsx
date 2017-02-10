@@ -23,7 +23,9 @@ import {
     changeParty,
     changePartyCreate,
     changePartyDelete,
-    changeExtSystem,
+    createExtSystem,
+    updateExtSystem,
+    deleteExtSystem,
     changeMoveLevel,
     changeRegistry,
     changeFund,
@@ -273,8 +275,14 @@ function processEvents(values) {
                 partyUpdate(value);
                 break;
 
-            case 'EXTERNAL_SYSTEM_CHANGE':
+            case 'EXTERNAL_SYSTEM_CREATE':
+                extSystemCreate(value);
+                break;
+            case 'EXTERNAL_SYSTEM_UPDATE':
                 extSystemUpdate(value);
+                break;
+            case 'EXTERNAL_SYSTEM_DELETE':
+                extSystemDelete(value);
                 break;
 
             case 'NODES_CHANGE':
@@ -530,7 +538,7 @@ function conformityInfo(value) {
  * @param value objekt
  */
 function daoLink(value) {
-    store.dispatch(daoActions.changeAllDaos());
+    store.dispatch(daoActions.changeAllDaos(value.nodeIds));
 }
 
 /**
@@ -608,8 +616,16 @@ function partyDelete(value){
  * Externí systémy
  */
 
-function extSystemUpdate(){
-    store.dispatch(changeExtSystem());
+function extSystemCreate(value){
+    store.dispatch(createExtSystem(value.ids[0]));
+}
+
+function extSystemUpdate(value){
+    store.dispatch(updateExtSystem(value.ids[0]));
+}
+
+function extSystemDelete(value){
+    store.dispatch(deleteExtSystem(value.ids[0]));
 }
 /**
  * Zpracování validací.

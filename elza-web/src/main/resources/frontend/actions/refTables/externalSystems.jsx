@@ -1,6 +1,8 @@
 import {WebApi} from 'actions/index.jsx';
-
+import {SimpleListActions} from 'shared/list'
 import * as types from 'actions/constants/ActionTypes.js';
+
+const AREA_REG_EXT_SYSTEM_LIST = 'regExtSystemList';
 
 export function refExternalSystemsFetchIfNeeded() {
     return (dispatch, getState) => {
@@ -19,6 +21,10 @@ export function refExternalSystemsFetch() {
     }
 }
 
+export function refExternalSystemListInvalidate() {
+    return SimpleListActions.invalidate(AREA_REG_EXT_SYSTEM_LIST, null);
+}
+
 export function refExternalSystemsReceive(json) {
     return {
         type: types.REF_EXTERNAL_SYSTEMS_RECEIVE,
@@ -30,11 +36,5 @@ export function refExternalSystemsReceive(json) {
 export function refExternalSystemsRequest() {
     return {
         type: types.REF_EXTERNAL_SYSTEMS_REQUEST
-    }
-}
-
-export function refExternalSystemsInvalid() {
-    return {
-        type: types.REF_EXTERNAL_SYSTEMS_INVALID
     }
 }

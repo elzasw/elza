@@ -20,17 +20,29 @@ import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 @XmlType(name = "packet", namespace = NamespaceInfo.NAMESPACE)
 public class Packet {
 
+    /** Id obalu. */
+    @XmlAttribute(name = "packet-id", required = true)
+    private String packetId;
+
     /** Kód typu obalu. */
     @XmlAttribute(name = "packet-type-code")
     private String packetTypeCode;
 
     /** Úložné číslo*/
-    @XmlAttribute(name = "storage-number")
+    @XmlAttribute(name = "storage-number", required = true)
     private String storageNumber;
 
     /** Stav */
-    @XmlAttribute(name = "state")
+    @XmlAttribute(name = "state", required = true)
     private PacketState state;
+
+    public String getPacketId() {
+        return packetId;
+    }
+
+    public void setPacketId(final String packetId) {
+        this.packetId = packetId;
+    }
 
     public String getPacketTypeCode() {
         return packetTypeCode;

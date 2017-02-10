@@ -22,10 +22,11 @@ class NodeDaosForm extends AbstractReactComponent {
         fund: React.PropTypes.object.isRequired,
         nodeId: React.PropTypes.number.isRequired,
         daoId: React.PropTypes.number,  // pokud má být vybrán konkrétní DAO na detail
+        readMode: React.PropTypes.bool.isRequired
     }
 
     render() {
-        const {fund, nodeId, daoId} = this.props;
+        const {fund, nodeId, daoId, readMode} = this.props;
 
         return (
             <Form>
@@ -34,6 +35,7 @@ class NodeDaosForm extends AbstractReactComponent {
                         fund={fund}
                         type="NODE"
                         nodeId={nodeId}
+                        readMode={readMode}
                         selectedDaoId={daoId}
                         />
                 </Modal.Body>
