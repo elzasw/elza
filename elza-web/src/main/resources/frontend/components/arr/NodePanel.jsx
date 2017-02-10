@@ -849,6 +849,7 @@ return true
                 versionId={versionId}
                 selectedSubNodeId={node.selectedSubNodeId}
                 routingKey={node.routingKey}
+                readMode={readMode}
                 daos={node.subNodeDaos} />
         }
 

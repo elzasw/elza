@@ -15,6 +15,7 @@ const SubNodeDao = class SubNodeDao extends AbstractReactComponent {
         nodeId: React.PropTypes.oneOfType([React.PropTypes.number, React.PropTypes.string]),
         selectedSubNodeId: React.PropTypes.number.isRequired,
         routingKey: React.PropTypes.number.isRequired,
+        readMode: React.PropTypes.bool.isRequired
     };
 
     renderDao = (dao, index) => {
@@ -50,13 +51,14 @@ const SubNodeDao = class SubNodeDao extends AbstractReactComponent {
     };
 
     handleShowDetailAll = () => {
-        const {fund, versionId, selectedSubNodeId} = this.props;
+        const {fund, versionId, selectedSubNodeId, readMode} = this.props;
 
         this.dispatch(
             modalDialogShow(
                 this,
                 i18n('subNodeDao.dao.title.node'),
                 <NodeDaosForm
+                    readMode={readMode}
                     nodeId={selectedSubNodeId}
                 />,
                 "dialog-lg node-dao-dialog"
@@ -65,13 +67,14 @@ const SubNodeDao = class SubNodeDao extends AbstractReactComponent {
     };
 
     handleShowDetailOne = (dao) => {
-        const {fund, selectedSubNodeId} = this.props;
+        const {fund, selectedSubNodeId, readMode} = this.props;
 
         this.dispatch(
             modalDialogShow(
                 this,
                 i18n('subNodeDao.dao.title.node'),
                 <NodeDaosForm
+                    readMode={readMode}
                     nodeId={selectedSubNodeId}
                     daoId={dao.id}
                 />,
