@@ -13,7 +13,7 @@ import cz.tacr.elza.repository.DigitalRepositoryRepository;
 import cz.tacr.elza.repository.DigitizationFrontdeskRepository;
 import cz.tacr.elza.repository.ExternalSystemRepository;
 import cz.tacr.elza.repository.RegExternalSystemRepository;
-import cz.tacr.elza.service.eventnotification.events.ActionEvent;
+import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -97,8 +97,9 @@ public class ExternalSystemService {
     @AuthMethod(permission = UsrPermission.Permission.ADMIN)
     public SysExternalSystem create(final SysExternalSystem externalSystem) {
         validateExternalSystem(externalSystem, true);
-        sendChangeExternalSystemNotification();
-        return externalSystemRepository.save(externalSystem);
+        externalSystemRepository.save(externalSystem);
+        sendCreateExternalSystemNotification(externalSystem.getExternalSystemId());
+        return externalSystem;
     }
 
     /**
@@ -108,7 +109,7 @@ public class ExternalSystemService {
      */
     @AuthMethod(permission = UsrPermission.Permission.ADMIN)
     public void delete(final Integer id) {
-        sendChangeExternalSystemNotification();
+        sendDeleteExternalSystemNotification(id);
         externalSystemRepository.delete(id);
     }
 
@@ -138,7 +139,7 @@ public class ExternalSystemService {
     @AuthMethod(permission = UsrPermission.Permission.ADMIN)
     public SysExternalSystem update(final SysExternalSystem externalSystem) {
         validateExternalSystem(externalSystem, false);
-        sendChangeExternalSystemNotification();
+        sendUpdateExternalSystemNotification(externalSystem.getExternalSystemId());
         return externalSystemRepository.save(externalSystem);
     }
 
@@ -176,10 +177,27 @@ public class ExternalSystemService {
     }
 
     /**
-     * Odešle notifikaci do klienta, že se změnily externí systémy.
+     * Odešle notifikaci do klienta, že se změnil externí systém.
+     * @param externalSystemId id ex. systému
      */
-    private void sendChangeExternalSystemNotification() {
-        eventNotificationService.publishEvent(new ActionEvent(EventType.EXTERNAL_SYSTEM_CHANGE));
+    private void sendUpdateExternalSystemNotification(final Integer externalSystemId) {
+        eventNotificationService.publishEvent(new EventId(EventType.EXTERNAL_SYSTEM_UPDATE, externalSystemId));
+    }
+
+    /**
+     * Odešle notifikaci do klienta, že se vytvořil externí systém.
+     * @param externalSystemId id ex. systému
+     */
+    private void sendCreateExternalSystemNotification(final Integer externalSystemId) {
+        eventNotificationService.publishEvent(new EventId(EventType.EXTERNAL_SYSTEM_CREATE, externalSystemId));
+    }
+
+    /**
+     * Odešle notifikaci do klienta, že se smazal externí systém.
+     * @param externalSystemId id ex. systému
+     */
+    private void sendDeleteExternalSystemNotification(final Integer externalSystemId) {
+        eventNotificationService.publishEvent(new EventId(EventType.EXTERNAL_SYSTEM_DELETE, externalSystemId));
     }
 
     /**

@@ -17,8 +17,8 @@ import java.util.function.Predicate;
 
 import javax.annotation.PostConstruct;
 
-import cz.tacr.elza.exception.BusinessException;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -373,6 +373,9 @@ public class InterpiFactory {
         regRecord.setNote(note);
 
         RegRegisterType regRegisterType = getRegisterType(interpiEntity);
+        if (BooleanUtils.isFalse(regRegisterType.getAddRecord())) {
+            throw new IllegalStateException("Do typu rejstříku s kódem " + regRegisterType.getCode() + " nelze přidávat záznamy.");
+        }
         regRecord.setRegisterType(regRegisterType);
 
         regRecord.setScope(regScope);
@@ -442,12 +445,72 @@ public class InterpiFactory {
             registryTypeName = podTrida.value();
         }
 
-        RegRegisterType regRegisterType = registerTypeRepository.findRegisterTypeByName(registryTypeName);
+        String registryTypeCode = getRegistryTypeCode(registryTypeName);
+        RegRegisterType regRegisterType = registerTypeRepository.findRegisterTypeByCode(registryTypeCode);
         if (regRegisterType == null) {
             throw new ObjectNotFoundException("Typ jména " + registryTypeName + " neexistuje", RegistryCode.REGISTRY_TYPE_NOT_FOUND).set("name", registryTypeName);
         }
 
         return regRegisterType;
+    }
+
+    private String getRegistryTypeCode(final String registryTypeName) {
+        Map<String, String> registryCodeMap = new HashMap<>();
+        registryCodeMap.put("administrativně vymezená území s vlastní správou", "REGION");
+        registryCodeMap.put("orgány, organizační složky a příspěvkové organizace veřejné správy", "PUBLIC_ADMINISTRATION");
+        registryCodeMap.put("sdružení organizací", "ORGANIZATION");
+        registryCodeMap.put("vojenské a bezpečnostní jednotky", "ARMY");
+        registryCodeMap.put("organizace založené za účelem podnikání", "COMPANY");
+        registryCodeMap.put("politické organizace", "POLITICAL_PARTY");
+        registryCodeMap.put("náboženské organizace a instituce", "CHURCH");
+        registryCodeMap.put("kulturní, výchovné, výzkumné a zdravotnické organizace a instituce", "HEALTH_AND_EDU");
+        registryCodeMap.put("nadace a nadační fondy", "CHARITY");
+        registryCodeMap.put("profesní a zájmové organizace", "GUILD");
+        registryCodeMap.put("spolky, společenské organizace", "CLUB");
+        registryCodeMap.put("pojmenované části korporací", "BRANCH");
+        registryCodeMap.put("fyzická osoba", "PERSON_INDIVIDUAL");
+        registryCodeMap.put("fiktivní fyzická osoba", "FICTIVE_INDIVIDUAL");
+        registryCodeMap.put("bytost", "PERSON_BEING");
+        registryCodeMap.put("zvíře", "PERSON_ANIMAL");
+        registryCodeMap.put("rodina, rod", "FAMILY");
+        registryCodeMap.put("větev rodu", "FAMILY_BRANCH");
+        registryCodeMap.put("fiktivní rod", "FICTIVE_DYNASTY");
+        registryCodeMap.put("administrativně či jinak lidmi vymezená území", "GEO_UNIT");
+        registryCodeMap.put("administrativně vymezené části přírody", "GEO_NATURE_RES");
+        registryCodeMap.put("vymezené obvody a správní celky", "GEO_ADMIN_UNIT");
+        registryCodeMap.put("geomorfologické útvary na dně moře", "GEO_SEA_FORMATION");
+        registryCodeMap.put("geomorfologické útvary na zemském povrchu", "GEO_FORMATION");
+        registryCodeMap.put("vodstvo a vodní plocha, vodní tok", "GEO_WATERS");
+        registryCodeMap.put("pojmenované útvary", "GEO_SHAPES");
+        registryCodeMap.put("pojmenované trvalé klimatické jevy", "GEO_CLIMATIC_PHEN");
+        registryCodeMap.put("Vesmír a jeho části", "GEO_SPACE");
+        registryCodeMap.put("organizované akce a události", "EVENT_EVENT");
+        registryCodeMap.put("ozbrojené střety (bitvy, války, obléhání...)", "EVENT_MILITARY");
+        registryCodeMap.put("lidové zvyky, významné dny a svátky", "EVENT_TRADITION");
+        registryCodeMap.put("dočasné přírodní jevy", "EVENT_NATURE");
+        registryCodeMap.put("autorská a umělecká díla", "ARTWORK_ARTWORK");
+        registryCodeMap.put("všeobecně známé dokumenty, smlouvy, zákony, předpisy, normy", "ARTWORK_CHARTER");
+        registryCodeMap.put("vyznamenání, ceny, soutěžní trofeje", "ARTWORK_AWARD");
+        registryCodeMap.put("výrobky a jejich typová označení, obchodní značky, odrůdy, plemena vytvořená člověkem", "ARTWORK_PROD");
+        registryCodeMap.put("názvy společenských, dětských her", "ARTWORK_");
+        registryCodeMap.put("programy, projekty, granty", "ARTWORK_PROJ");
+        registryCodeMap.put("stavby, trasy, zásahy do přírodních útvarů s vlastním jménem nebo jinou identifikací", "ARTWORK_CONSTR");
+        registryCodeMap.put("nepojmenované objekty a jejich fyzické části", "TERM_GENERAL");
+        registryCodeMap.put("kategorie a skupiny nepojmenovaných osob", "TERM_PERSON");
+        registryCodeMap.put("kategorie a skupiny nepojmenovaných korporací", "TERM_CORP");
+        registryCodeMap.put("materiály a techniky", "TERM_MATER");
+        registryCodeMap.put("formy a žánry", "TERM_GENRE");
+        registryCodeMap.put("systematická nomenklatura", "TERM_NOMENC");
+        registryCodeMap.put("abstraktní entity", "TERM_ABSTRACT");
+        registryCodeMap.put("rod/rodina", "FAMILY");
+
+        String registryTypeCode = registryCodeMap.get(registryTypeName);
+
+        if (StringUtils.isBlank(registryTypeCode)) {
+            throw new IllegalStateException("Chybí mapování pro typ rejstříku " + registryTypeName);
+        }
+
+        return registryTypeCode;
     }
 
     /**
@@ -1237,7 +1300,8 @@ public class InterpiFactory {
         entityMappingVO.setInterpiEntityType(interpiEntityType);
 
         if (interpiEntityType != null) {
-            RegRegisterType regRegisterType = registerTypeRepository.findRegisterTypeByName(interpiEntityType);
+            String registryTypeCode = getRegistryTypeCode(interpiEntityType);
+            RegRegisterType regRegisterType = registerTypeRepository.findRegisterTypeByCode(registryTypeCode);
             if (regRegisterType == null) {
                 entityMappingVO.setNotExistingType(true);
             }

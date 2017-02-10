@@ -1,5 +1,9 @@
 package cz.tacr.elza.other;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 
@@ -8,6 +12,8 @@ import javax.transaction.Transactional;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.endpoint.Client;
@@ -312,5 +318,26 @@ public class InterpiTest extends AbstractControllerTest {
         conduit.setClient(httpClientPolicy);
 
         return client;
+    }
+
+    @Test
+    public void printMappingMap() throws FileNotFoundException, IOException {
+        URL url = Thread.currentThread().getContextClassLoader().getResource("mapovani.map");
+        List<String> lines = IOUtils.readLines(url.openStream(), Charset.forName("UTF-8"));
+
+        if (!lines.isEmpty()) {
+            System.out.println("Map<String, String> registryCodeMap = new HashMap<>();");
+
+            for (String line : lines) {
+                String[] strings = line.split("=>");
+                if (strings.length != 2) {
+                    throw new IllegalStateException("Nesprávný formát řádku " + line);
+                }
+
+                String string1 = StringUtils.trim(strings[0]);
+                String string2 = StringUtils.trim(strings[1]);
+                System.out.println("registryCodeMap.put(\"" + string1 + "\", \"" + string2 + "\");");
+            }
+        }
     }
 }

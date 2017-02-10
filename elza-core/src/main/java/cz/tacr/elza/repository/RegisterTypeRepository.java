@@ -89,14 +89,6 @@ public interface RegisterTypeRepository extends JpaRepository<RegRegisterType, I
     @Query("UPDATE reg_register_type rr SET rr.parentRegisterType = NULL WHERE rr.rulPackage = :rulPackage")
     void preDeleteByRulPackage(@Param("rulPackage") RulPackage rulPackage);
 
-    /**
-     * Najde typ rejstříkového hesla podle názvu.
-     *
-     * @param registerTypeName název
-     * @return typ rejstříkového hesla
-     */
-    RegRegisterType findRegisterTypeByName(String registerTypeName);
-
     @Query("SELECT count(t) FROM reg_register_type t WHERE t.partyType IS NOT NULL AND t.registerTypeId IN (:ids)")
     Integer findCountPartyTypeNotNullByIds(@Param("ids") Set<Integer> ids);
 }

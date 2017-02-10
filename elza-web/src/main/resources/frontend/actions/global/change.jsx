@@ -8,7 +8,14 @@ import {fundOutputSelectOutput} from 'actions/arr/fundOutput.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {partyListInvalidate, partyDetailClear, partyDetailInvalidate} from 'actions/party/party.jsx'
-import {extSystemListInvalidate, extSystemDetailClear, extSystemDetailInvalidate, extSystemDetailFetchIfNeeded, AREA_EXT_SYSTEM_LIST, AREA_EXT_SYSTEM_DETAIL} from 'actions/admin/extSystem.jsx'
+import {
+    extSystemListInvalidate,
+    extSystemDetailClear,
+    extSystemDetailInvalidate,
+    extSystemDetailFetchIfNeeded,
+    AREA_EXT_SYSTEM_LIST,
+    AREA_EXT_SYSTEM_DETAIL
+} from 'actions/admin/extSystem.jsx'
 import {
     preparedListInvalidate,
     detailInvalidate,
@@ -23,7 +30,7 @@ import {
     registryDetailInvalidate,
     registryListInvalidate
 } from 'actions/registry/registry.jsx'
-import {refExternalSystemsInvalid} from 'actions/refTables/externalSystems'
+import {refExternalSystemListInvalidate} from 'actions/refTables/externalSystems'
 
 export function isFundChangeAction(action) {
     switch (action.type) {
@@ -171,13 +178,60 @@ export function changePartyDelete(partyId) {
         }
     }
 }
-
-export function changeExtSystem() {
+/**
+ * Externí systémy CREATE
+ *
+ * @param extSystemId
+ * @returns {function(*, *)}
+ */
+export function createExtSystem(extSystemId) {
     return (dispatch, getState) => {
         dispatch(extSystemListInvalidate());
-        dispatch(extSystemDetailInvalidate());
-        dispatch(refExternalSystemsInvalid());
+        dispatch(extSystemDetailFetchIfNeeded(extSystemId));
+        dispatch(refExternalSystemListInvalidate());
     }
+}
+
+/**
+ * Externí systémy UPDATE
+ *
+ * @param extSystemId
+ * @returns {function(*, *)}
+ */
+export function updateExtSystem(extSystemId) {
+    return (dispatch, getState) => {
+        const store = getState();
+        const detail = storeFromArea(store, AREA_EXT_SYSTEM_DETAIL);
+        const list = storeFromArea(store, AREA_EXT_SYSTEM_LIST);
+        if (detail.id == extSystemId) {
+            dispatch(extSystemDetailInvalidate());
+        }
+
+        if (list.rows && indexById(list.rows, extSystemId) !== null) {
+            dispatch(extSystemListInvalidate())
+        }
+        dispatch(refExternalSystemListInvalidate());
+    };
+}
+/**
+ * Externí systémy DELETE
+ *
+ * @param extSystemId
+ * @returns {function(*, *)}
+ */
+export function deleteExtSystem(extSystemId) {
+    return (dispatch, getState) => {
+        const store = getState();
+        const detail = storeFromArea(store, AREA_EXT_SYSTEM_DETAIL);
+        const list = storeFromArea(store, AREA_EXT_SYSTEM_LIST);
+        if (detail.id == extSystemId) {
+            dispatch(extSystemDetailClear());
+        }
+        if (list.rows && indexById(list.rows, extSystemId) !== null) {
+            dispatch(extSystemListInvalidate());
+        }
+        dispatch(refExternalSystemListInvalidate());
+    };
 }
 
 export function changeApproveVersion(fundId, versionId) {

@@ -29,6 +29,7 @@ class ArrDao extends AbstractReactComponent {
         dao: React.PropTypes.object.isRequired,
         fund: React.PropTypes.object.isRequired,
         onUnlink: React.PropTypes.func.isRequired,
+        readMode: React.PropTypes.bool.isRequired
     };
 
     componentDidMount() {
@@ -97,7 +98,7 @@ class ArrDao extends AbstractReactComponent {
     };
 
     render() {
-        const {fund, dao} = this.props;
+        const {fund, dao, readMode} = this.props;
         const {selectedFile} = this.state;
 
         // Položky souborů včetně skupin
@@ -132,8 +133,8 @@ class ArrDao extends AbstractReactComponent {
         if (dao) {
             daoDetail = <div><div className="title"><i>Digitalizát</i>: {dao.label}</div>
                 <div className="info">
-                    <Button disabled={!dao.daoLink} onClick={this.handleUnlink}><Icon glyph='fa-unlink'/></Button>
-                    <Button onClick={this.handleTrash}><Icon glyph='fa-trash'/></Button>
+                    {!readMode && <Button disabled={!dao.daoLink} onClick={this.handleUnlink}><Icon glyph='fa-unlink'/></Button>}
+                    {!readMode && <Button onClick={this.handleTrash}><Icon glyph='fa-trash'/></Button>}
                 <Form inline>
             <div><FormInput type="static" label={i18n("arr.daos.title.code") + ":"}>{dao.code}</FormInput></div>
             {dao.url && <div><FormInput type="static" label={i18n("arr.daos.title.url") + ":"}><a target="_blank" href={dao.url}>{dao.url}</a></FormInput></div>}
