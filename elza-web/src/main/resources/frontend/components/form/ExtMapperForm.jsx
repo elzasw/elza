@@ -35,7 +35,7 @@ class ExtMapperForm extends AbstractReactComponent {
                 return null;
             }
 
-            const entities = i.entities ? i.entities.map(e => !e.relationRoleTypeId ? {relationRoleTypeId: i18n('global.validation.required')} : null) : [];
+            const entities = i.entities ? i.entities.map(e => e.importEntity && !e.relationRoleTypeId ? {relationRoleTypeId: i18n('global.validation.required')} : null) : [];
             const relationTypeId = !i.relationTypeId ? i18n('global.validation.required') : null;
             const isEntitiesOk = entities.length === 0;
             const isRelationTypeIdOk = relationTypeId === null;

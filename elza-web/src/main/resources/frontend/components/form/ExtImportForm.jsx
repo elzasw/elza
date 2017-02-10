@@ -231,11 +231,10 @@ class ExtImportForm extends AbstractReactComponent {
                     isUpdate={update}
                     onSubmit={(data) => {
 
-                        importVO.mappings = [];
-
-                        data.mappings.forEach((mapping) => {
-                            if (mapping.importRelation) {
-                                importVO.mappings.push(mapping);
+                        importVO.mappings = data.mappings.filter((mapping) => mapping.importRelation).map(i => {
+                            return {
+                                ...i,
+                                entities: i.entities.filter(n => n.importEntity)
                             }
                         });
 
