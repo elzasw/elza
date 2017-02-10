@@ -117,24 +117,32 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                 <h4>{i18n('admin.extSystem.code')}</h4>
                 <span>{extSystem.code}</span>
 
-                {i18n('admin.extSystem.url') &&
-                <h4>{i18n('admin.extSystem.url')}</h4> &&
-                <span>{extSystem.url}</span>
+                {extSystem.url &&
+                    <div>
+                        <h4>{i18n('admin.extSystem.url')}</h4>
+                        <span>{extSystem.url}</span>
+                    </div>
                 }
 
-                {i18n('admin.extSystem.username') &&
-                <h4>{i18n('admin.extSystem.username')}</h4> &&
-                <span>{extSystem.username}</span>
+                {extSystem.username &&
+                    <div>
+                        <h4>{i18n('admin.extSystem.username')}</h4>
+                        <span>{extSystem.username}</span>
+                    </div>
                 }
 
-                {i18n('admin.extSystem.password') &&
-                <h4>{i18n('admin.extSystem.password')}</h4> &&
-                <span>{extSystem.password}</span>
+                {extSystem.password &&
+                    <div>
+                        <h4>{i18n('admin.extSystem.password')}</h4>
+                        <span>{extSystem.password}</span>
+                    </div>
                 }
 
-                {i18n('admin.extSystem.elzaCode') &&
-                <h4>{i18n('admin.extSystem.elzaCode')}</h4> &&
-                <span>{extSystem.elzaCode}</span>
+                {extSystem.elzaCode &&
+                    <div>
+                        <h4>{i18n('admin.extSystem.elzaCode')}</h4>
+                        <span>{extSystem.elzaCode}</span>
+                    </div>
                 }
             </div>
         </div>;
