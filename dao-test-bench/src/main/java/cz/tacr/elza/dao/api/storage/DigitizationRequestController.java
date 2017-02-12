@@ -55,7 +55,7 @@ public class DigitizationRequestController {
 	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
 	@RequestMapping(value = "/{requestIdentifier}/reject", method = RequestMethod.POST)
-	public void digiRequestFinished(@PathVariable String requestIdentifier,
+	public void digiRequestReject(@PathVariable String requestIdentifier,
 			@RequestParam(required = false) String description)
 			throws CoreServiceException {
 		DigitizationRequestInfo requestInfo = storageDigitizationRequestService.rejectRequest(requestIdentifier);
