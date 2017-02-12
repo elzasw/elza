@@ -2,6 +2,9 @@
 <wsdl:definitions name="ElzaDaoProvider" targetNamespace="http://elza.tacr.cz/ws/dao-service/v1" xmlns:eat="http://elza.tacr.cz/ws/types/v1" xmlns:tns="http://elza.tacr.cz/ws/dao-service/v1" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
 	<wsdl:import namespace="http://elza.tacr.cz/ws/types/v1" location="elza-api-types-v1.xsd"/>
 	<wsdl:types/>
+	<wsdl:message name="EmptyMessage">
+		<wsdl:documentation>Empty message is used for method without return value.</wsdl:documentation>
+	</wsdl:message>
 	<wsdl:message name="DaoServiceException">
 		<wsdl:part name="errorDescription" type="eat:errorDescription"/>
 	</wsdl:message>
@@ -38,10 +41,12 @@
 	<wsdl:portType name="DaoNotifications">
 		<wsdl:operation name="OnDaoLinked">
 			<wsdl:input name="onDaoLinked" message="tns:OnDaoLinked"/>
+			<wsdl:output name="emptyMessage" message="tns:EmptyMessage"/>
 			<wsdl:fault name="daoServiceException" message="tns:DaoServiceException"/>
 		</wsdl:operation>
 		<wsdl:operation name="OnDaoUnlinked">
 			<wsdl:input name="onDaoUnlinked" message="tns:OnDaoUnlinked"/>
+			<wsdl:output name="emptyMessage" message="tns:EmptyMessage"/>
 			<wsdl:fault name="daoServiceException" message="tns:DaoServiceException"/>
 		</wsdl:operation>
 	</wsdl:portType>
@@ -79,6 +84,9 @@
 			<wsdl:input name="onDaoLinked">
 				<soap:body use="literal"/>
 			</wsdl:input>
+			<wsdl:output name="emptyMessage">
+				<soap:body use="literal"/>
+			</wsdl:output>
 			<wsdl:fault name="daoServiceException">
 				<soap:fault name="daoServiceException" use=""/>
 			</wsdl:fault>
@@ -88,6 +96,9 @@
 			<wsdl:input name="onDaoUnlinked">
 				<soap:body use="literal"/>
 			</wsdl:input>
+			<wsdl:output name="emptyMessage">
+				<soap:body use="literal"/>
+			</wsdl:output>
 			<wsdl:fault name="daoServiceException">
 				<soap:fault name="daoServiceException" use=""/>
 			</wsdl:fault>

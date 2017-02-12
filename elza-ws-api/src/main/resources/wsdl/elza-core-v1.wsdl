@@ -6,6 +6,9 @@
 		<wsdl:documentation>Description of material/level of description</wsdl:documentation>
 		<wsdl:part name="did" type="eat:did"/>
 	</wsdl:message>
+	<wsdl:message name="EmptyMessage">
+		<wsdl:documentation>Empty message is used in function without return value to prevent asynchronous processing.</wsdl:documentation>
+	</wsdl:message>
 	<wsdl:message name="CoreServiceException">
 		<wsdl:part name="errorDescription" type="eat:errorDescription"/>
 	</wsdl:message>
@@ -34,6 +37,7 @@
 		<wsdl:operation name="Import">
 			<wsdl:documentation>Import one or more packages. Import will also create corresponding links to described material.</wsdl:documentation>
 			<wsdl:input name="daoImport" message="tns:DaoImport"/>
+			<wsdl:output name="emptyMessage" message="tns:EmptyMessage"/>
 			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
 		</wsdl:operation>
 		<wsdl:operation name="AddPackage">
@@ -45,13 +49,15 @@
 		</wsdl:operation>
 		<wsdl:operation name="RemovePackage">
 			<wsdl:documentation>Remove package by internal ID</wsdl:documentation>
-			<wsdl:input name="DaoPackageIdentifier" message="tns:Identifier">
+			<wsdl:input name="daoPackageIdentifier" message="tns:Identifier">
 				<wsdl:documentation>ID of package in the system</wsdl:documentation>
 			</wsdl:input>
+			<wsdl:output name="emptyMessage" message="tns:EmptyMessage"/>
 			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
 		</wsdl:operation>
 		<wsdl:operation name="Link">
 			<wsdl:input name="daoLink" message="tns:DaoLink"/>
+			<wsdl:output name="emptyMessage" message="tns:EmptyMessage"/>
 			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
 		</wsdl:operation>
 		<wsdl:operation name="GetDid">
@@ -68,24 +74,29 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 			<wsdl:input name="daoIdentifier" message="tns:Identifier">
 				<wsdl:documentation>ELZA internal identifier of given DAO</wsdl:documentation>
 			</wsdl:input>
+			<wsdl:output name="emptyMessage" message="tns:EmptyMessage"/>
 			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
 		</wsdl:operation>
 	</wsdl:portType>
 	<wsdl:portType name="DaoRequestsService">
 		<wsdl:operation name="TransferRequestFinished">
 			<wsdl:input name="requestIdentifier" message="tns:RequestIdentifier"/>
+			<wsdl:output name="emptyMessage" message="tns:EmptyMessage"/>
 			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
 		</wsdl:operation>
 		<wsdl:operation name="TransferRequestRevoked">
 			<wsdl:input name="requestRevoked" message="tns:RequestRevoked"/>
+			<wsdl:output name="emptyMessage" message="tns:EmptyMessage"/>
 			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
 		</wsdl:operation>
 		<wsdl:operation name="DestructionRequestFinished">
 			<wsdl:input name="requestIdentifier" message="tns:RequestIdentifier"/>
+			<wsdl:output name="emptyMessage" message="tns:EmptyMessage"/>
 			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
 		</wsdl:operation>
 		<wsdl:operation name="DestructionRequestRevoked">
 			<wsdl:input name="requestRevoked" message="tns:RequestRevoked"/>
+			<wsdl:output name="emptyMessage" message="tns:EmptyMessage"/>
 			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
 		</wsdl:operation>
 	</wsdl:portType>
@@ -94,11 +105,13 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 		<wsdl:operation name="DigitizationRequestRevoked">
 			<wsdl:documentation>Function to revoke some digitization request.</wsdl:documentation>
 			<wsdl:input name="requestRevoked" message="tns:RequestRevoked"/>
+			<wsdl:output name="emptyMessage" message="tns:EmptyMessage"/>
 			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
 		</wsdl:operation>
 		<wsdl:operation name="DigitizationRequestFinished">
 			<wsdl:documentation>Function for importing result of digitization request.</wsdl:documentation>
 			<wsdl:input name="digitizationRequestResult" message="tns:DigitizationRequestResult"/>
+			<wsdl:output name="emptyMessage" message="tns:EmptyMessage"/>
 			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
 		</wsdl:operation>
 	</wsdl:portType>
@@ -109,6 +122,9 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 			<wsdl:input name="requestIdentifier">
 				<soap:body use="literal"/>
 			</wsdl:input>
+			<wsdl:output name="emptyMessage">
+				<soap:body use="literal"/>
+			</wsdl:output>
 			<wsdl:fault name="coreServiceException">
 				<soap:fault name="coreServiceException" use=""/>
 			</wsdl:fault>
@@ -118,6 +134,9 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 			<wsdl:input name="requestRevoked">
 				<soap:body use="literal"/>
 			</wsdl:input>
+			<wsdl:output name="emptyMessage">
+				<soap:body use="literal"/>
+			</wsdl:output>
 			<wsdl:fault name="coreServiceException">
 				<soap:fault name="coreServiceException" use=""/>
 			</wsdl:fault>
@@ -127,6 +146,9 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 			<wsdl:input name="requestIdentifier">
 				<soap:body use="literal"/>
 			</wsdl:input>
+			<wsdl:output name="emptyMessage">
+				<soap:body use="literal"/>
+			</wsdl:output>
 			<wsdl:fault name="coreServiceException">
 				<soap:fault name="coreServiceException" use=""/>
 			</wsdl:fault>
@@ -136,6 +158,9 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 			<wsdl:input name="requestRevoked">
 				<soap:body use="literal"/>
 			</wsdl:input>
+			<wsdl:output name="emptyMessage">
+				<soap:body use="literal"/>
+			</wsdl:output>
 			<wsdl:fault name="coreServiceException">
 				<soap:fault name="coreServiceException" use=""/>
 			</wsdl:fault>
@@ -148,6 +173,9 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 			<wsdl:input name="digitizationRequestResult">
 				<soap:body use="literal"/>
 			</wsdl:input>
+			<wsdl:output name="emptyMessage">
+				<soap:body use="literal"/>
+			</wsdl:output>
 			<wsdl:fault name="coreServiceException">
 				<soap:fault name="coreServiceException" use=""/>
 			</wsdl:fault>
@@ -157,6 +185,9 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 			<wsdl:input name="requestRevoked">
 				<soap:body use="literal"/>
 			</wsdl:input>
+			<wsdl:output name="emptyMessage">
+				<soap:body use="literal"/>
+			</wsdl:output>
 			<wsdl:fault name="coreServiceException">
 				<soap:fault name="coreServiceException" use=""/>
 			</wsdl:fault>
@@ -186,6 +217,9 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 				<wsdl:documentation>ELZA internal identifier of given DAO</wsdl:documentation>
 				<soap:body use="literal"/>
 			</wsdl:input>
+			<wsdl:output name="emptyMessage">
+				<soap:body use="literal"/>
+			</wsdl:output>
 			<wsdl:fault name="coreServiceException">
 				<soap:fault name="coreServiceException" use=""/>
 			</wsdl:fault>
@@ -209,6 +243,9 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 			<wsdl:input name="daoImport">
 				<soap:body use="literal"/>
 			</wsdl:input>
+			<wsdl:output name="emptyMessage">
+				<soap:body use="literal"/>
+			</wsdl:output>
 			<wsdl:fault name="coreServiceException">
 				<soap:fault name="coreServiceException" use=""/>
 			</wsdl:fault>
@@ -218,6 +255,9 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 			<wsdl:input name="daoLink">
 				<soap:body use="literal"/>
 			</wsdl:input>
+			<wsdl:output name="emptyMessage">
+				<soap:body use="literal"/>
+			</wsdl:output>
 			<wsdl:fault name="coreServiceException">
 				<soap:fault name="coreServiceException" use=""/>
 			</wsdl:fault>
@@ -225,10 +265,13 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 		<wsdl:operation name="RemovePackage">
 			<wsdl:documentation>Remove package</wsdl:documentation>
 			<soap:operation soapAction="RemovePackage" style="document"/>
-			<wsdl:input name="DaoPackageIdentifier">
+			<wsdl:input name="daoPackageIdentifier">
 				<wsdl:documentation>ID of package in given system</wsdl:documentation>
 				<soap:body use="literal"/>
 			</wsdl:input>
+			<wsdl:output name="emptyMessage">
+				<soap:body use="literal"/>
+			</wsdl:output>
 			<wsdl:fault name="coreServiceException">
 				<soap:fault name="coreServiceException" use=""/>
 			</wsdl:fault>
