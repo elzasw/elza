@@ -484,6 +484,8 @@ public class InterpiFactory {
         registryCodeMap.put("pojmenované útvary", "GEO_SHAPES");
         registryCodeMap.put("pojmenované trvalé klimatické jevy", "GEO_CLIMATIC_PHEN");
         registryCodeMap.put("Vesmír a jeho části", "GEO_SPACE");
+        // Default mapping for geo objects
+        registryCodeMap.put("geografický objekt", "GEO_NATURE_RES");
         registryCodeMap.put("organizované akce a události", "EVENT_EVENT");
         registryCodeMap.put("ozbrojené střety (bitvy, války, obléhání...)", "EVENT_MILITARY");
         registryCodeMap.put("lidové zvyky, významné dny a svátky", "EVENT_TRADITION");
@@ -502,6 +504,8 @@ public class InterpiFactory {
         registryCodeMap.put("formy a žánry", "TERM_GENRE");
         registryCodeMap.put("systematická nomenklatura", "TERM_NOMENC");
         registryCodeMap.put("abstraktní entity", "TERM_ABSTRACT");
+        // obecny pojem - jen trida
+        registryCodeMap.put("obecný pojem", "TERM_GENERAL");
         registryCodeMap.put("rod/rodina", "FAMILY");
 
         String registryTypeCode = registryCodeMap.get(registryTypeName);
