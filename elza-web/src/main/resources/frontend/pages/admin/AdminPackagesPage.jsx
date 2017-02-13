@@ -17,56 +17,10 @@ import './AdminPackagesPage.less';
  */
 class AdminPackagesPage extends React.Component {
 
-    handleImportPackage = () => {
-        if(confirm(i18n('global.title.processAction'))) {
-            console.log('importPackage');
-        }
-    };
-    handleExportPackage = () => {
-        if(confirm(i18n('global.title.processAction'))) {
-            console.log('exportPackage');
-        }
-    };
-    handleDeletePackage = () => {
-        if(confirm(i18n('global.title.processAction'))) {
-            console.log('deletePackage');
-        }
-    };
-
     buildRibbon = () => {
-        const altActions = [];
-        const itemActions = [];
-
-        altActions.push(
-            <Button key="import-package" onClick={this.handleImportPackage} title={i18n('ribbon.action.admin.package.import.title')}>
-                <Icon glyph="fa-download"/>
-                <div><span className="btnText">{i18n('ribbon.action.admin.package.import')}</span></div>
-            </Button>
-        );
-        itemActions.push(
-            <Button key="export-package" onClick={this.handleExportPackage} title={i18n('ribbon.action.admin.package.export.title')}>
-                <Icon glyph="fa-upload"/>
-                <div><span className="btnText">{i18n('ribbon.action.admin.package.export')}</span></div>
-            </Button>
-        );
-
-        itemActions.push(
-            <Button key="delete-package" onClick={this.handleDeletePackage} title={i18n('ribbon.action.admin.package.delete.title')}>
-                <Icon glyph="fa-minus-circle"/>
-                <div><span className="btnText">{i18n('ribbon.action.admin.package.delete')}</span></div>
-            </Button>
-        );
-
-        let altSection;
-        if (altActions.length > 0) {
-            altSection = <RibbonGroup key='alt-actions' className="small">{altActions}</RibbonGroup>
-        }
-
-        let itemSection;
-        if (itemActions.length > 0) {
-            itemSection = <RibbonGroup key='item-actions' className="small">{itemActions}</RibbonGroup>
-        }
-        return <Ribbon admin altSection={altSection} itemSection={itemSection} {...this.props} />;
+        return (
+            <Ribbon admin {...this.props} />
+        )
     };
 
     render() {
