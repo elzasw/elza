@@ -451,7 +451,7 @@ public class RegistryController {
         }
 
         Set<Integer> scopeIdsByFund = registryService.getScopeIdsByFund(fund);
-        if (scopeIdsByFund.isEmpty()) {
+        if (scopeIdsByFund == null || scopeIdsByFund.isEmpty()) {
             return Collections.EMPTY_LIST;
         } else {
             List<RegScopeVO> result = factoryVo.createScopes(scopeRepository.findAll(scopeIdsByFund));
