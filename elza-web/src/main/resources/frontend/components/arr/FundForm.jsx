@@ -57,7 +57,7 @@ class FundForm extends AbstractReactComponent {
      */
     isBulkActionRunning = () => {
         let result = false;
-        this.props.bulkActions.states.forEach((item) => {
+        this.props.bulkActions && this.props.bulkActions.states.forEach((item) => {
             if (item.state !== 'ERROR' && item.state !== 'FINISH') {
                 result = true;
             }
