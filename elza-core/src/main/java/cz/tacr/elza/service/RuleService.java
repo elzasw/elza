@@ -555,15 +555,43 @@ public class RuleService {
             rulDescItemTypeExt.setCalculableState(false);
             rulDescItemTypeExt.setPolicyTypeCode(policyType.getCode());
 
-            // projde všechny specifikace typů atributů
-            for (RulItemSpecExt rulDescItemSpecExt : rulDescItemTypeExt.getRulItemSpecList()) {
+            List<RulItemSpecExt> itemSpecList = rulDescItemTypeExt.getRulItemSpecList();
 
+            // projde všechny specifikace typů atributů
+            for (RulItemSpecExt rulDescItemSpecExt : itemSpecList) {
                 rulDescItemSpecExt.setType(RulItemSpec.Type.IMPOSSIBLE);
                 rulDescItemSpecExt.setRepeatable(true);
                 rulDescItemSpecExt.setPolicyTypeCode(policyType.getCode());
-
             }
+
+            // seřadit dle viewOrder
+            itemSpecList.sort((o1, o2) -> {
+                if (o1 == null && o2 == null) {
+                    return 0;
+                }
+                if (o1 == null || o1.getViewOrder() == null) {
+                    return -1;
+                }
+                if (o2 == null || o2.getViewOrder() == null) {
+                    return 1;
+                }
+                return o1.getViewOrder().compareTo(o2.getViewOrder());
+            });
         }
+
+        rulDescItemTypeExtList.sort((o1, o2) -> {
+            if (o1 == null && o2 == null) {
+                return 0;
+            }
+            if (o1 == null || o1.getViewOrder() == null) {
+                return -1;
+            }
+            if (o2 == null || o2.getViewOrder() == null) {
+                return 1;
+            }
+            return o1.getViewOrder().compareTo(o2.getViewOrder());
+        });
+
         return rulDescItemTypeExtList;
     }
 
