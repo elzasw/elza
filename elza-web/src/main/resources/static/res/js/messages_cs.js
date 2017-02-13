@@ -1045,8 +1045,10 @@ var messages = {
     "extImport.update": "Aktualizovat",
     "extImport.showDetail": "Přejít na detail",
     "extImport.done.title":"Hotovo",
-    "extImport.done.messageImport":"Osoba úspěšně naimportována",
-    "extImport.done.messageUpdate":"Osoba úspěšně aktualizována",
+    "extImport.done.party.messageImport":"Osoba úspěšně naimportována",
+    "extImport.done.party.messageUpdate":"Osoba úspěšně aktualizována",
+    "extImport.done.record.messageImport":"Heslo úspěšně naimportováno",
+    "extImport.done.record.messageUpdate":"Heslo úspěšně aktualizováno",
 
     "extImport.attType.PREFFERED_NAME": "Hledání v preferovaném jméně rejstříku",
     "extImport.attType.ALL_NAMES": "Hledání ve všech jménech rejstříku",

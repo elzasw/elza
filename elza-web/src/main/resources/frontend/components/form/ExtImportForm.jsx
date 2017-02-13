@@ -215,7 +215,13 @@ class ExtImportForm extends AbstractReactComponent {
 
             promise.then(e => {
                 this.dispatch(modalDialogHide());
-                this.dispatch(addToastrSuccess(i18n("extImport.done.title"), i18n(update ? "extImport.done.messageImport" : "extImport.done.messageUpdate")));
+                let msg;
+                if (isParty) {
+                    msg = update ? "extImport.done.party.messageImport" : "extImport.done.party.messageUpdate";
+                } else {
+                    msg = update ? "extImport.done.record.messageImport" : "extImport.done.record.messageUpdate";
+                }
+                this.dispatch(addToastrSuccess(i18n("extImport.done.title"), i18n(msg)));
                 this.props.onSubmitForm && this.props.onSubmitForm(e);
             });
 
