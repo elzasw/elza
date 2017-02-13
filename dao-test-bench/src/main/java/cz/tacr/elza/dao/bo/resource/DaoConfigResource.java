@@ -30,7 +30,7 @@ public class DaoConfigResource extends YamlResource<DaoConfig> {
 	}
 
 	@Override
-	protected Path getResourcePath() {
+	public Path getResourcePath() {
 		return resourcePath;
 	}
 

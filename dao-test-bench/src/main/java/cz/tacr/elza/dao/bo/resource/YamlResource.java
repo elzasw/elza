@@ -44,7 +44,7 @@ public abstract class YamlResource<T> extends AbstractStorageResource<T> {
 		}
 	}
 
-	protected abstract Path getResourcePath();
+	public abstract Path getResourcePath();
 
 	protected abstract T createEmptyResource() throws Exception;
 

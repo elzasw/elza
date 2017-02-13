@@ -139,7 +139,7 @@ public class DaoBo {
 		try {
 			return configResource.getOrInit();
 		} catch (Exception e) {
-			throw new DaoComponentException("cannot init dao config", e);
+			throw new DaoComponentException("cannot init dao config: " + configResource.getResourcePath(), e);
 		}
 	}
 

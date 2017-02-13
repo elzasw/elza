@@ -27,7 +27,7 @@ public class DaoRequestInfoResource extends YamlResource<DaoRequestInfo> {
 	}
 
 	@Override
-	protected Path getResourcePath() {
+	public Path getResourcePath() {
 		return resourcePath;
 	}
 
