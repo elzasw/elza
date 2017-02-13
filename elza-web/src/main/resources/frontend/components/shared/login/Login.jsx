@@ -51,7 +51,7 @@ class Login extends AbstractReactComponent {
     };
 
     render() {
-        const {login} = this.props;
+        const {login, submitting} = this.props;
         const {error, username, password} = this.state;
 
         return <div className="login-container">
@@ -63,7 +63,7 @@ class Login extends AbstractReactComponent {
                         <FormInput type="password" value={password} onChange={this.handleChange.bind(this, 'password')} label={i18n('login.field.password')} />
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button type="submit" onClick={this.handleLogin}>{i18n('login.action.login')}</Button>
+                        <Button type="submit" onClick={this.handleLogin} disabled={submitting}>{i18n('login.action.login')}</Button>
                     </Modal.Footer>
                 </Form>
             </ModalDialogWrapper>}

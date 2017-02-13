@@ -78,7 +78,7 @@ class RelationForm extends AbstractReactComponent {
     };
 
     render() {
-        const {relationType, onClose, handleSubmit, fields: {from, to, relationEntities, note, source}, partyId, registerTypesMap} = this.props;
+        const {relationType, onClose, handleSubmit, fields: {from, to, relationEntities, note, source}, partyId, registerTypesMap, submitting} = this.props;
         const {relationRoleTypes} = relationType;
         const roleTypesList = relationRoleTypes ? relationRoleTypes : null;
         const usedRoles = relationEntities.map(i => parseInt(i.roleType.id.value));
@@ -133,7 +133,7 @@ class RelationForm extends AbstractReactComponent {
                 </div>
             </Modal.Body>
             <Modal.Footer>
-                <Button type="submit">{i18n('global.action.store')}</Button>
+                <Button type="submit"  disabled={submitting}>{i18n('global.action.store')}</Button>
                 <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
         </Form>;

@@ -93,7 +93,7 @@ class AddRegistryForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: {record, characteristics, registerTypeId, scopeId}, handleSubmit, onClose, versionId, refTables: {scopesData}, registryRegionRecordTypes, registryRegion} = this.props;
+        const {fields: {record, characteristics, registerTypeId, scopeId}, handleSubmit, onClose, versionId, refTables: {scopesData}, submitting, registryRegionRecordTypes, registryRegion} = this.props;
 
         const okSubmitForm = submitReduxFormWithProp.bind(this, AddRegistryForm.validate, 'store');
         const okAndDetailSubmitForm = submitReduxFormWithProp.bind(this, AddRegistryForm.validate, 'storeAndViewDetail');
@@ -131,8 +131,8 @@ class AddRegistryForm extends AbstractReactComponent {
                         <FormInput componentClass="textarea" label={i18n('registry.characteristics')} {...characteristics} {...decorateFormField(characteristics)} />
                     </Modal.Body>
                     <Modal.Footer>
-                        {this.props.showSubmitTypes && <Button onClick={handleSubmit(okAndDetailSubmitForm)}>{i18n('global.action.storeAndViewDetail')}</Button>}
-                        <Button type="submit" onClick={handleSubmit(okSubmitForm)}>{i18n('global.action.store')}</Button>
+                        {this.props.showSubmitTypes && <Button onClick={handleSubmit(okAndDetailSubmitForm)} disabled={submitting}>{i18n('global.action.storeAndViewDetail')}</Button>}
+                        <Button type="submit" onClick={handleSubmit(okSubmitForm)} disabled={submitting}>{i18n('global.action.store')}</Button>
                         <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                     </Modal.Footer>
                 </Form>

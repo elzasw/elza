@@ -31,7 +31,7 @@ class AddGroupForm extends AbstractReactComponent {
     };
 
     render() {
-        const {fields: {name, code, description}, create, handleSubmit, onClose} = this.props;
+        const {fields: {name, code, description}, create, handleSubmit, onClose, submitting} = this.props;
 
         const submitForm = submitReduxForm.bind(this, AddGroupForm.validate);
 
@@ -42,7 +42,7 @@ class AddGroupForm extends AbstractReactComponent {
                 <FormInput componentClass="textarea" label={i18n('admin.group.title.description')} {...description} />
             </Modal.Body>
             <Modal.Footer>
-                <Button type="submit" onClick={handleSubmit(submitForm)}>{i18n(create ? 'global.action.create' : 'global.action.update')}</Button>
+                <Button type="submit" onClick={handleSubmit(submitForm)} disabled={submitting}>{i18n(create ? 'global.action.create' : 'global.action.update')}</Button>
                 <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
         </Form>
