@@ -53,7 +53,8 @@
 									<extraarg>-autoNameResolution</extraarg>
 									<extraarg>-wsdlLocation</extraarg>
 									<wsdlurl />
-								</extraargs>
+								</extraargs>								
+                            	<exceptionSuper>java.lang.RuntimeException</exceptionSuper>                            
 							</defaultOptions>
 						</configuration>
 						<goals>

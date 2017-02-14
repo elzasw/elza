@@ -22,6 +22,9 @@
                         <phase>generate-sources</phase>
                         <configuration>
                             <sourceRoot>${project.build.directory}/generated/cxf</sourceRoot>
+                            <defaultOptions>
+                            	<exceptionSuper>java.lang.RuntimeException</exceptionSuper>
+                            </defaultOptions>
                             <wsdlOptions>
                                 <wsdlOption>
                                     <wsdl>${basedir}/src/main/resources/wsdl/elza-core-v1.wsdl</wsdl>
