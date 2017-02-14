@@ -74,4 +74,15 @@ public class ChangesResult {
     public void setTotalCount(final Integer totalCount) {
         this.totalCount = totalCount;
     }
+
+    @Override
+    public String toString() {
+        return "ChangesResult{" +
+                "maxSize=" + maxSize +
+                ", offset=" + offset +
+                ", totalCount=" + totalCount +
+                ", outdated=" + outdated +
+                ", changes=" + changes +
+                '}';
+    }
 }

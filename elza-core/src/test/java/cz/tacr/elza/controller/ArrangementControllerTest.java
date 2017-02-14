@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,10 +16,14 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.service.vo.ChangesResult;
 import org.apache.commons.csv.CSVRecord;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
@@ -113,6 +118,53 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         //smazání fondu
         deleteFund(fund);
+
+    }
+
+    //@Ignore // TODO
+    @Test
+    public void revertingChangeTest() throws IOException {
+
+        ArrFundVO fund = createdFund();
+
+        ArrFundVersionVO fundVersion = getOpenVersion(fund);
+
+        // vytvoření uzlů
+        List<ArrNodeVO> nodes = createLevels(fundVersion);
+
+        // přesunutí && smazání uzlů
+        moveAndDeleteLevels(nodes, fundVersion);
+
+        // atributy
+        attributeValues(fundVersion);
+
+        ChangesResult changesAll = findChanges(fundVersion.getId(), 999, 0, null, null);
+        Assert.notNull(changesAll);
+        Assert.notNull(changesAll.getChanges());
+        Assert.isTrue(changesAll.getTotalCount().equals(changesAll.getChanges().size()) && changesAll.getChanges().size() == 26);
+        Assert.isTrue(!changesAll.getOutdated());
+
+        ChangesResult changesByNode = findChanges(fundVersion.getId(), 999, 0, null, nodes.get(0).getId());
+        Assert.notNull(changesByNode);
+        Assert.notNull(changesByNode.getChanges());
+        Assert.isTrue(changesByNode.getTotalCount().equals(changesByNode.getChanges().size()) && changesByNode.getChanges().size() == 6);
+
+        final Integer lastChangeId = changesAll.getChanges().get(0).getChangeId();
+        final Integer firstChangeId = changesAll.getChanges().get(changesAll.getChanges().size() - 1).getChangeId();
+        ChangesResult changesByDate = findChangesByDate(fundVersion.getId(), 999, LocalDateTime.now(), lastChangeId, null);
+        Assert.notNull(changesByDate);
+        Assert.notNull(changesByDate.getChanges());
+        Assert.isTrue(changesByDate.getTotalCount().equals(changesByDate.getChanges().size()) && changesByDate.getChanges().size() == 26);
+        Assert.isTrue(!changesByDate.getOutdated());
+
+        // obdoba revertChanges s fail očekáváním
+        httpMethod(spec -> spec.pathParam("fundVersionId", fundVersion.getId())
+                        .queryParameter("fromChangeId", lastChangeId)
+                        .queryParameter("toChangeId", firstChangeId),
+                REVERT_CHANGES, HttpMethod.GET, HttpStatus.INTERNAL_SERVER_ERROR);
+
+        final Integer secondChangeId = changesAll.getChanges().get(changesAll.getChanges().size() - 2).getChangeId();
+        revertChanges(fundVersion.getId(), lastChangeId, secondChangeId, null);
 
     }
 

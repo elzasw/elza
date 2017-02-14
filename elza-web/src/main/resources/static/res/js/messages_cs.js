@@ -627,6 +627,8 @@ var messages = {
     "arr.history.change.title.CREATE_AS": "vytvoření AS",
     "arr.history.change.title.ADD_NODES_OUTPUT": "připojení JP k výstupu",
     "arr.history.change.title.REMOVE_NODES_OUTPUT": "odpojení JP od výstupu",
+    "arr.history.change.title.CREATE_DAO_LINK": "připojení DAO k JP",
+    "arr.history.change.title.DELETE_DAO_LINK": "odpojení DAO od JP",
     "arr.history.change.title.ADD_LEVEL": "založení JP",
     "arr.history.change.title.MOVE_LEVEL": "přesun JP",
     "arr.history.change.title.DELETE_LEVEL": "zrušení JP",

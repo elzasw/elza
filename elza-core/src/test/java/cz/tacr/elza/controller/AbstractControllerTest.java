@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -17,6 +19,7 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.service.vo.ChangesResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
@@ -218,6 +221,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String FUND_POLICY = ARRANGEMENT_CONTROLLER_URL + "/fund/policy/{fundVersionId}";
     protected static final String VALIDATION = ARRANGEMENT_CONTROLLER_URL + "/validation/{fundVersionId}/{fromIndex}/{toIndex}";
     protected static final String VALIDATION_ERROR = ARRANGEMENT_CONTROLLER_URL + "/validation/{fundVersionId}/find/{nodeId}/{direction}";
+    protected static final String FIND_CHANGE = ARRANGEMENT_CONTROLLER_URL + "/changes/{fundVersionId}";
+    protected static final String FIND_CHANGE_BY_DATE = ARRANGEMENT_CONTROLLER_URL + "/changes/{fundVersionId}/date";
+    protected static final String REVERT_CHANGES = ARRANGEMENT_CONTROLLER_URL + "/changes/{fundVersionId}/revert";
 
     // Party
     protected static final String CREATE_RELATIONS = PARTY_CONTROLLER_URL + "/relation";
@@ -296,6 +302,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected final static String JOIN_GROUP = USER_CONTROLLER_URL + "/group/join";
     protected final static String LEAVE_GROUP = USER_CONTROLLER_URL + "/group/{groupId}/leave/{userId}";
     protected final static String CHANGE_USER_PERMISSION = USER_CONTROLLER_URL + "/{userId}/permission";
+
+    protected final static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.00");
 
     @Value("${local.server.port}")
     private int port;
@@ -2881,5 +2889,66 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected void deleteExternalSystem(final SysExternalSystemVO externalSystemVO) {
         delete(spec -> spec.pathParam("externalSystemId", externalSystemVO.getId()), DELETE_EXTERNAL_SYSTEM);
+    }
+
+    /**
+     * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param maxSize       maximální počet záznamů
+     * @param offset        počet přeskočených záznamů
+     * @param changeId      identifikátor změny, vůči které chceme počítat offset (pokud není vyplněn, bere se vždy poslední)
+     * @param nodeId        identifikátor JP u které vyhledáváme změny (pokud není vyplněn, vyhledává se přes celý AS)
+     * @return výsledek hledání
+     */
+    protected ChangesResult findChanges(final Integer fundVersionId, final Integer maxSize,
+                                        final Integer offset,
+                                        final Integer changeId,
+                                        final Integer nodeId) {
+        return get(spec -> spec.pathParam("fundVersionId", fundVersionId)
+                        .queryParameter("maxSize", maxSize)
+                        .queryParameter("offset", offset)
+                        .queryParameter("changeId", changeId)
+                        .queryParameter("nodeId", nodeId), FIND_CHANGE).as(ChangesResult.class);
+    }
+
+    /**
+     * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param maxSize       maximální počet záznamů
+     * @param fromDate      datum vůči kterému vyhledávám v seznamu (př. formátu query parametru: 2016-11-07T10:32:04)
+     * @param changeId      identifikátor změny, vůči které chceme počítat offset (pokud není vyplněn, bere se vždy poslední)
+     * @param nodeId        identifikátor JP u které vyhledáváme změny (pokud není vyplně, vyhledává se přes celý AS)
+     * @return výsledek hledání
+     */
+    protected ChangesResult findChangesByDate(final Integer fundVersionId,
+                                              final Integer maxSize,
+                                              final LocalDateTime fromDate,
+                                              final Integer changeId,
+                                              final Integer nodeId) {
+        return get(spec -> spec.pathParam("fundVersionId", fundVersionId)
+                        .queryParameter("maxSize", maxSize)
+                        .queryParameter("fromDate", fromDate.format(FORMATTER))
+                        .queryParameter("changeId", changeId)
+                        .queryParameter("nodeId", nodeId), FIND_CHANGE_BY_DATE).as(ChangesResult.class);
+    }
+
+    /**
+     * Provede revertování AS / JP k požadovanému stavu.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param fromChangeId  identifikátor změny, vůči které provádíme revertování (od)
+     * @param toChangeId    identifikátor změny, ke které provádíme revertování (do)
+     * @param nodeId        identifikátor JP u které provádíme změny (pokud není vyplněn, revertuje se přes celý AS)
+     */
+    public void revertChanges(final Integer fundVersionId,
+                              final Integer fromChangeId,
+                              final Integer toChangeId,
+                              final Integer nodeId) {
+        get(spec -> spec.pathParam("fundVersionId", fundVersionId)
+                        .queryParameter("fromChangeId", fromChangeId)
+                        .queryParameter("toChangeId", toChangeId)
+                        .queryParameter("nodeId", nodeId), REVERT_CHANGES);
     }
 }
