@@ -155,6 +155,8 @@ var messages = {
     "exception.reg.SCOPE_EXISTS": "Kod třídy rejstříku již existuje",
     "exception.reg.SCOPE_CODE_CANT_CHANGE": "Třídě rejstříku nelze změnít kód",
     "exception.reg.PARTY_NOT_EXIST": "Osoba neexistuje",
+    "exception.reg.FOREIGN_ENTITY_INVALID_SUBTYPE": "Navázaná entita musí mít typ rejstříku nebo podtyp, který je navázaný na roli entity",
+    "exception.reg.FOREIGN_ENTITY_INVALID_SCOPE": "Navázaná entita musí mít stejnou třídu rejstříkového hesla jako osoba, ke které entitu navazujeme",
 
     "exception.usr.USER_DELETE_ERROR": "Osobu nelze smazat, kvůli navázaným uživatelům",
     "exception.usr.USER_NOT_FOUND": "Uživatel s ID={id} neexistuje",

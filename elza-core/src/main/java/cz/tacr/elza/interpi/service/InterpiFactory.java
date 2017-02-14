@@ -641,7 +641,7 @@ public class InterpiFactory {
             }
             String interpiRelationType = udalostTypA.value();
 
-            if (CollectionUtils.isEmpty(souvisejiciEntitaList)) {
+            if (CollectionUtils.isEmpty(souvisejiciEntitaList)  ) {
                 MappingVO mappingVO = findRelationMapping(mappings, interpiClass, interpiRelationType, null, null);
                 if (mappingVO == null) {
                     throw new IllegalStateException("Pro vztah " + interpiRelationType + " nebylo nalezeno mapování.");

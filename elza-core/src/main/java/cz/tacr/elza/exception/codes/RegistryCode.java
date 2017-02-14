@@ -112,6 +112,16 @@ public enum RegistryCode implements ErrorCode {
     PARTY_NOT_EXIST,
 
     /**
+     * Navázaná entita musí mít stejnou třídu rejstříkového hesla jako osoba, ke které entitu navazujeme.
+     */
+    FOREIGN_ENTITY_INVALID_SCOPE,
+
+    /**
+     * Navázaná entita musí mít typ rejstříku nebo podtyp, který je navázaný na roli entity.
+     */
+    FOREIGN_ENTITY_INVALID_SUBTYPE,
+
+    /**
      * Typ hesla musí mít vazbu na typ osoby.
      */
     REGISTRY_HAS_NOT_TYPE_PARTY

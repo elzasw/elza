@@ -237,15 +237,7 @@ class ExtImportForm extends AbstractReactComponent {
                         record={record}
                         isUpdate={update}
                         onSubmit={(data) => {
-
-                            importVO.mappings = data.mappings.filter((mapping) => mapping.importRelation).map(i => {
-                                return {
-                                    ...i,
-                                    entities: i.entities.filter(n => n.importEntity)
-                                }
-                            });
-
-                            return send(importVO, update, recordId);
+                            return send({...importVO, ...data}, update, recordId);
                         }
                     } />, "dialog-lg"));
                 } else {

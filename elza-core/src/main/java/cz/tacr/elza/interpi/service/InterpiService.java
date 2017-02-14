@@ -357,7 +357,7 @@ public class InterpiService {
                     }
 
                     String interpiKey = createInterpiKey(relationMappingVO, entityMappingVO);
-                    if ((relationMappingVO.getSave() || entityMappingVO.getSave()) && (relationMappingVO.getImportRelation() || entityMappingVO.getImportEntity()) &&
+                    if (relationMappingVO.getSave() && entityMappingVO.getSave() && relationMappingVO.getImportRelation() && entityMappingVO.getImportEntity() &&
                             !interpiKeys.contains(interpiKey)) {
                         String key = createMappingKey(relationMappingVO, entityMappingVO);
                         ParInterpiMapping interpiMapping = createParInterpiMapping(relationMappingVO, entityMappingVO);
@@ -474,7 +474,9 @@ public class InterpiService {
 
         if (entityMappingVO != null) {
             mappingVO.setInterpiRoleType(entityMappingVO.getInterpiRoleType());
-            mappingVO.setParRelationRoleType(relationRoleTypeRepository.findOne(entityMappingVO.getRelationRoleTypeId()));
+            if (entityMappingVO.getImportEntity()) {
+                mappingVO.setParRelationRoleType(relationRoleTypeRepository.findOne(entityMappingVO.getRelationRoleTypeId()));
+            }
             mappingVO.setImportRelation(entityMappingVO.getImportEntity());
             mappingVO.setInterpiId(entityMappingVO.getInterpiId());
         } else {
