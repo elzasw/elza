@@ -227,8 +227,7 @@ class AddPartyForm extends AbstractReactComponent {
                 reject(errors)
             } else {
                 const {partyTypeId} = this.props;
-                this.props.onSubmitForm(store, {...values, partyTypeId});
-                resolve()
+                return this.props.onSubmitForm(store, {...values, partyTypeId})
             }
         })
     };

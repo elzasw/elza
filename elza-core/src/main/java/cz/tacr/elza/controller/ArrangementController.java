@@ -1028,11 +1028,11 @@ public class ArrangementController {
      */
     @RequestMapping(value = "/getFund/{fundId}", method = RequestMethod.GET)
     public ArrFundVO getFund(@PathVariable("fundId") final Integer fundId) {
-
         ArrFund fund = fundRepository.findOne(fundId);
-        ArrFundVO fundVO = factoryVo.createFundVO(fund, true);
-
-        return fundVO;
+        if (fund == null) {
+            throw new ObjectNotFoundException("AS s ID=" + fundId + " nebyl nalezen", ArrangementCode.FUND_NOT_FOUND).set("id", fundId);
+        }
+        return factoryVo.createFundVO(fund, true);
     }
 
     /**

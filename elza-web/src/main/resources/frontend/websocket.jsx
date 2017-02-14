@@ -268,7 +268,7 @@ function processEvents(values) {
                 partyDelete(value);
                 break;
 
-            case 'PARTY_CREATE':
+            case 'PARTIES_CREATE':
                 partyCreate(value);
                 break;
             case 'PARTY_UPDATE':
@@ -605,7 +605,7 @@ function partyUpdate(value){
 }
 
 function partyCreate(value){
-    store.dispatch(changePartyCreate(value.ids[0]));
+    store.dispatch(changePartyCreate(value.ids));
 }
 
 function partyDelete(value){

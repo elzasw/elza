@@ -157,12 +157,12 @@ export function changeParty(partyId) {
     }
 }
 
-export function changePartyCreate(partyId) {
+export function changePartyCreate(partyIds) {
     return (dispatch, getState) => {
         dispatch(partyListInvalidate());
         dispatch({
             type: types.PARTY_CREATED,
-            partyId: partyId
+            partyIds: partyIds
         })
     };
 }

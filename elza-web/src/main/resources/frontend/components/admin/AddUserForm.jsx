@@ -58,7 +58,7 @@ class AddUserForm extends AbstractReactComponent {
     };
 
     render() {
-        const {fields: {username, password, passwordAgain, party}, create, handleSubmit, onClose} = this.props;
+        const {fields: {username, password, passwordAgain, party}, create, handleSubmit, onClose, submitting} = this.props;
 
         const submitForm = submitReduxForm.bind(this, AddUserForm.validate);
 
@@ -71,7 +71,7 @@ class AddUserForm extends AbstractReactComponent {
 
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit" onClick={handleSubmit(submitForm)}>{i18n(create ? 'global.action.create' : 'global.action.update')}</Button>
+                    <Button type="submit" onClick={handleSubmit(submitForm)} disabled={submitting}>{i18n(create ? 'global.action.create' : 'global.action.update')}</Button>
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
         </Form>

@@ -264,6 +264,11 @@ public class RevertingChangesService {
         updateEntityQuery.executeUpdate();
         deleteEntityQuery.executeUpdate();
 
+        updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_dao_link", toChange);
+        deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_dao_link", toChange);
+        updateEntityQuery.executeUpdate();
+        deleteEntityQuery.executeUpdate();
+
         updateEntityQuery = createExtendUpdateEntityQuery(fund, node, "deleteChange", "arr_desc_item", "arr_item", toChange);
         updateEntityQuery.executeUpdate();
 
@@ -564,6 +569,8 @@ public class RevertingChangesService {
                 {"arr_bulk_action_node", "node"},
                 {"arr_desc_item", "node"},
                 {"arr_change", "primaryNode"},
+                {"arr_dao_link", "node"},
+                {"arr_digitization_request_node", "node"},
         };
 
         return Arrays.asList(configUnionTables);
@@ -586,7 +593,13 @@ public class RevertingChangesService {
                 {"arr_output", "lockChange"},
                 {"arr_node_output", "createChange"},
                 {"arr_node_output", "deleteChange"},
-                {"arr_output_result", "change"}
+                {"arr_output_result", "change"},
+
+                {"arr_dao_link", "createChange"},
+                {"arr_dao_link", "deleteChange"},
+
+                {"arr_request_queue_item", "createChange"},
+                {"arr_request", "createChange"},
         };
 
         List<String[]> changeTables = Arrays.asList(configUnionTables);
@@ -1001,6 +1014,10 @@ public class RevertingChangesService {
                 "      SELECT create_change_id, node_id, 1 AS weight FROM arr_node_output WHERE node_id IN (%2$s)\n" +
                 "      UNION ALL\n" +
                 "      SELECT delete_change_id, node_id, 1 AS weight FROM arr_node_output WHERE node_id IN (%2$s)\n" +
+                "      UNION ALL\n" +
+                "      SELECT create_change_id, node_id, 1 AS weight FROM arr_dao_link WHERE node_id IN (%2$s)\n" +
+                "      UNION ALL\n" +
+                "      SELECT delete_change_id, node_id, 1 AS weight FROM arr_dao_link WHERE node_id IN (%2$s)\n" +
                 "      UNION ALL\n" +
                 "      SELECT change_id, null, 0 AS weight FROM arr_bulk_action_run r JOIN arr_fund_version v ON r.fund_version_id = v.fund_version_id WHERE v.fund_id = :fundId AND r.state = '" + ArrBulkActionRun.State.FINISHED + "'\n" +
 //                "    ) chlx ORDER BY change_id DESC\n" +

@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import javax.xml.bind.JAXBException;
 
+import cz.tacr.elza.service.eventnotification.events.ActionEvent;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
@@ -927,6 +928,7 @@ public class XmlImportService {
             }
         }
 
+        eventNotificationService.publishEvent(new ActionEvent(EventType.INSTITUTION_CHANGE));
         return xmlIdIntIdPartyMap;
     }
 
@@ -1046,7 +1048,7 @@ public class XmlImportService {
         }
 
         ParInstitution parInstitution = partyService.createInstitution(institution.getInternalCode(), parInstitutionType, parParty);
-        partyService.saveInstitution(parInstitution);
+        partyService.saveInstitution(parInstitution, false);
     }
 
     private void importEvents(final List<Relation> events, final ParParty parParty, final boolean stopOnError, final Map<String, RegRecord> xmlIdIntIdRecordMap)

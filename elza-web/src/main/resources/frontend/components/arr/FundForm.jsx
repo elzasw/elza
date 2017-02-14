@@ -57,7 +57,7 @@ class FundForm extends AbstractReactComponent {
      */
     isBulkActionRunning = () => {
         let result = false;
-        this.props.bulkActions.states.forEach((item) => {
+        this.props.bulkActions && this.props.bulkActions.states.forEach((item) => {
             if (item.state !== 'ERROR' && item.state !== 'FINISH') {
                 result = true;
             }
@@ -86,7 +86,7 @@ class FundForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: {name, ruleSetId, regScopes, institutionId, internalCode, dateRange}, handleSubmit, onClose, create, update, approve, ruleSet, refTables} = this.props;
+        const {fields: {name, ruleSetId, regScopes, institutionId, internalCode, dateRange}, handleSubmit, onClose, create, update, approve, ruleSet, refTables, submitting} = this.props;
 
         const submitForm = submitReduxForm.bind(this, FundForm.validate);
 
@@ -95,7 +95,7 @@ class FundForm extends AbstractReactComponent {
             if (this.isBulkActionRunning()) {
                 approveButton = <span className="text-danger">{i18n('arr.fund.approveVersion.runningBulkAction')}</span>;
             } else {
-                approveButton = <Button type="submit" onClick={handleSubmit(submitForm)}>{i18n('arr.fund.approveVersion.approve')}</Button>
+                approveButton = <Button type="submit" onClick={handleSubmit(submitForm)} disabled={submitting}>{i18n('arr.fund.approveVersion.approve')}</Button>
             }
         }
         const ruleSets = refTables.ruleSet.items;
@@ -159,9 +159,9 @@ class FundForm extends AbstractReactComponent {
                 </div>}
             </Modal.Body>
             <Modal.Footer>
-                {create && <Button type="submit" onClick={handleSubmit(submitForm)}>{i18n('global.action.create')}</Button>}
+                {create && <Button type="submit" onClick={handleSubmit(submitForm)} disabled={submitting}>{i18n('global.action.create')}</Button>}
                 {approve && approveButton}
-                {(update || ruleSet) && <Button type="submit" onClick={handleSubmit(submitForm)}>{i18n('global.action.update')}</Button>}
+                {(update || ruleSet) && <Button type="submit" onClick={handleSubmit(submitForm)} disabled={submitting}>{i18n('global.action.update')}</Button>}
                 <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
         </Form>

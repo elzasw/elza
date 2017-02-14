@@ -45,7 +45,7 @@ class EditRegistryForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: { record, characteristics, registerTypeId}, handleSubmit, onClose, initData, registryRegionRecordTypes, parentRecordId} = this.props;
+        const {fields: { record, characteristics, registerTypeId}, handleSubmit, onClose, initData, registryRegionRecordTypes, parentRecordId, submitting} = this.props;
 
         const submitForm = handleSubmit(submitReduxForm.bind(this, EditRegistryForm.validate));
         const items = registryRegionRecordTypes.item != null ? registryRegionRecordTypes.item : [];
@@ -72,7 +72,7 @@ class EditRegistryForm extends AbstractReactComponent {
                 <FormInput componentClass="textarea" label={i18n('registry.characteristics')} {...characteristics} {...decorateFormField(characteristics)}/>
             </Modal.Body>
             <Modal.Footer>
-                <Button type="submit" onClick={submitForm}>{i18n('global.action.store')}</Button>
+                <Button type="submit" onClick={submitForm} disabled={submitting}>{i18n('global.action.store')}</Button>
                 <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
         </Form>

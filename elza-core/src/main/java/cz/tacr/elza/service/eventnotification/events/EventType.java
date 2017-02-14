@@ -28,6 +28,7 @@ public enum EventType {
     DELETE_LEVEL(EventDeleteNode.class),
 
     PARTY_CREATE(EventId.class),
+    PARTIES_CREATE(EventId.class),
     PARTY_DELETE(EventId.class),
     PARTY_UPDATE(EventId.class),
 

@@ -128,4 +128,19 @@ public class Change {
     public void setUsername(final String username) {
         this.username = username;
     }
+
+    @Override
+    public String toString() {
+        return "Change{" +
+                "changeId=" + changeId +
+                ", changeDate=" + changeDate +
+                ", userId=" + userId +
+                ", username='" + username + '\'' +
+                ", type=" + type +
+                ", primaryNodeId=" + primaryNodeId +
+                ", nodeChanges=" + nodeChanges +
+                ", label='" + label + '\'' +
+                ", revert=" + revert +
+                '}';
+    }
 }

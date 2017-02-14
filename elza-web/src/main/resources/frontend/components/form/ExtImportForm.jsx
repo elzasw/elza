@@ -215,7 +215,13 @@ class ExtImportForm extends AbstractReactComponent {
 
             promise.then(e => {
                 this.dispatch(modalDialogHide());
-                this.dispatch(addToastrSuccess(i18n("extImport.done.title"), i18n(update ? "extImport.done.messageImport" : "extImport.done.messageUpdate")));
+                let msg;
+                if (isParty) {
+                    msg = update ? "extImport.done.party.messageImport" : "extImport.done.party.messageUpdate";
+                } else {
+                    msg = update ? "extImport.done.record.messageImport" : "extImport.done.record.messageUpdate";
+                }
+                this.dispatch(addToastrSuccess(i18n("extImport.done.title"), i18n(msg)));
                 this.props.onSubmitForm && this.props.onSubmitForm(e);
             });
 
@@ -224,24 +230,20 @@ class ExtImportForm extends AbstractReactComponent {
 
         if (importVO.originator) {
             return WebApi.findInterpiRecordRelations(importVO.interpiRecordId, relationsVO).then(mapping => {
-                this.dispatch(modalDialogHide());
-                this.dispatch(modalDialogShow(this, i18n('extMapperForm.title'), <ExtMapperForm
-                    initialValues={mapping}
-                    record={record}
-                    isUpdate={update}
-                    onSubmit={(data) => {
-
-                        importVO.mappings = [];
-
-                        data.mappings.forEach((mapping) => {
-                            if (mapping.importRelation) {
-                                importVO.mappings.push(mapping);
-                            }
-                        });
-
-                        return send(importVO, update, recordId);
-                    }
-                } />, "dialog-lg"));
+                if (mapping != null && mapping.mappings != null && mapping.mappings.length > 0) {
+                    this.dispatch(modalDialogHide());
+                    this.dispatch(modalDialogShow(this, i18n('extMapperForm.title'), <ExtMapperForm
+                        initialValues={mapping}
+                        record={record}
+                        isUpdate={update}
+                        onSubmit={(data) => {
+                            return send({...importVO, ...data}, update, recordId);
+                        }
+                    } />, "dialog-lg"));
+                } else {
+                    // pokud osoba neobsahuje žádné vztahy a je importována jako původce, rovnou se naimportuje
+                    return send(importVO, update, recordId);
+                }
             });
         } else {
             return send(importVO, update, recordId);

@@ -1,4 +1,3 @@
-
 /**
  * Utility pro formuláře s inplace editací.
  */
@@ -26,25 +25,20 @@ export function decorateFormField(field, inline = false) {
     }
 }
 
+/**
+ * @deprecated user submitForm()
+ */
 export function submitReduxForm(validate, values, dispatch) {
-    return new Promise((resolve, reject) => {
-        var errors = validate(values, this.props)
-        if (Object.keys(errors).length > 0) {
-            reject(errors)
-        } else {
-            this.props.onSubmitForm(values)
-            resolve()
-        }
-    })
+    return submitForm.bind(this)(validate, values);
 }
 
 export function submitForm(validate, values) {
     return new Promise((resolve, reject) => {
-        var errors = validate(values, this.props)
+        var errors = validate(values, this.props);
         if (Object.keys(errors).length > 0) {
-            reject(errors)
+            reject(errors);
         } else {
-            this.props.onSubmitForm(values).then(resolve).catch(reject)
+            return this.props.onSubmitForm(values);
         }
     })
 }

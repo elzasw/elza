@@ -44,7 +44,7 @@ class PasswordForm extends AbstractReactComponent {
     state = {};
 
     render() {
-        const {fields: {oldPassword, password, passwordAgain}, handleSubmit, onClose, admin} = this.props;
+        const {fields: {oldPassword, password, passwordAgain}, handleSubmit, onClose, admin, submitting} = this.props;
 
         const submitForm = submitReduxForm.bind(this, PasswordForm.validate);
 
@@ -55,7 +55,7 @@ class PasswordForm extends AbstractReactComponent {
                 {!admin && <FormInput label={i18n('admin.user.passwordAgain')} autoComplete="off" type="password" {...passwordAgain} />}
             </Modal.Body>
             <Modal.Footer>
-                <Button type="submit" onClick={handleSubmit(submitForm)}>{i18n('global.action.update')}</Button>
+                <Button type="submit" onClick={handleSubmit(submitForm)} disabled={submitting}>{i18n('global.action.update')}</Button>
                 <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
         </Form>

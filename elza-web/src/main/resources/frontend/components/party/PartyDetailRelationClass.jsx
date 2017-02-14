@@ -82,7 +82,7 @@ class PartyDetailRelations extends AbstractReactComponent {
     };
 
     handleRelationUpdate = (relation) => {
-        const {label, party, registerTypes} = this.props;
+        const {label, party, registerTypesMap} = this.props;
         const {allowedRelationTypesMap} = this.state;
         const relationType = allowedRelationTypesMap[relation.relationTypeId];
         this.dispatch(modalDialogShow(this, label, <RelationForm registerTypesMap={registerTypesMap} partyId={party.id} relationType={relationType} initialValues={relation} onSubmitForm={this.update.bind(this, relation)} />, "dialog-lg"));

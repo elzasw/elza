@@ -201,15 +201,15 @@ class RegistryDetail extends AbstractReactComponent {
         const {registryDetail} = this.props;
         const {data, fetched, isFetching, id} = registryDetail;
 
-        if (!fetched || (id && !data)) {
-            return <Loading />
-        }
-
         if (!id) {
             return <div className="unselected-msg">
                 <div className="title">{i18n('registry.noSelection.title')}</div>
                 <div className="msg-text">{i18n('registry.noSelection.message')}</div>
             </div>;
+        }
+
+        if (!fetched || (id && !data)) {
+            return <Loading />
         }
 
         const disableEdit = !this.canEdit();

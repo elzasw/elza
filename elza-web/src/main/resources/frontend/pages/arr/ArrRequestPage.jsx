@@ -312,7 +312,7 @@ const ArrRequestPage = class extends ArrParentPage {
     }
 
     hasPageShowRights(userDetail, activeFund) {
-        return userDetail.hasArrOutputPage(activeFund ? activeFund.id : null);
+        return userDetail.hasArrPage(activeFund ? activeFund.id : null);
     }
 };
 

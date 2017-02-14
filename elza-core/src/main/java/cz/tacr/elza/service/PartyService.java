@@ -15,7 +15,10 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.RegistryCode;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -871,8 +874,11 @@ public class PartyService {
         //navázaná entita stejné scope jako osoba sama
         RegScope entityScope = relationEntity.getRecord().getScope();
         if (!relationEntity.getRelation().getParty().getRecord().getScope().equals(entityScope)) {
-            throw new SystemException(
-                    "Navázaná entita musí mít stejnou třídu rejstříkového hesla jako osoba, ke které entitu navazujeme.");
+            throw new BusinessException(
+                    "Navázaná entita musí mít stejnou třídu rejstříkového hesla jako osoba, ke které entitu navazujeme.",
+                    RegistryCode.FOREIGN_ENTITY_INVALID_SCOPE).level(Level.WARNING)
+                    .set("recordScope", entityScope.getCode())
+                    .set("entityScope", relationEntity.getRelation().getParty().getRecord().getScope().getCode());
     }
 
         //navázaná entita povoleného typu rejstříku dle par_registry_role (mělo by to ideálně i dědit)
@@ -881,8 +887,11 @@ public class PartyService {
                 .stream().map(RegRegisterType::getRegisterTypeId).collect(Collectors.toSet());
         registerTypeIds = registerTypeRepository.findSubtreeIds(registerTypeIds);
         if (!registerTypeIds.contains(entityRegisterType.getRegisterTypeId())) {
-            throw new SystemException(
-                    "Navázaná entita musí mít typ rejstříku nebo podtyp, který je navázaný na roli entity.");
+            throw new BusinessException(
+                    "Navázaná entita musí mít typ rejstříku nebo podtyp, který je navázaný na roli entity.",
+                    RegistryCode.FOREIGN_ENTITY_INVALID_SUBTYPE).level(Level.WARNING)
+                    .set("entityRegisterType", entityRegisterType.getCode())
+                    .set("roleType", roleType.getCode());
         }
 
     }
@@ -948,9 +957,11 @@ public class PartyService {
      *
      * @return uložená instituce
      */
-    public ParInstitution saveInstitution(final ParInstitution institution) {
+    public ParInstitution saveInstitution(final ParInstitution institution, final boolean notification) {
         Assert.notNull(institution);
-        eventNotificationService.publishEvent(new ActionEvent(EventType.INSTITUTION_CHANGE));
+        if (notification) {
+            eventNotificationService.publishEvent(new ActionEvent(EventType.INSTITUTION_CHANGE));
+        }
         return institutionRepository.save(institution);
     }
 
