@@ -948,9 +948,11 @@ public class PartyService {
      *
      * @return uložená instituce
      */
-    public ParInstitution saveInstitution(final ParInstitution institution) {
+    public ParInstitution saveInstitution(final ParInstitution institution, final boolean notification) {
         Assert.notNull(institution);
-        eventNotificationService.publishEvent(new ActionEvent(EventType.INSTITUTION_CHANGE));
+        if (notification) {
+            eventNotificationService.publishEvent(new ActionEvent(EventType.INSTITUTION_CHANGE));
+        }
         return institutionRepository.save(institution);
     }
 
