@@ -12,8 +12,11 @@ import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
 import cz.tacr.elza.exception.Level;
+import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.RegistryCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -175,6 +178,9 @@ public class PartyController {
     public ParPartyVO getParty(@PathVariable final Integer partyId) {
         Assert.notNull(partyId);
         ParParty party = partyService.getParty(partyId);
+        if (party == null) {
+            throw new ObjectNotFoundException("Osoba s ID=" + partyId + " nebyla nalezena", RegistryCode.PARTY_NOT_EXIST).set("id", partyId);
+        }
         return factoryVo.createParPartyDetail(party);
     }
 
