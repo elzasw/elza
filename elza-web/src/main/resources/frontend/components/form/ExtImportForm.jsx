@@ -230,23 +230,28 @@ class ExtImportForm extends AbstractReactComponent {
 
         if (importVO.originator) {
             return WebApi.findInterpiRecordRelations(importVO.interpiRecordId, relationsVO).then(mapping => {
-                this.dispatch(modalDialogHide());
-                this.dispatch(modalDialogShow(this, i18n('extMapperForm.title'), <ExtMapperForm
-                    initialValues={mapping}
-                    record={record}
-                    isUpdate={update}
-                    onSubmit={(data) => {
+                if (mapping != null && mapping.mappings != null && mapping.mappings.length > 0) {
+                    this.dispatch(modalDialogHide());
+                    this.dispatch(modalDialogShow(this, i18n('extMapperForm.title'), <ExtMapperForm
+                        initialValues={mapping}
+                        record={record}
+                        isUpdate={update}
+                        onSubmit={(data) => {
 
-                        importVO.mappings = data.mappings.filter((mapping) => mapping.importRelation).map(i => {
-                            return {
-                                ...i,
-                                entities: i.entities.filter(n => n.importEntity)
-                            }
-                        });
+                            importVO.mappings = data.mappings.filter((mapping) => mapping.importRelation).map(i => {
+                                return {
+                                    ...i,
+                                    entities: i.entities.filter(n => n.importEntity)
+                                }
+                            });
 
-                        return send(importVO, update, recordId);
-                    }
-                } />, "dialog-lg"));
+                            return send(importVO, update, recordId);
+                        }
+                    } />, "dialog-lg"));
+                } else {
+                    // pokud osoba neobsahuje žádné vztahy a je importována jako původce, rovnou se naimportuje
+                    return send(importVO, update, recordId);
+                }
             });
         } else {
             return send(importVO, update, recordId);
