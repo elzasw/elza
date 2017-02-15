@@ -149,7 +149,6 @@ class ArrPage extends ArrParentPage {
             this.setState({fundNodesError: null});
         }
         this.registerTabs(nextProps);
-        console.log(this.state);
         this.trySetFocus(nextProps);
     }
     wrappedFocus = (ref) => {
@@ -269,27 +268,29 @@ class ArrPage extends ArrParentPage {
     }
     /**
      *   getTabs
+     *   Vrátí objekt obsahující identifikátor vybrané záložky a objekt obsahující objekty záložek.
+     *
      *   @param tabs {Object} - Objekt obsahující vlastnosti záložek
      *   @param settingsValues {Object} - objekt s nastavením
      *   @param selectedTab {String} - id/key záložky
-     *   @param ignoreSettings {Bool} - určuje, zda se bere v potaz nastavení. Při použití false vypíše všechny možné hodnoty splňující podmínku záložky.
-     *
-     *   Vrátí objekt obsahující identifikátor vybrané záložky a objekt obsahující objekty záložek.
+     *   @param ignoreSettings {Bool} - určuje, zda se bere v potaz nastavení. Při použití false vypíše všechny možné hodnoty splňující podmínku záložky.(určeno pro změnu nastavení)
      */
     getTabs = (tabs,settingsValues,selectedTab = null,ignoreSettings = false) => {
         var items = [];
         for(var tab in tabs){
-            var condition = tabs[tab].condition;
-            if(ignoreSettings || tabs[tab].notFromSettings || settingsValues === null || settingsValues[tabs[tab].id]){
-                if(typeof condition === "undefined" || condition){
-                    var checked = settingsValues && settingsValues[tab] !== undefined ? settingsValues[tab] : true;
-                    tabs[tab].checked = checked;
-                    items.push(tabs[tab]);
-                    selectedTab = this.selectIfNull(selectedTab, tabs[tab].id);
+            var tabCondition = typeof tabs[tab].condition === "undefined" || tabs[tab].condition; //Pokud podmínka není definována nebo je splněna
+            var tabSettings = ignoreSettings || settingsValues === null || settingsValues[tabs[tab].id]; //Pokud se má nastavení ignorovat, neexistuje nebo je záložka zapnuta
+            var showTabCondition = typeof tabs[tab].showCondition === "undefined" || tabs[tab].showCondition || ignoreSettings; //Pokud podmínka pro zobrazení není definována, je splněna, nebo se má ignorovat nastavení
+
+            if(tabSettings && tabCondition){
+                if(showTabCondition){
+                        var checked = settingsValues && settingsValues[tab] !== undefined ? settingsValues[tab] : true;
+                        tabs[tab].checked = checked;
+                        items.push(tabs[tab]);
+                        selectedTab = this.selectIfNull(selectedTab, tabs[tab].id);
                 }
             }
         }
-        console.log(selectedTab);
         return {items: items,selectedTab: selectedTab};
     }
     handleChangeFundSettings() {
@@ -590,7 +591,12 @@ class ArrPage extends ArrParentPage {
 
     renderDeveloperDescItems(activeFund, node) {
         var rows = []
-        if (node.subNodeForm.fetched) {
+        if(!node){
+            return <div className='developer-panel'>
+                Je potřeba vybrat jednotku popisu.
+            </div>
+        }
+        else if(node.subNodeForm.fetched) {
             node.subNodeForm.infoGroups.forEach(group => {
                 var types = []
                 group.types.forEach(type => {
@@ -655,6 +661,11 @@ class ArrPage extends ArrParentPage {
     }
 
     renderDeveloperScenarios(activeFund, node) {
+        if(!node){
+            return <div className='developer-panel'>
+                Je potřeba vybrat jednotku popisu.
+            </div>
+        }
         if (node.developerScenarios.isFetching) {
             return <Loading />
         }
@@ -727,10 +738,10 @@ class ArrPage extends ArrParentPage {
     }
     /**
      *   selectIfNull
+     *   Pokud není definována vybraná záložka, vrátí druhou předanou, pokud ne, vrátí zpět původní.
+     *
      *   @param selectedTab {String} - id/key záložky
      *   @param tabId {String}- záložka k vybrání
-     *
-     *   Pokud není definována vybraná záložka, vrátí druhou předanou, pokud ne, vrátí zpět původní.
      */
     selectIfNull = (selectedTab,tabId) => {
         if (!selectedTab) {
@@ -741,10 +752,10 @@ class ArrPage extends ArrParentPage {
     }
     /**
     *   checkTabEnabled
+    *   Zjišťuje, zda je vybraná záložka povolená. Pokud ano, vrátí jí zpátky, pokud ne, vrátí null.
+    *
     *   @param selectedTab {String} - id/key záložky
     *   @param settingsValues {Object}- hodnoty nastavení
-    *
-    *   Zjišťuje, zda je vybraná záložka povolená. Pokud ano, vrátí jí zpátky, pokud ne, vrátí null.
     */
     checkTabEnabled = (selectedTab, settingsValues) => {
         if(selectedTab){
@@ -758,14 +769,13 @@ class ArrPage extends ArrParentPage {
     }
     /**
     *   registerTabs
-    *   @param props {Object}
-    *
     *   Funkce pro definici záložek pravého panelu. Záložky se uloží do state.
+    *
+    *   @param props {Object}
     */
     registerTabs = (props) => {
         const {developer, arrRegion, userDetail} = props;
         var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
-
         var node;
         if (activeFund.nodes && activeFund.nodes.activeIndex !== null) {
             node = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
@@ -823,21 +833,16 @@ class ArrPage extends ArrParentPage {
                         key: "descItems" ,
                         name: i18n('developer.title.descItems'),
                         render:() => this.renderDeveloperDescItems(activeFund, node),
-                        condition: developer.enabled && node
+                        condition: developer.enabled,
+                        showCondition: node ? true : false
                     },
                     "scenarios":{
                         id: "scenarios" ,
                         key: "scenarios" ,
                         name: i18n('developer.title.scenarios'),
                         render:() => this.renderDeveloperScenarios(activeFund, node),
-                        condition: developer.enabled && node
-                    },
-                    "someNewTab":{
-                        id: "someNewTab",
-                        key: "someNewTab",
-                        ref: "fundErrors",
-                        name: "Some New Tab",
-                        render:() => this.renderFundErrors(activeFund)
+                        condition: developer.enabled,
+                        showCondition: node ? true : false
                     }
         };
         this.setState({tabs:tabs});
