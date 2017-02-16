@@ -1117,6 +1117,8 @@ var messages = {
     "arr.request.title.type.DIGITIZATION": "Požadavek na digitalizaci",
     "arr.request.title.type.DAO": "Požadavek na skartaci/dalimitaci",
     "arr.request.title.type.DAO_LINK": "Požadavek na připojení k/odpojení od JP",
+    "arr.request.title.type.DAO_LINK.LINK": "Připojení k",
+    "arr.request.title.type.DAO_LINK.UNLINK": "Odpojení od",
     "requestQueue.title.requestQueue": "Požadavky ve frontě",
     "requestQueue.title.create": "Vytvořeno",
     "requestQueue.title.attemptToSend": "Poslední pokud o odeslání",

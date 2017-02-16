@@ -237,10 +237,9 @@ public class DaoService {
             eventNotificationService.publishEvent(event);
 
             // vytvořit požadavek pro externí systém na odpojení
-            final ArrDaoLinkRequest request = requestService.createDaoLinkRequest(arrFundVersion, daoLink.getDao(), deleteChange, Type.LINK, daoLink.getNode());
+            final ArrDaoLinkRequest request = requestService.createDaoLinkRequest(arrFundVersion, daoLink.getDao(), deleteChange, Type.UNLINK, daoLink.getNode());
             requestQueueService.sendRequest(request, arrFundVersion);
         }
-
 
         return resultDaoLink;
     }
