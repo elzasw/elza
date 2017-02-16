@@ -201,7 +201,15 @@ public class DaoService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrDaoLink deleteDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion, final ArrDaoLink daoLink) {
         return deleteArrDaoLink(Collections.singletonList(fundVersion), daoLink);
+    }
 
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public List<ArrDaoLink> deleteDaoLinkByNode(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion, final ArrNode node) {
+        List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdInAndDeleteChangeIsNull(Collections.singletonList(node.getNodeId()));
+        for (ArrDaoLink daoLink : daoLinks) {
+            deleteArrDaoLink(Collections.singletonList(fundVersion), daoLink);
+        }
+        return daoLinks;
     }
 
     private ArrDaoLink deleteArrDaoLink(final List<ArrFundVersion> fundVersionList, final ArrDaoLink daoLink) {
