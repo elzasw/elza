@@ -133,7 +133,7 @@ const nodeInitialState = {
 export function node(state = nodeInitialState, action) {
     if (nodeFormActions.isSubNodeFormAction(action, "NODE")) {
         const result = {
-            ...state, 
+            ...state,
             subNodeForm: subNodeForm(state.subNodeForm, action),
         };
         return consolidateState(state, result);
@@ -141,7 +141,7 @@ export function node(state = nodeInitialState, action) {
 
     if (nodeFormActions.isSubNodeFormCacheAction(action, "NODE")) {
         return {
-            ...state, 
+            ...state,
             subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action),
         }
     }
@@ -215,7 +215,7 @@ export function node(state = nodeInitialState, action) {
                 }
             } else {
                 return state
-            }        
+            }
         case types.FUND_NODES_RECEIVE:
             if (action.nodeMap[state.id]) {
                 return {
@@ -226,7 +226,7 @@ export function node(state = nodeInitialState, action) {
                 }
             } else {
                 return state
-            }        
+            }
         case types.FUND_NODE_INCREASE_VERSION:
             var result = {
                 ...state,

@@ -52,11 +52,7 @@ export default function nodes(state = nodesInitialState, action) {
         if (action.type === types.CHANGE_DAOS) {
             let result = {...state,
                 nodes: state.nodes.map(nodeObj => {
-                    if (nodeObj.id === action.nodeId) {
-                        return node(nodeObj, action);
-                    } else {
-                        return nodeObj;
-                    }
+                    return node(nodeObj, action);
                 })};
             return consolidateState(state, result);
         }
