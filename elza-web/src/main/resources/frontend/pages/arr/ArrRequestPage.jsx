@@ -276,7 +276,7 @@ const ArrRequestPage = class extends ArrParentPage {
                         <option value={""}>{i18n('global.all')}</option>
                         <option value="DIGITIZATION" key="DIGITIZATION">{i18n("arr.request.title.type." + DIGITIZATION)}</option>
                         <option value="DAO" key="DAO">{i18n("arr.request.title.type." + DAO)}</option>
-                        <option value="DAO_LINK" key="DAO_LINK">{i18n("arr.request.title.type." + DAO_LINK)}</option>
+                        {/*<option value="DAO_LINK" key="DAO_LINK">{i18n("arr.request.title.type." + DAO_LINK)}</option>*/}
                     </FormInput>
                     <SearchWithGoto
                         onFulltextSearch={this.handleFilterText}
