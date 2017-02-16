@@ -174,10 +174,12 @@ public class DaoService {
                     dao.getDaoId(), Collections.singletonList(node.getNodeId()));
             eventNotificationService.publishEvent(event);
 
-            // vytvořit požadavek pro externí systém na připojení
-            final ArrDaoLinkRequest request = requestService.createDaoLinkRequest(fundVersion, dao, createChange, Type.LINK, node);
-            requestQueueService.sendRequest(request, fundVersion);
-
+            // poslat notifikaci pouze pokud je zapnutá u digitálního uložiště
+            if (dao.getDaoPackage().getDigitalRepository().getSendNotification()) {
+                // vytvořit požadavek pro externí systém na připojení
+                final ArrDaoLinkRequest request = requestService.createDaoLinkRequest(fundVersion, dao, createChange, Type.LINK, node);
+                requestQueueService.sendRequest(request, fundVersion);
+            }
         } else if (daoLinkList.size() == 1) {
             logger.debug("Nalezeno existující platné propojení mezi DAO(ID=" + dao.getDaoId() + ") a node(ID=" + node.getNodeId() + ").");
             resultDaoLink = daoLinkList.get(0); // vrací jediný prvek
@@ -236,9 +238,12 @@ public class DaoService {
                     daoLink.getDao().getDaoId(), Collections.singletonList(daoLink.getNode().getNodeId()));
             eventNotificationService.publishEvent(event);
 
-            // vytvořit požadavek pro externí systém na odpojení
-            final ArrDaoLinkRequest request = requestService.createDaoLinkRequest(arrFundVersion, daoLink.getDao(), deleteChange, Type.UNLINK, daoLink.getNode());
-            requestQueueService.sendRequest(request, arrFundVersion);
+            // poslat notifikaci pouze pokud je zapnutá u digitálního uložiště
+            if (daoLink.getDao().getDaoPackage().getDigitalRepository().getSendNotification()) {
+                // vytvořit požadavek pro externí systém na odpojení
+                final ArrDaoLinkRequest request = requestService.createDaoLinkRequest(arrFundVersion, daoLink.getDao(), deleteChange, Type.UNLINK, daoLink.getNode());
+                requestQueueService.sendRequest(request, arrFundVersion);
+            }
         }
 
         return resultDaoLink;
