@@ -46,8 +46,10 @@ const FileListBox = class FileListBox extends AbstractReactComponent {
         return (
             <div key={'file-id-' + item.id} className="search-result-row">
                 <div className="details">
-                    <div><Icon glyph={iconName} /></div>
-                    <div title={item.name} className="title">{item.name}</div>
+                    <div className="header">
+                        <Icon glyph={iconName} />
+                        <div title={item.name} className="title">{item.name}</div>
+                    </div>
                     <div className="path" >{item.fileName}</div>
                 </div>
                 <div className="actions">
@@ -85,7 +87,7 @@ const FileListBox = class FileListBox extends AbstractReactComponent {
     focus() {
         this.refs.listBox.focus()
     }
-    
+
     render() {
         const {className, items, searchable, renderItemContent} = this.props;
         const {filterText} = this.state;
