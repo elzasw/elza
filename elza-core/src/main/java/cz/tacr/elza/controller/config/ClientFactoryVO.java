@@ -2116,6 +2116,7 @@ public class ClientFactoryVO {
         ArrChange createChange = request.getCreateChange();
         requestVO.setCode(request.getCode());
         requestVO.setId(request.getRequestId());
+        requestVO.setExternalSystemCode(request.getExternalSystemCode());
         requestVO.setState(request.getState());
         requestVO.setRejectReason(request.getRejectReason());
         requestVO.setResponseExternalSystem(mapper.map(request.getResponseExternalSystem(), Date.class));

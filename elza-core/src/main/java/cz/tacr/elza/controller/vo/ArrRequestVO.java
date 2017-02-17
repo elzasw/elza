@@ -32,6 +32,8 @@ public abstract class ArrRequestVO {
 
     private Date responseExternalSystem;
 
+    private String externalSystemCode;
+
     public Integer getId() {
         return id;
     }
@@ -102,5 +104,13 @@ public abstract class ArrRequestVO {
 
     public void setSend(final Date send) {
         this.send = send;
+    }
+
+    public String getExternalSystemCode() {
+        return externalSystemCode;
+    }
+
+    public void setExternalSystemCode(final String externalSystemCode) {
+        this.externalSystemCode = externalSystemCode;
     }
 }

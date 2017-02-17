@@ -238,6 +238,14 @@ class ArrRequestDetail extends AbstractReactComponent {
                         onSave={this.handleSaveRequest}
                     />}
 
+                    {<div className="form-group">
+                        <label>{i18n("arr.request.title.daoRequest.identifiers.code")}</label> {req.code}
+                    </div>}
+
+                    {req.externalSystemCode && <div className="form-group">
+                        <label>{i18n("arr.request.title.daoRequest.identifiers.externalCode")}</label> {req.externalSystemCode}
+                    </div>}
+
                     {reqType === DIGITIZATION && <div>
                         <label className="control-label">{i18n("arr.request.title.nodes")}</label>
                         <FundNodesList
