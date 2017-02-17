@@ -833,14 +833,15 @@ class SubNodeForm extends AbstractReactComponent {
     handleAddUnusedItem = (itemTypeId, index) => {
         const {formActions, versionId} = this.props;
         const {unusedItemTypeIds} = this.state;
-        this.setState({
-            unusedItemTypeIds: [
-                ...unusedItemTypeIds.slice(0, index),
-                ...unusedItemTypeIds.slice(index + 1)
-            ]
-        });
 
-        this.dispatch(formActions.addCalculatedDescItem(versionId, itemTypeId));
+        this.dispatch(formActions.addCalculatedDescItem(versionId, itemTypeId, true)).then(()=>{
+            this.setState({
+                unusedItemTypeIds: [
+                    ...unusedItemTypeIds.slice(0, index),
+                    ...unusedItemTypeIds.slice(index + 1)
+                ]
+            });
+        });
     };
 
     render() {

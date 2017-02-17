@@ -950,12 +950,13 @@ public class ArrangementController {
     @RequestMapping(value = "/output/{outputDefinitionId}/{fundVersionId}/{itemTypeId}/switch", method = RequestMethod.POST)
     public void switchOutputCalculating(@PathVariable(value = "outputDefinitionId") final Integer outputDefinitionId,
                                         @PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                        @PathVariable(value = "itemTypeId") final Integer itemTypeId) {
+                                        @PathVariable(value = "itemTypeId") final Integer itemTypeId,
+                                        @RequestParam(value = "strict", required = false, defaultValue = "false") final Boolean strict) {
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
         ArrOutputDefinition outputDefinition = outputService.findOutputDefinition(outputDefinitionId);
         RulItemType itemType = itemTypeRepository.findOne(itemTypeId);
 
-        outputService.switchOutputCalculating(outputDefinition, version, itemType);
+        outputService.switchOutputCalculating(outputDefinition, version, itemType, strict);
     }
 
     /**

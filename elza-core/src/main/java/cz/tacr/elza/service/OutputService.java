@@ -16,6 +16,7 @@ import javax.transaction.Transactional;
 
 import com.fasterxml.jackson.databind.deser.Deserializers;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -26,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -721,12 +723,12 @@ public class OutputService {
      * @param oldNodes    seznam původních uzlů
      * @param newNodes    seznam nových uzlů
      */
-    private void storeResults(final ArrFundVersion fundVersion,
-                              final ArrChange change,
-                              final Set<ArrNode> oldNodes,
-                              final Set<ArrNode> newNodes,
-                              final ArrOutputDefinition outputDefinition,
-                              final RulItemType itemType) {
+    private boolean storeResults(final ArrFundVersion fundVersion,
+                                 final ArrChange change,
+                                 final Set<ArrNode> oldNodes,
+                                 final Set<ArrNode> newNodes,
+                                 final ArrOutputDefinition outputDefinition,
+                                 final RulItemType itemType) {
         List<RulItemType> itemTypesDelete = null;
         // pokud se jedná o rozdílné seznamy, je potřeba odstranit odlišné počítané atributy; cenu mazat má jen v případě, že předchozí stav má alespoň jeden uzel
         if ((!oldNodes.containsAll(newNodes) || !newNodes.containsAll(oldNodes)) && oldNodes.size() > 0) {
@@ -751,7 +753,7 @@ public class OutputService {
         }
 
         if (newNodes.size() == 0) {
-            return;
+            return false;
         }
 
         List<ArrBulkActionRun> bulkActionRunList = bulkActionService.findBulkActionsByNodes(fundVersion, newNodes);
@@ -759,14 +761,19 @@ public class OutputService {
 
         ArrChangeLazy changeLazy = () -> change;
 
+        boolean result = false;
         for (ArrBulkActionRun bulkActionRun : bulkActionRunList) {
             RulAction action = bulkActionService.getBulkActionByCode(bulkActionRun.getBulkActionCode());
             for (RulActionRecommended actionRecommended : actionRecommendeds) {
                 if (actionRecommended.getAction().equals(action)) {
-                    storeResultInternal(bulkActionRun.getResult(), fundVersion, newNodes, changeLazy, itemType);
+                    Boolean changed = storeResultInternal(bulkActionRun.getResult(), fundVersion, newNodes, changeLazy, itemType).getSecond();
+                    if (changed) {
+                        result = true;
+                    }
                 }
             }
         }
+        return result;
     }
 
     /**
@@ -1537,7 +1544,7 @@ public class OutputService {
             }
         };
 
-        List<RulItemType> itemTypes = storeResultInternal(bulkActionRun.getResult(), bulkActionRun.getFundVersion(), nodes, change, itemType);
+        List<RulItemType> itemTypes = storeResultInternal(bulkActionRun.getResult(), bulkActionRun.getFundVersion(), nodes, change, itemType).getFirst();
 
         RulAction action = bulkActionService.getBulkActionByCode(bulkActionRun.getBulkActionCode());
         List<RulItemType> recommendedItemTypes = itemTypeActionRepository.findByAction(Collections.singletonList(action));
@@ -1570,15 +1577,16 @@ public class OutputService {
      * @param change      změna překlopení
      * @param itemType    typ atributu
      */
-    public List<RulItemType> storeResultInternal(final Result result,
+    public Pair<List<RulItemType>, Boolean> storeResultInternal(final Result result,
                             final ArrFundVersion fundVersion,
                             final Set<ArrNode> nodes,
                             final ArrChangeLazy change,
                             @Nullable final RulItemType itemType) {
         if (nodes.size() == 0) {
-            return Collections.emptyList();
+            return Pair.of(Collections.emptyList(), false);
         }
 
+        boolean changed = false;
         List<ArrOutputDefinition> outputDefinitions = findOutputsByNodes(fundVersion, nodes, OutputState.OPEN, OutputState.COMPUTING);
 
         List<RulItemType> itemTypesResult = new ArrayList<>();
@@ -1602,16 +1610,20 @@ public class OutputService {
                 }
 
                 for (ActionResult actionResult : result.getResults()) {
-                    RulItemType itemTypeStore = storeActionResult(outputDefinition, actionResult, fundVersion, change, itemType, itemTypesIgnored);
-                    if (itemTypeStore != null) {
+                    Pair<RulItemType, Boolean> resultPair = storeActionResult(outputDefinition, actionResult, fundVersion, change, itemType, itemTypesIgnored);
+                    if (resultPair != null) {
+                        RulItemType itemTypeStore = resultPair.getFirst();
                         itemTypesResult.add(itemTypeStore);
+                        if (!changed) {
+                            changed = resultPair.getSecond();
+                        }
                     }
                 }
             }
             changeOutputState(outputDefinition, OutputState.OPEN);
         }
 
-        return itemTypesResult;
+        return Pair.of(itemTypesResult, changed);
     }
 
     /**
@@ -1637,12 +1649,12 @@ public class OutputService {
      * @param itemType         typ atributu
      * @param itemTypesIgnored seznam typů atributů, které se nepřeklápí
      */
-    private RulItemType storeActionResult(final ArrOutputDefinition outputDefinition,
-                                   final ActionResult actionResult,
-                                   final ArrFundVersion fundVersion,
-                                   final ArrChangeLazy change,
-                                   @Nullable final RulItemType itemType,
-                                   @Nullable final Set<RulItemType> itemTypesIgnored) {
+    private Pair<RulItemType, Boolean> storeActionResult(final ArrOutputDefinition outputDefinition,
+                                                         final ActionResult actionResult,
+                                                         final ArrFundVersion fundVersion,
+                                                         final ArrChangeLazy change,
+                                                         @Nullable final RulItemType itemType,
+                                                         @Nullable final Set<RulItemType> itemTypesIgnored) {
         RulItemType type;
         List<ArrItemData> dataItems;
 
@@ -1709,11 +1721,12 @@ public class OutputService {
             return null;
         }
 
+        boolean store = false;
         if (itemType == null || itemType.equals(type)) {
-            storeDataItems(type, dataItems, outputDefinition, fundVersion, change);
+            store = storeDataItems(type, dataItems, outputDefinition, fundVersion, change);
         }
 
-        return type;
+        return Pair.of(type, store);
     }
 
     /**
@@ -1725,11 +1738,11 @@ public class OutputService {
      * @param fundVersion      verze AS
      * @param change           změna překlopení
      */
-    private void storeDataItems(final RulItemType type,
-                                final List<ArrItemData> dataItems,
-                                final ArrOutputDefinition outputDefinition,
-                                final ArrFundVersion fundVersion,
-                                final ArrChangeLazy change) {
+    private boolean storeDataItems(final RulItemType type,
+                                   final List<ArrItemData> dataItems,
+                                   final ArrOutputDefinition outputDefinition,
+                                   final ArrFundVersion fundVersion,
+                                   final ArrChangeLazy change) {
         if (isDataChanged(type, dataItems, outputDefinition)) {
             deleteOutputItemsByType(fundVersion, outputDefinition, type, change.getOrCreateChange());
 
@@ -1742,7 +1755,9 @@ public class OutputService {
                 outputItem.setItemSpec(dataItem.getSpec());
                 createOutputItem(outputItem, outputDefinition, fundVersion, change.getOrCreateChange());
             }
+            return true;
         }
+        return false;
     }
 
     /**
@@ -1807,15 +1822,16 @@ public class OutputService {
 
     /**
      * Změnit typ kalkulace typu atributu - uživatelsky/automaticky.
-     *
-     * @param outputDefinition pojmenovaný výstup
+     *  @param outputDefinition pojmenovaný výstup
      * @param fundVersion      verze AS
      * @param itemType         typ atributu
+     * @param strict
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
     public void switchOutputCalculating(final ArrOutputDefinition outputDefinition,
                                         @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
-                                        final RulItemType itemType) {
+                                        final RulItemType itemType,
+                                        final Boolean strict) {
         Assert.notNull(outputDefinition, "Neplatný výstup");
         Assert.notNull(fundVersion, "Neplatná verze fondu");
         Assert.notNull(itemType, "Neplatný typ atributu");
@@ -1830,6 +1846,10 @@ public class OutputService {
         ArrChange change = arrangementService.createChange(null);
 
         if (itemSettings == null) {
+            if (strict) {
+                throw new BusinessException("Nelze přepnout způsob vyplňování, protože neexistuje žádná hodnota generovaná funkcí", OutputCode.CANNOT_SWITCH_CALCULATING).level(Level.WARNING);
+            }
+
             itemSettings = new ArrItemSettings();
             itemSettings.setBlockActionResult(true);
             itemSettings.setItemType(itemType);
@@ -1844,7 +1864,11 @@ public class OutputService {
             itemSettingsRepository.delete(itemSettings);
             Set<ArrNode> nodes = outputDefinition.getOutputNodes().stream().map(ArrNodeOutput::getNode).collect(Collectors.toSet());
             deleteOutputItemsByType(fundVersion, outputDefinition, itemType, change);
-            storeResults(fundVersion, change, nodes, nodes, outputDefinition, itemType);
+            boolean changed = storeResults(fundVersion, change, nodes, nodes, outputDefinition, itemType);
+
+            if (strict && !changed) {
+                throw new BusinessException("Nelze přepnout způsob vyplňování, protože neexistuje žádná hodnota generovaná funkcí", OutputCode.CANNOT_SWITCH_CALCULATING).level(Level.WARNING);
+            }
         }
     }
 
