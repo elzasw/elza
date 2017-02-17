@@ -469,7 +469,7 @@ export default function fundTree(state = initialState, action = {}) {
             var nodeId;
             for(var i = 0; i < state.nodes.length; i++) {
                 nodeId = state.nodes[i].id;
-                if (action.nodeIds.indexOf(nodeId) >= 0) {
+                if (action.nodeIds && action.nodeIds.indexOf(nodeId) >= 0) {
                     isDirty = true;
                     break;
                 }
