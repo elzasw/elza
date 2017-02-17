@@ -97,15 +97,14 @@ class ArrRequestDetail extends AbstractReactComponent {
     handleSaveRequest = (data) => {
         const {versionId, requestDetail} = this.props;
         this.dispatch(arrRequestActions.requestEdit(versionId, requestDetail.id, data));
-    }
+    };
 
     handleAddNodes = () => {
         const {versionId, requestDetail} = this.props;
-
         this.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
             <FundNodesSelectForm
                 onSubmitForm={(ids, nodes) => {
-                    this.dispatch(arrRequestActions.addNodes(versionId, requestDetail, ids, requestDetail.digitizationFrontdeskId))
+                    this.dispatch(arrRequestActions.addNodes(versionId, requestDetail, ids, requestDetail.data.digitizationFrontdeskId))
                 }}
             />))
     };
@@ -162,9 +161,16 @@ class ArrRequestDetail extends AbstractReactComponent {
         Object.keys(countMap).forEach(nodeId => {
             if (nodeId !== NO_NODE_ID) {
                 const node = nodeMap[nodeId];
-                nodesInfo.push(<div>
-                    {<NodeLabel inline node={node}/>} ({countMap[node.id]})
-                </div>);
+                if (node) {
+                    nodesInfo.push(<div>
+                        {<NodeLabel inline node={node}/>} ({countMap[node.id]})
+                    </div>);
+                } else {
+                    nodesInfo.push(<div>
+                        {nodeId}
+                    </div>);
+                }
+
             }
         });
 
