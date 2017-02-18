@@ -38,7 +38,7 @@ public class DaoRepositoryImpl implements DaoRepositoryCustom {
                     + " where l.dao.daoId = d.daoId and l.deleteChange IS NULL) ";
         }
 
-        hql += " order by d.daoId desc ";
+        hql += " order by d.label ASC, d.code ASC ";
 
         Query query = entityManager.createQuery(hql);
         query.setFirstResult(index);
@@ -70,7 +70,7 @@ public class DaoRepositoryImpl implements DaoRepositoryCustom {
                     + "                 AND (dl.deleteChange IS NULL))";
         }
 
-        hql += " order by d.daoId desc ";
+        hql += " order by d.label ASC, d.code ASC ";
 
         Query query = entityManager.createQuery(hql);
         query.setMaxResults(maxResults);

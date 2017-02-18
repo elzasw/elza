@@ -101,7 +101,9 @@ const ArrRequestPage = class extends ArrParentPage {
         super.componentDidMount();
 
         const fund = this.getActiveFund(this.props);
-        this.dispatch(arrRequestActions.fetchListIfNeeded(fund.versionId));
+        if (fund) {
+            this.dispatch(arrRequestActions.fetchListIfNeeded(fund.versionId));
+        }
 
         this.trySetFocus(this.props)
     }
@@ -110,7 +112,9 @@ const ArrRequestPage = class extends ArrParentPage {
         super.componentWillReceiveProps(nextProps);
 
         const fund = this.getActiveFund(nextProps);
-        this.dispatch(arrRequestActions.fetchListIfNeeded(fund.versionId));
+        if (fund) {
+            this.dispatch(arrRequestActions.fetchListIfNeeded(fund.versionId));
+        }
 
         this.trySetFocus(nextProps)
     }
@@ -272,7 +276,7 @@ const ArrRequestPage = class extends ArrParentPage {
                         <option value={""}>{i18n('global.all')}</option>
                         <option value="DIGITIZATION" key="DIGITIZATION">{i18n("arr.request.title.type." + DIGITIZATION)}</option>
                         <option value="DAO" key="DAO">{i18n("arr.request.title.type." + DAO)}</option>
-                        <option value="DAO_LINK" key="DAO_LINK">{i18n("arr.request.title.type." + DAO_LINK)}</option>
+                        {/*<option value="DAO_LINK" key="DAO_LINK">{i18n("arr.request.title.type." + DAO_LINK)}</option>*/}
                     </FormInput>
                     <SearchWithGoto
                         onFulltextSearch={this.handleFilterText}
@@ -312,7 +316,7 @@ const ArrRequestPage = class extends ArrParentPage {
     }
 
     hasPageShowRights(userDetail, activeFund) {
-        return userDetail.hasArrPage(activeFund ? activeFund.id : null);
+        return userDetail.hasRdPage(activeFund ? activeFund.id : null);
     }
 };
 

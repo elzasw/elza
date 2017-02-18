@@ -402,6 +402,19 @@ export function createDigitizationName(digitizationRequest, userDetail) {
 }
 
 /**
+ * Vytvoření názvu požadavku na link/unlink dao.
+ *
+ * @param daoLinkRequest objekt požadavku
+ * @param userDetail detail přihlášeného uživatele
+ */
+export function createDaoLinkName(daoLinkRequest, userDetail) {
+    let text = "";
+    text += i18n('arr.request.title.type.DAO_LINK.' + daoLinkRequest.type);
+    text += " " + daoLinkRequest.didCode;
+    return text;
+}
+
+/**
  * Pokud je ikona null, je použita výchozí.
  *
  * @param type ikona zobrazení

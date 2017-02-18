@@ -39,7 +39,7 @@ public class DaoPackageRepositoryImpl implements DaoPackageRepositoryCustom {
                     + "                               AND (dl.deleteChange IS NULL)))";
         }
 
-        hql += " order by dp.daoPackageId desc ";
+        hql += " order by dp.code ASC ";
 
         Query query = entityManager.createQuery(hql);
         query.setMaxResults(maxResults);

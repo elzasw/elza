@@ -81,6 +81,9 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     public static final String RENAME_AP = "Renamed UseCase";
     public static final Integer LIMIT = 100;
 
+    // maximální počet položek pro načtení
+    public static final int MAX_SIZE = 999;
+
     @Test
     public void arrangementTest() throws IOException {
 
@@ -121,7 +124,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
     }
 
-    //@Ignore // TODO
     @Test
     public void revertingChangeTest() throws IOException {
 
@@ -138,20 +140,20 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         // atributy
         attributeValues(fundVersion);
 
-        ChangesResult changesAll = findChanges(fundVersion.getId(), 999, 0, null, null);
+        ChangesResult changesAll = findChanges(fundVersion.getId(), MAX_SIZE, 0, null, null);
         Assert.notNull(changesAll);
         Assert.notNull(changesAll.getChanges());
         Assert.isTrue(changesAll.getTotalCount().equals(changesAll.getChanges().size()) && changesAll.getChanges().size() == 26);
         Assert.isTrue(!changesAll.getOutdated());
 
-        ChangesResult changesByNode = findChanges(fundVersion.getId(), 999, 0, null, nodes.get(0).getId());
+        ChangesResult changesByNode = findChanges(fundVersion.getId(), MAX_SIZE, 0, null, nodes.get(0).getId());
         Assert.notNull(changesByNode);
         Assert.notNull(changesByNode.getChanges());
         Assert.isTrue(changesByNode.getTotalCount().equals(changesByNode.getChanges().size()) && changesByNode.getChanges().size() == 6);
 
         final Integer lastChangeId = changesAll.getChanges().get(0).getChangeId();
         final Integer firstChangeId = changesAll.getChanges().get(changesAll.getChanges().size() - 1).getChangeId();
-        ChangesResult changesByDate = findChangesByDate(fundVersion.getId(), 999, LocalDateTime.now(), lastChangeId, null);
+        ChangesResult changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, LocalDateTime.now(), lastChangeId, null);
         Assert.notNull(changesByDate);
         Assert.notNull(changesByDate.getChanges());
         Assert.isTrue(changesByDate.getTotalCount().equals(changesByDate.getChanges().size()) && changesByDate.getChanges().size() == 26);

@@ -583,15 +583,15 @@ class ItemFormActions {
      * Přidání PP (který je počítaný a ještě ve formuláři není) do formuláře
      * @param versionId verze AS
      * @param itemTypeId id typu PP
+     * @param strict
      */
-    addCalculatedDescItem(versionId, itemTypeId) {
+    addCalculatedDescItem(versionId, itemTypeId, strict = false) {
         return (dispatch, getState) => {
             const state = getState();
             const fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
             if (fundIndex !== null) {
                 const outputDefinitionId = state.arrRegion.funds[fundIndex].fundOutput.fundOutputDetail.subNodeForm.fetchingId;
-                WebApi.switchOutputCalculating(versionId, outputDefinitionId, itemTypeId).then(() => {
-                });
+                return WebApi.switchOutputCalculating(versionId, outputDefinitionId, itemTypeId, strict);
             }
         }
     }

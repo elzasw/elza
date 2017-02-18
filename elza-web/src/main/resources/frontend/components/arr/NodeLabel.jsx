@@ -25,6 +25,16 @@ class NodeLabel extends AbstractReactComponent {
     render() {
         const {inline, node, nameMaxChars} = this.props;
 
+        if (node == null) {
+            return (
+                <div className={"node-label" + (inline ? " inline" : "")}>
+                    <div className={"node-label-container"}>
+                        ?
+                    </div>
+                </div>
+            )
+        }
+
         const refMark = <div className="reference-mark">{createReferenceMarkString(node)}</div>
 
         var name = node.name ? node.name : <i>{i18n('fundTree.node.name.undefined', node.id)}</i>;

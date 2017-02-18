@@ -2083,14 +2083,24 @@ public class ClientFactoryVO {
         Map<Integer, TreeNodeClient> treeNodeClientMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()).stream().collect(Collectors.toMap(TreeNodeClient::getId, Function.identity()));
 
         for (ArrDigitizationRequestNode digitizationRequestNode : digitizationRequestNodes) {
-            Integer nodeId = digitizationRequestNode.getNode().getNodeId();
-            nodeIds.add(nodeId);
+            ArrNode node = digitizationRequestNode.getNode();
+            nodeIds.add(node.getNodeId());
             List<TreeNodeClient> treeNodeClients = nodesRequestMap.get(digitizationRequestNode.getDigitizationRequest());
             if (treeNodeClients == null) {
                 treeNodeClients = new ArrayList<>();
                 nodesRequestMap.put(digitizationRequestNode.getDigitizationRequest(), treeNodeClients);
             }
-            treeNodeClients.add(treeNodeClientMap.get(nodeId));
+
+            TreeNodeClient treeNodeClient = treeNodeClientMap.get(node.getNodeId());
+            if (treeNodeClient == null) {
+                treeNodeClient = new TreeNodeClient();
+                treeNodeClient.setId(node.getNodeId());
+                treeNodeClient.setName(node.getUuid());
+                treeNodeClient.setReferenceMark(new String[0]);
+                treeNodeClient.setReferenceMarkInt(new Integer[0]);
+            }
+
+            treeNodeClients.add(treeNodeClient);
         }
 
         for (Map.Entry<ArrDigitizationRequest, List<TreeNodeClient>> entry : nodesRequestMap.entrySet()) {
@@ -2106,6 +2116,7 @@ public class ClientFactoryVO {
         ArrChange createChange = request.getCreateChange();
         requestVO.setCode(request.getCode());
         requestVO.setId(request.getRequestId());
+        requestVO.setExternalSystemCode(request.getExternalSystemCode());
         requestVO.setState(request.getState());
         requestVO.setRejectReason(request.getRejectReason());
         requestVO.setResponseExternalSystem(mapper.map(request.getResponseExternalSystem(), Date.class));
@@ -2213,6 +2224,13 @@ public class ClientFactoryVO {
         requestVO.setDigitizationFrontdeskId(request.getDigitizationFrontdesk().getExternalSystemId());
         if (treeNodeClients != null) {
             treeNodeClients.sort((o1, o2) -> {
+                if (o1 == null && o2 == null) {
+                    return 0;
+                } else if (o1 == null) {
+                    return -1;
+                } else if (o2 == null) {
+                    return 1;
+                }
                 for (int i = 0; i < o1.getReferenceMarkInt().length; i++) {
                     if (o1.getReferenceMarkInt().length > i && o2.getReferenceMarkInt().length > i) {
                         if (o1.getReferenceMarkInt()[i] > o2.getReferenceMarkInt()[i]) {

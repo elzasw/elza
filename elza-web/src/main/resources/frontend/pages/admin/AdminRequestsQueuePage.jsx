@@ -9,7 +9,7 @@ import {getIndexStateFetchIfNeeded, reindex} from 'actions/admin/fulltext.jsx';
 import {Ribbon, AdminPackagesList, AdminPackagesUpload} from 'components/index.jsx';
 import {PageLayout} from 'pages/index.jsx';
 import * as arrRequestActions from 'actions/arr/arrRequestActions';
-import {getRequestType, DIGITIZATION, createDigitizationName} from 'components/arr/ArrUtils.jsx'
+import {getRequestType, DIGITIZATION, DAO, DAO_LINK, createDigitizationName, createDaoLinkName} from 'components/arr/ArrUtils.jsx'
 import {dateTimeToString} from "components/Utils.jsx";
 import {WebApi} from 'actions/index.jsx';
 
@@ -44,6 +44,9 @@ const AdminRequestsQueuePage = class extends AbstractReactComponent {
         switch (type) {
             case DIGITIZATION: {
                 return " - " + createDigitizationName(request, userDetail);
+            }
+            case DAO_LINK: {
+                return " - " + createDaoLinkName(request, userDetail);
             }
             default:
                 return "TODO [createDescription]: " + type;

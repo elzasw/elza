@@ -44,6 +44,11 @@ public enum OutputCode implements ErrorCode {
     OUTPUT_NOT_EXISTS,
 
     /**
+     * Nelze přepnout způsob vyplňování, protože neexistuje žádná hodnota generovaná funkcí.
+     */
+    CANNOT_SWITCH_CALCULATING,
+
+    /**
      * Nemůže být odstraněn v tomto stavu.
      */
     CANNOT_DELETED_IN_STATE

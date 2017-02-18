@@ -93,6 +93,6 @@ export function fundSubNodeDaosInvalidate(versionId, nodeIds) {
     return {
         type: types.CHANGE_DAOS,
         versionId,
-        nodeId: nodeIds[0]
+        nodeIds: nodeIds
     }
 }

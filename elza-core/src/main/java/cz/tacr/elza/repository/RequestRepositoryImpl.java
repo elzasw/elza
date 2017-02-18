@@ -50,7 +50,10 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
             predicates.add(fundPredicate);
         }
 
-        if (type != null) {
+        if (type == null) {
+            Predicate typePredicate = c.get("discriminator").in(ArrRequest.ClassType.DAO, ArrRequest.ClassType.DIGITIZATION);
+            predicates.add(typePredicate);
+        } else {
             Predicate typePredicate = cb.equal(c.get("discriminator"), type);
             predicates.add(typePredicate);
         }

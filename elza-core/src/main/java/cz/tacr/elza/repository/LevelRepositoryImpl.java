@@ -5,6 +5,8 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.utils.ObjectListIterator;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -220,8 +222,8 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         List<ArrLevel> levelsByNode = findByNode(node, lockChange);
 
         if (levelsByNode.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Entita byla změněna nebo odstraněna. Načtěte znovu entitu a opakujte akci.");
+            throw new ObjectNotFoundException(
+                    "Entita byla změněna nebo odstraněna. Načtěte znovu entitu a opakujte akci.", ArrangementCode.NODE_NOT_FOUND).setId(node.getNodeId());
         } else if (levelsByNode.size() == 1) {
             return levelsByNode.iterator().next();
         }

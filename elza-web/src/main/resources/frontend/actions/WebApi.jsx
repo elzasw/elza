@@ -227,8 +227,8 @@ class WebApi {
         return AjaxUtils.ajaxDelete(WebApi.arrangementUrl + '/outputItems/' + versionId + '/' + outputDefinitionId + '/' + outputDefinitionVersion + '/' + descItemTypeId, null, null);
     }
 
-    switchOutputCalculating(fundVersionId, outputDefinitionId, itemTypeId) {
-        return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/output/' + outputDefinitionId + '/' + fundVersionId + '/' + itemTypeId + '/switch', null, null);
+    switchOutputCalculating(fundVersionId, outputDefinitionId, itemTypeId, strict) {
+        return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/output/' + outputDefinitionId + '/' + fundVersionId + '/' + itemTypeId + '/switch', {strict}, null);
     }
 
     addNode(node, parentNode, versionId, direction, descItemCopyTypes, scenarioName) {

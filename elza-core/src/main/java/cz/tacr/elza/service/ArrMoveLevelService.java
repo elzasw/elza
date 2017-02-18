@@ -63,6 +63,8 @@ public class ArrMoveLevelService {
     private IEventNotificationService eventNotificationService;
     @Autowired
     private DescriptionItemService descriptionItemService;
+    @Autowired
+    private DaoService daoService;
 
 
     /**
@@ -416,8 +418,7 @@ public class ArrMoveLevelService {
             }
         }
 
-
-
+        daoService.deleteDaoLinkByNode(version, deleteNode);
 
         ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(deleteNode.getNodeId()),
                 NodeTypeOperation.DELETE_NODE, null, null, null);

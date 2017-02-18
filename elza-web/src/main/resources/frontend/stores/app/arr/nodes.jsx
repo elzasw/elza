@@ -52,11 +52,7 @@ export default function nodes(state = nodesInitialState, action) {
         if (action.type === types.CHANGE_DAOS) {
             let result = {...state,
                 nodes: state.nodes.map(nodeObj => {
-                    if (nodeObj.id === action.nodeId) {
-                        return node(nodeObj, action);
-                    } else {
-                        return nodeObj;
-                    }
+                    return node(nodeObj, action);
                 })};
             return consolidateState(state, result);
         }
@@ -207,30 +203,32 @@ export default function nodes(state = nodesInitialState, action) {
             var changed = false;
 
             var nodeId;
-            for (var j = 0; j < action.nodeIds.length; j++) {
-                nodeId = action.nodeIds[j];
-                for (var i = 0; i < nodes.length; i++) {
-                    var index = indexById(nodes[i].childNodes, nodeId);
+            if (action.nodeIds) {
+                for (var j = 0; j < action.nodeIds.length; j++) {
+                    nodeId = action.nodeIds[j];
+                    for (var i = 0; i < nodes.length; i++) {
+                        var index = indexById(nodes[i].childNodes, nodeId);
 
-                    // změna se ho netýká, vracím původní stav
-                    if (index == null) {
-                        continue;
+                        // změna se ho netýká, vracím původní stav
+                        if (index == null) {
+                            continue;
+                        }
+
+                        var nodeChange = node(nodes[i], action);
+
+                        // nezměnil se stav podřízených, nemusím nic měnit
+                        if (nodeChange === nodes[i]) {
+                            continue;
+                        }
+
+                        changed = true;
+
+                        nodesChange = [
+                            ...nodesChange.slice(0, i),
+                            nodeChange,
+                            ...nodesChange.slice(i + 1)
+                        ];
                     }
-
-                    var nodeChange = node(nodes[i], action);
-
-                    // nezměnil se stav podřízených, nemusím nic měnit
-                    if (nodeChange === nodes[i]) {
-                        continue;
-                    }
-
-                    changed = true;
-
-                    nodesChange = [
-                        ...nodesChange.slice(0, i),
-                        nodeChange,
-                        ...nodesChange.slice(i + 1)
-                    ];
                 }
             }
 
