@@ -2,6 +2,7 @@ package cz.tacr.elza.domain;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -32,6 +33,9 @@ public class ArrDaoRequestDao implements Serializable {
     @JoinColumn(name = "daoId", nullable = false)
     private ArrDao dao;
 
+    @Column(name = "daoRequestId", insertable = false, updatable = false)
+    private Integer daoRequestId;
+
     public Integer getDaoRequestDaoId() {
         return daoRequestDaoId;
     }
@@ -46,6 +50,7 @@ public class ArrDaoRequestDao implements Serializable {
 
     public void setDaoRequest(final ArrDaoRequest daoRequest) {
         this.daoRequest = daoRequest;
+        this.daoRequestId = (daoRequest == null) ? null : daoRequest.getRequestId();
     }
 
     public ArrDao getDao() {
@@ -54,5 +59,9 @@ public class ArrDaoRequestDao implements Serializable {
 
     public void setDao(final ArrDao dao) {
         this.dao = dao;
+    }
+
+    public Integer getDaoRequestId() {
+        return daoRequestId;
     }
 }

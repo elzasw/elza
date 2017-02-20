@@ -33,6 +33,9 @@ public class ArrRequestQueueItem {
     @JoinColumn(name = "requestId", nullable = false)
     private ArrRequest request;
 
+    @Column(name = "requestId", nullable = false, insertable = false, updatable = false)
+    private Integer requestId;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = "createChangeId", nullable = false)
     private ArrChange createChange;
@@ -65,6 +68,7 @@ public class ArrRequestQueueItem {
 
     public void setRequest(final ArrRequest request) {
         this.request = request;
+        this.requestId = request == null ? null : request.getRequestId();
     }
 
     public ArrChange getCreateChange() {
@@ -105,5 +109,9 @@ public class ArrRequestQueueItem {
 
     public void setData(final String data) {
         this.data = data;
+    }
+
+    public Integer getRequestId() {
+        return requestId;
     }
 }

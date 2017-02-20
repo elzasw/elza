@@ -4,6 +4,7 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutput;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -53,4 +54,6 @@ public interface NodeRepository extends ElzaJpaRepository<ArrNode, Integer>, Nod
 
     List<ArrNode> findByUuid(Collection<String> uuids);
 
+    @Modifying
+    void deleteByFund(ArrFund fund);
 }

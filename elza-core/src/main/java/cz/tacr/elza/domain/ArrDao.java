@@ -32,6 +32,9 @@ public class ArrDao implements Serializable {
     @JoinColumn(name = "daoPackageId", nullable = false)
     private ArrDaoPackage daoPackage;
 
+    @Column(name = "daoPackageId", nullable = false, insertable = false, updatable = false)
+    private Integer daoPackageId;
+
     @Column(nullable = false)
     private Boolean valid;
 
@@ -55,6 +58,7 @@ public class ArrDao implements Serializable {
 
     public void setDaoPackage(final ArrDaoPackage daoPackage) {
         this.daoPackage = daoPackage;
+        this.daoPackageId = daoPackage == null ? null : daoPackage.getDaoPackageId();
     }
 
     public Boolean getValid() {
@@ -79,5 +83,9 @@ public class ArrDao implements Serializable {
 
     public void setLabel(final String label) {
         this.label = label;
+    }
+
+    public Integer getDaoPackageId() {
+        return daoPackageId;
     }
 }

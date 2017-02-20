@@ -2,6 +2,8 @@ package cz.tacr.elza.repository;
 
 import java.util.List;
 
+import cz.tacr.elza.domain.ArrFund;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -25,4 +27,7 @@ public interface DaoLinkRequestRepository extends ElzaJpaRepository<ArrDaoLinkRe
     List<ArrDaoLinkRequest> findByCode(@Param(value = "code") String code);
 
     List<ArrDaoLinkRequest> findByDao(ArrDao arrDao);
+
+    @Modifying
+    void deleteByFund(ArrFund fund);
 }

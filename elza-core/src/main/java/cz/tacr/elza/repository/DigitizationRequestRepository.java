@@ -1,6 +1,8 @@
 package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.ArrDigitizationRequest;
+import cz.tacr.elza.domain.ArrFund;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
 
 
@@ -11,4 +13,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface DigitizationRequestRepository extends ElzaJpaRepository<ArrDigitizationRequest, Integer> {
 
+    @Modifying
+    void deleteByFund(ArrFund fund);
 }

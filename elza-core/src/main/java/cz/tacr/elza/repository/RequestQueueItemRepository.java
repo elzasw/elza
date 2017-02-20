@@ -1,7 +1,9 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.ArrRequestQueueItem;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -25,4 +27,8 @@ public interface RequestQueueItemRepository extends ElzaJpaRepository<ArrRequest
 
     @Query("SELECT rqi FROM arr_request_queue_item rqi WHERE rqi.request = ?1")
     ArrRequestQueueItem findByRequest(ArrRequest request);
+
+    @Modifying
+    @Query("DELETE FROM arr_request_queue_item i WHERE i.requestId IN (SELECT d.requestId FROM arr_request d WHERE d.fund = ?1)")
+    void deleteByFund(ArrFund fund);
 }

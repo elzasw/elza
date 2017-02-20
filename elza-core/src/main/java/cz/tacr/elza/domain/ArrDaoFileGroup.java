@@ -32,6 +32,9 @@ public class ArrDaoFileGroup implements Serializable {
     @JoinColumn(name = "daoId", nullable = false)
     private ArrDao dao;
 
+    @Column(name = "daoId", nullable = false, insertable = false, updatable = false)
+    private Integer daoId;
+
     @Column(length = StringLength.LENGTH_250)
     private String label;
 
@@ -52,6 +55,7 @@ public class ArrDaoFileGroup implements Serializable {
 
     public void setDao(final ArrDao dao) {
         this.dao = dao;
+        this.daoId = dao == null ? null : dao.getDaoId();
     }
 
     public String getLabel() {
@@ -68,5 +72,9 @@ public class ArrDaoFileGroup implements Serializable {
 
     public void setCode(final String code) {
         this.code = code;
+    }
+
+    public Integer getDaoId() {
+        return daoId;
     }
 }
