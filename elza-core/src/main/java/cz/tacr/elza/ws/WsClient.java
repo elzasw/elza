@@ -1,48 +1,29 @@
 package cz.tacr.elza.ws;
 
-import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoLink;
-import cz.tacr.elza.domain.ArrDaoLinkRequest;
-import cz.tacr.elza.domain.ArrDaoRequest;
-import cz.tacr.elza.domain.ArrDaoRequestDao;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
-import cz.tacr.elza.domain.ArrDigitizationRequest;
-import cz.tacr.elza.domain.ArrDigitizationRequestNode;
-import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.repository.DaoDigitizationRequestNodeRepository;
-import cz.tacr.elza.repository.DaoLinkRepository;
-import cz.tacr.elza.repository.DaoRequestDaoRepository;
-import cz.tacr.elza.service.GroovyScriptService;
 import cz.tacr.elza.ws.dao_service.v1.DaoNotifications;
 import cz.tacr.elza.ws.dao_service.v1.DaoRequests;
 import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
 import cz.tacr.elza.ws.digitization.v1.DigitizationFrontdesk;
 import cz.tacr.elza.ws.digitization.v1.DigitizationServiceException;
-import cz.tacr.elza.ws.types.v1.DaoIdentifiers;
 import cz.tacr.elza.ws.types.v1.DestructionRequest;
-import cz.tacr.elza.ws.types.v1.Did;
 import cz.tacr.elza.ws.types.v1.DigitizationRequest;
-import cz.tacr.elza.ws.types.v1.Materials;
 import cz.tacr.elza.ws.types.v1.OnDaoLinked;
 import cz.tacr.elza.ws.types.v1.OnDaoUnlinked;
 import cz.tacr.elza.ws.types.v1.TransferRequest;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.feature.FastInfosetFeature;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.helpers.DefaultValidationEventHandler;
 import java.util.HashMap;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
@@ -52,18 +33,6 @@ import java.util.stream.Collectors;
 public class WsClient {
 
     private static final Logger logger = LoggerFactory.getLogger(WsClient.class);
-
-    @Autowired
-    private DaoRequestDaoRepository daoRequestDaoRepository;
-
-    @Autowired
-    private GroovyScriptService groovyScriptService;
-
-    @Autowired
-    private DaoDigitizationRequestNodeRepository daoDigitizationRequestNodeRepository;
-
-    @Autowired
-    private DaoLinkRepository daoLinkRepository;
 
     /**
      * Vytvoří JaxWs klienta webové služby a vrátí proxy rozhraní.
@@ -107,21 +76,10 @@ public class WsClient {
         }
     }
 
-    public String postDestructionRequest(ArrDaoRequest arrDaoRequest) {
-        final ArrDigitalRepository digitalRepository = arrDaoRequest.getDigitalRepository();
+    public String postDestructionRequest(final DestructionRequest destructionRequest,
+                                         final ArrDigitalRepository digitalRepository) {
         final DaoRequests remoteInterface = getDaoRequests(digitalRepository);
-
         try {
-            final DestructionRequest destructionRequest = new DestructionRequest();
-            destructionRequest.setIdentifier(arrDaoRequest.getCode());
-            destructionRequest.setDescription(arrDaoRequest.getDescription());
-            destructionRequest.setSystemIdentifier(digitalRepository.getElzaCode());
-
-            final DaoIdentifiers daoIdentifiers = new DaoIdentifiers();
-            final List<ArrDaoRequestDao> daos = daoRequestDaoRepository.findByDaoRequest(arrDaoRequest);
-            daoIdentifiers.getIdentifier().addAll(daos.stream().map(ArrDaoRequestDao::getDao).map(ArrDao::getCode).collect(Collectors.toList()));
-            destructionRequest.setDaoIdentifiers(daoIdentifiers);
-
             return remoteInterface.postDestructionRequest(destructionRequest);
         } catch (DaoServiceException e) {
             logger.error("Fail in call remote webservice.", e);
@@ -129,21 +87,10 @@ public class WsClient {
         }
     }
 
-    public String postTransferRequest(ArrDaoRequest arrDaoRequest) {
-        final ArrDigitalRepository digitalRepository = arrDaoRequest.getDigitalRepository();
+    public String postTransferRequest(final TransferRequest transferRequest,
+                                      final ArrDigitalRepository digitalRepository) {
         final DaoRequests remoteInterface = getDaoRequests(digitalRepository);
-
         try {
-            final TransferRequest transferRequest = new TransferRequest();
-            transferRequest.setIdentifier(arrDaoRequest.getCode());
-            transferRequest.setDescription(arrDaoRequest.getDescription());
-            transferRequest.setSystemIdentifier(digitalRepository.getElzaCode());
-
-            final DaoIdentifiers daoIdentifiers = new DaoIdentifiers();
-            final List<ArrDaoRequestDao> daos = daoRequestDaoRepository.findByDaoRequest(arrDaoRequest);
-            daoIdentifiers.getIdentifier().addAll(daos.stream().map(ArrDaoRequestDao::getDao).map(ArrDao::getCode).collect(Collectors.toList()));
-            transferRequest.setDaoIdentifiers(daoIdentifiers);
-
             return remoteInterface.postTransferRequest(transferRequest);
         } catch (DaoServiceException e) {
             logger.error("Fail in call remote webservice.", e);
@@ -172,24 +119,10 @@ public class WsClient {
         return getJaxWsRemoteInterface(DigitizationFrontdesk.class, url, username, password);
     }
 
-    public String postRequest(ArrDigitizationRequest arrDigitizationRequest) {
-        final ArrDigitizationFrontdesk digitalRepository = arrDigitizationRequest.getDigitizationFrontdesk();
-        final DigitizationFrontdesk remoteInterface = getDigitizationFrontdesk(digitalRepository);
-
+    public String postRequest(final DigitizationRequest digitizationRequest,
+                              final ArrDigitizationFrontdesk digitizationFrontdesk) {
+        final DigitizationFrontdesk remoteInterface = getDigitizationFrontdesk(digitizationFrontdesk);
         try {
-            final DigitizationRequest digitizationRequest = new DigitizationRequest();
-            digitizationRequest.setIdentifier(arrDigitizationRequest.getCode());
-            digitizationRequest.setDescription(arrDigitizationRequest.getDescription());
-            digitizationRequest.setSystemIdentifier(digitalRepository.getElzaCode());
-
-            final Materials materials = new Materials();
-            final List<ArrDigitizationRequestNode> digitizationRequestNodes = daoDigitizationRequestNodeRepository.findByDigitizationRequest(arrDigitizationRequest);
-            for (ArrDigitizationRequestNode arrDigitizationRequestNode : digitizationRequestNodes) {
-                final Did did = groovyScriptService.createDid(arrDigitizationRequestNode.getNode());
-                materials.getDid().add(did);
-            }
-            digitizationRequest.setMaterials(materials);
-
             return remoteInterface.postRequest(digitizationRequest);
         } catch (DigitizationServiceException e) {
             logger.error("Fail in call remote webservice.", e);
@@ -197,22 +130,10 @@ public class WsClient {
         }
     }
 
-    public void onDaoLinked(ArrDaoLinkRequest arrDaoLinkRequest) {
-        final ArrDigitalRepository digitalRepository = arrDaoLinkRequest.getDigitalRepository();
+    public void onDaoLinked(final OnDaoLinked daoLinked,
+                            final ArrDigitalRepository digitalRepository) {
         final DaoNotifications remoteInterface = getDaoNotifications(digitalRepository);
-
         try {
-            final OnDaoLinked daoLinked = new OnDaoLinked();
-            daoLinked.setDaoIdentifier(arrDaoLinkRequest.getDao().getCode());
-            daoLinked.setSystemIdentifier(digitalRepository.getElzaCode());
-            final List<ArrDaoLink> daoLinks = daoLinkRepository.findByDaoAndDeleteChangeIsNull(arrDaoLinkRequest.getDao());
-            if (CollectionUtils.isNotEmpty(daoLinks)) {
-                final ArrDaoLink arrDaoLink = daoLinks.iterator().next();
-                final ArrNode arrNode = arrDaoLink.getNode();
-                final Did did = groovyScriptService.createDid(arrNode);
-                daoLinked.setDid(did);
-            }
-
             remoteInterface.onDaoLinked(daoLinked);
         } catch (DaoServiceException e) {
             logger.error("Fail in call remote webservice.", e);
@@ -220,14 +141,10 @@ public class WsClient {
         }
     }
 
-    public void onDaoUnlinked(ArrDaoLinkRequest arrDaoLinkRequest) {
-        final ArrDigitalRepository digitalRepository = arrDaoLinkRequest.getDigitalRepository();
+    public void onDaoUnlinked(final OnDaoUnlinked daoUnlinked,
+                              final ArrDigitalRepository digitalRepository) {
         final DaoNotifications remoteInterface = getDaoNotifications(digitalRepository);
-
         try {
-            final OnDaoUnlinked daoUnlinked = new OnDaoUnlinked();
-            daoUnlinked.setDaoIdentifier(arrDaoLinkRequest.getDao().getCode());
-            daoUnlinked.setSystemIdentifier(digitalRepository.getElzaCode());
             remoteInterface.onDaoUnlinked(daoUnlinked);
         } catch (DaoServiceException e) {
             logger.error("Fail in call remote webservice.", e);
