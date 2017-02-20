@@ -218,7 +218,7 @@ class RegistryList extends AbstractReactComponent {
                         items={registryTypes}
                         tree
                         alwaysExpanded
-                        allowSelectItem={(id, item) => item.addRecord}
+                        allowSelectItem={(id, item) => true}
                         value={filter.registryTypeId === null ? null : getTreeItemById(filter.registryTypeId, registryTypes)}
                         onChange={this.handleFilterRegistryType}
                     /> : <Loading />}
