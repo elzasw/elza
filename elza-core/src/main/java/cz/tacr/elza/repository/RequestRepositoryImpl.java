@@ -32,7 +32,8 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
 
     @Override
     public List<ArrRequest> findRequests(final ArrFund fund, final ArrRequest.State state, final ArrRequest.ClassType type,
-                                         final String description, final LocalDateTime fromDate, final LocalDateTime toDate) {
+                                         final String description, final LocalDateTime fromDate, final LocalDateTime toDate,
+                                         final String subType) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<ArrRequest> q = cb.createQuery(ArrRequest.class);
         Root<ArrRequest> c = q.from(ArrRequest.class);
@@ -70,6 +71,11 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
         q.select(c).where(predicates.toArray(new Predicate[predicates.size()])).orderBy(cb.desc(c.get("createChange")));
         TypedQuery<ArrRequest> query = entityManager.createQuery(q);
 
+        ArrDaoRequest.Type daoType = null;
+        if (subType != null) {
+            daoType = ArrDaoRequest.Type.valueOf(subType);
+        }
+
         List<ArrRequest> resultList = query.getResultList();
         if (StringUtils.hasText(description)) {
             Iterator<ArrRequest> iterator = resultList.iterator();
@@ -88,6 +94,19 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
                 } else {
                     // jiné požadavky nemají vůbec popis
                     iterator.remove();
+                }
+            }
+        }
+
+        if (daoType != null) {
+            Iterator<ArrRequest> iterator = resultList.iterator();
+            while (iterator.hasNext()) {
+                ArrRequest request = iterator.next();
+                if (request.getDiscriminator() == ArrRequest.ClassType.DAO) {
+                    ArrDaoRequest daoRequest = (ArrDaoRequest) request;
+                    if (!daoType.equals(daoRequest.getType())) {
+                        iterator.remove();
+                    }
                 }
             }
         }

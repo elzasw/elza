@@ -12,7 +12,7 @@ import java.util.List;
  */
 public interface RequestRepositoryCustom {
 
-    List<ArrRequest> findRequests(ArrFund fund, ArrRequest.State state, ArrRequest.ClassType type, final String description, final LocalDateTime fromDate, final LocalDateTime toDate);
+    List<ArrRequest> findRequests(ArrFund fund, ArrRequest.State state, ArrRequest.ClassType type, final String description, final LocalDateTime fromDate, final LocalDateTime toDate, final String subType);
 
     boolean setState(ArrRequest request, ArrRequest.State oldState, ArrRequest.State newState);
 }

@@ -87,7 +87,15 @@ export function deleteRequest(versionId, requestId) {
  */
 export function fetchListIfNeeded(versionId) {
     return SimpleListActions.fetchIfNeeded("fund[" + versionId + "]" + AREA_REQUEST_LIST_SUFFIX, versionId, (parent, filter) => {
-        return WebApi.findRequests(versionId, filter.type, null, filter.description, filter.fromDate, filter.toDate)
+        let type;
+        let subType = null;
+        if (filter.type === 'DESTRUCTION' || filter.type === 'TRANSFER') {
+            type = 'DAO';
+            subType = filter.type;
+        } else {
+            type = filter.type;
+        }
+        return WebApi.findRequests(versionId, type, null, filter.description, filter.fromDate, filter.toDate, subType)
             .then(json => ({rows: json, count: 0}));
     });
 }

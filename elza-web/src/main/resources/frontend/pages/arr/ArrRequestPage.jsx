@@ -275,7 +275,8 @@ const ArrRequestPage = class extends ArrParentPage {
                     <FormInput componentClass="select" className="type" onChange={this.handleFilterType} value={requestList.filter.type}>
                         <option value={""}>{i18n('global.all')}</option>
                         <option value="DIGITIZATION" key="DIGITIZATION">{i18n("arr.request.title.type." + DIGITIZATION)}</option>
-                        <option value="DAO" key="DAO">{i18n("arr.request.title.type." + DAO)}</option>
+                        <option value="DESTRUCTION" key="DESTRUCTION">{i18n("arr.request.title.type.dao.DESTRUCTION")}</option>
+                        <option value="TRANSFER" key="TRANSFER">{i18n("arr.request.title.type.dao.TRANSFER")}</option>
                         {/*<option value="DAO_LINK" key="DAO_LINK">{i18n("arr.request.title.type." + DAO_LINK)}</option>*/}
                     </FormInput>
                     <SearchWithGoto
