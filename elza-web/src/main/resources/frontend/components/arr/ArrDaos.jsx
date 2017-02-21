@@ -134,7 +134,7 @@ class ArrDaos extends AbstractReactComponent {
                 selectedItem = daoList.rows[activeIndex];
             }
         }
-console.log(activeIndex, selectedItemId)
+
         return (
             <div className="daos-container">
                 <div className="daos-list">
