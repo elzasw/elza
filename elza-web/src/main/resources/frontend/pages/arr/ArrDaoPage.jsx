@@ -123,7 +123,9 @@ class ArrDaoPage extends ArrParentPage {
 
         const afterCreateCallback = (versionId, node, parentNode) => {
             // Připojení - link
-            WebApi.createDaoLink(fund.versionId, selectedDaoLeft.id, node.id);
+            WebApi.createDaoLink(fund.versionId, selectedDaoLeft.id, node.id).then(()=>{
+                this.setState({selectedDaoLeft: null});
+            });
 
             // Výběr node ve stromu
             this.props.dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_DAOS_RIGHT, fund.versionId, node.id, false, false, null, true));
@@ -144,7 +146,9 @@ class ArrDaoPage extends ArrParentPage {
         const fund = this.getActiveFund(this.props);
         const {selectedDaoLeft} = this.state;
 
-        WebApi.createDaoLink(fund.versionId, selectedDaoLeft.id, fund.fundTreeDaosRight.selectedId);
+        WebApi.createDaoLink(fund.versionId, selectedDaoLeft.id, fund.fundTreeDaosRight.selectedId).then(()=>{
+            this.setState({selectedDaoLeft: null});
+        });
     };
 
     handleTabSelect = (item) => {
@@ -209,6 +213,7 @@ class ArrDaoPage extends ArrParentPage {
                 unassigned={unassigned}
                 fund={fund}
                 readMode={readMode}
+                selectedDaoId={this.state.selectedDaoLeft ? this.state.selectedDaoLeft.id : null}
                 daoPackageId={selectedPackage ? selectedPackage.id : null}
                 onSelect={item => { this.setState({selectedDaoLeft: item}) }}
             />}
@@ -240,6 +245,7 @@ class ArrDaoPage extends ArrParentPage {
             {/*fund.fundTreeDaosLeft.selectedId !== null &&*/ <ArrDaos
                 type="NODE"
                 unassigned={false}
+                selectedDaoId={this.state.selectedDaoLeft ? this.state.selectedDaoLeft.id : null}
                 fund={fund}
                 readMode={readMode}
                 nodeId={fund.fundTreeDaosLeft.selectedId ? fund.fundTreeDaosLeft.selectedId : null}
