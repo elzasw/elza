@@ -120,8 +120,8 @@ class RegistryList extends AbstractReactComponent {
         this.dispatch(registryListFilter({
             ...this.props.registryList.filter,
             parents: [
-                ...this.props.registryList.filter.parents,
-                {id: item.id, name:item.record}
+                {id: item.id, name:item.record},
+                ...this.props.registryList.filter.parents
             ],
             typesToRoot: item.typesToRoot,
             text: null,
@@ -179,15 +179,17 @@ class RegistryList extends AbstractReactComponent {
 
         if (filter.registryTypeId !== null && filter.parents && filter.parents.length > 0) {
             const tmpParents = filter.parents.slice();
-            const nazevRodice = tmpParents.pop().name;
+            const nazevRodice = tmpParents[0].name;
+            tmpParents.shift();
+
             const cestaRodice = [];
-            tmpParents.map(val => {
-                cestaRodice.push(<span className='clickAwaiblePath parentPath' key={'parent'+val.id}  title={val.name} onClick={this.handleRegistryNavigation.bind(this,val.id)}>{val.name}</span>);
+            tmpParents.map((val, index) => {
+                cestaRodice.push(<span className='clickAwaiblePath parentPath' key={index}  title={val.name} onClick={this.handleRegistryNavigation.bind(this,val.id)}>{val.name}</span>);
             });
 
             if (filter.typesToRoot) {
-                filter.typesToRoot.map(val => {
-                    cestaRodice.push(<span className='clickAwaiblePath parentPath' key={'regType'+val.id} title={val.name} onClick={this.handleRegistryTypesSelectNavigation.bind(this,val.id)} >{val.name}</span>);
+                filter.typesToRoot.map((val, index) => {
+                    cestaRodice.push(<span className='clickAwaiblePath parentPath' key={index} title={val.name} onClick={this.handleRegistryTypesSelectNavigation.bind(this,val.id)} >{val.name}</span>);
                 });
             }
 
