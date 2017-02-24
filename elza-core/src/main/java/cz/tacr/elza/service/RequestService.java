@@ -293,8 +293,8 @@ public class RequestService {
                                          @Nullable final ArrRequest.ClassType type,
                                          @Nullable final String description,
                                          @Nullable final LocalDateTime fromDate,
-                                         @Nullable final LocalDateTime toDate) {
-        return requestRepository.findRequests(fund, state, type, description, fromDate, toDate);
+                                         @Nullable final LocalDateTime toDate, final String subType) {
+        return requestRepository.findRequests(fund, state, type, description, fromDate, toDate, subType);
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})

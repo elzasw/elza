@@ -180,13 +180,13 @@ export function registrySetFolder(recordId) {
     return (dispatch, getState) => {
         return WebApi.getRegistry(recordId).then(item => {
             const store = getState();
-            const list = storeFromArea(AREA_REGISTRY_LIST, store);
+            const list = storeFromArea(store, AREA_REGISTRY_LIST);
 
-            this.dispatch(registryListFilter({
+            dispatch(registryListFilter({
                 ...list.filter,
                 parents: [
-                    ...item.parents,
-                    item
+                    {id: item.id, name: item.record},
+                    ...item.parents
                 ],
                 typesToRoot: item.typesToRoot,
                 text: null,

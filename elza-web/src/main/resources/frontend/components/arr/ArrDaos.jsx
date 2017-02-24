@@ -80,7 +80,7 @@ class ArrDaos extends AbstractReactComponent {
             }
         }
 
-        if ((prevProps.fund && prevDaoList.isFetching || !prevProps.fund) && nextDaoList.fetched && !nextDaoList.isFetching) {  // donačetl data, pokusíme se nastavit aktuálně vybranou položku
+        if ((prevProps.fund && prevDaoList.isFetching || !prevProps.fund) && nextDaoList.fetched && !nextDaoList.isFetching || prevProps.selectedDaoId !== nextProps.selectedDaoId) {  // donačetl data, pokusíme se nastavit aktuálně vybranou položku
             const index = indexById(nextDaoList.rows, nextProps.selectedDaoId);
             if (index !== null) {
                 const selectedItem = nextDaoList.rows[index];
@@ -88,6 +88,12 @@ class ArrDaos extends AbstractReactComponent {
                     selectedItemId: selectedItem.id
                 });
                 onSelect && onSelect(selectedItem);
+            } else {
+                if (nextProps.selectedDaoId == null) {
+                    this.setState({
+                        selectedItemId: nextProps.selectedDaoId
+                    });
+                }
             }
         }
     };
@@ -120,7 +126,7 @@ class ArrDaos extends AbstractReactComponent {
             daoList = fund.packageDaoList;
         }
 
-        let activeIndex;
+        let activeIndex = null;
         let selectedItem;
         if (selectedItemId !== null) {
             activeIndex = indexById(daoList.rows, selectedItemId);

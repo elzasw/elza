@@ -2295,9 +2295,10 @@ public class ArrangementController {
                                            @RequestParam(value = "detail", required = false, defaultValue = "false") final Boolean detail,
                                            @RequestParam(value = "description", required = false) final String description,
                                            @RequestParam(value = "fromDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final LocalDateTime fromDate,
-                                           @RequestParam(value = "toDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final LocalDateTime toDate) {
+                                           @RequestParam(value = "toDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final LocalDateTime toDate,
+                                           @RequestParam(value = "subType", required = false) final String subType) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        List<ArrRequest> requests = requestService.findRequests(fundVersion.getFund(), state, type, description, fromDate, toDate);
+        List<ArrRequest> requests = requestService.findRequests(fundVersion.getFund(), state, type, description, fromDate, toDate, subType);
         return factoryVo.createRequest(requests, detail, fundVersion);
     }
 

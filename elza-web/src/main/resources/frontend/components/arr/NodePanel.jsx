@@ -167,7 +167,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        this.requestData(this.props.versionId, this.props.node);
+        this.requestData(this.props.versionId, this.props.node, this.props.showRegisterJp, this.props.showDaosJp);
         this.ensureItemVisible();
         this.trySetFocus(this.props);
     }

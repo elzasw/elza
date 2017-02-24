@@ -72,7 +72,18 @@ for (entitaTyp in ENTITIES) {
     ExternalRecordVO record = new ExternalRecordVO();
     records.add(record);
 
-    record.setDetail(createDetail(entitaTyp));
+    Iterator<PopisTyp> iterator = interpiEntity.getPopisTyp().iterator();
+    if (iterator.hasNext()) {
+        List<String> details = new ArrayList<>();
+        while(iterator.hasNext()) {
+            PopisTyp popis = iterator.next();
+            details.add(popis.getTextPopisu());
+        }
+        record.setDetail(details.join("; "));
+    } else {
+        record.setDetail(createDetail(entitaTyp));
+    }
+
     record.setName(generatePartyNameString(oznaceniTyp, interpiEntity));
     record.setRecordId(FACTORY.getInterpiRecordId(interpiEntity));
 

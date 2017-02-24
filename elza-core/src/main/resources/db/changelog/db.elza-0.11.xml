@@ -80,4 +80,16 @@
         <addUniqueConstraint constraintName="arr_packet_unique_col" tableName="arr_packet" columnNames="fund_id, storage_number, packet_type_id" />
     </changeSet>
 
+    <changeSet id="20170220105412" author="slapa">
+        <delete tableName="arr_request_queue_item" />
+        <update tableName="arr_request">
+            <column name="state" value="REJECTED" />
+            <column name="reject_reason" value="DB upgrade: 20170220105412" />
+            <where>state = 'QUEUED'</where>
+        </update>
+        <addColumn tableName="arr_request_queue_item">
+            <column name="data" type="text" />
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

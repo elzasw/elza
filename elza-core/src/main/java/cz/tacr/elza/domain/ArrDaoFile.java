@@ -36,6 +36,9 @@ public class ArrDaoFile implements Serializable {
     @JoinColumn(name = "daoId", nullable = false)
     private ArrDao dao;
 
+    @Column(name = "daoId", nullable = false, insertable = false, updatable = false)
+    private Integer daoId;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrDaoFileGroup.class)
     @JoinColumn(name = "daoFileGroupId")
     private ArrDaoFileGroup daoFileGroup;
@@ -96,6 +99,7 @@ public class ArrDaoFile implements Serializable {
 
     public void setDao(final ArrDao dao) {
         this.dao = dao;
+        this.daoId = dao == null ? null : dao.getDaoId();
     }
 
     public ArrDaoFileGroup getDaoFileGroup() {
@@ -216,5 +220,9 @@ public class ArrDaoFile implements Serializable {
         SHA256,
         SHA384,
         SHA512,
+    }
+
+    public Integer getDaoId() {
+        return daoId;
     }
 }

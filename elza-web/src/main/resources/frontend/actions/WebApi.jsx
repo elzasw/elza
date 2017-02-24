@@ -567,13 +567,14 @@ class WebApi {
         return getData({}, 100);
     }
 
-    findRequests(versionId, type, state, description, fromDate, toDate) {
+    findRequests(versionId, type, state, description, fromDate, toDate, subType) {
         return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/requests/' + versionId, {
             state,
             type,
             description,
             fromDate,
-            toDate
+            toDate,
+            subType
         });
     }
 

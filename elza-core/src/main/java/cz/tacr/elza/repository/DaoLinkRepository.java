@@ -3,6 +3,7 @@ package cz.tacr.elza.repository;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrNode;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
@@ -23,4 +24,7 @@ public interface DaoLinkRepository extends ElzaJpaRepository<ArrDaoLink, Integer
     List<ArrDaoLink> findByDao(ArrDao arrDao);
 
     List<ArrDaoLink> findByNodeIdInAndDeleteChangeIsNull(Collection<Integer> nodeIds);
+
+    @Modifying
+    void deleteByNode(ArrNode node);
 }

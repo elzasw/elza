@@ -21,6 +21,18 @@ import javax.annotation.Nullable;
 import javax.persistence.Query;
 
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.repository.CachedNodeRepository;
+import cz.tacr.elza.repository.DaoFileGroupRepository;
+import cz.tacr.elza.repository.DaoFileRepository;
+import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.DaoLinkRequestRepository;
+import cz.tacr.elza.repository.DaoPackageRepository;
+import cz.tacr.elza.repository.DaoRepository;
+import cz.tacr.elza.repository.DaoRequestDaoRepository;
+import cz.tacr.elza.repository.DaoRequestRepository;
+import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
+import cz.tacr.elza.repository.DigitizationRequestRepository;
+import cz.tacr.elza.repository.RequestQueueItemRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -208,6 +220,42 @@ public class ArrangementService {
 
     @Autowired
     private ArrangementCacheService arrangementCacheService;
+
+    @Autowired
+    private DaoLinkRepository daoLinkRepository;
+
+    @Autowired
+    private DigitizationRequestRepository digitizationRequestRepository;
+
+    @Autowired
+    private DigitizationRequestNodeRepository digitizationRequestNodeRepository;
+
+    @Autowired
+    private DaoRequestRepository daoRequestRepository;
+
+    @Autowired
+    private DaoLinkRequestRepository daoLinkRequestRepository;
+
+    @Autowired
+    private DaoRequestDaoRepository daoRequestDaoRepository;
+
+    @Autowired
+    private RequestQueueItemRepository requestQueueItemRepository;
+
+    @Autowired
+    private DaoFileRepository daoFileRepository;
+
+    @Autowired
+    private DaoFileGroupRepository daoFileGroupRepository;
+
+    @Autowired
+    private DaoRepository daoRepository;
+
+    @Autowired
+    private DaoPackageRepository daoPackageRepository;
+
+    @Autowired
+    private CachedNodeRepository cachedNodeRepository;
 
     /**
      * Vytvoření archivního souboru.
@@ -558,6 +606,7 @@ public class ArrangementService {
             }
         }
 
+        cachedNodeRepository.deleteByFund(fund);
 
         ArrNode rootNode = version.getRootNode();
         ArrLevel rootLevel = levelRepository.findNodeInRootTreeByNodeId(rootNode, rootNode, version.getLockChange());
@@ -572,7 +621,19 @@ public class ArrangementService {
         policyService.deleteFundVisiblePolicies(fund);
         userService.deleteByFund(fund);
 
+        requestQueueItemRepository.deleteByFund(fund);
+
+        digitizationRequestNodeRepository.deleteByFund(fund);
+        digitizationRequestRepository.deleteByFund(fund);
+
+        daoLinkRequestRepository.deleteByFund(fund);
+
+        daoRequestDaoRepository.deleteByFund(fund);
+        daoRequestRepository.deleteByFund(fund);
+
         deleteFundLevels(rootLevel);
+
+        daoLinkRepository.deleteByNode(node);
         changeRepository.deleteByPrimaryNode(node);
 
         nodeRegisterRepository.findByNode(node).forEach(relation -> {
@@ -593,8 +654,15 @@ public class ArrangementService {
                 faScope -> faRegisterRepository.delete(faScope)
         );
 
+        daoFileRepository.deleteByFund(fund);
+        daoFileGroupRepository.deleteByFund(fund);
+        daoRepository.deleteByFund(fund);
+        daoPackageRepository.deleteByFund(fund);
 
         eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.FUND_DELETE, fundId));
+
+        nodeRepository.deleteByFund(fund);
+
         fundRepository.delete(fundId);
 
         Query deleteNotUseChangesQuery = revertingChangesService.createDeleteNotUseChangesQuery();
@@ -721,6 +789,8 @@ public class ArrangementService {
         nodeConformityInfoRepository.findByNode(node).forEach(conformityInfo -> {
             deleteConformityInfo(conformityInfo);
         });
+
+        daoLinkRepository.deleteByNode(node);
 
         changeRepository.deleteByPrimaryNode(node);
 

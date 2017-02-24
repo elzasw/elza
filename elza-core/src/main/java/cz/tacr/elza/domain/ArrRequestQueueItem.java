@@ -8,10 +8,12 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
+import org.hibernate.annotations.Type;
 
 /**
  * Položka ve frontě pro odeslání do externích systémů.
@@ -31,6 +33,9 @@ public class ArrRequestQueueItem {
     @JoinColumn(name = "requestId", nullable = false)
     private ArrRequest request;
 
+    @Column(name = "requestId", nullable = false, insertable = false, updatable = false)
+    private Integer requestId;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = "createChangeId", nullable = false)
     private ArrChange createChange;
@@ -43,6 +48,11 @@ public class ArrRequestQueueItem {
 
     @Column(nullable = false)
     private Boolean send;
+
+    @Column(nullable = false)
+    @Lob
+    @Type(type = "org.hibernate.type.TextType")
+    private String data;
 
     public Integer getRequestQueueItemId() {
         return requestQueueItemId;
@@ -58,6 +68,7 @@ public class ArrRequestQueueItem {
 
     public void setRequest(final ArrRequest request) {
         this.request = request;
+        this.requestId = request == null ? null : request.getRequestId();
     }
 
     public ArrChange getCreateChange() {
@@ -90,5 +101,17 @@ public class ArrRequestQueueItem {
 
     public void setSend(final Boolean send) {
         this.send = send;
+    }
+
+    public String getData() {
+        return data;
+    }
+
+    public void setData(final String data) {
+        this.data = data;
+    }
+
+    public Integer getRequestId() {
+        return requestId;
     }
 }

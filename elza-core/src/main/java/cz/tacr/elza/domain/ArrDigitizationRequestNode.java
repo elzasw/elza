@@ -1,5 +1,6 @@
 package cz.tacr.elza.domain;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -26,6 +27,9 @@ public class ArrDigitizationRequestNode {
     @JoinColumn(name = "digitizationRequestId", nullable = false)
     private ArrDigitizationRequest digitizationRequest;
 
+    @Column(name = "digitizationRequestId", insertable = false, updatable = false)
+    private Integer digitizationRequestId;
+
     @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrNode.class)
     @JoinColumn(name = "nodeId", nullable = false)
     private ArrNode node;
@@ -44,6 +48,7 @@ public class ArrDigitizationRequestNode {
 
     public void setDigitizationRequest(final ArrDigitizationRequest digitizationRequest) {
         this.digitizationRequest = digitizationRequest;
+        this.digitizationRequestId = digitizationRequest == null ? null : digitizationRequest.getRequestId();
     }
 
     public ArrNode getNode() {
@@ -52,5 +57,9 @@ public class ArrDigitizationRequestNode {
 
     public void setNode(final ArrNode node) {
         this.node = node;
+    }
+
+    public Integer getDigitizationRequestId() {
+        return digitizationRequestId;
     }
 }
