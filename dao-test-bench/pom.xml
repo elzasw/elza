@@ -49,7 +49,7 @@
 							<wsdlRoot>../elza-ws-api/src/main/resources/wsdl/</wsdlRoot>
 							<defaultOptions>
 								<extraargs>
-									<extraarg>-verbose</extraarg>
+<!--									<extraarg>-verbose</extraarg>-->
 									<extraarg>-autoNameResolution</extraarg>
 									<extraarg>-wsdlLocation</extraarg>
 									<wsdlurl />
