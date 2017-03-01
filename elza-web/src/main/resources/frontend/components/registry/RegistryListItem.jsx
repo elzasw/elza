@@ -18,10 +18,20 @@ class RegistryListItem extends AbstractReactComponent {
         relations: React.PropTypes.array,
     };
 
+    getRecordId = (data) => {
+        if(data.externalId) {
+            if(data.externalSystem && data.externalSystem.name){
+                return data.externalSystem.name + ':' + data.externalId;
+            } else {
+                return 'UNKNOWN:' + data.externalId;
+            }
+        } else  {
+            return data.id;
+        }
+    }
 
     render() {
-        const {className, parents, typesToRoot, isActive, hierarchical, id, record, registryParentId, registryTypesId, ...otherProps} = this.props;
-
+        const {className, parents, typesToRoot, isActive, hierarchical, id, record, registryParentId, registryTypesId, externalId, externalSystem, ...otherProps} = this.props;
 
         const parentsShown = [];
         const parentsTypeShown = [];
@@ -30,6 +40,13 @@ class RegistryListItem extends AbstractReactComponent {
                 parentsShown.push(val.id);
             });
         }
+
+        var data = {
+            externalId:externalId,
+            externalSystem:externalSystem,
+            id:id
+        };
+
         if (typesToRoot) {
             typesToRoot.map((val) => {
                 parentsTypeShown.push(val.id);
@@ -71,10 +88,15 @@ class RegistryListItem extends AbstractReactComponent {
                 });
             }
 
-            return <div key={'record-id-' + id} title={path} className={cls} onDoubleClick={doubleClick} {...otherProps}>
-                <div><Icon glyph={iconName} /></div>
-                <div title={record} className={clsItem}>{record}</div>
-                <div className="path" >{path.join(' | ')}</div>
+            return <div className={classNames('registry-list-item', className)} key={'record-id-' + id} title={path} className={cls} onDoubleClick={doubleClick} {...otherProps}>
+                <div>
+                    <Icon glyph={iconName} />
+                    <span className="name">{record}</span>
+                </div>
+                <div>
+                    <span className="path date">{path.join(' | ')}</span>
+                    <span className="description">{this.getRecordId(data)}</span>
+                </div>
             </div>;
         }  else {
             // jednořádkový výsledek

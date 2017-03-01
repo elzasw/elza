@@ -197,9 +197,46 @@ class RegistryDetail extends AbstractReactComponent {
         });
     };
 
+    getRecordId = (data) => {
+        if(data.externalId) {
+            if(data.externalSystem && data.externalSystem.name){
+                return data.externalSystem.name + ':' + data.externalId;
+            } else {
+                return 'UNKNOWN:' + data.externalId;
+            }
+        } else  {
+            return data.id;
+        }
+    }
+    getHierarchy = (data) => {
+        const hierarchy = [];
+        data.typesToRoot.slice().reverse().map((val) => {
+            hierarchy.push(val.name);
+        });
+        data.parents.slice().reverse().map((val) => {
+            hierarchy.push(val.name);
+        });
+        return hierarchy;
+    }
+
+    createHierarchyElement = (hierarchy,delimiter = ">") => {
+        var hierarchyElement = [];
+        for(var i = 0; i < hierarchy.length; i++){
+            if(i > 0){hierarchyElement.push(<span className="hierarchy-delimiter">{delimiter}</span>);}
+            hierarchyElement.push(<span className="hierarchy-level">{hierarchy[i].toUpperCase()}</span>);
+        }
+        return hierarchyElement;
+    }
+
     render() {
         const {registryDetail} = this.props;
         const {data, fetched, isFetching, id} = registryDetail;
+
+        let icon = 'fa-folder';
+
+        if (registryDetail.data && registryDetail.data.hierarchical === false) {
+            icon = 'fa-file-o';
+        }
 
         if (!id) {
             return <div className="unselected-msg">
@@ -214,53 +251,64 @@ class RegistryDetail extends AbstractReactComponent {
 
         const disableEdit = !this.canEdit();
 
-        const hiearchie = [];
 
-        data.typesToRoot.slice().reverse().map((val) => {
-            hiearchie.push(val.name);
-        });
-
-
-        data.parents.slice().reverse().map((val) => {
-            hiearchie.push(val.name);
-        });
+        var hierarchy = this.getHierarchy(data);
+        var delimiter = <Icon glyph="fa-angle-right"/>;
+        var hierarchyElement = this.createHierarchyElement(hierarchy,delimiter);
 
         return <div className='registry'>
             <Shortcuts name='RegistryDetail' handler={this.handleShortcuts}>
-                <div ref='registryTitle' className="registry-title" tabIndex={0}>
-                    <div className='registry-content'>
-                        <h1 className='registry'>
-                            {data.record}
-                            <NoFocusButton disabled={disableEdit} className="registry-record-edit" onClick={this.handleRecordUpdate}>
-                                <Icon glyph='fa-pencil'/>
-                            </NoFocusButton>
-                            {data.partyId && <NoFocusButton className="registry-record-party" onClick={this.handleGoToParty}>
-                                <Icon glyph='fa-user'/>
-                            </NoFocusButton>}
-                        </h1>
-                        <div className='line charakteristik'>
-                            <label>{i18n('registry.detail.characteristics')}</label>
-                            <div>{data.characteristics}</div>
+                <div className="registry-detail">
+                    <div className="registry-header">
+                        <div className="header-icon">
+                            <Icon glyph={icon}/>
                         </div>
-                        <div className='line hiearch'>
-                            <label>{i18n('registry.detail.type')}</label>
-                            <div>{hiearchie.join(' > ')}</div>
-                        </div>
-
-                        <div className='line variant-name'>
-                            <label>{i18n('registry.detail.variantRegistry')}</label>
-                            <RegistryDetailVariantRecords value={data.variantRecords ? data.variantRecords : []} regRecordId={data.id} disabled={disableEdit} />
-                        </div>
-                        <div className='line'>
-                            <div className='reg-coordinates-labels'>
-                                <label>{i18n('registry.detail.coordinates')}</label>
-                                <label>{i18n('registry.coordinates.description')}</label>
+                        <div className="header-content">
+                            <div>
+                                <div>
+                                    <div className="title">{data.record}</div>
+                                </div>
+                                <div>
+                                    <NoFocusButton disabled={disableEdit} className="registry-record-edit btn-action" onClick={this.handleRecordUpdate}>
+                                        <Icon glyph='fa-pencil'/>
+                                    </NoFocusButton>
+                                    {data.partyId && <NoFocusButton className="registry-record-party btn-action" onClick={this.handleGoToParty}>
+                                        <Icon glyph='fa-user'/>
+                                    </NoFocusButton>}
+                                </div>
                             </div>
-                            <RegistryDetailCoordinates value={data.coordinates ? data.coordinates : []} regRecordId={data.id} disabled={disableEdit} />
+                            <div>
+                                <div className="description">{this.getRecordId(data)}</div>
+                                <div>{dateTimeToString(new Date(data.lastUpdate))}</div>
+                            </div>
                         </div>
-                        <div className='line note'>
-                            <label>{i18n('registry.detail.note')}</label>
-                            <FormInput disabled={disableEdit} onChange={this.handleNoteChange} onBlur={this.handleNoteBlur} componentClass='textarea' value={this.state.note} />
+                    </div>
+                    <div className="registry-type">
+                        {hierarchyElement}
+                    </div>
+                    <div ref='registryTitle' className="registry-title" tabIndex={0}>
+                        <div className='registry-content'>
+
+                            <div className='line charakteristik'>
+                                <label>{i18n('registry.detail.characteristics')}</label>
+                                <div>{data.characteristics}</div>
+                            </div>
+
+                            <div className='line variant-name'>
+                                <label>{i18n('registry.detail.variantRegistry')}</label>
+                                <RegistryDetailVariantRecords value={data.variantRecords ? data.variantRecords : []} regRecordId={data.id} disabled={disableEdit} />
+                            </div>
+                            <div className='line'>
+                                <div className='reg-coordinates-labels'>
+                                    <label>{i18n('registry.detail.coordinates')}</label>
+                                    <label>{i18n('registry.coordinates.description')}</label>
+                                </div>
+                                <RegistryDetailCoordinates value={data.coordinates ? data.coordinates : []} regRecordId={data.id} disabled={disableEdit} />
+                            </div>
+                            <div className='line note'>
+                                <label>{i18n('registry.detail.note')}</label>
+                                <FormInput disabled={disableEdit} onChange={this.handleNoteChange} onBlur={this.handleNoteBlur} componentClass='textarea' value={this.state.note} />
+                            </div>
                         </div>
                     </div>
                 </div>

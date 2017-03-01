@@ -36,6 +36,7 @@ import * as perms from 'actions/user/Permission.jsx';
 import {initForm} from "actions/form/inlineForm.jsx"
 import {getMapFromList} from 'stores/app/utils.jsx'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
+import {PartyListItem} from 'components/index.jsx';
 
 const keyModifier = Utils.getKeyModifier();
 
@@ -273,6 +274,18 @@ class PartyDetail extends AbstractReactComponent {
         }
     };
 
+    getPartyId = (data) => {
+        if(data.record.externalId) {
+            if(data.record.externalSystem && data.record.externalSystem.name){
+                return data.record.externalSystem.name + ':' + data.record.externalId;
+            } else {
+                return 'UNKNOWN:' + data.record.externalId;
+            }
+        } else  {
+            return data.id;
+        }
+    }
+
     render() {
         const {userDetail, partyDetail, fields, recordTypes} = this.props;
         const {sourceInformation, creators} = fields;
@@ -289,7 +302,9 @@ class PartyDetail extends AbstractReactComponent {
                 <div className="msg-text">{i18n('party.noSelection.message')}</div>
             </div>
         }
-
+        var type = party.partyType.code;
+        var icon = PartyListItem.partyIconByPartyTypeCode(type);
+        
         let canEdit = userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: party.record.scopeId});
 
         const partyType = this.getPartyType();
@@ -303,16 +318,23 @@ class PartyDetail extends AbstractReactComponent {
         return <Shortcuts name='PartyDetail' handler={this.handleShortcuts}>
             <div tabIndex={0} ref='partyDetail' className="party-detail">
                 <div className="party-header">
-                    <div>
-                        <h3>{party.name}</h3>
-                        {party.record.externalId && party.record.externalSystem && party.record.externalSystem.name && <span className="description">{party.record.externalSystem.name + ':' + party.record.externalId}</span>}
-                        {party.record.externalId && (!party.record.externalSystem || !party.record.externalSystem.name) && <span className="description">{'UNKNOWN:' + party.record.externalId}</span>}
-                        {!party.record.externalId && <span className="description">{party.id}</span>}
+                    <div className="header-icon">
+                        <Icon glyph={icon}/>
                     </div>
-                    <div>
-                        <h3>{party.partyType.description}</h3>
-                        <div>{dateTimeToString(new Date(party.record.lastUpdate))}</div>
+                    <div className="header-content">
+                        <div>
+                            <div>
+                                <div className="title">{party.name}</div>
+                            </div>
+                        </div>
+                        <div>
+                            <div className="description">{this.getPartyId(party)}</div>
+                            <div>{dateTimeToString(new Date(party.record.lastUpdate))}</div>
+                        </div>
                     </div>
+                </div>
+                <div className="party-type">
+                    {party.partyType.description}
                 </div>
                 <Form className="party-body">
                     {parts.map((i, index) => {
