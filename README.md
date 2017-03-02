@@ -56,12 +56,15 @@ V projektu elza-web v adresáři ```src/main/resources/frontend``` pokud vytvoř
 Pomocí stisku ctrl+q se mění umístění panelu nástrojů.
 
 
-### Sestavení a spuštění war v Tomcat
+### Release sestavení a spuštění war v Tomcat
+V projektu elza-web je nutné v adresáři config založit soubor elza.yaml s připojením k databázi.
+Podrobnosti o nastavení viz sekce 'Databázové připojení'.
+Pro release v souboru elza-web/config/elza.yaml zakomentovat radek: buildType: DEV
 ```
-mvn -Pexec install
+mvn -Prelease install
 ```
 
-Sestavenou webovou aplikaci najdete v `elza-war/target/elza.war`.
+Sestavenou webovou aplikaci najdete v `distrib/elza-war/target/elza.war`.
 Proveďte standardním způsobem deploy na aplikační server Tomcat verze 8.0.
 
 ### Spuštění v IDE (UI - React), určeno pro vývoj
@@ -152,8 +155,10 @@ logging:
   file: ${elza.workingDir}/log/elza.log
 ```
 
-### Import balíčku s pravidly
-Po přeložení spuštění je potřeba naimportovat základní pravidla - soubor elza-war/target/elza-packages.zip
+### Import balíčku cz-base a balíčku s pravidly
+Po přeložení spuštění je potřeba naimportovat 
+- balíček cz-base - soubor package-cz-base/target/elza-package-cz-base-?.zip
+- základní pravidla - soubor rules-cz-zp2015/target/elza-rules-cz-zp2015-?.zip
 
 ### Import institucí
 Aby bylo možné vytvářen archivní fondy, je nutné importovat instituci v sekci Osoby - soubor elza-core/src/test/resources/institution-import.xml
