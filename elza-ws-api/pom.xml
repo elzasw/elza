@@ -24,26 +24,30 @@
                             <sourceRoot>${project.build.directory}/generated/cxf</sourceRoot>
                             <defaultOptions>
                             	<exceptionSuper>java.lang.RuntimeException</exceptionSuper>
+				<!-- Note: extraargs cannot be specified inside defaultOptions due to bug in plugin -->
                             </defaultOptions>
                             <wsdlOptions>
                                 <wsdlOption>
                                     <wsdl>${basedir}/src/main/resources/wsdl/elza-core-v1.wsdl</wsdl>
-                                    <extraargs>
-                                        <extraarg>-verbose</extraarg>
+                            	    <extraargs>
+<!--                                        <extraarg>-quiet</extraarg>-->
+<!--                                        <extraarg>-verbose</extraarg>-->
                                         <extraarg>-autoNameResolution</extraarg>
                                     </extraargs>
                                 </wsdlOption>
                                 <wsdlOption>
                                     <wsdl>${basedir}/src/main/resources/wsdl/elza-dao-service-v1.wsdl</wsdl>
-                                    <extraargs>
-                                        <extraarg>-verbose</extraarg>
+                            	    <extraargs>
+<!--                                        <extraarg>-quiet</extraarg>-->
+<!--                                        <extraarg>-verbose</extraarg>-->
                                         <extraarg>-autoNameResolution</extraarg>
                                     </extraargs>
                                 </wsdlOption>
                                 <wsdlOption>
                                     <wsdl>${basedir}/src/main/resources/wsdl/elza-digitization-service-v1.wsdl</wsdl>
-                                    <extraargs>
-                                        <extraarg>-verbose</extraarg>
+                            	    <extraargs>
+<!--                                        <extraarg>-quiet</extraarg>-->
+<!--                                        <extraarg>-verbose</extraarg>-->
                                         <extraarg>-autoNameResolution</extraarg>
                                     </extraargs>
                                 </wsdlOption>

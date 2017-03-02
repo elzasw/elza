@@ -27,7 +27,7 @@ class PartyListItem extends AbstractReactComponent {
                 return 'fa-building';
                 break;
             case PARTY_TYPE_CODES.EVENT:
-                return 'fa-hospital-o';
+                return 'fa-calendar';
                 break;
             case PARTY_TYPE_CODES.DYNASTY:
                 return 'fa-shield';
