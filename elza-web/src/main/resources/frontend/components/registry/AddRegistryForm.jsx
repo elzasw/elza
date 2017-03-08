@@ -49,20 +49,23 @@ class AddRegistryForm extends AbstractReactComponent {
 
     componentDidMount() {
         this.dispatch(getRegistryRecordTypesIfNeeded());
+        console.log(this.props.initialValues);
         this.prepareState(this.props);
     }
 
-    prepareState(props){
+    prepareState = (props) => {
         const {fields: {registerTypeId}, parentRecordId, registryList:{filter:{registryTypeId}}, registryRegionRecordTypes} = props;
 
         // Pokud není nastaven typ rejstříku, pokusíme se ho nastavit
         if (!registerTypeId || registerTypeId.value === "") {
             // Pokud je předán parentRecordId, přednačte se do prvku výběr rejstříku a tento prvek se nastaví jako disabled
             if (parentRecordId !== null) {
-                this.setState({disabled: true});
-                WebApi.getRegistry(parentRecordId).then(json => {
-                    this.props.load(json);
-                });
+                if (!this.state.disabled) {
+                    WebApi.getRegistry(parentRecordId).then(json => {
+                        this.props.load({registerTypeId: json.registerTypeId, scopeId: json.scopeId});
+                    });
+                    this.setState({disabled: true});
+                }
             } else {    //  pokud není předán parentRecordId, může se výběr rejstříku editovat
                 this.setState({disabled: false});
                 if (registryTypeId && this.isValueUseable(registryRegionRecordTypes.item, registryTypeId)){ // pokud o vybrání nějaké položky, která je uvedena v registryRegion.registryTypesId
