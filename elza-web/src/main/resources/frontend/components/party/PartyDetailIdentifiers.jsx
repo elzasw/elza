@@ -101,8 +101,7 @@ class PartyDetailIdentifiers extends AbstractReactComponent {
 
     render() {
         const {party, canEdit} = this.props;
-        var hasValues = party.partyGroupIdentifiers.length > 0;
-        console.log(hasValues);
+        const hasValues = party.partyGroupIdentifiers.length > 0;
         return <div className="party-detail-names">
             <div>
                 <label className="group-label">{i18n("party.detail.partyGroupIdentifiers")}</label>

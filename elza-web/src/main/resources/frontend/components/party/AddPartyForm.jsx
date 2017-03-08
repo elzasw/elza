@@ -149,15 +149,15 @@ class AddPartyForm extends AbstractReactComponent {
             }
         };
 
-        let found;
         for (let type of items) {
-            found = loop(type);
-            if (found) {
+            loop(type);
+            if (res) {
                 break;
             }
         }
 
-        return found ? found.id : null;
+
+        return res ? res.id : null;
     };
 
     dataRefresh = (props = this.props) => {
