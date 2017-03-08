@@ -72,6 +72,7 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
             Order order = builder.asc(record.get(RegRecord.RECORD));
             query.where(condition).orderBy(order);
         }
+        query.distinct(true);
 
 
         return entityManager.createQuery(query)
@@ -110,7 +111,7 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
         if (condition != null) {
             query.where(condition);
         }
-
+        query.distinct(true);
         return entityManager.createQuery(query).getSingleResult();
     }
 
