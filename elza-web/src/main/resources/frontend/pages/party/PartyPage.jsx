@@ -114,6 +114,7 @@ class PartyPage extends AbstractReactComponent {
     handleExtImport = () => {
         this.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={true} onSubmitForm={(data) => {
             this.dispatch(partyDetailFetchIfNeeded(data.partyId));
+            this.dispatch(partyListInvalidate());
         }} />, "dialog-lg"));
     };
 

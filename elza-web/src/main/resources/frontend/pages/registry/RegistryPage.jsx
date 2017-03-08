@@ -212,6 +212,7 @@ class RegistryPage extends AbstractReactComponent {
     handleExtImport = () => {
         this.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={false} onSubmitForm={(data) => {
             this.dispatch(registryDetailFetchIfNeeded(data.id));
+            this.dispatch(registryListInvalidate());
         }}/>, "dialog-lg"));
     };
 
