@@ -49,6 +49,11 @@ var messages = {
     "global.action.downloadAll": "Stáhnout vše",
     "global.action.run": "Spustit",
 
+    "download.allreadyDownloading" : "Požadavek na stažení souboru již byl odeslán",
+    "download.error.title": "Chyba stahování",
+    "download.error.timeout": "Vypršel časový limit na obsluhu požadavku",
+
+
     "dataType.coordinates.format": "Zadávejte ve tvaru \"15.5154,49.535\"",
     "dataType.decimal.format": null,
     "dataType.fileRef.format": null,

@@ -6,6 +6,7 @@ import {fetchFundOutputFilesIfNeeded, fundOutputFilesFilterByText} from 'actions
 import {UrlFactory} from 'actions/index.jsx';
 
 import './FundFiles.less';
+import {downloadFile} from "../../actions/global/download";
 
 /**
  * Správa souborů.
@@ -36,18 +37,19 @@ class FundOutputFiles extends AbstractReactComponent {
         const {versionId, outputResultId} = props;
         this.dispatch(fetchFundOutputFilesIfNeeded(versionId, outputResultId));
     };
-    
+
     handleTextSearch = (text) => {
         const {versionId} = this.props;
         this.dispatch(fundOutputFilesFilterByText(versionId, text));
     };
 
     handleDownload = (id) => {
-        window.open(UrlFactory.downloadDmsFile(id))
+        this.dispatch(downloadFile("arr-output-file-" + id, UrlFactory.downloadDmsFile(id)));
     };
 
     handleDownloadAll = () => {
-        window.open(UrlFactory.downloadOutputResult(this.props.outputResultId))
+        const {versionId, outputResultId} = this.props;
+        this.dispatch(downloadFile("arr-output-files-all-" + versionId, UrlFactory.downloadOutputResult(outputResultId)));
     };
 
     focus = () => {

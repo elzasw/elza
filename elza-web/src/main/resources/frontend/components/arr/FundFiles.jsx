@@ -8,6 +8,7 @@ import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {UrlFactory} from 'actions/index.jsx';
 
 import './FundFiles.less'
+import {downloadFile} from "../../actions/global/download";
 
 let _ReplaceId = null;
 
@@ -61,7 +62,7 @@ class FundFiles extends AbstractReactComponent {
     };
 
     handleDownload = (id) => {
-        window.open(UrlFactory.downloadDmsFile(id))
+        this.dispatch(downloadFile("arr-file-" + id, UrlFactory.downloadDmsFile(id)));
     };
 
     handleReplace = (id) => {
@@ -71,7 +72,7 @@ class FundFiles extends AbstractReactComponent {
 
     handleReplaceSubmit = (e) => {
         const fileList = e.target.files;
-        
+
         if (fileList.length != 1) {
             return;
         }

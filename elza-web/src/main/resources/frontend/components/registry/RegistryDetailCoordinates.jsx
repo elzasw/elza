@@ -22,6 +22,7 @@ import {
 } from 'actions/registry/registry.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
+import {downloadFile} from "../../actions/global/download";
 
 
 
@@ -83,7 +84,7 @@ class RegistryDetailCoordinates extends AbstractReactComponent {
     };
 
     handleDownload = (objectId) => {
-        window.open(UrlFactory.exportRegCoordinate(objectId));
+        this.dispatch(downloadFile("registry-coordinates-" + objectId, UrlFactory.exportRegCoordinate(objectId)));
     };
 
     handleDelete = (item, index) => {

@@ -21,6 +21,7 @@ import {setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 import {WebApi} from 'actions/index.jsx';
 import './SubNodeForm.less'
+import {downloadFile} from "../../actions/global/download";
 
 const classNames = require('classnames');
 
@@ -699,12 +700,12 @@ class SubNodeForm extends AbstractReactComponent {
     handleCoordinatesDownload(objectId) {
         const {versionId} = this.props;
 
-        window.open(UrlFactory.exportArrCoordinate(objectId, versionId));
+        this.dispatch(downloadFile("arr-registry-coordinates-" + objectId, UrlFactory.exportArrCoordinate(objectId, versionId)));
     }
 
     handleJsonTableDownload(objectId) {
         const {versionId, typePrefix} = this.props;
-        window.open(UrlFactory.exportItemCsvExport(objectId, versionId, typePrefix));
+        this.dispatch(downloadFile("arr-json-table-" + objectId + "-" + versionId, UrlFactory.exportItemCsvExport(objectId, versionId, typePrefix)));
     }
 
     /**

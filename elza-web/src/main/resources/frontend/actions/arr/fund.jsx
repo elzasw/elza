@@ -12,6 +12,7 @@ import {createFundRoot, getFundFromFundAndVersion} from 'components/arr/ArrUtils
 import {fundsSelectFund} from 'actions/fund/fund.jsx'
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {storeLoadData} from 'actions/store/store.jsx'
+import {downloadFile} from "../global/download";
 
 /**
  * Fetch dat pro otevřené záložky AS, pokud je potřeba - např. název atp.
@@ -111,7 +112,7 @@ export function deleteFund(fundId) {
 export function exportFund(fundId, transformationName) {
     return dispatch => {
         dispatch(modalDialogHide());
-        window.location.href = UrlFactory.exportFund(fundId, transformationName)
+        dispatch(downloadFile("fund-" + fundId, UrlFactory.exportFund(fundId, transformationName)));
     }
 }
 

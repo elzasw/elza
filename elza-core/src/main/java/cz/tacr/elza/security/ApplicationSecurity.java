@@ -123,6 +123,7 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(final HttpSecurity http) throws Exception {
+        http.headers().frameOptions().sameOrigin();
         http.authorizeRequests().antMatchers("/api/**").authenticated();
         http.csrf().disable();
         http.sessionManagement()
