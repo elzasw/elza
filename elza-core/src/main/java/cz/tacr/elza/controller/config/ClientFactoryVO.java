@@ -4,6 +4,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -794,7 +795,7 @@ public class ClientFactoryVO {
             }
         }
 
-        return roots;
+        return roots.stream().sorted(Comparator.comparing(RegRegisterTypeVO::getId)).collect(Collectors.toList());
     }
 
     /**
