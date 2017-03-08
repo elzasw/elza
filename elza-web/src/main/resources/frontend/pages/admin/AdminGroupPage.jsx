@@ -23,7 +23,6 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
         this.buildRibbon = this.buildRibbon.bind(this);
 
         this.bindMethods(
-            'renderListItem',
             'handleSearch',
             'handleSearchClear',
             'handleSelect',

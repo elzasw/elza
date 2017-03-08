@@ -32,7 +32,7 @@ class AbstractReactComponent extends React.Component {
     bindMethods(...methods) {
         methods.forEach( (method) => {
             if (!this[method]) {
-                console.error("Cannot bind method " + method + ".");
+                console.warn("Cannot bind method " + method + ".");
             } else {
                 this[method] = this[method].bind(this)
             }
