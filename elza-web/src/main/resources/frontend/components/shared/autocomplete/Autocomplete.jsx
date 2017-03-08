@@ -760,16 +760,6 @@ export default class Autocomplete extends AbstractReactComponent {
                 ...result.items,
             ];
         }
-        if (tree) { // posun depth pole
-            let arr = [];
-            for (let a=0; a<beforeTreeCount; a++) {
-                arr.push(0);
-            }
-            result.itemsDepth = [
-                ...arr,
-                ...result.itemsDepth
-            ];
-        }
 
         if (tree) { // posun depth pole
             let arr = [];
