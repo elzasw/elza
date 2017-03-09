@@ -109,6 +109,9 @@ class PartyField extends AbstractReactComponent {
             {this.state.count !== null && this.state.count > AUTOCOMPLETE_PARTY_LIST_SIZE && <div className="items-count">
                 {i18n('partyField.visibleCount', this.state.partyList.length, this.state.count)}
             </div>}
+            {this.state.count !== null && this.state.count === 0 && <div className="items-count">
+                {i18n('partyField.noItemsFound')}
+            </div>}
         </div>
     };
 

@@ -121,15 +121,23 @@ class RegistryField extends AbstractReactComponent {
 
     renderFooter = () => {
         const {footerButtons, userDetail} = this.props;
-        return <div>
-            {footerButtons && userDetail.hasOne(perms.REG_SCOPE_WR_ALL, perms.REG_SCOPE_WR) && <div className="create-record">
+        const {count, registryList} = this.state;
+
+        const buttons = footerButtons && userDetail.hasOne(perms.REG_SCOPE_WR_ALL, perms.REG_SCOPE_WR);
+        const hasCount = count !== null && (count > AUTOCOMPLETE_REGISTRY_LIST_SIZE || count === 0);
+
+        return hasCount || buttons ? <div>
+            {buttons && <div className="create-record">
                 <Button onClick={this.handleCreateRecord} type="button"><Icon glyph='fa-plus'/>{i18n('registry.addNewRegistry')}</Button>
                 <Button onClick={this.handleImport} type="button"><Icon glyph='fa-plus' /> {i18n("ribbon.action.registry.importExt")}</Button>
             </div>}
-            {this.state.count !== null && this.state.count > AUTOCOMPLETE_REGISTRY_LIST_SIZE && <div className="items-count">
-                {i18n('registryField.visibleCount', this.state.registryList.length, this.state.count)}
+            {count > AUTOCOMPLETE_REGISTRY_LIST_SIZE && <div className="items-count">
+                {i18n('registryField.visibleCount', registryList.length, count)}
             </div>}
-        </div>
+            {count === 0 && <div className="items-count">
+                {i18n('registryField.noItemsFound')}
+            </div>}
+        </div> : null;
     };
 
     renderRecord = (item, focus, active) => <TooltipTrigger

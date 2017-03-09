@@ -122,7 +122,7 @@ class RelationClassForm extends AbstractReactComponent {
                                     </FormInput>
                                 </div>
                                 <div className="record">
-                                    <RegistryField disabled={!i.roleType.id.value} partyId={partyId} {...i.record} roleTypeId={i.roleType.id.value} />
+                                    <RegistryField disabled={!i.roleType.id.value} partyId={partyId} {...i.record} roleTypeId={i.roleType.id.value} footer={true} footerButtons={false} />
                                 </div>
                                 <Button bsStyle="action" onClick={() => relationEntities.removeField(index)}><Icon glyph="fa-times" /></Button>
                             </div>)}
