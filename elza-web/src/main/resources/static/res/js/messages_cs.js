@@ -1100,6 +1100,7 @@ var messages = {
     "arr.request.title.newRequest": "Nový",
     "arr.request.action.storeAndSend": "Uložit a odeslat",
     "arr.request.title.request": "Požadavek",
+    "arr.request.title.rejectReason": "Důvod odmítnutí",
     "arr.request.title.daoRequest.type": "Typ požadavku",
     "arr.request.title.daoRequest.digitizationFrontdesk": "Digitalizační linka",
     "arr.request.title.daoRequest.system": "Ext. systém",

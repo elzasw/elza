@@ -28,6 +28,7 @@ import * as arrRequestActions from 'actions/arr/arrRequestActions';
 import RequestInlineForm from "./RequestInlineForm";
 import {DIGITIZATION, DAO, DAO_LINK, getRequestType} from './ArrUtils.jsx'
 import {refExternalSystemsFetchIfNeeded} from 'actions/refTables/externalSystems';
+import {ControlLabel} from 'react-bootstrap'
 
 const ShortcutsManager = require('react-shortcuts');
 const Shortcuts = require('react-shortcuts/component');
@@ -262,6 +263,9 @@ class ArrRequestDetail extends AbstractReactComponent {
                     {reqType === DAO_LINK && <div>
                         <label className="control-label">{i18n("arr.request.title.nodes")}</label>
                         {this.renderDaoLinkNode(req)}
+                    </div>}
+                    {req.state === "REJECTED" && req.rejectReason && <div>
+                        <ControlLabel>{i18n("arr.request.title.rejectReason")}</ControlLabel> {req.rejectReason}
                     </div>}
                 </div>
             )
