@@ -239,9 +239,10 @@ export function fund(state, action) {
                 reducer: fund,
             }
         case types.STORE_SAVE:
-            const {id, versionId, name, lockDate} = state;
+            const {id, versionId, name, lockDate, activeVersion} = state;
             return {
                 id,
+                activeVersion,
                 versionId,
                 name,
                 lockDate,

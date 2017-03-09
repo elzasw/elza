@@ -221,6 +221,7 @@ export default function arrRegion(state = initialState, action) {
             var index = indexById(state.funds, action.versionId, "versionId");
             return processFund(state, action, index);
 
+        case types.FUND_FUNDS_REQUEST:
         case types.FUND_FUNDS_RECEIVE:
             var changed = false;
             var newFunds = state.funds.map(fundObj => {

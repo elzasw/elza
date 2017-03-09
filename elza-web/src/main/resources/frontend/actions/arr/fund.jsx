@@ -27,9 +27,10 @@ export function fundsFetchIfNeeded() {
             if (fund.dirty && !fund.isFetching) {
                 versionIds.push(fund.versionId);
             }
-        })
+        });
 
         if (versionIds.length > 0) {
+            dispatch(fundsRequest(versionIds));
             WebApi.getFundsByVersionIds(versionIds)
                 .then(json => {
                     var funds = json.map(x => getFundFromFundAndVersion(x, x.versions[0]))
@@ -43,6 +44,17 @@ export function fundsFetchIfNeeded() {
                     })
                 })
         }
+    }
+}
+
+export function fundsRequest(versionIds) {
+    let fundMap = {};
+    versionIds.forEach(id => {
+        fundMap[id] = true
+    });
+    return {
+        type: types.FUND_FUNDS_REQUEST,
+        fundMap
     }
 }
 
