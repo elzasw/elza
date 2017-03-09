@@ -98,21 +98,27 @@ class PartyField extends AbstractReactComponent {
     };
 
     renderFooter = () => {
+
         const {refTables, footerButtons, userDetail} = this.props;
-        return <div>
-            {footerButtons && userDetail.hasOne(perms.REG_SCOPE_WR_ALL, perms.REG_SCOPE_WR) && <div className="create-party">
+        const {count} = this.state;
+
+        const buttons = footerButtons && userDetail.hasOne(perms.REG_SCOPE_WR_ALL, perms.REG_SCOPE_WR);
+        const hasCount = count !== null && (count > AUTOCOMPLETE_PARTY_LIST_SIZE || count === 0);
+
+        return hasCount || buttons ? <div>
+            {buttons && <div className="create-party">
                 <DropdownButton noCaret title={<div><Icon glyph='fa-download' /><span className="create-party-label">{i18n('party.addParty')}</span></div>} id="party-field" >
                     {refTables.partyTypes.items.map(type => <MenuItem key={'party' + type.id} onClick={() => this.handleCreateParty(type.id)} eventKey={type.id}>{type.name}</MenuItem>)}
                 </DropdownButton>
                 <Button onClick={this.handleImport} type="button"><Icon glyph='fa-plus' /> {i18n("ribbon.action.party.importExt")}</Button>
             </div>}
-            {this.state.count !== null && this.state.count > AUTOCOMPLETE_PARTY_LIST_SIZE && <div className="items-count">
+            {count > AUTOCOMPLETE_PARTY_LIST_SIZE && <div className="items-count">
                 {i18n('partyField.visibleCount', this.state.partyList.length, this.state.count)}
             </div>}
-            {this.state.count !== null && this.state.count === 0 && <div className="items-count">
+            {count === 0 && <div className="items-count">
                 {i18n('partyField.noItemsFound')}
             </div>}
-        </div>
+        </div> : null;
     };
 
     handleImport = () => {
