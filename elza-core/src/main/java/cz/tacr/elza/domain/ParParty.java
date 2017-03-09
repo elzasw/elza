@@ -254,6 +254,7 @@ public class ParParty extends AbstractVersionableEntity implements IRegScope {
     }
 
     @Override
+    @JsonIgnore
     public RegScope getRegScope() {
         return record.getScope();
     }
