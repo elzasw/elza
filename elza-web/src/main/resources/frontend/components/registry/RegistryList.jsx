@@ -218,6 +218,7 @@ class RegistryList extends AbstractReactComponent {
                 {registryTypes ? <Autocomplete
                         inputProps={ {placeholder: filter.registryTypeId === null ? i18n('registry.all') : ""} }
                         items={registryTypes}
+                        disabled={registryList.filter.parents.length ? true : false}
                         tree
                         alwaysExpanded
                         allowSelectItem={(id, item) => true}
