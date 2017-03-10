@@ -46,7 +46,7 @@ export function registryListInvalidate() {
 
 
 
-export function registryMove(registryParentId) {
+export function registryMove(parentRecordId) {
     return (dispatch, getState) => {
         const store = getState();
         const list = storeFromArea(store, AREA_REGISTRY_LIST);
@@ -56,8 +56,9 @@ export function registryMove(registryParentId) {
         }
 
         WebApi.getRegistry(list.recordForMove.id).then((data) => {
-            savingApiWrapper(dispatch, WebApi.updateRegistry({...data, registryParentId})).then(json => {
+            savingApiWrapper(dispatch, WebApi.updateRegistry({...data, parentRecordId})).then(json => {
                 dispatch(registryMoveFinish());
+                dispatch(registryListInvalidate());
             });
         });
     }
