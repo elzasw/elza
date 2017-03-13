@@ -48,8 +48,11 @@ const AdminRequestsQueuePage = class extends AbstractReactComponent {
             case DAO_LINK: {
                 return " - " + createDaoLinkName(request, userDetail);
             }
+            case DAO: {
+                return " - " + i18n("arr.request.title.type.dao." + request.type);
+            }
             default:
-                return "TODO [createDescription]: " + type;
+                return "Unknown type: " + type;
         }
     };
 
