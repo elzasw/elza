@@ -66,13 +66,11 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
             }
         }
 
-        // TODO Lebeda - kompatibilita dotazu !!!! nelze použít distinct na Text
-        // query.select(record).distinct(true);
+        query.select(record).distinct(true);
         if (condition != null) {
             Order order = builder.asc(record.get(RegRecord.RECORD));
             query.where(condition).orderBy(order);
         }
-        query.distinct(true);
 
 
         return entityManager.createQuery(query)
@@ -111,7 +109,7 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
         if (condition != null) {
             query.where(condition);
         }
-        query.distinct(true);
+
         return entityManager.createQuery(query).getSingleResult();
     }
 
