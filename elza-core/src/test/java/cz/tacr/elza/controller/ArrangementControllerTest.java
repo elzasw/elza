@@ -159,11 +159,11 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // TODO: test
         try {
-            System.out.println(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size());
+            logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size());
             Thread.sleep(5000);
-            System.out.println(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size());
+            logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size());
             Thread.sleep(5000);
-            System.out.println(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size());
+            logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size());
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
