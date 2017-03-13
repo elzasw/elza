@@ -22,7 +22,7 @@
             <column name="change_id" type="int">
                 <constraints nullable="true"/>
             </column>
-            <column afterColumn="change_id" name="state" type="varchar(16)">
+            <column afterColumn="change_id" name="state" type="nvarchar(16)">
                 <constraints nullable="false" />
             </column>
             <column afterColumn="state" name="date_planned" type="timestamp">
@@ -34,7 +34,7 @@
             <column afterColumn="date_started" name="date_finished" type="timestamp">
                 <constraints nullable="true" />
             </column>
-            <column afterColumn="date_finished" name="error" type="varchar(1000)">
+            <column afterColumn="date_finished" name="error" type="nvarchar(1000)">
                 <constraints nullable="true" />
             </column>
         </addColumn>

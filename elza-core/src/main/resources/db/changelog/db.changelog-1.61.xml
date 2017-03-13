@@ -6,7 +6,7 @@
 
     <changeSet id="62" author="vanek">
         <addColumn tableName="par_party_type_relation">
-            <column name="name" type="varchar(250)"/>
+            <column name="name" type="nvarchar(250)"/>
         </addColumn>
     </changeSet>
 </databaseChangeLog>

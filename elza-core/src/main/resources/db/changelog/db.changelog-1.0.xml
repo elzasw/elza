@@ -11,7 +11,7 @@
         <validCheckSum>7:919eaa87d17925639ee8c78c95da9f33</validCheckSum>
 
         <createTable tableName="db_hibernate_sequences">
-            <column name="sequence_name" type="varchar(255)">
+            <column name="sequence_name" type="nvarchar(255)">
                 <constraints primaryKey="true"/>
             </column>
             <column name="next_val" type="bigint"/>
@@ -41,7 +41,7 @@
                 <constraints primaryKey="true"/>
             </column>
             <column name="create_date" type="timestamp"/>
-            <column name="name" type="varchar(255)"/>
+            <column name="name" type="nvarchar(255)"/>
             <column name="version" type="int" defaultValueNumeric="0"/>
         </createTable>
 
@@ -49,8 +49,8 @@
             <column name="arrangement_type_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="code" type="varchar(50)"/>
-            <column name="name" type="varchar(250)"/>
+            <column name="code" type="nvarchar(50)"/>
+            <column name="name" type="nvarchar(250)"/>
             <column name="rule_set_id" type="int">
                 <constraints nullable="false"/>
             </column>
@@ -63,8 +63,8 @@
             <column name="rule_set_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="code" type="varchar(50)"/>
-            <column name="name" type="varchar(250)"/>
+            <column name="code" type="nvarchar(50)"/>
+            <column name="name" type="nvarchar(250)"/>
             <column name="package_id" type="int">
                 <constraints nullable="false"/>
             </column>
@@ -140,7 +140,7 @@
             <column name="value_to_estimated" type="boolean">
                 <constraints nullable="false"/>
             </column>
-            <column name="format" defaultValue="" type="varchar(50)">
+            <column name="format" defaultValue="" type="nvarchar(50)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -149,7 +149,7 @@
             <column name="data_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="value" type="varchar(1000)">
+            <column name="value" type="nvarchar(1000)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -158,7 +158,7 @@
             <column name="data_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="value" type="varchar(250)">
+            <column name="value" type="nvarchar(250)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -176,7 +176,7 @@
             <column name="data_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="value" type="text">
+            <column name="value" type="${type.text}">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -200,7 +200,7 @@
             <column name="rule_set_id" type="int">
                 <constraints nullable="false"/>
             </column>
-            <column name="view_specification" type="varchar(1000)">
+            <column name="view_specification" type="nvarchar(1000)">
                 <constraints nullable="false"/>
             </column>
             <column name="version" type="int" defaultValueNumeric="0"/>
@@ -213,16 +213,16 @@
             <column name="data_type_id" type="int">
                 <constraints nullable="false"/>
             </column>
-            <column name="code" type="varchar(50)">
+            <column name="code" type="nvarchar(50)">
                 <constraints unique="true" nullable="false"/>
             </column>
-            <column name="name" type="varchar(250)">
+            <column name="name" type="nvarchar(250)">
                 <constraints nullable="false"/>
             </column>
-            <column name="shortcut" type="varchar(50)">
+            <column name="shortcut" type="nvarchar(50)">
                 <constraints nullable="false"/>
             </column>
-            <column name="description" type="text">
+            <column name="description" type="${type.text}">
                 <constraints nullable="false"/>
             </column>
             <column name="is_value_unique" type="boolean">
@@ -248,16 +248,16 @@
             <column name="desc_item_type_id" type="int">
                 <constraints nullable="false"/>
             </column>
-            <column name="code" type="varchar(50)">
+            <column name="code" type="nvarchar(50)">
                 <constraints unique="true" nullable="false"/>
             </column>
-            <column name="name" type="varchar(250)">
+            <column name="name" type="nvarchar(250)">
                 <constraints nullable="false"/>
             </column>
-            <column name="shortcut" type="varchar(50)">
+            <column name="shortcut" type="nvarchar(50)">
                 <constraints nullable="false"/>
             </column>
-            <column name="description" type="text">
+            <column name="description" type="${type.text}">
                 <constraints nullable="false"/>
             </column>
             <column name="view_order" type="int">
@@ -272,13 +272,13 @@
             <column name="data_type_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="code" type="varchar(50)">
+            <column name="code" type="nvarchar(50)">
                 <constraints nullable="false"/>
             </column>
-            <column name="name" type="varchar(250)">
+            <column name="name" type="nvarchar(250)">
                 <constraints nullable="false"/>
             </column>
-            <column name="description" type="text">
+            <column name="description" type="${type.text}">
                 <constraints nullable="false"/>
             </column>
             <column name="regexp_use" type="boolean">
@@ -287,7 +287,7 @@
             <column name="text_lenght_limit_use" type="boolean">
                 <constraints nullable="false"/>
             </column>
-            <column name="storage_table" type="varchar(250)">
+            <column name="storage_table" type="nvarchar(250)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -296,13 +296,13 @@
             <column name="party_type_id" type="int">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="code" type="varchar(50)">
+            <column name="code" type="nvarchar(50)">
                 <constraints nullable="false"/>
             </column>
-            <column name="name" type="varchar(250)">
+            <column name="name" type="nvarchar(250)">
                 <constraints nullable="false"/>
             </column>
-            <column name="description" type="text">
+            <column name="description" type="${type.text}">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -327,10 +327,10 @@
             <column name="external_source_id" type="int">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="code" type="varchar(50)">
+            <column name="code" type="nvarchar(50)">
                 <constraints nullable="false"/>
             </column>
-            <column name="name" type="varchar(250)">
+            <column name="name" type="nvarchar(250)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -342,7 +342,7 @@
             <column name="record_id" type="int">
                 <constraints nullable="false"/>
             </column>
-            <column name="record" type="varchar(1000)"/>
+            <column name="record" type="nvarchar(1000)"/>
             <column name="version" type="int" defaultValueNumeric="0"/>
         </createTable>
 
@@ -354,15 +354,15 @@
                 <constraints nullable="false"/>
             </column>
             <column name="external_source_id" type="int"/>
-            <column name="record" type="varchar(1000)">
+            <column name="record" type="nvarchar(1000)">
                 <constraints nullable="false"/>
             </column>
-            <column name="characteristics" type="text"/>
-            <column name="comment" type="text"/>
+            <column name="characteristics" type="${type.text}"/>
+            <column name="comment" type="${type.text}"/>
             <column name="local" type="boolean">
                 <constraints nullable="false"/>
             </column>
-            <column name="external_id" type="varchar(250)"/>
+            <column name="external_id" type="nvarchar(250)"/>
             <column name="version" type="int" defaultValueNumeric="0"/>
         </createTable>
 
@@ -370,10 +370,10 @@
             <column name="register_type_id" type="int">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="code" type="varchar(50)">
+            <column name="code" type="nvarchar(50)">
                 <constraints nullable="false"/>
             </column>
-            <column name="name" type="varchar(250)">
+            <column name="name" type="nvarchar(250)">
                 <constraints nullable="false"/>
             </column>
             <column name="parent_register_type_id" type="int">
@@ -391,7 +391,7 @@
         </createTable>
 
         <createTable tableName="arr_data_coordinates">
-            <column name="value" type="varchar(250)">
+            <column name="value" type="nvarchar(250)">
                 <constraints nullable="false"/>
             </column>
             <column name="data_id" type="int">
@@ -423,11 +423,11 @@
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="party_id" type="int"/>
-            <column name="main_part" type="varchar(255)"/>
-            <column name="other_part" type="varchar(255)"/>
-            <column name="annotation" type="text"/>
-            <column name="degree_before" type="varchar(50)"/>
-            <column name="degree_after" type="varchar(50)"/>
+            <column name="main_part" type="nvarchar(255)"/>
+            <column name="other_part" type="nvarchar(255)"/>
+            <column name="annotation" type="${type.text}"/>
+            <column name="degree_before" type="nvarchar(50)"/>
+            <column name="degree_after" type="nvarchar(50)"/>
             <column name="valid_from" type="timestamp"/>
             <column name="valid_to" type="timestamp"/>
         </createTable>
@@ -451,9 +451,9 @@
             <column name="desc_item_spec_id" type="int"/>
             <column name="finding_aid_version_id" type="int"/>
             <column name="repeatable" type="boolean"/>
-            <column name="regexp" type="varchar(500)"/>
+            <column name="regexp" type="nvarchar(500)"/>
             <column name="text_lenght_limit" type="int"/>
-            <column name="code" type="varchar(50)">
+            <column name="code" type="nvarchar(50)">
                 <constraints nullable="false"/>
             </column>
             <column name="package_id" type="int">
@@ -477,10 +477,10 @@
             <column name="calendar_type_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="code" type="varchar(50)">
+            <column name="code" type="nvarchar(50)">
                 <constraints nullable="false"/>
             </column>
-            <column name="name" type="varchar(250)">
+            <column name="name" type="nvarchar(250)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -506,13 +506,13 @@
                 <constraints primaryKey="true" nullable="false"/>
             </column>
 
-            <column name="code" type="varchar(50)">
+            <column name="code" type="nvarchar(50)">
                 <constraints nullable="false"/>
             </column>
-            <column name="name" type="varchar(250)">
+            <column name="name" type="nvarchar(250)">
                 <constraints nullable="false"/>
             </column>
-            <column name="shortcut" type="varchar(50)">
+            <column name="shortcut" type="nvarchar(50)">
                 <constraints nullable="false"/>
             </column>
             <column name="package_id" type="int">
@@ -524,7 +524,7 @@
             <column name="packet_id" type="int">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="storage_number" type="varchar(50)">
+            <column name="storage_number" type="nvarchar(50)">
                 <constraints nullable="false"/>
             </column>
             <column name="invalid_packet" type="boolean">
@@ -551,7 +551,7 @@
             <column name="bulk_action_run_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="bulk_action_code" type="varchar(50)">
+            <column name="bulk_action_code" type="nvarchar(50)">
                 <constraints nullable="false"/>
             </column>
             <column name="version_id" type="int">
@@ -581,7 +581,7 @@
             <column name="state" type="char(3)">
                 <constraints nullable="false"/>
             </column>
-            <column name="description" type="varchar(1000)"/>
+            <column name="description" type="nvarchar(1000)"/>
             <column name="date" type="timestamp"/>
         </createTable>
 
@@ -596,7 +596,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="desc_item_spec_id" type="int"/>
-            <column name="description" type="varchar(1000)"/>
+            <column name="description" type="nvarchar(1000)"/>
         </createTable>
 
         <createTable tableName="arr_node_conformity_error">
@@ -609,7 +609,7 @@
             <column name="desc_item_id" type="int">
                 <constraints nullable="false"/>
             </column>
-            <column name="description" type="varchar(1000)"/>
+            <column name="description" type="nvarchar(1000)"/>
         </createTable>
 
         <createTable tableName="arr_version_conformity">
@@ -620,20 +620,20 @@
                 <constraints nullable="false"/>
             </column>
             <column name="state" type="char(3)"/>
-            <column name="state_description" type="varchar(1000)"/>
+            <column name="state_description" type="nvarchar(1000)"/>
         </createTable>
 
         <createTable tableName="rul_package">
             <column name="package_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="name" type="varchar(50)">
+            <column name="name" type="nvarchar(50)">
                 <constraints nullable="false"/>
             </column>
-            <column name="code" type="varchar(50)">
+            <column name="code" type="nvarchar(50)">
                 <constraints unique="true" nullable="false"/>
             </column>
-            <column name="description" type="text">
+            <column name="description" type="${type.text}">
                 <constraints nullable="true"/>
             </column>
             <column name="version" type="int" />
@@ -643,7 +643,7 @@
             <column name="action_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="filename" type="varchar(250)">
+            <column name="filename" type="nvarchar(250)">
                 <constraints unique="true" nullable="false"/>
             </column>
             <column name="package_id" type="int">
@@ -655,10 +655,10 @@
             <column name="rule_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="filename" type="varchar(250)">
+            <column name="filename" type="nvarchar(250)">
                 <constraints unique="true" nullable="false"/>
             </column>
-            <column name="rule_type" type="varchar(50)">
+            <column name="rule_type" type="nvarchar(50)">
                 <constraints nullable="false"/>
             </column>
             <column name="priority" type="int">

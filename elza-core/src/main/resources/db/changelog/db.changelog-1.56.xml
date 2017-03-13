@@ -6,7 +6,7 @@
 
     <changeSet id="57" author="slapa">
         <addColumn tableName="rul_item_spec">
-            <column type="VARCHAR(1000)" name="category"/>
+            <column type="nvarchar(1000)" name="category"/>
         </addColumn>
     </changeSet>
 

@@ -10,7 +10,7 @@
             <column name="data_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="value" type="text">
+            <column name="value" type="${type.text}">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -39,7 +39,7 @@
         </update>
 
         <addColumn tableName="rul_item_type">
-            <column name="columns_definition" type="text"/>
+            <column name="columns_definition" type="${type.text}"/>
         </addColumn>
 
     </changeSet>

@@ -14,15 +14,15 @@
                       tableName="rul_data_type"/>
 
         <!-- Table -->
-        
+
         <createTable tableName="rul_policy_type">
             <column name="policy_type_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="code" type="varchar(50)">
+            <column name="code" type="nvarchar(50)">
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="name" type="varchar(250)">
+            <column name="name" type="nvarchar(250)">
                 <constraints nullable="false"/>
             </column>
             <column name="rule_set_id" type="int">

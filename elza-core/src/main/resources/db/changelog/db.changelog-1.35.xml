@@ -13,7 +13,7 @@
         </dropColumn>
 
         <addColumn tableName="par_institution">
-            <column name="internal_code" type="varchar(250)">
+            <column name="internal_code" type="nvarchar(250)">
                 <constraints nullable="true" />
             </column>
         </addColumn>
