@@ -156,6 +156,18 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ChangesResult changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, LocalDateTime.now(), lastChangeId, null);
         Assert.notNull(changesByDate);
         Assert.notNull(changesByDate.getChanges());
+
+        // TODO: test
+        try {
+            System.out.println(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size());
+            Thread.sleep(5000);
+            System.out.println(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size());
+            Thread.sleep(5000);
+            System.out.println(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         Assert.isTrue(changesByDate.getTotalCount().equals(changesByDate.getChanges().size()) && changesByDate.getChanges().size() == 26);
         Assert.isTrue(!changesByDate.getOutdated());
 
