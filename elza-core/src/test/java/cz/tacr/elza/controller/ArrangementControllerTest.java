@@ -880,7 +880,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         RegRecordVO record = new RegRecordVO();
 
-        record.setRegisterTypeId(getHierarchicalRegRegisterType(types, null).getId());
+        record.setRegisterTypeId(getHierarchicalRegRegisterType(types, null, false).getId());
 
         record.setCharacteristics("Ja jsem regRecordA");
 
