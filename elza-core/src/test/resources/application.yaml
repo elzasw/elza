@@ -11,7 +11,7 @@ spring:
 # !!! při změně DB změnit i elza.data.url !!!
 
   jpa:
-    show-sql: true
+    show-sql: false
     #pametova databaze automaticky zapina hibernate.ddl-auto: create
     hibernate.ddl-auto: none
 
