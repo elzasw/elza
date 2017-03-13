@@ -160,7 +160,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
         var needComputeColumnsWidth = props.staticColumns;
         props.cols.forEach((col, colIndex) => {
             var useColIndex = props.allowRowCheck ? colIndex + 1 : colIndex;
-            
+
             if (props.staticColumns) {
                 if (currState.colWidths) {
                     colWidths[useColIndex] = currState.colWidths[useColIndex];
@@ -199,7 +199,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
         } else {
             focusRow = 0
         }
-        
+
         var focusCol
         if (typeof props.focusCol !== 'undefined') {
             focusCol = props.focusCol
@@ -304,7 +304,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
         }
 
         this.setState({ focus: newFocus, selectedRowIndexes: newSelectedRowIndexes }, this.ensureFocusVisible(newFocus))
-        
+
         const {onChangeFocus, onChangeRowIndexes} = this.props;
         onChangeFocus && onChangeFocus(newFocus.row, newFocus.col);
         onChangeRowIndexes && onChangeRowIndexes(Object.keys(newSelectedRowIndexes));
@@ -435,15 +435,15 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
             )
         } else {
             if (col.cellRenderer) {
-                content = <div key="content" className='cell-container'>{col.cellRenderer(row, rowIndex, col, colIndex, colFocus, cellFocus)}</div>
+                content = <div key={"content-"+colIndex} className='cell-container'>{col.cellRenderer(row, rowIndex, col, colIndex, colFocus, cellFocus)}</div>
             } else {
-                content = <div key="content" className='cell-container'><div key={colIndex} className='value'>{row[col.dataName]}</div></div>
+                content = <div key={"content-"+colIndex} className='cell-container'><div key={colIndex} className='value'>{row[col.dataName]}</div></div>
             }
         }
 
         const colCls = colFocus ? 'focus' : '';
         const cellCls = cellFocus ? ' cell-focus' : '';
-        
+
         var style = {}
         if (rowIndex === 0) {
             style = {width: colWidths[colIndex], maxWidth: colWidths[colIndex] }
@@ -614,7 +614,7 @@ DataGrid.defaultProps = {
 {
     title: "nazev sloupce",
     desc: "popis sloupce",
-    width: 30,              // pokud je staticColumns==false, je šířka sloupce v bodech, pokud je staticColumns==true, je šířka v bodech nebo procentech podle widthPercent 
+    width: 30,              // pokud je staticColumns==false, je šířka sloupce v bodech, pokud je staticColumns==true, je šířka v bodech nebo procentech podle widthPercent
     widthPercent: true,     // pouze pro staticColumns - určuje, zda width je v bodech nebo procentech
     resizeable: true,   // je možné sloupečku měnit šířku
     cellRenderer: func,    // renderer na buňky dat
