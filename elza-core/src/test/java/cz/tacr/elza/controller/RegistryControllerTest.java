@@ -122,8 +122,8 @@ public class RegistryControllerTest extends AbstractControllerTest {
         Assert.assertTrue(scopes != null && scopes.size() > 0);
         Integer scopeId = scopes.iterator().next().getId();
 
-        RegRegisterTypeVO hierarchal = getHierarchicalRegRegisterType(types, null);
-        RegRegisterTypeVO nonHierarchal = getNonHierarchicalRegRegisterType(types);
+        RegRegisterTypeVO hierarchal = getHierarchicalRegRegisterType(types, null, false);
+        RegRegisterTypeVO nonHierarchal = getNonHierarchicalRegRegisterType(types, false);
 
         Assert.assertNotNull("Nebyl nalezen hirearchický typ rejstříku", hierarchal);
         Assert.assertNotNull("Nebyl nalezen nehirearchický typ rejstříku", nonHierarchal);
@@ -218,7 +218,7 @@ public class RegistryControllerTest extends AbstractControllerTest {
         Assert.assertTrue("Ocekavame 2 potomky recordu A", recordA.getChilds().size() == 2);
 
         /** změna parent record type id */
-        RegRegisterTypeVO newHierarchicalType = getHierarchicalRegRegisterType(types, Collections.singletonList(hierarchal));
+        RegRegisterTypeVO newHierarchicalType = getHierarchicalRegRegisterType(types, Collections.singletonList(hierarchal), false);
         recordA.setRegisterTypeId(newHierarchicalType.getId());
         recordA = updateRecord(recordA);
 
@@ -235,16 +235,16 @@ public class RegistryControllerTest extends AbstractControllerTest {
 
     }
 
-    private RegRegisterTypeVO getNonHierarchicalRegRegisterType(List<RegRegisterTypeVO> list) {
+    private RegRegisterTypeVO getNonHierarchicalRegRegisterType(final List<RegRegisterTypeVO> list, final boolean hasPartyType) {
         for (RegRegisterTypeVO type : list) {
-            if (!type.getHierarchical() && type.getAddRecord()) {
+            if (!type.getHierarchical() && type.getAddRecord() && ((!hasPartyType && type.getPartyTypeId() == null) || (hasPartyType && type.getPartyTypeId() != null))) {
                 return type;
             }
         }
 
         for (RegRegisterTypeVO type : list) {
             if (type.getChildren() != null) {
-                RegRegisterTypeVO res = getNonHierarchicalRegRegisterType(type.getChildren());
+                RegRegisterTypeVO res = getNonHierarchicalRegRegisterType(type.getChildren(), hasPartyType);
                 if (res != null) {
                     return res;
                 }

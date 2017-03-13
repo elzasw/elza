@@ -11,6 +11,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -1572,19 +1573,19 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param list seznam typů
      * @return nalezený typ
      */
-    protected RegRegisterTypeVO getHierarchicalRegRegisterType(final List<RegRegisterTypeVO> list, List<RegRegisterTypeVO> exclude) {
+    protected RegRegisterTypeVO getHierarchicalRegRegisterType(final List<RegRegisterTypeVO> list, List<RegRegisterTypeVO> exclude, final boolean hasPartyType) {
         if (exclude == null) {
-            exclude = new ArrayList<>();
+            exclude = Collections.emptyList();
         }
         for (RegRegisterTypeVO type : list) {
-            if (type.getHierarchical() && type.getAddRecord() && !exclude.contains(type)) {
+            if (type.getHierarchical() && type.getAddRecord() && !exclude.contains(type) && ((!hasPartyType && type.getPartyTypeId() == null) || (hasPartyType && type.getPartyTypeId() != null))) {
                 return type;
             }
         }
 
         for (RegRegisterTypeVO type : list) {
             if (type.getChildren() != null) {
-                RegRegisterTypeVO res = getHierarchicalRegRegisterType(type.getChildren(), exclude);
+                RegRegisterTypeVO res = getHierarchicalRegRegisterType(type.getChildren(), exclude, hasPartyType);
                 if (res != null) {
                     return res;
                 }
