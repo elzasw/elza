@@ -95,7 +95,7 @@ var Search = class Search extends React.Component {
         var actions = []
 
         if (extendedSearch) {
-            actions.push(<NoFocusButton className="search-extended" onClick={onClickExtendedSearch}><Icon glyph='fa-search-plus'/></NoFocusButton>)
+            actions.push(<NoFocusButton key='search-extended' className="search-extendedsearch-extended" onClick={onClickExtendedSearch}><Icon glyph='fa-search-plus'/></NoFocusButton>)
         }
 
         if (!readOnly) {
