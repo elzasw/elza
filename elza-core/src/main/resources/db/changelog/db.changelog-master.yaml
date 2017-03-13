@@ -1,4 +1,11 @@
 databaseChangeLog:
+  - property:
+      name: type.text
+      value: "NVARCHAR(MAX)"
+      dbms: mssql
+  - property:
+      name: type.text
+      value: text
   - include:
      file: db/changelog/db.changelog-1.0.xml
   - include:

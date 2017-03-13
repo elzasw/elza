@@ -9,7 +9,7 @@
             <column type="CHAR(12)" name="state" afterColumn="name">
                 <constraints nullable="true"/>
             </column>
-            <column type="VARCHAR(1000)" name="error" afterColumn="state">
+            <column type="nvarchar(1000)" name="error" afterColumn="state">
                 <constraints nullable="true"/>
             </column>
         </addColumn>

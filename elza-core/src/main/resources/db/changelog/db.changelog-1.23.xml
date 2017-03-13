@@ -13,7 +13,7 @@
             <column name="party_id" type="int">
                 <constraints nullable="false"/>
             </column>
-            <column name="username" type="varchar(250)">
+            <column name="username" type="nvarchar(250)">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="password" type="binary(32)">
@@ -22,7 +22,7 @@
             <column name="active" type="boolean">
                 <constraints nullable="false"/>
             </column>
-            <column name="description" type="varchar(250)" />
+            <column name="description" type="nvarchar(250)" />
         </createTable>
 
         <addForeignKeyConstraint constraintName="fk_user_party"
@@ -37,13 +37,13 @@
             <column name="group_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="code" type="varchar(50)">
+            <column name="code" type="nvarchar(50)">
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="name" type="varchar(250)">
+            <column name="name" type="nvarchar(250)">
                 <constraints nullable="false"/>
             </column>
-            <column name="description" type="varchar(250)" />
+            <column name="description" type="nvarchar(250)" />
         </createTable>
 
 

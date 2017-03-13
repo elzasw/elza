@@ -3,3 +3,31 @@ UPDATE db_databasechangelog SET md5sum = '7:11be2888d93aefa4936e2ce206cfd5cb' WH
 UPDATE db_databasechangelog SET md5sum = '7:ff3a3ee93b36bce4de3c726c1de5333c' WHERE filename = 'db/changelog/db.changelog-1.5.xml';
 UPDATE db_databasechangelog SET md5sum = '7:3f649c61eec58d45fc2a093b611ba038' WHERE filename = 'db/changelog/db.changelog-1.14.xml';
 UPDATE db_databasechangelog SET md5sum = '7:22fc6d229d16e2cda46fc2cd43041ba6' WHERE filename = 'db/changelog/db.changelog-1.18.xml';
+
+
+UPDATE db_databasechangelog SET md5sum = '7:11580b7a0256d08d8e6ed90d2ad60d1f' WHERE filename = 'db/changelog/db.changelog-1.0.xml';
+UPDATE db_databasechangelog SET md5sum = '7:b34c6c5c99d0c4cb8778ccc8f1876665' WHERE filename = 'db/changelog/db.changelog-1.2.xml';
+UPDATE db_databasechangelog SET md5sum = '7:faf11370a84cc6c1c0ce787ae910e4b7' WHERE filename = 'db/changelog/db.changelog-1.3.xml';
+UPDATE db_databasechangelog SET md5sum = '7:33cfc96d49777c36da9d4f6f9842306d' WHERE filename = 'db/changelog/db.changelog-1.5.xml';
+UPDATE db_databasechangelog SET md5sum = '7:270651fbe207295ccf9717865724027e' WHERE filename = 'db/changelog/db.changelog-1.13.xml';
+UPDATE db_databasechangelog SET md5sum = '7:946bdf6376b7b0a71a2de424ed240758' WHERE filename = 'db/changelog/db.changelog-1.16.xml';
+UPDATE db_databasechangelog SET md5sum = '7:7010319684a4bcac433fc69cf939b4df' WHERE filename = 'db/changelog/db.changelog-1.19.xml';
+UPDATE db_databasechangelog SET md5sum = '7:02cfc54052240f32b41046bc6fe84bca' WHERE filename = 'db/changelog/db.changelog-1.23.xml';
+UPDATE db_databasechangelog SET md5sum = '7:fcc8633add1920794533cd6219ffb2d5' WHERE filename = 'db/changelog/db.changelog-1.27.xml';
+UPDATE db_databasechangelog SET md5sum = '7:617b47be223a521dbc746c188aa73754' WHERE filename = 'db/changelog/db.changelog-1.31.xml';
+UPDATE db_databasechangelog SET md5sum = '7:c7831769daf9fd236d19f89a74eefb03' WHERE filename = 'db/changelog/db.changelog-1.32.xml';
+UPDATE db_databasechangelog SET md5sum = '7:4cfce4725344aee495adf1da15b04937' WHERE filename = 'db/changelog/db.changelog-1.33.xml';
+UPDATE db_databasechangelog SET md5sum = '7:0caab7a63dd723c5387dd496e39454c7' WHERE filename = 'db/changelog/db.changelog-1.35.xml';
+UPDATE db_databasechangelog SET md5sum = '7:ac3139cd299ea50a54021166e4008265' WHERE filename = 'db/changelog/db.changelog-1.38.xml';
+UPDATE db_databasechangelog SET md5sum = '7:525a2e8d132c9e8d6bd748ff4a7c997a' WHERE filename = 'db/changelog/db.changelog-1.40.xml';
+UPDATE db_databasechangelog SET md5sum = '7:ec36357b56531e07b608534d43d83967' WHERE filename = 'db/changelog/db.changelog-1.41.xml';
+UPDATE db_databasechangelog SET md5sum = '7:18fa693588dbb47bb64841da97d4852f' WHERE filename = 'db/changelog/db.changelog-1.47.xml';
+UPDATE db_databasechangelog SET md5sum = '7:f83105ec28706d3f05ccdc34666f1187' WHERE filename = 'db/changelog/db.changelog-1.52.xml';
+UPDATE db_databasechangelog SET md5sum = '7:76ec447820458c36e6b1a3d1440f5fcf' WHERE filename = 'db/changelog/db.changelog-1.56.xml';
+UPDATE db_databasechangelog SET md5sum = '7:60621a364ac731e9e229f1f8d94eaa8c' WHERE filename = 'db/changelog/db.changelog-1.59.xml';
+UPDATE db_databasechangelog SET md5sum = '7:f3529774f7266c5c75028c39e9c2243f' WHERE filename = 'db/changelog/db.changelog-1.60.xml';
+UPDATE db_databasechangelog SET md5sum = '7:52668d239c06e859e95e21a954b0c1f0' WHERE filename = 'db/changelog/db.changelog-1.61.xml';
+UPDATE db_databasechangelog SET md5sum = '7:288316c58f95a9150a8f736029fef32f' WHERE filename = 'db/changelog/db.elza-0.9.xml';
+UPDATE db_databasechangelog SET md5sum = '7:1568ab668aa24dcb42fbd7227af8441f' WHERE filename = 'db/changelog/db.elza-0.9.xml';
+UPDATE db_databasechangelog SET md5sum = '7:9dda0b9f44351a36458d443ebcb582e7' WHERE filename = 'db/changelog/db.elza-0.10.xml';
+UPDATE db_databasechangelog SET md5sum = '7:1d605658caa0cfd07b8641bff18751e8' WHERE filename = 'db/changelog/db.elza-0.10.xml';

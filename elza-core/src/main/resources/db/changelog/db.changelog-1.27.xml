@@ -15,7 +15,7 @@
             <column name="value" type="geometry">
                 <constraints nullable="false"/>
             </column>
-            <column name="description" type="varchar(250)" />
+            <column name="description" type="nvarchar(250)" />
         </createTable>
         <addForeignKeyConstraint constraintName="fk_regCoordinates_data"
                                  baseTableName="reg_coordinates"

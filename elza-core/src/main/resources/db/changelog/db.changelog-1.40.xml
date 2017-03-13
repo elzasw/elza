@@ -10,16 +10,16 @@
             <column name="file_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="name" type="varchar(250)">
+            <column name="name" type="nvarchar(250)">
                 <constraints nullable="false"/>
             </column>
-            <column name="file_name" type="varchar(250)">
+            <column name="file_name" type="nvarchar(250)">
                 <constraints nullable="false"/>
             </column>
             <column name="file_size" type="int">
                 <constraints nullable="false"/>
             </column>
-            <column name="mime_type" type="varchar(250)">
+            <column name="mime_type" type="nvarchar(250)">
                 <constraints nullable="false"/>
             </column>
             <column name="pages_count" type="int">
