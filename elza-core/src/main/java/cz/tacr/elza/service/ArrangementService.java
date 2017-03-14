@@ -978,8 +978,9 @@ public class ArrangementService {
                 arrangementCacheService.deleteDescItems(nodeDescItems.get(0).getNodeId(), descItemObjectIdsDeleted);
             }
 
-            descriptionItemService
+            final List<ArrDescItem> newDescItems = descriptionItemService
                     .copyDescItemWithDataToNode(level.getNode(), siblingDescItems, change, version);
+            arrangementCacheService.createDescItems(level.getNodeId(), newDescItems);
         }
 
         descItemRepository.flush();

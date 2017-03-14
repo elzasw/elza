@@ -200,6 +200,23 @@ public class ArrangementCacheService {
     }
 
     /**
+     * Vytvoření hodnot atributu u nodu.
+     *
+     * @param nodeId   identifikátor JP
+     * @param newDescItems vytvářené hodnoty atributu
+     */
+    public void createDescItems(final Integer nodeId, final Collection<ArrDescItem> newDescItems) {
+        CachedNode cachedNode = nodeCacheService.getNode(nodeId);
+        List<ArrDescItem> descItems = cachedNode.getDescItems();
+        if (descItems == null) {
+            descItems = new ArrayList<>();
+            cachedNode.setDescItems(descItems);
+        }
+        descItems.addAll(newDescItems);
+        nodeCacheService.saveNode(cachedNode);
+    }
+
+    /**
      * Mazaná hodnota atributu u nodu.
      *
      * @param nodeId           identifikátor JP
