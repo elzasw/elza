@@ -42,6 +42,7 @@ class ItemFormActions {
             switch (action.type) {
                 case types.FUND_SUB_NODE_FORM_REQUEST:
                 case types.FUND_SUB_NODE_FORM_RECEIVE:
+                case types.FUND_SUB_NODE_FORM_VALUE_CREATE:
                 case types.FUND_SUB_NODE_FORM_VALUE_CHANGE:
                 case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_POSITION:
                 case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_SPEC:
@@ -118,6 +119,22 @@ class ItemFormActions {
             valueLocation,
             operationType,
             descItemResult: descItemResult
+        }
+    }
+
+    /**
+     * Nastavení stavu o vytváření elementu
+     * @param {int} versionId verze AS
+     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
+     * @param {Object} valueLocation konkrétní umístění atributu nebo hodnoty
+     */
+    _fundSubNodeFormDescItemCreate(versionId, routingKey, valueLocation) {
+        return {
+            type: types.FUND_SUB_NODE_FORM_VALUE_CREATE,
+            area: this.area,
+            versionId,
+            routingKey,
+            valueLocation
         }
     }
 
@@ -214,7 +231,7 @@ class ItemFormActions {
 
     /**
      * Odeslání hodnoty atributu na server - buď vytvoření nebo aktualizace.
-     * @param {Object} dispatch odkaz na funkci dispatch
+     * @param {Function} dispatch odkaz na funkci dispatch
      * @param {Object} getState odkaz na funkci pro načtení store
      * @param {int} versionId verze AS
      * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
@@ -241,11 +258,14 @@ class ItemFormActions {
                         dispatch(statusSaved());
                     })
             } else {
-                this._callCreateDescItem(versionId, subNodeForm.data.parent.id, subNodeForm.data.parent.version, loc.descItemType.id, loc.descItem)
-                    .then(json => {
-                        dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'CREATE'));
-                        dispatch(statusSaved());
-                    })
+                if (!loc.descItem.saving) {
+                    dispatch(this._fundSubNodeFormDescItemCreate(versionId, routingKey, valueLocation));
+                    this._callCreateDescItem(versionId, subNodeForm.data.parent.id, subNodeForm.data.parent.version, loc.descItemType.id, loc.descItem)
+                        .then(json => {
+                            dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'CREATE'));
+                            dispatch(statusSaved());
+                        })
+                }
             }
         }
     }

@@ -247,6 +247,10 @@ export default function subNodeForm(state = initialState, action = {}) {
 
             state.formData = {...state.formData};
             return {...state};
+        case types.FUND_SUB_NODE_FORM_VALUE_CREATE:
+            loc.descItem.saving = true;
+            state.formData = {...state.formData};
+            return {...state};
         case types.FUND_SUB_NODE_FORM_VALUE_ADD:
             var refType = state.refTypesMap[loc.descItemType.id]
 
@@ -341,6 +345,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                     loc.descItem.prevValue = action.descItemResult.item.value;
                     loc.descItem.party = action.descItemResult.item.party;
                     loc.descItem.record = action.descItemResult.item.record;
+                    loc.descItem.saving = false;
                     if (loc.descItemType.useSpecification) {
                         loc.descItem.prevDescItemSpecId = action.descItemResult.item.descItemSpecId;
                     }

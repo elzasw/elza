@@ -540,7 +540,8 @@ class DescItemType extends AbstractReactComponent {
             readMode: readMode,
             ref: key,
             cal: infoType.cal && !infoType.calSt,
-            typePrefix
+            typePrefix,
+            readOnly: descItem.saving
         };
 
         let dragProps;
