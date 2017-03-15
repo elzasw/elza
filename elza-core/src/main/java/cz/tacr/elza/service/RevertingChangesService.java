@@ -15,6 +15,7 @@ import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -201,7 +202,16 @@ public class RevertingChangesService {
         // dotaz pro zjištění pozice v seznamu podle datumu
         Query queryIndex = createQueryIndex(fundId, nodeId, fromChangeId, fromDate);
 
-        Integer count = ((BigInteger) queryIndex.getSingleResult()).intValue();
+        final Object singleResult = queryIndex.getSingleResult();
+
+        Integer count = null;
+        if (singleResult instanceof Integer) {
+            count = (Integer) singleResult;
+        } else if (singleResult instanceof BigInteger) {
+            count = ((BigInteger) queryIndex.getSingleResult()).intValue();
+        } else {
+            throw new SystemException("Nedefinovaný typ výsledku dotazu. (" + (singleResult == null ? "null" : singleResult.getClass().getSimpleName()) + ")");
+        }
 
         return findChanges(fundVersion, node, maxSize, count, fromChange);
     }
