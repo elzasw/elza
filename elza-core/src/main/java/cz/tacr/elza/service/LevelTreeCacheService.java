@@ -688,7 +688,7 @@ public class LevelTreeCacheService {
 
         List<AbstractEventSimple> events = changeMessage.getEvents();
         for (AbstractEventSimple event : events) {
-            logger.info("Zpracování události "+event.getEventType());
+            logger.debug("Zpracování události "+event.getEventType());
             //projdeme všechny změny, které jsou změny ve stromu uzlů verze a smažeme cache verzí
             if (EventVersion.class.isAssignableFrom(event.getClass())) {
                 Integer changedVersionId = ((EventVersion) event).getVersionId();
@@ -1280,7 +1280,7 @@ public class LevelTreeCacheService {
         @Override
         protected boolean removeEldestEntry(final Map.Entry<K, V> eldest) {
             if (size() > MAX_CACHE_SIZE) {
-                logger.info("Překročena kapacita cache. Bude odpojena cache verze s id " + eldest.getKey());
+                logger.debug("Překročena kapacita cache. Bude odpojena cache verze s id " + eldest.getKey());
                 return true;
             }
             return false;

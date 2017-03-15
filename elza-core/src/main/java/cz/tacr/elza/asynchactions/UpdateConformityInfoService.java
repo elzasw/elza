@@ -42,7 +42,7 @@ import cz.tacr.elza.service.RuleService;
 @Configuration
 public class UpdateConformityInfoService {
 
-    private Log logger = LogFactory.getLog(UpdateConformityInfoWorker.class);
+    private Log logger = LogFactory.getLog(UpdateConformityInfoService.class);
 
     @Autowired
     @Qualifier(value = "conformityUpdateTaskExecutor")
@@ -175,7 +175,7 @@ public class UpdateConformityInfoService {
 
     @Transactional(value = Transactional.TxType.REQUIRES_NEW)
     public void updateConformityInfo(final Integer nodeId, final Integer levelId, final Integer versionId) {
-        logger.info("Aktualizace stavu " + nodeId + " ve verzi " + versionId);
+        logger.debug("Aktualizace stavu " + nodeId + " ve verzi " + versionId);
 
         registerAfterCommitListener(nodeId);
         ruleService.setConformityInfo(levelId, versionId);

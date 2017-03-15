@@ -71,7 +71,7 @@ public class UpdateConformityInfoWorker implements Runnable {
     @Override
     @Transactional
     public void run() {
-        logger.info("Spusteno nove vlakno pro aktualizaci stavu ve verzi " + versionId);
+        logger.debug("Spusteno nove vlakno pro aktualizaci stavu ve verzi " + versionId);
 
         ArrFundVersion version = fundVersionRepository.findOne(versionId);
 
@@ -102,11 +102,11 @@ public class UpdateConformityInfoWorker implements Runnable {
                     logger.info(
                             "Node " + node.getNodeId() + " nema aktualizovany stav. Behem validace ke zmene uzlu.");
                 } catch (Exception e) {
-                    logger.warn("Node " + node.getNodeId() + " nema aktualizovany stav. Behem validace došlo k chybě.",
+                    logger.error("Node " + node.getNodeId() + " nema aktualizovany stav. Behem validace došlo k chybě.",
                             e);
                 }
             }
-            logger.info("Konec vlakna pro aktualizaci stavu ve verzi" + versionId);
+            logger.debug("Konec vlakna pro aktualizaci stavu ve verzi" + versionId);
         } catch (Exception e) {
             logger.error(e);
         } finally {
