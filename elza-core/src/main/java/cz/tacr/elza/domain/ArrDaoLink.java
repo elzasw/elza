@@ -20,7 +20,7 @@ import javax.persistence.Table;
  */
 @Table
 @Entity(name = "arr_dao_link")
-public class ArrDaoLink implements Serializable {
+public class ArrDaoLink {
 
     @Id
     @GeneratedValue

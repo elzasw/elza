@@ -19,7 +19,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
  */
 @Table
 @Entity(name = "arr_dao_batch_info")
-public class ArrDaoBatchInfo implements Serializable {
+public class ArrDaoBatchInfo {
 
     @Id
     @GeneratedValue

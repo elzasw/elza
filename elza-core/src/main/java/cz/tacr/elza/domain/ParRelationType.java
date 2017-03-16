@@ -28,7 +28,7 @@ import cz.tacr.elza.api.UseUnitdateEnum;
 @Entity(name = "par_relation_type")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ParRelationType implements Serializable {
+public class ParRelationType {
 
     @Id
     @GeneratedValue

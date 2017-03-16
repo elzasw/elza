@@ -32,7 +32,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParPartyName implements Serializable {
+public class ParPartyName {
 
     public static final String PARTY = "party";
 

@@ -30,7 +30,7 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 @Entity(name = "arr_data_unitdate")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrDataUnitdate extends ArrData implements Serializable, IUnitdate {
+public class ArrDataUnitdate extends ArrData implements IUnitdate {
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrCalendarType.class)
