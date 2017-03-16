@@ -457,39 +457,12 @@ class SubNodeForm extends AbstractReactComponent {
      * @param descItemIndex {Integer} index honodty atributu v seznamu
      */
     handleFundPackets(descItemGroupIndex, descItemTypeIndex, descItemIndex) {
-        const {fundId, userDetail} = this.props;
-        var settings = getOneSettings(userDetail.settings, 'FUND_RIGHT_PANEL', 'FUND', fundId);
-        var centerSettings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', fundId);
-        console.warn(0, userDetail.settings);
+        var tab = "packets"
+        this.enableIfDisabled("FUND_CENTER_PANEL","rightPanel");
+        this.enableIfDisabled("FUND_RIGHT_PANEL",tab);
 
-        var dataRight = settings.value ? JSON.parse(settings.value) : null;
-        var dataCenter = centerSettings.value ? JSON.parse(centerSettings.value) : null;
-
-        var tabExists = dataRight !== null ? dataRight.packets : true;
-        var panelExists = dataCenter !== null ? dataCenter.rightPanel : true;
-
-
-        if (!tabExists || !panelExists) {
-            var rightValue = {};
-            var centerValue = {};
-            if (dataRight && dataCenter) {
-                dataRight.packets = true;
-                dataCenter.rightPanel = true;
-                rightValue = dataRight;
-                centerValue = dataCenter;
-            } else {
-                rightValue.packets = true;
-                centerValue.rightPanel = true;
-            }
-            settings.value = JSON.stringify(rightValue);
-            centerSettings.value = JSON.stringify(centerValue);
-            settings = setSettings(userDetail.settings, settings.id, settings);
-            settings = setSettings(settings, centerSettings.id, centerSettings);
-            console.warn(1, settings);
-            this.dispatch(userDetailsSaveSettings(settings));
-        }
         this.dispatch(routerNavigate('/arr'));
-        this.dispatch(selectTab('arr-as', "packets"));
+        this.dispatch(selectTab('arr-as', tab));
         this.dispatch(setFocus('arr', 3, null, null));
     }
 
@@ -561,9 +534,34 @@ class SubNodeForm extends AbstractReactComponent {
      * @param descItemTypeIndex {Integer} index atributu v seznamu
      * @param descItemIndex {Integer} index honodty atributu v seznamu
      */
+
+    enableIfDisabled(type,value){
+        const {fundId, userDetail} = this.props;
+        var settings = getOneSettings(userDetail.settings, type, 'FUND', fundId);
+        var data = settings.value ? JSON.parse(settings.value) : null;
+        var enabled = data !== null ? data[value] : true;
+        if (!enabled) {
+            var newData = {};
+            if (data) {
+                data[value] = true;
+                newData = data;
+            } else {
+                newData[value] = true;
+            }
+            settings.value = JSON.stringify(newData);
+            settings = setSettings(userDetail.settings, settings.id, settings);
+            //settings = setSettings(settings, centerSettings.id, centerSettings);
+            console.warn(1, settings);
+            this.dispatch(userDetailsSaveSettings(settings));
+        }
+    }
     handleFundFiles(descItemGroupIndex, descItemTypeIndex, descItemIndex) {
+        var tab = "files";
+        this.enableIfDisabled("FUND_CENTER_PANEL","rightPanel");
+        this.enableIfDisabled("FUND_RIGHT_PANEL", tab);
+
         this.dispatch(routerNavigate('arr'));
-        this.dispatch(selectTab('arr-as', 3));
+        this.dispatch(selectTab('arr-as', tab));
         this.dispatch(setFocus('arr', 3, null, null));
     }
 
