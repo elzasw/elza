@@ -178,8 +178,7 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
                         disabled={locked}
                         items={this.state.packets}
                         onSearchChange={this.handleSearchChange}
-                        onChange={onChange}
-                        onBlur={onBlur}
+                        onChange={onChange}                        
                         renderItem={this.renderPacket}
                         getItemName={(item) => this.getPacketName(item)}
                         footer={footer}
