@@ -7,14 +7,13 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.utils.DBUtils;
 import cz.tacr.elza.utils.ObjectListIterator;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
@@ -54,8 +53,8 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     @Autowired
     private LevelRepository levelRepository;
 
-    @Value("${elza.data.url}")
-    private String dbConnectString;
+    @Autowired
+    private DBUtils dbUtils;
 
     @Override
     public List<ArrLevel> findByParentNode(final ArrNode nodeParent, @Nullable final ArrChange change) {
@@ -426,8 +425,9 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     }
 
     private String getRecursivePart() {
+
         final String recursive;
-        if (StringUtils.containsIgnoreCase(dbConnectString, "jtds:sqlserver")) {
+        if (DBUtils.DatabaseType.MSSQL.equals(dbUtils.getDbType())) {
             recursive = "";
         } else {
             recursive = "RECURSIVE";
