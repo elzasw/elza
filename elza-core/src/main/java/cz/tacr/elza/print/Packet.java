@@ -13,8 +13,9 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
 /**
- * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
- *         Date: 22.6.16
+ * @author Martin Lebeda
+ * @author Petr Pytelka
+ * @Since  Date: 22.6.16
  */
 public class Packet implements Comparable<Packet> {
 
@@ -36,15 +37,13 @@ public class Packet implements Comparable<Packet> {
     }
 
     /**
-     * Fieldy spojí v uvedeném pořadí "type typeCode typeShortcut storageNumber state" a oddělí čárkou, zohledňuje pouze vyplněné položky.
+     * Return formatted packet name
      *
-     * @return hodnota formátovaná jako text k tisku
+     * Function return typeShortcut and storageNumber
+     * @return Return formatted value
      */
-    public String serialize() {
-        StringJoiner sj = new StringJoiner(", ");
-        if (StringUtils.isNotBlank(type)) {
-            sj.add(type);
-        }
+    public String formatAsString() {
+        StringJoiner sj = new StringJoiner(" ");
         if (StringUtils.isNotBlank(typeShortcut)) {
             sj.add(typeShortcut);
         }

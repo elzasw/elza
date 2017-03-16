@@ -4,8 +4,9 @@ import cz.tacr.elza.print.NodeId;
 import cz.tacr.elza.print.Packet;
 
 /**
- * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
- *         Date: 22.6.16
+ * @author Martin Lebeda
+ * @author Petr Pytelka
+ * @sinceDate: 22.6.16
  */
 public class ItemPacketRef extends AbstractItem {
 	
@@ -18,7 +19,7 @@ public class ItemPacketRef extends AbstractItem {
 
     @Override
     public String serializeValue() {
-        return packet.serialize();
+        return packet.formatAsString();
     }
     
     @Override
