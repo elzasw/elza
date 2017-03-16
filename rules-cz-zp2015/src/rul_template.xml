@@ -15,8 +15,13 @@
         <directory>ZP2015_INVENTAR_PDF_JASPER</directory>
     </template>
     <template code="ZP2015_STITKY_PDF_JASPER" output-type="ZP2015_STITKY" mime-type="application/pdf" extension="pdf">
-        <name>Štítky do PDF</name>
+        <name>Štítky na obaly do PDF</name>
         <engine>JASPER</engine>
         <directory>ZP2015_STITKY_PDF_JASPER</directory>
+    </template>
+    <template code="ZP2015_KOSILKY_PDF_JASPER" output-type="ZP2015_STITKY" mime-type="application/pdf" extension="pdf">
+        <name>Košilky na spisy do PDF</name>
+        <engine>JASPER</engine>
+        <directory>ZP2015_KOSILKY_PDF_JASPER</directory>
     </template>
 </templates>
