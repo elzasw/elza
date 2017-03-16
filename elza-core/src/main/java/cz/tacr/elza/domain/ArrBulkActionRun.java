@@ -39,7 +39,7 @@ import cz.tacr.elza.bulkaction.generator.result.Result;
  */
 @Entity(name = "arr_bulk_action_run")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrBulkActionRun implements Serializable {
+public class ArrBulkActionRun {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 

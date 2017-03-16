@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @Entity(name = "usr_permission")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class UsrPermission implements Serializable {
+public class UsrPermission {
 
     @Id
     @GeneratedValue

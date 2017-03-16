@@ -12,7 +12,7 @@ import cz.tacr.elza.domain.ArrDescItem;
  * @author Martin Šlapa
  * @since 18.9.2015
  */
-public class ArrDescItems implements Serializable {
+public class ArrDescItems {
 
     List<ArrDescItem> descItems;
 

@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Table
 //@Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParRelationTypeRoleType implements Serializable {
+public class ParRelationTypeRoleType {
 
     @Id
     @GeneratedValue

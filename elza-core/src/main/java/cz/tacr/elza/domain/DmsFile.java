@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity(name = "dms_file")
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class DmsFile implements Serializable {
+public class DmsFile {
 
     public static final String NAME = "name";
 
