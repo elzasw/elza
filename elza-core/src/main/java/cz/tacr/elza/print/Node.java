@@ -18,12 +18,14 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.item.ItemRecordRef;
+import cz.tacr.elza.print.item.ItemSpec;
 import cz.tacr.elza.service.output.OutputFactoryService;
 import cz.tacr.elza.utils.AppContext;
 
 /**
- * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
- *         Date: 22.6.16
+ * @author Martin Lebeda
+ * @author Petr Pytelka
+ * @since  22.6.16
  */
 public class Node implements RecordProvider, Comparable<Node>, NodesOrder {
 
@@ -71,6 +73,33 @@ public class Node implements RecordProvider, Comparable<Node>, NodesOrder {
                     return codes.contains(code);
                 })
                 .collect(Collectors.toList());
+    }
+    
+    /**
+     * Return list of items with given specification
+     * 
+     * @param code 		Code of the item
+     * @param specCode	Code of specificaion
+     * @return
+     */
+    public List<Item> getItemsWithSpec(@NotNull final String code, @NotNull final String specCode) {
+    	Assert.notNull(code);
+    	Assert.notNull(specCode);
+    	
+    	List<Item> result = new ArrayList<>();
+    	items.forEach(item -> {
+    		if(code.equals(item.getType().getCode())) {
+    			// Check specification
+    			ItemSpec is = item.getSpecification();
+    			if(is!=null) {
+    				if(specCode.equals(is.getCode())) {
+    					result.add(item);
+    				}
+    			}
+    		}
+    	});
+    	
+    	return result;
     }
 
     /**
