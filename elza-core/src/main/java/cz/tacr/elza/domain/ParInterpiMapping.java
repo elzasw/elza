@@ -30,7 +30,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Entity(name = "par_interpi_mapping")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table
-public class ParInterpiMapping implements Serializable {
+public class ParInterpiMapping {
 
     @Id
     @GeneratedValue

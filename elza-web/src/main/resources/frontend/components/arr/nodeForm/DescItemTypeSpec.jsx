@@ -197,7 +197,8 @@ class DescItemTypeSpec extends AbstractReactComponent {
             onChange: value => onChange(value ? value.id : null),
             onBlur: value => onBlur(value ? value.id : null),
             onFocus,
-            disabled: locked
+            disabled: locked,
+            readOnly: descItem.saving
         };
 
         // Získání hodnoty jako objekt specifikace = autocomplete pořebuje na vstupu objekt

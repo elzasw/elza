@@ -649,15 +649,15 @@ public class DescriptionItemService {
 
     /**
      * Vytvoří kopii seznamu atributů. Kopírovaný atribut patří zvolenému uzlu.
-     *
-     * @param node            uzel, který dostane kopírované atributy
+     *  @param node            uzel, který dostane kopírované atributy
      * @param sourceDescItems zdrojové atributy ke zkopírování
      * @param createChange    čas vytvoření nové kopie
      */
-    public void copyDescItemWithDataToNode(final ArrNode node,
-                                           final List<ArrDescItem> sourceDescItems,
-                                           final ArrChange createChange,
-                                           final ArrFundVersion version) {
+    public List<ArrDescItem> copyDescItemWithDataToNode(final ArrNode node,
+                                                        final List<ArrDescItem> sourceDescItems,
+                                                        final ArrChange createChange,
+                                                        final ArrFundVersion version) {
+        List<ArrDescItem> result = new ArrayList<>(sourceDescItems.size());
         for (ArrDescItem sourceDescItem : sourceDescItems) {
             ArrDescItem descItemNew = new ArrDescItem();
 
@@ -676,7 +676,9 @@ public class DescriptionItemService {
 
             // pro odverzovanou hodnotu atributu je nutné vytvořit kopii dat
             copyDescItemData(sourceDescItem, descItemNew);
+            result.add(descItemNew);
         }
+        return result;
     }
 
     /**

@@ -16,7 +16,7 @@
             </column>
             <column name="entity_type" type="char(20)" />
             <column name="entity_id" type="int" />
-            <column name="value" type="text" />
+            <column name="value" type="${type.text}" />
         </createTable>
 
         <addForeignKeyConstraint constraintName="fk_settings_user"

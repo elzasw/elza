@@ -11,7 +11,7 @@
         <dropColumn tableName="arr_named_output" columnName="code" />
 
         <addColumn tableName="arr_named_output">
-            <column name="internal_code" type="varchar(250)" />
+            <column name="internal_code" type="nvarchar(250)" />
         </addColumn>
 
     </changeSet>

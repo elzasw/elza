@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @Entity(name = "arr_node_register")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrNodeRegister implements Serializable {
+public class ArrNodeRegister {
 
     public static final String NODE_ID = "nodeId";
     public static final String NODE = "node";

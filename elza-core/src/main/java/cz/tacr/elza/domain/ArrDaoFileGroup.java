@@ -22,7 +22,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
  */
 @Table
 @Entity(name = "arr_dao_file_group")
-public class ArrDaoFileGroup implements Serializable {
+public class ArrDaoFileGroup {
 
     @Id
     @GeneratedValue

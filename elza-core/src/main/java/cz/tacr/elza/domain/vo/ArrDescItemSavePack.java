@@ -14,7 +14,7 @@ import cz.tacr.elza.domain.ArrNode;
  * @author Martin Šlapa
  * @since 28.8.2015
  */
-public class ArrDescItemSavePack implements Serializable {
+public class ArrDescItemSavePack {
 
     private List<ArrDescItem> descItems;
 

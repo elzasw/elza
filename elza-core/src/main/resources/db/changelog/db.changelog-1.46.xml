@@ -94,7 +94,7 @@
 
         <addColumn tableName="arr_bulk_action_run">
             <column name="output_definition_id" type="int" />
-            <column name="result" type="text" />
+            <column name="result" type="${type.text}" />
         </addColumn>
 
         <addForeignKeyConstraint constraintName="fk_bulkActionRun_output_definition"

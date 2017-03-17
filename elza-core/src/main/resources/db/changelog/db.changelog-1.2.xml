@@ -26,8 +26,8 @@
         <addUniqueConstraint tableName="par_party_type" columnNames="code" />
 
         <addColumn tableName="par_party">
-            <column name="history" type="text" />
-            <column name="source_information" type="text" />
+            <column name="history" type="${type.text}" />
+            <column name="source_information" type="${type.text}" />
         </addColumn>
         <dropNotNullConstraint tableName="par_party" columnName="preferred_name_id" columnDataType="int" />
 
@@ -36,12 +36,12 @@
                 <constraints primaryKey="true" nullable="false" />
             </column>
             <column name="calendar_type_id" type="int" />
-            <column name="value_from" type="varchar(19)" />
+            <column name="value_from" type="nvarchar(19)" />
             <column name="value_from_estimated" type="boolean" />
-            <column name="value_to" type="varchar(19)" />
+            <column name="value_to" type="nvarchar(19)" />
             <column name="value_to_estimated" type="boolean" />
-            <column name="format" type="varchar(50)" />
-            <column name="text_date" type="varchar(250)" />
+            <column name="format" type="nvarchar(50)" />
+            <column name="text_date" type="nvarchar(250)" />
         </createTable>
         <addForeignKeyConstraint
                 constraintName="fk_parUnitdate_arrCalendarType"
@@ -53,20 +53,20 @@
             <column name="name_form_type_id" type="int">
                 <constraints primaryKey="true" nullable="false" />
             </column>
-            <column name="code" type="varchar(50)" >
+            <column name="code" type="nvarchar(50)" >
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="name" type="varchar(250)" />
+            <column name="name" type="nvarchar(250)" />
         </createTable>
 
         <createTable tableName="par_complement_type">
             <column name="complement_type_id" type="int">
                 <constraints primaryKey="true" nullable="false" />
             </column>
-            <column name="code" type="varchar(50)" >
+            <column name="code" type="nvarchar(50)" >
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="name" type="varchar(250)">
+            <column name="name" type="nvarchar(250)">
                 <constraints nullable="false" />
             </column>
             <column name="view_order" type="int">
@@ -91,13 +91,13 @@
             <column name="party_id" type="int" >
                 <constraints nullable="false" />
             </column>
-            <column name="main_part" type="varchar(250)">
+            <column name="main_part" type="nvarchar(250)">
                 <constraints nullable="false" />
             </column>
-            <column name="other_part" type="varchar(250)" />
-            <column name="note" type="text" />
-            <column name="degree_before" type="varchar(50)" />
-            <column name="degree_after" type="varchar(50)" />
+            <column name="other_part" type="nvarchar(250)" />
+            <column name="note" type="${type.text}" />
+            <column name="degree_before" type="nvarchar(50)" />
+            <column name="degree_after" type="nvarchar(50)" />
         </createTable>
         <addForeignKeyConstraint
                 constraintName="fk_parPartyName_fromParUnitdate"
@@ -136,7 +136,7 @@
             <column name="party_name_id" type="int" >
                 <constraints nullable="false" />
             </column>
-            <column name="complement" type="varchar(1000)">
+            <column name="complement" type="nvarchar(1000)">
                 <constraints nullable="false" />
             </column>
         </createTable>
@@ -225,13 +225,13 @@
             <column name="relation_type_id" type="int">
                 <constraints primaryKey="true" nullable="false" />
             </column>
-            <column name="name" type="varchar(250)" >
+            <column name="name" type="nvarchar(250)" >
                 <constraints nullable="false"/>
             </column>
-            <column name="code" type="varchar(50)" >
+            <column name="code" type="nvarchar(50)" >
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="class_type" type="varchar(50)" />
+            <column name="class_type" type="nvarchar(50)" />
         </createTable>
 
         <createTable tableName="par_party_type_relation">
@@ -268,8 +268,8 @@
             </column>
             <column name="from_unitdate_id" type="int" />
             <column name="to_unitdate_id" type="int" />
-            <column name="date_note" type="varchar(1000)" />
-            <column name="note" type="varchar(1000)" />
+            <column name="date_note" type="nvarchar(1000)" />
+            <column name="note" type="nvarchar(1000)" />
         </createTable>
         <addForeignKeyConstraint
                 constraintName="fk_parRelation_parParty"
@@ -296,10 +296,10 @@
             <column name="role_type_id" type="int">
                 <constraints primaryKey="true" nullable="false" />
             </column>
-            <column name="name" type="varchar(250)" >
+            <column name="name" type="nvarchar(250)" >
                 <constraints nullable="false"/>
             </column>
-            <column name="code" type="varchar(50)" >
+            <column name="code" type="nvarchar(50)" >
                 <constraints nullable="false" unique="true"/>
             </column>
         </createTable>
@@ -339,7 +339,7 @@
             <column name="role_type_id" type="int" >
                 <constraints nullable="false" />
             </column>
-            <column name="source" type="text" />
+            <column name="source" type="${type.text}" />
         </createTable>
         <addForeignKeyConstraint
                 constraintName="fk_parRelationEntity_parRelationType"
@@ -361,12 +361,12 @@
             <column name="party_id" type="int">
                 <constraints primaryKey="true" nullable="false" />
             </column>
-            <column name="scope" type="varchar(1000)" >
+            <column name="scope" type="nvarchar(1000)" >
                 <constraints nullable="false" />
             </column>
-            <column name="founding_norm" type="varchar(50)" />
-            <column name="scope_norm" type="varchar(250)" />
-            <column name="organization" type="varchar(1000)" />
+            <column name="founding_norm" type="nvarchar(50)" />
+            <column name="scope_norm" type="nvarchar(250)" />
+            <column name="organization" type="nvarchar(1000)" />
         </createTable>
 
         <createTable tableName="par_party_group_identifier">
@@ -378,9 +378,9 @@
             <column name="party_id" type="int" >
                 <constraints nullable="false"/>
             </column>
-            <column name="source" type="varchar(50)" />
-            <column name="note" type="text" />
-            <column name="identifier" type="varchar(50)" >
+            <column name="source" type="nvarchar(50)" />
+            <column name="note" type="${type.text}" />
+            <column name="identifier" type="nvarchar(50)" >
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -404,7 +404,7 @@
             <column name="party_id" type="int">
                 <constraints primaryKey="true" nullable="false" />
             </column>
-            <column name="genealogy" type="text" >
+            <column name="genealogy" type="${type.text}" >
                 <constraints nullable="false" />
             </column>
         </createTable>

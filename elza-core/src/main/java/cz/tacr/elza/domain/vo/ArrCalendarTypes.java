@@ -12,7 +12,7 @@ import cz.tacr.elza.domain.ArrCalendarType;
  * @author Martin Šlapa
  * @since 20.10.2015
  */
-public class ArrCalendarTypes implements Serializable {
+public class ArrCalendarTypes {
 
     private List<ArrCalendarType> calendarTypes;
 

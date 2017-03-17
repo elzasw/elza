@@ -68,7 +68,7 @@ class DescItemPartyRef extends AbstractReactComponent {
                     ref="partyField"
                     {...otherProps}
                     value={value}
-                    detail={typePrefix != "output"}
+                    detail={typePrefix != "output" || !cal}
                     footerButtons={false}
                     footer={!singleDescItemTypeEdit}
                     onSelectModule={this.handleSelectModule}

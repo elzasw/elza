@@ -11,22 +11,22 @@
             <column name="external_system_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="code" type="varchar(50)">
+            <column name="code" type="nvarchar(50)">
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="name" type="varchar(250)">
+            <column name="name" type="nvarchar(250)">
                 <constraints nullable="false"/>
             </column>
-            <column name="url" type="varchar(1000)"/>
-            <column name="username" type="varchar(50)"/>
-            <column name="password" type="varchar(50)"/>
+            <column name="url" type="nvarchar(1000)"/>
+            <column name="username" type="nvarchar(50)"/>
+            <column name="password" type="nvarchar(50)"/>
         </createTable>
 
         <createTable tableName="reg_external_system">
             <column name="external_system_id" type="int">
                 <constraints primaryKey="true" nullable="false" foreignKeyName="fk_sys_external_system" referencedTableName="sys_external_system" referencedColumnNames="external_system_id"/>
             </column>
-            <column name="type" type="varchar(10)">
+            <column name="type" type="nvarchar(10)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -54,7 +54,7 @@
             <column name="class" type="char(20)">
                 <constraints nullable="false"/>
             </column>
-            <column name="name" type="varchar(250)">
+            <column name="name" type="nvarchar(250)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -69,7 +69,7 @@
             <column name="role_type_id" type="int">
                 <constraints nullable="false" foreignKeyName="fk_par_relation_role_type" referencedTableName="par_relation_role_type" referencedColumnNames="role_type_id"/>
             </column>
-            <column name="name" type="varchar(250)">
+            <column name="name" type="nvarchar(250)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -80,8 +80,8 @@
             <column name="external_system_id" type="int">
                 <constraints primaryKey="true" nullable="false" foreignKeyName="fk_arr_digital_repository" referencedTableName="sys_external_system" referencedColumnNames="external_system_id"/>
             </column>
-            <column name="view_dao_url" type="varchar(1000)" />
-            <column name="view_file_url" type="varchar(1000)" />
+            <column name="view_dao_url" type="nvarchar(1000)" />
+            <column name="view_file_url" type="nvarchar(1000)" />
             <column name="send_notification" type="boolean">
                 <constraints nullable="false"/>
             </column>
@@ -99,10 +99,10 @@
             <column name="dao_batch_info_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="code" type="varchar(50)">
+            <column name="code" type="nvarchar(50)">
                 <constraints unique="true" nullable="false"/>
             </column>
-            <column name="label" type="varchar(250)" />
+            <column name="label" type="nvarchar(250)" />
         </createTable>
 
         <createTable tableName="arr_dao_package">
@@ -116,7 +116,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="dao_batch_info_id" type="int"/>
-            <column name="code" type="varchar(50)" >
+            <column name="code" type="nvarchar(50)" >
                 <constraints unique="true"/>
             </column>
         </createTable>
@@ -152,10 +152,10 @@
             <column name="valid" type="boolean">
                 <constraints nullable="false"/>
             </column>
-            <column name="code" type="varchar(50)">
+            <column name="code" type="nvarchar(50)">
                 <constraints unique="true" nullable="false"/>
             </column>
-            <column name="label" type="varchar(250)"/>
+            <column name="label" type="nvarchar(250)"/>
         </createTable>
 
         <addForeignKeyConstraint constraintName="fk_dao_dao_package"
@@ -216,8 +216,8 @@
             <column name="dao_id" type="int">
                 <constraints nullable="false"/>
             </column>
-            <column name="label" type="varchar(250)"/>
-            <column name="code" type="varchar(50)">
+            <column name="label" type="nvarchar(250)"/>
+            <column name="code" type="nvarchar(50)">
                 <constraints unique="true"/>
             </column>
         </createTable>
@@ -237,10 +237,10 @@
                 <constraints nullable="false"/>
             </column>
             <column name="dao_file_group_id" type="int" />
-            <column name="checksum" type="varchar(250)"/>
+            <column name="checksum" type="nvarchar(250)"/>
             <column name="checksum_type" type="char(10)"/>
             <column name="created" type="timestamp"/>
-            <column name="mimetype" type="varchar(50)"/>
+            <column name="mimetype" type="nvarchar(50)"/>
             <column name="size" type="bigint" />
             <column name="image_height" type="int" />
             <column name="image_width" type="int" />
@@ -248,8 +248,8 @@
             <column name="source_x_dimension_value" type="decimal"/>
             <column name="source_y_dimension_unit" type="char(10)"/>
             <column name="source_y_dimension_value" type="decimal"/>
-            <column name="duration" type="varchar(250)"/>
-            <column name="code" type="varchar(50)">
+            <column name="duration" type="nvarchar(250)"/>
+            <column name="code" type="nvarchar(50)">
                 <constraints unique="true" nullable="false"/>
             </column>
         </createTable>
@@ -279,14 +279,14 @@
             <column name="fund_id" type="int">
                 <constraints nullable="false"/>
             </column>
-            <column name="code" type="varchar(50)">
+            <column name="code" type="nvarchar(50)">
                 <constraints unique="true" nullable="false"/>
             </column>
             <column name="state" type="char(20)">
                 <constraints nullable="false"/>
             </column>
             <column name="response_external_system" type="timestamp"/>
-            <column name="reject_reason" type="varchar(1000)"/>
+            <column name="reject_reason" type="nvarchar(1000)"/>
         </createTable>
 
         <addForeignKeyConstraint constraintName="fk_request_fund"
@@ -306,7 +306,7 @@
             <column name="type" type="char(20)">
                 <constraints nullable="false"/>
             </column>
-            <column name="description" type="varchar(1000)"/>
+            <column name="description" type="nvarchar(1000)"/>
         </createTable>
 
         <addForeignKeyConstraint constraintName="fk_dao_request_digitization_frontdesk"
@@ -323,7 +323,7 @@
             <column name="digitization_frontdesk_id" type="int">
                 <constraints nullable="false"/>
             </column>
-            <column name="description" type="varchar(1000)"/>
+            <column name="description" type="nvarchar(1000)"/>
         </createTable>
 
         <addForeignKeyConstraint constraintName="fk_digitization_request_digitization_frontdesk"
@@ -435,7 +435,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="attempt_to_send" type="timestamp" />
-            <column name="error" type="varchar(1000)"/>
+            <column name="error" type="nvarchar(1000)"/>
             <column name="send" type="boolean">
                 <constraints nullable="false"/>
             </column>
@@ -462,7 +462,7 @@
         <validCheckSum>7:26203ba4403eb8c05dbf242fd108b150</validCheckSum>
 
         <addColumn tableName="arr_dao_link_request">
-            <column name="did_code" type="varchar(50)">
+            <column name="did_code" type="nvarchar(50)">
                 <constraints nullable="false"/>
             </column>
         </addColumn>
@@ -503,7 +503,7 @@
     <changeSet id="20161208090500" author="slapa">
 
         <addColumn tableName="arr_request">
-            <column name="discriminator" type="varchar(20)">
+            <column name="discriminator" type="nvarchar(20)">
                 <constraints nullable="false"/>
             </column>
         </addColumn>
@@ -526,10 +526,10 @@
             <column name="interpi_class" type="char(20)">
                 <constraints nullable="false"/>
             </column>
-            <column name="interpi_relation_type" type="varchar(250)">
+            <column name="interpi_relation_type" type="nvarchar(250)">
                 <constraints nullable="true"/>
             </column>
-            <column name="interpi_role_type" type="varchar(250)">
+            <column name="interpi_role_type" type="nvarchar(250)">
                 <constraints nullable="true"/>
             </column>
         </createTable>
@@ -586,8 +586,8 @@
 
     <changeSet id="201701041340" author="vanek">
         <dropNotNullConstraint tableName="par_interpi_mapping" columnName="relation_role_type_id" columnDataType="int"/>
-        <dropNotNullConstraint tableName="par_dynasty" columnName="genealogy" columnDataType="text"/>
-        <dropNotNullConstraint tableName="par_party_group" columnName="scope" columnDataType="varchar(1000)"/>
+        <dropNotNullConstraint tableName="par_dynasty" columnName="genealogy" columnDataType="${type.text}"/>
+        <dropNotNullConstraint tableName="par_party_group" columnName="scope" columnDataType="nvarchar(1000)"/>
     </changeSet>
 
 </databaseChangeLog>

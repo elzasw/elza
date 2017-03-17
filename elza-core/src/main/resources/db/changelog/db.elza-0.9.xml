@@ -16,11 +16,11 @@
             <where>sequence_name='par_party_name_form_type|name_form_type_id'</where>
         </delete>
         <update tableName="db_hibernate_sequences">
-            <column name="sequence_name" type="varchar(255)" value="par_relation_role_type|role_type_id" />
+            <column name="sequence_name" type="nvarchar(255)" value="par_relation_role_type|role_type_id" />
             <where>sequence_name='par_relation_role_type|relation_role_type_id'</where>
         </update>
         <update tableName="db_hibernate_sequences">
-            <column name="sequence_name" type="varchar(255)" value="par_party_name_form_type|name_form_type_id" />
+            <column name="sequence_name" type="nvarchar(255)" value="par_party_name_form_type|name_form_type_id" />
             <where>sequence_name='par_party_name_form_type|party_name_form_type_id'</where>
         </update>
     </changeSet>
@@ -42,32 +42,32 @@
     </changeSet>
 
     <changeSet id="20170207093900" author="slapa">
-        <dropNotNullConstraint columnDataType="text"
+        <dropNotNullConstraint columnDataType="${type.text}"
                                columnName="genealogy"
                                tableName="par_dynasty"/>
     </changeSet>
 
     <changeSet id="20170207094200" author="slapa">
-        <dropNotNullConstraint columnDataType="varchar(1000)"
+        <dropNotNullConstraint columnDataType="nvarchar(1000)"
                                columnName="scope"
                                tableName="par_party_group"/>
     </changeSet>
 
     <changeSet id="20170207095700" author="slapa">
         <modifyDataType columnName="characteristics"
-                        newDataType="text"
+                        newDataType="${type.text}"
                         tableName="par_party"/>
         <modifyDataType columnName="scope"
-                        newDataType="text"
+                        newDataType="${type.text}"
                         tableName="par_party_group"/>
         <modifyDataType columnName="founding_norm"
-                        newDataType="text"
+                        newDataType="${type.text}"
                         tableName="par_party_group"/>
         <modifyDataType columnName="scope_norm"
-                        newDataType="text"
+                        newDataType="${type.text}"
                         tableName="par_party_group"/>
         <modifyDataType columnName="organization"
-                        newDataType="text"
+                        newDataType="${type.text}"
                         tableName="par_party_group"/>
     </changeSet>
 

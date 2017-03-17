@@ -6,9 +6,9 @@
 
     <changeSet id="11" author="kubovy">
         <dropColumn tableName="par_relation_entity" columnName="source"/>
-        
+
         <addColumn tableName="par_relation">
-            <column name="source" type="text"/>
+            <column name="source" type="${type.text}"/>
         </addColumn>
     </changeSet>
 

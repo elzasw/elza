@@ -15,10 +15,10 @@
             <column name="institution_type_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="name" type="varchar(250)">
+            <column name="name" type="nvarchar(250)">
                 <constraints nullable="false"/>
             </column>
-            <column name="code" type="varchar(50)">
+            <column name="code" type="nvarchar(50)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -48,7 +48,7 @@
             <column name="institution_type_id" type="int">
                 <constraints nullable="false"/>
             </column>
-            <column name="code" type="varchar(50)">
+            <column name="code" type="nvarchar(50)">
                 <constraints unique="true" nullable="false" uniqueConstraintName="uq_par_institution_code"/>
             </column>
         </createTable>
@@ -77,7 +77,7 @@
         -->
 
         <addColumn tableName="arr_fund">
-            <column name="internal_code" type="varchar(250)">
+            <column name="internal_code" type="nvarchar(250)">
                 <constraints nullable="false"/>
             </column>
             <column name="institution_id" type="int">
@@ -100,7 +100,7 @@
         <dropColumn columnName="arrangement_type_id" tableName="arr_fund_version"/>
 
         <addColumn tableName="arr_fund_version">
-            <column name="date_range" type="text" />
+            <column name="date_range" type="${type.text}" />
         </addColumn>
 
     </changeSet>

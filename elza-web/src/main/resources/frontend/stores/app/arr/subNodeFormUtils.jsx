@@ -28,7 +28,7 @@ function createDataMap(formData) {
     if (formData) { // nějaká data již existují
         formData.descItemGroups.forEach(group => {
             groupMap[group.code] = group;
-            
+
             group.descItemTypes.forEach(type => {
                 typeMap[type.id] = type;
 
@@ -137,7 +137,7 @@ function initFormKey(descItemType, descItem) {
 
 // 1. Doplní povinné a doporučené specifikace s prázdnou hodnotou, pokud je potřeba
 // 2. Pokud atribut nemá žádnou hodnotu, přidá první implicitní
-// 
+//
 export function consolidateDescItems(resultDescItemType, infoType, refType, addedByUser, emptySystemSpecToKeyMap={}) {
     var forceVisibility = infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED'
 
@@ -148,7 +148,7 @@ export function consolidateDescItems(resultDescItemType, infoType, refType, adde
     if (resultDescItemType.descItems.length === 0) {
         resultDescItemType.descItems.push(createImplicitDescItem(resultDescItemType, refType, addedByUser));
     }
-    
+
     resultDescItemType.descItems.forEach((descItem, index) => {descItem.position = index + 1});
 }
 
@@ -241,7 +241,7 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
         } else {    // je v db a my ji také máme, musíme provést merge
             // Vezmeme jako primární nově příchozí hodnoty a do nich přidáme ty, které aktualní klient má přidané, ale nemá je ještě uložené např. kvůli validaci atp.
             // Pokud ale má klient ty samé hodnoty (prev value je stejné jako nově příchozí hodnota), jako přijdou ze serveru a současně je upravil a nejsou uložené, necháme hodnoty v našem klientovi
-            
+
             // Mapa existujících hodnot na klientovi
             var prevDescItemMap = {}
             prevType.descItems.forEach(descItem => {
@@ -315,7 +315,7 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
         }
     }
 
-    // Uměle doplníme ty specifikace, které 
+    // Uměle doplníme ty specifikace, které
 
     return false;
 }
@@ -357,7 +357,7 @@ function merge(state) {
             // - původní verze descItem - data, která jsou aktuálně ve store
             var prevDescItemType = dataMap.typeMap.get(descItemType.id);    // verze na klientovi, pokud existuje
             var newDescItemType = dbItemTypesMap[descItemType.id];          // verze z db, pokud existuje
-            
+
             if (mergeDescItems(state, resultDescItemType, prevDescItemType, newDescItemType)) {
                 resultGroup.descItemTypes.push(resultDescItemType);
             }
@@ -452,6 +452,7 @@ export function createDescItem(descItemType, refType, addedByUser) {
         hasFocus: false,
         touched: false,
         visited: false,
+        saving: false,
         value: null,
         error: {hasError:false},
         addedByUser

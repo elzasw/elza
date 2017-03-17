@@ -7,10 +7,10 @@
     <changeSet id="53" author="vanek">
 
         <addColumn tableName="rul_template">
-            <column type="VARCHAR(50)" name="extension"/>
-            <column type="VARCHAR(50)" name="mime_type"/>
+            <column type="nvarchar(50)" name="extension"/>
+            <column type="nvarchar(50)" name="mime_type"/>
         </addColumn>
-        
+
         <update tableName="rul_template">
             <column name="extension" value="pdf" />
             <where>engine = 'JASPER'</where>
@@ -27,8 +27,8 @@
             <column name="mime_type" value="text/csv" />
             <where>engine = 'FREEMARKER'</where>
         </update>
-        <addNotNullConstraint tableName="rul_template" columnName="extension" columnDataType="VARCHAR(50)" />        
-        <addNotNullConstraint tableName="rul_template" columnName="mime_type" columnDataType="VARCHAR(50)" />        
+        <addNotNullConstraint tableName="rul_template" columnName="extension" columnDataType="nvarchar(50)" />
+        <addNotNullConstraint tableName="rul_template" columnName="mime_type" columnDataType="nvarchar(50)" />
     </changeSet>
 
 </databaseChangeLog>

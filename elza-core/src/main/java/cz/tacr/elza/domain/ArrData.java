@@ -43,7 +43,7 @@ filters = {
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public abstract class ArrData implements Serializable {
+public abstract class ArrData {
 
     public static final String ITEM = "item";
 

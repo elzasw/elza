@@ -156,6 +156,18 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ChangesResult changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, LocalDateTime.now(), lastChangeId, null);
         Assert.notNull(changesByDate);
         Assert.notNull(changesByDate.getChanges());
+
+        // TODO: test
+        try {
+            logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size() + ", xxxxxxxxxxxxxxxxxxxx");
+            Thread.sleep(5000);
+            logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size() + ", xxxxxxxxxxxxxxxxxxxx");
+            Thread.sleep(5000);
+            logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size() + ", xxxxxxxxxxxxxxxxxxxx");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         Assert.isTrue(changesByDate.getTotalCount().equals(changesByDate.getChanges().size()) && changesByDate.getChanges().size() == 26);
         Assert.isTrue(!changesByDate.getOutdated());
 
@@ -880,7 +892,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         RegRecordVO record = new RegRecordVO();
 
-        record.setRegisterTypeId(getHierarchicalRegRegisterType(types, null).getId());
+        record.setRegisterTypeId(getHierarchicalRegRegisterType(types, null, false).getId());
 
         record.setCharacteristics("Ja jsem regRecordA");
 

@@ -25,7 +25,7 @@ var DescItemText = class DescItemText extends AbstractReactComponent {
 
     render() {
         const {descItem, locked, readMode, cal} = this.props;
-        let value = cal && descItem.value == null ? i18n("subNodeForm.descItemType.calculable") : descItem.value;
+        let value = descItem.value;
 
         if (readMode) {
             return (
@@ -41,14 +41,23 @@ var DescItemText = class DescItemText extends AbstractReactComponent {
         return (
             <div className='desc-item-value'>
                 <ItemTooltipWrapper tooltipTitle="dataType.text.format">
+                    {cal ? <textarea
+                            {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
+                            key="calc"
+                            defaultValue={i18n("subNodeForm.descItemType.calculable")}
+                            disabled={true}
+                            onBlur={null}
+                            onFocus={null}
+                        /> :
                     <textarea
                         {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
+                        key="val"
                         ref='focusEl'
-                        type="text"
                         disabled={locked}
+                        defaultValue={''}
                         value={value}
-                        onChange={(e) => this.props.onChange(e.target.value)}
-                    />
+                        onChange={(e) => !cal && this.props.onChange(e.target.value)}
+                    />}
                 </ItemTooltipWrapper>
             </div>
         )

@@ -177,7 +177,7 @@ class HomePage extends AbstractReactComponent {
     /**
      * Vykreslení informace o prázné historii
      */
-    renderMessage = (title, message) => <div className="unselected-msg history-list-item no-history">
+    renderMessage = (title, message) => <div key="blank" className="unselected-msg history-list-item no-history">
         <div className="title">{title}</div>
         <div className="message">{message}</div>
     </div>;
@@ -185,7 +185,7 @@ class HomePage extends AbstractReactComponent {
     /**
      * Vykreslení odkazu do příslušných modulů
      */
-    renderLink = (to, text, glyph = "fa-arrow-right") => <LinkContainer to={to}>
+    renderLink = (to, text, glyph = "fa-arrow-right") => <LinkContainer key={to} to={to}>
         <Button className='history-list-item history-button link'>
             <Icon glyph={glyph}/>
             <div className='history-name'>{text}</div>

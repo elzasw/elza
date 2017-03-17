@@ -23,7 +23,7 @@ import java.util.Objects;
  */
 @Table
 @Entity(name = "arr_cached_node")
-public class ArrCachedNode implements Serializable {
+public class ArrCachedNode {
 
     @Id
     @GeneratedValue
