@@ -14,9 +14,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import cz.tacr.elza.interpi.ws.wo.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -67,30 +69,6 @@ import cz.tacr.elza.interpi.service.vo.ConditionVO;
 import cz.tacr.elza.interpi.service.vo.ExternalRecordVO;
 import cz.tacr.elza.interpi.service.vo.InterpiEntity;
 import cz.tacr.elza.interpi.service.vo.MappingVO;
-import cz.tacr.elza.interpi.ws.wo.DoplnekTyp;
-import cz.tacr.elza.interpi.ws.wo.EntitaTyp;
-import cz.tacr.elza.interpi.ws.wo.IdentifikaceTyp;
-import cz.tacr.elza.interpi.ws.wo.IdentifikatorSouvTyp;
-import cz.tacr.elza.interpi.ws.wo.IdentifikatorSouvTypA;
-import cz.tacr.elza.interpi.ws.wo.IdentifikatorTyp;
-import cz.tacr.elza.interpi.ws.wo.IdentifikatorTypA;
-import cz.tacr.elza.interpi.ws.wo.KodovaneTyp;
-import cz.tacr.elza.interpi.ws.wo.KodovaneTypA;
-import cz.tacr.elza.interpi.ws.wo.KomplexniDataceTyp;
-import cz.tacr.elza.interpi.ws.wo.KomplexniDataceTypA;
-import cz.tacr.elza.interpi.ws.wo.OznaceniTyp;
-import cz.tacr.elza.interpi.ws.wo.OznaceniTypTypA;
-import cz.tacr.elza.interpi.ws.wo.PodtridaTyp;
-import cz.tacr.elza.interpi.ws.wo.PopisTyp;
-import cz.tacr.elza.interpi.ws.wo.RoleTypA;
-import cz.tacr.elza.interpi.ws.wo.SouvisejiciTyp;
-import cz.tacr.elza.interpi.ws.wo.TitulTyp;
-import cz.tacr.elza.interpi.ws.wo.TitulTypA;
-import cz.tacr.elza.interpi.ws.wo.TridaTyp;
-import cz.tacr.elza.interpi.ws.wo.UdalostTyp;
-import cz.tacr.elza.interpi.ws.wo.UdalostTypA;
-import cz.tacr.elza.interpi.ws.wo.VedlejsiCastTyp;
-import cz.tacr.elza.interpi.ws.wo.ZdrojTyp;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
@@ -336,7 +314,8 @@ public class InterpiFactory {
         ExternalRecordVO recordVO = convertToExternalRecordVO(Collections.singletonList(entitaTyp), generateVariantNames).
                 iterator().next();
 
-        regRecord.setCharacteristics(recordVO.getDetail());
+        List<String> strucnaCharakteristika = interpiEntity.getPopisTyp().stream().filter(i -> PopisTypA.STRUČNÁ_CHARAKTERISTIKA.equals(i.getTyp())).map(PopisTyp::getTextPopisu).collect(Collectors.toList());
+        regRecord.setCharacteristics(String.join(", ", strucnaCharakteristika));
         regRecord.setRecord(recordVO.getName());
 
         List<RegVariantRecord> regVariantRecords = new ArrayList<>(recordVO.getVariantNames().size());

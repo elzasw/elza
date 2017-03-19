@@ -154,7 +154,7 @@ export function registryUpdate(data, callback = null) {
             }
 
             if (callback !== null) {
-                dispatch(callback());
+                dispatch(callback);
             }
         });
     }

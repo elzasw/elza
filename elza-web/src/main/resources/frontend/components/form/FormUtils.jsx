@@ -38,7 +38,7 @@ export function submitForm(validate, values) {
         if (Object.keys(errors).length > 0) {
             reject(errors);
         } else {
-            return this.props.onSubmitForm(values);
+            return this.props.onSubmitForm(values).then(resolve).catch(reject);
         }
     })
 }
