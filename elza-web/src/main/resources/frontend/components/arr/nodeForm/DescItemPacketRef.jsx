@@ -24,7 +24,6 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
             'handleBlur',
             'getPacketName',
             'handleSearchChange',
-            'handleChange',
             'renderPacket',
             'handleFundPackets',
             'handleCreatePacket');
