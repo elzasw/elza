@@ -4,11 +4,8 @@ import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {i18n} from 'components'
 import {connect} from 'react-redux'
 
-var Exception = class Exception extends AbstractReactComponent {
+class Exception extends AbstractReactComponent {
 
-    constructor(props) {
-        super(props);
-    }
 
     openDetail = () => {
         this.dispatch(modalDialogShow(this, this.props.title, <ExceptionDetail data={this.props.data} />, "dialog-lg top max-height"));
@@ -38,6 +35,6 @@ var Exception = class Exception extends AbstractReactComponent {
             </div>
         )
     }
-};
+}
 
-module.exports = connect()(Exception);
+export default connect()(Exception);
