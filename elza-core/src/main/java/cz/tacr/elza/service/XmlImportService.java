@@ -662,6 +662,17 @@ public class XmlImportService {
         return arrDescItem;
     }
 
+    /**
+     * Metoda vytvoří Fund případně doplní UUID
+     *
+     * @param fund Fund
+     * @param change change
+     * @param config config
+     * @param stopOnError stop on error
+     * @return ArrFund created
+     * @throws FatalXmlImportException fatální chyba
+     * @throws InvalidDataException Neplatná data
+     */
     private ArrFund createFund(final Fund fund, final ArrChange change, final XmlImportConfig config, final boolean stopOnError) throws FatalXmlImportException, InvalidDataException {
         RulRuleSet ruleSet;
         if (StringUtils.isBlank(config.getTransformationName())) {
@@ -676,6 +687,10 @@ public class XmlImportService {
 
         ParInstitution institution = getInstitution(fund.getInstitutionCode());
         String uuid = XmlImportUtils.trimStringValue(fund.getRootLevel().getUuid(), StringLength.LENGTH_36, stopOnError);
+        if (StringUtils.isBlank(uuid)) {
+            uuid = arrangementService.generateUuid();
+            fund.getRootLevel().setUuid(uuid);
+        }
         ArrFund arrFund = arrangementService.createFund(fund.getName(), ruleSet, change, uuid, "TST", institution, null); // TODO: dateRange zatím nevyplněn, internalCode TST, instituce
         arrangementService.addScopeToFund(arrFund, config.getRegScope());
 
