@@ -78,9 +78,16 @@ import {addToastr} from "components/shared/toastr/ToastrActions.jsx"
 AppStore.store.dispatch(storeRestoreFromStorage());
 
 window.onerror = function(message, url, line, column, error) {
+    let devMessage = error;
+    try {
+        if (devMessage.stack) {
+            devMessage = devMessage.stack
+        }
+    } catch (e) {}
+
     AppStore.store.dispatch(addToastr(i18n('exception.client'), [<Exception title={i18n('exception.client')} data={{
         message,
-        devMessage: error,
+        devMessage: devMessage,
         properties: {
             url,
             line,
