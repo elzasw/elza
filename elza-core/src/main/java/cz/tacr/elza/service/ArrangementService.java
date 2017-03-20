@@ -483,7 +483,7 @@ public class ArrangementService {
      *
      * @return jednoznačný identifikátor
      */
-    private String generateUuid() {
+    public String generateUuid() {
         return UUID.randomUUID().toString();
     }
 

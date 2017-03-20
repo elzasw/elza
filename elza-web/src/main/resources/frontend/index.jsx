@@ -73,7 +73,21 @@ if (!String.prototype.startsWith) {
 import {AppStore} from 'stores/index.jsx';
 import {storeRestoreFromStorage} from 'actions/store/store.jsx';
 import {storeSave} from 'actions/store/storeEx.jsx';
+import {i18n, Exception} from "components/index";
+import {addToastr} from "components/shared/toastr/ToastrActions.jsx"
 AppStore.store.dispatch(storeRestoreFromStorage());
+
+window.onerror = function(message, url, line, column, error) {
+    AppStore.store.dispatch(addToastr(i18n('exception.client'), [<Exception title={i18n('exception.client')} data={{
+        message,
+        devMessage: error,
+        properties: {
+            url,
+            line,
+            column
+        }
+    }} />], "danger", "lg", null))
+};
 
 // Globální vypnutí focus na split buttony
 import SplitToggle from './node_modules/react-bootstrap/lib/SplitToggle';

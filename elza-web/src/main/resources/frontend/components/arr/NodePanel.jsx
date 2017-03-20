@@ -474,7 +474,7 @@ return true
      * @param items {Array} seznam node pro vyrenderování
      * @param key {String} klíč objektu
      * @param myClass {String} třída objektu
-     * @param onClick {Functions} callback po kliku na položku
+     * @param onClick {Function} callback po kliku na položku
      * @return {Object} view
      */
     renderRow(items, key, myClass, onClick) {
@@ -661,7 +661,7 @@ return true
         var rows = [];
 
         if (!node.nodeInfoFetched) {
-            rows.push( <Loading value={i18n('global.data.loading.node')}/>);
+            rows.push(<Loading key="loading" value={i18n('global.data.loading.node')}/>);
         } else{
             if (node.viewStartIndex > 0) {
                 rows.push(

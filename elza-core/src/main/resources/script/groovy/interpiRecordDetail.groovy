@@ -1,76 +1,49 @@
 import org.apache.commons.lang.StringUtils;
-import org.junit.Assert
-import cz.tacr.elza.domain.ParPartyNameComplement
+import org.junit.Assert;
+import cz.tacr.elza.domain.ParPartyNameComplement;
 import cz.tacr.elza.interpi.service.vo.ExternalRecordVO;
 import cz.tacr.elza.interpi.ws.wo.DoplnekTyp;
-import cz.tacr.elza.interpi.ws.wo.EntitaTyp
-import cz.tacr.elza.interpi.ws.wo.OznaceniTyp
-import cz.tacr.elza.interpi.ws.wo.PopisTyp
+import cz.tacr.elza.interpi.ws.wo.EntitaTyp;
+import cz.tacr.elza.interpi.ws.wo.OznaceniTyp;
+import cz.tacr.elza.interpi.ws.wo.PopisTyp;
 import cz.tacr.elza.interpi.ws.wo.TitulTyp;
-import cz.tacr.elza.interpi.ws.wo.TitulTypA
-import cz.tacr.elza.interpi.ws.wo.VedlejsiCastTyp
+import cz.tacr.elza.interpi.ws.wo.TitulTypA;
+import cz.tacr.elza.interpi.ws.wo.VedlejsiCastTyp;
 import cz.tacr.elza.utils.XmlUtils;
 import cz.tacr.elza.interpi.service.vo.InterpiEntity;
 
-List<ExternalRecordVO> records = new LinkedList<>();
-for (entitaTyp in ENTITIES) {
-    InterpiEntity interpiEntity = new InterpiEntity(entitaTyp);
-    OznaceniTyp oznaceniTyp = interpiEntity.getPreferovaneOznaceni();
+InterpiEntity interpiEntity = new InterpiEntity(ENTITY);
+OznaceniTyp oznaceniTyp = interpiEntity.getPreferovaneOznaceni();
 
-    ExternalRecordVO record = new ExternalRecordVO();
-    records.add(record);
+ExternalRecordVO record = new ExternalRecordVO();
 
-    Iterator<PopisTyp> iterator = interpiEntity.getPopisTyp().iterator();
-    if (iterator.hasNext()) {
-        List<String> details = new ArrayList<>();
-        while(iterator.hasNext()) {
-            PopisTyp popis = iterator.next();
-            details.add(popis.getTextPopisu());
-        }
-        record.setDetail(details.join("; "));
-    } else {
-        record.setDetail(createSimpleDetail(entitaTyp));
-    }
+record.setDetail(createDetail(interpiEntity));
+record.setName(generatePartyNameString(oznaceniTyp, interpiEntity));
+record.setRecordId(FACTORY.getInterpiRecordId(interpiEntity));
 
-    record.setName(generatePartyNameString(oznaceniTyp, interpiEntity));
-    record.setRecordId(FACTORY.getInterpiRecordId(interpiEntity));
-
-    List<OznaceniTyp> otherNames = interpiEntity.getVariantniOznaceni();
-    List<String> variantNames = new ArrayList<>(otherNames.size());
-    otherNames.each {
-        String variantRecord = createVariantRecord(it, interpiEntity)
-        variantNames.add(variantRecord);
-    };
-    record.setVariantNames(variantNames);
-}
+List<OznaceniTyp> otherNames = interpiEntity.getVariantniOznaceni();
+List<String> variantNames = new ArrayList<>(otherNames.size());
+otherNames.each {
+    String variantRecord = createVariantRecord(it, interpiEntity)
+    variantNames.add(variantRecord);
+};
+record.setVariantNames(variantNames);
 
 return records;
 
-String createSimpleDetail(EntitaTyp entitaTyp) {
-    byte[] marshallData = XmlUtils.marshallData(entitaTyp, EntitaTyp.class);
-
-    return XmlUtils.formatXml(new ByteArrayInputStream(marshallData));
-}
-
-String createDetail(InterpiEntity ent) {
-
-    StringBuilder detail = new StringBuilder();
-    detail.append("id: ").append(FACTORY.getInterpiRecordId(interpiEntity)).append("\n")
-    detail.append("název: ").append(generatePartyNameString(ent)).append("\n");
-    detail.append("popis: ");
+String createDetail(InterpiEntity entity) {
+    List<String> details = new ArrayList<>();
     Iterator<PopisTyp> iterator = interpiEntity.getPopisTyp().iterator();
-    if (iterator.hasNext()) {
-        List<String> details = new ArrayList<>();
-        while(iterator.hasNext()) {
-            PopisTyp popis = iterator.next();
-            details.add(popis.getTextPopisu());
-        }
-        detail.append(details.join("; "));
+    while(iterator.hasNext()) {
+        PopisTyp popis = iterator.next();
+        details.add(popis.getTextPopisu());
     }
+    String popis = details.join("; ")
 
 
-
-    return XmlUtils.formatXml(new ByteArrayInputStream(marshallData));
+    return "id: " + FACTORY.getInterpiRecordId(entity) + "\n" +
+            "název: " + generatePartyNameString(entity.getPreferovaneOznaceni(), entity) + "\n" +
+            "popis" + popis;
 }
 
 /**
@@ -81,10 +54,6 @@ String createDetail(InterpiEntity ent) {
  */
 String createVariantRecord(final OznaceniTyp oznaceniTyp, final InterpiEntity interpiEntity) {
     return generatePartyNameString(oznaceniTyp, interpiEntity);
-}
-
-String generatePartyNameString(final InterpiEntity interpiEntity) {
-    return generatePartyNameString(interpiEntity.getPreferovaneOznaceni(), interpiEntity);
 }
 
 /**

@@ -88,6 +88,7 @@ class ArrPage extends ArrParentPage {
     state = {
         developerExpandedSpecsIds: {},
         fundNodesError: null,
+        tabs: null
     };
 
     constructor(props) {
@@ -170,9 +171,9 @@ class ArrPage extends ArrParentPage {
     }
     trySetFocus(props) {
         var {focus, tab} = props
-        let selectedTab = this.state.tabs[tab.values['arr-as']];
-        if (canSetFocus()) {
+        if (this.state.tabs !== null && canSetFocus()) {
             if (isFocusFor(focus, 'arr', 3)) {
+                let selectedTab = this.state.tabs[tab.values['arr-as']];
                 if(!selectedTab.focus && !selectedTab.ref){ //Pokud tab nemá zadánu funkci pro focus ani ref
                     focusWasSet();
                 } else if (!selectedTab.focus){ //Pokud tab nemá zadánu funkci pro focus
@@ -777,6 +778,9 @@ class ArrPage extends ArrParentPage {
         const {developer, arrRegion, userDetail} = props;
         var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
         var node;
+        if (!activeFund) {
+            return;
+        }
         if (activeFund.nodes && activeFund.nodes.activeIndex !== null) {
             node = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
         }
