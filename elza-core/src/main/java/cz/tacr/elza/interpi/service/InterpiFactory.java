@@ -586,11 +586,7 @@ public class InterpiFactory {
             String interpiRoleType = getInterpiRoleType(souvisejiciTyp);
             String interpiId = getInterpiSouvIdentifier(souvisejiciTyp.getIdentifikator());
             MappingVO mappingVO = findRelationMapping(mappings, interpiClass, null, interpiRoleType, interpiId);
-            if (mappingVO == null) {
-                throw new IllegalStateException("Pro entitu " + interpiRoleType + " nebylo nalezeno mapování.");
-            }
-
-            if (!mappingVO.isImportRelation()) { // přeskočení
+            if (mappingVO == null || !mappingVO.isImportRelation()) { // přeskočení
                 continue;
             }
 
@@ -626,11 +622,7 @@ public class InterpiFactory {
 
             if (CollectionUtils.isEmpty(souvisejiciEntitaList)  ) {
                 MappingVO mappingVO = findRelationMapping(mappings, interpiClass, interpiRelationType, null, null);
-                if (mappingVO == null) {
-                    throw new IllegalStateException("Pro vztah " + interpiRelationType + " nebylo nalezeno mapování.");
-                }
-
-                if (!mappingVO.isImportRelation()) { // přeskočení
+                if (mappingVO == null || !mappingVO.isImportRelation()) { // přeskočení
                     continue;
                 }
 
@@ -642,11 +634,7 @@ public class InterpiFactory {
                     String interpiRoleType = getInterpiRoleType(souvisejiciTyp);
                     String interpiId = getInterpiSouvIdentifier(souvisejiciTyp.getIdentifikator());
                     MappingVO mappingVO = findRelationMapping(mappings, interpiClass, interpiRelationType, interpiRoleType, interpiId);
-                    if (mappingVO == null) {
-                        throw new IllegalStateException("Pro vztah " + interpiRoleType + " a roli " + interpiRoleType + " nebylo nalezeno mapování.");
-                    }
-
-                    if (!mappingVO.isImportRelation()) { // přeskočení
+                    if (mappingVO == null || !mappingVO.isImportRelation()) { // přeskočení
                         continue;
                     }
 
