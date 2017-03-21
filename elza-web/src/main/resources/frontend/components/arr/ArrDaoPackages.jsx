@@ -2,7 +2,6 @@ import React from "react";
 import {connect} from "react-redux";
 import {FormInput, Icon, AbstractReactComponent, Search, i18n, Loading, ListBox} from "components/index.jsx";
 import {indexById} from "stores/app/utils.jsx";
-import {Form, Button} from "react-bootstrap";
 import {dateToString} from "components/Utils.jsx";
 import {userDetailsSaveSettings} from "actions/user/userDetail.jsx";
 import {fundChangeReadMode} from "actions/arr/fund.jsx";
@@ -10,13 +9,9 @@ import {setSettings, getOneSettings} from "components/arr/ArrUtils.jsx";
 import {humanFileSize} from "components/Utils.jsx";
 import * as daoActions from 'actions/arr/daoActions.jsx';
 import classNames from 'classnames';
-require("./ArrDaoPackages.less")
+import "./ArrDaoPackages.less"
 
 class ArrDaoPackages extends AbstractReactComponent {
-
-    constructor(props) {
-        super(props);
-    }
 
     static PropTypes = {
         fund: React.PropTypes.object.isRequired,
@@ -74,20 +69,13 @@ class ArrDaoPackages extends AbstractReactComponent {
                     onSearch={this.handleSearch}
                     onClear={this.handleClear}
                 />
-                {list.fetched && <ListBox
+                {list.fetched ? <ListBox
                     key="list"
                     items={list.rows}
                     onFocus={this.handleSelect}
                     activeIndex={activeIndex}
-                    renderItemContent={(item, isActive, index) => {
-                        console.warn(item, isActive)
-                        const cls = classNames({
-                            active: isActive,
-                        });
-                        return <div className={cls}>{item.code}</div>
-                    }}
-                />}
-                {!list.fetched && <Loading/>}
+                    renderItemContent={(item, isActive, index) => <div className={classNames({active: isActive})}>{item.code}</div>}
+                /> : <Loading/>}
             </div>
         );
     }
