@@ -25,6 +25,8 @@ public class ArrDaoVO {
 
     private String url;
 
+    private Boolean existInArrDaoRequest;
+
     private List<ArrDaoFileVO> fileList = new ArrayList<>();
     private List<ArrDaoFileGroupVO> fileGroupList = new ArrayList<>();
 
@@ -140,5 +142,13 @@ public class ArrDaoVO {
 
     public void setUrl(final String url) {
         this.url = url;
+    }
+
+    public Boolean getExistInArrDaoRequest() {
+        return existInArrDaoRequest;
+    }
+
+    public void setExistInArrDaoRequest(Boolean existInArrDaoRequest) {
+        this.existInArrDaoRequest = existInArrDaoRequest;
     }
 }

@@ -422,6 +422,11 @@ public class ArrangementController {
                     BooleanUtils.isTrue(unassigned));
 
             final List<ArrDaoVO> daoList = factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail), fundVersion);
+
+            final List<Integer> processingArrDaoIds = daoService.findProcessingArrDaoRequestDaoArrDaoIds(arrDaoList);
+
+            daoList.forEach(i -> i.setExistInArrDaoRequest(processingArrDaoIds.contains(i.getId())));
+
             return daoList;
         }
 

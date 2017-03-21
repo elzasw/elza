@@ -4,6 +4,7 @@ import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoRequest;
 import cz.tacr.elza.domain.ArrDaoRequestDao;
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrRequest;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -35,4 +36,7 @@ public interface DaoRequestDaoRepository extends ElzaJpaRepository<ArrDaoRequest
     @Modifying
     @Query("DELETE FROM arr_dao_request_dao dd WHERE dd.daoRequestId IN (SELECT d.requestId FROM arr_dao_request d WHERE d.fund = ?1)")
     void deleteByFund(ArrFund fund);
+
+    @Query("SELECT p FROM arr_dao_request_dao p JOIN p.daoRequest r WHERE p.dao IN (?1) AND r.state IN (?2)")
+    List<ArrDaoRequestDao> findByDaoAndState(List<ArrDao> daos, List<ArrRequest.State> states);
 }

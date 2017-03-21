@@ -133,8 +133,8 @@ class ArrDao extends AbstractReactComponent {
         if (dao) {
             daoDetail = <div><div className="title"><i>Digitalizát</i>: {dao.label}</div>
                 <div className="info">
-                    {!readMode && <Button disabled={!dao.daoLink} onClick={this.handleUnlink}><Icon glyph='fa-unlink'/></Button>}
-                    {!readMode && <Button onClick={this.handleTrash}><Icon glyph='fa-trash'/></Button>}
+                    {!readMode && <Button bsStyle="action" disabled={!dao.daoLink} onClick={this.handleUnlink}><Icon glyph='fa-unlink'/></Button>}
+                    {!readMode && <Button bsStyle="action" onClick={this.handleTrash} disabled={dao.existInArrDaoRequest}><Icon glyph='fa-trash'/></Button>}
                 <Form inline>
             <div><FormInput type="static" label={i18n("arr.daos.title.code") + ":"}>{dao.code}</FormInput></div>
             {dao.url && <div><FormInput type="static" label={i18n("arr.daos.title.url") + ":"}><a target="_blank" href={dao.url}>{dao.url}</a></FormInput></div>}

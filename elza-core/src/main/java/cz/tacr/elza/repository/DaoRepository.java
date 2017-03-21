@@ -3,6 +3,7 @@ package cz.tacr.elza.repository;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrRequest;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -37,4 +38,7 @@ public interface DaoRepository extends ElzaJpaRepository<ArrDao, Integer>, DaoRe
     @Modifying
     @Query("DELETE FROM arr_dao d WHERE d.daoPackageId IN (SELECT p.daoPackageId FROM arr_dao_package p WHERE p.fund = ?1)")
     void deleteByFund(ArrFund fund);
+
+    @Query("SELECT d.dao.daoId FROM arr_dao_request_dao d JOIN d.daoRequest r WHERE d.dao IN (?1) AND r.state IN (?2)")
+    List<Integer> findIdsByDaoIdsWhereArrRequestDaoExistInState(List<ArrDao> daos, List<ArrRequest.State> states);
 }

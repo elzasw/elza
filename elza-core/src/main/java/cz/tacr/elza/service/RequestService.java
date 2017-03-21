@@ -2,6 +2,8 @@ package cz.tacr.elza.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -137,6 +139,12 @@ public class RequestService {
         daoRequest.setState(ArrRequest.State.OPEN);
         daoRequest.setType(type);
 
+        List<ArrDaoRequestDao> daosInOtherRequests = daoRequestDaoRepository.findByDaoAndState(daos, Arrays.asList(ArrRequest.State.OPEN, ArrRequest.State.QUEUED, ArrRequest.State.SENT));
+        if (daosInOtherRequests.size() != 0) {
+            throw new BusinessException("Existuje požadavek, který již obsahuje přidávaný digitalizát(y) a není v uzavřeném stavu.", ArrangementCode.ALREADY_ADDED);
+        }
+
+
         List<ArrDaoRequestDao> requestDaos = new ArrayList<>(daos.size());
         for (ArrDao dao : daos) {
             if (!dao.getDaoPackage().getDigitalRepository().getExternalSystemId()
@@ -217,6 +225,12 @@ public class RequestService {
         if (daoRequestDaos.size() != 0) {
             throw new BusinessException("Požadavek již obsahuje přidávaný digitalizát(y)", ArrangementCode.ALREADY_ADDED);
         }
+
+        List<ArrDaoRequestDao> daosInOtherRequests = daoRequestDaoRepository.findByDaoAndState(daos, Arrays.asList(ArrRequest.State.OPEN, ArrRequest.State.QUEUED, ArrRequest.State.SENT));
+        if (daosInOtherRequests.size() != 0) {
+            throw new BusinessException("Existuje požadavek, který již obsahuje přidávaný digitalizát(y) a není v uzavřeném stavu.", ArrangementCode.ALREADY_ADDED);
+        }
+
 
         for (ArrDao dao : daos) {
             if (!dao.getDaoPackage().getDigitalRepository().getExternalSystemId()
