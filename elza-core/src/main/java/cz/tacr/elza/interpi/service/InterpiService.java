@@ -12,7 +12,13 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.interpi.ws.wo.IdentifikatorSouvTyp;
+import cz.tacr.elza.interpi.ws.wo.IdentifikatorSouvTypA;
+import cz.tacr.elza.interpi.ws.wo.SouvisejiciMinTyp;
+import cz.tacr.elza.interpi.ws.wo.SouvisejiciTyp;
+import cz.tacr.elza.interpi.ws.wo.StrukturaTyp;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -308,6 +314,28 @@ public class InterpiService {
             result = interpiFactory.importParty(interpiEntity, originalRecord, interpiRecordId, isOriginator, regScope, regExternalSystem, updatedMappings);
         } else {
             result = interpiFactory.importRecord(entitaTyp, originalRecord, interpiRecordId, regScope, regExternalSystem);
+        }
+
+        if (interpiEntity.getHierarchickaStruktura().size() > 0) {
+            final SouvisejiciMinTyp rodicEntita = interpiEntity.getHierarchickaStruktura().get(interpiEntity.getHierarchickaStruktura().size() - 1).getSouvisejiciEntita();
+            IdentifikatorSouvTyp parentRecordExtId = null;
+
+            for (IdentifikatorSouvTyp identifikator : rodicEntita.getIdentifikator()) {
+                if (IdentifikatorSouvTypA.INTERPI.equals(identifikator.getTyp())) {
+                    parentRecordExtId = identifikator;
+                    break;
+                }
+            }
+
+            if (parentRecordExtId == null) {
+                throw new SystemException("Při importu hierarchického hesla nebyl nalezen interpi idetifikátor rodiče.");
+            }
+
+            final RegRecord parentRecord = recordRepository.findRegRecordByExternalIdAndExternalSystemCodeAndScope(parentRecordExtId.getValue(), regExternalSystem.getCode(), regScope);
+            final RegRecord importParentRecord = importRecord(parentRecord != null ? parentRecord.getRecordId() : null, parentRecordExtId.getValue(), scopeId, systemId, isOriginator, mappings);
+
+            result.setParentRecord(importParentRecord);
+            recordRepository.save(result);
         }
 
         interpiEntitySession.clear();

@@ -202,6 +202,10 @@ public class InterpiEntity {
         return getValueList(EntityValueType.SOUVISEJICI_ENTITA);
     }
 
+    public List<StrukturaTyp> getHierarchickaStruktura() {
+        return getValueList(EntityValueType.HIERARCHICKA_STRUKTURA);
+    }
+
     public List<KodovaneTyp> getKodovaneUdaje() {
         return getValueList(EntityValueType.KODOVANE_UDAJE);
     }
