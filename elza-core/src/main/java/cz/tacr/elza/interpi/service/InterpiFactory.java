@@ -1,9 +1,5 @@
 package cz.tacr.elza.interpi.service;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,21 +12,14 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
-
 import cz.tacr.elza.interpi.ws.wo.*;
+import cz.tacr.elza.service.GroovyScriptService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.PathResource;
-import org.springframework.core.io.Resource;
-import org.springframework.scripting.ScriptEvaluator;
-import org.springframework.scripting.ScriptSource;
-import org.springframework.scripting.support.ResourceScriptSource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -78,7 +67,6 @@ import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.service.PartyService;
 import cz.tacr.elza.service.RegistryService;
 import cz.tacr.elza.utils.PartyType;
-import liquibase.util.file.FilenameUtils;
 
 /**
  * Třída pro konverzi objektů z a do INTERPI.
@@ -90,23 +78,6 @@ import liquibase.util.file.FilenameUtils;
 public class InterpiFactory {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-
-    /**
-     * Výchozí skript mapování rejstříkového hesla.
-     */
-    @Value("classpath:script/groovy/interpiRecord.groovy")
-    private Resource createDetailDefaultResource;
-
-    /**
-     * Načtená transformace pro vytvoření detailu rejstříkového hesla.
-     */
-    private Resource createDetailResource;
-
-    private static final String RECORD_DETAIL_FILE = "interpiRecord.groovy";
-
-    @Value("${elza.groovy.groovyDir}")
-    private String groovyScriptDir;
-
     @Autowired
     private InterpiSessionHolder interpiSessionHolder;
 
@@ -115,9 +86,6 @@ public class InterpiFactory {
 
     @Autowired
     private RegistryService registryService;
-
-    @Autowired
-    private ScriptEvaluator groovyScriptEvaluator;
 
     @Autowired
     private InterpiClient client;
@@ -139,6 +107,9 @@ public class InterpiFactory {
 
     @Autowired
     private VariantRecordRepository variantRecordRepository;
+
+    @Autowired
+    private GroovyScriptService groovyScriptService;
 
     /**
      * Import rejstříkového hesla.
@@ -236,17 +207,6 @@ public class InterpiFactory {
                 createQuery();
     }
 
-    public List<ExternalRecordVO> convertToExternalRecordVO(final List<EntitaTyp> searchResults,
-            final boolean generateVariantNames) {
-        Map<String, Object> input = new HashMap<>();
-        input.put("ENTITIES", searchResults);
-        input.put("FACTORY", this);
-        input.put("GENERATE_VARIANT_NAMES", generateVariantNames);
-
-        ScriptSource source = new ResourceScriptSource(createDetailResource);
-        return (List<ExternalRecordVO>) groovyScriptEvaluator.evaluate(source, input);
-    }
-
     public String getInterpiRecordId(final InterpiEntity interpiEntity) {
         List<IdentifikaceTyp> identifikace = interpiEntity.getIdentifikace();
         String interpiRecordId = getInterpiIdentifier(identifikace);
@@ -311,7 +271,7 @@ public class InterpiFactory {
         InterpiEntity interpiEntity = new InterpiEntity(entitaTyp);
         RegRecord regRecord = createPartyRecord(interpiEntity, interpiPartyId, regExternalSystem, regScope);
 
-        ExternalRecordVO recordVO = convertToExternalRecordVO(Collections.singletonList(entitaTyp), generateVariantNames).
+        ExternalRecordVO recordVO = groovyScriptService.convertListToExternalRecordVO(Collections.singletonList(entitaTyp), generateVariantNames, this).
                 iterator().next();
 
         List<String> strucnaCharakteristika = interpiEntity.getPopisTyp().stream().filter(i -> PopisTypA.STRUČNÁ_CHARAKTERISTIKA.equals(i.getTyp())).map(PopisTyp::getTextPopisu).collect(Collectors.toList());
@@ -1111,34 +1071,6 @@ public class InterpiFactory {
         fillParty(parParty, interpiEntity, regExternalSystem, mappings);
 
         return parParty;
-    }
-
-    @PostConstruct
-    private void initScripts() {
-        File dirRules = new File(groovyScriptDir);
-        if (!dirRules.exists()) {
-            dirRules.mkdir();
-        }
-
-        File createTransformationFile = new File(FilenameUtils.concat(groovyScriptDir, RECORD_DETAIL_FILE));
-
-        try {
-            if (!createTransformationFile.exists() || createTransformationFile.lastModified() < createDetailDefaultResource
-                    .lastModified()) {
-                Files.copy(createDetailDefaultResource.getInputStream(), createTransformationFile.toPath(),
-                        StandardCopyOption.REPLACE_EXISTING);
-
-                File copiedFile = new File(createTransformationFile.getAbsolutePath());
-                copiedFile.setLastModified(createDetailDefaultResource.lastModified());
-
-
-                logger.info("Vytvoření souboru " + createTransformationFile.getAbsolutePath());
-            }
-        } catch (IOException e) {
-            throw new IllegalStateException("Nepodařilo se vytvořit soubor " + createTransformationFile.getAbsolutePath(), e);
-        }
-
-        createDetailResource = new PathResource(createTransformationFile.toPath());
     }
 
     /**

@@ -2,6 +2,7 @@ package cz.tacr.elza.controller.vo;
 
 import java.util.List;
 
+import cz.tacr.elza.interpi.service.vo.ExternalRecordVO;
 import org.springframework.util.Assert;
 
 /**
@@ -18,11 +19,14 @@ public class InterpiMappingVO {
     /** Mapování vztahů a entit. */
     private List<InterpiRelationMappingVO> mappings;
 
-    public InterpiMappingVO(final Integer partyTypeId, final List<InterpiRelationMappingVO> mappings) {
+    private ExternalRecordVO externalRecord;
+
+    public InterpiMappingVO(final Integer partyTypeId, final List<InterpiRelationMappingVO> mappings, final ExternalRecordVO externalRecord) {
         Assert.notNull(partyTypeId);
 
         this.partyTypeId = partyTypeId;
         this.mappings = mappings;
+        this.externalRecord = externalRecord;
     }
 
     public Integer getPartyTypeId() {
@@ -31,5 +35,13 @@ public class InterpiMappingVO {
 
     public List<InterpiRelationMappingVO> getMappings() {
         return mappings;
+    }
+
+    public ExternalRecordVO getExternalRecord() {
+        return externalRecord;
+    }
+
+    public void setExternalRecord(ExternalRecordVO externalRecord) {
+        this.externalRecord = externalRecord;
     }
 }

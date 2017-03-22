@@ -19,6 +19,7 @@ import cz.tacr.elza.interpi.ws.wo.IdentifikatorSouvTypA;
 import cz.tacr.elza.interpi.ws.wo.SouvisejiciMinTyp;
 import cz.tacr.elza.interpi.ws.wo.SouvisejiciTyp;
 import cz.tacr.elza.interpi.ws.wo.StrukturaTyp;
+import cz.tacr.elza.service.GroovyScriptService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -113,6 +114,9 @@ public class InterpiService {
     @Autowired
     private RelationTypeRoleTypeRepository relationTypeRoleTypeRepository;
 
+    @Autowired
+    private GroovyScriptService groovyScriptService;
+
     /**
      * Vyhledá záznamy v INTERPI.
      *
@@ -185,7 +189,7 @@ public class InterpiService {
      * @return mapa externí id rejstříku -> převedený záznam
      */
     private Map<String, ExternalRecordVO> convertSearchResults(final List<EntitaTyp> records, final boolean generateVariantNames) {
-        return interpiFactory.convertToExternalRecordVO(records, generateVariantNames).
+        return groovyScriptService.convertListToExternalRecordVO(records, generateVariantNames, interpiFactory).
                 stream().
                 collect(Collectors.toMap(ExternalRecordVO::getRecordId, Function.identity()));
     }
@@ -225,6 +229,7 @@ public class InterpiService {
 
         RegScope regScope = scopeRepository.findOne(scopeId);
         InterpiEntity interpiEntity = new InterpiEntity(entitaTyp);
+        final ExternalRecordVO externalRecordVO = groovyScriptService.convertToExternalRecordVO(entitaTyp, false, interpiFactory);
 
         RegRegisterType regRegisterType = interpiFactory.getRegisterType(interpiEntity);
         ParPartyType partyType = regRegisterType.getPartyType();
@@ -265,7 +270,7 @@ public class InterpiService {
 
         }
 
-        return new InterpiMappingVO(partyType.getPartyTypeId(), mappings);
+        return new InterpiMappingVO(partyType.getPartyTypeId(), mappings, externalRecordVO);
     }
 
     /**

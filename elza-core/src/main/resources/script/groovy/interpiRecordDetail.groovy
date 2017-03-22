@@ -21,19 +21,21 @@ record.setDetail(createDetail(interpiEntity));
 record.setName(generatePartyNameString(oznaceniTyp, interpiEntity));
 record.setRecordId(FACTORY.getInterpiRecordId(interpiEntity));
 
-List<OznaceniTyp> otherNames = interpiEntity.getVariantniOznaceni();
-List<String> variantNames = new ArrayList<>(otherNames.size());
-otherNames.each {
-    String variantRecord = createVariantRecord(it, interpiEntity)
-    variantNames.add(variantRecord);
-};
-record.setVariantNames(variantNames);
+if (GENERATE_VARIANT_NAMES) {
+    List<OznaceniTyp> otherNames = interpiEntity.getVariantniOznaceni();
+    List<String> variantNames = new ArrayList<>(otherNames.size());
+    otherNames.each {
+        String variantRecord = createVariantRecord(it, interpiEntity)
+        variantNames.add(variantRecord);
+    };
+    record.setVariantNames(variantNames);
+}
 
-return records;
+return record;
 
 String createDetail(InterpiEntity entity) {
     List<String> details = new ArrayList<>();
-    Iterator<PopisTyp> iterator = interpiEntity.getPopisTyp().iterator();
+    Iterator<PopisTyp> iterator = entity.getPopisTyp().iterator();
     while(iterator.hasNext()) {
         PopisTyp popis = iterator.next();
         details.add(popis.getTextPopisu());
@@ -43,7 +45,7 @@ String createDetail(InterpiEntity entity) {
 
     return "id: " + FACTORY.getInterpiRecordId(entity) + "\n" +
             "název: " + generatePartyNameString(entity.getPreferovaneOznaceni(), entity) + "\n" +
-            "popis" + popis;
+            "popis: " + popis;
 }
 
 /**
