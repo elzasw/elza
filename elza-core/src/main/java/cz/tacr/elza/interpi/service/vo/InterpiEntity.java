@@ -219,21 +219,27 @@ public class InterpiEntity {
         OznaceniTyp other = null;
         for (OznaceniTyp oznaceniTyp : preferovaneOznaceniList) {
             for (PravidlaTyp pravidlaTyp : oznaceniTyp.getPravidla()) {
-                switch (pravidlaTyp) {
-                    case INTERPI:
-                        if (interpi == null) {
-                            interpi = oznaceniTyp;
-                        }
-                        break;
-                    case ZP:
-                        if (zp == null) {
-                            zp = oznaceniTyp;
-                        }
-                        break;
-                    default:
-                        if (other == null) {
-                            other = oznaceniTyp;
-                        }
+                if (pravidlaTyp == null) {
+                    if (other == null) {
+                        other = oznaceniTyp;
+                    }
+                } else {
+                    switch (pravidlaTyp) {
+                        case INTERPI:
+                            if (interpi == null) {
+                                interpi = oznaceniTyp;
+                            }
+                            break;
+                        case ZP:
+                            if (zp == null) {
+                                zp = oznaceniTyp;
+                            }
+                            break;
+                        default:
+                            if (other == null) {
+                                other = oznaceniTyp;
+                            }
+                    }
                 }
             }
         }
