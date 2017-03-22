@@ -17,8 +17,6 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.interpi.ws.wo.IdentifikatorSouvTyp;
 import cz.tacr.elza.interpi.ws.wo.IdentifikatorSouvTypA;
 import cz.tacr.elza.interpi.ws.wo.SouvisejiciMinTyp;
-import cz.tacr.elza.interpi.ws.wo.SouvisejiciTyp;
-import cz.tacr.elza.interpi.ws.wo.StrukturaTyp;
 import cz.tacr.elza.service.GroovyScriptService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
