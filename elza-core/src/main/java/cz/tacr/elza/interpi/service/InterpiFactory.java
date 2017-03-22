@@ -759,7 +759,11 @@ public class InterpiFactory {
         String dateTo = convertDateFormat(dataceTyp.getDatumDo());
 
         if (StringUtils.isNotBlank(dateFrom) && StringUtils.isNotBlank(dateTo)) {
-            UnitDateConvertor.convertToUnitDate(dateFrom + "-" + dateTo, parUnitdate);
+            if (dateFrom.equals(dateTo)) {
+                UnitDateConvertor.convertToUnitDate(dateFrom, parUnitdate);
+            } else {
+                UnitDateConvertor.convertToUnitDate(dateFrom + "-" + dateTo, parUnitdate);
+            }
         } else if (StringUtils.isNotBlank(dateFrom)) {
             UnitDateConvertor.convertToUnitDate(dateFrom, parUnitdate);
         } else if (StringUtils.isNotBlank(dateTo)) {
