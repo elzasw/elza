@@ -107,6 +107,10 @@ class AddPartyForm extends AbstractReactComponent {
         partyType: React.PropTypes.object.isRequired,
     };
 
+    static defaultProps = {
+        versionId: -1
+    };
+
     state = {
         complementsTypes: [],
         initialized: false,

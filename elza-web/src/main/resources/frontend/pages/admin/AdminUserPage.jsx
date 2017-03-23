@@ -71,7 +71,7 @@ const AdminUserPage = class AdminUserPage extends AbstractReactComponent{
     }
 
     handlePartyAdd(partyTypeId, callback) {
-        this.dispatch(partyAdd(partyTypeId, null, callback));
+        this.dispatch(partyAdd(partyTypeId, -1, callback));
     };
 
     handleCreateUserForm() {
@@ -210,4 +210,4 @@ function mapStateToProps(state) {
     }
 }
 
-module.exports = connect(mapStateToProps)(AdminUserPage);
+export default connect(mapStateToProps)(AdminUserPage);

@@ -11,13 +11,18 @@ import './Scope.less';
 /**
  *  Komponenta pro scope
  *
- *  @param versionId zadat null nebo id verze
- *  <Scope versionId={null} label='Scope'/>
+ *  @param versionId zadat null nebo id verze nebo -1 pro všechny scopes
+ *  <Scope label='Scope'/>
  */
 class Scope extends AbstractReactComponent {
 
     static PropTypes = {
+        versionId: React.PropTypes.oneOfType([React.PropTypes.number, React.PropTypes.object]),
         value: React.PropTypes.oneOfType([React.PropTypes.number, React.PropTypes.string])
+    };
+
+    static defaultProps = {
+        versionId: -1
     };
 
     componentDidMount() {

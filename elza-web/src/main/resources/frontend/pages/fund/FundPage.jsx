@@ -31,7 +31,7 @@ import {barrier} from 'components/Utils.jsx';
 import {scopesDirty} from 'actions/refTables/scopesData.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 
-const FundPage = class FundPage extends AbstractReactComponent {
+class FundPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -39,7 +39,6 @@ const FundPage = class FundPage extends AbstractReactComponent {
             'handleAddFund',
             'handleImport',
             'handleExportDialog',
-            'handleExport',
             'renderListItem',
             'handleSelect',
             'handleSearch',
@@ -86,10 +85,6 @@ const FundPage = class FundPage extends AbstractReactComponent {
                 <ExportForm fund={true} onSubmitForm={data => {this.dispatch(exportFund(fundDetail.versionId, data.transformationName))}} />
             )
         );
-    }
-
-    handleExport(values) {
-        console.log(values);
     }
 
     /**
@@ -332,7 +327,7 @@ const FundPage = class FundPage extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {focus, splitter, fundRegion, userDetail} = state
+    const {focus, splitter, fundRegion, userDetail} = state;
     return {
         focus,
         splitter,
@@ -341,5 +336,5 @@ function mapStateToProps(state) {
     }
 }
 
-module.exports = connect(mapStateToProps)(FundPage);
+export default connect(mapStateToProps)(FundPage);
 

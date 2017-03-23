@@ -170,7 +170,7 @@ class RegistryPage extends AbstractReactComponent {
             parentName = parents[parentIndex].name;
         }
 
-        this.dispatch(registryAdd(registryParentId, versionId, this.handleCallAddRegistry, parentName, false));
+        this.dispatch(registryAdd(registryParentId, versionId === null ? -1 : versionId, this.handleCallAddRegistry, parentName, false));
     };
 
     handleCallAddRegistry = (data) => {

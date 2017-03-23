@@ -38,6 +38,10 @@ class AddRegistryForm extends AbstractReactComponent {
         showSubmitTypes: React.PropTypes.bool.isRequired
     };
 
+    static defaultProps = {
+        versionId: -1
+    };
+
     state = {
         disabled: false
     };

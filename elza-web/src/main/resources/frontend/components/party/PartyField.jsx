@@ -124,7 +124,7 @@ class PartyField extends AbstractReactComponent {
     handleImport = () => {
         const {versionId} = this.props;
         this.refs.autocomplete.closeMenu();
-        this.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={true} versionId={versionId}/>, "dialog-lg"));
+        this.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={true} versionId={versionId === null ? -1 : versionId}/>, "dialog-lg"));
     };
 
     handleDetail = (id) => {

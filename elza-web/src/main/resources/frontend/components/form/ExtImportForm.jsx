@@ -186,7 +186,7 @@ class ExtImportForm extends AbstractReactComponent {
     static defaultProps = {
         isParty: false,
         count: 200,
-        versionId: null
+        versionId: -1
     };
 
     submit = (data) => {

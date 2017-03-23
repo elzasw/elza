@@ -259,7 +259,7 @@ class PartyDetail extends AbstractReactComponent {
     };
 
     handleAddParty = (field, partyTypeId) => {
-        this.dispatch(partyAdd(partyTypeId, null, this.partyAdded.bind(this, field), false));
+        this.dispatch(partyAdd(partyTypeId, -1, this.partyAdded.bind(this, field), false));
     };
 
     registerTypesToMap = (registerTypes, map, parent) => {
@@ -304,7 +304,7 @@ class PartyDetail extends AbstractReactComponent {
         }
         var type = party.partyType.code;
         var icon = PartyListItem.partyIconByPartyTypeCode(type);
-        
+
         let canEdit = userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: party.record.scopeId});
 
         const partyType = this.getPartyType();

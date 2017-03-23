@@ -25,7 +25,7 @@ export function scopesDirty(versionId) {
     };
 }
 
-export function requestScopesIfNeeded(versionId = null) {
+export function requestScopesIfNeeded(versionId = -1) {
     return (dispatch, getState) => {
         var state = getState().refTables.scopesData;
 
@@ -41,11 +41,12 @@ export function requestScopesIfNeeded(versionId = null) {
     }
 }
 
-export function requestScopes(versionId = null) {
-    return dispatch => (
-        WebApi.getScopes(versionId)
-            .then((json) => {
-                dispatch(scopesDataReceive(versionId, json));
-            })
-    )
+export function requestScopes(versionId = -1) {
+    return dispatch => {
+        const promise = versionId === -1 ? WebApi.getAllScopes() : WebApi.getScopes(versionId);
+
+        promise.then((json) => {
+            dispatch(scopesDataReceive(versionId, json));
+        });
+    }
 }
