@@ -231,7 +231,13 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
 
             // Upravení a opravení seznamu hodnot, případně přidání rázdných
             if (forceVisibility) {
+                const count = resultDescItemType.descItems.length;
                 consolidateDescItems(resultDescItemType, infoType, refType, false)
+
+                // Oprava incrementování formKey - nechceme zvýšit formKey v případě že se nic nezměnilo (předchozí položka není na serveru a je vynucená nová také)
+                if (count === 0 && resultDescItemType.descItems.length === 1 && prevType.descItems.length === 1 && prevType.descItems[0].formKey && !prevType.descItems[0].id) {
+                    resultDescItemType.descItems[0].formKey = prevType.descItems[0].formKey;
+                }
             }
 
             // Chceme ji pokud má nějaké hodnoty
