@@ -12,8 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
+import net.sf.jasperreports.engine.JRRuntimeException;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
@@ -73,12 +72,16 @@ class OutputGeneratorWorkerJasper extends OutputGeneratorWorkerAbstract {
             // Export to PDF - pouze příprava procesu pro renderování - reálně proběhne až při čtení z in v dms
             PipedInputStream in = new PipedInputStream();
             PipedOutputStream out = new PipedOutputStream(in);
-            new Thread(() -> renderJasperPdf(mainJasperTemplate, jasperPrint, out)).start();
 
             // připojení PDF příloh
             PipedInputStream inm = new PipedInputStream();
             PipedOutputStream outm = new PipedOutputStream(inm);
-            new Thread(() -> mergePdfJasperAndAttachements(output, in, outm)).start();
+
+            generatorThread = new Thread(() -> {
+                new Thread(() -> renderJasperPdf(mainJasperTemplate, jasperPrint, out)).start();
+                mergePdfJasperAndAttachements(output, in, outm);
+            });
+            generatorThread.start();
 
             return inm;
         } catch (JRException e) {
@@ -91,21 +94,22 @@ class OutputGeneratorWorkerJasper extends OutputGeneratorWorkerAbstract {
     private void addSubreports(final RulTemplate rulTemplate, final Map<String, Object> parameters) {
         File templateDir = getTemplatesDir(rulTemplate);
         final File[] files = templateDir.listFiles((dir, name) -> name.endsWith(JASPER_TEMPLATE_SUFFIX) && !name.equals(JASPER_MAIN_TEMPLATE));
-        Arrays.stream(files).forEach(file -> {
-            try {
-                parameters.put(FilenameUtils.getBaseName(file.getAbsolutePath()), JasperCompileManager.compileReport(file.getAbsolutePath()));
-            } catch (JRException e) {
-                throw new SystemException("Chyba kompilace subšablony reportu " + file.getAbsolutePath(), e);
-            }
-        });
+        if (files != null) {
+            Arrays.stream(files).forEach(file -> {
+                try {
+                    parameters.put(FilenameUtils.getBaseName(file.getAbsolutePath()), JasperCompileManager.compileReport(file.getAbsolutePath()));
+                } catch (JRException e) {
+                    throw new SystemException("Chyba kompilace subšablony reportu " + file.getAbsolutePath(), e);
+                }
+            });
+        }
     }
 
     private void mergePdfJasperAndAttachements(final Output output, final PipedInputStream in, final PipedOutputStream outm) {
         PDFMergerUtility ut = new PDFMergerUtility();
         ut.addSource(in);
         final List<ItemFile> attachements = output.getAttachements();
-        attachements.stream()
-                .forEach(itemFile -> {
+        attachements.forEach(itemFile -> {
                     File file = itemFile.getFile();
                     if (file == null) { // obezlička, protože arrFile ten file nevrací
                         final DmsFile dmsFile = dmsService.getFile(itemFile.getFileId());
@@ -124,7 +128,7 @@ class OutputGeneratorWorkerJasper extends OutputGeneratorWorkerAbstract {
             ut.mergeDocuments(MemoryUsageSetting.setupMixed(MAX_MERGE_MAIN_MEMORY_BYTES));
             outm.close();
         } catch (IOException e) {
-            throw new SystemException(e);
+            setException(new SystemException(e));
         }
     }
 
@@ -132,8 +136,8 @@ class OutputGeneratorWorkerJasper extends OutputGeneratorWorkerAbstract {
         try {
             JasperExportManager.exportReportToPdfStream(jasperPrint, out);
             out.close();
-        } catch (JRException | IOException e) {
-            throw new SystemException("Nepodařilo se vyrenderovat PDF ze šablony " + mainJasperTemplate.getAbsolutePath() + ".", e);
+        } catch (JRRuntimeException | JRException | IOException e) {
+            setException(new SystemException("Nepodařilo se vyrenderovat PDF ze šablony " + mainJasperTemplate.getAbsolutePath() + ".", e));
         }
     }
 }
