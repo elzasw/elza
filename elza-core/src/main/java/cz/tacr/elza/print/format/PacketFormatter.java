@@ -2,23 +2,30 @@ package cz.tacr.elza.print.format;
 
 import java.util.List;
 
-import cz.tacr.elza.print.item.Item;
-import cz.tacr.elza.print.item.ItemSpec;
 import org.springframework.util.StringUtils;
 
+import cz.tacr.elza.print.Packet;
+import cz.tacr.elza.print.Packet.FormatType;
+import cz.tacr.elza.print.item.Item;
+import cz.tacr.elza.print.item.ItemSpec;
+
 /**
- * Format value of one item
+ * Packet formatter
+ *
  */
-public class ValueFormatter
-	implements FormatAction
-{
+public class PacketFormatter implements FormatAction {
+
 	/**
 	 * Code of item to format
 	 */
 	String itemType;
 	
-	ValueFormatter(String itemType)
-	{
+	/**
+	 * Format type
+	 */
+	FormatType formatType;
+
+	public PacketFormatter(String itemType, FormatType formatType) {
 		this.itemType = itemType;
 	}
 
@@ -30,7 +37,6 @@ public class ValueFormatter
 				formatItem(ctx, item);
 			}
 		}
-		
 	}
 
 	/**
@@ -39,7 +45,8 @@ public class ValueFormatter
 	 * @param item
 	 */
 	private void formatItem(FormatContext ctx, Item item) {
-		String value = item.serializeValue();
+		Packet packet = item.getValue(Packet.class);
+		String value = packet.formatAsString(formatType);
 		if(StringUtils.isEmpty(value)) {
 			return;
 		}
@@ -56,4 +63,5 @@ public class ValueFormatter
 			ctx.appendValue(value);
 		}		
 	}
+
 }

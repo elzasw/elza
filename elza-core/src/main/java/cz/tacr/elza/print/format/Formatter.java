@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cz.tacr.elza.print.Node;
+import cz.tacr.elza.print.Packet;
 import cz.tacr.elza.print.item.Item;
 
 /**
  * Format node as string
  * 
  * Class allows to customize formatter object.
- * @author Petr Pytelka
  *
  */
 public class Formatter {
@@ -53,6 +53,17 @@ public class Formatter {
 			addAction(new ValueFormatter(itemType));
 		}
 		return this;
+	}
+	
+	/**
+	 * Add packet value
+	 * @param itemType Item type
+	 * @param formatType Packet format
+	 * @return
+	 */
+	public Formatter addPacketValue(String itemType, Packet.FormatType formatType)
+	{
+		return addAction(new PacketFormatter(itemType, formatType));
 	}
 	
 	/**

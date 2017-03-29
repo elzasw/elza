@@ -13,8 +13,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
 /**
- * @author Martin Lebeda
- * @author Petr Pytelka
+ * Packet
  * @Since  Date: 22.6.16
  */
 public class Packet implements Comparable<Packet> {
@@ -25,6 +24,13 @@ public class Packet implements Comparable<Packet> {
     private String storageNumber;
     private String state;
     private Set<Node> nodes;
+    
+    public enum FormatType {
+    	TYPE_WITH_NUMBER,
+    	NUMBER_WITH_TYPE,
+    	ONLY_TYPE,
+    	ONLY_NUMBER
+    };
 
     /**
      * Metoda pro získání hodnoty do fieldu v Jasper.
@@ -42,7 +48,49 @@ public class Packet implements Comparable<Packet> {
      * Function return typeShortcut and storageNumber
      * @return Return formatted value
      */
-    public String formatAsString() {
+    public String formatAsString(FormatType formatType) {
+    	switch(formatType)
+    	{
+    	case TYPE_WITH_NUMBER:
+    		return formatTypeWithNumber();
+    	case NUMBER_WITH_TYPE:
+    		return formatNumberWithType();
+    	case ONLY_TYPE:
+    		return formatOnlyType();
+    	case ONLY_NUMBER:
+    		return formatOnlyNumber();
+    	}
+		return new String();
+    }
+
+    private String formatOnlyNumber() {
+        StringJoiner sj = new StringJoiner(" ");
+        if (StringUtils.isNotBlank(storageNumber)) {
+            sj.add(storageNumber);
+        }
+        return sj.toString();
+	}
+
+	private String formatOnlyType() {
+        StringJoiner sj = new StringJoiner(" ");
+        if (StringUtils.isNotBlank(typeShortcut)) {
+            sj.add(typeShortcut);
+        }
+        return sj.toString();
+	}
+
+	private String formatNumberWithType() {
+        StringJoiner sj = new StringJoiner(" ");
+        if (StringUtils.isNotBlank(storageNumber)) {
+            sj.add(storageNumber);
+        }
+        if (StringUtils.isNotBlank(typeShortcut)) {
+            sj.add(new StringBuilder().append("(").append(typeShortcut).append(")").toString());
+        }
+        return sj.toString();
+	}
+
+	private String formatTypeWithNumber() {
         StringJoiner sj = new StringJoiner(" ");
         if (StringUtils.isNotBlank(typeShortcut)) {
             sj.add(typeShortcut);
@@ -51,9 +99,9 @@ public class Packet implements Comparable<Packet> {
             sj.add(storageNumber);
         }
         return sj.toString();
-    }
+	}
 
-    public String getState() {
+	public String getState() {
         return state;
     }
 
