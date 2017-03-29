@@ -60,7 +60,7 @@ public class Packet implements Comparable<Packet> {
     	case ONLY_NUMBER:
     		return formatOnlyNumber();
     	}
-		return new String();
+		return "";
     }
 
     private String formatOnlyNumber() {

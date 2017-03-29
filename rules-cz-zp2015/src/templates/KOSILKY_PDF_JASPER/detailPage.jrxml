@@ -4,7 +4,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="detail" columnCount="2" printOrder="Horizontal" pageWidth="595" pageHeight="842" columnWidth="282" leftMargin="15" rightMargin="15" topMargin="21" bottomMargin="21" uuid="33c094a7-3c36-4bd2-b55d-a9860efff18f">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<parameter name="fund" class="cz.tacr.elza.print.Fund"/>
-	<parameter name="PacketFormatter" class="java.lang.String">
+	<parameter name="packetFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
 		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
 	.setItemSeparator(", ")
 	.setSpecSeparator(" ")
@@ -129,7 +129,7 @@
 			<textField>
 				<reportElement x="110" y="160" width="165" height="30" uuid="035c2826-1e91-49b0-bab5-a88ce3eb22a7"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$P{PacketFormatter}.format( $F{node} )]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{packetFormatter}.format( $F{node} )]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

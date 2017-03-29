@@ -27,6 +27,7 @@ public class PacketFormatter implements FormatAction {
 
 	public PacketFormatter(String itemType, FormatType formatType) {
 		this.itemType = itemType;
+		this.formatType = formatType;
 	}
 
 	@Override
