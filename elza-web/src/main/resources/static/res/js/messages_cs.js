@@ -949,6 +949,8 @@ var messages = {
     "admin.user.group.action.add": "Přiřadit skupiny",
     "admin.user.permission.action.delete": "Odebrat oprávnění uživatele",
     "admin.user.permission.action.add": "Přiřadit oprávnění pro uživatele",
+    "admin.user.noSelection.title" : "Není vybrán uživatel",
+    "admin.user.noSelection.message" : "Prosím vyberte uživatele ze seznamu nebo vytvořte nového",
     "admin.user.emptyList.title" : "Žádní uživatelé",
     "admin.user.emptyList.message" : "V systému nejsou zadáni žádní uživatelé",
 
