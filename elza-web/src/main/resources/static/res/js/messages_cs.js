@@ -794,7 +794,7 @@ var messages = {
     "registry.disallowedMoveAction.title": "Nepovolená akce",
     "registry.disallowedMoveAction.text": "Nelze přesunout sama sebe do sebe",
 
-    "registryField.noItemsFound": "Záznamy nebyli nalezeny.",
+    "registryField.noItemsFound": "Záznamy nebyly nalezeny.",
     "registryField.visibleCount": "Zobrazeno {0} z {1} záznamů",
 
     "party.noSelection.title": "Není vybrána osoba",
