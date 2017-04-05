@@ -9,7 +9,6 @@ import java.util.Collection;
 /**
  * Pomocná třída pro zjednodušené vytváření vyjímek.
  *
- * @author Martin Šlapa
  * @since 24.01.2017
  */
 public class ExceptionUtils {
