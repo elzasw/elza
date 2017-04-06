@@ -895,7 +895,7 @@ var messages = {
     "party.relation.errors.undefinedRoleType": "U některé entity nebyla zadaná role rejstříkové položky",
     "party.relation.errors.invalidNoteLength": "Maximální délka poznámky je {0} znaků.",
 
-    "partyField.noItemsFound": "Záznamy nebyli nalezeny.",
+    "partyField.noItemsFound": "Záznamy nebyly nalezeny.",
     "partyField.visibleCount": "Zobrazeno {0} z {1} záznamů",
 
     "arr.fund.title.added": "AS byl vytvořen",
