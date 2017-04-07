@@ -8,14 +8,6 @@ function getData(data, timeout = 1000) {
         }, timeout);
     });
 }
-
-const digReqs = [
-    {id: 1, code: "026c75c4-4ee7-4f7f-9c91-49df8e5abbcf", filesCount: 1, label: "Fotka - Petr Compel", url: "http://info.marbes.cz/modules/obrazky/preved_fotku.php?id=562"},
-    {id: 2, code: "09a2301a-61b9-4ce5-a013-df6e4f23a7bd", filesCount: 0, label: "Fotka - Michal Moučka", url: "http://info.marbes.cz/modules/obrazky/preved_fotku.php?id=55"},
-    {id: 3, code: "5369d629-baa0-4571-b5df-0c339f8fa36f", filesCount: 2, label: "Fotka - Martin Šlapa"},
-    {id: 4, code: "5369d629-baa0-4570-b5df-0c339f8fa36f", filesCount: 8, label: "Fotka - Václav Mařík", url: "http://info.marbes.cz/modules/obrazky/preved_fotku.php?id=54"},
-];
-
 /**
  * Zavolání webscoket operace na serveru.
  * @param url url
@@ -453,8 +445,7 @@ class WebApi {
             detail,
             index: from,
             maxResults: max,
-        });
-        //return getData(digReqs, 200);
+        });        
     }
 
     findDaoPackages(versionId, search, unassigned) {
