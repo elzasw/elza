@@ -163,6 +163,7 @@
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-search-orm</artifactId>
+                <!--<version>5.2.1.Final</version>-->
                 <version>5.5.5.Final</version>
             </dependency>
 <!--            <dependency>
@@ -170,13 +171,25 @@
                 <artifactId>hibernate-core</artifactId>
                 <version>5.2.4.Final</version>
                 <version>5.5.5.Final</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-java8</artifactId>
+                <version>5.2.4.Final</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-entitymanager</artifactId>
+                <version>4.3.10.Final</version>
+                <version>5.2.4.Final</version>
             </dependency>-->
 
             <!-- Hibernate Spatial -->
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-spatial</artifactId>
-<!--            <version>5.2.4.Final</version>-->
+<!--                <version>4.3</version>
+                <version>5.2.4.Final</version>-->
                 <version>5.0.9.Final</version>
                 <exclusions>
                     <exclusion>
@@ -298,6 +311,13 @@
     </dependencyManagement>
 
     <build>
+        <plugins>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-release-plugin</artifactId>
+               <version>2.5.3</version>
+            </plugin>
+        </plugins>
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -319,11 +339,6 @@
         </pluginManagement>
     </build>
     <profiles>
-        <!-- Use this profile to build release version of the application -->
-        <profile>
-            <id>release</id>
-        </profile>
-        <!-- Use this profile to skip tests during build -->
         <profile>
             <id>skiptest</id>
             <properties>
@@ -387,10 +402,8 @@
                             <useStandardDocletOptions>true</useStandardDocletOptions>
                             <additionalparam>
                                 -inferdep
-                                -attributes -types
-                                -visibility
-                                -operations -enumerations
-                                -enumconstants -views
+                                -attributes -types -visibility
+                                -operations -enumerations -enumconstants -views
                                 -hide java.*
                                 -Xdoclint:none
                             </additionalparam>
@@ -429,4 +442,14 @@
         </repository>
     </repositories>
 
+    <scm>
+        <connection>scm:git:ssh://frnk.lightcomp.cz/opt/git/elza.git</connection>
+        <developerConnection>scm:git:ssh://frnk.lightcomp.cz/opt/git/elza.git</developerConnection>
+    </scm>
+    <distributionManagement>
+        <repository>
+            <id>LightCompReleaseRepository</id>
+            <url>https://vlas1.lightcomp.cz:8079/releases/repository/elza-release</url>
+        </repository>
+    </distributionManagement>
 </project>
