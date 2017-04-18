@@ -311,6 +311,13 @@
     </dependencyManagement>
 
     <build>
+        <plugins>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-release-plugin</artifactId>
+               <version>2.5.3</version>
+            </plugin>
+        </plugins>
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -411,16 +418,6 @@
         </profile>
     </profiles>
 
-    <developers>
-        <developer>
-            <id>burianek</id>
-            <name>Ondrej Burianek</name>
-            <email>ondrej.burianek@marbes.cz</email>
-            <organization>Marbes Consulting s.r.o.</organization>
-            <organizationUrl>http://www.marbes.cz</organizationUrl>
-        </developer>
-    </developers>
-
     <repositories>
         <repository>
             <id>OSGEO GeoTools repo</id>
@@ -446,7 +443,13 @@
     </repositories>
 
     <scm>
-        <connection>scm:git:http://git.marbes.cz/r/INET/ELZA/elza.git</connection>
+        <connection>scm:git:ssh://frnk.lightcomp.cz/opt/git/elza.git</connection>
+        <developerConnection>scm:git:ssh://frnk.lightcomp.cz/opt/git/elza.git</developerConnection>
     </scm>
-
+    <distributionManagement>
+        <repository>
+            <id>LightCompReleaseRepository</id>
+            <url>https://vlas1.lightcomp.cz:8079/releases/repository/elza-release</url>
+        </repository>
+    </distributionManagement>
 </project>
