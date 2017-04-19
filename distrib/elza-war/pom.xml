@@ -41,7 +41,7 @@
     </dependencies>
 
     <build>
-        <finalName>elza</finalName>
+        <finalName>elza-${project.parent.version}</finalName>
         <resources>
             <resource>
                 <directory>../../elza-core/src/main/resources</directory>
@@ -52,6 +52,13 @@
             </resource>
         </resources>
         <plugins>
+            <!-- Force to name result as described in finalName -->
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                  <appendAssemblyId>false</appendAssemblyId>
+                </configuration>
+            </plugin>
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
                 <configuration>

@@ -319,12 +319,24 @@
                  <autoVersionSubmodules>true</autoVersionSubmodules>
                </configuration>
             </plugin>
+            <!-- By default no subproject is deployed 
+                 If you want to deploy some project you have 
+                 to override skip to false
+              -->
             <plugin>
                <groupId>org.apache.maven.plugins</groupId>
                <artifactId>maven-deploy-plugin</artifactId>
                <configuration>
                    <skip>true</skip>
                </configuration>
+            </plugin>
+            <!-- Disable source distribution/deployment by default -->
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-source-plugin</artifactId>
+              <configuration>
+                <skipSource>true</skipSource>
+              </configuration>
             </plugin>
         </plugins>
         <pluginManagement>
