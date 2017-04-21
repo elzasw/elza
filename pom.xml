@@ -411,16 +411,6 @@
         </profile>
     </profiles>
 
-    <developers>
-        <developer>
-            <id>burianek</id>
-            <name>Ondrej Burianek</name>
-            <email>ondrej.burianek@marbes.cz</email>
-            <organization>Marbes Consulting s.r.o.</organization>
-            <organizationUrl>http://www.marbes.cz</organizationUrl>
-        </developer>
-    </developers>
-
     <repositories>
         <repository>
             <id>OSGEO GeoTools repo</id>
@@ -444,9 +434,4 @@
             <url>http://central.maven.org/maven2/</url>
         </repository>
     </repositories>
-
-    <scm>
-        <connection>scm:git:http://git.marbes.cz/r/INET/ELZA/elza.git</connection>
-    </scm>
-
 </project>
