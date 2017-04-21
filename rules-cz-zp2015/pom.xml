@@ -5,45 +5,46 @@
         <groupId>cz.tacr.elza</groupId>
         <version>0.12.3-SNAPSHOT</version>
     </parent>
-    <artifactId>elza-rules-cz-zp2015</artifactId>
-    <name>ELZA CZ-ZP2015</name>
+    <artifactId>rules-cz-zp2015</artifactId>
+    <name>Rules CZ ZP2015</name>
+    <packaging>pom</packaging>
 
     <dependencies>
     </dependencies>
 
     <build>
-      <plugins>
-        <!-- Disable default .jar generation -->
-        <plugin>
-          <artifactId>maven-jar-plugin</artifactId>
-          <version>2.3.1</version>
-          <executions>
-            <execution>
-              <id>default-jar</id>
-              <phase>none</phase>
-            </execution>
-          </executions>
-        </plugin>
-        <!-- Create own package -->
-        <plugin>
-          <artifactId>maven-assembly-plugin</artifactId>
-          <version>2.6</version>
-          <configuration>
-            <descriptors>
-              <descriptor>zip-src.xml</descriptor>
-            </descriptors>
-            <appendAssemblyId>false</appendAssemblyId>
-          </configuration>
-          <executions>
-            <execution>
-              <id>elza-rules-cz-zp2015</id> <!-- this is used for inheritance merges -->
-              <phase>package</phase> <!-- append to the packaging phase. -->
-              <goals>
-                <goal>single</goal> <!-- goals == mojos -->
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
-      </plugins>
+        <plugins>
+            <!-- Disable default .jar generation -->
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.3.1</version>
+                <executions>
+                    <execution>
+                        <id>default-jar</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Create own package -->
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.6</version>
+                <executions>
+                    <execution>
+                        <id>rules-cz-zp2015</id> <!-- this is used for inheritance merges -->
+                        <phase>package</phase> <!-- append to the packaging phase. -->
+                        <goals>
+                            <goal>single</goal> <!-- goals == mojos -->
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>zip-src.xml</descriptor>
+                            </descriptors>
+                            <appendAssemblyId>false</appendAssemblyId>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 </project>
