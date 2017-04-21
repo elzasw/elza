@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -162,7 +163,6 @@
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-search-orm</artifactId>
-                <!--<version>5.2.1.Final</version>-->
                 <version>5.5.5.Final</version>
             </dependency>
 <!--            <dependency>
@@ -170,25 +170,13 @@
                 <artifactId>hibernate-core</artifactId>
                 <version>5.2.4.Final</version>
                 <version>5.5.5.Final</version>
-            </dependency>
-            <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-java8</artifactId>
-                <version>5.2.4.Final</version>
-            </dependency>
-            <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-entitymanager</artifactId>
-                <version>4.3.10.Final</version>
-                <version>5.2.4.Final</version>
             </dependency>-->
 
             <!-- Hibernate Spatial -->
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-spatial</artifactId>
-<!--                <version>4.3</version>
-                <version>5.2.4.Final</version>-->
+<!--            <version>5.2.4.Final</version>-->
                 <version>5.0.9.Final</version>
                 <exclusions>
                     <exclusion>
@@ -224,18 +212,18 @@
                 <groupId>net.sf.jasperreports</groupId>
                 <artifactId>jasperreports</artifactId>
                 <version>6.3.0</version>
-              <exclusions>
-                <exclusion>
-                    <artifactId>lucene-core</artifactId>
-                    <groupId>org.apache.lucene</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>lucene-analyzers-common</artifactId>
-                    <groupId>org.apache.lucene</groupId>
-                </exclusion>
+                <exclusions>
                     <exclusion>
-                      <artifactId>lucene-queryparser</artifactId>
-                      <groupId>org.apache.lucene</groupId>
+                        <artifactId>lucene-core</artifactId>
+                        <groupId>org.apache.lucene</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>lucene-analyzers-common</artifactId>
+                        <groupId>org.apache.lucene</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>lucene-queryparser</artifactId>
+                        <groupId>org.apache.lucene</groupId>
                     </exclusion>
                     <exclusion>
                         <groupId>bouncycastle</groupId>
@@ -310,35 +298,6 @@
     </dependencyManagement>
 
     <build>
-        <plugins>
-            <plugin>
-               <groupId>org.apache.maven.plugins</groupId>
-               <artifactId>maven-release-plugin</artifactId>
-               <version>2.5.3</version>
-               <configuration>
-                 <autoVersionSubmodules>true</autoVersionSubmodules>
-               </configuration>
-            </plugin>
-            <!-- By default no subproject is deployed 
-                 If you want to deploy some project you have 
-                 to override skip to false
-              -->
-            <plugin>
-               <groupId>org.apache.maven.plugins</groupId>
-               <artifactId>maven-deploy-plugin</artifactId>
-               <configuration>
-                   <skip>true</skip>
-               </configuration>
-            </plugin>
-            <!-- Disable source distribution/deployment by default -->
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-source-plugin</artifactId>
-              <configuration>
-                <skipSource>true</skipSource>
-              </configuration>
-            </plugin>
-        </plugins>
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -360,6 +319,44 @@
         </pluginManagement>
     </build>
     <profiles>
+        <!-- Use this profile to build distribution of the application -->
+        <profile>
+            <id>dist</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-release-plugin</artifactId>
+                        <version>2.5.3</version>
+                        <configuration>
+                            <autoVersionSubmodules>true</autoVersionSubmodules>
+                        </configuration>
+                    </plugin>
+                    <!-- By default no subproject is deployed If you want 
+                        to deploy some project you have to override skip to false -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                    <!-- Disable source distribution/deployment by default -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <configuration>
+                            <skipSource>true</skipSource>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <!-- Use this profile to build release version of the application -->
+        <profile>
+            <id>release</id>
+        </profile>
+        <!-- Use this profile to skip tests during build -->
         <profile>
             <id>skiptest</id>
             <properties>
@@ -423,8 +420,10 @@
                             <useStandardDocletOptions>true</useStandardDocletOptions>
                             <additionalparam>
                                 -inferdep
-                                -attributes -types -visibility
-                                -operations -enumerations -enumconstants -views
+                                -attributes -types
+                                -visibility
+                                -operations -enumerations
+                                -enumconstants -views
                                 -hide java.*
                                 -Xdoclint:none
                             </additionalparam>
@@ -466,8 +465,8 @@
     <scm>
         <connection>scm:git:ssh://frnk.lightcomp.cz/opt/git/elza.git</connection>
         <developerConnection>scm:git:ssh://frnk.lightcomp.cz/opt/git/elza.git</developerConnection>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
     <distributionManagement>
         <repository>
             <id>LightCompReleaseRepository</id>
