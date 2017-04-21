@@ -794,7 +794,7 @@ var messages = {
     "registry.disallowedMoveAction.title": "Nepovolená akce",
     "registry.disallowedMoveAction.text": "Nelze přesunout sama sebe do sebe",
 
-    "registryField.noItemsFound": "Záznamy nebyli nalezeny.",
+    "registryField.noItemsFound": "Záznamy nebyly nalezeny.",
     "registryField.visibleCount": "Zobrazeno {0} z {1} záznamů",
 
     "party.noSelection.title": "Není vybrána osoba",
@@ -895,7 +895,7 @@ var messages = {
     "party.relation.errors.undefinedRoleType": "U některé entity nebyla zadaná role rejstříkové položky",
     "party.relation.errors.invalidNoteLength": "Maximální délka poznámky je {0} znaků.",
 
-    "partyField.noItemsFound": "Záznamy nebyli nalezeny.",
+    "partyField.noItemsFound": "Záznamy nebyly nalezeny.",
     "partyField.visibleCount": "Zobrazeno {0} z {1} záznamů",
 
     "arr.fund.title.added": "AS byl vytvořen",
@@ -949,6 +949,8 @@ var messages = {
     "admin.user.group.action.add": "Přiřadit skupiny",
     "admin.user.permission.action.delete": "Odebrat oprávnění uživatele",
     "admin.user.permission.action.add": "Přiřadit oprávnění pro uživatele",
+    "admin.user.noSelection.title" : "Není vybrán uživatel",
+    "admin.user.noSelection.message" : "Prosím vyberte uživatele ze seznamu nebo vytvořte nového",
     "admin.user.emptyList.title" : "Žádní uživatelé",
     "admin.user.emptyList.message" : "V systému nejsou zadáni žádní uživatelé",
 
