@@ -250,11 +250,16 @@ class FundPage extends AbstractReactComponent {
 
     renderListItem(item) {
         return (
-            <div>
-                <div className='name'>{item.name}</div>
-                <div><Button className='link' onClick={this.handleShowInArr.bind(this, item)} bsStyle='link'>{i18n('arr.fund.action.openInArr')}</Button></div>
-                <div>{item.internalCode}</div>
-            </div>
+            [
+                <div className='item-row'>
+                    <div className='name'>{item.name}</div>
+                    <div className='btn btn-action' onClick={this.handleShowInArr.bind(this, item)} bsStyle='link'><Icon glyph="fa-folder-open" /></div>
+                </div>,
+                <div className='item-row desc'>
+                    <div>{item.internalCode}</div>
+                    <div>{item.id}</div>
+                </div>
+            ]
         )
     }
 
@@ -341,4 +346,5 @@ function mapStateToProps(state) {
 }
 
 export default connect(mapStateToProps)(FundPage);
+
 
