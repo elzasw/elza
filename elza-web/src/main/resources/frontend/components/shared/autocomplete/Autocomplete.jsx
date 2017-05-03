@@ -466,19 +466,29 @@ export default class Autocomplete extends AbstractReactComponent {
         let headerComp;
         if (header) {
             cls += ' has-header';
-            headerComp = <div className='autocomplete-menu-header'>{header}</div>;
+
+            headerComp = (
+                <div ref="autocompleteHeader" className='autocomplete-menu-header'>
+                    {header}
+                </div>
+            )
         }
 
         let footerComp;
         if (footer) {
             cls += ' has-footer';
-            footerComp = <div className='autocomplete-menu-footer'>{footer}</div>;
+
+            footerComp = (
+                <div ref="autocompleteFooter" className='autocomplete-menu-footer'>
+                    {footer}
+                </div>
+            )
         }
 
         return (
             <div ref='menuParent' className={cls}>
                 {headerComp}
-                <div className='autocomplete-menu-wrapper'>
+                <div ref="autocompleteContent" className='autocomplete-menu-wrapper'>
                     <div ref='menu' className='autocomplete-menu'>
                         {items}
                     </div>
@@ -507,7 +517,7 @@ export default class Autocomplete extends AbstractReactComponent {
                 return;
             }
             var menuNode = ReactDOM.findDOMNode(this.refs.menu).parentNode
-            scrollIntoView(itemNode, menuNode, {onlyScrollIfNeeded: true})
+            scrollIntoView(itemNode, menuNode, {onlyScrollIfNeeded: true, allowHorizontalScroll: false})
         }
     }
 
@@ -780,35 +790,105 @@ export default class Autocomplete extends AbstractReactComponent {
             return;
         }
 
-        const node = ReactDOM.findDOMNode(this.refs.input)
-        const rect = node.getBoundingClientRect()
-        const computedStyle = getComputedStyle(node)
-        const marginBottom = parseInt(computedStyle.marginBottom, 10)
-        const marginLeft = parseInt(computedStyle.marginLeft, 10)
+        const originNode = ReactDOM.findDOMNode(this.refs.input);
+        const containerNode = ReactDOM.findDOMNode(this.refs.menuParent);
+        const wrapperNode = ReactDOM.findDOMNode(this.refs.autocompleteContent);
+        const contentNode = ReactDOM.findDOMNode(this.refs.menu);
+        const container = $(containerNode);
+        const wrapper = $(wrapperNode);
+        const content = $(contentNode);
+        console.log(containerNode,container);
+        //Resetování velikostí elementů
+        container.css({height: "auto",width: "auto"});
+        content.css({height: "auto",width: "auto",});
+        wrapper.css({height: "auto", width: "auto", overflowY:'visible', overflowX:'visible'});
 
-        const position = {x: rect.left + marginLeft, y: rect.bottom + marginBottom};
-        const inputHeight = rect.height;
+        var contentSize = {w:contentNode.clientWidth,h:contentNode.clientHeight}; //Zjistí velikost obsahu
 
-        const elementNode = ReactDOM.findDOMNode(this.refs.menuParent);
-        const element = $(elementNode);
+        const originRect = originNode.getBoundingClientRect();
+        var originStyle = getComputedStyle(originNode);
+        var marginBottom = parseInt(originStyle.marginBottom, 10);
+        var marginLeft = parseInt(originStyle.marginLeft, 10);
+
+        //Zjištění okrajů okna našeptávače
+        var containerStyle = getComputedStyle(containerNode);
+        var borderLeft = parseInt(containerStyle.borderLeftWidth, 10);
+        var borderRight = parseInt(containerStyle.borderRightWidth, 10);
+        var borderTop = parseInt(containerStyle.borderRightWidth, 10);
+        var borderBottom = parseInt(containerStyle.borderRightWidth, 10);
+        var borderLR = borderRight + borderLeft;
+        var borderTB = borderTop + borderBottom;
+
         const screen = $(document);
-        let elementSize = {w: element.width(), h: element.height()};
-        const windowSize = {w: screen.width(), h: screen.height()};
 
-        let x = position.x;
-        let y = position.y;
+        //Odsazení vstupního pole našeptávače
+        const originOffset = {top:originRect.top, bottom:screen.height() - originRect.bottom, left:originRect.left, right:screen.width() - originRect.right};
 
-        if (y + elementSize.h > windowSize.h) { // nevejde se dolu, dáme ho nahoru
-            y = y - elementSize.h - inputHeight - 2;    // číslo 2 kvůli border 1px
+        //Zjistí maximální/minimální šířku a výšku
+        var maxHeight = originOffset.bottom < originOffset.top ? originOffset.top : originOffset.bottom;
+        var maxWidth = originOffset.right + originRect.width;
+        //Pokud má obalující element našeptávače nastavenou maximální výšku nebo šířku, která je menší než maximální povolená hodnota, přiřadí se její hodnota
+        maxWidth = containerStyle.maxWidth === 'none' || (parseInt(containerStyle.maxWidth , 10) > maxWidth) ? maxWidth : parseInt(containerStyle.maxWidth , 10);
+        maxHeight = containerStyle.maxHeight === 'none' || (parseInt(containerStyle.maxHeight , 10) > maxHeight) ? maxHeight : parseInt(containerStyle.maxHeight , 10);
+        var minWidth = originRect.width;
 
-            if (y < 0) {    // nevejde se nahoru ani dolu, neřešíme
-                y = position.y;
-            }
+        //Definuje velikost okna našeptávače
+        var containerSize = {
+            w: containerNode.offsetWidth > maxWidth ? maxWidth : containerNode.offsetWidth,
+            h: containerNode.offsetHeight > maxHeight ? maxHeight : containerNode.offsetHeight
         }
 
-        element.css({
-            top: y + 'px',
+        var heightString = 'auto';
+        var widthString = 'auto';
+        //Pokud je obsah větší než maximální výška/šířka zapne se scroll. OverflowX má 'auto' kvůli zalamování textu v řádku (proměnlivá šířka)
+        var overflowY = containerSize.h + borderTB >= maxHeight ? 'scroll' : 'visible';
+        var overflowX = containerSize.w + borderLR >= maxWidth ? 'auto' : 'visible';
+
+        //Získání šířky/výšky vertikálního a horizontánlního scrollbaru
+        wrapper.css({overflowY:'scroll', overflowX:'scroll'});
+        var xScrollWidth = wrapperNode.offsetHeight - wrapperNode.clientHeight;
+        var yScrollWidth = wrapperNode.offsetWidth - wrapperNode.clientWidth;
+        wrapper.css({overflowY:'visible', overflowX:'visible'});
+
+        if(containerSize.h >= maxHeight && containerSize.w >= maxWidth){ //Pokud se nevejde na obrazovku ani výškou ani šířkou
+            wrapper.css({overflowX:overflowX,overflowY:overflowY});
+            contentSize.w = maxWidth - yScrollWidth - borderLR;
+            heightString = maxHeight + 'px';
+            widthString = maxWidth + 'px';
+            xScrollWidth=0;
+        } else if(containerSize.h >= maxHeight){ //Pokud se na obrazovku nevejde pouze výškou
+            wrapper.css({overflowY:overflowY});
+            xScrollWidth=0;
+            heightString = maxHeight + 'px';
+        } else if(containerSize.w >= maxWidth){ //Pokud se na obrazovku nevejde pouze šířkou
+            wrapper.css({overflowX:overflowX});
+            contentSize.w = maxWidth - borderLR;
+            yScrollWidth=0;
+            widthString = maxWidth + 'px';
+        } else{ //Pokud se vejde na obrazovku
+            yScrollWidth=0;
+            xScrollWidth=0;
+        }
+        let x = originOffset.left;
+        let y = originRect.bottom;
+        if (originOffset.bottom < originOffset.top) { // nevejde se dolu, dáme ho nahoru
+            y = originRect.top - containerSize.h;
+            container.css({bottom:originOffset.bottom + originRect.height + 'px'});
+        } else {
+            container.css({top: y + 'px'});
+        }
+        contentSize.w = contentSize.w <= minWidth ? (minWidth - yScrollWidth - borderLR) : contentSize.w;
+        //widthString = containerSize.w < minWidth ? minWidth+'px' : containerSize.w+'px';
+
+        content.css({width: contentSize.w+'px'});
+        wrapper.css({width: contentSize.w+yScrollWidth+ 'px'})
+        container.css({
             left: x + 'px',
+            height: heightString,
+            width: widthString,
+            maxWidth: maxWidth,
+            maxHeight: maxHeight,
+            visibility:'visible'
         })
     }
 
@@ -1131,9 +1211,9 @@ Autocomplete.defaultProps = {
 
         var itemStr;
         if (item.name && item.name.length > 0) {
-            itemStr = <span className="item-text">{item.name}</span>;
+            itemStr = <div className="item-text">{item.name}</div>;
         } else {
-            itemStr = <span className="item-text">&nbsp;</span>;
+            itemStr = <div className="item-text">&nbsp;</div>;
         }
 
         let treeTogle;
