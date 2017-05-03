@@ -68,9 +68,9 @@
                             <execution>
                                 <id>npm-run-build</id>
                                 <!-- Plugin maven-source-plugin is running phase 'generate-sources' multiple times.
-                                     To run this only one time phase 'process-classes' is used.
+                                     To run this only one time phase 'generate-resources' is used.
                                    -->
-                                <phase>process-classes</phase>
+                                <phase>generate-resources</phase>
                                 <goals>
                                     <goal>exec</goal>
                                 </goals>
@@ -91,7 +91,7 @@
                         <executions>
                             <execution>
                                 <id>copy-react-resources</id>
-                                <phase>process-sources</phase>
+                                <phase>process-resources</phase>
                                 <goals>
                                     <goal>copy-resources</goal>
                                 </goals>
