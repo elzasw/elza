@@ -9,15 +9,9 @@
     </parent>
     <artifactId>elza-war</artifactId>
     <packaging>war</packaging>
-    <name>ELZA WAR</name>
+    <name>Elza war</name>
 
     <dependencies>
-<!--        <dependency>
-            <groupId>cz.tacr.elza</groupId>
-            <artifactId>elza-ui</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>runtime</scope>
-        </dependency>-->
         <dependency>
             <groupId>cz.tacr.elza</groupId>
             <artifactId>elza-web</artifactId>
@@ -42,7 +36,7 @@
     </dependencies>
 
     <build>
-        <finalName>elza</finalName>
+        <finalName>elza-${project.parent.version}</finalName>
         <resources>
             <resource>
                 <directory>../../elza-core/src/main/resources</directory>

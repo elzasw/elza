@@ -6,7 +6,7 @@
         <groupId>cz.tacr.elza</groupId>
         <version>0.12.0-SNAPSHOT</version>
     </parent>
-    <artifactId>elza-rules-simple</artifactId>
+    <artifactId>rules-simple</artifactId>
     <name>ELZA Simple Rules</name>
 
     <dependencies>
