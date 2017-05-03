@@ -199,15 +199,22 @@ class AddNodeForm extends AbstractReactComponent {
 
         // Položky v select na směr
         const allowedDirectionsMap = getSetFromIdsList(allowedDirections);
-        const canDirections = [];
-        if (isFundRootId(parentNode.id)) {
-            allowedDirectionsMap["CHILD"] && canDirections.push("CHILD");
-        } else {
-            ['BEFORE', 'AFTER', 'CHILD', 'ATEND'].forEach(d => {
-                allowedDirectionsMap[d] && canDirections.push(d);
-            });
+        const directions = {
+            "BEFORE":"before",
+            "AFTER":"after",
+            "CHILD":"child",
+            "ATEND":"atEnd"
+            };
+        var options = [];
+        for(let d in directions){
+            if(allowedDirectionsMap[d]){
+                if(isFundRootId(parentNode.id) && d !== "CHILD"){
+                    continue;
+                }
+                options.push(<option value={d} key={d}>{i18n(`arr.fund.addNode.${directions[d]}`)}</option>);
+            }
         }
-        const options = canDirections.map(d => <option value={d} key={d}>{i18n(`arr.fund.addNode.${d.toLowerCase()}`)}</option>)
+
 
         return <Form onSubmit={this.handleFormSubmit}>
             <Modal.Body>
