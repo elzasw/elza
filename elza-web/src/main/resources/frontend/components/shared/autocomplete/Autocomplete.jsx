@@ -559,55 +559,57 @@ export default class Autocomplete extends AbstractReactComponent {
     handleChange(event) {
         const {onSearchChange} = this.props;
         const value = event.target.value;
+        const origValue = this.state.inputStrValue;
+        if(value !== origValue){ //Provede se pouze pokud se nová hodnota nerovná původní hodnotě
+            const result = this.getFilteredResult(value, true, this.props, this.state);
 
-        const result = this.getFilteredResult(value, true, this.props, this.state);
-
-        // Přednastavení aktivně označené položky, TODO - musí upravit pro strom atp. - musí brát v úvahu unselected položky atp.
-        let highlightedIndex;
-        if (value) {    // vyplněný nějaký filtr
-            // Vybereme vybíratelnou položku, pokud je právě jedna
-            let allowFocusIndex = null;
-            let allowSelectIndex = null;
-            let allowFocusCount = 0;
-            let allowSelectCount = 0;
-            const {getItemId, allowSelectItem, allowFocusItem} = this.props;
-            for (let a=0; a<result.items.length; a++) {
-                const item = result.items[a];
-                const id = getItemId(item);
-                if (allowFocusItem(id, item)) {
-                    allowFocusCount++;
-                    if (allowFocusIndex === null) {
-                        allowFocusIndex = a;
+            // Přednastavení aktivně označené položky, TODO - musí upravit pro strom atp. - musí brát v úvahu unselected položky atp.
+            let highlightedIndex;
+            if (value) {    // vyplněný nějaký filtr
+                // Vybereme vybíratelnou položku, pokud je právě jedna
+                let allowFocusIndex = null;
+                let allowSelectIndex = null;
+                let allowFocusCount = 0;
+                let allowSelectCount = 0;
+                const {getItemId, allowSelectItem, allowFocusItem} = this.props;
+                for (let a=0; a<result.items.length; a++) {
+                    const item = result.items[a];
+                    const id = getItemId(item);
+                    if (allowFocusItem(id, item)) {
+                        allowFocusCount++;
+                        if (allowFocusIndex === null) {
+                            allowFocusIndex = a;
+                        }
+                    }
+                    if (allowSelectItem(id, item)) {
+                        allowSelectCount++;
+                        if (allowSelectIndex === null) {
+                            allowSelectIndex = a;
+                        }
                     }
                 }
-                if (allowSelectItem(id, item)) {
-                    allowSelectCount++;
-                    if (allowSelectIndex === null) {
-                        allowSelectIndex = a;
-                    }
-                }
-            }
 
-            if (allowSelectCount > 0) {
-                highlightedIndex = allowSelectIndex;
-            } else if (allowFocusCount > 0) {
-                highlightedIndex = allowFocusIndex
-            } else {
+                if (allowSelectCount > 0) {
+                    highlightedIndex = allowSelectIndex;
+                } else if (allowFocusCount > 0) {
+                    highlightedIndex = allowFocusIndex
+                } else {
+                    highlightedIndex = null;
+                }
+            } else {    // pokud není vyplněný filtr, nebudeme žádnou položku vybírat
                 highlightedIndex = null;
             }
-        } else {    // pokud není vyplněný filtr, nebudeme žádnou položku vybírat
-            highlightedIndex = null;
-        }
 
-        this.changeState({
-            ...result,
-            inputStrValue: value,
-            changed:true,
-            highlightedIndex
-        }, () => {
-            this.openMenu(false);
-            onSearchChange(value)
-        })
+            this.changeState({
+                ...result,
+                inputStrValue: value,
+                changed:true,
+                highlightedIndex
+            }, () => {
+                    this.openMenu(false);
+                    onSearchChange(value);
+            })
+        }
     }
 
     getFilteredItems() {
@@ -1160,6 +1162,7 @@ export default class Autocomplete extends AbstractReactComponent {
                             {this.props.actions && <div ref='actions'>{this.props.actions}</div>}
                             {!inline && hasError && <HelpBlock>{error}</HelpBlock>}
                         </div>
+                        {console.log("ac-open",this.state.isOpen)}
                         {this.state.isOpen && this.renderMenu()}
                         {this.props.hasFeedback &&
                         <span className={'glyphicon form-control-feedback glyphicon-' + bootInfo.feedbackIcon}></span>}
