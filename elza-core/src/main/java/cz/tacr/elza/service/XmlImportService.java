@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import javax.xml.bind.JAXBException;
 
-import cz.tacr.elza.service.eventnotification.events.ActionEvent;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
@@ -56,6 +55,7 @@ import cz.tacr.elza.domain.ArrItemUnitdate;
 import cz.tacr.elza.domain.ArrItemUnitid;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParCreator;
@@ -98,6 +98,7 @@ import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.InstitutionTypeRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.PartyCreatorRepository;
 import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
@@ -117,6 +118,7 @@ import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.ActionEvent;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.exception.FatalXmlImportException;
@@ -269,6 +271,9 @@ public class XmlImportService {
     @Autowired
     private ArrangementCacheService arrangementCacheService;
 
+    @Autowired
+    private NodeRegisterRepository nodeRegisterRepository;
+
     @Value("${elza.xmlImport.transformationDir}")
     private String transformationsDirectory;
 
@@ -296,8 +301,8 @@ public class XmlImportService {
         switch (xmlImportType) {
             case FUND:
                 importFund = true;
-                importAllRecords = false;
-                importAllParties = false;
+                importAllRecords = true;
+                importAllParties = true;
                 break;
             case PARTY:
                 importFund = false;
@@ -477,6 +482,21 @@ public class XmlImportService {
         ArrNode arrNode = arrangementService.createNode(XmlImportUtils.trimStringValue(level.getUuid(), StringLength.LENGTH_36,
                 config.isStopOnError()), arrFund, change);
         ArrLevel arrLevel = arrangementService.createLevel(change, arrNode, parent, position);
+
+        if (level.getRecordIds() != null) {
+	        for (String recordId : level.getRecordIds()) {
+	        	RegRecord regRecord = xmlIdIntIdRecordMap.get(recordId);
+	        	if (regRecord == null) {
+	        		throw new InvalidDataException("RegRecord not found, recordId:" + recordId);
+	        	}
+	        	ArrNodeRegister nodeRegister = new ArrNodeRegister();
+	        	nodeRegister.setNode(arrNode);
+	        	nodeRegister.setRecord(regRecord);
+	        	nodeRegister.setCreateChange(change);
+	        	nodeRegisterRepository.saveAndFlush(nodeRegister);
+	        	arrangementCacheService.createNodeRegister(arrNode.getNodeId(), nodeRegister);
+	        }
+        }
 
         try {
             importDescItems(arrLevel.getNode(), level, change, config, xmlIdIntIdRecordMap, xmlIdIntIdPartyMap, xmlIdIntIdPacketMap,
@@ -1413,7 +1433,7 @@ public class XmlImportService {
                             }
                         }
                     }
-                };
+                }
             }
         }
         xmlIdIntIdRecordMap.put(record.getRecordId(), regRecord);
