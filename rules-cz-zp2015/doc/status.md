@@ -18,9 +18,9 @@ Ukladaci jednotka
 Prvky popisu
 ------------
 * Datace - ok
-* 4.3.2 D�jiny jednotky popisu - ok
-* 4.3.5 P��m� zdroj akvizice - ok
-* 4.4.4 Fyzick� stav jednotky popisu a technick� po�adavky - ok
+* 4.3.2 Dějiny jednotky popisu - ok
+* 4.3.5 Přímý zdroj akvizice - ok
+* 4.4.4 Fyzický stav jednotky popisu a technické požadavky - ok
 
 Chybi
 -----
@@ -32,4 +32,5 @@ Otazky
 ======
 - Muze logicka slozka obsahovat ukladaci jednotku?
 - Jednotlivost - zavest jednotlivost bez typu?
-
+- Neměl by vzniknout příznak určující kopii?
+  - důležité pro povinné prvky popisu
