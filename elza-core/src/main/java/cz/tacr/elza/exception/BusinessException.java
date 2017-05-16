@@ -6,7 +6,6 @@ import cz.tacr.elza.exception.codes.ErrorCode;
 /**
  * Výjimka pro business.
  *
- * @author Martin Šlapa
  * @since 09.11.2016
  */
 public class BusinessException extends AbstractException {

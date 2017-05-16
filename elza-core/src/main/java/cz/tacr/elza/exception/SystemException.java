@@ -6,7 +6,6 @@ import cz.tacr.elza.exception.codes.ErrorCode;
 /**
  * Výjimka pro systémovou chybu.
  *
- * @author Martin Šlapa
  * @since 09.11.2016
  */
 public class SystemException extends AbstractException {

@@ -10,7 +10,6 @@ import javax.swing.*;
  * - vyjímku
  * - ID
  *
- * @author Petr Compel <petr.compel@marbes.cz>
  * @since 19.9.2016
  */
 public class ProcessException extends AbstractException {
