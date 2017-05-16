@@ -9,7 +9,6 @@ import java.util.Map;
 /**
  * Výchozí výjimka serveru.
  *
- * @author Martin Šlapa
  * @since 09.11.2016
  */
 public abstract class AbstractException extends RuntimeException {
@@ -59,7 +58,15 @@ public abstract class AbstractException extends RuntimeException {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(errorCode.getType()).append(":").append(errorCode.getCode());
+        String message = this.getMessage();
+        if(message!=null) {
+        	sb.append(message);
+        	
+        }
+        if(sb.length()>0) {
+        	sb.append(", ");
+        }
+        sb.append("code: ").append(errorCode.getType()).append("=").append(errorCode.getCode());
         if (properties != null) {
             sb.append(", properties [");
             boolean first = true;
