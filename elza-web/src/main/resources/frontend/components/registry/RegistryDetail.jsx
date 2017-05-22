@@ -155,12 +155,10 @@ class RegistryDetail extends AbstractReactComponent {
     handleRecordUpdateCall = (value) => {
         const {registryDetail:{data}} = this.props;
 
-        this.dispatch(registryUpdate({
+        return this.dispatch(registryUpdate({
             ...data,
             ...value
         }, () => {
-            this.dispatch(modalDialogHide());
-
             // Nastavení focus
             this.dispatch(setFocus('registry', 2))
         }));

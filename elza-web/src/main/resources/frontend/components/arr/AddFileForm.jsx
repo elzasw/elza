@@ -2,7 +2,7 @@ import React from 'react';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
 import {Modal, Button, Form} from 'react-bootstrap';
-import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
+import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 
 
 /**
@@ -39,20 +39,20 @@ class AddFileForm extends AbstractReactComponent {
         this.props.load(this.props.initData);
     }
 
+    submitReduxForm = (values, dispatch) => submitForm(AddFileForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
+
     render() {
         const {fields: {name, file}, handleSubmit, onClose} = this.props;
 
-        var submitForm = submitReduxForm.bind(this, AddFileForm.validate);
-
         return (
             <div className="add-file-form-container">
-                <Form onSubmit={handleSubmit(submitForm)}>
+                <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                     <Modal.Body>
                         <FormInput type="text" label={i18n('dms.file.name')} {...name} {...decorateFormField(name)} />
                         <FormInput type="file" {...file} {...decorateFormField(file)} value={null}/>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button type="submit" onClick={handleSubmit(submitForm)}>{i18n('global.action.add')}</Button>
+                        <Button type="submit">{i18n('global.action.add')}</Button>
                         <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                     </Modal.Footer>
                 </Form>

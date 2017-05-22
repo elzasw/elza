@@ -107,7 +107,7 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
             break;
           }
         }
-        if(type>=0){initData.packetTypeId = type;}          
+        if(type>=0){initData.packetTypeId = type;}
         const form = <AddPacketForm
             initData={initData}
             changeNumbers
@@ -151,12 +151,12 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
 
     handleCreatePacketFormSubmit(type, data) {
         const {fundId} = this.props
-        this.dispatch(fundPacketsCreate(fundId, type, data))
+        return this.dispatch(fundPacketsCreate(fundId, type, data))
     }
 
     handleChangePacketNumberSubmit(selectedIds, data) {
         const {fundId} = this.props
-        this.dispatch(fundPacketsChangeNumbers(fundId, data, selectedIds))
+        return this.dispatch(fundPacketsChangeNumbers(fundId, data, selectedIds))
     }
 
     focus() {

@@ -4,7 +4,7 @@ import {AbstractReactComponent, i18n, Icon, FormInput, Autocomplete, VersionVali
 import {Modal, Button, FormControl, FormGroup, ControlLabel, HelpBlock, Form} from 'react-bootstrap';
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx'
-import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
+import {submitForm} from 'components/form/FormUtils.jsx'
 import PartyField from 'components/party/PartyField.jsx'
 
 
@@ -43,19 +43,19 @@ class PasswordForm extends AbstractReactComponent {
 
     state = {};
 
+    submitReduxForm = (values, dispatch) => submitForm(PasswordForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
+
     render() {
         const {fields: {oldPassword, password, passwordAgain}, handleSubmit, onClose, admin, submitting} = this.props;
 
-        const submitForm = submitReduxForm.bind(this, PasswordForm.validate);
-
-        return <Form onSubmit={handleSubmit(submitForm)}>
+        return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
             <Modal.Body>
                 {!admin && <FormInput label={i18n('admin.user.oldPassword')} autoComplete="off" type="password" {...oldPassword} />}
                 <FormInput label={i18n('admin.user.newPassword')} autoComplete="off" type="password" {...password} />
                 {!admin && <FormInput label={i18n('admin.user.passwordAgain')} autoComplete="off" type="password" {...passwordAgain} />}
             </Modal.Body>
             <Modal.Footer>
-                <Button type="submit" onClick={handleSubmit(submitForm)} disabled={submitting}>{i18n('global.action.update')}</Button>
+                <Button type="submit" disabled={submitting}>{i18n('global.action.update')}</Button>
                 <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
         </Form>

@@ -9,7 +9,7 @@ import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registry.jsx'
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
-import {submitReduxForm} from 'components/form/FormUtils.jsx'
+import {submitForm} from 'components/form/FormUtils.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {PARTY_TYPE_CODES} from 'actions/party/party.jsx'
 
@@ -139,10 +139,10 @@ class PartyNameForm extends AbstractReactComponent {
         }
     }
 
+    submitReduxForm = (values, dispatch) => submitForm(PartyNameForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
+
     render() {
         const {complementsTypes} = this.state;
-
-        const submit = submitReduxForm.bind(this, PartyNameForm.validate);
 
         const {
             fields: {
@@ -167,7 +167,7 @@ class PartyNameForm extends AbstractReactComponent {
 
         const complementsList = complementsTypes && complementsTypes.map(i => <option value={i.complementTypeId} key={'index' + i.complementTypeId}>{i.name}</option>);
 
-        return initialized ? <Form onSubmit={handleSubmit(submit)}>
+        return initialized ? <Form onSubmit={handleSubmit(this.submitReduxForm)}>
             <Modal.Body className="dialog-3-col party-name-form">
                 <div className="flex">
                     <div className="flex-2 col">

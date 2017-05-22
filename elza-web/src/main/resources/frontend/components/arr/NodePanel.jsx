@@ -319,7 +319,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         data.records.forEach((val, index) => {
             mapIds[parseInt(val.id)] = val.checked;
         });
-        this.dispatch(setVisiblePolicyRequest(node.selectedSubNodeId, versionId, mapIds));
+        return this.dispatch(setVisiblePolicyRequest(node.selectedSubNodeId, versionId, mapIds));
     }
 
     /**
@@ -357,8 +357,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         // descItemTypes.sort((a, b) => typeId(a.type) - typeId(b.type));
 
         var submit = (data) => {
-            this.dispatch(modalDialogHide());
-            this.dispatch(nodeFormActions.fundSubNodeFormDescItemTypeAdd(versionId, routingKey, data.descItemTypeId.id));
+            return this.dispatch(nodeFormActions.fundSubNodeFormDescItemTypeAdd(versionId, routingKey, data.descItemTypeId.id));
         };
 
         // Modální dialog

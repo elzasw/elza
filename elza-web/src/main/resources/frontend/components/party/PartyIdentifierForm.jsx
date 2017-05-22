@@ -4,7 +4,7 @@ import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, FormInput, DatationField} from 'components/index.jsx';
 import {Form, Modal, Button, Row, Col} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
-import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
+import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 
 import './RelationForm.less'
@@ -39,12 +39,12 @@ class PartyIdentifierForm extends AbstractReactComponent {
         return errors;
     };
 
+    submitReduxForm = (values, dispatch) => submitForm(PartyIdentifierForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
+
     render() {
         const {onClose, handleSubmit, fields:{source, note, identifier, from, to,}} = this.props;
 
-        const submit = submitReduxForm.bind(this, PartyIdentifierForm.validate);
-
-        return <Form onSubmit={handleSubmit(submit)}>
+        return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
             <Modal.Body className="dialog-3-col party-identifier-form">
                 <div className="flex">
                     <div className="flex-2 col">

@@ -83,10 +83,9 @@ export function fundFilesCreate(fundId, data, callback = null) {
         formData.append("fundId", fundId);
         formData.append("@class", ".ArrFileVO");
 
-        savingApiWrapper(dispatch, WebApi.createFundFile(formData)
+        return savingApiWrapper(dispatch, WebApi.createFundFile(formData)
             .then((json) => {
-                callback && callback(json);
-                dispatch(modalDialogHide())
+                return callback && callback(json);
         }))
     }
 }

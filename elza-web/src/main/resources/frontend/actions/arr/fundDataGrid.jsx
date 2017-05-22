@@ -46,16 +46,13 @@ export function fundBulkModifications(versionId, descItemTypeId, specsIds, opera
     return (dispatch, getState) => {
         switch (operationType) {
             case 'findAndReplace':
-                    WebApi.replaceDataValues(versionId, descItemTypeId, specsIds, findText, replaceText, nodes)
-                        .then(dispatch(modalDialogHide()))
+                    return WebApi.replaceDataValues(versionId, descItemTypeId, specsIds, findText, replaceText, nodes);
                 break
             case 'replace':
-                    WebApi.placeDataValues(versionId, descItemTypeId, specsIds, replaceText, replaceSpecId, nodes)
-                        .then(dispatch(modalDialogHide()))
+                    return WebApi.placeDataValues(versionId, descItemTypeId, specsIds, replaceText, replaceSpecId, nodes);
                 break
             case 'delete':
-                    WebApi.deleteDataValues(versionId, descItemTypeId, specsIds, nodes)
-                        .then(dispatch(modalDialogHide()))
+                    return WebApi.deleteDataValues(versionId, descItemTypeId, specsIds, nodes);
                 break
         }
     }
@@ -76,7 +73,7 @@ export function fundDataInitIfNeeded(versionId, initData) {
 
 export function fundDataFulltextSearch(versionId, filterText, luceneQuery, searchParams, data) {
     return (dispatch, getState) => {
-        WebApi.getFilteredFulltextNodes(versionId, filterText, luceneQuery, searchParams).then(json => {
+        return WebApi.getFilteredFulltextNodes(versionId, filterText, luceneQuery, searchParams).then(json => {
             dispatch(fundDataFulltextSearchResult(versionId, filterText, luceneQuery, json, data));
         });
     }

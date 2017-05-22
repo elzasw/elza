@@ -21,7 +21,7 @@ export function isFundOutput(action) {
     if (isFundOutputFunctionsAction(action)) {
         return true
     }
-    
+
     switch (action.type) {
         case types.FUND_OUTPUT_REQUEST:
         case types.FUND_OUTPUT_RECEIVE:
@@ -61,7 +61,7 @@ export function fundOutputUsageEnd(versionId, outputId) {
         WebApi.outputUsageEnd(versionId, outputId)
             .then((json) => {
                 dispatch(addToastrSuccess(i18n("arr.output.title.usageEnded")));
-            });        
+            });
     }
 }
 
@@ -71,7 +71,7 @@ export function fundOutputAddNodes(versionId, outputId, nodeIds) {
             .then((json) => {
                 dispatch(addToastrSuccess(i18n("arr.output.title.nodesAdded")));
                 dispatch(modalDialogHide());
-            });        
+            });
     }
 }
 
@@ -87,7 +87,7 @@ export function fundOutputDelete(versionId, outputId) {
             .then((json) => {
                 dispatch(addToastrSuccess(i18n("arr.output.title.deleted")));
                 dispatch(fundOutputDetailClear(versionId))
-            });        
+            });
     }
 }
 
@@ -96,7 +96,7 @@ export function fundOutputRevert(versionId, outputId) {
         WebApi.outputRevert(versionId, outputId)
             .then((json) => {
                 dispatch(addToastrSuccess(i18n("arr.output.title.revert")));
-            });        
+            });
     }
 }
 export function fundOutputClone(versionId, outputId) {
@@ -111,21 +111,17 @@ export function fundOutputClone(versionId, outputId) {
 
 export function fundOutputCreate(versionId, data) {
     return (dispatch, getState) => {
-        savingApiWrapper(dispatch, WebApi.createOutput(versionId, data))
+        return savingApiWrapper(dispatch, WebApi.createOutput(versionId, data))
             .then((json) => {
                 dispatch(addToastrSuccess(i18n("arr.output.title.added")));
-                dispatch(modalDialogHide());
                 dispatch(fundOutputSelectOutput(versionId, json.outputs[0].id))
-            });        
+            });
     }
 }
 
 export function fundOutputEdit(versionId, outputId, data) {
     return (dispatch, getState) => {
-        savingApiWrapper(dispatch, WebApi.updateOutput(versionId, outputId, data))
-            .then((json) => {
-                dispatch(modalDialogHide());
-            });        
+        return savingApiWrapper(dispatch, WebApi.updateOutput(versionId, outputId, data));
     }
 }
 

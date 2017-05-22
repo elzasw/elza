@@ -3,7 +3,6 @@ import {connect} from 'react-redux'
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, FundNodesSelectForm, i18n, FormInput} from 'components/index.jsx';
 import {Modal, Button, FormGroup, Form} from 'react-bootstrap';
-import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
 import {LazyListBox} from 'components/index.jsx';
 import {WebApi} from 'actions/index.jsx';
 import {getScrollbarWidth, timeToString, dateToString} from 'components/Utils.jsx'

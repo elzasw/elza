@@ -2,7 +2,7 @@ import React from 'react';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
 import {Modal, Button, Checkbox, Form} from 'react-bootstrap';
-import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
+import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 import {outputTypesFetchIfNeeded} from 'actions/refTables/outputTypes.jsx'
 import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx'
 import {indexById} from 'stores/app/utils.jsx'
@@ -54,9 +54,10 @@ class AddOutputForm extends AbstractReactComponent {
         this.dispatch(outputTypesFetchIfNeeded());
     }
 
+    submitReduxForm = (values, dispatch) => submitForm(AddOutputForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
+
     render() {
         const {fields: {name, internalCode, temporary, templateId, outputTypeId}, create, handleSubmit, onClose, outputTypes, allTemplates} = this.props;
-        const submitForm = submitReduxForm.bind(this, AddOutputForm.validate);
 
         let templates = false;
         if (outputTypeId.value) {
@@ -71,7 +72,7 @@ class AddOutputForm extends AbstractReactComponent {
 
         return (
             <div className="add-output-form-container">
-                <Form onSubmit={handleSubmit(submitForm)}>
+                <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                     <Modal.Body>
                         <FormInput type="text" label={i18n('arr.output.name')} {...name} {...decorateFormField(name)} />
                         <FormInput type="text" label={i18n('arr.output.internalCode')} {...internalCode} {...decorateFormField(internalCode)} />
@@ -86,7 +87,7 @@ class AddOutputForm extends AbstractReactComponent {
                         {create && <Checkbox {...temporary} {...decorateFormField(temporary)}>{i18n('arr.output.temporary')}</Checkbox>}
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button type="submit" onClick={handleSubmit(submitForm)}>{create ? i18n('global.action.create') : i18n('global.action.update')}</Button>
+                        <Button type="submit">{create ? i18n('global.action.create') : i18n('global.action.update')}</Button>
                         <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                     </Modal.Footer>
                 </Form>

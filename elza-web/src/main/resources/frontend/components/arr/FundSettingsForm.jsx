@@ -4,7 +4,7 @@ import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n} from 'components/index.jsx';
 import {Modal, Button, Checkbox, Form, ControlLabel, FormControl} from 'react-bootstrap';
 import {indexById, objectById} from 'stores/app/utils.jsx'
-import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
+import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 import {visiblePolicyFetchIfNeeded} from 'actions/arr/visiblePolicy.jsx'
 
 import './FundSettingsForm.less';
@@ -23,11 +23,12 @@ class FundSettingsForm extends AbstractReactComponent {
 
     state = {};
 
+    submitReduxForm = (values, dispatch) => submitForm(FundSettingsForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
+
     render() {
         const {fields: {rightPanel: {tabs}, centerPanel: {panels}, strictMode}, handleSubmit, onClose} = this.props;
-        const submitForm = submitReduxForm.bind(this, FundSettingsForm.validate);
 
-        return <Form onSubmit={handleSubmit(submitForm)}>
+        return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                 <Modal.Body>
                     <div className="fund-settings-form">
                         <div className="center-panel">
@@ -58,7 +59,7 @@ class FundSettingsForm extends AbstractReactComponent {
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit" onClick={handleSubmit(submitForm)}>{i18n('visiblePolicy.action.save')}</Button>
+                    <Button type="submit">{i18n('visiblePolicy.action.save')}</Button>
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </Form>

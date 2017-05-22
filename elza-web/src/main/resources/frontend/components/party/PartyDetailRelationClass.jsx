@@ -54,25 +54,23 @@ class PartyDetailRelations extends AbstractReactComponent {
 
     addIdentifier = (relation) => {
         const {party} = this.props;
-        this.dispatch(relationCreate({
+        return this.dispatch(relationCreate({
             ...relation,
             partyId: party.id,
             from: isNotBlankObject(relation.from) ? normalizeDatation(relation.from) : null,
             to: isNotBlankObject(relation.to) ? normalizeDatation(relation.to) : null,
         }));
-        this.dispatch(modalDialogHide());
     };
 
     update = (origRelation, newRelation) => {
         const {party} = this.props;
-        this.dispatch(relationUpdate({
+        return this.dispatch(relationUpdate({
             ...origRelation,
             ...newRelation,
             partyId: party.id,
             from: isNotBlankObject(newRelation.from) ? normalizeDatation(newRelation.from) : null,
             to: isNotBlankObject(newRelation.to) ? normalizeDatation(newRelation.to) : null,
         }));
-        this.dispatch(modalDialogHide());
     };
 
     handleRelationAdd = () => {

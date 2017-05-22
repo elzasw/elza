@@ -8,7 +8,6 @@ import {reduxForm} from 'redux-form';
 import {Autocomplete, AbstractReactComponent, i18n, Icon, FormInput} from 'components/index.jsx';
 import {Modal, Button} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
-import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
 import UserField from "./UserField.jsx"
 import Tags from "components/form/Tags.jsx"
 import {renderUserItem} from "components/admin/adminRenderUtils.jsx"

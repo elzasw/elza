@@ -2,10 +2,10 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/ActionTypes.js';
 import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
-import {Modal, Button} from 'react-bootstrap';
+import {Modal, Button, Form} from 'react-bootstrap';
 import {connect} from 'react-redux'
 import {reduxForm} from 'redux-form';
-import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
+import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 
 const validate = (values, props) => {
     const errors = {};
@@ -38,22 +38,24 @@ var GoToPositionForm = class GoToPositionForm extends AbstractReactComponent {
     componentDidMount() {
     }
 
+    submitOptions = {finishOnSubmit:true}
+
+    submitReduxForm = (values, dispatch) => submitForm(validate,values,this.props,this.props.onSubmitForm,dispatch,this.submitOptions);
+
     render() {
         const {fields: {position}, handleSubmit, onClose, maxPosition} = this.props;
 
-        var submitForm = submitReduxForm.bind(this, validate)
-
         return (
             <div>
-                <Modal.Body>
-                    <form onSubmit={handleSubmit(submitForm)}>
+                <Form onSubmit={handleSubmit(this.submitReduxForm)}>
+                    <Modal.Body>
                         <FormInput type="text" label={i18n('arr.fund.subNodes.findPositionNumber', maxPosition)} {...position} {...decorateFormField(position)} />
-                    </form>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button onClick={handleSubmit(submitForm)}>{i18n('global.action.store')}</Button>
-                    <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
-                </Modal.Footer>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button type="submit">{i18n('global.action.store')}</Button>
+                        <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                    </Modal.Footer>
+                </Form>
             </div>
         )
     }

@@ -50,7 +50,6 @@ export function setVisiblePolicyRequest(nodeId, fundVersionId, policyTypeIdsMap)
         })
         return WebApi.setVisiblePolicy(nodeId, fundVersionId, policyTypeIdsMap)
             .then(data => {
-                dispatch(modalDialogHide());
                 dispatch(setVisiblePolicyReceive(nodeId, fundVersionId));
             });
     }

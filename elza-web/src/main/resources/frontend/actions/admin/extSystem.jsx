@@ -57,7 +57,7 @@ export function extSystemDetailClear() {
  */
 export function extSystemCreate(data) {
     return (dispatch, getState) => {
-        WebApi.createExtSystem(data).then(response => {
+        return WebApi.createExtSystem(data).then(response => {
             dispatch(extSystemListInvalidate());
             dispatch(extSystemDetailFetchIfNeeded(response.id));
             dispatch(refExternalSystemListInvalidate());
@@ -70,7 +70,7 @@ export function extSystemCreate(data) {
 export function extSystemUpdate(data) {
     return (dispatch, getState) => {
         const id = data.id;
-        WebApi.updateExtSystem(id, data).then(response => {
+        return WebApi.updateExtSystem(id, data).then(response => {
             const store = getState();
             const detail = storeFromArea(store, AREA_EXT_SYSTEM_DETAIL);
             const list = storeFromArea(store, AREA_EXT_SYSTEM_LIST);

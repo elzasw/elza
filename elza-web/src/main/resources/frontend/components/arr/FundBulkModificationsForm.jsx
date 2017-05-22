@@ -4,7 +4,7 @@ import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
 import {FormControl, Modal, Button, Input, Radio, ControlLabel, Form, FormGroup} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx';
-import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx';
+import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
 import {getSpecsIds} from 'components/arr/ArrUtils.jsx';
 import  './FundBulkModificationsForm.less';
@@ -147,10 +147,11 @@ class FundBulkModificationsForm extends AbstractReactComponent {
         return result
     };
 
+    submitReduxForm = (values, dispatch) => submitForm(FundBulkModificationsForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
+
     render() {
         const {allItemsCount, checkedItemsCount, refType, fields: {findText, replaceText, itemsArea, operationType, specs, replaceSpec}, handleSubmit, onClose, descItemTypes} = this.props;
         const uncheckedItemsCount = allItemsCount - checkedItemsCount;
-        var submitForm = submitReduxForm.bind(this, FundBulkModificationsForm.validate);
 
         let operationInputs = [];
         let submitButtonTitle;
@@ -180,7 +181,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                 break
         }
 
-        return <Form onSubmit={handleSubmit(submitForm)}>
+        return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
             <Modal.Body className='fund-bulk-modifications-container'>
                 <FormInput type="static" label={i18n('arr.fund.bulkModifications.descItemType')} wrapperClassName='form-items-group'>
                     {refType.shortcut}
@@ -211,7 +212,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                 {operationInputs}
             </Modal.Body>
             <Modal.Footer>
-                <Button onClick={handleSubmit(submitForm)}>{i18n(submitButtonTitle)}</Button>
+                <Button type="submit">{i18n(submitButtonTitle)}</Button>
                 <Button bsStyle="link" onClick={onClose}>{i18n('global.action.close')}</Button>
             </Modal.Footer>
         </Form>

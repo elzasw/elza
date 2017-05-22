@@ -227,10 +227,8 @@ function partyAddSubmit(callback, dispatch, submitType, data) {
             }
         ]
     };
-
     const promise = savingApiWrapper(dispatch, WebApi.createParty(party));
     promise.then((json) => {
-        dispatch(modalDialogHide());
         callback && callback(json, submitType);
     });
     return promise;

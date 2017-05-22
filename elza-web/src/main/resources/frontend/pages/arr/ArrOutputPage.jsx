@@ -188,7 +188,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         this.dispatch(modalDialogShow(this, i18n('arr.output.title.add'),
             <AddOutputForm
                 create
-                onSubmitForm={(data) => {this.dispatch(fundOutputCreate(fund.versionId, data))}}/>));
+                onSubmitForm={(data) => {return this.dispatch(fundOutputCreate(fund.versionId, data))}}/>));
     }
 
     handleBulkActions() {
@@ -206,8 +206,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
 
         this.dispatch(modalDialogShow(this, i18n('arr.output.title.add'),
             <RunActionForm versionId={fund.versionId} onSubmitForm={(data) => {
-                this.dispatch(fundOutputActionRun(fund.versionId, data.code));
-                this.dispatch(modalDialogHide());
+                return this.dispatch(fundOutputActionRun(fund.versionId, data.code));
             }}/>));
     }
 

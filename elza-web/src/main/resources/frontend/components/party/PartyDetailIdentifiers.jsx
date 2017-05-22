@@ -60,8 +60,7 @@ class PartyDetailIdentifiers extends AbstractReactComponent {
                 },
             ]
         };
-        this.props.onPartyUpdate(party);
-        this.dispatch(modalDialogHide())
+        return this.props.onPartyUpdate(party);
     };
 
     update = (origIdentifier, newIdentifier) => {
@@ -79,8 +78,7 @@ class PartyDetailIdentifiers extends AbstractReactComponent {
                 ...this.props.party.partyGroupIdentifiers.slice(index+1)
             ]
         };
-        this.props.onPartyUpdate(party);
-        this.dispatch(modalDialogHide());
+        return this.props.onPartyUpdate(party);
     };
 
     handlePartyGroupIdentifierAdd = () => {

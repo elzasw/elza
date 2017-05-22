@@ -191,8 +191,7 @@ return true
             }
         }
 
-        this.dispatch(fundTreeFulltextSearch(types.FUND_TREE_AREA_MAIN, versionId, params, result, true));
-        this.dispatch(modalDialogHide());
+        return this.dispatch(fundTreeFulltextSearch(types.FUND_TREE_AREA_MAIN, versionId, params, result, true));
     };
 
     render() {

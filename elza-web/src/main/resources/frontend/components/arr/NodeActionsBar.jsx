@@ -38,7 +38,6 @@ const NodeActionsBar = class NodeActionsBar extends AbstractReactComponent {
         var subNodeId = node.allChildNodes[index].id;
 
         this.dispatch(fundSelectSubNode(versionId, subNodeId, node));
-        this.dispatch(modalDialogHide());
     }
 
     /**
@@ -61,7 +60,7 @@ const NodeActionsBar = class NodeActionsBar extends AbstractReactComponent {
     render() {
       const {node, selectedSubNodeIndex, versionId, userDetail, fundId, closed} = this.props;
       var selectedSubNodeNumber = selectedSubNodeIndex + 1; // pořadí vybraného záznamu v akordeonu
-      
+
       return(
         <div key='actions' className='actions-container'>
             <div key='actions' className='actions'>

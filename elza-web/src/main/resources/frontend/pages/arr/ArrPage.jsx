@@ -336,7 +336,7 @@ class ArrPage extends ArrParentPage {
                     value: dataStrictMode},
         };
 
-        var form = <FundSettingsForm initialValues={init} onSubmitForm={this.handleChangeFundSettingsSubmit.bind(this)} />;
+        var form = <FundSettingsForm initialValues={init} onSubmitForm={this.handleChangeFundSettingsSubmit} />;
         this.dispatch(modalDialogShow(this, i18n('arr.fund.settings.title'), form));
     }
 
@@ -363,7 +363,7 @@ class ArrPage extends ArrParentPage {
         strictMode.value = data.strictMode.value === "" ? null : data.strictMode.value;
         settings = setSettings(settings, strictMode.id, strictMode);
 
-        this.dispatch(userDetailsSaveSettings(settings));
+        return this.dispatch(userDetailsSaveSettings(settings));
     }
 
     /**
@@ -558,7 +558,7 @@ class ArrPage extends ArrParentPage {
         data.records.forEach((val, index) => {
             mapIds[parseInt(val.id)] = val.checked;
         });
-        this.dispatch(setVisiblePolicyRequest(node.selectedSubNodeId, versionId, mapIds));
+        return this.dispatch(setVisiblePolicyRequest(node.selectedSubNodeId, versionId, mapIds));
     }
 
     renderFundVisiblePolicies(activeFund) {

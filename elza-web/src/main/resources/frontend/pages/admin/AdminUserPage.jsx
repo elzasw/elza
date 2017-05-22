@@ -79,7 +79,7 @@ const AdminUserPage = class AdminUserPage extends AbstractReactComponent{
     }
 
     handleCreateUser(data) {
-        this.dispatch(userCreate(data.username, data.password, data.party.id));
+        return this.dispatch(userCreate(data.username, data.password, data.party.id));
     }
 
     handleChangeUserPasswordForm() {
@@ -88,12 +88,12 @@ const AdminUserPage = class AdminUserPage extends AbstractReactComponent{
 
     handleChangeUserPassword(data) {
         const {user: {userDetail: {id}}} = this.props;
-        this.dispatch(adminPasswordChange(id, data.password));
+        return this.dispatch(adminPasswordChange(id, data.password));
     }
 
     handleUpdateUser(data) {
         const {user: {userDetail: {id}}} = this.props;
-        this.dispatch(userUpdate(id, data.username, data.password));
+        return this.dispatch(userUpdate(id, data.username, data.password));
     }
 
     handleChangeUsernameForm() {

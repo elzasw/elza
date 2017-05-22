@@ -248,7 +248,7 @@ class PartyDetail extends AbstractReactComponent {
 
 
     handlePartyUpdate = (party) => {
-        this.dispatch(partyUpdate({
+        return this.dispatch(partyUpdate({
             ...this.props.partyDetail.data,
             ...party
         }));

@@ -6,7 +6,7 @@ import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
 import {Modal, Button, Form} from 'react-bootstrap';
 import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {indexById, getMapFromList} from 'stores/app/utils.jsx'
-import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
+import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 import './AddPacketForm.less';
 
 /**
@@ -54,11 +54,11 @@ class AddPacketForm extends AbstractReactComponent {
         return number + ""; // always return a string
     }
 
+    submitReduxForm = (values, dispatch) => submitForm(AddPacketForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
+
     render() {
         const {fields: {packetTypeId, storageNumber, prefix, start, size, count}, handleSubmit, onClose, packetTypes,
-            createSingle, createMany, changeNumbers, arrRegion} = this.props;
-
-        var submitForm = submitReduxForm.bind(this, AddPacketForm.validate);
+            createSingle, createMany, changeNumbers, arrRegion, submitting} = this.props;
 
         var activeFund = null;
         if (arrRegion.activeIndex != null) {
@@ -92,11 +92,11 @@ class AddPacketForm extends AbstractReactComponent {
                 packetTypeHelp = i18n('arr.packet.changeNumbers.packetType.empty')
             } else {
                 const packetType = getMapFromList(packetTypeItems)[packetTypeId.value]
-                packetTypeHelp = packetType && i18n('arr.packet.changeNumbers.packetType.notEmpty', packetType.name);                
+                packetTypeHelp = packetType && i18n('arr.packet.changeNumbers.packetType.notEmpty', packetType.name);
             }
         }
 
-        return <Form onSubmit={handleSubmit(submitForm)}>
+        return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
             <div className="add-packet-form-container">
                 <Modal.Body>
 
@@ -112,7 +112,7 @@ class AddPacketForm extends AbstractReactComponent {
                 </Modal.Body>
                 <Modal.Footer>
                     <div className="packet-example">{example && i18n('arr.packet.example', example)}</div>
-                    <Button type="submit" onClick={handleSubmit(submitForm)}>{i18n('global.action.create')}</Button>
+                    <Button type="submit" disabled={submitting}>{i18n('global.action.create')}</Button>
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>

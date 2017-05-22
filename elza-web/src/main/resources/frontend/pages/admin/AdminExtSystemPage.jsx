@@ -41,8 +41,7 @@ class AdminExtSystemPage extends AbstractReactComponent {
 
     handleAddExtSystem = () => {
         this.dispatch(modalDialogShow(this, i18n('admin.extSystem.add.title'), <ExtSystemForm onSubmitForm={(data) => {
-            this.dispatch(extSystemCreate(data));
-            this.dispatch(modalDialogHide());
+            return this.dispatch(extSystemCreate(data));
         }} />));
     };
 
@@ -54,8 +53,7 @@ class AdminExtSystemPage extends AbstractReactComponent {
     handleEditExtSystem = () => {
         const {data} = this.props.extSystemDetail;
         this.dispatch(modalDialogShow(this, i18n('admin.extSystem.edit.title'), <ExtSystemForm initialValues={data} onSubmitForm={(data) => {
-            this.dispatch(extSystemUpdate(data));
-            this.dispatch(modalDialogHide());
+            return this.dispatch(extSystemUpdate(data));
         }} />));
     };
 

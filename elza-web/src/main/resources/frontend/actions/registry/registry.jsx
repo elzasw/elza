@@ -139,7 +139,7 @@ function registryRecordCreate(parentId, callback, data, submitType) {
 
 export function registryUpdate(data, callback = null) {
     return (dispatch, getState) => {
-        savingApiWrapper(dispatch, WebApi.updateRegistry(data)).then(json => {
+        return savingApiWrapper(dispatch, WebApi.updateRegistry(data)).then(json => {
             const store = getState();
             const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
 

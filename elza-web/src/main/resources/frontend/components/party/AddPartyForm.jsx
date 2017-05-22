@@ -10,7 +10,7 @@ import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registry.jsx'
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
-import {submitReduxForm} from 'components/form/FormUtils.jsx'
+import {submitForm} from 'components/form/FormUtils.jsx'
 import {getTreeItemById} from "./../../components/registry/registryUtils";
 import {PARTY_TYPE_CODES} from 'actions/party/party.jsx'
 
@@ -224,17 +224,15 @@ class AddPartyForm extends AbstractReactComponent {
         this.dispatch(modalDialogHide());
     };
 
-    customSubmitReduxForm = (validate, store, values) => {
-        return new Promise((resolve, reject) => {
-            const errors = validate(values, this.props);
-            if (Object.keys(errors).length > 0) {
-                reject(errors)
-            } else {
-                const {partyTypeId} = this.props;
-                return this.props.onSubmitForm(store, {...values, partyTypeId})
-            }
-        })
+    submitType = 'store';
+
+    onSubmit = (values) => {
+        var partyTypeId = this.props.partyTypeId;
+        var submitType = this.submitType;
+        return this.props.onSubmitForm(submitType, {...values, partyTypeId});
     };
+
+    submitReduxForm = (values, dispatch) => submitForm(this.validate,values,this.props,this.onSubmit,dispatch);
 
     /**
      * RENDER
@@ -243,8 +241,6 @@ class AddPartyForm extends AbstractReactComponent {
      */
     render() {
         const {complementsTypes} = this.state;
-
-        const submit = this.customSubmitReduxForm.bind(this, this.validate);
 
         const {
             fields: {
@@ -283,7 +279,7 @@ class AddPartyForm extends AbstractReactComponent {
         const value = registerTypeId.value === null ? null : getTreeItemById(registerTypeId.value, treeItems);
         const complementsList = complementsTypes && complementsTypes.map(i => <option value={i.complementTypeId} key={'index' + i.complementTypeId}>{i.name}</option>);
 
-        return <Form>
+        return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
             <Modal.Body className="dialog-3-col add-party-form">
                 <div className="flex">
                     <div className="flex-2 col">
@@ -343,8 +339,8 @@ class AddPartyForm extends AbstractReactComponent {
                 </div>
             </Modal.Body>
             <Modal.Footer>
-                {showSubmitTypes && <Button type="submit" onClick={handleSubmit(submit.bind(this, 'storeAndViewDetail'))} disabled={submitting}>{i18n('global.action.storeAndViewDetail')}</Button>}
-                <Button type="submit" onClick={handleSubmit(submit.bind(this,'store'))} disabled={submitting}>{i18n('global.action.store')}</Button>
+                {showSubmitTypes && <Button type="submit" onClick={()=>{this.submitType = 'storeAndViewDetail'}} disabled={submitting}>{i18n('global.action.storeAndViewDetail')}</Button>}
+                <Button type="submit" disabled={submitting}>{i18n('global.action.store')}</Button>
                 <Button bsStyle="link" onClick={this.handleClose} disabled={submitting}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
         </Form>;

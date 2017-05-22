@@ -3,7 +3,7 @@ import {connect} from 'react-redux'
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, FundNodesSelectForm, i18n, FormInput, Icon, DatationField} from 'components/index.jsx';
 import {Modal, Button, FormGroup, Form, Row, Col} from 'react-bootstrap';
-import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
+import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 import {LazyListBox} from 'components/index.jsx';
 import {WebApi} from 'actions/index.jsx';
 import {getScrollbarWidth, timeToString, dateToString} from 'components/Utils.jsx'
@@ -99,8 +99,9 @@ class ArrSearchForm extends AbstractReactComponent {
                 </div>;
             }
         }
-
     };
+
+    submitReduxForm = (values, dispatch) => submitForm(ArrSearchForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
 
     render() {
 
@@ -112,8 +113,6 @@ class ArrSearchForm extends AbstractReactComponent {
             },
             handleSubmit, submitting, onClose,
         } = this.props;
-
-        const submitForm = submitReduxForm.bind(this, ArrSearchForm.validate);
 
         const formForm = <div className="arr-search-form-container">
             <Button className="action-button" onClick={() => condition.addField({type: TYPE_TEXT})}><Icon glyph="fa-plus" /> {i18n('search.extended.form.text')}</Button>
@@ -131,7 +130,7 @@ class ArrSearchForm extends AbstractReactComponent {
             <FormInput componentClass="textarea" label={i18n('search.extended.input.text')} {...text} />
         </div>;
 
-        return <Form onSubmit={handleSubmit(submitForm)}>
+        return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
             <Modal.Body>
                 <Row>
                     <Col xs={4}>
