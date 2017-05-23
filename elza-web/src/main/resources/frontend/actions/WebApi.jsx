@@ -49,18 +49,18 @@ class UrlFactory {
     }
 
     static exportArrCoordinate(objectId, versionId) {
-        return window.location.origin + WebApi.kmlUrl + '/export/descCoordinates/' + versionId + '/' + objectId;
+        return serverContextPath + WebApi.kmlUrl + '/export/descCoordinates/' + versionId + '/' + objectId;
     }
 
     static exportItemCsvExport(objectId, versionId, typePrefix) {
-        return window.location.origin + WebApi.arrangementUrl + '/' + typePrefix + 'Items/' + versionId + '/csv/export?descItemObjectId=' + objectId
+        return serverContextPath + WebApi.arrangementUrl + '/' + typePrefix + 'Items/' + versionId + '/csv/export?descItemObjectId=' + objectId
     }
 
     static downloadDmsFile(id) {
-        return window.location.origin + WebApi.dmsUrl + '/' + id
+        return serverContextPath + WebApi.dmsUrl + '/' + id
     }
     static downloadOutputResult(id) {
-        return window.location.origin + '/api/outputResult/' + id
+        return serverContextPath + '/api/outputResult/' + id
     }
 }
 
