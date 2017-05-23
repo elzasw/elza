@@ -1091,6 +1091,7 @@ var messages = {
     "login.field.username": "Uživatelské jméno",
     "login.field.password": "Heslo",
     "login.action.login": "Přihlásit",
+    "login.defaultUserEnabled": "Je povolen výchozí uživatel. Vytvořte si vlastního uživatele s oprávněním administrátora a výchozího uživatele vypněte.",
 
     "visiblePolicy.form.title": "Nastavení zobrazení pravidel kontroly JP",
     "visiblePolicy.action.save": "Upravit",

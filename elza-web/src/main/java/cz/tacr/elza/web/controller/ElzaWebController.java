@@ -29,6 +29,13 @@ public class ElzaWebController {
     public Boolean isDevBuild() {
         return "DEV".equals(buildType);
     }
+    @Value("${elza.security.allowDefaultUser:true}")
+    private Boolean allowDefaultUser;
+
+    @ModelAttribute("isDefaultUserEnabled")
+    public Boolean isDefaultUserEnabled() {
+        return allowDefaultUser;
+    }
 
     private void initDefaults(final HttpServletRequest request, final Model model) {
         model.addAttribute("contextPath", request.getContextPath());

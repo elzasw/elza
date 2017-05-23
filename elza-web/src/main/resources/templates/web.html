@@ -34,6 +34,9 @@
 
         <script>
         </script>
+        <script th:if="${isDefaultUserEnabled}">
+            var defaultUserEnabled = true;
+        </script>
 
         <script th:inline="javascript">
             /*<![CDATA[*/
