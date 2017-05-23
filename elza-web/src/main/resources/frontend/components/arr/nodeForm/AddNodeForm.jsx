@@ -122,7 +122,7 @@ class AddNodeForm extends AbstractReactComponent {
      */
     getDescItemTypeCopyIds = () => {
         const nodeSettings = this.props.nodeSettings;
-        const nodeId = this.props.node.id;
+        const nodeId = this.props.parentNode.id;
 
         let itemsToCopy = null;
         if (nodeSettings != undefined) {
