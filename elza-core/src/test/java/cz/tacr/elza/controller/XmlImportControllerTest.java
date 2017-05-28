@@ -3,7 +3,6 @@ package cz.tacr.elza.controller;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.domain.vo.XmlImportType;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -14,7 +13,6 @@ import org.springframework.util.FileCopyUtils;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -40,17 +38,7 @@ public class XmlImportControllerTest extends AbstractControllerTest {
     @Value("${elza.xmlImport.transformationDir}")
     private String transformationsDirectory;
 
-    @After
-    public void cleanUp() {
-        List<String> toDelete = Arrays.asList(IMPORT_SCOPE_FA, IMPORT_SCOPE_PARTY, IMPORT_SCOPE_RECORD);
-        for (RegScopeVO scope : getAllScopes()) {
-            if (toDelete.contains(scope.getName())) {
-                deleteScope(scope.getId());
-                break;
-            }
-        }
-    }
-
+    
     /**
      * Scénář
      * ----
