@@ -146,6 +146,11 @@ class ArrPage extends ArrParentPage {
                     this.refs.fundErrors.fetchNow();
                 }
             }
+            if(activeFund.nodes.activeIndex === null && activeFund.fundTree.nodes[0]){
+                var node = activeFund.fundTree.nodes[0];
+                var parentNode = createFundRoot(activeFund);
+                this.dispatch(fundSelectSubNode(activeFund.versionId, node.id, parentNode, false, null, true));
+            }
         } else {
             this.setState({fundNodesError: null});
         }
