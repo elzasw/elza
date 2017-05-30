@@ -210,6 +210,8 @@ export default function arrRegion(state = initialState, action) {
         case types.CHANGE_DELETE_LEVEL:
         case types.CHANGE_ADD_LEVEL:
         case types.CHANGE_MOVE_LEVEL:
+        case types.FUND_NODES_MOVE_START:
+        case types.FUND_NODES_MOVE_STOP:
         case types.FUND_FUND_APPROVE_VERSION:
         case types.CHANGE_FUND_RECORD:
         case types.FUND_FUND_SELECT_SUBNODE:

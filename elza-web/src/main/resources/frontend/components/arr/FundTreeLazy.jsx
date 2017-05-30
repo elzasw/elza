@@ -132,11 +132,11 @@ class FundTreeLazy extends AbstractReactComponent {
     }
 
     focus = () => {
-        ReactDOM.findDOMNode(this.refs.treeContainer).focus()
+        ReactDOM.findDOMNode(this.refs.treeWrapper).focus()
     };
 
     handleKeyDown = (event) => {
-        if (document.activeElement === ReactDOM.findDOMNode(this.refs.treeContainer)) { // focus má strom
+        if (document.activeElement === ReactDOM.findDOMNode(this.refs.treeWrapper)) { // focus má strom
             if (keyDownHandlers[event.key]) {
                 keyDownHandlers[event.key].call(this, event)
             }
@@ -250,20 +250,22 @@ class FundTreeLazy extends AbstractReactComponent {
                     onClickExtendedSearch={onClickExtendedSearch}
                 />
             </div>
-            <div className="fa-tree-lazy-actions">
-                <Button className="tree-collapse" onClick={this.props.onCollapse}><Icon glyph='fa-compress'/>Sbalit vše</Button>
-                {actionAddons}
-            </div>
-            <div className='fa-tree-lazy-container' ref="treeContainer" onKeyDown={this.handleKeyDown} tabIndex={0}>
-                {this.state.treeContainer && <VirtualList
-                    scrollTopPadding={TREE_TOP_PADDING}
-                    tagName='div'
-                    scrollToIndex={index}
-                    container={this.state.treeContainer}
-                    items={this.props.nodes}
-                    renderItem={this.renderNode}
-                    itemHeight={this.props.rowHeight}
-                />}
+            <div className="fa-tree-wrapper" tabIndex={0} ref="treeWrapper" onKeyDown={this.handleKeyDown}>
+                <div className="fa-tree-lazy-actions">
+                    <Button className="tree-collapse" onClick={this.props.onCollapse}><Icon glyph='fa-compress'/>Sbalit vše</Button>
+                    {actionAddons}
+                </div>
+                <div className='fa-tree-lazy-container' ref="treeContainer" >
+                    {this.state.treeContainer && <VirtualList
+                        scrollTopPadding={TREE_TOP_PADDING}
+                        tagName='div'
+                        scrollToIndex={index}
+                        container={this.state.treeContainer}
+                        items={this.props.nodes}
+                        renderItem={this.renderNode}
+                        itemHeight={this.props.rowHeight}
+                    />}
+                </div>
             </div>
         </div>
     }
