@@ -1184,7 +1184,7 @@ public class ArrangementController {
             itemTypes = ruleService.getDescriptionItemTypes(versionId, nodeId);
         } catch (Exception e) {
             logger.error("Chyba v pravidlech", e);
-            itemTypes = new ArrayList<>();
+            throw new BusinessException("Chyba v pravidlech",e,BaseCode.SYSTEM_ERROR);            
         }
 
         Integer fundId = version.getFund().getFundId();
