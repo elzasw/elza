@@ -346,20 +346,6 @@ export function fund(state, action) {
         case types.CHANGE_NODES:
         case types.CHANGE_ADD_LEVEL:
         case types.CHANGE_DELETE_LEVEL:
-        case types.FUND_NODES_MOVE_START: {
-            const result = {
-                ...state,
-                moving: true
-            };
-            return consolidateState(state, result);
-        }
-        case types.FUND_NODES_MOVE_STOP: {
-            const result = {
-                ...state,
-                moving: false
-            };
-            return consolidateState(state, result);
-        }
         case types.CHANGE_MOVE_LEVEL: {
             const result = {
                 ...state,
@@ -371,6 +357,20 @@ export function fund(state, action) {
                 fundTreeDaosRight: fundTree(state.fundTreeDaosRight, action),
                 fundTreeNodes: fundTree(state.fundTreeNodes, action),
                 fundDataGrid: fundDataGrid(state.fundDataGrid, action),
+            };
+            return consolidateState(state, result);
+        }
+        case types.FUND_NODES_MOVE_START: {
+            const result = {
+                ...state,
+                moving: true
+            };
+            return consolidateState(state, result);
+        }
+        case types.FUND_NODES_MOVE_STOP: {
+            const result = {
+                ...state,
+                moving: false
             };
             return consolidateState(state, result);
         }
