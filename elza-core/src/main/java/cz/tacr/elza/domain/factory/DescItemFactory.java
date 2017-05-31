@@ -834,6 +834,17 @@ public class DescItemFactory implements InitializingBean {
 
         return descItem;
     }
+    
+    /**
+     * Fill ArrItemData to ArrDescItem
+     * @param descItem descItem without ArrItemData
+     * @param data ArrData to create ArrItemData from
+     */
+    public void fillItemData(final ArrDescItem descItem, final ArrData data) {
+    	 ArrItemData item = createItemByType(descItem.getItemType().getDataType());
+         BeanUtils.copyProperties(data, item);
+         descItem.setItem(item);
+    }
 
     /**
      * Načte hodnotu k atributu.

@@ -711,8 +711,8 @@ public class DescriptionItemService {
 
         ArrData data = dataList.get(0);
         ArrData dataNew = createCopyDescItemData(data, descItemTo);
-
-        dataRepository.save(dataNew);
+        descItemFactory.fillItemData(descItemTo, data);
+        dataRepository.save(dataNew);        
     }
 
     /**
