@@ -51,6 +51,7 @@ export function fundInitState(fundWithVersion) {
         fundTree: fundTree(undefined, {type: ''}),
         fundTreeMovementsLeft: fundTree(undefined, {type: ''}),
         fundTreeMovementsRight: fundTree(undefined, {type: ''}),
+        moving: false,
         fundTreeDaosLeft: fundTree(),
         fundTreeDaosRight: fundTree(),
         fundTreeNodes: fundTree(undefined, {type: ''}),
@@ -215,6 +216,7 @@ export function fund(state, action) {
                 fundTree: fundTree(state.fundTree, action),
                 fundTreeMovementsLeft: fundTree(state.fundTreeMovementsLeft, action),
                 fundTreeMovementsRight: fundTree(state.fundTreeMovementsRight, action),
+                moving: false,
                 fundTreeDaosLeft: fundTree(state.fundTreeDaosLeft, action),
                 fundTreeDaosRight: fundTree(state.fundTreeDaosRight, action),
                 fundTreeNodes: initFundTreeNodes(fundTree()),
@@ -355,6 +357,20 @@ export function fund(state, action) {
                 fundTreeDaosRight: fundTree(state.fundTreeDaosRight, action),
                 fundTreeNodes: fundTree(state.fundTreeNodes, action),
                 fundDataGrid: fundDataGrid(state.fundDataGrid, action),
+            };
+            return consolidateState(state, result);
+        }
+        case types.FUND_NODES_MOVE_START: {
+            const result = {
+                ...state,
+                moving: true
+            };
+            return consolidateState(state, result);
+        }
+        case types.FUND_NODES_MOVE_STOP: {
+            const result = {
+                ...state,
+                moving: false
             };
             return consolidateState(state, result);
         }

@@ -8,13 +8,22 @@
 .fa-tree-lazy-main-container {
     height: 100%;
     position: relative;
+    display:flex;
+    flex-direction:column;
 
-    .fa-tree-lazy-container {
+    .fa-tree-wrapper{
+        flex-grow:1;
         height: 100%;
-        height: calc(~"100% - 49px");
+        border: 1px solid #DDDDDD;
+        display:flex;
+        flex-direction:column;
+    }
+    .fa-tree-lazy-container {
+        flex-grow:1;
+        height: 100%;
+        //height: calc(~"100% - 49px");
         overflow: auto;
         background: white;
-        border: 1px solid #DDDDDD;
         position: relative;
         margin-top: @TREE_TOP_PADDING;
         width: 100%;
@@ -110,10 +119,9 @@
 
     .fa-tree-lazy-actions {
         display: flex;
+        flex-shrink: 0;
         justify-content: flex-end;
         background: white;
-        border: 1px solid #DDDDDD;
-        border-bottom:none;
         margin: 0;
         .btn {
             border: none;
