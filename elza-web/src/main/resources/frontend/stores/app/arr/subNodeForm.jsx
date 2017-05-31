@@ -267,7 +267,7 @@ export default function subNodeForm(state = initialState, action = {}) {
         case types.FUND_INVALID:
             return {...state, dirty: true}
         case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
-            state.data.parent = action.copySiblingResult.parent;
+            state.data.parent = action.copySiblingResult.node;
 
             var currentDescItemMap = {}
             loc.descItemType.descItems.forEach(descItem => {currentDescItemMap[descItem.descItemObjectId] = descItem})

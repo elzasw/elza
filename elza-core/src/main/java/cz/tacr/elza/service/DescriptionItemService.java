@@ -672,11 +672,14 @@ public class DescriptionItemService {
             descItemRepository.save(descItemNew);
 
             // sockety
-            publishChangeDescItem(version, descItemNew);
+            //publishChangeDescItem(version, descItemNew);
 
             // pro odverzovanou hodnotu atributu je nutné vytvořit kopii dat
             copyDescItemData(sourceDescItem, descItemNew);
             result.add(descItemNew);
+        }        
+        if (CollectionUtils.isNotEmpty(result)) {
+            arrangementCacheService.createDescItems(node.getNodeId(), result);
         }
         return result;
     }
@@ -708,8 +711,8 @@ public class DescriptionItemService {
 
         ArrData data = dataList.get(0);
         ArrData dataNew = createCopyDescItemData(data, descItemTo);
-
-        dataRepository.save(dataNew);
+        descItemFactory.fillItemData(descItemTo, data);
+        dataRepository.save(dataNew);        
     }
 
     /**

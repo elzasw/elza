@@ -281,7 +281,7 @@ public class ArrangementCacheService {
         CachedNode cachedNode = nodeCacheService.getNode(nodeId);
         List<ArrDescItem> descItems = cachedNode.getDescItems();
         if (descItems == null) {
-            throw new ObjectNotFoundException("Seznam je prázdný, nelze v něm měnit navázané položky z rejstříků", BaseCode.ID_NOT_EXIST);
+            throw new ObjectNotFoundException("Seznam je prázdný, nelze v něm měnit navázané prvky popisu, nodeId:"+nodeId, BaseCode.ID_NOT_EXIST);
         }
         for (ArrDescItem descItem : descItemList) {
             int index = -1;

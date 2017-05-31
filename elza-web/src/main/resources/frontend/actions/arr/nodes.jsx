@@ -129,45 +129,48 @@ export function fundSelectSubNode(versionId, subNodeId, subNodeParentNode, openN
         dispatch(developerNodeScenariosDirty(subNodeId, subNodeParentNode.routingKey, state.arrRegion.funds[state.arrRegion.activeIndex].versionId));
     }
 }
-
 /**
- * Akce přesunu uzlů ve stromu.
- * @param {int} versionId verze AS
- * @param {Array} nodes seznam uzlů pro akci
- * @param {Object} nodesParent nadřazený uzel k nodes
- * @param {Object} dest cílový uzel, kterého se akce týká
- * @param {Object} destParent nadřazený uzel pro dest
+ * Funkce přesunu uzlů. Všechny funkce musí vracet Promise.
  */
-export function moveNodesUnder(versionId, nodes, nodesParent, dest, destParent) {
+const moveFunctions = {
+    "BEFORE": WebApi.moveNodesBefore,
+    "AFTER": WebApi.moveNodesAfter,
+    "UNDER": WebApi.moveNodesUnder
+}
+/**
+ * Funkce spouštějící a ukončující operaci přesunu.
+ * @param {string} direction - směr přesunu uzlu
+ * @param {int} versionId - verze AS
+ * @param {Array} nodes - seznam uzlů pro akci
+ * @param {Object} nodesParent - nadřazený uzel k nodes
+ * @param {Object} dest - cílový uzel, kterého se akce týká
+ * @param {Object} destParent - nadřazený uzel pro dest
+ */
+export function moveNodes(direction,versionId,nodes,nodesParent,dest,destParent){
     return (dispatch, getState) => {
-        WebApi.moveNodesUnder(versionId, nodes, nodesParent, dest, destParent);
+        dispatch(fundMoveStart(versionId));
+        return moveFunctions[direction](versionId, nodes, nodesParent, dest, destParent).then(()=>{
+            dispatch(fundMoveFinish(versionId));
+        });
     }
 }
-
 /**
- * Akce přesunu uzlů ve stromu.
- * @param {int} versionId verze AS
- * @param {Array} nodes seznam uzlů pro akci
- * @param {Object} nodesParent nadřazený uzel k nodes
- * @param {Object} dest cílový uzel, kterého se akce týká
- * @param {Object} destParent nadřazený uzel pro dest
+ * Akce zavolána při začátku přesunu
+ * @param {int} versionId - verze AS určující pro, který AS se akce spustí
  */
-export function moveNodesBefore(versionId, nodes, nodesParent, dest, destParent) {
-    return (dispatch, getState) => {
-        WebApi.moveNodesBefore(versionId, nodes, nodesParent, dest, destParent);
-    }
+function fundMoveFinish(versionId){
+    return {
+        type: types.FUND_NODES_MOVE_STOP,
+        versionId:versionId
+    };
 }
-
 /**
- * Akce přesunu uzlů ve stromu.
- * @param {int} versionId verze AS
- * @param {Array} nodes seznam uzlů pro akci
- * @param {Object} nodesParent nadřazený uzel k nodes
- * @param {Object} dest cílový uzel, kterého se akce týká
- * @param {Object} destParent nadřazený uzel pro dest
+ * Akce zavolána po skončení přesunu
+ * @param {int} versionId - verze AS určující pro, který AS se akce zastaví
  */
-export function moveNodesAfter(versionId, nodes, nodesParent, dest, destParent) {
-    return (dispatch, getState) => {
-        WebApi.moveNodesAfter(versionId, nodes, nodesParent, dest, destParent);
-    }
+function fundMoveStart(versionId){
+    return {
+        type: types.FUND_NODES_MOVE_START,
+        versionId:versionId
+    };
 }

@@ -9,10 +9,10 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.IntegrationTest;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,10 +29,10 @@ import java.util.zip.ZipOutputStream;
  * @author Martin Šlapa
  * @since 16.2.2016
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = ElzaCoreTest.class)
-@IntegrationTest("server.port:0") // zvoli volny port, lze spustit i s aktivni Elzou
-@WebAppConfiguration
+
+@RunWith(SpringRunner.class)
+@ContextConfiguration(classes=ElzaCoreTest.class)
+@SpringBootTest(webEnvironment=WebEnvironment.RANDOM_PORT)
 public abstract class AbstractTest {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractTest.class);

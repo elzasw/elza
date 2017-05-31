@@ -63,12 +63,12 @@ class SelectPage extends AbstractReactComponent {
             altActions: [],
             itemActions: [],
             primarySection: [
-                <RibbonGroup key="ribbon-group-main" className="large">
-                    <Button onClick={this.handleClose} style={{borderRadius:'50%', background: '#CD5051', color: 'white'}}>
-                        <Icon glyph="fa-times" style={{fontSize: '3em'}}/>
+                <RibbonGroup key="ribbon-group-main" className="large big-icon">
+                    <Button onClick={this.handleClose} className="cancel">
+                        <Icon glyph="fa-times-circle"/>
                     </Button>
-                    <Button onClick={this.handleConfirm} style={{borderRadius:'50%', background: '#86BB65', color: 'white'}}>
-                        <Icon glyph="fa-check" style={{fontSize: '3em'}}/>
+                    <Button onClick={this.handleConfirm} className="confirm">
+                        <Icon glyph="fa-check-circle"/>
                     </Button>
                 </RibbonGroup>
             ]
