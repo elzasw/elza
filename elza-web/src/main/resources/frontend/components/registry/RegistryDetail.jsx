@@ -25,8 +25,7 @@ import {registryDetailFetchIfNeeded, registryUpdate} from 'actions/registry/regi
 import {Utils, EditRegistryForm} from 'components/index.jsx';
 import {objectById, indexById} from 'stores/app/utils.jsx';
 import {setInputFocus, dateTimeToString} from 'components/Utils.jsx'
-import ShortcutsManager from 'react-shortcuts';
-import Shortcuts from 'react-shortcuts/component';
+import {Shortcuts} from 'react-shortcuts';
 import {setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
@@ -34,26 +33,8 @@ import {initForm} from "actions/form/inlineForm.jsx"
 import {getMapFromList} from 'stores/app/utils.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
 
-
 import {routerNavigate} from 'actions/router.jsx'
 import {partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
-
-
-const keyModifier = Utils.getKeyModifier();
-
-const keymap = {
-    RegistryDetail: {
-        editRecord: keyModifier + 'e',
-        goToPartyPerson: keyModifier + 'b',
-        addRegistryVariant: keyModifier + 'i'
-    },
-
-    VariantRecord: {
-        deleteRegistryVariant: keyModifier + 'd'
-    }
-};
-
-const shortcutManager = new ShortcutsManager(keymap);
 
 import './RegistryDetail.less';
 
@@ -64,10 +45,6 @@ import './RegistryDetail.less';
 class RegistryDetail extends AbstractReactComponent {
 
     state = {note:null}
-
-    static childContextTypes = {
-        shortcuts: React.PropTypes.object.isRequired
-    };
 
     componentDidMount() {
         this.trySetFocus();
@@ -107,11 +84,6 @@ class RegistryDetail extends AbstractReactComponent {
             }
         }
     };
-
-    getChildContext() {
-        return { shortcuts: shortcutManager };
-    }
-
 
     handleGoToParty = () => {
         this.dispatch(partyDetailFetchIfNeeded(this.props.registryDetail.data.partyId));

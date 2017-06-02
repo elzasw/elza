@@ -17,22 +17,10 @@ import {
     registryVariantInternalDelete
 } from 'actions/registry/registry.jsx'
 import {Utils, EditRegistryForm} from 'components/index.jsx';
-import ShortcutsManager from 'react-shortcuts';
-import Shortcuts from 'react-shortcuts/component';
+import {Shortcuts} from 'react-shortcuts';
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 
 import {setFocus} from 'actions/global/focus.jsx'
-
-
-const keyModifier = Utils.getKeyModifier();
-
-
-const keymap = {
-    VariantRecord: {
-        deleteRegistryVariant: keyModifier + 'd'
-    }
-};
-const shortcutManager = new ShortcutsManager(keymap);
 
 class RegistryDetailVariantRecords extends AbstractReactComponent {
 
@@ -60,14 +48,6 @@ class RegistryDetailVariantRecords extends AbstractReactComponent {
                 })
             }
         }
-    }
-
-    static childContextTypes = {
-        shortcuts: React.PropTypes.object.isRequired
-    };
-
-    getChildContext() {
-        return { shortcuts: shortcutManager };
     }
 
     handleAdd = () => {
@@ -130,7 +110,7 @@ class RegistryDetailVariantRecords extends AbstractReactComponent {
         }
     }
 
-    handleShortcuts = (item, index) => {
+    handleShortcuts = (item, index, action) => {
         console.log("#handleShortcuts", '[' + action + ']', this, item, index);
         const {disabled} = this.props;
         switch (action) {

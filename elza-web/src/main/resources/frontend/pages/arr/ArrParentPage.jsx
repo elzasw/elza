@@ -48,8 +48,7 @@ import {createFundRoot} from 'components/arr/ArrUtils.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {fundTreeFetchIfNeeded} from 'actions/arr/fundTree.jsx'
-const ShortcutsManager = require('react-shortcuts');
-const Shortcuts = require('react-shortcuts/component');
+import {Shortcuts} from 'react-shortcuts';
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {selectTab} from 'actions/global/tab.jsx'
@@ -59,29 +58,7 @@ const keyModifier = Utils.getKeyModifier()
 
 export default class ArrParentPage extends AbstractReactComponent {
 
-    static childContextTypes = {
-        shortcuts: React.PropTypes.object.isRequired
-    };
 
-    static keymap = {
-        ArrParent: {
-            back: keyModifier + 'z',
-            arr: keyModifier + 'a',
-            dataGrid: keyModifier + 't',
-            movements: keyModifier + 'm',
-            actions: keyModifier + 'h',
-            output: keyModifier + 'o',
-        },
-    };
-
-    static mergeKeymap = (keys) => {
-        return {
-            ArrParent:{
-                ...ArrParentPage.keymap.ArrParent,
-                ...keys.ArrParent
-            }
-        }
-    };
 
     static propTypes = {
         splitter: React.PropTypes.object.isRequired,
@@ -168,11 +145,6 @@ export default class ArrParentPage extends AbstractReactComponent {
         return arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
     }
 
-    // Pokud ma stranka klavesove zkratky, musi se tato metoda prekryt a vratit zkratky pro nazev ArrParent!!!
-    getChildContext() {
-        return {shortcuts: new ShortcutsManager({ArrParent: {aaa: "123"}})}
-    }
-
     /**
      * Sestavení Ribbonu. Pro překrytí.
      * @return {Object} view
@@ -238,7 +210,7 @@ export default class ArrParentPage extends AbstractReactComponent {
         }
 
         return (
-            <Shortcuts name='ArrParent' handler={this.handleShortcuts}>
+            <Shortcuts name='ArrParent' handler={this.handleShortcuts} global>
                 <PageLayout
                     splitter={splitter}
                     _className='fa-page'

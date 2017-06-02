@@ -22,26 +22,11 @@ import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import classNames from 'classnames';
 import * as perms from 'actions/user/Permission.jsx';
-const ShortcutsManager = require('react-shortcuts');
-const Shortcuts = require('react-shortcuts/component')
+import {Shortcuts} from 'react-shortcuts';
 import {getSetFromIdsList} from "stores/app/utils.jsx";
 import DescItemTypeSpec from "./DescItemTypeSpec";
 
 import './AbstractDescItem.less'
-
-const keyModifier = Utils.getKeyModifier()
-
-const keymap = {
-    DescItemType: {
-        deleteDescItemType: keyModifier + 'y',
-    },
-    DescItem: {
-        addDescItem: keyModifier + 'i',
-        deleteDescItem: keyModifier + 'd',
-    },
-};
-
-const shortcutManager = new ShortcutsManager(keymap);
 
 const placeholder = document.createElement("div");
 placeholder.className = "placeholder";
@@ -128,10 +113,6 @@ class DescItemType extends AbstractReactComponent {
                 }
                 break
         }
-    }
-
-    getChildContext() {
-        return {shortcuts: shortcutManager};
     }
 
     focus(item) {
@@ -1029,9 +1010,5 @@ DescItemType.propTypes = {
     showNodeAddons: React.PropTypes.bool.isRequired,
     strictMode: React.PropTypes.bool.isRequired,
 }
-
-DescItemType.childContextTypes = {
-    shortcuts: React.PropTypes.object.isRequired
-};
 
 module.exports = connect(mapStateToProps, null, null, {withRef: true})(DescItemType);

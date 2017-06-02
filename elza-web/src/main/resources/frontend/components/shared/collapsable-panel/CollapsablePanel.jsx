@@ -2,19 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {i18n, NoFocusButton, Icon, AbstractReactComponent} from 'components'
 import {Panel, PanelGroup} from 'react-bootstrap';
-
-var keyDownHandlers = {
-    Enter: function(e) {
-        const {onSelect, onPin, eventKey} = this.props;
-        e.preventDefault();
-        e.stopPropagation();
-        if (!e.shiftKey) {
-            onSelect(eventKey);
-        } else {
-            onPin(eventKey);
-        }
-    }
-};
+import {Shortcuts} from 'react-shortcuts'
 
 class CollapsablePanel extends AbstractReactComponent {
     static PropTypes = {
@@ -25,23 +13,34 @@ class CollapsablePanel extends AbstractReactComponent {
         eventKey: React.PropTypes.any,
         header: React.PropTypes.element
     };
-
-    handleHeaderKeyDown = (e) => {
-        if (keyDownHandlers[e.key]) {
-            keyDownHandlers[e.key].call(this, e);
-        }
-    };
+    panelToggle = (e)=>{
+        const {onSelect, eventKey} = this.props;
+        onSelect(eventKey);
+    }
+    panelPin = (e)=>{
+        const {onPin, eventKey} = this.props;
+        onPin(eventKey);
+    }
+    actionMap = {
+        "PANEL_TOGGLE":this.panelToggle,
+        "PANEL_PIN":this.panelPin
+    }
+    handleShortcuts = (action,e)=>{
+        e.stopPropagation();
+        e.preventDefault();
+        this.actionMap[action](e);
+    }
 
     render() {
         const {children, header, isOpen, onSelect, onPin, eventKey, pinned, tabIndex, ...otherProps} = this.props;
-        return <PanelGroup activeKey={isOpen} onSelect={() => onSelect(eventKey)} accordion {...otherProps} className={isOpen ? 'open' : null}>
+        return <PanelGroup activeKey={isOpen} onSelect={() => this.panelToggle()} accordion {...otherProps} className={isOpen ? 'open' : null}>
             <Panel eventKey={true}
-                   header={<div tabIndex={tabIndex} onKeyDown={this.handleHeaderKeyDown}>
-                       {header}
-                       <NoFocusButton className={"btn-action pull-right" + (pinned ? " pinned" : " hover-button")} onClick={() => onPin(eventKey)}>
-                           <Icon glyph="fa-thumb-tack" />
-                       </NoFocusButton>
-                   </div>}>
+                header={<Shortcuts name="CollapsablePanel" handler={(action,e)=>this.handleShortcuts(action,e)} tabIndex="0">
+                    {header}
+                    <NoFocusButton className={"btn-action pull-right" + (pinned ? " pinned" : " hover-button")} onClick={() => panelPin()}>
+                        <Icon glyph="fa-thumb-tack" />
+                    </NoFocusButton>
+                </Shortcuts>}>
                 {children}
             </Panel>
         </PanelGroup>

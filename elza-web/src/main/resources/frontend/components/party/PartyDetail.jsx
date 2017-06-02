@@ -28,8 +28,7 @@ import {partyAdd, findPartyFetchIfNeeded, partyDetailFetchIfNeeded, PARTY_TYPE_C
 import {Utils} from 'components/index.jsx';
 import {objectById, indexById} from 'stores/app/utils.jsx';
 import {setInputFocus, dateTimeToString} from 'components/Utils.jsx'
-const ShortcutsManager = require('react-shortcuts');
-const Shortcuts = require('react-shortcuts/component');
+import {Shortcuts} from 'react-shortcuts';
 import {setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
@@ -37,13 +36,6 @@ import {initForm} from "actions/form/inlineForm.jsx"
 import {getMapFromList} from 'stores/app/utils.jsx'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
 import {PartyListItem} from 'components/index.jsx';
-
-const keyModifier = Utils.getKeyModifier();
-
-const keymap = {
-    PartyDetail: {}
-};
-const shortcutManager = new ShortcutsManager(keymap);
 
 import './PartyDetail.less';
 
@@ -81,10 +73,6 @@ class PartyDetail extends AbstractReactComponent {
         activeIndexes: {},
         visibilitySettings: {},
         visibilitySettingsValue: {}
-    };
-
-    static childContextTypes = {
-        shortcuts: React.PropTypes.object.isRequired
     };
 
     static fields = [
@@ -209,10 +197,6 @@ class PartyDetail extends AbstractReactComponent {
             }
         }
     };
-
-    getChildContext() {
-        return { shortcuts: shortcutManager };
-    }
 
     handleShortcuts = (action)  => {
         // Not defined shortcuts
