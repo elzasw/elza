@@ -35,7 +35,7 @@ const NodeActionsBar = class NodeActionsBar extends AbstractReactComponent {
         const {node, versionId} = this.props;
 
         var index = form.position - 1;
-        var subNodeId = node.allChildNodes[index].id;
+        var subNodeId = node.childNodes[index].id;
 
         this.dispatch(fundSelectSubNode(versionId, subNodeId, node));
     }
@@ -47,8 +47,8 @@ const NodeActionsBar = class NodeActionsBar extends AbstractReactComponent {
         const {node} = this.props;
 
         var count = 0;
-        if (node.allChildNodes) {
-            count = node.allChildNodes.length;
+        if (node.childNodes) {
+            count = node.childNodes.length;
         }
 
         this.dispatch(modalDialogShow(this, i18n('arr.fund.subNodes.findPosition'),

@@ -23,7 +23,6 @@ export function nodeInitState(node, prevNodesNode) {
         isNodeInfoFetching: false,
         nodeInfoFetched: false,
         nodeInfoDirty: false,
-        allChildNodes: [],
         childNodes: [],
         parentNodes: [],
         viewStartIndex: 0,
@@ -65,7 +64,6 @@ export function nodeInitState(node, prevNodesNode) {
         result.nodeInfoFetched = prevNodesNode.nodeInfoFetched;
         result.nodeInfoDirty = prevNodesNode.nodeInfoDirty;
         result.childNodes = prevNodesNode.childNodes;
-        result.allChildNodes = prevNodesNode.allChildNodes;
         result.parentNodes = prevNodesNode.parentNodes;
         result.selectedSubNodeId = prevNodesNode.selectedSubNodeId;
         result.filterText = prevNodesNode.filterText;
@@ -78,7 +76,6 @@ export function nodeInitState(node, prevNodesNode) {
         result.nodeInfoFetched = false;
         result.nodeInfoDirty = false;
         result.childNodes = [];
-        result.allChildNodes = [];
         result.parentNodes = [];
         result.selectedSubNodeId = null;
         result.filterText = '';
@@ -116,7 +113,6 @@ const nodeInitialState = {
     nodeInfoFetched: false,
     nodeInfoDirty: false,
     childNodes: [],
-    allChildNodes: [],
     parentNodes: [],
     developerScenarios: {
         isFetching: false,
@@ -180,7 +176,6 @@ export function node(state = nodeInitialState, action) {
                 nodeInfoFetched: false,
                 nodeInfoDirty: false,
                 childNodes: [],
-                allChildNodes: [],
                 parentNodes: [],
                 pageSize: _pageSize,
                 subNodeForm: subNodeForm(undefined, {type:''}),
@@ -232,26 +227,10 @@ export function node(state = nodeInitialState, action) {
                 ...state,
                 subNodeForm: subNodeForm(state.subNodeForm, action),    // změna pro formulář, pokud je potřeba
             }
-
             if (result.id === action.nodeId && result.version === action.nodeVersionId) { // změníme aktuální node
                 result.version = result.version + 1;
             }
-
-            // Změna pro child nodes, pokud je to pro ně
-            for (let a=0; a<result.allChildNodes.length; a++) {
-                if (result.allChildNodes[a].id === action.nodeId && result.allChildNodes[a].version === action.nodeVersionId) {   // změna tohoto node
-                    result.allChildNodes = [
-                        ...result.allChildNodes.slice(0, a),
-                        {
-                            ...result.allChildNodes[a],
-                            version: result.allChildNodes[a].version + 1
-                        },
-                        ...result.allChildNodes.slice(a + 1)
-                    ]
-                    break;
-                }
-            }
-            for (let a=0; a<result.allChildNodes.length; a++) {
+            for (let a=0; a<result.childNodes.length; a++) {
                 if (result.childNodes[a].id === action.nodeId && result.childNodes[a].version === action.nodeVersionId) {   // změna tohoto node
                     result.childNodes = [
                         ...result.childNodes.slice(0, a),
@@ -264,7 +243,6 @@ export function node(state = nodeInitialState, action) {
                     break;
                 }
             }
-
             return consolidateState(state, result);
         case types.CHANGE_NODES:
         case types.CHANGE_FUND_RECORD:
@@ -283,7 +261,7 @@ export function node(state = nodeInitialState, action) {
             }
             return consolidateState(state, result);
         case types.FUND_FUND_SUBNODES_NEXT:
-            if ((state.viewStartIndex + state.pageSize/2) < state.allChildNodes.length) {
+            if ((state.viewStartIndex + state.pageSize/2) < state.childNodes.length) {
                 return {
                     ...state,
                     viewStartIndex: state.viewStartIndex + state.pageSize/2
@@ -301,7 +279,7 @@ export function node(state = nodeInitialState, action) {
                 return state;
             }
         case types.FUND_FUND_SUBNODES_NEXT_PAGE:
-            if ((state.viewStartIndex + state.pageSize) < state.allChildNodes.length) {
+            if ((state.viewStartIndex + state.pageSize) < state.childNodes.length) {
                 return {
                     ...state,
                     viewStartIndex: state.viewStartIndex + state.pageSize
@@ -327,7 +305,7 @@ export function node(state = nodeInitialState, action) {
             if (state.filterText === '') {
                 var result = {
                     ...state,
-                    childNodes: [...state.allChildNodes],
+                    nodeInfoDirty: true,
                     searchedIds: {},
                     viewStartIndex: 0
                 }
@@ -341,7 +319,7 @@ export function node(state = nodeInitialState, action) {
             })
 
             var childNodes = [];
-            state.allChildNodes.forEach(n => {
+            state.childNodes.forEach(n => {
                 if (searchedIds[n.id]) {
                     childNodes.push(n);
                 }
@@ -367,7 +345,6 @@ export function node(state = nodeInitialState, action) {
                 nodeInfoFetched: true,
                 nodeInfoDirty: false,
                 childNodes: action.childNodes,
-                allChildNodes: action.childNodes,
                 parentNodes: action.parentNodes,
                 lastUpdated: action.receivedAt
             }
@@ -392,7 +369,7 @@ export function node(state = nodeInitialState, action) {
             if (action.subNodeId !== null && indexById(state.childNodes, action.subNodeId) === null) {
                 result.filterText = ''
                 result.searchedIds = {}
-                result.childNodes = [...state.allChildNodes]
+                result.childNodes = [...state.childNodes]
                 result.viewStartIndex = 0;
             }
 
@@ -429,38 +406,36 @@ export function node(state = nodeInitialState, action) {
                      * direction - BEFORE/AFTER - před/za
                      * newNode - Node objekt
                      */
-                    var nodeIndex = indexById(state.allChildNodes, action.indexNode.id);
+                    var nodeIndex = indexById(state.childNodes, action.indexNode.id);
                     if (nodeIndex != null) {
                         switch (action.direction) {
                             case "AFTER":
                             case "BEFORE":
                                 nodeIndex = action.direction == "BEFORE" ? nodeIndex : nodeIndex + 1;
 
-                                var allChildNodes = [
-                                    ...state.allChildNodes.slice(0, nodeIndex),
+                                var childNodes = [
+                                    ...state.childNodes.slice(0, nodeIndex),
                                     nodeInitState(action.newNode),
-                                    ...state.allChildNodes.slice(nodeIndex)
+                                    ...state.childNodes.slice(nodeIndex)
                                 ]
 
                                 return {
                                     ...state,
                                     version: action.parentNode.version,
-                                    allChildNodes: allChildNodes,
-                                    childNodes: [...allChildNodes],
+                                    childNodes: [...childNodes],
                                     filterText: '',
                                     searchedIds: {}
                                 };
                             case "CHILD":
-                                var allChildNodes = [
-                                    ...state.allChildNodes,
+                                var childNodes = [
+                                    ...state.childNodes,
                                     nodeInitState(action.newNode)
                                 ]
 
                                 return {
                                     ...state,
                                     version: action.parentNode.version,
-                                    allChildNodes: allChildNodes,
-                                    childNodes: [...allChildNodes],
+                                    childNodes: [...childNodes],
                                     filterText: '',
                                     searchedIds: {}
                                 };
@@ -533,14 +508,6 @@ export function node(state = nodeInitialState, action) {
 
             result.subNodeForm = subNodeForm(result.subNodeForm, action);
             result.subNodeFormCache = subNodeFormCache(result.subNodeFormCache, action);
-
-            let allChildNodes = [];
-            result.allChildNodes.forEach((node) => {
-                if (action.nodeIds.indexOf(node.id) < 0) {
-                    allChildNodes.push(node);
-                }
-            });
-            result.allChildNodes = allChildNodes;
 
             let childNodes = [];
             result.childNodes.forEach((node) => {

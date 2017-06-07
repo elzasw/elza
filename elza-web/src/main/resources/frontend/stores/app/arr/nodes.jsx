@@ -270,6 +270,17 @@ export default function nodes(state = nodesInitialState, action) {
                 return {...state, nodes}
             }
             return state;
+        case types.CHANGE_DELETE_LEVEL:
+            var changed = false;
+            var nodes = [...state.nodes];
+            for (let i = 0; i < nodes.length; i++) {
+                const node = nodes[i];
+                if (node.id == action.nodeId || node.id == action.parentNodeId) {
+                    node.nodeInfoDirty = true;
+                    break;
+                }
+            }
+            return {...state, nodes};
         case types.CHANGE_FUND_RECORD:
             var index = indexById(state.nodes, action.nodeId, 'selectedSubNodeId');
             if (index !== null) {
