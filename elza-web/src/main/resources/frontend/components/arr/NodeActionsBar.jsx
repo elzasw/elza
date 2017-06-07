@@ -17,7 +17,6 @@ import {Icon, AbstractReactComponent, i18n, Loading, AddNodeCross, Search, GoToP
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {fundSelectSubNode} from 'actions/arr/nodes.jsx';
 
-require ('./NodePanel.less');
 require ('./NodeActionsBar.less');
 
 const NodeActionsBar = class NodeActionsBar extends AbstractReactComponent {
@@ -62,7 +61,7 @@ const NodeActionsBar = class NodeActionsBar extends AbstractReactComponent {
       var selectedSubNodeNumber = selectedSubNodeIndex + 1; // pořadí vybraného záznamu v akordeonu
 
       return(
-        <div key='actions' className='actions-container'>
+        <div key='actions' className='node-actions-bar'>
             <div key='actions' className='actions'>
                 <AddNodeCross node={node} selectedSubNodeIndex={selectedSubNodeIndex} versionId={versionId} userDetail={userDetail} fundId={fundId} closed={closed}/>
                 <div className="button-wrap">
