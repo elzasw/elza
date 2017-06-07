@@ -71,10 +71,11 @@ const NodeActionsBar = class NodeActionsBar extends AbstractReactComponent {
                             tabIndex={-1}
                             ref='search'
                             className='search-input'
-                            placeholder={i18n('search.input.search')}
+                            placeholder={i18n('search.input.filter')}
                             value={node.filterText}
                             onClear={() => {this.dispatch(fundNodeSubNodeFulltextSearch(''))}}
                             onSearch={(value) => {this.dispatch(fundNodeSubNodeFulltextSearch(value))}}
+                            filter
                         />
                     </div>
                     <div className="right-side">

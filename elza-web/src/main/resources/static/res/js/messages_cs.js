@@ -177,6 +177,7 @@ var messages = {
     "exception.usr.PASSWORD_NOT_MATCH": "Původní heslo se neshoduje",
 
     "search.input.search": "Vyhledat...",
+    "search.input.filter": "Filtrovat...",
     "search.not.found": "nenalezeno",
     "search.found": "({0})",
     "search.found.more": "({0}/{1})",

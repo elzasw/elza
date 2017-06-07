@@ -74,7 +74,7 @@ var Search = class Search extends React.Component {
     }
 
     render() {                          // metoda pro renderovani obsahu komponenty
-        const {textAreaInput, tabIndex, placeholder, extendedSearch, onClickExtendedSearch, extendedReadOnly} = this.props;
+        const {textAreaInput, tabIndex, placeholder, extendedSearch, onClickExtendedSearch, extendedReadOnly, filter} = this.props;
 
         const readOnly = extendedSearch && extendedReadOnly;
 
@@ -92,6 +92,8 @@ var Search = class Search extends React.Component {
         }
         var searchLabel = i18n('search.action.search');
 
+        var searchIcon = !filter ? <Icon glyph='fa-search'/> : <Icon glyph='fa-filter'/>; // Pokud je v props příznak filter změní se ikona
+
         var actions = []
 
         if (extendedSearch) {
@@ -99,7 +101,7 @@ var Search = class Search extends React.Component {
         }
 
         if (!readOnly) {
-            actions.push(<NoFocusButton key='handleSearch' className='search-button' onClick={this.handleSearch.bind(this, false, false)}><Icon glyph='fa-search'/></NoFocusButton>)
+            actions.push(<NoFocusButton key='handleSearch' className='search-button' onClick={this.handleSearch.bind(this, false, false)}>{searchIcon}</NoFocusButton>)
         }
 
         if (this.state.filterText) {
