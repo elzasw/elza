@@ -45,17 +45,26 @@ const NodeActionsBar = class NodeActionsBar extends AbstractReactComponent {
     handleFindPosition() {
         const {node} = this.props;
 
-        var count = 0;
-        if (node.childNodes) {
-            count = node.childNodes.length;
-        }
-
-        this.dispatch(modalDialogShow(this, i18n('arr.fund.subNodes.findPosition'),
-                        <GoToPositionForm onSubmitForm={this.handleFindPositionSubmit} maxPosition={count} />
+        if(!this.isFilterUsed()){ // Pokud je aktivní filtr je goto zakázáno
+            var count = 0;
+            if (node.childNodes) {
+                count = node.childNodes.length;
+            }
+            this.dispatch(modalDialogShow(this, i18n('arr.fund.subNodes.findPosition'),
+                    <GoToPositionForm onSubmitForm={this.handleFindPositionSubmit} maxPosition={count} />
                 )
-        )
+            )
+        }
     }
-
+    /**
+     * Akce kontrolující zda je na uzly použit filtr
+     * @return {bool} nodesFiltered
+     */
+    isFilterUsed(){
+        const {node} = this.props;
+        var nodesFiltered = node.filterText ? true : false;
+        return nodesFiltered;
+    }
     render() {
       const {node, selectedSubNodeIndex, versionId, userDetail, fundId, closed} = this.props;
       var selectedSubNodeNumber = selectedSubNodeIndex + 1; // pořadí vybraného záznamu v akordeonu
@@ -84,6 +93,7 @@ const NodeActionsBar = class NodeActionsBar extends AbstractReactComponent {
                         <div
                           className='btn btn-default'
                           onClick={this.handleFindPosition}
+                          disabled={this.isFilterUsed()}
                           title={i18n('arr.fund.subNodes.findPosition')}
                         >
                             <Icon glyph="fa-hand-o-down" />
