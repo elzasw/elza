@@ -87,12 +87,15 @@ export function nodeInitState(node, prevNodesNode) {
 }
 
 function getViewStartIndex(state, selectedId) {
-    const index = indexById(state.childNodes, selectedId);
+    const {pageSize, viewStartIndex, childNodes} = state;
+    const index = indexById(childNodes, selectedId);
     if (index !== null) {   // null může být, pokud nejsou data seznamu položek accordionu (childNodes) ještě načtena
-        if (index < state.viewStartIndex || index >= state.viewStartIndex + state.pageSize) {
-            let newIndex = state.pageSize * Math.floor(index / state.pageSize);
-            // Chceme posunout o půlku stránky méně, aby nebyla položka sama na začátku
-            newIndex -= Math.floor(_pageSize / 2);
+        if (index < viewStartIndex || index >= viewStartIndex + pageSize) {
+            let newIndex = index - Math.floor(pageSize / 2);
+            let lastPageIndex = childNodes.length - pageSize;
+            if(newIndex > lastPageIndex){
+                newIndex = lastPageIndex;
+            }
             return Math.max(newIndex, 0)
         }
     }
