@@ -34,30 +34,38 @@ var DescItemText = class DescItemText extends AbstractReactComponent {
         }
 
         let cls = [];
-        if (cal) {
-            cls.push("calculable");
+        var textareaProps = {
+            key: "val",
+            disabled: locked,
+            defaultValue: ""
         }
+
+        if(cal){
+            cls.push("calculable");
+
+            textareaProps.key = "calc";
+            textareaProps.disabled = true;
+            textareaProps.onBlur = null;
+            textareaProps.onFocus = null;
+            textareaProps.defaultValue = i18n("subNodeForm.descItemType.calculable");
+            if(value){
+                textareaProps.value = value;
+            }
+        } else {
+            textareaProps.ref = "focusEl";
+            textareaProps.onChange = (e) => !cal && this.props.onChange(e.target.value);
+            textareaProps.value = value;
+        }
+
+
 
         return (
             <div className='desc-item-value'>
                 <ItemTooltipWrapper tooltipTitle="dataType.text.format">
-                    {cal ? <textarea
-                            {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
-                            key="calc"
-                            defaultValue={i18n("subNodeForm.descItemType.calculable")}
-                            disabled={true}
-                            onBlur={null}
-                            onFocus={null}
-                        /> :
                     <textarea
                         {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
-                        key="val"
-                        ref='focusEl'
-                        disabled={locked}
-                        defaultValue={''}
-                        value={value}
-                        onChange={(e) => !cal && this.props.onChange(e.target.value)}
-                    />}
+                        {...textareaProps}
+                    />
                 </ItemTooltipWrapper>
             </div>
         )
