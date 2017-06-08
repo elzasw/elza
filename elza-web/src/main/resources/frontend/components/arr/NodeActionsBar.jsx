@@ -17,7 +17,6 @@ import {Icon, AbstractReactComponent, i18n, Loading, AddNodeCross, Search, GoToP
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {fundSelectSubNode} from 'actions/arr/nodes.jsx';
 
-require ('./NodePanel.less');
 require ('./NodeActionsBar.less');
 
 const NodeActionsBar = class NodeActionsBar extends AbstractReactComponent {
@@ -35,7 +34,7 @@ const NodeActionsBar = class NodeActionsBar extends AbstractReactComponent {
         const {node, versionId} = this.props;
 
         var index = form.position - 1;
-        var subNodeId = node.allChildNodes[index].id;
+        var subNodeId = node.childNodes[index].id;
 
         this.dispatch(fundSelectSubNode(versionId, subNodeId, node));
     }
@@ -46,23 +45,34 @@ const NodeActionsBar = class NodeActionsBar extends AbstractReactComponent {
     handleFindPosition() {
         const {node} = this.props;
 
-        var count = 0;
-        if (node.allChildNodes) {
-            count = node.allChildNodes.length;
-        }
-
-        this.dispatch(modalDialogShow(this, i18n('arr.fund.subNodes.findPosition'),
-                        <GoToPositionForm onSubmitForm={this.handleFindPositionSubmit} maxPosition={count} />
+        if(!this.isFilterUsed()){ // Pokud je aktivní filtr je goto zakázáno
+            var count = 0;
+            if (node.childNodes) {
+                count = node.childNodes.length;
+            }
+            this.dispatch(modalDialogShow(this, i18n('arr.fund.subNodes.findPosition'),
+                    <GoToPositionForm onSubmitForm={this.handleFindPositionSubmit} maxPosition={count} />
                 )
-        )
+            )
+        }
     }
-
+    /**
+     * Akce kontrolující zda je na uzly použit filtr
+     * @return {bool} nodesFiltered
+     */
+    isFilterUsed(){
+        const {node} = this.props;
+        var nodesFiltered = node.filterText ? true : false;
+        return nodesFiltered;
+    }
     render() {
       const {node, selectedSubNodeIndex, versionId, userDetail, fundId, closed} = this.props;
       var selectedSubNodeNumber = selectedSubNodeIndex + 1; // pořadí vybraného záznamu v akordeonu
+      var gotoTitle = this.isFilterUsed() ? i18n('arr.fund.subNodes.findPosition.filterActive') : i18n('arr.fund.subNodes.findPosition')
+
 
       return(
-        <div key='actions' className='actions-container'>
+        <div key='actions' className='node-actions-bar'>
             <div key='actions' className='actions'>
                 <AddNodeCross node={node} selectedSubNodeIndex={selectedSubNodeIndex} versionId={versionId} userDetail={userDetail} fundId={fundId} closed={closed}/>
                 <div className="button-wrap">
@@ -71,10 +81,11 @@ const NodeActionsBar = class NodeActionsBar extends AbstractReactComponent {
                             tabIndex={-1}
                             ref='search'
                             className='search-input'
-                            placeholder={i18n('search.input.search')}
+                            placeholder={i18n('search.input.filter')}
                             value={node.filterText}
                             onClear={() => {this.dispatch(fundNodeSubNodeFulltextSearch(''))}}
                             onSearch={(value) => {this.dispatch(fundNodeSubNodeFulltextSearch(value))}}
+                            filter
                         />
                     </div>
                     <div className="right-side">
@@ -84,7 +95,8 @@ const NodeActionsBar = class NodeActionsBar extends AbstractReactComponent {
                         <div
                           className='btn btn-default'
                           onClick={this.handleFindPosition}
-                          title={i18n('arr.fund.subNodes.findPosition')}
+                          disabled={this.isFilterUsed()}
+                          title={gotoTitle}
                         >
                             <Icon glyph="fa-hand-o-down" />
                         </div>
@@ -92,6 +104,7 @@ const NodeActionsBar = class NodeActionsBar extends AbstractReactComponent {
                           className='btn btn-default'
                           disabled={node.viewStartIndex == 0}
                           onClick={()=>this.dispatch(fundSubNodesPrevPage(versionId, node.id, node.routingKey))}
+                          title={i18n('arr.fund.subNodes.prevPage',node.pageSize)}
                         >
                             <Icon glyph="fa-backward" />
                         </div>
@@ -99,6 +112,7 @@ const NodeActionsBar = class NodeActionsBar extends AbstractReactComponent {
                           className='btn btn-default'
                           disabled={node.viewStartIndex + node.pageSize >= node.childNodes.length}
                           onClick={()=>this.dispatch(fundSubNodesNextPage(versionId, node.id, node.routingKey))}
+                          title={i18n('arr.fund.subNodes.nextPage',node.pageSize)}
                         >
                             <Icon glyph="fa-forward" />
                         </div>

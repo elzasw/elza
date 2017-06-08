@@ -90,7 +90,7 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
     handleShowHistory = () => {
         const {versionId, fund: {nodes}} = this.props;
         const node = nodes.nodes[nodes.activeIndex];
-        const nodeObj = getMapFromList(node.allChildNodes)[node.selectedSubNodeId];
+        const nodeObj = getMapFromList(node.childNodes)[node.selectedSubNodeId];
         const form = <ArrHistoryForm versionId={versionId} node={nodeObj} onDeleteChanges={this.handleDeleteChanges} />
         this.dispatch(modalDialogShow(this, i18n('arr.history.title'), form, "dialog-lg"));
     }

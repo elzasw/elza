@@ -453,7 +453,7 @@ class ArrPage extends ArrParentPage {
             var nodeIndex = activeFund.nodes.activeIndex;
             if (nodeIndex !== null) {
                 var activeNode = activeFund.nodes.nodes[nodeIndex];
-                const activeNodeObj = getMapFromList(activeNode.allChildNodes)[activeNode.selectedSubNodeId];
+                const activeNodeObj = getMapFromList(activeNode.childNodes)[activeNode.selectedSubNodeId];
 
                 if (activeNode.selectedSubNodeId !== null) {
                     itemActions.push(
