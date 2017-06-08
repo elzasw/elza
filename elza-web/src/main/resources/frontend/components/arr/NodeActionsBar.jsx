@@ -68,6 +68,8 @@ const NodeActionsBar = class NodeActionsBar extends AbstractReactComponent {
     render() {
       const {node, selectedSubNodeIndex, versionId, userDetail, fundId, closed} = this.props;
       var selectedSubNodeNumber = selectedSubNodeIndex + 1; // pořadí vybraného záznamu v akordeonu
+      var gotoTitle = this.isFilterUsed() ? i18n('arr.fund.subNodes.findPosition.filterActive') : i18n('arr.fund.subNodes.findPosition')
+
 
       return(
         <div key='actions' className='node-actions-bar'>
@@ -94,7 +96,7 @@ const NodeActionsBar = class NodeActionsBar extends AbstractReactComponent {
                           className='btn btn-default'
                           onClick={this.handleFindPosition}
                           disabled={this.isFilterUsed()}
-                          title={i18n('arr.fund.subNodes.findPosition')}
+                          title={gotoTitle}
                         >
                             <Icon glyph="fa-hand-o-down" />
                         </div>
@@ -102,6 +104,7 @@ const NodeActionsBar = class NodeActionsBar extends AbstractReactComponent {
                           className='btn btn-default'
                           disabled={node.viewStartIndex == 0}
                           onClick={()=>this.dispatch(fundSubNodesPrevPage(versionId, node.id, node.routingKey))}
+                          title={i18n('arr.fund.subNodes.prevPage',node.pageSize)}
                         >
                             <Icon glyph="fa-backward" />
                         </div>
@@ -109,6 +112,7 @@ const NodeActionsBar = class NodeActionsBar extends AbstractReactComponent {
                           className='btn btn-default'
                           disabled={node.viewStartIndex + node.pageSize >= node.childNodes.length}
                           onClick={()=>this.dispatch(fundSubNodesNextPage(versionId, node.id, node.routingKey))}
+                          title={i18n('arr.fund.subNodes.nextPage',node.pageSize)}
                         >
                             <Icon glyph="fa-forward" />
                         </div>

@@ -611,9 +611,10 @@ var messages = {
     "arr.daos.files.title.unitOfMeasure.IN" : "in",
     "arr.daos.files.title.unitOfMeasure.MM" : "mm",
 
-    "arr.fund.subNodes.prevPage": "Předchozí stránka",
-    "arr.fund.subNodes.nextPage": "Další stránka",
+    "arr.fund.subNodes.prevPage": "Skok o {0} záznamů vzad",
+    "arr.fund.subNodes.nextPage": "Skok o {0} záznamů vpřed",
     "arr.fund.subNodes.findPosition": "Přejít na JP podle pořadového čísla",
+    "arr.fund.subNodes.findPosition.filterActive": "Skok na jednotku popisu není možný, pokud je aktivní filtr",
     "arr.fund.subNodes.findPositionNumber": "Přejít na JP číslo (celkem {0})",
     "arr.fund.subNodes.findPositionNumber.error.required": "Pozice JP musí být vyplněna",
     "arr.fund.subNodes.findPositionNumber.error.type": "Pozice JP musí být vyplněna celým číslem",
