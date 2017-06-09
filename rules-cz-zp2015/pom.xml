@@ -3,7 +3,7 @@
     <parent>
         <artifactId>elza</artifactId>
         <groupId>cz.tacr.elza</groupId>
-        <version>0.12.9</version>
+        <version>0.12.10-SNAPSHOT</version>
     </parent>
     <artifactId>rules-cz-zp2015</artifactId>
     <name>Rules CZ ZP2015</name>
