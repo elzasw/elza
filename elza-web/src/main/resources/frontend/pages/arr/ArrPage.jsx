@@ -406,15 +406,6 @@ class ArrPage extends ArrParentPage {
 
         var itemActions = [];
 
-        if (activeInfo.activeFund && !activeInfo.activeFund.closed) {
-            altActions.push(
-                <Button key="fas" onClick={()=>{}}><Icon glyph="fa-cogs"/>
-                    <div><span className="btnText">{i18n('ribbon.action.arr.fund.fas')}</span></div>
-                </Button>
-            )
-        }
-
-
         altActions.push(
             <Button active={this.props.arrRegion.showRegisterJp} onClick={this.handleRegisterJp} key="toggle-record-jp">
                 <Icon glyph="fa-th-list"/>
@@ -453,7 +444,7 @@ class ArrPage extends ArrParentPage {
             var nodeIndex = activeFund.nodes.activeIndex;
             if (nodeIndex !== null) {
                 var activeNode = activeFund.nodes.nodes[nodeIndex];
-                const activeNodeObj = getMapFromList(activeNode.allChildNodes)[activeNode.selectedSubNodeId];
+                const activeNodeObj = getMapFromList(activeNode.childNodes)[activeNode.selectedSubNodeId];
 
                 if (activeNode.selectedSubNodeId !== null) {
                     itemActions.push(

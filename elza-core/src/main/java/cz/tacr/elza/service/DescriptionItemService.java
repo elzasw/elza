@@ -86,10 +86,8 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 
 
 /**
- * Serviska pro správu hodnot atributů.
+ * Description Item management
  *
- * @author Martin Šlapa
- * @since 13. 1. 2016
  */
 @Service
 public class DescriptionItemService {
@@ -558,6 +556,7 @@ public class DescriptionItemService {
     /**
      * Smaže hodnotu atributu.
      *
+     * Funkce současně posílá notifikaci přes WS
      * @param descItem  hodnota atributu
      * @param version   verze archivní pomůcky
      * @param change    změna operace
@@ -586,11 +585,13 @@ public class DescriptionItemService {
         }
 
         descItem.setDeleteChange(change);
+        
+        ArrDescItem retDescItem = descItemRepository.save(descItem);
 
         // sockety
-        publishChangeDescItem(version, descItem);
+        publishChangeDescItem(version, retDescItem);
 
-        return descItemRepository.save(descItem);
+        return retDescItem;
     }
 
     /**

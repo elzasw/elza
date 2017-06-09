@@ -4,6 +4,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
  * @author Pavel Stánek [pavel.stanek@marbes.cz]
  */
 @Controller
+@PropertySource(value = "classpath:/META-INF/maven/cz.tacr.elza/elza-core/pom.properties", ignoreResourceNotFound = true)
 public class ElzaWebController {
 
     /** Logger. */
@@ -37,6 +39,14 @@ public class ElzaWebController {
         return allowDefaultUser;
     }
 
+    @Value("${version}")
+    private String appVersion;
+
+    @ModelAttribute("appVersion")
+    public String getAppVersion(){
+    	return appVersion;
+    }
+    
     private void initDefaults(final HttpServletRequest request, final Model model) {
         model.addAttribute("contextPath", request.getContextPath());
     }

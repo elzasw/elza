@@ -789,9 +789,9 @@ return true
             // Zjisštění, zda pro daný node existuje v accordion předchozí záznam (který ale není vyfiltrovaný), ze kterého je možné přebírat hodnoty atirbutu pro akci okamžité kopírování
             var descItemCopyFromPrevEnabled = false
             var i1 = indexById(node.childNodes, node.selectedSubNodeId)
-            var i2 = indexById(node.allChildNodes, node.selectedSubNodeId)
+            var i2 = indexById(node.childNodes, node.selectedSubNodeId)
             if (i1 !== null && i2 !== null && i2 > 0 && i1 > 0) {   // před danám nodem existuje nějaký záznam a v případě filtrování existuje před daným nodem také nějaký záznam
-                if (node.childNodes[i1 - 1].id == node.allChildNodes[i2 - 1].id) {  // jedná se o stejné záznamy, můžeme zobrazit akci kopírování
+                if (node.childNodes[i1 - 1].id == node.childNodes[i2 - 1].id) {  // jedná se o stejné záznamy, můžeme zobrazit akci kopírování
                     descItemCopyFromPrevEnabled = true
                 }
             }

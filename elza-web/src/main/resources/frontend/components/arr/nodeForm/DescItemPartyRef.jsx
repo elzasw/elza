@@ -88,7 +88,7 @@ export default connect((state, props) => {
         const {nodes} = fund;
         const node = nodes.nodes[nodes.activeIndex];
         const {selectedSubNodeId} = node;
-        const subNode = objectById(node.allChildNodes, selectedSubNodeId);
+        const subNode = objectById(node.childNodes, selectedSubNodeId);
         subNode && subNode.name && (nodeName = subNode.name);
     }
 
