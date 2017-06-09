@@ -168,7 +168,7 @@ class PartyPage extends AbstractReactComponent {
 
         const centerPanel = <PartyDetail />;
 
-        return <Shortcuts name='Party' handler={this.handleShortcuts}>
+        return <Shortcuts name='Party' handler={this.handleShortcuts} global>
             <PageLayout
                 splitter={splitter}
                 className='party-page'

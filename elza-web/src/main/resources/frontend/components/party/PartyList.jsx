@@ -108,9 +108,6 @@ class PartyList extends AbstractReactComponent {
         } else {
             list = <div className="listbox-container"><Loading /></div>;
         }
-        // Wrap
-        list = <div className="list">{list}</div>;
-
 
         return <div className="party-list">
             <div className="filter">

@@ -10,6 +10,7 @@ import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Resizer} from 'components/index.jsx';
 import {Button} from 'react-bootstrap';
 import {validateInt, normalizeInt} from 'components/validate.jsx';
+import {Shortcuts} from 'react-shortcuts';
 
 function getPagesCount(itemsCount, pageSize) {
     var pagesCount = Math.floor(itemsCount / pageSize)
@@ -28,7 +29,7 @@ var DataGridPagination = class DataGridPagination extends AbstractReactComponent
         super(props);
 
         this.bindMethods('handleCurrPageFocus', 'handleCurrPageBlur', 'handleCurrPageChange',
-            'handleCurrPageKeyDown', 'processCurrPageChange', 'renderButton');
+            'processCurrPageChange', 'renderButton');
 
         const pagesCount = getPagesCount(props.itemsCount, props.pageSize)
 
@@ -63,12 +64,6 @@ var DataGridPagination = class DataGridPagination extends AbstractReactComponent
             currPageValue: this.props.pageIndex + 1,
             focused: true,
         })
-    }
-
-    handleCurrPageKeyDown(e) {
-        if (e.keyCode === 13) {
-            this.processCurrPageChange(false)
-        }
     }
 
     processCurrPageChange(clearFocus) {
@@ -126,7 +121,15 @@ var DataGridPagination = class DataGridPagination extends AbstractReactComponent
         var cls = disabed ? 'disabled' : ''
         return <a className={cls} onClick={onClick}>{content}</a>
     }
-
+    actionMap ={
+        "CONFIRM": () => this.processCurrPageChange(false)
+    }
+    handleShortcuts = (action,e) => {
+        console.log(action);
+        e.stopPropagation();
+        e.preventDefault();
+        this.actionMap[action] && this.actionMap[action](e);
+    }
     render() {
         const {onSetPageIndex, onChangePageSize, itemsCount, pageSize, pageIndex} = this.props
         var pagesCount = getPagesCount(itemsCount, pageSize)
@@ -135,24 +138,25 @@ var DataGridPagination = class DataGridPagination extends AbstractReactComponent
 
         var cls = this.props.className ? 'pagination-container ' + this.props.className : 'pagination-container'
         return (
-            <nav className={cls} >
-                <ul className="pagination">
-                    <li key='start'>{this.renderButton(pageIndex === 0, () => pageIndex > 0 && onSetPageIndex(0), '«')}</li>
-                    <li key='prev'>{this.renderButton(pageIndex === 0, () => pageIndex > 0 && onSetPageIndex(pageIndex - 1), '‹')}</li>
-                    <li key='goTo' className='input'><span>
-                        <input 
-                            type='text' value={this.state.currPageValue}
-                            onChange={this.handleCurrPageChange}
-                            onFocus={this.handleCurrPageFocus}
-                            onBlur={this.handleCurrPageBlur}
-                            onKeyDown={this.handleCurrPageKeyDown}
-                        />
-                    </span></li>
-                    <li key='pageSize' className='input'><span><select value={pageSize} onChange={e => onChangePageSize(Number(e.target.value))}>{options}</select></span></li>
-                    <li key='next'>{this.renderButton(pageIndex + 1 >= pagesCount, () => pageIndex + 1 < pagesCount && onSetPageIndex(pageIndex + 1), '›')}</li>
-                    <li key='end'>{this.renderButton(pageIndex === pagesCount - 1, () => pageIndex < pagesCount - 1 && onSetPageIndex(pagesCount - 1), '»')}</li>
-                </ul>
-            </nav>
+            <Shortcuts name="DataGridPagination" handler={this.handleShortcuts}>
+                <nav className={cls} >
+                    <ul className="pagination">
+                        <li key='start'>{this.renderButton(pageIndex === 0, () => pageIndex > 0 && onSetPageIndex(0), '«')}</li>
+                        <li key='prev'>{this.renderButton(pageIndex === 0, () => pageIndex > 0 && onSetPageIndex(pageIndex - 1), '‹')}</li>
+                        <li key='goTo' className='input'><span>
+                            <input
+                                type='text' value={this.state.currPageValue}
+                                onChange={this.handleCurrPageChange}
+                                onFocus={this.handleCurrPageFocus}
+                                onBlur={this.handleCurrPageBlur}
+                            />
+                        </span></li>
+                        <li key='pageSize' className='input'><span><select value={pageSize} onChange={e => onChangePageSize(Number(e.target.value))}>{options}</select></span></li>
+                        <li key='next'>{this.renderButton(pageIndex + 1 >= pagesCount, () => pageIndex + 1 < pagesCount && onSetPageIndex(pageIndex + 1), '›')}</li>
+                        <li key='end'>{this.renderButton(pageIndex === pagesCount - 1, () => pageIndex < pagesCount - 1 && onSetPageIndex(pagesCount - 1), '»')}</li>
+                    </ul>
+                </nav>
+            </Shortcuts>
         )
     }
 }

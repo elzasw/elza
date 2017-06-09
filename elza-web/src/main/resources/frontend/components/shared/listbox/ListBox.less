@@ -1,47 +1,53 @@
 @import "~variables.less";
-
-.listbox-container {
+.listbox-wrapper {
     border: 1px solid #DDDDDD;
-    display: block;
-    .listbox-item {
-        cursor: pointer;
-        .node {
-            display: flex;
-            flex-direction: row;
-            flex-wrap: nowrap;
+    background-color: white;
+    display:block;
+    overflow: auto;
+    flex-grow:1;
 
-            span {
-                flex-shrink: 0;
+    .listbox-container {
+        display: block;
+        .listbox-item {
+            cursor: pointer;
+            .node {
+                display: flex;
+                flex-direction: row;
+                flex-wrap: nowrap;
 
-            }
-            .node-icon {
-                line-height: 1.4em;
-                width: 1em;
-            }
-            .reference-mark {
-                line-height: 2.2em;
-                padding: 0 3px;
-            }
-            .name {
-                flex-shrink: 1;
-                position:  relative;
-                width: 100%;
                 span {
-                    position: absolute;
+                    flex-shrink: 0;
+
+                }
+                .node-icon {
+                    line-height: 1.4em;
+                    width: 1em;
+                }
+                .reference-mark {
+                    line-height: 2.2em;
+                    padding: 0 3px;
+                }
+                .name {
+                    flex-shrink: 1;
+                    position:  relative;
                     width: 100%;
-                    white-space: nowrap;
-                    text-overflow: ellipsis;
-                    overflow: hidden;
+                    span {
+                        position: absolute;
+                        width: 100%;
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                        overflow: hidden;
+                    }
                 }
             }
-        }
-        &:hover {
-            background: @tree-node-label-active-bg
-        }
-        &.active {
-            background: @tree-node-active-bg;
             &:hover {
-                background: @tree-node-active-hover-bg;
+                background: @tree-node-label-active-bg
+            }
+            &.active {
+                background: @tree-node-active-bg;
+                &:hover {
+                    background: @tree-node-active-hover-bg;
+                }
             }
         }
     }

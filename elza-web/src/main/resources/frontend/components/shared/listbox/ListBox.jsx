@@ -21,7 +21,7 @@ var ListBox = class ListBox extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('handleKeyDown', 'ensureItemVisible', 'getNextSelectableItemIndex', 'getPrevSelectableItemIndex',
+        this.bindMethods('ensureItemVisible', 'getNextSelectableItemIndex', 'getPrevSelectableItemIndex',
             'dragStart', 'dragEnd', 'dragOver', 'handleClick', 'unFocus', 'focus', 'handleDoubleClick')
 
         if (props.multiselect) {
@@ -69,7 +69,7 @@ var ListBox = class ListBox extends AbstractReactComponent {
     }
     /**
      * Wrapper for item operations from props. Checks if the operation exists and that an item is selected.
-     * @param {function} operation -
+     * @param {function} operation
      */
     selectedItemOperation = (operation)=>{
         const {items} = this.props;
@@ -108,6 +108,7 @@ var ListBox = class ListBox extends AbstractReactComponent {
     handleShortcuts = (action, e)=>{
         e.stopPropagation();
         e.preventDefault();
+        console.log(action)
         this.actionMap[action](e);
     }
     componentWillReceiveProps(nextProps) {
@@ -264,17 +265,19 @@ var ListBox = class ListBox extends AbstractReactComponent {
         const {items, canSelectItem} = this.props;
         var isDecrementing = step < 0;
         if(index || index === 0){
-            while (step != 0) {
+            while (step) {
                 var i = index + step;
-                while (i >= 0 || i < items.length) {
+                while (i >= 0 && i < items.length) {
+                    console.log(i);
                     if (canSelectItem(items[i], i)) {
                         return i;
                     }
                     isDecrementing ? i-- : i++;
                 }
-                isDecrementing ? step-- : step++;
+                isDecrementing ? step++ : step--;
             }
-            return null;
+            console.log(index);
+            return index;
         } else {
             return 0;
         }
@@ -298,16 +301,12 @@ var ListBox = class ListBox extends AbstractReactComponent {
     }
 
     ensureItemVisible(index) {
+
         var itemNode = ReactDOM.findDOMNode(this.refs['item-' + index])
         if (itemNode !== null) {
             var containerNode = ReactDOM.findDOMNode(this.refs.container)
+            console.log("ensureItemVisible",itemNode,containerNode);
             scrollIntoView(itemNode, containerNode, { onlyScrollIfNeeded: true, alignWithTop:false })
-        }
-    }
-
-    handleKeyDown(event) {
-        if (keyDownHandlers[event.key]) {
-            keyDownHandlers[event.key].call(this, event)
         }
     }
 
@@ -329,7 +328,7 @@ var ListBox = class ListBox extends AbstractReactComponent {
     }
 
     focus() {
-        this.setState({}, () => {ReactDOM.findDOMNode(this.refs.container).focus()})
+        this.setState({}, () => {ReactDOM.findDOMNode(this.refs.wrapper).focus()})
     }
 
     render() {
@@ -337,10 +336,10 @@ var ListBox = class ListBox extends AbstractReactComponent {
         const {activeIndex, activeIndexes} = this.state;
 
         var cls = "listbox-container";
-        if (className) {
-            cls += " " + className;
+        var wrapperClass = "listbox-wrapper"
+        if (className){
+             wrapperClass += " " + className
         }
-
         var rows = items.map((item, index) => {
             const active = multiselect ? (activeIndexes[index]) : (index === activeIndex)
             var draggableProps = {}
@@ -367,8 +366,8 @@ var ListBox = class ListBox extends AbstractReactComponent {
         })
 
         return (
-            <Shortcuts name="ListBox" handler={this.handleShortcuts} tabIndex={0} className={cls}>
-                <div ref='container' onDragOver={this.dragOver}>
+            <Shortcuts ref="wrapper" name="ListBox" handler={this.handleShortcuts} tabIndex={"0"} className={wrapperClass}>
+                <div className={cls} ref='container' onDragOver={this.dragOver}>
                     {rows}
                 </div>
             </Shortcuts>

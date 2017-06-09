@@ -139,13 +139,13 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         if (canSetFocus()) {
             if (isFocusFor(focus, 'arr', 2, 'accordion') || (node.selectedSubNodeId === null && isFocusFor(focus, 'arr', 2))) {
                 this.setState({}, () => {
-                   ReactDOM.findDOMNode(this.refs.innerAccordionWrapper).focus()
+                   ReactDOM.findDOMNode(this.refs.content).focus()
                    focusWasSet()
                 })
             } else if (isFocusExactFor(focus, 'arr', 2)) {   // jen pokud není třeba focus na něco nižšího, např. prvek formuláře atp
                 // Voláne jen pokud formulář úspěšně focus nenastavil - např. pokud jsou všechna pole formuláře zamčena
                 this.setState({}, () => {
-                    ReactDOM.findDOMNode(this.refs.innerAccordionWrapper).focus()
+                    ReactDOM.findDOMNode(this.refs.content).focus()
                     focusWasSet()
                 })
             }
@@ -687,8 +687,8 @@ return true
             }
         }
         return (
-            <Shortcuts name='Accordion' key='content' className='content' ref='content' handler={this.handleShortcuts}>
-                <div tabIndex={0} className='inner-wrapper' ref="innerAccordionWrapper">
+            <Shortcuts name='Accordion' key='content' className='content' ref='content' handler={this.handleShortcuts} tabIndex={"0"} global>
+                <div  className='inner-wrapper' ref="innerAccordionWrapper">
                     <div className="menu-wrapper">
                         <NodeActionsBar node={node} selectedSubNodeIndex={focusItemIndex} versionId={versionId} userDetail={userDetail} fundId={fundId} closed={closed}/>
                     </div>

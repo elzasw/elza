@@ -20,11 +20,11 @@ require('./Layout.less');
 
 var keymap = {
     Main: {
-        home: ['alt+1','g h right'],  	//GOTO_HOME_PAGE
-        arr: ['alt+2','g a right'],       //GOTO_ARR_PAGE
-        registry: ['alt+3','g r right'],  //GOTO_REGISTRY_PAGE
-        party: ['alt+4','g p right'],     //GOTO_PARTY_PAGE
-        admin: ['alt+5','g n right up'],     //GOTO_ADMIN_PAGE
+        home: ['alt+1','g h'],  	//GOTO_HOME_PAGE
+        arr: ['alt+2','g a'],       //GOTO_ARR_PAGE
+        registry: ['alt+3','g r'],  //GOTO_REGISTRY_PAGE
+        party: ['alt+4','g p'],     //GOTO_PARTY_PAGE
+        admin: ['alt+5','g n'],     //GOTO_ADMIN_PAGE
     },
     Tree: {},
     Accordion: {
@@ -38,11 +38,11 @@ var keymap = {
     },
     NodePanel: {
         searchItem: keyModifier + 'f',      //SEARCH_ITEM
-        addDescItemType: [keyModifier + 'p',"n p"], //ADD_DESC_ITEM
-        addNodeAfter: [keyModifier + '+',"n j down"],    //ADD_NODE_AFTER
-        addNodeBefore: [keyModifier + '-',"n j up"],   //ADD_NODE_BEFORE
-        addNodeChild: [keyModifier + '*',"n j right"],    //ADD_NODE_CHILD
-        addNodeEnd: ['up up up up up left right down left']      //ADD_NODE_END
+        addDescItemType: [keyModifier + 'p',"n p enter"], //ADD_DESC_ITEM
+        addNodeAfter: [keyModifier + '+',"n j down enter"],    //ADD_NODE_AFTER
+        addNodeBefore: [keyModifier + '-',"n j up enter"],   //ADD_NODE_BEFORE
+        addNodeChild: [keyModifier + '*',"n j right enter"],    //ADD_NODE_CHILD
+        addNodeEnd: [keyModifier + '/','n j e enter']      //ADD_NODE_END
     },
     DescItemType: {
         deleteDescItemType: keyModifier + 'y',  //DELETE_DESC_ITEM
@@ -119,6 +119,38 @@ var keymap = {
         "ITEM_CHECK":"space",
         "ITEM_DELETE":"del",
         "ITEM_SELECT":"enter"
+    },
+    DataGrid:{
+        "MOVE_UP":"up",
+        "MOVE_DOWN":"down",
+        "MOVE_LEFT":"left",
+        "MOVE_RIGHT":"right",
+        "ITEM_EDIT":["enter","f2"],
+        "ITEM_ROW_CHECK":"space",
+        "ITEM_DELETE":"del",
+    },
+    LazyListBox:{
+        "MOVE_UP":"up",
+        "MOVE_DOWN":"down",
+        "MOVE_PAGE_UP":"pageup",
+        "MOVE_PAGE_DOWN":"pagedown",
+        "MOVE_TOP":"home",
+        "MOVE_END":"end",
+        "ITEM_DELETE":"del",
+        "ITEM_CHECK":"space",
+        "ITEM_SELECT":"enter"
+    },
+    DataGridPagination:{
+        "CONFIRM":"enter"
+    },
+    Autocomplete: {
+        "MOVE_UP": "up",
+        "MOVE_DOWN": "down",
+        "MOVE_TO_PARENT_OR_CLOSE": "left",
+        "MOVE_TO_CHILD_OR_OPEN": "right",
+        "SELECT_ITEM": "enter",
+        "OPEN_MENU": "alt+down",
+        "CLOSE_MENU": ["escape","alt+up"]
     }
 }
 const shortcutManager = new ShortcutManager(keymap)

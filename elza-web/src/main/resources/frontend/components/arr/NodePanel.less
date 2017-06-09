@@ -36,10 +36,10 @@
             margin-top: @parts-margin;
             height: @node-panel-content-height;
             flex-grow: 1;
+            border: 1px solid @node-panel-border;
 
             .inner-wrapper {
                 height: 100%;
-                border: 1px solid @node-panel-border;
 
                 display: flex;
                 flex-direction: column;
@@ -53,19 +53,19 @@
                     overflow-x: hidden;
                 }
 
-                &:focus {
-                    .content-wrapper {
-                        .accordion-item {
-                            &.focused {
-                                .accordion-header-container {
-                                    .accordion-header {
-                                        background: @accordion-header-bg-opened;
-                                    }
+
+                .content-wrapper {
+                    .accordion-item {
+                        &.focused {
+                            .accordion-header-container {
+                                .accordion-header {
+                                    background: @accordion-header-bg-opened;
                                 }
                             }
                         }
                     }
                 }
+
             }
 
             .accordion-item:first-child {
