@@ -3,6 +3,8 @@ import {indexById, findByRoutingKeyInGlobalState} from 'stores/app/utils.jsx'
 
 import * as types from 'actions/constants/ActionTypes.js';
 import {savingApiWrapper} from 'actions/global/status.jsx';
+import {increaseNodeVersion} from 'actions/arr/node.jsx';
+
 export function isSubNodeRegisterAction(action) {
     switch (action.type) {
         case types.FUND_SUB_NODE_REGISTER_REQUEST:
@@ -122,8 +124,9 @@ export function fundSubNodeRegisterValueDelete(versionId, nodeId, routingKey, in
     return (dispatch, getState) => {
         const subNodeRegister = getSubNodeRegister(getState(), versionId, routingKey);
         const register = subNodeRegister.data[index];
+        const node = subNodeRegister.node;
 
-
+        dispatch(increaseNodeVersion(versionId, nodeId, node.version));
         if (register.id !== null) {
             dispatch(fundSubNodeRegisterValueSaving(versionId, nodeId, routingKey, index));
             dispatch(fundSubNodeRegisterDelete(versionId, nodeId, {...register, node: subNodeRegister.node}, routingKey, index));
@@ -247,8 +250,10 @@ export function fundSubNodeRegisterValueBlur(versionId, nodeId, routingKey, inde
 
         const subNodeRegister = getSubNodeRegister(getState(), versionId, routingKey);
         const register = subNodeRegister.data[index];
+        const node = subNodeRegister.node;
         if (register && !register.hasError && register.touched) {
             dispatch(fundSubNodeRegisterValueSaving(versionId, nodeId, routingKey, index));
+            dispatch(increaseNodeVersion(versionId, nodeId, node.version));
 
             if (register.id === null) { // Jen pokud je ještě není vytvořená
                 dispatch(fundSubNodeRegisterCreate(versionId, nodeId, {...register, node: subNodeRegister.node}, routingKey, index));
