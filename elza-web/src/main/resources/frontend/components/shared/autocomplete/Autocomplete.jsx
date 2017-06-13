@@ -80,25 +80,6 @@ export default class Autocomplete extends AbstractReactComponent {
         return null;
     }
     /**
-     * Získání indexu další možné položky pro focus.
-     * @param index aktuální index
-     * @param loop pokud je true, focus na položkách cykluje
-     * @return další možná položka nebo index, pokud jiná není
-     */
-    getNextFocusableItem = (index, loop) => {
-        getRelativeSelectableItemIndex(index,1,loop);
-    }
-    /**
-     * Získání indexu předchozí možné položky pro focus.
-     * @param index aktuální index
-     * @param loop pokud je true, focus na položkách cykluje
-     * @return další možná položka nebo index, pokud jiná není
-     */
-    getPrevFocusableItem = (index, loop) => {
-        getRelativeSelectableItemIndex(index,-1,loop);
-    }
-
-    /**
      * Rozbalení nebo zabalení položky ve stromu.
      * @param node položka
      * @param expand true, pokud se má rozbalit
@@ -575,7 +556,149 @@ export default class Autocomplete extends AbstractReactComponent {
 
         return result
     };
-
+    /**
+     * Získá šířku jednotlivých okrajů elementu z css stylů
+     * @param {object} element
+     * @return {object}
+     */
+    getElementBorders = (element) => {
+        var elementStyle = getComputedStyle(element);
+        var borderLeft = parseInt(elementStyle.borderLeftWidth, 10);
+        var borderRight = parseInt(elementStyle.borderRightWidth, 10);
+        var borderTop = parseInt(elementStyle.borderRightWidth, 10);
+        var borderBottom = parseInt(elementStyle.borderRightWidth, 10);
+        return {
+            left: borderLeft,
+            right: borderRight,
+            top: borderTop,
+            bottom: borderBottom
+        }
+    }
+    /**
+     * Získá maximální a minimální rozměry elementu vůči origin elementu a okrajům obrazovky
+     * @param {object} node
+     * @param {object} origin
+     * @return {object}
+     */
+    getSizeConstraints = (node, origin) => {
+        const nodeStyle = getComputedStyle(node);
+        const originRect = origin.getBoundingClientRect();
+        const originOffset = this.getRectScreenOffset(originRect);
+        var maxHeight = originOffset.bottom < originOffset.top ? originOffset.top : originOffset.bottom;
+        var maxWidth = originOffset.right + originRect.width;
+        var minWidth = originRect.width;
+        var minHeight = 0;
+        //Pokud má obalující element našeptávače nastavenou maximální výšku nebo šířku, která je menší než maximální povolená hodnota, přiřadí se její hodnota
+        maxWidth = nodeStyle.maxWidth === 'none' || (parseInt(nodeStyle.maxWidth , 10) > maxWidth) ? maxWidth : parseInt(nodeStyle.maxWidth , 10);
+        maxHeight = nodeStyle.maxHeight === 'none' || (parseInt(nodeStyle.maxHeight , 10) > maxHeight) ? maxHeight : parseInt(nodeStyle.maxHeight , 10);
+        minWidth = nodeStyle.minWidth === 'none' || (parseInt(nodeStyle.minWidth , 10) < minWidth) ? minWidth : parseInt(nodeStyle.minWidth , 10);
+        minHeight = nodeStyle.minHeight === 'none' || (parseInt(nodeStyle.minHeight , 10) < minHeight) ? minHeight : parseInt(nodeStyle.minHeight , 10);
+        return {
+            max: {
+                width: maxWidth,
+                height: maxHeight
+            },
+            min: {
+                width: minWidth,
+                height: minHeight
+            }
+        };
+    }
+    /**
+     * Získá rozměry elementu vzhledem k velikostním omezením
+     * @param {object} element
+     * @param {object} constraints
+     * @return {object}
+     */
+    getConstrainedElementSize = (element, constraints) => {
+        var elementWidth, elementHeight, widthResize, heightResize, resize;
+        if (element.offsetWidth >= constraints.max.width){
+            elementWidth = constraints.max.width;
+            widthResize = true;
+        } else {
+            elementWidth = element.offsetWidth;
+        }
+        if (element.offsetHeight >= constraints.max.height){
+            elementHeight = constraints.max.height;
+            heightResize = true;
+        } else {
+            elementHeight = element.offsetHeight;
+        }
+        if(widthResize && heightResize){
+            resize = "WIDTH_HEIGHT";
+        } else if (widthResize){
+            resize = "WIDTH";
+        } else if (heightResize){
+            resize = "HEIGHT";
+        } else {
+            resize = "NORESIZE";
+        }
+        return {
+            width: elementWidth,
+            height: elementHeight,
+            resize: resize
+        };
+    }
+    /**
+     * Získá rozměry elementu spočítané s velikostí 'auto'
+     * @param {object} element
+     * @return {object}
+     */
+    getAutoElementSize = (element) => {
+        const height = $(element).css("height");
+        const width = $(element).css("width");
+        $(element).css({height: "auto",width: "auto"});
+        var elementWidth = element.clientWidth;
+        var elementHeight = element.clientHeight;
+        $(element).css({height: height,width: width});
+        console.log("origElSize: ",height,width,"autoElSize: ",elementHeight,elementWidth);
+        return {
+            width: elementWidth,
+            height: elementHeight
+        };
+    }
+    setContentSize = () => {
+        contentSize.width = contentSize.width <= minWidth ? (minWidth - scrollbarWidth - borderLR) : contentSize.width;
+        content.css({width: contentSize.width + 'px'});
+    }
+    /**
+     * Získá šířku scrollbaru
+     * @param {object} element
+     * @return {object}
+     */
+    getScrollbarWidth = () => {
+        const wrapperNode = ReactDOM.findDOMNode(this.refs.autocompleteContent);
+        const wrapper = $(wrapperNode);
+        wrapper.css({overflowY:'scroll', overflowX:'scroll'});
+        var scrollWidth = wrapperNode.offsetWidth - wrapperNode.clientWidth;
+        wrapper.css({overflowY:'visible', overflowX:'visible'});
+        return scrollWidth;
+    }
+    getRectScreenOffset = (nodeRect) => {
+        const screen = $(document);
+        return {
+            top: nodeRect.top,
+            bottom: screen.height() - nodeRect.bottom,
+            left: nodeRect.left,
+            right: screen.width() - nodeRect.right
+        };
+    }
+    /**
+     * Nastaví automatickou velikost elementu
+     * @param {object} element
+     */
+    resetElementSize = (element) => {
+        $(element).css({height: "auto",width: "auto"});
+    }
+    getWrapperStyle = (resizeType) => {
+        var wrapperStyle = {
+            "WIDTH_HEIGHT": {overflowX:"auto",overflowY:"scroll"},
+            "HEIGHT": {overflowY:"scroll"},
+            "WIDTH": {overflowX:"auto"},
+            "NORESIZE": {}
+        }
+        return wrapperStyle[resizeType];
+    }
     setMenuPositions() {
         if (!this.state.isOpen) {   // jen pokud je menu zobrazeno
             return;
@@ -585,16 +708,25 @@ export default class Autocomplete extends AbstractReactComponent {
         const containerNode = ReactDOM.findDOMNode(this.refs.menuParent);
         const wrapperNode = ReactDOM.findDOMNode(this.refs.autocompleteContent);
         const contentNode = ReactDOM.findDOMNode(this.refs.menu);
+
         const container = $(containerNode);
         const wrapper = $(wrapperNode);
         const content = $(contentNode);
-        console.log(containerNode,container);
-        //Resetování velikostí elementů
-        container.css({height: "auto",width: "auto"});
-        content.css({height: "auto",width: "auto",});
-        wrapper.css({height: "auto", width: "auto", overflowY:'visible', overflowX:'visible'});
 
-        var contentSize = {w:contentNode.clientWidth,h:contentNode.clientHeight}; //Zjistí velikost obsahu
+        //Resetování velikostí elementů
+        this.resetElementSize(containerNode);
+        this.resetElementSize(contentNode);
+        this.resetElementSize(wrapperNode);
+
+        wrapper.css({overflowY:'visible', overflowX:'visible'});
+
+        var contentSize = this.getAutoElementSize(contentNode); //Zjistí velikost obsahu
+
+        var containerBorders = this.getElementBorders(containerNode);
+        var containerStyle = getComputedStyle(containerNode);
+        var containerConstraints = this.getSizeConstraints(containerNode,originNode);
+        var containerSize = this.getConstrainedElementSize(containerNode,containerConstraints);
+        //console.log("RESIZE",containerSize.resize);
 
         const originRect = originNode.getBoundingClientRect();
         var originStyle = getComputedStyle(originNode);
@@ -602,83 +734,54 @@ export default class Autocomplete extends AbstractReactComponent {
         var marginLeft = parseInt(originStyle.marginLeft, 10);
 
         //Zjištění okrajů okna našeptávače
-        var containerStyle = getComputedStyle(containerNode);
-        var borderLeft = parseInt(containerStyle.borderLeftWidth, 10);
-        var borderRight = parseInt(containerStyle.borderRightWidth, 10);
-        var borderTop = parseInt(containerStyle.borderRightWidth, 10);
-        var borderBottom = parseInt(containerStyle.borderRightWidth, 10);
-        var borderLR = borderRight + borderLeft;
-        var borderTB = borderTop + borderBottom;
 
-        const screen = $(document);
+        var borderLR = containerBorders.right + containerBorders.left;
+        var borderTB = containerBorders.top + containerBorders.bottom;
 
         //Odsazení vstupního pole našeptávače
-        const originOffset = {top:originRect.top, bottom:screen.height() - originRect.bottom, left:originRect.left, right:screen.width() - originRect.right};
-
-        //Zjistí maximální/minimální šířku a výšku
-        var maxHeight = originOffset.bottom < originOffset.top ? originOffset.top : originOffset.bottom;
-        var maxWidth = originOffset.right + originRect.width;
-        //Pokud má obalující element našeptávače nastavenou maximální výšku nebo šířku, která je menší než maximální povolená hodnota, přiřadí se její hodnota
-        maxWidth = containerStyle.maxWidth === 'none' || (parseInt(containerStyle.maxWidth , 10) > maxWidth) ? maxWidth : parseInt(containerStyle.maxWidth , 10);
-        maxHeight = containerStyle.maxHeight === 'none' || (parseInt(containerStyle.maxHeight , 10) > maxHeight) ? maxHeight : parseInt(containerStyle.maxHeight , 10);
-        var minWidth = originRect.width;
-
-        //Definuje velikost okna našeptávače
-        var containerSize = {
-            w: containerNode.offsetWidth > maxWidth ? maxWidth : containerNode.offsetWidth,
-            h: containerNode.offsetHeight > maxHeight ? maxHeight : containerNode.offsetHeight
-        }
+        const originOffset = this.getRectScreenOffset(originRect);
 
         var heightString = 'auto';
         var widthString = 'auto';
         //Pokud je obsah větší než maximální výška/šířka zapne se scroll. OverflowX má 'auto' kvůli zalamování textu v řádku (proměnlivá šířka)
-        var overflowY = containerSize.h + borderTB >= maxHeight ? 'scroll' : 'visible';
-        var overflowX = containerSize.w + borderLR >= maxWidth ? 'auto' : 'visible';
+        //var overflowY = containerSize.height + borderTB >= containerConstraints.max.height ? 'scroll' : 'visible';
+        //var overflowX = containerSize.width + borderLR >= containerConstraints.max.width ? 'auto' : 'visible';
 
         //Získání šířky/výšky vertikálního a horizontánlního scrollbaru
-        wrapper.css({overflowY:'scroll', overflowX:'scroll'});
-        var xScrollWidth = wrapperNode.offsetHeight - wrapperNode.clientHeight;
-        var yScrollWidth = wrapperNode.offsetWidth - wrapperNode.clientWidth;
-        wrapper.css({overflowY:'visible', overflowX:'visible'});
-
-        if(containerSize.h >= maxHeight && containerSize.w >= maxWidth){ //Pokud se nevejde na obrazovku ani výškou ani šířkou
-            wrapper.css({overflowX:overflowX,overflowY:overflowY});
-            contentSize.w = maxWidth - yScrollWidth - borderLR;
-            heightString = maxHeight + 'px';
-            widthString = maxWidth + 'px';
-            xScrollWidth=0;
-        } else if(containerSize.h >= maxHeight){ //Pokud se na obrazovku nevejde pouze výškou
-            wrapper.css({overflowY:overflowY});
-            xScrollWidth=0;
-            heightString = maxHeight + 'px';
-        } else if(containerSize.w >= maxWidth){ //Pokud se na obrazovku nevejde pouze šířkou
-            wrapper.css({overflowX:overflowX});
-            contentSize.w = maxWidth - borderLR;
-            yScrollWidth=0;
-            widthString = maxWidth + 'px';
+        var scrollbarWidth = this.getScrollbarWidth();
+        var wrapperStyle = this.getWrapperStyle(containerSize.resize);
+        if(containerSize.resize === "WIDTH_HEIGHT"){ //Pokud se nevejde na obrazovku ani výškou ani šířkou
+            contentSize.width = containerConstraints.max.width - scrollbarWidth - borderLR;
+            heightString = containerConstraints.max.height + 'px';
+            widthString = containerConstraints.max.width + 'px';
+        } else if(containerSize.resize === "HEIGHT"){ //Pokud se na obrazovku nevejde pouze výškou
+            heightString = containerConstraints.max.height + 'px';
+        } else if(containerSize.resize === "WIDTH"){ //Pokud se na obrazovku nevejde pouze šířkou
+            contentSize.width = containerConstraints.max.width - borderLR;
+            scrollbarWidth=0;
+            widthString = containerConstraints.max.width + 'px';
         } else{ //Pokud se vejde na obrazovku
-            yScrollWidth=0;
-            xScrollWidth=0;
+            scrollbarWidth=0;
         }
         let x = originOffset.left;
         let y = originRect.bottom;
         if (originOffset.bottom < originOffset.top) { // nevejde se dolu, dáme ho nahoru
-            y = originRect.top - containerSize.h;
+            y = originRect.top - containerSize.height;
             container.css({bottom:originOffset.bottom + originRect.height + 'px'});
         } else {
             container.css({top: y + 'px'});
         }
-        contentSize.w = contentSize.w <= minWidth ? (minWidth - yScrollWidth - borderLR) : contentSize.w;
+        contentSize.width = contentSize.width <= containerConstraints.min.width ? (containerConstraints.min.width - scrollbarWidth - borderLR) : contentSize.width;
         //widthString = containerSize.w < minWidth ? minWidth+'px' : containerSize.w+'px';
 
-        content.css({width: contentSize.w+'px'});
-        wrapper.css({width: contentSize.w+yScrollWidth+ 'px'})
+        content.css({width: contentSize.width + 'px'});
+        wrapper.css({...wrapperStyle, width: contentSize.width + scrollbarWidth + 'px'})
         container.css({
             left: x + 'px',
             height: heightString,
             width: widthString,
-            maxWidth: maxWidth,
-            maxHeight: maxHeight,
+            maxWidth: containerConstraints.max.width,
+            maxHeight: containerConstraints.max.height,
             visibility:'visible'
         })
     }
@@ -901,146 +1004,134 @@ export default class Autocomplete extends AbstractReactComponent {
         this.focus();
     }
     selectorMoveToChildOrOpen = (e) => {
-        const {tree} = this.props;
-        if (tree) {
-            const {highlightedIndex} = this.state;
-
-            if (highlightedIndex != null) {
-                event.preventDefault(); // u stromu nechceme posouvat po inputu, pokud je highlightedIndex = má focus list s položkami a klávesy fungují na rozbalení a zabalení stromu
-                event.stopPropagation();
-            }
-
-            const {expandedIds} = this.state;
-            if (highlightedIndex !== null) {
-                const items = this.getFilteredItems();
-                const node = items[highlightedIndex];
-                const id = this.props.getItemId(node);
-                if (node.children && node.children.length > 0) {
-                    if (expandedIds[id]) {  // je rozbalený, přejdeme na potomka
-                        if (highlightedIndex + 1 < items.length) {
-                            // this._performAutoCompleteOnKeyUp = true;
-                            this.changeState({
-                                highlightedIndex: highlightedIndex + 1,
-                            })
-                        }
-                    } else {    // není rozbalený, rozbalíme
-                        this.expandNode(node, true)
+        const node = this.getHighlightedNode();
+        const items = this.getFilteredItems();
+        const {highlightedIndex, expandedIds} = this.state;
+        if(node){
+            if (node.children && node.children.length > 0) {
+                if (expandedIds[node.id]) {  // je rozbalený, přejdeme na potomka
+                    if (highlightedIndex + 1 < items.length) {
+                        // this._performAutoCompleteOnKeyUp = true;
+                        this.changeState({
+                            highlightedIndex: highlightedIndex + 1,
+                        })
                     }
+                } else {    // není rozbalený, rozbalíme
+                    this.expandNode(node, true)
                 }
             }
         }
     }
     selectorMoveToParentOrClose = (e) => {
-        const {tree} = this.props;
-        if (tree) {
-            const {highlightedIndex} = this.state;
-
-            if (highlightedIndex != null) {
-                event.preventDefault(); // u stromu nechceme posouvat po inputu, pokud je highlightedIndex = má focus list s položkami a klávesy fungují na rozbalení a zabalení stromu
-                event.stopPropagation();
-            }
-
-            const {expandedIds} = this.state;
-            if (highlightedIndex !== null) {
-                const items = this.getFilteredItems();
-                const node = items[highlightedIndex];
-                const id = this.props.getItemId(node);
-                if (node.children && node.children.length > 0 && expandedIds[id]) { // je rozbalený, zablíme
-                    this.expandNode(node, false)
-                } else {    // není rozbalený, přejmede na parenta
-                    const currDepth = this.state.itemsDepth[highlightedIndex];
-                    let index = highlightedIndex - 1;
-                    while (index >= 0 && this.state.itemsDepth[index] >= currDepth) {
-                        index--;
-                    }
-                    if (index >= 0) {
-                        this.changeState({
-                            highlightedIndex: index,
-                        })
-                    }
+        const node = this.getHighlightedNode();
+        const {itemsDepth, highlightedIndex, expandedIds} = this.state;
+        if(node){
+            if (node.children && node.children.length > 0 && expandedIds[node.id]) { // je rozbalený, zablíme
+                this.expandNode(node, false)
+            } else {    // není rozbalený, přejmede na parenta
+                var index = this.getParentNodeIndex(highlightedIndex);
+                if (index >= 0) {
+                    this.changeState({
+                        highlightedIndex: index,
+                    })
                 }
             }
         }
     }
-    selectorMoveDown = (e) => {
-        const {highlightedIndex} = this.state;
+    getParentNodeIndex = (index) => {
+        const {itemsDepth} = this.state;
+        const currDepth = itemsDepth[index];
+        var parentIndex = index - 1;
+        while (parentIndex >= 0 && itemsDepth[parentIndex] >= currDepth) {
+            parentIndex--;
+        }
+        return parentIndex;
+    }
+    getHighlightedNode = () => {
         const {tree} = this.props;
+        const {highlightedIndex} = this.state;
 
-        const index = this.getNextFocusableItem(highlightedIndex, !tree);
-        console.log(index,"relative: ",this.getRelativeSelectableItemIndex(highlightedIndex,1,!tree))
-
-        this.changeState({
-            highlightedIndex: index,
-        })
-
+        if (highlightedIndex !== null) {
+            return this.getNode(highlightedIndex);
+        }
+        return null;
+    }
+    getNode = (index) => {
+        const items = this.getFilteredItems();
+        return items[index];
+    }
+    selectorMoveDown = (e) => {
+        this.selectorMoveRelative(1);
     }
     selectorMoveUp = (e) => {
+        this.selectorMoveRelative(-1);
+    }
+    selectorMoveRelative = (step) => {
         const {highlightedIndex} = this.state;
         const {tree} = this.props;
-
-        const index = this.getPrevFocusableItem(highlightedIndex, !tree);
-        console.log(index,"relative: ",this.getRelativeSelectableItemIndex(highlightedIndex,-1,!tree))
-
+        const index = this.getRelativeSelectableItemIndex(highlightedIndex, step, !tree);
         this.changeState({
             highlightedIndex: index,
         })
     }
     selectItem = (e) => {
-        if (this.state.isOpen === false && !this.state.changed) {
-            // already selected this, do nothing
-            return
-        }
-        if (this.props.tags) {
-            let id, item;
-            if (this.state.highlightedIndex == null) {
-                id = null;
-                item = {
-                    name: this.state.inputStrValue
+        const {getItemName, getItemId, allowSelectItem, onChange, tags} = this.props;
+        const {isOpen, changed, inputStrValue, highlightedIndex} = this.state;
+
+        if (isOpen || changed) {
+            if (tags) {
+                let id, item;
+                if (highlightedIndex == null) {
+                    id = null;
+                    item = {
+                        name: inputStrValue
+                    }
+                } else {
+                    item = this.getHighlightedNode();
+                    id = getItemId(item);
+                }
+                if (allowSelectItem(id, item)) {
+                    this.changeState({
+                        inputStrValue: '',
+                        value: '',
+                        isOpen: false,
+                        highlightedIndex: null
+                    }, () => {
+                        onChange(item)
+                    })
                 }
             } else {
-                item = this.getFilteredItems()[this.state.highlightedIndex];
-                id = this.props.getItemId(item);
-            }
-            if (this.props.allowSelectItem(id, item)) {
-                this.changeState({
-                    inputStrValue: '',
-                    value: '',
-                    isOpen: false,
-                    highlightedIndex: null
-                }, () => {
-                    this.props.onChange(item)
-                })
-            }
-        } else {
-            if (this.state.highlightedIndex == null) {
-                // hit enter after focus but before typing anything so no autocomplete attempt yet
-                this.changeState({
-                    isOpen: false,
-                    inputStrValue: '',
-                    value: null,
-                }, () => {
-                    ReactDOM.findDOMNode(this.refs.input).select();
-                    this.props.onChange(null)
-                })
-            } else {
-                const item = this.getFilteredItems()[this.state.highlightedIndex];
-
-                const id = this.props.getItemId(item);
-                if (this.props.allowSelectItem(id, item)) {
+                if (highlightedIndex == null) {
+                    // hit enter after focus but before typing anything so no autocomplete attempt yet
                     this.changeState({
-                        inputStrValue: this.props.getItemName(item),
-                        value: item,
                         isOpen: false,
-                        highlightedIndex: null,
-                        changed:false
+                        inputStrValue: '',
+                        value: null,
                     }, () => {
-                        //ReactDOM.findDOMNode(this.refs.input).focus() // TODO: file issue
-                        ReactDOM.findDOMNode(this.refs.input).setSelectionRange(
-                            this.state.inputStrValue.length,
-                            this.state.inputStrValue.length
-                        );
-                        this.props.onChange(item)
+                        ReactDOM.findDOMNode(this.refs.input).select();
+                        onChange(null)
                     })
+                } else {
+                    const item = this.getHighlightedNode();
+                    console.log("HIGHLIGHTED_ITEM",item);
+                    const id = getItemId(item);
+
+                    if (allowSelectItem(id, item)) {
+                        this.changeState({
+                            inputStrValue: getItemName(item),
+                            value: item,
+                            isOpen: false,
+                            highlightedIndex: null,
+                            changed:false
+                        }, () => {
+                            //ReactDOM.findDOMNode(this.refs.input).focus() // TODO: file issue
+                            ReactDOM.findDOMNode(this.refs.input).setSelectionRange(
+                                inputStrValue.length,
+                                inputStrValue.length
+                            );
+                            onChange(item)
+                        })
+                    }
                 }
             }
         }
@@ -1055,6 +1146,7 @@ export default class Autocomplete extends AbstractReactComponent {
         "CLOSE_MENU": () => {this.closeMenu()}
     }
     handleShortcuts = (action,e)=>{
+        console.log(action);
         e.stopPropagation();
         e.preventDefault();
         this.actionMap[action](e);
@@ -1109,7 +1201,6 @@ export default class Autocomplete extends AbstractReactComponent {
                                 {this.props.actions && <div ref='actions'>{this.props.actions}</div>}
                                 {!inline && hasError && <HelpBlock>{error}</HelpBlock>}
                             </div>
-                            {console.log("ac-open",this.state.isOpen)}
                             {this.state.isOpen && this.renderMenu()}
                             {this.props.hasFeedback &&
                             <span className={'glyphicon form-control-feedback glyphicon-' + bootInfo.feedbackIcon}></span>}
