@@ -256,7 +256,7 @@ class RegistryDetail extends AbstractReactComponent {
                     <div className="registry-type">
                         {hierarchyElement}
                     </div>
-                    <div ref='registryTitle' className="registry-title" tabIndex={0}>
+                    <div ref='registryTitle' className="registry-title" tabIndex={1}>
                         <div className='registry-content'>
 
                             <div className='line charakteristik'>

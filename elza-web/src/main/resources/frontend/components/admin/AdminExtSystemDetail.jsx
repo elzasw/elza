@@ -77,7 +77,7 @@ class AdminExtSystemDetail extends AbstractReactComponent {
         }
         const classJ = extSystem["@class"];
 
-        return <div tabIndex={0} ref='extSystemDetail' className="ext-system-detail">
+        return <div tabIndex={1} ref='extSystemDetail' className="ext-system-detail">
 
             {classJ == EXT_SYSTEM_CLASS.RegExternalSystem &&
             <div>

@@ -543,11 +543,11 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
 
         var tabIndexProp = {}
         if (!disabled) {
-            tabIndexProp = {tabIndex: 0}
+            tabIndexProp = {tabIndex: 1}
         }
 
         var ret = (
-            <Shortcuts name="DataGrid" handler={this.handleShortcuts} tabIndex={0} className={cls}>
+            <Shortcuts name="DataGrid" handler={this.handleShortcuts} tabIndex={1} className={cls}>
                 <div ref="dataGrid" className={cls} onFocus={(e)=>this.handleFocus(e)} onBlur={onBlur}>
                     <div ref='header' key="header" className='header-container'>
                         <table className="header-table" style={headerStyle}>
