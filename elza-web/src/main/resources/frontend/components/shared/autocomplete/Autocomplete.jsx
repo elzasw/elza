@@ -576,33 +576,66 @@ export default class Autocomplete extends AbstractReactComponent {
     }
     /**
      * Získá maximální a minimální rozměry elementu vůči origin elementu a okrajům obrazovky
-     * @param {object} node
      * @param {object} origin
      * @return {object}
      */
-    getSizeConstraints = (node, origin) => {
-        const nodeStyle = getComputedStyle(node);
+    getElementRelativeScreenConstraints = (origin) => {
         const originRect = origin.getBoundingClientRect();
         const originOffset = this.getRectScreenOffset(originRect);
         var maxHeight = originOffset.bottom < originOffset.top ? originOffset.top : originOffset.bottom;
         var maxWidth = originOffset.right + originRect.width;
         var minWidth = originRect.width;
         var minHeight = 0;
+        return{
+            minHeight: minHeight,
+            maxHeight: maxHeight,
+            minWidth: minWidth,
+            maxWidth: maxWidth
+        }
+    }
+    /**
+     * Získá maximální a minimální rozměry elementu vůči origin elementu a okrajům obrazovky.
+     * Bere v úvahu i omezení z css stylů daného elementu
+     * @param {object} node
+     * @param {object} origin
+     * @return {object}
+     */
+    getSizeConstraints = (node, origin) => {
+        const nodeStyle = getComputedStyle(node);
+        var constraints = this.getElementRelativeScreenConstraints(origin);
         //Pokud má obalující element našeptávače nastavenou maximální výšku nebo šířku, která je menší než maximální povolená hodnota, přiřadí se její hodnota
-        maxWidth = nodeStyle.maxWidth === 'none' || (parseInt(nodeStyle.maxWidth , 10) > maxWidth) ? maxWidth : parseInt(nodeStyle.maxWidth , 10);
-        maxHeight = nodeStyle.maxHeight === 'none' || (parseInt(nodeStyle.maxHeight , 10) > maxHeight) ? maxHeight : parseInt(nodeStyle.maxHeight , 10);
-        minWidth = nodeStyle.minWidth === 'none' || (parseInt(nodeStyle.minWidth , 10) < minWidth) ? minWidth : parseInt(nodeStyle.minWidth , 10);
-        minHeight = nodeStyle.minHeight === 'none' || (parseInt(nodeStyle.minHeight , 10) < minHeight) ? minHeight : parseInt(nodeStyle.minHeight , 10);
+        var maxWidth = nodeStyle.maxWidth === 'none' || (parseInt(nodeStyle.maxWidth , 10) > constraints.maxWidth) ? constraints.maxWidth : parseInt(nodeStyle.maxWidth , 10);
+        var maxHeight = nodeStyle.maxHeight === 'none' || (parseInt(nodeStyle.maxHeight , 10) > constraints.maxHeight) ? constraints.maxHeight : parseInt(nodeStyle.maxHeight , 10);
+        var minWidth = nodeStyle.minWidth === 'none' || (parseInt(nodeStyle.minWidth , 10) < constraints.minWidth) ? constraints.minWidth : parseInt(nodeStyle.minWidth , 10);
+        var minHeight = nodeStyle.minHeight === 'none' || (parseInt(nodeStyle.minHeight , 10) < constraints.minHeight) ? constraints.minHeight : parseInt(nodeStyle.minHeight , 10);
         return {
-            max: {
-                width: maxWidth,
-                height: maxHeight
-            },
-            min: {
-                width: minWidth,
-                height: minHeight
-            }
+            minHeight: minHeight,
+            maxHeight: maxHeight,
+            minWidth: minWidth,
+            maxWidth: maxWidth
         };
+    }
+    /**
+     * Získá hodnotu omezeného rozměru
+     * @param {number} originalValue
+     * @param {number} constrainedValueMax
+     * @param {number} constrainedValueMin
+     * @return {object}
+     */
+    getElementConstrainedDimension = (originalValue, constrainedValueMax, constrainedValueMin) => {
+        var elementDimension, resized = false;
+        if (originalValue >= constrainedValueMax){
+            elementDimension = constrainedValueMax;
+            resized = true;
+        } else if (originalValue <= constrainedValueMin){
+            elementDimension = constrainedValueMin;
+        } else {
+            elementDimension = originalValue;
+        }
+        return {
+            value: elementDimension,
+            resized: resized
+        }
     }
     /**
      * Získá rozměry elementu vzhledem k velikostním omezením
@@ -611,32 +644,33 @@ export default class Autocomplete extends AbstractReactComponent {
      * @return {object}
      */
     getConstrainedElementSize = (element, constraints) => {
-        var elementWidth, elementHeight, widthResize, heightResize, resize;
-        if (element.offsetWidth >= constraints.max.width){
-            elementWidth = constraints.max.width;
-            widthResize = true;
-        } else {
-            elementWidth = element.offsetWidth;
+        var elementWidth, elementHeight, widthResize, heightResize, resize=[];
+        var scrollbarWidth = this.getScrollbarWidth();
+        var verticalScrollbar = 0, horizontalScrollbar = 0;
+        var constrainedWidth = this.getElementConstrainedDimension(element.offsetWidth,constraints.maxWidth,constraints.minWidth);
+        elementWidth = constrainedWidth.value;
+        if(constrainedWidth.resized){
+            horizontalScrollbar = scrollbarWidth;
+            resize.push("WIDTH");
         }
-        if (element.offsetHeight >= constraints.max.height){
-            elementHeight = constraints.max.height;
-            heightResize = true;
-        } else {
-            elementHeight = element.offsetHeight;
+        var constrainedHeight = this.getElementConstrainedDimension(element.offsetHeight,constraints.maxHeight,constraints.minHeight);
+        elementHeight = constrainedHeight.value;
+        if(constrainedHeight.resized){
+            verticalScrollbar = scrollbarWidth;
+            resize.push("HEIGHT");
         }
-        if(widthResize && heightResize){
-            resize = "WIDTH_HEIGHT";
-        } else if (widthResize){
-            resize = "WIDTH";
-        } else if (heightResize){
-            resize = "HEIGHT";
-        } else {
-            resize = "NORESIZE";
+        resize = resize.join("_");
+        if(resize === "WIDTH"){
+            elementHeight += horizontalScrollbar;
+        } else if(resize === "HEIGHT"){
+            elementWidth += verticalScrollbar;
         }
         return {
             width: elementWidth,
             height: elementHeight,
-            resize: resize
+            resize: resize,
+            hScroll: horizontalScrollbar,
+            vScroll: verticalScrollbar
         };
     }
     /**
@@ -657,10 +691,6 @@ export default class Autocomplete extends AbstractReactComponent {
             height: elementHeight
         };
     }
-    setContentSize = () => {
-        contentSize.width = contentSize.width <= minWidth ? (minWidth - scrollbarWidth - borderLR) : contentSize.width;
-        content.css({width: contentSize.width + 'px'});
-    }
     /**
      * Získá šířku scrollbaru
      * @param {object} element
@@ -674,6 +704,11 @@ export default class Autocomplete extends AbstractReactComponent {
         wrapper.css({overflowY:'visible', overflowX:'visible'});
         return scrollWidth;
     }
+    /**
+     * Získá odsazení od okrajů stránky
+     * @param {object} nodeRect
+     * @return {object}
+     */
     getRectScreenOffset = (nodeRect) => {
         const screen = $(document);
         return {
@@ -690,100 +725,75 @@ export default class Autocomplete extends AbstractReactComponent {
     resetElementSize = (element) => {
         $(element).css({height: "auto",width: "auto"});
     }
-    getWrapperStyle = (resizeType) => {
+    /**
+     * Nastaví viditelné overflow elementu
+     * @param {object} element
+     */
+    resetElementOverflow = (element) => {
+        $(element).css({overflowY:'visible', overflowX:'visible'});
+    }
+    /**
+     * Vrací nastavení overflow pro wrapper
+     * @param {string} resizeType
+     * @return {object}
+     */
+    getWrapperOverflow = (resizeType) => {
+        //Pokud je obsah větší než maximální výška/šířka zapne se scroll. OverflowX má 'auto' kvůli zalamování textu v řádku (proměnlivá šířka)
         var wrapperStyle = {
             "WIDTH_HEIGHT": {overflowX:"auto",overflowY:"scroll"},
             "HEIGHT": {overflowY:"scroll"},
-            "WIDTH": {overflowX:"auto"},
-            "NORESIZE": {}
+            "WIDTH": {overflowX:"auto"}
         }
         return wrapperStyle[resizeType];
     }
-    setMenuPositions() {
-        if (!this.state.isOpen) {   // jen pokud je menu zobrazeno
-            return;
-        }
-
-        const originNode = ReactDOM.findDOMNode(this.refs.input);
-        const containerNode = ReactDOM.findDOMNode(this.refs.menuParent);
-        const wrapperNode = ReactDOM.findDOMNode(this.refs.autocompleteContent);
-        const contentNode = ReactDOM.findDOMNode(this.refs.menu);
-
-        const container = $(containerNode);
-        const wrapper = $(wrapperNode);
-        const content = $(contentNode);
-
-        //Resetování velikostí elementů
-        this.resetElementSize(containerNode);
-        this.resetElementSize(contentNode);
-        this.resetElementSize(wrapperNode);
-
-        wrapper.css({overflowY:'visible', overflowX:'visible'});
-
-        var contentSize = this.getAutoElementSize(contentNode); //Zjistí velikost obsahu
-
-        var containerBorders = this.getElementBorders(containerNode);
-        var containerStyle = getComputedStyle(containerNode);
-        var containerConstraints = this.getSizeConstraints(containerNode,originNode);
-        var containerSize = this.getConstrainedElementSize(containerNode,containerConstraints);
-        //console.log("RESIZE",containerSize.resize);
-
-        const originRect = originNode.getBoundingClientRect();
-        var originStyle = getComputedStyle(originNode);
-        var marginBottom = parseInt(originStyle.marginBottom, 10);
-        var marginLeft = parseInt(originStyle.marginLeft, 10);
-
-        //Zjištění okrajů okna našeptávače
-
-        var borderLR = containerBorders.right + containerBorders.left;
-        var borderTB = containerBorders.top + containerBorders.bottom;
-
-        //Odsazení vstupního pole našeptávače
+    /**
+     * Vrací objekt s umístěním našeptávače
+     * @param {object} origin
+     * @return {object}
+     */
+    getRelativeMenuPlacement = (origin) => {
+        const originRect = origin.getBoundingClientRect();
         const originOffset = this.getRectScreenOffset(originRect);
-
-        var heightString = 'auto';
-        var widthString = 'auto';
-        //Pokud je obsah větší než maximální výška/šířka zapne se scroll. OverflowX má 'auto' kvůli zalamování textu v řádku (proměnlivá šířka)
-        //var overflowY = containerSize.height + borderTB >= containerConstraints.max.height ? 'scroll' : 'visible';
-        //var overflowX = containerSize.width + borderLR >= containerConstraints.max.width ? 'auto' : 'visible';
-
-        //Získání šířky/výšky vertikálního a horizontánlního scrollbaru
-        var scrollbarWidth = this.getScrollbarWidth();
-        var wrapperStyle = this.getWrapperStyle(containerSize.resize);
-        if(containerSize.resize === "WIDTH_HEIGHT"){ //Pokud se nevejde na obrazovku ani výškou ani šířkou
-            contentSize.width = containerConstraints.max.width - scrollbarWidth - borderLR;
-            heightString = containerConstraints.max.height + 'px';
-            widthString = containerConstraints.max.width + 'px';
-        } else if(containerSize.resize === "HEIGHT"){ //Pokud se na obrazovku nevejde pouze výškou
-            heightString = containerConstraints.max.height + 'px';
-        } else if(containerSize.resize === "WIDTH"){ //Pokud se na obrazovku nevejde pouze šířkou
-            contentSize.width = containerConstraints.max.width - borderLR;
-            scrollbarWidth=0;
-            widthString = containerConstraints.max.width + 'px';
-        } else{ //Pokud se vejde na obrazovku
-            scrollbarWidth=0;
-        }
-        let x = originOffset.left;
-        let y = originRect.bottom;
+        var placement = {left: originOffset.left + 'px'};
         if (originOffset.bottom < originOffset.top) { // nevejde se dolu, dáme ho nahoru
-            y = originRect.top - containerSize.height;
-            container.css({bottom:originOffset.bottom + originRect.height + 'px'});
+            placement.bottom = originOffset.bottom + originRect.height + 'px';
         } else {
-            container.css({top: y + 'px'});
+            placement.top = originRect.bottom + 'px';
         }
-        contentSize.width = contentSize.width <= containerConstraints.min.width ? (containerConstraints.min.width - scrollbarWidth - borderLR) : contentSize.width;
-        //widthString = containerSize.w < minWidth ? minWidth+'px' : containerSize.w+'px';
+        return placement;
+    }
+    setMenuPositions() {
+        if (this.state.isOpen) {  // jen pokud je menu zobrazeno
+            const originNode = ReactDOM.findDOMNode(this.refs.input);
+            const containerNode = ReactDOM.findDOMNode(this.refs.menuParent);
+            const wrapperNode = ReactDOM.findDOMNode(this.refs.autocompleteContent);
+            const contentNode = ReactDOM.findDOMNode(this.refs.menu);
 
-        content.css({width: contentSize.width + 'px'});
-        wrapper.css({...wrapperStyle, width: contentSize.width + scrollbarWidth + 'px'})
-        container.css({
-            left: x + 'px',
-            height: heightString,
-            width: widthString,
-            maxWidth: containerConstraints.max.width,
-            maxHeight: containerConstraints.max.height,
-            visibility:'visible'
-        })
+            //Resetování velikostí elementů
+            this.resetElementSize(containerNode);
+            this.resetElementSize(contentNode);
+            this.resetElementSize(wrapperNode);
+            this.resetElementOverflow(wrapperNode);
+
+            //Zjistí velikost obsahu
+            var contentSize = this.getAutoElementSize(contentNode);
+            var containerBorders = this.getElementBorders(containerNode);
+            var containerConstraints = this.getSizeConstraints(containerNode,originNode);
+            var containerSize = this.getConstrainedElementSize(containerNode,containerConstraints);
+            //Zjištění okrajů okna našeptávače
+            var borderLR = containerBorders.right + containerBorders.left;
+            var wrapperOverflow = this.getWrapperOverflow(containerSize.resize);
+            var containerPlacement = this.getRelativeMenuPlacement(originNode);
+
+            $(contentNode).css({width: containerSize.width - borderLR - containerSize.vScroll + 'px'});
+            $(wrapperNode).css({...wrapperOverflow, width: containerSize.width - borderLR + 'px'})
+            $(containerNode).css({
+                height: containerSize.height + 'px',
+                width: containerSize.width + 'px',
+                visibility:'visible',
+                ...containerPlacement
+            })
+        }
     }
 
     highlightItemFromMouse(index) {
@@ -1172,40 +1182,38 @@ export default class Autocomplete extends AbstractReactComponent {
         var cls = bootInfo.cls;
 
         return (
-            <Shortcuts handler={this.handleShortcuts} name="Autocomplete" tabIndex="0">
-                <div className={clsMain}>
-                    <div className='autocomplete-control-box'>
-                        <div className={cls}>
-                            {this.props.label && <label className='control-label'>{this.props.label}</label>}
-                            <div key="inputWrapper" className={'autocomplete-input-container form-group' + (hasError ? " has-error" : "")}>
-                                <TextInput
-                                    key="input"
-                                    className='form-control'
-                                    type='text'
-                                    {...inlineProps}
-                                    {...this.props.inputProps}
-                                    label={this.props.label}
-                                    disabled={this.props.disabled}
-                                    role='combobox'
-                                    aria-autocomplete="both"
-                                    ref="input"
-                                    onFocus={this.handleInputFocus}
-                                    onBlur={this.handleInputBlur}
-                                    onChange={this.handleChange}
-                                    value={this.state.inputStrValue}
-                                />
-                                {!customFilter &&  <div disabled={this.props.disabled} ref='openClose'
-                                    className={(this.state.isOpen ? 'btn btn-default opened' : 'btn btn-default closed') + (this.props.disabled ? " disabled" : "")}
-                                    onClick={()=>{if (!this.props.disabled) {this.state.isOpen ? this.closeMenu() : this.openMenu()}}}><Icon
-                                    glyph={glyph}/></div>}
-                                {this.props.actions && <div ref='actions'>{this.props.actions}</div>}
-                                {!inline && hasError && <HelpBlock>{error}</HelpBlock>}
-                            </div>
-                            {this.state.isOpen && this.renderMenu()}
-                            {this.props.hasFeedback &&
-                            <span className={'glyphicon form-control-feedback glyphicon-' + bootInfo.feedbackIcon}></span>}
-                            {this.props.help && <span className='help-block'>{this.props.help}</span>}
+            <Shortcuts handler={this.handleShortcuts} name="Autocomplete" tabIndex="0" className={clsMain}>
+                <div className='autocomplete-control-box'>
+                    <div className={cls}>
+                        {this.props.label && <label className='control-label'>{this.props.label}</label>}
+                        <div key="inputWrapper" className={'autocomplete-input-container form-group' + (hasError ? " has-error" : "")}>
+                            <TextInput
+                                key="input"
+                                className='form-control'
+                                type='text'
+                                {...inlineProps}
+                                {...this.props.inputProps}
+                                label={this.props.label}
+                                disabled={this.props.disabled}
+                                role='combobox'
+                                aria-autocomplete="both"
+                                ref="input"
+                                onFocus={this.handleInputFocus}
+                                onBlur={this.handleInputBlur}
+                                onChange={this.handleChange}
+                                value={this.state.inputStrValue}
+                            />
+                            {!customFilter &&  <div disabled={this.props.disabled} ref='openClose'
+                                className={(this.state.isOpen ? 'btn btn-default opened' : 'btn btn-default closed') + (this.props.disabled ? " disabled" : "")}
+                                onClick={()=>{if (!this.props.disabled) {this.state.isOpen ? this.closeMenu() : this.openMenu()}}}><Icon
+                                glyph={glyph}/></div>}
+                            {this.props.actions && <div ref='actions'>{this.props.actions}</div>}
+                            {!inline && hasError && <HelpBlock>{error}</HelpBlock>}
                         </div>
+                        {this.state.isOpen && this.renderMenu()}
+                        {this.props.hasFeedback &&
+                        <span className={'glyphicon form-control-feedback glyphicon-' + bootInfo.feedbackIcon}></span>}
+                        {this.props.help && <span className='help-block'>{this.props.help}</span>}
                     </div>
                 </div>
             </Shortcuts>
