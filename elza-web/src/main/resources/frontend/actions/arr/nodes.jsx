@@ -149,17 +149,23 @@ const moveFunctions = {
  */
 export function moveNodes(direction,versionId,nodes,nodesParent,dest,destParent){
     return (dispatch, getState) => {
+        var state = getState();
+        var activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
+        var nodeTab = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
         var nodesToUpdate = [...nodes];
         nodesToUpdate.push(nodesParent);
+        var nextNodeParent;
         if(direction === "UNDER"){
-            nodesToUpdate.push(dest);
+            nextNodeParent = dest;
         } else {
-            nodesToUpdate.push(destParent);
+            nextNodeParent = destParent;
         }
-        dispatch(increaseMultipleNodesVersions(versionId,nodesToUpdate));        
+        nodesToUpdate.push(nextNodeParent);
+        dispatch(increaseMultipleNodesVersions(versionId,nodesToUpdate));
         dispatch(fundMoveStart(versionId));
         return moveFunctions[direction](versionId, nodes, nodesParent, dest, destParent).then(()=>{
             dispatch(fundMoveFinish(versionId));
+            dispatch(fundSelectSubNode(versionId, nodeTab.selectedSubNodeId, nextNodeParent))
         });
     }
 }
