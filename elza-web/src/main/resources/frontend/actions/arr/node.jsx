@@ -169,7 +169,21 @@ export function increaseNodeVersion(versionId, nodeId, nodeVersionId) {
         })
     }
 }
-
+/**
+ * Provedení umělého navýšení verze pro více uzlů najednou
+ * @param versionId verze AS
+ * @param nodeArray pole objektů uzlů (pro zvýšení verze musí obsahovat id a version)
+ */
+export function increaseMultipleNodesVersions(versionId,nodeArray){
+    return (dispatch) => {
+        for(var node in nodeArray){
+            node = nodeArray[node];
+            if(node.id && node.version){
+                dispatch(increaseNodeVersion(versionId,node.id,node.version));
+            }
+        }
+    }
+}
 /**
  * Přidání uzlu před, za na konec a pod.
  * @param {Object} indexNode uzel, pro který je volána akce - před, za a pod který se akce volá

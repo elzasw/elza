@@ -10,23 +10,14 @@ import {connect} from 'react-redux'
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, SubNodeForm, FormInput} from 'components/index.jsx';
 import {validateInt, normalizeInt} from 'components/validate.jsx';
-
-const keyDownHandlers = {
-    Enter: function (e) {
-        e.stopPropagation();
-        e.preventDefault();
-
-        const {onClose} = this.props
-        onClose();
-    },
-}
+import {Shortcuts} from 'react-shortcuts';
 
 var DescItemJsonTableCellForm = class DescItemJsonTableCellForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        
-        this.bindMethods("handleChange", 'handleKeyDown')
-        
+
+        this.bindMethods("handleChange")
+
         this.state = {
             value: props.value
         }
@@ -49,11 +40,17 @@ var DescItemJsonTableCellForm = class DescItemJsonTableCellForm extends Abstract
         $(".modal-backdrop").hide();
         // $(".modal-backdrop").css({opacity: 0})
     }
-
-    handleKeyDown(event) {
-        if (keyDownHandlers[event.key]) {
-            keyDownHandlers[event.key].call(this, event)
-        }
+    handleFormClose = ()=>{
+        const {onClose} = this.props;
+        onClose();
+    }
+    actionMap = {
+        "FORM_CLOSE": this.handleFormClose
+    }
+    handleShortcuts(action,e){
+        e.stopPropagation();
+        e.preventDefault();
+        this.actionMap[action](e);
     }
 
     handleChange(e) {
@@ -72,23 +69,23 @@ var DescItemJsonTableCellForm = class DescItemJsonTableCellForm extends Abstract
         this.setState({
             value: normalizedValue,
         })
-        
+
         const {onChange} = this.props
         onChange(normalizedValue);
     }
-    
+
     render() {
         const {className} = this.props
         const {value} = this.state
 
         return (
-            <div className={"cell-edit-container " + (className ? className : "")} onKeyDown={this.handleKeyDown}>
+            <Shortcuts name="DescItemJsonTableCellForm" handler={(action,e)=>this.handleShortcuts(action,e)} className={"cell-edit-container " + (className ? className : "")}>
                 <FormInput
                     type="text"
                     value={value}
                     onChange={this.handleChange}
                        />
-            </div>
+            </Shortcuts>
         )
     }
 }

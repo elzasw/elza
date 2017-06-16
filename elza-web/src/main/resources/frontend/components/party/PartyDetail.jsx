@@ -28,8 +28,7 @@ import {partyAdd, findPartyFetchIfNeeded, partyDetailFetchIfNeeded, PARTY_TYPE_C
 import {Utils} from 'components/index.jsx';
 import {objectById, indexById} from 'stores/app/utils.jsx';
 import {setInputFocus, dateTimeToString} from 'components/Utils.jsx'
-const ShortcutsManager = require('react-shortcuts');
-const Shortcuts = require('react-shortcuts/component');
+import {Shortcuts} from 'react-shortcuts';
 import {setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
@@ -37,13 +36,6 @@ import {initForm} from "actions/form/inlineForm.jsx"
 import {getMapFromList} from 'stores/app/utils.jsx'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
 import {PartyListItem} from 'components/index.jsx';
-
-const keyModifier = Utils.getKeyModifier();
-
-const keymap = {
-    PartyDetail: {}
-};
-const shortcutManager = new ShortcutsManager(keymap);
 
 import './PartyDetail.less';
 
@@ -81,10 +73,6 @@ class PartyDetail extends AbstractReactComponent {
         activeIndexes: {},
         visibilitySettings: {},
         visibilitySettingsValue: {}
-    };
-
-    static childContextTypes = {
-        shortcuts: React.PropTypes.object.isRequired
     };
 
     static fields = [
@@ -210,10 +198,6 @@ class PartyDetail extends AbstractReactComponent {
         }
     };
 
-    getChildContext() {
-        return { shortcuts: shortcutManager };
-    }
-
     handleShortcuts = (action)  => {
         // Not defined shortcuts
     };
@@ -316,7 +300,7 @@ class PartyDetail extends AbstractReactComponent {
         const events = {onPin:this.handlePinToggle, onSelect: this.handleToggleActive};
 
         return <Shortcuts name='PartyDetail' handler={this.handleShortcuts}>
-            <div tabIndex={0} ref='partyDetail' className="party-detail">
+            <div tabIndex={1} ref='partyDetail' className="party-detail">
                 <div className="party-header">
                     <div className="header-icon">
                         <Icon glyph={icon}/>
@@ -342,7 +326,7 @@ class PartyDetail extends AbstractReactComponent {
                         if (TYPE == UI_PARTY_GROUP_TYPE.IDENT) {
                             const key = UI_PARTY_GROUP_TYPE.IDENT;
                             return <div key={index}>
-                                <CollapsablePanel tabIndex={0} isOpen={activeIndexes && activeIndexes[key] === true} pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true} header={i.name} eventKey={key} {...events}>
+                                <CollapsablePanel tabIndex={1} isOpen={activeIndexes && activeIndexes[key] === true} pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true} header={i.name} eventKey={key} {...events}>
                                     <PartyDetailNames party={party} partyType={partyType} onPartyUpdate={this.handlePartyUpdate} canEdit={canEdit} />
                                     {party.partyType.code == PARTY_TYPE_CODES.GROUP_PARTY && <PartyDetailIdentifiers party={party} onPartyUpdate={this.handlePartyUpdate} canEdit={canEdit} />}
                                 </CollapsablePanel>
@@ -350,7 +334,7 @@ class PartyDetail extends AbstractReactComponent {
                         } else if (TYPE == UI_PARTY_GROUP_TYPE.CONCLUSION) {
                             const key = UI_PARTY_GROUP_TYPE.CONCLUSION;
                             return <div key={index}>
-                                <CollapsablePanel tabIndex={0} isOpen={activeIndexes && activeIndexes[key] === true} pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true} header={i.name} eventKey={key} {...events}>
+                                <CollapsablePanel tabIndex={1} isOpen={activeIndexes && activeIndexes[key] === true} pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true} header={i.name} eventKey={key} {...events}>
                                     <FormInput componentClass="textarea" {...sourceInformation} label={i18n("party.detail.sources")} />
                                     <label className="group-label">{i18n("party.detail.creators")}{canEdit && <Button bsStyle="action" onClick={() => creators.addField({})}><Icon glyph="fa-plus" /></Button>}</label>
                                     {creators.map((creator, index) => <div key={index + "-" + creator.id} className="value-group">
@@ -430,7 +414,7 @@ class PartyDetail extends AbstractReactComponent {
 
                             const key = i.code;
 
-                            return <CollapsablePanel tabIndex={0} key={key} isOpen={activeIndexes && activeIndexes[key] === true}
+                            return <CollapsablePanel tabIndex={1} key={key} isOpen={activeIndexes && activeIndexes[key] === true}
                                                      pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true} header={i.name}
                                                      eventKey={key} {...events}>
                                 <div className="elements-container">

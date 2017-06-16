@@ -15,8 +15,7 @@ import {indexById} from 'stores/app/utils.jsx'
 import {registryMoveStart, registryMove, registryMoveCancel, registryDelete, registryDetailFetchIfNeeded, registryAdd, registryListInvalidate} from 'actions/registry/registry.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
-import ShortcutsManager from 'react-shortcuts';
-import Shortcuts from 'react-shortcuts/component';
+import {Shortcuts} from 'react-shortcuts';
 import {Utils, RegistryList} from 'components/index.jsx';
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
@@ -25,20 +24,6 @@ import {regExtSystemListFetchIfNeeded} from 'actions/registry/regExtSystemList';
 
 import './RegistryPage.less';
 import {SelectPage} from 'pages'
-
-const keyModifier = Utils.getKeyModifier();
-
-const keymap = {
-    Registry: {
-        addRegistry: keyModifier + 'n',
-        registryMove: keyModifier + 'x',
-        registryMoveApply: keyModifier + 'v',
-        registryMoveCancel: keyModifier + 'w',
-        area1: keyModifier + '1',
-        area2: keyModifier + '2'
-    }
-};
-const shortcutManager = new ShortcutsManager(keymap);
 
 /**
  * Stránka rejstříků.
@@ -52,10 +37,6 @@ class RegistryPage extends AbstractReactComponent {
         refTables: React.PropTypes.object.isRequired,
         focus: React.PropTypes.object.isRequired,
         userDetail: React.PropTypes.object.isRequired
-    };
-
-    static childContextTypes = {
-        shortcuts: React.PropTypes.object.isRequired
     };
 
     state = {items: []};
@@ -156,10 +137,6 @@ class RegistryPage extends AbstractReactComponent {
                 break
         }
     };
-
-    getChildContext() {
-        return { shortcuts: shortcutManager };
-    }
 
     handleAddRegistry = () => {
         const {registryList: {filter:{registryParentId, versionId}, parents}} = this.props;
@@ -305,7 +282,7 @@ class RegistryPage extends AbstractReactComponent {
             <RegistryDetail />
         </div>;
 
-        return <Shortcuts name='Registry' handler={this.handleShortcuts}>
+        return <Shortcuts name='Registry' handler={this.handleShortcuts} global>
             <PageLayout
                 splitter={splitter}
                 key='registryPage'

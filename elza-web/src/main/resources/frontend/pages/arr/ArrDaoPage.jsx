@@ -53,17 +53,11 @@ import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {fundTreeFetchIfNeeded} from 'actions/arr/fundTree.jsx'
-var ShortcutsManager = require('react-shortcuts');
-var Shortcuts = require('react-shortcuts/component');
+import {Shortcuts} from 'react-shortcuts';
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {selectTab} from 'actions/global/tab.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
-
-const keyModifier = Utils.getKeyModifier()
-const keymap = ArrParentPage.mergeKeymap({});
-
-const shortcutManager = new ShortcutsManager(keymap)
 
 class ArrDaoPage extends ArrParentPage {
     constructor(props) {
@@ -100,10 +94,6 @@ class ArrDaoPage extends ArrParentPage {
     getDestNode() {
         const fund = this.getActiveFund(this.props);
         return fund.fundTreeDaosRight.nodes[indexById(fund.fundTreeDaosRight.nodes, fund.fundTreeDaosRight.selectedId)];
-    }
-
-    getChildContext() {
-        return { shortcuts: shortcutManager };
     }
 
     handleShortcuts(action) {

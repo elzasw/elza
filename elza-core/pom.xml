@@ -54,10 +54,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-rest</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-ehcache</artifactId>
-        </dependency>
         <!--<dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
@@ -128,17 +124,17 @@
             <version>1.4.5</version>
         </dependency>
         <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-ehcache</artifactId>
+        </dependency>
+        <dependency>
            <groupId>org.hibernate</groupId>
            <artifactId>hibernate-search-orm</artifactId>
         </dependency>
-            <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-java8</artifactId>
-            </dependency>
-    <dependency>
-      <groupId>org.hibernate</groupId>
-      <artifactId>hibernate-entitymanager</artifactId>
-    </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-entitymanager</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-spatial</artifactId>
@@ -171,7 +167,7 @@
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-messaging</artifactId>
         </dependency>
-<!--        <dependency>
+        <!--<dependency>
             <groupId>org.springframework.session</groupId>
             <artifactId>spring-session</artifactId>
         </dependency>-->
@@ -242,7 +238,13 @@
         <dependency>
           <groupId>org.apache.lucene</groupId>
           <artifactId>lucene-queryparser</artifactId>
+          <version>${hibernate.lucene.version}</version>
         </dependency>
+        <dependency>
+		    <groupId>org.apache.lucene</groupId>
+		    <artifactId>lucene-backward-codecs</artifactId>
+		    <version>${hibernate.lucene.version}</version>
+		</dependency>
 
         <dependency>
             <groupId>net.sf.jasperreports</groupId>
