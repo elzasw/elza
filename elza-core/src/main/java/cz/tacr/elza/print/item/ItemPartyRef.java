@@ -20,7 +20,7 @@ public class ItemPartyRef extends AbstractItem {
 
     @Override
     public String serializeValue() {
-        return party.serialize();
+        return party.getName();
     }
     
     public Party getParty() {

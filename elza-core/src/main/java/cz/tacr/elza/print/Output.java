@@ -32,10 +32,8 @@ import cz.tacr.elza.utils.AppContext;
 /**
  * Základní objekt pro generování výstupu, při tisku se vytváří 1 instance.
  *
- * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
- *         Date: 21.6.16
  */
-public class Output implements RecordProvider, NodesOrder {
+public class Output implements NodesOrder {
 
     public static final int MAX_CACHED_NODES = 100; // maximální počet nodů v cache
 
@@ -63,8 +61,8 @@ public class Output implements RecordProvider, NodesOrder {
     // mapa má jako klíč ID Nodu odpovídající ArrNode.arrNodeId
     private Map<Integer, NodeId> nodeIdsMap = new HashMap<>();
 
-    // seznam rejstříkových hesel všech nodes outputu odkazovaných přes arr_node_register
-    private List<Record> records = null;
+    // seznam rejstříkových hesel podle  typu
+    private Map<String, FilteredRecords> filteredRecords = new HashMap <>();
 
     private Map<String, RecordType> recordTypes = new HashMap<>(); // seznam rejstříků podle code
 
@@ -169,37 +167,6 @@ public class Output implements RecordProvider, NodesOrder {
     }
 
     /**
-     * @param recordProvider entita poskytující seznam recordů
-     * @param code           požadovaný kód recordu, pokud je vyplněno code, bude filtrovat
-     * @return seznam všech recordů
-     */
-    private static List<Record> getRecordsInternal(final RecordProvider recordProvider, final String code) {
-        // za samotný recordProvider
-        final List<Record> records = recordProvider.getRecords().stream()
-                .filter(record -> (StringUtils.isBlank(code) || code.equals(record.getType().getCode()))) // pokud je vyplněno code, pak filtrovat
-                .collect(Collectors.toList());
-
-        // rekurzivně za jednotlivé podřízené recordProvider
-
-        IteratorNodes iteratorNodes = recordProvider.getRecordProviderChildren();
-
-        while (iteratorNodes.hasNext()) {
-
-            Node next = iteratorNodes.next();
-            List<Record> subRecords = next.getRecords().stream()
-                    .filter(record -> (StringUtils.isBlank(code) || code.equals(record.getType().getCode()))) // pokud je vyplněno code, pak filtrovat
-                    .collect(Collectors.toList());
-
-            records.addAll(subRecords);
-        }
-
-        // seřadit podle názvu (record)
-        return records.stream()
-                .sorted((o1, o2) -> o1.getRecord().compareTo(o1.getRecord()))
-                .collect(Collectors.toList());
-    }
-
-    /**
      * Metoda sahá pomocí service do DB a zafiltruje seznam přímo přiřazených nodes.
      *
      * @return seznam nodes, které jsou přímo přiřazené outputu (arr_node_output), řazeno dle pořadí ve stromu
@@ -285,39 +252,6 @@ public class Output implements RecordProvider, NodesOrder {
                 .filter(item -> !codes.contains(item.getType().getCode()))
                 .sorted(Item::compareToItemViewOrderPosition)
                 .collect(Collectors.toList());
-    }
-
-
-    /**
-     * vrací seznam typů rejstříku, pro každý počet záznamů v něm přímo zařazených a počet záznamů včetně podřízených typů;
-     * řazeno dle pořadí ve stromu typů rejstříku (zjevně dle názvu typu)
-     *
-     * @param withCount pouze s countRecords > 0
-     * @return seznam typů rejstříku
-     */
-    public List<RecordType> getRecordTypes(final boolean withCount) {
-        final List<Record> records = getRecordsInternal(this, null); // všechny záznamy rekurzivně
-        return records.stream()
-                .filter(record -> (!withCount || record.getType().getCountDirectRecords() > 0)) // zafiltrovat dle count
-                .map(Record::getType) // převést na typ záznamu
-                .distinct() // každý typ jen jednou
-                .sorted((o1, o2) -> o1.getName().compareTo(o2.getName())) // seřadit dle zadání -> dle názvu typu
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * vstupem je kód typu rejstříku a vrací se seznam rejstříkových hesel řazených podle názvu (record).
-     *
-     * @param code požadovaný kód recordu, pokud je vyplněno code, bude filtrovat
-     * @return seznam všech recordů
-     */
-    public List<Record> getRecordsByType(final String code) {
-        final List<Record> recordsInternal = getRecordsInternal(this, code);
-        final List<Record> collect = recordsInternal.stream()
-                .distinct()
-                .sorted()
-                .collect(Collectors.toList());
-        return collect;
     }
 
     /**
@@ -460,26 +394,60 @@ public class Output implements RecordProvider, NodesOrder {
         return new IteratorNodes(this, nodesChildsModel, outputFactoryService, MAX_CACHED_NODES);
     }
 
-    @Override
-    public List<Record> getRecords() {
+
+    /**
+     * vstupem je kód typu rejstříku a vrací se seznam rejstříkových hesel řazených podle názvu (record).
+     *
+     * @param code požadovaný kód recordu
+     * @return seznam recordů v daného typu
+     */
+    public FilteredRecords getRecordsByType(final String code) {
+    	FilteredRecords recs = filteredRecords.get(code);
+    	if(recs==null) {
+    		// prepare records
+    		recs = filterRecords(code);
+    		filteredRecords.put(code, recs);
+    	}
+    	
+    	return recs;
+    }
+
+    /**
+     * Prepare filtered list of records
+     * @param code
+     * @return
+     */
+    private FilteredRecords filterRecords(String code) {
+    	FilteredRecords records = new FilteredRecords(code);
+    	
+    	// Add all nodes
         IteratorNodes iteratorNodes = new IteratorNodes(this, new ArrayList<>(nodeIdsMap.values()), outputFactoryService, MAX_CACHED_NODES);
-        if (records == null) {
-            records = new ArrayList<>();
-            while (iteratorNodes.hasNext()) {
-                Node node = iteratorNodes.next();
-                records.addAll(node.getNodeRecords());
-            }
+        while (iteratorNodes.hasNext()) {
+        	Node node = iteratorNodes.next();
+            records.addNode(node);
         }
+        
+        // Sort collection
+        records.nodesAdded();
+        
         return records;
-    }
+	}
 
-    public Map<String, RecordType> getRecordTypes() {
-        return recordTypes;
+    /**
+     * Return record type
+     * @return
+     */
+    public RecordType getRecordType(String code) {
+    	return recordTypes.get(code);
     }
-
-    @Override
-    public IteratorNodes getRecordProviderChildren() {
-        return getNodesBFS();
+    
+    /**
+     * Add new record type
+     * @return
+     */
+    public void addRecordType(RecordType recordType)
+    {
+    	recordTypes.put(recordType.getCode(), recordType);
     }
 
     public Fund getFund() {
