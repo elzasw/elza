@@ -222,9 +222,11 @@ export function addNode(indexNode, parentNode, versionId, direction, descItemCop
  * Akce smazání uzlu.
  * @param {Object} node uzel, který se má smazat
  * @param {Object} parentNode nadřazený uzel k mazanému
- * @param {int} versionId vezer AS
+ * @param {int} versionId verze AS
+ * @param {func} afterDeleteCallback - callback, který je volán po úspěšném smazání,
+ *     předpis: function (versionId, node, parentNode), node je smazaný node a parentNode je jeho aktualizovaný nadřazený node
  */
-export function deleteNode(node, parentNode, versionId) {
+export function deleteNode(node, parentNode, versionId, afterDeleteCallback) {
     return (dispatch) => {
         parentNode = {
             id: parentNode.id,
@@ -242,6 +244,7 @@ export function deleteNode(node, parentNode, versionId) {
 
         // Reálné provedení operace
         return WebApi.deleteNode(node, parentNode, versionId).then((json) => {
+            afterDeleteCallback && afterDeleteCallback(versionId, json.node, json.parentNode);
             dispatch(fundNodeChangeDelete(versionId, json.node, json.parentNode));
         });
     }

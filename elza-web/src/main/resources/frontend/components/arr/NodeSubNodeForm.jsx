@@ -21,6 +21,9 @@ import ArrHistoryForm from 'components/arr/ArrHistoryForm.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {WebApi} from 'actions/index.jsx';
 import {getMapFromList} from 'stores/app/utils.jsx'
+import {indexById} from 'stores/app/utils.jsx'
+import {fundSelectSubNode} from 'actions/arr/nodes.jsx';
+import {addToastrSuccess, addToastr} from 'components/shared/toastr/ToastrActions.jsx';
 
 const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
     constructor(props) {
@@ -100,10 +103,48 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
             this.dispatch(modalDialogHide());
         });
     }
+    /**
+     * Vybere sousední nebo nadřazenou JP po smazání
+     * @param {number} versionId
+     * @param {object} prevNode
+     * @param {func} callback - function(selectedParent) - funkci je předáván {bool} určující, zda byl vybrán rodič
+     */
+    selectSubnodeAfterDelete = (versionId, prevNode, callback) => {
+        let outdatedParent = {...this.props.parentNode}; //Potřeba kvůli seznamu potomků
+        let prevIndex = indexById(outdatedParent.childNodes, prevNode.id);
+        let childNodeCount = outdatedParent.childNodes.length;
+        let newNodeId = outdatedParent.childNodes[0];
+        let selectedParent = false;
+        if (childNodeCount <= 1){ //Pokud je posledním potomkem, přejde se na rodiče
+            newNodeId = outdatedParent.id;
+            outdatedParent = outdatedParent.parentNodes[0];
+            selectedParent = true;
+        } else if (prevIndex === 0){ //Pokud je smazaná JP první, bude jako další vybrána následující JP
+            newNodeId = outdatedParent.childNodes[prevIndex + 1].id;
+        } else { //Bude vybrána předcházející JP
+            newNodeId = outdatedParent.childNodes[prevIndex - 1].id;
+        }
+        this.dispatch(fundSelectSubNode(versionId, newNodeId, outdatedParent));
+        callback(selectedParent);
+    }
+    /**
+     * Funkce zavolána po skončení smazání JP
+     * @param {number} versionId
+     * @param {object} prevNode
+     * @param {object} parentNode
+     */
+    afterDeleteCallback = (versionId, prevNode, parentNode) => {
+        this.selectSubnodeAfterDelete(versionId, prevNode, (selectedParent) => {
+            this.dispatch(addToastrSuccess(i18n('arr.fund.deleteNode.deleted')));
+            if(selectedParent){
+                this.dispatch(addToastr(i18n('arr.fund.deleteNode.noSibling'), null,"info","lg",5000));
+            }
+        });
 
+    }
     handleDeleteNode() {
-        if (window.confirm('Opravdu chcete smazat tento JP?')) {
-            this.dispatch(deleteNode(this.props.selectedSubNode, this.props.parentNode, this.props.versionId));
+        if (window.confirm(i18n('arr.fund.deleteNode.confirm'))) {
+            this.dispatch(deleteNode(this.props.selectedSubNode, this.props.parentNode, this.props.versionId, this.afterDeleteCallback));
         }
     }
 
