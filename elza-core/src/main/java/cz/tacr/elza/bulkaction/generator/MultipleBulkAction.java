@@ -29,16 +29,21 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.service.ItemService;
+import cz.tacr.elza.service.cache.CachedNode;
+import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.utils.Yaml;
 
 /**
  * Vícenásobná hromadná akce prochází strom otevřené verze archivní pomůcky a doplňuje u položek požadované atributy.
  *
- * @author Martin Šlapa
- * @author Petr Pytelka
  * @since 29.06.2016
  */
 public class MultipleBulkAction extends BulkAction {
+	
+	/** 
+	 * Size of batch for fetching child nodes from DB
+	 */
+	private final static int BATCH_CHILD_NODE_SIZE = 100;
 
     @Autowired
     private ActionFactory actionFactory;
@@ -48,6 +53,9 @@ public class MultipleBulkAction extends BulkAction {
 
     @Autowired
     private DescItemRepository descItemRepository;
+    
+    @Autowired 
+    private NodeCacheService nodeCacheService;
 
     /**
      * Identifikátor hromadné akce
@@ -172,7 +180,9 @@ public class MultipleBulkAction extends BulkAction {
      * @return Return loaded level
      */
     private LevelWithItems prepareLevelWithItems(final ArrLevel level, final LevelWithItems parentLevels) {
-        List<ArrDescItem> items = loadDescItems(level);
+    	// we can load data from cache because we are running action on the recent node
+    	CachedNode cachedNode = nodeCacheService.getNode(level.getNodeId());
+    	List<ArrDescItem> items = cachedNode.getDescItems();
         return new LevelWithItems(level, parentLevels, items);
     }
 
@@ -184,7 +194,7 @@ public class MultipleBulkAction extends BulkAction {
      * @param level procházený uzel
      * @param parentNodeDescItems data předků
      */
-    private void generate(final LevelWithItems levelWithItems) {
+    void generate(final LevelWithItems levelWithItems) {
         if (bulkActionRun.isInterrupted()) {
             bulkActionRun.setState(ArrBulkActionRun.State.INTERRUPTED);
             throw new BusinessException("Hromadná akce " + toString() + " byla přerušena.", ArrangementCode.BULK_ACTION_INTERRUPTED).set("code", bulkActionRun.getBulkActionCode());
@@ -197,14 +207,14 @@ public class MultipleBulkAction extends BulkAction {
 
         apply(node, levelWithItems.descItems, TypeLevel.CHILD, parentLevel);
 
-        // apply on child nodes
+        // apply on child nodes in batch
         List<ArrLevel> childLevels = getChildren(level);
-
+        
+        BatchNodeProcessor bnp = new BatchNodeProcessor(this, BATCH_CHILD_NODE_SIZE, actions, levelWithItems, nodeCacheService); 
         for (ArrLevel childLevel : childLevels) {
-            LevelWithItems childLevelWithItems = prepareLevelWithItems(childLevel, levelWithItems);
-
-            generate(childLevelWithItems);
+        	bnp.addItem(childLevel);
         }
+        bnp.processAll();
     }
 
     /**
@@ -218,17 +228,6 @@ public class MultipleBulkAction extends BulkAction {
     private void apply(final ArrNode node, final List<ArrDescItem> items, final TypeLevel typeLevel, final LevelWithItems parentLevelWithItems) {
         actions.stream().filter(action -> action.canApply(typeLevel))
                 .forEach(action -> action.apply(node, items, parentLevelWithItems));
-    }
-
-    /**
-     * Načtení hodnot uzlu.
-     *
-     * @param level uzel
-     * @return  hodnoty uzlu
-     */
-    private List<ArrDescItem> loadDescItems(final ArrLevel level) {
-        List<ArrDescItem> descItems = descItemRepository.findByNodeAndDeleteChangeIsNull(level.getNode());
-        return itemService.loadData(descItems);
     }
 
     @Override

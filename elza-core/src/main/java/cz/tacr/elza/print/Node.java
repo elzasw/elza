@@ -23,11 +23,9 @@ import cz.tacr.elza.service.output.OutputFactoryService;
 import cz.tacr.elza.utils.AppContext;
 
 /**
- * @author Martin Lebeda
- * @author Petr Pytelka
- * @since  22.6.16
+ * Node with data
  */
-public class Node implements RecordProvider, Comparable<Node>, NodesOrder {
+public class Node implements Comparable<Node>, NodesOrder {
 
     private final NodeId nodeId; // vazba na node
     private final Output output;
@@ -174,9 +172,13 @@ public class Node implements RecordProvider, Comparable<Node>, NodesOrder {
         return nodeId;
     }
 
-    @Override
+    /**
+     * Return list of records connected to the node or to description item
+     * @return
+     */
     public List<Record> getRecords() {
-        final List<Record> recordList = new ArrayList<>(records); // interně navázané recordy jako první
+    	// interně navázané recordy jako první
+        final List<Record> recordList = new ArrayList<>(records); 
 
         // recordy z itemů
         for (Item item : getItems()) {
@@ -190,11 +192,6 @@ public class Node implements RecordProvider, Comparable<Node>, NodesOrder {
 
     public List<Record> getNodeRecords() {
         return records;
-    }
-
-    @Override
-    public IteratorNodes getRecordProviderChildren() {
-        return new IteratorNodes(output, new ArrayList<>(getChildren()), outputFactoryService, Output.MAX_CACHED_NODES);
     }
 
     @Override

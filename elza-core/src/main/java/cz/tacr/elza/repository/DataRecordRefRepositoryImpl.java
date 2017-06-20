@@ -13,9 +13,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * Implementation of DataRecordRefRepositoryCustom
  *
- *
- * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 4. 2. 2016
  */
 public class DataRecordRefRepositoryImpl implements DataRecordRefRepositoryCustom {
@@ -39,18 +38,15 @@ public class DataRecordRefRepositoryImpl implements DataRecordRefRepositoryCusto
 
         hql += "AND di.itemType IN (:itemTypes) AND d.dataId IN (:dataIds)";
 
-
-        Query query = entityManager.createQuery(hql);
-
-        if (changeId != null) {
-            query.setParameter("changeId", changeId);
-        }
-
-        query.setParameter("itemTypes", itemTypes);
-
         List<ArrDataRecordRef> result = new LinkedList<>();
         ObjectListIterator<Integer> nodeIdsIterator = new ObjectListIterator<Integer>(dataIds);
         while (nodeIdsIterator.hasNext()) {
+
+            Query query = entityManager.createQuery(hql);
+            if (changeId != null) {
+                query.setParameter("changeId", changeId);
+            }
+            query.setParameter("itemTypes", itemTypes);
             query.setParameter("dataIds", nodeIdsIterator.next());
 
             result.addAll(query.getResultList());

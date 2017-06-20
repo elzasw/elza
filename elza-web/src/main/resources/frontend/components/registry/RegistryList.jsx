@@ -170,8 +170,6 @@ class RegistryList extends AbstractReactComponent {
         } else {
             list = <div className="listbox-container"><Loading /></div>;
         }
-        // Wrap
-        list = <div className="list">{list}</div>;
 
         const {filter} = registryList;
 

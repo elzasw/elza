@@ -29,17 +29,7 @@ import RequestInlineForm from "./RequestInlineForm";
 import {DIGITIZATION, DAO, DAO_LINK, getRequestType} from './ArrUtils.jsx'
 import {refExternalSystemsFetchIfNeeded} from 'actions/refTables/externalSystems';
 import {ControlLabel} from 'react-bootstrap'
-
-const ShortcutsManager = require('react-shortcuts');
-const Shortcuts = require('react-shortcuts/component');
-const keyModifier = Utils.getKeyModifier();
-
-const keymap = {
-    ArrRequestDetail: {
-        xxx: keyModifier + 'e',
-    },
-};
-const shortcutManager = new ShortcutsManager(keymap);
+import {Shortcuts} from 'react-shortcuts';
 
 /**
  * Formulář detailu požadavku na digitalizaci.
@@ -51,10 +41,6 @@ class ArrRequestDetail extends AbstractReactComponent {
         fund: React.PropTypes.object.isRequired,
         userDetail: React.PropTypes.object.isRequired,
         ArrRequestDetail: React.PropTypes.object.isRequired,
-    };
-
-    static childContextTypes = {
-        shortcuts: React.PropTypes.object.isRequired
     };
 
     componentDidMount() {
@@ -90,10 +76,6 @@ class ArrRequestDetail extends AbstractReactComponent {
     handleShortcuts = (action) => {
         console.log("#handleShortcuts", '[' + action + ']', this);
     };
-
-    getChildContext() {
-        return {shortcuts: shortcutManager};
-    }
 
     handleSaveRequest = (data) => {
         const {versionId, requestDetail} = this.props;

@@ -1,47 +1,53 @@
 package cz.tacr.elza.print;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.lang.StringUtils;
+
+import cz.tacr.elza.domain.ParUnitdate;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 
 /**
- * Neformátovaný/neparsovaný text s popisem datumu.
+ * Formatted date/time value for outputs.
  *
- * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
- *         Date: 22.6.16
  */
 public class UnitDateText {
 
     private String valueText;
 
-    /**
-     * @return hodnota valueText
-     */
-    public String serialize() {
-        return getValueText();
+    private UnitDateText(String textForm) {
+    	valueText = textForm;
+	}
+    
+    protected UnitDateText()
+    {
+    	
     }
 
     public String getValueText() {
         return valueText;
     }
 
-    public void setValueText(final String valueText) {
+    public void setValueText(String valueText) {
         this.valueText = valueText;
     }
 
     @Override
-    public boolean equals(final Object o) {
-        return EqualsBuilder.reflectionEquals(o, this);
-    }
-
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-
-    @Override
     public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.SIMPLE_STYLE);
+        return valueText;
     }
+
+	public static UnitDateText valueOf(ParUnitdate parUnitdate) {
+        if (parUnitdate == null) {
+            return null;
+        }
+        UnitDateText result = null;
+        final String format = parUnitdate.getFormat();
+        if (StringUtils.isNotBlank(format)) { // musí být nastaven formát
+        	String textForm = UnitDateConvertor.convertToString(parUnitdate);
+        	if(StringUtils.isNotBlank(textForm)) {
+        		result = new UnitDateText(textForm);
+        	}
+        }
+        return result;
+	}
+    
 }

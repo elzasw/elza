@@ -31,8 +31,7 @@ import {getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {Utils} from 'components/index.jsx';
 import ArrRequestForm from "./ArrRequestForm";
 import {WebApi} from 'actions/index.jsx';
-var ShortcutsManager = require('react-shortcuts');
-var Shortcuts = require('react-shortcuts/component');
+import {Shortcuts} from 'react-shortcuts';
 const scrollIntoView = require('dom-scroll-into-view')
 var classNames = require('classnames');
 import {setFocus, canSetFocus, focusWasSet, isFocusFor, isFocusExactFor} from 'actions/global/focus.jsx'
@@ -43,90 +42,6 @@ import * as perms from 'actions/user/Permission.jsx';
 
 require ('./NodePanel.less');
 
-var keyModifier = Utils.getKeyModifier()
-
-var keymap = {
-    Accordion: {
-        prevItem: keyModifier + 'up',
-        nextItem: keyModifier + 'down',
-        closeItem: 'shift+enter',
-    },
-    NodePanel: {
-        searchItem: keyModifier + 'f',
-        addDescItemType: keyModifier + 'p',
-        addNodeAfter: keyModifier + '+',
-        addNodeBefore: keyModifier + '-',
-        addNodeChild: keyModifier + '*',
-        addNodeEnd: keyModifier + '/',
-    },
-}
-var shortcutManager = new ShortcutsManager(keymap)
-
-var accordionKeyDownHandlers = {
-    Home: function(e) {
-        e.preventDefault()
-        e.stopPropagation()
-
-        const {node} = this.props
-        if (node.selectedSubNodeId === null) {
-            const index = node.viewStartIndex
-            this.setState({focusItemIndex: index}, () => {this.ensureItemVisibleNoForm(index)})
-        }
-    },
-    End: function(e) {
-        e.preventDefault()
-        e.stopPropagation()
-
-        const {node} = this.props
-        if (node.selectedSubNodeId === null) {
-            const index = Math.min(node.viewStartIndex + node.pageSize - 1, node.childNodes.length - 1)
-            this.setState({focusItemIndex: index}, () => {this.ensureItemVisibleNoForm(index)})
-        }
-    },
-    ArrowUp: function(e) {
-        e.preventDefault()
-        e.stopPropagation()
-
-        const {node} = this.props
-        if (node.selectedSubNodeId === null) {
-            const {focusItemIndex} = this.state
-            if (focusItemIndex > node.viewStartIndex) {
-                this.setState({focusItemIndex: focusItemIndex - 1}, () => {this.ensureItemVisibleNoForm(focusItemIndex - 1)})
-            }
-        }
-    },
-    ArrowDown: function(e) {
-        e.preventDefault()
-        e.stopPropagation()
-
-        const {node} = this.props
-        if (node.selectedSubNodeId === null) {
-            const {focusItemIndex} = this.state
-            const max = Math.min(node.viewStartIndex + node.pageSize, node.childNodes.length)
-            if (focusItemIndex + 1 < max) {
-                this.setState({focusItemIndex: focusItemIndex + 1}, () => {this.ensureItemVisibleNoForm(focusItemIndex + 1)})
-            }
-        }
-    },
-    Enter: function(e) {
-        e.preventDefault()
-        e.stopPropagation()
-
-        if (!e.shiftKey) {
-            const {node} = this.props
-            if (node.selectedSubNodeId === null) {
-                const {focusItemIndex} = this.state
-                this.handleOpenItem(node.childNodes[focusItemIndex])
-                this.dispatch(setFocus('arr', 2, 'accordion'))
-            } else {
-                const {focusItemIndex} = this.state
-                this.handleCloseItem(node.childNodes[focusItemIndex])
-                this.dispatch(setFocus('arr', 2, 'accordion'))
-            }
-        }
-    },
-}
-
 var NodePanel = class NodePanel extends AbstractReactComponent {
     constructor(props) {
         super(props);
@@ -136,7 +51,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             'handleCloseItem', 'handleParentNodeClick', 'handleChildNodeClick',
             'getParentNodes', 'getChildNodes', 'getSiblingNodes',
             'renderAccordion', 'renderState', 'transformConformityInfo', 'renderRowItem',
-            'handleShortcuts', 'trySetFocus', 'handleAddDescItemType', 'handleAccordionKeyDown', 'handleVisiblePolicy',
+            'handleShortcuts', 'trySetFocus', 'handleAddDescItemType', 'handleVisiblePolicy',
             'ensureItemVisibleNoForm'
             );
 
@@ -144,15 +59,37 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             focusItemIndex: this.getFocusItemIndex(props, 0)
         }
     }
-
-    handleAccordionKeyDown(event) {
-        if (
-            document.activeElement === ReactDOM.findDOMNode(this.refs.accordionContent) ||
-            document.activeElement === ReactDOM.findDOMNode(this.refs.innerAccordionWrapper)
-        ) { // focus má accordion
-            if (accordionKeyDownHandlers[event.key]) {
-                accordionKeyDownHandlers[event.key].call(this, event)
+    selectorMoveUp = ()=>{
+        const {node} = this.props
+        if (node.selectedSubNodeId === null) {
+            const {focusItemIndex} = this.state
+            if (focusItemIndex > node.viewStartIndex) {
+                this.setState({focusItemIndex: focusItemIndex - 1}, () => {this.ensureItemVisibleNoForm(focusItemIndex - 1)})
             }
+        }
+    }
+    selectorMoveDown = ()=>{
+        const {node} = this.props
+        if (node.selectedSubNodeId === null) {
+            const {focusItemIndex} = this.state
+            const max = Math.min(node.viewStartIndex + node.pageSize, node.childNodes.length)
+            if (focusItemIndex + 1 < max) {
+                this.setState({focusItemIndex: focusItemIndex + 1}, () => {this.ensureItemVisibleNoForm(focusItemIndex + 1)})
+            }
+        }
+    }
+    selectorMoveEnd = ()=>{
+        const {node} = this.props
+        if (node.selectedSubNodeId === null) {
+            const index = Math.min(node.viewStartIndex + node.pageSize - 1, node.childNodes.length - 1)
+            this.setState({focusItemIndex: index}, () => {this.ensureItemVisibleNoForm(index)})
+        }
+    }
+    selectorMoveTop = ()=>{
+        const {node} = this.props
+        if (node.selectedSubNodeId === null) {
+            const index = node.viewStartIndex
+            this.setState({focusItemIndex: index}, () => {this.ensureItemVisibleNoForm(index)})
         }
     }
 
@@ -173,6 +110,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
+        console.log("REQUEST");
         this.requestData(nextProps.versionId, nextProps.node, nextProps.showRegisterJp, nextProps.showDaosJp);
 
         var newState = {
@@ -201,22 +139,23 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         if (canSetFocus()) {
             if (isFocusFor(focus, 'arr', 2, 'accordion') || (node.selectedSubNodeId === null && isFocusFor(focus, 'arr', 2))) {
                 this.setState({}, () => {
-                   ReactDOM.findDOMNode(this.refs.innerAccordionWrapper).focus()
+                   ReactDOM.findDOMNode(this.refs.content).focus()
                    focusWasSet()
                 })
             } else if (isFocusExactFor(focus, 'arr', 2)) {   // jen pokud není třeba focus na něco nižšího, např. prvek formuláře atp
                 // Voláne jen pokud formulář úspěšně focus nenastavil - např. pokud jsou všechna pole formuláře zamčena
                 this.setState({}, () => {
-                    ReactDOM.findDOMNode(this.refs.innerAccordionWrapper).focus()
+                    ReactDOM.findDOMNode(this.refs.content).focus()
                     focusWasSet()
                 })
             }
         }
     }
 
-    handleShortcuts(action) {
+    handleShortcuts(action,e) {
         console.log("#handleShortcuts", '[' + action + ']', this);
-
+        e.preventDefault()
+        e.stopPropagation()
         const {node, versionId, closed, userDetail, fundId} = this.props
         const {focusItemIndex} = this.state;
         const index = indexById(node.childNodes, node.selectedSubNodeId)
@@ -256,12 +195,15 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                     this.handleAddDescItemType()
                 }
                 break
-            case 'closeItem':
-                if (node.selectedSubNodeId !== null) {
-                    actionWithBlur(() => {
-                        this.handleCloseItem(node.childNodes[index])
-                        this.dispatch(setFocus('arr', 2, 'accordion'))
-                    });
+            case 'toggleItem':
+                if (node.selectedSubNodeId === null) {
+                    const {focusItemIndex} = this.state
+                    this.handleOpenItem(node.childNodes[focusItemIndex])
+                    this.dispatch(setFocus('arr', 2, 'accordion'))
+                } else {
+                    const {focusItemIndex} = this.state
+                    this.handleCloseItem(node.childNodes[focusItemIndex])
+                    this.dispatch(setFocus('arr', 2, 'accordion'))
                 }
                 break
             case 'addNodeAfter':
@@ -284,6 +226,18 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                     this.dispatch(addNodeFormArr('ATEND', node, focusItemIndex, versionId));
                 }
                 break
+            case "ACCORDION_MOVE_UP":
+                this.selectorMoveUp();
+                break;
+            case "ACCORDION_MOVE_DOWN":
+                this.selectorMoveDown();
+                break;
+            case "ACCORDION_MOVE_TOP":
+                this.selectorMoveTop();
+                break;
+            case "ACCORDION_MOVE_END":
+                this.selectorMoveEnd();
+                break;
         }
     }
 
@@ -363,10 +317,6 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         // Modální dialog
         const form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit}/>;
         this.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), form));
-    }
-
-    getChildContext() {
-        return { shortcuts: shortcutManager };
     }
 
     ensureItemVisible() {
@@ -737,8 +687,8 @@ return true
             }
         }
         return (
-            <Shortcuts name='Accordion' key='content' className='content' ref='content' handler={this.handleShortcuts}>
-                <div tabIndex={0} className='inner-wrapper' ref="innerAccordionWrapper" onKeyDown={this.handleAccordionKeyDown}>
+            <Shortcuts name='Accordion' key='content' className='content' ref='content' handler={this.handleShortcuts} tabIndex={"0"} global stopPropagation={false}>
+                <div  className='inner-wrapper' ref="innerAccordionWrapper">
                     <div className="menu-wrapper">
                         <NodeActionsBar node={node} selectedSubNodeIndex={focusItemIndex} versionId={versionId} userDetail={userDetail} fundId={fundId} closed={closed}/>
                     </div>
@@ -857,7 +807,7 @@ return true
         })
 
         return (
-            <Shortcuts name='NodePanel' key={'node-panel'} className={cls} handler={this.handleShortcuts}>
+            <Shortcuts name='NodePanel' key={'node-panel'} className={cls} handler={this.handleShortcuts} tabIndex={"0"} global stopPropagation={false}>
                 <div key='main' className='main'>
                     {parents}
                     {this.renderAccordion(form, record, daos, readMode)}
@@ -947,10 +897,6 @@ NodePanel.propTypes = {
     showDaosJp: React.PropTypes.bool.isRequired,
     closed: React.PropTypes.bool.isRequired,
     userDetail: React.PropTypes.object.isRequired,
-}
-
-NodePanel.childContextTypes = {
-    shortcuts: React.PropTypes.object.isRequired
 }
 
 module.exports = connect(mapStateToProps)(NodePanel);

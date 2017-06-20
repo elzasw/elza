@@ -590,6 +590,10 @@ var messages = {
     "arr.fund.addNode.scenario": "Typ jednotky popisu",
     "arr.fund.addNode.noDirection": "Nebylo vybráno umístění.",
 
+    "arr.fund.deleteNode.deleted": "Jednotka popisu byla smazána.",
+    "arr.fund.deleteNode.noSibling": "Nebyli nalezeni žádní další sourozencí. Byl vybrán rodič.",
+    "arr.fund.deleteNode.confirm": "Opravdu chcete smazat tuto jednotku popisu?",
+
     "arr.movements.move.under" : "Přesunout pod",
     "arr.movements.move.before" : "Přesunout před",
     "arr.movements.move.after" : "Přesunout za",

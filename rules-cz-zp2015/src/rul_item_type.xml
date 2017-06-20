@@ -280,7 +280,7 @@
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="ZP2015_DATE_OTHER" data-type="UNITDATE">
-        <name>Jiné datace jednotky popisu než datace vzniku jednotky popisu - specifikace a hodnota</name>
+        <name>Jiné datace jednotky popisu než datace vzniku jednotky popisu</name>
         <shortcut>Jiná datace</shortcut>
         <description>ZP5.2.1 Jiné datace jednotky popisu než datace vzniku jednotky popisu - specifikace a hodnota
         </description>

@@ -5,25 +5,26 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
+import cz.tacr.elza.domain.RegRegisterType;
+
 /**
- * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
- *         Date: 27.6.16
+ * Class to hold Record type info
+ * 
  */
 public class RecordType {
 
     private String name;
     private String code;
-    private int countRecords = 0;
-    private int countDirectRecords = 0;
+    private RecordType parentType;
 
-    /**
-     * Metoda pro získání hodnoty do fieldu v Jasper.
-     * Umožní na položce v detailu volat metody sám nad sebou (nejen implicitně zpřístupněné gettery).
-     *
-     * @return odkaz sám na sebe
-     */
-    public RecordType getRecordType() {
-        return this;
+    private RecordType(RecordType parentType, String code, String name) {
+    	this.parentType = parentType;
+		this.code = code;
+		this.name = name;
+	}
+
+    public RecordType getParentType() {
+    	return parentType;
     }
 
     public String getCode() {
@@ -32,22 +33,6 @@ public class RecordType {
 
     public void setCode(final String code) {
         this.code = code;
-    }
-
-    public int getCountDirectRecords() {
-        return countDirectRecords;
-    }
-
-    public void setCountDirectRecords(final int countDirectRecords) {
-        this.countDirectRecords = countDirectRecords;
-    }
-
-    public int getCountRecords() {
-        return countRecords;
-    }
-
-    public void setCountRecords(final int countRecords) {
-        this.countRecords = countRecords;
     }
 
     public String getName() {
@@ -76,4 +61,38 @@ public class RecordType {
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SIMPLE_STYLE);
     }
+
+    /**
+     * Return new instance of RecordType
+     * @param registerType
+     * @return
+     */
+	public static RecordType newInstance(RecordType parentType, RegRegisterType dbRegisterType) {
+		RecordType recordType = new RecordType(parentType, dbRegisterType.getCode(), dbRegisterType.getName()); 
+		return recordType;
+	}
+
+	/**
+	 * Return existing instance of record type
+	 * @param output
+	 * @param dbRegisterType
+	 * @return
+	 */
+	public static RecordType getInstance(Output output, RegRegisterType dbRegisterType) {
+		String regTypeCode = dbRegisterType.getCode();
+		RecordType recordType = output.getRecordType(regTypeCode);
+		if (recordType == null) {
+			// prepare parent
+			RecordType parentType = null;
+			RegRegisterType dbParentRegisterType = dbRegisterType.getParentRegisterType();
+			if(dbParentRegisterType!=null) {
+				parentType = getInstance(output, dbParentRegisterType);
+			}
+			// create new instance of record type
+			recordType = RecordType.newInstance(parentType, dbRegisterType);
+			// store record type
+			output.addRecordType(recordType);
+		}		
+		return recordType;
+	}
 }

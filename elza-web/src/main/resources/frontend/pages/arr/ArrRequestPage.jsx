@@ -70,20 +70,9 @@ import {
 import ArrParentPage from "./ArrParentPage.jsx";
 
 const classNames = require('classnames');
-const ShortcutsManager = require('react-shortcuts');
-const Shortcuts = require('react-shortcuts/component');
-
-const keyModifier = Utils.getKeyModifier();
+import {Shortcuts} from 'react-shortcuts';
 
 require("./ArrRequestPage.less");
-
-const keymap = ArrParentPage.mergeKeymap({
-    ArrParent: {
-        area1: keyModifier + '1',
-        area2: keyModifier + '2',
-    }
-});
-const shortcutManager = new ShortcutsManager(keymap);
 
 const ArrRequestPage = class extends ArrParentPage {
     constructor(props) {
@@ -147,10 +136,6 @@ const ArrRequestPage = class extends ArrParentPage {
             default:
                 super.handleShortcuts(action);
         }
-    }
-
-    getChildContext() {
-        return {shortcuts: shortcutManager};
     }
 
     /**

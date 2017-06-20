@@ -40,7 +40,9 @@ export function fundNodeInfoFetchIfNeeded(versionId, nodeId, routingKey) {
     return (dispatch, getState) => {
         var state = getState();
         var node = getNode(state, versionId, routingKey);
+        //console.log("FETCH_NODE",node);
         if (node != null && (!node.nodeInfoFetched || node.nodeInfoDirty ) && !node.isNodeInfoFetching) {
+            //console.log("FETCHING_NODE_INFO");
             return dispatch(fundNodeInfoFetch(versionId, nodeId, routingKey));
         }
     }

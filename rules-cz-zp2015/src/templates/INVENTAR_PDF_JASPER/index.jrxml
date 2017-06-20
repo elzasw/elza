@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2016-09-27T12:56:17 -->
+<!-- 2017-06-19T22:12:27 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="index" pageWidth="595" pageHeight="842" sectionType="Part" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" uuid="d2716064-8ae4-40cf-a575-33afba400e3a">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
@@ -11,6 +11,8 @@
 	<parameter name="output" class="cz.tacr.elza.print.Output"/>
 	<parameter name="introPage" class="net.sf.jasperreports.engine.JasperReport"/>
 	<parameter name="contentPage" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="registryPerson" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="puvodcePage" class="net.sf.jasperreports.engine.JasperReport"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -40,6 +42,9 @@
 				<subreportParameter name="output">
 					<subreportParameterExpression><![CDATA[$P{output}]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="puvodcePage">
+					<subreportParameterExpression><![CDATA[$P{puvodcePage}]]></subreportParameterExpression>
+				</subreportParameter>
 				<subreportExpression><![CDATA[$P{introPage}]]></subreportExpression>
 			</p:subreportPart>
 		</part>
@@ -55,6 +60,21 @@
 					<subreportParameterExpression><![CDATA[$P{fund}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportExpression><![CDATA[$P{contentPage}]]></subreportExpression>
+			</p:subreportPart>
+		</part>
+		<part uuid="542597fe-0018-4554-bd4b-a344db057935">
+			<printWhenExpression><![CDATA[$P{output}.getRecordsByType("PERSON").getRecords().size()>0]]></printWhenExpression>
+			<p:subreportPart xmlns:p="http://jasperreports.sourceforge.net/jasperreports/parts" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/parts http://jasperreports.sourceforge.net/xsd/parts.xsd">
+				<subreportParameter name="output">
+					<subreportParameterExpression><![CDATA[$P{output}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="fund">
+					<subreportParameterExpression><![CDATA[$P{fund}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DATA_SOURCE">
+					<subreportParameterExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{output}.getRecordsByType("PERSON").getRecords())]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportExpression><![CDATA[$P{registryPerson}]]></subreportExpression>
 			</p:subreportPart>
 		</part>
 	</detail>

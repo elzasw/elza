@@ -11,6 +11,7 @@ import javax.persistence.Id;
 
 import org.hibernate.MappingException;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.enhanced.TableGenerator;
 import org.hibernate.service.ServiceRegistry;
 import org.hibernate.type.Type;
@@ -39,7 +40,7 @@ public class TableIdGenerator extends TableGenerator {
     }
 
     @Override
-    public Serializable generate(final SessionImplementor session, final Object obj) {
+    public Serializable generate(final SharedSessionContractImplementor session, final Object obj) {
         Serializable id = getReplicatedId(obj);
         if (id == null) {
             id = super.generate(session, obj);

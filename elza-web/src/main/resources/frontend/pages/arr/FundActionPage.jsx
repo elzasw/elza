@@ -40,7 +40,6 @@ import {
 } from 'actions/arr/fundAction.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {getOneSettings} from 'components/arr/ArrUtils.jsx';
-const ShortcutsManager = require('react-shortcuts');
 import {canSetFocus, setFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {Utils} from 'components/index.jsx';
 
@@ -53,16 +52,6 @@ const ActionState = {
     INTERRUPTED: 'INTERRUPTED',
     OUTDATED: 'OUTDATED'
 };
-
-const keyModifier = Utils.getKeyModifier()
-
-var keymap = ArrParentPage.mergeKeymap({
-    ArrParent: {
-        newAction: keyModifier + '+'
-    }
-});
-
-const shortcutManager = new ShortcutsManager(keymap)
 
 class FundActionPage extends ArrParentPage {
 
@@ -101,10 +90,6 @@ class FundActionPage extends ArrParentPage {
             this.dispatch(fundActionFetchConfigIfNeeded(fund.versionId));
             this.dispatch(fundActionFetchDetailIfNeeded(fund.versionId));
         }
-    }
-
-    getChildContext() {
-        return { shortcuts: shortcutManager };
     }
 
     handleShortcuts(action) {

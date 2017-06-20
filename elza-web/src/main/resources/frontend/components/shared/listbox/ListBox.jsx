@@ -6,6 +6,7 @@
 import React from 'react';
 import {AbstractReactComponent} from 'components/index.jsx';
 import ReactDOM from 'react-dom';
+import {Shortcuts} from 'react-shortcuts';
 const scrollIntoView = require('dom-scroll-into-view')
 
 require ('./ListBox.less');
@@ -14,175 +15,13 @@ var _ListBox_placeholder = document.createElement("div");
 var _ListBox_placeholder_cls = "placeholder"
 _ListBox_placeholder.className = _ListBox_placeholder_cls;
 
-var keyDownHandlers = {
-    Enter: function(e) {
-        e.preventDefault()
-        e.stopPropagation()
-
-        const {items} = this.props
-        const {activeIndex} = this.state
-
-        if (activeIndex !== null) {
-            this.props.onSelect && this.props.onSelect(items[activeIndex], activeIndex)
-        }
-    },
-    ' ': function(e) {
-        e.preventDefault()
-        e.stopPropagation()
-
-        const {items} = this.props
-        const {activeIndex} = this.state
-
-        if (activeIndex !== null) {
-            this.props.onCheck && this.props.onCheck(items[activeIndex], activeIndex)
-        }
-    },
-    Delete: function(e) {
-        e.preventDefault()
-        e.stopPropagation()
-
-        const {items, onDelete} = this.props
-        const {activeIndex} = this.state
-
-        if (activeIndex !== null) {
-            onDelete && onDelete(items[activeIndex], activeIndex)
-        }
-    },
-    Home: function(e) {
-        e.preventDefault()
-        e.stopPropagation()
-
-        const {items, canSelectItem, multiselect} = this.props
-
-        if (items.length > 0) {
-            var newActiveIndex = 0
-            if (!canSelectItem(items[newActiveIndex], newActiveIndex)) {
-                newActiveIndex = this.getNextSelectableItemIndex(newActiveIndex)
-            }
-
-            var state = multiselect ? {lastFocus: newActiveIndex, activeIndexes: {[newActiveIndex]: true}} : {lastFocus: newActiveIndex, activeIndex: newActiveIndex}
-            this.setState(state, this.ensureItemVisible.bind(this, newActiveIndex))
-            this.props.onFocus && this.props.onFocus(items[newActiveIndex], newActiveIndex)
-            this.props.onChangeSelection && this.props.onChangeSelection([newActiveIndex])
-        }
-    },
-    End: function(e) {
-        e.preventDefault()
-        e.stopPropagation()
-
-        const {items, canSelectItem, multiselect} = this.props
-
-        if (items.length > 0) {
-            var newActiveIndex = items.length - 1
-            if (!canSelectItem(items[newActiveIndex], newActiveIndex)) {
-                newActiveIndex = this.getPrevSelectableItemIndex(newActiveIndex)
-            }
-
-            var state = multiselect ? {lastFocus: newActiveIndex, activeIndexes: {[newActiveIndex]: true}} : {lastFocus: newActiveIndex, activeIndex: newActiveIndex}
-            this.setState(state, this.ensureItemVisible.bind(this, newActiveIndex))
-            this.props.onFocus && this.props.onFocus(items[newActiveIndex], newActiveIndex)
-            this.props.onChangeSelection && this.props.onChangeSelection([newActiveIndex])
-        }
-    },
-    ArrowUp: function(e) {
-        e.preventDefault()
-        e.stopPropagation()
-
-        const {lastFocus} = this.state
-        const {items, multiselect} = this.props
-
-        if (items.length > 0) {
-            var newActiveIndex = null
-
-            if (lastFocus === null) {
-                newActiveIndex = 0
-            } else {
-                newActiveIndex = this.getPrevSelectableItemIndex(lastFocus)
-            }
-            if (newActiveIndex !== null) {
-                var state = multiselect ? {lastFocus: newActiveIndex, activeIndexes: {[newActiveIndex]: true}} : {lastFocus: newActiveIndex, activeIndex: newActiveIndex}
-                this.setState(state, this.ensureItemVisible.bind(this, newActiveIndex))
-                this.props.onFocus && this.props.onFocus(items[newActiveIndex], newActiveIndex)
-                this.props.onChangeSelection && this.props.onChangeSelection([newActiveIndex])
-            }
-        }
-    },
-    ArrowDown: function(e) {
-        e.preventDefault()
-        e.stopPropagation()
-
-        const {lastFocus} = this.state
-        const {items, multiselect} = this.props
-
-        if (items.length > 0) {
-            var newActiveIndex = null
-
-            if (lastFocus === null) {
-                newActiveIndex = 0
-            } else {
-                newActiveIndex = this.getNextSelectableItemIndex(lastFocus)
-            }
-            if (newActiveIndex !== null) {
-                var state = multiselect ? {lastFocus: newActiveIndex, activeIndexes: {[newActiveIndex]: true}} : {lastFocus: newActiveIndex, activeIndex: newActiveIndex}
-                this.setState(state, this.ensureItemVisible.bind(this, newActiveIndex))
-                this.props.onFocus && this.props.onFocus(items[newActiveIndex], newActiveIndex)
-                this.props.onChangeSelection && this.props.onChangeSelection([newActiveIndex])
-            }
-        }
-    },
-    PageDown: function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const {lastFocus} = this.state;
-        const {items, multiselect} = this.props;
-
-        if (items.length > 0) {
-            var newActiveIndex = null;
-
-            if (lastFocus === null) {
-                newActiveIndex = 0
-            } else {
-                newActiveIndex = this.getNextPageSelectableItemIndex(lastFocus, 10)
-            }
-            if (newActiveIndex !== null) {
-                var state = multiselect ? {lastFocus: newActiveIndex, activeIndexes: {[newActiveIndex]: true}} : {lastFocus: newActiveIndex, activeIndex: newActiveIndex};
-                this.setState(state, this.ensureItemVisible.bind(this, newActiveIndex));
-                this.props.onFocus && this.props.onFocus(items[newActiveIndex], newActiveIndex);
-                this.props.onChangeSelection && this.props.onChangeSelection([newActiveIndex]);
-            }
-        }
-    },
-    PageUp: function(e) {
-        e.preventDefault()
-        e.stopPropagation()
-
-        const {lastFocus} = this.state
-        const {items, multiselect} = this.props
-
-        if (items.length > 0) {
-            var newActiveIndex = null
-
-            if (lastFocus === null) {
-                newActiveIndex = 0
-            } else {
-                newActiveIndex = this.getPrevPageSelectableItemIndex(lastFocus, 10)
-            }
-            if (newActiveIndex !== null) {
-                var state = multiselect ? {lastFocus: newActiveIndex, activeIndexes: {[newActiveIndex]: true}} : {lastFocus: newActiveIndex, activeIndex: newActiveIndex}
-                this.setState(state, this.ensureItemVisible.bind(this, newActiveIndex))
-                this.props.onFocus && this.props.onFocus(items[newActiveIndex], newActiveIndex)
-                this.props.onChangeSelection && this.props.onChangeSelection([newActiveIndex])
-            }
-        }
-    }
-}
+const PAGE_SIZE = 10;
 
 var ListBox = class ListBox extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('handleKeyDown', 'ensureItemVisible', 'getNextSelectableItemIndex', 'getPrevSelectableItemIndex',
+        this.bindMethods('ensureItemVisible', 'getNextSelectableItemIndex', 'getPrevSelectableItemIndex',
             'dragStart', 'dragEnd', 'dragOver', 'handleClick', 'unFocus', 'focus', 'handleDoubleClick')
 
         if (props.multiselect) {
@@ -201,7 +40,77 @@ var ListBox = class ListBox extends AbstractReactComponent {
             }
         }
     }
-
+    selectorMoveUp = (e)=>{
+        this.selectorMoveRelative(-1);
+    }
+    selectorMoveDown = (e)=>{
+        this.selectorMoveRelative(1);
+    }
+    selectorMovePageUp = (e)=>{
+        this.selectorMoveRelative(-1*PAGE_SIZE);
+    }
+    selectorMovePageDown = (e)=>{
+        this.selectorMoveRelative(PAGE_SIZE);
+    }
+    selectorMoveTop = (e)=>{
+        this.selectorMoveToIndex(0);
+    }
+    selectorMoveEnd = (e)=>{
+        this.selectorMoveToIndex(this.props.items.length-1);
+    }
+    selectedItemCheck = (e)=>{
+        this.selectedItemOperation(this.props.onCheck);
+    }
+    selectedItemDelete = (e)=>{
+        this.selectedItemOperation(this.props.onDelete);
+    }
+    selectItem = (e)=>{
+        this.selectedItemOperation(this.props.onSelect);
+    }
+    /**
+     * Wrapper for item operations from props. Checks if the operation exists and that an item is selected.
+     * @param {function} operation
+     */
+    selectedItemOperation = (operation)=>{
+        const {items} = this.props;
+        const {activeIndex} = this.state;
+        if(operation && activeIndex !== null){
+            operation(items[activeIndex],activeIndex)
+        }
+    }
+    selectorMoveRelative = (step) => {
+        const {lastFocus} = this.state;
+        var newIndex = this.getRelativeSelectableItemIndex(lastFocus, step)
+        this.selectorMoveToIndex(newIndex);
+    }
+    selectorMoveToIndex = (index) => {
+        const {items, multiselect} = this.props;
+        if (items.length > 0) {
+            if (index !== null) {
+                var state = multiselect ? {lastFocus: index, activeIndexes: {[index]: true}} : {lastFocus: index, activeIndex: index};
+                this.setState(state, this.ensureItemVisible.bind(this, index));
+                this.props.onFocus && this.props.onFocus(items[index], index);
+                this.props.onChangeSelection && this.props.onChangeSelection([index]);
+            }
+        }
+    }
+    actionMap = {
+        "MOVE_UP":this.selectorMoveUp,
+        "MOVE_DOWN":this.selectorMoveDown,
+        "MOVE_PAGE_UP":this.selectorMovePageUp,
+        "MOVE_PAGE_DOWN":this.selectorMovePageDown,
+        "MOVE_TOP":this.selectorMoveTop,
+        "MOVE_END":this.selectorMoveEnd,
+        "ITEM_CHECK":this.selectedItemCheck,
+        "ITEM_DELETE":this.selectedItemDelete,
+        "ITEM_SELECT":this.selectItem
+    }
+    handleShortcuts = (action, e)=>{
+        e.stopPropagation();
+        e.preventDefault();
+        console.log(action)
+        this.actionMap[action](e);
+    }
     componentWillReceiveProps(nextProps) {
         if (nextProps.multiselect) {
             if (typeof nextProps.activeIndexes !== 'undefined') {
@@ -277,25 +186,14 @@ var ListBox = class ListBox extends AbstractReactComponent {
     }
 
     dragStart(index, e) {
-        const {items, multiselect, canSelectItem} = this.props
+        const {items, multiselect, canSelectItem} = this.props;
 
         this.dragged = e.currentTarget;
         e.dataTransfer.effectAllowed = 'move';
         // Firefox requires dataTransfer data to be set
         e.dataTransfer.setData("text/html", e.currentTarget);
 
-        var canSelect = canSelectItem(items[index], index)
-        /*if (multiselect) {
-            this.setState(canSelect ? {lastFocus: index, activeIndexes: {[index]: true}} : {lastFocus: index, activeIndexes: {}})
-        } else {
-            this.setState(canSelect ? {lastFocus: index, activeIndex: index} : {lastFocus: index, activeIndex: null})
-        }*/
-        if (multiselect) {
-            //this.setState({lastFocus: index, activeIndexes: {}})
-        } else {
-            //this.setState({lastFocus: index, activeIndex: null})
-        }
-        //this.props.onChangeSelection && this.props.onChangeSelection([])
+        var canSelect = canSelectItem(items[index], index);
     }
 
     dragEnd(e) {
@@ -363,64 +261,27 @@ var ListBox = class ListBox extends AbstractReactComponent {
 
         }
     }
-
-    getNextSelectableItemIndex(index) {
-        const {items, canSelectItem} = this.props
-
-        var i = index + 1
-        while (i < items.length) {
-            if (canSelectItem(items[i], i)) {
-                return i
-            }
-            i++
-        }
-        return null
-    }
-
-    getPrevSelectableItemIndex(index) {
-        const {items, canSelectItem} = this.props
-
-        var i = index - 1
-        while (i >= 0) {
-            if (canSelectItem(items[i], i)) {
-                return i
-            }
-            i--
-        }
-        return null
-    }
-
-    getNextPageSelectableItemIndex = (index, pageSize) => {
+    getRelativeSelectableItemIndex = (index, step) => {
         const {items, canSelectItem} = this.props;
-
-        while (pageSize > 0) {
-            var i = index + pageSize;
-            while (i < items.length) {
-                if (canSelectItem(items[i], i)) {
-                    return i;
+        var isDecrementing = step < 0;
+        if(index || index === 0){
+            while (step) {
+                var i = index + step;
+                while (i >= 0 && i < items.length) {
+                    console.log(i);
+                    if (canSelectItem(items[i], i)) {
+                        return i;
+                    }
+                    isDecrementing ? i-- : i++;
                 }
-                i++;
+                isDecrementing ? step++ : step--;
             }
-            pageSize--;
+            console.log(index);
+            return index;
+        } else {
+            return 0;
         }
-        return null;
-    };
-
-    getPrevPageSelectableItemIndex = (index, pageSize) => {
-        const {items, canSelectItem} = this.props;
-
-        while (pageSize > 0) {
-            var i = index - pageSize;
-            while (i >= 0) {
-                if (canSelectItem(items[i], i)) {
-                    return i;
-                }
-                i--;
-            }
-            pageSize--;
-        }
-        return null;
-    };
+    }
 
     getActiveIndexForUse(props, state) {
         var index
@@ -440,16 +301,12 @@ var ListBox = class ListBox extends AbstractReactComponent {
     }
 
     ensureItemVisible(index) {
+
         var itemNode = ReactDOM.findDOMNode(this.refs['item-' + index])
         if (itemNode !== null) {
             var containerNode = ReactDOM.findDOMNode(this.refs.container)
+            console.log("ensureItemVisible",itemNode,containerNode);
             scrollIntoView(itemNode, containerNode, { onlyScrollIfNeeded: true, alignWithTop:false })
-        }
-    }
-
-    handleKeyDown(event) {
-        if (keyDownHandlers[event.key]) {
-            keyDownHandlers[event.key].call(this, event)
         }
     }
 
@@ -471,7 +328,7 @@ var ListBox = class ListBox extends AbstractReactComponent {
     }
 
     focus() {
-        this.setState({}, () => {ReactDOM.findDOMNode(this.refs.container).focus()})
+        this.setState({}, () => {ReactDOM.findDOMNode(this.refs.wrapper).focus()})
     }
 
     render() {
@@ -479,10 +336,10 @@ var ListBox = class ListBox extends AbstractReactComponent {
         const {activeIndex, activeIndexes} = this.state;
 
         var cls = "listbox-container";
-        if (className) {
-            cls += " " + className;
+        var wrapperClass = "listbox-wrapper"
+        if (className){
+             wrapperClass += " " + className
         }
-
         var rows = items.map((item, index) => {
             const active = multiselect ? (activeIndexes[index]) : (index === activeIndex)
             var draggableProps = {}
@@ -509,15 +366,11 @@ var ListBox = class ListBox extends AbstractReactComponent {
         })
 
         return (
-            <div
-                className={cls}
-                onKeyDown={this.handleKeyDown}
-                tabIndex={0}
-                ref='container'
-                onDragOver={this.dragOver}
-            >
-                {rows}
-            </div>
+            <Shortcuts ref="wrapper" name="ListBox" handler={this.handleShortcuts} tabIndex={"0"} className={wrapperClass}>
+                <div className={cls} ref='container' onDragOver={this.dragOver}>
+                    {rows}
+                </div>
+            </Shortcuts>
         );
     }
 }

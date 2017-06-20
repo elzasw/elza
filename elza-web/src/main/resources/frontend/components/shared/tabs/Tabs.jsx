@@ -11,18 +11,10 @@ import {Nav, NavItem} from 'react-bootstrap';
 import {ResizeStore} from 'stores/index.jsx';
 import {AbstractReactComponent, Utils, Icon, i18n, NoFocusButton} from 'components/index.jsx';
 var ShortcutsManager = require('react-shortcuts')
-var Shortcuts = require('react-shortcuts/component')
+import {Shortcuts} from 'react-shortcuts';
 var keyModifier = Utils.getKeyModifier()
 
 require ('./Tabs.less');
-
-var keymap = {
-    Tabs: {
-        prevTab: keyModifier + 'left',
-        nextTab: keyModifier + 'right',
-    },
-}
-var shortcutManager = new ShortcutsManager(keymap)
 
 /**
  *  Obalovací komponenta pro záložky a jejich obsah
@@ -34,10 +26,6 @@ var TabsContainer = class TabsContainer extends React.Component {
         super(props);                   // volaní nadřazeného konstruktoru
 
         this.handleShortcuts = this.handleShortcuts.bind(this);
-    }
-
-    getChildContext() {
-        return { shortcuts: shortcutManager };
     }
 
     handleShortcuts(action, e) {
@@ -93,15 +81,11 @@ var TabsContainer = class TabsContainer extends React.Component {
             cls += " " + this.props.className;
         }
         return (
-            <Shortcuts className={cls} name='Tabs' handler={this.handleShortcuts}>
+            <Shortcuts className={cls} name='Tabs' handler={this.handleShortcuts} stopPropagation={false} global>
                 {this.props.children}
             </Shortcuts>
         );
     }
-}
-
-TabsContainer.childContextTypes = {
-    shortcuts: React.PropTypes.object.isRequired
 }
 
 /**
@@ -175,7 +159,7 @@ var Tabs = class Tabs extends React.Component {
      *  Renderovánaí samotné komponenty přepínacích záložek
     **/
     render() {
-        var tabs = this.props.items.map((item, i) => {            
+        var tabs = this.props.items.map((item, i) => {
             var closeAction;
             var closeAction2;
             if (this.props.closable) {

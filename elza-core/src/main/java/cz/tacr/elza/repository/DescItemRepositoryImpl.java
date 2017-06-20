@@ -95,19 +95,18 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
         hqlBuilder.append("LEFT JOIN arr_data_string ds ON d.data_id = ds.data_id ");
         hqlBuilder.append("WHERE n.node_id IN (:ids) ");
 
-        Query query = entityManager.createNativeQuery(hqlBuilder.toString());
-        query.setParameter("descItemTypeId", titleType.getItemTypeId());
-
-        if (lockChange != null) {
-            query.setParameter("lockChange", lockChange.getChangeId());
-        }
-
-
         Map<Integer, DescItemTitleInfo> result = new HashMap<>(nodeIds.size());
 
         ObjectListIterator<Integer> iterator = new ObjectListIterator<>(nodeIds);
         while (iterator.hasNext()) {
             List<Integer> partIds = iterator.next();
+
+            Query query = entityManager.createNativeQuery(hqlBuilder.toString());
+            query.setParameter("descItemTypeId", titleType.getItemTypeId());
+
+            if (lockChange != null) {
+                query.setParameter("lockChange", lockChange.getChangeId());
+            }
             query.setParameter("ids", partIds);
 
             for (Object[] row : (List<Object[]>) query.getResultList()) {

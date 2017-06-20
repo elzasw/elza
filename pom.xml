@@ -21,6 +21,9 @@
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <enforcer.skip>true</enforcer.skip>
         <cxf.version>3.1.8</cxf.version>
+        <hibernate.version>5.2.8.Final</hibernate.version>
+        <hibernate.search.orm.version>5.7.0.Final</hibernate.search.orm.version>
+        <hibernate.lucene.version>5.5.4</hibernate.lucene.version>
     </properties>
 
     <modules>
@@ -59,7 +62,7 @@
                 <version>1.4.0.RELEASE</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>                                                
+            </dependency>
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-config</artifactId>
@@ -119,11 +122,6 @@
                 <scope>runtime</scope>
             </dependency>
             <dependency>
-                <groupId>org.hibernatespatial</groupId>
-                <artifactId>hibernate-spatial-sqlserver</artifactId>
-                <version>1.1.1</version>
-            </dependency>
-            <dependency>
                 <groupId>org.geotools</groupId>
                 <artifactId>gt-geojson</artifactId>
                 <version>14.0</version>
@@ -159,24 +157,38 @@
                 <artifactId>pdfbox</artifactId>
                 <version>2.0.2</version>
             </dependency>
+
+            <!-- Hibernate -->
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-core</artifactId>
+                <version>${hibernate.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-entitymanager</artifactId>
+                <version>${hibernate.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-search-orm</artifactId>
-                <version>5.5.5.Final</version>
+                <version>${hibernate.search.orm.version}</version>
             </dependency>
-<!--            <dependency>
+            <dependency>
                 <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-core</artifactId>
-                <version>5.2.4.Final</version>
-                <version>5.5.5.Final</version>
-            </dependency>-->
-
+                <artifactId>hibernate-ehcache</artifactId>
+                <version>${hibernate.version}</version>
+            </dependency>
+             <dependency>
+                <groupId>net.sf.ehcache</groupId>
+                <artifactId>ehcache</artifactId>
+                <version>2.10.3</version>
+            </dependency>
             <!-- Hibernate Spatial -->
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-spatial</artifactId>
-<!--            <version>5.2.4.Final</version>-->
-                <version>5.0.9.Final</version>
+                <version>${hibernate.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>postgresql</groupId>
@@ -184,6 +196,12 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <dependency>
+                <groupId>org.hibernatespatial</groupId>
+                <artifactId>hibernate-spatial-sqlserver</artifactId>
+                <version>1.1.1</version>
+            </dependency>
+            
             <dependency>
                 <groupId>com.vividsolutions</groupId>
                 <artifactId>jts</artifactId>
@@ -200,13 +218,7 @@
                 <artifactId>groovy</artifactId>
                 <version>2.4.3</version>
             </dependency>
-            <dependency>
-                <groupId>org.apache.lucene</groupId>
-                <artifactId>lucene-queryparser</artifactId>
-                <!--<version>4.10.4</version>-->
-                <version>5.3.1</version>
-            </dependency>
-
+		
             <dependency>
                 <groupId>net.sf.jasperreports</groupId>
                 <artifactId>jasperreports</artifactId>
