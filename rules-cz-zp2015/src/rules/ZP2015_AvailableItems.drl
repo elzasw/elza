@@ -388,7 +388,7 @@ rule "Univerzální prvky popisu - možné"
 no-loop
 when
     $itemType : RulItemTypeExt(code in
-    ( "ZP2015_FORMAL_TITLE", "ZP2015_OTHER_ID",
+    ( "ZP2015_OTHER_ID",
       // 4.3.1 Odkaz na původce 
       "ZP2015_ORIGINATOR", 
       // 4.3.2 Dějiny jednotky popisu
@@ -423,14 +423,24 @@ when
       "ZP2015_ARRANGE_RULES",
       // ZP4.7.3 Datum (data) popisu 
       "ZP2015_DESCRIPTION_DATE",
-      // 5.2.1 Jiné datace jednotky popisu než datace vzniku jednotky popisu - specifikace a hodnota
-      "ZP2015_DATE_OTHER",
       // ZP 5.2.10 Jazyk
       "ZP2015_LANGUAGE",
       // ZP 5.2.11 Edice a literatura
       "ZP2015_EDITION",
       // Obecná příloha 
       "ZP2015_ATTACHMENT" ) )
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+end
+
+// Prvky možné od úrovně složky níže
+rule "Univerzální prvky popisu - možné od složky níže"
+no-loop
+when
+    $activeLevel: ActiveLevel( )
+    $itemType : RulItemTypeExt(code in
+    ( "ZP2015_FORMAL_TITLE" ) )
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
@@ -455,13 +465,13 @@ then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
 
-// Datace - strojová
-rule "Datace - strojová - možná na složce a níže"
+// Datace - strojová a jiná datace
+rule "Datace - možná na složce a níže"
 no-loop
 when
     $activeLevel: ActiveLevel( )
     $itemType : RulItemTypeExt(code in
-    ( "ZP2015_UNIT_DATE_PRE", "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_POST" ) )
+    ( "ZP2015_UNIT_DATE_PRE", "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_POST", "ZP2015_DATE_OTHER" ) )
     $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
