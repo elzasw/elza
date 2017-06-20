@@ -235,7 +235,7 @@ class FundTreeLazy extends AbstractReactComponent {
                     onClickExtendedSearch={onClickExtendedSearch}
                 />
             </div>
-            <Shortcuts className="fa-tree-wrapper" name="FundTreeLazy" tabIndex={1} handler={(action,e)=>this.handleShortcuts(action,e)} ref="treeWrapper" >
+            <Shortcuts className="fa-tree-wrapper" name="FundTreeLazy" tabIndex={"0"} handler={(action,e)=>this.handleShortcuts(action,e)} ref="treeWrapper" >
                 <div className="fa-tree-lazy-actions">
                     <Button className="tree-collapse" onClick={this.props.onCollapse}><Icon glyph='fa-compress'/>Sbalit vše</Button>
                     {actionAddons}

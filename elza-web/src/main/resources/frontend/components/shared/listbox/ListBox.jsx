@@ -366,7 +366,7 @@ var ListBox = class ListBox extends AbstractReactComponent {
         })
 
         return (
-            <Shortcuts ref="wrapper" name="ListBox" handler={this.handleShortcuts} tabIndex={1} className={wrapperClass}>
+            <Shortcuts ref="wrapper" name="ListBox" handler={this.handleShortcuts} tabIndex={"0"} className={wrapperClass}>
                 <div className={cls} ref='container' onDragOver={this.dragOver}>
                     {rows}
                 </div>

@@ -1182,7 +1182,7 @@ export default class Autocomplete extends AbstractReactComponent {
         var cls = bootInfo.cls;
 
         return (
-            <Shortcuts handler={this.handleShortcuts} name="Autocomplete" tabIndex={1} className={clsMain}>
+            <Shortcuts handler={this.handleShortcuts} name="Autocomplete" tabIndex={"0"} className={clsMain}>
                 <div className='autocomplete-control-box'>
                     <div className={cls}>
                         {this.props.label && <label className='control-label'>{this.props.label}</label>}
