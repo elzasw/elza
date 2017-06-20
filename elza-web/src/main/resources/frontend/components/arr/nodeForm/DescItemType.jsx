@@ -642,7 +642,7 @@ class DescItemType extends AbstractReactComponent {
         }
         //{actions.length > 0 && <div key="actions" className='desc-item-action-container'>{actions.map(i => <span>{i}<Icon glyph="fa-save" /></span>)}</div>}
         return (
-            <Shortcuts key={key} name='DescItem' handler={this.handleDescItemShortcuts.bind(this, descItemIndex)}>
+            <Shortcuts key={key} name='DescItem' handler={this.handleDescItemShortcuts.bind(this, descItemIndex)} alwaysFireHandler global>
                 <div key="container" className={cls} {...dragProps}>
                     {!readMode && infoType.rep == 1 &&
                     <div className='dragger'><Icon className="up" glyph="fa-angle-up"/><Icon className="down"

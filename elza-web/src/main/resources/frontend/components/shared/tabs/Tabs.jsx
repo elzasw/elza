@@ -81,7 +81,7 @@ var TabsContainer = class TabsContainer extends React.Component {
             cls += " " + this.props.className;
         }
         return (
-            <Shortcuts className={cls} name='Tabs' handler={this.handleShortcuts}>
+            <Shortcuts className={cls} name='Tabs' handler={this.handleShortcuts} stopPropagation={false} global>
                 {this.props.children}
             </Shortcuts>
         );

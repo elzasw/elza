@@ -168,7 +168,7 @@ class PartyPage extends AbstractReactComponent {
 
         const centerPanel = <PartyDetail />;
 
-        return <Shortcuts name='Party' handler={this.handleShortcuts} global>
+        return <Shortcuts name='Party' handler={this.handleShortcuts} global stopPropagation={false}>
             <PageLayout
                 splitter={splitter}
                 className='party-page'
@@ -197,4 +197,3 @@ function mapStateToProps(state) {
 }
 
 export default connect(mapStateToProps)(PartyPage);
-

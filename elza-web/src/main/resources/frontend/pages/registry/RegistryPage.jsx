@@ -282,7 +282,7 @@ class RegistryPage extends AbstractReactComponent {
             <RegistryDetail />
         </div>;
 
-        return <Shortcuts name='Registry' handler={this.handleShortcuts} global>
+        return <Shortcuts name='Registry' handler={this.handleShortcuts} global stopPropagation={false}>
             <PageLayout
                 splitter={splitter}
                 key='registryPage'

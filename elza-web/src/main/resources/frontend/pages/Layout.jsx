@@ -90,7 +90,7 @@ class Layout extends AbstractReactComponent {
             return <Tetris onClose={() => { this.setState({showGame: false, canStartGame: false}) }} />;
         }
 
-        return <Shortcuts name='Main' handler={this.handleShortcuts} global>
+        return <Shortcuts name='Main' handler={this.handleShortcuts} global stopPropagation={false}>
             <div className={versionNumber ? 'root-container with-version' : 'root-container'}>
                 <div onClick={() => { canStartGame && this.setState({showGame: true}) }} onMouseEnter={this.handleGameStartOver} onMouseLeave={this.handleGameStartLeave} className={"game-placeholder " + (canStartGame ? "canStart" : "")}>
                     &nbsp;
