@@ -54,7 +54,7 @@ public class DateRangeAction extends Action {
     /**
      * Minimální čas prior
      */
-    private Long dateMinPrior = Long.MAX_VALUE;
+    private long dateMinPrior = Long.MAX_VALUE;
 
     /**
      * Textová reprezentace minimální prior datace.
@@ -64,7 +64,7 @@ public class DateRangeAction extends Action {
     /**
      * Minimální čas
      */
-    private Long dateMin = Long.MAX_VALUE;
+    private long dateMin = Long.MAX_VALUE;
 
     /**
      * Textová reprezentace minimální datace.
@@ -74,7 +74,7 @@ public class DateRangeAction extends Action {
     /**
      * Maximální čas
      */
-    private Long dateMax = Long.MIN_VALUE;
+    private long dateMax = Long.MIN_VALUE;
 
     /**
      * Textová reprezentace maximální datace.
@@ -84,7 +84,7 @@ public class DateRangeAction extends Action {
     /**
      * Maximální čas posterior
      */
-    private Long dateMaxPosterior = Long.MIN_VALUE;
+    private long dateMaxPosterior = Long.MIN_VALUE;
 
     /**
      * Textová reprezentace maximální posterior datace.
@@ -139,33 +139,50 @@ public class DateRangeAction extends Action {
 
     @Override
     public void apply(final ArrNode node, final List<ArrDescItem> items, final LevelWithItems parentLevelWithItems) {
-        for (ArrItem item : items) {
+        for (ArrItem item : items) {        	
             // není použit záměrně if-else, protože teoreticky by šlo nakonfigurovat vše na stejnou položku
             if (inputItemType.equals(item.getItemType())) {
                 ArrItemUnitdate data = (ArrItemUnitdate) item.getItem();
                 data.setFormat(UnitDateConvertor.DATE);
-                if (dateMin > data.getNormalizedFrom()) {
-                    dateMinString = UnitDateConvertor.convertToString(data);
-                    dateMin = data.getNormalizedFrom();
+                Long dataNormalizedFrom = data.getNormalizedFrom();
+                if(dataNormalizedFrom==null) {
+                	dataNormalizedFrom = Long.MAX_VALUE;
                 }
-                if (dateMax < data.getNormalizedTo()) {
-                    dateMax = data.getNormalizedTo();
+                Long dataNormalizedTo = data.getNormalizedTo();
+                if(dataNormalizedTo==null) {
+                	dataNormalizedTo = Long.MIN_VALUE;
+                }
+                
+                if (dateMin > dataNormalizedFrom) {
+                    dateMinString = UnitDateConvertor.convertToString(data);
+                    dateMin = dataNormalizedFrom;
+                }
+                if (dateMax < dataNormalizedTo) {
+                    dateMax = dataNormalizedTo;
                     dateMaxString = UnitDateConvertor.convertToString(data);
                 }
             }
             if (inputItemTypePrior.equals(item.getItemType())) {
                 ArrItemUnitdate data = (ArrItemUnitdate) item.getItem();
                 data.setFormat(UnitDateConvertor.DATE);
-                if (dateMinPrior > data.getNormalizedFrom()) {
+                Long dataNormalizedFrom = data.getNormalizedFrom();
+                if(dataNormalizedFrom==null) {
+                	dataNormalizedFrom = Long.MAX_VALUE;
+                }
+                if (dateMinPrior > dataNormalizedFrom) {
                     dateMinPriorString = UnitDateConvertor.convertToString(data);
-                    dateMinPrior = data.getNormalizedFrom();
+                    dateMinPrior = dataNormalizedFrom;
                 }
             }
             if (inputItemTypePosterior.equals(item.getItemType())) {
                 ArrItemUnitdate data = (ArrItemUnitdate) item.getItem();
                 data.setFormat(UnitDateConvertor.DATE);
-                if (dateMaxPosterior < data.getNormalizedTo()) {
-                    dateMaxPosterior = data.getNormalizedTo();
+                Long dataNormalizedTo = data.getNormalizedTo();
+                if(dataNormalizedTo==null) {
+                	dataNormalizedTo = Long.MIN_VALUE;
+                }
+                if (dateMaxPosterior < dataNormalizedTo) {
+                    dateMaxPosterior = dataNormalizedTo;
                     dateMaxPosteriorString = UnitDateConvertor.convertToString(data);
                 }
             }

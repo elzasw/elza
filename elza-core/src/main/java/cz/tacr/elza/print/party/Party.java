@@ -27,13 +27,6 @@ public abstract class Party {
     private String typeCode;
 
     /**
-     * @return vrací hodnotu formátovanou jako text k tisku
-     */
-    public String serialize() {
-        return (StringUtils.defaultString(record.getRecord()) + " " + StringUtils.defaultString(record.getCharacteristics())).trim();
-    }
-
-    /**
      * @return obsah položky record.getRecord()
      */
     public String getName() {

@@ -135,8 +135,8 @@ public class ElzaCore {
     @Bean
     public MultipartConfigElement multipartConfigElement() {
         MultipartConfigFactory factory = new MultipartConfigFactory();
-        factory.setMaxFileSize("10MB");
-        factory.setMaxRequestSize("10MB");
+        factory.setMaxFileSize("25MB");
+        factory.setMaxRequestSize("100MB");
         return factory.createMultipartConfig();
     }
 }

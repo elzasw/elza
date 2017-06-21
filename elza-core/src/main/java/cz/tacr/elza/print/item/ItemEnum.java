@@ -3,16 +3,14 @@ package cz.tacr.elza.print.item;
 import cz.tacr.elza.print.NodeId;
 
 /**
- * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
- *         Date: 22.6.16
+ * Enumerated Item for outputs
+ * 
+ * This type is without value
  */
 public class ItemEnum extends AbstractItem {
-	
-	String value;
 
-    public ItemEnum(final NodeId nodeId, final String value) {
+    private ItemEnum(final NodeId nodeId) {
         super(nodeId);
-        this.value = value;
     }
 
     @Override
@@ -27,7 +25,11 @@ public class ItemEnum extends AbstractItem {
     
     @Override
     public Object getValue() {
-    	return value;
+    	return "";
     }
+
+	public static AbstractItem newInstance(NodeId nodeId) {
+		return new ItemEnum(nodeId);
+	}
 
 }

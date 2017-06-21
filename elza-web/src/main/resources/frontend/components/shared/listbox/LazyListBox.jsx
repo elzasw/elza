@@ -11,104 +11,16 @@ import {VirtualList, AbstractReactComponent, i18n} from "components";
 import {indexById} from 'stores/app/utils.jsx'
 var classNames = require('classnames');
 const scrollIntoView = require('dom-scroll-into-view')
+import {Shortcuts} from 'react-shortcuts';
 
 const _LLB_FETCH_DELAY = 32
 const _LLB_FETCH_BOUNDARY = 200
-
-function changeFocus(newActiveIndex) {
-    if (this.state.lastFocus !== newActiveIndex) {
-        var state = {lastFocus: newActiveIndex, activeIndex: newActiveIndex}
-        this.setState(state, this.ensureItemVisible.bind(this, newActiveIndex))
-        this.callCallbackAction(newActiveIndex, 'onFocus')
-        if (!this.props.separateFocus) {
-            this.callCallbackAction(newActiveIndex, 'onChangeSelection')
-            this.callCallbackAction(newActiveIndex, 'onSelect')
-        }
-    }
-}
-
-var keyDownHandlers = {
-    Enter: function(e) {
-        e.preventDefault()
-        e.stopPropagation()
-
-        const {activeIndex} = this.state
-
-        if (activeIndex !== null && this.state.selectedIndex !== activeIndex) {
-            this.setState({selectedIndex: activeIndex})
-            this.callCallbackAction(activeIndex, 'onChangeSelection')
-            this.callCallbackAction(activeIndex, 'onSelect')
-        }
-    },
-    ' ': function(e) {
-        e.preventDefault()
-        e.stopPropagation()
-
-        const {activeIndex} = this.state
-
-        if (activeIndex !== null) {
-            this.callCallbackAction(activeIndex, 'onCheck')
-        }
-    },
-    Home: function(e) {
-        e.preventDefault()
-        e.stopPropagation()
-
-        const {itemsCount} = this.state
-        itemsCount > 0 && changeFocus.bind(this, 0)()
-    },
-    End: function(e) {
-        e.preventDefault()
-        e.stopPropagation()
-
-        const {itemsCount} = this.state
-        itemsCount > 0 && changeFocus.bind(this, itemsCount - 1)()
-    },
-    ArrowUp: function(e) {
-        e.preventDefault()
-        e.stopPropagation()
-
-        const {itemsCount, lastFocus} = this.state
-        itemsCount > 0 && changeFocus.bind(this, lastFocus === null ? 0 : Math.max(lastFocus - 1, 0))()
-    },
-    ArrowDown: function(e) {
-        e.preventDefault()
-        e.stopPropagation()
-
-        const {itemsCount, lastFocus} = this.state
-        itemsCount > 0 && changeFocus.bind(this, lastFocus === null ? 0 : Math.min(lastFocus + 1, itemsCount - 1))()
-    },
-    PageDown: function(e) {
-        e.preventDefault()
-        e.stopPropagation()
-
-        const {itemHeight} = this.props
-        const elHeight = ReactDOM.findDOMNode(this.refs.mainContainer).getBoundingClientRect().height
-        const pageSize = Math.floor(elHeight / itemHeight)
-        // console.log(elHeight, itemHeight, pageSize)
-
-        const {itemsCount, lastFocus} = this.state
-        itemsCount > 0 && changeFocus.bind(this, lastFocus === null ? 0 : Math.min(lastFocus + pageSize, itemsCount - 1))()
-    },
-    PageUp: function(e) {
-        e.preventDefault()
-        e.stopPropagation()
-
-        const {itemHeight} = this.props
-        const elHeight = ReactDOM.findDOMNode(this.refs.mainContainer).getBoundingClientRect().height
-        const pageSize = Math.floor(elHeight / itemHeight)
-        // console.log(elHeight, itemHeight, pageSize)
-
-        const {itemsCount, lastFocus} = this.state
-        itemsCount > 0 && changeFocus.bind(this, lastFocus === null ? 0 : Math.max(lastFocus - pageSize, 0))()
-    }
-}
 
 var LazyListBox = class LazyListBox extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('handleKeyDown', 'ensureItemVisible',
+        this.bindMethods('ensureItemVisible',
             'handleClick', 'unFocus', 'handleViewChange', 'handleRenderItem', 'isFetching', 'callFetch', 'callCallbackAction',
             'handleDoubleClick', 'tryCallCallback', 'tryCallSingleCallback', 'tryUpdateSelectedIndex', 'fetchNow')
 
@@ -273,13 +185,6 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
             scrollToIndex: {index},
         })
     }
-
-    handleKeyDown(event) {
-        if (keyDownHandlers[event.key]) {
-            keyDownHandlers[event.key].call(this, event)
-        }
-    }
-
     focus() {
         this.refs.container.focus()
     }
@@ -448,7 +353,94 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
             </div>
         )
     }
+    selectorMoveToIndex = (index) => {
+        if (this.state.lastFocus !== index) {
+            var state = {lastFocus: index, activeIndex: index};
+            this.setState(state, this.ensureItemVisible.bind(this, index));
+            this.callCallbackAction(index, 'onFocus');
+            if (!this.props.separateFocus) {
+                this.callCallbackAction(index, 'onChangeSelection');
+                this.callCallbackAction(index, 'onSelect');
+            }
+        }
+    }
+    getPageHeight = () => {
+        const {itemHeight} = this.props;
+        const elHeight = this.refs.mainContainer.getBoundingClientRect().height;
+        const pageSize = Math.floor(elHeight / itemHeight);
+        return pageSize;
+    }
+    selectorMoveUp = () => {
+        this.selectorMoveRelative(-1);
+    }
+    selectorMoveDown = () => {
+        this.selectorMoveRelative(1);
+    }
+    selectorMovePageUp = () => {
+        this.selectorMoveRelative(this.getPageHeight()*-1);
+    }
+    selectorMovePageDown = () => {
+        this.selectorMoveRelative(this.getPageHeight());
+    }
+    selectorMoveTop = () => {
+        this.selectorMoveToIndex(0);
+    }
+    selectorMoveEnd = () => {
+        this.selectorMoveToIndex(this.state.itemsCount-1);
+    }
+    selectorMoveRelative = (step) => {
+        const {lastFocus} = this.state;
+        var nextFocus = this.getRelativeSelectableItemIndex(lastFocus,step);
+        this.selectorMoveToIndex(nextFocus);
+    }
+    getRelativeSelectableItemIndex = (index, step) => {
+        const {itemsCount} = this.state;
+        var isDecrementing = step < 0;
+        if(index || index === 0){
+            while (step) {
+                var i = index + step;
+                if (i >= 0 && i < itemsCount) {
+                    return i;
+                }
+                isDecrementing ? step++ : step--;
+            }
+            return index;
+        } else {
+            return 0;
+        }
+    }
+    selectedItemCheck = () => {
+        const {activeIndex} = this.state
 
+        if (activeIndex !== null) {
+            this.callCallbackAction(activeIndex, 'onCheck')
+        }
+    }
+    selectItem = () => {
+        const {activeIndex} = this.state
+
+        if (activeIndex !== null && this.state.selectedIndex !== activeIndex) {
+            this.setState({selectedIndex: activeIndex})
+            this.callCallbackAction(activeIndex, 'onChangeSelection')
+            this.callCallbackAction(activeIndex, 'onSelect')
+        }
+    }
+    actionMap = {
+        "MOVE_UP": this.selectorMoveUp,
+        "MOVE_DOWN": this.selectorMoveDown,
+        "MOVE_PAGE_UP": this.selectorMovePageUp,
+        "MOVE_PAGE_DOWN": this.selectorMovePageDown,
+        "MOVE_TOP": this.selectorMoveTop,
+        "MOVE_END": this.selectorMoveEnd,
+        "ITEM_CHECK": this.selectedItemCheck,
+        "ITEM_SELECT": this.selectItem
+    }
+    handleShortcuts = (action,e)=>{
+        console.log("LAZY_LIST",action);
+        e.stopPropagation();
+        e.preventDefault();
+        this.actionMap[action](e);
+    }
     focus() {
         ReactDOM.findDOMNode(this.refs.mainContainer).focus()
     }
@@ -463,19 +455,21 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
         }
 
         return (
-            <div className={cls} ref="mainContainer" onKeyDown={this.handleKeyDown} tabIndex={0}>
-                <VirtualList
-                    ref="virtualList"
-                    tagName='div'
-                    container={this.state.mainContainer}
-                    lazyItemsCount={this.state.itemsCount}
-                    renderItem={this.handleRenderItem}
-                    itemHeight={this.props.itemHeight}
-                    onViewChange={this.handleViewChange}
-                    scrollToIndex={scrollToIndex}
-                    fetching={fetching && fetching === true}
-                />
-            </div>
+            <Shortcuts name="LazyListBox" className="lazy-listbox-wrapper" handler={this.handleShortcuts} tabIndex={"0"}>
+                <div className={cls} ref="mainContainer">
+                    <VirtualList
+                        ref="virtualList"
+                        tagName='div'
+                        container={this.state.mainContainer}
+                        lazyItemsCount={this.state.itemsCount}
+                        renderItem={this.handleRenderItem}
+                        itemHeight={this.props.itemHeight}
+                        onViewChange={this.handleViewChange}
+                        scrollToIndex={scrollToIndex}
+                        fetching={fetching && fetching === true}
+                    />
+                </div>
+            </Shortcuts>
         )
     }
 }

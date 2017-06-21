@@ -20,7 +20,7 @@ public class ItemRecordRef extends AbstractItem {
 
     @Override
     public String serializeValue() {
-        return record.serialize();
+        return record.getRecord();
     }
 
 	@Override

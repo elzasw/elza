@@ -8,35 +8,20 @@ import {connect} from 'react-redux'
 import { AppStore, ResizeStore } from 'stores/index.jsx';
 import {AbstractReactComponent, ContextMenu, Toastr, ModalDialog, WebSocket, Login} from 'components/index.jsx';
 var AppRouter = require ('./AppRouter')
-var ShortcutsManager = require('react-shortcuts')
-var Shortcuts = require('react-shortcuts/component')
-var keyModifier = Utils.getKeyModifier()
-import {Utils} from 'components/index.jsx';
+import {ShortcutManager} from 'react-shortcuts';
+import {Shortcuts} from 'react-shortcuts';
 import {routerNavigate} from 'actions/router.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
 import Tetris from "components/game/Tetris.jsx";
+import keymap from "keymap.jsx";
 
 require('./Layout.less');
 
-var keymap = {
-    Main: {
-        home: 'alt+1',
-        arr: 'alt+2',
-        registry: 'alt+3',
-        party: 'alt+4',
-        admin: 'alt+5',
-    },
-    Tree: {}
-}
-var shortcutManager = new ShortcutsManager(keymap)
+const shortcutManager = new ShortcutManager(keymap)
 
 var _gameRunner = null;
 
 class Layout extends AbstractReactComponent {
-
-    static childContextTypes = {
-        shortcuts: React.PropTypes.object.isRequired
-    };
 
     state = {
         showGame: false,
@@ -95,15 +80,18 @@ class Layout extends AbstractReactComponent {
             this.setState({canStartGame: true});
         }, 1000);
     };
-
+    componentWillMount(){
+        this.dispatch({type:"SHORTCUTS_SAVE",shortcutManager:shortcutManager});
+    }
     render() {
         const {canStartGame, showGame} = this.state;
 
         if (showGame) {
             return <Tetris onClose={() => { this.setState({showGame: false, canStartGame: false}) }} />;
         }
-        return <Shortcuts name='Main' handler={this.handleShortcuts}>
-            <div className='root-container'>
+
+        return <Shortcuts name='Main' handler={this.handleShortcuts} global stopPropagation={false}>
+            <div className={versionNumber ? 'root-container with-version' : 'root-container'}>
                 <div onClick={() => { canStartGame && this.setState({showGame: true}) }} onMouseEnter={this.handleGameStartOver} onMouseLeave={this.handleGameStartLeave} className={"game-placeholder " + (canStartGame ? "canStart" : "")}>
                     &nbsp;
                 </div>
@@ -117,9 +105,13 @@ class Layout extends AbstractReactComponent {
                 <Login />
                 <AppRouter/>
             </div>
+            {typeof versionNumber != "undefined" && <div className="version-container">Verze sestavení aplikace: {versionNumber}</div>}
         </Shortcuts>
     }
 }
+Layout.childContextTypes = {
+    shortcuts: React.PropTypes.object.isRequired
+};
 
 function mapStateToProps(state) {
     const {contextMenu, modalDialog} = state

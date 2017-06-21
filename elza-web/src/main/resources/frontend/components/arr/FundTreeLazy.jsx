@@ -8,84 +8,13 @@ import {propsEquals} from 'components/Utils.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {createReferenceMark, getGlyph, getNodePrevSibling, getNodeNextSibling, getNodeParent, getNodeFirstChild} from 'components/arr/ArrUtils.jsx'
 import './FundTreeLazy.less';
+import {Shortcuts} from 'react-shortcuts';
 
 // Na kolik znaků se má název položky stromu oříznout, jen pokud je nastaven vstupní atribut, že se má název ořezávat
 const TREE_NAME_MAX_CHARS = 60
 
 // Odsazení odshora, musí být definováno, jinak nefunguje ensureItemVisible
 const TREE_TOP_PADDING = 0
-
-const keyDownHandlers = {
-    ArrowUp: function(e) {
-        const {nodes, selectedId, multipleSelection} = this.props
-        e.stopPropagation()
-        e.preventDefault()
-
-        if (!multipleSelection && selectedId !== null) {
-            var index = indexById(nodes, selectedId)
-            if (index !== null && index > 0) {
-                this.handleNodeClick(nodes[index - 1], true)
-            }
-        }
-    },
-    ArrowDown: function(e) {
-        const {nodes, selectedId, multipleSelection} = this.props
-        e.stopPropagation()
-        e.preventDefault()
-
-        if (!multipleSelection) {
-            if (selectedId !== null) {  // něco je označeno
-                var index = indexById(nodes, selectedId)
-                if (index !== null && index + 1 < nodes.length) {
-                    this.handleNodeClick(nodes[index + 1], true)
-                }
-            } else {    // není nic označeno, označíme první položku stromu
-                if (nodes.length > 0) {
-                    this.handleNodeClick(nodes[0], true)
-                }
-            }
-        }
-    },
-    ArrowLeft: function(e) {
-        const {nodes, selectedId, multipleSelection, expandedIds, onOpenCloseNode} = this.props
-        e.stopPropagation()
-        e.preventDefault()
-
-        if (!multipleSelection && selectedId !== null) {
-            var index = indexById(nodes, selectedId)
-            if (index !== null) {
-                var node = nodes[index]
-                if (node.hasChildren && expandedIds[node.id]) { // je rozbalen, zabalíme ho
-                    onOpenCloseNode(node, false)
-                } else {    // jdeme na parenta
-                    var parent = getNodeParent(nodes, selectedId)
-                    parent && this.handleNodeClick(parent, true)
-                }
-            }
-        }
-    },
-    ArrowRight: function(e) {
-        const {nodes, selectedId, multipleSelection, expandedIds, onOpenCloseNode} = this.props
-        e.stopPropagation()
-        e.preventDefault()
-
-        if (!multipleSelection && selectedId !== null) {
-            var index = indexById(nodes, selectedId)
-            if (index !== null) {
-                var node = nodes[index]
-                if (node.hasChildren) {
-                    if (!expandedIds[node.id]) {    // je zabalen, rozbalíme ho
-                        onOpenCloseNode(node, true)
-                    } else {    // jdeme na prvního potomka
-                        var firstChild = getNodeFirstChild(nodes, selectedId);
-                        firstChild && parseInt(firstChild.id) && this.handleNodeClick(firstChild, true)
-                    }
-                } else {    // nemá potomky, nic neděláme
-                }
-            }
-        }
-    }
-};
 
 /**
  * Strom archivních souborů.
@@ -116,7 +45,82 @@ class FundTreeLazy extends AbstractReactComponent {
         onContextMenu: React.PropTypes.func,
         actionAddons: React.PropTypes.object,
     };
-
+    selectorMoveUp = ()=>{
+        const {nodes, selectedId, multipleSelection} = this.props;
+        if (!multipleSelection && selectedId !== null) {
+            var index = indexById(nodes, selectedId)
+            if (index !== null && index > 0) {
+                this.handleNodeClick(nodes[index - 1], true)
+            }
+        }
+    }
+    selectorMoveDown = ()=>{
+        const {nodes, selectedId, multipleSelection} = this.props;
+        if (!multipleSelection) {
+            if (selectedId !== null) {  // něco je označeno
+                var index = indexById(nodes, selectedId)
+                if (index !== null && index + 1 < nodes.length) {
+                    this.handleNodeClick(nodes[index + 1], true)
+                }
+            } else {    // není nic označeno, označíme první položku stromu
+                if (nodes.length > 0) {
+                    this.handleNodeClick(nodes[0], true)
+                }
+            }
+        }
+    }
+    selectorMoveToParentOrClose = ()=>{
+        const {nodes, selectedId, multipleSelection, expandedIds, onOpenCloseNode} = this.props;
+        if (!multipleSelection && selectedId !== null) {
+            var index = indexById(nodes, selectedId)
+            if (index !== null) {
+                var node = nodes[index]
+                if (node.hasChildren && expandedIds[node.id]) { // je rozbalen, zabalíme ho
+                    onOpenCloseNode(node, false)
+                } else {    // jdeme na parenta
+                    var parent = getNodeParent(nodes, selectedId)
+                    parent && this.handleNodeClick(parent, true)
+                }
+            }
+        }
+    }
+    selectorMoveToChildOrOpen = ()=>{
+        const {nodes, selectedId, multipleSelection, expandedIds, onOpenCloseNode} = this.props;
+        if (!multipleSelection && selectedId !== null) {
+            var index = indexById(nodes, selectedId)
+            if (index !== null) {
+                var node = nodes[index]
+                if (node.hasChildren) {
+                    if (!expandedIds[node.id]) {    // je zabalen, rozbalíme ho
+                        onOpenCloseNode(node, true)
+                    } else {    // jdeme na prvního potomka
+                        var firstChild = getNodeFirstChild(nodes, selectedId);
+                        firstChild && parseInt(firstChild.id) && this.handleNodeClick(firstChild, true)
+                    }
+                } else {    // nemá potomky, nic neděláme
+                }
+            }
+        }
+    }
+    handleNodeClick = (node, ensureItemVisible, e)=>{
+        const {onNodeClick} = this.props;
+        onNodeClick && onNodeClick(node, ensureItemVisible, e)
+    }
+    handleNodeDoubleClick = (node, ensureItemVisible, e)=>{
+        const {onNodeDoubleClick} = this.props;
+        onNodeDoubleClick && onNodeDoubleClick(node, ensureItemVisible, e)
+    }
+    actionMap = {
+        "MOVE_UP": this.selectorMoveUp,
+        "MOVE_DOWN": this.selectorMoveDown,
+        "MOVE_TO_PARENT_OR_CLOSE":this.selectorMoveToParentOrClose,
+        "MOVE_TO_CHILD_OR_OPEN":this.selectorMoveToChildOrOpen
+    }
+    handleShortcuts = (action,e)=>{
+        e.stopPropagation();
+        e.preventDefault();
+        this.actionMap[action](e);
+    }
 
     componentDidMount() {
         this.setState({treeContainer: ReactDOM.findDOMNode(this.refs.treeContainer)});
@@ -134,15 +138,6 @@ class FundTreeLazy extends AbstractReactComponent {
     focus = () => {
         ReactDOM.findDOMNode(this.refs.treeWrapper).focus()
     };
-
-    handleKeyDown = (event) => {
-        if (document.activeElement === ReactDOM.findDOMNode(this.refs.treeWrapper)) { // focus má strom
-            if (keyDownHandlers[event.key]) {
-                keyDownHandlers[event.key].call(this, event)
-            }
-        }
-    };
-
     /**
      * Renderování uzlu.
      * @param node {Object} uzel
@@ -154,8 +149,8 @@ class FundTreeLazy extends AbstractReactComponent {
         const expanded = node.hasChildren && this.props.expandedIds[node.id];
 
         const clickProps = {
-            onClick: this.handleNodeClick.bind(this, node, false),
-            onDoubleClick: this.handleNodeDoubleClick.bind(this, node, false),
+            onClick: (e)=>this.handleNodeClick(node, false, e),
+            onDoubleClick: (e)=>this.handleNodeDoubleClick(node, false, e),
         };
 
         let expCol;
@@ -203,16 +198,6 @@ class FundTreeLazy extends AbstractReactComponent {
         </div>;
     };
 
-    handleNodeClick = (node, ensureItemVisible, e) => {
-        const {onNodeClick} = this.props;
-        onNodeClick && onNodeClick(node, ensureItemVisible, e)
-    };
-
-    handleNodeDoubleClick = (node, ensureItemVisible, e) => {
-        const {onNodeDoubleClick} = this.props;
-        onNodeDoubleClick && onNodeDoubleClick(node, ensureItemVisible, e)
-    };
-
     render() {
         const {className, actionAddons, multipleSelection, onFulltextNextItem, onFulltextPrevItem, onFulltextSearch,
             onFulltextChange, filterText, searchedIds, filterCurrentIndex, filterResult,
@@ -250,7 +235,7 @@ class FundTreeLazy extends AbstractReactComponent {
                     onClickExtendedSearch={onClickExtendedSearch}
                 />
             </div>
-            <div className="fa-tree-wrapper" tabIndex={0} ref="treeWrapper" onKeyDown={this.handleKeyDown}>
+            <Shortcuts className="fa-tree-wrapper" name="FundTreeLazy" tabIndex={"0"} handler={(action,e)=>this.handleShortcuts(action,e)} ref="treeWrapper" >
                 <div className="fa-tree-lazy-actions">
                     <Button className="tree-collapse" onClick={this.props.onCollapse}><Icon glyph='fa-compress'/>Sbalit vše</Button>
                     {actionAddons}
@@ -266,7 +251,7 @@ class FundTreeLazy extends AbstractReactComponent {
                         itemHeight={this.props.rowHeight}
                     />}
                 </div>
-            </div>
+            </Shortcuts>
         </div>
     }
 }

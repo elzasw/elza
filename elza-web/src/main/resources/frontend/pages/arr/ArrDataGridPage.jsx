@@ -51,18 +51,11 @@ import {createFundRoot} from 'components/arr/ArrUtils.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {fundTreeFetchIfNeeded} from 'actions/arr/fundTree.jsx'
-var ShortcutsManager = require('react-shortcuts');
-var Shortcuts = require('react-shortcuts/component');
+import {Shortcuts} from 'react-shortcuts';
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {selectTab} from 'actions/global/tab.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
-
-
-const keyModifier = Utils.getKeyModifier()
-const keymap = ArrParentPage.mergeKeymap({});
-
-const shortcutManager = new ShortcutsManager(keymap)
 
 const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
     constructor(props) {
@@ -109,10 +102,6 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
 
     hasPageShowRights(userDetail, activeFund) {
         return userDetail.hasRdPage(activeFund ? activeFund.id : null);
-    }
-
-    getChildContext() {
-        return { shortcuts: shortcutManager };
     }
 
     handleShortcuts(action) {

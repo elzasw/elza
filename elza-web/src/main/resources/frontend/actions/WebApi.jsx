@@ -18,13 +18,13 @@ function getData(data, timeout = 1000) {
 function callWS(url, data, needResponse = true) {
     return new Promise((resolve, reject) => {
         if (needResponse) { // chceme skoro vždy
-            window.ws.send(serverContextPath + '/app' + url, {}, JSON.stringify(data), (successResponse) => {
+            window.ws.send('/app' + url, {}, JSON.stringify(data), (successResponse) => {
                 resolve(successResponse);
             }, (errorResponse) => { // příprava pro budoucí možnost odchytávání klientských výjimek - zavolá se error calbback
                 reject(errorResponse);
             });
         } else {
-            window.ws.send(serverContextPath + '/app' + url, {}, JSON.stringify(data));
+            window.ws.send('/app' + url, {}, JSON.stringify(data));
             resolve();
         }
     });
@@ -37,15 +37,15 @@ function callWS(url, data, needResponse = true) {
  */
 class UrlFactory {
     static exportPackage(code) {
-        return WebApi.ruleUrl + '/exportPackage/' + code;
+        return serverContextPath + WebApi.ruleUrl + '/exportPackage/' + code;
     }
 
     static exportFund(versionId, transformationName) {
-        return WebApi.exportUrl + '/fund/' + versionId + '?transformationName=' + encodeURIComponent(transformationName);
+        return serverContextPath + WebApi.exportUrl + '/fund/' + versionId + '?transformationName=' + encodeURIComponent(transformationName);
     }
 
     static exportRegCoordinate(objectId) {
-        return WebApi.kmlUrl + '/export/regCoordinates/' + objectId;
+        return serverContextPath + WebApi.kmlUrl + '/export/regCoordinates/' + objectId;
     }
 
     static exportArrCoordinate(objectId, versionId) {
@@ -445,7 +445,7 @@ class WebApi {
             detail,
             index: from,
             maxResults: max,
-        });        
+        });
     }
 
     findDaoPackages(versionId, search, unassigned) {

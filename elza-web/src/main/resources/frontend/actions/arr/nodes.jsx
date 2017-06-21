@@ -8,6 +8,7 @@ import {fundExtendedView} from './fund.jsx'
 import * as types from 'actions/constants/ActionTypes.js';
 import {developerNodeScenariosDirty} from 'actions/global/developer.jsx';
 import {findByRoutingKeyInGlobalState} from 'stores/app/utils.jsx'
+import {increaseMultipleNodesVersions} from 'actions/arr/node.jsx';
 
 export function isNodesAction(action) {
     switch (action.type) {
@@ -80,7 +81,7 @@ export function fundCloseNodeTab(versionId, nodeId, routingKey, index) {
         dispatch(_fundCloseNodeTab(versionId, nodeId, routingKey, index));
         var newState = getState();
         var newActiveFund = newState.arrRegion.funds[newState.arrRegion.activeIndex];
-        if (wasSelected) { 
+        if (wasSelected) {
             if (newActiveFund.nodes.nodes.length > 0) {    // bude vybraná nějaká jiná, protože ještě nějaké záložky existují
                 const node = newActiveFund.nodes.nodes[newActiveFund.nodes.activeIndex]
                 dispatch(fundSelectNodeTab(versionId, node.id, node.routingKey, newActiveFund.nodes.activeIndex));
@@ -148,9 +149,23 @@ const moveFunctions = {
  */
 export function moveNodes(direction,versionId,nodes,nodesParent,dest,destParent){
     return (dispatch, getState) => {
+        var state = getState();
+        var activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
+        var nodeTab = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
+        var nodesToUpdate = [...nodes];
+        nodesToUpdate.push(nodesParent);
+        var nextNodeParent;
+        if(direction === "UNDER"){
+            nextNodeParent = dest;
+        } else {
+            nextNodeParent = destParent;
+        }
+        nodesToUpdate.push(nextNodeParent);
+        dispatch(increaseMultipleNodesVersions(versionId,nodesToUpdate));
         dispatch(fundMoveStart(versionId));
         return moveFunctions[direction](versionId, nodes, nodesParent, dest, destParent).then(()=>{
             dispatch(fundMoveFinish(versionId));
+            dispatch(fundSelectSubNode(versionId, nodeTab.selectedSubNodeId, nextNodeParent))
         });
     }
 }

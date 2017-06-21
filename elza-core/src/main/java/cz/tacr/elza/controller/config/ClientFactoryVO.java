@@ -39,6 +39,9 @@ import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.config.ConfigRules;
 import cz.tacr.elza.config.ConfigView;
+import cz.tacr.elza.config.rules.GroupConfiguration;
+import cz.tacr.elza.config.rules.TypeInfo;
+import cz.tacr.elza.config.rules.ViewConfiguration;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
 import cz.tacr.elza.controller.vo.ArrDaoFileVO;
@@ -165,8 +168,6 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.packageimport.ItemTypeUpdater;
-import cz.tacr.elza.packageimport.PackageService;
-import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.DaoFileGroupRepository;
@@ -177,10 +178,8 @@ import cz.tacr.elza.repository.DaoRequestDaoRepository;
 import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.GroupRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
-import cz.tacr.elza.repository.PartyNameComplementRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PermissionRepository;
@@ -202,9 +201,6 @@ import ma.glasnost.orika.MapperFactory;
 
 /**
  * Tovární třída pro vytváření VO objektů a jejich seznamů.
- *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 21.12.2015
  */
 @Service
 public class ClientFactoryVO {
@@ -214,9 +210,6 @@ public class ClientFactoryVO {
     @Autowired
     @Qualifier("configVOMapper")
     private MapperFactory mapperFactory;
-
-    @Autowired
-    private PartyNameComplementRepository partyNameComplementRepository;
 
     @Autowired
     private DaoService daoService;
@@ -1137,10 +1130,7 @@ public class ClientFactoryVO {
      * @return VO skupin zabalených atributů
      */
     public <T extends ArrItem> List<ItemGroupVO> createItemGroupsNew(final String ruleCode, final Integer fundId, final List<T> items) {
-        Map<String, ItemGroupVO> itemGroupVOMap = new HashMap<>();
         Map<RulItemType, List<ArrItemVO>> itemByType = new HashMap<>();
-        List<ItemTypeDescItemsLiteVO> itemTypeVOList = new ArrayList<>();
-
         // vytvoření VO hodnot atributů
         for (T item : items) {
             List<ArrItemVO> itemList = itemByType.get(item.getItemType());
@@ -1152,7 +1142,8 @@ public class ClientFactoryVO {
 
             itemList.add(createItem(item));
         }
-
+    	
+        List<ItemTypeDescItemsLiteVO> itemTypeVOList = new ArrayList<>();
         // zjištění použitých typů atributů a jejich převod do VO
         for (RulItemType descItemType : itemByType.keySet()) {
             ItemTypeDescItemsLiteVO itemTypeVO = createDescItemTypeLiteVO(descItemType);
@@ -1160,51 +1151,66 @@ public class ClientFactoryVO {
             itemTypeVO.setDescItems(itemByType.get(descItemType));
         }
 
+        // mapování id na kod atributu
         Map<Integer, String> codeToId = new HashMap<>();
-
         itemByType.keySet().forEach(type -> codeToId.put(type.getItemTypeId(), type.getCode()));
+
+        ViewConfiguration viewConfig = elzaRules.getViewConfiguration(ruleCode, fundId);
+    	List<ItemGroupVO> allItemGroups = new ArrayList<>();
+        Map<GroupConfiguration, ItemGroupVO> itemGroupVOMap = new HashMap<>();
+        // prepare empty groups
+        if(viewConfig!=null)
+        {
+        	for(GroupConfiguration groupConfig: viewConfig.getGroups())
+        	{
+        		ItemGroupVO groupVo = new ItemGroupVO(groupConfig.getCode());
+        		groupVo.setTypes(new ArrayList<>()); // should be removed after moving logic into ItemTypeGroupVO 
+        		allItemGroups.add(groupVo);
+        		itemGroupVOMap.put(groupConfig, groupVo);
+        	}
+        }
+        // prepare default group for all other items
+        ItemGroupVO defaultGroupVo = new ItemGroupVO(elzaRules.getDefaultGroupConfigurationCode());
+        defaultGroupVo.setTypes(new ArrayList<>()); // should be removed after moving logic into ItemTypeGroupVO
+        allItemGroups.add(defaultGroupVo);
 
         // rozřazení do skupin podle konfigurace
         for (ItemTypeDescItemsLiteVO descItemTypeVO : itemTypeVOList) {
-            ConfigRules.Group group = elzaRules.getGroupByType(ruleCode, fundId, codeToId.get(descItemTypeVO.getId()));
-            ItemGroupVO itemGroupVO = itemGroupVOMap.get(group.getCode());
-
-            if (itemGroupVO == null) {
-                itemGroupVO = new ItemGroupVO(group.getCode());
-                itemGroupVOMap.put(group.getCode(), itemGroupVO);
+            GroupConfiguration groupConfig = viewConfig.getGroupForType(codeToId.get(descItemTypeVO.getId()));
+            ItemGroupVO itemGroupVO;
+            if(groupConfig!=null) {
+            	itemGroupVO = itemGroupVOMap.get(groupConfig);
+            } else {
+            	itemGroupVO = defaultGroupVo;
             }
 
             List<ItemTypeDescItemsLiteVO> itemTypeList = itemGroupVO.getTypes();
-            if (itemTypeList == null) {
-                itemTypeList = new ArrayList<>();
-                itemGroupVO.setTypes(itemTypeList);
-            }
-
             itemTypeList.add(descItemTypeVO);
         }
 
-        ArrayList<ItemGroupVO> itemGroupVOList = new ArrayList<>(itemGroupVOMap.values());
-
-        List<String> typeGroupCodes = elzaRules.getTypeGroupCodes(ruleCode, fundId);
-
-        // seřazení skupin
-        Collections.sort(itemGroupVOList, (left, right) -> Integer
-                .compare(typeGroupCodes.indexOf(left.getCode()), typeGroupCodes.indexOf(right.getCode())));
+        // Filter empty groups
+        List<ItemGroupVO> itemGroupVOList = allItemGroups.stream().filter(g -> g.getTypes().size()>0).collect(Collectors.toList());
 
         // seřazení položek ve skupinách
         for (ItemGroupVO itemGroupVO : itemGroupVOList) {
-            List<String> typeInfos = elzaRules.getTypeCodesByGroupCode(ruleCode, fundId, itemGroupVO.getCode());
-            if (typeInfos.isEmpty()) {
+        	boolean ordered = false;
+        	
+            if(viewConfig!=null) {
+            	GroupConfiguration groupConfig = viewConfig.getGroup(itemGroupVO.getCode());
+            	if(groupConfig!=null) {
+            		List<String> typeInfos = groupConfig.getTypeCodes();
+                    // seřazení typů atributů podle konfigurace
+                    Collections.sort(itemGroupVO.getTypes(), (left, right) -> Integer
+                            .compare(typeInfos.indexOf(codeToId.get(left.getId())), typeInfos.indexOf(codeToId.get(
+                                    right.getId()))));
+                    ordered = true;
+            	}
+            }
 
+            if (!ordered) {
                 // seřazení typů atributů podle viewOrder
                 Collections.sort(itemGroupVO.getTypes(), (left, right) -> Integer
                         .compare(left.getViewOrder(), right.getViewOrder()));
-            } else {
-
-                // seřazení typů atributů podle konfigurace
-                Collections.sort(itemGroupVO.getTypes(), (left, right) -> Integer
-                        .compare(typeInfos.indexOf(codeToId.get(left.getId())), typeInfos.indexOf(codeToId.get(
-                                right.getId()))));
             }
 
             itemGroupVO.getTypes().forEach(descItemType -> {
@@ -1273,7 +1279,25 @@ public class ClientFactoryVO {
             }
         }
 
-        Map<String, ItemTypeGroupVO> itemTypeGroupVOMap = new HashMap<>();
+        // Prepare list of groups        
+        ViewConfiguration viewConfig = elzaRules.getViewConfiguration(ruleCode, fundId);        
+        Map<GroupConfiguration, ItemTypeGroupVO> itemTypeGroupVOMap = new HashMap<>();
+        List<ItemTypeGroupVO> result = new ArrayList<>();
+        // prepare empty groups
+        if(viewConfig!=null)
+        {
+        	for(GroupConfiguration groupConfig: viewConfig.getGroups())
+        	{
+        		ItemTypeGroupVO groupVo = new ItemTypeGroupVO(groupConfig.getCode(), groupConfig.getName());
+        		groupVo.setTypes(new ArrayList<>()); // should be removed after moving logic into ItemTypeGroupVO 
+        		result.add(groupVo);
+        		itemTypeGroupVOMap.put(groupConfig, groupVo);
+        	}
+        }
+        // prepare default group for all other items
+        ItemTypeGroupVO defaultGroupVo = new ItemTypeGroupVO(elzaRules.getDefaultGroupConfigurationCode(), null);
+        defaultGroupVo.setTypes(new ArrayList<>()); // should be removed after moving logic into ItemTypeGroupVO
+        result.add(defaultGroupVo);
 
         for (ItemTypeLiteVO itemTypeVO : itemTypeExtList) {
 
@@ -1281,25 +1305,31 @@ public class ClientFactoryVO {
             List<Integer> favoriteSpecIds = typeSpecsMap.get(itemTypeVO.getId());
             itemTypeVO.setFavoriteSpecIds(favoriteSpecIds);
 
-            ConfigRules.Group group = elzaRules.getGroupByType(ruleCode, fundId, codeToId.get(itemTypeVO.getId()));
-            ItemTypeGroupVO itemTypeGroupVO = itemTypeGroupVOMap.get(group.getCode());
+            TypeInfo typeInfo = null;
+            ItemTypeGroupVO itemTypeGroupVO;
 
-            if (itemTypeGroupVO == null) {
-                itemTypeGroupVO = new ItemTypeGroupVO(group.getCode(), group.getName());
-                itemTypeGroupVOMap.put(group.getCode(), itemTypeGroupVO);
+            String itemTypeCode = codeToId.get(itemTypeVO.getId());
+            GroupConfiguration groupConfig = null;
+            if(viewConfig!=null) {
+            	groupConfig = viewConfig.getGroupForType(itemTypeCode);
+            }
+            if(groupConfig!=null) {
+            	itemTypeGroupVO = itemTypeGroupVOMap.get(groupConfig);
+            	// get type info
+            	typeInfo = groupConfig.getTypeInfo(itemTypeCode);
+            } else {
+            	itemTypeGroupVO = defaultGroupVo;
             }
 
-            List<ItemTypeLiteVO> itemTypeList = itemTypeGroupVO.getTypes();
-            if (itemTypeList == null) {
-                itemTypeList = new ArrayList<>();
-                itemTypeGroupVO.setTypes(itemTypeList);
-            }
+            // set width from type info
+            itemTypeVO.setWidth(typeInfo!=null?typeInfo.getWidth():1);
 
-            itemTypeVO.setWidth(elzaRules.getTypeWidthByCode(ruleCode, fundId, codeToId.get(itemTypeVO.getId())));
+            List<ItemTypeLiteVO> itemTypeList = itemTypeGroupVO.getTypes();            
             itemTypeList.add(itemTypeVO);
         }
-
-        return new ArrayList<>(itemTypeGroupVOMap.values());
+        
+        // remove empty groups and return result
+        return result.stream().filter(g -> g.getTypes().size()>0 ).collect(Collectors.toList());
     }
 
     private ItemTypeLiteVO createItemTypeLite(final RulItemTypeExt itemTypeExt) {

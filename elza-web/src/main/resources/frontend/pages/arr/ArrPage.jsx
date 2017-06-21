@@ -50,26 +50,14 @@ import ArrHistoryForm from 'components/arr/ArrHistoryForm.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {fundTreeFetchIfNeeded} from 'actions/arr/fundTree.jsx'
-const ShortcutsManager = require('react-shortcuts');
-const Shortcuts = require('react-shortcuts/component');
+import {Shortcuts} from 'react-shortcuts';
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {selectTab} from 'actions/global/tab.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 import {getMapFromList} from 'stores/app/utils.jsx'
 
-const keyModifier = Utils.getKeyModifier()
 
-const keymap = ArrParentPage.mergeKeymap({
-    ArrParent: {
-        registerJp: keyModifier + 'j',
-        area1: keyModifier + '1',
-        area2: keyModifier + '2',
-        area3: keyModifier + '3',
-    },
-});
-
-const shortcutManager = new ShortcutsManager(keymap)
 
 class ArrPage extends ArrParentPage {
     static PropTypes = {
@@ -212,10 +200,6 @@ class ArrPage extends ArrParentPage {
             default:
                 super.handleShortcuts(action);
         }
-    }
-
-    getChildContext() {
-        return { shortcuts: shortcutManager };
     }
 
     /**
@@ -406,15 +390,6 @@ class ArrPage extends ArrParentPage {
 
         var itemActions = [];
 
-        if (activeInfo.activeFund && !activeInfo.activeFund.closed) {
-            altActions.push(
-                <Button key="fas" onClick={()=>{}}><Icon glyph="fa-cogs"/>
-                    <div><span className="btnText">{i18n('ribbon.action.arr.fund.fas')}</span></div>
-                </Button>
-            )
-        }
-
-
         altActions.push(
             <Button active={this.props.arrRegion.showRegisterJp} onClick={this.handleRegisterJp} key="toggle-record-jp">
                 <Icon glyph="fa-th-list"/>
@@ -453,7 +428,7 @@ class ArrPage extends ArrParentPage {
             var nodeIndex = activeFund.nodes.activeIndex;
             if (nodeIndex !== null) {
                 var activeNode = activeFund.nodes.nodes[nodeIndex];
-                const activeNodeObj = getMapFromList(activeNode.allChildNodes)[activeNode.selectedSubNodeId];
+                const activeNodeObj = getMapFromList(activeNode.childNodes)[activeNode.selectedSubNodeId];
 
                 if (activeNode.selectedSubNodeId !== null) {
                     itemActions.push(

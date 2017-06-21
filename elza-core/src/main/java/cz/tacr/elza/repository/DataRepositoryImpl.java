@@ -50,7 +50,8 @@ import cz.tacr.elza.utils.ObjectListIterator;
 
 
 /**
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
+ * Implementation of DataRepositoryCustom
+ * 
  * @since 03.02.2016
  */
 public class DataRepositoryImpl implements DataRepositoryCustom {
@@ -81,20 +82,17 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             hql += " AND di.itemType IN (:itemTypes)";
         }
 
-
-        Query query = entityManager.createQuery(hql);
-
-        if (changeId != null) {
-            query.setParameter("changeId", changeId);
-        }
-
-        if (CollectionUtils.isNotEmpty(itemTypes)) {
-            query.setParameter("itemTypes", itemTypes);
-        }
-
         List<ArrData> result = new LinkedList<>();
         ObjectListIterator<Integer> nodeIdsIterator = new ObjectListIterator<Integer>(nodeIds);
         while (nodeIdsIterator.hasNext()) {
+
+            Query query = entityManager.createQuery(hql);
+            if (changeId != null) {
+                query.setParameter("changeId", changeId);
+            }
+            if (CollectionUtils.isNotEmpty(itemTypes)) {
+                query.setParameter("itemTypes", itemTypes);
+            }
             query.setParameter("nodeIds", nodeIdsIterator.next());
 
             result.addAll(query.getResultList());
@@ -120,19 +118,16 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
         hql += "AND di.itemType IN (:itemTypes) AND d.dataId IN (:dataIds)";
 
-
-        Query query = entityManager.createQuery(hql);
-
-        if (changeId != null) {
-            query.setParameter("changeId", changeId);
-        }
-
-        query.setParameter("itemTypes", itemTypes);
-
         List<ArrData> result = new LinkedList<>();
         ObjectListIterator<Integer> nodeIdsIterator = new ObjectListIterator<Integer>(dataIds);
         while (nodeIdsIterator.hasNext()) {
-            query.setParameter("dataIds", nodeIdsIterator.next());
+
+            Query query = entityManager.createQuery(hql);
+            if (changeId != null) {
+                query.setParameter("changeId", changeId);
+            }
+            query.setParameter("itemTypes", itemTypes);
+        	query.setParameter("dataIds", nodeIdsIterator.next());
 
             result.addAll(query.getResultList());
         }

@@ -388,19 +388,59 @@ rule "Univerzální prvky popisu - možné"
 no-loop
 when
     $itemType : RulItemTypeExt(code in
-    ( "ZP2015_FORMAL_TITLE", "ZP2015_ORIGINATOR", "ZP2015_OTHER_ID",
-      "ZP2015_UNIT_SOURCE", "ZP2015_UNIT_HIST", "ZP2015_UNIT_CURRENT_STATUS",
-      // ZP 4.1 - 4.3 - vzdy mozne, neni soucasti uvodu
-      "ZP2015_UNIT_ACCESS","ZP2015_UNIT_INFO_RIGHTS", "ZP2015_UNIT_COPY_RIGHTS",
-      // ZP4.3.3 Způsob uspořádání jednotky popisu a ZP4.3.6 Budoucí přírůstky
-      "ZP2015_UNIT_ARR", "ZP2015_FUTURE_UNITS",
+    ( "ZP2015_OTHER_ID",
+      // 4.3.1 Odkaz na původce 
+      "ZP2015_ORIGINATOR", 
+      // 4.3.2 Dějiny jednotky popisu
+      "ZP2015_UNIT_HIST", 
+      // 4.3.3 Způsob uspořádání jednotky popisu
+      "ZP2015_UNIT_ARR",
+      // 4.3.4 Tematický popis jednotky popisu
+      "ZP2015_UNIT_CONTENT",
+      // 4.3.5 Přímý zdroj akvizice
+      "ZP2015_UNIT_SOURCE", 
+      // ZP4.3.6 Budoucí přírůstky 
+      "ZP2015_FUTURE_UNITS",
+      // 4.4.1 Podmínky přístupu, práva k jednotce popisu a její reprodukci
+      "ZP2015_UNIT_ACCESS",
+      // 4.4.2 Možnost zveřejnění informací o jednotce popisu
+      "ZP2015_UNIT_INFO_RIGHTS", 
+      // 4.4.3 Možnost zveřejnění reprodukce jednotky popisu
+      "ZP2015_UNIT_COPY_RIGHTS",
+      // 4.4.4 Fyzický stav jednotky popisu a technické požadavky
+      "ZP2015_UNIT_CURRENT_STATUS",
+      // ZP 4.5.1 Identifikace předlohy kopie
+      "ZP2015_COPY_SOURCE",
       // ZP 4.5.2
       "ZP2015_RELATED_UNITS",
+      // ZP 4.5.3
+      "ZP2015_EXISTING_COPY",
       // Poznámky - ZP 4.6.1, 4.6.2
       "ZP2015_INTERNAL_NOTE", "ZP2015_NOTE",
+      // 4.7.1 Zpracovatel jednotky popisu
+      "ZP2015_ARRANGER",
       // 4.7.2 Pravidla zpracování jednotky popisu
-      "ZP2015_ARRANGE_RULES", "ZP2015_DESCRIPTION_DATE",
-      "ZP2015_LANGUAGE", "ZP2015_ATTACHMENT" ) )
+      "ZP2015_ARRANGE_RULES",
+      // ZP4.7.3 Datum (data) popisu 
+      "ZP2015_DESCRIPTION_DATE",
+      // ZP 5.2.10 Jazyk
+      "ZP2015_LANGUAGE",
+      // ZP 5.2.11 Edice a literatura
+      "ZP2015_EDITION",
+      // Obecná příloha 
+      "ZP2015_ATTACHMENT" ) )
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+end
+
+// Prvky možné od úrovně složky níže
+rule "Univerzální prvky popisu - možné od složky níže"
+no-loop
+when
+    $activeLevel: ActiveLevel( )
+    $itemType : RulItemTypeExt(code in
+    ( "ZP2015_FORMAL_TITLE" ) )
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
@@ -425,14 +465,13 @@ then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
 
-
-// Datace - strojová
-rule "Datace - strojová - možná na složce a níže"
+// Datace - strojová a jiná datace
+rule "Datace - možná na složce a níže"
 no-loop
 when
     $activeLevel: ActiveLevel( )
     $itemType : RulItemTypeExt(code in
-    ( "ZP2015_UNIT_DATE_PRE", "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_POST" ) )
+    ( "ZP2015_UNIT_DATE_PRE", "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_POST", "ZP2015_DATE_OTHER" ) )
     $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
@@ -463,6 +502,16 @@ when
     $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM") ) from $activeLevel.descItems
 then
     $itemType.setType(RulItemType.Type.RECOMMENDED);
+end
+
+// Povolení všech specifikací jiné datace označení
+rule "Povolení všech jiných datací (ZP2015_DATE_OTHER)"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ZP2015_DATE_OTHER")
+    $itemSpec : RulItemSpecExt() from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
 
 // Doporuceni na textovou dataci
