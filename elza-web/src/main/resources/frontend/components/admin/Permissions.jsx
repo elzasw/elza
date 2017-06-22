@@ -12,6 +12,7 @@ import {indexById} from 'stores/app/utils.jsx'
 import FundField from './FundField.jsx'
 import ScopeField from './ScopeField.jsx'
 import * as perms from 'actions/user/Permission.jsx';
+import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
 
 require('./Permissions.less');
 
@@ -56,7 +57,7 @@ const Permissions2 = class Permissions2 extends AbstractReactComponent {
         );
 
         this.state = {
-            scopes: this.getScopes(props)
+            scopes: this.getScopes(props.scopesData)
         };
     }
 
@@ -66,13 +67,20 @@ const Permissions2 = class Permissions2 extends AbstractReactComponent {
 
     componentWillReceiveProps(nextProps) {
         this.setState({
-            scopes: this.getScopes(nextProps)
+            scopes: this.getScopes(nextProps.scopesData)
         });
     }
-
-    getScopes(props) {
-        const {scopesData} = props;
-        const scopeIndex = indexById(scopesData.scopes, null, 'versionId');
+    /**
+     * Získá pole dostupných scope ze store. Pokud ve store žádný neexistuje, načte je ze serveru.
+     * @param {object} scopesData
+     * @return {array}
+     */
+    getScopes(scopesData) {
+        var versionId = -1;
+        if(!scopesData.scopes){
+            this.dispatch(requestScopesIfNeeded(versionId));
+        }
+        const scopeIndex = indexById(scopesData.scopes, versionId, 'versionId');
         let scopes;
         if (scopeIndex !== null) {
             scopes = scopesData.scopes[scopeIndex].scopes;

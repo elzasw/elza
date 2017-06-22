@@ -13,7 +13,6 @@
 .autocomplete-control-box {
     width: 100%;
     display: inline-block;
-    //margin-left: -1px;
 
     .autocomplete-input-container {
         width: 100%;
@@ -33,7 +32,7 @@
             }
 
             &.detail {
-                right: 5px;
+                right: 19px;
             }
 
             .icon {
@@ -63,6 +62,9 @@
     border: 1px solid #bfbfbf;
     position: fixed;
     z-index: 9999;
+    display:flex;
+    flex-direction: column;
+    visibility:hidden;
 
     &.active {
         @color-rgba: rgba(red(@input-border-focus), green(@input-border-focus), blue(@input-border-focus), .6);
@@ -72,20 +74,16 @@
     }
 
     .autocomplete-menu-wrapper {
-        max-height: 160px;
-        max-width: 600px;
-        min-width: 350px;
-        overflow-y: auto;
-        overflow-x: hidden;
+        flex-grow: 2;
+        flex-shrink: 2;
         padding-right: 8px;
 
         .autocomplete-menu {
+            display:table;
             height: 100%;
-            /*padding-right: 20px;*/
-            width: 100%;
 
             .item {
-                width: 100%;
+                cursor: pointer;
                 display: flex;
 
                 .depth-container {
@@ -95,15 +93,13 @@
                         width: @autocomplete-tree-depth;
                     }
                 }
-
                 .item-text {
+                    display: inline-block;
                     margin-right: 8px;
                     padding: 0 4px;
                     white-space: nowrap;
                     flex-shrink: 0;
                 }
-
-                cursor: pointer;
                 &.not-selectable {
                     cursor: default;
                     .item-text {
@@ -118,7 +114,6 @@
                         font-style: italic;
                     }
                 }
-
                 .node-expand-collapse {
                     cursor: pointer;
                     width: 20px;
@@ -132,7 +127,6 @@
                     &.collapsed {
                     }
                 }
-
                 &.active {
                     font-weight: bold;
                 }
@@ -152,19 +146,14 @@
     .autocomplete-menu-footer {
         height: 32px;
         background: #cfcfcf;
+        flex-grow: 0;
+        flex-shrink: 0;
     }
     .autocomplete-menu-header {
         height: 32px;
         background: #cfcfcf;
-    }
-    &.has-header .autocomplete-menu {
-        height: calc(~"100% - 32px");
-    }
-    &.has-footer .autocomplete-menu {
-        height: calc(~"100% - 32px");
-    }
-    &.has-header.has-footer .autocomplete-menu {
-        height: calc(~"100% - 64px");
+        flex-grow: 0;
+        flex-shrink: 0;
     }
 
     .autocomplete-menu-footer {

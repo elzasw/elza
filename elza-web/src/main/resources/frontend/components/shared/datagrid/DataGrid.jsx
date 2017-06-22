@@ -10,92 +10,10 @@ import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Resizer} from 'components/index.jsx';
 const scrollIntoView = require('dom-scroll-into-view')
 import {propsEquals, getScrollbarWidth} from 'components/Utils.jsx'
+import {Shortcuts} from 'react-shortcuts';
 
 const __emptyColWidth = 8000
 const __minColWidth = 16
-
-const keyDownHandlers = {
-    changeFocus: function(newFocus) {
-        this.setState({ focus: newFocus, selectedRowIndexes: {[newFocus.row]: true} }, this.ensureFocusVisible(newFocus))
-
-        const {onChangeFocus, onChangeRowIndexes} = this.props
-        onChangeFocus && onChangeFocus(newFocus.row, newFocus.col)
-        onChangeRowIndexes && onChangeRowIndexes([newFocus.row]);
-    },
-    Enter: function(e) {
-        const {focus} = this.state
-
-        e.stopPropagation();
-        e.preventDefault();
-
-        this.handleEdit(focus.row, focus.col)
-    },
-    Delete: function(e) {
-        const {focus} = this.state
-
-        e.stopPropagation();
-        e.preventDefault();
-
-        this.handleDelete(focus.row, focus.col)
-    },
-    'F2': function(e) {
-        const {focus} = this.state
-
-        e.stopPropagation();
-        e.preventDefault();
-
-        this.handleEdit(focus.row, focus.col)
-    },
-    ' ': function(e) {
-        const {focus} = this.state
-        const {rows} = this.props
-
-        e.stopPropagation();
-        e.preventDefault();
-
-        this.handleCheckboxChange(rows[focus.row], focus.row, e)
-    },
-    ArrowUp: function(e) {
-        const {focus} = this.state
-
-        e.stopPropagation();
-        e.preventDefault();
-
-        if (focus.row > 0) {
-            keyDownHandlers.changeFocus.bind(this)({ row: focus.row - 1, col: focus.col })
-        }
-    },
-    ArrowDown: function(e) {
-        const {focus} = this.state
-        const {rows} = this.props
-
-        e.stopPropagation();
-        e.preventDefault();
-
-        if (focus.row + 1 < rows.length) {
-            keyDownHandlers.changeFocus.bind(this)({ row: focus.row + 1, col: focus.col })
-        }
-    },
-    ArrowLeft: function(e) {
-        const {focus} = this.state
-
-        e.stopPropagation();
-        e.preventDefault();
-
-        if (focus.col > 0) {
-            keyDownHandlers.changeFocus.bind(this)({ row: focus.row, col: focus.col - 1 })
-        }
-    },
-    ArrowRight: function(e) {
-        const {focus, cols} = this.state
-
-        e.stopPropagation();
-        e.preventDefault();
-        if (focus.col + 1 < cols.length) {
-            keyDownHandlers.changeFocus.bind(this)({ row: focus.row, col: focus.col + 1 })
-        }
-    },
-}
 
 var DataGrid = class DataGrid extends AbstractReactComponent {
     constructor(props) {
@@ -105,7 +23,6 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
             'handleScroll',
             'renderHeaderCol',
             'renderCell',
-            'handleKeyDown',
             'ensureFocusVisible',
             'handleResizerMouseDown',
             'handleMouseUp',
@@ -318,12 +235,6 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
         }
     }
 
-    handleKeyDown(event) {
-        if (keyDownHandlers[event.key]) {
-            keyDownHandlers[event.key].call(this, event)
-        }
-    }
-
     handleScroll(e) {
         ReactDOM.findDOMNode(this.refs.header).scrollLeft = e.target.scrollLeft
     }
@@ -526,7 +437,84 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
             scrollIntoView(cellNode, bodyNode, { onlyScrollIfNeeded: true })
         }
     }
+    handleFocus(e){
+        console.log("focus",this.props.onFocus)
+        this.props.onFocus && this.props.onFocus(e);
+    }
+    changeFocus = (newFocus) => {
+        const {onChangeFocus, onChangeRowIndexes} = this.props;
 
+        this.setState({
+                focus: newFocus,
+                selectedRowIndexes: {[newFocus.row]: true}
+            },
+            this.ensureFocusVisible(newFocus)
+        );
+        onChangeFocus && onChangeFocus(newFocus.row, newFocus.col);
+        onChangeRowIndexes && onChangeRowIndexes([newFocus.row]);
+    }
+    selectorMoveUp = () => {
+        this.selectorMoveRelative(0,-1);
+    }
+    selectorMoveDown = () => {
+        this.selectorMoveRelative(0,1);
+    }
+    selectorMoveLeft = () => {
+        this.selectorMoveRelative(-1,0);
+    }
+    selectorMoveRight = () => {
+        this.selectorMoveRelative(1,0);
+    }
+    selectorMoveRelative = (colStep,rowStep) => {
+        const {focus:{row,col}} = this.state;
+        //console.log("old","r:",row,"c:",col,"colStep",colStep,"rowStep",rowStep,"new","r:",newFocus.row,"/",rows.length,"c:",newFocus.col,"/",cols.length,"rowInRange:",rowInRange,"colInRange:",colInRange);
+        var nextFocus = this.getRelativeSelectableItemIndex(row,col,rowStep,colStep);
+        this.changeFocus(nextFocus);
+    }
+    getRelativeSelectableItemIndex = (row, col, rowStep,colStep) => {
+        const {canSelectItem, rows} = this.props;
+        const {cols} = this.state;
+
+        var rowIsDecrementing = rowStep < 0;
+        var colIsDecrementing = colStep < 0;
+        var rowLast = false;
+
+        if((row || row === 0) && (col || col === 0)){
+            while (rowStep || colStep) {
+                var newFocus = {row:row+rowStep,col:col+colStep};
+                var rowInRange = newFocus.row >= 0 && newFocus.row < rows.length;
+                var colInRange = newFocus.col >= 0 && newFocus.col < cols.length;
+                if (rowInRange && colInRange) {
+                    return newFocus;
+                }
+                if(!rowLast && rowStep || !colStep){
+                    rowIsDecrementing ? rowStep++ : rowStep--;
+                    rowLast = true;
+                } else if(rowLast && colStep || !rowStep){
+                    colIsDecrementing ? colStep++ : colStep--;
+                    rowLast = false;
+                }
+            }
+            return {row:row,col:col};
+        } else {
+            return 0;
+        }
+    }
+    actionMap = {
+        "MOVE_UP": this.selectorMoveUp,
+        "MOVE_DOWN": this.selectorMoveDown,
+        "MOVE_LEFT": this.selectorMoveLeft,
+        "MOVE_RIGHT": this.selectorMoveRight,
+        "ITEM_EDIT": (e) => this.handleEdit(this.state.focus.row,this.state.focus.col),
+        "ITEM_DELETE": (e) => this.handleDelete(this.state.focus.row,this.state.focus.col),
+        "ITEM_ROW_CHECK": (e) => this.handleCheckboxChange(this.props.rows[this.state.focus.row], this.state.focus.row, e)
+    }
+    handleShortcuts = (action,e)=>{
+        console.log("DataGrid",action);
+        e.stopPropagation();
+        e.preventDefault();
+        this.actionMap[action](e);
+    }
     render() {
         var cls = this.props.className ? 'datagrid-container ' + this.props.className : 'datagrid-container'
 
@@ -555,48 +543,50 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
 
         var tabIndexProp = {}
         if (!disabled) {
-            tabIndexProp = {tabIndex: 0}
+            tabIndexProp = {tabIndex: 1}
         }
 
         var ret = (
-            <div ref="dataGrid" className={cls} onKeyDown={this.handleKeyDown} {...tabIndexProp} onFocus={onFocus} onBlur={onBlur}>
-                <div ref='header' key="header" className='header-container'>
-                    <table className="header-table" style={headerStyle}>
-                        <thead>
-                            <tr>
-                                {cols.map((col, colIndex) => this.renderHeaderCol(col, colIndex, focus.col === colIndex))}
-                                {!staticColumns && <th key={-1} className='th-empty-scroll' />}
-                                {staticColumns && <th key={-1}/>}
-                            </tr>
-                        </thead>
-                    </table>
-                </div>
-                <div ref='body' key="body" className='body-container' onScroll={this.handleScroll}>
-                    <table className="body-table" style={bodyStyle}>
-                        <tbody>
-                            {rows.map((row, rowIndex) => {
-                                const rowWasFocus = focus.row === rowIndex
+            <Shortcuts name="DataGrid" handler={this.handleShortcuts} tabIndex={"0"} className={cls}>
+                <div ref="dataGrid" className={cls} onFocus={(e)=>this.handleFocus(e)} onBlur={onBlur}>
+                    <div ref='header' key="header" className='header-container'>
+                        <table className="header-table" style={headerStyle}>
+                            <thead>
+                                <tr>
+                                    {cols.map((col, colIndex) => this.renderHeaderCol(col, colIndex, focus.col === colIndex))}
+                                    {!staticColumns && <th key={-1} className='th-empty-scroll' />}
+                                    {staticColumns && <th key={-1}/>}
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                    <div ref='body' key="body" className='body-container' onScroll={this.handleScroll}>
+                        <table className="body-table" style={bodyStyle}>
+                            <tbody>
+                                {rows.map((row, rowIndex) => {
+                                    const rowWasFocus = focus.row === rowIndex
 
-                                var rowCls = rowWasFocus ? 'focus' : ''
-                                if (selectedRowIndexes[rowIndex]) {
-                                    rowCls += ' selected-index'
-                                }
-                                if (selectedIds[row.id]) {
-                                    rowCls += ' selected'
-                                }
+                                    var rowCls = rowWasFocus ? 'focus' : ''
+                                    if (selectedRowIndexes[rowIndex]) {
+                                        rowCls += ' selected-index'
+                                    }
+                                    if (selectedIds[row.id]) {
+                                        rowCls += ' selected'
+                                    }
 
-                                const cells = cols.map((col, colIndex) => this.renderCell(row, rowIndex, col, colIndex, focus.col === colIndex, rowWasFocus && focus.col === colIndex))
-                                return (
-                                    <tr key={rowIndex} className={rowCls}>
-                                        {cells}
-                                        {staticColumns && <td key={-1} />}
-                                    </tr>
-                                )
-                            })}
-                        </tbody>
-                    </table>
+                                    const cells = cols.map((col, colIndex) => this.renderCell(row, rowIndex, col, colIndex, focus.col === colIndex, rowWasFocus && focus.col === colIndex))
+                                    return (
+                                        <tr key={rowIndex} className={rowCls}>
+                                            {cells}
+                                            {staticColumns && <td key={-1} />}
+                                        </tr>
+                                    )
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
+            </Shortcuts>
         );
 //console.log('ee', new Date().getTime() - t1)
         return ret

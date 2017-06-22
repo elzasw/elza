@@ -32,15 +32,12 @@ export function userDetailClear() {
  * @param settings nastavení
  * @param hideDialog uzavřít dialog po úspěšném dokončení?
  */
-export function userDetailsSaveSettings(settings, hideDialog = true) {
+export function userDetailsSaveSettings(settings) {
     return (dispatch) => {
         dispatch(userDetailRequestSettings(settings))
-        WebApi.setUserSettings(settings)
+        return WebApi.setUserSettings(settings)
             .then(data => {
                 dispatch(userDetailResponseSettings(data));
-                if (hideDialog === true) {
-                    dispatch(modalDialogHide());
-                }
             });
     }
 }

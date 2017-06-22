@@ -8,6 +8,7 @@ import {fundExtendedView} from './fund.jsx'
 import * as types from 'actions/constants/ActionTypes.js';
 import {developerNodeScenariosDirty} from 'actions/global/developer.jsx';
 import {findByRoutingKeyInGlobalState} from 'stores/app/utils.jsx'
+import {increaseMultipleNodesVersions} from 'actions/arr/node.jsx';
 
 export function isNodesAction(action) {
     switch (action.type) {
@@ -80,7 +81,7 @@ export function fundCloseNodeTab(versionId, nodeId, routingKey, index) {
         dispatch(_fundCloseNodeTab(versionId, nodeId, routingKey, index));
         var newState = getState();
         var newActiveFund = newState.arrRegion.funds[newState.arrRegion.activeIndex];
-        if (wasSelected) { 
+        if (wasSelected) {
             if (newActiveFund.nodes.nodes.length > 0) {    // bude vybraná nějaká jiná, protože ještě nějaké záložky existují
                 const node = newActiveFund.nodes.nodes[newActiveFund.nodes.activeIndex]
                 dispatch(fundSelectNodeTab(versionId, node.id, node.routingKey, newActiveFund.nodes.activeIndex));
@@ -129,45 +130,62 @@ export function fundSelectSubNode(versionId, subNodeId, subNodeParentNode, openN
         dispatch(developerNodeScenariosDirty(subNodeId, subNodeParentNode.routingKey, state.arrRegion.funds[state.arrRegion.activeIndex].versionId));
     }
 }
-
 /**
- * Akce přesunu uzlů ve stromu.
- * @param {int} versionId verze AS
- * @param {Array} nodes seznam uzlů pro akci
- * @param {Object} nodesParent nadřazený uzel k nodes
- * @param {Object} dest cílový uzel, kterého se akce týká
- * @param {Object} destParent nadřazený uzel pro dest
+ * Funkce přesunu uzlů. Všechny funkce musí vracet Promise.
  */
-export function moveNodesUnder(versionId, nodes, nodesParent, dest, destParent) {
+const moveFunctions = {
+    "BEFORE": WebApi.moveNodesBefore,
+    "AFTER": WebApi.moveNodesAfter,
+    "UNDER": WebApi.moveNodesUnder
+}
+/**
+ * Funkce spouštějící a ukončující operaci přesunu.
+ * @param {string} direction - směr přesunu uzlu
+ * @param {int} versionId - verze AS
+ * @param {Array} nodes - seznam uzlů pro akci
+ * @param {Object} nodesParent - nadřazený uzel k nodes
+ * @param {Object} dest - cílový uzel, kterého se akce týká
+ * @param {Object} destParent - nadřazený uzel pro dest
+ */
+export function moveNodes(direction,versionId,nodes,nodesParent,dest,destParent){
     return (dispatch, getState) => {
-        WebApi.moveNodesUnder(versionId, nodes, nodesParent, dest, destParent);
+        var state = getState();
+        var activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
+        var nodeTab = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
+        var nodesToUpdate = [...nodes];
+        nodesToUpdate.push(nodesParent);
+        var nextNodeParent;
+        if(direction === "UNDER"){
+            nextNodeParent = dest;
+        } else {
+            nextNodeParent = destParent;
+        }
+        nodesToUpdate.push(nextNodeParent);
+        dispatch(increaseMultipleNodesVersions(versionId,nodesToUpdate));
+        dispatch(fundMoveStart(versionId));
+        return moveFunctions[direction](versionId, nodes, nodesParent, dest, destParent).then(()=>{
+            dispatch(fundMoveFinish(versionId));
+            dispatch(fundSelectSubNode(versionId, nodeTab.selectedSubNodeId, nextNodeParent))
+        });
     }
 }
-
 /**
- * Akce přesunu uzlů ve stromu.
- * @param {int} versionId verze AS
- * @param {Array} nodes seznam uzlů pro akci
- * @param {Object} nodesParent nadřazený uzel k nodes
- * @param {Object} dest cílový uzel, kterého se akce týká
- * @param {Object} destParent nadřazený uzel pro dest
+ * Akce zavolána při začátku přesunu
+ * @param {int} versionId - verze AS určující pro, který AS se akce spustí
  */
-export function moveNodesBefore(versionId, nodes, nodesParent, dest, destParent) {
-    return (dispatch, getState) => {
-        WebApi.moveNodesBefore(versionId, nodes, nodesParent, dest, destParent);
-    }
+function fundMoveFinish(versionId){
+    return {
+        type: types.FUND_NODES_MOVE_STOP,
+        versionId:versionId
+    };
 }
-
 /**
- * Akce přesunu uzlů ve stromu.
- * @param {int} versionId verze AS
- * @param {Array} nodes seznam uzlů pro akci
- * @param {Object} nodesParent nadřazený uzel k nodes
- * @param {Object} dest cílový uzel, kterého se akce týká
- * @param {Object} destParent nadřazený uzel pro dest
+ * Akce zavolána po skončení přesunu
+ * @param {int} versionId - verze AS určující pro, který AS se akce zastaví
  */
-export function moveNodesAfter(versionId, nodes, nodesParent, dest, destParent) {
-    return (dispatch, getState) => {
-        WebApi.moveNodesAfter(versionId, nodes, nodesParent, dest, destParent);
-    }
+function fundMoveStart(versionId){
+    return {
+        type: types.FUND_NODES_MOVE_START,
+        versionId:versionId
+    };
 }

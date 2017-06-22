@@ -4,7 +4,7 @@ import {reduxForm} from 'redux-form';
 import {Autocomplete, AbstractReactComponent, i18n, Icon, FormInput} from 'components/index.jsx';
 import {Modal, Button, Form, ControlLabel, FormGroup} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
-import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
+import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 import './AddDescItemTypeForm.less';
 
 /**
@@ -54,14 +54,15 @@ class AddDescItemTypeForm extends AbstractReactComponent {
             possibleItemTypes
         }
     }
+    submitOptions = {finishOnSubmit:true}
+
+    submitReduxForm = (values, dispatch) => submitForm(AddDescItemTypeForm.validate,values,this.props,this.props.onSubmitForm,dispatch,this.submitOptions);
 
     render() {
-        const {fields: {descItemTypeId}, handleSubmit, onClose, descItemTypes} = this.props;
+        const {fields: {descItemTypeId}, handleSubmit, onClose, descItemTypes,submitting} = this.props;
         const {possibleItemTypes} = this.state;
 
-        var submitForm = submitReduxForm.bind(this, AddDescItemTypeForm.validate);
-
-        return <Form onSubmit={handleSubmit(submitForm)}>
+        return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                 <Modal.Body>
                     <div>
                         {possibleItemTypes.map(node => {
@@ -70,8 +71,10 @@ class AddDescItemTypeForm extends AbstractReactComponent {
                                 <div>
                                     {node.children.map(item => {
                                         return <a className="add-link btn btn-link" key={item.id} onClick={() => {
-                                            this.props.onSubmit2({descItemTypeId: item});
-                                       }}><Icon glyph="fa-plus" />{item.name}</a>
+                                            this.submitReduxForm({descItemTypeId:item},this.dispatch);
+                                        }}>
+                                            <Icon glyph="fa-plus" />{item.name}
+                                        </a>
                                     })}
                                 </div>
                             </FormGroup>
@@ -92,7 +95,7 @@ class AddDescItemTypeForm extends AbstractReactComponent {
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit" onClick={handleSubmit(submitForm)}>{i18n('global.action.add')}</Button>
+                    <Button type="submit" disabled={submitting}>{i18n('global.action.add')}</Button>
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </Form>

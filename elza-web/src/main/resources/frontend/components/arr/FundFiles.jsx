@@ -4,7 +4,7 @@ import {connect} from 'react-redux'
 import {AbstractReactComponent, Icon, i18n, FileListBox, Loading, AddFileForm, FormInput} from 'components/index.jsx';
 import {Button} from 'react-bootstrap'
 import {fetchFundFilesIfNeeded, fundFilesFilterByText, fundFilesCreate, fundFilesDelete, fundFilesReplace} from 'actions/arr/fundFiles.jsx'
-import {modalDialogShow} from 'actions/global/modalDialog.jsx'
+import {modalDialogShow,modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {UrlFactory} from 'actions/index.jsx';
 
 import './FundFiles.less'
@@ -53,12 +53,12 @@ class FundFiles extends AbstractReactComponent {
     };
 
     handleCreate = () => {
-        this.dispatch(modalDialogShow(this, i18n('dms.file.title.add'), <AddFileForm onSubmitForm={this.handleCreateSubmit.bind(this)} />));
+        this.dispatch(modalDialogShow(this, i18n('dms.file.title.add'), <AddFileForm onSubmitForm={this.handleCreateSubmit} />));
     };
 
     handleCreateSubmit = (data) => {
         const {fundId} = this.props;
-        this.dispatch(fundFilesCreate(fundId, data))
+        return this.dispatch(fundFilesCreate(fundId, data))
     };
 
     handleDownload = (id) => {

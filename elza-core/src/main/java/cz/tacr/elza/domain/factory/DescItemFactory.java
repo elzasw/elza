@@ -609,6 +609,8 @@ public class DescItemFactory implements InitializingBean {
                         } else {
                             arrDataUnitdate.setNormalizedFrom(Long.MIN_VALUE);
                         }
+                        //TODO Hotfix to set normalizedFrom on memory object
+                        arrItemUnitdate.setNormalizedFrom(arrDataUnitdate.getNormalizedFrom());
 
                         value = arrItemUnitdate.getValueTo();
                         if (value != null) {
@@ -616,6 +618,8 @@ public class DescItemFactory implements InitializingBean {
                         } else {
                             arrDataUnitdate.setNormalizedTo(Long.MAX_VALUE);
                         }
+                        //TODO Hotfix to set normalizedTo on memory object
+                        arrItemUnitdate.setNormalizedTo(arrDataUnitdate.getNormalizedTo());
 
                         arrDataUnitdate.setValueToEstimated(arrItemUnitdate.getValueToEstimated());
                     }
@@ -833,6 +837,17 @@ public class DescItemFactory implements InitializingBean {
 
 
         return descItem;
+    }
+    
+    /**
+     * Fill ArrItemData to ArrDescItem
+     * @param descItem descItem without ArrItemData
+     * @param data ArrData to create ArrItemData from
+     */
+    public void fillItemData(final ArrDescItem descItem, final ArrData data) {
+    	 ArrItemData item = createItemByType(descItem.getItemType().getDataType());
+         BeanUtils.copyProperties(data, item);
+         descItem.setItem(item);
     }
 
     /**

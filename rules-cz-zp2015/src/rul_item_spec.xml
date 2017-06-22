@@ -2876,5 +2876,90 @@
             <item-spec-register register-type="ARTWORK"/>
         </item-spec-registers>
     </item-spec>
-
+    <!-- Nezjištěné hodnoty -->
+    <item-spec code="ZP2015_UNKNOWN_AUTHOR" item-type="ZP2015_NOT_FOUND">
+        <name>autor</name>
+        <description>neznámý autor</description>
+        <shortcut></shortcut>
+        <view-order>1</view-order>
+    </item-spec>
+    <!-- jiné typy datace -->
+    <item-spec code="ZP2015_DATE_OF_CONTENT" item-type="ZP2015_DATE_OTHER">
+        <name>obsahu</name>
+        <description>Datace obsahu jednotky popisu</description>
+        <shortcut></shortcut>
+        <view-order>1</view-order>
+    </item-spec>
+    <item-spec code="ZP2015_DATE_DECLARED" item-type="ZP2015_DATE_OTHER">
+        <name>deklarovaná</name>
+        <description>Datace, k níž se jednotka popisu hlásí</description>
+        <shortcut></shortcut>
+        <view-order>2</view-order>
+    </item-spec>
+    <item-spec code="ZP2015_DATE_ORIG" item-type="ZP2015_DATE_OTHER">
+        <name>vzniku předlohy</name>
+        <description>Datace vzniku předlohy, pokud je popisována kopie, která nenahrazuje předlohu</description>
+        <shortcut></shortcut>
+        <view-order>3</view-order>
+    </item-spec>
+    <item-spec code="ZP2015_DATE_OF_COPY" item-type="ZP2015_DATE_OTHER">
+        <name>vzniku kopie</name>
+        <description>Datace vzniku kopie, která nahrazuje zničenou archiválii</description>
+        <shortcut></shortcut>
+        <view-order>4</view-order>
+    </item-spec>
+    <item-spec code="ZP2015_DATE_SEALING" item-type="ZP2015_DATE_OTHER">
+        <name>zpečetění</name>
+        <description>Datace zpečetění jednotky popisu</description>
+        <shortcut></shortcut>
+        <view-order>5</view-order>
+    </item-spec>
+    <item-spec code="ZP2015_DATE_ACT_PUBLISHING" item-type="ZP2015_DATE_OTHER">
+        <name>vydání listiny</name>
+        <description>Datace vydání listiny</description>
+        <shortcut></shortcut>
+        <view-order>6</view-order>
+    </item-spec>
+    <item-spec code="ZP2015_DATE_INSERT" item-type="ZP2015_DATE_OTHER">
+        <name>insert/transept</name>
+        <description>Datace insertu/transeptu</description>
+        <shortcut></shortcut>
+        <view-order>7</view-order>
+    </item-spec>
+    <item-spec code="ZP2015_DATE_MOLD_CREATION" item-type="ZP2015_DATE_OTHER">
+        <name>vzniku matrice</name>
+        <description>Datace vzniku matrice, z níž byla jednotka popisu zhotovena</description>
+        <shortcut></shortcut>
+        <view-order>8</view-order>
+    </item-spec>
+    <item-spec code="ZP2015_DATE_USAGE" item-type="ZP2015_DATE_OTHER">
+        <name>užívání typáře</name>
+        <description>Doba užívání typáře</description>
+        <shortcut></shortcut>
+        <view-order>9</view-order>
+    </item-spec>
+    <item-spec code="ZP2015_DATE_PUBLISHING" item-type="ZP2015_DATE_OTHER">
+        <name>vydání dokumentu</name>
+        <description>Datace vydání dokumentu, k němuž byl popisovaný otisk připojen</description>
+        <shortcut></shortcut>
+        <view-order>10</view-order>
+    </item-spec>
+    <item-spec code="ZP2015_DATE_MAP_UPDATE" item-type="ZP2015_DATE_OTHER">
+        <name>reambulace mapy</name>
+        <description>Datace reambulace (aktualizace) mapy</description>
+        <shortcut></shortcut>
+        <view-order>11</view-order>
+    </item-spec>
+    <item-spec code="ZP2015_DATE_CAPTURING" item-type="ZP2015_DATE_OTHER">
+        <name>pořízení obrazového záznamu</name>
+        <description>Datace pořízení obrazového záznamu</description>
+        <shortcut></shortcut>
+        <view-order>12</view-order>
+    </item-spec>
+    <item-spec code="ZP2015_DATE_RECORDING" item-type="ZP2015_DATE_OTHER">
+        <name>pořízení filmového / zvukového záznamu</name>
+        <description>Datace pořízení filmového / zvukového záznamu</description>
+        <shortcut></shortcut>
+        <view-order>13</view-order>
+    </item-spec>
 </item-specs>

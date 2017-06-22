@@ -1,39 +1,50 @@
 package cz.tacr.elza.print;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
 import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.domain.ArrCalendarType;
+import cz.tacr.elza.domain.ArrItemUnitdate;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 
 /**
  * Rozšiřuje {@link UnitDateText} o strukturovaný zápis datumu.
  *
- * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
- *         Date: 22.6.16
  */
 public class UnitDate extends UnitDateText implements IUnitdate {
 
-    private String valueFrom;
+	private String valueFrom;
     private String valueTo;
     private Boolean valueFromEstimated;
     private Boolean valueToEstimated;
     private String format;
+    
     private String calendar;
     private String calendarCode;
     private ArrCalendarType calendarType;
 
+    private UnitDate(ArrItemUnitdate srcItemData) {
+		this.valueFrom = srcItemData.getValueFrom();
+		this.valueTo = srcItemData.getValueTo();
+		this.valueFromEstimated = srcItemData.getValueFromEstimated();
+		this.valueToEstimated = srcItemData.getValueToEstimated();
+		this.format = srcItemData.getFormat();
+        this.calendarType = srcItemData.getCalendarType();
+        this.calendar = calendarType.getName();
+        this.calendarCode = calendarType.getCode();
+        
+        String textForm = UnitDateConvertor.convertToString(this);
+        this.setValueText(textForm);
+	}
+
     /**
      * @return hodnota valueText
      */
-    @Override
     public String serialize() {
         if (StringUtils.isNotBlank(getValueText())) {
-            return super.serialize();
+            return getValueText();
         }
         return UnitDateConvertor.convertToString(this);
     }
@@ -42,16 +53,8 @@ public class UnitDate extends UnitDateText implements IUnitdate {
         return calendar;
     }
 
-    public void setCalendar(final String calendar) {
-        this.calendar = calendar;
-    }
-
     public String getCalendarCode() {
         return calendarCode;
-    }
-
-    public void setCalendarCode(final String calendarCode) {
-        this.calendarCode = calendarCode;
     }
 
     @Override
@@ -114,23 +117,20 @@ public class UnitDate extends UnitDateText implements IUnitdate {
         return calendarType;
     }
 
-    @Override
-    public void setCalendarType(final ArrCalendarType calendarType) {
-        this.calendarType = calendarType;
-    }
+	@Override
+	public void setCalendarType(ArrCalendarType calendarType) {
+		// TODO Auto-generated method stub
+		
+	}
 
-    @Override
-    public boolean equals(final Object o) {
-        return EqualsBuilder.reflectionEquals(o, this);
-    }
-
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-
-    @Override
+	@Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SIMPLE_STYLE);
     }
+
+	public static UnitDate valueOf(ArrItemUnitdate itemData) {
+		UnitDate unitDate = new UnitDate(itemData);		
+		return unitDate;
+	}
+
 }

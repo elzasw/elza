@@ -498,7 +498,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
             // Získání seznam specifikací
             const specsIds = getSpecsIds(refType, data.specs.type, data.specs.ids)
 
-            this.dispatch(fundBulkModifications(versionId, refType.id, specsIds, data.operationType, data.findText, data.replaceText, data.replaceSpec, nodes))
+            return this.dispatch(fundBulkModifications(versionId, refType.id, specsIds, data.operationType, data.findText, data.replaceText, data.replaceSpec, nodes))
         }
 
         this.dispatch(modalDialogShow(this, i18n('arr.fund.bulkModifications.title'),
@@ -699,8 +699,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
             }
         }
 
-        this.dispatch(fundDataFulltextSearch(versionId, text, true, params, result));
-        this.dispatch(modalDialogHide());
+        return this.dispatch(fundDataFulltextSearch(versionId, text, true, params, result));
     };
 
     render() {

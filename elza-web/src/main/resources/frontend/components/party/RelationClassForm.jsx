@@ -5,7 +5,7 @@ import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, Autocomplete, i18n, Icon, FormInput, RegistryField, DatationField} from 'components/index.jsx';
 import {Modal, Button, Form, Radio, FormGroup, HelpBlock} from 'react-bootstrap'
 import {indexById} from 'stores/app/utils.jsx'
-import {submitReduxForm} from 'components/form/FormUtils.jsx'
+import {submitForm} from 'components/form/FormUtils.jsx'
 import {objectById} from 'stores/app/utils.jsx'
 
 import './RelationForm.less'
@@ -84,6 +84,8 @@ class RelationClassForm extends AbstractReactComponent {
 
     };
 
+    submitReduxForm = (values, dispatch) => submitForm(RelationClassForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
+
     render() {
         const {relationTypes, onClose, handleSubmit, fields: {from, to, relationEntities, note, source, relationTypeId}, partyId, submitting, registerTypesMap} = this.props;
 
@@ -93,8 +95,7 @@ class RelationClassForm extends AbstractReactComponent {
         }
         const roleTypesList = relationType ? relationType.relationRoleTypes : null;
         const usedRoles = relationEntities.map(i => parseInt(i.roleType.id.value));
-        const submit = submitReduxForm.bind(this, RelationClassForm.validate);
-        return <Form onSubmit={handleSubmit(submit)}>
+        return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
             <Modal.Body className="dialog-3-col relation-form">
                 <div className="flex">
                     <div className="flex-2 col">

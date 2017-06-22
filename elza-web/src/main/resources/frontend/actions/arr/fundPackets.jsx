@@ -100,17 +100,13 @@ export function fundPacketsCreate(fundId, type, data, callback = null) {
     return (dispatch, getState) => {
         switch (type) {
             case "SINGLE":
-                savingApiWrapper(dispatch, WebApi.insertPacket(fundId, data.storageNumber, data.packetTypeId, false))
+                return savingApiWrapper(dispatch, WebApi.insertPacket(fundId, data.storageNumber, data.packetTypeId, false))
                     .then((json) => {
                         callback && callback(json);
-                        dispatch(modalDialogHide())
                     })
                 break
             case "MORE":
-                savingApiWrapper(dispatch, WebApi.generatePackets(fundId, data.prefix, data.packetTypeId, data.start, data.size, data.count, null))
-                    .then(() => {
-                        dispatch(modalDialogHide())
-                    })
+                return savingApiWrapper(dispatch, WebApi.generatePackets(fundId, data.prefix, data.packetTypeId, data.start, data.size, data.count, null))
                 break
         }
     }
@@ -118,10 +114,7 @@ export function fundPacketsCreate(fundId, type, data, callback = null) {
 
 export function fundPacketsChangeNumbers(fundId, data, ids) {
     return (dispatch, getState) => {
-        WebApi.generatePackets(fundId, data.prefix, data.packetTypeId, data.start, data.size, data.count, ids)
-            .then(() => {
-                dispatch(modalDialogHide())
-            })
+        return WebApi.generatePackets(fundId, data.prefix, data.packetTypeId, data.start, data.size, data.count, ids);
     }
 }
 

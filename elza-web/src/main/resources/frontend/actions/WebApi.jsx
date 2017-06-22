@@ -8,14 +8,6 @@ function getData(data, timeout = 1000) {
         }, timeout);
     });
 }
-
-const digReqs = [
-    {id: 1, code: "026c75c4-4ee7-4f7f-9c91-49df8e5abbcf", filesCount: 1, label: "Fotka - Petr Compel", url: "http://info.marbes.cz/modules/obrazky/preved_fotku.php?id=562"},
-    {id: 2, code: "09a2301a-61b9-4ce5-a013-df6e4f23a7bd", filesCount: 0, label: "Fotka - Michal Moučka", url: "http://info.marbes.cz/modules/obrazky/preved_fotku.php?id=55"},
-    {id: 3, code: "5369d629-baa0-4571-b5df-0c339f8fa36f", filesCount: 2, label: "Fotka - Martin Šlapa"},
-    {id: 4, code: "5369d629-baa0-4570-b5df-0c339f8fa36f", filesCount: 8, label: "Fotka - Václav Mařík", url: "http://info.marbes.cz/modules/obrazky/preved_fotku.php?id=54"},
-];
-
 /**
  * Zavolání webscoket operace na serveru.
  * @param url url
@@ -26,13 +18,13 @@ const digReqs = [
 function callWS(url, data, needResponse = true) {
     return new Promise((resolve, reject) => {
         if (needResponse) { // chceme skoro vždy
-            window.ws.send(serverContextPath + '/app' + url, {}, JSON.stringify(data), (successResponse) => {
+            window.ws.send('/app' + url, {}, JSON.stringify(data), (successResponse) => {
                 resolve(successResponse);
             }, (errorResponse) => { // příprava pro budoucí možnost odchytávání klientských výjimek - zavolá se error calbback
                 reject(errorResponse);
             });
         } else {
-            window.ws.send(serverContextPath + '/app' + url, {}, JSON.stringify(data));
+            window.ws.send('/app' + url, {}, JSON.stringify(data));
             resolve();
         }
     });
@@ -45,30 +37,30 @@ function callWS(url, data, needResponse = true) {
  */
 class UrlFactory {
     static exportPackage(code) {
-        return WebApi.ruleUrl + '/exportPackage/' + code;
+        return serverContextPath + WebApi.ruleUrl + '/exportPackage/' + code;
     }
 
     static exportFund(versionId, transformationName) {
-        return WebApi.exportUrl + '/fund/' + versionId + '?transformationName=' + encodeURIComponent(transformationName);
+        return serverContextPath + WebApi.exportUrl + '/fund/' + versionId + '?transformationName=' + encodeURIComponent(transformationName);
     }
 
     static exportRegCoordinate(objectId) {
-        return WebApi.kmlUrl + '/export/regCoordinates/' + objectId;
+        return serverContextPath + WebApi.kmlUrl + '/export/regCoordinates/' + objectId;
     }
 
     static exportArrCoordinate(objectId, versionId) {
-        return window.location.origin + WebApi.kmlUrl + '/export/descCoordinates/' + versionId + '/' + objectId;
+        return serverContextPath + WebApi.kmlUrl + '/export/descCoordinates/' + versionId + '/' + objectId;
     }
 
     static exportItemCsvExport(objectId, versionId, typePrefix) {
-        return window.location.origin + WebApi.arrangementUrl + '/' + typePrefix + 'Items/' + versionId + '/csv/export?descItemObjectId=' + objectId
+        return serverContextPath + WebApi.arrangementUrl + '/' + typePrefix + 'Items/' + versionId + '/csv/export?descItemObjectId=' + objectId
     }
 
     static downloadDmsFile(id) {
-        return window.location.origin + WebApi.dmsUrl + '/' + id
+        return serverContextPath + WebApi.dmsUrl + '/' + id
     }
     static downloadOutputResult(id) {
-        return window.location.origin + '/api/outputResult/' + id
+        return serverContextPath + '/api/outputResult/' + id
     }
 }
 
@@ -454,7 +446,6 @@ class WebApi {
             index: from,
             maxResults: max,
         });
-        //return getData(digReqs, 200);
     }
 
     findDaoPackages(versionId, search, unassigned) {

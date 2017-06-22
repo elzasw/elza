@@ -14,7 +14,7 @@ import {Link, IndexLink} from 'react-router';
 import {FundSettingsForm, Tabs, Icon, Ribbon, i18n, FundTreeMovementsLeft, FundTreeMovementsRight, ArrFundPanel} from 'components/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
 import {getNodeParents, getNodeParent} from 'components/arr/ArrUtils.jsx'
-import {moveNodesUnder, moveNodesBefore, moveNodesAfter} from 'actions/arr/nodes.jsx'
+import {moveNodesUnder, moveNodesBefore, moveNodesAfter, moveNodes} from 'actions/arr/nodes.jsx'
 
 import ArrParentPage from "./ArrParentPage.jsx";
 
@@ -52,17 +52,11 @@ import {createFundRoot} from 'components/arr/ArrUtils.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {fundTreeFetchIfNeeded} from 'actions/arr/fundTree.jsx'
-var ShortcutsManager = require('react-shortcuts');
-var Shortcuts = require('react-shortcuts/component');
+import {Shortcuts} from 'react-shortcuts';
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {selectTab} from 'actions/global/tab.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
-
-const keyModifier = Utils.getKeyModifier()
-const keymap = ArrParentPage.mergeKeymap({});
-
-const shortcutManager = new ShortcutsManager(keymap)
 
 const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
     constructor(props) {
@@ -89,10 +83,6 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
         return fund.fundTreeMovementsRight.nodes[indexById(fund.fundTreeMovementsRight.nodes, fund.fundTreeMovementsRight.selectedId)];
     }
 
-    getChildContext() {
-        return { shortcuts: shortcutManager };
-    }
-
     handleShortcuts(action) {
         console.log("#handleShortcuts ArrMovementsPage", '[' + action + ']', this);
         super.handleShortcuts(action);
@@ -114,17 +104,17 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
 
     handleMoveUnder() {
         var info = this.getMoveInfo();
-        this.dispatch(moveNodesUnder(info.versionId, info.nodes, info.nodesParent, info.dest, info.destParent));
+        this.dispatch(moveNodes("UNDER",info.versionId,info.nodes,info.nodesParent,info.dest,info.destParent));
     }
 
     handleMoveAfter() {
         var info = this.getMoveInfo();
-        this.dispatch(moveNodesAfter(info.versionId, info.nodes, info.nodesParent, info.dest, info.destParent));
+        this.dispatch(moveNodes("AFTER",info.versionId,info.nodes,info.nodesParent,info.dest,info.destParent));
     }
 
     handleMoveBefore() {
         var info = this.getMoveInfo();
-        this.dispatch(moveNodesBefore(info.versionId, info.nodes, info.nodesParent, info.dest, info.destParent));
+        this.dispatch(moveNodes("BEFORE",info.versionId,info.nodes,info.nodesParent,info.dest,info.destParent));
     }
 
     checkMoveUnder() {
@@ -204,15 +194,16 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
     renderCenterPanel(readMode, closed) {
         const {userDetail} = this.props;
         const fund = this.getActiveFund(this.props);
-
         var leftHasSelection = Object.keys(fund.fundTreeMovementsLeft.selectedIds).length > 0;
         var rightHasSelection = fund.fundTreeMovementsRight.selectedId != null;
-        var active = leftHasSelection && rightHasSelection && !readMode && !fund.closed;
+        var active = leftHasSelection && rightHasSelection && !readMode && !fund.closed && !fund.moving;
         var moveUnder = active && this.checkMoveUnder();
         var moveBeforeAfter = active && this.checkMoveBeforeAfter();
+        console.log(this.props.arrRegion);
 
         return (
             <div className="movements-content-container">
+                <div className={fund.moving ? "moving-overlay visible" : "moving-overlay"}><Icon glyph="fa-cog fa-spin"/><div>Probíhá přesun</div></div>
                 <div key={1} className='tree-left-container'>
 
                     <FundTreeMovementsLeft

@@ -65,7 +65,7 @@ class FundPage extends AbstractReactComponent {
 
     handleAddFund() {
         this.dispatch(modalDialogShow(this, i18n('arr.fund.title.add'),
-            <FundForm create onSubmitForm={(data) => {this.dispatch(createFund(data))}}/>));
+            <FundForm create onSubmitForm={(data) => {return this.dispatch(createFund(data))}}/>));
     }
 
     handleImport() {
@@ -82,7 +82,9 @@ class FundPage extends AbstractReactComponent {
         this.dispatch(
             modalDialogShow(this,
                 i18n('export.title.fund'),
-                <ExportForm fund={true} onSubmitForm={data => {this.dispatch(exportFund(fundDetail.versionId, data.transformationName))}} />
+                <ExportForm fund={true} onSubmitForm={data => {
+                    return this.dispatch(exportFund(fundDetail.versionId, data.transformationName));
+                }} />
             )
         );
     }
@@ -103,7 +105,9 @@ class FundPage extends AbstractReactComponent {
                 <FundForm
                     approve
                     initData={data}
-                    onSubmitForm={data => {this.dispatch(approveFund(fundDetail.versionId, data.dateRange))}}/>
+                    onSubmitForm={data => {
+                        return this.dispatch(approveFund(fundDetail.versionId, data.dateRange));
+                    }}/>
             )
         );
     }
@@ -163,7 +167,7 @@ class FundPage extends AbstractReactComponent {
 
         data.id = fundDetail.id;
         this.dispatch(scopesDirty(fundDetail.versionId));
-        this.dispatch(updateFund(data));
+        return this.dispatch(updateFund(data));
     }
 
     buildRibbon() {
@@ -246,11 +250,16 @@ class FundPage extends AbstractReactComponent {
 
     renderListItem(item) {
         return (
-            <div>
-                <div className='name'>{item.name}</div>
-                <div><Button className='link' onClick={this.handleShowInArr.bind(this, item)} bsStyle='link'>{i18n('arr.fund.action.openInArr')}</Button></div>
-                <div>{item.internalCode}</div>
-            </div>
+            [
+                <div className='item-row'>
+                    <div className='name'>{item.name}</div>
+                    <div className='btn btn-action' onClick={this.handleShowInArr.bind(this, item)} bsStyle='link'><Icon glyph="fa-folder-open" /></div>
+                </div>,
+                <div className='item-row desc'>
+                    <div>{item.internalCode}</div>
+                    <div>{item.id}</div>
+                </div>
+            ]
         )
     }
 
@@ -337,4 +346,5 @@ function mapStateToProps(state) {
 }
 
 export default connect(mapStateToProps)(FundPage);
+
 

@@ -263,7 +263,7 @@ export function fundTreeFulltextSearch(area, versionId, params, result, luceneQu
                         }
                     });
             } else {
-                dispatch(fundTreeFulltextResult(area, versionId, fundTree.filterText, [], true, null, false))
+                return dispatch(fundTreeFulltextResult(area, versionId, fundTree.filterText, [], true, null, false))
             }
         }
     }

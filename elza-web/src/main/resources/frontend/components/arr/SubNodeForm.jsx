@@ -433,7 +433,7 @@ class SubNodeForm extends AbstractReactComponent {
      */
     handleCreatePacketFormSubmit(valueLocation, type, data) {
         const {fundId} = this.props;
-        this.dispatch(fundPacketsCreate(fundId, type, data, this.handleCreatedPacket.bind(this, valueLocation)));
+        return this.dispatch(fundPacketsCreate(fundId, type, data, this.handleCreatedPacket.bind(this, valueLocation)));
     }
 
     /**
@@ -511,7 +511,7 @@ class SubNodeForm extends AbstractReactComponent {
      */
     handleCreateFileFormSubmit(valueLocation, data) {
         const {fundId} = this.props;
-        this.dispatch(fundFilesCreate(fundId, data, this.handleCreatedFile.bind(this, valueLocation)))
+        return this.dispatch(fundFilesCreate(fundId, data, this.handleCreatedFile.bind(this, valueLocation)))
     }
 
     /**

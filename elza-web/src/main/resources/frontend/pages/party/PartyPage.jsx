@@ -11,8 +11,7 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {partyDetailFetchIfNeeded, partyListInvalidate, PARTY_LIST_MAX_SIZE, partyAdd, partyCreate, insertRelation, partyDelete} from 'actions/party/party.jsx'
-const ShortcutsManager = require('react-shortcuts');
-const Shortcuts = require('react-shortcuts/component');
+import {Shortcuts} from 'react-shortcuts';
 import {Utils} from 'components/index.jsx';
 import {setFocus} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
@@ -20,20 +19,6 @@ import {SelectPage} from 'pages'
 
 import './PartyPage.less';
 import {regExtSystemListFetchIfNeeded} from 'actions/registry/regExtSystemList';
-
-
-const keyModifier = Utils.getKeyModifier();
-
-const keymap = {
-    Party: {
-        addParty: keyModifier + 'n',
-        addRelation: keyModifier + 't',
-        area1: keyModifier + '1',
-        area2: keyModifier + '2',
-        area3: keyModifier + '3',
-    },
-};
-const shortcutManager = new ShortcutsManager(keymap);
 
 /**
  * PARTY PAGE
@@ -47,11 +32,6 @@ class PartyPage extends AbstractReactComponent {
         splitter: React.PropTypes.object.isRequired,
         userDetail: React.PropTypes.object.isRequired,
         refTables: React.PropTypes.object.isRequired
-    };
-
-
-    static childContextTypes = {
-        shortcuts: React.PropTypes.object.isRequired
     };
 
     componentDidMount() {
@@ -81,10 +61,6 @@ class PartyPage extends AbstractReactComponent {
                 break;
         }
     };
-
-    getChildContext() {
-        return { shortcuts: shortcutManager };
-    }
 
     /**
      * ADD PARTY
@@ -192,7 +168,7 @@ class PartyPage extends AbstractReactComponent {
 
         const centerPanel = <PartyDetail />;
 
-        return <Shortcuts name='Party' handler={this.handleShortcuts}>
+        return <Shortcuts name='Party' handler={this.handleShortcuts} global stopPropagation={false}>
             <PageLayout
                 splitter={splitter}
                 className='party-page'
@@ -221,4 +197,3 @@ function mapStateToProps(state) {
 }
 
 export default connect(mapStateToProps)(PartyPage);
-

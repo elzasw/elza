@@ -89,6 +89,7 @@ import cz.tacr.elza.exception.ConcurrentUpdateException;
 import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.ChangeRepository;
@@ -964,30 +965,41 @@ public class ArrangementService {
         typeSet.add(descItemType);
 
         ArrLevel olderSibling = levelRepository.findOlderSibling(level, version.getLockChange());
-        if (olderSibling != null) {
-
-            List<ArrDescItem> siblingDescItems = descItemRepository.findOpenByNodeAndTypes(olderSibling.getNode(),
-                    typeSet);
-            List<ArrDescItem> nodeDescItems = descItemRepository.findOpenByNodeAndTypes(level.getNode(), typeSet);
-
-            if (CollectionUtils.isNotEmpty(nodeDescItems)) {
-                List<Integer> descItemObjectIdsDeleted = new ArrayList<>(nodeDescItems.size());
-                for (ArrDescItem nodeDescItem : nodeDescItems) {
-                    descItemObjectIdsDeleted.add(descriptionItemService.deleteDescriptionItem(nodeDescItem, version, change, false).getDescItemObjectId());
-                }
-                arrangementCacheService.deleteDescItems(nodeDescItems.get(0).getNodeId(), descItemObjectIdsDeleted);
-            }
-
-            final List<ArrDescItem> newDescItems = descriptionItemService
-                    .copyDescItemWithDataToNode(level.getNode(), siblingDescItems, change, version);
-            arrangementCacheService.createDescItems(level.getNodeId(), newDescItems);
+        if (olderSibling == null) {
+        	throw new BusinessException("Node does not have older sibling, levelId="+level.getLevelId(), BaseCode.INVALID_STATE);
         }
+
+        // Read source data
+        List<ArrDescItem> siblingDescItems = descItemRepository.findOpenByNodeAndTypes(olderSibling.getNode(), typeSet);
+        
+        // Delete old values for these items
+        List<ArrDescItem> nodeDescItems = descItemRepository.findOpenByNodeAndTypes(level.getNode(), typeSet);
+        List<ArrDescItem> deletedDescItems = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(nodeDescItems)) {
+            List<Integer> descItemObjectIdsDeleted = new ArrayList<>(nodeDescItems.size());
+            for (ArrDescItem nodeDescItem : nodeDescItems) {
+             	ArrDescItem deletedItem = descriptionItemService.deleteDescriptionItem(nodeDescItem, version, change, false);
+                descItemObjectIdsDeleted.add(deletedItem.getDescItemObjectId());
+                deletedDescItems.add(deletedItem);
+            }
+            arrangementCacheService.deleteDescItems(nodeDescItems.get(0).getNodeId(), descItemObjectIdsDeleted);
+        }
+
+        final List<ArrDescItem> newDescItems = descriptionItemService
+                    .copyDescItemWithDataToNode(level.getNode(), siblingDescItems, change, version);
+        // update cache
+        arrangementCacheService.createDescItems(level.getNodeId(), newDescItems);
 
         descItemRepository.flush();
 
         eventNotificationService.publishEvent(EventFactory
                 .createIdInVersionEvent(EventType.COPY_OLDER_SIBLING_ATTRIBUTE, version, level.getNode().getNodeId()));
-
+        
+        // revalidate node
+        ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(level.getNode().getNodeId()), 
+        		NodeTypeOperation.SAVE_DESC_ITEM, newDescItems, null, deletedDescItems);
+        
+        // Should it be taken from cache?
         return descItemRepository.findOpenByNodeAndTypes(level.getNode(), typeSet);
     }
 

@@ -177,6 +177,7 @@ var messages = {
     "exception.usr.PASSWORD_NOT_MATCH": "Původní heslo se neshoduje",
 
     "search.input.search": "Vyhledat...",
+    "search.input.filter": "Filtrovat...",
     "search.not.found": "nenalezeno",
     "search.found": "({0})",
     "search.found.more": "({0}/{1})",
@@ -589,6 +590,10 @@ var messages = {
     "arr.fund.addNode.scenario": "Typ jednotky popisu",
     "arr.fund.addNode.noDirection": "Nebylo vybráno umístění.",
 
+    "arr.fund.deleteNode.deleted": "Jednotka popisu byla smazána.",
+    "arr.fund.deleteNode.noSibling": "Nebyli nalezeni žádní další sourozencí. Byl vybrán rodič.",
+    "arr.fund.deleteNode.confirm": "Opravdu chcete smazat tuto jednotku popisu?",
+
     "arr.movements.move.under" : "Přesunout pod",
     "arr.movements.move.before" : "Přesunout před",
     "arr.movements.move.after" : "Přesunout za",
@@ -610,9 +615,10 @@ var messages = {
     "arr.daos.files.title.unitOfMeasure.IN" : "in",
     "arr.daos.files.title.unitOfMeasure.MM" : "mm",
 
-    "arr.fund.subNodes.prevPage": "Předchozí stránka",
-    "arr.fund.subNodes.nextPage": "Další stránka",
+    "arr.fund.subNodes.prevPage": "Skok o {0} záznamů vzad",
+    "arr.fund.subNodes.nextPage": "Skok o {0} záznamů vpřed",
     "arr.fund.subNodes.findPosition": "Přejít na JP podle pořadového čísla",
+    "arr.fund.subNodes.findPosition.filterActive": "Skok na jednotku popisu není možný, pokud je aktivní filtr",
     "arr.fund.subNodes.findPositionNumber": "Přejít na JP číslo (celkem {0})",
     "arr.fund.subNodes.findPositionNumber.error.required": "Pozice JP musí být vyplněna",
     "arr.fund.subNodes.findPositionNumber.error.type": "Pozice JP musí být vyplněna celým číslem",
@@ -794,7 +800,7 @@ var messages = {
     "registry.disallowedMoveAction.title": "Nepovolená akce",
     "registry.disallowedMoveAction.text": "Nelze přesunout sama sebe do sebe",
 
-    "registryField.noItemsFound": "Záznamy nebyli nalezeny.",
+    "registryField.noItemsFound": "Záznamy nebyly nalezeny.",
     "registryField.visibleCount": "Zobrazeno {0} z {1} záznamů",
 
     "party.noSelection.title": "Není vybrána osoba",
@@ -895,7 +901,7 @@ var messages = {
     "party.relation.errors.undefinedRoleType": "U některé entity nebyla zadaná role rejstříkové položky",
     "party.relation.errors.invalidNoteLength": "Maximální délka poznámky je {0} znaků.",
 
-    "partyField.noItemsFound": "Záznamy nebyli nalezeny.",
+    "partyField.noItemsFound": "Záznamy nebyly nalezeny.",
     "partyField.visibleCount": "Zobrazeno {0} z {1} záznamů",
 
     "arr.fund.title.added": "AS byl vytvořen",
@@ -949,6 +955,8 @@ var messages = {
     "admin.user.group.action.add": "Přiřadit skupiny",
     "admin.user.permission.action.delete": "Odebrat oprávnění uživatele",
     "admin.user.permission.action.add": "Přiřadit oprávnění pro uživatele",
+    "admin.user.noSelection.title" : "Není vybrán uživatel",
+    "admin.user.noSelection.message" : "Prosím vyberte uživatele ze seznamu nebo vytvořte nového",
     "admin.user.emptyList.title" : "Žádní uživatelé",
     "admin.user.emptyList.message" : "V systému nejsou zadáni žádní uživatelé",
 
@@ -1089,6 +1097,7 @@ var messages = {
     "login.field.username": "Uživatelské jméno",
     "login.field.password": "Heslo",
     "login.action.login": "Přihlásit",
+    "login.defaultUserEnabled": "Je povolen výchozí uživatel. Vytvořte si vlastního uživatele s oprávněním administrátora a výchozího uživatele vypněte.",
 
     "visiblePolicy.form.title": "Nastavení zobrazení pravidel kontroly JP",
     "visiblePolicy.action.save": "Upravit",

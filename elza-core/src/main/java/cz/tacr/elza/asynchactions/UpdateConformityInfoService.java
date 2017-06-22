@@ -9,6 +9,7 @@ import java.util.concurrent.Executor;
 
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.config.ConfigRules;
 import cz.tacr.elza.domain.ArrFundVersion;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.logging.Log;
@@ -25,7 +26,6 @@ import org.springframework.util.Assert;
 
 import com.google.common.eventbus.EventBus;
 
-import cz.tacr.elza.config.ConfigRules;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.events.ConformityInfoUpdatedEvent;

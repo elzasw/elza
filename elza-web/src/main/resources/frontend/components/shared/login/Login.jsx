@@ -9,17 +9,28 @@ import {loginSuccess} from 'actions/global/login.jsx';
 
 import './Login.less';
 
-// TODO: smazat až bude potřeba
-const defaultLogin = {
-    username: "admin",
-    password: "admin"
-};
+var defaultEnabled = typeof defaultUserEnabled !== "undefined" && defaultUserEnabled;
+
+var getDefaultLogin = () => {
+    var defaultLogin = {};
+    if(defaultEnabled){
+        defaultLogin = {
+            username: "admin",
+            password: "admin"
+        };
+    } else {
+        defaultLogin = {
+            username: "",
+            password: ""
+        };
+    }
+    return defaultLogin;
+}
+
 
 class Login extends AbstractReactComponent {
     defaultState = {
-        username: '',
-        password: '',
-        ...defaultLogin, // TODO: Smazat až bude potřeba
+        ...getDefaultLogin(),
         error: null
     };
 
@@ -58,6 +69,7 @@ class Login extends AbstractReactComponent {
             {!login.logged && <ModalDialogWrapper className="login" ref='wrapper' title={i18n('login.form.title')}>
                 <Form onSubmit={this.handleLogin}>
                     <Modal.Body>
+                        {defaultEnabled && <div className="error">{i18n('login.defaultUserEnabled')}</div>}
                         {error && <div className="error">{error}</div>}
                         <FormInput type="text" value={username} onChange={this.handleChange.bind(this, 'username')} label={i18n('login.field.username')} />
                         <FormInput type="password" value={password} onChange={this.handleChange.bind(this, 'password')} label={i18n('login.field.password')} />

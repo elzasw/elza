@@ -157,33 +157,26 @@ function groupsGroupDetailReceive(data) {
 
         // Oprávnění z detailu
         // dispatch(permissionReceive("GROUP", data.permissions));
-    }    
+    }
 }
 
 export function groupUpdate(groupId, name, description) {
     return (dispatch, getState) => {
-        savingApiWrapper(dispatch, WebApi.updateGroup(groupId, name, description)).then(response => {
-            dispatch(modalDialogHide());
-        }).catch(e => {
-            console.error(e);
-        });
+        return savingApiWrapper(dispatch, WebApi.updateGroup(groupId, name, description));
     }
 }
 
 export function groupCreate(name, code, description) {
-    return (dispatch, getState) => {
-        savingApiWrapper(dispatch, WebApi.createGroup(name, code, description)).then(response => {
+    return (dispatch) => {
+        return savingApiWrapper(dispatch, WebApi.createGroup(name, code, description)).then(response => {
             dispatch(addToastrSuccess(i18n('admin.group.add.success')));
-            dispatch(modalDialogHide());
             dispatch(groupsSelectGroup(response.id));
-        }).catch(e => {
-            console.error(e);
         });
     }
 }
 
 export function groupDelete(id) {
     return (dispatch, getState) => {
-        savingApiWrapper(dispatch, WebApi.deleteGroup(id));
+        return savingApiWrapper(dispatch, WebApi.deleteGroup(id));
     }
 }

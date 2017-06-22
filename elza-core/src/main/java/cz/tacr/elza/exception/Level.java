@@ -3,7 +3,6 @@ package cz.tacr.elza.exception;
 /**
  * Úroveň vyjímky.
  *
- * @author Martin Šlapa
  * @since 20.01.2017
  */
 public enum Level {

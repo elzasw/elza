@@ -86,10 +86,8 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 
 
 /**
- * Serviska pro správu hodnot atributů.
+ * Description Item management
  *
- * @author Martin Šlapa
- * @since 13. 1. 2016
  */
 @Service
 public class DescriptionItemService {
@@ -558,6 +556,7 @@ public class DescriptionItemService {
     /**
      * Smaže hodnotu atributu.
      *
+     * Funkce současně posílá notifikaci přes WS
      * @param descItem  hodnota atributu
      * @param version   verze archivní pomůcky
      * @param change    změna operace
@@ -586,11 +585,13 @@ public class DescriptionItemService {
         }
 
         descItem.setDeleteChange(change);
+        
+        ArrDescItem retDescItem = descItemRepository.save(descItem);
 
         // sockety
-        publishChangeDescItem(version, descItem);
+        publishChangeDescItem(version, retDescItem);
 
-        return descItemRepository.save(descItem);
+        return retDescItem;
     }
 
     /**
@@ -672,11 +673,14 @@ public class DescriptionItemService {
             descItemRepository.save(descItemNew);
 
             // sockety
-            publishChangeDescItem(version, descItemNew);
+            //publishChangeDescItem(version, descItemNew);
 
             // pro odverzovanou hodnotu atributu je nutné vytvořit kopii dat
             copyDescItemData(sourceDescItem, descItemNew);
             result.add(descItemNew);
+        }        
+        if (CollectionUtils.isNotEmpty(result)) {
+            arrangementCacheService.createDescItems(node.getNodeId(), result);
         }
         return result;
     }
@@ -708,8 +712,8 @@ public class DescriptionItemService {
 
         ArrData data = dataList.get(0);
         ArrData dataNew = createCopyDescItemData(data, descItemTo);
-
-        dataRepository.save(dataNew);
+        descItemFactory.fillItemData(descItemTo, data);
+        dataRepository.save(dataNew);        
     }
 
     /**

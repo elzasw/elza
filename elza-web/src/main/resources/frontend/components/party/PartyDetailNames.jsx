@@ -62,8 +62,7 @@ class PartyDetailNames extends AbstractReactComponent {
                 data
             ]
         };
-        this.props.onPartyUpdate(party);
-        this.dispatch(modalDialogHide());
+        return this.props.onPartyUpdate(party);
     };
 
     partyNameDelete = (id) => {
@@ -94,8 +93,7 @@ class PartyDetailNames extends AbstractReactComponent {
                 ...partyNames.slice(index+1)
             ]
         };
-        this.props.onPartyUpdate(party);
-        this.dispatch(modalDialogHide());
+        return this.props.onPartyUpdate(party);
     };
 
     partyNameSetPreffered = (id) => {

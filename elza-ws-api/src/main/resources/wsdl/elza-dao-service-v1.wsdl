@@ -46,7 +46,7 @@
 		</wsdl:operation>
 		<wsdl:operation name="OnDaoUnlinked">
 			<wsdl:input name="onDaoUnlinked" message="tns:OnDaoUnlinked"/>
-			<wsdl:output name="emptyMessage" message="tns:EmptyMessage"/>
+			<wsdl:output name="emptyMessageUnlinked" message="tns:EmptyMessage"/>
 			<wsdl:fault name="daoServiceException" message="tns:DaoServiceException"/>
 		</wsdl:operation>
 	</wsdl:portType>
@@ -61,7 +61,7 @@
 				<soap:body use="literal"/>
 			</wsdl:output>
 			<wsdl:fault name="daoServiceException">
-				<soap:fault name="daoServiceException" use=""/>
+				<soap:fault name="daoServiceException" use="literal"/>
 			</wsdl:fault>
 		</wsdl:operation>
 		<wsdl:operation name="PostTransferRequest">
@@ -73,7 +73,7 @@
 				<soap:body use="literal"/>
 			</wsdl:output>
 			<wsdl:fault name="daoServiceException">
-				<soap:fault name="daoServiceException" use=""/>
+				<soap:fault name="daoServiceException" use="literal"/>
 			</wsdl:fault>
 		</wsdl:operation>
 	</wsdl:binding>
@@ -88,7 +88,7 @@
 				<soap:body use="literal"/>
 			</wsdl:output>
 			<wsdl:fault name="daoServiceException">
-				<soap:fault name="daoServiceException" use=""/>
+				<soap:fault name="daoServiceException" use="literal"/>
 			</wsdl:fault>
 		</wsdl:operation>
 		<wsdl:operation name="OnDaoUnlinked">
@@ -96,11 +96,11 @@
 			<wsdl:input name="onDaoUnlinked">
 				<soap:body use="literal"/>
 			</wsdl:input>
-			<wsdl:output name="emptyMessage">
+			<wsdl:output name="emptyMessageUnlinked">
 				<soap:body use="literal"/>
 			</wsdl:output>
 			<wsdl:fault name="daoServiceException">
-				<soap:fault name="daoServiceException" use=""/>
+				<soap:fault name="daoServiceException" use="literal"/>
 			</wsdl:fault>
 		</wsdl:operation>
 	</wsdl:binding>

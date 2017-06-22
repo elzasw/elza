@@ -79,7 +79,7 @@ var FundDetail = class FundDetail extends AbstractReactComponent {
                         <label>{i18n('arr.fund.detail.ruleSet')}:</label>
                         <span>{rule}</span>
                     </div>
-                    <Button className='fund-detail-button' onClick={this.handleShowInArr.bind(this, ver)}>{i18n('arr.fund.action.openInArr')}</Button>
+                    <Button className='fund-detail-button' onClick={this.handleShowInArr.bind(this, ver)}><Icon glyph="fa-folder-open" />&nbsp;{i18n('arr.fund.action.openInArr')}</Button>
                 </div>
             </div>
         );

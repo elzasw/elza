@@ -4,8 +4,6 @@ import cz.tacr.elza.print.NodeId;
 import cz.tacr.elza.print.Packet;
 
 /**
- * @author Martin Lebeda
- * @author Petr Pytelka
  * @sinceDate: 22.6.16
  */
 public class ItemPacketRef extends AbstractItem {
@@ -19,7 +17,7 @@ public class ItemPacketRef extends AbstractItem {
 
     @Override
     public String serializeValue() {
-        return packet.formatAsString();
+        return packet.formatAsString(Packet.FormatType.NUMBER_WITH_TYPE);
     }
     
     @Override

@@ -10,15 +10,11 @@ import cz.tacr.elza.domain.RulTemplate.Engine;
 import cz.tacr.elza.print.Node;
 import cz.tacr.elza.print.NodeId;
 import cz.tacr.elza.print.Output;
-import cz.tacr.elza.print.Record;
 
 /**
  * Factory metoda pro vytváření objektů {@link OutputGeneratorWorkerJasper} a objektů vytvářených při jeho běhu s dependency injections.
  *
- * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
- *         Date: 29.6.16
  */
-@SuppressWarnings("SpringJavaAutowiringInspection")
 @Component
 @Configuration
 public class OutputGeneratorWorkerFactory {
@@ -38,14 +34,6 @@ public class OutputGeneratorWorkerFactory {
         } else {
             throw new IllegalStateException("Nepodporovaný typ výstupu: " + engine.toString());
         }
-    }
-
-    /**
-     * @param output output ke kterému je record zařazen
-     * @return vytvořený objekt s provedeným dependency injections
-     */
-    public Record getRecord(final Output output) {
-        return new Record(output);
     }
 
     /**

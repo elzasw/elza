@@ -2,10 +2,11 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n} from 'components/index.jsx';
-import {Modal, Button, Checkbox} from 'react-bootstrap';
+import {Modal, Button, Checkbox, Form} from 'react-bootstrap';
 import {indexById, objectById} from 'stores/app/utils.jsx'
-import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
+import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 import {visiblePolicyFetchIfNeeded} from 'actions/arr/visiblePolicy.jsx'
+import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 
 /**
  * Validace formuláře.
@@ -13,7 +14,6 @@ import {visiblePolicyFetchIfNeeded} from 'actions/arr/visiblePolicy.jsx'
  */
 const validate = (values, props) => {
     const errors = {};
-
     return errors;
 };
 
@@ -36,12 +36,14 @@ class VisiblePolicyForm extends AbstractReactComponent {
     handleResetVisiblePolicy = () => {
         if(confirm(i18n('visiblePolicy.action.reset.confirm'))) {
             this.props.onSubmitForm({records: []});
+            this.dispatch(modalDialogHide());
         }
     };
 
+    submitReduxForm = (values, dispatch) => submitForm(validate,values,this.props,this.props.onSubmitForm,dispatch);
+
     render() {
         const {fields: {records}, handleSubmit, onClose, nodeId, fundVersionId, visiblePolicy, visiblePolicyTypes, arrRegion} = this.props;
-        const submitForm = submitReduxForm.bind(this, validate);
 
         let activeFund = null;
         if (arrRegion.activeIndex != null) {
@@ -66,20 +68,20 @@ class VisiblePolicyForm extends AbstractReactComponent {
 
         return (
             <div>
-                <Modal.Body>
-                    <form onSubmit={handleSubmit(submitForm)}>
+                <Form onSubmit={handleSubmit(this.submitReduxForm)}>
+                    <Modal.Body>
                         {records.map((val, index) =>
                             <div key={index}>
                                 <Checkbox {...val.checked} value={true}>{visiblePolicyTypeItems[val.id.initialValue].name}</Checkbox>
                             </div>
                         )}
-                    </form>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button onClick={handleSubmit(submitForm)}>{i18n('visiblePolicy.action.save')}</Button>
-                    <Button onClick={this.handleResetVisiblePolicy}>{i18n('visiblePolicy.action.reset')}</Button>
-                    <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
-                </Modal.Footer>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button type="submit">{i18n('visiblePolicy.action.save')}</Button>
+                        <Button onClick={this.handleResetVisiblePolicy}>{i18n('visiblePolicy.action.reset')}</Button>
+                        <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                    </Modal.Footer>
+                </Form>
             </div>
         )
     }

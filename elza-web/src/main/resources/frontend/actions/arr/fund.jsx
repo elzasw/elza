@@ -84,7 +84,6 @@ export function createFund(data) {
         return savingApiWrapper(dispatch, WebApi.createFund(data.name, data.ruleSetId, data.institutionId, data.internalCode, data.dateRange))
             .then((fund) => {
                 dispatch(addToastrSuccess(i18n("arr.fund.title.added")));
-                dispatch(modalDialogHide());
                 dispatch(fundsSelectFund(fund.id))
             });
     }
@@ -92,9 +91,7 @@ export function createFund(data) {
 
 export function updateFund(data) {
     return dispatch => {
-        return savingApiWrapper(dispatch, WebApi.updateFund(data)).then((response) => {
-            dispatch(modalDialogHide());
-        });
+        return savingApiWrapper(dispatch, WebApi.updateFund(data));
     }
 }
 
@@ -109,7 +106,6 @@ export function approveFund(versionId, dateRange) {
             .then((json) => {
                 dispatch(addToastrSuccess(i18n("arr.fund.title.approved")));
                 dispatch(approveFundResult(json.versionId))
-                dispatch(modalDialogHide())
             });
     }
 }
@@ -123,7 +119,6 @@ export function deleteFund(fundId) {
 
 export function exportFund(fundId, transformationName) {
     return dispatch => {
-        dispatch(modalDialogHide());
         dispatch(downloadFile("fund-" + fundId, UrlFactory.exportFund(fundId, transformationName)));
     }
 }

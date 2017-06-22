@@ -1,7 +1,6 @@
 package cz.tacr.elza.service.output;
 
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -12,17 +11,13 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.validation.constraints.NotNull;
-
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
@@ -54,16 +49,11 @@ import cz.tacr.elza.domain.ParEvent;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyGroup;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParPerson;
-import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPacketType;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.print.Fund;
 import cz.tacr.elza.print.Node;
 import cz.tacr.elza.print.NodeId;
@@ -71,9 +61,7 @@ import cz.tacr.elza.print.NodeLoader;
 import cz.tacr.elza.print.Output;
 import cz.tacr.elza.print.Packet;
 import cz.tacr.elza.print.Record;
-import cz.tacr.elza.print.RecordType;
 import cz.tacr.elza.print.UnitDate;
-import cz.tacr.elza.print.UnitDateText;
 import cz.tacr.elza.print.item.AbstractItem;
 import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.item.ItemCoordinates;
@@ -100,7 +88,6 @@ import cz.tacr.elza.print.party.PartyName;
 import cz.tacr.elza.print.party.Person;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.PartyGroupRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.ItemService;
@@ -109,18 +96,10 @@ import cz.tacr.elza.service.RegistryService;
 import cz.tacr.elza.utils.ObjectListIterator;
 import cz.tacr.elza.utils.PartyType;
 import cz.tacr.elza.utils.ProxyUtils;
-import ma.glasnost.orika.CustomMapper;
-import ma.glasnost.orika.MapperFacade;
-import ma.glasnost.orika.MapperFactory;
-import ma.glasnost.orika.MappingContext;
-import ma.glasnost.orika.impl.DefaultMapperFactory;
-import ma.glasnost.orika.metadata.MappingDirection;
 
 /**
  * Factory pro vytvoření struktury pro výstupy
  *
- * @author Martin Lebeda
- * @since 03.05.2016
  */
 
 @Service
@@ -128,22 +107,17 @@ public class OutputFactoryService implements NodeLoader {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private MapperFacade mapper;
-
     private Map<Integer, Packet> packetMap = new HashMap<>();
 
     private Map<Integer, Node> nodeMap = new HashMap<>();
-
+    
     public void reset() {
-        packetMap.clear();
+        packetMap.clear();        
         nodeMap.clear();
     }
 
     @Autowired
     private OutputGeneratorWorkerFactory outputGeneratorFactory;
-
-    @Autowired
-    private PartyGroupRepository partyGroupRepository;
 
     @Autowired
     private PartyNameRepository partyNameRepository;
@@ -167,26 +141,6 @@ public class OutputFactoryService implements NodeLoader {
     private RegistryService registryService;
 
     public OutputFactoryService() {
-        // inicializace mapperů
-        MapperFactory mapperFactory = new DefaultMapperFactory.Builder().build();
-
-        mapperFactory.classMap(ArrItemUnitdate.class, UnitDate.class)
-                .customize(new CustomMapper<ArrItemUnitdate, UnitDate>() {
-                    @Override
-                    public void mapAtoB(final ArrItemUnitdate arrItemUnitdate, final UnitDate unitDate, final MappingContext context) {
-                        super.mapAtoB(arrItemUnitdate, unitDate, context);
-                        final ArrCalendarType calendarType = arrItemUnitdate.getCalendarType();
-                        unitDate.setCalendarType(calendarType);
-                        unitDate.setCalendar(calendarType.getName());
-                        unitDate.setCalendarCode(calendarType.getCode());
-                    }
-                })
-                .exclude("calendarType")
-                .byDefault(MappingDirection.A_TO_B).register();
-
-        mapperFactory.classMap(RegRegisterType.class, RecordType.class).byDefault(MappingDirection.A_TO_B).register();
-
-        mapper = mapperFactory.getMapperFacade();
     }
 
     /**
@@ -256,50 +210,6 @@ public class OutputFactoryService implements NodeLoader {
         };
     }
 
-    private PartyGroup createPartyGroup(final Output output, final ParParty parParty) {
-        final PartyGroup partyGroup = new PartyGroup();
-        final ParPartyGroup parPartyGroup = partyGroupRepository.findOne(parParty.getPartyId());
-        partyGroup.setScope(parPartyGroup.getScope());
-        partyGroup.setFoundingNorm(parPartyGroup.getFoundingNorm());
-        partyGroup.setOrganization(parPartyGroup.getOrganization());
-        partyGroup.setScopeNorm(parPartyGroup.getScopeNorm());
-
-        // partyGroup - odděděno od party
-        partyGroup.setType(parParty.getPartyType().getName());
-        partyGroup.setTypeCode(parParty.getPartyType().getCode());
-        partyGroup.setHistory(parParty.getHistory());
-        partyGroup.setSourceInformation(parParty.getSourceInformation());
-        partyGroup.setCharacteristics(parParty.getCharacteristics());
-        partyGroup.setPreferredName(createPartyName(parParty.getPreferredName()));
-
-        List<ParPartyName> partyNames = parParty.getPartyNames();
-        if (CollectionUtils.isNotEmpty(partyNames)) {
-            List<ParPartyName> namesToCreate = new ArrayList<>(partyNames);
-            namesToCreate.remove(parParty.getPreferredName());
-
-            for (ParPartyName parPartyName : namesToCreate) {
-                PartyName partyName = createPartyName(parPartyName);
-                partyGroup.getNames().add(partyName);
-            }
-        }
-
-        Record partyRecord = createRecord(output, parParty);
-        partyGroup.setRecord(partyRecord);
-
-        return partyGroup;
-    }
-
-    private Record createRecord(final Output output, final ParParty parParty) {
-        final RegRecord parPartyRecord = parParty.getRecord();
-        Record partyRecord = new Record(output);
-        partyRecord.setRecord(parPartyRecord.getRecord());
-        partyRecord.setCharacteristics(parPartyRecord.getCharacteristics());
-        parPartyRecord.getVariantRecordList().stream().forEach(regVariantRecord -> partyRecord.getVariantRecords().add(regVariantRecord.getRecord()));
-
-        partyRecord.setType(getRecordTypeByPartyRecord(output, parPartyRecord));
-        return partyRecord;
-    }
-
     private Institution createInstitution(final ParInstitution arrFundInstitution, final Output output) {
         final Institution institution = new Institution();
         institution.setTypeCode(arrFundInstitution.getInstitutionType().getCode());
@@ -308,14 +218,14 @@ public class OutputFactoryService implements NodeLoader {
 
         // partyGroup k instituci
         final ParParty parParty = arrFundInstitution.getParty();
+        final Party party = createParty(parParty, output);
 
-        // Check party type
-        final ParPartyType partyType = parParty.getPartyType();
-        if(!ParPartyType.PartyTypeEnum.GROUP_PARTY.toString().equals(partyType.getCode())) {
+        // Check party type        
+        if(! (party instanceof PartyGroup)) {
             throw new IllegalStateException("Party for institution is not GROUP_PARTY, partyId = "+parParty.getPartyId());
         }
         // create party group
-        final PartyGroup partyGroup = createPartyGroup(output, parParty);
+        final PartyGroup partyGroup = (PartyGroup)party;
         institution.setPartyGroup(partyGroup);
 
         return institution;
@@ -329,37 +239,6 @@ public class OutputFactoryService implements NodeLoader {
         fund.setInternalCode(arrFund.getInternalCode());
 
         return fund;
-    }
-
-    /**
-     * factory metoda konvertující objekty
-     */
-    private PartyName createPartyName(final ParPartyName parPartyPreferredName) {
-        PartyName preferredName = new PartyName();
-        preferredName.setMainPart(parPartyPreferredName.getMainPart());
-        preferredName.setOtherPart(parPartyPreferredName.getOtherPart());
-        preferredName.setNote(parPartyPreferredName.getNote());
-        preferredName.setDegreeBefore(parPartyPreferredName.getDegreeBefore());
-        preferredName.setDegreeAfter(parPartyPreferredName.getDegreeAfter());
-        preferredName.setValidFrom(createUnitDateText(parPartyPreferredName.getValidFrom()));
-        preferredName.setValidTo(createUnitDateText(parPartyPreferredName.getValidTo()));
-        return preferredName;
-    }
-
-    /**
-     * factory metoda konvertující objekty
-     */
-    private UnitDateText createUnitDateText(final ParUnitdate parUnitdate) {
-        if (parUnitdate == null) {
-            return null;
-        }
-        UnitDateText dateFrom = null;
-        final String format = parUnitdate.getFormat();
-        if (StringUtils.isNotBlank(format)) { // musí být nastaven formát
-            dateFrom = new UnitDateText();
-            dateFrom.setValueText(UnitDateConvertor.convertToString(parUnitdate));
-        }
-        return dateFrom;
     }
 
     /**
@@ -538,7 +417,7 @@ public class OutputFactoryService implements NodeLoader {
         } else if (itemData instanceof ArrItemFileRef) {
             item = getItemFile(nodeId, (ArrItemFileRef) itemData);
         } else if (itemData instanceof ArrItemEnum) {
-            item = getItemUnitEnum(nodeId, (ArrItemEnum) itemData);
+            item = ItemEnum.newInstance(nodeId);
         } else if (itemData instanceof ArrItemDecimal) {
             item = getItemUnitDecimal(nodeId, (ArrItemDecimal) itemData);
         } else if (itemData instanceof ArrItemCoordinates) {
@@ -570,94 +449,38 @@ public class OutputFactoryService implements NodeLoader {
     }
 
     private AbstractItem getItemUnitRecordRef(final Output output, final NodeId nodeId, final ArrItemRecordRef itemData) {
-        final Record record = getRecordByItem(output, itemData);
+    	RegRecord regRecord = itemData.getRecord();
+        final Record record = Record.newInstance(output, regRecord);
         return new ItemRecordRef(nodeId, record);
-    }
-
-    private Record getRecordByItem(final Output output, final ArrItemRecordRef itemData) {
-        Record record = getRecord(output, itemData.getRecord());
-        record.setType(getRecordTypeByItem(output, itemData));
-        return record;
-    }
-
-    private Record createRecord(final Output output, final RegRecord regRecord) {
-        Record record =  getRecord(output, regRecord);
-        record.setType(getRecordTypeByNode(output, regRecord.getRegisterType()));
-        return record;
-    }
-
-    private Record getRecordByParty(final Output output, final RegRecord partyRecord) {
-        Record record = getRecord(output, partyRecord);
-        record.setType(getRecordTypeByPartyRecord(output, partyRecord));
-        return record;
-    }
-
-    private Record getRecord(@NotNull final Output output, @NotNull final RegRecord regRecord) {
-        Record record = outputGeneratorFactory.getRecord(output);
-        record.setRecord(regRecord.getRecord());
-        record.setCharacteristics(regRecord.getCharacteristics());
-        regRecord.getVariantRecordList().stream().forEach(regVariantRecord -> record.getVariantRecords().add(regVariantRecord.getRecord()));
-        return record;
-    }
-
-    private RecordType getRecordTypeByItem(final Output output, final ArrItemRecordRef itemData) {
-        final RegRegisterType registerType = itemData.getRecord().getRegisterType();
-        final RecordType recordType = getRecordType(output, registerType);
-        recordType.setCountRecords(recordType.getCountDirectRecords() + 1);
-        return recordType;
-    }
-
-    private RecordType getRecordTypeByNode(final Output output, final RegRegisterType registerType) {
-        final RecordType recordType = getRecordType(output, registerType);
-        recordType.setCountDirectRecords(recordType.getCountDirectRecords() + 1);
-        recordType.setCountRecords(recordType.getCountDirectRecords() + 1);
-        return recordType;
-        }
-
-    private RecordType getRecordTypeByPartyRecord(final Output output, final RegRecord parPartyRecord) {
-        final RegRegisterType registerType = parPartyRecord.getRegisterType();
-        final RecordType recordType = getRecordType(output, registerType);
-        recordType.setCountRecords(recordType.getCountDirectRecords() + 1);
-        return recordType;
-    }
-
-    private RecordType getRecordType(final Output output, final RegRegisterType registerType) {
-        RecordType recordType = output.getRecordTypes().get(registerType.getCode());
-        if (recordType == null) {
-            recordType = mapper.map(registerType, RecordType.class);
-            output.getRecordTypes().put(registerType.getCode(), recordType);
-        }
-        return recordType;
     }
 
     private AbstractItem getItemUnitPartyRef(final Output output, final NodeId nodeId, final ArrItemPartyRef itemData) {
         final ParParty parParty = itemData.getParty();
+        Party party = createParty(parParty, output);
+        return new ItemPartyRef(nodeId, party);
+    }
+    
+    private Party createParty(final ParParty parParty, final Output output)
+    {
         String partyTypeCode = parParty.getPartyType().getCode();
         PartyType partyType = PartyType.getByCode(partyTypeCode);
-
-        Party party;
+        
         switch (partyType) {
             case DYNASTY:
                 ParDynasty parDynasty = ProxyUtils.deproxy(parParty);
-                party = createDynasty(parDynasty, output);
-                break;
+                return createDynasty(parDynasty, output);
             case EVENT:
                 ParEvent parEvent = ProxyUtils.deproxy(parParty);
-                party = createEvent(parEvent, output);
-                break;
+                return createEvent(parEvent, output);
             case PARTY_GROUP:
                 ParPartyGroup parPartyGroup = ProxyUtils.deproxy(parParty);
-                party = createPartyGroup(parPartyGroup, output);
-                break;
+                return createPartyGroup(parPartyGroup, output);
             case PERSON:
                 ParPerson parPerson = ProxyUtils.deproxy(parParty);
-                party = createPerson(parPerson, output);
-                break;
+                return createPerson(parPerson, output);
             default :
                 throw new IllegalStateException("Neznámý typ osoby " + partyType.getCode());
-        }
-
-        return new ItemPartyRef(nodeId, party);
+        }    	
     }
 
     private Person createPerson(final ParPerson parPerson, final Output output) {
@@ -696,16 +519,18 @@ public class OutputFactoryService implements NodeLoader {
     }
 
     private void fillCommonPartyAttributes(final Party party, final ParParty parParty, final Output output) {
-        party.setPreferredName(createPartyName(parParty.getPreferredName()));
+        party.setPreferredName(PartyName.valueOf(parParty.getPreferredName()));
         partyNameRepository.findByParty(parParty).stream()
                 .filter(parPartyName -> !parPartyName.getPartyNameId().equals(parParty.getPreferredName().getPartyNameId())) // kromě preferovaného jména
-                .forEach(parPartyName -> party.getNames().add(createPartyName(parPartyName)));
+                .forEach(parPartyName -> party.getNames().add(PartyName.valueOf(parPartyName)));
         party.setHistory(parParty.getHistory());
         party.setSourceInformation(parParty.getSourceInformation());
-        party.setCharacteristics(parParty.getCharacteristics());
-        party.setRecord(getRecordByParty(output, parParty.getRecord()));
+        party.setCharacteristics(parParty.getCharacteristics());        
         party.setType(parParty.getPartyType().getName());
         party.setTypeCode(parParty.getPartyType().getCode());
+        
+        // Prepare corresponding record
+        party.setRecord(Record.newInstance(output, parParty.getRecord()));
     }
 
     private AbstractItem getItemUnitPacketRef(final NodeId nodeId, final ArrItemPacketRef itemData) {
@@ -738,10 +563,6 @@ public class OutputFactoryService implements NodeLoader {
         return new ItemInteger(nodeId, itemData.getValue());
     }
 
-    private AbstractItem getItemUnitEnum(final NodeId nodeId, final ArrItemEnum itemData) {
-        return new ItemEnum(nodeId, itemData.toString());
-    }
-
     private AbstractItem getItemUnitDecimal(final NodeId nodeId, final ArrItemDecimal itemData) {
         return new ItemDecimal(nodeId, itemData.getValue());
     }
@@ -755,7 +576,7 @@ public class OutputFactoryService implements NodeLoader {
     }
 
     private AbstractItem getItemUnitdate(final NodeId nodeId, final ArrItemUnitdate itemData) {
-        UnitDate data = mapper.map(itemData, UnitDate.class);
+    	UnitDate data = UnitDate.valueOf(itemData);
         return new ItemUnitdate(nodeId, data);
     }
 
@@ -792,14 +613,18 @@ public class OutputFactoryService implements NodeLoader {
         Map<Integer, List<RegRecord>> recordsByNode = registryService.findByNodes(mapNodes.keySet());
         for (NodeId nodeId : nodeIds) {
             int arrNodeId = nodeId.getArrNodeId();
+            Node node = mapNodes.get(arrNodeId);
+
+            // prepare list of records
             List<RegRecord> regRecords = recordsByNode.get(arrNodeId);
             List<Record> records;
-            if (regRecords == null) {
+            if (CollectionUtils.isEmpty(regRecords)) {
                 records = Collections.<Record>emptyList();
             } else {
-                records = regRecords.stream().map(regRecord -> createRecord(output, regRecord)).collect(Collectors.toList());
+                records = regRecords.stream().map(regRecord -> Record.newInstance(output, regRecord)).collect(Collectors.toList());
             }
-            Node node = mapNodes.get(arrNodeId);
+            
+            // store list
             node.setRecords(records);
         }
     }

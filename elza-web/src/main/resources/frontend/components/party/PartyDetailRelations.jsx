@@ -22,19 +22,18 @@ class PartyDetailRelations extends AbstractReactComponent {
 
     addIdentifier = (relation) => {
         const {relationType, party} = this.props;
-        this.dispatch(relationCreate({
+        return this.dispatch(relationCreate({
             ...relation,
             relationTypeId: relationType.id,
             partyId: party.id,
             from: isNotBlankObject(relation.from) ? normalizeDatation(relation.from) : null,
             to: isNotBlankObject(relation.to) ? normalizeDatation(relation.to) : null,
         }));
-        this.dispatch(modalDialogHide());
     };
 
     update = (origRelation, newRelation) => {
         const {relationType, party} = this.props;
-        this.dispatch(relationUpdate({
+        return this.dispatch(relationUpdate({
             ...origRelation,
             ...newRelation,
             relationTypeId: relationType.id,
@@ -43,7 +42,6 @@ class PartyDetailRelations extends AbstractReactComponent {
             to: isNotBlankObject(newRelation.to) ? normalizeDatation(newRelation.to) : null,
         }));
         console.warn("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-        this.dispatch(modalDialogHide());
     };
 
     handleRelationAdd = () => {

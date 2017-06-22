@@ -21,25 +21,65 @@
             margin: 0;
             overflow: hidden;
             overflow-y: auto;
-            
+
             .listbox-item {
-                padding: 5px;
-                font-size: 0.8em;
-                height: 40px;
+                //padding: 5px;
+                //height: 40px;
                 overflow:hidden;
+                border-bottom: 1px solid #eee;
+                padding:5px;
 
-                .name {
-                    font-size: 12px;
+                .item-row{
+                    display: flex;
 
-                    white-space: nowrap;
-                    overflow:hidden;
-                    text-overflow: ellipsis;
+                    div:first-child{
+                        flex-grow:1;
+                    }
+                    .name {
+                        white-space: nowrap;
+                        overflow:hidden;
+                        text-overflow: ellipsis;
+                    }
+                    .btn-action {
+                        padding: 0;
+                        border: none;
+                        margin: 0;
+                        background: transparent;
+                        height: 1.3em;
+                        width: 1.3em;
+                        line-height: 1.3em;
+                        font-size: 1em;
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: inherit;
+                        margin-right:-0.2em;
+
+                        .icon {
+                            color: inherit;
+                            transition: transform 100ms ease-in-out;
+                            vertical-align: middle;
+                        }
+
+                        &:hover {
+                            background-color: #6fa8dc;
+                            color: white;
+                        }
+                    }
+                    .link{
+                        //color:@color-link;
+
+                        &:hover{
+                            color:lighten(@color-link,20%);
+                            text-decoration: underline;
+                        }
+                    }
+
                 }
-                .link {
-                    float: right;
-                    margin-top: -3px;
+                .desc{
+                    font-size:0.8em;
                 }
             }
         }
-    }    
+    }
 }

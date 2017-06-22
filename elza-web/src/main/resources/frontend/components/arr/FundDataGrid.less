@@ -6,10 +6,6 @@
         .actions-container {
             display: flex;
             justify-content: space-between;
-            .actions-search {
-                width: 200px;
-                flex-shrink: 0;
-            }
             .actions-buttons, .actions-search {
                 display: flex;
                 > .btn {
@@ -41,11 +37,16 @@
                 }
             }
             .actions-search {
+                flex-shrink: 1;
                 flex-grow: 1;
-                max-width: 480px;
                 .search-container {
-                    width: 100%;
+                    width:100%;
+                    max-width: 500px;
+                    min-width: 200px;
                 }
+            }
+            .actions-buttons{
+                flex-shrink: 0;
             }
         }
         .grid-container {

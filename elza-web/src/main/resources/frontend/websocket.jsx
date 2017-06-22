@@ -55,7 +55,10 @@ import URLParse from "url-parse";
 import {reloadUserDetail} from 'actions/user/userDetail'
 
 const url = new URLParse(serverContextPath + '/stomp');
-const wsUrl = "ws://" + url.host + url.pathname;
+
+var wsProtocol = url.protocol === "https:" ? "wss:" : "ws:";
+
+const wsUrl = wsProtocol+ "//" + url.host + url.pathname;
 console.log("Websocekt URL", wsUrl)
 var refresh = false;
 var stompClient;
@@ -646,4 +649,3 @@ function processValidations(values) {
 
     });
 }
-

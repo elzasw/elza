@@ -97,12 +97,14 @@ class ExtSystemForm extends AbstractReactComponent {
         return ExtSystemForm.requireFields(...requiredFields)(values);
     };
 
+    submitReduxForm = (values, dispatch) => submitForm(ExtSystemForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
+
     render() {
         const {fields: {id, type, viewDaoUrl, viewFileUrl, sendNotification, code, name, url, username, password, elzaCode}, handleSubmit, submitting} = this.props;
         const classJ = this.props.fields['@class'];
         const isUpdate = !!id.value;
 
-        return <Form onSubmit={handleSubmit(submitForm.bind(this, ExtSystemForm.validate))}>
+        return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
             <Modal.Body>
                 <FormInput componentClass="select" label={i18n('admin.extSystem.class')} {...classJ} disabled={id.value}>
                     <option key={null}/>

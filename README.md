@@ -84,6 +84,32 @@ Aplikace je konfigurována pomocí souboru `elza.yaml`. Umístění konfiguračn
 * war Tomcat `webapps/elza/WEB-INF/classes`
 * embed načítá v aktuální cestě nebo složce config
 
+### Výchozí uživatel
+
+Pro zakázání výchozího uživatele s právy administrátora je potřeba přidat do konfiguračního souboru `elza.security.allowDefaultUser:false`. Při použití šablony stačí pouze smazat `#`.
+
+```
+elza:
+    data:
+        url: jdbc:postgresql://server/databaze
+        username: uzivatel
+        password: heslo
+    security:
+        allowDefaultUser:false
+```
+
+### Pracovní adresář
+
+Úmístění pracovního adresáře elzy lze změnit pomocí parametru `elza.workingDir`
+```
+elza:
+    data:
+        url: jdbc:postgresql://server/databaze
+        username: uzivatel
+        password: heslo
+    workingDir: C:\Elza\work
+```
+
 ### Databázový server
 Od MT14 je nutné mít připravený databázový server pro datový typ Geometry.
 
@@ -162,3 +188,5 @@ Po přeložení spuštění je potřeba naimportovat
 
 ### Import institucí
 Aby bylo možné vytvářen archivní fondy, je nutné importovat instituci v sekci Osoby - soubor elza-core/src/test/resources/institution-import.xml
+
+Importovat je možné též instituce archivů ze souboru `package-cz-base/src/all-institutions-import.xml`

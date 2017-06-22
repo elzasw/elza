@@ -87,7 +87,6 @@ class ExtImportSearch extends AbstractReactComponent {
             errors._error = i18n('extImport.validation.missingConditions')
         }
 
-
         return errors;
     };
 
@@ -120,6 +119,10 @@ class ExtImportSearch extends AbstractReactComponent {
         </div>
     };
 
+    submitOptions = {closeOnFinished:false}
+
+    submitReduxForm = (values, dispatch) => submitForm(this.validate,values,this.props,this.props.onSubmitForm,dispatch,this.submitOptions);
+
     render() {
         const {fields: {systemId, conditions}, handleSubmit, submitting, error, extSystems} = this.props;
 
@@ -130,9 +133,9 @@ class ExtImportSearch extends AbstractReactComponent {
         if (systemId.value != null) {
             system = objectById(extSystems, systemId.value);
         }
-        const submit = submitForm.bind(this, this.validate);
+        //const submit = submitForm.bind(this, this.validate);
 
-        return <Form onSubmit={handleSubmit(submit)}>
+        return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
             {error && <p className="text-danger">{error}</p>}
             <FormInput componentClass="select" label={i18n('extImport.source')} {...systemId}>
                 {extSystems.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
@@ -281,6 +284,15 @@ class ExtImportForm extends AbstractReactComponent {
         }
     };
 
+    validate = (values,props) => {
+        var errors = {};
+        return errors;
+    }
+
+    submitOptions = {closeOnFinished:false}
+
+    submitReduxForm = (values, dispatch) => submitForm(this.validate,values,this.props,this.submit,dispatch,this.submitOptions);
+
     render() {
         const {searched, results} = this.state;
         const {autocomplete, onClose, fields:{scopeId, interpiRecordId, originator}, handleSubmit, submitting, versionId, isParty} = this.props;
@@ -313,7 +325,7 @@ class ExtImportForm extends AbstractReactComponent {
         return <div>
             <Modal.Body>
                 <ExtImportSearchComponent onSubmitForm={this.submitSearch}/>
-                <Form name="extImport" onSubmit={handleSubmit(this.submit)}>
+                <Form name="extImport" onSubmit={handleSubmit(this.submitReduxForm)}>
                     {searched && <div>
                         <hr />
                         {results && results.length === 0 ? <div>{i18n('extImport.noResults')}</div> : <div>

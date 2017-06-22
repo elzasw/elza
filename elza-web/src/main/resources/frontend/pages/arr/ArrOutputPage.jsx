@@ -63,20 +63,7 @@ import {getDescItemsAddTree, getOneSettings} from 'components/arr/ArrUtils.jsx';
 import ArrParentPage from "./ArrParentPage.jsx";
 
 var classNames = require('classnames');
-var ShortcutsManager = require('react-shortcuts');
-var Shortcuts = require('react-shortcuts/component');
-
-var keyModifier = Utils.getKeyModifier();
-
-var keymap = ArrParentPage.mergeKeymap({
-    ArrParent: {
-        newOutput: keyModifier + '+',
-        area1: keyModifier + '1',
-        area2: keyModifier + '2',
-        area3: keyModifier + '3'
-    }
-});
-var shortcutManager = new ShortcutsManager(keymap);
+import {Shortcuts} from 'react-shortcuts';
 
 let _selectedTab = 0
 
@@ -178,17 +165,13 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         }
     }
 
-    getChildContext() {
-        return {shortcuts: shortcutManager};
-    }
-
     handleAddOutput() {
         const fund = this.getActiveFund(this.props);
 
         this.dispatch(modalDialogShow(this, i18n('arr.output.title.add'),
             <AddOutputForm
                 create
-                onSubmitForm={(data) => {this.dispatch(fundOutputCreate(fund.versionId, data))}}/>));
+                onSubmitForm={(data) => {return this.dispatch(fundOutputCreate(fund.versionId, data))}}/>));
     }
 
     handleBulkActions() {
@@ -206,8 +189,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
 
         this.dispatch(modalDialogShow(this, i18n('arr.output.title.add'),
             <RunActionForm versionId={fund.versionId} onSubmitForm={(data) => {
-                this.dispatch(fundOutputActionRun(fund.versionId, data.code));
-                this.dispatch(modalDialogHide());
+                return this.dispatch(fundOutputActionRun(fund.versionId, data.code));
             }}/>));
     }
 

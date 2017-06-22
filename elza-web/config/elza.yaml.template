@@ -3,6 +3,9 @@ elza:
       url: jdbc:postgresql://localhost/elza
       user: app
       pass: app
+  security:
+      #allowDefaultUser:false
+  #workingDir: C:/Elza/work
 
 spring:
   app:

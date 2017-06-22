@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, Autocomplete, FormInput} from 'components/index.jsx';
 import {Modal, Button, Form} from 'react-bootstrap';
-import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
+import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registry.jsx'
 import {getTreeItemById} from "./registryUtils";
 
@@ -44,16 +44,17 @@ class EditRegistryForm extends AbstractReactComponent {
         this.dispatch(getRegistryRecordTypesIfNeeded());
     }
 
+    submitReduxForm = (values, dispatch) => submitForm(EditRegistryForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
+
     render() {
         const {fields: { record, characteristics, registerTypeId}, handleSubmit, onClose, initData, registryRegionRecordTypes, parentRecordId, submitting} = this.props;
 
-        const submitForm = handleSubmit(submitReduxForm.bind(this, EditRegistryForm.validate));
         const items = registryRegionRecordTypes.item != null ? registryRegionRecordTypes.item : [];
         const registerTypesIdValue = initData.registerTypeId && !registerTypeId.value ? initData.registerTypeId : registerTypeId.value;
 
         const value = getTreeItemById(registerTypeId ? registerTypeId.value : "", items);
 
-        return <Form onSubmit={submitForm}>
+        return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
             <Modal.Body>
                 <Autocomplete
                     label={i18n('registry.update.type')}
@@ -72,7 +73,7 @@ class EditRegistryForm extends AbstractReactComponent {
                 <FormInput componentClass="textarea" label={i18n('registry.characteristics')} {...characteristics} {...decorateFormField(characteristics)}/>
             </Modal.Body>
             <Modal.Footer>
-                <Button type="submit" onClick={submitForm} disabled={submitting}>{i18n('global.action.store')}</Button>
+                <Button type="submit" disabled={submitting}>{i18n('global.action.store')}</Button>
                 <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
         </Form>

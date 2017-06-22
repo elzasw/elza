@@ -12,10 +12,16 @@ import {
     fundSubNodeRegisterValueBlur,
     fundSubNodeRegisterValueChange
 } from 'actions/arr/subNodeRegister.jsx'
-import {registryDetailFetchIfNeeded, registryAdd} from 'actions/registry/registry.jsx'
 import NodeRegister from './registerForm/NodeRegister.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import DescItemLabel from './nodeForm/DescItemLabel.jsx'
+import RegistrySelectPage from 'pages/select/RegistrySelectPage.jsx'
+import {registryDetailFetchIfNeeded, registryListFilter, registryDetailClear, AREA_REGISTRY_LIST, registryAdd} from 'actions/registry/registry.jsx'
+import {partyDetailFetchIfNeeded, partyListFilter, partyDetailClear, AREA_PARTY_LIST} from 'actions/party/party.jsx'
+import {storeFromArea, objectById} from 'shared/utils'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import classNames from 'classnames'
+import {MODAL_DIALOG_VARIANT} from 'constants'
 
 const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
     static PropTypes = {
@@ -72,6 +78,34 @@ const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
         this.dispatch(registryDetailFetchIfNeeded(recordId));
         this.dispatch(routerNavigate('registry'));
     }
+    handleSelectModule = ({onSelect, filterText, value}) => {
+        const {hasSpecification, registryList, partyList, fundName, nodeName} = this.props;
+        //console.log(filterText, registryList, partyList, fundName, nodeName, specName, "aaa");
+        const open = (hasParty = false) => {
+            if (hasParty) {
+                //this.dispatch(partyListFilter({...partyList.filter, text: filterText, itemSpecId: null}));
+                this.dispatch(partyDetailClear());
+            }
+            //this.dispatch(registryListFilter({text: filterText}));
+            this.dispatch(registryDetailFetchIfNeeded(value ? value.id : null));
+
+            this.dispatch(modalDialogShow(this, null, <RegistrySelectPage
+                titles={[fundName, nodeName]}
+                hasParty={hasParty} onSelect={(data) => {
+                    onSelect(data);
+                    if (hasParty) {
+                        this.dispatch(partyListFilter({text:null, type:null, itemSpecId: null}));
+                        this.dispatch(partyDetailClear());
+                    }
+                    this.dispatch(registryListFilter({text: null, registryParentId: null, registryTypeId: null, versionId: null, itemSpecId: null, parents: [], typesToRoot: null}));
+                    this.dispatch(registryDetailClear());
+                    this.dispatch(modalDialogHide());
+            }}
+            />, classNames(MODAL_DIALOG_VARIANT.FULLSCREEN, MODAL_DIALOG_VARIANT.NO_HEADER)));
+        };
+        open(true);
+
+    };
 
     handleFocus(index) {
         this.dispatch(fundSubNodeRegisterValueFocus(this.props.versionId, this.props.selectedSubNodeId, this.props.routingKey, index));
@@ -97,7 +131,8 @@ const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
             return <div className="link" key={"link-" + index}>
                     <NodeRegister onFocus={this.handleFocus.bind(this, index)}
                                   onBlur={this.handleBlur.bind(this, index)}
-                                  onDetail={this.handleDetail.bind(this, index)}
+                                  //onDetail={this.handleDetail.bind(this, index)}
+                                  onSelectModule={this.handleSelectModule}
                                   onChange={this.handleChange.bind(this, index)}
                                   closed={closed}
                                   onCreateRecord={this.handleCreateRecord.bind(this, index)}
@@ -129,15 +164,31 @@ const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
     }
 };
 
-function mapStateToProps(state) {
+function mapStateToProps(state,props) {
     const {arrRegion} = state;
     let fund = null;
     if (arrRegion.activeIndex != null) {
         fund = arrRegion.funds[arrRegion.activeIndex];
     }
-
+    const registryList = storeFromArea(state, AREA_REGISTRY_LIST);
+    const partyList = storeFromArea(state, AREA_PARTY_LIST);
+    let fundName = null, nodeName = null;
+    if (props.typePrefix != "output") {
+        const {arrRegion:{activeIndex,funds}} = state;
+        const fund = funds[activeIndex];
+        const {nodes} = fund;
+        fundName = fund.name;
+        const node = nodes.nodes[nodes.activeIndex];
+        const {selectedSubNodeId} = node;
+        const subNode = objectById(node.childNodes, selectedSubNodeId);
+        subNode && subNode.name && (nodeName = subNode.name);
+    }
     return {
-        fund
+        fund,
+        registryList,
+        partyList,
+        fundName,
+        nodeName
     }
 }
 

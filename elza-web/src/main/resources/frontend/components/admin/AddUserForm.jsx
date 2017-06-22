@@ -5,7 +5,7 @@ import {AbstractReactComponent, i18n, Icon, FormInput, VersionValidationState, P
 import {Modal, Button, Form} from 'react-bootstrap';
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx'
-import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
+import {submitForm} from 'components/form/FormUtils.jsx'
 
 /**
  * Formulář přidání nebo uzavření AS.
@@ -57,21 +57,20 @@ class AddUserForm extends AbstractReactComponent {
         this.props.fields.party.onChange(newParty);
     };
 
+    submitReduxForm = (values, dispatch) => submitForm(AddUserForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
+
     render() {
         const {fields: {username, password, passwordAgain, party}, create, handleSubmit, onClose, submitting} = this.props;
-
-        const submitForm = submitReduxForm.bind(this, AddUserForm.validate);
-
-        return <Form onSubmit={handleSubmit(submitForm)}>
+        return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                 <Modal.Body>
-                        {create && <PartyField label={i18n('admin.user.add.party')} {...party}  onCreate={this.handlePartyCreate} detail={false} />}
-                        <FormInput label={i18n('admin.user.add.username')} autoComplete="off" type="text" {...username} />
-                        <FormInput label={i18n(create ? 'admin.user.password' : 'admin.user.newPassword' )} autoComplete="off" type="password" {...password} />
-                        <FormInput label={i18n('admin.user.passwordAgain')} autoComplete="off" type="password" {...passwordAgain} />
+                    {create && <PartyField label={i18n('admin.user.add.party')} {...party}  onCreate={this.handlePartyCreate} detail={false} />}
+                    <FormInput label={i18n('admin.user.add.username')} autoComplete="off" type="text" {...username} />
+                    <FormInput label={i18n(create ? 'admin.user.password' : 'admin.user.newPassword' )} autoComplete="off" type="password" {...password} />
+                    <FormInput label={i18n('admin.user.passwordAgain')} autoComplete="off" type="password" {...passwordAgain} />
 
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit" onClick={handleSubmit(submitForm)} disabled={submitting}>{i18n(create ? 'global.action.create' : 'global.action.update')}</Button>
+                    <Button type="submit" disabled={submitting}>{i18n(create ? 'global.action.create' : 'global.action.update')}</Button>
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
         </Form>

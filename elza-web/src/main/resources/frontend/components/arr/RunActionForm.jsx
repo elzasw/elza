@@ -5,9 +5,10 @@
 import React from 'react';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
-import {Modal, Button} from 'react-bootstrap';
-import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
+import {Modal, Button, Form} from 'react-bootstrap';
+import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 import {fundActionFetchConfigIfNeeded} from 'actions/arr/fundAction.jsx'
+import {addToastrInfo,addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 
 /**
  * Validace formuláře.
@@ -35,32 +36,39 @@ const RunActionForm = class RunActionForm extends AbstractReactComponent {
     componentDidMount() {
         this.dispatch(fundActionFetchConfigIfNeeded(this.props.versionId));
     }
+    submitOptions = {
+        closeOnSubmit:true
+    }
+
+    submitReduxForm = (values, dispatch) => submitForm(validate,values,this.props,this.props.onSubmitForm,dispatch,this.submitOptions);
+
 
     render() {
-        const {fields: {code}, handleSubmit, onClose, actionConfig} = this.props;
-        const submitForm = submitReduxForm.bind(this, validate)
+        const {fields: {code}, handleSubmit, onClose, actionConfig, submitting} = this.props;
+        //const submitForm = submitReduxForm.bind(this, validate)
+        console.log(actionConfig);
 
         return (
             <div className="run-action-form-container">
-                <Modal.Body>
-                    <form onSubmit={handleSubmit(submitForm)}>
+                <Form onSubmit={handleSubmit(this.submitReduxForm)}>
+                    <Modal.Body>
                         <FormInput componentClass="select"
-                               label={i18n('arr.fundAction.form.type')}
-                               key='code-action'
-                               ref='code-action'
-                               className='form-control'
+                                label={i18n('arr.fundAction.form.type')}
+                                key='code-action'
+                                ref='code-action'
+                                className='form-control'
                                 {...code}
                                 {...decorateFormField(code)}
                         >
                             <option key="novalue" value={null}/>
                             {actionConfig.map((item) => (<option key={item.code} value={item.code}>{item.name}</option>))}
                         </FormInput>
-                    </form>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button onClick={handleSubmit(submitForm)}>{i18n('global.action.run')}</Button>
-                    <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
-                </Modal.Footer>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button type="submit" disabled={submitting}>{i18n('global.action.run')}</Button>
+                        <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                    </Modal.Footer>
+                </Form>
             </div>
         )
     }

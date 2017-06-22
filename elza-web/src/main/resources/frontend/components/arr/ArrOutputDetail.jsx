@@ -14,18 +14,7 @@ import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import OutputInlineForm from 'components/arr/OutputInlineForm.jsx'
 
 import './ArrOutputDetail.less';
-
-const ShortcutsManager = require('react-shortcuts');
-const Shortcuts = require('react-shortcuts/component');
-const keyModifier = Utils.getKeyModifier();
-
-
-const keymap = {
-    ArrOutputDetail: {
-        xxx: keyModifier + 'e',
-    },
-};
-const shortcutManager = new ShortcutsManager(keymap);
+import {Shortcuts} from 'react-shortcuts';
 
 const OutputState = {
     OPEN: 'OPEN',
@@ -54,10 +43,6 @@ class ArrOutputDetail extends AbstractReactComponent {
         closed: React.PropTypes.bool.isRequired,
         readMode: React.PropTypes.bool.isRequired,
         fundOutputDetail: React.PropTypes.object.isRequired,
-    };
-
-    static childContextTypes = {
-        shortcuts: React.PropTypes.object.isRequired
     };
 
     componentDidMount() {
@@ -115,10 +100,6 @@ class ArrOutputDetail extends AbstractReactComponent {
         const {fund, fundOutputDetail} = this.props;
         this.dispatch(fundOutputEdit(fund.versionId, fundOutputDetail.id, data));
     };
-
-    getChildContext() {
-        return { shortcuts: shortcutManager };
-    }
 
     handleRemoveNode = (node) => {
         const {fund, fundOutputDetail} = this.props;

@@ -4,16 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
+import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParPartyNameFormType;
 import cz.tacr.elza.print.UnitDateText;
 
 /**
- * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
- *         Date: 22.6.16
+ * Party name
+ * 
+ * This object is used in output generators
  */
 public class PartyName {
 
@@ -24,6 +25,22 @@ public class PartyName {
     private String degreeAfter;
     private UnitDateText validFrom;
     private UnitDateText validTo;
+    private String formTypeName;
+    
+    private PartyName(ParPartyName parPartyName) {
+        this.mainPart = parPartyName.getMainPart();
+        this.otherPart = parPartyName.getOtherPart();
+        this.note = parPartyName.getNote();
+        this.degreeBefore = parPartyName.getDegreeBefore();
+        this.degreeAfter = parPartyName.getDegreeAfter();
+        this.validFrom = UnitDateText.valueOf(parPartyName.getValidFrom());
+        this.validTo = UnitDateText.valueOf(parPartyName.getValidTo());
+        
+        ParPartyNameFormType nameFormType = parPartyName.getNameFormType();
+        if(nameFormType!=null) {
+        	formTypeName = nameFormType.getName();
+        }
+    }
 
     /**
      * @return obsah fieldů "mainPart otherPart degreeBefore degreeAfter" oddělený mezerou
@@ -49,70 +66,47 @@ public class PartyName {
         return degreeAfter;
     }
 
-    public void setDegreeAfter(final String degreeAfter) {
-        this.degreeAfter = degreeAfter;
-    }
-
     public String getDegreeBefore() {
         return degreeBefore;
-    }
-
-    public void setDegreeBefore(final String degreeBefore) {
-        this.degreeBefore = degreeBefore;
     }
 
     public String getMainPart() {
         return mainPart;
     }
 
-    public void setMainPart(final String mainPart) {
-        this.mainPart = mainPart;
-    }
-
     public String getNote() {
         return note;
-    }
-
-    public void setNote(final String note) {
-        this.note = note;
     }
 
     public String getOtherPart() {
         return otherPart;
     }
 
-    public void setOtherPart(final String otherPart) {
-        this.otherPart = otherPart;
-    }
-
     public UnitDateText getValidFrom() {
         return validFrom;
-    }
-
-    public void setValidFrom(final UnitDateText validFrom) {
-        this.validFrom = validFrom;
     }
 
     public UnitDateText getValidTo() {
         return validTo;
     }
 
-    public void setValidTo(final UnitDateText validTo) {
-        this.validTo = validTo;
-    }
 
-    @Override
-    public boolean equals(final Object o) {
-        return EqualsBuilder.reflectionEquals(o, this);
-    }
+	public String getFormTypeName() {
+		return formTypeName;
+	}
 
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-
-    @Override
+	@Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SIMPLE_STYLE);
     }
+
+    /**
+     * Create new instance from DB object
+     * @param parPartyName
+     * @return
+     */
+	public static PartyName valueOf(ParPartyName parPartyName) {
+		PartyName partyName = new PartyName(parPartyName); 
+		return partyName;
+	}
 }

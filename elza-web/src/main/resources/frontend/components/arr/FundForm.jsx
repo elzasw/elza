@@ -4,7 +4,7 @@ import {AbstractReactComponent, i18n, Icon, Autocomplete, VersionValidationState
 import {Modal, Button, Form} from 'react-bootstrap';
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx'
-import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
+import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 
 import './FundForm.less';
 
@@ -84,24 +84,22 @@ class FundForm extends AbstractReactComponent {
         }
         return null;
     }
+    submitReduxForm = (values, dispatch) => submitForm(FundForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
 
     render() {
         const {fields: {name, ruleSetId, regScopes, institutionId, internalCode, dateRange}, handleSubmit, onClose, create, update, approve, ruleSet, refTables, submitting} = this.props;
-
-        const submitForm = submitReduxForm.bind(this, FundForm.validate);
-
         let approveButton;
         if (approve) {
             if (this.isBulkActionRunning()) {
                 approveButton = <span className="text-danger">{i18n('arr.fund.approveVersion.runningBulkAction')}</span>;
             } else {
-                approveButton = <Button type="submit" onClick={handleSubmit(submitForm)} disabled={submitting}>{i18n('arr.fund.approveVersion.approve')}</Button>
+                approveButton = <Button type="submit" disabled={submitting}>{i18n('arr.fund.approveVersion.approve')}</Button>
             }
         }
         const ruleSets = refTables.ruleSet.items;
         const institutions = refTables.institutions.items;
 
-        return <Form onSubmit={handleSubmit(submitForm)}>
+        return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
             <Modal.Body>
                 {(create || update) &&
                 <FormInput type="text" label={i18n('arr.fund.name')} {...name} {...decorateFormField(name)} />}
@@ -159,9 +157,9 @@ class FundForm extends AbstractReactComponent {
                 </div>}
             </Modal.Body>
             <Modal.Footer>
-                {create && <Button type="submit" onClick={handleSubmit(submitForm)} disabled={submitting}>{i18n('global.action.create')}</Button>}
+                {create && <Button type="submit"  disabled={submitting}>{i18n('global.action.create')}</Button>}
                 {approve && approveButton}
-                {(update || ruleSet) && <Button type="submit" onClick={handleSubmit(submitForm)} disabled={submitting}>{i18n('global.action.update')}</Button>}
+                {(update || ruleSet) && <Button type="submit" disabled={submitting}>{i18n('global.action.update')}</Button>}
                 <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
         </Form>
@@ -170,7 +168,7 @@ class FundForm extends AbstractReactComponent {
 
 export default reduxForm({
         form: 'fundForm',
-        fields: ['name', 'ruleSetId', 'institutionId', 'internalCode', 'dateRange', 'regScopes[].id', 'regScopes[].name'],
+        fields: ['name', 'ruleSetId', 'institutionId', 'internalCode', 'dateRange', 'regScopes[].id', 'regScopes[].name']
     }, state => ({
         initialValues: state.form.fundForm.initialValues,
         refTables: state.refTables,

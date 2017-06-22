@@ -11,6 +11,9 @@
       <directory>${project.basedir}/src</directory>
       <outputDirectory>.</outputDirectory>
       <useDefaultExcludes>true</useDefaultExcludes>
+      <excludes>
+        <exclude>all-institutions-import.xml</exclude>
+      </excludes>
     </fileSet>
   </fileSets>
 </assembly>

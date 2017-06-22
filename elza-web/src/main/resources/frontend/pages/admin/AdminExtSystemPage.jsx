@@ -4,8 +4,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Ribbon, AdminExtSystemDetail, AdminExtSystemList, AbstractReactComponent, i18n, RibbonGroup, Utils, Icon} from 'components/index.jsx';
 import {PageLayout} from 'pages/index.jsx';
-import Shortcuts from 'react-shortcuts/component';
-import ShortcutsManager from 'react-shortcuts';
+import {Shortcuts} from 'react-shortcuts';
 import {extSystemDetailFetchIfNeeded, extSystemCreate, extSystemDelete, extSystemUpdate, extSystemListInvalidate, AREA_EXT_SYSTEM_DETAIL} from 'actions/admin/extSystem.jsx'
 import {Button} from 'react-bootstrap'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
@@ -13,23 +12,7 @@ import ExtSystemForm from 'components/admin/ExtSystemForm.jsx';
 import {storeFromArea} from 'shared/utils'
 import './AdminExtSystemPage.less';
 
-const keyModifier = Utils.getKeyModifier();
-
-const keymap = {
-    AdminExtSystemPage: {
-    },
-};
-const shortcutManager = new ShortcutsManager(keymap);
-
 class AdminExtSystemPage extends AbstractReactComponent {
-
-    static childContextTypes = {
-        shortcuts: React.PropTypes.object.isRequired
-    };
-
-    getChildContext() {
-        return { shortcuts: shortcutManager };
-    }
 
     handleShortcuts = () => {};
 
@@ -41,8 +24,7 @@ class AdminExtSystemPage extends AbstractReactComponent {
 
     handleAddExtSystem = () => {
         this.dispatch(modalDialogShow(this, i18n('admin.extSystem.add.title'), <ExtSystemForm onSubmitForm={(data) => {
-            this.dispatch(extSystemCreate(data));
-            this.dispatch(modalDialogHide());
+            return this.dispatch(extSystemCreate(data));
         }} />));
     };
 
@@ -54,8 +36,7 @@ class AdminExtSystemPage extends AbstractReactComponent {
     handleEditExtSystem = () => {
         const {data} = this.props.extSystemDetail;
         this.dispatch(modalDialogShow(this, i18n('admin.extSystem.edit.title'), <ExtSystemForm initialValues={data} onSubmitForm={(data) => {
-            this.dispatch(extSystemUpdate(data));
-            this.dispatch(modalDialogHide());
+            return this.dispatch(extSystemUpdate(data));
         }} />));
     };
 

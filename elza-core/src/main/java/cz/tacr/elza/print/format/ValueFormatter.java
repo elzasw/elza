@@ -8,8 +8,6 @@ import org.springframework.util.StringUtils;
 
 /**
  * Format value of one item
- * @author Petr Pytelka
- *
  */
 public class ValueFormatter
 	implements FormatAction

@@ -29,7 +29,7 @@ export function isUserAction(action) {
     if (isUserDetailAction(action)) {
         return true;
     }
-    
+
     switch (action.type) {
         case types.USERS_RECEIVE:
         case types.USERS_REQUEST:
@@ -158,7 +158,7 @@ function usersUserDetailReceive(data) {
             type: types.USERS_USER_DETAIL_RECEIVE,
             data,
         })
-        
+
         // Oprávnění z detailu
         // dispatch(permissionReceive("USER", data.permissions));
     }
@@ -167,48 +167,40 @@ function usersUserDetailReceive(data) {
 
 export function userCreate(username, password, partyId) {
     return (dispatch, getState) => {
-        savingApiWrapper(dispatch, WebApi.createUser(username, password, partyId)).then(response => {
+        return savingApiWrapper(dispatch, WebApi.createUser(username, password, partyId)).then(response => {
             dispatch(addToastrSuccess(i18n('admin.user.add.success')));
-            dispatch(modalDialogHide());
             dispatch(usersSelectUser(response.id))
-        }).catch(e => {
-            console.error(e);
         });
     }
 }
 
 export function userUpdate(id, username, password) {
     return (dispatch) => {
-        savingApiWrapper(dispatch, WebApi.updateUser(id, username, password)).then(response => {
+        return savingApiWrapper(dispatch, WebApi.updateUser(id, username, password)).then(response => {
             dispatch(addToastrSuccess(i18n('admin.user.update.success')));
-            dispatch(modalDialogHide());
             dispatch(usersSelectUser(response.id))
-        }).catch(e => {
-            console.error(e);
         });
     }
 }
 
 export function userPasswordChange(oldPass, newPass) {
     return (dispatch, getState) => {
-        savingApiWrapper(dispatch, WebApi.changePasswordUser(oldPass, newPass)).then(response => {
+        return savingApiWrapper(dispatch, WebApi.changePasswordUser(oldPass, newPass)).then(response => {
             dispatch(addToastrSuccess(i18n('admin.user.passwordChange.success')));
-            dispatch(modalDialogHide())
         });
     }
 }
 
 export function adminPasswordChange(userId, newPassword) {
     return (dispatch, getState) => {
-        savingApiWrapper(dispatch, WebApi.changePassword(userId, newPassword)).then(response => {
+        return savingApiWrapper(dispatch, WebApi.changePassword(userId, newPassword)).then(response => {
             dispatch(addToastrSuccess(i18n('admin.user.passwordChange.success')));
-            dispatch(modalDialogHide())
         });
     }
 }
 
 export function adminUserChangeActive(userId, active) {
     return (dispatch, getState) => {
-        savingApiWrapper(dispatch, WebApi.changeActive(userId, active))
+        return savingApiWrapper(dispatch, WebApi.changeActive(userId, active))
     }
 }

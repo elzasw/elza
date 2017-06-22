@@ -2,29 +2,34 @@
 
 // Toto nutné upravit i v props komponenty!
 @lazy-listbox-height: 24px;
-
-.lazy-listbox-container {
-  width: 100%;
-  height: 100%;
-  overflow: auto;
+.lazy-listbox-wrapper{
   border: 1px solid #DDDDDD;
-  padding: 1px;
+  display:block;
+  height:100%;
+  background-color: white;
 
-  .listbox-item {
-    height: @lazy-listbox-height;
-    cursor: pointer;
-    &:hover {
-      background: @tree-node-label-active-bg
-    }
-    &.active {
-      background: @tree-node-active-bg;
+  .lazy-listbox-container {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    border:none;
+
+    .listbox-item {
+      height: @lazy-listbox-height;
+      cursor: pointer;
       &:hover {
-        background: @tree-node-active-hover-bg;
+        background: @tree-node-label-active-bg
       }
-    }
-    &.focus {
-      //outline: 1px solid @tree-node-active-bg;
-      background: @tree-node-label-active-bg;
+      &.active {
+        background: @tree-node-active-bg;
+        &:hover {
+          background: @tree-node-active-hover-bg;
+        }
+      }
+      &.focus {
+        //outline: 1px solid @tree-node-active-bg;
+        background: @tree-node-label-active-bg;
+      }
     }
   }
 }
