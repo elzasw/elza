@@ -39,10 +39,13 @@ public class ValueFormatter
 	 * @param item
 	 */
 	private void formatItem(FormatContext ctx, Item item) {
-		String value = item.serializeValue();
-		if(StringUtils.isEmpty(value)) {
+		// Do not write empty value
+		if(item.isEmpty()) {
 			return;
 		}
+		
+		String value = item.serializeValue();
+
 		ItemSpec spec = item.getSpecification();			
 		if(spec!=null) {
 			// write value with specification
@@ -51,7 +54,7 @@ public class ValueFormatter
 				specName = spec.getName();
 			}			
 			ctx.appendSpecWithValue(specName, value);
-		} else {
+		} else {			
 			// write value without specification
 			ctx.appendValue(value);
 		}		

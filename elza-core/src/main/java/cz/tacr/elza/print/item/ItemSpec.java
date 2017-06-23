@@ -1,8 +1,9 @@
 package cz.tacr.elza.print.item;
 
+import cz.tacr.elza.domain.RulItemSpec;
+
 /**
- * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
- *         Date: 22.6.16
+ * Item specification for output
  */
 public class ItemSpec {
 
@@ -11,35 +12,30 @@ public class ItemSpec {
     public String description;
     public String code;
 
-    public String getCode() {
-        return code;
-    }
+    public ItemSpec(RulItemSpec rulItemSpec) {
+        name = rulItemSpec.getName();
+        shortcut = rulItemSpec.getShortcut();
+        description = rulItemSpec.getDescription();
+        code = rulItemSpec.getCode();
+	}
 
-    public void setCode(final String code) {
-        this.code = code;
+	public String getCode() {
+        return code;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(final String description) {
-        this.description = description;
-    }
-
     public String getName() {
         return name;
-    }
-
-    public void setName(final String name) {
-        this.name = name;
     }
 
     public String getShortcut() {
         return shortcut;
     }
 
-    public void setShortcut(final String shortcut) {
-        this.shortcut = shortcut;
+    public static ItemSpec instanceOf(final RulItemSpec rulItemSpec) {
+    	return new ItemSpec(rulItemSpec); 
     }
 }

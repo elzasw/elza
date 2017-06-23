@@ -85,7 +85,7 @@ public class Record implements Comparable<Record> {
      * @param output
      * @return
      */
-	public static Record newInstance(Output output, RegRecord regRecord) {
+	public static Record newInstance(OutputImpl output, RegRecord regRecord) {
         // set register type
         RegRegisterType dbRegisterType = regRecord.getRegisterType();
 		RecordType recordType = RecordType.getInstance(output, dbRegisterType);

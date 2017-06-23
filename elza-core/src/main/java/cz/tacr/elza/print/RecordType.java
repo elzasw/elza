@@ -78,7 +78,7 @@ public class RecordType {
 	 * @param dbRegisterType
 	 * @return
 	 */
-	public static RecordType getInstance(Output output, RegRegisterType dbRegisterType) {
+	public static RecordType getInstance(OutputImpl output, RegRegisterType dbRegisterType) {
 		String regTypeCode = dbRegisterType.getCode();
 		RecordType recordType = output.getRecordType(regTypeCode);
 		if (recordType == null) {
