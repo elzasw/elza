@@ -1,39 +1,5 @@
 package cz.tacr.elza.repository;
 
-import java.text.NumberFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.lucene.document.FieldType;
-import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
-import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
-import org.apache.lucene.queryparser.flexible.standard.config.NumericConfig;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Query;
-import org.hibernate.search.jpa.FullTextEntityManager;
-import org.hibernate.search.jpa.FullTextQuery;
-import org.hibernate.search.jpa.Search;
-import org.hibernate.search.query.dsl.BooleanJunction;
-import org.hibernate.search.query.dsl.QueryBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-
 import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.filter.SearchParamType;
@@ -55,6 +21,38 @@ import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.filter.condition.LuceneDescItemCondition;
 import cz.tacr.elza.utils.NodeUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.lucene.document.FieldType;
+import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
+import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
+import org.apache.lucene.queryparser.flexible.standard.config.NumericConfig;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Query;
+import org.hibernate.search.jpa.FullTextEntityManager;
+import org.hibernate.search.jpa.FullTextQuery;
+import org.hibernate.search.jpa.Search;
+import org.hibernate.search.query.dsl.BooleanJunction;
+import org.hibernate.search.query.dsl.QueryBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
+
+import javax.annotation.PostConstruct;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.text.NumberFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 /**
@@ -427,11 +425,21 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
         StandardQueryParser parser = new StandardQueryParser();
         parser.setAllowLeadingWildcard(true);
+
+        // Po přechodu na lucene 6.6.0 se Použije tento kód
+//        HashMap<String, PointsConfig> stringNumericConfigHashMap = new HashMap<>();
+//        PointsConfig intConfig = new PointsConfig(NumberFormat.getIntegerInstance(), Integer.class);
+//        PointsConfig longConfig = new PointsConfig(NumberFormat.getNumberInstance(), Long.class);
+//        stringNumericConfigHashMap.put("specification", intConfig);
+//        stringNumericConfigHashMap.put("normalizedFrom", longConfig);
+//        stringNumericConfigHashMap.put("normalizedTo", longConfig);
+//        parser.setPointsConfigMap(stringNumericConfigHashMap);
         HashMap<String, NumericConfig> stringNumericConfigHashMap = new HashMap<>();
         stringNumericConfigHashMap.put("specification", new NumericConfig(1, NumberFormat.getIntegerInstance(), FieldType.NumericType.INT));
         stringNumericConfigHashMap.put("normalizedFrom", new NumericConfig(16, NumberFormat.getNumberInstance(), FieldType.NumericType.LONG));
         stringNumericConfigHashMap.put("normalizedTo", new NumericConfig(16, NumberFormat.getNumberInstance(), FieldType.NumericType.LONG));
         parser.setNumericConfigMap(stringNumericConfigHashMap);
+
         Query query;
         try {
             Query textQuery = parser.parse(queryText, "fulltextValue");
