@@ -83,9 +83,9 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
         return fund.fundTreeMovementsRight.nodes[indexById(fund.fundTreeMovementsRight.nodes, fund.fundTreeMovementsRight.selectedId)];
     }
 
-    handleShortcuts(action) {
+    handleShortcuts(action,e) {
         console.log("#handleShortcuts ArrMovementsPage", '[' + action + ']', this);
-        super.handleShortcuts(action);
+        super.handleShortcuts(action,e);
     }
 
     getMoveInfo() {

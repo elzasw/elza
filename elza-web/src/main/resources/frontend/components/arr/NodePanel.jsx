@@ -39,10 +39,20 @@ import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
 import {visiblePolicyTypesFetchIfNeeded} from 'actions/refTables/visiblePolicyTypes.jsx'
 import * as perms from 'actions/user/Permission.jsx';
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './NodePanelKeymap.jsx'
 
 require ('./NodePanel.less');
 
 var NodePanel = class NodePanel extends AbstractReactComponent {
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
     constructor(props) {
         super(props);
 
@@ -110,7 +120,6 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        console.log("REQUEST");
         this.requestData(nextProps.versionId, nextProps.node, nextProps.showRegisterJp, nextProps.showDaosJp);
 
         var newState = {

@@ -1,6 +1,8 @@
 import {Utils} from 'components/index.jsx';
 var keyModifier = Utils.getKeyModifier()
 
-var keymap = {}
+var defaultKeymap = {
+    ArrOutputDetail: {},
+}
 
-export default keymap;
+export default defaultKeymap;

@@ -36,7 +36,8 @@ import {initForm} from "actions/form/inlineForm.jsx"
 import {getMapFromList} from 'stores/app/utils.jsx'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
 import {PartyListItem} from 'components/index.jsx';
-
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './PartyDetailKeymap.jsx';
 import './PartyDetail.less';
 
 
@@ -68,6 +69,14 @@ const FIELDS_BY_PARTY_TYPE_CODE = {
  * Komponenta detailu osoby
  */
 class PartyDetail extends AbstractReactComponent {
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
 
     state = {
         activeIndexes: {},

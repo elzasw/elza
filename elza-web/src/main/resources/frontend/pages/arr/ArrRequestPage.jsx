@@ -121,7 +121,7 @@ const ArrRequestPage = class extends ArrParentPage {
         }
     }
 
-    handleShortcuts(action) {
+    handleShortcuts(action,e) {
         console.log("#handleShortcuts ArrRequestPage", '[' + action + ']', this);
         switch (action) {
             case 'newOutput':

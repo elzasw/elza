@@ -35,7 +35,8 @@ import {setFocus} from 'actions/global/focus.jsx'
 
 import {routerNavigate} from 'actions/router.jsx'
 import {partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
-
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './RegistryDetailKeymap.jsx';
 import './RegistryDetail.less';
 
 
@@ -43,6 +44,14 @@ import './RegistryDetail.less';
  * Komponenta detailu rejstříku
  */
 class RegistryDetail extends AbstractReactComponent {
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
 
     state = {note:null}
 
@@ -227,7 +236,7 @@ class RegistryDetail extends AbstractReactComponent {
         var hierarchyElement = this.createHierarchyElement(hierarchy,delimiter);
 
         return <div className='registry'>
-            <Shortcuts name='RegistryDetail' handler={this.handleShortcuts}>
+            <Shortcuts name='RegistryDetail' handler={this.handleShortcuts} global>
                 <div className="registry-detail">
                     <div className="registry-header">
                         <div className="header-icon">

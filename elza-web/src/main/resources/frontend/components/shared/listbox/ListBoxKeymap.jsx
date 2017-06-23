@@ -1,0 +1,18 @@
+import {Utils} from 'components/index.jsx';
+var keyModifier = Utils.getKeyModifier()
+
+var defaultKeymap = {
+    ListBox:{
+        "MOVE_UP":"up",
+        "MOVE_DOWN":"down",
+        "MOVE_PAGE_UP":"pageup",
+        "MOVE_PAGE_DOWN":"pagedown",
+        "MOVE_TOP":"home",
+        "MOVE_END":"end",
+        "ITEM_CHECK":"space",
+        "ITEM_DELETE":"del",
+        "ITEM_SELECT":"enter"
+    },
+}
+
+export default defaultKeymap;

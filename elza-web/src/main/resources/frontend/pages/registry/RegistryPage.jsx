@@ -21,16 +21,23 @@ import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {regExtSystemListFetchIfNeeded} from 'actions/registry/regExtSystemList';
-
+import {PropTypes} from 'prop-types';
 import './RegistryPage.less';
 import {SelectPage} from 'pages'
-
+import defaultKeymap from './RegistryPageKeymap.jsx';
 /**
  * Stránka rejstříků.
  * Zobrazuje stranku s vyberem rejstriku a jeho detailem/editaci
  */
 class RegistryPage extends AbstractReactComponent {
-
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
     static PropTypes = {
         splitter: React.PropTypes.object.isRequired,
         registryRegion: React.PropTypes.object.isRequired,

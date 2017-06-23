@@ -6,23 +6,30 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import { AppStore, ResizeStore } from 'stores/index.jsx';
-import {AbstractReactComponent, ContextMenu, Toastr, ModalDialog, WebSocket, Login} from 'components/index.jsx';
+import {AbstractReactComponent, ContextMenu, Toastr, ModalDialog, WebSocket, Login, Utils} from 'components/index.jsx';
 var AppRouter = require ('./AppRouter')
 import {ShortcutManager} from 'react-shortcuts';
 import {Shortcuts} from 'react-shortcuts';
 import {routerNavigate} from 'actions/router.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
 import Tetris from "components/game/Tetris.jsx";
+import {PropTypes} from 'prop-types';
 import keymap from "keymap.jsx";
-
+import defaultKeymap from './LayoutKeymap.jsx';
 require('./Layout.less');
 
-const shortcutManager = new ShortcutManager(keymap)
 
 var _gameRunner = null;
 
 class Layout extends AbstractReactComponent {
-
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap,keymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
     state = {
         showGame: false,
         canStartGame: false,
@@ -32,10 +39,6 @@ class Layout extends AbstractReactComponent {
         if (_gameRunner) {
             clearTimeout(_gameRunner);
         }
-    }
-
-    getChildContext() {
-        return { shortcuts: shortcutManager };
     }
 
     handleShortcuts = (action) => {
@@ -80,9 +83,6 @@ class Layout extends AbstractReactComponent {
             this.setState({canStartGame: true});
         }, 1000);
     };
-    componentWillMount(){
-        this.dispatch({type:"SHORTCUTS_SAVE",shortcutManager:shortcutManager});
-    }
     render() {
         const {canStartGame, showGame} = this.state;
 
@@ -109,9 +109,6 @@ class Layout extends AbstractReactComponent {
         </Shortcuts>
     }
 }
-Layout.childContextTypes = {
-    shortcuts: React.PropTypes.object.isRequired
-};
 
 function mapStateToProps(state) {
     const {contextMenu, modalDialog} = state
