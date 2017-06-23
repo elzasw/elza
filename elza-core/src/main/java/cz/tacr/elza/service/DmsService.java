@@ -90,9 +90,10 @@ public class DmsService {
 
         fileRepository.save(dmsFile);
 
-        File outputFile = new File(getFilePath(dmsFile));
+        String filePath = getFilePath(dmsFile);
+        File outputFile = new File(filePath);
         if (outputFile.exists()) {
-            throw new SystemException("Nelze soubor již existuje", ArrangementCode.ALREADY_CREATED);
+            throw new SystemException("Nelze soubor již existuje: "+ filePath, ArrangementCode.ALREADY_CREATED);
         }
         saveFile(dmsFile, fileStream, outputFile);
 
