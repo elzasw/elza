@@ -40,4 +40,4 @@ var ExceptionDetail = class ExceptionDetail extends AbstractReactComponent {
     }
 };
 
-module.exports = ExceptionDetail;
+export default ExceptionDetail;

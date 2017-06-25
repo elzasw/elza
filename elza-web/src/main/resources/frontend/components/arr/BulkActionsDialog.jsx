@@ -31,7 +31,7 @@ BulkActionsDialog.propTypes = {
     mandatory: React.PropTypes.bool.isRequired
 };
 
-module.exports = BulkActionsDialog;
+export default BulkActionsDialog;
 
 
 

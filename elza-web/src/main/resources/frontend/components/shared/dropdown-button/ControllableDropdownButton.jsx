@@ -85,7 +85,7 @@ const ControllableDropdownButton = class ControllableDropdownButton extends Abst
                 {children}
             </DropdownButton>
         );
-          
+
     }
 }
 
@@ -97,4 +97,4 @@ ControllableDropdownButton.propsTypes = {
 }
 
 
-module.exports = ControllableDropdownButton
+export default ControllableDropdownButton

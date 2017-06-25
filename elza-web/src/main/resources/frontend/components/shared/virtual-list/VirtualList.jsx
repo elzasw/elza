@@ -233,4 +233,4 @@ VirtualList.getItems = function(viewTop, viewHeight, listTop, itemHeight, itemCo
     return result;
 };
 
-module.exports = VirtualList;
+export default VirtualList;

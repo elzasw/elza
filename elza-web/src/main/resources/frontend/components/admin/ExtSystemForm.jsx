@@ -11,7 +11,7 @@ import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {extSystemDetailFetchIfNeeded} from 'actions/admin/extSystem.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {extSystemListFetchIfNeeded} from 'actions/admin/extSystem.jsx';
-import {REG_EXT_SYSTEM_TYPE} from 'constants';
+import {REG_EXT_SYSTEM_TYPE} from 'constants.jsx';
 
 const EXT_SYSTEM_CLASS = {
     RegExternalSystem: ".RegExternalSystemVO",

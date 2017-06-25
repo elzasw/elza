@@ -89,7 +89,7 @@ var FundTreeMovementsRight = class FundTreeMovementsRight extends AbstractReactC
         const {fund} = this.props;
 
         return (
-            <FundTreeLazy 
+            <FundTreeLazy
                 {...this.props}
                 cutLongLabels={true}
                 onOpenCloseNode={(node, expand) => {expand ? this.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_MOVEMENTS_RIGHT, node)) : this.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_MOVEMENTS_RIGHT, this.props.versionId, node))}}
@@ -105,5 +105,5 @@ var FundTreeMovementsRight = class FundTreeMovementsRight extends AbstractReactC
     }
 }
 
-module.exports = connect()(FundTreeMovementsRight);
+export default connect()(FundTreeMovementsRight);
 

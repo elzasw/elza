@@ -167,4 +167,4 @@ ArrDataGridPage.propTypes = {
     ruleSet: React.PropTypes.object.isRequired,
 }
 
-module.exports = connect(mapStateToProps)(ArrDataGridPage);
+export default connect(mapStateToProps)(ArrDataGridPage);

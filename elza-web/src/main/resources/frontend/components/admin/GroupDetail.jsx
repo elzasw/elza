@@ -106,4 +106,4 @@ function mapStateToProps(state) {
     }
 }
 
-module.exports = connect(mapStateToProps)(GroupDetail);
+export default connect(mapStateToProps)(GroupDetail);

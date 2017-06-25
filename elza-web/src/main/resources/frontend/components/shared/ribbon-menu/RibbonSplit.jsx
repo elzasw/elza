@@ -22,4 +22,4 @@ var RibbonSplit = class RibbonSplit extends React.Component {
     }
 }
 
-module.exports = RibbonSplit;
+export default RibbonSplit;

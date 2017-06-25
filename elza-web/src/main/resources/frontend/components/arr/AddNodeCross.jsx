@@ -80,4 +80,4 @@ AddNodeCross.propTypes = {
     userDetail: React.PropTypes.object.isRequired,
     selectedSubNodeIndex: React.PropTypes.number.isRequired
 };
-module.exports = connect()(AddNodeCross);
+export default connect()(AddNodeCross);

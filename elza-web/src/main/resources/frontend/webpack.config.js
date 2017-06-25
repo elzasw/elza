@@ -1,6 +1,9 @@
-var webpack = require('webpack');
-var path = require('path');
-var fs = require('fs');
+const webpack = require('webpack');
+const path = require('path');
+const fs = require('fs');
+const HappyPack = require('happypack');
+
+const PORT = 8090;
 
 process.env.BABEL_ENV = 'development';
 process.env.NODE_ENV = 'development';
@@ -14,49 +17,55 @@ function fileExist(filePath){
     return true;
 }
 
+console.log(path.resolve(__dirname));
 
 module.exports = {
     entry: [
-        'webpack-dev-server/client?http://localhost:8090',
+        'react-hot-loader/patch',
+        `webpack-dev-server/client?http://localhost:${PORT}`,
         'webpack/hot/only-dev-server',
-        ///'react-hot-loader/patch',// - HOT3
         './index.jsx',
     ],
-    debug: true,
-    devtool: '#eval-source-map',
+    devtool: 'eval-source-map',
     output: {
-        publicPath: 'http://localhost:8090/assets'
+        path: path.join(__dirname, 'assets'),
+        filename: 'bundle.js',
+        publicPath: `http://localhost:${PORT}/assets/`
     },
-    historyApiFallback: true,
-    module: {
-        loaders: [
-            {
-                test: /\.jsx?$/,
-                exclude: /(node_modules|bower_components)/,
-                loaders: ['react-hot', 'babel-loader'] // Po upgrade na HOT 3 smazat
-            },
-            {
-                test: /\.json$/,
-                loader: 'json'
-            },
-            {
-                test: /\.css$/,
-                loader: 'style-loader!css-loader'
-            },
-            {
-                test: /\.less$/,
-                loader: "style!css!less"
-            },
-            {
-                test: /\.scss$/,
-                loader: "style!css!sass?outputStyle=expanded&indentedSyntax"
-            },
-            {test: /\.woff(\?v=\d+\.\d+\.\d+)?$/, loader: "file"},
-            {test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/, loader: "file"},
-            {test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/, loader: "file"},
-            {test: /\.eot(\?v=\d+\.\d+\.\d+)?$/, loader: "file"},
-            {test: /\.svg(\?v=\d+\.\d+\.\d+)?$/, loader: "file"},
-            {test: /\.png(\?v=\d+\.\d+\.\d+)?$/, loader: "file"}
+    devServer: {
+        host: 'localhost',
+        port: PORT,
+
+        historyApiFallback: true,
+        // respond to 404s with index.html
+
+        hot: true,
+        // enable HMR on the server
+        headers: { 'Access-Control-Allow-Origin': '*' }
+    },
+    plugins: [
+        new HappyPack({
+            id: 'jsx',
+            threads: 6,
+            loaders: ['babel-loader']
+        }),
+        new webpack.HotModuleReplacementPlugin(),
+        new webpack.NamedModulesPlugin(),
+        new webpack.NoEmitOnErrorsPlugin(),
+        new webpack.DefinePlugin({
+            __DEV__: true,
+            __DEVTOOLS__: fileExist('.dev'),
+        }),
+        new webpack.ProvidePlugin({
+            $: "jquery",
+            jQuery: "jquery"
+        }),
+    ],
+    resolve: {
+        extensions: ['.js', '.jsx'],
+        modules: [
+            path.resolve(__dirname),
+            path.resolve(__dirname, "node_modules")
         ]
     },
     node: {
@@ -67,28 +76,50 @@ module.exports = {
         aggregateTimeout: 300,
         poll: 1000
     },
-    externals: {
-    },
-    resolve: {
-        modulesDirectories: [
-            "node_modules",
-            path.resolve('./')
-        ],
-        extensions: ['', '.js', '.jsx']
-    },
-    plugins: [
-        // Webpack 1 - pro hot
-        new webpack.HotModuleReplacementPlugin(),
-        new webpack.optimize.OccurenceOrderPlugin(),
-        new webpack.NoErrorsPlugin(),
-        new webpack.ProvidePlugin({
-            $: "jquery",
-            jQuery: "jquery"
-        }),
-        new webpack.DefinePlugin({
-            __DEVTOOLS__: fileExist('.dev'),
-            __SHOW_DEVTOOLS__: false,
-            __DEV__: true
-        })
-    ]
-}
+    module: {
+        rules: [
+            {
+                test: /\.jsx?$/,
+                exclude: /node_modules/,
+                use: [
+                    //{loader: 'babel-loader'}
+                    {loader: 'happypack/loader?id=jsx'}
+                ]
+            },
+            {
+                test: /\.css/,
+                use: [{loader: "style-loader"}, {loader: "css-loader"}]
+            },
+            {
+                test: /\.less$/,
+                use: [
+                    {loader: "style-loader"},
+                    {loader: "css-loader"},
+                    {
+                        loader: "less-loader",
+                        options: {
+                            strictMath: true,
+                            noIeCompat: true,
+                            paths: [
+                                path.resolve(__dirname),
+                                path.resolve(__dirname, "node_modules")
+                            ]
+                    }
+                }]
+            },
+            {
+                test: /\.scss$/,
+                use: [{loader: "style-loader"}, {loader: "css-loader"}, {loader: "sass-loader"}]
+            },
+            {
+                test: /\.(gif|png)$/,
+                use: [{loader: "url-loader?mimetype=image/png"}]
+            },
+            {
+                test: /\.woff(2)?(\?v=[0-9].[0-9].[0-9])?$/,
+                use: [{loader: "url-loader?mimetype=application/font-woff"}]
+            },
+            {test: /\.(ttf|eot|svg)(\?v=[0-9].[0-9].[ž0-9])?$/, use: [{loader: "file-loader?name=[name].[ext]"}]}
+        ]
+    }
+};

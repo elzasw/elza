@@ -234,4 +234,4 @@ FundPackets.propTypes = {
     fetched: React.PropTypes.bool.isRequired
 };
 
-module.exports = connect(null, null, null, { withRef: true })(FundPackets);
+export default connect(null, null, null, { withRef: true })(FundPackets);

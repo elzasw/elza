@@ -10,7 +10,7 @@ import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 import {storeFromArea, indexById, objectById} from 'shared/utils'
 
 
-import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from 'constants'
+import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from 'constants.jsx'
 
 import {SimpleListActions} from 'shared/list'
 import {DetailActions} from 'shared/detail'
@@ -280,6 +280,3 @@ export const normalizeDatation = (obj) => {
     }
     return null;
 };
-
-console.log(normalizeDatation({calendarTypeId:1, value:null}));
-

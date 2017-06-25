@@ -1011,4 +1011,4 @@ DescItemType.propTypes = {
     strictMode: React.PropTypes.bool.isRequired,
 }
 
-module.exports = connect(mapStateToProps, null, null, {withRef: true})(DescItemType);
+export default connect(mapStateToProps, null, null, {withRef: true})(DescItemType);

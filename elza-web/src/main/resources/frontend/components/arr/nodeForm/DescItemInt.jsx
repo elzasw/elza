@@ -62,4 +62,4 @@ var DescItemInt = class DescItemInt extends AbstractReactComponent {
     }
 }
 
-module.exports = connect(null, null, null, { withRef: true })(DescItemInt);
+export default connect(null, null, null, { withRef: true })(DescItemInt);

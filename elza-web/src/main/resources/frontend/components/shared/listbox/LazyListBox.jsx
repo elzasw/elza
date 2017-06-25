@@ -485,4 +485,4 @@ LazyListBox.defaultProps = {
     itemIdAttrName: "id",
 }
 
-module.exports = LazyListBox
+export default LazyListBox

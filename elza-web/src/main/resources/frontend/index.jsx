@@ -8,9 +8,6 @@
 import './elza-styles.less';
 
 import React from 'react';
-import { render } from 'react-dom';
-import { createHistory, useBasename } from 'history'
-import { Route, Link, History, Lifecycle } from 'react-router'
 import { Utils } from 'components/index.jsx';
 import {WebApi, WebApiCls} from 'actions/index.jsx';
 import {loginFail} from 'actions/global/login.jsx';
@@ -191,26 +188,38 @@ WebApi.getUserDetail()
 
 // Aplikace
 import {AppContainer} from 'react-hot-loader'
-//import Redbox from 'redbox-react'
+import Redbox from 'redbox-react'
+import ReactDOM from 'react-dom'
+
 import Root from './router';
 
-render(
-    //<AppContainer errorReporter={Redbox}><Root store={AppStore.store} /></AppContainer>,
-    <Root store={AppStore.store} />,
-    document.getElementById('content')
-);
+
+class CustomRedbox extends React.Component {
+    static PropTypes = {
+        error: React.PropTypes.instanceOf(Error).isRequired
+    };
+
+    render() {
+        const {error} = this.props;
+        console.error(error);
+        return <Redbox error={error} />;
+    }
+}
+
+const render = Component => {
+    const MOUNT_POINT = document.getElementById('content');
+
+    ReactDOM.render(
+        <AppContainer errorReported={CustomRedbox}>
+            <Component store={AppStore.store} />
+        </AppContainer>,
+        MOUNT_POINT
+    )
+};
 
 
-if (process.env.NODE_ENV === 'development' && module.hot) {
-    // Accept changes to this file for hot reloading.
-    module.hot.accept();
-    // Any changes to our routes will cause a hotload re-render.
-    module.hot.accept('./router.jsx', () => {
-        const NewRoot = require('./router').default;
-        render(
-            //<AppContainer errorReporter={Redbox}><NewRoot store={AppStore.store} /></AppContainer>, //HOT 3
-            <NewRoot store={AppStore.store} />, /// HOT 1
-            document.getElementById('content')
-        )
-    });
+render(Root);
+
+if (module.hot) {
+    module.hot.accept('./router', () => render(Root));
 }

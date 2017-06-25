@@ -221,5 +221,5 @@ return true
     }
 }
 
-module.exports = connect()(FundTreeMain);
+export default connect()(FundTreeMain);
 

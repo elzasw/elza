@@ -81,4 +81,4 @@ function mapStateToProps(state) {
     }
 }
 
-module.exports = connect(mapStateToProps)(ArrFundPanel);
+export default connect(mapStateToProps)(ArrFundPanel);

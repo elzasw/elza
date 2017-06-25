@@ -183,5 +183,5 @@ Splitter.propTypes = {
 };
 
 
-module.exports = connect(null, null, null, {withRef: true})(Splitter);
+export default connect(null, null, null, {withRef: true})(Splitter);
 

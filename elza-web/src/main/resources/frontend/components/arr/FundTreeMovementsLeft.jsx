@@ -96,7 +96,7 @@ var FundTreeMovementsLeft = class FundTreeMovementsLeft extends AbstractReactCom
 
     render() {
         return (
-            <FundTreeLazy 
+            <FundTreeLazy
                 {...this.props}
                 cutLongLabels={true}
                 onOpenCloseNode={(node, expand) => {expand ? this.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_MOVEMENTS_LEFT, node)) : this.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_MOVEMENTS_LEFT, this.props.versionId, node))}}
@@ -112,5 +112,5 @@ var FundTreeMovementsLeft = class FundTreeMovementsLeft extends AbstractReactCom
     }
 }
 
-module.exports = connect()(FundTreeMovementsLeft);
+export default connect()(FundTreeMovementsLeft);
 

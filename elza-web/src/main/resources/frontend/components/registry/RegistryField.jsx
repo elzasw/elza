@@ -13,7 +13,7 @@ import classNames from 'classnames';
 import {routerNavigate} from 'actions/router.jsx'
 import {debounce} from 'shared/utils'
 
-import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from 'constants'
+import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from 'constants.jsx'
 
 import './RegistryField.less'
 

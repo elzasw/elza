@@ -26,7 +26,7 @@ var AdminFulltextReindex = class AdminFulltextReindex extends AbstractReactCompo
             this.dispatch(getIndexStateFetchIfNeeded());
         }
     }
-    
+
     renderReindexing() {
         return (
             <div>{i18n("admin.fulltext.message.reindexing")}</div>
@@ -48,4 +48,4 @@ var AdminFulltextReindex = class AdminFulltextReindex extends AbstractReactCompo
     }
 }
 
-module.exports = connect()(AdminFulltextReindex);
+export default connect()(AdminFulltextReindex);

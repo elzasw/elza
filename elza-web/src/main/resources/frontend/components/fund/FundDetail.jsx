@@ -97,5 +97,5 @@ function mapStateToProps(state) {
     }
 }
 
-module.exports = connect(mapStateToProps)(FundDetail);
+export default connect(mapStateToProps)(FundDetail);
 

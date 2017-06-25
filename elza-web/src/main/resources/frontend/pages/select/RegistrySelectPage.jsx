@@ -10,7 +10,7 @@ import {RegistryPage, PartyPage} from 'pages/index.jsx';
 import {AREA_PARTY_DETAIL} from 'actions/party/party.jsx';
 import {AREA_REGISTRY_DETAIL} from 'actions/registry/registry.jsx';
 import {storeFromArea} from 'shared/utils'
-import SelectPage from './SelectPage'
+import SelectPage from './SelectPage.jsx'
 
 const OPEN_PAGE = {
     PARTY: 'party',

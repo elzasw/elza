@@ -8,7 +8,7 @@
 var React = require('react');
 var i18n = require('./i18n');
 
-module.exports = React.createClass({
+export default React.createClass({
     propTypes: {
         // Maximální počet znaků pro zobrazení, pokud bude mít text více, bude zkrácen. Implicitně 164.
         max: React.PropTypes.number,

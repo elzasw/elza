@@ -262,4 +262,4 @@ ArrMovementsPage.propTypes = {
     ruleSet: React.PropTypes.object.isRequired,
 }
 
-module.exports = connect(mapStateToProps)(ArrMovementsPage);
+export default connect(mapStateToProps)(ArrMovementsPage);

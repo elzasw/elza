@@ -68,4 +68,4 @@ const UserField = class UserField extends AbstractReactComponent {
     }
 }
 
-module.exports = connect(null, null, null, { withRef: true })(UserField);
+export default connect(null, null, null, { withRef: true })(UserField);

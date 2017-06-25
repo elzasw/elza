@@ -172,4 +172,4 @@ function mapStateToProps(state) {
     }
 }
 
-module.exports = connect(mapStateToProps)(AdminGroupPage);
+export default connect(mapStateToProps)(AdminGroupPage);

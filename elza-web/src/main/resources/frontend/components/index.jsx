@@ -1,3 +1,5 @@
+// Zde asi zůstane navždy require -> protože celá aplikace jde přes tento soubor ve kterém je AbstractReactComponent exportována
+// A jelikož require není striktní jako export tak dovolí cyklické volání...
 exports.AbstractReactComponent = require('components/AbstractReactComponent.jsx');
 
 exports.AjaxUtils = require('components/AjaxUtils.jsx');

@@ -57,7 +57,11 @@ class Login extends AbstractReactComponent {
             }
             this.setState(this.defaultState);
         }).catch((err) => {
-            this.setState({error: err.data.message});
+            if (err.data && err.data.message) {
+                this.setState({error: err.data.message});
+            } else {
+                this.setState({error: i18n('login.error.unknown')});
+            }
         });
     };
 

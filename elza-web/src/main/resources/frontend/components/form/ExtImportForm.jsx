@@ -15,7 +15,7 @@ import {registryDetailFetchIfNeeded} from 'actions/registry/registry.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import Scope from '../../components/shared/scope/Scope';
 import {regExtSystemListFetchIfNeeded} from 'actions/registry/regExtSystemList';
-import {REG_EXT_SYSTEM_TYPE} from 'constants';
+import {REG_EXT_SYSTEM_TYPE} from 'constants.jsx';
 
 const CONDITION_TYPE = {
     AND: "AND",

@@ -625,4 +625,4 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
     }
 }
 
-module.exports = FundFilterSettings
+export default FundFilterSettings

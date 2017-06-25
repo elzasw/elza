@@ -1,7 +1,7 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import {createStore, applyMiddleware, compose} from 'redux'
 import thunkMiddleware from 'redux-thunk'
-import createLogger from 'redux-logger'
+import {createLogger} from 'redux-logger'
 import {lenToBytesStr, roughSizeOfObject} from 'components/Utils.jsx';
 import {splitterResize} from 'actions/global/splitter.jsx';
 

@@ -17,7 +17,7 @@ var ContextMenu = class extends AbstractReactComponent {
         document.addEventListener("mousedown", this.handleClick);
         document.addEventListener("touchstart", this.handleClick);
         window.addEventListener("resize", this.hideMenu);
-        document.addEventListener("scroll", this.hideMenu);        
+        document.addEventListener("scroll", this.hideMenu);
     }
 
     componentWillUnmount() {
@@ -70,4 +70,4 @@ var ContextMenu = class extends AbstractReactComponent {
     }
 }
 
-module.exports = connect()(ContextMenu);
+export default connect()(ContextMenu);

@@ -64,4 +64,4 @@ var DescItemUnitid = class DescItemUnitid extends AbstractReactComponent {
     }
 }
 
-module.exports = connect(null, null, null, { withRef: true })(DescItemUnitid);
+export default connect(null, null, null, { withRef: true })(DescItemUnitid);

@@ -100,7 +100,7 @@ var FundTreeDaos = class FundTreeDaos extends AbstractReactComponent {
         const {fund} = this.props;
 
         return (
-            <FundTreeLazy 
+            <FundTreeLazy
                 {...this.props}
                 cutLongLabels={true}
                 onOpenCloseNode={(node, expand) => {expand ? this.dispatch(fundTreeNodeExpand(this.props.area, node)) : this.dispatch(fundTreeNodeCollapse(this.props.area, this.props.versionId, node))}}
@@ -116,5 +116,5 @@ var FundTreeDaos = class FundTreeDaos extends AbstractReactComponent {
     }
 }
 
-module.exports = connect()(FundTreeDaos);
+export default connect()(FundTreeDaos);
 

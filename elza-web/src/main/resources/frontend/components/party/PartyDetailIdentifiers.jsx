@@ -5,7 +5,7 @@ import {FormControl, Button} from 'react-bootstrap'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {i18n, AbstractReactComponent, Icon, PartyIdentifierForm} from 'components/index.jsx'
 import {indexById} from 'stores/app/utils.jsx'
-import {MODAL_DIALOG_VARIANT} from 'constants'
+import {MODAL_DIALOG_VARIANT} from 'constants.jsx'
 
 import './PartyDetailIdentifiers.less'
 

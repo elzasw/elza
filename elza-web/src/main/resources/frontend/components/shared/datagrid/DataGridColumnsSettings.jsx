@@ -206,5 +206,5 @@ var DataGridColumnsSettings = class DataGridColumnsSettings extends AbstractReac
 
 // columns - musí být seřazeno podle definovaného pořadí!!!
 
-module.exports = connect()(DataGridColumnsSettings);
+export default connect()(DataGridColumnsSettings);
 

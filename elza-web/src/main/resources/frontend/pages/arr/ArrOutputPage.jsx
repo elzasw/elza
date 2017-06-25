@@ -623,4 +623,4 @@ ArrOutputPage.propTypes = {
     userDetail: React.PropTypes.object.isRequired
 };
 
-module.exports = connect(mapStateToProps)(ArrOutputPage);
+export default connect(mapStateToProps)(ArrOutputPage);

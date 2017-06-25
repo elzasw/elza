@@ -664,7 +664,7 @@ const isNotBlankObject = (obj) => {
     return Object.keys(newObj).length > 0
 };
 
-module.exports = {
+export default {
     dateTimeToLocalUTC,
     wktType,
     wktFromTypeAndData,

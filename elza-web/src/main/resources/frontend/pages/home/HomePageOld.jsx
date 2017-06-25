@@ -30,7 +30,7 @@ var List = React.createClass({
   dragStart: function(e) {
     this.dragged = e.currentTarget;
     e.dataTransfer.effectAllowed = 'move';
-    
+
     // Firefox requires dataTransfer data to be set
     e.dataTransfer.setData("text/html", e.currentTarget);
   },
@@ -58,7 +58,7 @@ console.log(from, to);
     var relY = e.clientY - this.over.offsetTop;
     var height = this.over.offsetHeight / 2;
     var parent = e.target.parentNode;
-    
+
     if(relY > height) {
       this.nodePlacement = "after";
       parent.insertBefore(placeholder, e.target.nextElementSibling);
@@ -228,7 +228,7 @@ setTimeout(()=>this.setState({options: options2}), 4000);
                 break;
             case 'ARR_REGION_FUND':
                 glyph = 'fa-file-text';
-                break;            
+                break;
         }
 
         var hasDesc = desc && desc.length > 0
@@ -408,5 +408,5 @@ function mapStateToProps(state) {
     }
 }
 
-module.exports = connect(mapStateToProps)(HomePage);
+export default connect(mapStateToProps)(HomePage);
 

@@ -36,7 +36,7 @@ VersionValidationState.propTypes = {
     isFetching: React.PropTypes.bool.isRequired
 };
 
-module.exports = VersionValidationState;
+export default VersionValidationState;
 
 
 

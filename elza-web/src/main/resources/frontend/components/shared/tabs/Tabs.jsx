@@ -187,7 +187,7 @@ var Tabs = class Tabs extends React.Component {
     }
 }
 
-module.exports = {
+export default {
     Container: TabsContainer,
     Tabs: Tabs,
     Content: TabContent,

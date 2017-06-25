@@ -48,4 +48,4 @@ var AdminPackagesUpload = class AdminPackagesUpload extends AbstractReactCompone
     }
 }
 
-module.exports = connect()(AdminPackagesUpload);
+export default connect()(AdminPackagesUpload);

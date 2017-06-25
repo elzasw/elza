@@ -79,7 +79,7 @@ var FundFilterCondition = class FundFilterCondition extends AbstractReactCompone
         } else {    // vlastní validační hláška
             newErrors[index] = error;
         }
-        
+
         this.setState({errors: newErrors})
 
         // Existují nějaké chyby?
@@ -138,5 +138,5 @@ var FundFilterCondition = class FundFilterCondition extends AbstractReactCompone
     }
 }
 
-module.exports = FundFilterCondition
+export default FundFilterCondition
 

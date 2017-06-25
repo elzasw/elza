@@ -233,4 +233,4 @@ function mapStateToProps(state) {
     }
 }
 
-module.exports = connect(mapStateToProps)(FundDataGridCellForm)
+export default connect(mapStateToProps)(FundDataGridCellForm)

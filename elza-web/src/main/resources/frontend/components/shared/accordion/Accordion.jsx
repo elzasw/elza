@@ -106,6 +106,6 @@ var Accordion = class AccordionWrapper extends AbstractReactComponent {
     }
 }
 
-module.exports = Accordion;
+export default Accordion;
 
 

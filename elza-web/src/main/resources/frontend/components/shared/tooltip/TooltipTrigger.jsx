@@ -289,4 +289,4 @@ class TooltipTrigger extends AbstractReactComponent {
     }
 }
 
-module.exports = TooltipTrigger;
+export default TooltipTrigger;

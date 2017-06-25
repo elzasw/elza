@@ -147,4 +147,4 @@ FileListBox.defaultProps = {
     filterText: ''
 };
 
-module.exports = FileListBox;
+export default FileListBox;

@@ -6,7 +6,7 @@
  * @param onShowHide handler: co se má stát po kliknutí
  * @param alwaysRender bolean default false zda se ma vzdycky vyrenderovat objekt
  * @param openedIcon String default 'chevron-up' ikona pro rozbaleni
- * @param closedIcon String default 'chevron-down' ikona pro sbaleni 
+ * @param closedIcon String default 'chevron-down' ikona pro sbaleni
  *
  * v kontextu je přístupný isParentOpened boolen - this.context.isParentOpened.
  * příklad použití
@@ -31,7 +31,7 @@ var ToggleContent = class ToggleContent extends React.Component {
             openedIcon: this.props.openedIcon || "fa-chevron-up",
             closedIcon: this.props.closedIcon || "fa-chevron-down",
             alwaysRender: typeof this.props.alwaysRender == 'undefined' ? false : this.props.alwaysRender
-        };        
+        };
     }
 
     getChildContext() {
@@ -86,4 +86,4 @@ ToggleContent.childContextTypes = {
     isParentOpened: React.PropTypes.bool
 }
 
-module.exports = ToggleContent;
+export default ToggleContent;

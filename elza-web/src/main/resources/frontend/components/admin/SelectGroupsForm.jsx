@@ -83,7 +83,7 @@ var SelectGroupsForm = class SelectGroupsForm extends AbstractReactComponent {
     }
 }
 
-module.exports = SelectGroupsForm
+export default SelectGroupsForm
 
 
 

@@ -132,4 +132,4 @@ NodeActionsBar.propTypes = {
       closed: React.PropTypes.any.isRequired,
       selectedSubNodeIndex: React.PropTypes.number.isRequired
 };
-module.exports = connect()(NodeActionsBar);
+export default connect()(NodeActionsBar);

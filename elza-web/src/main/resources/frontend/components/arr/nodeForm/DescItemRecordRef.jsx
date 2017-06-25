@@ -14,7 +14,7 @@ import {registryDetailFetchIfNeeded, registryListFilter, registryDetailClear, AR
 import {partyDetailFetchIfNeeded, partyListFilter, partyDetailClear, AREA_PARTY_LIST} from 'actions/party/party.jsx'
 import classNames from 'classnames'
 import {storeFromArea, objectById} from 'shared/utils'
-import {MODAL_DIALOG_VARIANT} from 'constants'
+import {MODAL_DIALOG_VARIANT} from 'constants.jsx'
 
 
 class DescItemRecordRef extends AbstractReactComponent {

@@ -28,4 +28,4 @@ var Pane = class Pane extends AbstractReactComponent {
     }
 }
 
-module.exports = Pane;
+export default Pane;

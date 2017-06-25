@@ -133,4 +133,4 @@ function mapStateToProps(state) {
     }
 }
 
-module.exports = connect(mapStateToProps)(NodeTabs);
+export default connect(mapStateToProps)(NodeTabs);

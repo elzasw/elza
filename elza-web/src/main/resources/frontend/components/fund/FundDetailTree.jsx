@@ -182,7 +182,7 @@ return true
         const {fund, cutLongLabels} = this.props;
 
         return (
-            <FundTreeLazy 
+            <FundTreeLazy
                 ref='tree'
                 {...this.props}
                 className={this.props.className}
@@ -201,5 +201,5 @@ return true
     }
 }
 
-module.exports = connect()(FundDetailTree);
+export default connect()(FundDetailTree);
 

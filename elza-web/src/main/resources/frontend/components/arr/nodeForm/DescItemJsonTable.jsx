@@ -230,4 +230,4 @@ var DescItemJsonTable = class DescItemJsonTable extends AbstractReactComponent {
     }
 }
 
-module.exports = connect(null, null, null, { withRef: true })(DescItemJsonTable);
+export default connect(null, null, null, { withRef: true })(DescItemJsonTable);

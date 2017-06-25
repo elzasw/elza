@@ -161,5 +161,5 @@ var DataGridPagination = class DataGridPagination extends AbstractReactComponent
     }
 }
 
-module.exports = connect()(DataGridPagination);
+export default connect()(DataGridPagination);
 

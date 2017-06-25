@@ -96,4 +96,4 @@ function mapStateToProps(state) {
     }
 }
 
-module.exports = connect(mapStateToProps)(DescItemJsonTableCellForm)
+export default connect(mapStateToProps)(DescItemJsonTableCellForm)

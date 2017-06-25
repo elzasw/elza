@@ -41,4 +41,4 @@ var DescItemLabel = class DescItemLabel extends AbstractReactComponent {
 
 
 
-module.exports = connect(null, null, null, { withRef: true })(DescItemLabel);
+export default connect(null, null, null, { withRef: true })(DescItemLabel);

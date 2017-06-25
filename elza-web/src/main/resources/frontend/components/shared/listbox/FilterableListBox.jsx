@@ -168,7 +168,7 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
     focus() {
         this.refs.listBox.focus()
     }
-    
+
     render() {
         const {label, className, items, searchable, altSearch} = this.props
         const {filterText} = this.state
@@ -225,4 +225,4 @@ FilterableListBox.propsTypes = {
     selectionType: React.PropTypes.string
 };
 
-module.exports = FilterableListBox;
+export default FilterableListBox;

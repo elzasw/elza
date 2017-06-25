@@ -47,4 +47,4 @@ Tags.defaultProps = {
     }
 }
 
-module.exports = Tags
+export default Tags

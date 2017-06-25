@@ -633,4 +633,4 @@ DataGrid.propTypes = {
     onBlur: React.PropTypes.func,
 };
 
-module.exports = connect(null, null, null, { withRef: true })(DataGrid);
+export default connect(null, null, null, { withRef: true })(DataGrid);

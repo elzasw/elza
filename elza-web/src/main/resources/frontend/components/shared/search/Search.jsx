@@ -151,4 +151,4 @@ var Search = class Search extends React.Component {
 }
 
 
-module.exports = Search;
+export default Search;

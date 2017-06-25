@@ -301,4 +301,4 @@ NodeSubNodeForm.propTypes = {
     readMode: React.PropTypes.bool,
 }
 
-module.exports = connect(mapStateToProps, null, null, { withRef: true })(NodeSubNodeForm);
+export default connect(mapStateToProps, null, null, { withRef: true })(NodeSubNodeForm);

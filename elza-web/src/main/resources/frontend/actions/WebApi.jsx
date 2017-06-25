@@ -1,5 +1,5 @@
 import {AjaxUtils} from 'components/index.jsx';
-import {DEFAULT_LIST_SIZE} from 'constants'
+import {DEFAULT_LIST_SIZE} from 'constants.jsx'
 
 function getData(data, timeout = 1000) {
     return new Promise(function (resolve, reject) {

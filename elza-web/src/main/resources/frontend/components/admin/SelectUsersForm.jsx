@@ -88,7 +88,7 @@ const SelectUsersForm = class SelectUsersForm extends AbstractReactComponent {
     }
 }
 
-module.exports = SelectUsersForm
+export default SelectUsersForm
 
 
 

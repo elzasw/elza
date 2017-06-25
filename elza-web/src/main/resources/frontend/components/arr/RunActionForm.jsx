@@ -80,7 +80,7 @@ RunActionForm.propTypes = {
     versionId: React.PropTypes.number.isRequired
 };
 
-module.exports = reduxForm({
+export default reduxForm({
         form: 'RunActionForm',
         fields: ['code'],
     },(state, props) => {

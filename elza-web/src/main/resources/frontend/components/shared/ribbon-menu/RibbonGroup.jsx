@@ -41,4 +41,4 @@ const RibbonGroup = class RibbonGroup extends React.Component {
     }
 }
 
-module.exports = RibbonGroup;
+export default RibbonGroup;

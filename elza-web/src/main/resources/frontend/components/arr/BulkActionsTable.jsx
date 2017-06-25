@@ -111,7 +111,7 @@ BulkActionsTable.propTypes = {
     versionValidate: React.PropTypes.bool.isRequired
 };
 
-module.exports = connect((state) => ({
+export default connect((state) => ({
     store: state.arrRegion.funds[state.arrRegion.activeIndex].bulkActions,
     versionId: state.arrRegion.funds[state.arrRegion.activeIndex].versionId
 }))(BulkActionsTable);

@@ -127,5 +127,5 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
     }
 }
 
-module.exports = connect()(FundDetailExt);
+export default connect()(FundDetailExt);
 

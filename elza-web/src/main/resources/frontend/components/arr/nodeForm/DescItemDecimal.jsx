@@ -95,4 +95,4 @@ var DescItemDecimal = class DescItemDecimal extends AbstractReactComponent {
     }
 }
 
-module.exports = connect(null, null, null, { withRef: true })(DescItemDecimal);
+export default connect(null, null, null, { withRef: true })(DescItemDecimal);

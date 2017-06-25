@@ -804,4 +804,4 @@ function mapStateToProps(state) {
     }
 }
 
-module.exports = connect(mapStateToProps)(FundDataGrid);
+export default connect(mapStateToProps)(FundDataGrid);

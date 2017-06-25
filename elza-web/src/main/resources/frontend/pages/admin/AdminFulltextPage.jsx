@@ -54,11 +54,11 @@ const AdminFulltextPage = class AdminFulltextPage extends React.Component {
  */
 function mapStateToProps(state) {
     const {splitter, adminRegion} = state
-    
+
     return {
         splitter,
         fulltext: adminRegion.fulltext
     }
 }
 
-module.exports = connect(mapStateToProps)(AdminFulltextPage);
+export default connect(mapStateToProps)(AdminFulltextPage);

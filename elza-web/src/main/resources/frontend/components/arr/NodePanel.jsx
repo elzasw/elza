@@ -110,7 +110,6 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        console.log("REQUEST");
         this.requestData(nextProps.versionId, nextProps.node, nextProps.showRegisterJp, nextProps.showDaosJp);
 
         var newState = {
@@ -899,4 +898,4 @@ NodePanel.propTypes = {
     userDetail: React.PropTypes.object.isRequired,
 }
 
-module.exports = connect(mapStateToProps)(NodePanel);
+export default connect(mapStateToProps)(NodePanel);
