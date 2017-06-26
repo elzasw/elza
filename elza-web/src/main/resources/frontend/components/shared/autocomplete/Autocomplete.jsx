@@ -1129,7 +1129,6 @@ export default class Autocomplete extends AbstractReactComponent {
                     })
                 } else {
                     const item = this.getHighlightedNode();
-                    console.log("HIGHLIGHTED_ITEM",item);
                     const id = getItemId(item);
 
                     if (allowSelectItem(id, item)) {

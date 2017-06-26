@@ -31,7 +31,7 @@ var ListBox = class ListBox extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('ensureItemVisible', 'getNextSelectableItemIndex', 'getPrevSelectableItemIndex',
+        this.bindMethods('ensureItemVisible',
             'dragStart', 'dragEnd', 'dragOver', 'handleClick', 'unFocus', 'focus', 'handleDoubleClick')
 
         if (props.multiselect) {
@@ -118,7 +118,6 @@ var ListBox = class ListBox extends AbstractReactComponent {
     handleShortcuts = (action, e)=>{
         e.stopPropagation();
         e.preventDefault();
-        console.log(action)
         this.actionMap[action](e);
     }
     componentWillReceiveProps(nextProps) {
@@ -278,7 +277,6 @@ var ListBox = class ListBox extends AbstractReactComponent {
             while (step) {
                 var i = index + step;
                 while (i >= 0 && i < items.length) {
-                    console.log(i);
                     if (canSelectItem(items[i], i)) {
                         return i;
                     }
@@ -286,7 +284,6 @@ var ListBox = class ListBox extends AbstractReactComponent {
                 }
                 isDecrementing ? step++ : step--;
             }
-            console.log(index);
             return index;
         } else {
             return 0;
@@ -311,11 +308,9 @@ var ListBox = class ListBox extends AbstractReactComponent {
     }
 
     ensureItemVisible(index) {
-
         var itemNode = ReactDOM.findDOMNode(this.refs['item-' + index])
         if (itemNode !== null) {
             var containerNode = ReactDOM.findDOMNode(this.refs.container)
-            console.log("ensureItemVisible",itemNode,containerNode);
             scrollIntoView(itemNode, containerNode, { onlyScrollIfNeeded: true, alignWithTop:false })
         }
     }

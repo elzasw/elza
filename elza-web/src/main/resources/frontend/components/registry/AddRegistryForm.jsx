@@ -53,7 +53,6 @@ class AddRegistryForm extends AbstractReactComponent {
 
     componentDidMount() {
         this.dispatch(getRegistryRecordTypesIfNeeded());
-        console.log(this.props.initialValues);
         this.prepareState(this.props);
     }
 
@@ -158,7 +157,3 @@ export default reduxForm({
 }),
 {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'addRegistryForm', data})}
 )(AddRegistryForm);
-
-
-
-

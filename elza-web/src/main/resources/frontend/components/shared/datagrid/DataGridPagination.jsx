@@ -136,7 +136,6 @@ var DataGridPagination = class DataGridPagination extends AbstractReactComponent
         "CONFIRM": () => this.processCurrPageChange(false)
     }
     handleShortcuts = (action,e) => {
-        console.log(action);
         e.stopPropagation();
         e.preventDefault();
         this.actionMap[action] && this.actionMap[action](e);

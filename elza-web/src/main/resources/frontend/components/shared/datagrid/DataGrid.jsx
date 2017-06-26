@@ -449,7 +449,6 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
         }
     }
     handleFocus(e){
-        console.log("focus",this.props.onFocus)
         this.props.onFocus && this.props.onFocus(e);
     }
     changeFocus = (newFocus) => {
@@ -521,7 +520,6 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
         "ITEM_ROW_CHECK": (e) => this.handleCheckboxChange(this.props.rows[this.state.focus.row], this.state.focus.row, e)
     }
     handleShortcuts = (action,e)=>{
-        console.log("DataGrid",action);
         e.stopPropagation();
         e.preventDefault();
         this.actionMap[action](e);

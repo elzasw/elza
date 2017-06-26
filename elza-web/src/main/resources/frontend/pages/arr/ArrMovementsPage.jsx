@@ -199,7 +199,6 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
         var active = leftHasSelection && rightHasSelection && !readMode && !fund.closed && !fund.moving;
         var moveUnder = active && this.checkMoveUnder();
         var moveBeforeAfter = active && this.checkMoveBeforeAfter();
-        console.log(this.props.arrRegion);
 
         return (
             <div className="movements-content-container">

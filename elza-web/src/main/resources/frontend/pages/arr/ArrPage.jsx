@@ -104,7 +104,6 @@ class ArrPage extends ArrParentPage {
     componentWillMount(){
         this.registerTabs(this.props);
         let newKeymap = Utils.mergeKeymaps(ArrParentPage.defaultKeymap,defaultKeymap);
-        console.log("ARR_PAGE_KEYMAP",newKeymap,defaultKeymap);
         Utils.addShortcutManager(this,newKeymap);
     }
 

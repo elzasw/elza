@@ -447,7 +447,6 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
         "ITEM_SELECT": this.selectItem
     }
     handleShortcuts = (action,e)=>{
-        console.log("LAZY_LIST",action);
         e.stopPropagation();
         e.preventDefault();
         this.actionMap[action](e);

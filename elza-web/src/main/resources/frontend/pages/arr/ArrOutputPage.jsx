@@ -82,7 +82,6 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
     getChildContext() {
-        console.log(this.context);
         return { shortcuts: this.shortcutManager };
     }
     componentWillMount(){
