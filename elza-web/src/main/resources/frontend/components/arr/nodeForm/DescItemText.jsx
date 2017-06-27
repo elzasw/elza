@@ -11,17 +11,13 @@ import {connect} from 'react-redux'
 import {decorateValue} from './DescItemUtils.jsx'
 import DescItemLabel from './DescItemLabel.jsx'
 import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
+import TextareaAutosize from 'react-autosize-textarea';
 
-var DescItemText = class DescItemText extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
+class DescItemText extends AbstractReactComponent {
 
-        this.bindMethods('focus')
-    }
-
-    focus() {
+    focus = () => {
         this.refs.focusEl.focus()
-    }
+    };
 
     render() {
         const {descItem, locked, readMode, cal} = this.props;
@@ -62,7 +58,9 @@ var DescItemText = class DescItemText extends AbstractReactComponent {
         return (
             <div className='desc-item-value'>
                 <ItemTooltipWrapper tooltipTitle="dataType.text.format">
-                    <textarea
+                    <TextareaAutosize
+                        maxRows={12}
+                        rows={3}
                         {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
                         {...textareaProps}
                     />

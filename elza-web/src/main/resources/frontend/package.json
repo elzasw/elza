@@ -22,6 +22,7 @@
     "jquery": "2.1.4",
     "lodash-compat": "3.10.2",
     "react": "15.6.1",
+    "react-autosize-textarea": "^0.4.5",
     "react-bootstrap": "0.31.0",
     "react-dom": "15.6.1",
     "react-redux": "5.0.5",
