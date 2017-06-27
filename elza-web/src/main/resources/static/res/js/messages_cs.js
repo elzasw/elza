@@ -1086,7 +1086,7 @@ var messages = {
     "extMapperForm.import": "Importovat",
     "extMapperForm.update": "Aktualizovat",
 
-    "export.title.fund": "Import archivního souboru",
+    "export.title.fund": "Export archivního souboru",
     "export.transformationName": "Šablona transformace",
 
     "validate.validateInt.notInt": "Nejedná se o celé číslo",
