@@ -60,8 +60,9 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         }
     }
     selectorMoveUp = ()=>{
-        const {node} = this.props
-        if (node.selectedSubNodeId === null) {
+
+        const {node} = this.props;
+        if (node.selectedSubNodeId !== null) {
             const {focusItemIndex} = this.state
             if (focusItemIndex > node.viewStartIndex) {
                 this.setState({focusItemIndex: focusItemIndex - 1}, () => {this.ensureItemVisibleNoForm(focusItemIndex - 1)})
@@ -70,7 +71,8 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
     selectorMoveDown = ()=>{
         const {node} = this.props
-        if (node.selectedSubNodeId === null) {
+
+        if (node.selectedSubNodeId !== null) {
             const {focusItemIndex} = this.state
             const max = Math.min(node.viewStartIndex + node.pageSize, node.childNodes.length)
             if (focusItemIndex + 1 < max) {
@@ -686,7 +688,7 @@ return true
             }
         }
         return (
-            <Shortcuts name='Accordion' key='content' className='content' ref='content' handler={this.handleShortcuts} tabIndex={"0"} global stopPropagation={false}>
+            <Shortcuts name='Accordion' key='content' className='content' ref='content' handler={readMode && this.handleShortcuts} tabIndex={"0"} global stopPropagation={false}>
                 <div  className='inner-wrapper' ref="innerAccordionWrapper">
                     <div className="menu-wrapper">
                         <NodeActionsBar node={node} selectedSubNodeIndex={focusItemIndex} versionId={versionId} userDetail={userDetail} fundId={fundId} closed={closed}/>
