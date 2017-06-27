@@ -2,7 +2,7 @@
  * Input prvek pro desc item - typ STRING.
  */
 
-require ('./DescItemText.less')
+require('./DescItemText.less')
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -16,7 +16,7 @@ import TextareaAutosize from 'react-autosize-textarea';
 class DescItemText extends AbstractReactComponent {
 
     focus = () => {
-        this.refs.focusEl.focus()
+        this.textarea.focus()
     };
 
     render() {
@@ -25,7 +25,7 @@ class DescItemText extends AbstractReactComponent {
 
         if (readMode) {
             return (
-                <DescItemLabel value={value} cal={cal} />
+                <DescItemLabel value={value} cal={cal}/>
             )
         }
 
@@ -36,7 +36,7 @@ class DescItemText extends AbstractReactComponent {
             defaultValue: ""
         }
 
-        if(cal){
+        if (cal) {
             cls.push("calculable");
 
             textareaProps.key = "calc";
@@ -44,17 +44,16 @@ class DescItemText extends AbstractReactComponent {
             textareaProps.onBlur = null;
             textareaProps.onFocus = null;
             textareaProps.defaultValue = i18n("subNodeForm.descItemType.calculable");
-            if(value){
+            if (value) {
                 textareaProps.value = value;
             }
         } else {
-            textareaProps.ref = "focusEl";
             textareaProps.onChange = (e) => !cal && this.props.onChange(e.target.value);
             textareaProps.value = value;
         }
 
 
-
+        console.log(textareaProps);
         return (
             <div className='desc-item-value'>
                 <ItemTooltipWrapper tooltipTitle="dataType.text.format">
@@ -63,6 +62,7 @@ class DescItemText extends AbstractReactComponent {
                         rows={3}
                         {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
                         {...textareaProps}
+                        innerRef={ref => this.textarea = ref}
                     />
                 </ItemTooltipWrapper>
             </div>
@@ -70,4 +70,4 @@ class DescItemText extends AbstractReactComponent {
     }
 }
 
-export default connect(null, null, null, { withRef: true })(DescItemText);
+export default connect(null, null, null, {withRef: true})(DescItemText);

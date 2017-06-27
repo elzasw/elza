@@ -65,6 +65,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         if (node.selectedSubNodeId !== null) {
             const {focusItemIndex} = this.state
             if (focusItemIndex > node.viewStartIndex) {
+                console.log(focusItemIndex);
                 this.setState({focusItemIndex: focusItemIndex - 1}, () => {this.ensureItemVisibleNoForm(focusItemIndex - 1)})
             }
         }
@@ -157,6 +158,8 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         console.log("#handleShortcuts", '[' + action + ']', this);
         e.preventDefault()
         e.stopPropagation()
+        console.log(e);
+
         const {node, versionId, closed, userDetail, fundId} = this.props
         const {focusItemIndex} = this.state;
         const index = indexById(node.childNodes, node.selectedSubNodeId)
