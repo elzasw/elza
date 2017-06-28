@@ -89,7 +89,7 @@ var DescItemJsonTableCellForm = class DescItemJsonTableCellForm extends Abstract
         const {value} = this.state
 
         return (
-            <Shortcuts name="DescItemJsonTableCellForm" handler={(action,e)=>this.handleShortcuts(action,e)} className={"cell-edit-container " + (className ? className : "")}>
+            <Shortcuts name="DescItemJsonTableCellForm" handler={(action,e)=>this.handleShortcuts(action,e)} className={"cell-edit-container " + (className ? className : "")} stopPropagation={false}>
                 <FormInput
                     type="text"
                     value={value}
