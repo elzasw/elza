@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2017-06-27T23:12:36 -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="registryPerson" pageWidth="595" pageHeight="842" columnWidth="468" leftMargin="85" rightMargin="42" topMargin="42" bottomMargin="42" uuid="eba96cb0-da59-4e96-a077-a5ab42f4b286">
+<!-- 2017-06-27T23:17:44 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="registryPartyGroup" pageWidth="595" pageHeight="842" columnWidth="468" leftMargin="85" rightMargin="42" topMargin="42" bottomMargin="42" uuid="cb6fed65-8bfc-41ee-bcd9-2557f1ebaceb">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<queryString>
 		<![CDATA[]]>
@@ -26,7 +26,7 @@
 				<textElement>
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<text><![CDATA[Rejstřík osob]]></text>
+				<text><![CDATA[Rejstřík korporací]]></text>
 			</staticText>
 		</band>
 	</pageHeader>
@@ -43,7 +43,9 @@
 				<textFieldExpression><![CDATA[$F{record}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement x="180" y="0" width="288" height="15" uuid="f594599e-8a70-4210-835c-1c8482543917"/>
+				<reportElement x="180" y="0" width="288" height="15" uuid="f594599e-8a70-4210-835c-1c8482543917">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

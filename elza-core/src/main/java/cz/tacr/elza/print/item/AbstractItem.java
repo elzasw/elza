@@ -7,13 +7,9 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.lang3.StringUtils;
 
-import cz.tacr.elza.print.NodeId;
-
 /**
- * Abstraktní základ se společnými metodami pro Items.
+ * Abstract description item implementation
  *
- * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
- *         Date: 22.6.16
  */
 public abstract class AbstractItem implements Item {
     private ItemType type;

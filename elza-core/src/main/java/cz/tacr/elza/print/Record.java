@@ -3,12 +3,11 @@ package cz.tacr.elza.print;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
+
 
 /**
  * One record from registry
@@ -22,9 +21,11 @@ public class Record implements Comparable<Record> {
 	private String record;
     private String characteristics;
     private List<String> variantRecords = new ArrayList<>();
-    private RecordType recordType;    
+    private RecordType recordType;
+    private String externalId;
 
     private Record(RegRecord regRecord, RecordType recordType) {
+    	this.externalId = regRecord.getExternalId();
         this.recordId = regRecord.getRecordId(); 
         this.record = regRecord.getRecord();
         this.characteristics = regRecord.getCharacteristics();
@@ -69,7 +70,11 @@ public class Record implements Comparable<Record> {
         return variantRecords;
     }
 
-    @Override
+	public String getExternalId() {
+		return externalId;
+	}
+
+	@Override
     public String toString() {
         return new ToStringBuilder(this).append("record", record).append("characteristics", characteristics).toString();
     }
@@ -81,17 +86,13 @@ public class Record implements Comparable<Record> {
 
     /**
      * Return value of RegRecord
+     * @param recordType
      * @param regRecord
-     * @param output
      * @return
      */
-	public static Record newInstance(OutputImpl output, RegRecord regRecord) {
-        // set register type
-        RegRegisterType dbRegisterType = regRecord.getRegisterType();
-		RecordType recordType = RecordType.getInstance(output, dbRegisterType);
-
+	public static Record newInstance(RecordType recordType, RegRecord regRecord) {
 		Record record = new Record(regRecord, recordType);
-
         return record;
 	}
+
 }

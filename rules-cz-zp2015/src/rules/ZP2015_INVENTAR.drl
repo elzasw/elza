@@ -16,7 +16,7 @@ rule "Jen vybrané jsou možné"
 no-loop
 when
     $itemType : RulItemTypeExt( code in (
-    "ZP2015_RELATED_UNITS") )
+       "ZP2015_RELATED_UNITS", "ZP2015_UNIT_CONTENT") )
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
     $itemType.setRepeatable(false);

@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
@@ -86,6 +88,7 @@ import cz.tacr.elza.print.party.Party;
 import cz.tacr.elza.print.party.PartyGroup;
 import cz.tacr.elza.print.party.PartyName;
 import cz.tacr.elza.print.party.Person;
+import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
@@ -93,6 +96,8 @@ import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.ItemService;
 import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.RegistryService;
+import cz.tacr.elza.service.cache.CachedNode;
+import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.utils.ObjectListIterator;
 import cz.tacr.elza.utils.PartyType;
 import cz.tacr.elza.utils.ProxyUtils;
@@ -111,6 +116,8 @@ public class OutputFactoryService implements NodeLoader {
 
     private Map<Integer, Node> nodeMap = new HashMap<>();
     
+    private Map<Integer, ArrCalendarType> calendarTypes = new HashMap<>(); 
+    
     public void reset() {
         packetMap.clear();        
         nodeMap.clear();
@@ -118,9 +125,9 @@ public class OutputFactoryService implements NodeLoader {
 
     @Autowired
     private OutputGeneratorWorkerFactory outputGeneratorFactory;
-
+    
     @Autowired
-    private PartyNameRepository partyNameRepository;
+    private CalendarTypeRepository calendarTypeRepository;
 
     @Autowired
     private LevelRepository levelRepository;
@@ -139,6 +146,9 @@ public class OutputFactoryService implements NodeLoader {
 
     @Autowired
     private RegistryService registryService;
+    
+    @Autowired
+    private NodeCacheService nodeCacheService;
 
     public OutputFactoryService() {
     }
@@ -218,7 +228,7 @@ public class OutputFactoryService implements NodeLoader {
 
         // partyGroup k instituci
         final ParParty parParty = arrFundInstitution.getParty();
-        final Party party = createParty(parParty, output);
+        final Party party = output.getParty(parParty);
 
         // Check party type        
         if(! (party instanceof PartyGroup)) {
@@ -416,94 +426,27 @@ public class OutputFactoryService implements NodeLoader {
     }
 
     private AbstractItem getItemUnitRecordRef(final OutputImpl output, final ArrItemRecordRef itemData) {
-    	RegRecord regRecord = itemData.getRecord();
-        final Record record = Record.newInstance(output, regRecord);
+    	Record record = output.getRecordFromCache(itemData.getRecordId());
+    	if(record == null) {
+    		RegRecord regRecord = itemData.getRecord();
+    		record = output.getRecord(regRecord);
+    	}
         return new ItemRecordRef(record);
     }
 
     private AbstractItem getItemUnitPartyRef(final OutputImpl output, final ArrItemPartyRef itemData) {
-        final ParParty parParty = itemData.getParty();
-        Party party = createParty(parParty, output);
+    	Party party = output.getPartyFromCache(itemData.getPartyId());
+    	if(party==null) {
+    		final ParParty parParty = itemData.getParty();
+    		party = output.getParty(parParty);
+    	}
         return new ItemPartyRef(party);
     }
-    
-    private Party createParty(final ParParty parParty, final OutputImpl output)
-    {
-        String partyTypeCode = parParty.getPartyType().getCode();
-        PartyType partyType = PartyType.getByCode(partyTypeCode);
-        
-        switch (partyType) {
-            case DYNASTY:
-                ParDynasty parDynasty = ProxyUtils.deproxy(parParty);
-                return createDynasty(parDynasty, output);
-            case EVENT:
-                ParEvent parEvent = ProxyUtils.deproxy(parParty);
-                return createEvent(parEvent, output);
-            case PARTY_GROUP:
-                ParPartyGroup parPartyGroup = ProxyUtils.deproxy(parParty);
-                return createPartyGroup(parPartyGroup, output);
-            case PERSON:
-                ParPerson parPerson = ProxyUtils.deproxy(parParty);
-                return createPerson(parPerson, output);
-            default :
-                throw new IllegalStateException("Neznámý typ osoby " + partyType.getCode());
-        }    	
-    }
 
-    private Person createPerson(final ParPerson parPerson, final OutputImpl output) {
-        Person person = new Person();
-        fillCommonPartyAttributes(person, parPerson, output);
-
-        return person;
-    }
-
-    private PartyGroup createPartyGroup(final ParPartyGroup parPartyGroup, final OutputImpl output) {
-        PartyGroup partyGroup = new PartyGroup();
-        fillCommonPartyAttributes(partyGroup, parPartyGroup, output);
-
-        partyGroup.setFoundingNorm(parPartyGroup.getFoundingNorm());
-        partyGroup.setOrganization(parPartyGroup.getOrganization());
-        partyGroup.setScope(parPartyGroup.getScope());
-        partyGroup.setScopeNorm(parPartyGroup.getScopeNorm());
-
-        return partyGroup;
-    }
-
-    private Event createEvent(final ParEvent parEvent, final OutputImpl output) {
-        Event event = new Event();
-        fillCommonPartyAttributes(event, parEvent, output);
-
-        return event;
-    }
-
-    private Dynasty createDynasty(final ParDynasty parDynasty, final OutputImpl output) {
-        Dynasty dynasty = new Dynasty();
-        fillCommonPartyAttributes(dynasty, parDynasty, output);
-
-        dynasty.setGenealogy(parDynasty.getGenealogy());
-
-        return dynasty;
-    }
-
-    private void fillCommonPartyAttributes(final Party party, final ParParty parParty, final OutputImpl output) {
-        party.setPreferredName(PartyName.valueOf(parParty.getPreferredName()));
-        partyNameRepository.findByParty(parParty).stream()
-                .filter(parPartyName -> !parPartyName.getPartyNameId().equals(parParty.getPreferredName().getPartyNameId())) // kromě preferovaného jména
-                .forEach(parPartyName -> party.getNames().add(PartyName.valueOf(parPartyName)));
-        party.setHistory(parParty.getHistory());
-        party.setSourceInformation(parParty.getSourceInformation());
-        party.setCharacteristics(parParty.getCharacteristics());        
-        party.setType(parParty.getPartyType().getName());
-        party.setTypeCode(parParty.getPartyType().getCode());
-        
-        // Prepare corresponding record
-        party.setRecord(Record.newInstance(output, parParty.getRecord()));
-    }
-
-    private AbstractItem getItemUnitPacketRef(final ArrItemPacketRef itemData) {
-        final ArrPacket arrPacket = itemData.getPacket();
-        Packet packet = packetMap.get(arrPacket.getPacketId());
+    private AbstractItem getItemUnitPacketRef(final ArrItemPacketRef itemData) {        
+        Packet packet = packetMap.get(itemData.getPacketId());
         if (packet == null) {
+        	final ArrPacket arrPacket = itemData.getPacket();
             packet = new Packet();
             RulPacketType packetType = arrPacket.getPacketType();
             if (packetType != null) {
@@ -544,7 +487,12 @@ public class OutputFactoryService implements NodeLoader {
     }
 
     private AbstractItem getItemUnitdate(final ArrItemUnitdate itemData) {
-    	UnitDate data = UnitDate.valueOf(itemData);
+    	// lazy initialization of calendar types
+    	if(calendarTypes.size()==0) {
+    		calendarTypeRepository.findAll().forEach(calendarType -> calendarTypes.put(calendarType.getCalendarTypeId(), calendarType));
+    	}
+    	ArrCalendarType calendarType = calendarTypes.get(itemData.getCalendarTypeId());
+    	UnitDate data = UnitDate.valueOf(itemData, calendarType);
         return new ItemUnitdate(data);
     }
 
@@ -589,7 +537,7 @@ public class OutputFactoryService implements NodeLoader {
             if (CollectionUtils.isEmpty(regRecords)) {
                 records = Collections.<Record>emptyList();
             } else {
-                records = regRecords.stream().map(regRecord -> Record.newInstance(output, regRecord)).collect(Collectors.toList());
+                records = regRecords.stream().map(regRecord -> output.getRecord(regRecord)).collect(Collectors.toList());
             }
             
             // store list
@@ -605,7 +553,17 @@ public class OutputFactoryService implements NodeLoader {
      * @param mapNodes mapa uzlů, do kterých ukládáme
      */
     private void fillItems(final OutputImpl output, final Collection<NodeId> nodeIds, final Map<Integer, Node> mapNodes) {
-        Map<Integer, List<ArrDescItem>> descItemsByNode = arrangementService.findByNodes(mapNodes.keySet());
+    	Set<Integer> requestNodeIds = mapNodes.keySet();
+    	// request from cache
+    	Map<Integer, CachedNode> nodeData = nodeCacheService.getNodes(requestNodeIds);
+    	mapNodes.forEach((nodeId, node) -> {
+    		// find node in nodeData
+    		CachedNode cachedNode = nodeData.get(nodeId);
+    		fillNode(output, cachedNode, node);
+    	});
+    	// TODO: use old code to request nodes directly for non active version
+    	/*
+        Map<Integer, List<ArrDescItem>> descItemsByNode = arrangementService.findByNodes();        
 
         List<ArrDescItem> allDescItems = new LinkedList<>();
         for (List<ArrDescItem> items : descItemsByNode.values()) {
@@ -643,10 +601,33 @@ public class OutputFactoryService implements NodeLoader {
                 items.sort((i1,i2) -> (i1.compareToItemViewOrderPosition(i2)));
             }            
             node.setItems(items);
-        }
+        }*/
     }
 
-    /**
+    private void fillNode(OutputImpl output, CachedNode cachedNode, Node node) {
+    	List<ArrDescItem> descItems = cachedNode.getDescItems();
+        List<Item> items;
+        if (descItems == null) {
+            items = Collections.<Item>emptyList();
+        } else {
+            items = descItems.stream()
+                    .map(arrDescItem -> {
+                    	Item item = createItem(output, arrDescItem);
+                    	
+                        if (item instanceof ItemPacketRef) {
+                        	if(node!=null) {
+                        		item.getValue(Packet.class).addNode(node);
+                        	}
+                        }
+                        return item;
+                    	
+                    }).collect(Collectors.toList());
+            items.sort((i1,i2) -> (i1.compareToItemViewOrderPosition(i2)));
+        }            
+        node.setItems(items);		
+	}
+
+	/**
      * Create description item for ouput
      * @param output
      * @param arrDescItem

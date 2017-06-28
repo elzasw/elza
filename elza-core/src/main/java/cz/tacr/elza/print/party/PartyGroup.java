@@ -1,45 +1,44 @@
 package cz.tacr.elza.print.party;
 
+import cz.tacr.elza.domain.ParPartyGroup;
+
 /**
- * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
- *         Date: 22.6.16
+ * PartyGroup
  */
 public class PartyGroup extends Party {
 
-    private String scope;
-    private String foundingNorm;
-    private String scopeNorm;
-    private String organization;
+    private final String scope;
+    private final String foundingNorm;
+    private final String scopeNorm;
+    private final String organization;
+    
+    private PartyGroup(ParPartyGroup parPartyGroup, PartyInitHelper initHelper)
+    {
+    	super(parPartyGroup, initHelper);
+    	this.scope = parPartyGroup.getScope();
+    	this.foundingNorm = parPartyGroup.getFoundingNorm();
+    	this.scopeNorm = parPartyGroup.getScopeNorm();
+    	this.organization = parPartyGroup.getOrganization();
+    }
 
     public String getFoundingNorm() {
         return foundingNorm;
-    }
-
-    public void setFoundingNorm(final String foundingNorm) {
-        this.foundingNorm = foundingNorm;
     }
 
     public String getOrganization() {
         return organization;
     }
 
-    public void setOrganization(final String organization) {
-        this.organization = organization;
-    }
-
     public String getScope() {
         return scope;
-    }
-
-    public void setScope(final String scope) {
-        this.scope = scope;
     }
 
     public String getScopeNorm() {
         return scopeNorm;
     }
 
-    public void setScopeNorm(final String scopeNorm) {
-        this.scopeNorm = scopeNorm;
-    }
+	public static PartyGroup newInstance(ParPartyGroup parPartyGroup, PartyInitHelper initHelper) {
+		PartyGroup partyGroup = new PartyGroup(parPartyGroup, initHelper);
+		return partyGroup;
+	}
 }

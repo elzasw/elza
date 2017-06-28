@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -19,16 +20,40 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.ParDynasty;
+import cz.tacr.elza.domain.ParEvent;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyGroup;
+import cz.tacr.elza.domain.ParPerson;
+import cz.tacr.elza.domain.ParRelation;
+import cz.tacr.elza.domain.ParRelationEntity;
+import cz.tacr.elza.domain.ParRelationRoleType;
+import cz.tacr.elza.domain.ParRelationType;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.item.ItemFile;
 import cz.tacr.elza.print.item.ItemPacketRef;
+import cz.tacr.elza.print.item.ItemPartyRef;
 import cz.tacr.elza.print.item.ItemSpec;
 import cz.tacr.elza.print.item.ItemType;
+import cz.tacr.elza.print.party.Dynasty;
+import cz.tacr.elza.print.party.Event;
+import cz.tacr.elza.print.party.Party;
+import cz.tacr.elza.print.party.PartyGroup;
+import cz.tacr.elza.print.party.PartyInitHelper;
+import cz.tacr.elza.print.party.Person;
+import cz.tacr.elza.print.party.Relation;
+import cz.tacr.elza.print.party.RelationToType;
+import cz.tacr.elza.print.party.RelationTo;
+import cz.tacr.elza.print.party.RelationType;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.output.OutputFactoryService;
 import cz.tacr.elza.utils.AppContext;
+import cz.tacr.elza.utils.PartyType;
+import cz.tacr.elza.utils.ProxyUtils;
 
 /**
  * Základní objekt pro generování výstupu, při tisku se vytváří 1 instance.
@@ -37,7 +62,7 @@ import cz.tacr.elza.utils.AppContext;
 public class OutputImpl implements Output
 {
 
-    public static final int MAX_CACHED_NODES = 100; // maximální počet nodů v cache
+    public static final int MAX_CACHED_NODES = 1000; // maximální počet nodů v cache
 
     private final int outputId; // ID pro vazbu do DB na entitu arr_output
 
@@ -66,12 +91,32 @@ public class OutputImpl implements Output
     // seznam rejstříkových hesel podle  typu
     private Map<String, FilteredRecords> filteredRecords = new HashMap <>();
 
-    private Map<String, RecordType> recordTypes = new HashMap<>(); // seznam rejstříků podle code
+    /**
+     * Record type cache
+     */
+    private Map<Integer, RecordType> recordTypes = new HashMap<>();
+    
+    /**
+     * Cache for party
+     */
+    private Map<Integer, Party> partyCache = new HashMap<>();
+    
+    /**
+     * Cache for records
+     */
+    private Map<Integer, Record> recordCache = new HashMap<>();
+    
+    /**
+     * Cache ro relation types
+     */
+    private Map<Integer, RelationType> partyRelationTypeCache = new HashMap<>();
 
     private Set<Integer> directNodeIds = new HashSet<>();
 
     Map<Integer, ItemType> itemTypeMap = new HashMap<>();
     Map<Integer, ItemSpec> itemSpecMap = new HashMap<>();
+    
+    private Map<Integer, RelationToType> relToTypeCache = new HashMap<>();
     
     /**
      * Vytvoření instance s povinnými údaji
@@ -202,7 +247,31 @@ public class OutputImpl implements Output
                 .collect(Collectors.toList());
     }
 
-    @Override
+	@Override
+	public List<Party> getParties(Collection<String> codes) {
+        Assert.notNull(codes);
+        List<Party> parties = new ArrayList<>();
+        // set to check if party was added
+        Set<Integer> exportedParties = new HashSet<>();
+        items.forEach(item-> {
+        	// check item code
+        	if(codes.contains(item.getType().getCode())) {
+        		
+        		ItemPartyRef partyRef = (ItemPartyRef)item;
+        		Party party = partyRef.getParty();
+        		
+        		// check if party already added and add it
+        		if(!exportedParties.contains(party.getPartyId())) {
+        			exportedParties.add(party.getPartyId());
+        			parties.add(party);
+        		}
+        	}
+        });
+        
+        return parties;
+	}
+
+	@Override
     public Item getSingleItem(final String itemTypeCode) {
         Item found = null;
         for(Item item: items)
@@ -345,23 +414,6 @@ public class OutputImpl implements Output
         return records;
 	}
 
-    /**
-     * Return record type
-     * @return
-     */
-    public RecordType getRecordType(String code) {
-    	return recordTypes.get(code);
-    }
-    
-    /**
-     * Add new record type
-     * @return
-     */
-    public void addRecordType(RecordType recordType)
-    {
-    	recordTypes.put(recordType.getCode(), recordType);
-    }
-
     @Override
     public Fund getFund() {
         return fund;
@@ -453,4 +505,177 @@ public class OutputImpl implements Output
         }
         return itemSpec;
 	}
+	
+	/**
+	 * Return party from cache
+	 * @param partyId
+	 * @return
+	 */
+	public Party getParty(final ParParty parParty) {
+		Party party = partyCache.get(parParty.getPartyId());
+		if(party==null) {
+			party = createParty(parParty);
+		}
+		return party;
+	}	
+    
+	/**
+	 * Create party object and store it in cache
+	 * @param parParty
+	 * @return
+	 */
+    private Party createParty(final ParParty parParty)
+    {
+        String partyTypeCode = parParty.getPartyType().getCode();
+        PartyType partyType = PartyType.getByCode(partyTypeCode);
+
+        // Prepare corresponding record
+        Record record = this.recordCache.get(parParty.getRecord());
+        if(record==null) {
+        	record = createRecord(parParty.getRecord());
+        }
+        
+        // create relations
+        List<ParRelation> dbrelations = parParty.getRelations();
+        List<Relation> rels = null;
+        if(CollectionUtils.isNotEmpty(dbrelations)) {
+        	rels = new ArrayList<>();
+        	for(ParRelation dbRelation: dbrelations) {
+        		Relation rel = createRelation(dbRelation);
+        		rels.add(rel);
+        	}
+        }
+        
+        // prepare init helper
+        PartyInitHelper initHelper = new PartyInitHelper(record, rels); 
+        
+        Party party;
+        switch (partyType) {
+            case DYNASTY:
+                ParDynasty parDynasty = ProxyUtils.deproxy(parParty);
+                party = Dynasty.newInstance(parDynasty, initHelper);
+                break;
+            case EVENT:
+                ParEvent parEvent = ProxyUtils.deproxy(parParty);
+                party = Event.newInstance(parEvent, initHelper);
+                break;
+            case PARTY_GROUP:
+                ParPartyGroup parPartyGroup = ProxyUtils.deproxy(parParty);
+                party = PartyGroup.newInstance(parPartyGroup, initHelper);
+                break;
+            case PERSON:
+                ParPerson parPerson = ProxyUtils.deproxy(parParty);
+                party = Person.newInstance(parPerson, initHelper);
+                break;
+            default :
+                throw new IllegalStateException("Neznámý typ osoby " + partyType.getCode());
+        }
+        this.partyCache.put(party.getPartyId(), party);
+        return party;
+    }
+
+    private Relation createRelation(ParRelation dbRelation) {
+    	// prepare relation type
+    	ParRelationType dbRelType = dbRelation.getRelationType();
+    	RelationType relType = this.partyRelationTypeCache.get(dbRelType.getRelationTypeId());
+    	if(relType==null) {
+    		relType = RelationType.newInstance(dbRelType);
+    		partyRelationTypeCache.put(dbRelType.getRelationTypeId(), relType);
+    	}
+    	// prepare list of relationTo
+    	List<ParRelationEntity> entities = dbRelation.getRelationEntities();
+    	List<RelationTo> relsTo = null;
+    	if(CollectionUtils.isNotEmpty(entities)) {
+    		relsTo = new ArrayList<>(entities.size());
+    		for(ParRelationEntity dbEntity: entities)
+    		{
+    			RelationTo relTo = createRelationTo(dbEntity);
+    			relsTo.add(relTo);
+    		}
+    	}
+    	
+    	// create relation
+    	Relation relation = Relation.newInstance(dbRelation, relType, relsTo);
+		return relation;
+	}
+
+	private RelationTo createRelationTo(ParRelationEntity dbEntity) {
+		// prepare RelationToType
+		ParRelationRoleType roleType = dbEntity.getRoleType();
+		RelationToType relToType = relToTypeCache.get(roleType.getRoleTypeId());
+		if(relToType==null) {
+			relToType = RelationToType.newInstance(roleType);
+			relToTypeCache.put(roleType.getRoleTypeId(), relToType);
+		}
+		// get record
+		RegRecord dbRecord = dbEntity.getRecord();
+		Record record = this.getRecord(dbRecord);
+		
+		// prepare RelationTo
+		RelationTo relTo = RelationTo.newInstance(dbEntity, relToType, record);
+		return relTo;
+	}
+
+	public Record getRecord(final RegRecord regRecord)
+    {
+    	Record record = recordCache.get(regRecord.getRecord());
+		if(record==null) {
+			record = createRecord(regRecord);
+		}
+		return record;
+    }
+
+	private Record createRecord(RegRecord regRecord) {
+		RegRegisterType dbRegisterType = regRecord.getRegisterType();
+		// lookup via recordTypeId
+		RecordType recordType = this.recordTypes.get(regRecord.getRegisterTypeId());
+		if(recordType==null) {
+			recordType = this.createRecordType(dbRegisterType);
+		}
+		
+		Record record = Record.newInstance(recordType, regRecord);
+		recordCache.put(record.getRecordId(), record);
+		return record;
+	}
+
+	/**
+     * Return record type
+     * @return
+     */
+	public RecordType getRecordType(RegRegisterType dbRegisterType) {
+		RecordType  recordType = this.recordTypes.get(dbRegisterType.getRegisterTypeId());
+		if(recordType==null) {
+			recordType = createRecordType(dbRegisterType);
+		}
+		return recordType;
+	}
+
+    /**
+     * Add new record type
+     * @return
+     */
+    private RecordType createRecordType(RegRegisterType dbRegisterType) {
+		// prepare parent
+		RecordType parentType = null;
+		RegRegisterType dbParentRegisterType = dbRegisterType.getParentRegisterType();
+		if(dbParentRegisterType!=null) {
+			parentType = getRecordType(dbParentRegisterType);
+		}
+		RecordType recordType = RecordType.newInstance(parentType, dbRegisterType);
+		recordTypes.put(dbRegisterType.getRegisterTypeId(), recordType);
+		return recordType;
+	}
+
+    /**
+     * Return record from cache
+     * @param recordId
+     * @return
+     */
+	public Record getRecordFromCache(Integer recordId) {
+		return recordCache.get(recordId);
+	}
+
+	public Party getPartyFromCache(Integer partyId) {
+		return partyCache.get(partyId);
+	}    
 }

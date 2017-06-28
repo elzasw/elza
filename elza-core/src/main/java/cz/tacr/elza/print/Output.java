@@ -6,7 +6,12 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import cz.tacr.elza.print.item.Item;
+import cz.tacr.elza.print.party.Party;
 
+/**
+ * Output interface to access all output related data
+ * 
+ */
 public interface Output {
 
     /**
@@ -17,6 +22,15 @@ public interface Output {
      * @return seznam items s odpovídajícími kódy
      */
 	public List<Item> getItems(@NotNull final Collection<String> codes);
+	
+	/**
+	 * Return list of parties from the given description items.
+	 * 
+	 * Description items have to be party references.
+	 * @param codes List of description items referencing parties 
+	 * @return List of referenced parties
+	 */
+	public List<Party> getParties(@NotNull final Collection<String> codes);
 	
     /**
      * Return single item

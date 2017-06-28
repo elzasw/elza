@@ -71,28 +71,4 @@ public class RecordType {
 		RecordType recordType = new RecordType(parentType, dbRegisterType.getCode(), dbRegisterType.getName()); 
 		return recordType;
 	}
-
-	/**
-	 * Return existing instance of record type
-	 * @param output
-	 * @param dbRegisterType
-	 * @return
-	 */
-	public static RecordType getInstance(OutputImpl output, RegRegisterType dbRegisterType) {
-		String regTypeCode = dbRegisterType.getCode();
-		RecordType recordType = output.getRecordType(regTypeCode);
-		if (recordType == null) {
-			// prepare parent
-			RecordType parentType = null;
-			RegRegisterType dbParentRegisterType = dbRegisterType.getParentRegisterType();
-			if(dbParentRegisterType!=null) {
-				parentType = getInstance(output, dbParentRegisterType);
-			}
-			// create new instance of record type
-			recordType = RecordType.newInstance(parentType, dbRegisterType);
-			// store record type
-			output.addRecordType(recordType);
-		}		
-		return recordType;
-	}
 }
