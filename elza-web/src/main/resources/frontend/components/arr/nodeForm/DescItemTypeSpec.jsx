@@ -151,7 +151,9 @@ class DescItemTypeSpec extends AbstractReactComponent {
             }
         }
     };
-
+    focus(){
+        this.refs.autocomplete.focus();
+    }
     /**
      * Načtení aktuálně vybrané hodnoty - jako desc item type - složení ref a info type.
      * @param descItem hodnota
@@ -223,6 +225,7 @@ class DescItemTypeSpec extends AbstractReactComponent {
 
         return <Autocomplete
             key="spec"
+            ref="autocomplete"
             {...descItemSpecProps}
             className={cls}
             value={value}
