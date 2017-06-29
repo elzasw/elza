@@ -53,9 +53,23 @@
                                     <md5>db8f0f5fcd878b5cf14392347f3597f5</md5>
                                 </configuration>
                             </execution>
+                            <execution>
+                                <id>download-jre</id>
+                                <!--<phase>compile</phase>-->
+                                <goals>
+                                    <goal>wget</goal>
+                                </goals>
+                                <configuration>
+                                    <url>
+                                        http://build.marbes.cz/jre.zip
+                                    </url>
+                                    <unpack>true</unpack>
+                                    <outputDirectory>${project.build.directory}/jre</outputDirectory>
+                                    <md5>3c4fa74ccbd68658f2b1ac2c245ad627</md5>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
-
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
@@ -176,9 +190,10 @@
                                 </goals>
                                 <configuration>
                                     <arguments>
-                                        <argument>
-                                            ${project.build.directory}/classes/elza-instalator.iss
-                                        </argument>
+                                        <argument>"/DTomcatVersion=${tomcat.version}"</argument>
+                                        <argument>"/DVerzeAplikace=${project.version}"</argument>
+                                        <argument>"/DNazevInstalator=ELZA-${project.version}"</argument>
+                                        <argument>${project.build.directory}/classes/elza-instalator.iss</argument>
                                     </arguments>
                                     <executable>"c:\Program Files (x86)\Inno Setup 5\ISCC.exe"</executable>
                                 </configuration>

@@ -1,13 +1,13 @@
 #define NazevApliakceInstalator "ELZA"
-#define IdAplikace "{44F9EF89-0373-4BFD-8D36-C465DAB6E0A2}"
-#define VerzeAplikace "0.12.0-SNAPSHOT"
-#define VerzeAplikaceWinInfo "0.0.12.0"
-#define NazevInstalator  "ELZA-0.12.0"
 #define KodAplikace  "ELZA"
+#define IdAplikace "{44F9EF89-0373-4BFD-8D36-C465DAB6E0A2}"
+#define VerzeAplikaceWinInfo "0.0.12.0"
 #define NazevAplikace "Elektronická evidence archiválií"
-#define NazevFirmy "Název firmy"
-#define Copyright "Název firmy © 2017"
-#define TomcatVersion "8.5.15"
+#define NazevFirmy "Technologická agentura ÈR"
+#define Copyright "Technologická agentura ÈR © 2017"
+;#define TomcatVersion "8.5.15"
+;#define NazevInstalator  "ELZA-0.12.0"
+;#define VerzeAplikace "0.12.0-SNAPSHOT"
 
 [Setup]
 DisableProgramGroupPage=yes
@@ -47,7 +47,7 @@ SetupIconFile=.\classes\Nastaveni\favicon.ico
 [Files]
 Source: "compiler:\WizModernSmallImage.bmp"; Flags: dontcopy
 Source: "apache-tomcat-{#TomcatVersion}\*"; DestDir: "{app}\apache-tomcat"; Flags: recursesubdirs
-Source: "classes\jre\*"; DestDir: "{app}\apache-tomcat\jre"; Flags: recursesubdirs
+Source: "jre\*"; DestDir: "{app}\apache-tomcat\jre"; Flags: recursesubdirs
 Source: "ROOT\*"; DestDir: "{app}\apache-tomcat\webapps\ROOT"; Flags: recursesubdirs
 Source: "classes\TestDb\*"; DestDir: "{app}\TestDb"; Flags: recursesubdirs
 Source: "package-cz-base-{#VerzeAplikace}.zip"; DestDir: "{app}\import"
