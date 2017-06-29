@@ -1,15 +1,15 @@
 /**
  * Stránka pro správu uživatelů.
  */
-require('./AdminGroupPage.less');
+import './AdminGroupPage.less';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Button} from 'react-bootstrap';
-import {Ribbon} from 'components/index.jsx';
+import {GroupDetail, AddGroupForm, Ribbon} from 'components/index.jsx';
 import {PageLayout} from 'pages/index.jsx';
-import {i18n, GroupDetail, Search, ListBox, AbstractReactComponent, AddGroupForm, Icon, RibbonGroup, Loading} from 'components/index.jsx';
+import {i18n, Search, ListBox, AbstractReactComponent, Icon, RibbonGroup, Loading} from 'components/shared';
 import {groupsFetchIfNeeded, groupsGroupDetailFetchIfNeeded, groupsSelectGroup, groupsSearch, groupUpdate, groupCreate, groupDelete} from 'actions/admin/group.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'

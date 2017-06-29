@@ -2,7 +2,7 @@
  * Stránka archivních pomůcek.
  */
 
-require('./FundActionPage.less');
+import './FundActionPage.less';
 
 import ArrParentPage from "./ArrParentPage.jsx";
 
@@ -11,21 +11,22 @@ import ReactDOM from 'react-dom';
 import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {
-    Loading,
-    Icon,
     Ribbon,
-    i18n,
-    AbstractReactComponent,
-    ListBox,
-    RibbonGroup,
     FundNodesSelectForm,
     FundNodesList,
     FormInput,
     ArrFundPanel
 } from 'components/index.jsx';
+import {
+    Loading,
+    Icon,
+    i18n,
+    AbstractReactComponent,
+    ListBox,
+    RibbonGroup
+} from 'components/shared';
 import {Button} from 'react-bootstrap';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {PageLayout} from 'pages/index.jsx';
 import {dateTimeToString} from 'components/Utils.jsx'
 import {
     fundActionFetchDetailIfNeeded,

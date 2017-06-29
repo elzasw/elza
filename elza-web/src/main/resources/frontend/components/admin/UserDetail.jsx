@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {Icon, AbstractReactComponent, NoFocusButton, AddRemoveList, i18n, Loading} from 'components/index.jsx';
+import {Icon, AbstractReactComponent, NoFocusButton, AddRemoveList, i18n, Loading} from 'components/shared';
 import {indexById, getIdsList} from 'stores/app/utils.jsx'
 import {dateToString} from 'components/Utils.jsx'
 import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
@@ -21,7 +21,7 @@ import * as perms from 'actions/user/Permission.jsx';
 import './UserDetail.less';
 
 /**
- * Detail uživatele s nastavením skupin a oprávnìní
+ * Detail uï¿½ivatele s nastavenï¿½m skupin a oprï¿½vnï¿½nï¿½
  */
 class UserDetail extends AbstractReactComponent {
     static PropTypes = {

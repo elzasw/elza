@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import {WebApi} from 'actions/index.jsx';
-import {TooltipTrigger, Icon, i18n, AbstractReactComponent, Autocomplete, ExtImportForm, PartyListItem} from 'components/index.jsx';
+import {TooltipTrigger, Icon, i18n, AbstractReactComponent, Autocomplete} from 'components/shared';
 import {connect} from 'react-redux'
 import {MenuItem, DropdownButton, Button} from 'react-bootstrap';
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
@@ -15,9 +15,9 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {debounce} from 'shared/utils'
 import classNames from 'classnames';
 
-import {PartySelectPage} from 'pages'
-
 import './PartyField.less'
+import PartyListItem from "./PartyListItem";
+import ExtImportForm from "../form/ExtImportForm";
 
 const AUTOCOMPLETE_PARTY_LIST_SIZE = DEFAULT_LIST_SIZE;
 

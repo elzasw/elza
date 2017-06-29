@@ -5,7 +5,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import { AppStore, ResizeStore } from 'stores/index.jsx';
-import {AbstractReactComponent, ContextMenu, Toastr, ModalDialog, WebSocket, Login} from 'components/index.jsx';
+import {AbstractReactComponent, ContextMenu, Toastr, ModalDialog, WebSocket} from 'components/shared';
 import {Route, Switch} from "react-router-dom";
 import AppRouter from './AppRouter'
 import {ShortcutManager} from 'react-shortcuts';
@@ -36,6 +36,7 @@ import {
 } from 'pages'
 
 import './Layout.less';
+import Login from "../components/shared/login/Login";
 
 const shortcutManager = new ShortcutManager(keymap);
 

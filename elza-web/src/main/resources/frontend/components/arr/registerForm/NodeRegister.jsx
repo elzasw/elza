@@ -2,13 +2,14 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import {WebApi} from 'actions/index.jsx';
-import {Icon, i18n, AbstractReactComponent, RegistryField} from 'components/index.jsx';
+import {Icon, i18n, AbstractReactComponent} from 'components/shared';
 import {decorateAutocompleteValue} from './../nodeForm/DescItemUtils.jsx'
 import {objectById} from 'stores/app/utils.jsx'
 
 import './NodeRegister.less';
+import RegistryField from "../../registry/RegistryField";
 
-export default class NodeRegister extends AbstractReactComponent {
+class NodeRegister extends AbstractReactComponent {
 
     static PropTypes = {
         onChange: React.PropTypes.func.isRequired,
@@ -37,3 +38,5 @@ export default class NodeRegister extends AbstractReactComponent {
         </div>
     }
 }
+
+export default NodeRegister

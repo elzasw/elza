@@ -1,5 +1,5 @@
 import React from 'react';
-import {AbstractReactComponent, i18n, Icon} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, Icon} from 'components/shared';
 import classNames from 'classnames'
 import './AdminExtSystemListItem.less';
 

@@ -1,46 +1,40 @@
-require ('./Accordion.less')
-
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent} from 'components/index.jsx';
-import {ResizeStore} from 'stores/index.jsx';
+import AbstractReactComponent from "../../AbstractReactComponent";
+import {store} from 'stores/index.jsx';
+import AccordionComponent from './AccordionComponent';
 
-var AccordionComponent = require('./AccordionComponent');
+import './Accordion.less'
 
-var Accordion = class AccordionWrapper extends AbstractReactComponent {
+class Accordion extends AbstractReactComponent {
+    state = {};
 
     constructor(props) {
         super(props);
 
-        this.bindMethods('renderItem', 'setHeights');
-
-        ResizeStore.listen(status => {
+        store.listen(status => {
             this.setHeights();
         });
-
-        this.state = {};
     }
 
     componentDidMount() {
         this.setHeights();
     }
 
-    setHeights() {
+    setHeights = () => {
         if (this.refs.contentContainer) {
-            var itemCloseHeight = 42;
-            var itemOpenHeight = this.refs.contentContainer.clientHeight - itemCloseHeight * 4;
+            const itemCloseHeight = 42;
+            const itemOpenHeight = this.refs.contentContainer.clientHeight - itemCloseHeight * 4;
 
-            this.setState({itemCloseHeight:itemCloseHeight, itemOpenHeight: itemOpenHeight});
+            this.setState({itemCloseHeight, itemOpenHeight});
         }
     }
 
-    renderItem(item) {
-        var selectedNodeId = this.props.selectedId;
-        var open = item.id == selectedNodeId;
+    renderItem = (item) => {
+        const {selectedId} = this.props;
 
-        var result;
-        if (open) {
-            result = (
+        if (item.id == selectedId) {
+            return (
                 <div className='accordion-item active' style={{height: this.state.itemOpenHeight}} key={item.id} >
                     <div className='accordion-header' style={{height: this.state.itemCloseHeight}} onClick={this.props.closeItem.bind(this, item)}>
                         <div className='accordion-header-content'>{this.props.renderItemHeader(item, true)}</div>
@@ -53,7 +47,7 @@ var Accordion = class AccordionWrapper extends AbstractReactComponent {
                 </div>
             )
         } else {
-            result = (
+            return (
                 <div className='accordion-item' style={{height: this.state.itemCloseHeight}} key={item.id}>
                     <div className='accordion-header' style={{height: this.state.itemCloseHeight}} onClick={this.props.openItem.bind(this, item)}>
                         <div className='accordion-header-content'>{this.props.renderItemHeader(item, false)}</div>
@@ -61,28 +55,21 @@ var Accordion = class AccordionWrapper extends AbstractReactComponent {
                 </div>
             )
         }
-
-        return (
-                result
-        )
-    }
+    };
 
     render() {
 
-        var scrollTo;
+        let scrollTo;
 
         if (this.refs.contentContainer) {
-
-            var items = this.props.items;
-            var selectedId = this.props.selectedId;
+            const {items, selectedId} = this.props;
 
             if (selectedId != null) {
-                var index = items.map(item=>{return item.id}).indexOf(selectedId);
-                var count = items.length;
+                const index = items.map(item=>{return item.id}).indexOf(selectedId);
 
-                var x = this.state.itemOpenHeight / this.state.itemCloseHeight * 2;
+                // const x = this.state.itemOpenHeight / this.state.itemCloseHeight * 2;
 
-                var offset = ((this.refs.contentContainer.clientHeight - this.state.itemOpenHeight) / 2);
+                const offset = ((this.refs.contentContainer.clientHeight - this.state.itemOpenHeight) / 2);
 
                 /*console.log(count, index, x);
 

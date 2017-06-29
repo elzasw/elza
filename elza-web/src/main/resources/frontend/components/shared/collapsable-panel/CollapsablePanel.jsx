@@ -1,8 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {i18n, NoFocusButton, Icon, AbstractReactComponent} from 'components'
 import {Panel, PanelGroup} from 'react-bootstrap';
 import {Shortcuts} from 'react-shortcuts'
+import AbstractReactComponent from "../../AbstractReactComponent";
+import NoFocusButton from "../button/NoFocusButton";
+import Icon from "../icon/Icon";
 
 class CollapsablePanel extends AbstractReactComponent {
     static PropTypes = {

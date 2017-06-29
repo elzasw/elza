@@ -6,7 +6,9 @@ require('./NodeSubNodeForm.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Icon, i18n, AbstractReactComponent, NoFocusButton, AddPacketForm, AddPartyForm, AddRegistryForm,
+import {Icon, i18n, AbstractReactComponent, NoFocusButton} from 'components/shared';
+import {
+    AddPacketForm, AddPartyForm, AddRegistryForm,
     AddPartyEventForm, AddPartyGroupForm, AddPartyDynastyForm, AddPartyOtherForm} from 'components';
 import {connect} from 'react-redux'
 import {lockDescItemType, unlockDescItemType, unlockAllDescItemType,
@@ -14,7 +16,7 @@ import {lockDescItemType, unlockDescItemType, unlockAllDescItemType,
 import {addNode,deleteNode} from '../../actions/arr/node.jsx'
 import {isFundRootId} from './ArrUtils.jsx'
 import * as perms from 'actions/user/Permission.jsx';
-import {SubNodeForm} from "components/index.jsx";
+import {SubNodeForm} from 'components';
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {getOneSettings} from 'components/arr/ArrUtils.jsx';
 import ArrHistoryForm from 'components/arr/ArrHistoryForm.jsx'
@@ -25,7 +27,7 @@ import {indexById} from 'stores/app/utils.jsx'
 import {fundSelectSubNode} from 'actions/arr/nodes.jsx';
 import {addToastrSuccess, addToastr} from 'components/shared/toastr/ToastrActions.jsx';
 
-const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
+class NodeSubNodeForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
 

@@ -6,7 +6,10 @@
 require('./FileListBox.less');
 
 import React from "react";
-import {Icon, Search, ListBox, AbstractReactComponent, i18n} from "components";
+import ListBox from "./ListBox";
+import Search from "../search/Search";
+import Icon from "../icon/Icon";
+import AbstractReactComponent from "../../AbstractReactComponent";
 
 
 var __FileListBox_timer = null;

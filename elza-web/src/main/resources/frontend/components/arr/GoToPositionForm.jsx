@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
 import {Modal, Button, Form} from 'react-bootstrap';
 import {reduxForm} from 'redux-form';
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'

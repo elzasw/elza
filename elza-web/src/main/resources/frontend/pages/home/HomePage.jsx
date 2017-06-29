@@ -4,7 +4,8 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Icon, i18n} from 'components/index.jsx';
-import {TooltipTrigger, Splitter, Autocomplete, FundForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent, PartyListItem} from 'components/index.jsx';
+import {TooltipTrigger, Splitter, Autocomplete, RibbonGroup, ToggleContent, AbstractReactComponent} from 'components/shared';
+import {FundForm, Ribbon, FindindAidFileTree, PartyListItem} from 'components/index.jsx';
 import {NodeTabs} from 'components/index.jsx';
 import {Button} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';

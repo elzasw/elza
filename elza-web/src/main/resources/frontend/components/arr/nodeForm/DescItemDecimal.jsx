@@ -4,7 +4,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent, i18n} from 'components/index.jsx';
+import {AbstractReactComponent, i18n} from 'components/shared';
 import {connect} from 'react-redux'
 import {normalizeDouble} from 'components/validate.jsx'
 import {decorateValue} from './DescItemUtils.jsx'

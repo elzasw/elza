@@ -1,19 +1,16 @@
 /**
  * Data grid komponent - typu tabulka excel.
  */
-
-require ('./DataGridPagination.less');
-
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Resizer} from 'components/index.jsx';
-import {Button} from 'react-bootstrap';
 import {validateInt, normalizeInt} from 'components/validate.jsx';
 import {Shortcuts} from 'react-shortcuts';
 
+import './DataGridPagination.less';
+import AbstractReactComponent from "../../AbstractReactComponent";
+
 function getPagesCount(itemsCount, pageSize) {
-    var pagesCount = Math.floor(itemsCount / pageSize)
+    let pagesCount = Math.floor(itemsCount / pageSize);
     if (itemsCount % pageSize > 0) {
         pagesCount++
     }
@@ -24,7 +21,7 @@ function getCurrPageDesc(pageIndex, pagesCount) {
     return (pageIndex + 1) + ' z ' + pagesCount
 }
 
-var DataGridPagination = class DataGridPagination extends AbstractReactComponent {
+class DataGridPagination extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -131,12 +128,12 @@ var DataGridPagination = class DataGridPagination extends AbstractReactComponent
         this.actionMap[action] && this.actionMap[action](e);
     }
     render() {
-        const {onSetPageIndex, onChangePageSize, itemsCount, pageSize, pageIndex} = this.props
-        var pagesCount = getPagesCount(itemsCount, pageSize)
+        const {onSetPageIndex, onChangePageSize, itemsCount, pageSize, pageIndex} = this.props;
+        const pagesCount = getPagesCount(itemsCount, pageSize);
 
-        var options = [10, 25, 50, 100, 250].map(val => <option key={val} value={val}>{val}</option>)
+        const options = [10, 25, 50, 100, 250].map(val => <option key={val} value={val}>{val}</option>);
 
-        var cls = this.props.className ? 'pagination-container ' + this.props.className : 'pagination-container'
+        const cls = this.props.className ? 'pagination-container ' + this.props.className : 'pagination-container';
         return (
             <Shortcuts name="DataGridPagination" handler={this.handleShortcuts}>
                 <nav className={cls} >
@@ -161,5 +158,5 @@ var DataGridPagination = class DataGridPagination extends AbstractReactComponent
     }
 }
 
-export default connect()(DataGridPagination);
+export default DataGridPagination;
 

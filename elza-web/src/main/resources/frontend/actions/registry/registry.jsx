@@ -11,10 +11,10 @@ export const DEFAULT_REGISTRY_LIST_MAX_SIZE = DEFAULT_LIST_SIZE;
 export const AREA_REGISTRY_LIST = "registryList";
 import * as types from 'actions/constants/ActionTypes.js';
 import {savingApiWrapper} from 'actions/global/status.jsx';
-import {i18n, AddRegistryForm} from 'components/index.jsx';
+import {i18n} from 'components/shared';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess,addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
-
+import AddRegistryForm from "../../components/registry/AddRegistryForm";
 
 
 
@@ -336,7 +336,7 @@ export function registryCoordinatesDeleted(coordinatesId) {
 export function registryCoordinatesInternalDelete(coordinatesInternalId) {
     return {
         coordinatesInternalId,
-        type: types.REGISTRY_RECORD_COORDINATES_INTERNAL_DELETE,
+        type: types.REGISTRY_RECORD_COORDINATES_INTERNAL_DELETED,
         area: AREA_REGISTRY_DETAIL
     }
 }

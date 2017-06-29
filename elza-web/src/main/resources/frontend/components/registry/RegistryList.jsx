@@ -1,6 +1,9 @@
+/**
+ * Komponenta list rejstříků
+ */
 import React from 'react';
 import {connect} from 'react-redux'
-import {ListBox, AbstractReactComponent, SearchWithGoto, Autocomplete, i18n, ArrPanel, Loading, Icon, RegistryListItem, registryTypes} from 'components/index.jsx';
+import {ListBox, AbstractReactComponent, SearchWithGoto, Autocomplete, i18n, ArrPanel, Loading, Icon} from 'components/shared';
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
 import {indexById, objectById} from 'stores/app/utils.jsx'
 import {registryListFetchIfNeeded, registryListFilter, registryListInvalidate, registryDetailFetchIfNeeded, registryDetailInvalidate, DEFAULT_REGISTRY_LIST_MAX_SIZE, registrySetFolder} from 'actions/registry/registry.jsx'
@@ -12,10 +15,8 @@ import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 
 
 import './RegistryList.less';
+import RegistryListItem from "./RegistryListItem";
 
-/**
- * Komponenta list rejstříků
- */
 class RegistryList extends AbstractReactComponent {
 
     static PropTypes = {

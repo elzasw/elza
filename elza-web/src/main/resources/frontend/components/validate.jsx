@@ -18,7 +18,8 @@
 /**
  * Ajax je pro validaci datace, i18n překlad
  **/
-import {AjaxUtils, i18n} from 'components/index.jsx';
+import {i18n} from 'components/shared';
+//import AjaxUtils from "./AjaxUtils";
 
 /**
  * Validace zda je číslo celým číslem kladným i záporným  v intervalu clého čísla JAVA
@@ -52,7 +53,7 @@ export function validateCoordinatePoint(value) {
         } else {
             return null;
         }
-    }    
+    }
     return null;
 };
 
@@ -72,8 +73,9 @@ export function validateDouble(doubleNumber) {
  * @param dateNumber datace
  * @param callback funkce
  * volání funkce: validateDate('19.st.', function (message){console.log(message); });
+ * @deprecated Nepoužívá se - pokud se bude znovu používat nutno vyextrahovat do extra souboru
  **/
-export function validateDate(dateNumber, callback = function () {
+/*export function validateDate(dateNumber, callback = function () {
 }) {
     AjaxUtils.ajaxGet('/api/validate/unitDate', {value: dateNumber})
         .then(json=> {
@@ -82,7 +84,7 @@ export function validateDate(dateNumber, callback = function () {
                 message = json['message'];
             callback(message);
         });
-};
+};*/
 
 /**
  * Normalizace čísla - pouze povolené celé číslo - (přes string rychlejší než ukládat do pole)

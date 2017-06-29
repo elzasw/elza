@@ -6,19 +6,21 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {
-    FundBulkModificationsForm,
     Icon,
-    DataGridColumnsSettings,
     AbstractReactComponent,
     i18n,
     Loading,
     DataGrid,
-    FundFilterSettings,
+    DataGridColumnsSettings,
     DataGridPagination,
+    SearchWithGoto
+} from 'components/shared';
+import {
+    FundBulkModificationsForm,
+    FundFilterSettings,
     FundDataGridCellForm,
-    SearchWithGoto,
     ArrSearchForm
-} from 'components/index.jsx';
+} from 'components';
 import {Button, MenuItem} from 'react-bootstrap';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {
@@ -58,9 +60,9 @@ import {
 import {getMapFromList, getSetFromIdsList} from 'stores/app/utils.jsx'
 import {propsEquals} from 'components/Utils.jsx'
 import {COL_DEFAULT_WIDTH, COL_REFERENCE_MARK} from "./FundDataGridConst";
-require('./FundDataGrid.less')
+import './FundDataGrid.less'
 
-var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
+class FundDataGrid extends AbstractReactComponent {
     constructor(props) {
         super(props);
 

@@ -5,7 +5,7 @@ import {indexById} from 'stores/app/utils.jsx'
 import React from 'react';
 import {dateToString, dateTimeToString} from 'components/Utils.jsx'
 import {getSetFromIdsList} from 'stores/app/utils.jsx'
-import {i18n} from 'components';
+import {i18n} from 'components/shared';
 
 /**
  * Načtení stromového uspořádání - kořenové jsou item group a pod nimi item types. Do stromu se vkládají jen položky, které ještě nejsou použivté v descItemGroups.

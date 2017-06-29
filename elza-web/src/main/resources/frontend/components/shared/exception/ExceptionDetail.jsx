@@ -1,15 +1,11 @@
 import React from 'react';
-import {AbstractReactComponent} from 'components/index.jsx';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
-import {i18n, FormInput} from 'components'
 import {Modal, Button, Input} from 'react-bootstrap';
+import AbstractReactComponent from "../../AbstractReactComponent";
+import FormInput from "../form/FormInput";
+import i18n from "../../i18n";
 
-var ExceptionDetail = class ExceptionDetail extends AbstractReactComponent {
-
-    constructor(props) {
-        super(props);
-    }
-
+class ExceptionDetail extends AbstractReactComponent {
     render() {
         const {data} = this.props;
         return (
@@ -38,6 +34,6 @@ var ExceptionDetail = class ExceptionDetail extends AbstractReactComponent {
             </div>
         )
     }
-};
+}
 
 export default ExceptionDetail;

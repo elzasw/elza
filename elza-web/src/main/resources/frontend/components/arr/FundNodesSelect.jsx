@@ -1,7 +1,8 @@
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {i18n, FundTreeLazy, AbstractReactComponent} from 'components/index.jsx';
+import {i18n, AbstractReactComponent} from 'components/shared';
+import {FundTreeLazy} from 'components'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Modal, Button, Input, Form} from 'react-bootstrap';
 import * as types from 'actions/constants/ActionTypes.js';

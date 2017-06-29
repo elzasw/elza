@@ -1,6 +1,6 @@
 import React from 'react';
 import {connect} from 'react-redux'
-import {i18n, FundTreeLazy, AbstractReactComponent} from 'components/index.jsx';
+import {i18n, FundTreeLazy, AbstractReactComponent} from 'components/shared';
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Modal, Button, Input, Form} from 'react-bootstrap';
 import {

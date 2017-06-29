@@ -1,15 +1,18 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, Autocomplete, Icon, FormInput} from 'components/index.jsx';
-import {Modal, Button, Form} from 'react-bootstrap';
-import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
-import {WebApi} from 'actions/index.jsx';
-
 /**
  * Formulář importu rejstříkových hesel
  * <ImportForm fund onSubmit={this.handleCallImportRegistry} />
  */
+import React from 'react';
+import ReactDOM from 'react-dom';
+import {reduxForm} from 'redux-form';
+import {Modal, Button, Form} from 'react-bootstrap';
+import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
+import {WebApi} from 'actions/index.jsx';
+import AbstractReactComponent from "../AbstractReactComponent";
+import Loading from "../shared/loading/Loading";
+import FormInput from "../shared/form/FormInput";
+import i18n from "../i18n";
+
 class ExportForm extends AbstractReactComponent {
 
     static PropTypes = {};
@@ -17,16 +20,8 @@ class ExportForm extends AbstractReactComponent {
     state = {
         defaultScopes: [],
         transformationNames: [],
-        isFetching: true
+        iExportFormsFetching: true
     };
-
-    validate = (values,props) => {
-        var errors = {}
-        return errors;
-    }
-
-    componentWillReceiveProps(nextProps) {
-    }
 
     componentDidMount() {
         WebApi.getExportTransformations().then(json => {
@@ -36,6 +31,12 @@ class ExportForm extends AbstractReactComponent {
             });
         });
     }
+
+
+    validate = (values,props) => {
+        const errors = {}
+        return errors;
+    };
 
     submitOptions = {finishOnSubmit:true}
 

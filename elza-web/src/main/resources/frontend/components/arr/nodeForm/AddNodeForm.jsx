@@ -4,7 +4,7 @@ import {connect} from 'react-redux'
 import {Modal, Button, Radio, FormGroup, ControlLabel, Form} from 'react-bootstrap';
 import {WebApi} from 'actions/index.jsx';
 import {addNode} from 'actions/arr/node.jsx';
-import {AbstractReactComponent, i18n, FormInput, Loading} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, FormInput, Loading} from 'components/shared';
 import {isFundRootId, getOneSettings} from 'components/arr/ArrUtils.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import './AddNodeForm.less';

@@ -2,8 +2,8 @@
  * Stránka archivních pomůcek.
  */
 
-require('./ArrPage.less');
-require('./ArrDaoPage.less');
+import './ArrPage.less';
+import './ArrDaoPage.less';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -11,28 +11,36 @@ import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {FundSettingsForm, Tabs, Icon, Search, Ribbon, i18n, FundTreeDaos, ArrFundPanel, ArrDaos} from 'components/index.jsx';
+import {
+    FundSettingsForm,
+    NodeTabs,
+    BulkActionsDialog,
+    VisiblePolicyForm,
+    FundPackets,
+    FundFiles,
+    FundTreeMain,
+    ArrDaoPackages,
+    Ribbon,
+    FundTreeDaos,
+    ArrFundPanel,
+    ArrDaos
+} from 'components/index.jsx';
+
+import {
+    i18n,
+    Tabs, Icon, Search,
+    RibbonGroup,
+    AbstractReactComponent,
+    ListBox2,
+    LazyListBox,
+    Loading
+} from 'components/shared';
 import * as types from 'actions/constants/ActionTypes.js';
 import {createFundRoot, getParentNode} from 'components/arr/ArrUtils.jsx'
 import {moveNodesUnder, moveNodesBefore, moveNodesAfter} from 'actions/arr/nodes.jsx'
 import {addNodeForm} from "actions/arr/addNodeForm.jsx"
 import ArrParentPage from "./ArrParentPage.jsx";
 import {fundTreeSelectNode} from 'actions/arr/fundTree.jsx'
-
-import {
-    BulkActionsDialog,
-    RibbonGroup,
-    AbstractReactComponent,
-    NodeTabs,
-    ListBox2,
-    LazyListBox,
-    VisiblePolicyForm,
-    Loading,
-    FundPackets,
-    FundFiles,
-    FundTreeMain,
-    ArrDaoPackages
-} from 'components/index.jsx';
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {WebApi} from 'actions/index.jsx';

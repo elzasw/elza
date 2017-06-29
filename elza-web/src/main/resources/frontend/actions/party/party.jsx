@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import {WebApi} from 'actions/index.jsx';
 import * as types from 'actions/constants/ActionTypes'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {i18n, AddPartyForm} from 'components/index.jsx';
+import {i18n} from 'components/shared';
 import {getPartyTypeById} from 'actions/refTables/partyTypes.jsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
@@ -14,6 +14,7 @@ import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from 'constants.jsx'
 
 import {SimpleListActions} from 'shared/list'
 import {DetailActions} from 'shared/detail'
+import AddPartyForm from "../../components/party/AddPartyForm";
 
 export const AREA_PARTY_LIST = 'partyList';
 export const AREA_PARTY_DETAIL = 'partyDetail';

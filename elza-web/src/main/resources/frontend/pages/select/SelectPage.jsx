@@ -4,11 +4,7 @@ import {connect} from 'react-redux'
 
 import classNames from 'classnames';
 
-import {AbstractReactComponent, i18n, Loading} from 'components/index.jsx';
-import {Icon, RibbonGroup,Ribbon, ModalDialog, NodeTabs, ArrPanel,
-    SearchWithGoto, RegistryPanel, AddRegistryForm, ImportForm,
-    ListBox, Autocomplete, ExtImportForm, RegistryDetail, RibbonMenu,
-    RibbonSplit} from 'components';
+import {AbstractReactComponent, i18n, Loading, RibbonGroup, Icon} from 'components/shared';
 import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 import {Button, Dropdown, MenuItem} from 'react-bootstrap';
 import {RegistryPage, PartyPage} from 'pages/index.jsx';

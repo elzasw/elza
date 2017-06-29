@@ -2,18 +2,19 @@
  * Správa obalů.
  */
 
-require('./FundPackets.less')
+import './FundPackets.less'
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, Icon, i18n, FilterableListBox, Loading, AddPacketForm, FixedDropDownButton, FormInput} from 'components/index.jsx';
+import {AddPacketForm} from 'components';
+import {AbstractReactComponent, Icon, i18n, FilterableListBox, Loading, FixedDropDownButton, FormInput} from 'components/shared';
 import {DropdownButton, MenuItem} from 'react-bootstrap'
 import {fetchFundPacketsIfNeeded, fundPacketsFilterByText, fundPacketsChangeSelection, fundPacketsFilterByState, fundPacketsChangeState, fundPacketsCreate, fundPacketsChangeNumbers, fundPacketsDelete} from 'actions/arr/fundPackets.jsx'
 import {getMapFromList, getSetFromIdsList} from 'stores/app/utils.jsx'
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import PacketFormatter from 'components/arr/packets/PacketFormatter.jsx';
 
-var FundPackets = class FundPackets extends AbstractReactComponent {
+class FundPackets extends AbstractReactComponent {
     constructor(props) {
         super(props);
 

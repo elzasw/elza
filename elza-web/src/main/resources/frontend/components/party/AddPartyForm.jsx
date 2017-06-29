@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
-import {Autocomplete, AbstractReactComponent, i18n, Scope, Icon, FormInput, Loading, DatationField} from 'components/index.jsx';
+import {Autocomplete, AbstractReactComponent, i18n, Icon, FormInput, Loading} from 'components/shared';
 import {Modal, Button, HelpBlock, FormGroup, Form, Row, Col} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes.jsx'
@@ -14,7 +14,10 @@ import {submitForm} from 'components/form/FormUtils.jsx'
 import {getTreeItemById} from "./../../components/registry/registryUtils";
 import {PARTY_TYPE_CODES} from 'actions/party/party.jsx'
 
+import DatationField from './DatationField';
+
 import './RelationForm.less'
+import Scope from "../shared/scope/Scope";
 
 /**
  * Formulář nové osoby

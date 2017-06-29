@@ -1,26 +1,32 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, Resizer} from 'components/index.jsx';
+import Pane from './Pane'
+import AbstractReactComponent from "../../AbstractReactComponent";
 
-require ('./Splitter.less')
-var Pane = require ('./Pane')
+import './Splitter.less'
+import Resizer from "../resizer/Resizer";
 
-var Splitter = class Splitter extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
+class Splitter extends AbstractReactComponent {
 
-        this.bindMethods('updateChildPanes', 'onMouseDownLeft', 'onMouseDownRight', 'onMouseUp', 'onMouseMove', 'unFocus');
+    state = {
+        active: false,
+        resized: false,
+        leftDragged: false,
+        rightDragged: false,
+        leftSize: this.props.leftSize || 200,
+        rightSize: this.props.rightSize || 200
+    };
 
-        this.state = {
-            active: false,
-            resized: false,
-            leftDragged: false,
-            rightDragged: false,
-            leftSize: this.props.leftSize || 200,
-            rightSize: this.props.rightSize || 200
-        }
-    }
+    static PropTypes = {
+        left: React.PropTypes.object,
+        leftSize: React.PropTypes.number,
+        center: React.PropTypes.object.isRequired,
+        right: React.PropTypes.object,
+        rightSize: React.PropTypes.number,
+        onDragFinished: React.PropTypes.func,
+        onChange: React.PropTypes.func,
+    };
 
     componentDidMount() {
         document.addEventListener('mouseup', this.onMouseUp);
@@ -29,7 +35,7 @@ var Splitter = class Splitter extends AbstractReactComponent {
         this.updateChildPanes();
     }
 
-    updateChildPanes() {
+    updateChildPanes = () => {
         const leftRef = this.refs.paneLeft;
         if (leftRef && this.state.leftSize) {
             leftRef.setState({
@@ -42,7 +48,7 @@ var Splitter = class Splitter extends AbstractReactComponent {
                 size: this.state.rightSize
             });
         }
-    }
+    };
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.leftSize || nextProps.rightSize) {
@@ -58,15 +64,15 @@ var Splitter = class Splitter extends AbstractReactComponent {
         document.removeEventListener('mousemove', this.onMouseMove);
     }
 
-    unFocus() {
+    unFocus = () => {
         if (document.selection) {
             document.selection.empty();
         } else {
             window.getSelection().removeAllRanges()
         }
-    }
+    };
 
-    onMouseDownLeft(event) {
+    onMouseDownLeft = (event) => {
         this.unFocus();
         let position = event.clientX;
         this.setState({
@@ -74,8 +80,9 @@ var Splitter = class Splitter extends AbstractReactComponent {
             position: position,
             leftDragged: true,
         });
-    }
-    onMouseDownRight(event) {
+    };
+
+    onMouseDownRight = (event) => {
         this.unFocus();
         let position = event.clientX;
         this.setState({
@@ -83,9 +90,9 @@ var Splitter = class Splitter extends AbstractReactComponent {
             position: position,
             rightDragged: true,
         });
-    }
+    };
 
-    onMouseMove(event) {
+    onMouseMove = (event) => {
         if (this.state.active) {
             this.unFocus();
             const ref = this.state.leftDragged ? this.refs.paneLeft : this.state.rightDragged ? this.refs.paneRight : null;
@@ -132,9 +139,9 @@ var Splitter = class Splitter extends AbstractReactComponent {
                 }
             }
         }
-    }
+    };
 
-    onMouseUp() {
+    onMouseUp = () => {
         if (this.state.active) {
             if (this.props.onDragFinished) {
                 this.props.onDragFinished();
@@ -145,7 +152,7 @@ var Splitter = class Splitter extends AbstractReactComponent {
                 rightDragged: false
             });
         }
-    }
+    };
 
     render() {
         const {props: {left, right, center}} = this;
@@ -170,17 +177,7 @@ var Splitter = class Splitter extends AbstractReactComponent {
             </div>
         )
     }
-};
-
-Splitter.propTypes = {
-    left: React.PropTypes.object,
-    leftSize: React.PropTypes.number,
-    center: React.PropTypes.object.isRequired,
-    right: React.PropTypes.object,
-    rightSize: React.PropTypes.number,
-    onDragFinished: React.PropTypes.func,
-    onChange: React.PropTypes.func,
-};
+}
 
 
 export default connect(null, null, null, {withRef: true})(Splitter);

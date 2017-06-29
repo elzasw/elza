@@ -8,9 +8,8 @@ import {
     i18n,
     FormInput,
     Icon,
-    NoFocusButton,
-    RegistryCoordinate
-} from 'components/index.jsx';
+    NoFocusButton
+} from 'components/shared';
 import {
     registryCoordinatesUpload,
     registryCoordinatesAddRow,
@@ -23,6 +22,7 @@ import {
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
 import {downloadFile} from "../../actions/global/download";
+import RegistryCoordinate from "./RegistryCoordinate";
 
 
 

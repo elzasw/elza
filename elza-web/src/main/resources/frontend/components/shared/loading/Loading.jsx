@@ -1,19 +1,11 @@
 import React from 'react';
-import {i18n} from 'components/index.jsx';
 
-require ('./Loading.less');
+import './Loading.less';
+import i18n from "../../i18n";
 
-var Loading = class Loading extends React.Component {
-
-    constructor(props) {
-        super(props);
-    }
-
+class Loading extends React.Component {
     render() {
-        var text = this.props.value ? this.props.value : i18n('global.data.loading');
-        return (
-            <div className="loading">{text}</div>
-        )
+        return <div className="loading">{this.props.value ? this.props.value : i18n('global.data.loading')}</div>
     }
 }
 

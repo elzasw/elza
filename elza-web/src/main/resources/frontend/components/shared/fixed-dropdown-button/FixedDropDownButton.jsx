@@ -1,11 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux';
-import {AbstractReactComponent} from 'components/index.jsx';
 import omit from 'lodash-compat/object/omit';
 import pick from 'lodash-compat/object/pick';
 import {Dropdown, Button, DropdownMenu} from 'react-bootstrap';
 import './FixedDropDownButton.less';
+import AbstractReactComponent from "../../AbstractReactComponent";
 
 class FixedDropDownButton extends AbstractReactComponent {
     state = {marginSide: 0, marginTop: 0};

@@ -3,7 +3,7 @@
  */
 
 import {WebApi, UrlFactory} from 'actions/index.jsx';
-import {Toastr, i18n} from 'components/index.jsx';
+import {Toastr, i18n} from 'components/shared';
 import * as types from 'actions/constants/ActionTypes.js';
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'

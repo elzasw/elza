@@ -4,10 +4,8 @@ import ReactDOM from 'react-dom';
 import classNames from 'classnames';
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Loading} from 'components/index.jsx';
-import {Icon, RibbonGroup,Ribbon, ModalDialog, NodeTabs, ArrPanel,
-        SearchWithGoto, AddRegistryForm, ImportForm,
-        ListBox, Autocomplete, ExtImportForm, RegistryDetail} from 'components';
+import {AbstractReactComponent, RibbonGroup, ModalDialog, i18n, Loading, NodeTabs, Icon, Utils} from 'components/shared';
+import {Ribbon, ArrPanel, SearchWithGoto, AddRegistryForm, ImportForm, ExtImportForm, RegistryDetail, RegistryList} from 'components';
 import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 import {Button} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
@@ -16,7 +14,6 @@ import {registryMoveStart, registryMove, registryMoveCancel, registryDelete, reg
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
 import {Shortcuts} from 'react-shortcuts';
-import {Utils, RegistryList} from 'components/index.jsx';
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';

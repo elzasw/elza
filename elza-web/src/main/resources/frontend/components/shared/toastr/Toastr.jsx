@@ -1,18 +1,20 @@
 import React from 'react'
 import {createElement} from "react";
-import {Icon, i18n, AbstractReactComponent} from 'components/index.jsx';
 import {Alert} from 'react-bootstrap';
 import {connect} from 'react-redux'
 import {addToastr, removeToastr} from './ToastrActions.jsx'
 
 import './Toastr.less';
+import AbstractReactComponent from "../../AbstractReactComponent";
+import Icon from "../icon/Icon";
+import i18n from "../../i18n";
 
 /**
  *  Toastr.
  *  Pro data využívá ToastrStore.
  *  Pro přidání dat slouží ToastrActions.
  *
- *  Pro inicializaci staci naimportovat: import {Toastr} from 'components/index.jsx';
+ *  Pro inicializaci staci naimportovat: import {Toastr} from 'components/shared';
  *
  *  Volání je pro typ hlášky:
  *  Danger:

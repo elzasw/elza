@@ -2,7 +2,7 @@ import {WebApi} from 'actions/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
 import {barrier} from 'components/Utils.jsx';
 import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
-import {i18n} from 'components/index.jsx';
+import {i18n} from 'components/shared';
 import {addToastrInfo} from 'components/shared/toastr/ToastrActions.jsx'
 
 export function isVersionValidation(action) {

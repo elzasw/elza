@@ -9,7 +9,8 @@ import React from 'react';
 import {addNode} from 'actions/arr/node.jsx';
 import {fundSelectSubNode} from 'actions/arr/nodes.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {i18n, AddNodeForm} from 'components/index.jsx';
+import {i18n} from 'components/shared';
+import {AddNodeForm} from 'components/index.jsx';
 
 /**
  * Vyvolá dialog pro přidání uzlu. Toto vyvolání dialogu slouží pro volání POUZE z pořádání! Po úspěšném volání je vybrán v pořádání přidaný node.

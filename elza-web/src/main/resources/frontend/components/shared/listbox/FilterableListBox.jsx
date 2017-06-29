@@ -6,7 +6,10 @@
 require ('./FilterableListBox.less')
 
 import React from "react";
-import {Search, ListBox, AbstractReactComponent, i18n} from "components";
+import Search from "../search/Search";
+import ListBox from "./ListBox";
+import i18n from "../../i18n";
+import AbstractReactComponent from "../../AbstractReactComponent";
 import {Checkbox, Button} from "react-bootstrap";
 import {getSetFromIdsList} from "stores/app/utils.jsx";
 var __FilterableListBox_timer = null

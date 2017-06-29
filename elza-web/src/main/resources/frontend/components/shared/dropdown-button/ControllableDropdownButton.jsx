@@ -1,18 +1,23 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {DropdownButton} from 'react-bootstrap';
-import {AbstractReactComponent} from 'components/index.jsx';
+import AbstractReactComponent from "../../AbstractReactComponent";
 
-const ControllableDropdownButton = class ControllableDropdownButton extends AbstractReactComponent {
+class ControllableDropdownButton extends AbstractReactComponent {
     constructor(props) {
         super(props);
-
-        this.bindMethods('getOpenValue', 'handleToggle', 'setOpen', 'focusFirstMenuItem')
 
         this.state = {
             open: this.getOpenValue(props, {})
         }
     }
+
+    static PropsTypes = {
+        id: React.PropTypes.string.isRequired,
+        children: React.PropTypes.array.isRequired,
+        onToggle: React.PropTypes.func,
+        open: React.PropTypes.bool
+    };
 
     componentWillReceiveProps(nextProps) {
         this.setState({
@@ -20,10 +25,7 @@ const ControllableDropdownButton = class ControllableDropdownButton extends Abst
         })
     }
 
-    componentDidMount(){
-    }
-
-    getOpenValue(props, state) {
+    getOpenValue = (props, state) => {
         let open
         if (typeof props.open !== 'undefined') {
             open = props.open
@@ -34,37 +36,37 @@ const ControllableDropdownButton = class ControllableDropdownButton extends Abst
         }
 
         return open
-    }
+    };
 
-    focusFirstMenuItem() {
+    focusFirstMenuItem = () => {
         // TODO - není dobré řešení, ale v tuto chvíli mě jiné nenapadá
-        const child = this.props.children[0]
+        const child = this.props.children[0];
         let ref;
         if (typeof child.ref !== 'undefined' && child.ref !== null) {
             ref = child.ref
         } else {
             ref = 'firstMenuItem'
         }
-        const el = ReactDOM.findDOMNode(this.refs[ref])
+        const el = ReactDOM.findDOMNode(this.refs[ref]);
         el.children[0].focus()
-    }
+    };
 
-    handleToggle(isOpen) {
+    handleToggle = (isOpen) => {
         this.setState({
             open: isOpen
-        }, ()=>{isOpen && this.focusFirstMenuItem()})
+        }, ()=>{isOpen && this.focusFirstMenuItem()});
         this.props.onToggle && this.props.onToggle(isOpen)
-    }
+    };
 
-    setOpen(open) {
+    setOpen = (open) => {
         this.handleToggle(open)
-    }
+    };
 
     render() {
-        const {open, onToggle, id, ...other} = this.props
+        const {open, onToggle, id, ...other} = this.props;
 
         const children = React.Children.map(this.props.children, (child, index) => {
-            const opts = {}
+            const opts = {};
             if (index === 0) {
                 if (typeof child.ref !== 'undefined' && child.ref !== null) {
                     opts.ref = child.ref
@@ -73,7 +75,7 @@ const ControllableDropdownButton = class ControllableDropdownButton extends Abst
                 }
             }
             return React.cloneElement(child, opts);
-        })
+        });
 
         return (
             <DropdownButton
@@ -89,12 +91,5 @@ const ControllableDropdownButton = class ControllableDropdownButton extends Abst
     }
 }
 
-ControllableDropdownButton.propsTypes = {
-    id: React.PropTypes.string.isRequired,
-    children: React.PropTypes.array.isRequired,
-    onToggle: React.PropTypes.func,
-    open: React.PropTypes.bool
-}
 
-
-export default ControllableDropdownButton
+export default ControllableDropdownButton;

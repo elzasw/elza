@@ -1,6 +1,6 @@
 import React from 'react';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, Icon, i18n, FileListBox, Loading} from 'components/index.jsx';
+import {AbstractReactComponent, Icon, i18n, FileListBox, Loading} from 'components/shared';
 import {Button} from 'react-bootstrap'
 import {fetchFundOutputFilesIfNeeded, fundOutputFilesFilterByText} from 'actions/arr/fundOutputFiles.jsx'
 import {UrlFactory} from 'actions/index.jsx';

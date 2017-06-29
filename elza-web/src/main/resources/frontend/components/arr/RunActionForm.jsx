@@ -4,7 +4,7 @@
 
 import React from 'react';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
 import {Modal, Button, Form} from 'react-bootstrap';
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 import {fundActionFetchConfigIfNeeded} from 'actions/arr/fundAction.jsx'

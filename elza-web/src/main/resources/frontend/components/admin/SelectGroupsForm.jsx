@@ -5,7 +5,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
-import {Autocomplete, AbstractReactComponent, i18n, Icon, FormInput} from 'components/index.jsx';
+import {Autocomplete, AbstractReactComponent, i18n, Icon, FormInput} from 'components/shared';
 import {Modal, Button} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import GroupField from "./GroupField.jsx"

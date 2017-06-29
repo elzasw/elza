@@ -1,8 +1,11 @@
+/**
+ * Obal pro PartyField
+ */
 import React from 'react';
 import ReactDOM from 'react-dom';
 
 import {WebApi} from 'actions/index.jsx';
-import {i18n, AbstractReactComponent, PartyField} from 'components/index.jsx';
+import {i18n, AbstractReactComponent} from 'components/shared';
 import {connect} from 'react-redux'
 import {decorateAutocompleteValue} from './DescItemUtils.jsx'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
@@ -13,14 +16,12 @@ import {partyDetailFetchIfNeeded, partyListFilter, partyDetailClear, AREA_PARTY_
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import classNames from 'classnames'
 import {MODAL_DIALOG_VARIANT} from 'constants.jsx'
-import {PartySelectPage} from 'pages'
 
 
 import './DescItemPartyRef.less'
+import PartyField from "../../party/PartyField";
+import PartySelectPage from "../../../pages/select/PartySelectPage";
 
-/**
- * Obal pro PartyField
- */
 class DescItemPartyRef extends AbstractReactComponent {
 
     static PropTypes = {

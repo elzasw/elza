@@ -11,7 +11,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {addNodeFormArr} from 'actions/arr/addNodeForm.jsx';
 import * as perms from 'actions/user/Permission.jsx';
-import {AbstractReactComponent, i18n} from 'components/index.jsx';
+import {AbstractReactComponent, i18n} from 'components/shared';
 import {getOneSettings, isFundRootId} from 'components/arr/ArrUtils.jsx';
 
 require ('./AddNodeCross.less');

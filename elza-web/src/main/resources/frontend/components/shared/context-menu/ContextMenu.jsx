@@ -1,17 +1,11 @@
-require ('./ContextMenu.less')
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent} from 'components/index.jsx';
 import {contextMenuHide} from 'actions/global/contextMenu.jsx'
+import AbstractReactComponent from "../../AbstractReactComponent";
+import './ContextMenu.less'
 
-var ContextMenu = class extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
-
-        this.bindMethods('hideMenu', 'handleClick');
-    }
+class ContextMenu extends AbstractReactComponent {
 
     componentDidMount() {
         document.addEventListener("mousedown", this.handleClick);
@@ -27,14 +21,14 @@ var ContextMenu = class extends AbstractReactComponent {
         document.removeEventListener("scroll", this.hideMenu);
     }
 
-    hideMenu() {
+    hideMenu = () => {
         this.dispatch(contextMenuHide());
-    }
+    };
 
-    handleClick(e) {
-        var source = e.target;
-        var found = false;
-        var contextMenuDomNode = this.refs.contextMenu
+    handleClick = (e) => {
+        let source = e.target;
+        let found = false;
+        let contextMenuDomNode = this.refs.contextMenu
 
         while (source) {
             // console.log(source, contextMenuDomNode, source === contextMenuDomNode, source == contextMenuDomNode)
@@ -51,14 +45,14 @@ var ContextMenu = class extends AbstractReactComponent {
             this.hideMenu();
         }
         // console.log("NOT FOUND...");
-    }
+    };
 
     render() {
         if (!this.props.visible) {
             return <div ref="contextMenu" className='context-menu'></div>;
         }
 
-        var style = {};
+        const style = {};
         style.top = this.props.position.y;
         style.left = this.props.position.x;
 

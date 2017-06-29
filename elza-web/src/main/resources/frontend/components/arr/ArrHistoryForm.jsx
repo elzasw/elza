@@ -1,9 +1,10 @@
 import React from 'react';
 import {connect} from 'react-redux'
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, FundNodesSelectForm, i18n, FormInput} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
+import {FundNodesSelectForm} from 'components';
 import {Modal, Button, FormGroup, Form} from 'react-bootstrap';
-import {LazyListBox} from 'components/index.jsx';
+import {LazyListBox} from 'components/shared';
 import {WebApi} from 'actions/index.jsx';
 import {getScrollbarWidth, timeToString, dateToString} from 'components/Utils.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'

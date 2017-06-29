@@ -4,7 +4,8 @@
 
 import React from "react";
 import {connect} from "react-redux";
-import {AbstractReactComponent, i18n, Tabs, FundTreeLazy} from "components/index.jsx";
+import {AbstractReactComponent, i18n, Tabs} from 'components/shared';
+import {FundTreeLazy} from 'components'
 import * as types from "actions/constants/ActionTypes.js";
 import {AppActions} from "stores/index.jsx";
 import {MenuItem} from "react-bootstrap";
@@ -24,7 +25,7 @@ import {
 
 import {contextMenuShow, contextMenuHide} from "actions/global/contextMenu.jsx";
 
-var FundTreeDaos = class FundTreeDaos extends AbstractReactComponent {
+class FundTreeDaos extends AbstractReactComponent {
     constructor(props) {
         super(props);
 

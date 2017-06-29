@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {VirtualList, NoFocusButton, AbstractReactComponent, i18n, Loading, Icon, SearchWithGoto} from 'components/index.jsx';
+import {VirtualList, NoFocusButton, AbstractReactComponent, i18n, Loading, Icon, SearchWithGoto} from 'components/shared';
 import {Nav, Input, NavItem, Button, DropdownButton} from 'react-bootstrap';
 const classNames = require('classnames');
 import {propsEquals} from 'components/Utils.jsx'

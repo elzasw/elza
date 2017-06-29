@@ -1,6 +1,6 @@
 import React from "react";
 import {WebApi} from "actions/index.jsx";
-import {AbstractReactComponent, Autocomplete} from "components/index.jsx";
+import {AbstractReactComponent, Autocomplete} from 'components/shared';
 import {connect} from "react-redux";
 
 // import "./FundField.less"

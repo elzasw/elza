@@ -1,10 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent} from 'components/index.jsx';
 import {Button, Tooltip, Overlay} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
+import AbstractReactComponent from "../../AbstractReactComponent";
 
-require("./TooltipTrigger.less")
+import "./TooltipTrigger.less"
 
 const TOOLTIP_WINDOW_PADDING = 40;
 

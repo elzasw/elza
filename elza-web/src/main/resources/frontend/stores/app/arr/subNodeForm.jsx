@@ -1,8 +1,7 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import {i18n} from 'components/index.jsx';
+import {i18n} from 'components/shared';
 import {indexById} from 'stores/app/utils.jsx'
 import {createDescItemFromDb, getItemType, updateFormData, createDescItem, consolidateDescItems} from './subNodeFormUtils.jsx'
-var subNodeFormUtils = require('./subNodeFormUtils.jsx')
 import {validateInt, validateDouble, validateCoordinatePoint} from 'components/validate.jsx'
 import {getMapFromList} from 'stores/app/utils.jsx'
 import {valuesEquals} from 'components/Utils.jsx'

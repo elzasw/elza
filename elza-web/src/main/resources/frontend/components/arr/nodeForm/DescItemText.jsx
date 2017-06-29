@@ -5,7 +5,8 @@
 require('./DescItemText.less')
 
 import React from 'react';
-import {AbstractReactComponent, i18n} from 'components/index.jsx';
+import ReactDOM from 'react-dom';
+import {AbstractReactComponent, i18n} from 'components/shared';
 import {connect} from 'react-redux'
 import {decorateValue} from './DescItemUtils.jsx'
 import DescItemLabel from './DescItemLabel.jsx'
@@ -52,7 +53,6 @@ class DescItemText extends AbstractReactComponent {
         }
 
 
-        console.log(textareaProps);
         return (
             <div className='desc-item-value'>
                 <ItemTooltipWrapper tooltipTitle="dataType.text.format">

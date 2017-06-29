@@ -9,14 +9,16 @@ import {
     PartyDetailRelations,
     PartyDetailRelationClass,
     PartyNameForm,
-    PartyField,
+    PartyField
+} from 'components'
+import {
     AbstractReactComponent,
     Search,
     i18n,
     FormInput,
     Icon,
     CollapsablePanel
-} from 'components/index.jsx';
+} from 'components/shared';
 import {Form, Button} from 'react-bootstrap';
 import {AppActions} from 'stores/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
@@ -25,7 +27,7 @@ import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {partyUpdate} from 'actions/party/party.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 import {partyAdd, findPartyFetchIfNeeded, partyDetailFetchIfNeeded, PARTY_TYPE_CODES} from 'actions/party/party.jsx'
-import {Utils} from 'components/index.jsx';
+import {Utils} from 'components/shared';
 import {objectById, indexById} from 'stores/app/utils.jsx';
 import {setInputFocus, dateTimeToString} from 'components/Utils.jsx'
 import {Shortcuts} from 'react-shortcuts';
@@ -35,7 +37,7 @@ import * as perms from 'actions/user/Permission.jsx';
 import {initForm} from "actions/form/inlineForm.jsx"
 import {getMapFromList} from 'stores/app/utils.jsx'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
-import {PartyListItem} from 'components/index.jsx';
+import {PartyListItem} from 'components';
 
 import './PartyDetail.less';
 

@@ -6,7 +6,7 @@ require('./FundFilterSettings.less')
 
 import React from 'react';
 import {reduxForm} from 'redux-form';
-import {FilterableListBox, AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
+import {FilterableListBox, AbstractReactComponent, i18n, FormInput} from 'components/shared';
 import DescItemCoordinates from './nodeForm/DescItemCoordinates.jsx'
 import {Modal, Button} from 'react-bootstrap';
 import {WebApi} from 'actions/index.jsx';

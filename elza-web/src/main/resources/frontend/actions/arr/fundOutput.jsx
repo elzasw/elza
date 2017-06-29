@@ -4,7 +4,7 @@
 
 import * as types from 'actions/constants/ActionTypes.js';
 import {WebApi} from 'actions/index.jsx'
-import {i18n} from 'components/index.jsx';
+import {i18n} from 'components/shared';
 import {indexById} from 'stores/app/utils.jsx';
 import {isFundOutputFilesAction} from './fundOutputFiles.jsx';
 import {isFundOutputFunctionsAction} from './fundOutputFunctions.jsx';

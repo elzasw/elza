@@ -2,7 +2,7 @@ require('./SubNodeRegister.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Icon, i18n, AbstractReactComponent, Loading, NoFocusButton} from 'components/index.jsx';
+import {Icon, i18n, AbstractReactComponent, Loading, NoFocusButton} from 'components/shared';
 import {connect} from 'react-redux'
 
 import {

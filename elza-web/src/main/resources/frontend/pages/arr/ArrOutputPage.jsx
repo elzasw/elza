@@ -2,34 +2,37 @@
  * Stránka výstupů.
  */
 
-require('./ArrOutputPage.less');
+import classNames from "classnames";
+import './ArrOutputPage.less';
 
 import React from 'react';
-import Utils from "components/Utils.jsx";
+import * as Utils from "components/Utils.jsx";
 import ReactDOM from 'react-dom';
 import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {
-    ListBox,
     Ribbon,
-    Loading,
-    RibbonGroup,
     FundNodesSelectForm,
-    Icon,
     FundNodesList,
-    i18n,
     ArrOutputDetail,
     AddOutputForm,
-    AbstractReactComponent,
-    Tabs,
     FundOutputFiles,
     FundOutputFunctions,
     RunActionForm,
     FormInput,
     ArrFundPanel
 } from 'components/index.jsx';
+import {
+    ListBox,
+    Loading,
+    RibbonGroup,
+    Icon,
+    i18n,
+    Tabs,
+    AbstractReactComponent
+} from 'components/shared';
 import {Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
@@ -62,7 +65,6 @@ import {outputTypesFetchIfNeeded} from "actions/refTables/outputTypes.jsx";
 import {getDescItemsAddTree, getOneSettings} from 'components/arr/ArrUtils.jsx';
 import ArrParentPage from "./ArrParentPage.jsx";
 
-var classNames = require('classnames');
 import {Shortcuts} from 'react-shortcuts';
 
 let _selectedTab = 0

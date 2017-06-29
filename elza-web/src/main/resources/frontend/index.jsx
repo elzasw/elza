@@ -8,7 +8,8 @@
 import './elza-styles.less';
 
 import React from 'react';
-import { Utils } from 'components/index.jsx';
+
+import {Utils} from 'components/shared';
 import {WebApi, WebApiCls} from 'actions/index.jsx';
 import {loginFail} from 'actions/global/login.jsx';
 import {userDetailChange} from 'actions/user/userDetail.jsx'
@@ -22,10 +23,10 @@ bootstrapUtils.addStyle(Button, 'action');
 // CustomEvent polyfill pro IE 9+
 if ( typeof window.CustomEvent !== "function" ){
     function CustomEvent ( event, params ) {
-    params = params || { bubbles: false, cancelable: false, detail: undefined };
-    var evt = document.createEvent( 'CustomEvent' );
-    evt.initCustomEvent( event, params.bubbles, params.cancelable, params.detail );
-    return evt;
+        params = params || { bubbles: false, cancelable: false, detail: undefined };
+        var evt = document.createEvent( 'CustomEvent' );
+        evt.initCustomEvent( event, params.bubbles, params.cancelable, params.detail );
+        return evt;
     }
 
     CustomEvent.prototype = window.Event.prototype;
@@ -44,9 +45,6 @@ es6promise.polyfill();
 // Nastavení neomezeného počtu listenerů pro event emitter - v ELZA je emitter použit pro klávesové zkratky, kde je více listenerů
 const EventEmitter = require('events').EventEmitter;
 EventEmitter.defaultMaxListeners = 0
-
-// Web socket
-const websocket = require('./websocket');
 
 function xx() {
     setTimeout(fc, 1000)
@@ -79,12 +77,17 @@ if (!String.prototype.startsWith) {
 //setTimeout(fc, 1500)
 
 // Načtení dat z local storage = vrácení aplikace do předchozího stavu
-import {AppStore} from 'stores/index.jsx';
+import {store} from 'stores/index.jsx';
+import AjaxUtils from 'components/AjaxUtils.jsx';
+AjaxUtils.setStore(store);
+// Web socket - až po initu store
+import websocket from "./websocketActions.jsx";
 import {storeRestoreFromStorage} from 'actions/store/store.jsx';
 import {storeSave} from 'actions/store/storeEx.jsx';
-import {i18n, Exception} from "components/index";
+import {i18n, Exception} from "components/shared";
+
 import {addToastr} from "components/shared/toastr/ToastrActions.jsx"
-AppStore.store.dispatch(storeRestoreFromStorage());
+store.dispatch(storeRestoreFromStorage());
 
 window.onerror = function(message, url, line, column, error) {
     let devMessage = error;
@@ -94,7 +97,7 @@ window.onerror = function(message, url, line, column, error) {
         }
     } catch (e) {}
 
-    AppStore.store.dispatch(addToastr(i18n('exception.client'), [<Exception title={i18n('exception.client')} data={{
+    store.dispatch(addToastr(i18n('exception.client'), [<Exception title={i18n('exception.client')} data={{
         message,
         devMessage: devMessage,
         properties: {
@@ -117,7 +120,7 @@ import {setFocus} from 'actions/global/focus.jsx';
 {
     const testBodyfocus = () => {
         if (document.activeElement === document.body) { // focus je na body, nastavíme ho podle aktuálně přepnuté oblasti
-            AppStore.store.dispatch(setFocus(null, 1));
+            store.dispatch(setFocus(null, 1));
         }
 
         setTimeout(testBodyfocus, 150)
@@ -127,14 +130,14 @@ import {setFocus} from 'actions/global/focus.jsx';
 /*
 import {setFocus} from 'actions/global/focus.jsx';
 document.body.addEventListener("focus", () => {
-    //AppStore.store.dispatch(setFocus(null, null, 'ribbon'));
+    //store.dispatch(setFocus(null, null, 'ribbon'));
 })
 */
 
 // Ukládání stavu aplikace
 function scheduleStoreSave() {
     setTimeout(() => {
-        AppStore.store.dispatch(storeSave());
+        store.dispatch(storeSave());
         scheduleStoreSave();
     }, 1000)
 }
@@ -145,7 +148,7 @@ let calbacks = [];
 
 const login = (callback) => {
     calbacks.push(callback);
-    AppStore.store.dispatch(loginFail(() => {
+    store.dispatch(loginFail(() => {
         calbacks.forEach(callback => callback());
         calbacks = [];
     }));
@@ -183,7 +186,7 @@ for(const i in  methods) {
 // Načtení oprávnění a jeho uložení do store po přihlášení
 WebApi.getUserDetail()
     .then(userDetail => {
-        AppStore.store.dispatch(userDetailChange(userDetail))
+        store.dispatch(userDetailChange(userDetail))
     })
 
 // Aplikace
@@ -191,7 +194,7 @@ import {AppContainer} from 'react-hot-loader'
 import Redbox from 'redbox-react'
 import ReactDOM from 'react-dom'
 
-import Root from './router';
+
 
 
 class CustomRedbox extends React.Component {
@@ -211,12 +214,14 @@ const render = Component => {
 
     ReactDOM.render(
         <AppContainer errorReported={CustomRedbox}>
-            <Component store={AppStore.store} />
+            <Component store={store} />
         </AppContainer>,
         MOUNT_POINT
     )
 };
 
+
+import Root from './router';
 
 render(Root);
 

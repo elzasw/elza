@@ -2,17 +2,15 @@
  * Stránka archivní soubory.
  */
 
-require('./FundPage.less')
+import './FundPage.less';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Icon, i18n} from 'components/index.jsx';
-import {Splitter, Autocomplete, FundForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent,
-    ImportForm, ExportForm, SearchWithGoto, ListBox, FundDetail, FundDetailExt} from 'components';
-import {NodeTabs} from 'components/index.jsx';
+import {Splitter, Autocomplete, ListBox, RibbonGroup, ToggleContent, AbstractReactComponent, SearchWithGoto} from 'components/shared';
+import {NodeTabs, FundForm, FundDetail, Ribbon, FindindAidFileTree, ImportForm, ExportForm, FundDetailExt} from 'components'
 import {ButtonGroup, Button, Panel} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'

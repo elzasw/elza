@@ -2,14 +2,15 @@
  * Formulář editace PP - jako buňky v tabulce hromadných úprav - FundDataGrid.
  */
 
-require ('./FundDataGridCellForm.less')
+import './FundDataGridCellForm.less'
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, NodeSubNodeForm} from 'components/index.jsx';
+import {AbstractReactComponent, i18n} from 'components/shared';
+import {NodeSubNodeForm} from 'components'
 import {Modal, Button, Input} from 'react-bootstrap';
 import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {indexById} from 'stores/app/utils.jsx'
@@ -19,7 +20,7 @@ import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {setInputFocus} from 'components/Utils.jsx'
 
-var FundDataGridCellForm = class FundDataGridCellForm extends AbstractReactComponent {
+class FundDataGridCellForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
 

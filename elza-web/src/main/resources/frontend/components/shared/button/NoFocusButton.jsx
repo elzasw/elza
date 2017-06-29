@@ -1,5 +1,5 @@
 import React from 'react';
-import {AbstractReactComponent} from 'components/index.jsx';
+import AbstractReactComponent from "../../AbstractReactComponent";
 
 class NoFocusButton extends AbstractReactComponent {
     render() {

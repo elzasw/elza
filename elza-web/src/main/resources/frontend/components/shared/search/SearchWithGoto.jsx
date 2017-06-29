@@ -1,12 +1,16 @@
-import React from 'react';
-import {Search, i18n, Icon, NoFocusButton, AbstractReactComponent} from 'components/index.jsx';
-import ReactDOM from 'react-dom'
-
-import './SearchWithGoto.less';
-
 /**
  *  Komponenta hledání s možností "skákání" po výsledcích hledání. Je založená na komponentě Search s přidanými addons.
  */
+import React from 'react';
+import ReactDOM from 'react-dom'
+
+import './SearchWithGoto.less';
+import AbstractReactComponent from "../../AbstractReactComponent";
+import NoFocusButton from "../button/NoFocusButton";
+import Search from "./Search";
+import Icon from "../icon/Icon";
+import i18n from "../../i18n";
+
 class SearchWithGoto extends AbstractReactComponent {
     static PropTypes = {
         filterText: React.PropTypes.string,

@@ -1,17 +1,17 @@
 /**
  * Komponenta výběru sloupců pro grid - s možností změny jejich pořadí.
  */
-
-require ('./DataGridColumnsSettings.less')
-
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {connect} from 'react-redux'
-import {ListBox, AbstractReactComponent, i18n} from 'components/index.jsx';
 import {Modal, Button} from 'react-bootstrap';
 import {getMapFromList} from 'stores/app/utils.jsx'
 
-var DataGridColumnsSettings = class DataGridColumnsSettings extends AbstractReactComponent {
+import './DataGridColumnsSettings.less'
+import AbstractReactComponent from "../../AbstractReactComponent";
+import ListBox from "../listbox/ListBox";
+import i18n from "../../i18n";
+
+class DataGridColumnsSettings extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -156,7 +156,7 @@ var DataGridColumnsSettings = class DataGridColumnsSettings extends AbstractReac
         const {onSubmitForm, onClose} = this.props
         const {available, visible, leftSelected, rightSelected} = this.state
 
-        var cls = this.props.className ? 'datagrid-columns-settings-container ' + this.props.className : 'datagrid-columns-settings-container'
+        const cls = this.props.className ? 'datagrid-columns-settings-container ' + this.props.className : 'datagrid-columns-settings-container'
         return (
             <div>
                 <Modal.Body>
@@ -206,5 +206,5 @@ var DataGridColumnsSettings = class DataGridColumnsSettings extends AbstractReac
 
 // columns - musí být seřazeno podle definovaného pořadí!!!
 
-export default connect()(DataGridColumnsSettings);
+export default DataGridColumnsSettings;
 

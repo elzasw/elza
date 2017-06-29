@@ -2,12 +2,13 @@
  * Komponenta záložek otevřených JP.
  */
 
-require ('./NodeTabs.less');
+import './NodeTabs.less';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, NodePanel, Tabs, i18n} from 'components/index.jsx';
+import {AbstractReactComponent, Tabs, i18n} from 'components/shared';
+import {NodePanel} from 'components'
 import {AppActions} from 'stores/index.jsx';
 import {fundSelectNodeTab, fundCloseNodeTab} from 'actions/arr/nodes.jsx'
 import {nodesFetchIfNeeded} from 'actions/arr/node.jsx'
@@ -15,7 +16,7 @@ import {propsEquals} from 'components/Utils.jsx'
 import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils.jsx'
 import {setFocus, canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 
-var NodeTabs = class NodeTabs extends AbstractReactComponent {
+class NodeTabs extends AbstractReactComponent {
     constructor(props) {
         super(props);
 

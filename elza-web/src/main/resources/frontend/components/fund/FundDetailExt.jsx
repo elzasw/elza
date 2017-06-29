@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Button, Panel} from 'react-bootstrap'
-import {Icon, AbstractReactComponent, i18n, Loading, FundDetailTree} from 'components/index.jsx';
+import {Icon, AbstractReactComponent, i18n, Loading, FundDetailTree} from 'components/shared';
 import {indexById} from 'stores/app/utils.jsx'
 import {dateToString} from 'components/Utils.jsx'
 import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'

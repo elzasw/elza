@@ -4,7 +4,7 @@
 import React from 'react';
 import {connect} from 'react-redux';
 import {Table, Button} from 'react-bootstrap';
-import {AbstractReactComponent, i18n, Loading} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, Loading} from 'components/shared';
 import {getIndexStateFetchIfNeeded, reindex} from 'actions/admin/fulltext.jsx';
 import {Ribbon, AdminPackagesList, AdminPackagesUpload} from 'components/index.jsx';
 import {PageLayout} from 'pages/index.jsx';
@@ -13,10 +13,7 @@ import {getRequestType, DIGITIZATION, DAO, DAO_LINK, createDigitizationName, cre
 import {dateTimeToString} from "components/Utils.jsx";
 import {WebApi} from 'actions/index.jsx';
 
-const AdminRequestsQueuePage = class extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
-    }
+class AdminRequestsQueuePage extends AbstractReactComponent {
 
     buildRibbon() {
         return (
@@ -103,7 +100,7 @@ const AdminRequestsQueuePage = class extends AbstractReactComponent {
             />
         )
     }
-};
+}
 
 /**
  * Namapování state do properties.

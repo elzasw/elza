@@ -4,7 +4,9 @@ import {
     Icon,
     i18n,
     AbstractReactComponent,
-    NoFocusButton,
+    NoFocusButton
+} from 'components/shared'
+import {
     AddPacketForm,
     AddPartyForm,
     AddRegistryForm,
@@ -13,7 +15,7 @@ import {
     AddPartyDynastyForm,
     AddPartyOtherForm,
     SubNodeForm
-} from 'components/index.jsx';
+} from 'components';
 import {connect} from 'react-redux'
 import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
 

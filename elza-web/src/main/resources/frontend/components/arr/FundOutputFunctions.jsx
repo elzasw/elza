@@ -1,6 +1,6 @@
 import React from 'react';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, Icon, i18n, ListBox, Loading, FormInput} from 'components/index.jsx';
+import {AbstractReactComponent, Icon, i18n, ListBox, Loading, FormInput} from 'components/shared';
 import FundActionPage from 'pages/arr/FundActionPage.jsx'
 import {fetchFundOutputFunctionsIfNeeded, fundOutputFunctionsFilterByState, fundOutputActionRun, fundOutputActionInterrupt} from 'actions/arr/fundOutputFunctions.jsx'
 import {fundActionFetchConfigIfNeeded} from 'actions/arr/fundAction.jsx'
@@ -63,7 +63,7 @@ class FundOutputFunctions extends AbstractReactComponent {
         }
         return null;
     };
-    
+
     handleActionRun = (code) => {
         const {versionId} = this.props;
         this.dispatch(fundOutputActionRun(versionId, code));

@@ -2,7 +2,7 @@ require ('./DescItemLabel.less')
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent, Icon} from 'components/index.jsx';
+import {AbstractReactComponent, Icon} from 'components/shared';
 import {connect} from 'react-redux'
 import {decorateValue} from './DescItemUtils.jsx'
 import {Button} from 'react-bootstrap';

@@ -6,18 +6,20 @@
 **/
 
 import React from 'react';
-
-import {i18n, Icon, NoFocusButton, FormInput} from 'components/index.jsx';
 import ReactDOM from 'react-dom'
 
-require ('./Search.less');
+import './Search.less';
+import FormInput from "../form/FormInput";
+import NoFocusButton from "../button/NoFocusButton";
+import Icon from "../icon/Icon";
+import i18n from "../../i18n";
 
 /**
  *  Komponenta pro vyhledávání
  *  @param string className             třída komponenty
  *  $param string filterText            hledaný předvyplněný řezězec
 **/
-var Search = class Search extends React.Component {
+class Search extends React.Component {
     constructor(props) {
         super(props);                                                   // volaní nadřazeného konstruktoru
 

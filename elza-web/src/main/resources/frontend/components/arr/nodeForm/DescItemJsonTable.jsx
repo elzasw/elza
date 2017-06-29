@@ -4,7 +4,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent, NoFocusButton, DataGrid, Icon, i18n} from 'components/index.jsx';
+import {AbstractReactComponent, NoFocusButton, DataGrid, Icon, i18n} from 'components/shared';
 import {connect} from 'react-redux'
 import {Input} from 'react-bootstrap'
 import {decorateValue} from './DescItemUtils.jsx'

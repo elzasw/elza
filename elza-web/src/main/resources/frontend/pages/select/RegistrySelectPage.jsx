@@ -4,7 +4,7 @@ import {connect} from 'react-redux'
 
 import classNames from 'classnames';
 
-import {AbstractReactComponent, i18n, Loading, Icon, RibbonGroup, RibbonMenu, RibbonSplit} from 'components';
+import {AbstractReactComponent, i18n, Loading, Icon, RibbonGroup, RibbonMenu, RibbonSplit} from 'components/shared';
 import {Button} from 'react-bootstrap';
 import {RegistryPage, PartyPage} from 'pages/index.jsx';
 import {AREA_PARTY_DETAIL} from 'actions/party/party.jsx';

@@ -5,7 +5,7 @@
 require('./VersionValidationState.less');
 
 import React from 'react';
-import {AbstractReactComponent, i18n, Icon} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, Icon} from 'components/shared';
 
 var VersionValidationState = class VersionValidationState extends AbstractReactComponent {
     constructor(props) {

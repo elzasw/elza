@@ -1,18 +1,19 @@
+/**
+ * Komponenta pro text input - defoinována pro překrytí a kontrolu shouldComponentUpdate. Pokud se v autocomplete
+ * dovyplní a označí zbytek textu a input se překreslil, zmizel daný text. Tato komponenta tomuz zabrání - testuje změnu value.
+ */
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Button, Input, HelpBlock} from 'react-bootstrap';
-import {Icon, AbstractReactComponent} from 'components/index.jsx';
 import {getBootstrapInputComponentInfo} from 'components/form/FormUtils.jsx';
 import scrollIntoView from 'dom-scroll-into-view';
 import './Autocomplete.less';
 let _debugStates = false;
 import {propsEquals} from 'components/Utils.jsx'
 import {Shortcuts} from 'react-shortcuts';
+import AbstractReactComponent from "../../AbstractReactComponent";
+import Icon from "../icon/Icon";
 
-/**
- * Komponenta pro text input - defoinována pro překrytí a kontrolu shouldComponentUpdate. Pokud se v autocomplete
- * dovyplní a označí zbytek textu a input se překreslil, zmizel daný text. Tato komponenta tomuz zabrání - testuje změnu value.
- */
 class TextInput extends AbstractReactComponent {
 
     shouldComponentUpdate(nextProps, nextState) {

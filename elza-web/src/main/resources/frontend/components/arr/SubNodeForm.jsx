@@ -1,6 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Icon, i18n, AbstractReactComponent, NoFocusButton, AddPacketForm, AddPartyForm, AddRegistryForm,
+import {Icon, i18n, AbstractReactComponent, NoFocusButton } from 'components/shared';
+import {
+    AddPacketForm, AddPartyForm, AddRegistryForm,
     AddPartyEventForm, AddPartyGroupForm, AddPartyDynastyForm, AddPartyOtherForm,
     AddFileForm} from 'components';
 import {connect} from 'react-redux'

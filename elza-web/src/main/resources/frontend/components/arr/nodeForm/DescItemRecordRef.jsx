@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import {WebApi} from 'actions/index.jsx';
-import {Icon, i18n, AbstractReactComponent, RegistryField} from 'components/index.jsx';
+import {Icon, i18n, AbstractReactComponent} from 'components/shared';
 import {connect} from 'react-redux'
 import {decorateAutocompleteValue} from './DescItemUtils.jsx'
 import DescItemLabel from './DescItemLabel.jsx'
@@ -15,6 +15,7 @@ import {partyDetailFetchIfNeeded, partyListFilter, partyDetailClear, AREA_PARTY_
 import classNames from 'classnames'
 import {storeFromArea, objectById} from 'shared/utils'
 import {MODAL_DIALOG_VARIANT} from 'constants.jsx'
+import RegistryField from "../../registry/RegistryField";
 
 
 class DescItemRecordRef extends AbstractReactComponent {

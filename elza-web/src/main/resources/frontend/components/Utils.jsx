@@ -5,9 +5,9 @@ import {normalizeDoubleWithDot} from 'components/validate.jsx'
  * Utility metody.
  */
 
-require ("./Utils.less");
+import "./Utils.less";
 
-function consolidateState(prevState, newState) {
+export function consolidateState(prevState, newState) {
     var equals = stateEquals(prevState, newState);
     if (!equals) {
         //console.log(newState);
@@ -15,7 +15,7 @@ function consolidateState(prevState, newState) {
     return equals ? prevState : newState;
 }
 
-function chooseInputEl(el1, el2) {
+export function chooseInputEl(el1, el2) {
     var result = null;
 
     if (el1 && el2) {
@@ -43,7 +43,7 @@ function chooseInputEl(el1, el2) {
  * @param setInputFocus {bool} true, pokud má být obsah vybraný (např. u input type text)
  * @return {bool} true, pokud se podařilo najít a nastavit focus
  */
-function setInputFocus(el, selectContent = false) {
+export function setInputFocus(el, selectContent = false) {
     var elem = $('input:visible:enabled', el).get(0);
     var select = $('select:visible:enabled', el).get(0);
     elem = chooseInputEl(elem, select);
@@ -72,7 +72,7 @@ function setInputFocus(el, selectContent = false) {
     return false
 }
 
-function propsEquals(x, y, attrs) {
+export function propsEquals(x, y, attrs) {
     if (typeof attrs !== 'undefined' && attrs !== null) {
         for (var a=0; a<attrs.length; a++) {
             var p = attrs[a];
@@ -103,7 +103,7 @@ function propsEquals(x, y, attrs) {
     }
 }
 
-function stateEquals(x, y) {
+export function stateEquals(x, y) {
   for ( var p in x ) {
     if ( ! x.hasOwnProperty( p ) ) continue;
       // other properties were tested using x.constructor === y.constructor
@@ -125,7 +125,7 @@ function stateEquals(x, y) {
     return true;
 }
 
-function objectEquals( x, y ) {
+export function objectEquals( x, y ) {
   if ( x === y ) return true;
     // if both x and y are null or undefined and exactly the same
 
@@ -160,7 +160,7 @@ function objectEquals( x, y ) {
   return true;
 }
 
-function lenToBytesStr(len) {
+export function lenToBytesStr(len) {
     var lenStr;
     if (len < 1000) {
         lenStr = ('' + len).substring(0, 3) + " B";
@@ -172,7 +172,7 @@ function lenToBytesStr(len) {
     return lenStr;
 }
 
-function humanFileSize(bytes, si = false) {
+export function humanFileSize(bytes, si = false) {
     var thresh = si ? 1000 : 1024;
     if (Math.abs(bytes) < thresh) {
         return bytes + ' B';
@@ -188,7 +188,7 @@ function humanFileSize(bytes, si = false) {
     return bytes.toFixed(1) + ' ' + units[u];
 }
 
-function roughSizeOfObject( object ) {
+export function roughSizeOfObject( object ) {
 
     var objectList = [];
     var stack = [ object ];
@@ -222,7 +222,7 @@ function roughSizeOfObject( object ) {
     return bytes;
 }
 
-function StringSet() {
+export function StringSet() {
     var setObj = {}, val = {};
 
     this.add = function(str) {
@@ -260,7 +260,7 @@ function StringSet() {
     };
 }
 
-function StringMap() {
+export function StringMap() {
     var setObj = {};
 
     this.put = function(key, val) {
@@ -316,11 +316,11 @@ var _browser
         blink,
     }
 }
-function browser() {
+export function browser() {
     return _browser;
 }
 
-function getKeyModifier() {
+export function getKeyModifier() {
     var browser = _browser;
     if (browser.ie || browser.edge) {
         return 'ctrl+shift+';
@@ -329,7 +329,7 @@ function getKeyModifier() {
     }
 }
 
-function init() {
+export function init() {
     Array.prototype.each = function(callback){
         if (!callback) return false;
         for (var i=0; i<this.length; i++){
@@ -378,7 +378,7 @@ function init() {
     }
 }
 
-function barrierCall(index, promise, onData, onError) {
+export function barrierCall(index, promise, onData, onError) {
     promise
         .then((result)=>{
             //console.log("Promise #" + index + " OK", result);
@@ -390,7 +390,7 @@ function barrierCall(index, promise, onData, onError) {
         });
 }
 
-function barrier(...promises) {
+export function barrier(...promises) {
     var errors = {};
     var results = {};
     return new Promise(function (resolve, reject) {
@@ -429,7 +429,7 @@ function barrier(...promises) {
  * @param date {Date} datum
  * @return {String} datum
  */
-function dateToString(date) {
+export function dateToString(date) {
     var dd = date.getDate().toString();
     var mm = (date.getMonth() + 1).toString();
     var yyyy = date.getFullYear().toString();
@@ -441,7 +441,7 @@ function dateToString(date) {
  * @param date {Date} datum
  * @return {String} datum
  */
-function timeToString(date) {
+export function timeToString(date) {
     var hh = date.getHours().toString();
     var ii = date.getMinutes().toString();
     var ss = date.getSeconds().toString();
@@ -456,7 +456,7 @@ function timeToString(date) {
  * @return {String} datum
  * TODO Možná změnit dateTimeToString => dateToDateTimeString a dateToString => dateToDateString
  */
-function dateTimeToString(date) {
+export function dateTimeToString(date) {
     var dd = date.getDate().toString();
     var mm = (date.getMonth() + 1).toString();
     var yyyy = date.getFullYear().toString();
@@ -471,7 +471,7 @@ function dateTimeToString(date) {
  * Porovnání dvou hodnot. Undefined, null a prázdný řetězec jsou ekvivalentní.
  * @return {boolean} true, pokud jsou předané parametry stejné
  */
-function valuesEquals(v1, v2) {
+export function valuesEquals(v1, v2) {
     if (v1 === v2) {
         return true;
     }
@@ -495,7 +495,7 @@ function valuesEquals(v1, v2) {
  * @param value
  * @returns object
  */
-function objectFromWKT(value) {
+export function objectFromWKT(value) {
     if (typeof value === 'undefined' || value === null || value == '' || typeof value === "object") {
         return {type: "POINT", data: null};
     }
@@ -523,7 +523,7 @@ function objectFromWKT(value) {
  * @param val body(s desetinou ".") oddělené čárkou a 1 bod na 1 řádku
  * @returns string WK Text
  */
-function wktFromTypeAndData(type, val) {
+export function wktFromTypeAndData(type, val) {
     let points = val.split(",").map(function (dat) {
         return normalizeDoubleWithDot(dat);
     }).join(" ").split("\n").join(", ");
@@ -539,7 +539,7 @@ function wktFromTypeAndData(type, val) {
  * @param type
  * @returns string
  */
-function wktType(type) {
+export function wktType(type) {
     switch (type) {
         case "POINT":
             return "B";
@@ -556,7 +556,7 @@ function wktType(type) {
  * detect IE
  * returns version of IE or false, if browser is not Internet Explorer
  */
-function detectIE() {
+export function detectIE() {
     var ua = window.navigator.userAgent;
 
     // Test values; Uncomment to check result …
@@ -597,7 +597,7 @@ function detectIE() {
 }
 
 var _scrollbarWidth = null
-function calculateScrollbarWidth() {
+export function calculateScrollbarWidth() {
     if (_scrollbarWidth == null) {
         // Create the measurement node
         var scrollDiv = document.createElement("div");
@@ -613,7 +613,7 @@ function calculateScrollbarWidth() {
 }
 calculateScrollbarWidth();
 
-function getScrollbarWidth() {
+export function getScrollbarWidth() {
     return _scrollbarWidth;
 }
 
@@ -635,7 +635,7 @@ function _dtpad(number) {
  * @param date
  * @return {*}
  */
-function dateTimeToLocalUTC(date) {
+export function dateTimeToLocalUTC(date) {
     if (!date) {
         return date;
     }
@@ -649,7 +649,7 @@ function dateTimeToLocalUTC(date) {
         + '.' + _dtpad( date.getMilliseconds());
 }
 
-const removeUndefined = (obj) => {
+export const removeUndefined = (obj) => {
     for (let key in obj ) {
         if (obj.hasOwnProperty(key)) {
             if (obj[key] === undefined || obj[key] === null) {
@@ -659,12 +659,12 @@ const removeUndefined = (obj) => {
     }
     return obj;
 };
-const isNotBlankObject = (obj) => {
+export const isNotBlankObject = (obj) => {
     const newObj = removeUndefined(obj);
     return Object.keys(newObj).length > 0
 };
 
-export default {
+/*export default {
     dateTimeToLocalUTC,
     wktType,
     wktFromTypeAndData,
@@ -692,4 +692,4 @@ export default {
     init: function() {
         init();
     }
-}
+}*/

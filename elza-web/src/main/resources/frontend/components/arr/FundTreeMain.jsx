@@ -5,7 +5,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, FundTreeLazy, ArrSearchForm} from 'components/index.jsx';
+import {AbstractReactComponent, i18n} from 'components/shared';
+import {FundTreeLazy, ArrSearchForm} from 'components'
 import * as types from 'actions/constants/ActionTypes.js';
 import {AppActions} from 'stores/index.jsx';
 import {MenuItem} from 'react-bootstrap';
@@ -17,7 +18,7 @@ import {propsEquals} from 'components/Utils.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 
-var FundTreeMain = class FundTreeMain extends AbstractReactComponent {
+class FundTreeMain extends AbstractReactComponent {
     constructor(props) {
         super(props);
 

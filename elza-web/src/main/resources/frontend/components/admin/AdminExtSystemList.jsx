@@ -1,6 +1,7 @@
 import React from 'react';
 import {connect} from 'react-redux'
-import {ListBox, AbstractReactComponent, i18n, Loading, Icon, AdminExtSystemListItem} from 'components/index.jsx';
+import {ListBox, AbstractReactComponent, i18n, Loading, Icon} from 'components/shared';
+import {AdminExtSystemListItem} from 'components';
 import {indexById} from 'stores/app/utils.jsx'
 import {extSystemListFetchIfNeeded, extSystemListFilter, extSystemListInvalidate, extSystemDetailFetchIfNeeded, extSystemArrReset, AREA_EXT_SYSTEM_LIST,  AREA_EXT_SYSTEM_DETAIL} from 'actions/admin/extSystem.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'

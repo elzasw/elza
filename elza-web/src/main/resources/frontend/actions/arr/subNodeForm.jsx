@@ -15,7 +15,7 @@ import {increaseNodeVersion} from 'actions/arr/node.jsx'
 import {getRoutingKeyType} from 'stores/app/utils.jsx'
 import * as types from 'actions/constants/ActionTypes.js';
 import {addToastrSuccess,addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
-import {i18n} from 'components/index.jsx';
+import {i18n} from 'components/shared';
 import {statusSaving, statusSaved} from 'actions/global/status.jsx'
 
 class ItemFormActions {
@@ -1031,7 +1031,8 @@ class OutputFormActions extends ItemFormActions {
     }
 }
 
-export default {
-    nodeFormActions: new NodeFormActions(),
-    outputFormActions: new OutputFormActions(),
-};
+
+
+export const nodeFormActions = new NodeFormActions();
+export const outputFormActions =  new OutputFormActions();
+

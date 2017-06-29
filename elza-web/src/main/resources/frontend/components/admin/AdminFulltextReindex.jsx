@@ -7,7 +7,7 @@
 import React from 'react';
 import {connect} from 'react-redux';
 import {Button} from 'react-bootstrap';
-import {AbstractReactComponent, i18n} from 'components/index.jsx';
+import {AbstractReactComponent, i18n} from 'components/shared';
 import {getIndexStateFetchIfNeeded, reindex} from 'actions/admin/fulltext.jsx';
 
 var AdminFulltextReindex = class AdminFulltextReindex extends AbstractReactComponent {

@@ -3,7 +3,8 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {FormControl, Button} from 'react-bootstrap'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
-import {i18n, AbstractReactComponent, Icon, PartyIdentifierForm} from 'components/index.jsx'
+import {i18n, AbstractReactComponent, Icon} from 'components/shared'
+import {PartyIdentifierForm} from 'components'
 import {indexById} from 'stores/app/utils.jsx'
 import {MODAL_DIALOG_VARIANT} from 'constants.jsx'
 

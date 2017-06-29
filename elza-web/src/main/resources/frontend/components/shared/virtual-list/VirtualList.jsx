@@ -1,8 +1,6 @@
-var React = require('react');
-var ReactDOM = require('react-dom');
-var utils = require('./utils');
-
-import {Loading} from "components";
+import React from "react";
+import ReactDOM from "react-dom";
+import utils from "./utils";
 
 var VirtualList = React.createClass({
     propTypes: {

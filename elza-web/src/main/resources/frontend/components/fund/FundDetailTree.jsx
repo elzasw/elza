@@ -5,7 +5,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Tabs, FundTreeLazy} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, Tabs} from 'components/shared';
 import * as types from 'actions/constants/ActionTypes.js';
 import {AppActions} from 'stores/index.jsx';
 import {MenuItem} from 'react-bootstrap';
@@ -18,8 +18,9 @@ import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
 import {selectFundTab} from 'actions/arr/fund.jsx'
 import {routerNavigate} from 'actions/router.jsx'
+import FundTreeLazy from "../arr/FundTreeLazy";
 
-var FundDetailTree = class FundDetailTree extends AbstractReactComponent {
+class FundDetailTree extends AbstractReactComponent {
     constructor(props) {
         super(props);
 

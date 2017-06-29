@@ -4,7 +4,7 @@ import {indexById, objectById} from 'stores/app/utils.jsx'
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
-import {i18n} from 'components/index.jsx';
+import {i18n} from 'components/shared';
 
 export function isFundPacketsAction(action) {
     switch (action.type) {

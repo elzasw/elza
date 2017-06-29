@@ -2,8 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
-import {ControllableDropdownButton, Icon, AbstractReactComponent, Ribbon, RibbonGroup, PartyList, PartyDetail, PartyEntities, i18n, ImportForm} from 'components/index.jsx';
-import {RelationForm, AddPartyForm, ExtImportForm} from 'components/index.jsx';
+import {ControllableDropdownButton, Icon, AbstractReactComponent, RibbonGroup, i18n, Utils} from 'components/shared';
+import {Ribbon, PartyList, PartyDetail, PartyEntities, ImportForm, RelationForm, AddPartyForm, ExtImportForm} from 'components/index.jsx';
 import {MenuItem, Button} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {AppStore} from 'stores/index.jsx'
@@ -12,7 +12,6 @@ import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {partyDetailFetchIfNeeded, partyListInvalidate, PARTY_LIST_MAX_SIZE, partyAdd, partyCreate, insertRelation, partyDelete} from 'actions/party/party.jsx'
 import {Shortcuts} from 'react-shortcuts';
-import {Utils} from 'components/index.jsx';
 import {setFocus} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {SelectPage} from 'pages'

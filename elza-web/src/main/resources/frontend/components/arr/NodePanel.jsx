@@ -2,14 +2,16 @@
  * Komponenta panelu formuláře jedné JP.
  */
 
+import scrollIntoView from "dom-scroll-into-view";
+import classNames from "classnames";
 // Konstance kolik se má maximálně zobrazit v seznamu parents a children záznamů
 const PARENT_CHILD_MAX_LENGTH = 250
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {TooltipTrigger, Icon, ListBox, AbstractReactComponent, i18n, Loading, NodeSubNodeForm, Accordion, SubNodeRegister, NodeActionsBar,
-        VisiblePolicyForm, SubNodeDao} from 'components';
+import {TooltipTrigger, Icon, ListBox, AbstractReactComponent, i18n, Loading,  Accordion} from 'components/shared';
+import {NodeSubNodeForm,VisiblePolicyForm, SubNodeDao, SubNodeRegister, NodeActionsBar} from 'components'
 import {Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
 import {addNodeFormArr} from 'actions/arr/addNodeForm.jsx';
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
@@ -28,21 +30,19 @@ import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {getOneSettings} from 'components/arr/ArrUtils.jsx';
-import {Utils} from 'components/index.jsx';
+import {Utils} from 'components/shared';
 import ArrRequestForm from "./ArrRequestForm";
 import {WebApi} from 'actions/index.jsx';
 import {Shortcuts} from 'react-shortcuts';
-const scrollIntoView = require('dom-scroll-into-view')
-var classNames = require('classnames');
 import {setFocus, canSetFocus, focusWasSet, isFocusFor, isFocusExactFor} from 'actions/global/focus.jsx'
 import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
 import {visiblePolicyTypesFetchIfNeeded} from 'actions/refTables/visiblePolicyTypes.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 
-require ('./NodePanel.less');
+import './NodePanel.less';
 
-var NodePanel = class NodePanel extends AbstractReactComponent {
+class NodePanel extends AbstractReactComponent {
     constructor(props) {
         super(props);
 

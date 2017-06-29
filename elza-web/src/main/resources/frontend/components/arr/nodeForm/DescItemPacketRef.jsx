@@ -2,7 +2,7 @@ require('./DescItemPacketRef.less')
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Icon, i18n, AbstractReactComponent, NoFocusButton, Autocomplete} from 'components/index.jsx';
+import {Icon, i18n, AbstractReactComponent, NoFocusButton, Autocomplete} from 'components/shared';
 import {connect} from 'react-redux'
 import {decorateValue, decorateAutocompleteValue} from './DescItemUtils.jsx'
 import {WebApi} from 'actions/index.jsx';

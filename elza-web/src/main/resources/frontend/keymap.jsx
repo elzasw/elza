@@ -1,7 +1,7 @@
-import {Utils} from 'components/index.jsx';
-var keyModifier = Utils.getKeyModifier()
+import {Utils} from 'components/shared';
+const keyModifier = Utils.getKeyModifier();
 
-var keymap = {
+const keymap = {
     Main: {
         home: ['alt+1','g h'],  	//GOTO_HOME_PAGE
         arr: ['alt+2','g a'],       //GOTO_ARR_PAGE
@@ -135,6 +135,6 @@ var keymap = {
         "OPEN_MENU": "alt+down",
         "CLOSE_MENU": ["escape","alt+up"]
     }
-}
+};
 
 export default keymap;

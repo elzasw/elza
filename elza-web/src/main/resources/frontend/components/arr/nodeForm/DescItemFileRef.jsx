@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 
 import {connect} from 'react-redux'
 import {WebApi} from 'actions/index.jsx';
-import {Icon, i18n, AbstractReactComponent, Autocomplete} from 'components/index.jsx';
+import {Icon, i18n, AbstractReactComponent, Autocomplete} from 'components/shared';
 import {decorateAutocompleteValue} from './DescItemUtils.jsx'
 import {Button} from 'react-bootstrap';
 import DescItemLabel from './DescItemLabel.jsx'

@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 
 import {connect} from 'react-redux'
 import classNames from 'classnames';
-import {Splitter, ToggleContent} from 'components/index.jsx';
+import {Splitter, ToggleContent} from 'components/shared';
 import {splitterResize} from 'actions/global/splitter.jsx';
 
 import './PageLayout.less';

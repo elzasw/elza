@@ -1,7 +1,7 @@
 import React from 'react';
-import {AbstractReactComponent} from 'components/index.jsx';
 import {propsEquals} from 'components/Utils.jsx'
 import classNames from 'classnames';
+import AbstractReactComponent from "../../AbstractReactComponent";
 
 class Icon extends AbstractReactComponent {
     static eqProps = ['className', 'glyph', 'onClick'];
