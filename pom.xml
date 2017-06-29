@@ -40,6 +40,7 @@
         <module>rules-cz-zp2015</module>
         <module>rules-simple-dev</module>
         <module>dao-test-bench</module>
+        <module>elza-install</module>
     </modules>
 
     <dependencyManagement>

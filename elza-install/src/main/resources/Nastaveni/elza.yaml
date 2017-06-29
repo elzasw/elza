@@ -1,0 +1,35 @@
+elza:
+  data:
+      url: <dbURL>
+      user: <dbUser>
+      pass: <dbPass>
+
+  rules:
+    ZP2015:
+      default:
+        - NORMAL
+
+  treenode:
+      title: ZP2015_TITLE
+      defaultTitle: <Není nastaven popisek>
+#  type-groups:
+#    GROUP1:
+#      name: Testovací skupina 1
+#      types:
+#        - code: ZP2015_NOTE
+#          width: 0
+#        - code: ZP2015_LEVEL_TYPE
+#          width: 1
+#        - code: ZP2015_UNIT_ID
+#          width: 2
+#        - code: ZP2015_ORIGINATOR
+#          width: 0
+#    GROUP2:
+#      name: Testovací skupina 2
+#      types:
+#        - code: ZP2015_SIZE
+#          width: 1
+
+spring:
+  app:
+      buildType: REL
