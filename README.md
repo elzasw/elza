@@ -83,7 +83,8 @@ Uživatelské rozhranní najdete na adrese http://localhost:8080.
     ```
     mvn clean install -Pskiptest,release,build-instalator
     ```
-* Předchozím krokem dojde k sestavení aplikace a vytvoření instalátoru. Výsledný soubor instalátoru se uloží do umístění elza-install\target\ELZA-<verze aplikace>.exe
+* Předchozím krokem dojde k sestavení aplikace a vytvoření instalátoru. Výsledný soubor instalátoru se uloží do umístění `elza-install\target\ELZA-<verze aplikace>.exe`
+
 ## Konfigurace a logování
 
 Aplikace je konfigurována pomocí souboru `elza.yaml`. Umístění konfiguračních souborů:
