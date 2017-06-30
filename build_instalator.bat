@@ -1,0 +1,1 @@
+mvn clean install -Pskiptest,release,build-instalator

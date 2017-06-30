@@ -66,8 +66,8 @@ Source: "classes\Nastaveni\faviconstop.ico"; DestDir: "{app}"
 [Icons]
 Name: "{group}\{#KodAplikace} - Stránka aplikace"; Filename: "{app}\elza.url"; WorkingDir: "{app}"; IconFilename: "{app}\favicon.ico"
 Name: "{group}\{#KodAplikace} - Odinstalovat aplikaci"; Filename: "{uninstallexe}"; IconFilename: "{app}\faviconuninstall.ico"
-Name: "{group}\{#KodAplikace} - Spustit službu"; Filename: "{app}\start.bat"; IconFilename: "{app}\faviconplay.ico"
-Name: "{group}\{#KodAplikace} - Vypnout službu"; Filename: "{app}\stop.bat"; IconFilename: "{app}\faviconstop.ico"
+;Name: "{group}\{#KodAplikace} - Spustit službu"; Filename: "{app}\start.bat"; IconFilename: "{app}\faviconplay.ico"
+;Name: "{group}\{#KodAplikace} - Vypnout službu"; Filename: "{app}\stop.bat"; IconFilename: "{app}\faviconstop.ico"
 
 [Languages] 
 Name: "Czech"; MessagesFile: "compiler:Languages\Czech.isl"
