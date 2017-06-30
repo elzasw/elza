@@ -587,7 +587,7 @@ begin
     begin
       //Nahradí pøeddefinované texty hodnotami z instalace
       SeznamUkolu.AddCheckBox(_UlozeniNastaveniApp, '', 0, false, false, false, false, nil);
-      NahradHodnotuVSouboru('{app}\Aplikace.url','<urlAplikace>',ExpandConstant('http://' + '{computername}' + ':' + PortAplikace)); //vytvoøí odkaz do start menu
+      NahradHodnotuVSouboru('{app}\elza.url','<urlAplikace>',ExpandConstant('http://' + '{computername}' + ':' + PortAplikace)); //vytvoøí odkaz do start menu
       NahradHodnotuVSouboru('{app}\start.bat','<NazevSluzby>',NazevSluzby ('')); //nastaví název služby do dávky pro start služby
       NahradHodnotuVSouboru('{app}\stop.bat','<NazevSluzby>',NazevSluzby ('')); //nastaví název služby do dávky pro vypnutí služby
       
