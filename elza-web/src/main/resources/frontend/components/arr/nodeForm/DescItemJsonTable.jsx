@@ -191,20 +191,25 @@ var DescItemJsonTable = class DescItemJsonTable extends AbstractReactComponent {
         const {descItem, locked, onFocus, onDownload, readMode} = this.props;
         const {rows, cols} = this.state;
 
-        var actions = [];
+        let actions = [];
 
-        if (descItem.descItemObjectId != null) {
+        if (descItem.descItemObjectId != null && !descItem.undefined) {
             actions.push(<NoFocusButton key="download" onClick={onDownload} title={i18n('subNodeForm.descItem.jsonTable.action.download')}><Icon glyph="fa-download" /></NoFocusButton>)
         }
 
-        if (!locked) {
+        if (!locked && !descItem.undefined) {
             actions.push(<NoFocusButton key="add" onClick={this.handleAddRow} title={i18n('subNodeForm.descItem.jsonTable.action.addRow')}><Icon glyph="fa-plus" /></NoFocusButton>)
         }
 
         return (
             <div className='desc-item-value desc-item-value-table'>
                 <ItemTooltipWrapper tooltipTitle="dataType.jsonTable.format">
-                    <DataGrid
+                    {descItem.undefined ? <input
+                        {...decorateValue(this, descItem.hasFocus, descItem.error.value, true)}
+                        ref='focusEl'
+                        type="text"
+                        value={i18n('subNodeForm.descItemType.notIdentified')}
+                    /> : <DataGrid
                         key="grid"
                         ref='dataGrid'
                         rows={rows}
@@ -217,7 +222,7 @@ var DescItemJsonTable = class DescItemJsonTable extends AbstractReactComponent {
                         onEdit={this.handleEdit}
                         onDelete={this.handleDelete}
                         disabled={locked || readMode}
-                        />
+                        />}
                 </ItemTooltipWrapper>
                 <div
                     key="actions"

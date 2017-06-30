@@ -110,9 +110,9 @@ public class OutputFactoryService implements NodeLoader {
     private Map<Integer, Packet> packetMap = new HashMap<>();
 
     private Map<Integer, Node> nodeMap = new HashMap<>();
-    
+
     public void reset() {
-        packetMap.clear();        
+        packetMap.clear();
         nodeMap.clear();
     }
 
@@ -220,7 +220,7 @@ public class OutputFactoryService implements NodeLoader {
         final ParParty parParty = arrFundInstitution.getParty();
         final Party party = createParty(parParty, output);
 
-        // Check party type        
+        // Check party type
         if(! (party instanceof PartyGroup)) {
             throw new IllegalStateException("Party for institution is not GROUP_PARTY, partyId = "+parParty.getPartyId());
         }
@@ -428,6 +428,7 @@ public class OutputFactoryService implements NodeLoader {
         }
 
         item.setPosition(arrItem.getPosition());
+        item.setUndefined(arrItem.getUndefined());
 
         return item;
     }
@@ -459,12 +460,12 @@ public class OutputFactoryService implements NodeLoader {
         Party party = createParty(parParty, output);
         return new ItemPartyRef(nodeId, party);
     }
-    
+
     private Party createParty(final ParParty parParty, final Output output)
     {
         String partyTypeCode = parParty.getPartyType().getCode();
         PartyType partyType = PartyType.getByCode(partyTypeCode);
-        
+
         switch (partyType) {
             case DYNASTY:
                 ParDynasty parDynasty = ProxyUtils.deproxy(parParty);
@@ -480,7 +481,7 @@ public class OutputFactoryService implements NodeLoader {
                 return createPerson(parPerson, output);
             default :
                 throw new IllegalStateException("Neznámý typ osoby " + partyType.getCode());
-        }    	
+        }
     }
 
     private Person createPerson(final ParPerson parPerson, final Output output) {
@@ -525,10 +526,10 @@ public class OutputFactoryService implements NodeLoader {
                 .forEach(parPartyName -> party.getNames().add(PartyName.valueOf(parPartyName)));
         party.setHistory(parParty.getHistory());
         party.setSourceInformation(parParty.getSourceInformation());
-        party.setCharacteristics(parParty.getCharacteristics());        
+        party.setCharacteristics(parParty.getCharacteristics());
         party.setType(parParty.getPartyType().getName());
         party.setTypeCode(parParty.getPartyType().getCode());
-        
+
         // Prepare corresponding record
         party.setRecord(Record.newInstance(output, parParty.getRecord()));
     }
@@ -623,7 +624,7 @@ public class OutputFactoryService implements NodeLoader {
             } else {
                 records = regRecords.stream().map(regRecord -> Record.newInstance(output, regRecord)).collect(Collectors.toList());
             }
-            
+
             // store list
             node.setRecords(records);
         }

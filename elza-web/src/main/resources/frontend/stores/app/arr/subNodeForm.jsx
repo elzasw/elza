@@ -328,12 +328,12 @@ export default function subNodeForm(state = initialState, action = {}) {
                     loc.descItemType.descItems.forEach((descItem, index) => {descItem.position = index + 1});
                     break;
                 case 'UPDATE':
-                    loc.descItem.descItemObjectId = action.descItemResult.item.descItemObjectId;
-                    loc.descItem.prevValue = action.descItemResult.item.value;
-                    if (loc.descItemType.useSpecification) {
+                    loc.descItem.descItemObjectId = action.descItemResult.item ? action.descItemResult.item.descItemObjectId : null;
+                    loc.descItem.prevValue = action.descItemResult.item ? action.descItemResult.item.value : null;
+                    if (action.descItemResult.item && loc.descItemType.useSpecification) {
                         loc.descItem.prevDescItemSpecId = action.descItemResult.item.descItemSpecId;
                     }
-                    if (action.descItemResult.item.calendarTypeId) {
+                    if (action.descItemResult.item && action.descItemResult.item.calendarTypeId) {
                         loc.descItem.prevCalendarTypeId = action.descItemResult.item.calendarTypeId;
                     }
                     loc.descItem.touched = false

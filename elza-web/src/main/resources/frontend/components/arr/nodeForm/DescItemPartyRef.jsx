@@ -32,7 +32,7 @@ class DescItemPartyRef extends AbstractReactComponent {
     };
 
     focus = () => {
-        this.refs.partyField.refs.wrappedInstance.focus();
+        this.refs.partyField.wrappedInstance.focus();
     };
 
 
@@ -57,9 +57,9 @@ class DescItemPartyRef extends AbstractReactComponent {
 
         if (readMode) {
             if (value) {
-                return <DescItemLabel onClick={onDetail.bind(this, descItem.party.id)} value={value.record.record} />;
+                return <DescItemLabel onClick={onDetail.bind(this, descItem.party.id)} notIdentified={descItem.undefined} value={value.record.record} />;
             } else {
-                return <DescItemLabel value={cal ? i18n("subNodeForm.descItemType.calculable") : ""} cal={cal} />
+                return <DescItemLabel value={cal ? i18n("subNodeForm.descItemType.calculable") : ""} cal={cal} notIdentified={descItem.undefined} />
             }
         }
 
@@ -69,11 +69,12 @@ class DescItemPartyRef extends AbstractReactComponent {
                     ref="partyField"
                     {...otherProps}
                     value={value}
-                    detail={typePrefix != "output" || !cal}
+                    detail={!descItem.undefined && (typePrefix != "output" || !cal)}
                     footerButtons={false}
                     footer={!singleDescItemTypeEdit}
+                    undefined={descItem.undefined}
                     onSelectModule={this.handleSelectModule}
-                    {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, ['autocomplete-party'])}
+                    {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked || descItem.undefined, ['autocomplete-party'])}
                 />
             </ItemTooltipWrapper>
         </div>

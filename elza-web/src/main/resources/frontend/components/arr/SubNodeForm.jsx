@@ -783,6 +783,14 @@ class SubNodeForm extends AbstractReactComponent {
             }
         }
 
+        let notIdentified = false;
+
+        descItemType.descItems.forEach(descItem => {
+            if (!descItemType.rep && descItem.undefined) {
+                notIdentified = true;
+            }
+        });
+
         return <DescItemType key={descItemType.id}
              typePrefix={typePrefix}
             ref={'descItemType' + descItemType.id}
@@ -828,8 +836,22 @@ class SubNodeForm extends AbstractReactComponent {
             fundId={fundId}
             readMode={readMode}
             strictMode={strictMode}
+            notIdentified={notIdentified}
+            onDescItemNotIdentified={(descItem) => this.handleDescItemNotIdentified(descItemGroupIndex, descItemTypeIndex, descItem)}
         />
     }
+
+    handleDescItemNotIdentified = (descItemGroupIndex, descItemTypeIndex, descItem) => {
+        console.warn(descItem);
+
+
+        let valueLocation = {
+            descItemGroupIndex,
+            descItemTypeIndex,
+            descItemIndex: 0,
+        };
+        this.dispatch(this.props.formActions.fundSubNodeFormValueNotIdentified(this.props.versionId, this.props.routingKey, valueLocation, descItem));
+    };
 
     handleAddUnusedItem = (itemTypeId, index) => {
         const {formActions, versionId} = this.props;

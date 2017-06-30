@@ -15,6 +15,9 @@ import OutputInlineForm from 'components/arr/OutputInlineForm.jsx'
 
 import './ArrOutputDetail.less';
 import {Shortcuts} from 'react-shortcuts';
+import OutputSubNodeForm from "./OutputSubNodeForm";
+import FundNodesList from "./FundNodesList";
+import FundNodesSelectForm from "./FundNodesSelectForm";
 
 const OutputState = {
     OPEN: 'OPEN',

@@ -129,6 +129,26 @@ public enum ArrangementCode implements ErrorCode {
     INVALID_REQUEST_DIGITAL_REPOSITORY_DAO,
 
     /**
+     * Položku není možné nastavit jako 'Nezjištěno'.
+     */
+    CANT_SET_INDEFINABLE,
+
+    /**
+     * Položka již je nastavená jako 'Nezjištěno'.
+     */
+    ALREADY_INDEFINABLE,
+
+    /**
+     * Data neexistují.
+     */
+    DATA_NOT_FOUND,
+
+    /**
+     * Specifikace atributu neexistuje.
+     */
+    ITEM_SPEC_NOT_FOUND,
+
+    /**
      * Typ formy jména neexistuje.
      */
     PARTY_NAME_FORM_TYPE_NOT_FOUND

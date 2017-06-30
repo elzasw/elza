@@ -6,6 +6,7 @@
 require('./FileListBox.less');
 
 import React from "react";
+import i18n from "../../i18n";
 import ListBox from "./ListBox";
 import Search from "../search/Search";
 import Icon from "../icon/Icon";

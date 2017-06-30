@@ -830,6 +830,129 @@ public class ArrangementController {
     }
 
     /**
+     * Nastavení atributu na "Nezjištěno".
+     *
+     * @param fundVersionId    id archivního souboru
+     * @param nodeId           id JP
+     * @param nodeVersion      verze JP
+     * @param descItemTypeId   identfikátor typu hodnoty atributu
+     * @param descItemSpecId   identfikátor specifikace hodnoty atributu
+     * @param descItemObjectId identifikátor existující hodnoty atributu
+     * @return upravená hodnota atributu nastavená na nezjištěno
+     */
+    @Transactional
+    @RequestMapping(value = "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/notUndefined/set",
+            method = RequestMethod.PUT,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public DescItemResult setNotIdentifiedDescItem(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                                   @PathVariable(value = "nodeId") final Integer nodeId,
+                                                   @PathVariable(value = "nodeVersion") final Integer nodeVersion,
+                                                   @RequestParam(value = "descItemTypeId") final Integer descItemTypeId,
+                                                   @RequestParam(value = "descItemSpecId", required = false) final Integer descItemSpecId,
+                                                   @RequestParam(value = "descItemObjectId", required = false) final Integer descItemObjectId) {
+        ArrDescItem descItemUpdated = descriptionItemService
+                .setNotIdentifiedDescItem(descItemTypeId, nodeId, nodeVersion, fundVersionId, descItemSpecId, descItemObjectId);
+
+        DescItemResult descItemResult = new DescItemResult();
+        descItemResult.setItem(factoryVo.createDescItem(descItemUpdated));
+        descItemResult.setParent(factoryVo.createArrNode(descItemUpdated.getNode()));
+
+        return descItemResult;
+    }
+
+    /**
+     * Zrušení nastavení atributu na "Nezjištěno".
+     *
+     * @param fundVersionId    id archivního souboru
+     * @param nodeId           id JP
+     * @param nodeVersion      verze JP
+     * @param descItemTypeId   identfikátor typu hodnoty atributu
+     * @param descItemSpecId   identfikátor specifikace hodnoty atributu
+     * @param descItemObjectId identifikátor existující hodnoty atributu
+     * @return odstraněný atribut
+     */
+    @Transactional
+    @RequestMapping(value = "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/notUndefined/unset",
+            method = RequestMethod.PUT,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public DescItemResult unsetNotIdentifiedDescItem(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                                     @PathVariable(value = "nodeId") final Integer nodeId,
+                                                     @PathVariable(value = "nodeVersion") final Integer nodeVersion,
+                                                     @RequestParam(value = "descItemTypeId") final Integer descItemTypeId,
+                                                     @RequestParam(value = "descItemSpecId", required = false) final Integer descItemSpecId,
+                                                     @RequestParam(value = "descItemObjectId", required = false) final Integer descItemObjectId) {
+        ArrDescItem descItemDeleted = descriptionItemService
+                .deleteDescriptionItem(descItemObjectId, nodeVersion, fundVersionId);
+        DescItemResult descItemResult = new DescItemResult();
+        descItemResult.setItem(null);
+        descItemResult.setParent(factoryVo.createArrNode(descItemDeleted.getNode()));
+        return descItemResult;
+    }
+
+    /**
+     * Nastavení atributu na "Nezjištěno".
+     *
+     * @param fundVersionId           id archivního souboru
+     * @param outputDefinitionId      identifikátor výstupu
+     * @param outputDefinitionVersion verze výstupu
+     * @param outputItemTypeId        dentfikátor typu hodnoty atributu
+     * @param outputItemSpecId        identfikátor specifikace hodnoty atributu
+     * @param outputItemObjectId      identifikátor existující hodnoty atributu
+     * @return upravená hodnota atributu nastavená na nezjištěno
+     */
+    @Transactional
+    @RequestMapping(value = "/outputItems/{fundVersionId}/{outputDefinitionId}/{outputDefinitionVersion}/notUndefined/set",
+            method = RequestMethod.PUT,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public OutputItemResult setNotIdentifiedOutputItem(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                                       @PathVariable(value = "outputDefinitionId") final Integer outputDefinitionId,
+                                                       @PathVariable(value = "outputDefinitionVersion") final Integer outputDefinitionVersion,
+                                                       @RequestParam(value = "outputItemTypeId") final Integer outputItemTypeId,
+                                                       @RequestParam(value = "outputItemSpecId", required = false) final Integer outputItemSpecId,
+                                                       @RequestParam(value = "outputItemObjectId", required = false) final Integer outputItemObjectId) {
+        ArrOutputItem outputItemUpdated = outputService
+                .setNotIdentifiedDescItem(outputItemTypeId, outputDefinitionId, outputDefinitionVersion, fundVersionId, outputItemSpecId, outputItemObjectId);
+        OutputItemResult outputItemResult = new OutputItemResult();
+        outputItemResult.setItem(factoryVo.createItem(outputItemUpdated));
+        outputItemResult.setParent(factoryVo.createOutputDefinition(outputItemUpdated.getOutputDefinition()));
+        return outputItemResult;
+    }
+
+
+    /**
+     * Zrušení nastavení atributu na "Nezjištěno".
+     *
+     * @param fundVersionId           id archivního souboru
+     * @param outputDefinitionId      identifikátor výstupu
+     * @param outputDefinitionVersion verze výstupu
+     * @param outputItemTypeId        dentfikátor typu hodnoty atributu
+     * @param outputItemSpecId        identfikátor specifikace hodnoty atributu
+     * @param outputItemObjectId      identifikátor existující hodnoty atributu
+     * @return odstraněný atribut
+     */
+    @Transactional
+    @RequestMapping(value = "/outputItems/{fundVersionId}/{outputDefinitionId}/{outputDefinitionVersion}/notUndefined/unset",
+            method = RequestMethod.PUT,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public OutputItemResult unsetNotIdentifiedOutputItem(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                                         @PathVariable(value = "outputDefinitionId") final Integer outputDefinitionId,
+                                                         @PathVariable(value = "outputDefinitionVersion") final Integer outputDefinitionVersion,
+                                                         @RequestParam(value = "outputItemTypeId") final Integer outputItemTypeId,
+                                                         @RequestParam(value = "outputItemSpecId", required = false) final Integer outputItemSpecId,
+                                                         @RequestParam(value = "outputItemObjectId", required = false) final Integer outputItemObjectId) {
+        ArrOutputItem descItemDeleted = outputService
+                .deleteOutputItem(outputItemObjectId, outputDefinitionVersion, fundVersionId);
+        OutputItemResult outputItemResult = new OutputItemResult();
+        outputItemResult.setItem(null);
+        outputItemResult.setParent(factoryVo.createArrOutputDefinition(descItemDeleted.getOutputDefinition()));
+        return outputItemResult;
+    }
+
+    /**
      * Vytvoření hodnoty atributu.
      *
      * @param descItemVO            hodnota atributu
@@ -1184,7 +1307,7 @@ public class ArrangementController {
             itemTypes = ruleService.getDescriptionItemTypes(versionId, nodeId);
         } catch (Exception e) {
             logger.error("Chyba v pravidlech", e);
-            throw new BusinessException("Chyba v pravidlech",e,BaseCode.SYSTEM_ERROR);            
+            throw new BusinessException("Chyba v pravidlech",e,BaseCode.SYSTEM_ERROR);
         }
 
         Integer fundId = version.getFund().getFundId();

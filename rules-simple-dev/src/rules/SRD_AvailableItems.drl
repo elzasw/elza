@@ -20,6 +20,19 @@ import cz.tacr.elza.domain.RulItemType;
 // - addWithAllSpec
 // - addWithoutSpec - ?kde je vzit pozdeji?
 
+rule "Atributy lze nastavit na Nezjištěno"
+salience 100
+no-loop
+when
+    $itemType : RulItemTypeExt(code in ("SRD_ARRANGEMENT_TYPE", "SRD_LEVEL_TYPE", "SRD_FOLDER_TYPE",
+        "SRD_UNIT_TYPE", "SRD_UNIT_COUNT", "SRD_UNIT_ID", "SRD_SERIAL_NUMBER", "SRD_TITLE",
+        "SRD_FORMAL_TITLE", "SRD_UNIT_DATE_PRE", "SRD_UNIT_DATE", "SRD_UNIT_DATE_POST",
+        "SRD_UNIT_DATE_TEXT", "SRD_UNIT_HIST", "SRD_UNIT_ARR", "SRD_UNIT_CONTENT",
+        "SRD_UNIT_SOURCE", "SRD_FUTURE_UNITS", "SRD_UNIT_ACCESS", "SRD_NAD"))
+then
+    $itemType.setIndefinable(true);
+end
+
 // Nastaveni vychozi neopakovatelnosti atributu
 rule "U atributu je zapotrebi nove explicitne nastavit neopakovatelnost"
 salience 100

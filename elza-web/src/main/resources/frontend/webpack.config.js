@@ -21,7 +21,7 @@ console.log(path.resolve(__dirname));
 
 module.exports = {
     entry: [
-        'react-hot-loader/patch',
+        //'react-hot-loader/patch',
         `webpack-dev-server/client?http://localhost:${PORT}`,
         'webpack/hot/only-dev-server',
         './index.jsx',
@@ -44,11 +44,11 @@ module.exports = {
         headers: { 'Access-Control-Allow-Origin': '*' }
     },
     plugins: [
-        new HappyPack({
+        /*new HappyPack({
             id: 'jsx',
             threads: 6,
             loaders: ['babel-loader']
-        }),
+        }),*/
         new webpack.HotModuleReplacementPlugin(),
         new webpack.NamedModulesPlugin(),
         new webpack.NoEmitOnErrorsPlugin(),
@@ -82,8 +82,8 @@ module.exports = {
                 test: /\.jsx?$/,
                 exclude: /node_modules/,
                 use: [
-                    //{loader: 'babel-loader'}
-                    {loader: 'happypack/loader?id=jsx'}
+                    {loader: 'babel-loader'}
+                    //{loader: 'happypack/loader?id=jsx'}
                 ]
             },
             {

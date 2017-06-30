@@ -142,11 +142,11 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
 
     render() {
         const {descItem, onChange, onBlur, locked, packetTypes, packets, singleDescItemTypeEdit, readMode, cal} = this.props;
-        var packet = descItem.packet ? descItem.packet : null;
-        if (readMode) {
+        let packet = descItem.packet ? descItem.packet : null;
+        if (readMode || descItem.undefined) {
             let calValue = cal && packet == null ? i18n("subNodeForm.descItemType.calculable") : "";
             return (
-                <DescItemLabel value={packet ? this.pf.format(packet) : calValue} cal={cal} />
+                <DescItemLabel value={packet ? this.pf.format(packet) : calValue} cal={cal} notIdentified={descItem.undefined} />
             )
         }
 
@@ -168,7 +168,7 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
 
                 <ItemTooltipWrapper tooltipTitle="dataType.packetRef.format">
                     <Autocomplete
-                        {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, ['autocomplete-packet'])}
+                        {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked || descItem.undefined, ['autocomplete-packet'])}
                         ref='focusEl'
                         customFilter
                         onFocus={this.handleFocus}
@@ -178,7 +178,7 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
                         items={this.state.packets}
                         onSearchChange={this.handleSearchChange}
                         onChange={onChange}
-                        renderItem={this.renderPacket}
+                        renderItem={descItem.undefined ? {name: i18n('subNodeForm.descItemType.notIdentified')} : this.renderPacket}
                         getItemName={(item) => this.getPacketName(item)}
                         footer={footer}
                     />

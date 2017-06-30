@@ -258,6 +258,8 @@ public class ArrangementService {
     @Autowired
     private CachedNodeRepository cachedNodeRepository;
 
+    public static final String UNDEFINED = "Nezjištněno";
+
     /**
      * Vytvoření archivního souboru.
      *
@@ -971,7 +973,7 @@ public class ArrangementService {
 
         // Read source data
         List<ArrDescItem> siblingDescItems = descItemRepository.findOpenByNodeAndTypes(olderSibling.getNode(), typeSet);
-        
+
         // Delete old values for these items
         List<ArrDescItem> nodeDescItems = descItemRepository.findOpenByNodeAndTypes(level.getNode(), typeSet);
         List<ArrDescItem> deletedDescItems = new ArrayList<>();
@@ -994,11 +996,11 @@ public class ArrangementService {
 
         eventNotificationService.publishEvent(EventFactory
                 .createIdInVersionEvent(EventType.COPY_OLDER_SIBLING_ATTRIBUTE, version, level.getNode().getNodeId()));
-        
+
         // revalidate node
-        ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(level.getNode().getNodeId()), 
+        ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(level.getNode().getNodeId()),
         		NodeTypeOperation.SAVE_DESC_ITEM, newDescItems, null, deletedDescItems);
-        
+
         // Should it be taken from cache?
         return descItemRepository.findOpenByNodeAndTypes(level.getNode(), typeSet);
     }

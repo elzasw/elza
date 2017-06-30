@@ -6,6 +6,7 @@ import {Button} from 'react-bootstrap';
 import './WebSocket.less';
 import AbstractReactComponent from "../../AbstractReactComponent";
 import i18n from "../../i18n";
+import {stompConnect} from "../../../websocketActions";
 
 class WebSocket extends AbstractReactComponent {
 

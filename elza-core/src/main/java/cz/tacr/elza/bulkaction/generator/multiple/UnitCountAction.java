@@ -18,6 +18,7 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.utils.Yaml;
+import org.apache.commons.lang.BooleanUtils;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -287,7 +288,7 @@ public class UnitCountAction extends Action {
         RulItemSpec countSpec = itemSpecs.get("FOLDER_SINGLE_TYPE");
 
         for (ArrDescItem item : items) {
-            if (countType.equals(item.getItemType())) {
+            if (countType.equals(item.getItemType()) && BooleanUtils.isNotTrue(item.getUndefined())) {
                 addToCount(countSpec.getShortcut(), ((ArrItemInt) item.getItem()).getValue());
             }
         }
@@ -302,7 +303,7 @@ public class UnitCountAction extends Action {
         RulItemType extraType = itemTypes.get("STORAGE");
 
         for (ArrDescItem item : items) {
-            if (item.getItemType().equals(extraType)) {
+            if (item.getItemType().equals(extraType) && BooleanUtils.isNotTrue(item.getUndefined())) {
                 ArrPacket packet = ((ArrItemPacketRef) item.getItem()).getPacket();
                 String storageNumber = packet.getStorageNumber();
                 if (!storageNumbers.contains(storageNumber)) {
@@ -325,7 +326,7 @@ public class UnitCountAction extends Action {
     private void countExtraUnit(final List<ArrDescItem> items) {
         RulItemType extraType = itemTypes.get("EXTRA_UNITS");
         for (ArrDescItem item : items) {
-            if (item.getItemType().equals(extraType)) {
+            if (item.getItemType().equals(extraType) && BooleanUtils.isNotTrue(item.getUndefined())) {
                 RulItemSpec itemSpec = item.getItemSpec();
                 addToCount(itemSpec.getShortcut(), ((ArrItemInt) item.getItem()).getValue());
             }
@@ -393,7 +394,7 @@ public class UnitCountAction extends Action {
     private void addItemWithTypeToCount(RulItemType unitType, List<ArrDescItem> items) {
     	for(ArrDescItem descItem: items)
     	{
-    		if(descItem.getItemType().equals(unitType))
+    		if(descItem.getItemType().equals(unitType) && BooleanUtils.isNotTrue(descItem.getUndefined()))
     		{
     			// TODO: ignore some types
     			addToCount(descItem.getItemSpec().getShortcut(), 1);

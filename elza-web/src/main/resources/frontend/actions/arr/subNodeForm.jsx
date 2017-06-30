@@ -52,6 +52,7 @@ class ItemFormActions {
                 case types.FUND_SUB_NODE_FORM_VALUE_BLUR:
                 case types.FUND_SUB_NODE_FORM_VALUE_FOCUS:
                 case types.FUND_SUB_NODE_FORM_VALUE_ADD:
+                case types.FUND_SUB_NODE_FORM_VALUE_NOT_IDENTIFIED:
                 case types.FUND_SUB_NODE_FORM_VALUE_DELETE:
                 case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
                 case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
@@ -284,6 +285,35 @@ class ItemFormActions {
             routingKey,
             valueLocation,
         }
+    }
+
+    /**
+     * Akce na nastavení hodnoty atributu jako Nezjištěno.
+     *
+     * @param {int} versionId verze AS
+     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
+     * @param {Object} valueLocation konkrétní umístění nové hodnoty
+     * @param descItem
+     */
+    fundSubNodeFormValueNotIdentified(versionId, routingKey, valueLocation, descItem) {
+        return (dispatch, getState) => {
+            let state = getState();
+            let subNodeForm = this._getItemFormStore(state, versionId, routingKey);
+            let loc = subNodeForm.getLoc(subNodeForm, valueLocation);
+
+            if (descItem && descItem.undefined) {
+                this._callUnsetNotIdentifiedDescItem(versionId, subNodeForm.nodeId, subNodeForm.data.parent.version, loc.descItemType.id, descItem.descItemSpecId, descItem.descItemObjectId)
+                    .then(json => {
+                        dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'UPDATE'));
+                        dispatch(this.fundSubNodeFormValueAdd(versionId, routingKey, valueLocation));
+                    });
+            } else {
+                this._callSetNotIdentifiedDescItem(versionId, subNodeForm.nodeId, subNodeForm.data.parent.version, loc.descItemType.id, descItem.descItemSpecId, descItem.descItemObjectId)
+                    .then(json => {
+                        dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'CREATE'));
+                    });
+            }
+        };
     }
 
     /** Metoda pro volání API. */
@@ -598,6 +628,14 @@ class ItemFormActions {
     /** Metoda pro volání API. */
     // @Abstract
     _callDeleteDescItemType(versionId, parentId, parentVersionId, descItemTypeId) {}
+
+    /** Metoda pro volání API. */
+    // @Abstract
+    _callSetNotIdentifiedDescItem(versionId, elementId, parentNodeVersion, itemTypeId, itemSpecId, itemObjectId) {}
+
+    /** Metoda pro volání API. */
+    // @Abstract
+    _callUnsetNotIdentifiedDescItem(versionId, elementId, parentNodeVersion, itemTypeId, itemSpecId, itemObjectId) {}
 
     /**
      * Přidání PP (který je počítaný a ještě ve formuláři není) do formuláře
@@ -951,6 +989,16 @@ class NodeFormActions extends ItemFormActions {
     }
 
     // @Override
+    _callSetNotIdentifiedDescItem(versionId, nodeId, parentNodeVersion, descItemTypeId, descItemSpecId, descItemObjectId) {
+        return WebApi.setNotIdentifiedDescItem(versionId, nodeId, parentNodeVersion, descItemTypeId, descItemSpecId, descItemObjectId);
+    }
+
+    // @Override
+    _callUnsetNotIdentifiedDescItem(versionId, nodeId, parentNodeVersion, descItemTypeId, descItemSpecId, descItemObjectId) {
+        return WebApi.unsetNotIdentifiedDescItem(versionId, nodeId, parentNodeVersion, descItemTypeId, descItemSpecId, descItemObjectId);
+    }
+
+    // @Override
     _getParentObjIdInfo(parentObjStore, routingKey) {
         const type = getRoutingKeyType(routingKey)
         switch (type) {
@@ -1023,6 +1071,16 @@ class OutputFormActions extends ItemFormActions {
     // @Override
     _callDeleteDescItemType(versionId, parentId, parentVersionId, descItemTypeId) {
         return WebApi.deleteOutputItemType(versionId, parentId, parentVersionId, descItemTypeId);
+    }
+
+    // @Override
+    _callSetNotIdentifiedDescItem(versionId, nodeId, parentNodeVersion, descItemTypeId, descItemSpecId, descItemObjectId) {
+        return WebApi.setNotIdentifiedOutputItem(versionId, nodeId, parentNodeVersion, descItemTypeId, descItemSpecId, descItemObjectId);
+    }
+
+    // @Override
+    _callUnsetNotIdentifiedDescItem(versionId, nodeId, parentNodeVersion, outputItemTypeId, outputItemSpecId, outputItemObjectId) {
+        return WebApi.unsetNotIdentifiedOutputItem(versionId, nodeId, parentNodeVersion, outputItemTypeId, outputItemSpecId, outputItemObjectId);
     }
 
 // @Override

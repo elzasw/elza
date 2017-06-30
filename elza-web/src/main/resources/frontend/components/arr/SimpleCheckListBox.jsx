@@ -7,7 +7,7 @@ import React from 'react';
 import {FilterableListBox, AbstractReactComponent, i18n} from 'components/shared';
 import {indexById, getSetFromIdsList} from 'stores/app/utils.jsx'
 
-var SimpleCheckListBox = class SimpleCheckListBox extends AbstractReactComponent {
+class SimpleCheckListBox extends AbstractReactComponent {
     constructor(props) {
         super(props)
 

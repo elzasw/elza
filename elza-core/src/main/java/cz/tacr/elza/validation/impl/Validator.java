@@ -4,8 +4,10 @@ import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.factory.DescItemFactory;
+import cz.tacr.elza.domain.vo.ArrDescItems;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.DataValidationResults;
+import cz.tacr.elza.service.ArrangementService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.springframework.util.Assert;
@@ -20,22 +22,22 @@ import java.util.Set;
 
 /**
  * Implementation of separate validator object
- * 
+ *
  * @author Petr Pytelka
  *
  */
 public class Validator {
 
 	DataValidationResults validationResults = new DataValidationResults();
-	
+
 	List<RulItemTypeExt> nodeTypes;
-	
-	List<ArrData> levelData;
+
+	List<ArrDescItem> descItems;
 	DescItemFactory descItemFactory;
 
-	public Validator(List<RulItemTypeExt> nodeTypes, List<ArrData> levelData, DescItemFactory descItemFactory) {
+	public Validator(List<RulItemTypeExt> nodeTypes, List<ArrDescItem> descItems, DescItemFactory descItemFactory) {
 		this.nodeTypes = nodeTypes;
-		this.levelData = levelData;
+		this.descItems = descItems;
 		this.descItemFactory = descItemFactory;
 	}
 
@@ -46,7 +48,7 @@ public class Validator {
 	public List<DataValidationResult> getValidationResultList() {
 		return validationResults.getResults();
 	}
-	
+
     /**
      * Provede validaci hodnot jednoho daného typu atributu.
      */
@@ -55,9 +57,15 @@ public class Validator {
         Assert.notNull(type);
         Assert.notNull(descItemsOfType);
 
-        Map<Integer, RulItemSpecExt> specExtMap = ElzaTools.createEntityMap(type.getRulItemSpecList(),
-                s -> s.getItemSpecId());
+        Map<Integer, RulItemSpecExt> specExtMap = ElzaTools.createEntityMap(type.getRulItemSpecList(), RulItemSpec::getItemSpecId);
         Map<RulItemSpecExt, List<ArrDescItem>> specItemsMap = new HashMap<>();
+
+        for (ArrDescItem descItem : descItemsOfType) {
+            if (descItem.getUndefined() && !type.getIndefinable()) {
+                validationResults.createError(descItem, "U prvku popisu " + descItem.getItemType().getName()
+                        + " není možné nastavit hodnotu '" + ArrangementService.UNDEFINED + "'.", type.getPolicyTypeCode());
+            }
+        }
 
         //musí mít hodnoty specifikaci?
         if (type.getUseSpecification()) {
@@ -111,7 +119,7 @@ public class Validator {
 
 
         postValidateRepeatable(BooleanUtils.isNotFalse(type.getRepeatable()), descItemsOfType, type);
-    }	
+    }
 
 	/**
 	 * Provede validaci opakovatelnosti hodnoty atributu.
@@ -137,7 +145,7 @@ public class Validator {
             if (RulItemType.Type.REQUIRED.equals(requiredType.getType())) {
             	validationResults.createMissingRequired(requiredType, null, requiredType.getPolicyTypeCode());
             }
-        }		
+        }
 	}
 
 	/**
@@ -146,29 +154,22 @@ public class Validator {
 	public void validate() {
         // Set of required but non existing types
         Set<RulItemTypeExt> requiredTypes = new HashSet<>(nodeTypes);
-        Map<Integer, RulItemTypeExt> extNodeTypes = ElzaTools.createEntityMap(nodeTypes, type ->
-                type.getItemTypeId());
+        Map<Integer, RulItemTypeExt> extNodeTypes = ElzaTools.createEntityMap(nodeTypes, RulItemType::getItemTypeId);
 
         //rozdělení hodnot podle typu
         Map<Integer, List<ArrDescItem>> descItemsInTypeMap = new HashMap<>();
 
-        for (ArrData arrData : levelData) {
-            ArrDescItem descItem = (ArrDescItem) arrData.getItem();
+        for (ArrDescItem descItem : descItems) {
             descItem = descItemFactory.getDescItem(descItem);
             if (!extNodeTypes.containsKey(descItem.getItemType().getItemTypeId())) {
                 validationResults.createError(descItem, "Prvek " + descItem.getItemType().getName()
-                                + " není možný u této jednotky popisu.", descItem.getItemType().getPolicyTypeCode());
+                                + " není možný u této jednotky popisu.", extNodeTypes.get(descItem.getItemType().getItemTypeId()).getPolicyTypeCode());
                 continue;
             }
 
-            List<ArrDescItem> itemsInType = descItemsInTypeMap.get(descItem.getItemType().getItemTypeId());
-            if (itemsInType == null) {
-                itemsInType = new LinkedList<>();
-                descItemsInTypeMap.put(descItem.getItemType().getItemTypeId(), itemsInType);
-            }
+            List<ArrDescItem> itemsInType = descItemsInTypeMap.computeIfAbsent(descItem.getItemType().getItemTypeId(), k -> new LinkedList<>());
             itemsInType.add(descItem);
         }
-
 
         for (Integer destItemTypeId : descItemsInTypeMap.keySet()) {
             RulItemTypeExt extType = extNodeTypes.get(destItemTypeId);
@@ -179,6 +180,6 @@ public class Validator {
         }
 
         //smazání hodnot, které jsou povinné a nejsou zadány
-        writeRequiredTypes(requiredTypes);		
+        writeRequiredTypes(requiredTypes);
 	}
 }

@@ -6,6 +6,7 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
+import org.apache.commons.lang.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -179,7 +180,8 @@ public class SerialNumberBulkAction extends BulkAction {
         ArrItemInt item = (ArrItemInt) descItem.getItem();
 
         // uložit pouze při rozdílu
-        if (item.getValue() == null || sn != item.getValue()) {
+        if (item.getValue() == null || sn != item.getValue() || BooleanUtils.isNotFalse(descItem.getUndefined())) {
+            descItem.setUndefined(false);
             item.setValue(sn);
             ArrDescItem ret = saveDescItem(descItem, version, change);
             level.setNode(ret.getNode());

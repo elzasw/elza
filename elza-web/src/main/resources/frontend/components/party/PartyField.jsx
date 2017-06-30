@@ -26,6 +26,7 @@ class PartyField extends AbstractReactComponent {
     static defaultProps = {
         detail: false,
         footer: true,
+        undefined: false,
         footerButtons: true,
         partyTypeId: null
     };
@@ -34,6 +35,7 @@ class PartyField extends AbstractReactComponent {
         detail: React.PropTypes.bool.isRequired,
         footer: React.PropTypes.bool,
         footerButtons: React.PropTypes.bool,
+        undefined: React.PropTypes.bool,
         value: React.PropTypes.object,
         onChange: React.PropTypes.func.isRequired,
         onDetail: React.PropTypes.func,
@@ -151,7 +153,7 @@ class PartyField extends AbstractReactComponent {
     };
 
     render() {
-        const {userDetail, value, detail, footer, ...otherProps} = this.props;
+        const {userDetail, value, detail, footer, undefined, ...otherProps} = this.props;
 
         let footerRender;
         if (footer) {
@@ -166,6 +168,11 @@ class PartyField extends AbstractReactComponent {
             // }
         }
 
+        let tmpVal = '';
+        if (undefined) {
+            tmpVal = i18n('subNodeForm.descItemType.notIdentified');
+        }
+
         return <Autocomplete
             ref='autocomplete'
             className="autocomplete-party"
@@ -174,7 +181,7 @@ class PartyField extends AbstractReactComponent {
             value={value}
             items={this.state.partyList}
             getItemId={(item) => item ? item.id : null}
-            getItemName={(item) => item && item.record ? item.record.record : ''}
+            getItemName={(item) => item && item.record ? item.record.record : tmpVal}
             onSearchChange={this.handleSearchChange}
             renderItem={this.renderParty}
             actions={[actions]}

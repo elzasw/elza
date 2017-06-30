@@ -178,6 +178,20 @@ export class WebApiCls {
         // return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/descItems/' + versionId + '/' + nodeVersionId + '/update/true', null,  descItem);
     }
 
+    setNotIdentifiedDescItem(versionId, nodeId, parentNodeVersion, descItemTypeId, descItemSpecId, descItemObjectId) {
+        // return callWS('/arrangement/descItems/' + versionId + '/' + nodeId + '/' + parentNodeVersion + '/notUndefined/set?descItemTypeId=' + descItemTypeId + '&descItemSpecId=' + descItemSpecId + '&descItemObjectId=' + descItemObjectId, null);
+
+        // Původní volání kontroleru - zatím necháno pro testovací účely
+        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/descItems/' + versionId + '/' + nodeId + '/' + parentNodeVersion + '/notUndefined/set', {descItemTypeId, descItemSpecId, descItemObjectId});
+    }
+
+    unsetNotIdentifiedDescItem(versionId, nodeId, parentNodeVersion, descItemTypeId, descItemSpecId, descItemObjectId) {
+        // return callWS('/arrangement/descItems/' + versionId + '/' + nodeId + '/' + parentNodeVersion + '/notUndefined/unset?descItemTypeId=' + descItemTypeId + '&descItemSpecId=' + descItemSpecId + '&descItemObjectId=' + descItemObjectId, null);
+
+        // Původní volání kontroleru - zatím necháno pro testovací účely
+        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/descItems/' + versionId + '/' + nodeId + '/' + parentNodeVersion + '/notUndefined/unset', {descItemTypeId, descItemSpecId, descItemObjectId});
+    }
+
     updateOutputItem(versionId, outputDefinitionVersion, descItem) {
         return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/outputItems/' + versionId + '/' + outputDefinitionVersion + '/update/true', null,  descItem);
     }
@@ -196,6 +210,20 @@ export class WebApiCls {
 
     deleteOutputItemType(versionId, outputDefinitionId, outputDefinitionVersion, descItemTypeId) {
         return AjaxUtils.ajaxDelete(WebApiCls.arrangementUrl + '/outputItems/' + versionId + '/' + outputDefinitionId + '/' + outputDefinitionVersion + '/' + descItemTypeId, null, null);
+    }
+
+    setNotIdentifiedOutputItem(versionId, outputDefinitionId, outputDefinitionVersion, outputItemTypeId, outputItemSpecId, outputItemObjectId) {
+        //return callWS('/arrangement/outputItems/' + versionId + '/' + outputDefinitionId + '/' + outputDefinitionVersion + '/notUndefined/set?outputItemTypeId=' + outputItemTypeId + '&outputItemSpecId=' + outputItemSpecId + '&outputItemObjectId=' + outputItemObjectId, null);
+
+        // Původní volání kontroleru - zatím necháno pro testovací účely
+        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/outputItems/' + versionId + '/' + outputDefinitionId + '/' + outputDefinitionVersion + '/notUndefined/set', {outputItemTypeId, outputItemSpecId, outputItemObjectId});
+    }
+
+    unsetNotIdentifiedOutputItem(versionId, outputDefinitionId, outputDefinitionVersion, outputItemTypeId, outputItemSpecId, outputItemObjectId) {
+        //return callWS('/arrangement/outputItems/' + versionId + '/' + outputDefinitionId + '/' + outputDefinitionVersion + '/notUndefined/unset?outputItemTypeId=' + outputItemTypeId + '&outputItemSpecId=' + outputItemSpecId + '&outputItemObjectId=' + outputItemObjectId, null);
+
+        // Původní volání kontroleru - zatím necháno pro testovací účely
+        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/outputItems/' + versionId + '/' + outputDefinitionId + '/' + outputDefinitionVersion + '/notUndefined/unset', {outputItemTypeId, outputItemSpecId, outputItemObjectId});
     }
 
     switchOutputCalculating(fundVersionId, outputDefinitionId, itemTypeId, strict) {

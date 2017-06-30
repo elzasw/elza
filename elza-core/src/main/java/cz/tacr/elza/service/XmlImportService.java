@@ -678,6 +678,7 @@ public class XmlImportService {
         arrDescItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
         arrDescItem.setItemSpec(descItemSpec);
         arrDescItem.setItemType(descItemType);
+        arrDescItem.setUndefined(false);
 
         return arrDescItem;
     }

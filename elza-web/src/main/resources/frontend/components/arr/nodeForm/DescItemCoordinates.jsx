@@ -60,7 +60,7 @@ class DescItemCoordinates extends AbstractReactComponent {
         let value = cal && descItem.value == null ? i18n("subNodeForm.descItemType.calculable") : descItem.value;
 
         if (readMode) {
-            return <DescItemLabel value={value} cal={cal} />
+            return <DescItemLabel value={value} cal={cal} notIdentified={descItem.undefined} />
         }
 
         return (
@@ -73,14 +73,14 @@ class DescItemCoordinates extends AbstractReactComponent {
                                 <input
                                     {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
                                     ref='focusEl'
-                                    disabled={locked}
+                                    disabled={locked || descItem.undefined}
                                     onChange={this.handleChangeData}
-                                    value={this.state.data}
+                                    value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : value}
                                 />
                             </ItemTooltipWrapper>
                             : <span className="textvalue">{i18n('subNodeForm.countOfCoordinates', this.state.data)}</span>
                     }
-                    { descItem.descItemObjectId && <div className='desc-item-coordinates-action' key='download-action'><NoFocusButton onClick={this.props.onDownload}>
+                    { !descItem.undefined && descItem.descItemObjectId && <div className='desc-item-coordinates-action' key='download-action'><NoFocusButton onClick={this.props.onDownload}>
                             <Icon glyph="fa-download"/>
                         </NoFocusButton></div>
                     }

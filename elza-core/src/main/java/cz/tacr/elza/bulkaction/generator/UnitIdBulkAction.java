@@ -6,6 +6,7 @@ import java.util.List;
 
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import org.apache.commons.lang.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -235,6 +236,10 @@ public class UnitIdBulkAction extends BulkAction {
 
                     }
 
+                    if (BooleanUtils.isNotFalse(descItem.getUndefined())) {
+                        descItem.setUndefined(false);
+                    }
+
                     ((ArrItemUnitid) item).setValue(unitId.getData());
                     ret = saveDescItem(descItem, version, change);
                     level.setNode(ret.getNode());
@@ -325,7 +330,7 @@ public class UnitIdBulkAction extends BulkAction {
 
             ArrDescItem descItem = loadDescItem(level);
             ArrDescItem descItemLevel = loadDescItemLevel(level);
-            if (descItem != null) {
+            if (descItem != null && BooleanUtils.isNotTrue(descItem.getUndefined())) {
                 ArrItemData item = descItem.getItem();
 
                 if (!(item instanceof ArrItemUnitid)) {

@@ -1,3 +1,4 @@
+//
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
@@ -8,9 +9,7 @@ import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
 import {getSpecsIds} from 'components/arr/ArrUtils.jsx';
 import  './FundBulkModificationsForm.less';
-
-const SimpleCheckListBox = require('./SimpleCheckListBox');
-
+import SimpleCheckListBox from "./SimpleCheckListBox";
 
 const getDefaultOperationType = props => {
     const {dataType} = props;
@@ -48,7 +47,6 @@ const getDefaultItemsArea = props => {
 /**
  * Formulář hledání a nahrazení.
  */
-
 class FundBulkModificationsForm extends AbstractReactComponent {
 
     /**

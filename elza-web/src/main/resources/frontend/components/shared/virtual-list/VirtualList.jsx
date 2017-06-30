@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import utils from "./utils";
+import Loading from "../loading/Loading";
 
 var VirtualList = React.createClass({
     propTypes: {

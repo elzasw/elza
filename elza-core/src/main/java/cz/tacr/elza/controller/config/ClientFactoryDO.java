@@ -16,6 +16,7 @@ import javax.annotation.Nullable;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.filter.condition.UndefinedDescItemCondition;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -595,6 +596,9 @@ public class ClientFactoryDO {
                 }
                 case NOT_EMPTY:
                     condition = new NotEmptyDescItemCondition(); // fulltextValue
+                    break;
+                case UNDEFINED:
+                    condition = new UndefinedDescItemCondition();
                     break;
                 case NOT_INTERVAL: {
                     if (descItemType.getDataType().getCode().equals("INT")) {

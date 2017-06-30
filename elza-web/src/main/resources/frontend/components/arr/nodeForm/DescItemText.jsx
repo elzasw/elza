@@ -25,16 +25,18 @@ class DescItemText extends AbstractReactComponent {
 
         if (readMode) {
             return (
-                <DescItemLabel value={value} cal={cal}/>
+                <DescItemLabel value={value} cal={cal} notIdentified={descItem.undefined} />
             )
         }
 
+        value = descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : value;
+
         let cls = [];
-        var textareaProps = {
+        let textareaProps = {
             key: "val",
-            disabled: locked,
+            disabled: locked || descItem.undefined,
             defaultValue: ""
-        }
+        };
 
         if (cal) {
             cls.push("calculable");
@@ -51,7 +53,6 @@ class DescItemText extends AbstractReactComponent {
             textareaProps.onChange = (e) => !cal && this.props.onChange(e.target.value);
             textareaProps.value = value;
         }
-
 
         return (
             <div className='desc-item-value'>

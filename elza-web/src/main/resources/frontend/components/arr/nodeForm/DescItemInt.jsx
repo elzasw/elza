@@ -36,7 +36,7 @@ var DescItemInt = class DescItemInt extends AbstractReactComponent {
 
         if (readMode) {
             return (
-                <DescItemLabel value={value} cal={cal} />
+                <DescItemLabel value={value} cal={cal} notIdentified={descItem.undefined} />
             )
         }
 
@@ -52,8 +52,8 @@ var DescItemInt = class DescItemInt extends AbstractReactComponent {
                         {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
                         ref='focusEl'
                         type="text"
-                        disabled={locked}
-                        value={value}
+                        disabled={locked || descItem.undefined}
+                        value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : value}
                         onChange={this.handleChange}
                     />
                 </ItemTooltipWrapper>

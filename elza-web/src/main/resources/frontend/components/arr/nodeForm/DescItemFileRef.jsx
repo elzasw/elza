@@ -69,9 +69,9 @@ class DescItemFileRef extends AbstractReactComponent {
 
         if (readMode) {
             if (value) {
-                return <DescItemLabel value={value.name} />;
+                return <DescItemLabel value={value.name} notIdentified={descItem.undefined} />;
             } else {
-                return <DescItemLabel value="" />;
+                return <DescItemLabel value="" notIdentified={descItem.undefined} />;
             }
         }
 
@@ -80,10 +80,10 @@ class DescItemFileRef extends AbstractReactComponent {
         return <div className='desc-item-value desc-item-value-parts'>
             <ItemTooltipWrapper tooltipTitle="dataType.fileRef.format">
                 <Autocomplete
-                    {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, ['autocomplete-file'])}
+                    {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked || descItem.undefined, ['autocomplete-file'])}
                     ref='autocomplete'
                     customFilter
-                    value={value}
+                    value={descItem.undefined ? {name: i18n('subNodeForm.descItemType.notIdentified')} : value}
                     items={this.state.fileList}
                     getItemId={(item) => item ? item.id : null}
                     getItemName={(item) => item ? item.name : ''}
