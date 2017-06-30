@@ -126,7 +126,7 @@ const
   _AktualizaceApp = 'Aktualizace aplikace:';
   _UlozeniNastaveniApp = 'Uložení nastavení aplikace';
   _UlozeniNastaveniPripojeni = 'Uložení nastavení pøipojení k databázi';
-  _RegistaceSluzby = 'Registrace služby xzr3';
+  _RegistaceSluzby = 'Registrace služby {#KodAplikace}';
   _OdstanovaniDocasnychSouboru = 'Odstraòování doèasných souborù';
   _Hotovo = 'Hotovo';
   _InstalacniAdresarObsahujeMezery = 'Ceska k instalaènímu adresáøi nesmí obsahovat mezery!';   
@@ -636,6 +636,12 @@ begin
         CheckBoxZobrazStranku.Visible := true;
         CheckBoxZobrazStranku.Checked := true;
       end;
+      WizardForm.Refresh;
+      sleep (10000);
+      WizardForm.Refresh;
+      sleep (10000);
+      WizardForm.Refresh;
+      sleep (10000);
       WizardForm.Refresh;
       sleep (10000);
       WizardForm.Refresh;
