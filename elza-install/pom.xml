@@ -53,21 +53,6 @@
                                     <md5>db8f0f5fcd878b5cf14392347f3597f5</md5>
                                 </configuration>
                             </execution>
-                            <execution>
-                                <id>download-jre</id>
-                                <!--<phase>compile</phase>-->
-                                <goals>
-                                    <goal>wget</goal>
-                                </goals>
-                                <configuration>
-                                    <url>
-                                        http://build.marbes.cz/jre.zip
-                                    </url>
-                                    <unpack>true</unpack>
-                                    <outputDirectory>${project.build.directory}/jre</outputDirectory>
-                                    <md5>3c4fa74ccbd68658f2b1ac2c245ad627</md5>
-                                </configuration>
-                            </execution>
                         </executions>
                     </plugin>
                     <plugin>
@@ -170,6 +155,23 @@
                                                 <include>all-institutions-import.xml</include>
                                             </includes>
                                             <directory>../package-cz-base/src</directory>
+                                            <filtering>false</filtering>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>copy-jre</id>
+                                <!-- here the phase you need -->
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/jre</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${jre.path}</directory>
                                             <filtering>false</filtering>
                                         </resource>
                                     </resources>
