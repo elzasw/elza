@@ -84,7 +84,7 @@ Uživatelské rozhranní najdete na adrese http://localhost:8080.
     ```
     mvn clean install -Pskiptest,release,build-instalator -Djre.path="c:\Program Files\Java\jre1.8.0_131\"
     ```
-* Předchozím krokem dojde k sestavení aplikace a vytvoření instalátoru. Výsledný soubor instalátoru se uloží do umístění `elza-install\target\ELZA-<verze aplikace>.exe`
+* Předchozím krokem dojde k sestavení aplikace a vytvoření instalátoru. Výsledný soubor instalátoru se uloží do umístění `elza-install\elza-exe\target\ELZA-<verze aplikace>.exe`
 
 ## Konfigurace a logování
 
