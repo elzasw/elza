@@ -6,7 +6,6 @@ import './ArrDaos.less';
 import React from "react";
 import {connect} from "react-redux";
 import {Icon, Loading, AbstractReactComponent, i18n} from 'components/shared';
-import {ArrDao} from 'components'
 import {indexById} from "stores/app/utils.jsx";
 import {Button} from "react-bootstrap";
 import {dateToString} from "components/Utils.jsx";
@@ -16,6 +15,7 @@ import {fundChangeReadMode} from "actions/arr/fund.jsx";
 import {setSettings, getOneSettings} from "components/arr/ArrUtils.jsx";
 import {LazyListBox, ListBox} from 'components/shared';
 import {WebApi} from 'actions/index.jsx';
+import ArrDao from "./ArrDao";
 
 class ArrDaos extends AbstractReactComponent {
 

@@ -3,13 +3,14 @@ import {WebApi} from 'actions/index.jsx';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, Autocomplete, i18n, Icon, FormInput} from 'components/shared';
-import {RegistryField, DatationField} from 'components'
 import {Modal, Button, Form, Radio, FormGroup, HelpBlock} from 'react-bootstrap'
 import {indexById} from 'stores/app/utils.jsx'
 import {submitForm} from 'components/form/FormUtils.jsx'
 import {objectById} from 'stores/app/utils.jsx'
 
 import './RelationForm.less'
+import DatationField from "./DatationField";
+import RegistryField from "../registry/RegistryField";
 
 const USE_UNITDATE_ENUM = { // TODO @compel move to party.jsx
     NONE: 'NONE',

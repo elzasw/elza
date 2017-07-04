@@ -14,9 +14,10 @@ import {isFundRootId} from './ArrUtils.jsx';
 import {getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {fundNodeSubNodeFulltextSearch, fundSubNodesNextPage, fundSubNodesPrevPage} from 'actions/arr/node.jsx';
 import {Icon, AbstractReactComponent, i18n, Loading, Search} from 'components/shared';
-import {AddNodeCross, GoToPositionForm} from 'components';
+import AddNodeCross from './AddNodeCross'
+import GoToPositionForm from './GoToPositionForm'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
-import {fundSelectSubNode} from 'actions/arr/nodes.jsx';
+import {fundSelectSubNode} from 'actions/arr/node.jsx';
 
 import './NodeActionsBar.less';
 

@@ -5,7 +5,7 @@
 import React from 'react';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Tabs} from 'components/shared';
-import {FundTreeLazy} from 'components'
+import FundTreeLazy from './FundTreeLazy'
 import * as types from 'actions/constants/ActionTypes.js';
 import {AppActions} from 'stores/index.jsx';
 import {MenuItem} from 'react-bootstrap';

@@ -5,10 +5,13 @@ import classNames from 'classnames';
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, RibbonGroup, ModalDialog, i18n, Loading, NodeTabs, Icon, Utils} from 'components/shared';
-import {Ribbon, ArrPanel, SearchWithGoto, AddRegistryForm, ImportForm, ExtImportForm, RegistryDetail, RegistryList} from 'components';
+import Ribbon from 'components/page/Ribbon'
+import ImportForm from 'components/form/ImportForm'
+import ExtImportForm from 'components/form/ExtImportForm'
+import RegistryDetail from 'components/registry/RegistryDetail'
+import RegistryList from 'components/registry/RegistryList'
 import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 import {Button} from 'react-bootstrap';
-import {PageLayout} from 'pages/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
 import {registryMoveStart, registryMove, registryMoveCancel, registryDelete, registryDetailFetchIfNeeded, registryAdd, registryListInvalidate} from 'actions/registry/registry.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
@@ -20,7 +23,7 @@ import * as perms from 'actions/user/Permission.jsx';
 import {regExtSystemListFetchIfNeeded} from 'actions/registry/regExtSystemList';
 
 import './RegistryPage.less';
-import {SelectPage} from 'pages'
+import PageLayout from "../shared/layout/PageLayout";
 
 /**
  * Stránka rejstříků.

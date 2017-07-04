@@ -8,11 +8,11 @@ import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFor
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registry.jsx'
+import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRecordTypes.jsx'
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
 import {submitForm} from 'components/form/FormUtils.jsx'
 import {getTreeItemById} from "./../../components/registry/registryUtils";
-import {PARTY_TYPE_CODES} from 'actions/party/party.jsx'
+import {PARTY_TYPE_CODES} from 'constants.jsx'
 
 import DatationField from './DatationField';
 

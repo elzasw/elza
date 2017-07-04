@@ -5,7 +5,6 @@ import {fund, fundInitState} from './fund.jsx'
 import nodeSetting from './nodeSetting.jsx'
 import visiblePolicy from './visiblePolicy.jsx'
 import {consolidateState} from 'components/Utils.jsx'
-import {Toastr, i18n} from 'components/index.jsx';
 import {isBulkAction} from 'actions/arr/bulkActions.jsx'
 import {isFundTreeAction} from 'actions/arr/fundTree.jsx'
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'

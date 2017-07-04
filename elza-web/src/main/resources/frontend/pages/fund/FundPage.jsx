@@ -12,7 +12,7 @@ import {Icon, i18n} from 'components/index.jsx';
 import {Splitter, Autocomplete, ListBox, RibbonGroup, ToggleContent, AbstractReactComponent, SearchWithGoto} from 'components/shared';
 import {NodeTabs, FundForm, FundDetail, Ribbon, FindindAidFileTree, ImportForm, ExportForm, FundDetailExt} from 'components'
 import {ButtonGroup, Button, Panel} from 'react-bootstrap';
-import {PageLayout} from 'pages/index.jsx';
+import PageLayout from "../shared/layout/PageLayout";
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {createFund} from 'actions/arr/fund.jsx'
 import {storeLoadData, storeLoad} from 'actions/store/store.jsx'

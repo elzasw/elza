@@ -2,6 +2,7 @@ const webpack = require('webpack');
 const path = require('path');
 const fs = require('fs');
 const HappyPack = require('happypack');
+const CircularDependencyPlugin = require('circular-dependency-plugin');
 
 const PORT = 8090;
 
@@ -44,6 +45,12 @@ module.exports = {
         headers: { 'Access-Control-Allow-Origin': '*' }
     },
     plugins: [
+        new CircularDependencyPlugin({
+            // exclude detection of files based on a RegExp
+            exclude: /node_modules/,
+            // add errors to webpack instead of warnings
+            failOnError: true
+        }),
         /*new HappyPack({
             id: 'jsx',
             threads: 6,

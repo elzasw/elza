@@ -2,17 +2,17 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, Scope, Icon, FormInput, Loading} from 'components/shared';
-import {DatationField} from 'components'
+import DatationField from './DatationField'
 import {Modal, Button, Row, Col, Form} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes.jsx'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registry.jsx'
+import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRecordTypes.jsx'
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
 import {submitForm} from 'components/form/FormUtils.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
-import {PARTY_TYPE_CODES} from 'actions/party/party.jsx'
+import {PARTY_TYPE_CODES, RELATION_CLASS_CODES} from 'constants.jsx'
 
 
 import './RelationForm.less'

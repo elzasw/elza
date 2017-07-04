@@ -1,8 +1,8 @@
 require('./SubNodeDao.less');
 
 import React from 'react';
+import NodeDaosForm from "./NodeDaosForm";
 import {Icon, i18n, AbstractReactComponent, Loading} from 'components/shared';
-import {NodeDaosForm} from 'components'
 import {Button} from "react-bootstrap";
 import {connect} from 'react-redux'
 

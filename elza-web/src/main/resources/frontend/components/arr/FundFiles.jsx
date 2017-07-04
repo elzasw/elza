@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, Icon, i18n, FileListBox, Loading, FormInput} from 'components/shared';
-import {AddFileForm} from 'components'
+import AddFileForm from './AddFileForm'
 import {Button} from 'react-bootstrap'
 import {fetchFundFilesIfNeeded, fundFilesFilterByText, fundFilesCreate, fundFilesDelete, fundFilesReplace} from 'actions/arr/fundFiles.jsx'
 import {modalDialogShow,modalDialogHide} from 'actions/global/modalDialog.jsx'

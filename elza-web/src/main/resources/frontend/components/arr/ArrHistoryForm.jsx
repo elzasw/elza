@@ -1,20 +1,20 @@
+/**
+ * Formulář zobrazení hostorie.
+ */
 import React from 'react';
 import {connect} from 'react-redux'
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
-import {FundNodesSelectForm} from 'components';
 import {Modal, Button, FormGroup, Form} from 'react-bootstrap';
 import {LazyListBox} from 'components/shared';
 import {WebApi} from 'actions/index.jsx';
 import {getScrollbarWidth, timeToString, dateToString} from 'components/Utils.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {dateTimeToLocalUTC} from "components/Utils"
+import FundNodesSelectForm from "./FundNodesSelectForm";
 
 require("./ArrHistoryForm.less");
 
-/**
- * Formulář zobrazení hostorie.
- */
 class ArrHistoryForm extends AbstractReactComponent {
 
     static PropTypes = {};

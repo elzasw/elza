@@ -8,7 +8,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Button} from 'react-bootstrap';
 import {GroupDetail, AddGroupForm, Ribbon} from 'components/index.jsx';
-import {PageLayout} from 'pages/index.jsx';
+import PageLayout from "../shared/layout/PageLayout";
 import {i18n, Search, ListBox, AbstractReactComponent, Icon, RibbonGroup, Loading} from 'components/shared';
 import {groupsFetchIfNeeded, groupsGroupDetailFetchIfNeeded, groupsSelectGroup, groupsSearch, groupUpdate, groupCreate, groupDelete} from 'actions/admin/group.jsx'
 import {indexById} from 'stores/app/utils.jsx'

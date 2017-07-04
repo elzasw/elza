@@ -4,7 +4,7 @@
 
 import React from 'react';
 import {AbstractReactComponent, i18n} from 'components/shared';
-import {BulkActionsTable} from 'components';
+import BulkActionsTable from './BulkActionsTable'
 import {Modal, Button} from 'react-bootstrap';
 
 class BulkActionsDialog extends AbstractReactComponent {

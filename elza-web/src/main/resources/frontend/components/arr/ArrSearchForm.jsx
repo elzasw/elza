@@ -2,7 +2,7 @@ import React from 'react';
 import {connect} from 'react-redux'
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, FormInput, Icon} from 'components/shared';
-import {DatationField} from 'components'
+import DatationField from '../party/DatationField'
 import {Modal, Button, FormGroup, Form, Row, Col} from 'react-bootstrap';
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 import {LazyListBox} from 'components/shared';

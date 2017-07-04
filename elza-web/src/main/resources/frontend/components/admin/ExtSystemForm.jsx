@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 
 import {reduxForm} from 'redux-form'
 import {Form, Button, FormControl, Table, Modal, OverlayTrigger, Tooltip, Checkbox} from 'react-bootstrap'
-import {FormInput} from '../index.jsx';
 import {submitForm} from 'components/form/FormUtils.jsx'
 import {WebApi} from 'actions'
 import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx'
@@ -14,6 +13,7 @@ import {extSystemListFetchIfNeeded} from 'actions/admin/extSystem.jsx';
 import {REG_EXT_SYSTEM_TYPE} from 'constants.jsx';
 import i18n from "../i18n";
 import AbstractReactComponent from "../AbstractReactComponent";
+import {FormInput} from "../shared/index";
 
 const EXT_SYSTEM_CLASS = {
     RegExternalSystem: ".RegExternalSystemVO",

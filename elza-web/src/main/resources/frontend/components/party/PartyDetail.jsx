@@ -1,16 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form'
-import {
-    PartyDetailCreators,
-    PartyIdentifierForm,
-    PartyDetailIdentifiers,
-    PartyDetailNames,
-    PartyDetailRelations,
-    PartyDetailRelationClass,
-    PartyNameForm,
-    PartyField
-} from 'components'
+import PartyListItem from './PartyListItem';
+import PartyDetailIdentifiers from './PartyDetailIdentifiers';
+import PartyDetailNames from './PartyDetailNames';
+import PartyDetailRelations from './PartyDetailRelations';
+import PartyDetailRelationClass from './PartyDetailRelationClass';
+import PartyField from './PartyField';
 import {
     AbstractReactComponent,
     Search,
@@ -26,7 +22,7 @@ import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {partyUpdate} from 'actions/party/party.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
-import {partyAdd, findPartyFetchIfNeeded, partyDetailFetchIfNeeded, PARTY_TYPE_CODES} from 'actions/party/party.jsx'
+import {partyAdd, findPartyFetchIfNeeded, partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
 import {Utils} from 'components/shared';
 import {objectById, indexById} from 'stores/app/utils.jsx';
 import {setInputFocus, dateTimeToString} from 'components/Utils.jsx'
@@ -37,7 +33,7 @@ import * as perms from 'actions/user/Permission.jsx';
 import {initForm} from "actions/form/inlineForm.jsx"
 import {getMapFromList} from 'stores/app/utils.jsx'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
-import {PartyListItem} from 'components';
+import {PARTY_TYPE_CODES} from 'constants.jsx'
 
 import './PartyDetail.less';
 

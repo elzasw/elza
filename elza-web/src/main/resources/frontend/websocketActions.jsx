@@ -92,6 +92,10 @@ class ws {
         this.receiptErrorCallbacks = {}; // mapa id receipt na error callback funkci
     }
 
+    static stompDisconnect = stompDisconnect;
+
+    static stompConnect = stompConnect;
+
     send = (url, headers, data, successCallback, errorCallback) => {
         const useHeaders = headers ? headers : {};
         if (successCallback || errorCallback) {

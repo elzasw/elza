@@ -7,7 +7,6 @@ import classNames from 'classnames';
 import {AbstractReactComponent, i18n, Loading, RibbonGroup, Icon} from 'components/shared';
 import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 import {Button, Dropdown, MenuItem} from 'react-bootstrap';
-import {RegistryPage, PartyPage} from 'pages/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
 import {logout} from 'actions/global/login.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'

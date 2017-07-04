@@ -288,41 +288,29 @@ export function StringMap() {
     };
 }
 
-var _browser
 // Inicializace typu prohlížeče
-{
-    // Opera 8.0+
-    var opera = (!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
-        // Firefox 1.0+
-    var firefox = typeof InstallTrigger !== 'undefined';
-        // At least Safari 3+: "[object HTMLElementConstructor]"
-    var safari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
-        // Internet Explorer 6-11
-    var ie = /*@cc_on!@*/false || !!document.documentMode;
-        // Edge 20+
-    var edge = !ie && !!window.StyleMedia;
-        // Chrome 1+
-    var chrome = !!window.chrome && !!window.chrome.webstore;
-        // Blink engine detection
-    var blink = (chrome || opera) && !!window.CSS;
-
-    _browser = {
-        opera,
-        firefox,
-        safari,
-        ie,
-        edge,
-        chrome,
-        blink,
-    }
-}
 export function browser() {
-    return _browser;
+    return {
+        // Opera 8.0+
+        opera: (!!window.opr && !!window.opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0,
+        // Firefox 1.0+
+        firefox: typeof InstallTrigger !== 'undefined',
+        // At least Safari 3+: "[object HTMLElementConstructor]"
+        safari: Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0,
+        // Internet Explorer 6-11
+        ie: /*@cc_on!@*/false || !!document.documentMode,
+        // Edge 20+
+        edge: !window.ie && !!window.StyleMedia,
+        // Chrome 1+
+        chrome: !!window.chrome && !!window.chrome.webstore,
+        // Blink engine detection
+        blink: (window.chrome || window.opera) && !!window.CSS,
+    };
 }
 
 export function getKeyModifier() {
-    var browser = _browser;
-    if (browser.ie || browser.edge) {
+    const brows = browser();
+    if (brows.ie || brows.edge) {
         return 'ctrl+shift+';
     } else {
         return 'ctrl+alt+';

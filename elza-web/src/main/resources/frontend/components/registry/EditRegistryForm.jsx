@@ -4,7 +4,7 @@ import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, Autocomplete, FormInput} from 'components/shared';
 import {Modal, Button, Form} from 'react-bootstrap';
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
-import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registry.jsx'
+import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRecordTypes.jsx'
 import {getTreeItemById} from "./registryUtils";
 
 /**

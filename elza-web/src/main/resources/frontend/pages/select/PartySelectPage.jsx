@@ -4,10 +4,10 @@ import {connect} from 'react-redux'
 
 import {AbstractReactComponent, i18n, Icon, RibbonGroup, Ribbon, RibbonMenu, RibbonSplit} from 'components/shared';
 import {Button} from 'react-bootstrap';
-import {PartyPage} from 'pages/index.jsx';
 import {storeFromArea} from 'shared/utils'
 import SelectPage from './SelectPage.jsx'
 import {AREA_PARTY_DETAIL} from 'actions/party/party.jsx'
+import PartyPage from "../party/PartyPage";
 
 /**
  * Stránka rejstříků.

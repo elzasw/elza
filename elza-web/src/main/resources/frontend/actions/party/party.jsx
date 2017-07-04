@@ -16,18 +16,13 @@ import {SimpleListActions} from 'shared/list'
 import {DetailActions} from 'shared/detail'
 import AddPartyForm from "../../components/party/AddPartyForm";
 
+import {PARTY_TYPE_CODES} from 'constants.jsx'
+
 export const AREA_PARTY_LIST = 'partyList';
 export const AREA_PARTY_DETAIL = 'partyDetail';
 
 
 export const DEFAULT_PARTY_LIST_MAX_SIZE = DEFAULT_LIST_SIZE;
-
-export const PARTY_TYPE_CODES = {
-    GROUP_PARTY: 'GROUP_PARTY',
-    PERSON: 'PERSON',
-    DYNASTY: 'DYNASTY',
-    EVENT: 'EVENT',
-};
 
 export const RELATION_CLASS_TYPE_REPEATABILITY = {
     UNIQUE: "UNIQUE",
@@ -40,11 +35,6 @@ export const USE_UNITDATE_ENUM = {
     INTERVAL: 'INTERVAL',
 };
 
-export const RELATION_CLASS_CODES = {
-    RELATION: "R",
-    BIRTH: "B",
-    EXTINCTION: "E"
-};
 
 /**
  * Načtení seznamu osob dle filtru

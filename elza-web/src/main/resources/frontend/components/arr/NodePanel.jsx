@@ -11,7 +11,11 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {TooltipTrigger, Icon, ListBox, AbstractReactComponent, i18n, Loading,  Accordion} from 'components/shared';
-import {NodeSubNodeForm,VisiblePolicyForm, SubNodeDao, SubNodeRegister, NodeActionsBar} from 'components'
+import VisiblePolicyForm from './VisiblePolicyForm'
+import SubNodeDao from './SubNodeDao'
+import SubNodeRegister from './SubNodeRegister'
+import NodeActionsBar from './NodeActionsBar'
+import NodeSubNodeForm from './NodeSubNodeForm'
 import {Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
 import {addNodeFormArr} from 'actions/arr/addNodeForm.jsx';
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
@@ -19,7 +23,7 @@ import {fundSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister.jsx'
 import {fundSubNodeDaosFetchIfNeeded} from 'actions/arr/subNodeDaos.jsx'
 import {fundSubNodeInfoFetchIfNeeded} from 'actions/arr/subNodeInfo.jsx'
 import {fundNodeInfoFetchIfNeeded} from 'actions/arr/nodeInfo.jsx'
-import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
+import {fundSelectSubNode} from 'actions/arr/node.jsx';
 import {fundNodeSubNodeFulltextSearch, fundSubNodesNext, fundSubNodesPrev, fundSubNodesNextPage, fundSubNodesPrevPage} from 'actions/arr/node.jsx'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
 import {indexById} from 'stores/app/utils.jsx'

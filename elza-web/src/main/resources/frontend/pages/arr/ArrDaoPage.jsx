@@ -11,20 +11,11 @@ import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {
-    FundSettingsForm,
-    NodeTabs,
-    BulkActionsDialog,
-    VisiblePolicyForm,
-    FundPackets,
-    FundFiles,
-    FundTreeMain,
-    ArrDaoPackages,
-    Ribbon,
-    FundTreeDaos,
-    ArrFundPanel,
-    ArrDaos
-} from 'components/index.jsx';
+
+import ArrDaoPackages from '../../components/arr/ArrDaoPackages'
+import Ribbon from '../../components/page/Ribbon'
+import FundTreeDaos from '../../components/arr/FundTreeDaos'
+import ArrDaos from '../../components/arr/ArrDaos'
 
 import {
     i18n,
@@ -42,7 +33,7 @@ import {addNodeForm} from "actions/arr/addNodeForm.jsx"
 import ArrParentPage from "./ArrParentPage.jsx";
 import {fundTreeSelectNode} from 'actions/arr/fundTree.jsx'
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
-import {PageLayout} from 'pages/index.jsx';
+import PageLayout from "../shared/layout/PageLayout";
 import {WebApi} from 'actions/index.jsx';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {showRegisterJp, fundsFetchIfNeeded} from 'actions/arr/fund.jsx'

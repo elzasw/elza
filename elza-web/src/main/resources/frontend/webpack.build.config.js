@@ -3,16 +3,23 @@ process.env.NODE_ENV = 'production';
 const path = require('path');
 const webpack = require('webpack');
 const CommonsChunkPlugin = require("webpack/lib/optimize/CommonsChunkPlugin");
+const CircularDependencyPlugin = require('circular-dependency-plugin');
 
+const SOURCE_MAP = false
 
 module.exports = {
+    devtool: SOURCE_MAP ? 'source-map' : false,
     bail: true,
     entry: {
-        main: './index.jsx'
+        main: [
+            './public_entry.jsx',
+            './index.jsx'
+        ]
     },
     output: {
         path: path.resolve('../../../../target/react-dist'),
-        filename: "[name].js"
+        filename: "[name].js",
+        sourceMapFilename: SOURCE_MAP ? "[name].js.map" : null,
     },
     resolve: {
         extensions: ['.js', '.jsx'],
@@ -71,6 +78,12 @@ module.exports = {
         tls: "empty"
     },
     plugins: [
+        new CircularDependencyPlugin({
+            // exclude detection of files based on a RegExp
+            exclude: /node_modules/,
+            // add errors to webpack instead of warnings
+            failOnError: true
+        }),
         new webpack.ProvidePlugin({
             $: "jquery",
             jQuery: "jquery"
@@ -104,7 +117,7 @@ module.exports = {
             output: {
                 comments: false
             },
-            sourceMap: false
+            sourceMap: SOURCE_MAP
         }),
         new webpack.optimize.OccurrenceOrderPlugin(true)
 

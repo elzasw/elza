@@ -226,5 +226,5 @@ import Root from './router';
 render(Root);
 
 if (module.hot) {
-    module.hot.accept('./router', () => render(Root));
+    module.hot.accept(['./router', './stores', './actions', './pages', './components'], () => render(Root));
 }

@@ -3,11 +3,11 @@ import ReactDOM from 'react-dom';
 
 import {connect} from 'react-redux'
 import {Ribbon, AdminPackagesList, AdminPackagesUpload, i18n, Icon, RibbonGroup} from 'components';
-import {PageLayout} from 'pages/index.jsx';
 import {UrlFactory} from 'actions/index.jsx';
 import {Button} from 'react-bootstrap'
 
 import './AdminPackagesPage.less';
+import PageLayout from "../shared/layout/PageLayout";
 
 /**
  * Stránka pro správu importovaných balíčků

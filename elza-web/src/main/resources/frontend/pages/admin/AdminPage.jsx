@@ -10,9 +10,7 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {RibbonGroup, RibbonSplit, i18n, Icon, ModalDialog} from 'components/shared';
-import {Ribbon, NodeTabs} from 'components/index.jsx';
 import {ButtonGroup, Button} from 'react-bootstrap';
-import {PageLayout} from 'pages/index.jsx';
 import {developerSet} from 'actions/global/developer.jsx'
 import {resetLocalStorage} from 'actions/store/storeEx.jsx'
 import {WebApi} from 'actions/index.jsx';
@@ -23,6 +21,8 @@ import {getIndexStateFetchIfNeeded, reindex} from 'actions/admin/fulltext.jsx';
 
 import './AdminPage.less';
 import AbstractReactComponent from "../../components/AbstractReactComponent";
+import Ribbon from "../../components/page/Ribbon";
+import PageLayout from "../shared/layout/PageLayout";
 
 class AdminPage extends AbstractReactComponent {
 

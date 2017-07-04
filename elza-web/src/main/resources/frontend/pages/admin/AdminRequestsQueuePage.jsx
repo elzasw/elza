@@ -7,7 +7,7 @@ import {Table, Button} from 'react-bootstrap';
 import {AbstractReactComponent, i18n, Loading} from 'components/shared';
 import {getIndexStateFetchIfNeeded, reindex} from 'actions/admin/fulltext.jsx';
 import {Ribbon, AdminPackagesList, AdminPackagesUpload} from 'components/index.jsx';
-import {PageLayout} from 'pages/index.jsx';
+import PageLayout from "../shared/layout/PageLayout";
 import * as arrRequestActions from 'actions/arr/arrRequestActions';
 import {getRequestType, DIGITIZATION, DAO, DAO_LINK, createDigitizationName, createDaoLinkName} from 'components/arr/ArrUtils.jsx'
 import {dateTimeToString} from "components/Utils.jsx";

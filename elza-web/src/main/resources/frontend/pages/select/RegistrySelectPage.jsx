@@ -6,11 +6,12 @@ import classNames from 'classnames';
 
 import {AbstractReactComponent, i18n, Loading, Icon, RibbonGroup, RibbonMenu, RibbonSplit} from 'components/shared';
 import {Button} from 'react-bootstrap';
-import {RegistryPage, PartyPage} from 'pages/index.jsx';
 import {AREA_PARTY_DETAIL} from 'actions/party/party.jsx';
 import {AREA_REGISTRY_DETAIL} from 'actions/registry/registry.jsx';
 import {storeFromArea} from 'shared/utils'
 import SelectPage from './SelectPage.jsx'
+import RegistryPage from '../registry/RegistryPage.jsx'
+import PartyPage from '../party/PartyPage.jsx'
 
 const OPEN_PAGE = {
     PARTY: 'party',

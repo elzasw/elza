@@ -1,10 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Icon, i18n, AbstractReactComponent, NoFocusButton } from 'components/shared';
-import {
-    AddPacketForm, AddPartyForm, AddRegistryForm,
-    AddPartyEventForm, AddPartyGroupForm, AddPartyDynastyForm, AddPartyOtherForm,
-    AddFileForm} from 'components';
+import AddPacketForm from './AddPacketForm';
+import AddFileForm from './AddFileForm';
 import {connect} from 'react-redux'
 import {Panel, Accordion} from 'react-bootstrap'
 import {indexById} from 'stores/app/utils.jsx'

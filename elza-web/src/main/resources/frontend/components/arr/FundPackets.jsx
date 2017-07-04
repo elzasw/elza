@@ -6,7 +6,7 @@ import './FundPackets.less'
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {AddPacketForm} from 'components';
+import AddPacketForm from './AddPacketForm';
 import {AbstractReactComponent, Icon, i18n, FilterableListBox, Loading, FixedDropDownButton, FormInput} from 'components/shared';
 import {DropdownButton, MenuItem} from 'react-bootstrap'
 import {fetchFundPacketsIfNeeded, fundPacketsFilterByText, fundPacketsChangeSelection, fundPacketsFilterByState, fundPacketsChangeState, fundPacketsCreate, fundPacketsChangeNumbers, fundPacketsDelete} from 'actions/arr/fundPackets.jsx'

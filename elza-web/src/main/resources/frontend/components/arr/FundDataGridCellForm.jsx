@@ -10,7 +10,7 @@ import {connect} from 'react-redux'
 import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n} from 'components/shared';
-import {NodeSubNodeForm} from 'components'
+import NodeSubNodeForm from './NodeSubNodeForm'
 import {Modal, Button, Input} from 'react-bootstrap';
 import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {indexById} from 'stores/app/utils.jsx'

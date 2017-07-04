@@ -6,7 +6,7 @@ import './AdminUserPage.less';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {PageLayout} from 'pages/index.jsx';
+import PageLayout from "../shared/layout/PageLayout";
 import {FormControl, Button} from 'react-bootstrap';
 import {i18n, Search, ListBox, AbstractReactComponent, RibbonGroup, Icon} from 'components/shared';
 import {UserDetail, Ribbon, AddUserForm, PasswordForm} from 'components/index.jsx';

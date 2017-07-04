@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {i18n, RibbonGroup, Utils, Icon} from 'components/shared';
 import {Ribbon, AdminExtSystemDetail, AdminExtSystemList} from 'components/index.jsx';
-import {PageLayout} from 'pages/index.jsx';
+import PageLayout from "../shared/layout/PageLayout";
 import {Shortcuts} from 'react-shortcuts';
 import {extSystemDetailFetchIfNeeded, extSystemCreate, extSystemDelete, extSystemUpdate, extSystemListInvalidate, AREA_EXT_SYSTEM_DETAIL} from 'actions/admin/extSystem.jsx'
 import {Button} from 'react-bootstrap'

@@ -53,7 +53,7 @@ export {default as NodeTabs} from 'components/arr/NodeTabs.jsx';
 export {default as FundDataGrid} from 'components/arr/FundDataGrid.jsx';
 export {default as FundFilterSettings} from 'components/arr/FundFilterSettings.jsx';
 export {default as FundTreeLazy} from 'components/arr/FundTreeLazy.jsx';
-export {default as SubNodeForm} from 'components/arr/SubNodeForm.jsx';
+// export {default as SubNodeForm} from 'components/arr/SubNodeForm.jsx'; -- nelze kvůli cyklické závislosti
 export {default as NodeSubNodeForm} from 'components/arr/NodeSubNodeForm.jsx';
 export {default as NodeActionsBar} from 'components/arr/NodeActionsBar.jsx';
 export {default as OutputSubNodeForm} from 'components/arr/OutputSubNodeForm.jsx';

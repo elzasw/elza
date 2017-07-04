@@ -5,7 +5,7 @@ import {Autocomplete, AbstractReactComponent, i18n, FormInput} from 'components/
 import {Modal, Button, Form} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitReduxFormWithProp} from 'components/form/FormUtils.jsx'
-import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registry.jsx'
+import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRecordTypes.jsx'
 import {WebApi} from 'actions/index.jsx';
 import {getTreeItemById} from "./registryUtils";
 import Scope from "../shared/scope/Scope";

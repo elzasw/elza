@@ -3,9 +3,12 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {ControllableDropdownButton, Icon, AbstractReactComponent, RibbonGroup, i18n, Utils} from 'components/shared';
-import {Ribbon, PartyList, PartyDetail, PartyEntities, ImportForm, RelationForm, AddPartyForm, ExtImportForm} from 'components/index.jsx';
+import Ribbon from '../../components/page/Ribbon'
+import PartyList from '../../components/party/PartyList'
+import PartyDetail from '../../components/party/PartyDetail'
+import ImportForm from '../../components/form/ImportForm'
+import ExtImportForm from '../../components/form/ExtImportForm'
 import {MenuItem, Button} from 'react-bootstrap';
-import {PageLayout} from 'pages/index.jsx';
 import {AppStore} from 'stores/index.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
@@ -14,10 +17,10 @@ import {partyDetailFetchIfNeeded, partyListInvalidate, PARTY_LIST_MAX_SIZE, part
 import {Shortcuts} from 'react-shortcuts';
 import {setFocus} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
-import {SelectPage} from 'pages'
 
 import './PartyPage.less';
 import {regExtSystemListFetchIfNeeded} from 'actions/registry/regExtSystemList';
+import PageLayout from "../shared/layout/PageLayout";
 
 /**
  * PARTY PAGE
