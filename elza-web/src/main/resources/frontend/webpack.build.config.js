@@ -19,7 +19,7 @@ module.exports = {
     output: {
         path: path.resolve('../../../../target/react-dist'),
         filename: "[name].js",
-        sourceMapFilename: SOURCE_MAP ? "[name].js.map" : null,
+        sourceMapFilename: "[name].js.map",
     },
     resolve: {
         extensions: ['.js', '.jsx'],
