@@ -22,7 +22,7 @@ class PageLayout extends React.Component {
     };
 
     render() {
-        const {className, status, ribbon, appContentExt, splitter, leftPanel, centerPanel, rightPanel} = this.props;
+        const {className, status, ribbon, splitter, leftPanel, centerPanel, rightPanel} = this.props;
         const {ribbonOpened} = this.state;
         const cls = classNames(className, {
             'app-container': true,
@@ -40,8 +40,7 @@ class PageLayout extends React.Component {
                 <div className='status-header'>
                     {status}
                 </div>
-                <div className='app-content'>
-                    {appContentExt}
+                {/*<div className='app-content'>*/}
 
                     <Splitter
                         leftSize={splitter.leftWidth}
@@ -51,7 +50,7 @@ class PageLayout extends React.Component {
                         center={centerPanel}
                         right={rightPanel}
                     />
-                </div>
+                {/*</div>*/}
             </div>
         )
     }

@@ -210,7 +210,7 @@ export default class ArrParentPage extends AbstractReactComponent {
         }
 
         return (
-            <Shortcuts name='ArrParent' handler={this.handleShortcuts} global>
+            <Shortcuts name='ArrParent' handler={this.handleShortcuts} global className="main-shortcuts2">
                 <PageLayout
                     splitter={splitter}
                     _className='fa-page'
