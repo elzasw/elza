@@ -50,9 +50,9 @@ Source: "apache-tomcat-{#TomcatVersion}\*"; DestDir: "{app}\apache-tomcat"; Flag
 Source: "jre\*"; DestDir: "{app}\apache-tomcat\jre"; Flags: recursesubdirs
 Source: "ROOT\*"; DestDir: "{app}\apache-tomcat\webapps\ROOT"; Flags: recursesubdirs
 Source: "classes\TestDb\*"; DestDir: "{app}\TestDb"; Flags: recursesubdirs
-Source: "package-cz-base-{#VerzeAplikace}.zip"; DestDir: "{app}\import"
-Source: "rules-simple-{#VerzeAplikace}.zip"; DestDir: "{app}\import"
-Source: "rules-cz-zp2015-{#VerzeAplikace}.zip"; DestDir: "{app}\import"
+Source: "package-cz-base.zip"; DestDir: "{app}\import"
+Source: "package-rules-simple-dev.zip"; DestDir: "{app}\import"
+Source: "package-zp2015.zip"; DestDir: "{app}\import"
 Source: "all-institutions-import.xml"; DestDir: "{app}\import"
 Source: "classes\Nastaveni\elza.url"; DestDir: "{app}"; Flags: onlyifdoesntexist
 Source: "classes\Nastaveni\elza.yaml"; DestDir: "{app}\apache-tomcat\config"; Flags: onlyifdoesntexist

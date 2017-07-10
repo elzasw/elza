@@ -115,6 +115,7 @@
                                             <version>${project.version}</version>
                                             <type>zip</type>
                                             <overWrite>true</overWrite>
+                                            <destFileName>package-cz-base.zip</destFileName>
                                         </artifactItem>
                                         <artifactItem>
                                             <groupId>cz.tacr.elza</groupId>
@@ -122,6 +123,7 @@
                                             <version>${project.version}</version>
                                             <type>zip</type>
                                             <overWrite>true</overWrite>
+                                            <destFileName>package-zp2015.zip</destFileName>
                                         </artifactItem>
                                         <artifactItem>
                                             <groupId>cz.tacr.elza</groupId>
@@ -129,6 +131,7 @@
                                             <version>${project.version}</version>
                                             <type>zip</type>
                                             <overWrite>true</overWrite>
+                                            <destFileName>package-rules-simple-dev.zip</destFileName>
                                         </artifactItem>
                                     </artifactItems>
                                     <outputDirectory>${project.build.directory}</outputDirectory>
