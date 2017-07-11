@@ -258,7 +258,7 @@ public class ArrangementService {
     @Autowired
     private CachedNodeRepository cachedNodeRepository;
 
-    public static final String UNDEFINED = "Nezjištněno";
+    public static final String UNDEFINED = "Nezjištěno";
 
     /**
      * Vytvoření archivního souboru.
