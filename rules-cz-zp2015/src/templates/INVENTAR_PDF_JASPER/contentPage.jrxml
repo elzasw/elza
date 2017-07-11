@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2017-06-28T13:12:47 -->
+<!-- Created with Jaspersoft Studio version 6.4.0.final using JasperReports Library version 6.4.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="contentPage" pageWidth="595" pageHeight="842" columnWidth="468" leftMargin="85" rightMargin="42" topMargin="42" bottomMargin="42" uuid="71cc9236-0f65-4a0a-bb66-bbfe841a66c1">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
@@ -65,6 +64,7 @@
 	.setBlockSeparators("<br>","")
 	.addValue("ZP2015_TITLE")
 	.beginBlock()
+		.addValueWithTitle("ZP2015_UNIT_TYPE")
 		.addValueWithTitle("ZP2015_LANGUAGE")
 		.addValueWithTitle("ZP2015_STORAGE_COND")
 		.addValueWithTitle("ZP2015_SIZE")
@@ -87,6 +87,34 @@
 	.endBlock()
 	.beginBlock().addValueWithTitle("ZP2015_OTHER_ID").endBlock()]]></defaultValueExpression>
 	</parameter>
+	<parameter name="titleFormatter" class="cz.tacr.elza.print.format.Formatter">
+		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
+	.setTitleSeparator(": ")
+	.setItemSeparator("; ")
+	.setSpecSeparator(" ")
+	.setBlockSeparators("<br>","")
+		.addValueWithTitle("ZP2015_UNIT_TYPE")
+		.addValueWithTitle("ZP2015_LANGUAGE")
+		.addValueWithTitle("ZP2015_STORAGE_COND")
+		.addValueWithTitle("ZP2015_SIZE")
+		.addValueWithTitle("ZP2015_SCALE")
+		.addValueWithTitle("ZP2015_POSITION")
+		.addValueWithTitle("ZP2015_ORIENTATION")
+		.addValueWithTitle("ZP2015_ITEM_MAT")
+		.addValueWithTitle("ZP2015_PART")
+		.addValueWithTitle("ZP2015_EDITION")
+		.setSpecSeparator(": ")
+		.addValue("ZP2015_ENTITY_ROLE")
+		.addValueWithTitle("ZP2015_EXERQUE")
+		.addValueWithTitle("ZP2015_PAINTING_CHAR")	
+		.addValueWithTitle("ZP2015_CORROBORATION")
+		.addValueWithTitle("ZP2015_IMPRINT_COUNT")
+		.addValueWithTitle("ZP2015_IMPRINT_ORDER")
+		.addValueWithTitle("ZP2015_LEGEND")
+		.addValueWithTitle("ZP2015_MOVIE_LENGTH")
+		.addValueWithTitle("ZP2015_RECORD_LENGTH")
+]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -100,10 +128,10 @@
 		<band height="58">
 			<textField isStretchWithOverflow="true" bookmarkLevel="1">
 				<reportElement x="101" y="20" width="327" height="20" uuid="69bbd56d-2f22-4854-b468-45e2cbd41a70"/>
-				<textElement>
+				<textElement markup="html">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{fund}.getName()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{fund}.getName()+"<br>"+$P{titleFormatter}.format( $P{output}.getNodesDFS().next() )+"<br>"+"Evidenční jednotky (druh a počet): "+$P{output}.getSingleItemValue( "ZP2015_UNIT_COUNT_TABLE" )]]></textFieldExpression>
 				<anchorNameExpression><![CDATA["Jednotky popisu"]]></anchorNameExpression>
 			</textField>
 			<staticText>
@@ -207,7 +235,7 @@
 				<text><![CDATA[Datace]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="430" y="0" width="38" height="20" uuid="2559ac97-563d-4a56-a543-0c50d9aeb663">
+				<reportElement x="390" y="0" width="38" height="20" uuid="2559ac97-563d-4a56-a543-0c50d9aeb663">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -221,7 +249,7 @@
 				<text><![CDATA[Ukl. č.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="390" y="0" width="40" height="20" uuid="a1c59bd0-c9e1-4e99-9a7d-3941bd8adc97"/>
+				<reportElement x="428" y="0" width="40" height="20" uuid="a1c59bd0-c9e1-4e99-9a7d-3941bd8adc97"/>
 				<box>
 					<bottomPen lineWidth="1.0"/>
 				</box>
@@ -271,7 +299,7 @@
 +(StringUtils.isNotEmpty($F{node}.getItemsValueByCode( "ZP2015_UNIT_DATE_POST" ))?(" ("+$F{node}.getItemsValueByCode( "ZP2015_UNIT_DATE_POST" )+")"):"")]]></textFieldExpression>
 			</textField>
 			<componentElement>
-				<reportElement key="" positionType="Float" x="430" y="0" width="38" height="16" uuid="fdce67b7-6db3-4319-a65e-da940c7c2195">
+				<reportElement key="" positionType="Float" x="390" y="0" width="38" height="16" uuid="fdce67b7-6db3-4319-a65e-da940c7c2195">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.CONTENTS.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -292,10 +320,11 @@
 				</jr:list>
 			</componentElement>
 			<textField isStretchWithOverflow="true" bookmarkLevel="2">
-				<reportElement x="390" y="0" width="40" height="16" uuid="cd348cc2-6495-4934-b426-d65417c60f52">
+				<reportElement x="428" y="0" width="38" height="16" uuid="cd348cc2-6495-4934-b426-d65417c60f52">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<printWhenExpression><![CDATA[($F{depth}<=4)&&($F{node}.getItemsWithSpec( "ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_SERIES" ).size()==1)]]></printWhenExpression>
 				</reportElement>
 				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="3"/>
@@ -306,7 +335,7 @@
 				<anchorNameExpression><![CDATA[$F{node}.getItemsValueByCode( "ZP2015_SERIAL_NUMBER" )]]></anchorNameExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement x="390" y="0" width="40" height="16" uuid="f980e23b-f26b-472c-a762-6ecf0fd8c221">
+				<reportElement x="428" y="0" width="38" height="16" uuid="f980e23b-f26b-472c-a762-6ecf0fd8c221">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
