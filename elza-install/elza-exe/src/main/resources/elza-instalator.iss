@@ -391,18 +391,27 @@ procedure UlozJdbcDoSouboruProperties(TypDB:Integer; UrlSeveru,Port,Instance,Naz
 var JdbcProperties: String;
 
 begin
-  if (ComboTypDatabaze.ItemIndex = 0) or (ComboTypDatabaze.ItemIndex = 1) then
+  if (ComboTypDatabaze.ItemIndex = 0) then
   begin
     
     NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbURL>', VytvorJdbc(TypDB, UrlSeveru, Port, NazevDB, ''));
     NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbUser>', Jmeno);
     NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbPass>', Heslo);
+    NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbDialect>', 'dialect: org.hibernate.spatial.dialect.postgis.PostgisDialect');
+  end
+  else if ComboTypDatabaze.ItemIndex = 1 then
+  begin
+    NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbURL>', VytvorJdbc(TypDB, UrlSeveru, Port, NazevDB, ''));
+    NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbUser>', Jmeno);
+    NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbPass>', Heslo);
+    NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbDialect>', 'dialect: org.hibernate.dialect.SQLServer2008Dialect');
   end
   else if ComboTypDatabaze.ItemIndex = 2 then
   begin
-    NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbURL>', 'jdbc:h2:file:./elza.db');
-    NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbUser>', '');
+    NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbURL>', 'jdbc:h2:file:./elza.db;DB_CLOSE_DELAY=-1');
+    NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbUser>', 'sa');
     NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbPass>', '');
+    NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbDialect>', 'dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect');
   end;end;
 
 //spuštìné akce pøi zmìnì výbìru typu databáze v comboboxu
