@@ -18,11 +18,11 @@ public class Record implements Comparable<Record> {
 
     final int recordId;
 
-	private String record;
-    private String characteristics;
-    private List<String> variantRecords = new ArrayList<>();
-    private RecordType recordType;
-    private String externalId;
+	private final String record;
+    private final String characteristics;
+    private final List<String> variantRecords = new ArrayList<>();
+    private final RecordType recordType;
+    private final String externalId;
 
     private Record(RegRecord regRecord, RecordType recordType) {
     	this.externalId = regRecord.getExternalId();
@@ -43,6 +43,7 @@ public class Record implements Comparable<Record> {
     	this.characteristics = srcRecord.characteristics;
     	this.recordType = srcRecord.recordType;
     	this.variantRecords.addAll(srcRecord.variantRecords);
+    	this.externalId = srcRecord.externalId;
     }
 
     public int getRecordId() {
@@ -53,10 +54,6 @@ public class Record implements Comparable<Record> {
     public RecordType getRecordType() {
         return recordType;
     }
-
-    public void setRecordType(final RecordType recordType) {
-        this.recordType = recordType;
-    }    
 
     public String getCharacteristics() {
         return characteristics;
