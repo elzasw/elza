@@ -20,6 +20,17 @@ import cz.tacr.elza.domain.RulItemType;
 // - addWithAllSpec
 // - addWithoutSpec - ?kde je vzit pozdeji?
 
+rule "Atributy lze nastavit na Nezjištěno"
+salience 100
+no-loop
+when
+    $itemType : RulItemTypeExt(code in ("ZP2015_SCALE", "ZP2015_ENTITY_ROLE", "ZP2015_ORIGINATOR", "ZP2015_UNIT_DATE"))
+then
+    $itemType.setIndefinable(true);
+end
+
+
+
 // Nastaveni vychozi neopakovatelnosti atributu
 rule "U atributu je zapotrebi nove explicitne nastavit neopakovatelnost"
 salience 100
