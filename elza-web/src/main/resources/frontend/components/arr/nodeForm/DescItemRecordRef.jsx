@@ -74,9 +74,9 @@ class DescItemRecordRef extends AbstractReactComponent {
 
         if (readMode) {
             if (value) {
-                return <DescItemLabel onClick={onDetail.bind(this, descItem.record.recordId)} value={value.record} />
+                return <DescItemLabel onClick={onDetail.bind(this, descItem.record.recordId)} value={value.record} notIdentified={descItem.undefined} />
             } else {
-                return <DescItemLabel value={cal ? i18n("subNodeForm.descItemType.calculable") : ""} cal={cal} />
+                return <DescItemLabel value={cal ? i18n("subNodeForm.descItemType.calculable") : ""} cal={cal} notIdentified={descItem.undefined} />
             }
         }
 
@@ -95,9 +95,10 @@ class DescItemRecordRef extends AbstractReactComponent {
                     value={value}
                     footer={!singleDescItemTypeEdit}
                     footerButtons={false}
-                    detail={typePrefix == "output" ? false : !disabled}
+                    detail={!descItem.undefined && (typePrefix == "output" ? false : !disabled)}
                     onSelectModule={this.handleSelectModule}
-                    {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, disabled, ['autocomplete-record'])}
+                    undefined={descItem.undefined}
+                    {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, disabled || descItem.undefined, ['autocomplete-record'])}
                 />
             </ItemTooltipWrapper>
         </div>

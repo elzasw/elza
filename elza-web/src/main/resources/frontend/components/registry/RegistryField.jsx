@@ -28,6 +28,7 @@ class RegistryField extends AbstractReactComponent {
         footer: false,
         footerButtons: true,
         itemSpecId: null,
+        undefined: false,
         registryParent: null,
         registerTypeId: null,
         roleTypeId: null,
@@ -40,6 +41,7 @@ class RegistryField extends AbstractReactComponent {
         footer: React.PropTypes.bool.isRequired,
         footerButtons: React.PropTypes.bool,
         value: React.PropTypes.object,
+        undefined: React.PropTypes.bool,
         onChange: React.PropTypes.func.isRequired,
         onDetail: React.PropTypes.func,
         onCreate: React.PropTypes.func.isRequired,
@@ -162,7 +164,7 @@ class RegistryField extends AbstractReactComponent {
     };
 
     render() {
-        const {onChange, onBlur, footer, detail, value, className, ...otherProps} = this.props;
+        const {onChange, onBlur, footer, detail, value, className, undefined, ...otherProps} = this.props;
 
         let footerRender = null;
         if (footer) {
@@ -176,6 +178,11 @@ class RegistryField extends AbstractReactComponent {
             // }
         }
 
+        let tmpVal = '';
+        if (undefined) {
+            tmpVal = i18n('subNodeForm.descItemType.notIdentified');
+        }
+
         return <Autocomplete
             ref='autocomplete'
             customFilter
@@ -183,7 +190,7 @@ class RegistryField extends AbstractReactComponent {
             footer={footerRender}
             items={this.state.registryList}
             getItemId={(item) => item ? item.id : null}
-            getItemName={(item) => item && item.record ? item.record : ''}
+            getItemName={(item) => item && item.record ? item.record : tmpVal}
             onSearchChange={this.handleSearchChange}
             renderItem={this.renderRecord}
             actions={[actions]}
