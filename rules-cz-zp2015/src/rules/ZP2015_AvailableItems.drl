@@ -24,7 +24,7 @@ rule "Atributy lze nastavit na Nezjištěno"
 salience 100
 no-loop
 when
-    $itemType : RulItemTypeExt(code in ("ZP2015_SCALE", "ZP2015_ENTITY_ROLE", "ZP2015_ORIGINATOR", "ZP2015_UNIT_DATE"))
+    $itemType : RulItemTypeExt(code in ("ZP2015_SCALE", "ZP2015_ENTITY_ROLE"))
 then
     $itemType.setIndefinable(true);
 end
