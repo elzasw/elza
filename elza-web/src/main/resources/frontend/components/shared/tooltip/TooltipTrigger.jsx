@@ -30,8 +30,8 @@ class TooltipTrigger extends AbstractReactComponent {
     };
 
     static defaultProps = {
-        showDelay: 300,
-        hideDelay: 500,
+        showDelay: 500,
+        hideDelay: 200,
         focusShowDelay: 250,
         focusHideDelay: 1,
         placement: "auto"

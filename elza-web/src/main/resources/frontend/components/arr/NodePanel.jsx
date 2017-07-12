@@ -608,7 +608,8 @@ return true
                     holdOnHover
                     placement="auto"
                     className="status"
-                    showDelay={1}
+                    showDelay={50}
+                    hideDelay={0}
                 >
                     <div>
                         {icon}

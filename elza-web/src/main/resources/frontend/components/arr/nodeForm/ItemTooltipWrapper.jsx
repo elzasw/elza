@@ -21,7 +21,6 @@ class ItemTooltipWrapper extends AbstractReactComponent {
             <TooltipTrigger
                 content={tooltip}
                 holdOnHover
-                holdOnFocus
                 placement="vertical"
                 {...otherProps}
             >

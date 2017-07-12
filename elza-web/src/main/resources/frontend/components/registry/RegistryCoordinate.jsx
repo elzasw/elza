@@ -76,7 +76,6 @@ class RegistryCoordinate extends AbstractReactComponent {
                         <TooltipTrigger
                             content={tooltip}
                             holdOnHover
-                            holdOnFocus
                             placement="vertical"
                             className="input-container"
                         >
