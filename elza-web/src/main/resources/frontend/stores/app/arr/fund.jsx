@@ -93,6 +93,9 @@ function updateFundTree(state, action) {
         case types.FUND_TREE_AREA_MAIN:
             state.fundTree = fundTree(state.fundTree, action)
             break;
+            case types.FUND_TREE_AREA_COPY:
+            state.fundTree = fundTree(state.fundTree, action)
+            break;
         case types.FUND_TREE_AREA_MOVEMENTS_LEFT:
             state.fundTreeMovementsLeft = fundTree(state.fundTreeMovementsLeft, action)
             break;

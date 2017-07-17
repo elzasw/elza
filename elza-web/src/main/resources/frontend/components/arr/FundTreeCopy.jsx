@@ -19,7 +19,7 @@ import {propsEquals} from 'components/Utils.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 
-class FundTreeMain extends AbstractReactComponent {
+class FundTreeCopy extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -72,7 +72,7 @@ return true
     }
 
     requestFundTreeData(versionId, expandedIds) {
-        this.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_MAIN, versionId, expandedIds));
+        this.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_COPY, versionId, expandedIds));
     }
 
     /**
@@ -90,7 +90,7 @@ return true
             </ul>
         )
 
-        this.dispatch(fundTreeFocusNode(types.FUND_TREE_AREA_MAIN, this.props.versionId, node));
+        this.dispatch(fundTreeFocusNode(types.FUND_TREE_AREA_COPY, this.props.versionId, node));
         this.dispatch(contextMenuShow(this, menu, {x: e.clientX, y:e.clientY}));
     }
 
@@ -123,32 +123,31 @@ return true
      * @param e {Object} event
      */
     handleNodeClick(node, ensureItemVisible, e) {
-
         this.callFundSelectSubNode(node, false, ensureItemVisible);
     }
 
     handleFulltextChange(value) {
-        this.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_MAIN, this.props.versionId, value));
+        this.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_COPY, this.props.versionId, value));
     }
 
     handleFulltextSearch() {
         const {fund} = this.props;
-        this.dispatch(fundTreeFulltextSearch(types.FUND_TREE_AREA_MAIN, this.props.versionId, null, fund.fundTree.searchFormData ? fund.fundTree.searchFormData : {type: "FORM"}));
+        this.dispatch(fundTreeFulltextSearch(types.FUND_TREE_AREA_COPY, this.props.versionId, null, fund.fundTree.searchFormData ? fund.fundTree.searchFormData : {type: "FORM"}));
     }
 
     handleFulltextPrevItem() {
-        this.dispatch(fundTreeFulltextPrevItem(types.FUND_TREE_AREA_MAIN, this.props.versionId));
+        this.dispatch(fundTreeFulltextPrevItem(types.FUND_TREE_AREA_COPY, this.props.versionId));
     }
 
     handleFulltextNextItem() {
-        this.dispatch(fundTreeFulltextNextItem(types.FUND_TREE_AREA_MAIN, this.props.versionId));
+        this.dispatch(fundTreeFulltextNextItem(types.FUND_TREE_AREA_COPY, this.props.versionId));
     }
 
     /**
      * Zabalení stromu
      */
     handleCollapse() {
-        this.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_MAIN, this.props.versionId, this.props.fund))
+        this.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_COPY, this.props.versionId, this.props.fund))
     }
 
     handleExtendedSearch = () => {
@@ -189,12 +188,12 @@ return true
             }
 
             case "TEXT": {
-                this.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_MAIN, this.props.versionId, result.text));
+                this.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_COPY, this.props.versionId, result.text));
                 break;
             }
         }
 
-        return this.dispatch(fundTreeFulltextSearch(types.FUND_TREE_AREA_MAIN, versionId, params, result, true));
+        return this.dispatch(fundTreeFulltextSearch(types.FUND_TREE_AREA_COPY, versionId, params, result, true));
     };
 
     render() {
@@ -207,7 +206,7 @@ return true
                 actionAddons={actionAddons}
                 {...this.props}
                 cutLongLabels={cutLongLabels}
-                onOpenCloseNode={(node, expand) => {expand ? this.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_MAIN, node)) : this.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_MAIN, this.props.versionId, node))}}
+                onOpenCloseNode={(node, expand) => {expand ? this.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_COPY, node)) : this.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_COPY, this.props.versionId, node))}}
                 onContextMenu={this.handleContextMenu}
                 onNodeClick={this.handleNodeClick}
                 onFulltextChange={this.handleFulltextChange}
@@ -224,5 +223,5 @@ return true
     }
 }
 
-export default connect()(FundTreeMain);
+export default connect()(FundTreeCopy);
 

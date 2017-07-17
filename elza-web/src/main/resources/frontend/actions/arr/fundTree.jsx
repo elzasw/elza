@@ -358,6 +358,8 @@ function getFundTree(fund, area) {
     switch (area) {
         case types.FUND_TREE_AREA_MAIN:
             return fund.fundTree;
+            case types.FUND_TREE_AREA_COPY:
+            return fund.fundTree;
         case types.FUND_TREE_AREA_MOVEMENTS_LEFT:
             return fund.fundTreeMovementsLeft;
         case types.FUND_TREE_AREA_MOVEMENTS_RIGHT:
