@@ -20,6 +20,9 @@ import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.controller.vo.CopyNodesParams;
+import cz.tacr.elza.controller.vo.CopyNodesValidate;
+import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.service.ExternalSystemService;
@@ -990,6 +993,35 @@ public class ArrangementController {
         return descItemResult;
     }
 
+    @Transactional
+    @RequestMapping(value = "/levels/copy/validate", method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public CopyNodesValidateResult copyLevelsValidate(@RequestBody final CopyNodesValidate copyNodesValidate) {
+        Assert.notNull(copyNodesValidate, "Neplatná struktura");
+        Assert.notNull(copyNodesValidate.getSourceFundVersionId(), "Neplatný identifikátor zdrojové verze AS");
+        Assert.notEmpty(copyNodesValidate.getSourceNodes(), "Musí být vybrána alespoň jedna cílová JP");
+        Assert.notNull(copyNodesValidate.getTargetFundVersionId(), "Neplatný identifikátor cílové verze AS");
+        Assert.notNull(copyNodesValidate.getTargetStaticNode(), "Neplatná cílová JP");
+
+        CopyNodesValidateResult result = new CopyNodesValidateResult();
+        result.setFileConflict(true);
+        result.setPacketConflict(true);
+        result.setScopeError(false);
+        return result;
+    }
+
+    @Transactional
+    @RequestMapping(value = "/levels/copy", method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public void copyLevels(@RequestBody final CopyNodesParams copyNodesParams) {
+        Assert.notNull(copyNodesParams, "Neplatná struktura");
+        Assert.notNull(copyNodesParams.getSourceFundVersionId(), "Neplatný identifikátor zdrojové verze AS");
+        Assert.notEmpty(copyNodesParams.getSourceNodes(), "Musí být vybrána alespoň jedna cílová JP");
+        Assert.notNull(copyNodesParams.getTargetFundVersionId(), "Neplatný identifikátor cílové verze AS");
+        Assert.notNull(copyNodesParams.getTargetStaticNode(), "Neplatná cílová JP");
+    }
 
     @Transactional
     @RequestMapping(value = "/outputItems/{fundVersionId}/{outputDefinitionVersion}/delete",

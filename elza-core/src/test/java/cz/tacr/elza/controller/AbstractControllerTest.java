@@ -20,6 +20,9 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.controller.vo.CopyNodesParams;
+import cz.tacr.elza.controller.vo.CopyNodesValidate;
+import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
 import cz.tacr.elza.service.vo.ChangesResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -229,6 +232,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String UNSET_NOT_IDENTIFIED_DESCITEM = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/notUndefined/unset";
     protected static final String SET_NOT_IDENTIFIED_OUTPUTITEM = ARRANGEMENT_CONTROLLER_URL + "/outputItems/{fundVersionId}/{outputDefinitionId}/{outputDefinitionVersion}/notUndefined/set";
     protected static final String UNSET_NOT_IDENTIFIED_OUTPUTITEM = ARRANGEMENT_CONTROLLER_URL + "/outputItems/{fundVersionId}/{outputDefinitionId}/{outputDefinitionVersion}/notUndefined/unset";
+    protected static final String COPY_LEVELS_VALIDATE = ARRANGEMENT_CONTROLLER_URL + "/levels/copy/validate";
+    protected static final String COPY_LEVELS = ARRANGEMENT_CONTROLLER_URL + "/levels/copy";
 
     // Party
     protected static final String CREATE_RELATIONS = PARTY_CONTROLLER_URL + "/relation";
@@ -3060,5 +3065,13 @@ public abstract class AbstractControllerTest extends AbstractTest {
                         .queryParameter("outputItemSpecId", outputItemSpecId)
                         .queryParameter("outputItemObjectId", outputItemObjectId)
                 , UNSET_NOT_IDENTIFIED_OUTPUTITEM).as(ArrangementController.OutputItemResult.class);
+    }
+
+    protected CopyNodesValidateResult copyLevelsValidate(final CopyNodesValidate copyNodesValidate) {
+        return post(spec -> spec.body(copyNodesValidate), COPY_LEVELS_VALIDATE).as(CopyNodesValidateResult.class);
+    }
+
+    protected void copyLevels(final CopyNodesParams copyNodesParams) {
+        post(spec -> spec.body(copyNodesParams), COPY_LEVELS);
     }
 }

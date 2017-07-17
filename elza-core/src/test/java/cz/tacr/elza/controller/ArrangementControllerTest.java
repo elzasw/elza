@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -16,6 +17,10 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.Lists;
+import cz.tacr.elza.controller.vo.CopyNodesParams;
+import cz.tacr.elza.controller.vo.CopyNodesValidate;
+import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
 import cz.tacr.elza.service.vo.ChangesResult;
 import org.apache.commons.csv.CSVRecord;
 import org.junit.Ignore;
@@ -1079,6 +1084,46 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
 
 
+    }
+
+    @Test
+    public void copyLevelsTest() {
+
+        ArrFundVO fundSource = createdFund();
+        ArrFundVersionVO fundVersionSource = getOpenVersion(fundSource);
+        List<ArrNodeVO> nodesSource = createLevels(fundVersionSource);
+
+        ArrFundVO fundTarget = createdFund();
+        ArrFundVersionVO fundVersionTarget = getOpenVersion(fundTarget);
+        List<ArrNodeVO> nodesTarget = createLevels(fundVersionTarget);
+
+        CopyNodesValidate copyNodesValidate = new CopyNodesValidate();
+
+        ArrNodeVO nodeSource = nodesTarget.get(1);
+
+        copyNodesValidate.setSourceFundVersionId(fundVersionSource.getId());
+        copyNodesValidate.setSourceNodes(Collections.singleton(nodeSource));
+        copyNodesValidate.setTargetFundVersionId(fundVersionTarget.getId());
+        copyNodesValidate.setTargetStaticNode(nodesTarget.get(0));
+        copyNodesValidate.setTargetStaticNodeParent(null);
+
+        copyNodesValidate.setIgnoreRootNodes(true);
+
+        CopyNodesValidateResult validateResult = copyLevelsValidate(copyNodesValidate);
+        Assert.notNull(validateResult, "Výsledek validace nemůže být prázdný");
+
+        CopyNodesParams copyNodesParams = new CopyNodesParams();
+
+        copyNodesParams.setSourceFundVersionId(fundVersionSource.getId());
+        copyNodesParams.setSourceNodes(Collections.singleton(nodeSource));
+        copyNodesParams.setTargetFundVersionId(fundVersionTarget.getId());
+        copyNodesParams.setTargetStaticNode(nodesTarget.get(0));
+        copyNodesParams.setTargetStaticNodeParent(null);
+        copyNodesParams.setIgnoreRootNodes(true);
+        copyNodesParams.setFilesConflictResolve(null);
+        copyNodesParams.setPacketsConflictResolve(null);
+
+        copyLevels(copyNodesParams);
     }
 
 }
