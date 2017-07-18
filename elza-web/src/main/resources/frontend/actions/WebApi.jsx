@@ -255,7 +255,7 @@ export class WebApiCls {
             sourceNodes,
             ignoreRootNodes,
         };
-        return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/levels/copy/validate', null, data);
+        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/levels/copy/validate', null, data);
     }
 
     copyNodes(targetFundVersionId, targetStaticNode, targetStaticNodeParent, sourceFundVersionId, sourceNodes, ignoreRootNodes = false, filesConflictResolve = null, packetsConflictResolve = null) {
@@ -269,7 +269,7 @@ export class WebApiCls {
             filesConflictResolve,
             packetsConflictResolve
         };
-        return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/levels/copy/validate', null, data);
+        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/levels/copy/validate', null, data);
     }
 
     deleteNode(node, parentNode, version) {
