@@ -1676,7 +1676,8 @@ public class ArrangementService {
         List<ArrPacket> packets = packetRepository.findPacketsBySubtreeNodeIds(nodeIds, ignoreRootNodes);
         result.setPacketConflict(packets.size() > 0 && packetsFund.stream().anyMatch(p -> {
             for (ArrPacket packet : packets) {
-                if (Objects.equal(packet.getStorageNumber(), p.getStorageNumber())
+                if ((packet.getStorageNumber() == null && p.getStorageNumber() == null) ||
+                        (packet.getStorageNumber() != null && packet.getStorageNumber().equalsIgnoreCase(p.getStorageNumber()))
                         /*&& Objects.equal(packet.getPacketType(), p.getPacketType())*/) {
                     return true;
                 }
