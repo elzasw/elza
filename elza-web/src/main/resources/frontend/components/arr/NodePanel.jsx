@@ -594,8 +594,7 @@ return true
                 <TooltipTrigger
                     content={tooltip}
                     holdOnHover
-                    p
-                    lacement="auto"
+                    placement="auto"
                     className="status"
                     showDelay={1}
                 >

@@ -25,14 +25,16 @@ import {
   AbstractReactComponent,
   i18n,
   FormInput,
-  Loading
+  Loading,
+  Autocomplete
 } from 'components/shared';
 import { isFundRootId, getOneSettings } from 'components/arr/ArrUtils.jsx';
 import { indexById } from 'stores/app/utils.jsx';
 import './AddNodeForm.less';
 import { getSetFromIdsList } from 'stores/app/utils.jsx';
-import FundTreeMain from "../FundTreeMain";
-import FundTreeCopy from "../FundTreeCopy";
+
+import FundTreeCopy from '../FundTreeCopy';
+import { renderUserItem } from '../../admin/adminRenderUtils';
 
 class AddNodeForm extends AbstractReactComponent {
   static PropTypes = {
@@ -54,7 +56,9 @@ class AddNodeForm extends AbstractReactComponent {
     selectedScenario: undefined,
     allowedDirections: ['BEFORE', 'AFTER', 'CHILD', 'ATEND'],
     selectedType: 'NEW',
-    selectedSourceAS: 'FILE'
+    selectedSourceAS: 'FILE',
+      fundList:[]
+
   };
 
   /**
@@ -191,10 +195,6 @@ class AddNodeForm extends AbstractReactComponent {
     };
 
     onSubmit(submitData);
-  };
-
-  handleTypeSelect = e => {
-    console.log(e);
   };
 
   componentWillMount() {
@@ -430,7 +430,9 @@ class AddNodeForm extends AbstractReactComponent {
   renderCreateFromFile() {
     return [
       <FormGroup>
-        <ControlLabel>{i18n('party.recordScope')}</ControlLabel>
+        <ControlLabel>
+          {i18n('party.recordScope')}
+        </ControlLabel>
         <FormControl type="text" name="tridaRejstriku" />
       </FormGroup>,
       <FormGroup>
@@ -438,29 +440,51 @@ class AddNodeForm extends AbstractReactComponent {
       </FormGroup>
     ];
   }
+
+    handleSearchChange(text) {
+        text = text == "" ? null : text;
+//TODO
+        WebApi.findFunds(text, true, false, 200).then(json => {
+            this.setState({
+                fundList: json.funds
+            })
+        })
+    }
   renderCreateFromOther() {
-      const activeFund = this.getActiveFund();
-      return [
+    const activeFund = this.getActiveFund();
+    return [
       <FormGroup>
-        <ControlLabel>{i18n('arr.fund.addNode.type.existing.archiveFile')}</ControlLabel>
-        <FormControl type="text" name="archivniSoubor" />
-      </FormGroup>,
-        <FundTreeCopy
-            className="fund-tree-container"
-            fund = {activeFund}
-            cutLongLabels={true}
-            versionId={activeFund.versionId}
-            ref='treeCopy'
-            {...activeFund.fundTree}
+        <ControlLabel>
+          {i18n('arr.fund.addNode.type.existing.archiveFile')}
+        </ControlLabel>
+        <Autocomplete
+          ref="autocompleteAF"
+          className="form-group"
+          customFilter
+          items={this.state.fundList}
+          onSearchChange={this.handleSearchChange}
+          renderItem={renderUserItem}
         />
+      </FormGroup>,
+      <ControlLabel>
+        {i18n('arr.history.title.nodeChanges')}
+      </ControlLabel>,
+      <FundTreeCopy
+        className="fund-tree-container-fixed"
+        fund={activeFund}
+        cutLongLabels={true}
+        versionId={activeFund.versionId}
+        ref="treeCopy"
+        {...activeFund.fundTreeCopy}
+      />
     ];
   }
-    getActiveFund() {
-        const {arrRegion} = this.props;
-        console.log("CHLEBA");
-        console.log(arrRegion.activeIndex);
-        return arrRegion.activeIndex !== null && arrRegion.funds[arrRegion.activeIndex];
-    }
+  getActiveFund() {
+    const { arrRegion } = this.props;
+    return (
+      arrRegion.activeIndex !== null && arrRegion.funds[arrRegion.activeIndex]
+    );
+  }
 }
 
 function mapStateToProps(state) {
@@ -469,7 +493,7 @@ function mapStateToProps(state) {
   return {
     nodeSettings: arrRegion.nodeSettings,
     arrRegion: arrRegion,
-    userDetail: userDetail,
+    userDetail: userDetail
   };
 }
 

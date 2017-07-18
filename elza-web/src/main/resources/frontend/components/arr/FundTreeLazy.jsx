@@ -240,7 +240,7 @@ class FundTreeLazy extends AbstractReactComponent {
                     <Button className="tree-collapse" onClick={this.props.onCollapse}><Icon glyph='fa-compress'/>Sbalit vše</Button>
                     {actionAddons}
                 </div>
-                <div className='fa-tree-lazy-container' ref="treeContainer" >
+                <div className='fa-tree-lazy-container' ref="treeContainer">
                     {this.state.treeContainer && <VirtualList
                         scrollTopPadding={TREE_TOP_PADDING}
                         tagName='div'
