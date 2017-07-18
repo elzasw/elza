@@ -14,12 +14,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.persistence.Query;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
+import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
+import cz.tacr.elza.domain.ArrFile;
+import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.DaoFileGroupRepository;
@@ -32,6 +38,7 @@ import cz.tacr.elza.repository.DaoRequestDaoRepository;
 import cz.tacr.elza.repository.DaoRequestRepository;
 import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
 import cz.tacr.elza.repository.DigitizationRequestRepository;
+import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -257,6 +264,9 @@ public class ArrangementService {
 
     @Autowired
     private CachedNodeRepository cachedNodeRepository;
+
+    @Autowired
+    private FundFileRepository fundFileRepository;
 
     public static final String UNDEFINED = "Nezjištěno";
 
@@ -1618,6 +1628,61 @@ public class ArrangementService {
                 result.put(change, false);
             }
         }
+
+        return result;
+    }
+
+    /**
+     * Zjištění, zda-li je možné provést kopírování vybraných JP (a jejich potomků) do AS.
+     *
+     * @param sourceFundVersion       zdrojový AS
+     * @param sourceNodes             zdrojové JP
+     * @param ignoreRootNodes         ignorovat root (vybrané) JP pří vyhledávání v podstromech
+     * @param targetFundVersion       cílová AS
+     * @param targetStaticNode        cílová JP, pod kterou přidáváme
+     * @param targetStaticParentNode  předek cílové JP
+     * @return výsledek validace
+     */
+    public CopyNodesValidateResult copyNodesValidate(final ArrFundVersion sourceFundVersion,
+                                                     final List<ArrNode> sourceNodes,
+                                                     final boolean ignoreRootNodes,
+                                                     final ArrFundVersion targetFundVersion,
+                                                     final ArrNode targetStaticNode,
+                                                     final ArrNode targetStaticParentNode) {
+        Assert.notNull(sourceFundVersion, "Nebyla zadána zdrojová verze AS");
+        Assert.notEmpty(sourceNodes, "Musí být zadána alespoň jedna zdrojová JP");
+        Assert.notNull(targetStaticNode, "Nebyl zadán cílová JP");
+        isValidAndOpenVersion(targetFundVersion);
+
+        CopyNodesValidateResult result = new CopyNodesValidateResult();
+        List<Integer> nodeIds = sourceNodes.stream().map(ArrNode::getNodeId).collect(Collectors.toList());
+
+        // zjištění podporovaných scope cílového archivního souboru
+        Set<Integer> scopeIdsFund = scopeRepository.findIdsByFund(targetFundVersion.getFund());
+        // zjištění používaných scope v podstromech vybraných JP
+        List<Integer> scopeIds = scopeRepository.findScopeIdsBySubtreeNodeIds(nodeIds, ignoreRootNodes);
+        result.setScopeError(scopeIds.size() > 0 && !scopeIdsFund.containsAll(scopeIds));
+
+        // zjištění existujících názvů souborů v cílovém archivním souboru
+        List<ArrFile> fundFiles = fundFileRepository.findByFund(targetFundVersion.getFund());
+        Set<String> fileNamesFund = fundFiles.stream().map(ArrFile::getName).collect(Collectors.toCollection(() -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER)));
+        // zjištění používaných souborů v podstromech vybraných JP
+        Set<String> fileNames = fundFileRepository.findFileNamesBySubtreeNodeIds(nodeIds, ignoreRootNodes).stream().collect(Collectors.toCollection(() -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER)));
+        result.setFileConflict(fileNames.size() > 0 && fileNamesFund.stream().anyMatch(fileNames::contains));
+
+        // zjištění existujících obalů v cílovém archivním souboru
+        List<ArrPacket> packetsFund = packetRepository.findByFund(targetFundVersion.getFund(), Lists.newArrayList(ArrPacket.State.OPEN, ArrPacket.State.CLOSED));
+        // zjištění používaných obalů v podstromech vybraných JP
+        List<ArrPacket> packets = packetRepository.findPacketsBySubtreeNodeIds(nodeIds, ignoreRootNodes);
+        result.setPacketConflict(packets.size() > 0 && packetsFund.stream().anyMatch(p -> {
+            for (ArrPacket packet : packets) {
+                if (Objects.equal(packet.getStorageNumber(), p.getStorageNumber())
+                        /*&& Objects.equal(packet.getPacketType(), p.getPacketType())*/) {
+                    return true;
+                }
+            }
+            return false;
+        }));
 
         return result;
     }

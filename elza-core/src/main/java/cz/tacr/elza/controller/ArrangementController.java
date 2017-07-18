@@ -1004,11 +1004,17 @@ public class ArrangementController {
         Assert.notNull(copyNodesValidate.getTargetFundVersionId(), "Neplatný identifikátor cílové verze AS");
         Assert.notNull(copyNodesValidate.getTargetStaticNode(), "Neplatná cílová JP");
 
-        CopyNodesValidateResult result = new CopyNodesValidateResult();
-        result.setFileConflict(true);
-        result.setPacketConflict(true);
-        result.setScopeError(false);
-        return result;
+        ArrFundVersion sourceFundVersion = fundVersionRepository.findOne(copyNodesValidate.getSourceFundVersionId());
+        ArrFundVersion targetFundVersion = fundVersionRepository.findOne(copyNodesValidate.getTargetFundVersionId());
+
+        ArrNode targetStaticNode = factoryDO.createNode(copyNodesValidate.getTargetStaticNode());
+        ArrNode targetStaticParentNode = copyNodesValidate.getTargetStaticNodeParent() == null ? null : factoryDO
+                .createNode(copyNodesValidate.getTargetStaticNodeParent());
+
+        List<ArrNode> sourceNodes = factoryDO.createNodes(copyNodesValidate.getSourceNodes());
+
+        return arrangementService.copyNodesValidate(sourceFundVersion, sourceNodes, copyNodesValidate.isIgnoreRootNodes(),
+                targetFundVersion, targetStaticNode, targetStaticParentNode);
     }
 
     @Transactional

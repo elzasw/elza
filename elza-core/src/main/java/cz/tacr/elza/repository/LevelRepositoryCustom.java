@@ -133,6 +133,11 @@ public interface LevelRepositoryCustom {
     List<LevelInfo> readTree(ArrFundVersion version);
 
     /**
+     * @return vrací dodatečný text při použití rekurzivního dotazu SQL podle typu DB
+     */
+    String getRecursivePart();
+
+    /**
      * Uzel stromu, obsahuje pouze základní informace.
      */
     class LevelInfo {

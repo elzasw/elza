@@ -3,6 +3,7 @@ package cz.tacr.elza.repository;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrPacket;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -35,4 +36,6 @@ public interface PacketRepositoryCustom {
 
 
     List<ArrPacket> findPackets(ArrFund fund, Integer limit, String text, ArrPacket.State state);
+
+    List<ArrPacket> findPacketsBySubtreeNodeIds(Collection<Integer> nodeIds, boolean ignoreRootNodes);
 }

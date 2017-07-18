@@ -393,16 +393,16 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
 
         List<LevelInfo> result = new ArrayList<>(ids.size());
 
-        String hql = "SELECT l.node_id, l.position, l.node_id_parent FROM arr_level l WHERE l.level_id IN (:ids)";        
+        String hql = "SELECT l.node_id, l.position, l.node_id_parent FROM arr_level l WHERE l.level_id IN (:ids)";
 
 
         ObjectListIterator<Integer> iterator = new ObjectListIterator<Integer>(ids);
         while (iterator.hasNext()) {
             List<Integer> partIds = iterator.next();
-            
+
             //TODO Change to use projections!
             // Note: Hibernate 5.2.8 requires same number of in parameteres for prepared
-            // native query, thus same query cannot be used multiple times 
+            // native query, thus same query cannot be used multiple times
             Query query = entityManager.createNativeQuery(hql);
             query.setParameter("ids", partIds);
 
@@ -429,7 +429,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         return (List<Integer>) query.getResultList();
     }
 
-    private String getRecursivePart() {
+    public String getRecursivePart() {
 
         final String recursive;
         if (DBUtils.DatabaseType.MSSQL.equals(dbUtils.getDbType())) {
