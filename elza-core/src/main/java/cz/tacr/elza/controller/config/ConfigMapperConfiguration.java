@@ -344,8 +344,10 @@ public class ConfigMapperConfiguration {
                     public void mapAtoB(final ArrItemUnitdate unitdate,
                                         final ArrItemUnitdateVO unitdateVO,
                                         final MappingContext context) {
-                        unitdateVO.setCalendarTypeId(unitdate.getCalendarType().getCalendarTypeId());
-                        unitdateVO.setValue(UnitDateConvertor.convertToString(unitdate));
+                        if (unitdate.getCalendarType() != null) {
+                            unitdateVO.setCalendarTypeId(unitdate.getCalendarType().getCalendarTypeId());
+                            unitdateVO.setValue(UnitDateConvertor.convertToString(unitdate));
+                        }
                     }
 
                     @Override
@@ -423,7 +425,7 @@ public class ConfigMapperConfiguration {
                                         final ArrItemRecordRefVO recordRefVO,
                                         final MappingContext context) {
                         super.mapAtoB(recordRef, recordRefVO, context);
-                        recordRefVO.setValue(recordRef == null ? null : recordRef.getRecord().getRecordId());
+                        recordRefVO.setValue(recordRef == null || recordRef.getRecord() == null ? null : recordRef.getRecord().getRecordId());
                     }
 
                     @Override
