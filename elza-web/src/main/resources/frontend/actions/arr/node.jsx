@@ -261,6 +261,8 @@ export function addNode(indexNode, parentNode, versionId, direction, descItemCop
     }
 }
 
+
+
 /**
  * Akce smazání uzlu.
  * @param {Object} node uzel, který se má smazat

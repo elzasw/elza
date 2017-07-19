@@ -34,7 +34,8 @@ import {
   modalDialogShow,
   modalDialogHide
 } from 'actions/global/modalDialog.jsx';
-import {fundTreeSelectNode} from "../../actions/arr/fundTree";
+import { fundTreeSelectNode } from '../../actions/arr/fundTree';
+import {fundExtendedView} from "../../actions/arr/fundExtended";
 
 class FundTreeCopy extends AbstractReactComponent {
   constructor(props) {
@@ -142,6 +143,27 @@ class FundTreeCopy extends AbstractReactComponent {
     );
   }
 
+  unFocus() {
+    if (document.selection) {
+      document.selection.empty();
+    } else {
+      window.getSelection().removeAllRanges();
+    }
+  }
+
+  /**
+     * Zabalení stromu
+     */
+  handleCollapse() {
+    this.dispatch(
+      fundTreeCollapse(
+        types.FUND_TREE_AREA_COPY,
+        this.props.versionId,
+        this.props.fund
+      )
+    );
+  }
+
   handleFulltextChange(value) {
     this.dispatch(
       fundTreeFulltextChange(
@@ -153,14 +175,16 @@ class FundTreeCopy extends AbstractReactComponent {
   }
 
   handleFulltextSearch() {
-    const { fund } = this.props;
-    this.dispatch(
+    const { searchFormData } = this.props;
+      this.dispatch(fundExtendedView(false));
+
+      this.dispatch(
       fundTreeFulltextSearch(
         types.FUND_TREE_AREA_COPY,
         this.props.versionId,
         null,
-        fund.fundTree.searchFormData
-          ? fund.fundTree.searchFormData
+        searchFormData
+          ? searchFormData
           : { type: 'FORM' }
       )
     );
@@ -177,87 +201,6 @@ class FundTreeCopy extends AbstractReactComponent {
       fundTreeFulltextNextItem(types.FUND_TREE_AREA_COPY, this.props.versionId)
     );
   }
-
-  /**
-     * Zabalení stromu
-     */
-  handleCollapse() {
-    this.dispatch(
-      fundTreeCollapse(
-        types.FUND_TREE_AREA_COPY,
-        this.props.versionId,
-        this.props.fund
-      )
-    );
-  }
-
-  handleExtendedSearch = () => {
-    const { fund } = this.props;
-    this.dispatch(
-      modalDialogShow(
-        this,
-        i18n('search.extended.title'),
-        <ArrSearchForm
-          onSubmitForm={this.handleExtendedSearchData}
-          initialValues={
-            fund.fundTree.searchFormData
-              ? fund.fundTree.searchFormData
-              : { type: 'FORM' }
-          }
-        />
-      )
-    );
-  };
-
-  handleExtendedSearchData = result => {
-    const { versionId } = this.props;
-    let params = [];
-
-    switch (result.type) {
-      case 'FORM': {
-        result.condition.forEach((conditionItem, index) => {
-          let param = {};
-          param.type = conditionItem.type;
-          param.value = conditionItem.value;
-          switch (conditionItem.type) {
-            case 'TEXT': {
-              param['@class'] = '.TextSearchParam';
-              break;
-            }
-            case 'UNITDATE': {
-              param['@class'] = '.UnitdateSearchParam';
-              param.calendarId = parseInt(conditionItem.calendarTypeId);
-              param.condition = conditionItem.condition;
-              break;
-            }
-          }
-          params.push(param);
-        });
-        break;
-      }
-
-      case 'TEXT': {
-        this.dispatch(
-          fundTreeFulltextChange(
-            types.FUND_TREE_AREA_COPY,
-            this.props.versionId,
-            result.text
-          )
-        );
-        break;
-      }
-    }
-
-    return this.dispatch(
-      fundTreeFulltextSearch(
-        types.FUND_TREE_AREA_COPY,
-        versionId,
-        params,
-        result,
-        true
-      )
-    );
-  };
 
   render() {
     const { actionAddons, className, fund, cutLongLabels } = this.props;
@@ -282,8 +225,10 @@ class FundTreeCopy extends AbstractReactComponent {
         onContextMenu={this.handleContextMenu}
         onNodeClick={this.handleNodeClick}
         onCollapse={this.handleCollapse}
-        extendedReadOnly={fund.fundTree.luceneQuery}
-        onClickExtendedSearch={this.handleExtendedSearch}
+        onFulltextChange={this.handleFulltextChange}
+        onFulltextSearch={this.handleFulltextSearch}
+        onFulltextPrevItem={this.handleFulltextPrevItem}
+        onFulltextNextItem={this.handleFulltextNextItem}
       />
     );
   }

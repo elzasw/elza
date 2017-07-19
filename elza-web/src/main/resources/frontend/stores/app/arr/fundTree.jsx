@@ -455,7 +455,6 @@ export default function fundTree(state = initialState, action = {}) {
                 action.expandedIdsExtension.forEach(id => {
                     result.expandedIds[id] = true;
                 });
-
                 return result;
             }
 

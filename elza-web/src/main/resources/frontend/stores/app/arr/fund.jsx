@@ -49,7 +49,6 @@ export function fundInitState(fundWithVersion) {
         fundPackets: fundPackets(),
         fundFiles: fundFiles(),
         fundTree: fundTree(undefined, {type: ''}),
-        fundTreeCopy: fundTree(undefined, {type: ''}),
         fundTreeMovementsLeft: fundTree(undefined, {type: ''}),
         fundTreeMovementsRight: fundTree(undefined, {type: ''}),
         moving: false,
@@ -78,8 +77,6 @@ export function fundInitState(fundWithVersion) {
 
     result.fundTreeNodes = initFundTreeNodes(result.fundTreeNodes);
 
-    result.fundTreeCopy.multipleSelection = true;
-
     return result;
 }
 
@@ -96,9 +93,6 @@ function updateFundTree(state, action) {
     switch (action.area) {
         case types.FUND_TREE_AREA_MAIN:
             state.fundTree = fundTree(state.fundTree, action)
-            break;
-        case types.FUND_TREE_AREA_COPY:
-            state.fundTreeCopy = fundTree(state.fundTreeCopy, action)
             break;
         case types.FUND_TREE_AREA_MOVEMENTS_LEFT:
             state.fundTreeMovementsLeft = fundTree(state.fundTreeMovementsLeft, action)
@@ -171,7 +165,6 @@ export function fund(state, action) {
                     ...state,
                     nodes: nodes(state.nodes, action),
                     fundTree: fundTree(state.fundTree, action),
-                    fundTreeCopy: fundTree(state.fundTreeCopy, action),
                 }
                 return consolidateState(state, result);
             }
@@ -199,7 +192,6 @@ export function fund(state, action) {
             ...state,
             nodes: nodes(state.nodes, action),
             fundTree: fundTree(state.fundTree, action),
-            fundTreeCopy: fundTree(state.fundTreeCopy, action),
         }
         return consolidateState(state, result);
     }
@@ -209,7 +201,6 @@ export function fund(state, action) {
             ...state,
             nodes: nodes(state.nodes, action),
             fundTree: fundTree(state.fundTree, action),
-            fundTreeCopy: fundTree(state.fundTreeCopy, action),
             fundNodesPolicy: fundNodesPolicy(state.fundNodesPolicy, action),
             fundNodesError: {}
         }
@@ -224,7 +215,6 @@ export function fund(state, action) {
                 closed: true,   // při načtení vždy chceme closed, i když není - aby nemohl editovat, než se načte aktuální stav ze serveru
                 dirty: true,
                 fundTree: fundTree(state.fundTree, action),
-                fundTreeCopy: fundTree(state.fundTreeCopy, action),
                 fundTreeMovementsLeft: fundTree(state.fundTreeMovementsLeft, action),
                 fundTreeMovementsRight: fundTree(state.fundTreeMovementsRight, action),
                 moving: false,
@@ -260,7 +250,6 @@ export function fund(state, action) {
                 name,
                 lockDate,
                 fundTree: fundTree(state.fundTree, action),
-                fundTreeCopy: fundTree(state.fundTreeCopy, action),
                 fundTreeMovementsLeft: fundTree(state.fundTreeMovementsLeft, action),
                 fundTreeMovementsRight: fundTree(state.fundTreeMovementsRight, action),
                 fundTreeDaosLeft: fundTree(state.fundTreeDaosLeft, action),
@@ -350,7 +339,6 @@ export function fund(state, action) {
                 ...state,
                 nodes: nodes(state.nodes, action),
                 fundTree: fundTree(state.fundTree, action),
-                fundTreeCopy: fundTree(state.fundTreeCopy, action),
             };
             return consolidateState(state, result);
         }
@@ -364,7 +352,6 @@ export function fund(state, action) {
                 ...state,
                 nodes: nodes(state.nodes, action),
                 fundTree: fundTree(state.fundTree, action),
-                fundTreeCopy: fundTree(state.fundTreeCopy, action),
                 fundTreeMovementsLeft: fundTree(state.fundTreeMovementsLeft, action),
                 fundTreeMovementsRight: fundTree(state.fundTreeMovementsRight, action),
                 fundTreeDaosLeft: fundTree(state.fundTreeDaosLeft, action),
@@ -393,7 +380,6 @@ export function fund(state, action) {
             const result = {
                 ...state,
                 fundTree: fundTree(state.fundTree, action),
-                fundTreeCopy: fundTree(state.fundTreeCopy, action),
                 nodes: nodes(state.nodes, action),
                 versionValidation: versionValidation(state.versionValidation, action),
                 bulkActions: bulkActions(state.bulkActions, action),
@@ -434,7 +420,6 @@ export function fund(state, action) {
                 ...state,
                 nodes: nodes(state.nodes, action),
                 fundTree: fundTree(state.fundTree, action),
-                fundTreeCopy: fundTree(state.fundTreeCopy, action),
                 fundTreeMovementsLeft: fundTree(state.fundTreeMovementsLeft, action),
                 fundTreeMovementsRight: fundTree(state.fundTreeMovementsRight, action),
                 fundTreeNodes: fundTree(state.fundTreeNodes, action),

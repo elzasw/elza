@@ -10,7 +10,7 @@ import {addNode, fundSelectSubNode} from 'actions/arr/node.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {i18n} from 'components/shared';
 import AddNodeForm from "../../components/arr/nodeForm/AddNodeForm";
-
+import {WebApi} from "../WebApi"
 /**
  * Vyvolá dialog pro přidání uzlu. Toto vyvolání dialogu slouží pro volání POUZE z pořádání! Po úspěšném volání je vybrán v pořádání přidaný node.
  * @param {Object} direction počáteční směr vytváření, který má být přednastaven v dialogu
@@ -41,9 +41,22 @@ export function addNodeFormArr(direction, node, selectedSubNodeIndex, versionId)
  */
 export function addNodeForm(direction, node, parentNode, versionId, afterCreateCallback, allowedDirections = ['BEFORE', 'AFTER', 'CHILD', 'ATEND']) {
     return (dispatch) => {
-        const onSubmit = (data) => {
-            dispatch(addNode(data.indexNode, data.parentNode, data.versionId, data.direction, data.descItemCopyTypes, data.scenarioName, afterCreateCallback));
-            dispatch(modalDialogHide());
+        const onSubmit = (data, type) => {
+            switch (type) {
+                case "NEW": {
+                    dispatch(addNode(data.indexNode, data.parentNode, data.versionId, data.direction, data.descItemCopyTypes, data.scenarioName, afterCreateCallback));
+                }
+                case "FILE": {
+                    //dispatch(addNode(data.indexNode, data.parentNode, data.versionId, data.direction, data.descItemCopyTypes, data.scenarioName, afterCreateCallback));
+                }
+                case "OTHER": {
+                    WebApi.copyNodesValidate(data.targetFundVersionId, data.targetStaticNode, data.targetStaticNodeParent, data.sourceFundVersionId, data.sourceNodes, data.ignoreRootNodes = false)
+                        .then(json=>{
+                            console.log(json);
+                        });
+                }
+               dispatch(modalDialogHide());
+            }
         };
 
         dispatch(modalDialogShow(

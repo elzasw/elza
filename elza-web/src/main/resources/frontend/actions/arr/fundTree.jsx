@@ -22,6 +22,7 @@ export function isFundTreeAction(action) {
         case types.FUND_FUND_TREE_REQUEST:
         case types.FUND_FUND_TREE_RECEIVE:
         case types.FUND_FUND_TREE_FULLTEXT_RESULT:
+        case types.SELECT_FUND_GLOBAL:
             return true
         default:
             return false
@@ -116,6 +117,8 @@ function getFundTreeForFund(state, area, versionId) {
     var fundTree
     if (area === types.FUND_TREE_AREA_FUNDS_FUND_DETAIL) {  // fundRegion
         return state.fundRegion.fundDetail.fundTree
+    } else if (area === types.FUND_TREE_AREA_COPY) {
+        return state.arrRegion.globalFundTree.fundTreeCopy
     } else {    // arrRegion
         var index = indexById(state.arrRegion.funds, versionId, "versionId");
         if (index != null) {
@@ -133,6 +136,8 @@ function getFundForTree(state, area, versionId) {
     var fundTree
     if (area === types.FUND_TREE_AREA_FUNDS_FUND_DETAIL) {  // fundRegion
         return state.fundRegion
+    } else if (area === types.FUND_TREE_AREA_COPY) {
+        return state.arrRegion.globalFundTree.fundTreeCopy;
     } else {    // arrRegion
         var index = indexById(state.arrRegion.funds, versionId, "versionId");
         if (index != null) {
@@ -159,9 +164,11 @@ function changeCurrentIndex(dispatch, area, fund, versionId, fundTree, newIndex)
         if (nodeParent === null) {
             nodeParent = createFundRoot(fund)
         }
-
         switch (area) {
             case types.FUND_TREE_AREA_MAIN:
+                dispatch(fundSelectSubNode(versionId, nodeId, nodeParent, false, newIndex, true));
+                break;
+                case types.FUND_TREE_AREA_COPY:
                 dispatch(fundSelectSubNode(versionId, nodeId, nodeParent, false, newIndex, true));
                 break;
             case types.FUND_TREE_AREA_MOVEMENTS_LEFT:
@@ -195,7 +202,7 @@ export function fundTreeFulltextNextItem(area, versionId) {
     return (dispatch, getState) => {
         var state = getState();
         var fundTree = getFundTreeForFund(state, area, versionId);
-
+        console.log(123,fundTree);
         if (fundTree && fundTree.searchedIds.length > 0) {
             var newIndex;
             if (fundTree.filterCurrentIndex == -1) {
@@ -304,6 +311,9 @@ export function fundTreeNodeExpand(area, node) {
         if (area === types.FUND_TREE_AREA_FUNDS_FUND_DETAIL) {  // fundRegion
             versionId = state.fundRegion.fundDetail.versionId
             fundTree = state.fundRegion.fundDetail.fundTree
+        } else if (area === types.FUND_TREE_AREA_COPY) {
+            versionId = state.arrRegion.globalFundTree.versionId;
+            fundTree = state.arrRegion.globalFundTree.fundTreeCopy
         } else {    // arrRegion
             var activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
             versionId = activeFund.versionId
@@ -358,8 +368,6 @@ function getFundTree(fund, area) {
     switch (area) {
         case types.FUND_TREE_AREA_MAIN:
             return fund.fundTree;
-        case types.FUND_TREE_AREA_COPY:
-            return fund.fundTreeCopy;
         case types.FUND_TREE_AREA_MOVEMENTS_LEFT:
             return fund.fundTreeMovementsLeft;
         case types.FUND_TREE_AREA_MOVEMENTS_RIGHT:
@@ -376,11 +384,11 @@ function getFundTree(fund, area) {
 /**
  * Vyžádání dat - aby byla ve store k dispozici.
  * @param {String} area oblast stromu
- * @param {versionId} id verze
+ * @param {sourceVersionId} id verze
  * @param {expandedIds} seznam rozbalených uzlů
  * @param selectedIdInfo buď id nebo pole id (id, které je aktuálně vybrané nebo null, toto id bude také načtené a strom zobrazený s touto položkou)
  */
-export function fundTreeFetchIfNeeded(area, versionId, expandedIds, selectedIdInfo) {
+export function fundTreeFetchIfNeeded(area, sourceVersionId, expandedIds, selectedIdInfo) {
     return (dispatch, getState) => {
         var state = getState();
 
@@ -389,6 +397,9 @@ export function fundTreeFetchIfNeeded(area, versionId, expandedIds, selectedIdIn
         if (area === types.FUND_TREE_AREA_FUNDS_FUND_DETAIL) {  // fundRegion
             versionId = state.fundRegion.fundDetail.versionId
             fundTree = state.fundRegion.fundDetail.fundTree
+        } else if (area === types.FUND_TREE_AREA_COPY) {
+            versionId = state.arrRegion.globalFundTree.versionId;
+            fundTree = state.arrRegion.globalFundTree.fundTreeCopy;
         } else {    // arrRegion
             var activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
             versionId = activeFund.versionId
@@ -442,6 +453,7 @@ export function fundTreeFetchIfNeeded(area, versionId, expandedIds, selectedIdIn
  * @param {expandedIds} seznam rozbalených uzlů
  */
 export function fundTreeFetch(area, versionId, nodeId, expandedIds, includeIds=[]) {
+
     return dispatch => {
         dispatch(fundTreeRequest(area, versionId, nodeId, expandedIds, includeIds))
         return WebApi.getFundTree(versionId, nodeId, expandedIds, includeIds)

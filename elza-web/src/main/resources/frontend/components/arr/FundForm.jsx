@@ -138,7 +138,7 @@ class FundForm extends AbstractReactComponent {
                                 return;
                             }
                             let index = this.findIndexInFields(this.props.fields.regScopes, value.name, 'name');
-                            if (index == null) {
+                            if (index === null) {
                                 this.props.fields.regScopes.addField(value);
                             } else {
                                 this.props.fields.regScopes.removeField(index);

@@ -34,7 +34,10 @@ import './AddNodeForm.less';
 import { getSetFromIdsList } from 'stores/app/utils.jsx';
 
 import FundTreeCopy from '../FundTreeCopy';
-import { renderUserItem } from '../../admin/adminRenderUtils';
+import FundField from '../../admin/FundField';
+import { fundsSelectFund } from '../../../actions/fund/fund';
+import { fundTreeFetch } from '../../../actions/arr/fundTree';
+import { FUND_TREE_AREA_COPY } from '../../../actions/constants/ActionTypes';
 
 class AddNodeForm extends AbstractReactComponent {
   static PropTypes = {
@@ -57,8 +60,8 @@ class AddNodeForm extends AbstractReactComponent {
     allowedDirections: ['BEFORE', 'AFTER', 'CHILD', 'ATEND'],
     selectedType: 'NEW',
     selectedSourceAS: 'FILE',
-      fundList:[]
-
+    scopeList: [],
+    value: ''
   };
 
   /**
@@ -173,7 +176,6 @@ class AddNodeForm extends AbstractReactComponent {
      */
   handleFormSubmit = e => {
     e.preventDefault();
-
     const { onSubmit, node, parentNode, versionId, initDirection } = this.props;
     const { selectedDirection, selectedScenario } = this.state;
 
@@ -183,24 +185,49 @@ class AddNodeForm extends AbstractReactComponent {
       node,
       parentNode
     );
+    if (this.state.selectedType === 'NEW') {
+      // Data pro poslání do on submit - obsahují všechny informace pro založení
+      const submitData = {
+        indexNode: dataServ.activeNode,
+        parentNode: dataServ.parentNode,
+        versionId: versionId,
+        direction: dataServ.direction,
+        descItemCopyTypes: this.getDescItemTypeCopyIds(),
+        scenarioName: selectedScenario
+      };
 
-    // Data pro poslání do on submit - obsahují všechny informace pro založení
-    const submitData = {
-      indexNode: dataServ.activeNode,
-      parentNode: dataServ.parentNode,
-      versionId: versionId,
-      direction: dataServ.direction,
-      descItemCopyTypes: this.getDescItemTypeCopyIds(),
-      scenarioName: selectedScenario
-    };
-
-    onSubmit(submitData);
+      onSubmit(submitData, 'NEW');
+    } else if (this.state.selectedSourceAS === 'FILE') {
+      const sumbitData = {};
+      onSubmit(sumbitData, 'FILE');
+    } else if (this.state.selectedSourceAS === 'OTHER') {
+        //TODO
+      console.log(456, this.props);
+      const sumbitData = {
+        targetFundVersionId: this.props.node.version,
+        targetStaticNode: this.props.node,
+        targetStaticNodeParent: this.props.parentNode,
+        sourceFundVersionId: this.props.fund.versions[0].id,
+        sourceNodes: this.props.fundTreeCopy.selectedIds,
+        ignoreRootNodes: false
+      };
+      console.log(sumbitData);
+      onSubmit(sumbitData, 'OTHER');
+    }
   };
 
-  componentWillMount() {
+  componentDidMount() {
     const { initDirection } = this.props;
     this.getDirectionScenarios(initDirection);
+    this.fetchScopeList();
   }
+  fetchScopeList = () => {
+    WebApi.getAllScopes().then(data => {
+      this.setState({
+        scopeList: data
+      });
+    });
+  };
 
   render() {
     const {
@@ -345,20 +372,8 @@ class AddNodeForm extends AbstractReactComponent {
             </Row>
           </FormGroup>
           {this.state.selectedType === 'NEW'
-            ? this.renderCreateNew(
-                loading,
-                initDirection,
-                scnRadios,
-                options,
-                onClose
-              )
-            : this.renderCreateExisting(
-                loading,
-                initDirection,
-                scnRadios,
-                options,
-                onClose
-              )}
+            ? this.renderCreateNew(loading, scnRadios)
+            : this.renderCreateExisting()}
         </Modal.Body>
         <Modal.Footer>
           <Button type="submit" onClick={this.handleFormSubmit}>
@@ -372,7 +387,7 @@ class AddNodeForm extends AbstractReactComponent {
     );
   }
 
-  renderCreateNew(loading, initDirection, scnRadios, options, onClose) {
+  renderCreateNew(loading, scnRadios) {
     return (
       <div>
         <FormGroup>
@@ -428,12 +443,21 @@ class AddNodeForm extends AbstractReactComponent {
   }
 
   renderCreateFromFile() {
+    const { scopeList } = this.state;
     return [
       <FormGroup>
         <ControlLabel>
           {i18n('party.recordScope')}
         </ControlLabel>
-        <FormControl type="text" name="tridaRejstriku" />
+        <Autocomplete
+          label={i18n('arr.fund.regScope')}
+          items={scopeList}
+          getItemId={item => (item ? item.id : null)}
+          getItemName={item => {
+            return item ? item.name : '';
+          }}
+          value={this.props.value}
+        />
       </FormGroup>,
       <FormGroup>
         <FormControl name="Soubor" type="file" />
@@ -441,59 +465,60 @@ class AddNodeForm extends AbstractReactComponent {
     ];
   }
 
-    handleSearchChange(text) {
-        text = text == "" ? null : text;
-//TODO
-        WebApi.findFunds(text, true, false, 200).then(json => {
-            this.setState({
-                fundList: json.funds
-            })
-        })
-    }
   renderCreateFromOther() {
-    const activeFund = this.getActiveFund();
+    const { value } = this.state;
+    const { fundTreeCopy, fund } = this.props;
+
     return [
       <FormGroup>
         <ControlLabel>
           {i18n('arr.fund.addNode.type.existing.archiveFile')}
         </ControlLabel>
-        <Autocomplete
-          ref="autocompleteAF"
-          className="form-group"
-          customFilter
-          items={this.state.fundList}
-          onSearchChange={this.handleSearchChange}
-          renderItem={renderUserItem}
+        <FundField
+          ref="fundField"
+          value={value}
+          onChange={item => {
+            this.dispatch({
+              type: 'SELECT_FUND_GLOBAL',
+              area: 'FUND_TREE_AREA_COPY',
+              fund: item,
+              versionId: item.versions[0].id
+            });
+            this.setState(() => {
+              return { value: item.name };
+            });
+          }}
         />
       </FormGroup>,
-      <ControlLabel>
-        {i18n('arr.history.title.nodeChanges')}
-      </ControlLabel>,
-      <FundTreeCopy
-        className="fund-tree-container-fixed"
-        fund={activeFund}
-        cutLongLabels={true}
-        versionId={activeFund.versionId}
-        ref="treeCopy"
-        {...activeFund.fundTreeCopy}
-      />
+      <div>
+        {fund &&
+          <ControlLabel>
+            {i18n('arr.history.title.nodeChanges')}
+          </ControlLabel>}
+        {fund &&
+          <FundTreeCopy
+            className="fund-tree-container-fixed"
+            fund={fund}
+            cutLongLabels={true}
+            versionId={fund.versions[0].id || 0}
+            ref="treeCopy"
+            {...fundTreeCopy}
+          />}
+      </div>
     ];
-  }
-  getActiveFund() {
-    const { arrRegion } = this.props;
-    return (
-      arrRegion.activeIndex !== null && arrRegion.funds[arrRegion.activeIndex]
-    );
   }
 }
 
 function mapStateToProps(state) {
-  const { arrRegion, userDetail } = state;
+  const { arrRegion, userDetail, registryDetail } = state;
 
   return {
+    fund: arrRegion.globalFundTree.fund,
+    fundTreeCopy: arrRegion.globalFundTree.fundTreeCopy,
     nodeSettings: arrRegion.nodeSettings,
     arrRegion: arrRegion,
-    userDetail: userDetail
+    userDetail: userDetail,
+    registryDetail
   };
 }
 
