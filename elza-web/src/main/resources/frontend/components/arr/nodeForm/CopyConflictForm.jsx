@@ -27,7 +27,10 @@ class CopyConflictForm extends AbstractReactComponent {
     packetsConflictResolve: 'USE_TARGET'
   };
   handleSubmit = data => {
-    this.props.onSumbit(this.state.filesConflictResolve, this.state.packetsConflictResolve);
+    this.props.onSumbit(
+      this.state.filesConflictResolve,
+      this.state.packetsConflictResolve
+    );
   };
   render() {
     const { onClose, packetConflict, fileConflict, scopeError } = this.props;
@@ -36,9 +39,8 @@ class CopyConflictForm extends AbstractReactComponent {
         <Modal.Body>
           {fileConflict &&
             <ControlLabel>
-              {i18n('Soubory')}
+              {i18n('arr.fund.addNode.conflict.files')}
             </ControlLabel>}
-          {'Vyberte akci k vyřešení konfliktních souborů'}
           <FormGroup>
             <Radio
               name="selectResolveTypeFile"
@@ -47,7 +49,7 @@ class CopyConflictForm extends AbstractReactComponent {
                 this.setState({ filesConflictResolve: 'USE_TARGET' });
               }}
             >
-              {'Použít z cílového AS'}
+              {i18n('arr.fund.addNode.conflict.useTarget')}
             </Radio>
             <Radio
               name="selectResolveTypeFile"
@@ -56,36 +58,38 @@ class CopyConflictForm extends AbstractReactComponent {
                 this.setState({ filesConflictResolve: 'COPY_AND_RENAME' });
               }}
             >
-              {'Přejmenovat'}
+              {i18n('arr.fund.addNode.conflict.rename')}
             </Radio>
-          </FormGroup>}
+          </FormGroup>
           {packetConflict &&
             <ControlLabel>
-              {i18n('Pakety')}
-            </ControlLabel>}
-          <FormGroup>
-            <Radio
-              name="selectResolveTypePacket"
-              checked={this.state.packetsConflictResolve === 'USE_TARGET'}
-              onChange={e => {
-                this.setState({ packetsConflictResolve: 'USE_TARGET' });
-              }}
-            >
-              {'Použít z cílového AS'}
-            </Radio>
-            <Radio
-              name="selectResolveTypePacket"
-              checked={this.state.packetsConflictResolve === 'COPY_AND_RENAME'}
-              onChange={e => {
-                this.setState({ packetsConflictResolve: 'COPY_AND_RENAME' });
-              }}
-            >
-              {'Přejmenovat'}
-            </Radio>
-          </FormGroup>}
+              {i18n('arr.fund.addNode.conflict.packets')}
+            </ControlLabel> &&
+            <FormGroup>
+              <Radio
+                name="selectResolveTypePacket"
+                checked={this.state.packetsConflictResolve === 'USE_TARGET'}
+                onChange={e => {
+                  this.setState({ packetsConflictResolve: 'USE_TARGET' });
+                }}
+              >
+                {i18n('arr.fund.addNode.conflict.useTarget')}
+              </Radio>
+              <Radio
+                name="selectResolveTypePacket"
+                checked={
+                  this.state.packetsConflictResolve === 'COPY_AND_RENAME'
+                }
+                onChange={e => {
+                  this.setState({ packetsConflictResolve: 'COPY_AND_RENAME' });
+                }}
+              >
+                {i18n('arr.fund.addNode.conflict.rename')}
+              </Radio>
+            </FormGroup>}
         </Modal.Body>
         <Modal.Footer>
-          {scopeError &&
+          {!scopeError &&
             <Button type="submit" onClick={this.handleFormSubmit}>
               {i18n('global.action.store')}
             </Button>}

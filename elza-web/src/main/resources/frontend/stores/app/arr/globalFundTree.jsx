@@ -18,6 +18,8 @@ export default function globalFundTree(state = initialState, action = {}) {
       case types.INVALIDATE: {
           return {
               ...state,
+              fund: initialState.fund,
+              versionId: initialState.versionId,
               fundTreeCopy: initialState.fundTreeCopy
           }
       }

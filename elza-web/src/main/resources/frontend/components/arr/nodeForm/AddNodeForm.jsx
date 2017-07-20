@@ -17,7 +17,8 @@ import {
   Col,
   Row,
   Grid,
-  FormControl
+  FormControl,
+  Checkbox
 } from 'react-bootstrap';
 import { WebApi } from 'actions/index.jsx';
 import { addNode } from 'actions/arr/node.jsx';
@@ -234,7 +235,7 @@ class AddNodeForm extends AbstractReactComponent {
         targetStaticNodeParent: getParentNode(parentNode),
         sourceFundVersionId: this.props.globalFundTree.versionId,
         sourceNodes,
-        ignoreRootNodes: false
+        ignoreRootNodes: this.state.ignoreRootNodes
       };
       onSubmit(sumbitData, 'OTHER');
     }
@@ -400,12 +401,29 @@ class AddNodeForm extends AbstractReactComponent {
             : this.renderCreateExisting()}
         </Modal.Body>
         <Modal.Footer>
-          <Button type="submit" onClick={this.handleFormSubmit}>
-            {i18n('global.action.store')}
-          </Button>
-          <Button bsStyle="link" onClick={onClose}>
-            {i18n('global.action.cancel')}
-          </Button>
+          <Row>
+            {this.state.selectedSourceAS === 'OTHER' &&
+              <Col xs={4}>
+                <Checkbox
+                  inline
+                  checked={this.state.ignoreRootNodes}
+                  onChange={() => {
+                    this.setState(() => {
+                      return { ignoreRootNodes: !this.state.ignoreRootNodes };
+                    });
+                  }}
+                >
+                    {i18n('arr.fund.addNode.ignoreRootNodes')}
+                </Checkbox>
+              </Col>}
+              <Col xs={4} xsOffset={4}>
+            <Button type="submit" onClick={this.handleFormSubmit}>
+              {i18n('global.action.store')}
+            </Button>
+            <Button bsStyle="link" onClick={onClose}>
+              {i18n('global.action.cancel')}
+            </Button></Col>
+          </Row>
         </Modal.Footer>
       </Form>
     );
@@ -472,9 +490,6 @@ class AddNodeForm extends AbstractReactComponent {
     const { scopeList } = this.state;
     return [
       <FormGroup>
-        <ControlLabel>
-          {i18n('party.recordScope')}
-        </ControlLabel>
         <Autocomplete
           label={i18n('arr.fund.regScope')}
           items={scopeList}
@@ -486,7 +501,7 @@ class AddNodeForm extends AbstractReactComponent {
         />
       </FormGroup>,
       <FormGroup>
-        <FormControl name="Soubor" type="file" />
+        <FormControl name="soubor" type="file" />
       </FormGroup>
     ];
   }

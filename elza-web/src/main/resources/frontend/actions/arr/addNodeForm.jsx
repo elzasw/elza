@@ -54,38 +54,10 @@ export function addNodeForm(direction, node, parentNode, versionId, afterCreateC
                     //dispatch(addNode(data.indexNode, data.parentNode, data.versionId, data.direction, data.descItemCopyTypes, data.scenarioName, afterCreateCallback));
                 }
                 case "OTHER": {
-                    WebApi.copyNodesValidate(data.targetFundVersionId, data.targetStaticNode, data.targetStaticNodeParent, data.sourceFundVersionId, data.sourceNodes, data.ignoreRootNodes = false)
-                        .then(json => {
-                            if (json.scopeError) {
-                                dispatch(modalDialogShow(
-                                    this,
-                                    i18n('Při kopírování došlo k chybě'),
-                                    <CopyConflictForm
-                                        scopeError={json.scopeError}
-                                    />
-                                ));
-                            }
-                            if (json.fileConflict === true || json.packetConflict === true) {
-                                 dispatch(modalDialogShow(
-                                    this,
-                                    i18n("Jak se mají řešit konflikty?"),
-                                    <CopyConflictForm
-                                        fileConflict={json.fileConflict}
-                                        packetConflict={json.packetConflict}
-                                        onSubmit={
-                                            (filesConflictResolve,
-                                             packetsConflictResolve
-                                            ) => dispatch(handleCopySubmit(data,filesConflictResolve,packetsConflictResolve))
-                                        }
-
-                                    />
-                                ));
-                            }
-                            dispatch(handleCopySubmit(data))
-                        });
+                    dispatch(handleSubmitOther(data));
                 }
-                    dispatch(modalDialogHide());
             }
+            dispatch(modalDialogHide());
         };
 
         dispatch(modalDialogShow(
@@ -101,6 +73,40 @@ export function addNodeForm(direction, node, parentNode, versionId, afterCreateC
             />
         ));
 
+    }
+}
+
+function handleSubmitOther(data) {
+    return(dispatch) => {
+        WebApi.copyNodesValidate(data.targetFundVersionId, data.targetStaticNode, data.targetStaticNodeParent, data.sourceFundVersionId, data.sourceNodes, data.ignoreRootNodes = false)
+            .then(json => {
+                if (json.scopeError) {
+                    dispatch(modalDialogShow(
+                        this,
+                        i18n('arr.fund.addNode.error'),
+                        <CopyConflictForm
+                            scopeError={json.scopeError}
+                        />
+                    ));
+                } else if (json.fileConflict === true || json.packetConflict === true) {
+                    dispatch(modalDialogShow(
+                        this,
+                        i18n('arr.fund.addNode.conflict'),
+                        <CopyConflictForm
+                            fileConflict={json.fileConflict}
+                            packetConflict={json.packetConflict}
+                            onSubmit={
+                                (filesConflictResolve,
+                                 packetsConflictResolve
+                                ) => dispatch(handleCopySubmit(data,filesConflictResolve,packetsConflictResolve))
+                            }
+
+                        />
+                    ));
+                } else {
+                    dispatch(handleCopySubmit(data))
+                }
+            });
     }
 }
 
