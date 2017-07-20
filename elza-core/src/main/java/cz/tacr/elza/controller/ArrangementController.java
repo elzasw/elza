@@ -22,10 +22,18 @@ import javax.transaction.Transactional;
 
 import cz.tacr.elza.controller.vo.CopyNodesParams;
 import cz.tacr.elza.controller.vo.CopyNodesValidate;
-import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.repository.FundFileRepository;
+import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.PacketRepository;
+import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.importnodes.ImportFromFund;
+import cz.tacr.elza.service.importnodes.ImportNodesFromSource;
+import cz.tacr.elza.service.importnodes.vo.ConflictResolve;
+import cz.tacr.elza.service.importnodes.vo.ImportParams;
+import cz.tacr.elza.service.importnodes.vo.ValidateResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
@@ -279,6 +287,21 @@ public class ArrangementController {
 
     @Autowired
     private ExternalSystemService externalSystemService;
+
+    @Autowired
+    private ScopeRepository scopeRepository;
+
+    @Autowired
+    private FundFileRepository fundFileRepository;
+
+    @Autowired
+    private PacketRepository packetRepository;
+
+    @Autowired
+    private LevelRepository levelRepository;
+
+    @Autowired
+    private ImportNodesFromSource importNodesFromSource;
 
     /**
      * Seznam typů obalů.
@@ -997,7 +1020,7 @@ public class ArrangementController {
     @RequestMapping(value = "/levels/copy/validate", method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public CopyNodesValidateResult copyLevelsValidate(@RequestBody final CopyNodesValidate copyNodesValidate) {
+    public ValidateResult copyLevelsValidate(@RequestBody final CopyNodesValidate copyNodesValidate) {
         Assert.notNull(copyNodesValidate, "Neplatná struktura");
         Assert.notNull(copyNodesValidate.getSourceFundVersionId(), "Neplatný identifikátor zdrojové verze AS");
         Assert.notEmpty(copyNodesValidate.getSourceNodes(), "Musí být vybrána alespoň jedna cílová JP");
@@ -1013,8 +1036,10 @@ public class ArrangementController {
 
         List<ArrNode> sourceNodes = factoryDO.createNodes(copyNodesValidate.getSourceNodes());
 
-        return arrangementService.copyNodesValidate(sourceFundVersion, sourceNodes, copyNodesValidate.isIgnoreRootNodes(),
-                targetFundVersion, targetStaticNode, targetStaticParentNode);
+        ImportFromFund importFromFund = new ImportFromFund(scopeRepository, fundFileRepository, packetRepository, levelRepository);
+        importFromFund.init(sourceFundVersion, sourceNodes, copyNodesValidate.isIgnoreRootNodes());
+
+        return importNodesFromSource.validateData(importFromFund, targetFundVersion, targetStaticNode);
     }
 
     @Transactional
@@ -1027,6 +1052,31 @@ public class ArrangementController {
         Assert.notEmpty(copyNodesParams.getSourceNodes(), "Musí být vybrána alespoň jedna cílová JP");
         Assert.notNull(copyNodesParams.getTargetFundVersionId(), "Neplatný identifikátor cílové verze AS");
         Assert.notNull(copyNodesParams.getTargetStaticNode(), "Neplatná cílová JP");
+
+        ArrFundVersion sourceFundVersion = fundVersionRepository.findOne(copyNodesParams.getSourceFundVersionId());
+        ArrFundVersion targetFundVersion = fundVersionRepository.findOne(copyNodesParams.getTargetFundVersionId());
+
+        ArrNode targetStaticNode = factoryDO.createNode(copyNodesParams.getTargetStaticNode());
+        ArrNode targetStaticParentNode = copyNodesParams.getTargetStaticNodeParent() == null ? null : factoryDO
+                .createNode(copyNodesParams.getTargetStaticNodeParent());
+
+        List<ArrNode> sourceNodes = factoryDO.createNodes(copyNodesParams.getSourceNodes());
+
+
+        ImportFromFund importFromFund = new ImportFromFund(scopeRepository, fundFileRepository, packetRepository, levelRepository);
+        importFromFund.init(sourceFundVersion, sourceNodes, copyNodesParams.isIgnoreRootNodes());
+
+        importNodesFromSource.importData(importFromFund, new ImportParams() {
+            @Override
+            public ConflictResolve getFileConflictResolve() {
+                return ConflictResolve.valueOf(copyNodesParams.getFilesConflictResolve().name());
+            }
+
+            @Override
+            public ConflictResolve getPacketConflictResolve() {
+                return ConflictResolve.valueOf(copyNodesParams.getPacketsConflictResolve().name());
+            }
+        }, targetFundVersion, targetStaticNode);
     }
 
     @Transactional

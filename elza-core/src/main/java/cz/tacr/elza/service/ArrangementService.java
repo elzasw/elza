@@ -1,58 +1,6 @@
 package cz.tacr.elza.service;
 
-import java.text.Normalizer;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-import javax.persistence.Query;
-
-import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
-import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
-import cz.tacr.elza.domain.ArrFile;
-import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.repository.CachedNodeRepository;
-import cz.tacr.elza.repository.DaoFileGroupRepository;
-import cz.tacr.elza.repository.DaoFileRepository;
-import cz.tacr.elza.repository.DaoLinkRepository;
-import cz.tacr.elza.repository.DaoLinkRequestRepository;
-import cz.tacr.elza.repository.DaoPackageRepository;
-import cz.tacr.elza.repository.DaoRepository;
-import cz.tacr.elza.repository.DaoRequestDaoRepository;
-import cz.tacr.elza.repository.DaoRequestRepository;
-import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
-import cz.tacr.elza.repository.DigitizationRequestRepository;
-import cz.tacr.elza.repository.FundFileRepository;
-import cz.tacr.elza.repository.RequestQueueItemRepository;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestParam;
-
 import com.google.common.collect.Iterables;
-
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
@@ -95,13 +43,26 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ConcurrentUpdateException;
 import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
+import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.DaoFileGroupRepository;
+import cz.tacr.elza.repository.DaoFileRepository;
+import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.DaoLinkRequestRepository;
+import cz.tacr.elza.repository.DaoPackageRepository;
+import cz.tacr.elza.repository.DaoRepository;
+import cz.tacr.elza.repository.DaoRequestDaoRepository;
+import cz.tacr.elza.repository.DaoRequestRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
+import cz.tacr.elza.repository.DigitizationRequestRepository;
+import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -120,12 +81,42 @@ import cz.tacr.elza.repository.OutputItemRepository;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.repository.PacketRepository;
+import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventFund;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import javax.annotation.Nullable;
+import javax.persistence.Query;
+import java.text.Normalizer;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 /**
@@ -477,6 +468,20 @@ public class ArrangementService {
         level.setNodeParent(parentNode);
         level.setNode(createNode(fund, createChange));
         return levelRepository.saveAndFlush(level);
+    }
+
+    public ArrLevel createLevelSimple(final ArrChange createChange,
+                                      final ArrNode parentNode,
+                                      final int position,
+                                      final ArrFund fund) {
+        Assert.notNull(createChange);
+
+        ArrLevel level = new ArrLevel();
+        level.setPosition(position);
+        level.setCreateChange(createChange);
+        level.setNodeParent(parentNode);
+        level.setNode(createNode(fund, createChange));
+        return levelRepository.save(level);
     }
 
     public ArrLevel createLevel(final ArrChange createChange, final ArrNode node, final ArrNode parentNode, final int position) {
@@ -1628,62 +1633,6 @@ public class ArrangementService {
                 result.put(change, false);
             }
         }
-
-        return result;
-    }
-
-    /**
-     * Zjištění, zda-li je možné provést kopírování vybraných JP (a jejich potomků) do AS.
-     *
-     * @param sourceFundVersion       zdrojový AS
-     * @param sourceNodes             zdrojové JP
-     * @param ignoreRootNodes         ignorovat root (vybrané) JP pří vyhledávání v podstromech
-     * @param targetFundVersion       cílová AS
-     * @param targetStaticNode        cílová JP, pod kterou přidáváme
-     * @param targetStaticParentNode  předek cílové JP
-     * @return výsledek validace
-     */
-    public CopyNodesValidateResult copyNodesValidate(final ArrFundVersion sourceFundVersion,
-                                                     final List<ArrNode> sourceNodes,
-                                                     final boolean ignoreRootNodes,
-                                                     final ArrFundVersion targetFundVersion,
-                                                     final ArrNode targetStaticNode,
-                                                     final ArrNode targetStaticParentNode) {
-        Assert.notNull(sourceFundVersion, "Nebyla zadána zdrojová verze AS");
-        Assert.notEmpty(sourceNodes, "Musí být zadána alespoň jedna zdrojová JP");
-        Assert.notNull(targetStaticNode, "Nebyl zadán cílová JP");
-        isValidAndOpenVersion(targetFundVersion);
-
-        CopyNodesValidateResult result = new CopyNodesValidateResult();
-        List<Integer> nodeIds = sourceNodes.stream().map(ArrNode::getNodeId).collect(Collectors.toList());
-
-        // zjištění podporovaných scope cílového archivního souboru
-        Set<Integer> scopeIdsFund = scopeRepository.findIdsByFund(targetFundVersion.getFund());
-        // zjištění používaných scope v podstromech vybraných JP
-        List<Integer> scopeIds = scopeRepository.findScopeIdsBySubtreeNodeIds(nodeIds, ignoreRootNodes);
-        result.setScopeError(scopeIds.size() > 0 && !scopeIdsFund.containsAll(scopeIds));
-
-        // zjištění existujících názvů souborů v cílovém archivním souboru
-        List<ArrFile> fundFiles = fundFileRepository.findByFund(targetFundVersion.getFund());
-        Set<String> fileNamesFund = fundFiles.stream().map(ArrFile::getName).collect(Collectors.toCollection(() -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER)));
-        // zjištění používaných souborů v podstromech vybraných JP
-        Set<String> fileNames = fundFileRepository.findFileNamesBySubtreeNodeIds(nodeIds, ignoreRootNodes).stream().collect(Collectors.toCollection(() -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER)));
-        result.setFileConflict(fileNames.size() > 0 && fileNamesFund.stream().anyMatch(fileNames::contains));
-
-        // zjištění existujících obalů v cílovém archivním souboru
-        List<ArrPacket> packetsFund = packetRepository.findByFund(targetFundVersion.getFund(), Lists.newArrayList(ArrPacket.State.OPEN, ArrPacket.State.CLOSED));
-        // zjištění používaných obalů v podstromech vybraných JP
-        List<ArrPacket> packets = packetRepository.findPacketsBySubtreeNodeIds(nodeIds, ignoreRootNodes);
-        result.setPacketConflict(packets.size() > 0 && packetsFund.stream().anyMatch(p -> {
-            for (ArrPacket packet : packets) {
-                if ((packet.getStorageNumber() == null && p.getStorageNumber() == null) ||
-                        (packet.getStorageNumber() != null && packet.getStorageNumber().equalsIgnoreCase(p.getStorageNumber()))
-                        /*&& Objects.equal(packet.getPacketType(), p.getPacketType())*/) {
-                    return true;
-                }
-            }
-            return false;
-        }));
 
         return result;
     }

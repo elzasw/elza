@@ -269,7 +269,7 @@ export class WebApiCls {
             filesConflictResolve,
             packetsConflictResolve
         };
-        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/levels/copy/validate', null, data);
+        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/levels/copy', null, data);
     }
 
     deleteNode(node, parentNode, version) {

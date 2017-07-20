@@ -116,6 +116,18 @@ public interface LevelRepositoryCustom {
     List<Integer> findNodeIdsSubtree(ArrNode node, ArrChange change);
 
     /**
+     * Vyhledání potomků v podstromu.
+     *
+     * Předpokladem je maximálně 1M záznamů v jedné úrovni!
+     *
+     * @param nodeId uzel prohledávání
+     * @param skip   počet přeskočených záznamů
+     * @param max    maximální počet vyhledaných záznamů
+     * @return seznam levelů
+     */
+    List<ArrLevel> findLevelsSubtree(Integer nodeId, final int skip, final int max);
+
+    /**
      * Vyhledá rodiče, které mají vyšší datum poslední změny, než je v ArrChange.
      *
      * @param node   uzel od kterého prohledáváme

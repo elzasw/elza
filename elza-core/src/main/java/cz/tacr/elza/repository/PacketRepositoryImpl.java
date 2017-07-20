@@ -1,7 +1,9 @@
 package cz.tacr.elza.repository;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -90,7 +92,7 @@ public class PacketRepositoryImpl implements PacketRepositoryCustom {
     }
 
     @Override
-    public List<ArrPacket> findPacketsBySubtreeNodeIds(final Collection<Integer> nodeIds, final boolean ignoreRootNodes) {
+    public Set<ArrPacket> findPacketsBySubtreeNodeIds(final Collection<Integer> nodeIds, final boolean ignoreRootNodes) {
         Assert.notEmpty(nodeIds, "Identifikátor JP musí být vyplněn");
 
         String sql_nodes = "WITH " + levelRepository.getRecursivePart() + " treeData AS (SELECT t.* FROM arr_level t WHERE t.node_id IN (:nodeIds) UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) " +
@@ -108,7 +110,7 @@ public class PacketRepositoryImpl implements PacketRepositoryCustom {
         Query query = entityManager.createNativeQuery(sql, ArrPacket.class);
         query.setParameter("nodeIds", nodeIds);
 
-        return query.getResultList();
+        return new HashSet<>(query.getResultList());
     }
 
     /**

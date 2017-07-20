@@ -1,12 +1,15 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.domain.RegScope;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -23,7 +26,7 @@ public class ScopeRepositoryImpl implements ScopeRepositoryCustom {
     private LevelRepository levelRepository;
 
     @Override
-    public List<Integer> findScopeIdsBySubtreeNodeIds(final Collection<Integer> nodeIds, final boolean ignoreRootNode) {
+    public Set<RegScope> findScopesBySubtreeNodeIds(final Collection<Integer> nodeIds, final boolean ignoreRootNode) {
         Assert.notEmpty(nodeIds, "Identifikátor JP musí být vyplněn");
 
         String sql_nodes = "WITH " + levelRepository.getRecursivePart() + " treeData AS (SELECT t.* FROM arr_level t WHERE t.node_id IN (:nodeIds) UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) " +
@@ -33,7 +36,7 @@ public class ScopeRepositoryImpl implements ScopeRepositoryCustom {
             sql_nodes += " AND n.node_id NOT IN (:nodeIds)";
         }
 
-        String sql = "SELECT DISTINCT r.scope_id FROM reg_record r WHERE r.record_id IN" +
+        String sql = "SELECT rs.* FROM reg_record r JOIN reg_scope rs ON r.scope_id = rs.scope_id WHERE r.record_id IN" +
                 " (" +
                 "  SELECT p.record_id FROM arr_data_party_ref dpf JOIN par_party p ON p.party_id = dpf.party_id WHERE dpf.data_id IN (SELECT d.data_id FROM arr_data d JOIN arr_item i ON d.item_id = i.item_id JOIN arr_desc_item di ON di.item_id = i.item_id WHERE i.delete_change_id IS NULL AND d.data_type_id = 8 AND di.node_id IN (" + sql_nodes + "))" +
                 "  UNION" +
@@ -42,10 +45,10 @@ public class ScopeRepositoryImpl implements ScopeRepositoryCustom {
                 "  SELECT nr.record_id FROM arr_node_register nr WHERE nr.delete_change_id IS NULL AND nr.node_id IN (" + sql_nodes + ")" +
                 " )";
 
-        Query query = entityManager.createNativeQuery(sql);
+        Query query = entityManager.createNativeQuery(sql, RegScope.class);
         query.setParameter("nodeIds", nodeIds);
 
-        return query.getResultList();
+        return new HashSet<>(query.getResultList());
     }
 
 }
