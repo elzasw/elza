@@ -13,8 +13,7 @@ import AddNodeForm from "../../components/arr/nodeForm/AddNodeForm";
 import CopyConflictForm from "../../components/arr/nodeForm/CopyConflictForm";
 
 import {WebApi} from "../WebApi"
-import {FUND_TREE_AREA_COPY} from "../constants/ActionTypes";
-import {INVALIDATE} from "../../shared/detail/DetailActions";
+import {FUND_TREE_AREA_COPY, INVALIDATE} from "../constants/ActionTypes";
 /**
  * Vyvolá dialog pro přidání uzlu. Toto vyvolání dialogu slouží pro volání POUZE z pořádání! Po úspěšném volání je vybrán v pořádání přidaný node.
  * @param {Object} direction počáteční směr vytváření, který má být přednastaven v dialogu
@@ -58,6 +57,10 @@ export function addNodeForm(direction, node, parentNode, versionId, afterCreateC
                 }
             }
             dispatch(modalDialogHide());
+            dispatch({
+                area: FUND_TREE_AREA_COPY,
+                type: INVALIDATE
+            });
         };
 
         dispatch(modalDialogShow(
@@ -70,14 +73,21 @@ export function addNodeForm(direction, node, parentNode, versionId, afterCreateC
                 versionId={versionId}
                 onSubmit={onSubmit}
                 allowedDirections={allowedDirections}
-            />
+            />,
+            null,
+            () => {
+                dispatch({
+                    area: FUND_TREE_AREA_COPY,
+                    type: INVALIDATE
+                });
+            }
         ));
 
     }
 }
 
 function handleSubmitOther(data) {
-    return(dispatch) => {
+    return (dispatch) => {
         WebApi.copyNodesValidate(data.targetFundVersionId, data.targetStaticNode, data.targetStaticNodeParent, data.sourceFundVersionId, data.sourceNodes, data.ignoreRootNodes = false)
             .then(json => {
                 if (json.scopeError) {
@@ -97,22 +107,19 @@ function handleSubmitOther(data) {
                             packetConflict={json.packetConflict}
                             onSubmit={
                                 (filesConflictResolve,
-                                 packetsConflictResolve
-                                ) => dispatch(handleCopySubmit(data,filesConflictResolve,packetsConflictResolve))
+                                 packetsConflictResolve) => dispatch(handleCopySubmit(data, filesConflictResolve, packetsConflictResolve))
                             }
 
                         />
                     ));
                 } else {
-                    dispatch(handleCopySubmit(data))
+                    dispatch(handleCopySubmit(data));
                 }
             });
     }
 }
 
-function handleCopySubmit(data, filesConflictResolve = null,packetsConflictResolve = null){
-    console.log(111,"COPY");
-    console.log(data);
+function handleCopySubmit(data, filesConflictResolve = null, packetsConflictResolve = null) {
     return (dispatch) => {
         WebApi.copyNodes(
             data.targetFundVersionId,
@@ -123,7 +130,7 @@ function handleCopySubmit(data, filesConflictResolve = null,packetsConflictResol
             data.ignoreRootNodes = false,
             filesConflictResolve,
             packetsConflictResolve
-        ).then((json)=>{
+        ).then((json) => {
             console.log(json);
             dispatch({
                 area: FUND_TREE_AREA_COPY,
