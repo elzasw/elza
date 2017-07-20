@@ -10,7 +10,11 @@ import {addNode, fundSelectSubNode} from 'actions/arr/node.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {i18n} from 'components/shared';
 import AddNodeForm from "../../components/arr/nodeForm/AddNodeForm";
+import CopyConflictForm from "../../components/arr/nodeForm/CopyConflictForm";
+
 import {WebApi} from "../WebApi"
+import {FUND_TREE_AREA_COPY} from "../constants/ActionTypes";
+import {INVALIDATE} from "../../shared/detail/DetailActions";
 /**
  * Vyvolá dialog pro přidání uzlu. Toto vyvolání dialogu slouží pro volání POUZE z pořádání! Po úspěšném volání je vybrán v pořádání přidaný node.
  * @param {Object} direction počáteční směr vytváření, který má být přednastaven v dialogu
@@ -51,11 +55,36 @@ export function addNodeForm(direction, node, parentNode, versionId, afterCreateC
                 }
                 case "OTHER": {
                     WebApi.copyNodesValidate(data.targetFundVersionId, data.targetStaticNode, data.targetStaticNodeParent, data.sourceFundVersionId, data.sourceNodes, data.ignoreRootNodes = false)
-                        .then(json=>{
-                            console.log(json);
+                        .then(json => {
+                            if (json.scopeError) {
+                                dispatch(modalDialogShow(
+                                    this,
+                                    i18n('Při kopírování došlo k chybě'),
+                                    <CopyConflictForm
+                                        scopeError={json.scopeError}
+                                    />
+                                ));
+                            }
+                            if (json.fileConflict === true || json.packetConflict === true) {
+                                 dispatch(modalDialogShow(
+                                    this,
+                                    i18n("Jak se mají řešit konflikty?"),
+                                    <CopyConflictForm
+                                        fileConflict={json.fileConflict}
+                                        packetConflict={json.packetConflict}
+                                        onSubmit={
+                                            (filesConflictResolve,
+                                             packetsConflictResolve
+                                            ) => dispatch(handleCopySubmit(data,filesConflictResolve,packetsConflictResolve))
+                                        }
+
+                                    />
+                                ));
+                            }
+                            dispatch(handleCopySubmit(data))
                         });
                 }
-               dispatch(modalDialogHide());
+                    dispatch(modalDialogHide());
             }
         };
 
@@ -71,5 +100,30 @@ export function addNodeForm(direction, node, parentNode, versionId, afterCreateC
                 allowedDirections={allowedDirections}
             />
         ));
+
+    }
+}
+
+function handleCopySubmit(data, filesConflictResolve = null,packetsConflictResolve = null){
+    console.log(111,"COPY");
+    console.log(data);
+    return (dispatch) => {
+        WebApi.copyNodes(
+            data.targetFundVersionId,
+            data.targetStaticNode,
+            data.targetStaticNodeParent,
+            data.sourceFundVersionId,
+            data.sourceNodes,
+            data.ignoreRootNodes = false,
+            filesConflictResolve,
+            packetsConflictResolve
+        ).then((json)=>{
+            console.log(json);
+            dispatch({
+                area: FUND_TREE_AREA_COPY,
+                type: INVALIDATE
+            });
+            dispatch(modalDialogHide());
+        })
     }
 }

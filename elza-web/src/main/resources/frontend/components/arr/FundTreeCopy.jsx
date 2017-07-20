@@ -176,7 +176,6 @@ class FundTreeCopy extends AbstractReactComponent {
 
   handleFulltextSearch() {
     const { searchFormData } = this.props;
-      this.dispatch(fundExtendedView(false));
 
       this.dispatch(
       fundTreeFulltextSearch(

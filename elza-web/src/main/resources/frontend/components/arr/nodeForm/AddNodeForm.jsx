@@ -35,8 +35,6 @@ import { getSetFromIdsList } from 'stores/app/utils.jsx';
 
 import FundTreeCopy from '../FundTreeCopy';
 import FundField from '../../admin/FundField';
-import { fundsSelectFund } from '../../../actions/fund/fund';
-import { fundTreeFetch } from '../../../actions/arr/fundTree';
 import { FUND_TREE_AREA_COPY } from '../../../actions/constants/ActionTypes';
 
 class AddNodeForm extends AbstractReactComponent {
@@ -176,7 +174,14 @@ class AddNodeForm extends AbstractReactComponent {
      */
   handleFormSubmit = e => {
     e.preventDefault();
-    const { onSubmit, node, parentNode, versionId, initDirection } = this.props;
+    const {
+      onSubmit,
+      node,
+      parentNode,
+      versionId,
+      initDirection,
+      globalFundTree: { fundTreeCopy }
+    } = this.props;
     const { selectedDirection, selectedScenario } = this.state;
 
     // nastavi odpovidajiciho rodice a direction pro dotaz
@@ -198,20 +203,39 @@ class AddNodeForm extends AbstractReactComponent {
 
       onSubmit(submitData, 'NEW');
     } else if (this.state.selectedSourceAS === 'FILE') {
+      alert('FILE SUMBTI');
       const sumbitData = {};
-      onSubmit(sumbitData, 'FILE');
+      //onSubmit(sumbitData, 'FILE');
     } else if (this.state.selectedSourceAS === 'OTHER') {
-        //TODO
-      console.log(456, this.props);
+      const newNode = {
+        id: node.id,
+        version: node.id
+      };
+
+      const sourceNodes = [];
+
+      for (let nodeItem in fundTreeCopy.selectedIds) {
+        const n = fundTreeCopy.nodes.find(i => {
+          if (i.id == nodeItem) {
+            return i;
+          }
+        });
+        if (n) {
+          sourceNodes.push({
+            id: n.id,
+            version: n.version
+          });
+        }
+      }
+
       const sumbitData = {
-        targetFundVersionId: this.props.node.version,
-        targetStaticNode: this.props.node,
-        targetStaticNodeParent: this.props.parentNode,
-        sourceFundVersionId: this.props.fund.versions[0].id,
-        sourceNodes: this.props.fundTreeCopy.selectedIds,
+        targetFundVersionId: versionId,
+        targetStaticNode: newNode,
+        targetStaticNodeParent: getParentNode(parentNode),
+        sourceFundVersionId: this.props.globalFundTree.versionId,
+        sourceNodes,
         ignoreRootNodes: false
       };
-      console.log(sumbitData);
       onSubmit(sumbitData, 'OTHER');
     }
   };
@@ -343,7 +367,7 @@ class AddNodeForm extends AbstractReactComponent {
                   {i18n('arr.fund.addNode.type.new')}
                 </Radio>
               </Col>
-              <Col xs={2}>
+              <Col xs={3}>
                 <Radio
                   inline
                   name="selectType"
@@ -400,7 +424,6 @@ class AddNodeForm extends AbstractReactComponent {
                 {scnRadios}
               </FormGroup>}
         </FormGroup>
-        <Button type="submit" className="hide" />
       </div>
     );
   }
@@ -409,36 +432,39 @@ class AddNodeForm extends AbstractReactComponent {
     return [
       <FormGroup>
         <Row>
-          <Col xs={3}>
-            <Radio
-              inline
-              name="selectSource"
-              checked={this.state.selectedSourceAS === 'FILE'}
-              onChange={e => {
-                this.setState({ selectedSourceAS: 'FILE' });
-              }}
-            >
-              {i18n('arr.fund.addNode.type.existing.file')}
-            </Radio>
-          </Col>
-          <Col xs={3}>
-            <Radio
-              inline
-              name="selectSource"
-              checked={this.state.selectedSourceAS === 'OTHER'}
-              onChange={e => {
-                this.setState({ selectedSourceAS: 'OTHER' });
-              }}
-            >
-              {i18n('arr.fund.addNode.type.existing.other')}
-            </Radio>
+          <Col xs={6}>
+            <Row>
+              <Col xs={5}>
+                <Radio
+                  inline
+                  name="selectSource"
+                  checked={this.state.selectedSourceAS === 'FILE'}
+                  onChange={e => {
+                    this.setState({ selectedSourceAS: 'FILE' });
+                  }}
+                >
+                  {i18n('arr.fund.addNode.type.existing.file')}
+                </Radio>
+              </Col>
+              <Col xs={7}>
+                <Radio
+                  inline
+                  name="selectSource"
+                  checked={this.state.selectedSourceAS === 'OTHER'}
+                  onChange={e => {
+                    this.setState({ selectedSourceAS: 'OTHER' });
+                  }}
+                >
+                  {i18n('arr.fund.addNode.type.existing.other')}
+                </Radio>
+              </Col>
+            </Row>
           </Col>
         </Row>
       </FormGroup>,
       this.state.selectedSourceAS === 'OTHER'
         ? this.renderCreateFromOther()
-        : this.renderCreateFromFile(),
-      <Button type="submit" className="hide" />
+        : this.renderCreateFromFile()
     ];
   }
 
@@ -467,7 +493,7 @@ class AddNodeForm extends AbstractReactComponent {
 
   renderCreateFromOther() {
     const { value } = this.state;
-    const { fundTreeCopy, fund } = this.props;
+    const { fundTreeCopy, fund, node, versionId } = this.props;
 
     return [
       <FormGroup>
@@ -475,6 +501,7 @@ class AddNodeForm extends AbstractReactComponent {
           {i18n('arr.fund.addNode.type.existing.archiveFile')}
         </ControlLabel>
         <FundField
+          excludedId={versionId}
           ref="fundField"
           value={value}
           onChange={item => {
@@ -508,13 +535,22 @@ class AddNodeForm extends AbstractReactComponent {
     ];
   }
 }
-
+function getParentNode(parentNode) {
+  if (parentNode) {
+    return null;
+  }
+  return {
+    id: parentNode.id,
+    version: parentNode.version
+  };
+}
 function mapStateToProps(state) {
   const { arrRegion, userDetail, registryDetail } = state;
 
   return {
     fund: arrRegion.globalFundTree.fund,
     fundTreeCopy: arrRegion.globalFundTree.fundTreeCopy,
+    globalFundTree: arrRegion.globalFundTree,
     nodeSettings: arrRegion.nodeSettings,
     arrRegion: arrRegion,
     userDetail: userDetail,
