@@ -73,9 +73,9 @@ public class ImportNodesFromSource {
         Set<String> scopeCodes = source.getScopes().stream().map(Scope::getCode).collect(Collectors.toSet());
         result.setScopeError(scopeCodes.size() > 0 && !scopeCodesFund.containsAll(scopeCodes));
         if (result.isScopeError()) {
-            HashSet<String> conflictedScopesCodes = new HashSet<>(scopeCodesFund);
-            conflictedScopesCodes.retainAll(scopeCodes);
-            result.setScopeErrors(conflictedScopesCodes);
+            Set<String> missedScopesCodes = new HashSet<>(scopeCodes);
+            missedScopesCodes.removeAll(scopeCodesFund);
+            result.setScopeErrors(missedScopesCodes);
         }
 
         // zjištění existujících názvů souborů v cílovém archivním souboru
@@ -85,7 +85,7 @@ public class ImportNodesFromSource {
         Set<String> fileNames = source.getFiles().stream().map(File::getName).collect(Collectors.toCollection(() -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER)));
         result.setFileConflict(fileNames.size() > 0 && fileNamesFund.stream().anyMatch(fileNames::contains));
         if (result.isFileConflict()) {
-            HashSet<String> conflictedFileNames = new HashSet<>(fileNamesFund);
+            Set<String> conflictedFileNames = new HashSet<>(fileNamesFund);
             conflictedFileNames.retainAll(fileNames);
             result.setFileConflicts(conflictedFileNames);
         }

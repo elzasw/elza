@@ -40,17 +40,22 @@ class CopyConflictForm extends AbstractReactComponent {
     };
 
     render() {
-        const {onClose, packetConflict, fileConflict, scopeError} = this.props;
+        const {onClose, packetConflict, fileConflict, scopeError, scopeErrors} = this.props;
         const { submitting } = this.state;
 
         return (
             <Form>
                 <Modal.Body>
+                    {scopeError &&
+                    <ControlLabel>
+                        {i18n('arr.fund.addNode.conflict.scopes', scopeErrors.join(", "))}
+                    </ControlLabel>}
+                    {scopeError && <br />}
                     {fileConflict &&
                     <ControlLabel>
                         {i18n('arr.fund.addNode.conflict.files')}
                     </ControlLabel>}
-                    <FormGroup>
+                    {fileConflict && <FormGroup>
                         <Radio
                             disabled={submitting}
                             name="selectResolveTypeFile"
@@ -71,12 +76,12 @@ class CopyConflictForm extends AbstractReactComponent {
                         >
                             {i18n('arr.fund.addNode.conflict.rename')}
                         </Radio>
-                    </FormGroup>
+                    </FormGroup>}
                     {packetConflict &&
                     <ControlLabel>
-                        {i18n('arr.fund.addNode.conflict.packets')}
-                    </ControlLabel> &&
-                    <FormGroup>
+                        {i18n('arr.fund.addNode.conflict.packet')}
+                    </ControlLabel>}
+                    {packetConflict && <FormGroup>
                         <Radio
                             disabled={submitting}
                             name="selectResolveTypePacket"

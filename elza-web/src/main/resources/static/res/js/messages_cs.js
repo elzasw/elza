@@ -597,6 +597,7 @@ var messages = {
     "arr.fund.addNode.conflict.useTarget":"Použít z cílového AS",
     "arr.fund.addNode.conflict.rename":"Přejmenovat",
     "arr.fund.addNode.conflict.packet":"Pakety",
+    "arr.fund.addNode.conflict.scopes":"Cílový AS nemá následující scope: {0}",
     "arr.fund.addNode.ignoreRootNodes":"Ignorovat kořenové uzly",
     "arr.fund.addNode.direction": "Umístění",
     "arr.fund.addNode.before": "Před",

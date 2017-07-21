@@ -85,22 +85,13 @@ function handleSubmitOther(data, cb) {
     return (dispatch) => {
         WebApi.copyNodesValidate(data.targetFundVersionId, data.targetStaticNode, data.targetStaticNodeParent, data.sourceFundVersionId, data.sourceNodes, data.ignoreRootNodes)
             .then(json => {
-                if (json.scopeError) {
-                    dispatch(modalDialogShow(
-                        this,
-                        i18n('arr.fund.addNode.error'),
-                        <CopyConflictForm
-                            scopeError={json.scopeError}
-                        />
-                    ));
-                } else if (json.fileConflict === true || json.packetConflict === true) {
+                if (json.scopeError === true || json.fileConflict === true || json.packetConflict === true) {
                     dispatch(modalDialogHide());
                     dispatch(modalDialogShow(
                         this,
                         i18n('arr.fund.addNode.conflict'),
                         <CopyConflictForm
-                            fileConflict={json.fileConflict}
-                            packetConflict={json.packetConflict}
+                            {...json}
                             onSubmit={
                                 (filesConflictResolve,
                                  packetsConflictResolve, cb) => dispatch(handleCopySubmit(data, filesConflictResolve, packetsConflictResolve, cb))

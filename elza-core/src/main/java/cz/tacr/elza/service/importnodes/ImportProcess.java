@@ -25,8 +25,10 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
@@ -40,6 +42,7 @@ import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.PacketRepository;
+import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.service.ArrangementService;
@@ -48,6 +51,7 @@ import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.cache.NodeCacheService;
+import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.importnodes.vo.DeepCallback;
@@ -56,6 +60,7 @@ import cz.tacr.elza.service.importnodes.vo.ImportParams;
 import cz.tacr.elza.service.importnodes.vo.ImportSource;
 import cz.tacr.elza.service.importnodes.vo.Node;
 import cz.tacr.elza.service.importnodes.vo.NodeRegister;
+import cz.tacr.elza.service.importnodes.vo.Packet;
 import cz.tacr.elza.service.importnodes.vo.descitems.Item;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemCoordinates;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemDecimal;
@@ -86,10 +91,12 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.Function;
@@ -160,6 +167,9 @@ public class ImportProcess {
     @Autowired
     private DmsService dmsService;
 
+    @Autowired
+    private PacketTypeRepository packetTypeRepository;
+
     /**
      * Zdroj dat pro import.
      */
@@ -200,6 +210,7 @@ public class ImportProcess {
     private Map<String, RulItemType> itemTypeMap;
     private Map<String, RulItemSpec> itemSpecMap;
     private Map<String, ArrCalendarType> calendarTypeMap;
+    private Map<String, RulPacketType> packetTypeMap;
     ArrChange change;
 
     public ImportProcess() {
@@ -230,6 +241,7 @@ public class ImportProcess {
         itemTypeMap = itemTypeRepository.findAll().stream().collect(Collectors.toMap(RulItemType::getCode, Function.identity()));
         itemSpecMap = itemSpecRepository.findAll().stream().collect(Collectors.toMap(RulItemSpec::getCode, Function.identity()));
         calendarTypeMap = calendarTypeRepository.findAll().stream().collect(Collectors.toMap(ArrCalendarType::getCode, Function.identity()));
+        packetTypeMap = packetTypeRepository.findAll().stream().collect(Collectors.toMap(RulPacketType::getCode, Function.identity()));
         change = arrangementService.createChange(ArrChange.Type.IMPORT);
     }
 
@@ -240,6 +252,7 @@ public class ImportProcess {
         logger.info("Zahájení importu do AS");
 
         Map<String, ArrFile> filesMapper = resolveFileConflict();
+        Map<Pair<String, String>, ArrPacket> packetsMapper = resolvePacketConflict();
 
         Stack<DeepData> stack = new Stack<>();
         while (source.hasNext()) {
@@ -270,7 +283,7 @@ public class ImportProcess {
                     descItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
                     descItems.add(descItem);
 
-                    ArrData data = createArrData(filesMapper, item, descItem);
+                    ArrData data = createArrData(filesMapper, packetsMapper, item, descItem);
 
                     if (data != null) {
                         data.setItem(descItem);
@@ -305,12 +318,12 @@ public class ImportProcess {
     /**
      * Vytvoření dat z atributu.
      *
-     * @param filesMapper mapování souborů
-     * @param item        zdrojový item
-     * @param descItem    vazební item
-     * @return vytvořená data
+     * @param filesMapper   mapování souborů
+     * @param packetsMapper mapovávé obalů
+     * @param item          zdrojový item
+     * @param descItem      vazební item   @return vytvořená data
      */
-    private ArrData createArrData(final Map<String, ArrFile> filesMapper, final Item item, final ArrDescItem descItem) {
+    private ArrData createArrData(final Map<String, ArrFile> filesMapper, final Map<Pair<String, String>, ArrPacket> packetsMapper, final Item item, final ArrDescItem descItem) {
         ArrData data = null;
         if (item instanceof ItemInt) {
             data = new ArrDataInteger();
@@ -363,7 +376,9 @@ public class ImportProcess {
             ((ArrDataFileRef) data).setFile(fileNew);
         } else if (item instanceof ItemPacketRef) {
             data = new ArrDataPacketRef();
-            ((ArrDataPacketRef) data).setPacket(packetRepository.getOne(((ItemPacketRef) item).getPacketId()));
+            ArrPacket packet = packetRepository.findOne(((ItemPacketRef) item).getPacketId());
+            ArrPacket packetNew = packetsMapper.get(new Pair<>(packet.getTypeCode(), packet.getStorageNumber()));
+            ((ArrDataPacketRef) data).setPacket(packetNew);
         } else if (item instanceof ItemPartyRef) {
             data = new ArrDataPartyRef();
             ((ArrDataPartyRef) data).setParty(partyRepository.getOne(((ItemPartyRef) item).getPartyId()));
@@ -450,6 +465,60 @@ public class ImportProcess {
             }
         }
         return filesMapper;
+    }
+
+    /**
+     * Vyřešení konfliktů v obalech.
+     *
+     * @return výsledná mapa pro provazování
+     */
+    private Map<Pair<String, String>, ArrPacket> resolvePacketConflict() {
+        Map<Pair<String, String>, Packet> sourcePackets = source.getPackets().stream().collect(Collectors.toMap(packet -> new Pair<>(packet.getTypeCode(), packet.getStorageNumber()), Function.identity()));
+        Map<Pair<String, String>, ArrPacket> fundPacketsMapName = packetRepository.findByFund(targetFundVersion.getFund(), Arrays.asList(ArrPacket.State.OPEN, ArrPacket.State.CLOSED))
+                .stream().collect(Collectors.toMap(packet -> new Pair<>(packet.getTypeCode(), packet.getStorageNumber()), Function.identity()));
+        Map<Pair<String, String>, ArrPacket> packetsMapper = new HashMap<>();
+
+        for (Pair<String, String> packetSource : sourcePackets.keySet()) {
+            ArrPacket arrPacket = fundPacketsMapName.get(packetSource);
+            if (arrPacket != null) {
+                switch (params.getPacketConflictResolve()) {
+                    case USE_TARGET:
+                        packetsMapper.put(packetSource, arrPacket);
+                        break;
+                    case COPY_AND_RENAME:
+                        copyPacketFromSource(sourcePackets, packetsMapper, packetSource, fundPacketsMapName.keySet());
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
+            } else {
+                copyPacketFromSource(sourcePackets, packetsMapper, packetSource, fundPacketsMapName.keySet());
+            }
+        }
+
+        return packetsMapper;
+    }
+
+    /**
+     * Zkopírovat obaly ze zdroje do AS.
+     *
+     * @param sourcePackets zdorové obaly [typ/number -> zdrojový obal]
+     * @param packetsMapper převodní mapa [typ/number -> obal v AS]
+     * @param packetSource  typ/number obalu
+     * @param existsPackets existující typ/number obaly v AS
+     */
+    private void copyPacketFromSource(final Map<Pair<String, String>, Packet> sourcePackets,
+                                      final Map<Pair<String, String>, ArrPacket> packetsMapper,
+                                      final Pair<String, String> packetSource,
+                                      final Set<Pair<String, String>> existsPackets) {
+        Packet sourcePacket = sourcePackets.get(packetSource);
+        ArrPacket packet = new ArrPacket();
+        packet.setState(ArrPacket.State.OPEN);
+        packet.setStorageNumber(StringUtils.renameConflictName(sourcePacket.getStorageNumber(), existsPackets.stream().map(Pair::getValue).collect(Collectors.toSet())));
+        packet.setFund(targetFundVersion.getFund());
+        packet.setPacketType(packetTypeMap.get(sourcePacket.getTypeCode()));
+        packetsMapper.put(packetSource, packetRepository.save(packet));
+        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.PACKETS_CHANGE, targetFundVersion.getFund().getFundId()));
     }
 
     /**
@@ -570,6 +639,51 @@ public class ImportProcess {
 
         public void setPrevNode(final ArrNode prevNode) {
             this.prevNode = prevNode;
+        }
+    }
+
+    /**
+     * Pomocná třída pro pár v obalech.
+     */
+    private class Pair<K, V> {
+
+        private K key;
+
+        private V value;
+
+        public Pair(final K key, final V value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        public K getKey() {
+            return key;
+        }
+
+        public V getValue() {
+            return value;
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Pair pair = (Pair) o;
+            return Objects.equals(key, pair.key) &&
+                    Objects.equals(value, pair.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(key, value);
+        }
+
+        @Override
+        public String toString() {
+            return "Pair{" +
+                    "key='" + key + '\'' +
+                    ", value='" + value + '\'' +
+                    '}';
         }
     }
 
