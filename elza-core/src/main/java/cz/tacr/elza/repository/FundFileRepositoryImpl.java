@@ -53,7 +53,7 @@ public class FundFileRepositoryImpl extends AbstractFileRepository<ArrFile> impl
     }
 
     @Override
-    public List<String> findFileNamesBySubtreeNodeIds(final Collection<Integer> nodeIds, final boolean ignoreRootNode) {
+    public List<ArrFile> findFilesBySubtreeNodeIds(final Collection<Integer> nodeIds, final boolean ignoreRootNode) {
         Assert.notEmpty(nodeIds, "Identifikátor JP musí být vyplněn");
 
         String sql_nodes = "WITH " + levelRepository.getRecursivePart() + " treeData AS (SELECT t.* FROM arr_level t WHERE t.node_id IN (:nodeIds) UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) " +
@@ -63,12 +63,12 @@ public class FundFileRepositoryImpl extends AbstractFileRepository<ArrFile> impl
             sql_nodes += " AND n.node_id NOT IN (:nodeIds)";
         }
 
-        String sql = "SELECT f.name FROM dms_file f WHERE f.file_id IN" +
+        String sql = "SELECT f.*, af.* FROM dms_file f JOIN arr_file af ON f.file_id = af.file_id WHERE f.file_id IN" +
                 " (" +
                 "  SELECT dfr.file_id FROM arr_data_file_ref dfr JOIN dms_file df ON df.file_id = dfr.file_id WHERE dfr.data_id IN (SELECT d.data_id FROM arr_data d JOIN arr_item i ON d.item_id = i.item_id JOIN arr_desc_item di ON di.item_id = i.item_id WHERE i.delete_change_id IS NULL AND d.data_type_id = 13 AND di.node_id IN (" + sql_nodes + "))" +
                 " )";
 
-        Query query = entityManager.createNativeQuery(sql);
+        Query query = entityManager.createNativeQuery(sql, ArrFile.class);
         query.setParameter("nodeIds", nodeIds);
 
         return query.getResultList();

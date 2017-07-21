@@ -17,5 +17,5 @@ public interface FundFileRepositoryCustom {
 
     FilteredResult<ArrFile> findByTextAndFund(String search, ArrFund fund, Integer firstResult, Integer maxResults);
 
-    List<String> findFileNamesBySubtreeNodeIds(Collection<Integer> nodeIds, boolean ignoreRootNode);
+    List<ArrFile> findFilesBySubtreeNodeIds(Collection<Integer> nodeIds, boolean ignoreRootNode);
 }

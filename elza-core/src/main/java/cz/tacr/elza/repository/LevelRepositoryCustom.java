@@ -123,9 +123,10 @@ public interface LevelRepositoryCustom {
      * @param nodeId uzel prohledávání
      * @param skip   počet přeskočených záznamů
      * @param max    maximální počet vyhledaných záznamů
+     * @param ignoreRootNode
      * @return seznam levelů
      */
-    List<ArrLevel> findLevelsSubtree(Integer nodeId, final int skip, final int max);
+    List<ArrLevel> findLevelsSubtree(Integer nodeId, final int skip, final int max, final boolean ignoreRootNode);
 
     /**
      * Vyhledá rodiče, které mají vyšší datum poslední změny, než je v ArrChange.

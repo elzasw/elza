@@ -19,7 +19,7 @@ public class StringUtils {
         String name = "test";
 
         List<String> existsNames = new ArrayList<>();
-        existsNames.add("test");
+        existsNames.add("testd");
         existsNames.add("sdfsdf");
 
         System.out.println(renameConflictName(name, existsNames));

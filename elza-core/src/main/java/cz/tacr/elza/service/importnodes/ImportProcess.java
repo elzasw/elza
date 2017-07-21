@@ -1,30 +1,98 @@
 package cz.tacr.elza.service.importnodes;
 
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
+import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDecimal;
+import cz.tacr.elza.domain.ArrDataFileRef;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataJsonTable;
+import cz.tacr.elza.domain.ArrDataNull;
+import cz.tacr.elza.domain.ArrDataPacketRef;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUnitid;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.convertor.CalendarConverter;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.repository.CalendarTypeRepository;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.FundFileRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NodeRegisterRepository;
+import cz.tacr.elza.repository.PacketRepository;
+import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.DmsService;
+import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.service.cache.NodeCacheService;
+import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
+import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.service.importnodes.vo.DeepCallback;
 import cz.tacr.elza.service.importnodes.vo.File;
 import cz.tacr.elza.service.importnodes.vo.ImportParams;
 import cz.tacr.elza.service.importnodes.vo.ImportSource;
 import cz.tacr.elza.service.importnodes.vo.Node;
-import cz.tacr.elza.service.importnodes.vo.Packet;
+import cz.tacr.elza.service.importnodes.vo.NodeRegister;
+import cz.tacr.elza.service.importnodes.vo.descitems.Item;
+import cz.tacr.elza.service.importnodes.vo.descitems.ItemCoordinates;
+import cz.tacr.elza.service.importnodes.vo.descitems.ItemDecimal;
+import cz.tacr.elza.service.importnodes.vo.descitems.ItemEnum;
+import cz.tacr.elza.service.importnodes.vo.descitems.ItemFileRef;
+import cz.tacr.elza.service.importnodes.vo.descitems.ItemFormattedText;
+import cz.tacr.elza.service.importnodes.vo.descitems.ItemInt;
+import cz.tacr.elza.service.importnodes.vo.descitems.ItemJsonTable;
+import cz.tacr.elza.service.importnodes.vo.descitems.ItemPacketRef;
+import cz.tacr.elza.service.importnodes.vo.descitems.ItemPartyRef;
+import cz.tacr.elza.service.importnodes.vo.descitems.ItemRecordRef;
+import cz.tacr.elza.service.importnodes.vo.descitems.ItemString;
+import cz.tacr.elza.service.importnodes.vo.descitems.ItemText;
+import cz.tacr.elza.service.importnodes.vo.descitems.ItemUnitdate;
+import cz.tacr.elza.service.importnodes.vo.descitems.ItemUnitid;
+import cz.tacr.elza.utils.StringUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -35,6 +103,11 @@ import java.util.stream.Collectors;
 @Component
 @Scope("prototype")
 public class ImportProcess {
+
+    /**
+     * Logger.
+     */
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private ArrangementService arrangementService;
@@ -47,6 +120,45 @@ public class ImportProcess {
 
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
+
+    @Autowired
+    private NodeRegisterRepository nodeRegisterRepository;
+
+    @Autowired
+    private NodeCacheService nodeCacheService;
+
+    @Autowired
+    private RegRecordRepository regRecordRepository;
+
+    @Autowired
+    private ItemTypeRepository itemTypeRepository;
+
+    @Autowired
+    private ItemSpecRepository itemSpecRepository;
+
+    @Autowired
+    private DataRepository dataRepository;
+
+    @Autowired
+    private DescItemRepository descItemRepository;
+
+    @Autowired
+    private CalendarTypeRepository calendarTypeRepository;
+
+    @Autowired
+    private FundFileRepository fundFileRepository;
+
+    @Autowired
+    private PacketRepository packetRepository;
+
+    @Autowired
+    private PartyRepository partyRepository;
+
+    @Autowired
+    private IEventNotificationService eventNotificationService;
+
+    @Autowired
+    private DmsService dmsService;
 
     /**
      * Zdroj dat pro import.
@@ -68,8 +180,27 @@ public class ImportProcess {
      */
     private ArrNode targetNode;
 
-    private Map<File, ArrFile> fileMap = new HashMap<>();
-    private Map<Packet, ArrPacket> packetMap = new HashMap<>();
+    /**
+     * Rodič cílového uzlu importu.
+     */
+    private ArrNode targetParentNode;
+
+    private List<ArrLevel> levels = new ArrayList<>();
+    private List<ArrNodeRegister> nodeRegisters = new ArrayList<>();
+    private List<ArrDescItem> descItems = new ArrayList<>();
+    private List<ArrData> dataList = new ArrayList<>();
+    private List<Integer> nodeIds = new ArrayList<>();
+
+    private final int LEVEL_LIMIT = 300;
+    private final int DESC_ITEM_LIMIT = 500;
+    private final int ARR_DATA_LIMIT = 800;
+
+    private boolean needFlush = false;
+
+    private Map<String, RulItemType> itemTypeMap;
+    private Map<String, RulItemSpec> itemSpecMap;
+    private Map<String, ArrCalendarType> calendarTypeMap;
+    ArrChange change;
 
     public ImportProcess() {
 
@@ -82,67 +213,324 @@ public class ImportProcess {
      * @param params            parametry importu
      * @param targetFundVersion cílová verze AS
      * @param targetNode        cílový uzel importu
+     * @param targetParentNode  rodič cílového uzlu importu
      */
     public void init(final ImportSource source,
                      final ImportParams params,
                      final ArrFundVersion targetFundVersion,
-                     final ArrNode targetNode) {
+                     final ArrNode targetNode,
+                     final ArrNode targetParentNode) {
+        logger.info("Inicializace importu do AS");
         this.source = source;
         this.params = params;
         this.targetFundVersion = targetFundVersion;
         this.targetNode = targetNode;
+        this.targetParentNode = targetParentNode;
+
+        itemTypeMap = itemTypeRepository.findAll().stream().collect(Collectors.toMap(RulItemType::getCode, Function.identity()));
+        itemSpecMap = itemSpecRepository.findAll().stream().collect(Collectors.toMap(RulItemSpec::getCode, Function.identity()));
+        calendarTypeMap = calendarTypeRepository.findAll().stream().collect(Collectors.toMap(ArrCalendarType::getCode, Function.identity()));
+        change = arrangementService.createChange(ArrChange.Type.IMPORT);
     }
 
     /**
      * Spuštění importu.
      */
     public void run() {
+        logger.info("Zahájení importu do AS");
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.IMPORT);
+        Map<String, ArrFile> filesMapper = resolveFileConflict();
 
-        List<ArrLevel> levels = new ArrayList<>();
-        Stack<Data> stack = new Stack<>();
+        Stack<DeepData> stack = new Stack<>();
         while (source.hasNext()) {
-            Node node = source.getNext((deep) -> {
-                switch (deep) {
-                    case UP:
-                        stack.pop();
-                        stack.peek().incPosition();
-                        break;
-                    case DOWN:
-                        stack.push(new Data(1, stack.peek().getPrevNode()));
-                        break;
-                    case NONE:
-                        stack.peek().incPosition();
-                        break;
-                    case RESET:
-                        Integer position = levelRepository.findMaxPositionUnderParent(targetNode);
-                        stack.push(new Data(position == null ? 1 : position + 1, targetNode));
-                        break;
-                }
-            });
+            Node node = source.getNext(processDeepCallback(stack));
 
-            Data peek = stack.peek();
+            DeepData deepData = stack.peek();
 
-            ArrLevel level = arrangementService.createLevelSimple(change, peek.getParentNode(), peek.getPosition(), targetFundVersion.getFund());
+            ArrLevel level = arrangementService.createLevelSimple(change, deepData.getParentNode(), deepData.getPosition(), node.getUuid(), targetFundVersion.getFund());
             levels.add(level);
 
-            peek.setPrevNode(level.getNode());
+            processNodeRegisters(node, level.getNode());
+
+            Collection<? extends Item> items = node.getItems();
+            if (CollectionUtils.isNotEmpty(items)) {
+                Map<String, Integer> descItemPositionMap = new HashMap<>();
+                for (Item item : items) {
+                    ArrDescItem descItem = new ArrDescItem();
+                    descItem.setUndefined(false);
+
+                    Integer position = descItemPositionMap.merge(item.getTypeCode(), 1, (a, b) -> a + b);
+
+                    RulItemType itemType = itemTypeMap.get(item.getTypeCode());
+                    descItem.setItemType(itemType);
+                    descItem.setItemSpec(item.getSpecCode() == null ? null : itemSpecMap.get(item.getSpecCode()));
+                    descItem.setCreateChange(change);
+                    descItem.setPosition(position);
+                    descItem.setNode(level.getNode());
+                    descItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
+                    descItems.add(descItem);
+
+                    ArrData data = createArrData(filesMapper, item, descItem);
+
+                    if (data != null) {
+                        data.setItem(descItem);
+                        data.setDataType(itemType.getDataType());
+                        dataList.add(data);
+                    }
+                }
+            }
+
+            deepData.setPrevNode(level.getNode());
+
+            flushData(false);
         }
 
-        List<Integer> nodeIds = levels.stream().map(level -> level.getNode().getNodeId()).collect(Collectors.toList());
-
-        ruleService.conformityInfo(targetFundVersion.getFundVersionId(), nodeIds,
-                NodeTypeOperation.CREATE_NODE, null, null, null);
+        flushData(true);
 
         levelTreeCacheService.invalidateFundVersion(targetFundVersion);
-        levelRepository.save(levels);
+
+        eventNotificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, targetFundVersion.getFundVersionId(), targetNode.getNodeId()));
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                logger.info("Dokončení importu do AS: " + nodeIds.size() + " uzlů");
+                if (nodeIds.size() > 0) {
+                    nodeCacheService.syncCache(() -> ruleService.conformityInfo(targetFundVersion.getFundVersionId(),
+                            nodeIds, NodeTypeOperation.CREATE_NODE, null, null, null));
+                }
+            }
+        });
+    }
+
+    /**
+     * Vytvoření dat z atributu.
+     *
+     * @param filesMapper mapování souborů
+     * @param item        zdrojový item
+     * @param descItem    vazební item
+     * @return vytvořená data
+     */
+    private ArrData createArrData(final Map<String, ArrFile> filesMapper, final Item item, final ArrDescItem descItem) {
+        ArrData data = null;
+        if (item instanceof ItemInt) {
+            data = new ArrDataInteger();
+            ((ArrDataInteger) data).setValue(((ItemInt) item).getValue());
+        } else if (item instanceof ItemEnum) {
+            data = new ArrDataNull();
+        } else if (item instanceof ItemText) {
+            data = new ArrDataText();
+            ((ArrDataText) data).setValue(((ItemText) item).getValue());
+        } else if (item instanceof ItemFormattedText) {
+            data = new ArrDataText();
+            ((ArrDataText) data).setValue(((ItemFormattedText) item).getValue());
+        } else if (item instanceof ItemString) {
+            data = new ArrDataString();
+            ((ArrDataString) data).setValue(((ItemString) item).getValue());
+        } else if (item instanceof ItemDecimal) {
+            data = new ArrDataDecimal();
+            ((ArrDataDecimal) data).setValue(((ItemDecimal) item).getValue());
+        } else if (item instanceof ItemUnitid) {
+            data = new ArrDataUnitid();
+            ((ArrDataUnitid) data).setValue(((ItemUnitid) item).getValue());
+        } else if (item instanceof ItemUnitdate) {
+            data = new ArrDataUnitdate();
+            String value = ((ItemUnitdate) item).getValue();
+            data = UnitDateConvertor.convertToUnitDate(value, (ArrDataUnitdate) data);
+            ArrCalendarType calendarType = calendarTypeMap.get(((ItemUnitdate) item).getCalendarTypeCode());
+            value = ((ArrDataUnitdate) data).getValueFrom();
+            if (value != null) {
+                ((ArrDataUnitdate) data).setNormalizedFrom(CalendarConverter.toSeconds(CalendarConverter.CalendarType.valueOf(calendarType.getCode()), LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+            } else {
+                ((ArrDataUnitdate) data).setNormalizedFrom(Long.MIN_VALUE);
+            }
+            value = ((ArrDataUnitdate) data).getValueTo();
+            if (value != null) {
+                ((ArrDataUnitdate) data).setNormalizedTo(CalendarConverter.toSeconds(CalendarConverter.CalendarType.valueOf(calendarType.getCode()), LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+            } else {
+                ((ArrDataUnitdate) data).setNormalizedTo(Long.MAX_VALUE);
+            }
+            ((ArrDataUnitdate) data).setCalendarType(calendarType);
+        } else if (item instanceof ItemJsonTable) {
+            data = new ArrDataJsonTable();
+            ((ArrDataJsonTable) data).setValue(((ItemJsonTable) item).getValue());
+        } else if (item instanceof ItemCoordinates) {
+            data = new ArrDataCoordinates();
+            ((ArrDataCoordinates) data).setValue(parseGeometry(((ItemCoordinates) item).getGeometry()));
+        } else if (item instanceof ItemFileRef) {
+            data = new ArrDataFileRef();
+            ArrFile file = fundFileRepository.findOne(((ItemFileRef) item).getFileId());
+            ArrFile fileNew = filesMapper.get(file.getName());
+            ((ArrDataFileRef) data).setFile(fileNew);
+        } else if (item instanceof ItemPacketRef) {
+            data = new ArrDataPacketRef();
+            ((ArrDataPacketRef) data).setPacket(packetRepository.getOne(((ItemPacketRef) item).getPacketId()));
+        } else if (item instanceof ItemPartyRef) {
+            data = new ArrDataPartyRef();
+            ((ArrDataPartyRef) data).setParty(partyRepository.getOne(((ItemPartyRef) item).getPartyId()));
+        } else if (item instanceof ItemRecordRef) {
+            data = new ArrDataRecordRef();
+            ((ArrDataRecordRef) data).setRecord(regRecordRepository.getOne(((ItemRecordRef) item).getRecordId()));
+        } else {
+            descItem.setUndefined(true);
+        }
+        return data;
+    }
+
+    /**
+     * Zpracování rejstříkových hesel u JP.
+     *
+     * @param sourceNode zdrojová JP
+     * @param node       cílová JP
+     */
+    private void processNodeRegisters(final Node sourceNode, final ArrNode node) {
+        Collection<? extends NodeRegister> registers = sourceNode.getNodeRegisters();
+        if (CollectionUtils.isNotEmpty(registers)) {
+            for (NodeRegister register : registers) {
+                ArrNodeRegister nodeRegister = new ArrNodeRegister();
+                nodeRegister.setCreateChange(change);
+                nodeRegister.setNode(node);
+                nodeRegister.setRecord(regRecordRepository.getOne(register.getRecordId()));
+                nodeRegisters.add(nodeRegister);
+            }
+        }
+    }
+
+    /**
+     * Zpracování posunu ve stromu.
+     *
+     * @param stack stack pro úrovně ve stromu
+     * @return callback
+     */
+    private DeepCallback processDeepCallback(final Stack<DeepData> stack) {
+        return (deep) -> {
+            switch (deep) {
+                case UP:
+                    stack.pop();
+                    stack.peek().incPosition();
+                    break;
+                case DOWN:
+                    stack.push(new DeepData(1, stack.peek().getPrevNode()));
+                    break;
+                case NONE:
+                    stack.peek().incPosition();
+                    break;
+                case RESET:
+                    Integer position = levelRepository.findMaxPositionUnderParent(this.targetNode);
+                    stack.push(new DeepData(position == null ? 1 : position + 1, this.targetNode));
+                    break;
+            }
+        };
+    }
+
+    /**
+     * Vyřešení konfliktů v souborech.
+     *
+     * @return výsledná mapa pro provazování
+     */
+    private Map<String, ArrFile> resolveFileConflict() {
+        Map<String, File> sourceFiles = source.getFiles().stream().collect(Collectors.toMap(File::getName, Function.identity()));
+        Map<String, ArrFile> fundFilesMapName = fundFileRepository.findByFund(targetFundVersion.getFund()).stream().collect(Collectors.toMap(ArrFile::getName, Function.identity()));
+        Map<String, ArrFile> filesMapper = new HashMap<>();
+
+        for (String fileNameSource : sourceFiles.keySet()) {
+            ArrFile arrFile = fundFilesMapName.get(fileNameSource);
+            if (arrFile != null) {
+                switch (params.getFileConflictResolve()) {
+                    case USE_TARGET:
+                        filesMapper.put(fileNameSource, arrFile);
+                        break;
+                    case COPY_AND_RENAME:
+                        copyFileFromSource(sourceFiles, filesMapper, fileNameSource, fundFilesMapName.keySet());
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
+            } else {
+                copyFileFromSource(sourceFiles, filesMapper, fileNameSource, fundFilesMapName.keySet());
+            }
+        }
+        return filesMapper;
+    }
+
+    /**
+     * Zkopírování souboru ze zdroje do AS.
+     *
+     * @param sourceFiles     zdrojové soubory [název -> zdrojovýSoubor]
+     * @param filesMapper     převodní mapa [název -> soubor v AS]
+     * @param fileNameSource  název kopírovaného souboru
+     * @param existsFileNames existující názvy souborů v AS
+     */
+    private void copyFileFromSource(final Map<String, File> sourceFiles, final Map<String, ArrFile> filesMapper, final String fileNameSource, final Set<String> existsFileNames) {
+        File sourceFile = sourceFiles.get(fileNameSource);
+        ArrFile file = new ArrFile();
+        file.setFileName(sourceFile.getFileName());
+        file.setFileSize(sourceFile.getFileSize());
+        file.setMimeType(sourceFile.getMimeType());
+        file.setPagesCount(sourceFile.getPagesCount());
+        file.setName(StringUtils.renameConflictName(sourceFile.getName(), existsFileNames));
+        file.setFund(targetFundVersion.getFund());
+        try {
+            dmsService.createFile(file, sourceFile.getFileStream());
+            filesMapper.put(fileNameSource, file);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    /**
+     * Pokud je potřeba, provede uložení dat do DB.
+     *
+     * @param force provede vždy
+     */
+    private void flushData(final boolean force) {
+
+        if (levels.size() >= LEVEL_LIMIT || descItems.size() >= DESC_ITEM_LIMIT || dataList.size() >= ARR_DATA_LIMIT) {
+            needFlush = true;
+        }
+
+        if (needFlush || force) {
+            logger.debug("Import: uložení dat do DB: start");
+            nodeIds.addAll(levels.stream().map(level -> level.getNode().getNodeId()).collect(Collectors.toList()));
+
+            levelRepository.save(levels);
+            levelRepository.flush();
+
+            nodeRegisterRepository.save(nodeRegisters);
+            nodeRegisterRepository.flush();
+
+            descItemRepository.save(descItems);
+            descItemRepository.flush();
+
+            dataRepository.save(dataList);
+            dataRepository.flush();
+
+            levels = new ArrayList<>();
+            nodeRegisters = new ArrayList<>();
+            descItems = new ArrayList<>();
+            dataList = new ArrayList<>();
+            needFlush = false;
+            logger.debug("Import: uložení dat do DB: konec");
+        }
+    }
+
+    /**
+     * Parsování geometry objektu.
+     *
+     * @param geometry vstupní data
+     * @return převedené geometry
+     */
+    private Geometry parseGeometry(final String geometry) {
+        try {
+            return new WKTReader().read(geometry);
+        } catch (ParseException e) {
+            throw new SystemException("Problém s převodem geometry", e);
+        }
     }
 
     /**
      * Pomocná data pro vytváření nové struktury.
      */
-    private class Data {
+    private class DeepData {
 
         /**
          * Pozice v úrovni.
@@ -159,7 +547,7 @@ public class ImportProcess {
          */
         private ArrNode parentNode;
 
-        public Data(final int position, final ArrNode parentNode) {
+        public DeepData(final int position, final ArrNode parentNode) {
             this.position = position;
             this.parentNode = parentNode;
         }

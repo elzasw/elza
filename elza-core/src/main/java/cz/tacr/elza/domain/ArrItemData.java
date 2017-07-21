@@ -1,9 +1,9 @@
 package cz.tacr.elza.domain;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import cz.tacr.elza.service.cache.NodeCacheSerializable;
+
+import java.util.Objects;
 
 /**
  * Abstraktní datový objekt.

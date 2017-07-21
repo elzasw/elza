@@ -430,7 +430,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     }
 
     @Override
-    public List<ArrLevel> findLevelsSubtree(final Integer nodeId, final int skip, final int max) {
+    public List<ArrLevel> findLevelsSubtree(final Integer nodeId, final int skip, final int max, final boolean ignoreRootNodes) {
         String sql = "WITH " + getRecursivePart() + " treeData AS" +
                 " (" +
                 "  (" +
@@ -445,7 +445,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
                 "   WHERE t.delete_change_id IS NULL" +
                 "  )" +
                 " )" +
-                " SELECT t.* FROM treeData t JOIN arr_node n ON n.node_id = t.node_id WHERE t.delete_change_id IS NULL ORDER BY t.path";
+                " SELECT t.* FROM treeData t JOIN arr_node n ON n.node_id = t.node_id WHERE t.delete_change_id IS NULL " + (ignoreRootNodes ? "AND n.node_id <> :nodeId" : "") + " ORDER BY t.path";
 
         Query query = entityManager.createNativeQuery(sql, ArrLevel.class);
         query.setParameter("nodeId", nodeId);

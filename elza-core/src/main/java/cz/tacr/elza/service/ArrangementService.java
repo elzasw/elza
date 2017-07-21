@@ -262,6 +262,11 @@ public class ArrangementService {
     public static final String UNDEFINED = "Nezjištěno";
 
     /**
+     * Poslední přidělené object id.
+     */
+    private Integer maxDescItemObjectId = null;
+
+    /**
      * Vytvoření archivního souboru.
      *
      * @param name         název
@@ -473,6 +478,7 @@ public class ArrangementService {
     public ArrLevel createLevelSimple(final ArrChange createChange,
                                       final ArrNode parentNode,
                                       final int position,
+                                      final String uuid,
                                       final ArrFund fund) {
         Assert.notNull(createChange);
 
@@ -480,7 +486,7 @@ public class ArrangementService {
         level.setPosition(position);
         level.setCreateChange(createChange);
         level.setNodeParent(parentNode);
-        level.setNode(createNode(fund, createChange));
+        level.setNode(createNodeSimple(fund, uuid, createChange));
         return levelRepository.save(level);
     }
 
@@ -512,6 +518,15 @@ public class ArrangementService {
         node.setFund(fund);
         nodeRepository.save(node);
         arrangementCacheService.createNode(node.getNodeId());
+        return node;
+    }
+
+    public ArrNode createNodeSimple(final ArrFund fund, final String uuid, final ArrChange createChange) {
+        ArrNode node = new ArrNode();
+        node.setLastUpdate(createChange.getChangeDate());
+        node.setUuid(uuid == null ? generateUuid() : uuid);
+        node.setFund(fund);
+        nodeRepository.save(node);
         return node;
     }
 
@@ -896,12 +911,15 @@ public class ArrangementService {
      *
      * @return Identifikátor objektu
      */
-    public Integer getNextDescItemObjectId() {
-        Integer maxDescItemObjectId = itemRepository.findMaxItemObjectId();
+    public synchronized Integer getNextDescItemObjectId() {
         if (maxDescItemObjectId == null) {
-            maxDescItemObjectId = 0;
+            maxDescItemObjectId = itemRepository.findMaxItemObjectId();
+            if (maxDescItemObjectId == null) {
+                maxDescItemObjectId = 0;
+            }
         }
-        return maxDescItemObjectId + 1;
+        maxDescItemObjectId++;
+        return maxDescItemObjectId;
     }
 
     /**

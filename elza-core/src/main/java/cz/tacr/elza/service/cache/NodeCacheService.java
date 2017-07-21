@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
 import com.google.common.collect.Lists;
 import cz.tacr.elza.domain.ArrCachedNode;
+import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -15,6 +16,7 @@ import cz.tacr.elza.domain.ArrItemFileRef;
 import cz.tacr.elza.domain.ArrItemPacketRef;
 import cz.tacr.elza.domain.ArrItemPartyRef;
 import cz.tacr.elza.domain.ArrItemRecordRef;
+import cz.tacr.elza.domain.ArrItemUnitdate;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrPacket;
@@ -24,6 +26,7 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.CachedNodeRepository;
+import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DescItemRepository;
@@ -120,6 +123,9 @@ public class NodeCacheService {
     private DescItemRepository descItemRepository;
 
     @Autowired
+    private CalendarTypeRepository calendarTypeRepository;
+
+    @Autowired
     private ItemService itemService;
 
     public NodeCacheService() {
@@ -141,6 +147,23 @@ public class NodeCacheService {
             logger.info("Ukončení synchronizace cache pro JP");
         } finally {
             writeLock.unlock();
+        }
+    }
+
+    /**
+     * Synchronizace záznamů v databázi s callbackem.
+     */
+    @Async("syncCacheTaskExecutor")
+    @Transactional
+    public void syncCache(final SyncCallback o) {
+        writeLock.lock();
+        try {
+            logger.info("Spuštění synchronizace cache pro JP");
+            syncCacheInternal();
+            logger.info("Ukončení synchronizace cache pro JP");
+        } finally {
+            writeLock.unlock();
+            o.call();
         }
     }
 
@@ -468,6 +491,7 @@ public class NodeCacheService {
         Map<ArrDescItem, Integer> itemPartiesMap = new HashMap<>();
         Map<ArrDescItem, Integer> itemRecordsMap = new HashMap<>();
         Map<ArrDescItem, Integer> itemFilesMap = new HashMap<>();
+        Map<ArrDescItem, Integer> itemUnitdateMap = new HashMap<>();
         Map<ArrDaoLink, Integer> daoLinksMap = new HashMap<>();
         Map<ArrNodeRegister, Integer> nodeRegistersMap = new HashMap<>();
 
@@ -493,6 +517,8 @@ public class NodeCacheService {
                         itemRecordsMap.put(descItem, ((ArrItemRecordRef) descItem.getItem()).getRecordId());
                     } else if (descItem.getItem() instanceof ArrItemFileRef) {
                         itemFilesMap.put(descItem, ((ArrItemFileRef) descItem.getItem()).getFileId());
+                    } else if (descItem.getItem() instanceof ArrItemUnitdate) {
+                        itemUnitdateMap.put(descItem, ((ArrItemUnitdate) descItem.getItem()).getCalendarTypeId());
                     }
                 }
             }
@@ -514,8 +540,25 @@ public class NodeCacheService {
         fillParParties(itemPartiesMap);
         fillRegRecords(itemRecordsMap);
         fillArrFiles(itemFilesMap);
+        fillUnitdate(itemUnitdateMap);
         fillArrDaoLinks(daoLinksMap);
         fillArrNodeRegisters(nodeRegistersMap);
+    }
+
+    private void fillUnitdate(final Map<ArrDescItem, Integer> itemUnitdateMap) {
+        if (itemUnitdateMap.size() == 0) {
+            return;
+        }
+        List<ArrCalendarType> calendarTypes = calendarTypeRepository.findAll(itemUnitdateMap.values());
+        Map<Integer, ArrCalendarType> calendarTypeMapFound = new HashMap<>();
+        for (ArrCalendarType calendarType : calendarTypes) {
+            calendarTypeMapFound.put(calendarType.getCalendarTypeId(), calendarType);
+        }
+
+        for (Map.Entry<ArrDescItem, Integer> entry : itemUnitdateMap.entrySet()) {
+            ArrDescItem descItem = entry.getKey();
+            ((ArrItemUnitdate) descItem.getItem()).setCalendarType(calendarTypeMapFound.get(entry.getValue()));
+        }
     }
 
     /**

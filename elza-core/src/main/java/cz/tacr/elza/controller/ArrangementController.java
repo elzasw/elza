@@ -1036,7 +1036,7 @@ public class ArrangementController {
 
         List<ArrNode> sourceNodes = factoryDO.createNodes(copyNodesValidate.getSourceNodes());
 
-        ImportFromFund importFromFund = new ImportFromFund(scopeRepository, fundFileRepository, packetRepository, levelRepository);
+        ImportFromFund importFromFund = importNodesFromSource.createImportFromFund();
         importFromFund.init(sourceFundVersion, sourceNodes, copyNodesValidate.isIgnoreRootNodes());
 
         return importNodesFromSource.validateData(importFromFund, targetFundVersion, targetStaticNode);
@@ -1063,7 +1063,7 @@ public class ArrangementController {
         List<ArrNode> sourceNodes = factoryDO.createNodes(copyNodesParams.getSourceNodes());
 
 
-        ImportFromFund importFromFund = new ImportFromFund(scopeRepository, fundFileRepository, packetRepository, levelRepository);
+        ImportFromFund importFromFund = importNodesFromSource.createImportFromFund();
         importFromFund.init(sourceFundVersion, sourceNodes, copyNodesParams.isIgnoreRootNodes());
 
         importNodesFromSource.importData(importFromFund, new ImportParams() {
@@ -1076,7 +1076,7 @@ public class ArrangementController {
             public ConflictResolve getPacketConflictResolve() {
                 return ConflictResolve.valueOf(copyNodesParams.getPacketsConflictResolve().name());
             }
-        }, targetFundVersion, targetStaticNode);
+        }, targetFundVersion, targetStaticNode, targetStaticParentNode);
     }
 
     @Transactional
