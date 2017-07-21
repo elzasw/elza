@@ -44,7 +44,7 @@ export function addNodeFormArr(direction, node, selectedSubNodeIndex, versionId)
  */
 export function addNodeForm(direction, node, parentNode, versionId, afterCreateCallback, allowedDirections = ['BEFORE', 'AFTER', 'CHILD', 'ATEND']) {
     return (dispatch) => {
-        const onSubmit = (data, type) => {
+        const onSubmit = (data, type, cb) => {
             switch (type) {
                 case "NEW": {
                     dispatch(addNode(data.indexNode, data.parentNode, data.versionId, data.direction, data.descItemCopyTypes, data.scenarioName, afterCreateCallback));
@@ -54,7 +54,7 @@ export function addNodeForm(direction, node, parentNode, versionId, afterCreateC
                     //dispatch(addNode(data.indexNode, data.parentNode, data.versionId, data.direction, data.descItemCopyTypes, data.scenarioName, afterCreateCallback));
                 }
                 case "OTHER": {
-                    dispatch(handleSubmitOther(data));
+                    dispatch(handleSubmitOther(data, cb));
                 }
             }
         };
@@ -77,7 +77,7 @@ export function addNodeForm(direction, node, parentNode, versionId, afterCreateC
     }
 }
 
-function handleSubmitOther(data) {
+function handleSubmitOther(data, cb) {
     return (dispatch) => {
         WebApi.copyNodesValidate(data.targetFundVersionId, data.targetStaticNode, data.targetStaticNodeParent, data.sourceFundVersionId, data.sourceNodes, data.ignoreRootNodes)
             .then(json => {
@@ -99,19 +99,21 @@ function handleSubmitOther(data) {
                             packetConflict={json.packetConflict}
                             onSubmit={
                                 (filesConflictResolve,
-                                 packetsConflictResolve) => dispatch(handleCopySubmit(data, filesConflictResolve, packetsConflictResolve))
+                                 packetsConflictResolve, cb) => dispatch(handleCopySubmit(data, filesConflictResolve, packetsConflictResolve, cb))
                             }
 
                         />
                     ));
                 } else {
-                    dispatch(handleCopySubmit(data));
+                    dispatch(handleCopySubmit(data, cb));
                 }
-            });
+            }).catch(()=>{
+                cb();
+        });
     }
 }
 
-function handleCopySubmit(data, filesConflictResolve = null, packetsConflictResolve = null) {
+function handleCopySubmit(data, filesConflictResolve = null, packetsConflictResolve = null, cb) {
     return (dispatch) => {
         WebApi.copyNodes(
             data.targetFundVersionId,
@@ -125,6 +127,9 @@ function handleCopySubmit(data, filesConflictResolve = null, packetsConflictReso
         ).then((json) => {
                 dispatch(modalDialogHide());
                 dispatch(globalFundTreeInvalidate());
+                cb();
+        }).catch(()=>{
+            cb();
         })
     }
 }

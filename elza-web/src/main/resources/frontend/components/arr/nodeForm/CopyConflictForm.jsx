@@ -24,18 +24,25 @@ import {
 class CopyConflictForm extends AbstractReactComponent {
     state = {
         filesConflictResolve: 'USE_TARGET',
-        packetsConflictResolve: 'USE_TARGET'
+        packetsConflictResolve: 'USE_TARGET',
+        submitting: false
     };
     handleFormSubmit = e => {
         e.preventDefault();
+        this.setState({submitting: true});
         this.props.onSubmit(
             this.state.filesConflictResolve,
-            this.state.packetsConflictResolve
+            this.state.packetsConflictResolve,
+            ()=>{
+                this.setState({submitting: false});
+            }
         );
     };
 
     render() {
         const {onClose, packetConflict, fileConflict, scopeError} = this.props;
+        const { submitting } = this.state;
+
         return (
             <Form>
                 <Modal.Body>
@@ -45,6 +52,7 @@ class CopyConflictForm extends AbstractReactComponent {
                     </ControlLabel>}
                     <FormGroup>
                         <Radio
+                            disabled={submitting}
                             name="selectResolveTypeFile"
                             checked={this.state.filesConflictResolve === 'USE_TARGET'}
                             onChange={e => {
@@ -54,6 +62,7 @@ class CopyConflictForm extends AbstractReactComponent {
                             {i18n('arr.fund.addNode.conflict.useTarget')}
                         </Radio>
                         <Radio
+                            disabled={submitting}
                             name="selectResolveTypeFile"
                             checked={this.state.filesConflictResolve === 'COPY_AND_RENAME'}
                             onChange={e => {
@@ -69,6 +78,7 @@ class CopyConflictForm extends AbstractReactComponent {
                     </ControlLabel> &&
                     <FormGroup>
                         <Radio
+                            disabled={submitting}
                             name="selectResolveTypePacket"
                             checked={this.state.packetsConflictResolve === 'USE_TARGET'}
                             onChange={e => {
@@ -78,6 +88,7 @@ class CopyConflictForm extends AbstractReactComponent {
                             {i18n('arr.fund.addNode.conflict.useTarget')}
                         </Radio>
                         <Radio
+                            disabled={submitting}
                             name="selectResolveTypePacket"
                             checked={
                                 this.state.packetsConflictResolve === 'COPY_AND_RENAME'
@@ -92,10 +103,10 @@ class CopyConflictForm extends AbstractReactComponent {
                 </Modal.Body>
                 <Modal.Footer>
                     {!scopeError &&
-                    <Button type="submit" onClick={this.handleFormSubmit}>
+                    <Button disabled={submitting} type="submit" onClick={this.handleFormSubmit}>
                         {i18n('global.action.store')}
                     </Button>}
-                    <Button bsStyle="link" onClick={onClose}>
+                    <Button disabled={submitting} bsStyle="link" onClick={onClose}>
                         {i18n('global.action.cancel')}
                     </Button>
                 </Modal.Footer>

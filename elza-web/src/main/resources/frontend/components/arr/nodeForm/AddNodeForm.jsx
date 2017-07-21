@@ -61,7 +61,8 @@ class AddNodeForm extends AbstractReactComponent {
     selectedSourceAS: 'FILE',
     scopeList: [],
     value: '',
-    ignoreRootNodes: false
+    ignoreRootNodes: false,
+    submitting: false
   };
 
   /**
@@ -238,7 +239,10 @@ class AddNodeForm extends AbstractReactComponent {
         sourceNodes,
         ignoreRootNodes: this.state.ignoreRootNodes
       };
-      onSubmit(sumbitData, 'OTHER');
+      this.setState({ submitting: true });
+      onSubmit(sumbitData, 'OTHER', () => {
+        this.setState({ submitting: false });
+      });
     }
   };
 
@@ -266,7 +270,7 @@ class AddNodeForm extends AbstractReactComponent {
       arrRegion,
       userDetail
     } = this.props;
-    const { scenarios, loading } = this.state;
+    const { scenarios, loading, submitting } = this.state;
     const notRoot = !isFundRootId(parentNode.id);
 
     var scnRadios = [];
@@ -387,7 +391,7 @@ class AddNodeForm extends AbstractReactComponent {
                 <FormInput
                   ref="selsel"
                   componentClass="select"
-                  disabled={loading}
+                  disabled={loading || submitting}
                   label={i18n('arr.fund.addNode.direction')}
                   defaultValue={initDirection}
                   onChange={this.handleDirectionChange}
@@ -406,10 +410,11 @@ class AddNodeForm extends AbstractReactComponent {
             {this.state.selectedSourceAS === 'OTHER' &&
               <Col xs={4}>
                 <Checkbox
+                  disabled={submitting}
                   inline
                   checked={this.state.ignoreRootNodes}
                   onChange={() => {
-                      console.log(this.state.ignoreRootNodes)
+                    console.log(this.state.ignoreRootNodes);
                     this.setState(() => {
                       return { ignoreRootNodes: !this.state.ignoreRootNodes };
                     });
@@ -419,10 +424,14 @@ class AddNodeForm extends AbstractReactComponent {
                 </Checkbox>
               </Col>}
             <Col xs={4} xsOffset={4}>
-              <Button type="submit" onClick={this.handleFormSubmit}>
+              <Button
+                disabled={submitting}
+                type="submit"
+                onClick={this.handleFormSubmit}
+              >
                 {i18n('global.action.store')}
               </Button>
-              <Button bsStyle="link" onClick={onClose}>
+              <Button disabled={submitting} bsStyle="link" onClick={onClose}>
                 {i18n('global.action.cancel')}
               </Button>
             </Col>
@@ -450,6 +459,7 @@ class AddNodeForm extends AbstractReactComponent {
   }
 
   renderCreateExisting() {
+    const { submitting } = this.state;
     return [
       <FormGroup>
         <Row>
@@ -457,6 +467,7 @@ class AddNodeForm extends AbstractReactComponent {
             <Row>
               <Col xs={5}>
                 <Radio
+                  disabled={submitting}
                   inline
                   name="selectSource"
                   checked={this.state.selectedSourceAS === 'FILE'}
@@ -469,6 +480,7 @@ class AddNodeForm extends AbstractReactComponent {
               </Col>
               <Col xs={7}>
                 <Radio
+                  disabled={submitting}
                   inline
                   name="selectSource"
                   checked={this.state.selectedSourceAS === 'OTHER'}
@@ -490,10 +502,11 @@ class AddNodeForm extends AbstractReactComponent {
   }
 
   renderCreateFromFile() {
-    const { scopeList } = this.state;
+    const { scopeList, submitting } = this.state;
     return [
       <FormGroup>
         <Autocomplete
+          disabled={submitting}
           label={i18n('arr.fund.regScope')}
           items={scopeList}
           getItemId={item => (item ? item.id : null)}
@@ -504,13 +517,13 @@ class AddNodeForm extends AbstractReactComponent {
         />
       </FormGroup>,
       <FormGroup>
-        <FormControl name="soubor" type="file" />
+        <FormControl disabled={submitting} name="soubor" type="file" />
       </FormGroup>
     ];
   }
 
   renderCreateFromOther() {
-    const { value } = this.state;
+    const { value, submitting } = this.state;
     const { fundTreeCopy, fund, node, versionId } = this.props;
 
     return [
@@ -542,6 +555,7 @@ class AddNodeForm extends AbstractReactComponent {
           </ControlLabel>}
         {fund &&
           <FundTreeCopy
+            disabled={submitting}
             className="fund-tree-container-fixed"
             fund={fund}
             cutLongLabels={true}
