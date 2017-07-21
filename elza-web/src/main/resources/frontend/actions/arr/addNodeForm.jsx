@@ -71,8 +71,7 @@ export function addNodeForm(direction, node, parentNode, versionId, afterCreateC
                 allowedDirections={allowedDirections}
             />,
             null,
-            ()=>{alert("CLOSING");
-            dispatch(globalFundTreeInvalidate())}
+            dispatch(globalFundTreeInvalidate())
         ));
 
     }
@@ -82,7 +81,6 @@ function handleSubmitOther(data) {
     return (dispatch) => {
         WebApi.copyNodesValidate(data.targetFundVersionId, data.targetStaticNode, data.targetStaticNodeParent, data.sourceFundVersionId, data.sourceNodes, data.ignoreRootNodes)
             .then(json => {
-                if (json) {}
                 if (json.scopeError) {
                     dispatch(modalDialogShow(
                         this,
@@ -92,7 +90,6 @@ function handleSubmitOther(data) {
                         />
                     ));
                 } else if (json.fileConflict === true || json.packetConflict === true) {
-                    dispatch(modalDialogHide());
                     dispatch(modalDialogHide());
                     dispatch(modalDialogShow(
                         this,
@@ -126,10 +123,8 @@ function handleCopySubmit(data, filesConflictResolve = null, packetsConflictReso
             filesConflictResolve,
             packetsConflictResolve
         ).then((json) => {
-            if (json) {
                 dispatch(modalDialogHide());
                 dispatch(globalFundTreeInvalidate());
-            }
         })
     }
 }
