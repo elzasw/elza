@@ -49,12 +49,16 @@ export function addNodeForm(direction, node, parentNode, versionId, afterCreateC
                 case "NEW": {
                     dispatch(addNode(data.indexNode, data.parentNode, data.versionId, data.direction, data.descItemCopyTypes, data.scenarioName, afterCreateCallback));
                     dispatch(modalDialogHide());
+                    break;
                 }
                 case "FILE": {
-                    //dispatch(addNode(data.indexNode, data.parentNode, data.versionId, data.direction, data.descItemCopyTypes, data.scenarioName, afterCreateCallback));
+                    //TODO
+                    console.log("TODO file upload");
+                    break;
                 }
                 case "OTHER": {
                     dispatch(handleSubmitOther(data, cb));
+                    break;
                 }
             }
         };
