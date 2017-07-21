@@ -23,6 +23,7 @@ export function isFundTreeAction(action) {
         case types.FUND_FUND_TREE_RECEIVE:
         case types.FUND_FUND_TREE_FULLTEXT_RESULT:
         case types.SELECT_FUND_GLOBAL:
+        case types.FUND_FUND_TREE_INVALIDATE:
             return true
         default:
             return false

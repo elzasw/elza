@@ -60,7 +60,8 @@ class AddNodeForm extends AbstractReactComponent {
     selectedType: 'NEW',
     selectedSourceAS: 'FILE',
     scopeList: [],
-    value: ''
+    value: '',
+    ignoreRootNodes: false
   };
 
   /**
@@ -408,21 +409,23 @@ class AddNodeForm extends AbstractReactComponent {
                   inline
                   checked={this.state.ignoreRootNodes}
                   onChange={() => {
+                      console.log(this.state.ignoreRootNodes)
                     this.setState(() => {
                       return { ignoreRootNodes: !this.state.ignoreRootNodes };
                     });
                   }}
                 >
-                    {i18n('arr.fund.addNode.ignoreRootNodes')}
+                  {i18n('arr.fund.addNode.ignoreRootNodes')}
                 </Checkbox>
               </Col>}
-              <Col xs={4} xsOffset={4}>
-            <Button type="submit" onClick={this.handleFormSubmit}>
-              {i18n('global.action.store')}
-            </Button>
-            <Button bsStyle="link" onClick={onClose}>
-              {i18n('global.action.cancel')}
-            </Button></Col>
+            <Col xs={4} xsOffset={4}>
+              <Button type="submit" onClick={this.handleFormSubmit}>
+                {i18n('global.action.store')}
+              </Button>
+              <Button bsStyle="link" onClick={onClose}>
+                {i18n('global.action.cancel')}
+              </Button>
+            </Col>
           </Row>
         </Modal.Footer>
       </Form>

@@ -13,7 +13,7 @@ import AddNodeForm from "../../components/arr/nodeForm/AddNodeForm";
 import CopyConflictForm from "../../components/arr/nodeForm/CopyConflictForm";
 
 import {WebApi} from "../WebApi"
-import {FUND_TREE_AREA_COPY, INVALIDATE} from "../constants/ActionTypes";
+import {globalFundTreeInvalidate} from "./globalFundTree";
 /**
  * Vyvolá dialog pro přidání uzlu. Toto vyvolání dialogu slouží pro volání POUZE z pořádání! Po úspěšném volání je vybrán v pořádání přidaný node.
  * @param {Object} direction počáteční směr vytváření, který má být přednastaven v dialogu
@@ -48,6 +48,7 @@ export function addNodeForm(direction, node, parentNode, versionId, afterCreateC
             switch (type) {
                 case "NEW": {
                     dispatch(addNode(data.indexNode, data.parentNode, data.versionId, data.direction, data.descItemCopyTypes, data.scenarioName, afterCreateCallback));
+                    dispatch(modalDialogHide());
                 }
                 case "FILE": {
                     //dispatch(addNode(data.indexNode, data.parentNode, data.versionId, data.direction, data.descItemCopyTypes, data.scenarioName, afterCreateCallback));
@@ -56,11 +57,6 @@ export function addNodeForm(direction, node, parentNode, versionId, afterCreateC
                     dispatch(handleSubmitOther(data));
                 }
             }
-            dispatch(modalDialogHide());
-            dispatch({
-                area: FUND_TREE_AREA_COPY,
-                type: INVALIDATE
-            });
         };
 
         dispatch(modalDialogShow(
@@ -75,12 +71,8 @@ export function addNodeForm(direction, node, parentNode, versionId, afterCreateC
                 allowedDirections={allowedDirections}
             />,
             null,
-            () => {
-                dispatch({
-                    area: FUND_TREE_AREA_COPY,
-                    type: INVALIDATE
-                });
-            }
+            ()=>{alert("CLOSING");
+            dispatch(globalFundTreeInvalidate())}
         ));
 
     }
@@ -88,8 +80,9 @@ export function addNodeForm(direction, node, parentNode, versionId, afterCreateC
 
 function handleSubmitOther(data) {
     return (dispatch) => {
-        WebApi.copyNodesValidate(data.targetFundVersionId, data.targetStaticNode, data.targetStaticNodeParent, data.sourceFundVersionId, data.sourceNodes, data.ignoreRootNodes = false)
+        WebApi.copyNodesValidate(data.targetFundVersionId, data.targetStaticNode, data.targetStaticNodeParent, data.sourceFundVersionId, data.sourceNodes, data.ignoreRootNodes)
             .then(json => {
+                if (json) {}
                 if (json.scopeError) {
                     dispatch(modalDialogShow(
                         this,
@@ -99,6 +92,8 @@ function handleSubmitOther(data) {
                         />
                     ));
                 } else if (json.fileConflict === true || json.packetConflict === true) {
+                    dispatch(modalDialogHide());
+                    dispatch(modalDialogHide());
                     dispatch(modalDialogShow(
                         this,
                         i18n('arr.fund.addNode.conflict'),
@@ -127,16 +122,14 @@ function handleCopySubmit(data, filesConflictResolve = null, packetsConflictReso
             data.targetStaticNodeParent,
             data.sourceFundVersionId,
             data.sourceNodes,
-            data.ignoreRootNodes = false,
+            data.ignoreRootNodes,
             filesConflictResolve,
             packetsConflictResolve
         ).then((json) => {
-            console.log(json);
-            dispatch({
-                area: FUND_TREE_AREA_COPY,
-                type: INVALIDATE
-            });
-            dispatch(modalDialogHide());
+            if (json) {
+                dispatch(modalDialogHide());
+                dispatch(globalFundTreeInvalidate());
+            }
         })
     }
 }

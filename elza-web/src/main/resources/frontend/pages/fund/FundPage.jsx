@@ -28,6 +28,7 @@ import {approveFund, deleteFund, exportFund, updateFund} from 'actions/arr/fund.
 import {barrier} from 'components/Utils.jsx';
 import {scopesDirty} from 'actions/refTables/scopesData.jsx'
 import * as perms from 'actions/user/Permission.jsx';
+import {globalFundTreeInvalidate} from "../../actions/arr/globalFundTree";
 
 class FundPage extends AbstractReactComponent {
     constructor(props) {
@@ -243,6 +244,7 @@ class FundPage extends AbstractReactComponent {
 
         // Otevření archivního souboru
         var fundObj = getFundFromFundAndVersion(item, item.versions[0]);
+        this.dispatch(globalFundTreeInvalidate());
         this.dispatch(selectFundTab(fundObj));
     }
 

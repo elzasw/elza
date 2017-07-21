@@ -15,14 +15,9 @@ export default function globalFundTree(state = initialState, action = {}) {
         fundTreeCopy: initialState.fundTreeCopy
       };
     }
-      case types.INVALIDATE: {
-          return {
-              ...state,
-              fund: initialState.fund,
-              versionId: initialState.versionId,
-              fundTreeCopy: initialState.fundTreeCopy
-          }
-      }
+    case types.FUND_FUND_TREE_INVALIDATE: {
+      return initialState;
+    }
   }
 
   return {
