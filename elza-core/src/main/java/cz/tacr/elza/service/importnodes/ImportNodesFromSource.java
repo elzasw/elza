@@ -8,6 +8,7 @@ import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.service.ArrMoveLevelService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.importnodes.vo.File;
 import cz.tacr.elza.service.importnodes.vo.ImportParams;
@@ -55,14 +56,11 @@ public class ImportNodesFromSource {
      *
      * @param source            zdrojová data pro import
      * @param targetFundVersion cílová verze AS
-     * @param targetNode        cílový uzel, pod který importujeme
      * @return výsledek validace
      */
     public ValidateResult validateData(final ImportSource source,
-                                       final ArrFundVersion targetFundVersion,
-                                       final ArrNode targetNode) {
+                                       final ArrFundVersion targetFundVersion) {
         Assert.notNull(source, "Nebyl předán vstup");
-        Assert.notNull(targetNode, "Nebyl zadán cílová JP");
         arrangementService.isValidAndOpenVersion(targetFundVersion);
 
         ValidateResult result = new ValidateResult();
@@ -134,19 +132,22 @@ public class ImportNodesFromSource {
 
     /**
      * Import dat ze zdroje do cílového AS.
-     * @param source
-     * @param params
-     * @param targetFundVersion
-     * @param targetNode
-     * @param targetStaticParentNode
+     *
+     * @param source                 zdroj importu
+     * @param params                 parametry importu
+     * @param targetFundVersion      verze AS do které kopírujeme
+     * @param targetNode             uzel, vůči kterému kopírujeme
+     * @param targetStaticParentNode rodič uzlu, vůči kterému kopírujeme
+     * @param selectedDirection      směr kopírování
      */
     public void importData(final ImportSource source,
                            final ImportParams params,
                            final ArrFundVersion targetFundVersion,
                            final ArrNode targetNode,
-                           final ArrNode targetStaticParentNode) {
+                           final ArrNode targetStaticParentNode,
+                           final ArrMoveLevelService.AddLevelDirection selectedDirection) {
         ImportProcess importProcess = createImportProcess();
-        importProcess.init(source, params, targetFundVersion, targetNode, targetStaticParentNode);
+        importProcess.init(source, params, targetFundVersion, targetNode, targetStaticParentNode, selectedDirection);
         importProcess.run();
     }
 

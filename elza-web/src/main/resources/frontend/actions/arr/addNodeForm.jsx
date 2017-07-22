@@ -83,7 +83,7 @@ export function addNodeForm(direction, node, parentNode, versionId, afterCreateC
 
 function handleSubmitOther(data, cb) {
     return (dispatch) => {
-        WebApi.copyNodesValidate(data.targetFundVersionId, data.targetStaticNode, data.targetStaticNodeParent, data.sourceFundVersionId, data.sourceNodes, data.ignoreRootNodes)
+        WebApi.copyNodesValidate(data.targetFundVersionId, data.sourceFundVersionId, data.sourceNodes, data.ignoreRootNodes, data.selectedDirection)
             .then(json => {
                 if (json.scopeError === true || json.fileConflict === true || json.packetConflict === true) {
                     dispatch(modalDialogHide());
@@ -117,6 +117,7 @@ function handleCopySubmit(data, filesConflictResolve = null, packetsConflictReso
             data.sourceFundVersionId,
             data.sourceNodes,
             data.ignoreRootNodes,
+            data.selectedDirection,
             filesConflictResolve,
             packetsConflictResolve
         ).then((json) => {

@@ -104,7 +104,8 @@ public class ImportFromFund implements ImportSource {
     private LevelIterator levelsIterator;
     private ArrNode node;
     private ArrNode nodePrev;
-    private Stack<ArrNode> nodeParents;
+    private Stack<ArrNode> nodeParents = new Stack<>();
+    private boolean reset = false;
 
     /**
      * Inicializace zdroje.
@@ -173,9 +174,6 @@ public class ImportFromFund implements ImportSource {
                 if (nodeIdsIterator.hasNext()) {
                     nodeId = nodeIdsIterator.next();
                     levelsIterator = new LevelIterator(levelRepository, nodeCacheService, nodeId);
-                    node = null;
-                    nodePrev = null;
-                    nodeParents = new Stack<>();
                 } else {
                     break;
                 }
@@ -284,7 +282,8 @@ public class ImportFromFund implements ImportSource {
         nodePrev = node;
         node = level.getNode();
 
-        if ((nodePrev == null && nodeParents.empty())) {
+        if ((!reset && nodeParents.empty())) {
+            reset = true;
             changeDeep.call(ChangeDeep.RESET);
         } else if (!nodeParents.empty() && Objects.equal(level.getNodeParent(), nodeParents.peek())) {
             changeDeep.call(ChangeDeep.NONE);
@@ -292,7 +291,7 @@ public class ImportFromFund implements ImportSource {
             nodeParents.push(level.getNodeParent());
             changeDeep.call(ChangeDeep.DOWN);
         } else {
-            if (nodeParents.empty()) {
+            if (nodeParents.isEmpty()) {
                 changeDeep.call(ChangeDeep.NONE);
             } else {
                 do {

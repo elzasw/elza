@@ -18,7 +18,8 @@ import {
     i18n,
     FormInput,
     Loading,
-    Autocomplete
+    Autocomplete,
+    Icon
 } from 'components/shared';
 
 class CopyConflictForm extends AbstractReactComponent {
@@ -40,7 +41,8 @@ class CopyConflictForm extends AbstractReactComponent {
     };
 
     render() {
-        const {onClose, packetConflict, fileConflict, scopeError, scopeErrors} = this.props;
+        const {onClose, packetConflict, fileConflict, scopeError, scopeErrors,
+            fileConflicts, packetConflicts} = this.props;
         const { submitting } = this.state;
 
         return (
@@ -48,12 +50,12 @@ class CopyConflictForm extends AbstractReactComponent {
                 <Modal.Body>
                     {scopeError &&
                     <ControlLabel>
-                        {i18n('arr.fund.addNode.conflict.scopes', scopeErrors.join(", "))}
+                        {i18n('arr.fund.addNode.conflict.scopes', scopeErrors && scopeErrors.join(", "))}
                     </ControlLabel>}
                     {scopeError && <br />}
                     {fileConflict &&
                     <ControlLabel>
-                        {i18n('arr.fund.addNode.conflict.files')}
+                        {i18n('arr.fund.addNode.conflict.files')} <Icon style={{cursor: 'pointer'}} title={fileConflicts && fileConflicts.join(", ")} glyph="fa-info-circle" />
                     </ControlLabel>}
                     {fileConflict && <FormGroup>
                         <Radio
@@ -79,7 +81,7 @@ class CopyConflictForm extends AbstractReactComponent {
                     </FormGroup>}
                     {packetConflict &&
                     <ControlLabel>
-                        {i18n('arr.fund.addNode.conflict.packet')}
+                        {i18n('arr.fund.addNode.conflict.packet')} <Icon style={{cursor: 'pointer'}} title={packetConflicts && packetConflicts.join(", ")} glyph="fa-info-circle" />
                     </ControlLabel>}
                     {packetConflict && <FormGroup>
                         <Radio

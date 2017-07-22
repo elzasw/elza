@@ -1100,13 +1100,11 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         CopyNodesValidate copyNodesValidate = new CopyNodesValidate();
 
-        ArrNodeVO nodeSource = nodesTarget.get(1);
+        ArrNodeVO nodeSource = nodesSource.get(0);
 
         copyNodesValidate.setSourceFundVersionId(fundVersionSource.getId());
         copyNodesValidate.setSourceNodes(Collections.singleton(nodeSource));
         copyNodesValidate.setTargetFundVersionId(fundVersionTarget.getId());
-        copyNodesValidate.setTargetStaticNode(nodesTarget.get(0));
-        copyNodesValidate.setTargetStaticNodeParent(null);
 
         copyNodesValidate.setIgnoreRootNodes(true);
 

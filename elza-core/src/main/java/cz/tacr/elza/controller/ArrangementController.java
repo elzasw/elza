@@ -1025,21 +1025,16 @@ public class ArrangementController {
         Assert.notNull(copyNodesValidate.getSourceFundVersionId(), "Neplatný identifikátor zdrojové verze AS");
         Assert.notEmpty(copyNodesValidate.getSourceNodes(), "Musí být vybrána alespoň jedna cílová JP");
         Assert.notNull(copyNodesValidate.getTargetFundVersionId(), "Neplatný identifikátor cílové verze AS");
-        Assert.notNull(copyNodesValidate.getTargetStaticNode(), "Neplatná cílová JP");
 
         ArrFundVersion sourceFundVersion = fundVersionRepository.findOne(copyNodesValidate.getSourceFundVersionId());
         ArrFundVersion targetFundVersion = fundVersionRepository.findOne(copyNodesValidate.getTargetFundVersionId());
-
-        ArrNode targetStaticNode = factoryDO.createNode(copyNodesValidate.getTargetStaticNode());
-        ArrNode targetStaticParentNode = copyNodesValidate.getTargetStaticNodeParent() == null ? null : factoryDO
-                .createNode(copyNodesValidate.getTargetStaticNodeParent());
 
         List<ArrNode> sourceNodes = factoryDO.createNodes(copyNodesValidate.getSourceNodes());
 
         ImportFromFund importFromFund = importNodesFromSource.createImportFromFund();
         importFromFund.init(sourceFundVersion, sourceNodes, copyNodesValidate.isIgnoreRootNodes());
 
-        return importNodesFromSource.validateData(importFromFund, targetFundVersion, targetStaticNode);
+        return importNodesFromSource.validateData(importFromFund, targetFundVersion);
     }
 
     @Transactional
@@ -1052,6 +1047,7 @@ public class ArrangementController {
         Assert.notEmpty(copyNodesParams.getSourceNodes(), "Musí být vybrána alespoň jedna cílová JP");
         Assert.notNull(copyNodesParams.getTargetFundVersionId(), "Neplatný identifikátor cílové verze AS");
         Assert.notNull(copyNodesParams.getTargetStaticNode(), "Neplatná cílová JP");
+        Assert.notNull(copyNodesParams.getSelectedDirection(), "Neplatný směr vložení");
 
         ArrFundVersion sourceFundVersion = fundVersionRepository.findOne(copyNodesParams.getSourceFundVersionId());
         ArrFundVersion targetFundVersion = fundVersionRepository.findOne(copyNodesParams.getTargetFundVersionId());
@@ -1076,7 +1072,7 @@ public class ArrangementController {
             public ConflictResolve getPacketConflictResolve() {
                 return ConflictResolve.valueOf(copyNodesParams.getPacketsConflictResolve().name());
             }
-        }, targetFundVersion, targetStaticNode, targetStaticParentNode);
+        }, targetFundVersion, targetStaticNode, targetStaticParentNode, copyNodesParams.getSelectedDirection());
     }
 
     @Transactional

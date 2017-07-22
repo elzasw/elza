@@ -15,16 +15,6 @@ public class CopyNodesValidate {
     private Integer targetFundVersionId;
 
     /**
-     * Statický uzel (pod který přidáváme).
-     */
-    private ArrNodeVO targetStaticNode;
-
-    /**
-     * Rodič statického uzlu (pod který přidáváme)
-     */
-    private ArrNodeVO targetStaticNodeParent;
-
-    /**
      * Id verze stromu.
      */
     private Integer sourceFundVersionId;
@@ -45,22 +35,6 @@ public class CopyNodesValidate {
 
     public void setTargetFundVersionId(final Integer targetFundVersionId) {
         this.targetFundVersionId = targetFundVersionId;
-    }
-
-    public ArrNodeVO getTargetStaticNode() {
-        return targetStaticNode;
-    }
-
-    public void setTargetStaticNode(final ArrNodeVO targetStaticNode) {
-        this.targetStaticNode = targetStaticNode;
-    }
-
-    public ArrNodeVO getTargetStaticNodeParent() {
-        return targetStaticNodeParent;
-    }
-
-    public void setTargetStaticNodeParent(final ArrNodeVO targetStaticNodeParent) {
-        this.targetStaticNodeParent = targetStaticNodeParent;
     }
 
     public Integer getSourceFundVersionId() {

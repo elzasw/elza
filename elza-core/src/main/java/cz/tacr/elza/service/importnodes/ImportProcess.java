@@ -33,6 +33,7 @@ import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
@@ -45,6 +46,7 @@ import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.service.ArrMoveLevelService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.IEventNotificationService;
@@ -78,6 +80,7 @@ import cz.tacr.elza.service.importnodes.vo.descitems.ItemUnitdate;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemUnitid;
 import cz.tacr.elza.utils.StringUtils;
 import org.apache.commons.collections4.CollectionUtils;
+import org.castor.core.util.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,7 +88,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -170,6 +172,9 @@ public class ImportProcess {
     @Autowired
     private PacketTypeRepository packetTypeRepository;
 
+    @Autowired
+    private ArrMoveLevelService arrMoveLevelService;
+
     /**
      * Zdroj dat pro import.
      */
@@ -195,12 +200,23 @@ public class ImportProcess {
      */
     private ArrNode targetParentNode;
 
+    /**
+     * Směr zakládání nodů.
+     */
+    private ArrMoveLevelService.AddLevelDirection selectedDirection;
+
     private List<ArrLevel> levels = new ArrayList<>();
     private List<ArrNodeRegister> nodeRegisters = new ArrayList<>();
     private List<ArrDescItem> descItems = new ArrayList<>();
     private List<ArrData> dataList = new ArrayList<>();
     private List<Integer> nodeIds = new ArrayList<>();
 
+    /**
+     * Uzly, které je potřeba posunout.
+     */
+    private List<ArrLevel> levelsToShift;
+
+    // konstanty pro uložení při překročení počtu
     private final int LEVEL_LIMIT = 300;
     private final int DESC_ITEM_LIMIT = 500;
     private final int ARR_DATA_LIMIT = 800;
@@ -211,7 +227,7 @@ public class ImportProcess {
     private Map<String, RulItemSpec> itemSpecMap;
     private Map<String, ArrCalendarType> calendarTypeMap;
     private Map<String, RulPacketType> packetTypeMap;
-    ArrChange change;
+    private ArrChange change;
 
     public ImportProcess() {
 
@@ -219,24 +235,26 @@ public class ImportProcess {
 
     /**
      * Inicializace importního procesu.
-     *
-     * @param source            zdroj dat importu
+     *  @param source           zdroj dat importu
      * @param params            parametry importu
      * @param targetFundVersion cílová verze AS
      * @param targetNode        cílový uzel importu
      * @param targetParentNode  rodič cílového uzlu importu
+     * @param selectedDirection směr zakládání
      */
     public void init(final ImportSource source,
                      final ImportParams params,
                      final ArrFundVersion targetFundVersion,
                      final ArrNode targetNode,
-                     final ArrNode targetParentNode) {
+                     final ArrNode targetParentNode,
+                     final ArrMoveLevelService.AddLevelDirection selectedDirection) {
         logger.info("Inicializace importu do AS");
         this.source = source;
         this.params = params;
         this.targetFundVersion = targetFundVersion;
         this.targetNode = targetNode;
         this.targetParentNode = targetParentNode;
+        this.selectedDirection = selectedDirection;
 
         itemTypeMap = itemTypeRepository.findAll().stream().collect(Collectors.toMap(RulItemType::getCode, Function.identity()));
         itemSpecMap = itemSpecRepository.findAll().stream().collect(Collectors.toMap(RulItemSpec::getCode, Function.identity()));
@@ -299,6 +317,17 @@ public class ImportProcess {
         }
 
         flushData(true);
+
+        // posunutí potřebných levelů (pokud se zakládá před nebo za
+        if (levelsToShift != null && levelsToShift.size() > 0) {
+            DeepData data = null;
+            while (!stack.isEmpty()) {
+                data = stack.pop();
+            }
+            if (data != null) {
+                arrMoveLevelService.shiftNodes(levelsToShift, change, data.position + 1);
+            }
+        }
 
         levelTreeCacheService.invalidateFundVersion(targetFundVersion);
 
@@ -429,10 +458,35 @@ public class ImportProcess {
                 case NONE:
                     stack.peek().incPosition();
                     break;
-                case RESET:
-                    Integer position = levelRepository.findMaxPositionUnderParent(this.targetNode);
-                    stack.push(new DeepData(position == null ? 1 : position + 1, this.targetNode));
+                case RESET: {
+
+                    switch (selectedDirection) {
+                        case CHILD: {
+                            Integer position = levelRepository.findMaxPositionUnderParent(targetNode);
+                            stack.push(new DeepData(position == null ? 1 : position + 1, targetNode));
+                                break;
+                        }
+
+                        case AFTER:
+                        case BEFORE: {
+                            ArrLevel staticLevel = levelRepository.findNodeInRootTreeByNodeId(targetNode, targetFundVersion.getRootNode(), targetFundVersion.getLockChange());
+                            int position = selectedDirection.equals(ArrMoveLevelService.AddLevelDirection.AFTER) ? staticLevel.getPosition() + 1 : staticLevel.getPosition();
+                            levelsToShift = arrMoveLevelService.nodesToShift(staticLevel);
+                            if (selectedDirection.equals(ArrMoveLevelService.AddLevelDirection.BEFORE)) {
+                                levelsToShift.add(0, staticLevel);
+                            }
+                            Assert.notNull(targetParentNode, "Musí být vyplněn rodič uzlu");
+                            stack.push(new DeepData(position, targetParentNode));
+                            break;
+                        }
+
+                        default: {
+                            throw new SystemException("Neplatný směr založení levelu: " + selectedDirection, BaseCode.INVALID_STATE);
+                        }
+                    }
+
                     break;
+                }
             }
         };
     }
@@ -458,7 +512,7 @@ public class ImportProcess {
                         copyFileFromSource(sourceFiles, filesMapper, fileNameSource, fundFilesMapName.keySet());
                         break;
                     default:
-                        throw new NotImplementedException();
+                        throw new SystemException("Neplatné vyřešení konfliktu: " + params.getFileConflictResolve(), BaseCode.INVALID_STATE);
                 }
             } else {
                 copyFileFromSource(sourceFiles, filesMapper, fileNameSource, fundFilesMapName.keySet());
@@ -489,7 +543,7 @@ public class ImportProcess {
                         copyPacketFromSource(sourcePackets, packetsMapper, packetSource, fundPacketsMapName.keySet());
                         break;
                     default:
-                        throw new NotImplementedException();
+                        throw new SystemException("Neplatné vyřešení konfliktu: " + params.getFileConflictResolve(), BaseCode.INVALID_STATE);
                 }
             } else {
                 copyPacketFromSource(sourcePackets, packetsMapper, packetSource, fundPacketsMapName.keySet());

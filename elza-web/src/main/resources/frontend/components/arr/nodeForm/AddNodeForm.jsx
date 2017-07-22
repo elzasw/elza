@@ -212,7 +212,7 @@ class AddNodeForm extends AbstractReactComponent {
     } else if (this.state.selectedSourceAS === 'OTHER') {
       const newNode = {
         id: node.id,
-        version: node.id
+        version: node.version
       };
 
       const sourceNodes = [];
@@ -231,16 +231,18 @@ class AddNodeForm extends AbstractReactComponent {
         }
       }
 
-      const sumbitData = {
+      const submitData = {
         targetFundVersionId: versionId,
         targetStaticNode: newNode,
         targetStaticNodeParent: getParentNode(parentNode),
+        selectedDirection,
         sourceFundVersionId: this.props.globalFundTree.versionId,
         sourceNodes,
         ignoreRootNodes: this.state.ignoreRootNodes
       };
+
       this.setState({ submitting: true });
-      onSubmit(sumbitData, 'OTHER', () => {
+      onSubmit(submitData, 'OTHER', () => {
         this.setState({ submitting: false });
       });
     }
@@ -568,7 +570,7 @@ class AddNodeForm extends AbstractReactComponent {
   }
 }
 function getParentNode(parentNode) {
-  if (parentNode) {
+  if (!parentNode || (parentNode && isNaN(parentNode.id))) {
     return null;
   }
   return {

@@ -246,19 +246,18 @@ export class WebApiCls {
         // return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/levels', null, data);
     }
 
-    copyNodesValidate(targetFundVersionId, targetStaticNode, targetStaticNodeParent, sourceFundVersionId, sourceNodes, ignoreRootNodes = false) {
+    copyNodesValidate(targetFundVersionId, sourceFundVersionId, sourceNodes, ignoreRootNodes = false, selectedDirection) {
         const data = {
             targetFundVersionId,
-            targetStaticNode,
-            targetStaticNodeParent,
             sourceFundVersionId,
             sourceNodes,
             ignoreRootNodes,
+            selectedDirection,
         };
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/levels/copy/validate', null, data);
     }
 
-    copyNodes(targetFundVersionId, targetStaticNode, targetStaticNodeParent, sourceFundVersionId, sourceNodes, ignoreRootNodes = false, filesConflictResolve = null, packetsConflictResolve = null) {
+    copyNodes(targetFundVersionId, targetStaticNode, targetStaticNodeParent, sourceFundVersionId, sourceNodes, ignoreRootNodes = false, selectedDirection, filesConflictResolve = null, packetsConflictResolve = null) {
         const data = {
             targetFundVersionId,
             targetStaticNode,
@@ -266,6 +265,7 @@ export class WebApiCls {
             sourceFundVersionId,
             sourceNodes,
             ignoreRootNodes,
+            selectedDirection,
             filesConflictResolve,
             packetsConflictResolve
         };

@@ -162,6 +162,7 @@ public class NodeCacheService {
             syncCacheInternal();
             logger.info("Ukončení synchronizace cache pro JP");
         } finally {
+            cachedNodeRepository.flush(); // uložení do DB, aby callback mohl mít všechny data k dispozici
             writeLock.unlock();
             o.call();
         }
