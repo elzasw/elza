@@ -59,8 +59,8 @@ public class ElzaCore {
 
     public static void configure() {
         System.setProperty("spring.config.name", "elza");
-        System.setProperty("liquibase.databaseChangeLogTableName", "db_databasechangelog");
-        System.setProperty("liquibase.databaseChangeLogLockTableName", "db_databasechangeloglock");
+        System.setProperty("liquibase.databaseChangeLogTableName", "DB_DATABASECHANGELOG");
+        System.setProperty("liquibase.databaseChangeLogLockTableName", "DB_DATABASECHANGELOGLOCK");
     }
 
     @Bean
