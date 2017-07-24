@@ -8,7 +8,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 
@@ -29,7 +28,7 @@ public class ScopeRepositoryImpl implements ScopeRepositoryCustom {
     public Set<RegScope> findScopesBySubtreeNodeIds(final Collection<Integer> nodeIds, final boolean ignoreRootNode) {
         Assert.notEmpty(nodeIds, "Identifikátor JP musí být vyplněn");
 
-        String sql_nodes = "WITH " + levelRepository.getRecursivePart() + " treeData AS (SELECT t.* FROM arr_level t WHERE t.node_id IN (:nodeIds) UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) " +
+        String sql_nodes = "WITH " + levelRepository.getRecursivePart() + " treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position) AS (SELECT t.* FROM arr_level t WHERE t.node_id IN (:nodeIds) UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) " +
                 "SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id WHERE t.delete_change_id IS NULL";
 
         if (ignoreRootNode) {

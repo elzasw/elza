@@ -431,7 +431,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
 
     @Override
     public List<ArrLevel> findLevelsSubtree(final Integer nodeId, final int skip, final int max, final boolean ignoreRootNodes) {
-        String sql = "WITH " + getRecursivePart() + " treeData AS" +
+        String sql = "WITH " + getRecursivePart() + " treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, path) AS" +
                 " (" +
                 "  (" +
                 "   SELECT t.*, '000001' AS path" +
