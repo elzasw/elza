@@ -515,17 +515,22 @@ then
 end
 
 // Doporučení pro kořen dle MAN,INV, KAT - vyhodnoceno později
-// 4.3.5 Přímý zdroj akvizice
-// 4.4.4 Fyzický stav jednotky popisu a technické požadavky
-// 4.7.1 Zpracovatel
-// 4.7.2 Pravidla zpracování jednotky popisu
 rule "Doporučení pro kořen pro MAN, INV, KAT"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( parent == null )
     $descItem : DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode not in ("ZP2015_ARRANGEMENT_OTHER") ) from $activeLevel.descItems
-    $itemType: RulItemTypeExt( code in ( "ZP2015_UNIT_SOURCE", "ZP2015_UNIT_CURRENT_STATUS",
-        "ZP2015_ARRANGER", "ZP2015_ARRANGE_RULES", "ZP2015_LANGUAGE") )
+    $itemType: RulItemTypeExt( code in (
+        // 4.3.4 Tematický popis jednotky popisu
+        "ZP2015_UNIT_CONTENT",
+        // 4.3.5 Přímý zdroj akvizice
+        "ZP2015_UNIT_SOURCE",
+        // 4.4.4 Fyzický stav jednotky popisu a technické požadavky 
+        "ZP2015_UNIT_CURRENT_STATUS",
+        // 4.7.1 Zpracovatel     
+        "ZP2015_ARRANGER", 
+        // 4.7.2 Pravidla zpracování jednotky popisu
+        "ZP2015_ARRANGE_RULES", "ZP2015_LANGUAGE") )
 then
     $itemType.setType(RulItemType.Type.RECOMMENDED);
 end
