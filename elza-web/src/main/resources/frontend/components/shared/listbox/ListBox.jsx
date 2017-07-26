@@ -4,11 +4,12 @@
  **/
 
 import React from 'react';
-import {AbstractReactComponent} from 'components/index.jsx';
+import {AbstractReactComponent, Utils} from 'components/index.jsx';
 import ReactDOM from 'react-dom';
 import {Shortcuts} from 'react-shortcuts';
 const scrollIntoView = require('dom-scroll-into-view')
-
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './ListBoxKeymap.jsx'
 require ('./ListBox.less');
 
 var _ListBox_placeholder = document.createElement("div");
@@ -18,10 +19,19 @@ _ListBox_placeholder.className = _ListBox_placeholder_cls;
 const PAGE_SIZE = 10;
 
 var ListBox = class ListBox extends AbstractReactComponent {
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
+
     constructor(props) {
         super(props);
 
-        this.bindMethods('ensureItemVisible', 'getNextSelectableItemIndex', 'getPrevSelectableItemIndex',
+        this.bindMethods('ensureItemVisible',
             'dragStart', 'dragEnd', 'dragOver', 'handleClick', 'unFocus', 'focus', 'handleDoubleClick')
 
         if (props.multiselect) {
@@ -108,7 +118,6 @@ var ListBox = class ListBox extends AbstractReactComponent {
     handleShortcuts = (action, e)=>{
         e.stopPropagation();
         e.preventDefault();
-        console.log(action)
         this.actionMap[action](e);
     }
     componentWillReceiveProps(nextProps) {
@@ -268,7 +277,6 @@ var ListBox = class ListBox extends AbstractReactComponent {
             while (step) {
                 var i = index + step;
                 while (i >= 0 && i < items.length) {
-                    console.log(i);
                     if (canSelectItem(items[i], i)) {
                         return i;
                     }
@@ -276,7 +284,6 @@ var ListBox = class ListBox extends AbstractReactComponent {
                 }
                 isDecrementing ? step++ : step--;
             }
-            console.log(index);
             return index;
         } else {
             return 0;
@@ -301,11 +308,9 @@ var ListBox = class ListBox extends AbstractReactComponent {
     }
 
     ensureItemVisible(index) {
-
         var itemNode = ReactDOM.findDOMNode(this.refs['item-' + index])
         if (itemNode !== null) {
             var containerNode = ReactDOM.findDOMNode(this.refs.container)
-            console.log("ensureItemVisible",itemNode,containerNode);
             scrollIntoView(itemNode, containerNode, { onlyScrollIfNeeded: true, alignWithTop:false })
         }
     }

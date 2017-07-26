@@ -54,8 +54,6 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
     handleSelectionChange(selectionType, ids, unselectedIds, type) {
         const {versionId, packets, selectedIds} = this.props;
 
-        console.log(selectionType, ids, unselectedIds, type);
-
         var newSelectedIds
         switch (type) {
             case "TOGGLE_ITEM":
@@ -72,7 +70,6 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
                 newSelectedIds = []
                 break
         }
-        console.log("NEW_SELECTION: " + newSelectedIds)
         this.dispatch(fundPacketsChangeSelection(versionId, newSelectedIds))
     }
 
@@ -101,7 +98,6 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
           var id = packets.filter(function(obj){
             return obj.id == selectedIds[i];
           })
-          console.log(id);
           type = type === null || id[0].packetTypeId === type ? id[0].packetTypeId : -1;
           if(type<0) {
             break;

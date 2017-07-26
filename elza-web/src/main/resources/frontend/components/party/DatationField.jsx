@@ -98,7 +98,6 @@ class DatationField extends AbstractReactComponent {
                 <TooltipTrigger
                     content={tooltip}
                     holdOnHover
-                    holdOnFocus
                     placement="vertical"
                 >
                     <FormInput type="text" {...fields.value} />
@@ -979,4 +978,3 @@ class Token {
 export default connect(state => ({
     calendarTypes: state.refTables.calendarTypes
 }))(DatationField)
-

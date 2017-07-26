@@ -11,6 +11,9 @@ import {AbstractReactComponent, i18n, Resizer} from 'components/index.jsx';
 import {Button} from 'react-bootstrap';
 import {validateInt, normalizeInt} from 'components/validate.jsx';
 import {Shortcuts} from 'react-shortcuts';
+import {Utils} from 'components/index.jsx';
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './DataGridPaginationKeymap.jsx';
 
 function getPagesCount(itemsCount, pageSize) {
     var pagesCount = Math.floor(itemsCount / pageSize)
@@ -25,6 +28,14 @@ function getCurrPageDesc(pageIndex, pagesCount) {
 }
 
 var DataGridPagination = class DataGridPagination extends AbstractReactComponent {
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
     constructor(props) {
         super(props);
 
@@ -125,7 +136,6 @@ var DataGridPagination = class DataGridPagination extends AbstractReactComponent
         "CONFIRM": () => this.processCurrPageChange(false)
     }
     handleShortcuts = (action,e) => {
-        console.log(action);
         e.stopPropagation();
         e.preventDefault();
         this.actionMap[action] && this.actionMap[action](e);
@@ -162,4 +172,3 @@ var DataGridPagination = class DataGridPagination extends AbstractReactComponent
 }
 
 module.exports = connect()(DataGridPagination);
-

@@ -45,9 +45,6 @@ const RunActionForm = class RunActionForm extends AbstractReactComponent {
 
     render() {
         const {fields: {code}, handleSubmit, onClose, actionConfig, submitting} = this.props;
-        //const submitForm = submitReduxForm.bind(this, validate)
-        console.log(actionConfig);
-
         return (
             <div className="run-action-form-container">
                 <Form onSubmit={handleSubmit(this.submitReduxForm)}>

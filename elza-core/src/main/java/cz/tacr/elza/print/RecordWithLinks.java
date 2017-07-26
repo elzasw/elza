@@ -1,8 +1,16 @@
 package cz.tacr.elza.print;
 
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
+
+import org.apache.commons.collections.CollectionUtils;
 
 import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.item.ItemType;
@@ -80,6 +88,49 @@ public class RecordWithLinks
 	}
 	
 	/**
+	 * Return collection of sorted values
+	 * @param itemTypeCode Type of item
+	 * @return
+	 */
+	public Collection<String> getSortedValues(String itemTypeCode)
+	{
+		SortedSet<String> result = null;
+		//List<Item> items = new ArrayList<>();
+		// prepare collection of items
+		for(Node node: nodes)
+		{
+			for(Item item :node.getItems()) {
+				ItemType itemType = item.getType();
+				if(itemType.getCode().equals(itemTypeCode)) {
+					// prepare result set if do not exists
+					if(result==null) {
+						result = createSortedSet(itemType);
+					}
+					result.add(item.serializeValue());
+				}
+			}
+		}
+		return result;
+	}
+	
+	/**
+	 * Prepare set with comparator for given ItemType
+	 * @param itemType
+	 * @return
+	 */
+	private SortedSet<String> createSortedSet(ItemType itemType) {
+		Comparator<String> c;
+		if(itemType.getDataType().equals("INT")) {
+			// comparator for ints
+			c = ( (arg0, arg1) -> Integer.compare(Integer.valueOf(arg0), Integer.valueOf(arg1)) );
+		} else {
+			// comparator for strings
+			c =( (a,b) -> a.compareTo(b) );
+		}
+		return new TreeSet<>(c);
+	}
+
+	/**
 	 * Return sorted list of values
 	 * @param itemType Type of description item
 	 * @param separator
@@ -87,32 +138,13 @@ public class RecordWithLinks
 	 */
 	public String getSortedValuesOf(String itemTypeCode, String separator)
 	{
-		List<Item> items = new ArrayList<>();
-		// prepare collection of items
-		for(Node node: nodes)
-		{
-			for(Item item :node.getItems()) {
-				if(item.getType().getCode().equals(itemTypeCode)) {
-					items.add(item);
-				}
-			}
-		}
-		
-		if(items.size()==0) {
+		Collection<String> sortedValues = getSortedValues(itemTypeCode);
+		if(CollectionUtils.isEmpty(sortedValues)) {
 			return "";
 		}
 		
-		// try to find first value and determine type of sort
-		ItemType itemType = items.get(0).getType();
-		if(itemType.getDataType().equals("INT")) {
-			// sort as int
-			// Items should implement Comparable and this implementation might be more simple
-			return items.stream().map(item -> item.getValue(Integer.class))
-					.sorted().map(v -> v.toString()).collect(Collectors.joining(separator));
-		} else {
-			return items.stream().map(item -> item.serializeValue())
-					.sorted().collect(Collectors.joining(separator));
-		}		
+		// return values as string
+		return String.join(separator, sortedValues);
 	}
 
     /**

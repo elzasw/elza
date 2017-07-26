@@ -10,9 +10,9 @@ import ReactDOM from 'react-dom';
 import {Nav, NavItem} from 'react-bootstrap';
 import {ResizeStore} from 'stores/index.jsx';
 import {AbstractReactComponent, Utils, Icon, i18n, NoFocusButton} from 'components/index.jsx';
-var ShortcutsManager = require('react-shortcuts')
 import {Shortcuts} from 'react-shortcuts';
-var keyModifier = Utils.getKeyModifier()
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './TabsKeymap.jsx';
 
 require ('./Tabs.less');
 
@@ -22,6 +22,14 @@ require ('./Tabs.less');
  *  $param obj children                 vnitřní části komponenty (přepínací panel, data zobrazovaná pod záložkami)
 **/
 var TabsContainer = class TabsContainer extends React.Component {
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
     constructor(props) {
         super(props);                   // volaní nadřazeného konstruktoru
 

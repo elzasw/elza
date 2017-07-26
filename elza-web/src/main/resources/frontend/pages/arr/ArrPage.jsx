@@ -56,10 +56,17 @@ import * as perms from 'actions/user/Permission.jsx';
 import {selectTab} from 'actions/global/tab.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 import {getMapFromList} from 'stores/app/utils.jsx'
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './ArrPageKeymap.jsx';
 
-
+var keyModifier = Utils.getKeyModifier()
 
 class ArrPage extends ArrParentPage {
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
     static PropTypes = {
         splitter: React.PropTypes.object.isRequired,
         arrRegion: React.PropTypes.object.isRequired,
@@ -80,8 +87,7 @@ class ArrPage extends ArrParentPage {
     };
 
     constructor(props) {
-        super(props, "fa-page");
-
+        super(props,"fa-page");
         this.bindMethods('getActiveInfo', 'buildRibbon', 'handleRegisterJp',
             'handleBulkActionsDialog', 'handleSelectVisiblePoliciesNode', 'handleShowVisiblePolicies',
             'handleShortcuts', 'renderFundErrors', 'renderFundVisiblePolicies', 'handleSetVisiblePolicy',
@@ -97,6 +103,8 @@ class ArrPage extends ArrParentPage {
     }
     componentWillMount(){
         this.registerTabs(this.props);
+        let newKeymap = Utils.mergeKeymaps(ArrParentPage.defaultKeymap,defaultKeymap);
+        Utils.addShortcutManager(this,newKeymap);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -182,8 +190,9 @@ class ArrPage extends ArrParentPage {
         isDirty && !isFetching && this.dispatch(versionValidate(versionId, false))
     }
 
-    handleShortcuts(action) {
+    handleShortcuts(action, e) {
         console.log("#handleShortcuts ArrPage", '[' + action + ']', this);
+        e.preventDefault();
         switch (action) {
             case 'registerJp':
                 this.handleRegisterJp()
@@ -198,7 +207,7 @@ class ArrPage extends ArrParentPage {
                 this.dispatch(setFocus('arr', 3))
                 break
             default:
-                super.handleShortcuts(action);
+                super.handleShortcuts(action, e);
         }
     }
 

@@ -12,8 +12,22 @@ import ExtSystemForm from 'components/admin/ExtSystemForm.jsx';
 import {storeFromArea} from 'shared/utils'
 import './AdminExtSystemPage.less';
 
-class AdminExtSystemPage extends AbstractReactComponent {
+import {PropTypes} from 'prop-types';
 
+var keyModifier = Utils.getKeyModifier()
+var defaultKeymap = {
+    AdminExtSystemPage: {}
+}
+
+class AdminExtSystemPage extends AbstractReactComponent {
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
     handleShortcuts = () => {};
 
     /**

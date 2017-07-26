@@ -30,8 +30,8 @@ class TooltipTrigger extends AbstractReactComponent {
     };
 
     static defaultProps = {
-        showDelay: 300,
-        hideDelay: 500,
+        showDelay: 500,
+        hideDelay: 200,
         focusShowDelay: 250,
         focusHideDelay: 1,
         placement: "auto"
@@ -211,8 +211,6 @@ class TooltipTrigger extends AbstractReactComponent {
      * @param {Bool} hover - true - přepne this.state.overTooltip na true, false - přepne this.state.overTooltip na false
      */
     handleTooltipHover = (hover) => {
-        console.log("###handleTooltipHover", hover)
-
         if (this.props.holdOnHover) {
             const delay = this.getDelay(hover);
             this.setState({
@@ -228,8 +226,6 @@ class TooltipTrigger extends AbstractReactComponent {
      * @param {Bool} focus - true - přepne this.state.focus na true, false - přepne this.state.focus na false
      */
     handleFocus = (focus) => {
-        console.log("###handleFocus", focus)
-
         if (this.props.holdOnFocus) {
             const delay = this.getFocusDelay(focus);
             this.setState({

@@ -25,6 +25,12 @@ action:
         input_types:
             - ZP2015_UNIT_ARR
         output_type: ZP2015_UNIT_ARR
+        
+    # ZP4.3.4 Tematický popis jednotky popisu
+    - TEXT_AGGREGATION    
+        input_types:
+            - ZP2015_UNIT_CONTENT
+        output_type: ZP2015_UNIT_CONTENT        
 
     # ZP4.3.6 Budoucí přírůstky
     - TEXT_AGGREGATION    

@@ -44,6 +44,7 @@
             <action-item-type item-type="ZP2015_UNIT_SOURCE" />
             <action-item-type item-type="ZP2015_UNIT_HIST" />
             <action-item-type item-type="ZP2015_UNIT_ARR" />
+            <action-item-type item-type="ZP2015_UNIT_CONTENT" />
             <action-item-type item-type="ZP2015_FUTURE_UNITS" />
             <action-item-type item-type="ZP2015_UNIT_CURRENT_STATUS" />
             <action-item-type item-type="ZP2015_RELATED_UNITS" />
@@ -54,7 +55,7 @@
             <action-item-type item-type="ZP2015_ORIGINATOR" />
             <action-item-type item-type="ZP2015_LANGUAGE" />
             <action-item-type item-type="ZP2015_UNIT_COUNT_SUM" />
-            <action-item-type item-type="ZP2015_UNIT_COUNT_TABLE" />
+            <action-item-type item-type="ZP2015_UNIT_COUNT_TABLE" />            
         </action-item-types>
         <action-recommendeds>
             <action-recommended output-type="ZP2015_INVENTAR" />

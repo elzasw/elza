@@ -12,9 +12,10 @@ import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
 import {fundOutputRemoveNodes, fundOutputAddNodes } from 'actions/arr/fundOutput.jsx'
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import OutputInlineForm from 'components/arr/OutputInlineForm.jsx'
-
+import {PropTypes} from 'prop-types';
 import './ArrOutputDetail.less';
 import {Shortcuts} from 'react-shortcuts';
+import defaultKeymap from './ArrOutputDetailKeymap.jsx';
 
 const OutputState = {
     OPEN: 'OPEN',
@@ -29,7 +30,14 @@ const OutputState = {
  * Formulář detailu a editace verze výstupu.
  */
 class ArrOutputDetail extends AbstractReactComponent {
-
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
     static PropTypes = {
         versionId: React.PropTypes.number.isRequired,
         fund: React.PropTypes.object.isRequired,

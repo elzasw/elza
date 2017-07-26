@@ -19,10 +19,19 @@ import {
 import {Utils, EditRegistryForm} from 'components/index.jsx';
 import {Shortcuts} from 'react-shortcuts';
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
-
+import {PropTypes} from 'prop-types';
 import {setFocus} from 'actions/global/focus.jsx'
+import defaultKeymap from './RegistryDetailVariantRecordsKeymap.jsx';
 
 class RegistryDetailVariantRecords extends AbstractReactComponent {
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
 
     static PropTypes = {
         value: React.PropTypes.array.isRequired,
@@ -134,7 +143,7 @@ class RegistryDetailVariantRecords extends AbstractReactComponent {
             variantKey = item.id;
         }
 
-        return <Shortcuts key={variantKey} name='VariantRecord' handler={this.handleShortcuts.bind(this, item, index)}>
+        return <Shortcuts key={variantKey} name='VariantRecord' handler={this.handleShortcuts.bind(this, item, index)} alwaysFireHandler>
             <RegistryLabel
                 ref={'variant-' + index}
                 value={item.record}

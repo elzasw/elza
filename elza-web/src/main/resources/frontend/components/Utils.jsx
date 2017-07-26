@@ -1,5 +1,6 @@
 
 import {normalizeDoubleWithDot} from 'components/validate.jsx'
+import {ShortcutManager} from 'react-shortcuts';
 
 /**
  * Utility metody.
@@ -663,6 +664,103 @@ const isNotBlankObject = (obj) => {
     const newObj = removeUndefined(obj);
     return Object.keys(newObj).length > 0
 };
+/**
+ * Vloží zkratky z výchozí keymapy do druhé předané keymapy, pokud se v ní nenachází
+ * @param {object} defaultKeymap - výchozí keymapa, ze které budou zkratky čteny
+ * @param {object} keymap - keymapa, do které budou zkratky vloženy
+ * @return {object}
+ */
+function overrideKeymap(defaultKeymap,keymap) {
+    keymap = {...keymap};
+    for(let component in defaultKeymap){
+        if(keymap && keymap[component]){
+            let newComponentKeymap = {};
+            for(let action in defaultKeymap[component]){
+                if(!keymap[component][action]){
+                    newComponentKeymap[action] = defaultKeymap[component][action];
+                } else {
+                    newComponentKeymap[action] = keymap[component][action];
+                }
+            }
+            keymap[component] = newComponentKeymap;
+            //console.log("existing component",component,keymap);
+        } else {
+            keymap[component] = {...defaultKeymap[component]};
+            //console.log("undefined component",component,keymap);
+        }
+        checkValueDuplicity(keymap[component]);
+    }
+    return keymap;
+}
+/**
+ * Spojí dvě keymapy, případně přepíše hodnoty výchozí keymapy hodnotami z rozšiřující
+ * @param {object} defaultKeymap - výchozí keymapa
+ * @param {object} extendingKeymap - rozšiřující keymapa
+ * @return {object} mergedKeymap - nová keymapa
+ */
+function mergeKeymaps(defaultKeymap,extendingKeymap){
+    let mergedKeymap = {};
+    for(let c in defaultKeymap){ //vytvoření nového objektu, aby se nepřepisoval původní
+        mergedKeymap[c] = {};
+        for(let a in defaultKeymap[c]){
+            mergedKeymap[c][a] = defaultKeymap[c][a];
+        }
+    }
+    for(let component in extendingKeymap){
+        if(mergedKeymap && mergedKeymap[component]){
+            for(let action in extendingKeymap[component]){
+                mergedKeymap[component][action] = extendingKeymap[component][action];
+            }
+        } else {
+            mergedKeymap[component] = {...extendingKeymap[component]};
+        }
+    }
+    return mergedKeymap;
+}
+/**
+ * Zkontroluje, jestli objekt neobsahuje duplicitní hodnoty. Pokud je hodnotou pole, jsou prohledány všechny jeho hodnoty
+ * => ["a","b"] je považováno za duplicitní s "a". hodnota "b" je pak dále porovnávána s dalšími hodnotami.
+ * Objekty jsou porovnávány jako stringy
+ * @param {object} object - objekt, ve kterém se budou hledat duplicity
+ */
+function checkValueDuplicity(object){
+    let newObj = {};
+    for(let i in object){
+        let objectValue = object[i];
+        if(!Array.isArray(objectValue)){
+            objectValue = [objectValue];
+        }
+        for(let j=0;j<objectValue.length;j++){            
+            if(typeof newObj[objectValue[j]] === "undefined"){
+                newObj[objectValue[j]] = i;
+            } else {
+                console.warn("Duplicity found for '"+objectValue[j]+"' assigned to '"+i+"'. Already used in '"+newObj[objectValue[j]]+"'");
+            }
+        }
+    }
+}
+/**
+ * Přidá na předanou komponentu shortcut manager s předanou keymapou.
+ * Pokud shortcut manager existuje v kontextu komponenty je mu pouze doplněna keymapa o hodnoty z předané keymapy.
+ * Pokud je předána přepisující keymapa je ignorován kontext komponenty a je vytvořen nový shortcut manager s keymapou vytvořenou spojením obou předaných
+ * @param {object} component - komponenta, ke které se přidá shortcut manager
+ * @param {object} defaultKeymap - výchozí keymapa
+ * @param {object} overridingKeymap -
+ */
+function addShortcutManager(component,defaultKeymap,overridingKeymap) {
+    let shortcutManager;
+    if(component.context && component.context.shortcuts && !overridingKeymap){
+        let keymap = component.context.shortcuts._keymap;
+        component.context.shortcuts._keymap = overrideKeymap(defaultKeymap,keymap);
+        shortcutManager = component.context.shortcuts;
+    } else {
+        if(overridingKeymap){
+            defaultKeymap = overrideKeymap(defaultKeymap,overridingKeymap);
+        }
+        shortcutManager = new ShortcutManager(defaultKeymap)
+    }
+    component.shortcutManager = shortcutManager;
+}
 
 module.exports = {
     dateTimeToLocalUTC,
@@ -689,6 +787,9 @@ module.exports = {
     removeUndefined,
     isNotBlankObject,
     humanFileSize,
+    overrideKeymap: overrideKeymap,
+    mergeKeymaps: mergeKeymaps,
+    addShortcutManager: addShortcutManager,
     init: function() {
         init();
     }

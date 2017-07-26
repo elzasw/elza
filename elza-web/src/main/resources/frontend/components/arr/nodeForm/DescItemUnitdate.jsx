@@ -70,7 +70,7 @@ class DescItemUnitdate extends AbstractReactComponent {
                 <option />
                 {calendarTypes.items.map(type => <option key={type.id} value={type.id}>{type.name.charAt(0)}</option>)}
             </select>
-            <ItemTooltipWrapper tooltipTitle="dataType.unitdate.format">
+            <ItemTooltipWrapper tooltipTitle="dataType.unitdate.format" style={{"width":"100%"}}>
                 <input
                     {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
                     ref='focusEl'

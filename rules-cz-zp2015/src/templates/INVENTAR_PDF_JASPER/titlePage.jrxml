@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2016-09-22T19:26:54 -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="titlePage" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="dd0267be-517a-4d78-bc37-65bd954e2a10">
+<!-- 2017-06-27T23:45:06 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="titlePage" pageWidth="595" pageHeight="842" columnWidth="468" leftMargin="85" rightMargin="42" topMargin="42" bottomMargin="42" uuid="dd0267be-517a-4d78-bc37-65bd954e2a10">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
@@ -19,33 +19,37 @@
 		<![CDATA[]]>
 	</queryString>
 	<detail>
-		<band height="450">
+		<band height="758">
 			<textField>
-				<reportElement x="0" y="370" width="560" height="50" uuid="6169d08a-6fdd-4b38-86fa-d19042c2b9d9"/>
+				<reportElement x="0" y="370" width="468" height="50" uuid="6169d08a-6fdd-4b38-86fa-d19042c2b9d9">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
 				<textElement textAlignment="Center">
 					<font size="18" isBold="true" pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{fund}.getName()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{output}.getName()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="0" y="420" width="560" height="30" uuid="a5fb06e6-7955-4fdf-b60e-dfa9f3a72a8f"/>
+				<reportElement x="0" y="420" width="468" height="30" uuid="a5fb06e6-7955-4fdf-b60e-dfa9f3a72a8f"/>
 				<textElement textAlignment="Center">
 					<font size="16" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{output}.getSingleItemValue( "ZP2015_DATE_RANGE" )]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="0" y="0" width="560" height="30" uuid="569bfdb1-6510-4732-ac7e-e7f018d39e20"/>
+				<reportElement x="0" y="0" width="468" height="30" uuid="569bfdb1-6510-4732-ac7e-e7f018d39e20">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
 				<box>
 					<bottomPen lineWidth="1.0"/>
 				</box>
 				<textElement>
 					<font size="16" pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{fund}.getInstitution().getPartyGroup().getPreferredName().serialize()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{fund}.getInstitution().getPartyGroup().getRecord().getRecord()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="0" y="40" width="560" height="30" uuid="702942b3-54f1-49f1-adff-3ad8ae566325"/>
+				<reportElement x="0" y="40" width="468" height="30" uuid="702942b3-54f1-49f1-adff-3ad8ae566325"/>
 				<box>
 					<bottomPen lineWidth="1.0"/>
 				</box>
@@ -55,7 +59,7 @@
 				<textFieldExpression><![CDATA[$P{fund}.getInstitution().getCode()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="0" y="80" width="560" height="14" uuid="e204c561-b87d-4e17-8072-843983c327b1">
+				<reportElement x="0" y="100" width="468" height="14" uuid="e204c561-b87d-4e17-8072-843983c327b1">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
@@ -64,13 +68,41 @@
 				<textFieldExpression><![CDATA["archivní pomůcka č. "+$P{output}.getInternal_code()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="0" y="94" width="560" height="14" uuid="4aeda5cf-c599-4af0-8152-15902d195e51">
+				<reportElement x="0" y="114" width="468" height="14" uuid="4aeda5cf-c599-4af0-8152-15902d195e51">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA["NAD č. "+$P{output}.getNodesDFS().next().getItemsValueByCode("ZP2015_NAD")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="80" width="468" height="20" uuid="23d30e4b-4b64-42af-bd93-1e68ba43e2ba">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement>
+					<font size="14" pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA["inventář"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="0" y="720" width="468" height="14" uuid="e0778e82-e190-4d85-8ff8-3d44f5eaeea5">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement>
+					<font pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Zpracoval: "+$P{output}.getSingleItemValue( "ZP2015_ARRANGER_TEXT" )]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="0" y="740" width="468" height="14" isRemoveLineWhenBlank="true" uuid="af89dff7-c912-4296-ae4b-aba8f44b7ffc">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement>
+					<font pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{output}.getSingleItemValue( "ZP2015_FINDING_AID_DATE" )]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

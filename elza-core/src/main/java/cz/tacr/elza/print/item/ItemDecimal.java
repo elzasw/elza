@@ -2,19 +2,16 @@ package cz.tacr.elza.print.item;
 
 import java.math.BigDecimal;
 
-import cz.tacr.elza.print.NodeId;
-
 /**
- * @author Martin Lebeda
- * @author Petr Pytelka
+ * Decimal number for print
  * 
  */
 public class ItemDecimal extends AbstractItem {
 	
 	BigDecimal value;
 
-    public ItemDecimal(final NodeId nodeId, final BigDecimal value) {
-        super(nodeId);
+    public ItemDecimal(final BigDecimal value) {
+        super();
         this.value = value;
     }
 

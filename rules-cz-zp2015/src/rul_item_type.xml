@@ -378,7 +378,7 @@
     </item-type>
     <item-type code="ZP2015_EXERQUE" data-type="TEXT">
         <name>Opis, nápis, exerque</name>
-        <shortcut>3y</shortcut>
+        <shortcut>Opis</shortcut>
         <description>ZP5.7.1 Opis, nápis, exerque</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>

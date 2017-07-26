@@ -2,19 +2,16 @@ package cz.tacr.elza.print.item;
 
 import org.apache.commons.lang.StringUtils;
 
-import cz.tacr.elza.print.NodeId;
-
 /**
- * @author Martin Lebeda
- * @author Petr Pytelka
+ * Item string
  * 
  */
 public class ItemString extends AbstractItem {
 	
 	String value;
 
-    public ItemString(final NodeId nodeId, final String value) {
-        super(nodeId);
+    public ItemString(final String value) {
+        super();
         
         this.value = value;
     }

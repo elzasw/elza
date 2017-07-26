@@ -2,9 +2,20 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {i18n, NoFocusButton, Icon, AbstractReactComponent} from 'components'
 import {Panel, PanelGroup} from 'react-bootstrap';
-import {Shortcuts} from 'react-shortcuts'
+import {Shortcuts} from 'react-shortcuts';
+import {Utils} from 'components/index.jsx';
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './CollapsablePanelKeymap.jsx';
 
 class CollapsablePanel extends AbstractReactComponent {
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
     static PropTypes = {
         isOpen: React.PropTypes.bool.isRequired,
         pinned: React.PropTypes.bool.isRequired,
@@ -37,7 +48,7 @@ class CollapsablePanel extends AbstractReactComponent {
             <Panel eventKey={true}
                 header={<Shortcuts name="CollapsablePanel" handler={(action,e)=>this.handleShortcuts(action,e)} tabIndex={"0"}>
                     {header}
-                    <NoFocusButton className={"btn-action pull-right" + (pinned ? " pinned" : " hover-button")} onClick={() => panelPin()}>
+                    <NoFocusButton className={"btn-action pull-right" + (pinned ? " pinned" : " hover-button")} onClick={() => this.panelPin()}>
                         <Icon glyph="fa-thumb-tack" />
                     </NoFocusButton>
                 </Shortcuts>}>
