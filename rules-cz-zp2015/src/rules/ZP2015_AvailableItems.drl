@@ -1766,7 +1766,7 @@ when $activeLevel: ActiveLevel( )
     $level: Level( $items: descItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT")) from $items
     // nastaveni prvku
-    $itemType: RulItemTypeExt( code in ("ZP2015_ITEM_MAT", "ZP2015_ENTITY_ROLE"	) )
+    $itemType: RulItemTypeExt( code in ("ZP2015_ENTITY_ROLE"	) )
 then
     $itemType.setType(RulItemType.Type.REQUIRED);
 end
