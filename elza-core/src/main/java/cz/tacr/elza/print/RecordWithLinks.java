@@ -1,15 +1,11 @@
 package cz.tacr.elza.print;
 
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
-
 import org.apache.commons.collections.CollectionUtils;
 
 import cz.tacr.elza.print.item.Item;
