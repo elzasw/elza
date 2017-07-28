@@ -131,8 +131,10 @@
                 <type code="ZP2015_ITEM_MAT" width="1"/>
                 <!-- 5.2.9 Díl, část, pořadí vydání jednotky popisu -->
                 <type code="ZP2015_PART" width="1"/>
-                <!--  5.2.10 Jazyk, písmo -->
+                <!--  5.2.10 Jazyk -->
                 <type code="ZP2015_LANGUAGE" width="2"/>
+                <!--  5.2.10 písmo -->
+                <type code="ZP2015_WRITING" width="2"/>                
                 <!-- 5.2.11 Edice a literatura -->
                 <type code="ZP2015_EDITION" width="0"/>
                 <!-- 5.3-5.6 Role entit (specifikace + hodnota) -->
