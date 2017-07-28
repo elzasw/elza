@@ -1198,9 +1198,9 @@ public class XmlExportService {
 
                 descItem.setCalendarTypeCode(arrDataUnitdate.getCalendarType().getCode());
                 descItem.setFormat(arrDataUnitdate.getFormat());
-                descItem.setValueFrom(XmlImportUtils.stringToDate(arrDataUnitdate.getValueFrom()));
+                descItem.setValueFrom(arrDataUnitdate.getValueFrom());
                 descItem.setValueFromEstimated(arrDataUnitdate.getValueFromEstimated());
-                descItem.setValueTo(XmlImportUtils.stringToDate(arrDataUnitdate.getValueTo()));
+                descItem.setValueTo(arrDataUnitdate.getValueTo());
                 descItem.setValueToEstimated(arrDataUnitdate.getValueToEstimated());
 
                 descItems.add(descItem);

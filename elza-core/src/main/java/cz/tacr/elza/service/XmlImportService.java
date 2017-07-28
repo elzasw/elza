@@ -3,11 +3,15 @@ package cz.tacr.elza.service;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -19,10 +23,14 @@ import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 import javax.xml.bind.JAXBException;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.time.FastDateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -276,6 +284,23 @@ public class XmlImportService {
 
     @Value("${elza.xmlImport.transformationDir}")
     private String transformationsDirectory;
+    
+    DatatypeFactory dataTypeFactory;
+    
+    //private final static SimpleDateFormat FORMATTER_DATE_TIME = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    private final static FastDateFormat ISO_8601_FORMAT = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss");
+    
+    public XmlImportService() {
+    	dataTypeFactory = createDatatypeFactory();
+    }
+    
+	private static DatatypeFactory createDatatypeFactory() {
+        try {
+            return DatatypeFactory.newInstance();
+        } catch (DatatypeConfigurationException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     /**
      * Naimportuje data.
@@ -595,8 +620,8 @@ public class XmlImportService {
                     itemUnitdate.setCalendarType(calendarType);
                     itemUnitdate.setFormat(descItemUnitDate.getFormat());
 
-                    itemUnitdate.setValueFrom(XmlImportUtils.dateToString(descItemUnitDate.getValueFrom()));
-                    itemUnitdate.setValueTo(XmlImportUtils.dateToString(descItemUnitDate.getValueTo()));
+                    itemUnitdate.setValueFrom(convertDate(descItemUnitDate.getValueFrom(), true));
+                    itemUnitdate.setValueTo(convertDate(descItemUnitDate.getValueTo(), false));
 
                     itemUnitdate.setValueFromEstimated(descItemUnitDate.getValueFromEstimated());
                     itemUnitdate.setValueToEstimated(descItemUnitDate.getValueToEstimated());
@@ -647,7 +672,22 @@ public class XmlImportService {
         }
     }
 
-    private ArrDescItem createArrDescItem(final ArrChange change, final ArrNode node, final AbstractDescItem descItem) throws LevelImportException {
+    /**
+     * Convert date to ISO format
+     * @param value
+     * @param valueFrom
+     * @return
+     */
+    private String convertDate(String value, boolean valueFrom) {
+    	XMLGregorianCalendar calValue = dataTypeFactory.newXMLGregorianCalendar(value);
+    	GregorianCalendar gcValue = calValue.toGregorianCalendar();
+    	//return formatDate(gcValue);
+    	// TODO update settings according valueFrom
+    	//return FORMATTER_DATE_TIME.format(gcValue.getTime());
+    	return ISO_8601_FORMAT.format(gcValue);
+	}
+
+	private ArrDescItem createArrDescItem(final ArrChange change, final ArrNode node, final AbstractDescItem descItem) throws LevelImportException {
         String descItemTypeCode = descItem.getDescItemTypeCode();
         RulItemType descItemType = null;
         if (descItemTypeCode !=  null) {
