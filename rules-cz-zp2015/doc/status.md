@@ -35,7 +35,7 @@ TODO: Hudebniny počítat jako rukopisy
 
 Otazky
 ======
-- Muze logicka slozka obsahovat ukladaci jednotku?
+- Muze logicka slozka obsahovat ukladaci jednotku? Muze serie obsahovat ukladaci jednotku (viz male fondy Lit.archiv)?
 - Jednotlivost - zavest jednotlivost bez typu?
 - Neměl by vzniknout příznak určující kopii?
   - důležité pro povinné prvky popisu

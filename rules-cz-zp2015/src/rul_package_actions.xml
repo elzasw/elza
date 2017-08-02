@@ -52,6 +52,7 @@
             <action-item-type item-type="ZP2015_DESCRIPTION_DATE" />
             <action-item-type item-type="ZP2015_DATE_RANGE" />
             <action-item-type item-type="ZP2015_ARRANGER" />
+            <action-item-type item-type="ZP2015_ARRANGEMENT_INFO" />
             <action-item-type item-type="ZP2015_ORIGINATOR" />
             <action-item-type item-type="ZP2015_LANGUAGE" />
             <action-item-type item-type="ZP2015_UNIT_COUNT_SUM" />

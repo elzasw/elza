@@ -89,7 +89,7 @@
                 <!-- 4.3.2 Dějiny jednotky popisu -->
                 <type code="ZP2015_UNIT_HIST" width="0"/>                
                 <!-- 4.3.3 Způsob uspořádání jednotky popisu -->
-                <type code="ZP2015_UNIT_ARR" width="2"/>
+                <type code="ZP2015_UNIT_ARR" width="0"/>
                 <!-- 4.3.4 Tematický popis jednotky popisu -->
                 <type code="ZP2015_UNIT_CONTENT" width="0"/>
                 <!-- 4.3.5 Přímý zdroj akvizice -->
@@ -109,7 +109,8 @@
                 <type code="ZP2015_RELATED_UNITS" width="1"/>
                 <type code="ZP2015_EXISTING_COPY" width="1"/>
                 <!-- 4.7.1 Zpracovatel jednotky popisu -->
-                <type code="ZP2015_ARRANGER" width="2"/>                
+                <type code="ZP2015_ARRANGER" width="2"/>  
+                <type code="ZP2015_ARRANGEMENT_INFO" width="0"/>         
                 <!-- 4.7.2 Pravidla zpracování jednotky popisu -->
                 <type code="ZP2015_ARRANGE_RULES" width="1"/>
                 <!-- 4.7.3 Datum (data) popisu -->               
