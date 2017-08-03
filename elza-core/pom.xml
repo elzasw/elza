@@ -11,7 +11,6 @@
     <name>ELZA Core</name>
 
     <properties>
-        <vaadin.theme.path>VAADIN/themes/elza</vaadin.theme.path>
         <drools.version>6.5.0.Final</drools.version>
         <geotools.version>14.3</geotools.version>
     </properties>
