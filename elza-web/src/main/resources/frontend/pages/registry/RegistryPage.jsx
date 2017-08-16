@@ -286,7 +286,7 @@ class RegistryPage extends AbstractReactComponent {
 
 
         const centerPanel = <div className='registry-page'>
-            <RegistryDetail />
+            <RegistryDetail goToPartyPerson={this.props.goToPartyPerson}/>
         </div>;
 
         return <Shortcuts name='Registry' handler={this.handleShortcuts} global stopPropagation={false} className="main-shortcuts2">

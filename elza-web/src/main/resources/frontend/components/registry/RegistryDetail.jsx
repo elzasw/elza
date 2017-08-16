@@ -48,6 +48,7 @@ class RegistryDetail extends AbstractReactComponent {
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
     componentWillMount(){
         Utils.addShortcutManager(this,defaultKeymap);
+        this.fetchIfNeeded();
     }
     getChildContext() {
         return { shortcuts: this.shortcutManager };
@@ -57,7 +58,6 @@ class RegistryDetail extends AbstractReactComponent {
 
     componentDidMount() {
         this.trySetFocus();
-        this.fetchIfNeeded();
     }
 
     componentWillReceiveProps(nextProps) {
@@ -65,8 +65,10 @@ class RegistryDetail extends AbstractReactComponent {
         this.trySetFocus(nextProps);
         const {registryDetail:{id, fetched, data}} = nextProps;
         if ((id !== this.props.registryDetail.id && fetched) || (!this.props.registryDetail.fetched && fetched)) {
-            if (this.props.registryDetail.data) {
+            if (data) {
                 this.setState({note: data.note});
+            } else {
+                this.setState({note: null});
             }
         }
     }
@@ -96,7 +98,11 @@ class RegistryDetail extends AbstractReactComponent {
 
     handleGoToParty = () => {
         this.dispatch(partyDetailFetchIfNeeded(this.props.registryDetail.data.partyId));
-        this.dispatch(routerNavigate('party'));
+        if(!this.props.goToPartyPerson){
+            this.dispatch(routerNavigate('party'));
+        } else {
+            this.props.goToPartyPerson();
+        }
     };
 
     handleShortcuts = (action)  => {
