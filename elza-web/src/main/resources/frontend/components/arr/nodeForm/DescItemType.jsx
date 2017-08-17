@@ -859,7 +859,7 @@ class DescItemType extends AbstractReactComponent {
         if (showDeleteButton && !closed && !readMode && !infoType.rep && infoType.ind && rulDataType.code !== 'ENUM') {
             actions.push(<NoFocusButton key="notIdentified" onClick={() => {
                 if (descItemType.descItems.length === 1) {
-                    onDescItemNotIdentified(descItemType.descItems[0]);
+                    onDescItemNotIdentified(0, descItemType.descItems[0]);
                 }
             }}
                                         title={i18n('subNodeForm.descItemType.title.notIdentified')}><Icon
@@ -928,7 +928,7 @@ class DescItemType extends AbstractReactComponent {
                 if (rulDataType.code !== 'ENUM' && infoType.ind) {
                     actions.push(<NoFocusButton disabled={!this.getShowDeleteDescItem(descItem)} key="notIdentified"
                                                 className={descItem.undefined ? 'notIdentified' : 'identified'}
-                                                onClick={() => onDescItemNotIdentified(descItem)}
+                                                onClick={() => onDescItemNotIdentified(descItemIndex, descItem)}
                                                 title={i18n('subNodeForm.descItemType.title.notIdentified')}><Icon
                         glyph="fa-low-vision"/></NoFocusButton>);
                 }

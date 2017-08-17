@@ -835,18 +835,15 @@ class SubNodeForm extends AbstractReactComponent {
             readMode={readMode}
             strictMode={strictMode}
             notIdentified={notIdentified}
-            onDescItemNotIdentified={(descItem) => this.handleDescItemNotIdentified(descItemGroupIndex, descItemTypeIndex, descItem)}
+            onDescItemNotIdentified={(descItemIndex, descItem) => this.handleDescItemNotIdentified(descItemGroupIndex, descItemTypeIndex, descItemIndex, descItem)}
         />
     }
 
-    handleDescItemNotIdentified = (descItemGroupIndex, descItemTypeIndex, descItem) => {
-        console.warn(descItem);
-
-
+    handleDescItemNotIdentified = (descItemGroupIndex, descItemTypeIndex, descItemIndex, descItem) => {
         let valueLocation = {
             descItemGroupIndex,
             descItemTypeIndex,
-            descItemIndex: 0,
+            descItemIndex,
         };
         this.dispatch(this.props.formActions.fundSubNodeFormValueNotIdentified(this.props.versionId, this.props.routingKey, valueLocation, descItem));
     };

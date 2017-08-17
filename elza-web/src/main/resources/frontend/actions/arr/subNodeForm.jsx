@@ -306,6 +306,13 @@ class ItemFormActions {
                     .then(json => {
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'UPDATE'));
                         dispatch(this.fundSubNodeFormValueAdd(versionId, routingKey, valueLocation));
+                        if (descItem.descItemSpecId) {
+                            state = getState();
+                            subNodeForm = this._getItemFormStore(state, versionId, routingKey);
+                            loc = subNodeForm.getLoc(subNodeForm, valueLocation);
+                            const valueLocationNew = {...valueLocation, descItemIndex: loc.descItemType.descItems.length - 1};
+                            dispatch(this.fundSubNodeFormValueChangeSpec(versionId, routingKey, valueLocationNew, descItem.descItemSpecId));
+                        }
                     });
             } else {
                 this._callSetNotIdentifiedDescItem(versionId, subNodeForm.nodeId, subNodeForm.data.parent.version, loc.descItemType.id, descItem.descItemSpecId, descItem.descItemObjectId)
