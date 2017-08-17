@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
@@ -542,9 +543,13 @@ public class DescriptionItemService {
         Assert.notNull(descItemType, "Hodnota atributu musí mít vyplněný typ");
 
         if (descItemType.getUseSpecification()) {
-            Assert.notNull(descItemSpec, "Pro typ atributu je nutné specifikaci vyplnit");
+            if (descItemSpec == null) {
+                throw new BusinessException("Pro typ atributu je nutné specifikaci vyplnit", ArrangementCode.ITEM_SPEC_NOT_FOUND).level(Level.WARNING);
+            }
         } else {
-            Assert.isNull(descItemSpec, "Pro typ atributu nesmí být specifikace vyplněná");
+            if (descItemSpec != null) {
+                throw new BusinessException("Pro typ atributu nesmí být specifikace vyplněná", ArrangementCode.ITEM_SPEC_FOUND).level(Level.WARNING);
+            }
         }
 
         if (descItemSpec != null) {

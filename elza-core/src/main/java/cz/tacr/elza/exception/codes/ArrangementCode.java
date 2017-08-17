@@ -144,9 +144,14 @@ public enum ArrangementCode implements ErrorCode {
     DATA_NOT_FOUND,
 
     /**
-     * Specifikace atributu neexistuje.
+     * Pro typ atributu je nutné specifikaci vyplnit.
      */
     ITEM_SPEC_NOT_FOUND,
+
+    /**
+     * Specifikace atributu nesmí být vyplněna pro tento typ atributu.
+     */
+    ITEM_SPEC_FOUND,
 
     /**
      * Typ formy jména neexistuje.
