@@ -12,6 +12,7 @@ module.exports = {
     bail: true,
     entry: {
         main: [
+            'babel-polyfill',
             './public_entry.jsx',
             './index.jsx'
         ]

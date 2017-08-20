@@ -18,11 +18,11 @@ const _logActionDuration = false;
 const _logCollapsed = true;
 
 // Store a middleware
-const loggerMiddleware = createLogger({
+const loggerMiddleware = __DEV__ ? createLogger({
     collapsed: _logCollapsed,
     duration: _logActionDuration,
     predicate: (getState, action) => (action.type !== types.STORE_STATE_DATA && action.type !== types.GLOBAL_SPLITTER_RESIZE)
-})
+}) : null;
 
 /**
  * Třída pro definici inline formulářů.
