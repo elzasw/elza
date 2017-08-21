@@ -43,6 +43,7 @@ VersionInfoCompany={#NazevFirmy}
 AppCopyright={#Copyright}
 VersionInfoCopyright={#Copyright}
 SetupIconFile=.\classes\Nastaveni\favicon.ico
+AllowCancelDuringInstall=False
 
 [Files]
 Source: "compiler:\WizModernSmallImage.bmp"; Flags: dontcopy
