@@ -44,6 +44,7 @@ AppCopyright={#Copyright}
 VersionInfoCopyright={#Copyright}
 SetupIconFile=.\classes\Nastaveni\favicon.ico
 AllowCancelDuringInstall=False
+PrivilegesRequired=admin
 
 [Files]
 Source: "compiler:\WizModernSmallImage.bmp"; Flags: dontcopy
