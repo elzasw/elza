@@ -183,7 +183,7 @@
                                             <includes>
                                                 <include>all-institutions-import.xml</include>
                                             </includes>
-                                            <directory>../../package-cz-base/src</directory>
+                                            <directory>../../../package-cz-base/src</directory>
                                             <filtering>false</filtering>
                                         </resource>
                                     </resources>
