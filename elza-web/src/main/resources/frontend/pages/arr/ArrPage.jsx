@@ -334,6 +334,11 @@ class ArrPage extends ArrParentPage {
                         name: i18n('arr.fund.settings.panel.rightPanel'),
                         key: 'rightPanel',
                         checked: dataCenter && dataCenter.rightPanel !== undefined ? dataCenter.rightPanel : true},
+                    {
+                        name: i18n('arr.fund.settings.panel.treeColorCoding'),
+                        key: "treeColorCoding",
+                        checked: dataCenter && dataCenter.treeColorCoding !== undefined ? dataCenter.treeColorCoding : true
+                    }
                 ]
             },
             strictMode: {
@@ -973,8 +978,11 @@ class ArrPage extends ArrParentPage {
     }
 
     renderLeftPanel(readMode, closed) {
-        const {focus, arrRegion} = this.props;
+        const {focus, arrRegion, userDetail} = this.props;
         const activeFund = this.getActiveFund(this.props);
+        var centerSettings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', activeFund.id);
+        var centerSettingsValues = centerSettings.value ? JSON.parse(centerSettings.value) : null;
+        let colorCoded = centerSettingsValues && centerSettingsValues.treeColorCoding || !centerSettingsValues;
 
         if (arrRegion.extendedView) {   // extended view - jiné větší zobrazení stromu, ale renderuje se v center panelu, tento bude prázdný
             return null;
@@ -989,6 +997,7 @@ class ArrPage extends ArrParentPage {
                     ref='tree'
                     focus={focus}
                     actionAddons={<Button onClick={() => {this.handleSetExtendedView(true)}} className='extended-view-toggle'><Icon glyph='fa-arrows-alt'/></Button>}
+                    colorCoded={colorCoded}
                 />
             )
         }

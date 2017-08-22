@@ -18,6 +18,15 @@ const TREE_NAME_MAX_CHARS = 60
 // Odsazení odshora, musí být definováno, jinak nefunguje ensureItemVisible
 const TREE_TOP_PADDING = 0
 
+const colorMap = {
+    "fa-folder-o":{background:"#ecc813",color:"#fff"},
+    "ez-serie":{background:"#6696dd", color:"#fff"},
+    "fa-sitemap":{background:"#4444cc", color:"#fff"},
+    "fa-file-text-o":{background:"#ff972c", color:"#fff"},
+    "ez-item-part-o":{background:"#cc3820", color: "#fff"},
+    "default":{background:"#333", color: "#fff"}
+}
+
 /**
  * Strom archivních souborů.
  */
@@ -32,10 +41,6 @@ class FundTreeLazy extends AbstractReactComponent {
     }
 
     state = {};
-
-    static defaultProps = {
-        rowHeight: 16
-    };
 
     static PropTypes = {
         expandedIds: React.PropTypes.object.isRequired,
@@ -128,9 +133,11 @@ class FundTreeLazy extends AbstractReactComponent {
         "MOVE_TO_CHILD_OR_OPEN":this.selectorMoveToChildOrOpen
     }
     handleShortcuts = (action,e)=>{
-        e.stopPropagation();
-        e.preventDefault();
-        this.actionMap[action](e);
+        if(this.actionMap && typeof this.actionMap[action] === "function"){
+            e.stopPropagation();
+            e.preventDefault();
+            this.actionMap[action](e);
+        }
     }
 
     componentDidMount() {
@@ -142,7 +149,7 @@ class FundTreeLazy extends AbstractReactComponent {
             return true;
         }
         var eqProps = ['ensureItemVisible', 'filterText', 'expandedIds', 'selectedId', 'selectedIds', 'nodes', 'focusId', 'isFetching',
-            'fetched', 'searchedIds', 'filterCurrentIndex', 'handleNodeClick', 'handleNodeDoubleClick']
+            'fetched', 'searchedIds', 'filterCurrentIndex', 'handleNodeClick', 'handleNodeDoubleClick', 'colorCoded']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -183,8 +190,12 @@ class FundTreeLazy extends AbstractReactComponent {
             closed: !expanded,
             active: active,
             focus: this.props.focusId === node.id,
+            "node-color": this.props.colorCoded 
         });
-
+        const iconClass = classNames({
+            "node-icon": true,
+            "node-icon-color": this.props.colorCoded
+        });
         var levels = createReferenceMark(node, clickProps);
 
         let name = node.name ? node.name : i18n('fundTree.node.name.undefined', node.id);
@@ -194,11 +205,25 @@ class FundTreeLazy extends AbstractReactComponent {
                 name = name.substring(0, TREE_NAME_MAX_CHARS - 3) + '...'
             }
         }
-
+        let style = {};
+        if(this.props.colorCoded){
+            let backgroundColor, color;
+            if(colorMap[node.icon]){
+                backgroundColor = colorMap[node.icon].background;
+                color = colorMap[node.icon].color;
+            } else {
+                backgroundColor = colorMap["default"].background;
+                color = colorMap["default"].color;
+            }
+            style = {
+                backgroundColor:backgroundColor,
+                color:color
+            };
+        }
         return <div key={node.id} className={cls}>
             {levels}
             {expCol}
-            <Icon {...clickProps} className="node-icon" glyph={getGlyph(node.icon)} />
+            <Icon {...clickProps} className={iconClass} style={style} glyph={getGlyph(node.icon)} />
             <span
                 title={title}
                 className='node-label'
@@ -259,7 +284,6 @@ class FundTreeLazy extends AbstractReactComponent {
                         container={this.state.treeContainer}
                         items={this.props.nodes}
                         renderItem={this.renderNode}
-                        itemHeight={this.props.rowHeight}
                     />}
                 </div>
             </Shortcuts>
