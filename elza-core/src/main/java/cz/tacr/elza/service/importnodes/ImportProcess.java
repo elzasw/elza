@@ -3,6 +3,8 @@ package cz.tacr.elza.service.importnodes;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
+
+import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -381,13 +383,13 @@ public class ImportProcess {
             ArrCalendarType calendarType = calendarTypeMap.get(((ItemUnitdate) item).getCalendarTypeCode());
             value = ((ArrDataUnitdate) data).getValueFrom();
             if (value != null) {
-                ((ArrDataUnitdate) data).setNormalizedFrom(CalendarConverter.toSeconds(CalendarConverter.CalendarType.valueOf(calendarType.getCode()), LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+                ((ArrDataUnitdate) data).setNormalizedFrom(CalendarConverter.toSeconds(CalendarType.valueOf(calendarType.getCode()), LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
             } else {
                 ((ArrDataUnitdate) data).setNormalizedFrom(Long.MIN_VALUE);
             }
             value = ((ArrDataUnitdate) data).getValueTo();
             if (value != null) {
-                ((ArrDataUnitdate) data).setNormalizedTo(CalendarConverter.toSeconds(CalendarConverter.CalendarType.valueOf(calendarType.getCode()), LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+                ((ArrDataUnitdate) data).setNormalizedTo(CalendarConverter.toSeconds(CalendarType.valueOf(calendarType.getCode()), LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
             } else {
                 ((ArrDataUnitdate) data).setNormalizedTo(Long.MAX_VALUE);
             }

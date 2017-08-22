@@ -1,5 +1,6 @@
 import React from 'react';
-import {AbstractReactComponent, Utils} from 'components/shared';
+import AbstractReactComponent from "../../AbstractReactComponent";
+import * as Utils from "../../Utils";
 import ReactDOM from 'react-dom';
 import {Shortcuts} from 'react-shortcuts';
 const scrollIntoView = require('dom-scroll-into-view');

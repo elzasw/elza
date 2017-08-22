@@ -5,7 +5,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import { AppStore, ResizeStore } from 'stores/index.jsx';
-import {AbstractReactComponent, ContextMenu, Toastr, ModalDialog, WebSocket, Login, Utils} from 'components/shared';
+import {AbstractReactComponent, ContextMenu, Toastr, ModalDialog, WebSocket, Utils} from 'components/shared';
+import Login from "../components/shared/login/Login";
 import {Route, Switch} from "react-router-dom";
 import AppRouter from './AppRouter'
 import {ShortcutManager} from 'react-shortcuts';

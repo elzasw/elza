@@ -686,7 +686,7 @@ function overrideKeymap(defaultKeymap,keymap) {
  * @param {object} extendingKeymap - rozšiřující keymapa
  * @return {object} mergedKeymap - nová keymapa
  */
-function mergeKeymaps(defaultKeymap,extendingKeymap){
+export function mergeKeymaps(defaultKeymap,extendingKeymap){
     let mergedKeymap = {};
     for(let c in defaultKeymap){ //vytvoření nového objektu, aby se nepřepisoval původní
         mergedKeymap[c] = {};
@@ -718,7 +718,7 @@ function checkValueDuplicity(object){
         if(!Array.isArray(objectValue)){
             objectValue = [objectValue];
         }
-        for(let j=0;j<objectValue.length;j++){            
+        for(let j=0;j<objectValue.length;j++){
             if(typeof newObj[objectValue[j]] === "undefined"){
                 newObj[objectValue[j]] = i;
             } else {
@@ -735,7 +735,7 @@ function checkValueDuplicity(object){
  * @param {object} defaultKeymap - výchozí keymapa
  * @param {object} overridingKeymap -
  */
-function addShortcutManager(component,defaultKeymap,overridingKeymap) {
+export function addShortcutManager(component,defaultKeymap,overridingKeymap) {
     let shortcutManager;
     if(component.context && component.context.shortcuts && !overridingKeymap){
         let keymap = component.context.shortcuts._keymap;

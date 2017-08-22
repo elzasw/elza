@@ -5,7 +5,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Button, Input, HelpBlock} from 'react-bootstrap';
-import {Icon, AbstractReactComponent, Utils} from 'components/shared';
+import AbstractReactComponent from "../../AbstractReactComponent";
+import * as Utils from "../../Utils";
+import Icon from "../icon/Icon";
 import {getBootstrapInputComponentInfo} from 'components/form/FormUtils.jsx';
 import scrollIntoView from 'dom-scroll-into-view';
 import './Autocomplete.less';

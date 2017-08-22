@@ -127,9 +127,9 @@ public class ImportFromFund implements ImportSource {
     }
 
     @Override
-    public Set<? extends File> getFiles() {
+    public Set<File> getFiles() {
         List<ArrFile> files = fundFileRepository.findFilesBySubtreeNodeIds(nodeIds, ignoreRootNodes);
-        return files.stream().map(file -> new File() {
+        return files.stream().<File>map(file -> new File() {
             @Override
             public String getName() {
                 return file.getName();

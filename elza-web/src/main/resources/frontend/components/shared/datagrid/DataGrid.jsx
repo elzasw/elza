@@ -4,7 +4,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Resizer, Utils} from 'components/index.jsx';
+import AbstractReactComponent from "../../AbstractReactComponent";
+import * as Utils from "../../Utils";
+import Resizer from "../resizer/Resizer";
 const scrollIntoView = require('dom-scroll-into-view')
 import {propsEquals, getScrollbarWidth} from 'components/Utils.jsx'
 import {Shortcuts} from 'react-shortcuts';

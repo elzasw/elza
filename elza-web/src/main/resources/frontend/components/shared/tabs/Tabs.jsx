@@ -8,12 +8,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Nav, NavItem} from 'react-bootstrap';
-import {Utils, Icon, i18n, NoFocusButton} from 'components/shared';
+import * as Utils from "../../Utils";
 import {Shortcuts} from 'react-shortcuts';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './TabsKeymap.jsx';
 
 import './Tabs.less';
+import Icon from "../icon/Icon";
+import NoFocusButton from "../button/NoFocusButton";
+import i18n from "../../i18n";
 
 /**
  *  Obalovací komponenta pro záložky a jejich obsah

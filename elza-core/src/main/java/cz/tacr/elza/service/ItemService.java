@@ -308,7 +308,7 @@ public class ItemService implements InitializingBean {
                 }
             }
         }
-        for (T item : items) {
+        for (ArrItem item : items) {
             if (item.getItem() == null) {
                 item.setItem(descItemFactory.createItemByType(item.getItemType().getDataType()));
             }

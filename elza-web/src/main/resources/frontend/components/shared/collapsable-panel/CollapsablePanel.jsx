@@ -1,6 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {i18n, NoFocusButton, Icon, AbstractReactComponent, Utils} from 'components/shared'
+import AbstractReactComponent from "../../AbstractReactComponent";
+import * as Utils from "../../Utils";
+import Icon from "../icon/Icon";
+import NoFocusButton from "../button/NoFocusButton";
 import {Panel, PanelGroup} from 'react-bootstrap';
 import {Shortcuts} from 'react-shortcuts';
 import {PropTypes} from 'prop-types';

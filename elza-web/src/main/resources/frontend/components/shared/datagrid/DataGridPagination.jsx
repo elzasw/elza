@@ -3,7 +3,8 @@
  */
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent, Utils} from 'components/shared';
+import AbstractReactComponent from "../../AbstractReactComponent";
+import * as Utils from "../../Utils";
 import {validateInt, normalizeInt} from 'components/validate.jsx';
 import {Shortcuts} from 'react-shortcuts';
 import {PropTypes} from 'prop-types';

@@ -3,7 +3,6 @@
  */
 
 import React from 'react';
-import * as Utils from "components/Utils.jsx";
 import ReactDOM from 'react-dom';
 import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
@@ -30,7 +29,8 @@ import {
     i18n,
     AbstractReactComponent,
     Tabs,
-    SearchWithGoto
+    SearchWithGoto,
+    Utils
 } from 'components/shared';
 import {Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import PageLayout from "../shared/layout/PageLayout";

@@ -23,11 +23,11 @@ import {
     i18n,
     AbstractReactComponent,
     ListBox,
-    RibbonGroup
+    RibbonGroup,
+    Utils
 } from 'components/shared';
 import {Button} from 'react-bootstrap';
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {dateTimeToString} from 'components/Utils.jsx'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {
     fundActionFetchDetailIfNeeded,
     fundActionFetchListIfNeeded,
@@ -38,11 +38,10 @@ import {
     fundActionActionSelect,
     funcActionActionInterrupt,
     fundActionFormReset
-} from 'actions/arr/fundAction.jsx'
+} from 'actions/arr/fundAction.jsx';
 import * as perms from 'actions/user/Permission.jsx';
 import {getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {canSetFocus, setFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
-import {Utils} from 'components/index.jsx';
 import {ActionState} from 'constants.jsx'
 import {actionStateTranslation} from "../../actions/arr/fundAction";
 import {PropTypes} from 'prop-types';
@@ -421,7 +420,7 @@ class FundActionPage extends ArrParentPage {
                 } else if (data.dateFinished) {
                     date = data.dateFinished;
                 }
-                date = dateTimeToString(new Date(date));
+                date = Utils.dateTimeToString(new Date(date));
 
                 return <div className='center-container'>
                     <div className='detail'>
