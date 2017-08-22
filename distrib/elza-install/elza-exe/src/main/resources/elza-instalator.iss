@@ -601,7 +601,7 @@ begin
       NahradHodnotuVSouboru('{app}\start.bat','<NazevSluzby>',NazevSluzby ('')); //nastaví název služby do dávky pro start služby
       NahradHodnotuVSouboru('{app}\stop.bat','<NazevSluzby>',NazevSluzby ('')); //nastaví název služby do dávky pro vypnutí služby
       
-      TextService := 'set CATALINA_HOME=' + _Enter + 'set "JAVA_HOME='  + _Enter + '"set JRE_HOME=%cd%\..\jre"' + _Enter + 'setlocal'
+      TextService := 'set CATALINA_HOME=' + _Enter + 'set JAVA_HOME='  + _Enter + 'set JRE_HOME=%cd%\..\jre' + _Enter + 'setlocal'
       NahradHodnotuVSouboru('{app}\apache-tomcat\bin\service.bat','setlocal',TextService); //nastaví lokální JRE
       NahradHodnotuVSouboru('{app}\apache-tomcat\bin\service.bat','SERVICE_STARTUP_MODE=manual','SERVICE_STARTUP_MODE=auto'); //nastaví lokální JRE
       NahradHodnotuVSouboru('{app}\apache-tomcat\conf\server.xml','8080',PortAplikace); //nastaví port aplikace
