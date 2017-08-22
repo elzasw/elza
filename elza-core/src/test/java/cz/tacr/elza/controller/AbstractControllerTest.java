@@ -20,6 +20,9 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.controller.vo.CopyNodesParams;
+import cz.tacr.elza.controller.vo.CopyNodesValidate;
+import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
 import cz.tacr.elza.service.vo.ChangesResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -225,6 +228,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String FIND_CHANGE = ARRANGEMENT_CONTROLLER_URL + "/changes/{fundVersionId}";
     protected static final String FIND_CHANGE_BY_DATE = ARRANGEMENT_CONTROLLER_URL + "/changes/{fundVersionId}/date";
     protected static final String REVERT_CHANGES = ARRANGEMENT_CONTROLLER_URL + "/changes/{fundVersionId}/revert";
+    protected static final String SET_NOT_IDENTIFIED_DESCITEM = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/notUndefined/set";
+    protected static final String UNSET_NOT_IDENTIFIED_DESCITEM = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/notUndefined/unset";
+    protected static final String SET_NOT_IDENTIFIED_OUTPUTITEM = ARRANGEMENT_CONTROLLER_URL + "/outputItems/{fundVersionId}/{outputDefinitionId}/{outputDefinitionVersion}/notUndefined/set";
+    protected static final String UNSET_NOT_IDENTIFIED_OUTPUTITEM = ARRANGEMENT_CONTROLLER_URL + "/outputItems/{fundVersionId}/{outputDefinitionId}/{outputDefinitionVersion}/notUndefined/unset";
+    protected static final String COPY_LEVELS_VALIDATE = ARRANGEMENT_CONTROLLER_URL + "/levels/copy/validate";
+    protected static final String COPY_LEVELS = ARRANGEMENT_CONTROLLER_URL + "/levels/copy";
 
     // Party
     protected static final String CREATE_RELATIONS = PARTY_CONTROLLER_URL + "/relation";
@@ -2951,5 +2960,118 @@ public abstract class AbstractControllerTest extends AbstractTest {
                         .queryParameter("fromChangeId", fromChangeId)
                         .queryParameter("toChangeId", toChangeId)
                         .queryParameter("nodeId", nodeId), REVERT_CHANGES);
+    }
+
+    /**
+     * Nastavení atributu na "Nezjištěno".
+     *
+     * @param fundVersionId    id archivního souboru
+     * @param nodeId           id JP
+     * @param nodeVersion      verze JP
+     * @param descItemTypeId   identfikátor typu hodnoty atributu
+     * @param descItemSpecId   identfikátor specifikace hodnoty atributu
+     * @param descItemObjectId identifikátor existující hodnoty atributu
+     * @return upravená hodnota atributu nastavená na nezjištěno
+     */
+    protected ArrangementController.DescItemResult setNotIdentifiedDescItem(final Integer fundVersionId,
+                                                                            final Integer nodeId,
+                                                                            final Integer nodeVersion,
+                                                                            final Integer descItemTypeId,
+                                                                            final Integer descItemSpecId,
+                                                                            final Integer descItemObjectId) {
+        return put(spec -> spec.pathParameter("fundVersionId", fundVersionId)
+                        .pathParameter("nodeId", nodeId)
+                        .pathParameter("nodeVersion", nodeVersion)
+                        .queryParameter("descItemTypeId", descItemTypeId)
+                        .queryParameter("descItemSpecId", descItemSpecId)
+                        .queryParameter("descItemObjectId", descItemObjectId)
+                , SET_NOT_IDENTIFIED_DESCITEM).as(ArrangementController.DescItemResult.class);
+    }
+
+    /**
+     * Zrušení nastavení atributu na "Nezjištěno".
+     *
+     * @param fundVersionId    id archivního souboru
+     * @param nodeId           id JP
+     * @param nodeVersion      verze JP
+     * @param descItemTypeId   identfikátor typu hodnoty atributu
+     * @param descItemSpecId   identfikátor specifikace hodnoty atributu
+     * @param descItemObjectId identifikátor existující hodnoty atributu
+     * @return odstraněný atribut
+     */
+    protected ArrangementController.DescItemResult unsetNotIdentifiedDescItem(final Integer fundVersionId,
+                                                                               final Integer nodeId,
+                                                                               final Integer nodeVersion,
+                                                                               final Integer descItemTypeId,
+                                                                               final Integer descItemSpecId,
+                                                                               final Integer descItemObjectId) {
+        return put(spec -> spec.pathParameter("fundVersionId", fundVersionId)
+                        .pathParameter("nodeId", nodeId)
+                        .pathParameter("nodeVersion", nodeVersion)
+                        .queryParameter("descItemTypeId", descItemTypeId)
+                        .queryParameter("descItemSpecId", descItemSpecId)
+                        .queryParameter("descItemObjectId", descItemObjectId)
+                , UNSET_NOT_IDENTIFIED_DESCITEM).as(ArrangementController.DescItemResult.class);
+    }
+
+    /**
+     * Nastavení atributu na "Nezjištěno".
+     *
+     * @param fundVersionId    id archivního souboru
+     * @param fundVersionId           id archivního souboru
+     * @param outputDefinitionId      identifikátor výstupu
+     * @param outputDefinitionVersion verze výstupu
+     * @param outputItemTypeId        dentfikátor typu hodnoty atributu
+     * @param outputItemSpecId        identfikátor specifikace hodnoty atributu
+     * @param outputItemObjectId      identifikátor existující hodnoty atributu
+     * @return upravená hodnota atributu nastavená na nezjištěno
+     */
+    protected ArrangementController.OutputItemResult setNotIdentifiedOutputItem(final Integer fundVersionId,
+                                                                            final Integer outputDefinitionId,
+                                                                            final Integer outputDefinitionVersion,
+                                                                            final Integer outputItemTypeId,
+                                                                            final Integer outputItemSpecId,
+                                                                            final Integer outputItemObjectId) {
+        return put(spec -> spec.pathParameter("fundVersionId", fundVersionId)
+                        .pathParameter("outputDefinitionId", outputDefinitionId)
+                        .pathParameter("outputDefinitionVersion", outputDefinitionVersion)
+                        .queryParameter("outputItemTypeId", outputItemTypeId)
+                        .queryParameter("outputItemSpecId", outputItemSpecId)
+                        .queryParameter("outputItemObjectId", outputItemObjectId)
+                , SET_NOT_IDENTIFIED_OUTPUTITEM).as(ArrangementController.OutputItemResult.class);
+    }
+
+    /**
+     * Zrušení nastavení atributu na "Nezjištěno".
+     *
+     * @param fundVersionId           id archivního souboru
+     * @param outputDefinitionId      identifikátor výstupu
+     * @param outputDefinitionVersion verze výstupu
+     * @param outputItemTypeId        dentfikátor typu hodnoty atributu
+     * @param outputItemSpecId        identfikátor specifikace hodnoty atributu
+     * @param outputItemObjectId      identifikátor existující hodnoty atributu
+     * @return odstraněný atribut
+     */
+    protected ArrangementController.OutputItemResult unsetNotIdentifiedOutputItem(final Integer fundVersionId,
+                                                                                  final Integer outputDefinitionId,
+                                                                                  final Integer outputDefinitionVersion,
+                                                                                  final Integer outputItemTypeId,
+                                                                                  final Integer outputItemSpecId,
+                                                                                  final Integer outputItemObjectId) {
+        return put(spec -> spec.pathParameter("fundVersionId", fundVersionId)
+                        .pathParameter("outputDefinitionId", outputDefinitionId)
+                        .pathParameter("outputDefinitionVersion", outputDefinitionVersion)
+                        .queryParameter("outputItemTypeId", outputItemTypeId)
+                        .queryParameter("outputItemSpecId", outputItemSpecId)
+                        .queryParameter("outputItemObjectId", outputItemObjectId)
+                , UNSET_NOT_IDENTIFIED_OUTPUTITEM).as(ArrangementController.OutputItemResult.class);
+    }
+
+    protected CopyNodesValidateResult copyLevelsValidate(final CopyNodesValidate copyNodesValidate) {
+        return post(spec -> spec.body(copyNodesValidate), COPY_LEVELS_VALIDATE).as(CopyNodesValidateResult.class);
+    }
+
+    protected void copyLevels(final CopyNodesParams copyNodesParams) {
+        post(spec -> spec.body(copyNodesParams), COPY_LEVELS);
     }
 }

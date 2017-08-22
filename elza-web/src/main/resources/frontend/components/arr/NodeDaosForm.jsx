@@ -1,14 +1,14 @@
 /** Dialog zobrazení DAO k JP. */
 import React from "react";
 import {connect} from "react-redux";
-import {Icon, Loading, AbstractReactComponent, i18n, ArrDao} from "components/index.jsx";
+import {Icon, Loading, AbstractReactComponent, i18n, ArrDao} from 'components/shared';
 import {indexById} from "stores/app/utils.jsx";
 import {Modal, Button, Form} from "react-bootstrap";
 import {dateToString} from "components/Utils.jsx";
 import {userDetailsSaveSettings} from "actions/user/userDetail.jsx";
 import {fundChangeReadMode} from "actions/arr/fund.jsx";
 import {setSettings, getOneSettings} from "components/arr/ArrUtils.jsx";
-import {LazyListBox, ListBox} from 'components/index.jsx';
+import {LazyListBox, ListBox} from 'components/shared';
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {WebApi} from 'actions/index.jsx';
 import ArrDaos from "./ArrDaos.jsx";

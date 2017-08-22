@@ -1,18 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {i18n} from 'components/index.jsx';
 import {Modal} from 'react-bootstrap';
 import {setInputFocus} from 'components/Utils.jsx'
 
 /**
  * Obal modálního dialogu
  */
-export default class ModalDialogWrapper extends React.Component {
+class ModalDialogWrapper extends React.Component {
 
-    constructor(props) {
-        super(props);
-        this.hide = false;
-    }
+    hide = false;
 
     componentDidMount() {
         this.setState({}, () => {
@@ -58,3 +54,5 @@ export default class ModalDialogWrapper extends React.Component {
         );
     }
 }
+
+export default ModalDialogWrapper

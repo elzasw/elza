@@ -1,4 +1,4 @@
-@import "~variables.less";
+@import "/variables.less";
 
 @header-height: 64px;
 @header-minimized-height: 12px;
@@ -12,6 +12,9 @@
 // Main layout
 .app-container {
     height:100%;
+    flex:1;
+    display: flex;
+    flex-direction: column;
 
     .app-header {
         //height: @header-height;

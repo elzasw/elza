@@ -6,7 +6,7 @@ require('./FundFilterSettings.less')
 
 import React from 'react';
 import {reduxForm} from 'redux-form';
-import {FilterableListBox, AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
+import {FilterableListBox, AbstractReactComponent, i18n, FormInput} from 'components/shared';
 import DescItemCoordinates from './nodeForm/DescItemCoordinates.jsx'
 import {Modal, Button} from 'react-bootstrap';
 import {WebApi} from 'actions/index.jsx';
@@ -23,8 +23,8 @@ import {getMapFromList} from 'stores/app/utils.jsx'
 import {objectFromWKT, wktFromTypeAndData} from 'components/Utils.jsx';
 import {COL_REFERENCE_MARK} from "./FundDataGridConst";
 import FundNodesSelect from "./FundNodesSelect";
-const FundFilterCondition = require('./FundFilterCondition')
-const SimpleCheckListBox = require('./SimpleCheckListBox')
+import SimpleCheckListBox from "./SimpleCheckListBox";
+import FundFilterCondition from "./FundFilterCondition";
 
 var _ffs_validateTimer
 var _ffs_prevReject = null
@@ -295,13 +295,13 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
 
     renderValueFilter() {
         const {refType, dataType} = this.props
-        const {valueItems, selectedValueItems, selectedValueItemsType} = this.state
+        const {valueItems, selectedValueItems, selectedValueItemsType, conditionSelectedCode} = this.state
 
         if (!hasDescItemTypeValue(dataType)) {
             return null
         }
 
-        if (dataType.code === 'UNITDATE' || dataType.code === 'TEXT' || dataType.code === 'COORDINATES') { // zde je výjimka a nechceme dle hodnoty
+        if (dataType.code === 'UNITDATE' || dataType.code === 'TEXT' || dataType.code === 'COORDINATES' || conditionSelectedCode === 'UNDEFINED') { // zde je výjimka a nechceme dle hodnoty
             return null
         }
 
@@ -339,6 +339,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                     {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
                     {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
                     {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
+                    {values: 0, code: 'UNDEFINED', name: i18n('arr.fund.filterSettings.condition.undefined')},
                     {values: 1, code: 'CONTAIN', name: i18n('arr.fund.filterSettings.condition.string.contain')},
                     {values: 1, code: 'NOT_CONTAIN', name: i18n('arr.fund.filterSettings.condition.string.notContain')},
                     {values: 1, code: 'BEGIN', name: i18n('arr.fund.filterSettings.condition.begin')},
@@ -360,6 +361,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                     {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
                     {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
                     {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
+                    {values: 0, code: 'UNDEFINED', name: i18n('arr.fund.filterSettings.condition.undefined')},
                     {values: 1, code: 'GT', name: i18n('arr.fund.filterSettings.condition.gt')},
                     {values: 1, code: 'GE', name: i18n('arr.fund.filterSettings.condition.ge')},
                     {values: 1, code: 'LT', name: i18n('arr.fund.filterSettings.condition.lt')},
@@ -380,6 +382,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                     {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
                     {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
                     {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
+                    {values: 0, code: 'UNDEFINED', name: i18n('arr.fund.filterSettings.condition.undefined')},
                     {values: 1, code: 'CONTAIN', name: i18n('arr.fund.filterSettings.condition.string.contain')},
                 ]
                 break
@@ -408,6 +411,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                     {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
                     {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
                     {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
+                    {values: 0, code: 'UNDEFINED', name: i18n('arr.fund.filterSettings.condition.undefined')},
                     {values: 2, code: 'EQ', name: i18n('arr.fund.filterSettings.condition.eq')},
                     {values: 2, code: 'LT', name: i18n('arr.fund.filterSettings.condition.unitdate.lt')},
                     {values: 2, code: 'GT', name: i18n('arr.fund.filterSettings.condition.unitdate.gt')},
@@ -424,6 +428,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                     {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
                     {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
                     {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
+                    {values: 0, code: 'UNDEFINED', name: i18n('arr.fund.filterSettings.condition.undefined')},
                     {values: 1, code: 'SUBSET', name: i18n('arr.fund.filterSettings.condition.coordinates.subset')},
                     {values: 2, code: 'NEAR', name: i18n('arr.fund.filterSettings.condition.coordinates.near')},
                 ]
@@ -625,4 +630,4 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
     }
 }
 
-module.exports = FundFilterSettings
+export default FundFilterSettings

@@ -107,6 +107,9 @@ public class RulItemType {
     @Transient
     private String policyTypeCode;
 
+    @Transient
+    private Boolean indefinable;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
@@ -300,6 +303,20 @@ public class RulItemType {
      */
     public void setCalculableState(final Boolean calculableState) {
         this.calculableState = calculableState;
+    }
+
+    /**
+     * @return lze typ atributu nastavit jako nedefinovaný?
+     */
+    public Boolean getIndefinable() {
+        return indefinable;
+    }
+
+    /**
+     * @param indefinable lze typ atributu nastavit jako nedefinovaný?
+     */
+    public void setIndefinable(final Boolean indefinable) {
+        this.indefinable = indefinable;
     }
 
     /**

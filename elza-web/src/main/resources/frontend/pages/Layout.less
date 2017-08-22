@@ -1,8 +1,9 @@
-//@import "~bootstrap/less/bootstrap.less";
-@import "~variables.less";
+//@import "bootstrap/less/bootstrap.less";
+@import "/variables.less";
 
 html, body {
     height:100%;
+    max-height: 100%;
     overflow: hidden;
 }
 
@@ -12,9 +13,13 @@ html, body {
 
 .root-container {
     height:100%;
-    &.with-version{
+
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    /*&.with-version{
         height: calc(~"100% - 15px");
-    }
+    }*/
 }
 .version-container{
     height:15px;

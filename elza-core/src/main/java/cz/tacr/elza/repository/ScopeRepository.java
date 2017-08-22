@@ -4,7 +4,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import cz.tacr.elza.domain.ArrFundVersion;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrFund;
@@ -18,7 +20,7 @@ import cz.tacr.elza.domain.RegScope;
  * @since 27.01.2016
  */
 @Repository
-public interface ScopeRepository extends ElzaJpaRepository<RegScope, Integer> {
+public interface ScopeRepository extends ElzaJpaRepository<RegScope, Integer>, ScopeRepositoryCustom {
 
     /**
      * Najde třídy podle kódů.
@@ -39,6 +41,14 @@ public interface ScopeRepository extends ElzaJpaRepository<RegScope, Integer> {
     @Query("SELECT s.scopeId FROM arr_fund_register_scope fs JOIN fs.scope s WHERE fs.fund = ?1")
     Set<Integer> findIdsByFund(final ArrFund fund);
 
+    /**
+     * Najde kódy tříd pro FA.
+     *
+     * @param fund archivní pomůcka
+     * @return id tříd dané fa
+     */
+    @Query("SELECT s.code FROM arr_fund_register_scope fs JOIN fs.scope s WHERE fs.fund = ?1")
+    Set<String> findCodesByFund(final ArrFund fund);
 
     /**
      * Najde všechny třídy seřazené podle kodu.

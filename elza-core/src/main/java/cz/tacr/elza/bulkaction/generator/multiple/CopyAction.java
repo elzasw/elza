@@ -5,8 +5,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -50,6 +52,9 @@ public class CopyAction extends Action {
      */
     private boolean distinct;
 
+    @Autowired
+    private DescItemFactory descItemFactory;
+
     CopyAction(final Yaml config) {
         super(config);
     }
@@ -77,7 +82,11 @@ public class CopyAction extends Action {
             // pouze hledaný typ
             if (inputItemTypes.contains(item.getItemType())) {
                 ArrItemData itemData = item.getItem();
+                if (itemData == null) {
+                    itemData = descItemFactory.createItemByType(item.getItemType().getDataType());
+                }
                 itemData.setSpec(item.getItemSpec());
+                itemData.setUndefined(item.getUndefined());
 
                 if (distinct) {
                     if (!dataItems.contains(itemData)) {

@@ -6,7 +6,11 @@
 require('./FileListBox.less');
 
 import React from "react";
-import {Icon, Search, ListBox, AbstractReactComponent, i18n} from "components";
+import i18n from "../../i18n";
+import ListBox from "./ListBox";
+import Search from "../search/Search";
+import Icon from "../icon/Icon";
+import AbstractReactComponent from "../../AbstractReactComponent";
 
 
 var __FileListBox_timer = null;
@@ -147,4 +151,4 @@ FileListBox.defaultProps = {
     filterText: ''
 };
 
-module.exports = FileListBox;
+export default FileListBox;

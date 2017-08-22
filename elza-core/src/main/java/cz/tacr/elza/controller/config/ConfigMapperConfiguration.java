@@ -307,11 +307,13 @@ public class ConfigMapperConfiguration {
             public void mapAtoB(final ArrItemCoordinates coordinates,
                                 final ArrItemCoordinatesVO coordinatesVO,
                                 final MappingContext context) {
-                String type = coordinates.getValue().getGeometryType().toUpperCase();
-                if (type.equals("POINT")) {
-                    coordinatesVO.setValue(new WKTWriter().writeFormatted(coordinates.getValue()));
-                } else {
-                    coordinatesVO.setValue(type + "( " + coordinates.getValue().getCoordinates().length + " )");
+                if (coordinates.getValue() != null) {
+                    String type = coordinates.getValue().getGeometryType().toUpperCase();
+                    if (type.equals("POINT")) {
+                        coordinatesVO.setValue(new WKTWriter().writeFormatted(coordinates.getValue()));
+                    } else {
+                        coordinatesVO.setValue(type + "( " + coordinates.getValue().getCoordinates().length + " )");
+                    }
                 }
             }
 
@@ -340,8 +342,10 @@ public class ConfigMapperConfiguration {
                     public void mapAtoB(final ArrItemUnitdate unitdate,
                                         final ArrItemUnitdateVO unitdateVO,
                                         final MappingContext context) {
-                        unitdateVO.setCalendarTypeId(unitdate.getCalendarType().getCalendarTypeId());
-                        unitdateVO.setValue(UnitDateConvertor.convertToString(unitdate));
+                        if (unitdate.getCalendarType() != null) {
+                            unitdateVO.setCalendarTypeId(unitdate.getCalendarType().getCalendarTypeId());
+                            unitdateVO.setValue(UnitDateConvertor.convertToString(unitdate));
+                        }
                     }
 
                     @Override
@@ -361,7 +365,9 @@ public class ConfigMapperConfiguration {
                                         final ArrItemPacketVO descItemPacketVO,
                                         final MappingContext context) {
                         super.mapAtoB(descItemPacketRef, descItemPacketVO, context);
-                        descItemPacketVO.setValue(descItemPacketRef.getPacket().getPacketId());
+                        if (descItemPacketRef.getPacket() != null) {
+                            descItemPacketVO.setValue(descItemPacketRef.getPacket().getPacketId());
+                        }
                     }
 
                     @Override
@@ -369,7 +375,7 @@ public class ConfigMapperConfiguration {
                                         final ArrItemPacketRef descItemPacketRef,
                                         final MappingContext context) {
                         super.mapBtoA(descItemPacketVO, descItemPacketRef, context);
-                        descItemPacketRef.setPacket(packetRepository.findOne(descItemPacketVO.getValue()));
+                        descItemPacketRef.setPacket(descItemPacketVO.getValue() == null ? null : packetRepository.findOne(descItemPacketVO.getValue()));
                     }
                 }).byDefault().register();
         mapperFactory.classMap(ArrItemFileRef.class, ArrItemFileRefVO.class).customize(
@@ -379,7 +385,9 @@ public class ConfigMapperConfiguration {
                                         final ArrItemFileRefVO arrItemFileRefVO,
                                         final MappingContext context) {
                         super.mapAtoB(arrItemFileRef, arrItemFileRefVO, context);
-                        arrItemFileRefVO.setValue(arrItemFileRef.getFile().getFileId());
+                        if (arrItemFileRef.getFile() != null) {
+                            arrItemFileRefVO.setValue(arrItemFileRef.getFile().getFileId());
+                        }
                     }
 
                     @Override
@@ -397,7 +405,7 @@ public class ConfigMapperConfiguration {
                                         final ArrItemPartyRefVO patryRefVO,
                                         final MappingContext context) {
                         super.mapAtoB(partyRef, patryRefVO, context);
-                        patryRefVO.setValue(partyRef.getParty().getPartyId());
+                        patryRefVO.setValue(partyRef.getParty() == null ? null : partyRef.getParty().getPartyId());
                     }
 
                     @Override
@@ -405,7 +413,7 @@ public class ConfigMapperConfiguration {
                                         final ArrItemPartyRef partyRef,
                                         final MappingContext context) {
                         super.mapBtoA(partyRefVO, partyRef, context);
-                        partyRef.setParty(partyRepository.findOne(partyRefVO.getValue()));
+                        partyRef.setParty(partyRefVO.getValue() == null ? null : partyRepository.findOne(partyRefVO.getValue()));
                     }
                 }).byDefault().register();
         mapperFactory.classMap(ArrItemRecordRef.class, ArrItemRecordRefVO.class).customize(
@@ -415,7 +423,7 @@ public class ConfigMapperConfiguration {
                                         final ArrItemRecordRefVO recordRefVO,
                                         final MappingContext context) {
                         super.mapAtoB(recordRef, recordRefVO, context);
-                        recordRefVO.setValue(recordRef.getRecord().getRecordId());
+                        recordRefVO.setValue(recordRef == null || recordRef.getRecord() == null ? null : recordRef.getRecord().getRecordId());
                     }
 
                     @Override
@@ -423,7 +431,7 @@ public class ConfigMapperConfiguration {
                                         final ArrItemRecordRef recordRef,
                                         final MappingContext context) {
                         super.mapBtoA(recordRefVO, recordRef, context);
-                        recordRef.setRecord(recordRepository.findOne(recordRefVO.getValue()));
+                        recordRef.setRecord(recordRefVO.getValue() == null ? null : recordRepository.findOne(recordRefVO.getValue()));
                     }
                 }).byDefault().register();
         mapperFactory.classMap(ArrItemString.class, ArrItemStringVO.class).byDefault().register();
@@ -803,6 +811,7 @@ public class ConfigMapperConfiguration {
                         itemTypeLiteVO.setRep(rulDescItemTypeExt.getRepeatable() ? 1 : 0);
                         itemTypeLiteVO.setCal(rulDescItemTypeExt.getCalculable() ? 1 : 0);
                         itemTypeLiteVO.setCalSt(rulDescItemTypeExt.getCalculableState() ? 1 : 0);
+                        itemTypeLiteVO.setInd(rulDescItemTypeExt.getIndefinable() ? 1 : 0);
                     }
                 })
                 .register();

@@ -23,4 +23,3 @@ export PartySelectPage from 'pages/select/PartySelectPage';
 export SelectPage from 'pages/select/SelectPage';
 
 export PageLayout from 'pages/shared/layout/PageLayout.jsx';
-export Layout from 'pages/Layout.jsx';

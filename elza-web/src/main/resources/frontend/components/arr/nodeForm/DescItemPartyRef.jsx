@@ -1,8 +1,11 @@
+/**
+ * Obal pro PartyField
+ */
 import React from 'react';
 import ReactDOM from 'react-dom';
 
 import {WebApi} from 'actions/index.jsx';
-import {i18n, AbstractReactComponent, PartyField} from 'components/index.jsx';
+import {i18n, AbstractReactComponent} from 'components/shared';
 import {connect} from 'react-redux'
 import {decorateAutocompleteValue} from './DescItemUtils.jsx'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
@@ -12,15 +15,13 @@ import {storeFromArea, objectById} from 'shared/utils'
 import {partyDetailFetchIfNeeded, partyListFilter, partyDetailClear, AREA_PARTY_LIST} from 'actions/party/party.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import classNames from 'classnames'
-import {MODAL_DIALOG_VARIANT} from 'constants'
-import {PartySelectPage} from 'pages'
+import {MODAL_DIALOG_VARIANT} from 'constants.jsx'
 
 
 import './DescItemPartyRef.less'
+import PartyField from "../../party/PartyField";
+import PartySelectPage from "../../../pages/select/PartySelectPage";
 
-/**
- * Obal pro PartyField
- */
 class DescItemPartyRef extends AbstractReactComponent {
 
     static PropTypes = {
@@ -31,7 +32,7 @@ class DescItemPartyRef extends AbstractReactComponent {
     };
 
     focus = () => {
-        this.refs.partyField.refs.wrappedInstance.focus();
+        this.refs.partyField.wrappedInstance.focus();
     };
 
 
@@ -56,9 +57,9 @@ class DescItemPartyRef extends AbstractReactComponent {
 
         if (readMode) {
             if (value) {
-                return <DescItemLabel onClick={onDetail.bind(this, descItem.party.id)} value={value.record.record} />;
+                return <DescItemLabel onClick={onDetail.bind(this, descItem.party.id)} notIdentified={descItem.undefined} value={value.record.record} />;
             } else {
-                return <DescItemLabel value={cal ? i18n("subNodeForm.descItemType.calculable") : ""} cal={cal} />
+                return <DescItemLabel value={cal ? i18n("subNodeForm.descItemType.calculable") : ""} cal={cal} notIdentified={descItem.undefined} />
             }
         }
 
@@ -68,11 +69,12 @@ class DescItemPartyRef extends AbstractReactComponent {
                     ref="partyField"
                     {...otherProps}
                     value={value}
-                    detail={typePrefix != "output" || !cal}
+                    detail={!descItem.undefined && (typePrefix != "output" || !cal)}
                     footerButtons={false}
                     footer={!singleDescItemTypeEdit}
+                    undefined={descItem.undefined}
                     onSelectModule={this.handleSelectModule}
-                    {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, ['autocomplete-party'])}
+                    {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked || descItem.undefined, ['autocomplete-party'])}
                 />
             </ItemTooltipWrapper>
         </div>

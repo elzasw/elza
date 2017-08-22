@@ -431,7 +431,33 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         return query.getResultList();
     }
 
-    private String getRecursivePart() {
+    @Override
+    public List<ArrLevel> findLevelsSubtree(final Integer nodeId, final int skip, final int max, final boolean ignoreRootNodes) {
+        String sql = "WITH " + getRecursivePart() + " treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, path) AS" +
+                " (" +
+                "  (" +
+                "   SELECT t.*, '000001' AS path" +
+                "   FROM arr_level t" +
+                "   WHERE t.node_id = :nodeId AND t.delete_change_id IS NULL" +
+                "  )" +
+                "  UNION ALL" +
+                "  (" +
+                "   SELECT t.*, CONCAT(td.path, '.', RIGHT(CONCAT('000000', t.position), 6)) AS deep" +
+                "   FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent" +
+                "   WHERE t.delete_change_id IS NULL" +
+                "  )" +
+                " )" +
+                " SELECT t.* FROM treeData t JOIN arr_node n ON n.node_id = t.node_id WHERE t.delete_change_id IS NULL " + (ignoreRootNodes ? "AND n.node_id <> :nodeId" : "") + " ORDER BY t.path";
+
+        Query query = entityManager.createNativeQuery(sql, ArrLevel.class);
+        query.setParameter("nodeId", nodeId);
+        query.setFirstResult(skip);
+        query.setMaxResults(max);
+
+        return query.getResultList();
+    }
+
+    public String getRecursivePart() {
 
         final String recursive;
         if (DBUtils.DatabaseType.MSSQL.equals(dbUtils.getDbType())) {

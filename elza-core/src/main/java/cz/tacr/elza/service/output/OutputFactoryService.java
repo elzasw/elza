@@ -392,6 +392,7 @@ public class OutputFactoryService implements NodeLoader {
         }
 
         item.setPosition(arrItem.getPosition());
+        item.setUndefined(arrItem.getUndefined());
 
         return item;
     }

@@ -3,7 +3,7 @@
  */
 
 import {WebApi, UrlFactory} from 'actions/index.jsx';
-import {Toastr, i18n} from 'components/index.jsx';
+import {Toastr, i18n} from 'components/shared';
 import * as types from 'actions/constants/ActionTypes.js';
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
@@ -159,17 +159,6 @@ export function closeFundTab(fund) {
     return {
         type: types.FUND_CLOSE_FUND_TAB,
         fund
-    }
-}
-
-/**
- * Zapnutí/vypnutí rozšířeného zobrazení stromu AS.
- * {boolean} enable zapnout nebo vypnout rozšířené zobrazení?
- */
-export function fundExtendedView(enable) {
-    return {
-        type: types.FUND_EXTENDED_VIEW,
-        enable
     }
 }
 

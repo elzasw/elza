@@ -28,7 +28,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
 
@@ -74,7 +75,9 @@ import cz.tacr.elza.utils.XmlUtils;
  */
 @Ignore
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = ElzaCoreTest.class)
+@SpringBootTest
+@ContextConfiguration(classes = ElzaCoreTest.class)
+//@SpringApplicationConfiguration(classes = ElzaCoreTest.class)
 public class InterpiTest extends AbstractControllerTest {
 
     private String url = "https://195.113.132.114:443/csp/interpi/cust.interpi.ws.soap.cls";

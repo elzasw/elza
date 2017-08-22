@@ -4,9 +4,9 @@ import {EmailSettingsActions, ApplicationActions} from 'actions/index.jsx';
 import {webSocketConnect, webSocketDisconnect} from 'actions/global/webSocket.jsx';
 import * as arrRequestActions from 'actions/arr/arrRequestActions';
 import * as daoActions from 'actions/arr/daoActions';
-import {store} from 'stores/AppStore.jsx';
+import {store} from 'stores/index.jsx';
 import {addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
-import {i18n} from 'components'
+import {i18n} from 'components/shared'
 
 import {
     changeConformityInfo,
@@ -91,6 +91,10 @@ class ws {
         this.receiptSuccessCallbacks = {}; // mapa id receipt na callback funkci
         this.receiptErrorCallbacks = {}; // mapa id receipt na error callback funkci
     }
+
+    static stompDisconnect = stompDisconnect;
+
+    static stompConnect = stompConnect;
 
     send = (url, headers, data, successCallback, errorCallback) => {
         const useHeaders = headers ? headers : {};

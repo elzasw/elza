@@ -97,6 +97,9 @@ public abstract class ArrItem implements NodeCacheSerializable {
     @Column(nullable = false)
     private Integer position;
 
+    @Column(nullable = false)
+    private Boolean undefined;
+
     @Field
     @NumericField
     public Integer getCreateChangeId() {
@@ -262,5 +265,13 @@ public abstract class ArrItem implements NodeCacheSerializable {
 
     public void setItemSpecId(final Integer itemSpecId) {
         this.itemSpecId = itemSpecId;
+    }
+
+    public Boolean getUndefined() {
+        return undefined;
+    }
+
+    public void setUndefined(final Boolean undefined) {
+        this.undefined = undefined;
     }
 }

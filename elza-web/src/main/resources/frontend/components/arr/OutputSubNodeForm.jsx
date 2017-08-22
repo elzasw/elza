@@ -4,20 +4,13 @@ import {
     Icon,
     i18n,
     AbstractReactComponent,
-    NoFocusButton,
-    AddPacketForm,
-    AddPartyForm,
-    AddRegistryForm,
-    AddPartyEventForm,
-    AddPartyGroupForm,
-    AddPartyDynastyForm,
-    AddPartyOtherForm,
-    SubNodeForm
-} from 'components/index.jsx';
+    NoFocusButton
+} from 'components/shared'
 import {connect} from 'react-redux'
 import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
 
 import './NodeSubNodeForm.less';
+import SubNodeForm from "./SubNodeForm";
 
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.

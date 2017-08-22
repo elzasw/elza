@@ -5,7 +5,6 @@ import {fund, fundInitState} from './fund.jsx'
 import nodeSetting from './nodeSetting.jsx'
 import visiblePolicy from './visiblePolicy.jsx'
 import {consolidateState} from 'components/Utils.jsx'
-import {Toastr, i18n} from 'components/index.jsx';
 import {isBulkAction} from 'actions/arr/bulkActions.jsx'
 import {isFundTreeAction} from 'actions/arr/fundTree.jsx'
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
@@ -27,6 +26,7 @@ import {isFundOutput} from 'actions/arr/fundOutput.jsx'
 import {isFundOutputFilesAction} from 'actions/arr/fundOutputFiles.jsx'
 import processAreaStores from "shared/utils/processAreaStores";
  import isCommonArea from "stores/utils/isCommonArea";
+ import globalFundTree from "./globalFundTree";
 
  const initialState = {
     activeIndex: null,
@@ -37,6 +37,7 @@ import processAreaStores from "shared/utils/processAreaStores";
     packets: {},
     visiblePolicy: visiblePolicy(),
     funds: [],
+    globalFundTree: globalFundTree(undefined, {}),
 }
 
 function selectFundTab(state, action) {
@@ -79,7 +80,7 @@ export default function arrRegion(state = initialState, action) {
 
     if (false
         || isBulkAction(action)
-        || isFundTreeAction(action)
+        || (isFundTreeAction(action) && action.area !== types.FUND_TREE_AREA_COPY)
         || nodeFormActions.isSubNodeFormAction(action, "NODE") || nodeFormActions.isSubNodeFormAction(action, "OUTPUT")
         || nodeFormActions.isSubNodeFormCacheAction(action, "NODE") || nodeFormActions.isSubNodeFormCacheAction(action, "OUTPUT")
         || isSubNodeRegisterAction(action)
@@ -102,6 +103,16 @@ export default function arrRegion(state = initialState, action) {
             return processFund(state, action, index)
         } else {
             return state
+        }
+    }
+
+    if (
+        isFundTreeAction(action) &&
+        action.area === types.FUND_TREE_AREA_COPY
+    ) {
+        return {
+            ...state,
+            globalFundTree: globalFundTree(state.globalFundTree, action)
         }
     }
 

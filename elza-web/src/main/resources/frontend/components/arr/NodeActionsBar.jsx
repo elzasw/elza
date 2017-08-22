@@ -13,13 +13,15 @@ import {WebApi} from 'actions/index.jsx';
 import {isFundRootId} from './ArrUtils.jsx';
 import {getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {fundNodeSubNodeFulltextSearch, fundSubNodesNextPage, fundSubNodesPrevPage} from 'actions/arr/node.jsx';
-import {Icon, AbstractReactComponent, i18n, Loading, AddNodeCross, Search, GoToPositionForm} from 'components';
+import {Icon, AbstractReactComponent, i18n, Loading, Search} from 'components/shared';
+import AddNodeCross from './AddNodeCross'
+import GoToPositionForm from './GoToPositionForm'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
-import {fundSelectSubNode} from 'actions/arr/nodes.jsx';
+import {fundSelectSubNode} from 'actions/arr/node.jsx';
 
-require ('./NodeActionsBar.less');
+import './NodeActionsBar.less';
 
-const NodeActionsBar = class NodeActionsBar extends AbstractReactComponent {
+class NodeActionsBar extends AbstractReactComponent {
     constructor(props) {
         super(props);
         this.bindMethods('handleFindPosition', 'handleFindPositionSubmit');
@@ -132,4 +134,4 @@ NodeActionsBar.propTypes = {
       closed: React.PropTypes.any.isRequired,
       selectedSubNodeIndex: React.PropTypes.number.isRequired
 };
-module.exports = connect()(NodeActionsBar);
+export default connect()(NodeActionsBar);

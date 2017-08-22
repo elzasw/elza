@@ -8,7 +8,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, SubNodeForm, FormInput, Utils} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, SubNodeForm, FormInput, Utils} from 'components/shared';
 import {validateInt, normalizeInt} from 'components/validate.jsx';
 import {Shortcuts} from 'react-shortcuts';
 import {PropTypes} from 'prop-types';
@@ -106,4 +106,4 @@ function mapStateToProps(state) {
     }
 }
 
-module.exports = connect(mapStateToProps)(DescItemJsonTableCellForm)
+export default connect(mapStateToProps)(DescItemJsonTableCellForm)

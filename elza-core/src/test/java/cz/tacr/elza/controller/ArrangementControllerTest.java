@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -16,6 +17,10 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.Lists;
+import cz.tacr.elza.controller.vo.CopyNodesParams;
+import cz.tacr.elza.controller.vo.CopyNodesValidate;
+import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
 import cz.tacr.elza.service.vo.ChangesResult;
 import org.apache.commons.csv.CSVRecord;
 import org.junit.Ignore;
@@ -143,13 +148,13 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ChangesResult changesAll = findChanges(fundVersion.getId(), MAX_SIZE, 0, null, null);
         Assert.notNull(changesAll);
         Assert.notNull(changesAll.getChanges());
-        Assert.isTrue(changesAll.getTotalCount().equals(changesAll.getChanges().size()) && changesAll.getChanges().size() == 26);
+        Assert.isTrue(changesAll.getTotalCount().equals(changesAll.getChanges().size()) && changesAll.getChanges().size() == 28);
         Assert.isTrue(!changesAll.getOutdated());
 
         ChangesResult changesByNode = findChanges(fundVersion.getId(), MAX_SIZE, 0, null, nodes.get(0).getId());
         Assert.notNull(changesByNode);
         Assert.notNull(changesByNode.getChanges());
-        Assert.isTrue(changesByNode.getTotalCount().equals(changesByNode.getChanges().size()) && changesByNode.getChanges().size() == 6);
+        Assert.isTrue(changesByNode.getTotalCount().equals(changesByNode.getChanges().size()) && changesByNode.getChanges().size() == 8);
 
         final Integer lastChangeId = changesAll.getChanges().get(0).getChangeId();
         final Integer firstChangeId = changesAll.getChanges().get(changesAll.getChanges().size() - 1).getChangeId();
@@ -161,14 +166,16 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         try {
             logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size() + ", xxxxxxxxxxxxxxxxxxxx");
             Thread.sleep(5000);
+            changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, LocalDateTime.now(), lastChangeId, null);
             logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size() + ", xxxxxxxxxxxxxxxxxxxx");
             Thread.sleep(5000);
+            changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, LocalDateTime.now(), lastChangeId, null);
             logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size() + ", xxxxxxxxxxxxxxxxxxxx");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
-        Assert.isTrue(changesByDate.getTotalCount().equals(changesByDate.getChanges().size()) && changesByDate.getChanges().size() == 26);
+        Assert.isTrue(changesByDate.getTotalCount().equals(changesByDate.getChanges().size()) && changesByDate.getChanges().size() == 28);
         Assert.isTrue(!changesByDate.getOutdated());
 
         // obdoba revertChanges s fail očekáváním
@@ -298,16 +305,33 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         Assert.isTrue(outputFormData.getGroups().size() == 1);
 
         outputItem = deleteOutputItem(itemCreated, fundVersion.getId(), outputItem.getParent().getVersion());
+        ArrOutputDefinitionVO parent = outputItem.getParent();
 
         ArrItemVO itemDeleted = outputItem.getItem();
         Assert.isNull(itemDeleted);
 
         item = new ArrItemStringVO();
         item.setValue("test1");
-        outputItem = createOutputItem(item, fundVersion.getId(), typeVo.getId(), outputDefinition.getId(), outputItem.getParent().getVersion());
+        outputItem = createOutputItem(item, fundVersion.getId(), typeVo.getId(), outputDefinition.getId(), parent.getVersion());
+        parent = outputItem.getParent();
         itemCreated = outputItem.getItem();
 
-        deleteOutputItemsByType(fundVersion.getId(), outputItem.getParent().getId(), outputItem.getParent().getVersion(), typeVo.getId());
+        ArrangementController.OutputItemResult outputItemResult = deleteOutputItemsByType(fundVersion.getId(), parent.getId(), parent.getVersion(), typeVo.getId());
+        parent = outputItemResult.getParent();
+
+        outputItemResult = setNotIdentifiedOutputItem(fundVersion.getId(), parent.getId(), parent.getVersion(), typeVo.getId(), null, null);
+        parent = outputItemResult.getParent();
+        Assert.notNull(outputItemResult, "Návratová struktura nesmí být prázdná");
+        Assert.notNull(outputItemResult.getItem(), "Hodnota atributu nesmí být prázdná");
+        ArrItemTextVO textVO = (ArrItemTextVO) outputItemResult.getItem();
+        Assert.isTrue(textVO.getUndefined(), "Hodnota Nezjištěno musí být true");
+        Assert.notNull(textVO.getDescItemObjectId(), "Identifikátor nesmí být prázdný");
+        Assert.isNull(textVO.getValue(), "Hodnota musí být prázdná");
+
+        outputItemResult = unsetNotIdentifiedOutputItem(fundVersion.getId(), parent.getId(), parent.getVersion(), typeVo.getId(), null, textVO.getDescItemObjectId());
+        parent = outputItemResult.getParent();
+        Assert.notNull(outputItemResult, "Návratová struktura nesmí být prázdná");
+        Assert.isNull(outputItemResult.getItem(), "Hodnota atributu musí být prázdná");
 
         deleteNamedOutput(fundVersion.getId(), output.getId());
 
@@ -415,6 +439,23 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         // odstranění hodnoty
         descItemResult = deleteDescItem(descItemUpdated, fundVersion, rootNode);
         rootNode = descItemResult.getParent();
+
+        // nastavené nemožné hodnoty
+        descItemResult = setNotIdentifiedDescItem(fundVersion.getId(), rootNode.getId(), rootNode.getVersion(), type.getId(), null, null);
+        rootNode = descItemResult.getParent();
+
+        Assert.notNull(descItemResult, "Návratová struktura nesmí být prázdná");
+        Assert.notNull(descItemResult.getItem(), "Hodnota atributu nesmí být prázdná");
+        ArrItemTextVO item = (ArrItemTextVO) descItemResult.getItem();
+        Assert.isTrue(item.getUndefined(), "Hodnota Nezjištěno musí být true");
+        Assert.notNull(item.getDescItemObjectId(), "Identifikátor nesmí být prázdný");
+        Assert.isNull(item.getValue(), "Hodnota musí být prázdná");
+
+        descItemResult = unsetNotIdentifiedDescItem(fundVersion.getId(), rootNode.getId(), rootNode.getVersion(), type.getId(), null, item.getDescItemObjectId());
+        rootNode = descItemResult.getParent();
+
+        Assert.notNull(descItemResult, "Návratová struktura nesmí být prázdná");
+        Assert.isNull(descItemResult.getItem(), "Hodnota atributu musí být prázdná");
 
         // vytvoření další hodnoty
         type = findDescItemTypeByCode("ZP2015_TITLE");
@@ -1043,6 +1084,45 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
 
 
+    }
+
+    @Test
+    @Ignore // TODO po implementaci
+    public void copyLevelsTest() {
+
+        ArrFundVO fundSource = createdFund();
+        ArrFundVersionVO fundVersionSource = getOpenVersion(fundSource);
+        List<ArrNodeVO> nodesSource = createLevels(fundVersionSource);
+
+        ArrFundVO fundTarget = createdFund();
+        ArrFundVersionVO fundVersionTarget = getOpenVersion(fundTarget);
+        List<ArrNodeVO> nodesTarget = createLevels(fundVersionTarget);
+
+        CopyNodesValidate copyNodesValidate = new CopyNodesValidate();
+
+        ArrNodeVO nodeSource = nodesSource.get(0);
+
+        copyNodesValidate.setSourceFundVersionId(fundVersionSource.getId());
+        copyNodesValidate.setSourceNodes(Collections.singleton(nodeSource));
+        copyNodesValidate.setTargetFundVersionId(fundVersionTarget.getId());
+
+        copyNodesValidate.setIgnoreRootNodes(true);
+
+        CopyNodesValidateResult validateResult = copyLevelsValidate(copyNodesValidate);
+        Assert.notNull(validateResult, "Výsledek validace nemůže být prázdný");
+
+        CopyNodesParams copyNodesParams = new CopyNodesParams();
+
+        copyNodesParams.setSourceFundVersionId(fundVersionSource.getId());
+        copyNodesParams.setSourceNodes(Collections.singleton(nodeSource));
+        copyNodesParams.setTargetFundVersionId(fundVersionTarget.getId());
+        copyNodesParams.setTargetStaticNode(nodesTarget.get(0));
+        copyNodesParams.setTargetStaticNodeParent(null);
+        copyNodesParams.setIgnoreRootNodes(true);
+        copyNodesParams.setFilesConflictResolve(null);
+        copyNodesParams.setPacketsConflictResolve(null);
+
+        copyLevels(copyNodesParams);
     }
 
 }

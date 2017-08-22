@@ -1,11 +1,20 @@
-require("./Toastr.less")
+import React from 'react'
+import {createElement} from "react";
+import {Alert} from 'react-bootstrap';
+import {connect} from 'react-redux'
+import {addToastr, removeToastr} from './ToastrActions.jsx'
+
+import './Toastr.less';
+import AbstractReactComponent from "../../AbstractReactComponent";
+import Icon from "../icon/Icon";
+import i18n from "../../i18n";
 
 /**
  *  Toastr.
  *  Pro data využívá ToastrStore.
  *  Pro přidání dat slouží ToastrActions.
  *
- *  Pro inicializaci staci naimportovat: import {Toastr} from 'components/index.jsx';
+ *  Pro inicializaci staci naimportovat: import {Toastr} from 'components/shared';
  *
  *  Volání je pro typ hlášky:
  *  Danger:
@@ -17,25 +26,15 @@ require("./Toastr.less")
  *  Warning:
  *      addToastrWarning('title', 'message,...)
  **/
+class Toastr extends AbstractReactComponent {
 
-import React from 'react'
-import {createElement} from "react";
-import {Icon, i18n, AbstractReactComponent} from 'components/index.jsx';
-import {Alert} from 'react-bootstrap';
-import {connect} from 'react-redux'
-import {addToastr, removeToastr} from './ToastrActions.jsx'
+    static PropTypes = {
+        store: React.PropTypes.object.isRequired
+    };
 
-require('./Toastr.less');
-
-const Toastr = class Toastr extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
-        this.bindMethods('handleDismiss')
-    }
-
-    handleDismiss(index) {
+    handleDismiss = (index) => {
         this.dispatch(removeToastr(index));
-    }
+    };
 
     static getIconStyle(style) {
         switch (style) {
@@ -59,7 +58,7 @@ const Toastr = class Toastr extends AbstractReactComponent {
             let message;
             if (t.extended) {
                 message = <div>
-                    {createElement(t.messageComponent, {...t.messageComponentProps, onClose: () => this.handleDismiss(index)})}
+                    {createElement(t.messageComponent, {key:"message", ...t.messageComponentProps, onClose: () => this.handleDismiss(index)})}
                 </div>
             } else {
                 message = <div>{t.message}</div>;
@@ -87,10 +86,6 @@ const Toastr = class Toastr extends AbstractReactComponent {
             </div>
         )
     }
-};
+}
 
-Toastr.propsTypes = {
-    store: React.PropTypes.object.isRequired
-};
-
-module.exports = connect((state) => ({store: state.toastr}))(Toastr);
+export default connect((state) => ({store: state.toastr}))(Toastr);

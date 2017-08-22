@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
+import cz.tacr.elza.domain.factory.DescItemFactory;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.BeanUtils;
@@ -183,6 +185,9 @@ public class ItemService implements InitializingBean {
     @Autowired
     private RegRecordRepository recordRepository;
 
+    @Autowired
+    private DescItemFactory descItemFactory;
+
     /**
      * Kontrola sloupců v JSON tabulce.
      *
@@ -229,6 +234,9 @@ public class ItemService implements InitializingBean {
     }
 
     public ArrData getDataByItem(final ArrItem item) {
+        if (BooleanUtils.isTrue(item.getUndefined())) {
+            return null;
+        }
         List<ArrData> dataList = dataRepository.findByItem(item);
         if (dataList.size() != 1) {
             throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
@@ -241,6 +249,10 @@ public class ItemService implements InitializingBean {
         itemRepository.save(item);
 
         ArrItemData itemData = item.getItem();
+
+        if (itemData == null || BooleanUtils.isTrue(itemData.getUndefined())) {
+            return item;
+        }
 
         if (itemData instanceof ArrItemJsonTable) {
             checkJsonTableData(((ArrItemJsonTable) itemData).getValue(), item.getItemType().getColumnsDefinition());
@@ -267,7 +279,12 @@ public class ItemService implements InitializingBean {
 
     public <T extends ArrItem> T loadData(final T item) {
         ArrData data = getDataByItem(item);
-        ArrItemData itemData = facade.map(data, ArrItemData.class);
+        ArrItemData itemData;
+        if (data == null) {
+            itemData = descItemFactory.createItemByType(item.getItemType().getDataType());
+        } else {
+            itemData = facade.map(data, ArrItemData.class);
+        }
         item.setItem(itemData);
         return item;
     }
@@ -289,6 +306,11 @@ public class ItemService implements InitializingBean {
                     item.setItem(itemData);
                     break;
                 }
+            }
+        }
+        for (T item : items) {
+            if (item.getItem() == null) {
+                item.setItem(descItemFactory.createItemByType(item.getItemType().getDataType()));
             }
         }
     }
@@ -1117,18 +1139,20 @@ public class ItemService implements InitializingBean {
 
         // prohledávám pouze entity, které mají návazné data
         for (ArrItemData dataItem : dataItems) {
-            if (dataItem instanceof ArrItemPartyRef) {
-                ParParty party = ((ArrItemPartyRef) dataItem).getParty();
-                partyMap.put(party.getPartyId(), (ArrItemPartyRef) dataItem);
-            } else if (dataItem instanceof ArrItemPacketRef) {
-                ArrPacket packet = ((ArrItemPacketRef) dataItem).getPacket();
-                packetMap.put(packet.getPacketId(), (ArrItemPacketRef) dataItem);
-            } else if (dataItem instanceof ArrItemFileRef) {
-                ArrFile file = ((ArrItemFileRef) dataItem).getFile();
-                fileMap.put(file.getFileId(), (ArrItemFileRef) dataItem);
-            } else if (dataItem instanceof ArrItemRecordRef) {
-                RegRecord record = ((ArrItemRecordRef) dataItem).getRecord();
-                recordMap.put(record.getRecordId(), (ArrItemRecordRef) dataItem);
+            if (BooleanUtils.isNotTrue(dataItem.getUndefined())) {
+                if (dataItem instanceof ArrItemPartyRef) {
+                    ParParty party = ((ArrItemPartyRef) dataItem).getParty();
+                    partyMap.put(party.getPartyId(), (ArrItemPartyRef) dataItem);
+                } else if (dataItem instanceof ArrItemPacketRef) {
+                    ArrPacket packet = ((ArrItemPacketRef) dataItem).getPacket();
+                    packetMap.put(packet.getPacketId(), (ArrItemPacketRef) dataItem);
+                } else if (dataItem instanceof ArrItemFileRef) {
+                    ArrFile file = ((ArrItemFileRef) dataItem).getFile();
+                    fileMap.put(file.getFileId(), (ArrItemFileRef) dataItem);
+                } else if (dataItem instanceof ArrItemRecordRef) {
+                    RegRecord record = ((ArrItemRecordRef) dataItem).getRecord();
+                    recordMap.put(record.getRecordId(), (ArrItemRecordRef) dataItem);
+                }
             }
         }
 
@@ -1147,7 +1171,10 @@ public class ItemService implements InitializingBean {
         Set<Integer> fileIds = partyMap.keySet();
         List<ArrFile> fileEntities = fundFileRepository.findAll(fileIds);
         for (ArrFile fileEntity : fileEntities) {
-            fileMap.get(fileEntity.getFileId()).setFile(fileEntity);
+            ArrItemFileRef ref = fileMap.get(fileEntity.getFileId());
+            if (ref != null) {
+                ref.setFile(fileEntity);
+            }
         }
 
         Set<Integer> recordIds = recordMap.keySet();

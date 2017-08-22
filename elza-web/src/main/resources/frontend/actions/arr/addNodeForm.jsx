@@ -6,11 +6,14 @@
  */
 
 import React from 'react';
-import {addNode} from 'actions/arr/node.jsx';
-import {fundSelectSubNode} from 'actions/arr/nodes.jsx';
+import {addNode, fundSelectSubNode} from 'actions/arr/node.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {i18n, AddNodeForm} from 'components/index.jsx';
+import {i18n} from 'components/shared';
+import AddNodeForm from "../../components/arr/nodeForm/AddNodeForm";
+import CopyConflictForm from "../../components/arr/nodeForm/CopyConflictForm";
 
+import {WebApi} from "../WebApi"
+import {globalFundTreeInvalidate} from "./globalFundTree";
 /**
  * Vyvolá dialog pro přidání uzlu. Toto vyvolání dialogu slouží pro volání POUZE z pořádání! Po úspěšném volání je vybrán v pořádání přidaný node.
  * @param {Object} direction počáteční směr vytváření, který má být přednastaven v dialogu
@@ -41,9 +44,23 @@ export function addNodeFormArr(direction, node, selectedSubNodeIndex, versionId)
  */
 export function addNodeForm(direction, node, parentNode, versionId, afterCreateCallback, allowedDirections = ['BEFORE', 'AFTER', 'CHILD', 'ATEND']) {
     return (dispatch) => {
-        const onSubmit = (data) => {
-            dispatch(addNode(data.indexNode, data.parentNode, data.versionId, data.direction, data.descItemCopyTypes, data.scenarioName, afterCreateCallback));
-            dispatch(modalDialogHide());
+        const onSubmit = (data, type, cb) => {
+            switch (type) {
+                case "NEW": {
+                    dispatch(addNode(data.indexNode, data.parentNode, data.versionId, data.direction, data.descItemCopyTypes, data.scenarioName, afterCreateCallback));
+                    dispatch(modalDialogHide());
+                    break;
+                }
+                case "FILE": {
+                    //TODO
+                    console.log("TODO file upload");
+                    break;
+                }
+                case "OTHER": {
+                    dispatch(handleSubmitOther(data, cb));
+                    break;
+                }
+            }
         };
 
         dispatch(modalDialogShow(
@@ -56,7 +73,59 @@ export function addNodeForm(direction, node, parentNode, versionId, afterCreateC
                 versionId={versionId}
                 onSubmit={onSubmit}
                 allowedDirections={allowedDirections}
-            />
+            />,
+            null,
+            dispatch(globalFundTreeInvalidate())
         ));
+
+    }
+}
+
+function handleSubmitOther(data, cb) {
+    return (dispatch) => {
+        WebApi.copyNodesValidate(data.targetFundVersionId, data.sourceFundVersionId, data.sourceNodes, data.ignoreRootNodes, data.selectedDirection)
+            .then(json => {
+                if (json.scopeError === true || json.fileConflict === true || json.packetConflict === true) {
+                    dispatch(modalDialogHide());
+                    dispatch(modalDialogShow(
+                        this,
+                        i18n('arr.fund.addNode.conflict'),
+                        <CopyConflictForm
+                            {...json}
+                            onSubmit={
+                                (filesConflictResolve,
+                                 packetsConflictResolve, cb) => dispatch(handleCopySubmit(data, filesConflictResolve, packetsConflictResolve, cb))
+                            }
+
+                        />
+                    ));
+                } else {
+                    dispatch(handleCopySubmit(data, cb));
+                }
+            }).catch(()=>{
+                cb();
+        });
+    }
+}
+
+function handleCopySubmit(data, filesConflictResolve = null, packetsConflictResolve = null, cb) {
+    return (dispatch) => {
+        WebApi.copyNodes(
+            data.targetFundVersionId,
+            data.targetStaticNode,
+            data.targetStaticNodeParent,
+            data.sourceFundVersionId,
+            data.sourceNodes,
+            data.ignoreRootNodes,
+            data.selectedDirection,
+            filesConflictResolve,
+            packetsConflictResolve
+        ).then((json) => {
+                dispatch(modalDialogHide());
+                dispatch(globalFundTreeInvalidate());
+                cb();
+        }).catch(()=>{
+            cb();
+        })
     }
 }

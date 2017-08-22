@@ -2,7 +2,7 @@ require('./SubNodeRegister.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Icon, i18n, AbstractReactComponent, Loading, NoFocusButton} from 'components/index.jsx';
+import {Icon, i18n, AbstractReactComponent, Loading, NoFocusButton} from 'components/shared';
 import {connect} from 'react-redux'
 
 import {
@@ -21,7 +21,7 @@ import {partyDetailFetchIfNeeded, partyListFilter, partyDetailClear, AREA_PARTY_
 import {storeFromArea, objectById} from 'shared/utils'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import classNames from 'classnames'
-import {MODAL_DIALOG_VARIANT} from 'constants'
+import {MODAL_DIALOG_VARIANT} from 'constants.jsx'
 
 const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
     static PropTypes = {

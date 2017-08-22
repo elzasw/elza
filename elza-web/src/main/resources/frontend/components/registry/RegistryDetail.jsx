@@ -1,3 +1,6 @@
+/**
+ * Komponenta detailu rejstříku
+ */
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
@@ -9,11 +12,9 @@ import {
     Icon,
     CollapsablePanel,
     NoFocusButton,
-    RegistryLabel,
     Loading,
-    RegistryDetailVariantRecords,
-    RegistryDetailCoordinates
-} from 'components/index.jsx';
+    Utils
+} from 'components/shared';
 import {Form, Button} from 'react-bootstrap';
 import {AppActions} from 'stores/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
@@ -22,7 +23,6 @@ import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {partyUpdate} from 'actions/party/party.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 import {registryDetailFetchIfNeeded, registryUpdate} from 'actions/registry/registry.jsx'
-import {Utils, EditRegistryForm} from 'components/index.jsx';
 import {objectById, indexById} from 'stores/app/utils.jsx';
 import {setInputFocus, dateTimeToString} from 'components/Utils.jsx'
 import {Shortcuts} from 'react-shortcuts';
@@ -38,11 +38,11 @@ import {partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './RegistryDetailKeymap.jsx';
 import './RegistryDetail.less';
+import EditRegistryForm from "./EditRegistryForm";
+import RegistryDetailVariantRecords from "./RegistryDetailVariantRecords";
+import RegistryDetailCoordinates from "./RegistryDetailCoordinates";
 
 
-/**
- * Komponenta detailu rejstříku
- */
 class RegistryDetail extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };

@@ -7,6 +7,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import cz.tacr.elza.service.importnodes.vo.Scope;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.hibernate.annotations.Cache;
@@ -27,7 +28,7 @@ import cz.tacr.elza.api.interfaces.IRegScope;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"code"}))
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RegScope implements IRegScope {
+public class RegScope implements IRegScope, Scope {
 
     public static final String SCOPE_ID = "scopeId";
 

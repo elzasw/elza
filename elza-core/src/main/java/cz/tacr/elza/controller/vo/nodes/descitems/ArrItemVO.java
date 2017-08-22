@@ -28,6 +28,11 @@ public abstract class ArrItemVO {
     private Integer position;
 
     /**
+     * nezjištěný (bez hodnoty)
+     */
+    private Boolean undefined;
+
+    /**
      * specifikace atributu
      */
     private Integer descItemSpecId;
@@ -62,5 +67,13 @@ public abstract class ArrItemVO {
 
     public void setDescItemSpecId(final Integer descItemSpecId) {
         this.descItemSpecId = descItemSpecId;
+    }
+
+    public Boolean getUndefined() {
+        return undefined;
+    }
+
+    public void setUndefined(final Boolean undefined) {
+        this.undefined = undefined;
     }
 }

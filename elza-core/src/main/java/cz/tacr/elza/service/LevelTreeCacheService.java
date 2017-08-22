@@ -683,6 +683,16 @@ public class LevelTreeCacheService {
         }
     }
 
+    /**
+     * Invalidace verze AS v cache.
+     *
+     * @param fundVersion verze archivního souboru
+     */
+    synchronized public void invalidateFundVersion(final ArrFundVersion fundVersion) {
+        Assert.notNull(fundVersion, "Verze AS není vyplněna");
+        versionCache.remove(fundVersion.getFundVersionId());
+    }
+
     @Subscribe
     public void onDataUpdate(final EventChangeMessage changeMessage) {
 

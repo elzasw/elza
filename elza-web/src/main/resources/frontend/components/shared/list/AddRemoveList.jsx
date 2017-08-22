@@ -2,19 +2,15 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Button} from 'react-bootstrap'
-import {Icon, AbstractReactComponent, NoFocusButton, i18n, Loading} from 'components/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
-import {dateToString} from 'components/Utils.jsx'
-import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
-import {selectFundTab} from 'actions/arr/fund.jsx'
-import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx'
-import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
-import {routerNavigate} from 'actions/router.jsx'
-import {usersUserDetailFetchIfNeeded} from 'actions/admin/user.jsx'
 
 import './AddRemoveList.less';
+import AbstractReactComponent from "../../AbstractReactComponent";
+import NoFocusButton from "../button/NoFocusButton";
+import Icon from "../icon/Icon";
+import i18n from "../../i18n";
 
-export default class AddRemoveList extends AbstractReactComponent {
+class AddRemoveList extends AbstractReactComponent {
 
     static propTypes = {
         items: React.PropTypes.array.isRequired,
@@ -65,6 +61,9 @@ export default class AddRemoveList extends AbstractReactComponent {
                     </NoFocusButton>
                 </div>}
             </div>
-        )        
+        )
     }
-};
+}
+
+export default AddRemoveList;
+

@@ -1,24 +1,22 @@
 /**
  * Data grid komponent - typu tabulka excel.
  */
-
-require ('./DataGrid.less');
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Resizer} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, Resizer, Utils} from 'components/index.jsx';
 const scrollIntoView = require('dom-scroll-into-view')
 import {propsEquals, getScrollbarWidth} from 'components/Utils.jsx'
 import {Shortcuts} from 'react-shortcuts';
-import {Utils} from 'components/index.jsx';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './DataGridKeymap.jsx';
+
+import './DataGrid.less';
 
 const __emptyColWidth = 8000
 const __minColWidth = 16
 
-var DataGrid = class DataGrid extends AbstractReactComponent {
+class DataGrid extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
     componentWillMount(){
@@ -49,12 +47,51 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
             "focus",
         );
 
-        var state = this.getStateFromProps(props, {})
-        state.columnSizeDragged = false
-        state.selectedRowIndexes = {[state.focus.row]: true}   // označené řádky v aktuálním zobrazení - pouze klientské označení
+        let state = this.getStateFromProps(props, {});
+        state.columnSizeDragged = false;
+        state.selectedRowIndexes = {[state.focus.row]: true} ;  // označené řádky v aktuálním zobrazení - pouze klientské označení
 
         this.state = state
     }
+
+    static defaultProps = {
+        allowRowCheck: true,
+        staticColumns: false,
+    };
+
+    // Definice sloupečku:
+    // Pokud je nastaveno staticColumns, bere se width jako procento
+    /*
+     {
+     title: "nazev sloupce",
+     desc: "popis sloupce",
+     width: 30,              // pokud je staticColumns==false, je šířka sloupce v bodech, pokud je staticColumns==true, je šířka v bodech nebo procentech podle widthPercent
+     widthPercent: true,     // pouze pro staticColumns - určuje, zda width je v bodech nebo procentech
+     resizeable: true,   // je možné sloupečku měnit šířku
+     cellRenderer: func,    // renderer na buňky dat
+     }
+
+     */
+    static PropTypes = {
+        rows: React.PropTypes.array.isRequired,
+        cols: React.PropTypes.array.isRequired, // pole objektů definice sloupčeků, viz výše
+        allowRowCheck: React.PropTypes.bool.isRequired,
+        staticColumns: React.PropTypes.bool.isRequired,
+        disabled: React.PropTypes.bool,
+        focusRow: React.PropTypes.object,
+        focusCol: React.PropTypes.object,
+        selectedIds: React.PropTypes.array,
+        selectedRowIndexes: React.PropTypes.array,
+        onColumnResize: React.PropTypes.func,
+        onChangeFocus: React.PropTypes.func,
+        onChangeRowIndexes: React.PropTypes.func,
+        onSelectedIdsChange: React.PropTypes.func,
+        onContextMenu: React.PropTypes.func,
+        onEdit: React.PropTypes.func,
+        onDelete: React.PropTypes.func,
+        onFocus: React.PropTypes.func,
+        onBlur: React.PropTypes.func,
+    };
 
     componentWillReceiveProps(nextProps) {
         this.setState(this.getStateFromProps(nextProps, this.state),
@@ -600,46 +637,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
 //console.log('ee', new Date().getTime() - t1)
         return ret
     }
-};
-
-DataGrid.defaultProps = {
-    allowRowCheck: true,
-    staticColumns: false,
 }
 
-// Definice sloupečku:
-// Pokud je nastaveno staticColumns, bere se width jako procento
-/*
-{
-    title: "nazev sloupce",
-    desc: "popis sloupce",
-    width: 30,              // pokud je staticColumns==false, je šířka sloupce v bodech, pokud je staticColumns==true, je šířka v bodech nebo procentech podle widthPercent
-    widthPercent: true,     // pouze pro staticColumns - určuje, zda width je v bodech nebo procentech
-    resizeable: true,   // je možné sloupečku měnit šířku
-    cellRenderer: func,    // renderer na buňky dat
-}
 
-*/
-
-DataGrid.propTypes = {
-    rows: React.PropTypes.array.isRequired,
-    cols: React.PropTypes.array.isRequired, // pole objektů definice sloupčeků, viz výše
-    allowRowCheck: React.PropTypes.bool.isRequired,
-    staticColumns: React.PropTypes.bool.isRequired,
-    disabled: React.PropTypes.bool,
-    focusRow: React.PropTypes.object,
-    focusCol: React.PropTypes.object,
-    selectedIds: React.PropTypes.array,
-    selectedRowIndexes: React.PropTypes.array,
-    onColumnResize: React.PropTypes.func,
-    onChangeFocus: React.PropTypes.func,
-    onChangeRowIndexes: React.PropTypes.func,
-    onSelectedIdsChange: React.PropTypes.func,
-    onContextMenu: React.PropTypes.func,
-    onEdit: React.PropTypes.func,
-    onDelete: React.PropTypes.func,
-    onFocus: React.PropTypes.func,
-    onBlur: React.PropTypes.func,
-};
-
-module.exports = connect(null, null, null, { withRef: true })(DataGrid);
+export default connect(null, null, null, { withRef: true })(DataGrid);

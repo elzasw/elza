@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {WebApi} from 'actions/index.jsx';
-import {Icon, i18n, TooltipTrigger, AbstractReactComponent, Autocomplete, ExtImportForm, RegistryListItem} from 'components/index.jsx';
+import {Icon, i18n, TooltipTrigger, AbstractReactComponent, Autocomplete} from 'components/shared';
 import {registryListFilter} from 'actions/registry/registry.jsx'
 
 import {Button} from 'react-bootstrap'
@@ -13,9 +13,11 @@ import classNames from 'classnames';
 import {routerNavigate} from 'actions/router.jsx'
 import {debounce} from 'shared/utils'
 
-import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from 'constants'
+import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from 'constants.jsx'
 
 import './RegistryField.less'
+import RegistryListItem from "./RegistryListItem";
+import ExtImportForm from "../form/ExtImportForm";
 
 const AUTOCOMPLETE_REGISTRY_LIST_SIZE = DEFAULT_LIST_SIZE;
 
@@ -26,6 +28,7 @@ class RegistryField extends AbstractReactComponent {
         footer: false,
         footerButtons: true,
         itemSpecId: null,
+        undefined: false,
         registryParent: null,
         registerTypeId: null,
         roleTypeId: null,
@@ -38,6 +41,7 @@ class RegistryField extends AbstractReactComponent {
         footer: React.PropTypes.bool.isRequired,
         footerButtons: React.PropTypes.bool,
         value: React.PropTypes.object,
+        undefined: React.PropTypes.bool,
         onChange: React.PropTypes.func.isRequired,
         onDetail: React.PropTypes.func,
         onCreate: React.PropTypes.func.isRequired,
@@ -160,7 +164,7 @@ class RegistryField extends AbstractReactComponent {
     };
 
     render() {
-        const {onChange, onBlur, footer, detail, value, className, ...otherProps} = this.props;
+        const {onChange, onBlur, footer, detail, value, className, undefined, ...otherProps} = this.props;
 
         let footerRender = null;
         if (footer) {
@@ -174,6 +178,11 @@ class RegistryField extends AbstractReactComponent {
             // }
         }
 
+        let tmpVal = '';
+        if (undefined) {
+            tmpVal = i18n('subNodeForm.descItemType.notIdentified');
+        }
+
         return <Autocomplete
             ref='autocomplete'
             customFilter
@@ -181,7 +190,7 @@ class RegistryField extends AbstractReactComponent {
             footer={footerRender}
             items={this.state.registryList}
             getItemId={(item) => item ? item.id : null}
-            getItemName={(item) => item && item.record ? item.record : ''}
+            getItemName={(item) => item && item.record ? item.record : tmpVal}
             onSearchChange={this.handleSearchChange}
             renderItem={this.renderRecord}
             actions={[actions]}

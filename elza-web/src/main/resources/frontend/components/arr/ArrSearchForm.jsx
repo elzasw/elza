@@ -1,17 +1,18 @@
 import React from 'react';
 import {connect} from 'react-redux'
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, FundNodesSelectForm, i18n, FormInput, Icon, DatationField} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, FormInput, Icon} from 'components/shared';
+import DatationField from '../party/DatationField'
 import {Modal, Button, FormGroup, Form, Row, Col} from 'react-bootstrap';
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
-import {LazyListBox} from 'components/index.jsx';
+import {LazyListBox} from 'components/shared';
 import {WebApi} from 'actions/index.jsx';
 import {getScrollbarWidth, timeToString, dateToString} from 'components/Utils.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {dateTimeToLocalUTC} from "components/Utils"
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 
-require("./ArrSearchForm.less");
+import "./ArrSearchForm.less";
 
 const TYPE_TEXT = "TEXT";
 const TYPE_UNITDATE = "UNITDATE";
@@ -29,9 +30,6 @@ const CONTAINS = "CONTAINS";
 class ArrSearchForm extends AbstractReactComponent {
     static PropTypes = {};
 
-    constructor(props) {
-        super(props);
-    }
 
     static validate(values, props) {
         const errors = {};

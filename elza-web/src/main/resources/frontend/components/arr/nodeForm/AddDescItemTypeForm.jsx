@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
-import {Autocomplete, AbstractReactComponent, i18n, Icon, FormInput} from 'components/index.jsx';
+import {Autocomplete, AbstractReactComponent, i18n, Icon, FormInput} from 'components/shared';
 import {Modal, Button, Form, ControlLabel, FormGroup} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'

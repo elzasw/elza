@@ -48,6 +48,11 @@ public class DescItem {
      */
     private Integer nodeId;
 
+    /**
+     * Nedefinovaná hodnota atributu?
+     */
+    private boolean undefined;
+
     public DescItem() {
 
     }
@@ -134,6 +139,14 @@ public class DescItem {
 
     public void setNodeId(final Integer nodeId) {
         this.nodeId = nodeId;
+    }
+
+    public boolean isUndefined() {
+        return undefined;
+    }
+
+    public void setUndefined(final boolean undefined) {
+        this.undefined = undefined;
     }
 
     /**

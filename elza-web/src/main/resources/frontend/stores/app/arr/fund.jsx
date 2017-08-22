@@ -88,6 +88,7 @@ function initFundTreeNodes(fundTreeNodes) {
     };
 }
 
+
 function updateFundTree(state, action) {
     switch (action.area) {
         case types.FUND_TREE_AREA_MAIN:

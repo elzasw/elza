@@ -2,36 +2,39 @@
  * Stránka výstupů.
  */
 
-require('./ArrOutputPage.less');
+import classNames from "classnames";
+import './ArrOutputPage.less';
 
 import React from 'react';
-import Utils from "components/Utils.jsx";
+import * as Utils from "components/Utils.jsx";
 import ReactDOM from 'react-dom';
 import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {
-    ListBox,
     Ribbon,
-    Loading,
-    RibbonGroup,
     FundNodesSelectForm,
-    Icon,
     FundNodesList,
-    i18n,
     ArrOutputDetail,
     AddOutputForm,
-    AbstractReactComponent,
-    Tabs,
     FundOutputFiles,
     FundOutputFunctions,
     RunActionForm,
     FormInput,
     ArrFundPanel
 } from 'components/index.jsx';
+import {
+    ListBox,
+    Loading,
+    RibbonGroup,
+    Icon,
+    i18n,
+    Tabs,
+    AbstractReactComponent
+} from 'components/shared';
 import {Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
-import {PageLayout} from 'pages/index.jsx';
+import PageLayout from "../shared/layout/PageLayout";
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {canSetFocus, setFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {
@@ -64,7 +67,6 @@ import ArrParentPage from "./ArrParentPage.jsx";
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './ArrOutputPageKeymap.jsx';
 
-var classNames = require('classnames');
 import {Shortcuts} from 'react-shortcuts';
 
 let _selectedTab = 0
@@ -635,4 +637,4 @@ ArrOutputPage.propTypes = {
     userDetail: React.PropTypes.object.isRequired
 };
 
-module.exports = connect(mapStateToProps)(ArrOutputPage);
+export default connect(mapStateToProps)(ArrOutputPage);

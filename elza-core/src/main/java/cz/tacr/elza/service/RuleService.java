@@ -571,6 +571,7 @@ public class RuleService {
             rulDescItemTypeExt.setRepeatable(true);
             rulDescItemTypeExt.setCalculable(false);
             rulDescItemTypeExt.setCalculableState(false);
+            rulDescItemTypeExt.setIndefinable(false);
             rulDescItemTypeExt.setPolicyTypeCode(policyType.getCode());
 
             List<RulItemSpecExt> itemSpecList = rulDescItemTypeExt.getRulItemSpecList();
@@ -716,6 +717,7 @@ public class RuleService {
         for (RulItemTypeExt rulItemTypeExt : rulDescItemTypeExtList) {
             if (itemTypeMap.get(rulItemTypeExt.getItemTypeId()) != null) {
                 rulItemTypeExt.setCalculable(true);
+                rulItemTypeExt.setIndefinable(false);
                 Boolean state = settingsMap.get(rulItemTypeExt.getItemTypeId());
                 rulItemTypeExt.setCalculableState(state == null ? false : state);
             }

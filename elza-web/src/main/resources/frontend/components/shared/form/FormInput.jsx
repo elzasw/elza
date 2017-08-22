@@ -1,6 +1,6 @@
 import React from 'react';
 import {Radio, FormControl, FormGroup, ControlLabel, HelpBlock} from 'react-bootstrap'
-import {AbstractReactComponent} from 'components/index.jsx'
+import AbstractReactComponent from "../../AbstractReactComponent";
 
 class FormInput extends AbstractReactComponent {
     static defaultProps = {

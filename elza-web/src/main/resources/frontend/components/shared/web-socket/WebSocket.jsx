@@ -1,12 +1,11 @@
 import React from 'react';
-
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Button} from 'react-bootstrap';
-import {AbstractReactComponent, i18n} from 'components/index.jsx';
-import {stompConnect} from "websocket"
 
 import './WebSocket.less';
+import AbstractReactComponent from "../../AbstractReactComponent";
+import i18n from "../../i18n";
 
 class WebSocket extends AbstractReactComponent {
 
@@ -26,7 +25,7 @@ class WebSocket extends AbstractReactComponent {
                 content = <div className="dialog">
                     <div className="title">{i18n('global.websocket.disconnectedOnError.title')}</div>
                     <br/>
-                    <Button onClick={() => { stompConnect() }}>{i18n("global.websocket.disconnectedOnError.action.refresh")}</Button>
+                    <Button onClick={() => { window.ws.stompConnect() }}>{i18n("global.websocket.disconnectedOnError.action.refresh")}</Button>
                 </div>
             } else {
                 content = <div className="dialog">

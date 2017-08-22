@@ -6,8 +6,9 @@
 require ('./LazyListBox.less');
 
 import React from "react";
+import VirtualList from "../virtual-list/VirtualList";
+import AbstractReactComponent from "../../AbstractReactComponent";
 import ReactDOM from 'react-dom';
-import {VirtualList, AbstractReactComponent, i18n} from "components";
 import {indexById} from 'stores/app/utils.jsx'
 var classNames = require('classnames');
 const scrollIntoView = require('dom-scroll-into-view')
@@ -495,4 +496,4 @@ LazyListBox.defaultProps = {
     itemIdAttrName: "id",
 }
 
-module.exports = LazyListBox
+export default LazyListBox

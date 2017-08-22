@@ -4,19 +4,19 @@
 
 import React from 'react';
 import {outputTypesFetchIfNeeded} from "actions/refTables/outputTypes.jsx";
-import Utils, {dateTimeToString} from "components/Utils.jsx";
+import {dateTimeToString} from "components/Utils.jsx";
 import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {
     Loading,
     i18n,
-    OutputSubNodeForm,
-    FundNodesSelectForm,
-    FundNodesList,
-    AbstractReactComponent,
     FormInput,
-    NodeLabel
-} from 'components/index.jsx';
+    AbstractReactComponent,
+    Utils
+} from 'components/shared';
+import FundNodesSelectForm from './FundNodesSelectForm';
+import FundNodesList from './FundNodesList';
+import NodeLabel from './NodeLabel';
 import {fundOutputDetailFetchIfNeeded, fundOutputEdit} from 'actions/arr/fundOutput.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'

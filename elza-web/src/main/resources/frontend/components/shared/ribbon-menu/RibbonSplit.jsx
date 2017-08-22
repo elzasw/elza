@@ -4,15 +4,13 @@
 
 import React from 'react';
 
-import {i18n} from 'components/index.jsx';
-import {ButtonToolbar} from 'react-bootstrap';
 
-require('./RibbonMenu.less');
+import './RibbonMenu.less';
 
 /**
  * Oddělovač skupin komponent v RibbonMenu.
  */
-var RibbonSplit = class RibbonSplit extends React.Component {
+class RibbonSplit extends React.Component {
 
     render() {
         return (
@@ -22,4 +20,4 @@ var RibbonSplit = class RibbonSplit extends React.Component {
     }
 }
 
-module.exports = RibbonSplit;
+export default RibbonSplit;

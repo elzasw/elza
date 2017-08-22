@@ -1,4 +1,4 @@
-import {i18n} from 'components/index.jsx';
+import {i18n} from 'components/shared';
 import {addToastr} from "components/shared/toastr/ToastrActions.jsx";
 
 /**

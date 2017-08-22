@@ -1,7 +1,7 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import {createStore, applyMiddleware, compose} from 'redux'
 import thunkMiddleware from 'redux-thunk'
-import createLogger from 'redux-logger'
+import {createLogger} from 'redux-logger'
 import {lenToBytesStr, roughSizeOfObject} from 'components/Utils.jsx';
 import {splitterResize} from 'actions/global/splitter.jsx';
 
@@ -18,11 +18,11 @@ const _logActionDuration = false;
 const _logCollapsed = true;
 
 // Store a middleware
-const loggerMiddleware = createLogger({
+const loggerMiddleware = __DEV__ ? createLogger({
     collapsed: _logCollapsed,
     duration: _logActionDuration,
     predicate: (getState, action) => (action.type !== types.STORE_STATE_DATA && action.type !== types.GLOBAL_SPLITTER_RESIZE)
-})
+}) : null;
 
 /**
  * Třída pro definici inline formulářů.
@@ -469,7 +469,7 @@ if (typeof __DEVTOOLS__ !== 'undefined' && __DEVTOOLS__) {
 
 
 const initialState = {};
-const store = function configureStore(initialState) {
+export const store = function configureStore(initialState) {
     const state = createStoreWithMiddleware(rootReducer, initialState);
     if (module.hot) {
         // Enable Webpack hot module replacement for reducers
@@ -528,7 +528,7 @@ import splitter from './app/global/splitter.jsx';
 import adminRegion from './app/admin/adminRegion.jsx';
 
 
-const save = function(store) {
+export const save = function(store) {
     const action = {
         type: types.STORE_SAVE
     };
@@ -557,8 +557,3 @@ inlineFormSupport.addForm("permissionsEditForm");
 inlineFormSupport.addForm("partyDetail");
 inlineFormSupport.addForm("requestEditForm");
 
-// ----------------------------------------------------
-export default {
-    store,
-    save
-};

@@ -2,26 +2,22 @@
  * Input prvek pro desc item - typ STRING.
  */
 
-require ('./DescItemText.less')
+require('./DescItemText.less')
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent, i18n} from 'components/index.jsx';
+import {AbstractReactComponent, i18n} from 'components/shared';
 import {connect} from 'react-redux'
 import {decorateValue} from './DescItemUtils.jsx'
 import DescItemLabel from './DescItemLabel.jsx'
 import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
+import TextareaAutosize from 'react-autosize-textarea';
 
-var DescItemText = class DescItemText extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
+class DescItemText extends AbstractReactComponent {
 
-        this.bindMethods('focus')
-    }
-
-    focus() {
-        this.refs.focusEl.focus()
-    }
+    focus = () => {
+        this.textarea.focus()
+    };
 
     render() {
         const {descItem, locked, readMode, cal} = this.props;
@@ -29,18 +25,20 @@ var DescItemText = class DescItemText extends AbstractReactComponent {
 
         if (readMode) {
             return (
-                <DescItemLabel value={value} cal={cal} />
+                <DescItemLabel value={value} cal={cal} notIdentified={descItem.undefined} />
             )
         }
 
-        let cls = [];
-        var textareaProps = {
-            key: "val",
-            disabled: locked,
-            defaultValue: ""
-        }
+        value = descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : value;
 
-        if(cal){
+        let cls = [];
+        let textareaProps = {
+            key: "val",
+            disabled: locked || descItem.undefined,
+            defaultValue: ""
+        };
+
+        if (cal) {
             cls.push("calculable");
 
             textareaProps.key = "calc";
@@ -48,23 +46,23 @@ var DescItemText = class DescItemText extends AbstractReactComponent {
             textareaProps.onBlur = null;
             textareaProps.onFocus = null;
             textareaProps.defaultValue = i18n("subNodeForm.descItemType.calculable");
-            if(value){
+            if (value) {
                 textareaProps.value = value;
             }
         } else {
-            textareaProps.ref = "focusEl";
             textareaProps.onChange = (e) => !cal && this.props.onChange(e.target.value);
             textareaProps.value = value;
         }
 
-
-
         return (
             <div className='desc-item-value'>
                 <ItemTooltipWrapper tooltipTitle="dataType.text.format">
-                    <textarea
+                    <TextareaAutosize
+                        maxRows={12}
+                        rows={3}
                         {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
                         {...textareaProps}
+                        innerRef={ref => this.textarea = ref}
                     />
                 </ItemTooltipWrapper>
             </div>
@@ -72,4 +70,4 @@ var DescItemText = class DescItemText extends AbstractReactComponent {
     }
 }
 
-module.exports = connect(null, null, null, { withRef: true })(DescItemText);
+export default connect(null, null, null, {withRef: true})(DescItemText);

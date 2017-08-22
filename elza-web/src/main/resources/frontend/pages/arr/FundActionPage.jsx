@@ -2,7 +2,7 @@
  * Stránka archivních pomůcek.
  */
 
-require('./FundActionPage.less');
+import './FundActionPage.less';
 
 import ArrParentPage from "./ArrParentPage.jsx";
 
@@ -11,21 +11,22 @@ import ReactDOM from 'react-dom';
 import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {
-    Loading,
-    Icon,
     Ribbon,
-    i18n,
-    AbstractReactComponent,
-    ListBox,
-    RibbonGroup,
     FundNodesSelectForm,
     FundNodesList,
     FormInput,
     ArrFundPanel
 } from 'components/index.jsx';
+import {
+    Loading,
+    Icon,
+    i18n,
+    AbstractReactComponent,
+    ListBox,
+    RibbonGroup
+} from 'components/shared';
 import {Button} from 'react-bootstrap';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {PageLayout} from 'pages/index.jsx';
 import {dateTimeToString} from 'components/Utils.jsx'
 import {
     fundActionFetchDetailIfNeeded,
@@ -42,18 +43,10 @@ import * as perms from 'actions/user/Permission.jsx';
 import {getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {canSetFocus, setFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {Utils} from 'components/index.jsx';
+import {ActionState} from 'constants.jsx'
+import {actionStateTranslation} from "../../actions/arr/fundAction";
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './FundActionPageKeymap.jsx';
-
-const ActionState = {
-    RUNNING: 'RUNNING',
-    WAITING: 'WAITING',
-    PLANNED: 'PLANNED',
-    FINISHED: 'FINISHED',
-    ERROR: 'ERROR',
-    INTERRUPTED: 'INTERRUPTED',
-    OUTDATED: 'OUTDATED'
-};
 
 class FundActionPage extends ArrParentPage {
     static contextTypes = { shortcuts: PropTypes.object };
@@ -317,26 +310,7 @@ class FundActionPage extends ArrParentPage {
         }
     }
 
-    static getStateTranslation(state) {
-        switch (state) {
-            case ActionState.RUNNING:
-                return i18n('arr.fundAction.state.running');
-            case ActionState.WAITING:
-                return i18n('arr.fundAction.state.waiting');
-            case ActionState.FINISHED:
-                return i18n('arr.fundAction.state.finished');
-            case ActionState.ERROR:
-                return i18n('arr.fundAction.state.error');
-            case ActionState.PLANNED:
-                return i18n('arr.fundAction.state.planned');
-            case ActionState.INTERRUPTED:
-                return i18n('arr.fundAction.state.interrupted');
-            case ActionState.OUTDATED:
-                return i18n('arr.fundAction.state.outdated');
-            default:
-                return null;
-        }
-    }
+    static
 
     renderRowItem(item) {
         const icon = FundActionPage.getStateIcon(item.state);
@@ -350,7 +324,7 @@ class FundActionPage extends ArrParentPage {
                     <div>{name}</div>
                     <div>
                         {item.date}
-                        {FundActionPage.getStateTranslation(item.state)}
+                        {actionStateTranslation(item.state)}
                     </div>
                 </div>
 
@@ -453,7 +427,7 @@ class FundActionPage extends ArrParentPage {
                     <div className='detail'>
                         <div>
                             <h1>{config.name}</h1>
-                            <h3>{FundActionPage.getStateIcon(data.state)} {FundActionPage.getStateTranslation(data.state)}
+                            <h3>{FundActionPage.getStateIcon(data.state)} {actionStateTranslation(data.state)}
                                 <small>{date}</small>
                             </h3>
                         </div>

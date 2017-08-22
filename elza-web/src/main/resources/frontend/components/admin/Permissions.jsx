@@ -4,7 +4,7 @@
 
 import React from 'react';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, AddRemoveList, i18n, FormInput} from 'components/index.jsx';
+import {AbstractReactComponent, AddRemoveList, i18n, FormInput} from 'components/shared';
 import {decorateFormField} from 'components/form/FormUtils.jsx'
 import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx'
 import {initForm} from "actions/form/inlineForm.jsx"

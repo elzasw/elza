@@ -1,3 +1,3 @@
-exports.Toastr = require('./Toastr');
-exports.Actions = require('./ToastrActions');
-exports.Store = require('./ToastrStore');
+export {default as Toastr} from './Toastr.jsx';
+export {default as Actions} from './ToastrActions.jsx';
+export {default as Store} from './ToastrStore.jsx';

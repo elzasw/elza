@@ -1,4 +1,4 @@
-import {save} from 'stores/AppStore.jsx'
+import {save} from 'stores'
 import {storeStateData} from './store.jsx'
 
 // Globální proměnná pro možnost vypnutí ukládání stavu do local storage

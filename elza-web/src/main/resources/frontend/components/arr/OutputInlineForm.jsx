@@ -1,6 +1,6 @@
 import React from 'react';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
 import {decorateFormField} from 'components/form/FormUtils.jsx'
 import {outputTypesFetchIfNeeded} from 'actions/refTables/outputTypes.jsx'
 import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx'

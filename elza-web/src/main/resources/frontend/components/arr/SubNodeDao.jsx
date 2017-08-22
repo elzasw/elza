@@ -1,14 +1,15 @@
 require('./SubNodeDao.less');
 
 import React from 'react';
-import {NodeDaosForm, Icon, i18n, AbstractReactComponent, Loading} from 'components/index.jsx';
+import NodeDaosForm from "./NodeDaosForm";
+import {Icon, i18n, AbstractReactComponent, Loading} from 'components/shared';
 import {Button} from "react-bootstrap";
 import {connect} from 'react-redux'
 
 import {routerNavigate} from 'actions/router.jsx'
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 
-const SubNodeDao = class SubNodeDao extends AbstractReactComponent {
+class SubNodeDao extends AbstractReactComponent {
     static PropTypes = {
         daos: React.PropTypes.object.isRequired,
         versionId: React.PropTypes.number.isRequired,

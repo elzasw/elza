@@ -1,15 +1,15 @@
+/**
+ * Formulář přidání nebo uzavření AS.
+ */
 
 import React from 'react';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, Icon, FormInput, VersionValidationState, PartyField} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, Icon, FormInput} from 'components/shared';
 import {Modal, Button, Form} from 'react-bootstrap';
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx'
 import {submitForm} from 'components/form/FormUtils.jsx'
-
-/**
- * Formulář přidání nebo uzavření AS.
- */
+import PartyField from "../party/PartyField";
 
 class AddUserForm extends AbstractReactComponent {
 

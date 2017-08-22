@@ -4,10 +4,10 @@
  **/
 
 import React from 'react';
-import {FilterableListBox, AbstractReactComponent, i18n} from 'components/index.jsx';
+import {FilterableListBox, AbstractReactComponent, i18n} from 'components/shared';
 import {indexById, getSetFromIdsList} from 'stores/app/utils.jsx'
 
-var SimpleCheckListBox = class SimpleCheckListBox extends AbstractReactComponent {
+class SimpleCheckListBox extends AbstractReactComponent {
     constructor(props) {
         super(props)
 
@@ -89,7 +89,7 @@ var SimpleCheckListBox = class SimpleCheckListBox extends AbstractReactComponent
         const {label} = this.props
         const {specItems} = this.state
         const value = this.getValue()
-        
+
         return (
             <FilterableListBox
                 className='filter-content-container'
@@ -101,9 +101,9 @@ var SimpleCheckListBox = class SimpleCheckListBox extends AbstractReactComponent
                 onChange={this.handleSpecItemsChange}
                 onSearch={this.handleSpecSearch}
             />
-        )        
+        )
     }
 }
 
-module.exports = SimpleCheckListBox
+export default SimpleCheckListBox
 

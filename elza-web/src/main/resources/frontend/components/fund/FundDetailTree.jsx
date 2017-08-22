@@ -5,12 +5,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Tabs, FundTreeLazy} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, Tabs} from 'components/shared';
 import * as types from 'actions/constants/ActionTypes.js';
 import {AppActions} from 'stores/index.jsx';
 import {MenuItem} from 'react-bootstrap';
 import {fundTreeFulltextChange, fundTreeFulltextSearch, fundTreeSelectNode, fundTreeFocusNode, fundTreeFetchIfNeeded, fundTreeNodeExpand, fundTreeFulltextNextItem, fundTreeFulltextPrevItem, fundTreeNodeCollapse, fundTreeCollapse} from 'actions/arr/fundTree.jsx'
-import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
+import {fundSelectSubNode} from 'actions/arr/node.jsx';
 import {createFundRoot, getParentNode} from './../arr/ArrUtils.jsx'
 import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu.jsx'
 import {propsEquals} from 'components/Utils.jsx'
@@ -18,8 +18,9 @@ import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
 import {selectFundTab} from 'actions/arr/fund.jsx'
 import {routerNavigate} from 'actions/router.jsx'
+import FundTreeLazy from "../arr/FundTreeLazy";
 
-var FundDetailTree = class FundDetailTree extends AbstractReactComponent {
+class FundDetailTree extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -182,7 +183,7 @@ return true
         const {fund, cutLongLabels} = this.props;
 
         return (
-            <FundTreeLazy 
+            <FundTreeLazy
                 ref='tree'
                 {...this.props}
                 className={this.props.className}
@@ -201,5 +202,5 @@ return true
     }
 }
 
-module.exports = connect()(FundDetailTree);
+export default connect()(FundDetailTree);
 

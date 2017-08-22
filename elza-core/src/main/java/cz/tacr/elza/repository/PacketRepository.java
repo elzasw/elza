@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,6 +24,9 @@ public interface PacketRepository extends JpaRepository<ArrPacket, Integer>, Pac
     ArrPacket findByFundAndStorageNumberAndPacketType(ArrFund fund, String storageNumber, RulPacketType rulPacketType);
 
     List<ArrPacket> findByFund(ArrFund fund);
+
+    @Query("SELECT p FROM arr_packet p WHERE p.fund = :fund AND p.state IN :states")
+    List<ArrPacket> findByFund(@Param("fund") ArrFund fund, @Param("states") Collection<ArrPacket.State> states);
 
     @Query("SELECT p FROM arr_packet p WHERE p.fund = :fund AND upper(p.storageNumber) LIKE CONCAT(upper(:prefix), '%') AND p.state = :state ORDER BY p.storageNumber ASC")
     List<ArrPacket> findPackets(@Param("fund") ArrFund fund, @Param("prefix") String prefix, @Param("state") ArrPacket.State state);

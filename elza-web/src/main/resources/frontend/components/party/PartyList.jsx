@@ -1,7 +1,6 @@
 import React from 'react';
 import {connect} from 'react-redux'
-import {ListBox, AbstractReactComponent, SearchWithGoto, i18n, ArrPanel, Loading, Icon, PartyListItem} from 'components/index.jsx';
-import FormInput from 'components/form/FormInput.jsx';
+import {ListBox, AbstractReactComponent, SearchWithGoto, i18n, ArrPanel, Loading, Icon, FormInput} from 'components/shared';
 import {AppActions} from 'stores/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
 import {partyListFetchIfNeeded, partyListFilter, partyListInvalidate, partyDetailFetchIfNeeded, partyArrReset, PARTY_TYPE_CODES, RELATION_CLASS_CODES, DEFAULT_PARTY_LIST_MAX_SIZE} from 'actions/party/party.jsx'
@@ -9,6 +8,7 @@ import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {WebApi} from 'actions/index.jsx';
 
 import './PartyList.less';
+import PartyListItem from "./PartyListItem";
 
 /**
  * Komponenta list osob

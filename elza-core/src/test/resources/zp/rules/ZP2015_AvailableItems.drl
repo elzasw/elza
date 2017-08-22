@@ -20,6 +20,15 @@ import cz.tacr.elza.domain.RulItemSpec
 // - addWithAllSpec
 // - addWithoutSpec - ?kde je vzit pozdeji?
 
+rule "Atribut ZP2015_TITLE je nemožný"
+salience 100
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ZP2015_TITLE")
+then
+    $itemType.setIndefinable(true);
+end
+
 rule "Atribut ZP2015_LEVEL_TYPE je povinný vždy"
 salience 100
 no-loop

@@ -1,9 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import * as types from 'actions/constants/ActionTypes.js';
-import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
 import {Modal, Button, Form} from 'react-bootstrap';
-import {connect} from 'react-redux'
 import {reduxForm} from 'redux-form';
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 
@@ -11,7 +9,7 @@ const validate = (values, props) => {
     const errors = {};
 
     function isNormalInteger(str) {
-        var n = ~~Number(str);
+        const n = ~~Number(str);
         return String(n) === str && n >= 0;
     }
 
@@ -26,17 +24,8 @@ const validate = (values, props) => {
     return errors;
 }
 
-var GoToPositionForm = class GoToPositionForm extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
-        this.state = {};
-    }
-
-    componentWillReceiveProps(nextProps) {
-    }
-
-    componentDidMount() {
-    }
+class GoToPositionForm extends AbstractReactComponent {
+    state = {}
 
     submitOptions = {finishOnSubmit:true}
 
@@ -60,8 +49,6 @@ var GoToPositionForm = class GoToPositionForm extends AbstractReactComponent {
         )
     }
 }
-
-module.exports = connect()(GoToPositionForm)
 
 export default reduxForm({
     form: 'goToPosition',

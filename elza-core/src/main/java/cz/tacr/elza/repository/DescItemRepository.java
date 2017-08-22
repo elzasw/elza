@@ -1,6 +1,7 @@
 package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -61,6 +62,9 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
      */
     @Query("SELECT i FROM arr_desc_item i WHERE i.node = ?1 AND i.deleteChange IS NULL AND i.itemType IN (?2)")
     List<ArrDescItem> findOpenByNodeAndTypes(ArrNode node, Set<RulItemType> descItemTypes);
+
+    @Query("SELECT i FROM arr_desc_item i WHERE i.undefined = TRUE AND i.nodeId IN (?1) AND i.deleteChange IS NULL AND i.itemType IN (?2) AND (i.createChange < ?3 OR ?3 IS NULL) AND (i.deleteChange > ?3 OR i.deleteChange IS NULL)")
+    List<ArrDescItem> findUndefinedByNodeAndTypesAndChange(Collection<Integer> nodeIds, Collection<RulItemType> descItemTypes, ArrChange change);
 
     /**
      * Vyhledá všechny otevřené (nesmazené) hodnoty atributů podle objectId.
@@ -174,5 +178,15 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 
     @Query("SELECT COUNT(i) FROM arr_desc_item i JOIN i.itemType t WHERE i.itemType = ?1")
     Long getCountByType(RulItemType itemType);
+
+
+    @Query(value = "SELECT i FROM arr_desc_item i "
+            + "left join fetch i.createChange cc "
+            + "left join fetch i.deleteChange dc "
+            + "left join fetch i.itemType it "
+            + "left join fetch i.itemSpec dis "
+            + "WHERE i.node = ?1 and i.deleteChange is null")
+    List<ArrDescItem> findByNodeAndDeleteChangeIsNullFetch(ArrNode node);
+
 
 }

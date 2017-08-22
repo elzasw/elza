@@ -8,20 +8,19 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Nav, NavItem} from 'react-bootstrap';
-import {ResizeStore} from 'stores/index.jsx';
-import {AbstractReactComponent, Utils, Icon, i18n, NoFocusButton} from 'components/index.jsx';
+import {Utils, Icon, i18n, NoFocusButton} from 'components/shared';
 import {Shortcuts} from 'react-shortcuts';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './TabsKeymap.jsx';
 
-require ('./Tabs.less');
+import './Tabs.less';
 
 /**
  *  Obalovací komponenta pro záložky a jejich obsah
  *  @param string className             třída komponenty
  *  $param obj children                 vnitřní části komponenty (přepínací panel, data zobrazovaná pod záložkami)
 **/
-var TabsContainer = class TabsContainer extends React.Component {
+export const Container = class TabsContainer extends React.Component {
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
     componentWillMount(){
@@ -30,18 +29,13 @@ var TabsContainer = class TabsContainer extends React.Component {
     getChildContext() {
         return { shortcuts: this.shortcutManager };
     }
-    constructor(props) {
-        super(props);                   // volaní nadřazeného konstruktoru
 
-        this.handleShortcuts = this.handleShortcuts.bind(this);
-    }
-
-    handleShortcuts(action, e) {
+    handleShortcuts = (action, e) =>  {
         e.stopPropagation()
         e.preventDefault()
 
-        var tabs
-        for (var a=0; a<this.props.children.length; a++) {
+        let tabs
+        for (let a=0; a<this.props.children.length; a++) {
             if (this.props.children[a].type === Tabs) {
                 tabs = this.props.children[a]
                 break
@@ -58,8 +52,8 @@ var TabsContainer = class TabsContainer extends React.Component {
             return
         }
 
-        var index = 0
-        for (var a=0; a<items.length; a++) {
+        let index = 0
+        for (let a=0; a<items.length; a++) {
             if (items[a] === activeItem) {
                 index = a;
             }
@@ -84,7 +78,7 @@ var TabsContainer = class TabsContainer extends React.Component {
     }
 
     render() {                          // metoda pro renderovani obsahu komponenty
-        var cls = "tabs-container";     // třída komponenty
+        let cls = "tabs-container";     // třída komponenty
         if (this.props.className) {
             cls += " " + this.props.className;
         }
@@ -94,25 +88,22 @@ var TabsContainer = class TabsContainer extends React.Component {
             </Shortcuts>
         );
     }
-}
+};
 
 /**
  *  Komponena pro zobrazeni obshu dané záložky
  *  @param string className     třída komponenty
  *  $param obj children         datový obsah komponenty
 **/
-var TabContent = class TabContent extends React.Component {
-    constructor(props) {
-        super(props);                   // volání nadřazeného kontruktoru
-    }
+export const Content = class TabContent extends React.Component {
 
     render() {
-        var cls = "tab-content";        // třída komponenty
+        let cls = "tab-content";        // třída komponenty
         if (this.props.className) {
             cls += " " + this.props.className;
         }
 
-        const key = this.props.key || 'tab-content'
+        const key = this.props.key || 'tab-content';
 
         return (
             <div key={key} className={cls}>
@@ -120,40 +111,34 @@ var TabContent = class TabContent extends React.Component {
             </div>
         );
     }
-}
+};
 
 /**
  *  Komponena pro panelů záložek pro přepínání
  *  @param string className             // třída komponenty
  *  $param obj children                 // vnitřní části komponenty (přepínací panel, data zobrazovaná pod záložkami)
 **/
-var Tabs = class Tabs extends React.Component {
-    constructor(props) {
-        super(props);                                                   // volání nadřazeného kontruktoru
-
-        this.handleTabSelect = this.handleTabSelect.bind(this);         // funkce pro vybrání nové aktivní záložky
-        this.handleTabClose = this.handleTabClose.bind(this);           // funkce pro zavření vybrané záložky
-    }
+export const Tabs = class Tabs extends React.Component {
 
     /**
      *  Zavření vybrané záložky
      *  @ param obj item        objekt záložky
      *  @ param event e         událost kliknutí na ikonu zavření záložky
     **/
-    handleTabClose(item, e) {
+    handleTabClose = (item, e) => {
         this.props.onClose(item);       // zavření záložky
 
         e.preventDefault();             // zastavení původní akce vyvolané událostí
         e.stopPropagation();            // zastavení dalších akcí vázaných na tuto událost
-    }
+    };
 
     /**
      *  Zobrazení obsahu vybrané záložky
      *  @ param int itemID      lokální identidikátor záložky
     **/
-    handleTabSelect(itemKey) {
-        var item = this.props.items.one(i => {
-            var key = typeof i.key !== 'undefined' ? i.key : i.id;
+    handleTabSelect = (itemKey) => {
+        let item = this.props.items.one(i => {
+            let key = typeof i.key !== 'undefined' ? i.key : i.id;
             if (key === itemKey) {
                 return i;
             } else {
@@ -161,21 +146,21 @@ var Tabs = class Tabs extends React.Component {
             }
         });
         this.props.onSelect(item);              // zobrazení vybrané položky
-    }
+    };
 
     /**
      *  Renderovánaí samotné komponenty přepínacích záložek
     **/
     render() {
-        var tabs = this.props.items.map((item, i) => {
-            var closeAction;
-            var closeAction2;
+        let tabs = this.props.items.map((item, i) => {
+            let closeAction;
+            let closeAction2;
             if (this.props.closable) {
                 closeAction = <NoFocusButton title={closeTitle} onClick={this.handleTabClose.bind(this, item)}><Icon glyph="fa-times" /></NoFocusButton>
             }
 
-            var closeTitle = i18n('tabs.action.closeTab');                                          // popisek ikony zavírající záložku
-            var key = typeof item.key !== 'undefined' ? item.key : item.id;
+            let closeTitle = i18n('tabs.action.closeTab');                                          // popisek ikony zavírající záložku
+            let key = typeof item.key !== 'undefined' ? item.key : item.id;
             return <NavItem tabIndex={-1} key={key} ref={"tab"+i} eventKey={key}><span title={item.title || item.name}>{item.title || item.name}</span>
                 <small>{item.desc}</small>
                 {closeAction}{closeAction2}</NavItem>    // vlastni kod založky
@@ -183,7 +168,7 @@ var Tabs = class Tabs extends React.Component {
 
 
         // vrácení html komponenty záložek
-        var activeKey = null;
+        let activeKey = null;
         if (this.props.activeItem) {
             activeKey = typeof this.props.activeItem.key !== 'undefined' ? this.props.activeItem.key : this.props.activeItem.id;
         }
@@ -193,10 +178,4 @@ var Tabs = class Tabs extends React.Component {
                 </Nav>
         )
     }
-}
-
-module.exports = {
-    Container: TabsContainer,
-    Tabs: Tabs,
-    Content: TabContent,
-}
+};

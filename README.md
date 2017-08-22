@@ -77,6 +77,15 @@ mvn exec:exec -Pfrontend-dev
 ```
 Uživatelské rozhranní najdete na adrese http://localhost:8080.
 
+### Sestavení instalátoru aplikace
+* Stáhněte aplikaci Inno Setup z odkazu http://www.jrsoftware.org/download.php/is.exe a nainstalujte (všechny volby ponechte výchozí). Aplikace se nainstaluje do umístění c:\Program Files (x86)\Inno Setup 5\.
+* Připravte si nainstalované lokální JRE (64-bit), na které je nutné se odkázat při spuštění sestavení instalátoru. JRE se v rámci sestavení přidá do instalátoru a bude využíváno pro běh aplikace.
+* V projektu ELZA (v kořenovém adresáři) spusťe soubor ```build_instalator.bat``` nebo ručně pomocí příkazu 
+    ```
+    mvn clean install -Pskiptest,release,build-instalator -Djre.path="c:\Program Files\Java\jre1.8.0_131\"
+    ```
+* Předchozím krokem dojde k sestavení aplikace a vytvoření instalátoru. Výsledný soubor instalátoru se uloží do umístění `elza-install\elza-exe\target\ELZA-<verze aplikace>.exe`
+
 ## Konfigurace a logování
 
 Aplikace je konfigurována pomocí souboru `elza.yaml`. Umístění konfiguračních souborů:

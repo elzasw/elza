@@ -2,8 +2,8 @@
  * Stránka předku archivních pomůcek, např. pro pořádání, přesuny atp. Společným znakem je vybraný aktivní archivní soubor.
  */
 
-require('./ArrPage.less');
-require('./ArrParentPage.less');
+import './ArrPage.less';
+import './ArrParentPage.less';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -11,7 +11,8 @@ import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {FundSettingsForm, Tabs, Icon, Ribbon, i18n, ArrFundPanel} from 'components/index.jsx';
+import {Tabs, Icon, Ribbon, i18n, Utils} from 'components/shared';
+import {ArrFundPanel, FundSettingsForm} from 'components/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
 
 import {
@@ -28,7 +29,6 @@ import {
     FundTreeMain
 } from 'components/index.jsx';
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
-import {PageLayout} from 'pages/index.jsx';
 import {WebApi} from 'actions/index.jsx';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {showRegisterJp, fundsFetchIfNeeded} from 'actions/arr/fund.jsx'
@@ -37,7 +37,6 @@ import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes.jsx'
 import {developerNodeScenariosRequest} from 'actions/global/developer.jsx'
-import {Utils} from 'components/index.jsx';
 import {isFundRootId, getSettings, setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {setFocus} from 'actions/global/focus.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
@@ -53,6 +52,7 @@ import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {selectTab} from 'actions/global/tab.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
+import PageLayout from "../shared/layout/PageLayout";
 import {fundChangeReadMode} from 'actions/arr/fund.jsx'
 import defaultKeymap from './ArrParentPageKeymap.jsx';
 
@@ -225,7 +225,7 @@ export default class ArrParentPage extends AbstractReactComponent {
         }
 
         return (
-            <Shortcuts name='ArrParent' handler={this.handleShortcuts} global stopPropagation={false} alwaysFireHandler>
+            <Shortcuts name='ArrParent' handler={this.handleShortcuts} global className="main-shortcuts2" stopPropagation={false} alwaysFireHandler>
                 <PageLayout
                     splitter={splitter}
                     _className='fa-page'
