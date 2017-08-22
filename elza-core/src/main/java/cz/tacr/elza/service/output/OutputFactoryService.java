@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,12 +45,8 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.ParDynasty;
-import cz.tacr.elza.domain.ParEvent;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyGroup;
-import cz.tacr.elza.domain.ParPerson;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -81,26 +76,18 @@ import cz.tacr.elza.print.item.ItemText;
 import cz.tacr.elza.print.item.ItemType;
 import cz.tacr.elza.print.item.ItemUnitId;
 import cz.tacr.elza.print.item.ItemUnitdate;
-import cz.tacr.elza.print.party.Dynasty;
-import cz.tacr.elza.print.party.Event;
 import cz.tacr.elza.print.party.Institution;
 import cz.tacr.elza.print.party.Party;
 import cz.tacr.elza.print.party.PartyGroup;
-import cz.tacr.elza.print.party.PartyName;
-import cz.tacr.elza.print.party.Person;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.ItemService;
 import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.RegistryService;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
-import cz.tacr.elza.utils.ObjectListIterator;
-import cz.tacr.elza.utils.PartyType;
-import cz.tacr.elza.utils.ProxyUtils;
 
 /**
  * Factory pro vytvoření struktury pro výstupy
@@ -115,17 +102,17 @@ public class OutputFactoryService implements NodeLoader {
     private Map<Integer, Packet> packetMap = new HashMap<>();
 
     private Map<Integer, Node> nodeMap = new HashMap<>();
-    
-    private Map<Integer, ArrCalendarType> calendarTypes = new HashMap<>(); 
-    
+
+    private Map<Integer, ArrCalendarType> calendarTypes = new HashMap<>();
+
     public void reset() {
-        packetMap.clear();        
+        packetMap.clear();
         nodeMap.clear();
     }
 
     @Autowired
     private OutputGeneratorWorkerFactory outputGeneratorFactory;
-    
+
     @Autowired
     private CalendarTypeRepository calendarTypeRepository;
 
@@ -146,7 +133,7 @@ public class OutputFactoryService implements NodeLoader {
 
     @Autowired
     private RegistryService registryService;
-    
+
     @Autowired
     private NodeCacheService nodeCacheService;
 
@@ -230,7 +217,7 @@ public class OutputFactoryService implements NodeLoader {
         final ParParty parParty = arrFundInstitution.getParty();
         final Party party = output.getParty(parParty);
 
-        // Check party type        
+        // Check party type
         if(! (party instanceof PartyGroup)) {
             throw new IllegalStateException("Party for institution is not GROUP_PARTY, partyId = "+parParty.getPartyId());
         }
@@ -426,27 +413,27 @@ public class OutputFactoryService implements NodeLoader {
     }
 
     private AbstractItem getItemUnitRecordRef(final OutputImpl output, final ArrItemRecordRef itemData) {
-    	Record record = output.getRecordFromCache(itemData.getRecordId());
-    	if(record == null) {
-    		RegRecord regRecord = itemData.getRecord();
-    		record = output.getRecord(regRecord);
-    	}
+        Record record = output.getRecordFromCache(itemData.getRecordId());
+        if(record == null) {
+            RegRecord regRecord = itemData.getRecord();
+            record = output.getRecord(regRecord);
+        }
         return new ItemRecordRef(record);
     }
 
     private AbstractItem getItemUnitPartyRef(final OutputImpl output, final ArrItemPartyRef itemData) {
-    	Party party = output.getPartyFromCache(itemData.getPartyId());
-    	if(party==null) {
-    		final ParParty parParty = itemData.getParty();
-    		party = output.getParty(parParty);
-    	}
+        Party party = output.getPartyFromCache(itemData.getPartyId());
+        if(party==null) {
+            final ParParty parParty = itemData.getParty();
+            party = output.getParty(parParty);
+        }
         return new ItemPartyRef(party);
     }
 
-    private AbstractItem getItemUnitPacketRef(final ArrItemPacketRef itemData) {        
+    private AbstractItem getItemUnitPacketRef(final ArrItemPacketRef itemData) {
         Packet packet = packetMap.get(itemData.getPacketId());
         if (packet == null) {
-        	final ArrPacket arrPacket = itemData.getPacket();
+            final ArrPacket arrPacket = itemData.getPacket();
             packet = new Packet();
             RulPacketType packetType = arrPacket.getPacketType();
             if (packetType != null) {
@@ -462,7 +449,7 @@ public class OutputFactoryService implements NodeLoader {
     }
 
     private AbstractItem getItemUnitJsonTable(OutputImpl output, RulItemType rulItemType, final ArrItemJsonTable itemData) {
-    	ItemType itemType = output.getItemType(rulItemType);
+        ItemType itemType = output.getItemType(rulItemType);
         return new ItemJsonTable(itemType.getTableDefinition(), itemData.getValue());
     }
 
@@ -487,12 +474,12 @@ public class OutputFactoryService implements NodeLoader {
     }
 
     private AbstractItem getItemUnitdate(final ArrItemUnitdate itemData) {
-    	// lazy initialization of calendar types
-    	if(calendarTypes.size()==0) {
-    		calendarTypeRepository.findAll().forEach(calendarType -> calendarTypes.put(calendarType.getCalendarTypeId(), calendarType));
-    	}
-    	ArrCalendarType calendarType = calendarTypes.get(itemData.getCalendarTypeId());
-    	UnitDate data = UnitDate.valueOf(itemData, calendarType);
+        // lazy initialization of calendar types
+        if(calendarTypes.size()==0) {
+            calendarTypeRepository.findAll().forEach(calendarType -> calendarTypes.put(calendarType.getCalendarTypeId(), calendarType));
+        }
+        ArrCalendarType calendarType = calendarTypes.get(itemData.getCalendarTypeId());
+        UnitDate data = UnitDate.valueOf(itemData, calendarType);
         return new ItemUnitdate(data);
     }
 
@@ -539,7 +526,7 @@ public class OutputFactoryService implements NodeLoader {
             } else {
                 records = regRecords.stream().map(regRecord -> output.getRecord(regRecord)).collect(Collectors.toList());
             }
-            
+
             // store list
             node.setRecords(records);
         }
@@ -553,17 +540,17 @@ public class OutputFactoryService implements NodeLoader {
      * @param mapNodes mapa uzlů, do kterých ukládáme
      */
     private void fillItems(final OutputImpl output, final Collection<NodeId> nodeIds, final Map<Integer, Node> mapNodes) {
-    	Set<Integer> requestNodeIds = mapNodes.keySet();
-    	// request from cache
-    	Map<Integer, CachedNode> nodeData = nodeCacheService.getNodes(requestNodeIds);
-    	mapNodes.forEach((nodeId, node) -> {
-    		// find node in nodeData
-    		CachedNode cachedNode = nodeData.get(nodeId);
-    		fillNode(output, cachedNode, node);
-    	});
-    	// TODO: use old code to request nodes directly for non active version
-    	/*
-        Map<Integer, List<ArrDescItem>> descItemsByNode = arrangementService.findByNodes();        
+        Set<Integer> requestNodeIds = mapNodes.keySet();
+        // request from cache
+        Map<Integer, CachedNode> nodeData = nodeCacheService.getNodes(requestNodeIds);
+        mapNodes.forEach((nodeId, node) -> {
+            // find node in nodeData
+            CachedNode cachedNode = nodeData.get(nodeId);
+            fillNode(output, cachedNode, node);
+        });
+        // TODO: use old code to request nodes directly for non active version
+        /*
+        Map<Integer, List<ArrDescItem>> descItemsByNode = arrangementService.findByNodes();
 
         List<ArrDescItem> allDescItems = new LinkedList<>();
         for (List<ArrDescItem> items : descItemsByNode.values()) {
@@ -589,64 +576,64 @@ public class OutputFactoryService implements NodeLoader {
                 items = descItems.stream()
                         .map(arrDescItem -> {
                         	Item item = createItem(output, arrDescItem);
-                        	
+
                             if (item instanceof ItemPacketRef) {
                             	if(node!=null) {
                             		item.getValue(Packet.class).addNode(node);
                             	}
                             }
                             return item;
-                        	
+
                         }).collect(Collectors.toList());
                 items.sort((i1,i2) -> (i1.compareToItemViewOrderPosition(i2)));
-            }            
+            }
             node.setItems(items);
         }*/
     }
 
     private void fillNode(OutputImpl output, CachedNode cachedNode, Node node) {
-    	List<ArrDescItem> descItems = cachedNode.getDescItems();
+        List<ArrDescItem> descItems = cachedNode.getDescItems();
         List<Item> items;
         if (descItems == null) {
             items = Collections.<Item>emptyList();
         } else {
             items = descItems.stream()
                     .map(arrDescItem -> {
-                    	Item item = createItem(output, arrDescItem);
-                    	
+                        Item item = createItem(output, arrDescItem);
+
                         if (item instanceof ItemPacketRef) {
-                        	if(node!=null) {
-                        		item.getValue(Packet.class).addNode(node);
-                        	}
+                            if(node!=null) {
+                                item.getValue(Packet.class).addNode(node);
+                            }
                         }
                         return item;
-                    	
+
                     }).collect(Collectors.toList());
             items.sort((i1,i2) -> (i1.compareToItemViewOrderPosition(i2)));
-        }            
-        node.setItems(items);		
-	}
+        }
+        node.setItems(items);
+    }
 
-	/**
+    /**
      * Create description item for ouput
      * @param output
      * @param arrDescItem
      * @return Return item for output
      */
-	private AbstractItem createItem(OutputImpl output, ArrItem arrDescItem) {
-            AbstractItem item = getItemByType(output, arrDescItem);
+    private AbstractItem createItem(OutputImpl output, ArrItem arrDescItem) {
+        AbstractItem item = getItemByType(output, arrDescItem);
 
-            RulItemSpec rulItemSpec = arrDescItem.getItemSpec();
-            if (rulItemSpec != null) {
-            	ItemSpec itemSpec = output.getItemSpec(rulItemSpec);
-                item.setSpecification(itemSpec);
-            }
+        RulItemSpec rulItemSpec = arrDescItem.getItemSpec();
+        if (rulItemSpec != null) {
+            ItemSpec itemSpec = output.getItemSpec(rulItemSpec);
+            item.setSpecification(itemSpec);
+        }
 
-            RulItemType rulItemType = arrDescItem.getItemType();
-            ItemType itemType = output.getItemType(rulItemType);
-            item.setType(itemType);
-            return item;
-	}
+        RulItemType rulItemType = arrDescItem.getItemType();
+        ItemType itemType = output.getItemType(rulItemType);
+        item.setType(itemType);
+        return item;
+    }
 
 
 }

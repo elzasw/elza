@@ -498,7 +498,8 @@ public class DescriptionItemService {
 
             ArrDescItem descItemNew = null;
             try {
-                descItemNew = new ArrDescItem(descItemMove.getItem().getClass());
+                ArrItemData itemData = descItemMove.getItem().getClass().newInstance();
+                descItemNew = new ArrDescItem(itemData);
             } catch (InstantiationException | IllegalAccessException e) {
                 throw new SystemException(e);
             }

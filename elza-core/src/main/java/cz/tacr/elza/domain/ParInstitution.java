@@ -35,6 +35,9 @@ public class ParInstitution {
     @JoinColumn(name = "partyId", nullable = false)
     private ParParty party;
 
+    @Column(name = "partyId", updatable = false, insertable = false)
+    private Integer partyId;
+
     /**
      * @return identifikátor
      */
@@ -89,5 +92,10 @@ public class ParInstitution {
      */
     public void setParty(final ParParty party) {
         this.party = party;
+        this.partyId = party == null ? null : party.getPartyId();
+    }
+
+    public Integer getPartyId() {
+        return partyId;
     }
 }

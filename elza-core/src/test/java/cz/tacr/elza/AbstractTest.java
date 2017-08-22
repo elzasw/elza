@@ -66,7 +66,7 @@ public abstract class AbstractTest {
     @Autowired
     protected PartyRepository partyRepository;
     @Autowired
-    private VariantRecordRepository variantRecordRepository;
+    private RegVariantRecordRepository variantRecordRepository;
     @Autowired
     protected RegCoordinatesRepository regCoordinatesRepository;
     @Autowired

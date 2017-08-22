@@ -1,21 +1,14 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.vo.RelatedNodeDirection;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.utils.DBUtils;
-import cz.tacr.elza.utils.ObjectListIterator;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
@@ -27,15 +20,26 @@ import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
+
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.vo.RelatedNodeDirection;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.utils.DBUtils;
+import cz.tacr.elza.utils.ObjectListIterator;
 
 
 /**
@@ -179,7 +183,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
 
         List<ArrLevel> children = findByParentNode(node, lockChange);
 
-        List<ArrLevel> result = new LinkedList<ArrLevel>();
+        List<ArrLevel> result = new LinkedList<>();
         while (!children.isEmpty()) {
             ArrLevel child = children.remove(0);
             result.add(child);
@@ -215,26 +219,24 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
 
 
     @Override
-    public ArrLevel findNodeInRootTreeByNodeId(final ArrNode node,
-                                               final ArrNode rootNode,
-                                               @Nullable final ArrChange lockChange) {
+    public ArrLevel findNodeInRootTreeByNodeId(final ArrNode node, final ArrNode rootNode, @Nullable final ArrChange lockChange) {
         List<ArrLevel> levelsByNode = findByNode(node, lockChange);
 
         if (levelsByNode.isEmpty()) {
-            throw new ObjectNotFoundException(
-                    "Entita byla změněna nebo odstraněna. Načtěte znovu entitu a opakujte akci.", ArrangementCode.NODE_NOT_FOUND).setId(node.getNodeId());
+            throw new ObjectNotFoundException("Missing level for node", ArrangementCode.NODE_NOT_FOUND).setId(node.getNodeId());
         } else if (levelsByNode.size() == 1) {
             return levelsByNode.iterator().next();
         }
 
+        throw new SystemException("Found multiple levels for one node, nodeId:" + node.getNodeId(), BaseCode.INVALID_STATE);
 
-        for (ArrLevel arrFaLevel : levelsByNode) {
-            if (levelRepository.isLevelInRootTree(arrFaLevel, rootNode, lockChange)) {
-                return arrFaLevel;
-            }
-        }
-
-        return null;
+        /*
+         * TODO: po otestování smazat a odstranit rootNode parametr
+         * for (ArrLevel arrFaLevel : levelsByNode) {
+         *     if (isLevelInRootTree(arrFaLevel, rootNode, lockChange)) { return arrFaLevel; }
+         * }
+         * return null;
+         */
     }
 
 
@@ -373,7 +375,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
 
             query.setParameter("ids", partIds);
 
-            result.addAll((List<Object[]>) query.getResultList());
+            result.addAll(query.getResultList());
         }
 
         return result;
@@ -393,16 +395,16 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
 
         List<LevelInfo> result = new ArrayList<>(ids.size());
 
-        String hql = "SELECT l.node_id, l.position, l.node_id_parent FROM arr_level l WHERE l.level_id IN (:ids)";        
+        String hql = "SELECT l.node_id, l.position, l.node_id_parent FROM arr_level l WHERE l.level_id IN (:ids)";
 
 
-        ObjectListIterator<Integer> iterator = new ObjectListIterator<Integer>(ids);
+        ObjectListIterator<Integer> iterator = new ObjectListIterator<>(ids);
         while (iterator.hasNext()) {
             List<Integer> partIds = iterator.next();
-            
+
             //TODO Change to use projections!
             // Note: Hibernate 5.2.8 requires same number of in parameteres for prepared
-            // native query, thus same query cannot be used multiple times 
+            // native query, thus same query cannot be used multiple times
             Query query = entityManager.createNativeQuery(hql);
             query.setParameter("ids", partIds);
 
@@ -426,7 +428,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         query.setParameter("nodeId", node.getNodeId());
         query.setParameter("date", Timestamp.valueOf(change.getChangeDate()));
 
-        return (List<Integer>) query.getResultList();
+        return query.getResultList();
     }
 
     private String getRecursivePart() {
@@ -450,7 +452,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         query.setParameter("nodeId", node.getNodeId());
         query.setParameter("date", Timestamp.valueOf(change.getChangeDate()));
 
-        return (List<Integer>) query.getResultList();
+        return query.getResultList();
     }
 
 }

@@ -1,8 +1,7 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrBulkActionRun.State;
-import cz.tacr.elza.domain.ArrOutputDefinition;
+import java.util.List;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -10,7 +9,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrBulkActionRun.State;
+import cz.tacr.elza.domain.ArrOutputDefinition;
 
 
 @Repository
@@ -35,10 +36,10 @@ public interface BulkActionRunRepository extends JpaRepository<ArrBulkActionRun,
      */
     @Query(value = "SELECT ba FROM arr_bulk_action_run ba JOIN ba.fundVersion v WHERE v.fundVersionId = :fundVersionId AND ba.state = :state")
     List<ArrBulkActionRun> findByFundVersionIdAndState(@Param(value = "fundVersionId") final Integer fundVersionId,
-                                                                @Param(value = "state") final State state);
+                                                       @Param(value = "state") final State state);
     @Query(value = "SELECT ba FROM arr_bulk_action_run ba JOIN ba.fundVersion v WHERE v.fundVersionId = :fundVersionId AND ba.state = :state")
     List<ArrBulkActionRun> findByFundVersionIdAndState(@Param(value = "fundVersionId") final Integer fundVersionId,
-                                                                @Param(value = "state") final State state, Pageable pageable);
+                                                       @Param(value = "state") final State state, Pageable pageable);
 
     @Query(value = "SELECT ba FROM arr_bulk_action_run ba JOIN ba.fundVersion v WHERE v.fundVersionId = :fundVersionId AND ba.bulkActionCode = :code")
     List<ArrBulkActionRun> findByFundVersionIdAndBulkActionCode(@Param(value = "fundVersionId") final Integer fundVersionId,
@@ -49,7 +50,7 @@ public interface BulkActionRunRepository extends JpaRepository<ArrBulkActionRun,
 
     @Modifying
     @Query("UPDATE arr_bulk_action_run ba SET ba.state = :toState WHERE ba.state = :fromState")
-    void updateFromStateToState(@Param("fromState") final State fromState, @Param("toState") final State toState);
+    int updateFromStateToState(@Param("fromState") final State fromState, @Param("toState") final State toState);
 
     List<ArrBulkActionRun> findByState(@Param(value = "state") final State state);
 

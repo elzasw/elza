@@ -8,6 +8,7 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
@@ -47,15 +48,22 @@ public class ArrDescItem extends ArrItem {
     @Column(name = "nodeId", updatable = false, insertable = false)
     private Integer nodeId;
 
+    @Transient
+    private final Integer fundId;
+    
+    /**
+     * Sets fund id for index when node is only reference (detached hibernate proxy).
+     */
+    public ArrDescItem(Integer fundId) {
+        this.fundId = fundId;
+    }
+    
     public ArrDescItem() {
-
+        this((Integer) null);
     }
-
-    public ArrDescItem(final Class<? extends ArrItemData> clazz) throws IllegalAccessException, InstantiationException {
-        super(clazz);
-    }
-
-    public ArrDescItem(final ArrItemData item) {
+  
+    public ArrDescItem(ArrItemData item) {
+        this((Integer) null);
         this.item = item;
     }
 
@@ -76,6 +84,9 @@ public class ArrDescItem extends ArrItem {
 
     @Override
     public Integer getFundId() {
+        if (fundId != null) {
+            return fundId;
+        }
         return node.getFundId();
     }
 

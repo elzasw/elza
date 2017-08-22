@@ -25,7 +25,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.tacr.elza.api.interfaces.IRegScope;
-import cz.tacr.elza.domain.enumeration.StringLength;
 
 
 /**

@@ -20,9 +20,6 @@ import java.util.Set;
 
 /**
  * Implementation of separate validator object
- * 
- * @author Petr Pytelka
- *
  */
 public class Validator {
 
@@ -66,7 +63,12 @@ public class Validator {
 
             for (ArrDescItem descItem : descItemsOfType) {
 
-                RulItemSpecExt extSpec = specExtMap.get(descItem.getItemSpec().getItemSpecId());
+                RulItemSpec itemSpec = descItem.getItemSpec();
+                if (itemSpec == null) {
+                    throw new IllegalStateException(
+                            "Missing item spec for itemTypeCode:" + type.getCode() + ", descItemId:" + descItem.getItemId());
+                }
+                RulItemSpecExt extSpec = specExtMap.get(itemSpec.getItemSpecId());
                 if (extSpec == null) {
                     continue;
                 } else if (RulItemSpec.Type.IMPOSSIBLE.equals(extSpec.getType())) {
@@ -144,8 +146,6 @@ public class Validator {
 	 * Run the validation
 	 */
 	public void validate() {
-        // Set of required but non existing types
-        Set<RulItemTypeExt> requiredTypes = new HashSet<>(nodeTypes);
         Map<Integer, RulItemTypeExt> extNodeTypes = ElzaTools.createEntityMap(nodeTypes, type ->
                 type.getItemTypeId());
 
@@ -169,7 +169,8 @@ public class Validator {
             itemsInType.add(descItem);
         }
 
-
+        // Set of required but non existing types
+        Set<RulItemTypeExt> requiredTypes = new HashSet<>(nodeTypes);
         for (Integer destItemTypeId : descItemsInTypeMap.keySet()) {
             RulItemTypeExt extType = extNodeTypes.get(destItemTypeId);
             if(extType != null){

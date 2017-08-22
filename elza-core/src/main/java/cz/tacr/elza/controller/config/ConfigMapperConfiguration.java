@@ -7,10 +7,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import cz.tacr.elza.controller.vo.ArrDigitalRepositorySimpleVO;
-import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskSimpleVO;
-import cz.tacr.elza.controller.vo.RegExternalSystemSimpleVO;
-import cz.tacr.elza.packageimport.xml.SettingGridView;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +24,9 @@ import cz.tacr.elza.controller.vo.ArrChangeVO;
 import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
 import cz.tacr.elza.controller.vo.ArrDaoFileVO;
 import cz.tacr.elza.controller.vo.ArrDaoVO;
+import cz.tacr.elza.controller.vo.ArrDigitalRepositorySimpleVO;
 import cz.tacr.elza.controller.vo.ArrDigitalRepositoryVO;
+import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskSimpleVO;
 import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskVO;
 import cz.tacr.elza.controller.vo.ArrFileVO;
 import cz.tacr.elza.controller.vo.ArrFundBaseVO;
@@ -65,6 +63,7 @@ import cz.tacr.elza.controller.vo.ParRelationTypeVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.ParUnitdateVO;
 import cz.tacr.elza.controller.vo.RegCoordinatesVO;
+import cz.tacr.elza.controller.vo.RegExternalSystemSimpleVO;
 import cz.tacr.elza.controller.vo.RegExternalSystemVO;
 import cz.tacr.elza.controller.vo.RegRecordSimple;
 import cz.tacr.elza.controller.vo.RegRecordVO;
@@ -86,7 +85,6 @@ import cz.tacr.elza.controller.vo.UserPermissionInfoVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
-import cz.tacr.elza.controller.vo.XmlImportConfigVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.DescItemSpecLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
@@ -187,6 +185,7 @@ import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
+import cz.tacr.elza.packageimport.xml.SettingGridView;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.FundRepository;
@@ -197,7 +196,6 @@ import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.security.UserPermission;
 import cz.tacr.elza.service.RuleService;
-import cz.tacr.elza.xmlimport.v1.utils.XmlImportConfig;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
@@ -467,8 +465,8 @@ public class ConfigMapperConfiguration {
                     public void mapAtoB(final BulkActionConfig bulkActionConfig,
                                         final BulkActionVO bulkActionVO,
                                         final MappingContext context) {
-                        bulkActionVO.setName((String) bulkActionConfig.getString("name"));
-                        bulkActionVO.setDescription((String) bulkActionConfig.getString("description"));
+                        bulkActionVO.setName(bulkActionConfig.getString("name"));
+                        bulkActionVO.setDescription(bulkActionConfig.getString("description"));
                     }
                 }
         ).byDefault().register();
@@ -965,8 +963,6 @@ public class ConfigMapperConfiguration {
                         }
                     }
                 }).exclude("value").byDefault().register();
-
-        mapperFactory.classMap(XmlImportConfig.class, XmlImportConfigVO.class).byDefault().register();
 
         mapperFactory.classMap(UserDetail.class, UserInfoVO.class)
                 .byDefault()

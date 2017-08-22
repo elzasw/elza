@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.controller.ArrangementController;
+import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataDecimal;
@@ -599,7 +600,7 @@ public class DescItemFactory implements InitializingBean {
                         }
 
                         String codeCalendar = arrItemUnitdate.getCalendarType().getCode();
-                        CalendarConverter.CalendarType calendarType = CalendarConverter.CalendarType.valueOf(codeCalendar);
+                        CalendarType calendarType = CalendarType.valueOf(codeCalendar);
 
                         String value;
 

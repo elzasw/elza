@@ -1,10 +1,13 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
 import java.util.List;
 
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import cz.tacr.elza.domain.RegCoordinates;
+import cz.tacr.elza.domain.RegRecord;
 
 /**
  * Repository pro souřadnice rejstříkových hesel.
@@ -21,4 +24,6 @@ public interface RegCoordinatesRepository extends ElzaJpaRepository<RegCoordinat
     @Query("SELECT cord FROM reg_coordinates cord JOIN cord.regRecord r WHERE r.recordId = ?1 ORDER BY cord.coordinatesId")
     List<RegCoordinates> findByRegRecordId(Integer recordId);
 
+    @Modifying
+    int deleteByRegRecordIn(Collection<RegRecord> records);
 }

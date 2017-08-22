@@ -37,7 +37,6 @@ import cz.tacr.elza.controller.vo.InterpiMappingVO;
 import cz.tacr.elza.controller.vo.InterpiSearchVO;
 import cz.tacr.elza.controller.vo.RecordImportVO;
 import cz.tacr.elza.controller.vo.RegCoordinatesVO;
-import cz.tacr.elza.controller.vo.RegExternalSystemVO;
 import cz.tacr.elza.controller.vo.RegRecordSimple;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
@@ -69,7 +68,7 @@ import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.VariantRecordRepository;
+import cz.tacr.elza.repository.RegVariantRecordRepository;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.PartyService;
 import cz.tacr.elza.service.RegistryService;
@@ -111,7 +110,7 @@ public class RegistryController {
     private ClientFactoryDO factoryDO;
 
     @Autowired
-    private VariantRecordRepository variantRecordRepository;
+    private RegVariantRecordRepository variantRecordRepository;
 
     @Autowired
     private RegCoordinatesRepository regCoordinatesRepository;

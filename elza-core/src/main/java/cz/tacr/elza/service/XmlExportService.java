@@ -90,7 +90,7 @@ import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RelationEntityRepository;
 import cz.tacr.elza.service.vo.XmlExportResult;
 import cz.tacr.elza.utils.ObjectListIterator;
-import cz.tacr.elza.utils.ProxyUtils;
+import cz.tacr.elza.utils.HibernateUtils;
 import cz.tacr.elza.utils.XmlUtils;
 import cz.tacr.elza.xmlexport.v1.XmlExportConfig;
 import cz.tacr.elza.xmlimport.v1.utils.XmlImportUtils;
@@ -418,7 +418,7 @@ public class XmlExportService {
             final Map<AbstractParty, List<String>> partyCreatorsMap) {
         Assert.notNull(parParty);
 
-        ParParty deproxiedParty = ProxyUtils.deproxy(parParty);
+        ParParty deproxiedParty = HibernateUtils.unproxy(parParty);
 
         AbstractParty party;
         if (deproxiedParty instanceof ParDynasty) {

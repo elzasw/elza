@@ -22,7 +22,7 @@ import java.util.function.Function;
  */
 public class ElzaTools {
 
-    /**
+    /** 
      * vytvoří z listu mapu listů zagrupovanou podle zadaného klíče.
      *
      * @param <T> typ zpracovávaného objektu.

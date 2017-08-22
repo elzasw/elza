@@ -17,6 +17,7 @@ import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.interfaces.IArrFund;
 import cz.tacr.elza.api.interfaces.IRegScope;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.PartyRepository;
@@ -92,7 +93,7 @@ public class Authorization {
             }
         }
 
-        throw new AccessDeniedException("Chybějící oprávnění: " + Arrays.toString(declaredAnnotation.permission()), declaredAnnotation.permission());
+        throw createAccessDeniedException(declaredAnnotation.permission());
     }
 
     /**
@@ -143,4 +144,8 @@ public class Authorization {
                 throw new IllegalStateException(type + ":" + value.getClass().getName());
         }
     }
+    
+	public static AccessDeniedException createAccessDeniedException(Permission... deniedPermissions) {
+		return new AccessDeniedException("Chybějící oprávnění: " + Arrays.toString(deniedPermissions), deniedPermissions);
+	}
 }

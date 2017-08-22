@@ -1,6 +1,40 @@
 package cz.tacr.elza.service;
 
+import java.math.BigInteger;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.TemporalType;
+import javax.validation.constraints.NotNull;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+
 import com.google.common.collect.Sets;
+
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.config.ConfigView;
 import cz.tacr.elza.domain.ArrBulkActionRun;
@@ -24,39 +58,6 @@ import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.Change;
 import cz.tacr.elza.service.vo.ChangesResult;
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.TemporalType;
-import javax.validation.constraints.NotNull;
-import java.math.BigInteger;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Servisní třída pro práci s obnovou změn v archivní souboru - "UNDO".
@@ -311,17 +312,12 @@ public class RevertingChangesService {
         Set<Integer> deleteNodeIds = getNodeIdsToDelete();
         nodeIdsChange.removeAll(deleteNodeIds);
 
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-            @Override
-            public void afterCommit() {
-                nodeCacheService.syncNodes(nodeIdsChange);
-            }
-        });
-
         nodeCacheService.deleteNodes(deleteNodeIds);
 
         Query deleteNotUseNodesQuery = createDeleteNotUseNodesQuery();
         deleteNotUseNodesQuery.executeUpdate();
+
+        nodeCacheService.syncNodes(nodeIdsChange);
 
         if (CollectionUtils.isNotEmpty(deleteNodeIds) && openFundVersion != null) {
             eventNotificationService.publishEvent(new EventIdsInVersion(EventType.DELETE_NODES, openFundVersion.getFundVersionId(),
@@ -338,7 +334,7 @@ public class RevertingChangesService {
         }
 
         levelTreeCacheService.invalidateFundVersion(fund);
-        startupService.revalidateNodes();
+        startupService.startNodeValidation();
     }
 
     /**
@@ -569,18 +565,18 @@ public class RevertingChangesService {
 
     private List<String[]> getNodesTables() {
         String[][] configUnionTables = new String[][]{
-                {"arr_level", "node"},
-                {"arr_level", "nodeParent"},
-                {"arr_node_register", "node"},
-                {"arr_node_conformity", "node"},
-                {"arr_fund_version", "rootNode"},
-                {"ui_visible_policy", "node"},
-                {"arr_node_output", "node"},
-                {"arr_bulk_action_node", "node"},
-                {"arr_desc_item", "node"},
-                {"arr_change", "primaryNode"},
-                {"arr_dao_link", "node"},
-                {"arr_digitization_request_node", "node"},
+            {"arr_level", "node"},
+            {"arr_level", "nodeParent"},
+            {"arr_node_register", "node"},
+            {"arr_node_conformity", "node"},
+            {"arr_fund_version", "rootNode"},
+            {"ui_visible_policy", "node"},
+            {"arr_node_output", "node"},
+            {"arr_bulk_action_node", "node"},
+            {"arr_desc_item", "node"},
+            {"arr_change", "primaryNode"},
+            {"arr_dao_link", "node"},
+            {"arr_digitization_request_node", "node"},
         };
 
         return Arrays.asList(configUnionTables);
@@ -589,27 +585,27 @@ public class RevertingChangesService {
     public Query createDeleteNotUseChangesQuery() {
 
         String[][] configUnionTables = new String[][]{
-                {"arr_level", "createChange"},
-                {"arr_level", "deleteChange"},
-                {"arr_item", "createChange"},
-                {"arr_item", "deleteChange"},
-                {"arr_node_register", "createChange"},
-                {"arr_node_register", "deleteChange"},
+            {"arr_level", "createChange"},
+            {"arr_level", "deleteChange"},
+            {"arr_item", "createChange"},
+            {"arr_item", "deleteChange"},
+            {"arr_node_register", "createChange"},
+            {"arr_node_register", "deleteChange"},
 
-                {"arr_fund_version", "createChange"},
-                {"arr_fund_version", "lockChange"},
-                {"arr_bulk_action_run", "change"},
-                {"arr_output", "createChange"},
-                {"arr_output", "lockChange"},
-                {"arr_node_output", "createChange"},
-                {"arr_node_output", "deleteChange"},
-                {"arr_output_result", "change"},
+            {"arr_fund_version", "createChange"},
+            {"arr_fund_version", "lockChange"},
+            {"arr_bulk_action_run", "change"},
+            {"arr_output", "createChange"},
+            {"arr_output", "lockChange"},
+            {"arr_node_output", "createChange"},
+            {"arr_node_output", "deleteChange"},
+            {"arr_output_result", "change"},
 
-                {"arr_dao_link", "createChange"},
-                {"arr_dao_link", "deleteChange"},
+            {"arr_dao_link", "createChange"},
+            {"arr_dao_link", "deleteChange"},
 
-                {"arr_request_queue_item", "createChange"},
-                {"arr_request", "createChange"},
+            {"arr_request_queue_item", "createChange"},
+            {"arr_request", "createChange"},
         };
 
         List<String[]> changeTables = Arrays.asList(configUnionTables);
@@ -674,10 +670,10 @@ public class RevertingChangesService {
                                          @Nullable final ArrNode node,
                                          @NotNull final ArrChange change) {
         String[][] tables = new String[][]{
-                {"arr_level", "node"},
-                {"arr_node_register", "node"},
-                {"arr_dao_link", "node"},
-                {"arr_desc_item", "node"},
+            {"arr_level", "node"},
+            {"arr_node_register", "node"},
+            {"arr_dao_link", "node"},
+            {"arr_desc_item", "node"},
         };
 
         List<String> hqls = new ArrayList<>();
@@ -1030,7 +1026,7 @@ public class RevertingChangesService {
                 "      SELECT delete_change_id, node_id, 1 AS weight FROM arr_dao_link WHERE node_id IN (%2$s)\n" +
                 "      UNION ALL\n" +
                 "      SELECT change_id, null, 0 AS weight FROM arr_bulk_action_run r JOIN arr_fund_version v ON r.fund_version_id = v.fund_version_id WHERE v.fund_id = :fundId AND r.state = '" + ArrBulkActionRun.State.FINISHED + "'\n" +
-//                "    ) chlx ORDER BY change_id DESC\n" +
+                //                "    ) chlx ORDER BY change_id DESC\n" +
                 "    ) chlx \n" +
                 "  ) chlxx GROUP BY change_id \n" +
                 ") chl\n" +

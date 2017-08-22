@@ -124,6 +124,10 @@
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
             <artifactId>hibernate-ehcache</artifactId>
         </dependency>
         <dependency>
@@ -326,16 +330,91 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
-            <!-- Suzap XSD -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
-                <artifactId>jaxb2-maven-plugin</artifactId>
-                <version>2.2</version>
+                <artifactId>build-helper-maven-plugin</artifactId>
                 <executions>
+                    <execution>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.build.directory}/generated-sources/jaxb</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+				<groupId>org.jvnet.jaxb2.maven2</groupId>
+				<artifactId>maven-jaxb2-plugin</artifactId>
+				<version>0.13.1</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<phase>generate-sources</phase>
+						<configuration>
+							<extension>true</extension>
+							<args>
+								<arg>-Xinheritance</arg>
+							</args>
+							<generateDirectory>${project.build.directory}/generated-sources/jaxb</generateDirectory>
+							<schemaDirectory>${project.basedir}/src/main/resources/schema</schemaDirectory>
+							<schemaIncludes>
+								<include>elza-schema-v2.xsd</include>
+							</schemaIncludes>
+							<bindingDirectory>${project.basedir}/src/main/resources/schema</bindingDirectory>
+							<bindingIncludes>
+								<include>elza-schema-v2-bindinds.xml</include>
+							</bindingIncludes>
+							<plugins>
+								<plugin>
+									<groupId>org.jvnet.jaxb2_commons</groupId>
+									<artifactId>jaxb2-basics</artifactId>
+									<version>1.11.1</version>
+								</plugin>
+							</plugins>
+						</configuration>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+					    <groupId>com.sun.xml.bind</groupId>
+					    <artifactId>jaxb-xjc</artifactId>
+					    <version>2.2.7</version>
+					</dependency>
+					<dependency>
+					    <groupId>com.sun.xml.bind</groupId>
+					    <artifactId>jaxb-impl</artifactId>
+					    <version>2.2.7</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+           <!--<plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jaxb2-maven-plugin</artifactId>
+                <version>2.3.1</version>
+                <executions>
+                    <execution>
+                        <id>edx</id>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <extension>true</extension>
+                            <sources>
+                                <source>${project.basedir}/src/main/resources/schema/elza-schema-v2.xsd</source>
+                            </sources>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>hierarchical-structure</id>
                         <phase>compile</phase>
-
                         <configuration>
                             <outputDirectory>${project.basedir}/src/main/resources/xsd/</outputDirectory>
                             <sources>
@@ -355,7 +434,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
 <!--             <plugin> -->
 <!--                 <groupId>org.codehaus.mojo</groupId> -->
 <!--                 <artifactId>jaxb2-maven-plugin</artifactId> -->
