@@ -2,16 +2,12 @@ package cz.tacr.elza.service;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.FileTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apache.commons.io.FileUtils;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +60,7 @@ public class GroovyScriptService {
                                @Value("classpath:/script/groovy/interpiRecord.groovy") Resource interpiRecordListScriptSource,
                                @Value("classpath:/script/groovy/interpiRecordDetail.groovy") Resource interpiRecordDetailScriptSource) {
         try {
-            Path workDir = createGroovyScriptDir(groovyScriptDirPath);
+            File workDir = createGroovyScriptDir(groovyScriptDirPath);
             this.createRecordScriptFile = GroovyScriptFile.create(createRecordScriptSource, workDir);
             this.createDidScriptFile = GroovyScriptFile.create(createDidScriptSource, workDir);
             this.interpiRecordListScriptFile = GroovyScriptFile.create(interpiRecordListScriptSource, workDir);
@@ -128,9 +124,10 @@ public class GroovyScriptService {
         return (ExternalRecordVO) interpiRecordDetailScriptFile.evaluate(input);
     }
 
-    private static Path createGroovyScriptDir(String groovyScriptDirPath) throws IOException {
-        Path dir = Paths.get(groovyScriptDirPath);
-        return Files.createDirectories(dir);
+    private static File createGroovyScriptDir(String groovyScriptDirPath) throws IOException {
+        File workDir = new File(groovyScriptDirPath);
+        workDir.mkdirs();
+        return workDir;
     }
 
     public static class GroovyScriptFile {
@@ -177,26 +174,17 @@ public class GroovyScriptService {
             return loader.parseClass(source, false);
         }
 
-        private static GroovyScriptFile create(Resource resource, Path workDir) throws IOException {
+        private static GroovyScriptFile create(Resource resource, File workDir) throws IOException {
             String fileName = resource.getFilename();
             Assert.hasLength(fileName, "Resource does not have a filename");
-            Path resourcePath = Paths.get(resource.getURI());
-            Path scriptPath = workDir.resolve(fileName);
+            File scriptFile = new File(workDir, fileName);
 
-            boolean copyResource = false;
-            if (Files.exists(scriptPath)) {
-                FileTime rlm = Files.getLastModifiedTime(resourcePath);
-                FileTime slm = Files.getLastModifiedTime(scriptPath);
-                if (rlm.compareTo(slm) > 0) {
-                    copyResource = true;
-                }
-            } else {
-                copyResource = true;
+            long resourceLM = resource.lastModified();
+            if (!scriptFile.exists() || resourceLM > scriptFile.lastModified()) {
+                FileUtils.copyInputStreamToFile(resource.getInputStream(), scriptFile);
+                scriptFile.setLastModified(resourceLM);
             }
-            if (copyResource) {
-                Files.copy(resourcePath, scriptPath, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
-            }
-            return new GroovyScriptFile(scriptPath.toFile());
+            return new GroovyScriptFile(scriptFile);
         }
     }
 }
