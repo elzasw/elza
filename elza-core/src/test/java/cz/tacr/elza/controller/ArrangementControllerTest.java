@@ -1009,15 +1009,15 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         //nalezení hodnot podle změněné hodnoty
         RulItemType type = itemTypeRepository.findOneByCode("ZP2015_TITLE");
         type.setDataType(dataTypeRepository.findByCode("TEXT"));  //kvůli transakci (no session)
-        /*List<ArrData> nodesContainingText = dataRepository.findByNodesContainingText(nodeRepository.findAll(nodeIds),
+        List<ArrDescItem> nodesContainingText = descItemRepository.findByNodesContainingText(nodeRepository.findAll(nodeIds),
                 type, null, "valXYZ");
 
         Assert.isTrue(nodesContainingText.size() == nodeIds.size());
-        for (ArrData arrData : nodesContainingText) {
-            ArrDataText data = (ArrDataText) arrData;
+        for (ArrDescItem descItem : nodesContainingText) {
+            ArrDataText data = (ArrDataText) descItem.getData();
             Assert.isTrue(Pattern.compile("^(\\d+valXYZ\\d+)$").matcher(data.getValue()).matches());
-            //Assert.isTrue(nodeIds.contains(arrData.getItem().getNodeId())); // TODO
-        }*/
+            Assert.isTrue(nodeIds.contains(descItem.getNodeId()));
+        }
 
 
         //test nahrazení všech hodnot na konkrétní hodnotu
@@ -1025,17 +1025,15 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         body.setNodes(new HashSet<>(allNodes));
         placeDataValues(fundVersion.getId(), typeVo.getId(), "nova_value", body);
 
-        // TODO
-        /*List<ArrData> byNodesAndDeleteChangeIsNull = dataRepository
+        List<ArrDescItem> byNodesAndDeleteChangeIsNull = descItemRepository
                 .findByNodesAndDeleteChangeIsNull(nodeRepository.findAll(nodeIds));
         Assert.isTrue(byNodesAndDeleteChangeIsNull.size() >= nodeIds.size());
-        for (ArrData arrData : byNodesAndDeleteChangeIsNull) {
-            if (arrData.getItem().getItemType().getItemTypeId().equals(typeVo.getId())) {
-                ArrDataText text = (ArrDataText) arrData;
+        for (ArrDescItem descItem : byNodesAndDeleteChangeIsNull) {
+            if (descItem.getItemType().getItemTypeId().equals(typeVo.getId())) {
+                ArrDataText text = (ArrDataText) descItem.getData();
                 Assert.isTrue(text.getValue().equals("nova_value"));
             }
-        }*/
-
+        }
 
         //smazání hodnot atributů
         allNodes = clientFactoryVO.createArrNodes(nodeRepository.findAll(nodeIds));
