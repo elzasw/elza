@@ -23,7 +23,7 @@ public class DaoRepositoryImpl implements DaoRepositoryCustom {
 
     @Override
     public List<ArrDao> findByFundAndNodePaginating(ArrFundVersion fundVersion, @Nullable ArrNode node, Integer index, Integer maxResults) {
-        Assert.notNull(fundVersion);
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
 
         String hql = "SELECT d FROM arr_dao d "
                 + "join d.daoPackage p "
@@ -55,8 +55,8 @@ public class DaoRepositoryImpl implements DaoRepositoryCustom {
 
     @Override
     public List<ArrDao> findByFundAndPackagePaginating(ArrFundVersion fundVersion, ArrDaoPackage daoPackage, Integer index, Integer maxResults, boolean unassigned) {
-        Assert.notNull(fundVersion);
-        Assert.notNull(daoPackage);
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Assert.notNull(daoPackage, "DAO obal musí být vyplněn");
         String hql = "SELECT d FROM arr_dao d "
                 + "  join d.daoPackage p "
                 + "  join p.fund f "

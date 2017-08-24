@@ -6,6 +6,7 @@ package cz.tacr.elza.domain;
  * @author Martin Šlapa
  * @since 15.9.15
  */
+@Deprecated
 public class ArrItemEnum extends ArrItemData {
 
     @Override

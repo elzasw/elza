@@ -250,7 +250,7 @@ public class RegistryService {
     @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL, UsrPermission.Permission.REG_SCOPE_WR})
     public RegRecord saveRecord(@AuthParam(type = AuthParam.Type.SCOPE) final RegRecord record,
                                 final boolean partySave) {
-        Assert.notNull(record);
+        Assert.notNull(record, "Rejstříkové heslo musí být vyplněno");
 
         checkRecordSave(record, partySave);
 
@@ -300,8 +300,8 @@ public class RegistryService {
     }
 
     private void hierarchicalUpdateRegisterType(final RegRecord record, final RegRegisterType type) {
-        Assert.notNull(record);
-        Assert.notNull(type);
+        Assert.notNull(record, "Rejstříkové heslo musí být vyplněno");
+        Assert.notNull(type, "Typ musí být vyplněn");
 
         record.setRegisterType(type);
 
@@ -350,7 +350,7 @@ public class RegistryService {
      * @param partySave true - jedná se o ukládání přes ukládání osoby, false -> editace z klienta
      */
     private void checkRecordSave(final RegRecord record, final boolean partySave) {
-        Assert.notNull(record);
+        Assert.notNull(record, "Rejstříkové heslo musí být vyplněno");
 
         Assert.notNull(record.getRecord(), "Není vyplněné Record.");
 
@@ -454,7 +454,7 @@ public class RegistryService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL, UsrPermission.Permission.REG_SCOPE_WR})
     public RegVariantRecord saveVariantRecord(@AuthParam(type = AuthParam.Type.SCOPE) final RegVariantRecord variantRecord) {
-        Assert.notNull(variantRecord);
+        Assert.notNull(variantRecord, "Heslo musí být vyplněno");
 
         RegRecord regRecord = variantRecord.getRegRecord();
         Assert.notNull(regRecord, "RegRecord musí být vyplněno.");
@@ -472,7 +472,7 @@ public class RegistryService {
     }
 
     public Map<RegRecord, List<RegRecord>> findChildren(final List<RegRecord> records) {
-        Assert.notNull(records);
+        Assert.notNull(records, "Musí být vyplněny hesla");
 
         if (CollectionUtils.isEmpty(records)) {
             return Collections.EMPTY_MAP;
@@ -500,7 +500,7 @@ public class RegistryService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL})
     public RegScope saveScope(final RegScope scope) {
-        Assert.notNull(scope);
+        Assert.notNull(scope, "Scope musí být vyplněn");
         checkScopeSave(scope);
 
         if (scope.getScopeId() == null) {
@@ -519,8 +519,8 @@ public class RegistryService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL})
     public void deleteScope(final RegScope scope) {
-        Assert.notNull(scope);
-        Assert.notNull(scope.getScopeId());
+        Assert.notNull(scope, "Scope musí být vyplněn");
+        Assert.notNull(scope.getScopeId(), "Identifikátor scope musí být vyplněn");
 
         List<RegRecord> scopeRecords = regRecordRepository.findByScope(scope);
         ExceptionUtils.isEmptyElseBusiness(scopeRecords, "Nelze smazat třídu rejstříku, která je nastavena na rejstříku.", RegistryCode.USING_SCOPE_CANT_DELETE);
@@ -535,7 +535,7 @@ public class RegistryService {
      * @param scope ukládaná třída
      */
     private void checkScopeSave(final RegScope scope) {
-        Assert.notNull(scope);
+        Assert.notNull(scope, "Scope musí být vyplněn");
         Assert.notNull(scope.getCode(), "Třída musí mít vyplněný kod");
         Assert.notNull(scope.getName(), "Třída musí mít vyplněný název");
 
@@ -578,8 +578,8 @@ public class RegistryService {
      */
     public List<ArrNodeRegister> findRegisterLinks(final Integer fundVersionId,
                                                    final Integer nodeId) {
-        Assert.notNull(fundVersionId);
-        Assert.notNull(nodeId);
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
 
         ArrNode node = nodeRepository.findOne(nodeId);
 
@@ -622,8 +622,8 @@ public class RegistryService {
     public ArrNodeRegister createRegisterLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer versionId,
                                               final Integer nodeId,
                                               final ArrNodeRegister nodeRegister) {
-        Assert.notNull(nodeRegister);
-        Assert.isNull(nodeRegister.getNodeRegisterId());
+        Assert.notNull(nodeRegister, "Rejstříkové heslo musí být vyplněno");
+        Assert.isNull(nodeRegister.getNodeRegisterId(), "Identifikátor hesla musí být vyplěn");
 
         ArrNode node = nodeRepository.findOne(nodeId);
 
@@ -656,8 +656,8 @@ public class RegistryService {
     public ArrNodeRegister updateRegisterLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer versionId,
                                               final Integer nodeId,
                                               final ArrNodeRegister nodeRegister) {
-        Assert.notNull(nodeRegister);
-        Assert.notNull(nodeRegister.getNodeRegisterId());
+        Assert.notNull(nodeRegister, "Rejstříkové heslo musí být vyplněno");
+        Assert.notNull(nodeRegister.getNodeRegisterId(), "Identifikátor musí být vyplněn");
 
         ArrNodeRegister nodeRegisterDB = nodeRegisterRepository.findOne(nodeRegister.getNodeRegisterId());
 
@@ -698,8 +698,8 @@ public class RegistryService {
     public ArrNodeRegister deleteRegisterLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer versionId,
                                               final Integer nodeId,
                                               final ArrNodeRegister nodeRegister) {
-        Assert.notNull(nodeRegister);
-        Assert.notNull(nodeRegister.getNodeRegisterId());
+        Assert.notNull(nodeRegister, "Rejstříkové heslo musí být vyplněno");
+        Assert.notNull(nodeRegister.getNodeRegisterId(), "Identifikátor musí být vyplněn");
 
         ArrNodeRegister nodeRegisterDB = nodeRegisterRepository.findOne(nodeRegister.getNodeRegisterId());
 
@@ -778,7 +778,7 @@ public class RegistryService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL, UsrPermission.Permission.REG_SCOPE_WR})
     public RegCoordinates saveRegCoordinates(@AuthParam(type = AuthParam.Type.SCOPE) final RegCoordinates coordinates) {
-        Assert.notNull(coordinates);
+        Assert.notNull(coordinates, "Musí být vyplněné koordináty");
 
         RegRecord regRecord = coordinates.getRegRecord();
         Assert.notNull(regRecord, "RegRecord musí být vyplněno.");
@@ -803,10 +803,10 @@ public class RegistryService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL})
     public List<RegCoordinates> saveRegCoordinates(final List<RegCoordinates> coordinatesList) {
-        Assert.notEmpty(coordinatesList);
+        Assert.notEmpty(coordinatesList, "Musí být vyplněn alespoň jeden koordinát");
         List<Integer> notifiedIds = new ArrayList<>();
         for (RegCoordinates cord : coordinatesList) {
-            Assert.notNull(cord);
+            Assert.notNull(cord, "Koodrinát musí být nenulový");
             Assert.notNull(cord.getRegRecord(), "RegRecord musí být vyplněno.");
             Integer recordId = cord.getRegRecord().getRecordId();
             Assert.notNull(recordId, "RegRecord nemá vyplněno ID.");
@@ -822,7 +822,7 @@ public class RegistryService {
 
     @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_RD_ALL, UsrPermission.Permission.REG_SCOPE_RD})
     public RegRecord getRecord(@AuthParam(type = AuthParam.Type.REGISTRY) final Integer recordId) {
-        Assert.notNull(recordId);
+        Assert.notNull(recordId, "Identifikátor rejstříkového hesla musí být vyplněn");
         return regRecordRepository.findOne(recordId);
     }
 

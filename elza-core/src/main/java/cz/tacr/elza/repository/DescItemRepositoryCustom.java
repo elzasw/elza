@@ -9,7 +9,9 @@ import javax.annotation.Nullable;
 
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 
 
@@ -43,6 +45,16 @@ public interface DescItemRepositoryCustom {
      * @return mapa - klíč identifikátor jed. popisu, hodnota - seznam hodnot atributu
      */
     Map<Integer, List<ArrDescItem>> findByNodes(Collection<Integer> nodeIds);
+
+    List<ArrDescItem> findDescItemsByNodeIds(Set<Integer> nodeIds, Set<RulItemType> itemTypes, ArrFundVersion version);
+
+    List<ArrDescItem> findDescItemsByNodeIds(Set<Integer> nodeIds, Set<RulItemType> itemTypes, Integer changeId);
+
+    List<ArrDescItem> findByNodesContainingText(Collection<ArrNode> nodes,
+                                                RulItemType itemType,
+                                                Set<RulItemSpec> specifications,
+                                                String text);
+
 
     /**
      * Objekt popisku uzlu.

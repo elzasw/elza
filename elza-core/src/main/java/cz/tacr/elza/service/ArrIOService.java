@@ -17,6 +17,9 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.ParserConfigurationException;
 
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataJsonTable;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
@@ -138,7 +141,7 @@ public class ArrIOService {
                 OutputStreamWriter out = new OutputStreamWriter(os, CSV_EXCEL_ENCODING);
                 CSVPrinter csvp = CSV_EXCEL_FORMAT.withHeader(columNames.toArray(new String[columNames.size()])).print(out);
         ) {
-            ElzaTable table = ((ArrItemJsonTable) item.getItem()).getValue();
+            ElzaTable table = ((ArrDataJsonTable) item.getData()).getValue();
 
             for (ElzaRow elzaRow : table.getRows()) {
                 Map<String, String> values = elzaRow.getValues();
@@ -216,19 +219,18 @@ public class ArrIOService {
         // Vytvoření instance nové položky
         RulItemType descItemType = itemTypeRepository.getOneCheckExist(descItemTypeId);
 
-        ArrItemJsonTable jsonTable = (ArrItemJsonTable) descItemFactory.createItemByType(dataTypeRepository.findByCode("JSON_TABLE"));
+        ArrDataJsonTable jsonTable = new ArrDataJsonTable();
 
         T item;
         try {
             item = clazz.newInstance();
-            item.setItem(jsonTable);
+            item.setData(jsonTable);
         } catch (IllegalAccessException | InstantiationException e) {
             throw new SystemException(e);
         }
 
         item.setItemType(descItemType);
         ElzaTable table = new ElzaTable();
-        ((ArrItemJsonTable) item.getItem()).setValue(table);
 
         // Načtení CSV a naplnění tabulky
         Iterable<CSVRecord> records = CSV_EXCEL_FORMAT.withFirstRecordAsHeader().parse(in);
@@ -239,6 +241,8 @@ public class ArrIOService {
             }
             table.addRow(row);
         }
+
+        jsonTable.setValue(table);
 
         // kontrola datových typů tabulky
         itemService.checkJsonTableData(table, descItemType.getColumnsDefinition());
@@ -296,12 +300,12 @@ public class ArrIOService {
                     continue;
             }
 
-            ArrItemCoordinates itemData = new ArrItemCoordinates();
+            ArrDataCoordinates itemData = new ArrDataCoordinates();
             itemData.setValue(geometry);
             T item;
             try {
                 item = clazz.newInstance();
-                item.setItem(itemData);
+                item.setData(itemData);
             } catch (IllegalAccessException | InstantiationException e) {
                 throw new SystemException(e);
             }
@@ -436,19 +440,19 @@ public class ArrIOService {
 
         T one = items.get(items.size() - 1);
 
-        Assert.notNull(one);
+        Assert.notNull(one, "Musí být vyplněno");
 
-        one = itemService.loadData(one);
+        //one = itemService.loadData(one);
 
-        ArrItemData item = one.getItem();
+        ArrData item = one.getData();
 
-        if (!(item instanceof ArrItemCoordinates)) {
+        if (!(item instanceof ArrDataCoordinates)) {
             throw new SystemException("Pouze typ COORDINATES může být importován pomocí KML.", BaseCode.PROPERTY_HAS_INVALID_TYPE)
                     .set("property", "descItemObjectId")
                     .set("expected", "COORDINATES")
                     .set("actual", item.getClass().getSimpleName());
         }
-        ArrItemCoordinates cords = (ArrItemCoordinates) item;
+        ArrDataCoordinates cords = (ArrDataCoordinates) item;
 
         toKml(response, cords.getValue());
     }

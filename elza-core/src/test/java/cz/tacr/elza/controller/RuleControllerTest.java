@@ -73,7 +73,7 @@ public class RuleControllerTest extends AbstractControllerTest {
 
         for (RulPolicyTypeVO policyType : policyTypes) {
             Boolean state = policyTypeIdsMap.get(policyType.getId());
-            Assert.notNull(state);
+            Assert.notNull(state, "Stav musí být vyplněn");
             Assert.isTrue(state);
         }
 
@@ -92,7 +92,7 @@ public class RuleControllerTest extends AbstractControllerTest {
 
         for (RulPolicyTypeVO policyType : policyTypes) {
             Boolean state = policyTypeIdsMap.get(policyType.getId());
-            Assert.notNull(state);
+            Assert.notNull(state, "Stav musí být vyplněn");
             Assert.isTrue(!state);
         }
 
@@ -110,7 +110,7 @@ public class RuleControllerTest extends AbstractControllerTest {
 
         for (RulPolicyTypeVO policyType : policyTypes) {
             Boolean state = policyTypeIdsMap.get(policyType.getId());
-            Assert.notNull(state);
+            Assert.notNull(state, "Stav musí být vyplněn");
             Assert.isTrue(state);
         }
     }

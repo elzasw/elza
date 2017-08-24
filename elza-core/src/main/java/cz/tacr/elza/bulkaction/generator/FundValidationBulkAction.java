@@ -66,7 +66,7 @@ public class FundValidationBulkAction extends BulkAction {
      * @param bulkActionConfig nastavení hromadné akce
      */
     private void init(final BulkActionConfig bulkActionConfig) {
-        Assert.notNull(bulkActionConfig);
+        Assert.notNull(bulkActionConfig, "Nastavení hromadné akce musí být vyplněno");
     }
 
     /**
@@ -99,7 +99,7 @@ public class FundValidationBulkAction extends BulkAction {
 
         ArrFundVersion version = bulkActionRun.getFundVersion();
 
-        Assert.notNull(version);
+        Assert.notNull(version, "Verze AS musí být vyplněna");
         checkVersion(version);
         this.version = version;
 
@@ -109,9 +109,9 @@ public class FundValidationBulkAction extends BulkAction {
         ArrNode rootNode = version.getRootNode();
         for (Integer nodeId : inputNodeIds) {
             ArrNode node = nodeRepository.findOne(nodeId);
-            Assert.notNull("Node s nodeId=" + nodeId + " neexistuje");
+            Assert.notNull(node, "Node s nodeId=" + nodeId + " neexistuje");
             ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, rootNode, null);
-            Assert.notNull("Level neexistuje, nodeId=" + node.getNodeId() + ", rootNodeId=" + rootNode.getNodeId());
+            Assert.notNull(level, "Level neexistuje, nodeId=" + node.getNodeId() + ", rootNodeId=" + rootNode.getNodeId());
 
             generate(level);
         }

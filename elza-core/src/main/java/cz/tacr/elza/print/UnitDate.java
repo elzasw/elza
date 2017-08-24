@@ -20,12 +20,12 @@ public class UnitDate extends UnitDateText implements IUnitdate {
     private Boolean valueFromEstimated;
     private Boolean valueToEstimated;
     private String format;
-    
+
     private String calendar;
     private String calendarCode;
     private ArrCalendarType calendarType;
 
-    private UnitDate(ArrItemUnitdate srcItemData) {
+    private UnitDate(IUnitdate srcItemData) {
 		this.valueFrom = srcItemData.getValueFrom();
 		this.valueTo = srcItemData.getValueTo();
 		this.valueFromEstimated = srcItemData.getValueFromEstimated();
@@ -34,7 +34,7 @@ public class UnitDate extends UnitDateText implements IUnitdate {
         this.calendarType = srcItemData.getCalendarType();
         this.calendar = calendarType.getName();
         this.calendarCode = calendarType.getCode();
-        
+
         String textForm = UnitDateConvertor.convertToString(this);
         this.setValueText(textForm);
 	}
@@ -120,7 +120,7 @@ public class UnitDate extends UnitDateText implements IUnitdate {
 	@Override
 	public void setCalendarType(ArrCalendarType calendarType) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -129,8 +129,13 @@ public class UnitDate extends UnitDateText implements IUnitdate {
     }
 
 	public static UnitDate valueOf(ArrItemUnitdate itemData) {
-		UnitDate unitDate = new UnitDate(itemData);		
+		UnitDate unitDate = new UnitDate(itemData);
 		return unitDate;
 	}
+
+    public static UnitDate valueOf(IUnitdate itemData) {
+        UnitDate unitDate = new UnitDate(itemData);
+        return unitDate;
+    }
 
 }

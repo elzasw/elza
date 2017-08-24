@@ -103,7 +103,7 @@ public abstract class BulkAction {
      * @param version verze archivní pomůcky
      */
     protected void checkVersion(ArrFundVersion version) {
-        Assert.notNull(version);
+        Assert.notNull(version, "Verze AS musí být vyplněna");
         if (version.getLockChange() != null) {
             throw new BusinessException("Nelze aplikovat na uzavřenou verzi archivní pomůcky", ArrangementCode.VERSION_ALREADY_CLOSED);
         }

@@ -1,26 +1,25 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import cz.tacr.elza.bulkaction.generator.LevelWithItems;
+import cz.tacr.elza.bulkaction.generator.result.ActionResult;
+import cz.tacr.elza.bulkaction.generator.result.CopyActionResult;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.utils.Yaml;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.bulkaction.generator.LevelWithItems;
-import cz.tacr.elza.bulkaction.generator.result.ActionResult;
-import cz.tacr.elza.bulkaction.generator.result.CopyActionResult;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrItemData;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.utils.Yaml;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Akce pro kopírování hodnot atributů.
@@ -45,7 +44,7 @@ public class CopyAction extends Action {
     /**
      * Seznam kopírovaných hodnot atributů
      */
-    private List<ArrItemData> dataItems = new ArrayList<>();
+    private List<ArrItem> dataItems = new ArrayList<>();
 
     /**
      * Provést distinct při vracení výsledků?
@@ -81,19 +80,16 @@ public class CopyAction extends Action {
         for (ArrItem item : items) {
             // pouze hledaný typ
             if (inputItemTypes.contains(item.getItemType())) {
-                ArrItemData itemData = item.getItem();
-                if (itemData == null) {
-                    itemData = descItemFactory.createItemByType(item.getItemType().getDataType());
-                }
-                itemData.setSpec(item.getItemSpec());
-                itemData.setUndefined(item.getUndefined());
-
+                ArrData itemData = item.getData();
                 if (distinct) {
-                    if (!dataItems.contains(itemData)) {
-                        dataItems.add(itemData);
+                    for (ArrDescItem descItem : items) {
+                        if (descItem.getData() != null && descItem.getData().equals(itemData)) {
+                            dataItems.add(item);
+                            break;
+                        }
                     }
                 } else {
-                    dataItems.add(itemData);
+                    dataItems.add(item);
                 }
             }
         }

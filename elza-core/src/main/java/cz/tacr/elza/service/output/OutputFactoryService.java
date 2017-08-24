@@ -11,6 +11,20 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDecimal;
+import cz.tacr.elza.domain.ArrDataFileRef;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataJsonTable;
+import cz.tacr.elza.domain.ArrDataNull;
+import cz.tacr.elza.domain.ArrDataPacketRef;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUnitid;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -391,49 +405,51 @@ public class OutputFactoryService implements NodeLoader {
      * @return item
      */
     private AbstractItem getItemByType(final Output output, final NodeId nodeId, final ArrItem arrItem) {
-        final ArrItemData itemData = arrItem.getItem();
+        final ArrData data = arrItem.getData();
 
         AbstractItem item;
-        if (itemData instanceof ArrItemUnitid) {
-            item = getItemUnitid(nodeId, (ArrItemUnitid) itemData);
-        } else if (itemData instanceof ArrItemUnitdate) {
-            item = getItemUnitdate(nodeId, (ArrItemUnitdate) itemData);
-        } else if (itemData instanceof ArrItemText) {
-            item = getItemUnitText(nodeId, (ArrItemText) itemData);
-        } else if (itemData instanceof ArrItemString) {
-            item = getItemUnitString(nodeId, (ArrItemString) itemData);
-        } else if (itemData instanceof ArrItemRecordRef) {
-            item = getItemUnitRecordRef(output, nodeId, (ArrItemRecordRef) itemData);
-        } else if (itemData instanceof ArrItemPartyRef) {
-            item = getItemUnitPartyRef(output, nodeId, (ArrItemPartyRef) itemData);
-        } else if (itemData instanceof ArrItemPacketRef) {
-            item = getItemUnitPacketRef(nodeId, (ArrItemPacketRef) itemData);
-        } else if (itemData instanceof ArrItemJsonTable) {
-            item = getItemUnitJsonTable(nodeId, (ArrItemJsonTable) itemData);
-        } else if (itemData instanceof ArrItemInt) {
-            item = getItemUnitInteger(nodeId, (ArrItemInt) itemData);
-        } else if (itemData instanceof ArrItemFormattedText) {
-            item = getItemUnitFormatedText(nodeId, (ArrItemFormattedText) itemData);
-        } else if (itemData instanceof ArrItemFileRef) {
-            item = getItemFile(nodeId, (ArrItemFileRef) itemData);
-        } else if (itemData instanceof ArrItemEnum) {
+        if (data == null) {
+            item = new ItemString(nodeId, data.toString());
+        } else if (data instanceof ArrDataUnitid) {
+            item = getItemUnitid(nodeId, (ArrDataUnitid) data);
+        } else if (data instanceof ArrDataUnitdate) {
+            item = getItemUnitdate(nodeId, (ArrDataUnitdate) data);
+        } else if (data instanceof ArrDataText && arrItem.getItemType().getDataType().getCode().equals("TEXT")) {
+            item = getItemUnitText(nodeId, (ArrDataText) data);
+        } else if (data instanceof ArrDataString) {
+            item = getItemUnitString(nodeId, (ArrDataString) data);
+        } else if (data instanceof ArrDataRecordRef) {
+            item = getItemUnitRecordRef(output, nodeId, (ArrDataRecordRef) data);
+        } else if (data instanceof ArrDataPartyRef) {
+            item = getItemUnitPartyRef(output, nodeId, (ArrDataPartyRef) data);
+        } else if (data instanceof ArrDataPacketRef) {
+            item = getItemUnitPacketRef(nodeId, (ArrDataPacketRef) data);
+        } else if (data instanceof ArrDataJsonTable) {
+            item = getItemUnitJsonTable(nodeId, (ArrDataJsonTable) data);
+        } else if (data instanceof ArrDataInteger) {
+            item = getItemUnitInteger(nodeId, (ArrDataInteger) data);
+        } else if (data instanceof ArrDataText && arrItem.getItemType().getDataType().getCode().equals("FORMATTED_TEXT")) {
+            item = getItemUnitFormatedText(nodeId, (ArrDataText) data);
+        } else if (data instanceof ArrDataFileRef) {
+            item = getItemFile(nodeId, (ArrDataFileRef) data);
+        } else if (data instanceof ArrDataNull && arrItem.getItemType().getDataType().getCode().equals("ENUM")) {
             item = ItemEnum.newInstance(nodeId);
-        } else if (itemData instanceof ArrItemDecimal) {
-            item = getItemUnitDecimal(nodeId, (ArrItemDecimal) itemData);
-        } else if (itemData instanceof ArrItemCoordinates) {
-            item = getItemUnitCoordinates(nodeId, (ArrItemCoordinates) itemData);
+        } else if (data instanceof ArrDataDecimal) {
+            item = getItemUnitDecimal(nodeId, (ArrDataDecimal) data);
+        } else if (data instanceof ArrDataCoordinates) {
+            item = getItemUnitCoordinates(nodeId, (ArrDataCoordinates) data);
         } else {
-            logger.warn("Neznámý datový typ hodnoty Item ({}) je zpracován jako string.", itemData.getClass().getName());
-            item = new ItemString(nodeId, itemData.toString());
+            logger.warn("Neznámý datový typ hodnoty Item ({}) je zpracován jako string.", data.getClass().getName());
+            item = new ItemString(nodeId, data.toString());
         }
 
         item.setPosition(arrItem.getPosition());
-        item.setUndefined(arrItem.getUndefined());
+        item.setUndefined(arrItem.getData() == null);
 
         return item;
     }
 
-    private AbstractItem getItemFile(final NodeId nodeId, final ArrItemFileRef itemData) {
+    private AbstractItem getItemFile(final NodeId nodeId, final ArrDataFileRef itemData) {
         final ArrFile arrFile = itemData.getFile();
         final ItemFile itemFile = new ItemFile(nodeId, arrFile);
         itemFile.setName(arrFile.getName());
@@ -445,17 +461,17 @@ public class OutputFactoryService implements NodeLoader {
         return itemFile;
     }
 
-    private AbstractItem getItemUnitString(final NodeId nodeId, final ArrItemString itemData) {
+    private AbstractItem getItemUnitString(final NodeId nodeId, final ArrDataString itemData) {
         return new ItemString(nodeId, itemData.getValue());
     }
 
-    private AbstractItem getItemUnitRecordRef(final Output output, final NodeId nodeId, final ArrItemRecordRef itemData) {
+    private AbstractItem getItemUnitRecordRef(final Output output, final NodeId nodeId, final ArrDataRecordRef itemData) {
     	RegRecord regRecord = itemData.getRecord();
         final Record record = Record.newInstance(output, regRecord);
         return new ItemRecordRef(nodeId, record);
     }
 
-    private AbstractItem getItemUnitPartyRef(final Output output, final NodeId nodeId, final ArrItemPartyRef itemData) {
+    private AbstractItem getItemUnitPartyRef(final Output output, final NodeId nodeId, final ArrDataPartyRef itemData) {
         final ParParty parParty = itemData.getParty();
         Party party = createParty(parParty, output);
         return new ItemPartyRef(nodeId, party);
@@ -534,7 +550,7 @@ public class OutputFactoryService implements NodeLoader {
         party.setRecord(Record.newInstance(output, parParty.getRecord()));
     }
 
-    private AbstractItem getItemUnitPacketRef(final NodeId nodeId, final ArrItemPacketRef itemData) {
+    private AbstractItem getItemUnitPacketRef(final NodeId nodeId, final ArrDataPacketRef itemData) {
         final ArrPacket arrPacket = itemData.getPacket();
         Packet packet = packetMap.get(arrPacket.getPacketId());
         if (packet == null) {
@@ -552,36 +568,36 @@ public class OutputFactoryService implements NodeLoader {
         return new ItemPacketRef(nodeId, packet);
     }
 
-    private AbstractItem getItemUnitJsonTable(final NodeId nodeId, final ArrItemJsonTable itemData) {
+    private AbstractItem getItemUnitJsonTable(final NodeId nodeId, final ArrDataJsonTable itemData) {
         return new ItemJsonTable(nodeId, itemData.getValue());
     }
 
-    private AbstractItem getItemUnitFormatedText(final NodeId nodeId, final ArrItemFormattedText itemData) {
+    private AbstractItem getItemUnitFormatedText(final NodeId nodeId, final ArrDataText itemData) {
         return new ItemText(nodeId, itemData.getValue());
     }
 
-    private AbstractItem getItemUnitInteger(final NodeId nodeId, final ArrItemInt itemData) {
+    private AbstractItem getItemUnitInteger(final NodeId nodeId, final ArrDataInteger itemData) {
         return new ItemInteger(nodeId, itemData.getValue());
     }
 
-    private AbstractItem getItemUnitDecimal(final NodeId nodeId, final ArrItemDecimal itemData) {
+    private AbstractItem getItemUnitDecimal(final NodeId nodeId, final ArrDataDecimal itemData) {
         return new ItemDecimal(nodeId, itemData.getValue());
     }
 
-    private AbstractItem getItemUnitCoordinates(final NodeId nodeId, final ArrItemCoordinates itemData) {
+    private AbstractItem getItemUnitCoordinates(final NodeId nodeId, final ArrDataCoordinates itemData) {
         return new ItemCoordinates(nodeId, itemData.getValue());
     }
 
-    private AbstractItem getItemUnitText(final NodeId nodeId, final ArrItemText itemData) {
+    private AbstractItem getItemUnitText(final NodeId nodeId, final ArrDataText itemData) {
         return new ItemText(nodeId, itemData.getValue());
     }
 
-    private AbstractItem getItemUnitdate(final NodeId nodeId, final ArrItemUnitdate itemData) {
+    private AbstractItem getItemUnitdate(final NodeId nodeId, final ArrDataUnitdate itemData) {
     	UnitDate data = UnitDate.valueOf(itemData);
         return new ItemUnitdate(nodeId, data);
     }
 
-    private AbstractItem getItemUnitid(final NodeId nodeId, final ArrItemUnitid itemData) {
+    private AbstractItem getItemUnitid(final NodeId nodeId, final ArrDataUnitid itemData) {
         return new ItemUnitId(nodeId, itemData.getValue());
     }
 
@@ -649,7 +665,7 @@ public class OutputFactoryService implements NodeLoader {
 
         while (iterator.hasNext()) {
             List<ArrDescItem> descItems = iterator.next();
-            itemService.loadData(descItems);
+            //itemService.loadData(descItems);
         }
 
         Map<Integer, ItemType> itemTypeMap = new HashMap<>();

@@ -114,7 +114,7 @@ public class RevertingChangesService {
                                      final int maxSize,
                                      final int offset,
                                      @Nullable final ArrChange fromChange) {
-        Assert.notNull(fundVersion);
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
 
         Integer fundId = fundVersion.getFund().getFundId();
         Integer nodeId = node == null ? null : node.getNodeId();
@@ -191,9 +191,9 @@ public class RevertingChangesService {
                                            final int maxSize,
                                            @NotNull final LocalDateTime fromDate,
                                            @NotNull final ArrChange fromChange) {
-        Assert.notNull(fundVersion);
-        Assert.notNull(fromDate);
-        Assert.notNull(fromChange);
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Assert.notNull(fromDate, "Datum od musí být vyplněn");
+        Assert.notNull(fromChange, "Změna musí být vyplněna");
 
         Integer fundId = fundVersion.getFund().getFundId();
         Integer nodeId = node == null ? null : node.getNodeId();
@@ -228,9 +228,9 @@ public class RevertingChangesService {
                               @Nullable final ArrNode node,
                               @NotNull final ArrChange fromChange,
                               @NotNull final ArrChange toChange) {
-        Assert.notNull(fund);
-        Assert.notNull(fromChange);
-        Assert.notNull(toChange);
+        Assert.notNull(fund, "AS musí být vyplněn");
+        Assert.notNull(fromChange, "Změna od musí být vyplněna");
+        Assert.notNull(toChange, "Změna do musí být vyplněna");
 
         Integer fundId = fund.getFundId();
         Integer nodeId = node == null ? null : node.getNodeId();

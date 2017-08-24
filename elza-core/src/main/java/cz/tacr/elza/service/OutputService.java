@@ -17,7 +17,13 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
 import com.fasterxml.jackson.databind.deser.Deserializers;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataJsonTable;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.exception.BusinessException;
@@ -199,7 +205,7 @@ public class OutputService {
      * @return seznam nodů k výstupu
      */
     public List<ArrNode> getNodesForOutput(final ArrOutput output) {
-        Assert.notNull(output);
+        Assert.notNull(output, "Výstup musí být vyplněn");
         if (output.getLockChange() == null) {
             return nodeRepository.findNodesForOutput(output, output.getCreateChange());
         } else {
@@ -218,8 +224,8 @@ public class OutputService {
             UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
     public ArrOutputDefinition deleteNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                                  final ArrOutputDefinition outputDefinition) {
-        Assert.notNull(fundVersion);
-        Assert.notNull(outputDefinition);
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Assert.notNull(outputDefinition, "Definice výstupu musí být vyplněna");
 
         if (fundVersion.getLockChange() != null) {
             throw new BusinessException("Nelze smazat výstup v uzavřené verzi AS", ArrangementCode.VERSION_ALREADY_CLOSED);
@@ -258,8 +264,8 @@ public class OutputService {
             UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
     public ArrOutputDefinition revertToOpenState(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                                  final ArrOutputDefinition outputDefinition) {
-        Assert.notNull(fundVersion);
-        Assert.notNull(outputDefinition);
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Assert.notNull(outputDefinition, "Definice výstupu musí být vyplněna");
 
         if (fundVersion.getLockChange() != null) {
             throw new BusinessException("Nelze vrátit do přípravy výstup v uzavřené verzi AS", ArrangementCode.VERSION_ALREADY_CLOSED);
@@ -305,8 +311,8 @@ public class OutputService {
             UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
     public ArrOutputDefinition cloneOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                            final ArrOutputDefinition originalOutputDef) {
-        Assert.notNull(fundVersion);
-        Assert.notNull(originalOutputDef);
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Assert.notNull(originalOutputDef, "Musí být vyplněna definice výstupu");
 
         checkFund(fundVersion, originalOutputDef);
 
@@ -386,9 +392,9 @@ public class OutputService {
     private ArrOutput outputLock(final ArrFundVersion fundVersion,
                                  final ArrOutput output,
                                  final ArrChange change) {
-        Assert.notNull(fundVersion);
-        Assert.notNull(output);
-        Assert.notNull(change);
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Assert.notNull(output, "Výstup musí být vyplněn");
+        Assert.notNull(change, "Změna musí být vyplněna");
 
         if (fundVersion.getLockChange() != null) {
             throw new BusinessException("Nelze zamknout výstup v uzavřené verzi AS", ArrangementCode.VERSION_ALREADY_CLOSED);
@@ -427,10 +433,10 @@ public class OutputService {
                                                       final Boolean temporary,
                                                       final Integer outputTypeId,
                                                       final Integer templateId) {
-        Assert.notNull(fundVersion);
-        Assert.notNull(name);
-        Assert.notNull(temporary);
-        Assert.notNull(outputTypeId);
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Assert.notNull(name, "Název musí být vyplněn");
+        Assert.notNull(temporary, "Musí být vyplněno");
+        Assert.notNull(outputTypeId, "Identifikátor typu vystupu musí být vyplněn");
 
         if (fundVersion.getLockChange() != null) {
             throw new BusinessException("Nelze vytvořit výstup v uzavřené verzi AS", ArrangementCode.VERSION_ALREADY_CLOSED);
@@ -445,7 +451,7 @@ public class OutputService {
         outputDefinition.setState(OutputState.OPEN);
 
         RulOutputType type = outputTypeRepository.findOne(outputTypeId);
-        Assert.notNull(type);
+        Assert.notNull(type, "Typ musí být vyplněn");
         outputDefinition.setOutputType(type);
 
         if (templateId != null) {
@@ -478,8 +484,8 @@ public class OutputService {
      */
     private ArrOutput createOutputWithChange(final ArrOutputDefinition outputDefinition,
                                              final ArrChange change) {
-        Assert.notNull(outputDefinition);
-        Assert.notNull(change);
+        Assert.notNull(outputDefinition, "Definice výstupu musí být vyplněna");
+        Assert.notNull(change, "Změna musí být vyplněna");
 
         ArrOutput output = new ArrOutput();
         output.setCreateChange(change);
@@ -516,10 +522,10 @@ public class OutputService {
                                         final ArrOutput output,
                                         final List<Integer> nodeIds,
                                         final ArrChange change) {
-        Assert.notNull(fundVersion);
-        Assert.notNull(output);
-        Assert.notEmpty(nodeIds);
-        Assert.notNull(change);
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Assert.notNull(output, "Výstup musí být vyplněn");
+        Assert.notEmpty(nodeIds, "Musí být vyplněna alespoň jedna JP");
+        Assert.notNull(change, "Změna musí být vyplněna");
 
         if (fundVersion.getLockChange() != null) {
             throw new BusinessException("Nelze odebrat uzly u výstupu v uzavřené verzi AS", ArrangementCode.VERSION_ALREADY_CLOSED);
@@ -587,9 +593,9 @@ public class OutputService {
                                                  final String name,
                                                  final String internalCode,
                                                  final Integer templateId) {
-        Assert.notNull(fundVersion);
-        Assert.notNull(output);
-        Assert.notNull(name);
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Assert.notNull(output, "Výstup musí být vyplněn");
+        Assert.notNull(name, "Název musí být vyplněn");
 
         if (fundVersion.getLockChange() != null) {
             throw new BusinessException("Nelze upravovat výstup v uzavřené verzi AS", ArrangementCode.VERSION_ALREADY_CLOSED);
@@ -663,10 +669,10 @@ public class OutputService {
                                      final ArrOutput output,
                                      final List<Integer> nodeIds,
                                      final ArrChange change) {
-        Assert.notNull(fundVersion);
-        Assert.notNull(output);
-        Assert.notEmpty(nodeIds);
-        Assert.notNull(change);
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Assert.notNull(output, "Výstup musí být vyplněn");
+        Assert.notEmpty(nodeIds, "Musí být vyplněna alespoň jedna JP");
+        Assert.notNull(change, "Změna musí být vyplněna");
 
         if (fundVersion.getLockChange() != null) {
             throw new BusinessException("Nelze přidat uzly k výstupu v uzavřené verzi AS", ArrangementCode.VERSION_ALREADY_CLOSED);
@@ -825,7 +831,7 @@ public class OutputService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
             UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public List<ArrOutput> getSortedOutputs(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
-        Assert.notNull(fundVersion);
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
         List<ArrOutput> outputs = outputRepository.findByFundVersionSorted(fundVersion);
         return outputs;
     }
@@ -840,7 +846,7 @@ public class OutputService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
             UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public List<ArrOutput> getSortedOutputsByState(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion, final OutputState state) {
-        Assert.notNull(fundVersion);
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
         return outputRepository.findByFundVersionAndStateSorted(fundVersion, state);
     }
 
@@ -855,8 +861,8 @@ public class OutputService {
             UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrOutputDefinition getNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                               final ArrOutput output) {
-        Assert.notNull(fundVersion);
-        Assert.notNull(output);
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Assert.notNull(output, "Výstup musí být vyplněn");
         checkFund(fundVersion, output.getOutputDefinition());
         return output.getOutputDefinition();
     }
@@ -885,14 +891,14 @@ public class OutputService {
                                           final Integer outputDefinitionId,
                                           final Integer outputDefinitionVersion,
                                           @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
-        Assert.notNull(item);
-        Assert.notNull(outputDefinitionId);
-        Assert.notNull(outputDefinitionVersion);
+        Assert.notNull(item, "Hodnota musí být vyplněna");
+        Assert.notNull(outputDefinitionId, "Identifikátor definice výstupu musí být vyplněn");
+        Assert.notNull(outputDefinitionVersion, "Verze definice výstupu musí být vyplněna");
 
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
 
         ArrOutputDefinition outputDefinition = outputDefinitionRepository.findOne(outputDefinitionId);
-        Assert.notNull(outputDefinition);
+        Assert.notNull(outputDefinition, "Definice výstupu musí být vyplněna");
         outputDefinition.setVersion(outputDefinitionVersion);
         saveOutputDefinition(outputDefinition);
 
@@ -902,7 +908,6 @@ public class OutputService {
         }
 
         checkCalculatingAttribute(outputDefinition, item.getItemType());
-        item.setUndefined(false);
         return createOutputItem(item, outputDefinition, fundVersion, null);
     }
 
@@ -960,9 +965,9 @@ public class OutputService {
     private ArrOutputItem createOutputItem(final ArrOutputItem outputItem,
                                            final ArrFundVersion version,
                                            final ArrChange change) {
-        Assert.notNull(outputItem);
-        Assert.notNull(version);
-        Assert.notNull(change);
+        Assert.notNull(outputItem, "Výstup musí být vyplněn");
+        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Assert.notNull(change, "Změna musí být vyplněna");
 
         // pro vytvoření musí být verze otevřená
         itemService.checkFundVersionLock(version);
@@ -1021,9 +1026,9 @@ public class OutputService {
     public ArrOutputItem deleteOutputItem(final Integer descItemObjectId,
                                           final Integer outputVersion,
                                           @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
-        Assert.notNull(descItemObjectId);
-        Assert.notNull(outputVersion);
-        Assert.notNull(fundVersionId);
+        Assert.notNull(descItemObjectId, "Nebyl vyplněn jednoznačný identifikátor descItem");
+        Assert.notNull(outputVersion, "Verze výstupu není vyplněna");
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
         ArrChange change = arrangementService.createChange(null);
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
@@ -1071,9 +1076,9 @@ public class OutputService {
                                           final ArrFundVersion version,
                                           final ArrChange change,
                                           final boolean moveAfter) {
-        Assert.notNull(outputItem);
-        Assert.notNull(version);
-        Assert.notNull(change);
+        Assert.notNull(outputItem, "Výstup musí být vyplněn");
+        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Assert.notNull(change, "Změna musí být vyplněna");
 
         // pro mazání musí být verze otevřená
         itemService.checkFundVersionLock(version);
@@ -1110,12 +1115,12 @@ public class OutputService {
                                           final Integer outputDefinitionVersion,
                                           @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
                                           final Boolean createNewVersion) {
-        Assert.notNull(outputItem);
-        Assert.notNull(outputItem.getPosition());
-        Assert.notNull(outputItem.getDescItemObjectId());
-        Assert.notNull(outputDefinitionVersion);
-        Assert.notNull(fundVersionId);
-        Assert.notNull(createNewVersion);
+        Assert.notNull(outputItem, "Výstup musí být vyplněn");
+        Assert.notNull(outputItem.getPosition(), "Pozice musí být vyplněna");
+        Assert.notNull(outputItem.getDescItemObjectId(), "Unikátní identifikátor hodnoty atributu musí být vyplněna");
+        Assert.notNull(outputDefinitionVersion, "Verze definice výstupu musí být vyplněna");
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(createNewVersion, "Vytvořit novou verzi musí být vyplněno");
 
         ArrChange change = null;
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
@@ -1130,7 +1135,7 @@ public class OutputService {
         ArrOutputItem outputItemDB = outputItems.get(0);
 
         final ArrOutputDefinition outputDefinition = outputItemDB.getOutputDefinition();
-        Assert.notNull(outputDefinition);
+        Assert.notNull(outputDefinition, "Definice výstupu musí být vyplněna");
 
         List<OutputState> allowedState = Collections.singletonList(OutputState.OPEN);
         if (!allowedState.contains(outputDefinition.getState())) {
@@ -1193,7 +1198,7 @@ public class OutputService {
             outputItemOrig = outputItemDB;
         }
 
-        itemService.loadData(outputItemOrig);
+        //itemService.loadData(outputItemOrig);
         ArrOutputItem outputItemUpdated;
 
         if (createNewVersion) {
@@ -1234,7 +1239,7 @@ public class OutputService {
                 descItemNew.setItemId(null);
                 descItemNew.setCreateChange(change);
                 descItemNew.setPosition(positionNew);
-                descItemNew.setItem(outputItem.getItem());
+                descItemNew.setData(outputItem.getData());
 
                 itemService.save(outputItemOrig, true);
                 outputItemUpdated = itemService.save(descItemNew, true);
@@ -1309,20 +1314,7 @@ public class OutputService {
         } else {
             itemList = outputItemRepository.findByOutputAndChange(outputDefinition, fundVersion.getLockChange());
         }
-
-        Map<Integer, RulItemTypeExt> itemTypeExtMap = ruleService.getOutputItemTypes(outputDefinition).stream().collect(Collectors.toMap(RulItemType::getItemTypeId, Function.identity()));
-
-        List<ArrOutputItem> outputItems = itemService.loadData(itemList);
-        for (ArrOutputItem outputItem : outputItems) {
-            if (outputItem.getItem() == null) {
-                RulItemTypeExt itemTypeExt = itemTypeExtMap.get(outputItem.getItemTypeId());
-                if (itemTypeExt.getIndefinable()) {
-                    outputItem.setItem(descItemFactory.createItemByType(itemTypeExt.getDataType()));
-                }
-            }
-        }
-
-        return outputItems;
+        return itemList;
     }
 
     /**
@@ -1361,16 +1353,16 @@ public class OutputService {
                                                  final Integer outputDefinitionId,
                                                  final Integer outputDefinitionVersion,
                                                  final Integer fundVersionId) {
-        Assert.notNull(outputItems);
-        Assert.notEmpty(outputItems);
-        Assert.notNull(outputDefinitionId);
-        Assert.notNull(outputDefinitionVersion);
-        Assert.notNull(fundVersionId);
+        Assert.notNull(outputItems, "Výstupy musí být vyplněny");
+        Assert.notEmpty(outputItems, "Musí být zadán alespoň jeden výstup");
+        Assert.notNull(outputDefinitionId, "Identifikátor definice výstupu musí být vyplněn");
+        Assert.notNull(outputDefinitionVersion, "Verze definice výstupu musí být vyplněna");
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 
         ArrOutputDefinition outputDefinition = findOutputDefinition(outputDefinitionId);
-        Assert.notNull(outputDefinition);
+        Assert.notNull(outputDefinition, "Definice výstupu musí být vyplněna");
 
         // uložení uzlu (kontrola optimistických zámků)
         outputDefinition.setVersion(outputDefinitionVersion);
@@ -1475,7 +1467,7 @@ public class OutputService {
         Assert.notNull(itemType, "Typ atributu neexistuje");
 
         ArrOutputDefinition outputDefinition = outputDefinitionRepository.findOne(outputDefinitionId);
-        Assert.notNull(outputDefinition);
+        Assert.notNull(outputDefinition, "Definice výstupu musí být vyplněna");
 
         List<OutputState> allowStates = Collections.singletonList(OutputState.OPEN);
         if (!allowStates.contains(outputDefinition.getState())) {
@@ -1683,7 +1675,7 @@ public class OutputService {
                                                          @Nullable final RulItemType itemType,
                                                          @Nullable final Set<RulItemType> itemTypesIgnored) {
         RulItemType type;
-        List<ArrItemData> dataItems;
+        List<ArrItem> dataItems;
 
         if (actionResult instanceof CopyActionResult) {
             CopyActionResult copyActionResult = (CopyActionResult) actionResult;
@@ -1694,34 +1686,34 @@ public class OutputService {
             DateRangeActionResult dateRangeActionResult = (DateRangeActionResult) actionResult;
             String itemTypeCode = dateRangeActionResult.getItemType();
             type = itemTypeRepository.findOneByCode(itemTypeCode);
-            ArrItemString itemString = new ArrItemString();
+            ArrDataString itemString = new ArrDataString();
             itemString.setValue(dateRangeActionResult.getText());
-            dataItems = Collections.singletonList(itemString);
+            dataItems = createArrItems(itemString);
         } else if (actionResult instanceof NodeCountActionResult) {
             NodeCountActionResult nodeCountActionResult = (NodeCountActionResult) actionResult;
             String itemTypeCode = nodeCountActionResult.getItemType();
             type = itemTypeRepository.findOneByCode(itemTypeCode);
-            ArrItemInt itemInt = new ArrItemInt();
+            ArrDataInteger itemInt = new ArrDataInteger();
             itemInt.setValue(nodeCountActionResult.getCount());
-            dataItems = Collections.singletonList(itemInt);
+            dataItems = createArrItems(itemInt);
         } else if (actionResult instanceof SerialNumberResult) {
             return null; // tohle se nikam nepřeklápí zatím
         } else if (actionResult instanceof TableStatisticActionResult) {
             TableStatisticActionResult tableStatisticActionResult = (TableStatisticActionResult) actionResult;
             String itemTypeCode = tableStatisticActionResult.getItemType();
             type = itemTypeRepository.findOneByCode(itemTypeCode);
-            ArrItemJsonTable itemJsonTable = new ArrItemJsonTable();
+            ArrDataJsonTable itemJsonTable = new ArrDataJsonTable();
             itemJsonTable.setValue(tableStatisticActionResult.getTable());
-            dataItems = Collections.singletonList(itemJsonTable);
+            dataItems = createArrItems(itemJsonTable);
         } else if (actionResult instanceof TextAggregationActionResult) {
             TextAggregationActionResult textAggregationActionResult = (TextAggregationActionResult) actionResult;
             String itemTypeCode = textAggregationActionResult.getItemType();
             type = itemTypeRepository.findOneByCode(itemTypeCode);
             // Check if item should be created
             if(textAggregationActionResult.isCreateInOutput()) {
-                ArrItemText itemText = new ArrItemText();
+                ArrDataText itemText = new ArrDataText();
                 itemText.setValue(textAggregationActionResult.getText());
-                dataItems = Collections.singletonList(itemText);
+                dataItems = createArrItems(itemText);
             } else {
                 // no items will be created
                 dataItems = Collections.emptyList();
@@ -1730,9 +1722,9 @@ public class OutputService {
             UnitCountActionResult unitCountActionResult = (UnitCountActionResult) actionResult;
             String itemTypeCode = unitCountActionResult.getItemType();
             type = itemTypeRepository.findOneByCode(itemTypeCode);
-            ArrItemJsonTable itemJsonTable = new ArrItemJsonTable();
+            ArrDataJsonTable itemJsonTable = new ArrDataJsonTable();
             itemJsonTable.setValue(unitCountActionResult.getTable());
-            dataItems = Collections.singletonList(itemJsonTable);
+            dataItems = createArrItems(itemJsonTable);
         } else if (actionResult instanceof UnitIdResult) {
             return null; // tohle se nikam nepřeklápí zatím
         } else if (actionResult instanceof TestDataGeneratorResult) {
@@ -1757,6 +1749,20 @@ public class OutputService {
     }
 
     /**
+     * Vytvoření singleton listu ArrItem z ArrData.
+     *
+     * @param item data
+     * @return vytvořený list
+     */
+    private List<ArrItem> createArrItems(final ArrData item) {
+        List<ArrItem> dataItems;
+        ArrDescItem descItem = new ArrDescItem();
+        descItem.setData(item);
+        dataItems = Collections.singletonList(descItem);
+        return dataItems;
+    }
+
+    /**
      * Uložení dat typu pro výstup.
      *
      * @param type             typ atributu
@@ -1766,7 +1772,7 @@ public class OutputService {
      * @param change           změna překlopení
      */
     private boolean storeDataItems(final RulItemType type,
-                                   final List<ArrItemData> dataItems,
+                                   final List<ArrItem> dataItems,
                                    final ArrOutputDefinition outputDefinition,
                                    final ArrFundVersion fundVersion,
                                    final ArrChangeLazy change) {
@@ -1776,11 +1782,11 @@ public class OutputService {
             // donačte entity, které jsou reprezentované v JSON pouze s ID (odkazové)
             itemService.refItemsLoader(dataItems);
 
-            for (ArrItemData dataItem : dataItems) {
-                ArrOutputItem outputItem = new ArrOutputItem(dataItem);
+            for (ArrItem dataItem : dataItems) {
+                ArrOutputItem outputItem = new ArrOutputItem();
                 outputItem.setItemType(type);
-                outputItem.setItemSpec(dataItem.getSpec());
-                outputItem.setUndefined(BooleanUtils.isTrue(dataItem.getUndefined()));
+                outputItem.setItemSpec(dataItem.getItemSpec());
+                outputItem.setData(dataItem.getData());
                 createOutputItem(outputItem, outputDefinition, fundVersion, change.getOrCreateChange());
             }
             return true;
@@ -1794,7 +1800,7 @@ public class OutputService {
      * @return {true} pokud se data změnily
      */
     private boolean isDataChanged(final RulItemType itemType,
-                                  final List<ArrItemData> dataItems,
+                                  final List<ArrItem> dataItems,
                                   final ArrOutputDefinition outputDefinition) {
         List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(itemType, outputDefinition);
 
@@ -1804,25 +1810,24 @@ public class OutputService {
         }
 
         // pomocné pole pro porovnávání
-        ArrayList<ArrItemData> dataItemsToCompare = new ArrayList<>(dataItems);
-
-        itemService.loadData(outputItems);
+        ArrayList<ArrItem> dataItemsToCompare = new ArrayList<>(dataItems);
 
         // procházím všechny kombinace
         // pokud naleznu shodu, odeberu položku z pomocného pole
         for (ArrOutputItem outputItem : outputItems) {
-            ArrItemData item = outputItem.getItem();
-            Iterator<ArrItemData> iterator = dataItemsToCompare.iterator();
+            ArrData data = outputItem.getData();
+            Iterator<ArrItem> iterator = dataItemsToCompare.iterator();
             while (iterator.hasNext()) {
-                ArrItemData next = iterator.next();
-                if (EqualsBuilder.reflectionEquals(next, item)) {
+                ArrItem next = iterator.next();
+                ArrData nextData = next.getData();
+                if (EqualsBuilder.reflectionEquals(next, data)) {
                     iterator.remove();
                     break;
-                } else if (next instanceof IArrItemStringValue && item instanceof IArrItemStringValue) {
+                } else if (nextData instanceof IArrItemStringValue && data instanceof IArrItemStringValue) {
                     // pokud se jedná o textové hodnoty atributu, porovnávám na úrovni textové hodnoty a specifikace
-                    String nextValue = ((IArrItemStringValue) next).getValue();
-                    String itemValue = ((IArrItemStringValue) item).getValue();
-                    if (ObjectUtils.equals(nextValue, itemValue) && ObjectUtils.equals(next.getSpec(), item.getSpec())) {
+                    String nextValue = ((IArrItemStringValue) nextData).getValue();
+                    String itemValue = ((IArrItemStringValue) data).getValue();
+                    if (ObjectUtils.equals(nextValue, itemValue) && ObjectUtils.equals(next.getItemSpec(), outputItem.getItemSpec())) {
                         iterator.remove();
                         break;
                     }
@@ -2032,7 +2037,7 @@ public class OutputService {
             ArrOutputItem openOutputItem = outputItemRepository.findOpenOutputItem(outputItemObjectId);
             if (openOutputItem == null) {
                 throw new ObjectNotFoundException("Nebyla nalezena hodnota atributu s OBJID=" + outputItemObjectId, ArrangementCode.DATA_NOT_FOUND).set("descItemObjectId", outputItemObjectId);
-            } else if (openOutputItem.getUndefined()) {
+            } else if (openOutputItem.getData() == null) {
                 throw new BusinessException("Položka již je nastavená jako '" + ArrangementService.UNDEFINED + "'", ArrangementCode.ALREADY_INDEFINABLE);
             }
 
@@ -2050,7 +2055,6 @@ public class OutputService {
         outputItem.setCreateChange(change);
         outputItem.setDeleteChange(null);
         outputItem.setDescItemObjectId(outputItemObjectId == null ? arrangementService.getNextDescItemObjectId() : outputItemObjectId);
-        outputItem.setUndefined(true);
 
         ArrOutputItem outputItemCreated = createOutputItem(outputItem, fundVersion, change);
 
@@ -2060,7 +2064,7 @@ public class OutputService {
         }
 
         checkCalculatingAttribute(outputDefinition, outputItem.getItemType());
-        outputItemCreated.setItem(descItemFactory.createItemByType(outputItemType.getDataType()));
+        //outputItemCreated.setItem(descItemFactory.createItemByType(outputItemType.getDataType()));
 
         // sockety
         publishChangeOutputItem(fundVersion, outputItemCreated);

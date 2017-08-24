@@ -11,6 +11,7 @@ import com.vividsolutions.jts.io.WKTWriter;
  * @author Martin Šlapa
  * @since 15.9.15
  */
+@Deprecated
 public class ArrItemCoordinates extends ArrItemData {
 
     private Geometry value;

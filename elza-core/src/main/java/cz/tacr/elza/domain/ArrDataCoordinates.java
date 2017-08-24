@@ -1,16 +1,14 @@
 package cz.tacr.elza.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.WKTWriter;
+import org.hibernate.search.annotations.Indexed;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
-import org.hibernate.search.annotations.Indexed;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.WKTWriter;
-
-import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 
 /**
  * Hodnota atributu archivního popisu typu Coordinates.
@@ -18,7 +16,7 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
  * @author Martin Šlapa
  * @since 1.9.2015
  */
-@Indexed(interceptor = IndexArrDataWhenHasDescItemInterceptor.class)
+@Indexed
 @Entity(name = "arr_data_coordinates")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -36,7 +34,12 @@ public class ArrDataCoordinates extends ArrData {
     }
 
     @Override
-    public String getFulltextValue() {
+    public String toString() {
         return new WKTWriter().writeFormatted(value);
+    }
+
+    @Override
+    public String getFulltextValue() {
+        return toString();
     }
 }

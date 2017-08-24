@@ -53,14 +53,14 @@ public class XmlImportController {
         config.setStopOnError(stopOnError == null ? false : stopOnError);
 
         if (type == XmlImportType.FUND && transformationName != null) {
-            Assert.notNull(ruleSetId);
+            Assert.notNull(ruleSetId, "Identifikátor pravidel musí být vyplněn");
             config.setRuleSetId(ruleSetId);
         }
 
         RegScope regScope;
         if (scopeId == null) {
             regScope = new RegScope();
-            Assert.notNull(scopeName);
+            Assert.notNull(scopeName, "Název scooe musí být vyplněn");
             regScope.setName(scopeName);
             regScope.setCode(StringUtils.upperCase(Normalizer.normalize(StringUtils.replace(StringUtils.substring(scopeName, 0, 50).trim(), " ", "_"), Normalizer.Form.NFD)));
             scopeRepository.save(regScope);

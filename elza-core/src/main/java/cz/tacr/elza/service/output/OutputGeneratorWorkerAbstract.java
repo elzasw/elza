@@ -85,7 +85,7 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
     private String mimeType;
 
     public void init(final Integer outputInProgress, final Integer userId, final RulTemplate rulTemplate) {
-        Assert.notNull(rulTemplate);
+        Assert.notNull(rulTemplate, "Šablona musí být vyplněna");
 
         this.arrOutputId = outputInProgress;
         this.userId = userId;

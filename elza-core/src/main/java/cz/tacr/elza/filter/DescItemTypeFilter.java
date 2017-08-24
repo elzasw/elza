@@ -60,8 +60,8 @@ public class DescItemTypeFilter {
             final List<DescItemCondition> valuesConditions,
             final List<DescItemCondition> specsConditions,
             final List<DescItemCondition> conditions) {
-        Assert.notNull(descItemType);
-        Assert.notNull(cls);
+        Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
+        Assert.notNull(cls, "Třída musí být vyplněna");
 
         this.descItemType = descItemType;
         this.cls = cls;

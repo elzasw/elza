@@ -63,7 +63,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     @Query("SELECT i FROM arr_desc_item i WHERE i.node = ?1 AND i.deleteChange IS NULL AND i.itemType IN (?2)")
     List<ArrDescItem> findOpenByNodeAndTypes(ArrNode node, Set<RulItemType> descItemTypes);
 
-    @Query("SELECT i FROM arr_desc_item i WHERE i.undefined = TRUE AND i.nodeId IN (?1) AND i.deleteChange IS NULL AND i.itemType IN (?2) AND (i.createChange < ?3 OR ?3 IS NULL) AND (i.deleteChange > ?3 OR i.deleteChange IS NULL)")
+    @Query("SELECT i FROM arr_desc_item i WHERE i.data IS NULL AND i.nodeId IN (?1) AND i.deleteChange IS NULL AND i.itemType IN (?2) AND (i.createChange < ?3 OR ?3 IS NULL) AND (i.deleteChange > ?3 OR i.deleteChange IS NULL)")
     List<ArrDescItem> findUndefinedByNodeAndTypesAndChange(Collection<Integer> nodeIds, Collection<RulItemType> descItemTypes, ArrChange change);
 
     /**

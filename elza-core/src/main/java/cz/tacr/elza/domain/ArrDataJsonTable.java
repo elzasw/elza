@@ -1,19 +1,16 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.tacr.elza.domain.table.ElzaTable;
 import org.hibernate.search.annotations.Indexed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import cz.tacr.elza.domain.table.ElzaTable;
-import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
 
 /**
@@ -22,7 +19,7 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
  * @author Martin Šlapa
  * @since 21.06.2016
  */
-@Indexed(interceptor = IndexArrDataWhenHasDescItemInterceptor.class)
+@Indexed
 @Entity(name = "arr_data_json_table")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})

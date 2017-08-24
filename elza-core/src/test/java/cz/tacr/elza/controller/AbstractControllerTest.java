@@ -1443,7 +1443,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return otevřená verze AP
      */
     protected ArrFundVersionVO getOpenVersion(final ArrFundVO fund) {
-        org.springframework.util.Assert.notNull(fund);
+        org.springframework.util.Assert.notNull(fund, "AS musí být vyplněn");
 
         List<ArrFundVO> funds = getFunds();
 

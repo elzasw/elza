@@ -14,8 +14,15 @@ import javax.persistence.Transient;
 
 import cz.tacr.elza.service.cache.NodeCacheSerializable;
 import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.lucene.analysis.core.KeywordTokenizerFactory;
+import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
+import org.hibernate.search.annotations.AnalyzerDef;
 import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.FieldBridge;
+import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.NumericField;
+import org.hibernate.search.annotations.TokenFilterDef;
+import org.hibernate.search.annotations.TokenizerDef;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -35,6 +42,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
 public abstract class ArrItem implements NodeCacheSerializable {
 
+    public static final String DATA = "data";
     public static final String ITEM_SPEC = "itemSpec";
     public static final String ITEM_TYPE = "itemType";
 
@@ -42,20 +50,20 @@ public abstract class ArrItem implements NodeCacheSerializable {
 
     }
 
-    public ArrItem(final Class<? extends ArrItemData> clazz) throws IllegalAccessException, InstantiationException {
+    /*public ArrItem(final Class<? extends ArrItemData> clazz) throws IllegalAccessException, InstantiationException {
         this.item = clazz.newInstance();
     }
 
     public ArrItem(final ArrItemData item) {
         this.item = item;
-    }
+    }*/
 
-    @Transient
-    protected ArrItemData item;
+    /*@Transient
+    protected ArrItemData item;*/
 
-    public void setItem(final ArrItemData item) {
+    /*public void setItem(final ArrItemData item) {
         this.item = item;
-    }
+    }*/
 
     @Id
     @GeneratedValue
@@ -99,8 +107,10 @@ public abstract class ArrItem implements NodeCacheSerializable {
     @Column(nullable = false)
     private Integer position;
 
-    @Column(nullable = false)
-    private Boolean undefined;
+    @IndexedEmbedded
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrData.class)
+    @JoinColumn(name = "dataId")
+    private ArrData data;
 
     @Field
     @NumericField
@@ -241,9 +251,9 @@ public abstract class ArrItem implements NodeCacheSerializable {
 
     public abstract ArrOutputDefinition getOutputDefinition();
 
-    public ArrItemData getItem() {
+    /*public ArrItemData getItem() {
         return item;
-    }
+    }*/
 
     public void setCreateChangeId(final Integer createChangeId) {
         this.createChangeId = createChangeId;
@@ -269,11 +279,15 @@ public abstract class ArrItem implements NodeCacheSerializable {
         this.itemSpecId = itemSpecId;
     }
 
-    public Boolean getUndefined() {
-        return undefined;
+    public ArrData getData() {
+        return data;
     }
 
-    public void setUndefined(final Boolean undefined) {
-        this.undefined = undefined;
+    public void setData(final ArrData data) {
+        this.data = data;
+    }
+
+    public boolean isUndefined() {
+        return data == null;
     }
 }

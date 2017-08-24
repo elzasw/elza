@@ -63,10 +63,10 @@ public class KmlController {
             @RequestParam(required = false, value = "outputDefinitionId") final Integer outputDefinitionId,
             @RequestParam(required = false, value = "outputDefinitionVersion") final Integer outputDefinitionVersion,
             @RequestParam(required = true, value = "file") final MultipartFile importFile) throws IOException, ParserConfigurationException, SAXException {
-        Assert.notNull(fundVersionId);
-        Assert.notNull(descItemTypeId);
-        Assert.notNull(outputDefinitionId);
-        Assert.notNull(outputDefinitionVersion);
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(descItemTypeId, "Nebyl vyplněn identifikátor typu atributu");
+        Assert.notNull(outputDefinitionId, "Identifikátor definice výstupu musí být vyplněn");
+        Assert.notNull(outputDefinitionVersion, "Verze definice výstupu musí být vyplněna");
 
         return arrIOService.coordinatesOutputImport(fundVersionId, descItemTypeId, outputDefinitionId, outputDefinitionVersion, importFile);
     }
@@ -79,10 +79,10 @@ public class KmlController {
             @RequestParam(required = false, value = "nodeId") final Integer nodeId,
             @RequestParam(required = false, value = "nodeVersion") final Integer nodeVersion,
             @RequestParam(required = true, value = "file") final MultipartFile importFile) throws IOException, ParserConfigurationException, SAXException {
-        Assert.notNull(fundVersionId);
-        Assert.notNull(descItemTypeId);
-        Assert.notNull(nodeId);
-        Assert.notNull(nodeVersion);
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(descItemTypeId, "Nebyl vyplněn identifikátor typu atributu");
+        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
+        Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
 
         return arrIOService.coordinatesDescImport(fundVersionId, descItemTypeId, nodeId, nodeVersion, importFile);
     }
@@ -92,7 +92,7 @@ public class KmlController {
     public List<Integer> importRegCoordinates(
             @RequestParam(value = "regRecordId") final Integer regRecordId,
             @RequestParam(value = "file") final MultipartFile importFile) throws IOException, ParserConfigurationException, SAXException {
-        Assert.notNull(regRecordId);
+        Assert.notNull(regRecordId, "Identifikátor hesla musí být vyplněn");
 
         RegRecord record = regRecordRepository.findOne(regRecordId);
         if (record == null) {
@@ -135,8 +135,8 @@ public class KmlController {
     public void coordinatesDescExport(final HttpServletResponse response,
                                      @PathVariable(value = "descItemObjectId") final Integer descItemObjectId,
                                      @PathVariable(value = "fundVersionId") final Integer fundVersionId) throws IOException {
-        Assert.notNull(descItemObjectId);
-        Assert.notNull(fundVersionId);
+        Assert.notNull(descItemObjectId, "Nebyl vyplněn jednoznačný identifikátor descItem");
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
         arrIOService.coordinatesDescExport(response, descItemObjectId, fundVersionId);
     }
@@ -148,8 +148,8 @@ public class KmlController {
     public void coordinatesOutputExport(final HttpServletResponse response,
                                      @PathVariable(value = "descItemObjectId") final Integer descItemObjectId,
                                      @PathVariable(value = "fundVersionId") final Integer fundVersionId) throws IOException {
-        Assert.notNull(descItemObjectId);
-        Assert.notNull(fundVersionId);
+        Assert.notNull(descItemObjectId, "Nebyl vyplněn jednoznačný identifikátor descItem");
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
         arrIOService.coordinatesOutputExport(response, descItemObjectId, fundVersionId);
     }
@@ -158,10 +158,10 @@ public class KmlController {
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_XML_VALUE)
     public void exportRegCoordinates(final HttpServletResponse response, @PathVariable(value = "coordinatesId") final Integer coordinatesId) throws IOException {
-        Assert.notNull(coordinatesId);
+        Assert.notNull(coordinatesId, "Identifikátor koordinátu musí být vyplněn");
         RegCoordinates cords = regCoordinatesRepository.findOne(coordinatesId);
 
-        Assert.notNull(cords);
+        Assert.notNull(cords, "Koordinát nexistuje");
 
        arrIOService.toKml(response, cords.getValue());
     }

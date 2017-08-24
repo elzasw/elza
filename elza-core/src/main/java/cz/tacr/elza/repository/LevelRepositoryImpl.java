@@ -85,8 +85,8 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
 
     @Override
     public List<ArrLevel> findAllParentsByNodeAndVersion(final ArrNode node, final ArrFundVersion version) {
-        Assert.notNull(node);
-        Assert.notNull(version);
+        Assert.notNull(node, "JP musí být vyplněna");
+        Assert.notNull(version, "Verze AS musí být vyplněna");
 
 
         ArrChange lockChange = version.getLockChange();
@@ -175,7 +175,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
 
     @Override
     public List<ArrLevel> findAllChildrenByNode(final ArrNode node, final ArrChange lockChange) {
-        Assert.notNull(node);
+        Assert.notNull(node, "JP musí být vyplněna");
 
         List<ArrLevel> children = findByParentNode(node, lockChange);
 
@@ -242,9 +242,9 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     public List<ArrLevel> findLevelsByDirection(final ArrLevel level,
                                                 final ArrFundVersion version,
                                                 final RelatedNodeDirection direction) {
-        Assert.notNull(level);
-        Assert.notNull(version);
-        Assert.notNull(direction);
+        Assert.notNull(level, "Level musí být vyplněn");
+        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Assert.notNull(direction, "Směr musí být vyplněn");
 
         switch (direction) {
             case NODE:

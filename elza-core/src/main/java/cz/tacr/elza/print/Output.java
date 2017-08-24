@@ -81,7 +81,7 @@ public class Output implements NodesOrder {
      * Přidá {@link NodeId} do výstupu.
      */
     public NodeId addNodeId(final NodeId nodeId) {
-        Assert.notNull(nodeId);
+        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
 
         NodeId nodeIdOrig = nodeIdsMap.get(nodeId.getArrNodeId());
         if (nodeIdOrig == null) {
@@ -196,7 +196,7 @@ public class Output implements NodesOrder {
      * @return seznam items s odpovídajícími kódy
      */
     public List<Item> getItems(@NotNull final Collection<String> codes) {
-        Assert.notNull(codes);
+        Assert.notNull(codes, "Kódy musí být vyplněny");
         return items.stream()
                 .filter(item -> codes.contains(item.getType().getCode()))
                 .sorted(Item::compareToItemViewOrderPosition)
@@ -247,7 +247,7 @@ public class Output implements NodesOrder {
      * @return seznam všech items výstupu kromě hodnot typů uvedených ve vstupu metody
      */
     public List<Item> getAllItems(@NotNull final Collection<String> codes) {
-        Assert.notNull(codes);
+        Assert.notNull(codes, "Kódy musí být vyplněny");
         return items.stream()
                 .filter(item -> !codes.contains(item.getType().getCode()))
                 .sorted(Item::compareToItemViewOrderPosition)
@@ -408,7 +408,7 @@ public class Output implements NodesOrder {
     		recs = filterRecords(code);
     		filteredRecords.put(code, recs);
     	}
-    	
+
     	return recs;
     }
 
@@ -419,17 +419,17 @@ public class Output implements NodesOrder {
      */
     private FilteredRecords filterRecords(String code) {
     	FilteredRecords records = new FilteredRecords(code);
-    	
+
     	// Add all nodes
         IteratorNodes iteratorNodes = new IteratorNodes(this, new ArrayList<>(nodeIdsMap.values()), outputFactoryService, MAX_CACHED_NODES);
         while (iteratorNodes.hasNext()) {
         	Node node = iteratorNodes.next();
             records.addNode(node);
         }
-        
+
         // Sort collection
         records.nodesAdded();
-        
+
         return records;
 	}
 
@@ -440,7 +440,7 @@ public class Output implements NodesOrder {
     public RecordType getRecordType(String code) {
     	return recordTypes.get(code);
     }
-    
+
     /**
      * Add new record type
      * @return

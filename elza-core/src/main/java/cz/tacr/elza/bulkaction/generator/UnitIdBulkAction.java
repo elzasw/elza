@@ -1,36 +1,34 @@
 package cz.tacr.elza.bulkaction.generator;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import org.apache.commons.lang.BooleanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-
 import cz.tacr.elza.bulkaction.BulkActionConfig;
-import cz.tacr.elza.bulkaction.BulkActionInterruptedException;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.bulkaction.generator.result.UnitIdResult;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItemData;
-import cz.tacr.elza.domain.ArrItemString;
-import cz.tacr.elza.domain.ArrItemUnitid;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
+import org.apache.commons.lang.BooleanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Hromadná akce prochází strom otevřené verze archivní pomůcky a doplňuje u položek požadované atributy.
@@ -119,35 +117,35 @@ public class UnitIdBulkAction extends BulkAction {
      */
     private void init(final BulkActionConfig bulkActionConfig) {
 
-        Assert.notNull(bulkActionConfig);
+        Assert.notNull(bulkActionConfig, "Nastavení hromadné akce musí být vyplněno");
 
         String unitIdCode = (String) bulkActionConfig.getString("unit_id_code");
-        Assert.notNull(unitIdCode);
+        Assert.notNull(unitIdCode, "unit_id_code musí být vyplněno");
 
         descItemType = itemTypeRepository.getOneByCode(unitIdCode);
-        Assert.notNull(descItemType);
+        Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
 
         String levelTypeCode = (String) bulkActionConfig.getString("level_type_code");
-        Assert.notNull(levelTypeCode);
+        Assert.notNull(levelTypeCode, "level_type_code musí být vyplněn");
 
         descItemLevelType = itemTypeRepository.getOneByCode(levelTypeCode);
-        Assert.notNull(descItemLevelType);
+        Assert.notNull(descItemLevelType, "Typ levelu musí být vyplněn");
 
         String delimiterMajor = (String) bulkActionConfig.getString("delimiter_major");
-        Assert.notNull(delimiterMajor);
+        Assert.notNull(delimiterMajor, "delimiter_major musí být vyplněn");
         this.delimiterMajor = delimiterMajor;
 
         String delimiterMinor = (String) bulkActionConfig.getString("delimiter_minor");
-        Assert.notNull(delimiterMinor);
+        Assert.notNull(delimiterMinor, "delimiter_minor musí být vyplněn");
         this.delimiterMinor = delimiterMinor;
 
         String previousIdCode = (String) bulkActionConfig.getString("previous_id_code");
         descItemPreviousType = itemTypeRepository.getOneByCode(previousIdCode);
-        Assert.notNull(descItemPreviousType);
+        Assert.notNull(descItemPreviousType, "Typ atributu musí být vyplněn");
 
         String previousIdSpecCode = (String) bulkActionConfig.getString("previous_id_spec_code");
         descItemPreviousSpec = itemSpecRepository.getOneByCode(previousIdSpecCode);
-        Assert.notNull(descItemPreviousSpec);
+        Assert.notNull(descItemPreviousSpec, "Typ specifikace musí být vyplněn");
 
         String delimiterMajorLevelTypeNotUse = (String) bulkActionConfig
                 .getString("delimiter_major_level_type_not_use");
@@ -198,34 +196,35 @@ public class UnitIdBulkAction extends BulkAction {
 
                 // vytvoření nového atributu
                 if (descItem == null) {
-                    descItem = new ArrDescItem(new ArrItemUnitid());
+                    descItem = new ArrDescItem();
                     descItem.setItemType(descItemType);
                     descItem.setNode(level.getNode());
+                    descItem.setData(new ArrDataUnitid());
                 }
 
-                ArrItemData item = descItem.getItem();
+                ArrData data = descItem.getData();
 
-                if (!(item instanceof ArrItemUnitid)) {
+                if (!(data instanceof ArrDataUnitid)) {
                     throw new IllegalStateException(descItemType.getCode() + " neni typu ArrDescItemUnitid");
                 }
 
                 // uložit pouze při rozdílu
-                if (((ArrItemUnitid) item).getValue() == null || !unitId.getData()
-                        .equals(((ArrItemUnitid) item).getValue())) {
+                if (((ArrDataUnitid) data).getValue() == null || !unitId.getData()
+                        .equals(((ArrDataUnitid) data).getValue())) {
 
                     ArrDescItem ret;
 
                     // uložit původní hodnotu pouze při první změně z předchozí verze
                     if (descItem.getDescItemObjectId() != null && descItem.getCreateChange().getChangeId() < version
                             .getCreateChange().getChangeId()) {
-                        ArrDescItem descItemPrev = new ArrDescItem(descItemFactory.createItemByType(descItemPreviousType.getDataType()));
-                        ArrItemData itemPrev = descItemPrev.getItem();
+                        ArrDescItem descItemPrev = new ArrDescItem();
+                        ArrData dataPrev = descItemPrev.getData();
                         descItemPrev.setItemType(descItemPreviousType);
                         descItemPrev.setItemSpec(descItemPreviousSpec);
                         descItemPrev.setNode(level.getNode());
 
-                        if (itemPrev instanceof ArrItemString) {
-                            ((ArrItemString) itemPrev).setValue(((ArrItemUnitid) itemPrev).getValue());
+                        if (dataPrev instanceof ArrDataString) {
+                            ((ArrDataString) dataPrev).setValue(((ArrDataUnitid) dataPrev).getValue());
                         } else {
                             throw new IllegalStateException(
                                     descItemPrev.getClass().getName() + " nema definovany prevod hodnoty");
@@ -236,11 +235,7 @@ public class UnitIdBulkAction extends BulkAction {
 
                     }
 
-                    if (BooleanUtils.isNotFalse(descItem.getUndefined())) {
-                        descItem.setUndefined(false);
-                    }
-
-                    ((ArrItemUnitid) item).setValue(unitId.getData());
+                    ((ArrDataUnitid) data).setValue(unitId.getData());
                     ret = saveDescItem(descItem, version, change);
                     level.setNode(ret.getNode());
                     countChanges++;
@@ -316,7 +311,7 @@ public class UnitIdBulkAction extends BulkAction {
 
         ArrFundVersion version = fundVersionRepository.findOne(bulkActionRun.getFundVersionId());
 
-        Assert.notNull(version);
+        Assert.notNull(version, "Verze AS musí být vyplněna");
         checkVersion(version);
         this.version = version;
 
@@ -324,28 +319,28 @@ public class UnitIdBulkAction extends BulkAction {
 
         for (Integer nodeId : inputNodeIds) {
             ArrNode node = nodeRepository.findOne(nodeId);
-            Assert.notNull("Node s nodeId=" + nodeId + " neexistuje");
+            Assert.notNull(node, "Node s nodeId=" + nodeId + " neexistuje");
             ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, rootNode, null);
-            Assert.notNull("Level neexistuje, nodeId=" + node.getNodeId() + ", rootNodeId=" + rootNode.getNodeId());
+            Assert.notNull(level, "Level neexistuje, nodeId=" + node.getNodeId() + ", rootNodeId=" + rootNode.getNodeId());
 
             ArrDescItem descItem = loadDescItem(level);
             ArrDescItem descItemLevel = loadDescItemLevel(level);
-            if (descItem != null && BooleanUtils.isNotTrue(descItem.getUndefined())) {
-                ArrItemData item = descItem.getItem();
+            if (descItem != null && BooleanUtils.isNotTrue(descItem.isUndefined())) {
+                ArrData item = descItem.getData();
 
-                if (!(item instanceof ArrItemUnitid)) {
+                if (!(item instanceof ArrDataUnitid)) {
                     throw new IllegalStateException(descItemType.getCode() + " neni typu ArrDescItemUnitid");
                 }
 
                 List<ArrLevel> childLevels = getChildren(level);
 
-                String value = ((ArrItemUnitid) item).getValue();
+                String value = ((ArrDataUnitid) item).getValue();
                 UnitId unitId = new UnitId(value);
                 unitId.setSeparator("");
 
                 UnitId unitIdChild = null;
                 for (ArrLevel childLevel : childLevels) {
-                    if (unitId != null && unitIdChild == null) {
+                    if (unitIdChild == null) {
                         unitIdChild = unitId.getClone();
                     }
                     generate(childLevel, rootNode, unitIdChild, descItemLevel == null ? null : descItemLevel.getItemSpec().getCode());

@@ -12,16 +12,13 @@ import org.hibernate.search.annotations.Store;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
-
-
 /**
  * Hodnota atributu archivního popisu typu desetinného čísla.
  *
  * @author Martin Šlapa
  * @since 12.10.2015
  */
-@Indexed(interceptor = IndexArrDataWhenHasDescItemInterceptor.class)
+@Indexed
 @Entity(name = "arr_data_decimal")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})

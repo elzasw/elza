@@ -18,6 +18,21 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemCoordinatesVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemDecimalVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemEnumVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemFileRefVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemFormattedTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemJsonTableVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemPartyRefVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemRecordRefVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
 import cz.tacr.elza.repository.ItemSpecRepository;
@@ -25,6 +40,7 @@ import cz.tacr.elza.domain.ParRegistryRole;
 import cz.tacr.elza.repository.RegistryRoleRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -347,7 +363,7 @@ public class ClientFactoryVO {
      * @return seznam VO
      */
     public List<RulTemplateVO> createTemplates(final Collection<RulTemplate> templates){
-        Assert.notNull(templates);
+        Assert.notNull(templates, "Šablony musí být vyplněny");
 
         List<RulTemplateVO> result = new ArrayList<>();
         for (RulTemplate template : templates) {
@@ -362,7 +378,7 @@ public class ClientFactoryVO {
      * @return VO
      */
     public RulTemplateVO createTemplate(final RulTemplate template){
-        Assert.notNull(template);
+        Assert.notNull(template, "Šablona musí být vyplněna");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.map(template, RulTemplateVO.class);
     }
@@ -737,7 +753,7 @@ public class ClientFactoryVO {
      * @return seznam VO typů
      */
     public List<ParPartyNameFormTypeVO> createPartyNameFormTypes(final Collection<ParPartyNameFormType> types) {
-        Assert.notNull(types);
+        Assert.notNull(types, "Typy forem jmén musí být vyplněny");
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
         List<ParPartyNameFormTypeVO> result = new LinkedList<>();
@@ -931,7 +947,7 @@ public class ClientFactoryVO {
      * @return VO
      */
     public ArrFundVO createFundVO(final ArrFund fund, final boolean includeVersions) {
-        Assert.notNull(fund);
+        Assert.notNull(fund, "AS musí být vyplněn");
 
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrFundVO fundVO = mapper.map(fund, ArrFundVO.class);
@@ -961,7 +977,7 @@ public class ClientFactoryVO {
      * @return VO verze archivní pomůcky
      */
     public ArrFundVersionVO createFundVersion(final ArrFundVersion fundVersion) {
-        Assert.notNull(fundVersion);
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
 
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrFundVersionVO fundVersionVO = mapper.map(fundVersion, ArrFundVersionVO.class);
@@ -991,7 +1007,7 @@ public class ClientFactoryVO {
      */
     public List<ArrOutputDefinitionVO> createOutputDefinitions(final Collection<ArrOutputDefinition> outputDefinitions,
                                                                final boolean loadOutputs) {
-        Assert.notNull(outputDefinitions);
+        Assert.notNull(outputDefinitions, "Musí být vyplněny definice výstupů");
 
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
@@ -1016,7 +1032,7 @@ public class ClientFactoryVO {
      * @return VO
      */
     public ArrOutputDefinitionVO createOutputDefinition(final ArrOutputDefinition outputDefinition) {
-        Assert.notNull(outputDefinition);
+        Assert.notNull(outputDefinition, "Definice výstupu musí být vyplněna");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrOutputDefinitionVO outputDefinitionVO = mapper.map(outputDefinition, ArrOutputDefinitionVO.class);
         return outputDefinitionVO;
@@ -1029,7 +1045,7 @@ public class ClientFactoryVO {
      * @return seznam verzí seřazený od nejstarší po nejmladší
      */
     private List<ArrOutputVO> createOutputsVO(final List<ArrOutput> outputs) {
-        Assert.notNull(outputs);
+        Assert.notNull(outputs, "Výstupy musí být vyplněny");
 
         List<ArrOutputVO> result = new ArrayList<>(outputs.size());
         MapperFacade mapper = mapperFactory.getMapperFacade();
@@ -1058,7 +1074,7 @@ public class ClientFactoryVO {
      * @return VO specifikace hodnoty atributu
      */
     public RulDescItemSpecVO createDescItemSpecVO(final RulItemSpec descItemSpec) {
-        Assert.notNull(descItemSpec);
+        Assert.notNull(descItemSpec, "Specifikace atributu musí být vyplněna");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         RulDescItemSpecVO descItemSpecVO = mapper.map(descItemSpec, RulDescItemSpecVO.class);
         return descItemSpecVO;
@@ -1071,7 +1087,7 @@ public class ClientFactoryVO {
      * @return VO typ hodnoty atributu
      */
     public RulDescItemTypeDescItemsVO createDescItemTypeVO(final RulItemType descItemType) {
-        Assert.notNull(descItemType);
+        Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         RulDescItemTypeDescItemsVO descItemTypeVO = mapper.map(descItemType, RulDescItemTypeDescItemsVO.class);
         descItemTypeVO.setDataTypeId(descItemType.getDataType().getDataTypeId());
@@ -1085,7 +1101,7 @@ public class ClientFactoryVO {
      * @return VO typ hodnoty atributu
      */
     public ItemTypeDescItemsLiteVO createDescItemTypeLiteVO(final RulItemType descItemType) {
-        Assert.notNull(descItemType);
+        Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ItemTypeDescItemsLiteVO descItemTypeVO = mapper.map(descItemType, ItemTypeDescItemsLiteVO.class);
         return descItemTypeVO;
@@ -1098,9 +1114,50 @@ public class ClientFactoryVO {
      * @return VO hodnota atributu
      */
     public <T extends ArrItem> ArrItemVO createDescItem(final T item) {
-        Assert.notNull(item);
+        Assert.notNull(item, "Hodnota musí být vyplněna");
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrItemVO itemVO = mapper.map(item.getItem(), ArrItemVO.class);
+
+        ArrItemVO itemVO;
+        ArrData data = item.getData();
+        if (data instanceof ArrDataText) {
+            switch (data.getDataType().getCode()) {
+                case "TEXT":
+                    itemVO = new ArrItemTextVO();
+                    ((ArrItemTextVO) itemVO).setValue(((ArrDataText)data).getValue());
+                    break;
+                case "FORMATTED_TEXT":
+                    itemVO = new ArrItemFormattedTextVO();
+                    ((ArrItemFormattedTextVO) itemVO).setValue(((ArrDataText)data).getValue());
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+        } else {
+            itemVO = mapper.map(data, ArrItemVO.class);
+        }
+
+        if (itemVO == null) {
+            String code = item.getItemType().getDataType().getCode();
+            switch (code) {
+                case "INT": itemVO = new ArrItemIntVO(); break;
+                case "STRING": itemVO = new ArrItemStringVO(); break;
+                case "TEXT": itemVO = new ArrItemTextVO(); break;
+                case "UNITDATE": itemVO = new ArrItemUnitdateVO(); break;
+                case "UNITID": itemVO = new ArrItemUnitidVO(); break;
+                case "FORMATTED_TEXT": itemVO = new ArrItemFormattedTextVO(); break;
+                case "COORDINATES": itemVO = new ArrItemCoordinatesVO(); break;
+                case "PARTY_REF": itemVO = new ArrItemPartyRefVO(); break;
+                case "RECORD_REF": itemVO = new ArrItemRecordRefVO(); break;
+                case "DECIMAL": itemVO = new ArrItemDecimalVO(); break;
+                case "PACKET_REF": itemVO = new ArrItemPartyRefVO(); break;
+                case "ENUM": itemVO = new ArrItemEnumVO(); break;
+                case "FILE_REF": itemVO = new ArrItemFileRefVO(); break;
+                case "JSON_TABLE": itemVO = new ArrItemJsonTableVO(); break;
+                default: throw  new NotImplementedException(code);
+            }
+            itemVO.setUndefined(true);
+        }
+
         BeanUtils.copyProperties(item, itemVO);
         itemVO.setId(item.getItemId());
 
@@ -1140,9 +1197,9 @@ public class ClientFactoryVO {
                 itemByType.put(item.getItemType(), itemList);
             }
 
-            itemList.add(createItem(item));
+            itemList.add(createDescItem(item));
         }
-    	
+
         List<ItemTypeDescItemsLiteVO> itemTypeVOList = new ArrayList<>();
         // zjištění použitých typů atributů a jejich převod do VO
         for (RulItemType descItemType : itemByType.keySet()) {
@@ -1164,7 +1221,7 @@ public class ClientFactoryVO {
         	for(GroupConfiguration groupConfig: viewConfig.getGroups())
         	{
         		ItemGroupVO groupVo = new ItemGroupVO(groupConfig.getCode());
-        		groupVo.setTypes(new ArrayList<>()); // should be removed after moving logic into ItemTypeGroupVO 
+        		groupVo.setTypes(new ArrayList<>()); // should be removed after moving logic into ItemTypeGroupVO
         		allItemGroups.add(groupVo);
         		itemGroupVOMap.put(groupConfig, groupVo);
         	}
@@ -1194,7 +1251,7 @@ public class ClientFactoryVO {
         // seřazení položek ve skupinách
         for (ItemGroupVO itemGroupVO : itemGroupVOList) {
         	boolean ordered = false;
-        	
+
             if(viewConfig!=null) {
             	GroupConfiguration groupConfig = viewConfig.getGroup(itemGroupVO.getCode());
             	if(groupConfig!=null) {
@@ -1279,8 +1336,8 @@ public class ClientFactoryVO {
             }
         }
 
-        // Prepare list of groups        
-        ViewConfiguration viewConfig = elzaRules.getViewConfiguration(ruleCode, fundId);        
+        // Prepare list of groups
+        ViewConfiguration viewConfig = elzaRules.getViewConfiguration(ruleCode, fundId);
         Map<GroupConfiguration, ItemTypeGroupVO> itemTypeGroupVOMap = new HashMap<>();
         List<ItemTypeGroupVO> result = new ArrayList<>();
         // prepare empty groups
@@ -1289,7 +1346,7 @@ public class ClientFactoryVO {
         	for(GroupConfiguration groupConfig: viewConfig.getGroups())
         	{
         		ItemTypeGroupVO groupVo = new ItemTypeGroupVO(groupConfig.getCode(), groupConfig.getName());
-        		groupVo.setTypes(new ArrayList<>()); // should be removed after moving logic into ItemTypeGroupVO 
+        		groupVo.setTypes(new ArrayList<>()); // should be removed after moving logic into ItemTypeGroupVO
         		result.add(groupVo);
         		itemTypeGroupVOMap.put(groupConfig, groupVo);
         	}
@@ -1324,16 +1381,16 @@ public class ClientFactoryVO {
             // set width from type info
             itemTypeVO.setWidth(typeInfo!=null?typeInfo.getWidth():1);
 
-            List<ItemTypeLiteVO> itemTypeList = itemTypeGroupVO.getTypes();            
+            List<ItemTypeLiteVO> itemTypeList = itemTypeGroupVO.getTypes();
             itemTypeList.add(itemTypeVO);
         }
-        
+
         // remove empty groups and return result
         return result.stream().filter(g -> g.getTypes().size()>0 ).collect(Collectors.toList());
     }
 
     private ItemTypeLiteVO createItemTypeLite(final RulItemTypeExt itemTypeExt) {
-        Assert.notNull(itemTypeExt);
+        Assert.notNull(itemTypeExt, "Typ hodnoty atributu musí být vyplněn");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ItemTypeLiteVO itemTypeVO = mapper.map(itemTypeExt, ItemTypeLiteVO.class);
         return itemTypeVO;
@@ -1346,7 +1403,7 @@ public class ClientFactoryVO {
      * @return VO typu hodnoty atributu se specifikacemi
      */
     public RulDescItemTypeExtVO createDescItemTypeExt(final RulItemTypeExt descItemType) {
-        Assert.notNull(descItemType);
+        Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         RulDescItemTypeExtVO descItemTypeVO = mapper.map(descItemType, RulDescItemTypeExtVO.class);
         descItemTypeVO.setDataTypeId(descItemType.getDataType().getDataTypeId());
@@ -1517,7 +1574,7 @@ public class ClientFactoryVO {
      * @return VO obalu
      */
     public ArrPacketVO createPacket(final ArrPacket packet) {
-        Assert.notNull(packet);
+        Assert.notNull(packet, "Obal musí být vyplněn");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrPacketVO packetVO = mapper.map(packet, ArrPacketVO.class);
         return packetVO;
@@ -1529,7 +1586,7 @@ public class ClientFactoryVO {
      * @return  VO stavu validace
      */
     public NodeConformityVO createNodeConformity(final ArrNodeConformityExt nodeConformity) {
-        Assert.notNull(nodeConformity);
+        Assert.notNull(nodeConformity, "Musí být vyplněno");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         NodeConformityVO nodeConformityVO = mapper.map(nodeConformity, NodeConformityVO.class);
         return nodeConformityVO;
@@ -1542,13 +1599,13 @@ public class ClientFactoryVO {
      * @return třída rejstříku
      */
     public RegScopeVO createScope(final RegScope scope) {
-        Assert.notNull(scope);
+        Assert.notNull(scope, "Scope musí být vyplněn");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.map(scope, RegScopeVO.class);
     }
 
     public List<RegScopeVO> createScopes(final Collection<RegScope> scopes) {
-        Assert.notNull(scopes);
+        Assert.notNull(scopes, "Scopes musí být vyplněny");
         List<RegScopeVO> result = new ArrayList<>(scopes.size());
         scopes.forEach(s -> result.add(createScope(s)));
 
@@ -1573,19 +1630,19 @@ public class ClientFactoryVO {
      * @return hromadná akce VO
      */
     public BulkActionVO createBulkAction(final BulkActionConfig bulkAction) {
-        Assert.notNull(bulkAction);
+        Assert.notNull(bulkAction, "Nastavení hromadné akce musí být vyplněno");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.map(bulkAction, BulkActionVO.class);
     }
 
     public BulkActionRunVO createBulkActionRun(final ArrBulkActionRun bulkActionRun) {
-        Assert.notNull(bulkActionRun);
+        Assert.notNull(bulkActionRun, "Běh hromatných akcí musí být vyplněn");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.map(bulkActionRun, BulkActionRunVO.class);
     }
 
     public BulkActionRunVO createBulkActionRunWithNodes(final ArrBulkActionRun bulkActionRun) {
-        Assert.notNull(bulkActionRun);
+        Assert.notNull(bulkActionRun, "Běh hromatných akcí musí být vyplněn");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         BulkActionRunVO bulkActionRunVO = mapper.map(bulkActionRun, BulkActionRunVO.class);
         bulkActionRunVO.setNodes(levelTreeCacheService.getNodesByIds(bulkActionNodeRepository.findNodeIdsByBulkActionRun(bulkActionRun), bulkActionRun.getFundVersionId()));
@@ -1597,7 +1654,7 @@ public class ClientFactoryVO {
     }
 
     public ArrNodeRegisterVO createRegisterLink(final ArrNodeRegister nodeRegister) {
-        Assert.notNull(nodeRegister);
+        Assert.notNull(nodeRegister, "Rejstříkové heslo musí být vyplněno");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrNodeRegisterVO nodeRegisterVO = mapper.map(nodeRegister, ArrNodeRegisterVO.class);
         nodeRegisterVO.setNodeId(nodeRegister.getNode().getNodeId());
@@ -1632,7 +1689,7 @@ public class ClientFactoryVO {
                                                          final Boolean withGroups,
                                                          final String ruleCode,
                                                          final Integer fundId) {
-        Assert.notNull(scenarioOfNewLevel);
+        Assert.notNull(scenarioOfNewLevel, "Scénáře musí být vyplněny");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ScenarioOfNewLevelVO scenarioVO = mapper.map(scenarioOfNewLevel, ScenarioOfNewLevelVO.class);
         if (BooleanUtils.isTrue(withGroups)) {
@@ -1668,7 +1725,7 @@ public class ClientFactoryVO {
      * @return instituce VO
      */
     public ParInstitutionVO createInstitution(final ParInstitution institution) {
-        Assert.notNull(institution);
+        Assert.notNull(institution, "Instituce musí být vyplněny");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ParInstitutionVO institutionVO = mapper.map(institution, ParInstitutionVO.class);
         institutionVO.setName(institution.getParty().getRecord().getRecord());
@@ -1693,7 +1750,7 @@ public class ClientFactoryVO {
      * @return seznam VO typu oprávnění
      */
     public RulPolicyTypeVO createPolicyType(final RulPolicyType policyType) {
-        Assert.notNull(policyType);
+        Assert.notNull(policyType, "Typ oprávnění musí být vyplněno");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         RulPolicyTypeVO policyTypeVO = mapper.map(policyType, RulPolicyTypeVO.class);
         policyTypeVO.setRuleSetId(policyType.getRuleSet().getRuleSetId());
@@ -1717,7 +1774,7 @@ public class ClientFactoryVO {
      * @return seznam VO typu outputu
      */
     public RulOutputTypeVO createOutputType(final RulOutputType outputType) {
-        Assert.notNull(outputType);
+        Assert.notNull(outputType, "Typ výstupu musí být vyplněno");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.map(outputType, RulOutputTypeVO.class);
     }
@@ -1734,7 +1791,7 @@ public class ClientFactoryVO {
      * @return seznam VO výstupů
      */
     public List<ArrOutputExtVO> createOutputExtList(final List<ArrOutput> outputs, final ArrFundVersion fundVersion) {
-        Assert.notNull(outputs);
+        Assert.notNull(outputs, "Výstupy musí být vyplněny");
         List<ArrOutputExtVO> outputExtList = new ArrayList<>();
         for (ArrOutput output : outputs) {
             ArrOutputExtVO outputExt = createOutputExt(output, fundVersion);
@@ -1887,7 +1944,7 @@ public class ClientFactoryVO {
     }
 
     public ArrOutputDefinitionVO createArrOutputDefinition(final ArrOutputDefinition outputDefinition) {
-        Assert.notNull(outputDefinition);
+        Assert.notNull(outputDefinition, "Definice výstupu musí být vyplněna");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrOutputDefinitionVO result = mapper.map(outputDefinition, ArrOutputDefinitionVO.class);
         if (outputDefinition.getOutputResult() != null) {
@@ -1896,11 +1953,12 @@ public class ClientFactoryVO {
         return result;
     }
 
+    @Deprecated
     public <T extends ArrItem> ArrItemVO createItem(final T item) {
 
-        Assert.notNull(item);
+        Assert.notNull(item, "Hodnota musí být vyplněna");
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrItemVO descItemVO = mapper.map(item.getItem(), ArrItemVO.class);
+        ArrItemVO descItemVO = mapper.map(item.getData(), ArrItemVO.class);
         BeanUtils.copyProperties(item, descItemVO);
         descItemVO.setId(item.getItemId());
 

@@ -72,10 +72,10 @@ public class PacketService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrPacket insertPacket(@AuthParam(type = AuthParam.Type.FUND) final ArrPacket packet) {
-        Assert.notNull(packet);
-        Assert.isNull(packet.getPacketId());
-        Assert.notNull(packet.getStorageNumber());
-        Assert.notNull(packet.getState());
+        Assert.notNull(packet, "Obal musí být vyplněn");
+        Assert.isNull(packet.getPacketId(), "Identifikátor obalu musí být vyplněn");
+        Assert.notNull(packet.getStorageNumber(), "Storage number musí být vyplněno");
+        Assert.notNull(packet.getState(), "Stav musí být vyplněn");
 
         checkPacketDuplicate(packet);
 
@@ -122,7 +122,7 @@ public class PacketService {
                                            final Integer lenNumber,
                                            final Integer count,
                                            final Integer[] packetIds) {
-        Assert.notNull(fund);
+        Assert.notNull(fund, "AS musí být vyplněn");
         String prefixFinal = StringUtils.isEmpty(prefix) ? "" : prefix;
 
         if (count <= 0
@@ -216,8 +216,8 @@ public class PacketService {
     public List<ArrPacket> findPackets(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
                                        @Nullable final String prefix,
                                        final ArrPacket.State state) {
-        Assert.notNull(fund);
-        Assert.notNull(state);
+        Assert.notNull(fund, "AS musí být vyplněn");
+        Assert.notNull(state, "Stav musí být vyplněn");
         return packetRepository.findPackets(fund, prefix, state);
     }
 
@@ -232,8 +232,8 @@ public class PacketService {
     public List<ArrPacket> findPackets(final ArrFund fund,
                                        final Integer limit,
                                        @Nullable final String text) {
-        Assert.notNull(fund);
-        Assert.notNull(limit);
+        Assert.notNull(fund, "AS musí být vyplněn");
+        Assert.notNull(limit, "Limit musí být vyplněn");
         Assert.isTrue(limit > 0, "Limit musí být alespoň 1");
         return packetRepository.findPackets(fund, limit, text, ArrPacket.State.OPEN);
     }
@@ -247,8 +247,8 @@ public class PacketService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void deletePackets(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
                               final Integer[] packetIds) {
-        Assert.notNull(fund);
-        Assert.notNull(packetIds);
+        Assert.notNull(fund, "AS musí být vyplněn");
+        Assert.notNull(packetIds, "Musí být vyplněny identifikátory obalů");
         Assert.isTrue(packetIds.length > 0, "Musí být alespoň jeden ke smazání");
 
         List<Integer> packetIdList = Arrays.asList(packetIds);
@@ -280,9 +280,9 @@ public class PacketService {
     public void setStatePackets(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
                                 final Integer[] packetIds,
                                 final ArrPacket.State state) {
-        Assert.notNull(fund);
-        Assert.notNull(packetIds);
-        Assert.notNull(state);
+        Assert.notNull(fund, "AS musí být vyplněn");
+        Assert.notNull(packetIds, "Musí být vyplněny identifikátory obalů");
+        Assert.notNull(state, "Stav musí být vyplněn");
         Assert.isTrue(packetIds.length > 0, "Musí být alespoň jeden ke změně stavu");
 
         List<ArrPacket> packets = new ArrayList<>();

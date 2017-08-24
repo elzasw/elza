@@ -60,6 +60,9 @@ public class ElzaTable {
     }
 
     public static ElzaTable fromJsonString(final String value) {
+        if (value == null) {
+            return null;
+        }
         try {
             return objectMapper.readValue(value, ElzaTable.class);
         } catch (IOException e) {

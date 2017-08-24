@@ -78,7 +78,7 @@ public class TestDataGenerator extends BulkAction {
 		this.change = bulkActionRun.getChange();
 		this.version = bulkActionRun.getFundVersion();
 
-        Assert.notNull(version);
+        Assert.notNull(version, "Verze AS musí být vyplněna");
         checkVersion(version);
 		ArrNode rootNode = version.getRootNode();
 
@@ -189,7 +189,7 @@ public class TestDataGenerator extends BulkAction {
 	}
 
 	private void init(BulkActionConfig bulkActionConfig) {
-        Assert.notNull(bulkActionConfig);
+        Assert.notNull(bulkActionConfig, "Nastavení hromadné akce musí být vyplněno");
 
 		Yaml config = bulkActionConfig.getYaml();
 		List<Integer> unitsCount = config.getIntList("items_to_generate", Collections.singletonList(10));

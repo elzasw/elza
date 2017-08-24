@@ -34,7 +34,7 @@ public class ModelFactory {
         item.setType(descItem.getItemType().getCode());
         item.setSpecCode(descItem.getItemSpec() == null ? null : descItem.getItemSpec().getCode());
         item.setDataType(descItem.getItemType().getDataType().getCode());
-        item.setUndefined(BooleanUtils.isTrue(descItem.getUndefined()));
+        item.setUndefined(BooleanUtils.isTrue(descItem.isUndefined()));
         return item;
     }
 
@@ -76,11 +76,11 @@ public class ModelFactory {
 
             if (!voDescItem.isUndefined()) {
                 if (descItemTypesForPackets.contains(descItem.getItemType())) {
-                    ArrItemPacketRef packetRef = lastVersion ? (ArrItemPacketRef) descItem.getItem() : (ArrItemPacketRef) descItemFactory.getDescItem(descItem).getItem();
+                    ArrDataPacketRef packetRef = lastVersion ? (ArrDataPacketRef) descItem.getData() : (ArrDataPacketRef) descItemFactory.getDescItem(descItem).getData();
                     ArrPacket packet = packetRef.getPacket();
                     voDescItem.setPacket(createPacket(packet));
                 } else if (descItemTypesForIntegers.contains(descItem.getItemType())) {
-                    ArrItemInt integer = lastVersion ? (ArrItemInt) descItem.getItem() : (ArrItemInt) descItemFactory.getDescItem(descItem).getItem();
+                    ArrDataInteger integer = lastVersion ? (ArrDataInteger) descItem.getData() : (ArrDataInteger) descItemFactory.getDescItem(descItem).getData();
                     voDescItem.setInteger(integer.getValue());
                 }
             }

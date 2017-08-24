@@ -41,7 +41,7 @@ public class XmlExportController {
                            @PathVariable(value = "versionId") final Integer versionId,
                            @RequestParam(value = "transformationName") final String transformationName
     ) throws IOException {
-        Assert.notNull(versionId);
+        Assert.notNull(versionId, "Nebyl vyplněn identifikátor verze AS");
 
         XmlExportConfig config = new XmlExportConfig(versionId);
         if (StringUtils.isNotBlank(transformationName)) {

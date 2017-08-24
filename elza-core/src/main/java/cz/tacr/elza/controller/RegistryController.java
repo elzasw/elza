@@ -303,7 +303,7 @@ public class RegistryController {
 
     @RequestMapping(value = "/specificationHasParty/{itemSpecId}", method = RequestMethod.GET)
     public boolean canParty(@PathVariable final Integer itemSpecId) {
-        Assert.notNull(itemSpecId);
+        Assert.notNull(itemSpecId, "Identifikátor specifikace musí být vyplněn");
 
         RulItemSpec spec = itemSpecRepository.getOneCheckExist(itemSpecId);
         Set<Integer> registerTypeIds = itemSpecRegisterRepository.findIdsByItemSpecId(spec);
@@ -321,7 +321,7 @@ public class RegistryController {
      */
     @RequestMapping(value = "/{recordId}", method = RequestMethod.GET)
     public RegRecordVO getRecord(@PathVariable final Integer recordId) {
-        Assert.notNull(recordId);
+        Assert.notNull(recordId, "Identifikátor rejstříkového hesla musí být vyplněn");
 
         RegRecord record = registryService.getRecord(recordId);
 
@@ -358,8 +358,8 @@ public class RegistryController {
     @Transactional
     @RequestMapping(value = "/{recordId}", method = RequestMethod.PUT)
     public RegRecordVO updateRecord(@PathVariable final Integer recordId, @RequestBody final RegRecordVO record) {
-        Assert.notNull(recordId);
-        Assert.notNull(record);
+        Assert.notNull(recordId, "Identifikátor rejstříkového hesla musí být vyplněn");
+        Assert.notNull(record, "Rejstříkové heslo musí být vyplněno");
 
         Assert.isTrue(
                 recordId.equals(record.getId()),
@@ -381,7 +381,7 @@ public class RegistryController {
     @Transactional
     @RequestMapping(value = "/{recordId}", method = RequestMethod.DELETE)
     public void deleteRecord(@PathVariable final Integer recordId) {
-        Assert.notNull(recordId);
+        Assert.notNull(recordId, "Identifikátor rejstříkového hesla musí být vyplněn");
         RegRecord record = regRecordRepository.getOneCheckExist(recordId);
 
         registryService.deleteRecord(record, true);
@@ -450,8 +450,8 @@ public class RegistryController {
     @Transactional
     @RequestMapping(value = "/variantRecord/{variantRecordId}", method = RequestMethod.PUT)
     public RegVariantRecordVO updateVariantRecord(@PathVariable final Integer variantRecordId, @RequestBody final RegVariantRecordVO variantRecord) {
-        Assert.notNull(variantRecordId);
-        Assert.notNull(variantRecord);
+        Assert.notNull(variantRecordId, "Identifikátor hesla musí být vyplněn");
+        Assert.notNull(variantRecord, "Heslo musí být vyplněno");
 
         Assert.isTrue(
                 variantRecordId.equals(variantRecord.getId()),
@@ -474,7 +474,7 @@ public class RegistryController {
     @Transactional
     @RequestMapping(value = "/variantRecord/{variantRecordId}", method = RequestMethod.DELETE)
     public void deleteVariantRecord(@PathVariable final Integer variantRecordId) {
-        Assert.notNull(variantRecordId);
+        Assert.notNull(variantRecordId, "Identifikátor hesla musí být vyplněn");
 
         RegVariantRecord variantRecord = registryService.getVariantRecord(variantRecordId);
         registryService.deleteVariantRecord(variantRecord, variantRecord.getRegRecord());
@@ -525,8 +525,8 @@ public class RegistryController {
     @Transactional
     @RequestMapping(value = "/scopes", method = RequestMethod.POST)
     public RegScopeVO createScope(@RequestBody final RegScopeVO scopeVO) {
-        Assert.notNull(scopeVO);
-        Assert.isNull(scopeVO.getId());
+        Assert.notNull(scopeVO, "Scope musí být vyplněn");
+        Assert.isNull(scopeVO.getId(), "Identifikátor scope musí být vyplněn");
 
         RegScope regScope = factoryDO.createScope(scopeVO);
 
@@ -543,8 +543,8 @@ public class RegistryController {
     @Transactional
     @RequestMapping(value = "/scopes/{scopeId}", method = RequestMethod.PUT)
     public RegScopeVO updateScope(@PathVariable final Integer scopeId, @RequestBody final RegScopeVO scopeVO) {
-        Assert.notNull(scopeId);
-        Assert.notNull(scopeVO);
+        Assert.notNull(scopeId, "Identifikátor scope musí být vyplněn");
+        Assert.notNull(scopeVO, "Scope musí být vyplněn");
 
         Assert.isTrue(
                 scopeId.equals(scopeVO.getId()),
@@ -599,8 +599,8 @@ public class RegistryController {
     @Transactional
     @RequestMapping(value = "/regCoordinates/{coordinatesId}", method = RequestMethod.PUT)
     public RegCoordinatesVO updateRegCoordinates(@PathVariable final Integer coordinatesId, @RequestBody final RegCoordinatesVO coordinatesVO) {
-        Assert.notNull(coordinatesId);
-        Assert.notNull(coordinatesVO);
+        Assert.notNull(coordinatesId, "Identifikátor koordinátu musí být vyplněn");
+        Assert.notNull(coordinatesVO, "Koordináty musí být vyplněny");
 
         Assert.isTrue(
                 coordinatesId.equals(coordinatesVO.getId()),
@@ -629,7 +629,7 @@ public class RegistryController {
     @Transactional
     @RequestMapping(value = "/regCoordinates/{coordinatesId}", method = RequestMethod.DELETE)
     public void deleteRegCoordinates(@PathVariable final Integer coordinatesId) {
-        Assert.notNull(coordinatesId);
+        Assert.notNull(coordinatesId, "Identifikátor koordinátu musí být vyplněn");
         RegCoordinates regCoordinate = registryService.getRegCoordinate(coordinatesId);
 
         registryService.deleteRegCoordinate(regCoordinate, regCoordinate.getRegRecord());
@@ -654,11 +654,11 @@ public class RegistryController {
     @RequestMapping(value = "/interpi/import/{recordId}", method = RequestMethod.PUT)
     @Transactional
     public RegRecordVO updateRecord(@PathVariable final Integer recordId, @RequestBody final RecordImportVO recordImportVO) {
-        Assert.notNull(recordId);
-        Assert.notNull(recordImportVO);
-        Assert.notNull(recordImportVO.getInterpiRecordId());
-        Assert.notNull(recordImportVO.getScopeId());
-        Assert.notNull(recordImportVO.getSystemId());
+        Assert.notNull(recordId, "Identifikátor rejstříkového hesla musí být vyplněn");
+        Assert.notNull(recordImportVO, "Struktura importu hesla musí být vyplněna");
+        Assert.notNull(recordImportVO.getInterpiRecordId(), "Identifikátor interpi musí být vyplněn");
+        Assert.notNull(recordImportVO.getScopeId(), "Identifikátor scope musí být vyplněn");
+        Assert.notNull(recordImportVO.getSystemId(), "Identifikátor systému musí být vyplněn");
 
         interpiService.importRecord(recordId, recordImportVO.getInterpiRecordId(), recordImportVO.getScopeId(),
                 recordImportVO.getSystemId(), recordImportVO.getOriginator(), recordImportVO.getMappings());
@@ -673,10 +673,10 @@ public class RegistryController {
     @Transactional
     @RequestMapping(value = "/interpi/import", method = RequestMethod.POST)
     public RegRecordVO importRecord(@RequestBody final RecordImportVO recordImportVO) {
-        Assert.notNull(recordImportVO);
-        Assert.notNull(recordImportVO.getInterpiRecordId());
-        Assert.notNull(recordImportVO.getScopeId());
-        Assert.notNull(recordImportVO.getSystemId());
+        Assert.notNull(recordImportVO, "Struktura importu hesla musí být vyplněna");
+        Assert.notNull(recordImportVO.getInterpiRecordId(), "Identifikátor interpi musí být vyplněn");
+        Assert.notNull(recordImportVO.getScopeId(), "Identifikátor scope musí být vyplněn");
+        Assert.notNull(recordImportVO.getSystemId(), "Identifikátor systému musí být vyplněn");
 
         RegRecord regRecord = interpiService.importRecord(null, recordImportVO.getInterpiRecordId(), recordImportVO.getScopeId(),
                 recordImportVO.getSystemId(), recordImportVO.getOriginator(), recordImportVO.getMappings());
@@ -694,8 +694,8 @@ public class RegistryController {
     @Transactional
     @RequestMapping(value = "/interpi", method = RequestMethod.POST)
     public List<ExternalRecordVO> findInterpiRecords(@RequestBody final InterpiSearchVO interpiSearchVO) {
-        Assert.notNull(interpiSearchVO);
-        Assert.notNull(interpiSearchVO.getSystemId());
+        Assert.notNull(interpiSearchVO, "Struktura pro vyhledání musí být vyplněna");
+        Assert.notNull(interpiSearchVO.getSystemId(), "Identifikátor systému musí být vyplněn");
 
         long start = System.currentTimeMillis();
         List<ExternalRecordVO> records = interpiService.findRecords(interpiSearchVO.isParty(), interpiSearchVO.getConditions(),
@@ -716,10 +716,10 @@ public class RegistryController {
      */
     @RequestMapping(value = "/interpi/{interpiRecordId}/relations", method = RequestMethod.POST)
     public InterpiMappingVO findInterpiRecordRelations(@PathVariable final String interpiRecordId, @RequestBody final RelationSearchVO relationSearchVO) {
-        Assert.notNull(interpiRecordId);
-        Assert.notNull(relationSearchVO);
-        Assert.notNull(relationSearchVO.getScopeId());
-        Assert.notNull(relationSearchVO.getSystemId());
+        Assert.notNull(interpiRecordId, "Identifikátor systému interpi musí být vyplněn");
+        Assert.notNull(relationSearchVO, "Struktura importu hesla musí být vyplněna");
+        Assert.notNull(relationSearchVO.getScopeId(), "Identifikátor scope musí být vyplněn");
+        Assert.notNull(relationSearchVO.getSystemId(), "Identifikátor systému musí být vyplněn");
 
         return interpiService.findInterpiRecordRelations(interpiRecordId, relationSearchVO.getSystemId(), relationSearchVO.getScopeId());
     }

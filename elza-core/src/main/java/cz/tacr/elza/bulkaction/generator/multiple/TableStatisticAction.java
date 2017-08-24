@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.service.ArrangementService;
 import org.apache.commons.lang.BooleanUtils;
 import org.springframework.context.annotation.Scope;
@@ -94,12 +95,12 @@ public class TableStatisticAction extends Action {
             if (inputItemTypes.contains(item.getItemType())) {
                 String text;
                 RulItemSpec itemSpec = item.getItemSpec();
-                if (BooleanUtils.isTrue(item.getUndefined())) {
+                if (BooleanUtils.isTrue(item.isUndefined())) {
                     text = ArrangementService.UNDEFINED;
                 } else {
-                    ArrItemData itemData = item.getItem();
-                    itemData.setSpec(itemSpec);
-                    text = itemData.toString();
+                    ArrData data = item.getData();
+                    //data.setSpec(itemSpec);
+                    text = data.toString();
                 }
                 if (itemSpec != null) {
                     text = itemSpec.getName() + ": " + text;

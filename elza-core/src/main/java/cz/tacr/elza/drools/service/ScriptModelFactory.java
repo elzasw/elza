@@ -11,6 +11,8 @@ import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -121,8 +123,8 @@ public class ScriptModelFactory {
      */
     public Level createLevelModel(final ArrLevel level,
                                         final ArrFundVersion version) {
-        Assert.notNull(level);
-        Assert.notNull(version);
+        Assert.notNull(level, "Level musí být vyplněn");
+        Assert.notNull(version, "Verze AS musí být vyplněna");
 
         List<ArrLevel> parents = levelRepository.findAllParentsByNodeAndVersion(level.getNode(), version);
         Set<ArrNode> nodes = new HashSet<>();
@@ -156,8 +158,8 @@ public class ScriptModelFactory {
      * @return seznam vo hodnot
      */
     public List<DescItem> createDescItems(final List<ArrDescItem> descItems, final Consumer<DescItem> extension) {
-        Assert.notNull(descItems);
-        Assert.notNull(extension);
+        Assert.notNull(descItems, "Hodnoty atributů musí být vyplněny");
+        Assert.notNull(extension, "Funkce pro zadání dodatečných hodnot musí být vyplněná");
 
         List<DescItem> result = new ArrayList<>(descItems.size());
         for (ArrDescItem descItem : descItems) {
@@ -196,11 +198,9 @@ public class ScriptModelFactory {
         RulItemType rulDescItemType = itemTypeRepository.getOneByCode(descItemVO.getType());
         Assert.notNull(rulDescItemType, "Item does not exists: " + descItemVO.getType());
 
-        ArrDescItem descItem = new ArrDescItem(descItemFactory.createItemByType(rulDescItemType.getDataType()));
+        ArrDescItem descItem = new ArrDescItem();
         descItem.setItemType(rulDescItemType);
 
-        // set specification
-        ArrItemData item = descItem.getItem();
         if (descItemVO.getSpecCode() != null) {
             RulItemSpec rulDescItemSpec = itemSpecRepository.getOneByCode(descItemVO.getSpecCode());
             Assert.notNull(rulDescItemSpec, "Item specification does not exists: " + descItemVO.getSpecCode());
@@ -208,14 +208,10 @@ public class ScriptModelFactory {
         }
 
         // set initial value
-        if (descItemVO.getInteger() != null)
-        {
-            if(item instanceof ArrItemInt) {
-                // Set initial value
-                ((ArrItemInt) item).setValue(descItemVO.getInteger());
-            } else {
-                throw new IllegalStateException("Initial value cannot be set for item: " + descItemVO.getType());
-            }
+        if (descItemVO.getInteger() != null && rulDescItemType.getCode().equals("INT")) {
+            ArrDataInteger data = new ArrDataInteger();
+            data.setValue(descItemVO.getInteger());
+            descItem.setData(data);
         }
         return descItem;
     }

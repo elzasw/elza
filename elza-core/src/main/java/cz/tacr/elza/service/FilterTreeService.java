@@ -170,7 +170,7 @@ public class FilterTreeService {
      */
     public List<FilterNodePosition> getFilteredFulltextIds(final ArrFundVersion version, final String fulltext,
                                                            final boolean luceneQuery, final List<SearchParam> searchParams) {
-        Assert.notNull(version);
+        Assert.notNull(version, "Verze AS musí být vyplněna");
 
         TreeSet<FilterNodePosition> result = new TreeSet<>((a, b) -> a.getIndex().compareTo(b.getIndex()));
 
@@ -219,12 +219,12 @@ public class FilterTreeService {
                                            @Nullable final String fulltext,
                                            final int max) {
 
-        Assert.notNull(version);
-        Assert.notNull(descItemType);
+        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
 
         Class<? extends ArrData> dataTypeClass = descriptionItemService.getDescItemDataTypeClass(descItemType);
         if (dataTypeClass.equals(ArrDataPacketRef.class)) {
-            Assert.notEmpty(specIds);
+            Assert.notEmpty(specIds, "Musí být vyplněn alespoň jeden identifikátor specifikace");
             boolean withoutType = FilterTools.removeNullValues(specIds);
             Set<RulPacketType> packetTypes = new HashSet<>(packetTypeRepository.findAll(specIds));
             return dataRepository.findUniquePacketValuesInVersion(version, descItemType, dataTypeClass, packetTypes,
@@ -233,7 +233,7 @@ public class FilterTreeService {
             Set<RulItemSpec> specs = null;
             boolean withoutSpec = false;
             if (descItemType.getUseSpecification()) {
-                Assert.notEmpty(specIds);
+                Assert.notEmpty(specIds, "Musí být vyplněn alespoň jeden identifikátor specifikace");
                 withoutSpec = FilterTools.removeNullValues(specIds);
                 specs = new HashSet<>(itemSpecRepository.findAll(specIds));
             }

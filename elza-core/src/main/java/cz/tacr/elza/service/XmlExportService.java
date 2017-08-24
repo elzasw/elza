@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import cz.tacr.elza.repository.DescItemRepository;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
@@ -173,6 +174,9 @@ public class XmlExportService {
     private DataRepository dataRepository;
 
     @Autowired
+    private DescItemRepository descItemRepository;
+
+    @Autowired
     private NodeRegisterRepository nodeRegisterRepository;
 
     @Autowired
@@ -186,8 +190,8 @@ public class XmlExportService {
      * @return výsledek exportu
      */
     public XmlExportResult exportData(final XmlExportConfig config) {
-        Assert.notNull(config);
-        Assert.notNull(config.getVersionId());
+        Assert.notNull(config, "Nastavení musí být vyplněno");
+        Assert.notNull(config.getVersionId(), "Identifikátor nastavení musí být vyplněn");
 
         XmlImport xmlImport = exportFund(config.getVersionId(), config.getNodeIds());
 
@@ -291,8 +295,8 @@ public class XmlExportService {
      * @param arrFund archivní soubor
      */
     private void exportPackets(final XmlImport xmlImport, final Map<Integer, List<DescItemPacketRef>> packetDescItems, final ArrFund arrFund) {
-        Assert.notNull(xmlImport);
-        Assert.notNull(arrFund);
+        Assert.notNull(xmlImport, "Musí být vyplněno");
+        Assert.notNull(arrFund, "AS musí být vyplněn");
 
         List<ArrPacket> arrPackets = packetRepository.findByFund(arrFund);
         List<Packet> packets = new ArrayList<>(arrPackets.size());
@@ -314,9 +318,9 @@ public class XmlExportService {
      */
     private void updateDescItemPacketReferences(final Integer packetId, final Packet packet,
             final Map<Integer, List<DescItemPacketRef>> packetDescItems) {
-        Assert.notNull(packetId);
-        Assert.notNull(packet);
-        Assert.notNull(packetDescItems);
+        Assert.notNull(packetId, "Identifikátor obalu musí být vyplněn");
+        Assert.notNull(packet, "Obal musí být vyplněn");
+        Assert.notNull(packetDescItems, "Hodnoty atributu pro obaly musí být vyplněny");
 
         List<DescItemPacketRef> descItemPacketRefs = packetDescItems.get(packetId);
         if (CollectionUtils.isNotEmpty(descItemPacketRefs)) {
@@ -356,9 +360,9 @@ public class XmlExportService {
      */
     private void exportParties(final XmlImport xmlImport, final Map<Integer, List<DescItemPartyRef>> partyDescItems,
             final Map<Integer, Record> recordMap) {
-        Assert.notNull(xmlImport);
-        Assert.notNull(partyDescItems);
-        Assert.notNull(recordMap);
+        Assert.notNull(xmlImport, "Musí být vyplněno");
+        Assert.notNull(partyDescItems, "Musí být vyplněno");
+        Assert.notNull(recordMap, "Mapa musí být vyplěna");
 
         // id osoby na osobu
         Map<String, AbstractParty> partyMap = new HashMap<>(partyDescItems.size());
@@ -395,9 +399,9 @@ public class XmlExportService {
      */
     private void updateDescItemPartyReferences(final Integer partyId, final AbstractParty party,
             final Map<Integer, List<DescItemPartyRef>> partyDescItems) {
-        Assert.notNull(partyId);
-        Assert.notNull(party);
-        Assert.notNull(partyDescItems);
+        Assert.notNull(partyId, "Identifikátor osoby musí být vyplněna");
+        Assert.notNull(party, "Osoba nesmí být prázdná");
+        Assert.notNull(partyDescItems, "Musí být vyplněno");
 
         List<DescItemPartyRef> descItemPartyRefs = partyDescItems.get(partyId);
         if (CollectionUtils.isNotEmpty(descItemPartyRefs)) {
@@ -416,7 +420,7 @@ public class XmlExportService {
      */
     private AbstractParty createParty(final ParParty parParty, final Map<Integer, Record> recordMap,
             final Map<AbstractParty, List<String>> partyCreatorsMap) {
-        Assert.notNull(parParty);
+        Assert.notNull(parParty, "Osoba musí být vyplněna");
 
         ParParty deproxiedParty = ProxyUtils.deproxy(parParty);
 
@@ -446,9 +450,9 @@ public class XmlExportService {
      */
     private void fillCommonAttributes(final AbstractParty party, final ParParty parParty,
             final Map<Integer, Record> recordMap, final Map<AbstractParty, List<String>> partyCreatorsMap) {
-        Assert.notNull(party);
-        Assert.notNull(parParty);
-        Assert.notNull(recordMap);
+        Assert.notNull(party, "Osoba nesmí být prázdná");
+        Assert.notNull(parParty, "Osoba musí být vyplněna");
+        Assert.notNull(recordMap, "Mapa musí být vyplěna");
 
         party.setCharacteristics(parParty.getCharacteristics());
 
@@ -508,7 +512,7 @@ public class XmlExportService {
      * @return exportovaný vztahynebo událost
      */
     private Relation createRelation(final ParRelation parRelation, final Map<Integer, Record> recordMap) {
-        Assert.notNull(parRelation);
+        Assert.notNull(parRelation, "Vztah musí být vyplněn");
 
         Relation relation = new Relation();
 
@@ -634,7 +638,7 @@ public class XmlExportService {
      * @return exportovaný doplněk jména osoby
      */
     private PartyNameComplement createPartyNameComplement(final ParPartyNameComplement parPartyNameComplement) {
-        Assert.notNull(parPartyNameComplement);
+        Assert.notNull(parPartyNameComplement, "Doplněk musí být vyplněn");
 
         PartyNameComplement partyNameComplement = new PartyNameComplement();
 
@@ -673,8 +677,8 @@ public class XmlExportService {
      * @return exportovaná osoba
      */
     private AbstractParty createPerson(final ParPerson parPerson, final Map<Integer, Record> recordMap, final Map<AbstractParty, List<String>> partyCreatorsMap) {
-        Assert.notNull(parPerson);
-        Assert.notNull(recordMap);
+        Assert.notNull(parPerson, "Osoba musí být vyplněna");
+        Assert.notNull(recordMap, "Mapa musí být vyplěna");
 
         Person person = new Person();
         fillCommonAttributes(person, parPerson, recordMap, partyCreatorsMap);
@@ -692,8 +696,8 @@ public class XmlExportService {
      * @return exportovaná organizace nebo skupina osob
      */
     private AbstractParty createPartyGroup(final ParPartyGroup parPartyGroup, final Map<Integer, Record> recordMap, final Map<AbstractParty, List<String>> partyCreatorsMap) {
-        Assert.notNull(parPartyGroup);
-        Assert.notNull(recordMap);
+        Assert.notNull(parPartyGroup, "Musí být vyplněno");
+        Assert.notNull(recordMap, "Mapa musí být vyplěna");
 
         PartyGroup partyGroup = new PartyGroup();
         fillCommonAttributes(partyGroup, parPartyGroup, recordMap, partyCreatorsMap);
@@ -731,7 +735,7 @@ public class XmlExportService {
      * @return exportovaný kód/identifikace osoby
      */
     private PartyGroupId createPartyGroupId(final ParPartyGroupIdentifier parPartyGroupIdentifier) {
-        Assert.notNull(parPartyGroupIdentifier);
+        Assert.notNull(parPartyGroupIdentifier, "Kód osoby musí být vyplněn");
 
         PartyGroupId partyGroupId = new PartyGroupId();
 
@@ -754,8 +758,8 @@ public class XmlExportService {
      * @return exportovaná akce
      */
     private AbstractParty createEvent(final ParEvent parEvent, final Map<Integer, Record> recordMap, final Map<AbstractParty, List<String>> partyCreatorsMap) {
-        Assert.notNull(parEvent);
-        Assert.notNull(recordMap);
+        Assert.notNull(parEvent, "Event musí být vyplněn");
+        Assert.notNull(recordMap, "Mapa musí být vyplěna");
 
         Event event = new Event();
         fillCommonAttributes(event, parEvent, recordMap, partyCreatorsMap);
@@ -773,8 +777,8 @@ public class XmlExportService {
      * @return exportovaný rod
      */
     private AbstractParty createDynasty(final ParDynasty parDynasty, final Map<Integer, Record> recordMap, final Map<AbstractParty, List<String>> partyCreatorsMap) {
-        Assert.notNull(parDynasty);
-        Assert.notNull(recordMap);
+        Assert.notNull(parDynasty, "Rod musí být vyplněn");
+        Assert.notNull(recordMap, "Mapa musí být vyplěna");
 
         Dynasty dynasty = new Dynasty();
         fillCommonAttributes(dynasty, parDynasty, recordMap, partyCreatorsMap);
@@ -793,8 +797,8 @@ public class XmlExportService {
      * @return recordMap exportované rejstříky
      */
     private Map<Integer, Record> exportRecords(final XmlImport xmlImport, final RelatedEntities relatedEntities) {
-        Assert.notNull(xmlImport);
-        Assert.notNull(relatedEntities);
+        Assert.notNull(xmlImport, "Musí být vyplněno");
+        Assert.notNull(relatedEntities, "Vazby musí být vyplněny");
 
         Map<Integer, List<DescItemRecordRef>> recordDescItems = relatedEntities.getRecordDescItems();
         Map<Integer, List<Level>> recordLevels = relatedEntities.getRecordLevels();
@@ -890,9 +894,9 @@ public class XmlExportService {
      * @param recordDescItems mapa id rejstříků na hodnoty atributů
      */
     private void updateDescItemRecordReferences(final Integer recordId, final Record record, final Map<Integer, List<DescItemRecordRef>> recordDescItems) {
-        Assert.notNull(recordId);
-        Assert.notNull(record);
-        Assert.notNull(recordDescItems);
+        Assert.notNull(recordId, "Identifikátor rejstříkového hesla musí být vyplněn");
+        Assert.notNull(record, "Rejstříkové heslo musí být vyplněno");
+        Assert.notNull(recordDescItems, "Seznam hodnot musí být vyplněn");
 
         List<DescItemRecordRef> descItemRecordRefs = recordDescItems.get(recordId);
         if (CollectionUtils.isNotEmpty(descItemRecordRefs)) {
@@ -908,9 +912,9 @@ public class XmlExportService {
      * @param recordLevels mapa id rejstříků na levely
      */
     private void updateLevelRecordReferences(final Integer recordId, final Record record, final Map<Integer, List<Level>> recordLevels) {
-        Assert.notNull(recordId);
-        Assert.notNull(record);
-        Assert.notNull(recordLevels);
+        Assert.notNull(recordId, "Identifikátor rejstříkového hesla musí být vyplněn");
+        Assert.notNull(record, "Rejstříkové heslo musí být vyplněno");
+        Assert.notNull(recordLevels, "Mapa musí být vyplněna");
 
         List<Level> levels = recordLevels.get(recordId);
         if (CollectionUtils.isNotEmpty(levels)) {
@@ -974,8 +978,8 @@ public class XmlExportService {
      */
     private Level exportNodeTree(final Set<Integer> nodeIds, final ArrFundVersion version,
             final RelatedEntities relatedEntities) {
-        Assert.notNull(version);
-        Assert.notNull(relatedEntities);
+        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Assert.notNull(relatedEntities, "Vazby musí být vyplněny");
 
         Map<Integer, Level> nodeIdToLevel = new HashMap<>();
         List<Integer> nodeIdsToExport = getNodeIdsToExport(nodeIds, version);
@@ -1076,7 +1080,8 @@ public class XmlExportService {
         ArrLevel arrLevel = levels.iterator().next();
         Set<Integer> nodeIds = new HashSet<>();
         nodeIds.add(arrNode.getNodeId());
-        List<ArrData> dataList = dataRepository.findDescItemsByNodeIds(nodeIds, null, version);
+
+        List<ArrDescItem> descItemList = descItemRepository.findDescItemsByNodeIds(nodeIds, null, version);
 
         Level parent = null;
         ArrNode nodeParent = arrLevel.getNodeParent();
@@ -1084,7 +1089,7 @@ public class XmlExportService {
             parent = nodeIdToLevel.get(nodeParent.getNodeId());
         }
 
-        return createLevel(arrLevel, parent, dataList, relatedEntities);
+        return createLevel(arrLevel, parent, descItemList, relatedEntities);
     }
 
     /**
@@ -1092,19 +1097,19 @@ public class XmlExportService {
      *
      * @param arrLevel do level
      * @param parent exprotovaný rodič
-     * @param dataList hodnoty uzlu
+     * @param descItems hodnoty uzlu
      * @param relatedEntities vazby na entity které se budou exportova později
      *
      * @return exportovaný uzel
      */
-    private Level createLevel(final ArrLevel arrLevel, final Level parent, final List<ArrData> dataList,
+    private Level createLevel(final ArrLevel arrLevel, final Level parent, final List<ArrDescItem> descItems,
             final RelatedEntities relatedEntities) {
         Level level = new Level();
 
         level.setPosition(arrLevel.getPosition());
         level.setUuid(arrLevel.getNode().getUuid());
 
-        level.setDescItems(createDescItems(dataList, relatedEntities));
+        level.setDescItems(createDescItems(descItems, relatedEntities));
 
         if (parent != null) {
             List<Level> subLevels = parent.getSubLevels();
@@ -1127,19 +1132,20 @@ public class XmlExportService {
     /**
      * Vytvoření hodnot atributů.
      *
-     * @param dataList do seznam hodnot
+     * @param descItemList do seznam hodnot
      * @param relatedEntities vazby na entity které se budou exportova později
      *
      * @return seznam exportovaných hodnot
      */
-    private List<AbstractDescItem> createDescItems(final List<ArrData> dataList,
+    private List<AbstractDescItem> createDescItems(final List<ArrDescItem> descItemList,
             final RelatedEntities relatedEntities) {
-        Assert.notNull(dataList);
+        Assert.notNull(descItemList, "Seznam hodnot atributů musí být vyplněn");
 
-        List<AbstractDescItem> descItems = new ArrayList<>(dataList.size());
-        for (ArrData arrData : dataList) {
-            ArrDescItem arrdescItem = (ArrDescItem) arrData.getItem();
-            if (arrdescItem == null) {
+        List<AbstractDescItem> descItems = new ArrayList<>(descItemList.size());
+        for (ArrDescItem arrDescItem : descItemList) {
+            ArrData arrData = arrDescItem.getData();
+
+            if (arrData == null) {
                 continue;
             }
 
@@ -1147,14 +1153,14 @@ public class XmlExportService {
             if (dataTypeCode.equals("ENUM")) {
                 DescItemEnum descItem = new DescItemEnum();
 
-                fillCommonAttributes(descItem, arrdescItem);
+                fillCommonAttributes(descItem, arrDescItem);
 
                 descItems.add(descItem);
             } else if (dataTypeCode.equals("PARTY_REF")) {
                 DescItemPartyRef descItem = new DescItemPartyRef();
                 ArrDataPartyRef arrDataPartyRef = (ArrDataPartyRef) arrData;
 
-                fillCommonAttributes(descItem, arrdescItem);
+                fillCommonAttributes(descItem, arrDescItem);
 
                 ParParty parParty = arrDataPartyRef.getParty();
                 Integer partyId = parParty.getPartyId();
@@ -1174,7 +1180,7 @@ public class XmlExportService {
                 DescItemRecordRef descItem = new DescItemRecordRef();
                 ArrDataRecordRef arrDataRecordRef = (ArrDataRecordRef) arrData;
 
-                fillCommonAttributes(descItem, arrdescItem);
+                fillCommonAttributes(descItem, arrDescItem);
 
                 Integer recordId = arrDataRecordRef.getRecord().getRecordId();
                 relatedEntities.addRecordDescItem(recordId, descItem);
@@ -1184,7 +1190,7 @@ public class XmlExportService {
                 DescItemPacketRef descItem = new DescItemPacketRef();
                 ArrDataPacketRef arrDataPacketRef = (ArrDataPacketRef) arrData;
 
-                fillCommonAttributes(descItem, arrdescItem);
+                fillCommonAttributes(descItem, arrDescItem);
 
                 Integer packetId = arrDataPacketRef.getPacket().getPacketId();
                 relatedEntities.addPacketDescItem(packetId, descItem);
@@ -1194,7 +1200,7 @@ public class XmlExportService {
                 DescItemUnitDate descItem = new DescItemUnitDate();
                 ArrDataUnitdate arrDataUnitdate = (ArrDataUnitdate) arrData;
 
-                fillCommonAttributes(descItem, arrdescItem);
+                fillCommonAttributes(descItem, arrDescItem);
 
                 descItem.setCalendarTypeCode(arrDataUnitdate.getCalendarType().getCode());
                 descItem.setFormat(arrDataUnitdate.getFormat());
@@ -1208,7 +1214,7 @@ public class XmlExportService {
                 DescItemString descItem = new DescItemString();
                 ArrDataString arrDataString = (ArrDataString) arrData;
 
-                fillCommonAttributes(descItem, arrdescItem);
+                fillCommonAttributes(descItem, arrDescItem);
                 descItem.setValue(arrDataString.getValue());
 
                 descItems.add(descItem);
@@ -1216,7 +1222,7 @@ public class XmlExportService {
                 DescItemText descItem = new DescItemText();
                 ArrDataText arrDataText = (ArrDataText) arrData;
 
-                fillCommonAttributes(descItem, arrdescItem);
+                fillCommonAttributes(descItem, arrDescItem);
                 descItem.setValue(arrDataText.getValue());
 
                 descItems.add(descItem);
@@ -1224,7 +1230,7 @@ public class XmlExportService {
                 DescItemFormattedText descItem = new DescItemFormattedText();
                 ArrDataText arrDataText = (ArrDataText) arrData;
 
-                fillCommonAttributes(descItem, arrdescItem);
+                fillCommonAttributes(descItem, arrDescItem);
                 descItem.setValue(arrDataText.getValue());
 
                 descItems.add(descItem);
@@ -1232,7 +1238,7 @@ public class XmlExportService {
                 DescItemUnitId descItem = new DescItemUnitId();
                 ArrDataUnitid arrDataUnitid = (ArrDataUnitid) arrData;
 
-                fillCommonAttributes(descItem, arrdescItem);
+                fillCommonAttributes(descItem, arrDescItem);
                 descItem.setValue(arrDataUnitid.getValue());
 
                 descItems.add(descItem);
@@ -1240,7 +1246,7 @@ public class XmlExportService {
                 DescItemInteger descItem = new DescItemInteger();
                 ArrDataInteger arrDataInteger = (ArrDataInteger) arrData;
 
-                fillCommonAttributes(descItem, arrdescItem);
+                fillCommonAttributes(descItem, arrDescItem);
                 descItem.setValue(arrDataInteger.getValue());
 
                 descItems.add(descItem);
@@ -1248,13 +1254,13 @@ public class XmlExportService {
                 DescItemDecimal descItem = new DescItemDecimal();
                 ArrDataDecimal arrDataDecimal = (ArrDataDecimal) arrData;
 
-                fillCommonAttributes(descItem, arrdescItem);
+                fillCommonAttributes(descItem, arrDescItem);
                 descItem.setValue(arrDataDecimal.getValue());
 
                 descItems.add(descItem);
             } else if(dataTypeCode.equals("COORDINATES")){
                 DescItemCoordinates descItem = new DescItemCoordinates();
-                fillCommonAttributes(descItem, arrdescItem);
+                fillCommonAttributes(descItem, arrDescItem);
 
                 ArrDataCoordinates arrDataCoordinates = (ArrDataCoordinates) arrData;
 
@@ -1264,7 +1270,7 @@ public class XmlExportService {
                 descItems.add(descItem);
             } else if(dataTypeCode.equals("JSON_TABLE")) {
                 DescItemJsonTable descItem = new DescItemJsonTable();
-                fillCommonAttributes(descItem, arrdescItem);
+                fillCommonAttributes(descItem, arrDescItem);
 
                 ArrDataJsonTable arrDataJsonTable = (ArrDataJsonTable) arrData;
 
@@ -1393,8 +1399,8 @@ public class XmlExportService {
         private Set<Integer> otherUsedRecords = new HashSet<>();
 
         public void addRecordLevel(final Integer recordId, final Level level) {
-            Assert.notNull(recordId);
-            Assert.notNull(level);
+            Assert.notNull(recordId, "Identifikátor rejstříkového hesla musí být vyplněn");
+            Assert.notNull(level, "Level musí být vyplněn");
 
             List<Level> levels = recordLevels.get(recordId);
             if (levels == null) {
@@ -1405,8 +1411,8 @@ public class XmlExportService {
         }
 
         public void addRecordDescItem(final Integer recordId, final DescItemRecordRef descItem) {
-            Assert.notNull(recordId);
-            Assert.notNull(descItem);
+            Assert.notNull(recordId, "Identifikátor rejstříkového hesla musí být vyplněn");
+            Assert.notNull(descItem, "Hodnota atributu musí být vyplněna");
 
             List<DescItemRecordRef> descItemsRecordRef = recordDescItems.get(recordId);
             if (descItemsRecordRef == null) {
@@ -1417,8 +1423,8 @@ public class XmlExportService {
         }
 
         public void addPartyDescItem(final Integer partyId, final DescItemPartyRef descItem) {
-            Assert.notNull(partyId);
-            Assert.notNull(descItem);
+            Assert.notNull(partyId, "Identifikátor osoby musí být vyplněna");
+            Assert.notNull(descItem, "Hodnota atributu musí být vyplněna");
 
             List<DescItemPartyRef> descItemsPartyRef = partyDescItems.get(partyId);
             if (descItemsPartyRef == null) {
@@ -1429,8 +1435,8 @@ public class XmlExportService {
         }
 
         public void addPacketDescItem(final Integer packetId, final DescItemPacketRef descItem) {
-            Assert.notNull(packetId);
-            Assert.notNull(descItem);
+            Assert.notNull(packetId, "Identifikátor obalu musí být vyplněn");
+            Assert.notNull(descItem, "Hodnota atributu musí být vyplněna");
 
             List<DescItemPacketRef> descItemsPacketRef = packetDescItems.get(packetId);
             if (descItemsPacketRef == null) {
@@ -1441,7 +1447,7 @@ public class XmlExportService {
         }
 
         public void addOtherUsedRecords(final Integer recordId) {
-            Assert.notNull(recordId);
+            Assert.notNull(recordId, "Identifikátor rejstříkového hesla musí být vyplněn");
 
             otherUsedRecords.add(recordId);
         }

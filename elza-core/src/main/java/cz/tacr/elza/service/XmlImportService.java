@@ -1,58 +1,26 @@
 package cz.tacr.elza.service;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.transaction.Transactional;
-import javax.xml.bind.JAXBException;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-import org.springframework.web.multipart.MultipartFile;
-
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
-
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDecimal;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataNull;
+import cz.tacr.elza.domain.ArrDataPacketRef;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItemCoordinates;
-import cz.tacr.elza.domain.ArrItemData;
-import cz.tacr.elza.domain.ArrItemDecimal;
-import cz.tacr.elza.domain.ArrItemEnum;
-import cz.tacr.elza.domain.ArrItemInt;
-import cz.tacr.elza.domain.ArrItemPacketRef;
-import cz.tacr.elza.domain.ArrItemPartyRef;
-import cz.tacr.elza.domain.ArrItemRecordRef;
-import cz.tacr.elza.domain.ArrItemString;
-import cz.tacr.elza.domain.ArrItemText;
-import cz.tacr.elza.domain.ArrItemUnitdate;
-import cz.tacr.elza.domain.ArrItemUnitid;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
@@ -163,6 +131,35 @@ import cz.tacr.elza.xmlimport.v1.vo.party.Relation;
 import cz.tacr.elza.xmlimport.v1.vo.party.RoleType;
 import cz.tacr.elza.xmlimport.v1.vo.record.Record;
 import cz.tacr.elza.xmlimport.v1.vo.record.VariantRecord;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.transaction.Transactional;
+import javax.xml.bind.JAXBException;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Import dat z xml.
@@ -529,11 +526,11 @@ public class XmlImportService {
         if (descItems != null) {
             for (AbstractDescItem descItem : descItems) {
 
-                ArrItemData itemData;
+                ArrData data;
 
                 if (descItem instanceof DescItemCoordinates) {
                     DescItemCoordinates descItemCoordinates = (DescItemCoordinates) descItem;
-                    ArrItemCoordinates itemCoordinates = new ArrItemCoordinates();
+                    ArrDataCoordinates itemCoordinates = new ArrDataCoordinates();
                     try {
                         itemCoordinates.setValue(new WKTReader().read(descItemCoordinates.getValue()));
                     } catch (ParseException e) {
@@ -541,53 +538,53 @@ public class XmlImportService {
                             throw new InvalidDataException(e.getMessage());
                         }
                     }
-                    itemData = itemCoordinates;
+                    data = itemCoordinates;
                 } else if (descItem instanceof DescItemDecimal) {
                     DescItemDecimal descItemDecimal = (DescItemDecimal) descItem;
-                    ArrItemDecimal itemDecimal = new ArrItemDecimal();
+                    ArrDataDecimal itemDecimal = new ArrDataDecimal();
                     itemDecimal.setValue(descItemDecimal.getValue());
-                    itemData = itemDecimal;
+                    data = itemDecimal;
                 } else if (descItem instanceof DescItemFormattedText) {
                     DescItemFormattedText descItemFormattedText = (DescItemFormattedText) descItem;
-                    ArrItemText itemText = new ArrItemText();
+                    ArrDataText itemText = new ArrDataText();
                     itemText.setValue(descItemFormattedText.getValue());
-                    itemData = itemText;
+                    data = itemText;
                 } else if (descItem instanceof DescItemInteger) {
                     DescItemInteger descItemInteger = (DescItemInteger) descItem;
-                    ArrItemInt itemInt = new ArrItemInt();
+                    ArrDataInteger itemInt = new ArrDataInteger();
                     itemInt.setValue(descItemInteger.getValue());
-                    itemData = itemInt;
+                    data = itemInt;
                 } else if (descItem instanceof DescItemPacketRef) {
                     DescItemPacketRef descItemPacketRef = (DescItemPacketRef) descItem;
-                    ArrItemPacketRef itemPacketRef = new ArrItemPacketRef();
+                    ArrDataPacketRef itemPacketRef = new ArrDataPacketRef();
                     String packetId = descItemPacketRef.getPacket().getPacketId();
                     itemPacketRef.setPacket(xmlIdIntIdPacketMap.get(packetId));
-                    itemData = itemPacketRef;
+                    data = itemPacketRef;
                 } else if (descItem instanceof DescItemPartyRef) {
                     DescItemPartyRef descItemPartyRef = (DescItemPartyRef) descItem;
-                    ArrItemPartyRef itemPartyRef = new ArrItemPartyRef();
+                    ArrDataPartyRef itemPartyRef = new ArrDataPartyRef();
                     String partyId = descItemPartyRef.getParty().getPartyId();
                     itemPartyRef.setParty(xmlIdIntIdPartyMap.get(partyId));
-                    itemData = itemPartyRef;
+                    data = itemPartyRef;
                 } else if (descItem instanceof DescItemRecordRef) {
                     DescItemRecordRef descItemRecordRef = (DescItemRecordRef) descItem;
-                    ArrItemRecordRef itemRecordRef = new ArrItemRecordRef();
+                    ArrDataRecordRef itemRecordRef = new ArrDataRecordRef();
                     String recordId = descItemRecordRef.getRecord().getRecordId();
                     itemRecordRef.setRecord(xmlIdIntIdRecordMap.get(recordId));
-                    itemData = itemRecordRef;
+                    data = itemRecordRef;
                 } else if (descItem instanceof DescItemString) {
                     DescItemString descItemString = (DescItemString) descItem;
-                    ArrItemString itemString = new ArrItemString();
+                    ArrDataString itemString = new ArrDataString();
                     itemString.setValue(XmlImportUtils.trimStringValue(descItemString.getValue(), StringLength.LENGTH_1000, stopOnError));
-                    itemData = itemString;
+                    data = itemString;
                 } else if (descItem instanceof DescItemText) {
                     DescItemText descItemText = (DescItemText) descItem;
-                    ArrItemText itemText = new ArrItemText();
+                    ArrDataText itemText = new ArrDataText();
                     itemText.setValue(descItemText.getValue());
-                    itemData = itemText;
+                    data = itemText;
                 } else if (descItem instanceof DescItemUnitDate) {
                     DescItemUnitDate descItemUnitDate = (DescItemUnitDate) descItem;
-                    ArrItemUnitdate itemUnitdate = new ArrItemUnitdate();
+                    ArrDataUnitdate itemUnitdate = new ArrDataUnitdate();
 
                     String calendarTypeCode = descItemUnitDate.getCalendarTypeCode();
                     ArrCalendarType calendarType = calendarTypeRepository.findByCode(calendarTypeCode);
@@ -618,14 +615,14 @@ public class XmlImportService {
                         long toSeconds = CalendarConverter.toSeconds(converterCalendarType, toDateTime);
                         itemUnitdate.setNormalizedTo(toSeconds);
                     }
-                    itemData = itemUnitdate;
+                    data = itemUnitdate;
                 } else if (descItem instanceof DescItemUnitId) {
                     DescItemUnitId descItemUnitId = (DescItemUnitId) descItem;
-                    ArrItemUnitid itemUnitid = new ArrItemUnitid();
+                    ArrDataUnitid itemUnitid = new ArrDataUnitid();
                     itemUnitid.setValue(XmlImportUtils.trimStringValue(descItemUnitId.getValue(), StringLength.LENGTH_250, stopOnError));
-                    itemData = itemUnitid;
+                    data = itemUnitid;
                 } else if (descItem instanceof DescItemEnum) {
-                    itemData = new ArrItemEnum();
+                    data = new ArrDataNull();
                 } else {
                     throw new NotImplementedException("Není implementován typ dat: " + descItem.getClass().getSimpleName());
                 }
@@ -633,7 +630,8 @@ public class XmlImportService {
                 ArrDescItem arrDescItem;
                 try {
                     arrDescItem = createArrDescItem(change, node, descItem);
-                    arrDescItem.setItem(itemData);
+                    arrDescItem.setData(data);
+                    data.setDataType(arrDescItem.getItemType().getDataType());
                 } catch (NonFatalXmlImportException e) {
                     if (config.isStopOnError()) {
                         throw e;
@@ -641,7 +639,7 @@ public class XmlImportService {
                     continue;
                 }
 
-                descItemFactory.saveDescItemWithData(arrDescItem, true);
+                descItemFactory.saveDescItemWithData(arrDescItem, false);
                 arrangementCacheService.createDescItem(arrDescItem.getNodeId(), arrDescItem);
             }
         }
@@ -670,7 +668,7 @@ public class XmlImportService {
 
         }
 
-        ArrDescItem arrDescItem = new ArrDescItem(descItemFactory.createItemByType(descItemType.getDataType()));
+        ArrDescItem arrDescItem = new ArrDescItem();
 
         arrDescItem.setCreateChange(change);
         arrDescItem.setNode(node);
@@ -678,7 +676,6 @@ public class XmlImportService {
         arrDescItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
         arrDescItem.setItemSpec(descItemSpec);
         arrDescItem.setItemType(descItemType);
-        arrDescItem.setUndefined(false);
 
         return arrDescItem;
     }
@@ -1556,9 +1553,9 @@ public class XmlImportService {
     }
 
     private XmlImport readData(final XmlImportConfig config) {
-        Assert.notNull(config);
-        Assert.notNull(config.getXmlFile());
-        Assert.notNull(config.getRegScope());
+        Assert.notNull(config, "Nastavení musí být vyplněno");
+        Assert.notNull(config.getXmlFile(), "XML file musí být vyplněn");
+        Assert.notNull(config.getRegScope(), "Scope musí být vyplněn");
 
         MultipartFile xmlFile = config.getXmlFile();
         String transformationName = config.getTransformationName();
@@ -1593,7 +1590,7 @@ public class XmlImportService {
 
     /** Podle identifikátorů dosadí do entit objekty. */
     private void updateReferences(final XmlImport data) {
-        Assert.notNull(data);
+        Assert.notNull(data, "Struktura importu musí být vyplněna");
 
         Map<String, Packet> packetMap = getPacketMap(data);
         Map<String, AbstractParty> partyMap = getPartyMap(data);

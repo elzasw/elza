@@ -64,7 +64,7 @@ public class UpdateConformityInfoWorker implements Runnable {
 
 
     public UpdateConformityInfoWorker(final Integer versionId) {
-        Assert.notNull(versionId);
+        Assert.notNull(versionId, "Nebyl vyplněn identifikátor verze AS");
         this.versionId = versionId;
     }
 
@@ -121,7 +121,7 @@ public class UpdateConformityInfoWorker implements Runnable {
      * @param nodes seznam nodů k přidání
      */
     public void addNodes(Collection<ArrNode> nodes) {
-        Assert.notNull(nodes);
+        Assert.notNull(nodes, "JP musí být vyplněny");
 
         nodesToUpdate.addAll(nodes);
     }

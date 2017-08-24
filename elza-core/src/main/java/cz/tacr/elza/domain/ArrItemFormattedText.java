@@ -10,6 +10,7 @@ import cz.tacr.elza.domain.interfaces.IArrItemStringValue;
  * @author Martin Šlapa
  * @since 15.9.15
  */
+@Deprecated
 public class ArrItemFormattedText extends ArrItemData implements IArrItemStringValue {
 
     private String value;

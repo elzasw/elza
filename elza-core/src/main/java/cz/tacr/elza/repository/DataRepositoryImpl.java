@@ -21,6 +21,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Selection;
 
+import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.exception.SystemException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -51,7 +52,7 @@ import cz.tacr.elza.utils.ObjectListIterator;
 
 /**
  * Implementation of DataRepositoryCustom
- * 
+ *
  * @since 03.02.2016
  */
 public class DataRepositoryImpl implements DataRepositoryCustom {
@@ -203,7 +204,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             private Join<ArrPacket, RulPacketType> packetTypeJoin;
 
             @Override
-            public void init(final Root<? extends ArrData> root, final Join<? extends ArrData, ArrDescItem> descItemJoin) {
+            public void init(final Root<ArrDescItem> root, final Join<ArrDescItem, ? extends ArrData> descItemJoin) {
                 packetTypeJoin = root.join(ArrDataPacketRef.PACKET, JoinType.INNER)
                         .join(ArrPacket.PACKET_TYPE, JoinType.LEFT);
             }
@@ -257,7 +258,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             private Join<ArrDescItem, RulItemSpec> specJoin;
 
             @Override
-            public void init(final Root<? extends ArrData> root, final Join<? extends ArrData, ArrDescItem> descItemJoin) {
+            public void init(final Root<ArrDescItem> root, final Join<ArrDescItem, ? extends ArrData> descItemJoin) {
                 specJoin = descItemJoin.join(ArrDescItem.ITEM_SPEC, JoinType.LEFT);
             }
 
@@ -315,16 +316,11 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Tuple> query = builder.createTupleQuery();
 
-        Root<? extends ArrData> data = query.from(dataTypeClass);
-        AbstractDescItemDataTypeHelper typeHelper = getDataTypeHelper(dataTypeClass, data);
+        Root<ArrDescItem> descItemRoot = query.from(ArrDescItem.class);
+        AbstractDescItemDataTypeHelper typeHelper = getDataTypeHelper(dataTypeClass, descItemRoot);
 
 
-        Join<? extends ArrData, ArrDescItem> item = data.join(ArrData.ITEM, JoinType.INNER);
-
-        Join<? extends ArrData, ArrDescItem> descItem = builder.treat(item, ArrDescItem.class);
-
-        //Join node = descItem.join(ArrDescItem.NODE, JoinType.INNER);
-
+        Join<ArrDescItem, ? extends ArrData> descItem = descItemRoot.join(ArrItem.DATA, JoinType.INNER);
 
         Predicate versionPredicate;
         if (version.getLockChange() == null) {
@@ -347,7 +343,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         andPredicates.add(versionPredicate);
         andPredicates.add(builder.equal(descItem.get(ArrDescItem.ITEM_TYPE), itemType));
         if (specificationDataTypeHelper.useSpec()) {
-            specificationDataTypeHelper.init(data, item);
+            //specificationDataTypeHelper.init(item, descItemRoot);
 
             andPredicates.add(specificationDataTypeHelper.getPredicate(builder));
         }
@@ -516,7 +512,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
     private interface SpecificationDataTypeHelper {
         boolean useSpec();
 
-        void init(Root<? extends ArrData> root, Join<? extends ArrData, ArrDescItem> descItemJoin);
+        void init(Root<ArrDescItem> root, Join<ArrDescItem, ? extends ArrData> descItemJoin);
 
         Predicate getPredicate(CriteriaBuilder builder);
 

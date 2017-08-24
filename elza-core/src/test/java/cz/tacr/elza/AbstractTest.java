@@ -145,6 +145,8 @@ public abstract class AbstractTest {
     private UtilsTest utilsTest;
     @Autowired
     private CachedNodeRepository cachedNodeRepository;
+    @Autowired
+    private NodeOutputRepository nodeOutputRepository;
 
     @Autowired
     protected ExternalSystemRepository externalSystemRepository;
@@ -237,6 +239,11 @@ public abstract class AbstractTest {
         groupUserRepository.deleteAll();
         groupRepository.deleteAll();
         userRepository.deleteAll();
+        nodeConformityErrorsRepository.deleteAll();
+        nodeConformityMissingRepository.deleteAll();
+        nodeConformityInfoRepository.deleteAll();
+        descItemRepository.deleteAll();
+        itemRepository.deleteAll();
         arrDataRepository.deleteAll();
         bulkActionNodeRepository.deleteAll();
         faBulkActionRepository.deleteAll();
@@ -253,16 +260,12 @@ public abstract class AbstractTest {
         nodeRegisterRepository.deleteAll();
         regCoordinatesRepository.deleteAll();
         recordRepository.deleteAll();
-        nodeConformityErrorsRepository.deleteAll();
-        nodeConformityMissingRepository.deleteAll();
-        nodeConformityInfoRepository.deleteAll();
         fundVersionRepository.deleteAll();
         fundRegisterScopeRepository.deleteAll();
         levelRepository.deleteAll();
+        nodeOutputRepository.deleteAll();
         outputRepository.deleteAll();
         outputDefinitionRepository.deleteAll();
-        descItemRepository.deleteAll();
-        itemRepository.deleteAll();
         itemSpecRegisterRepository.deleteAll();
         changeRepository.deleteAll();
         nodeRepository.deleteAll();

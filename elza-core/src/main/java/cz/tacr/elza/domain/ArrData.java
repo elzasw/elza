@@ -34,18 +34,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */
-@AnalyzerDef(name = "customanalyzer",
-tokenizer = @TokenizerDef(factory = KeywordTokenizerFactory.class),
-filters = {
-  @TokenFilterDef(factory = LowerCaseFilterFactory.class),
-})
 @Entity(name = "arr_data")
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public abstract class ArrData {
-
-    public static final String ITEM = "item";
 
     public static final String LUCENE_DESC_ITEM_TYPE_ID = "descItemTypeId";
 
@@ -57,48 +50,12 @@ public abstract class ArrData {
     @JoinColumn(name = "dataTypeId", nullable = false)
     private RulDataType dataType;
 
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrItem.class)
-    @JoinColumn(name = "itemId", nullable = true)
-    private ArrItem item;
-
-    /** @return vrací hodnotu pro fulltextové hledání  */
+    /**
+     * @return vrací hodnotu pro fulltextové hledání
+     */
     @Field
     @Analyzer(definition = "customanalyzer")
     public abstract String getFulltextValue();
-
-    @Field(store = Store.YES)
-    public String getItemId() {
-        return item.getItemId().toString();
-    }
-
-    @Field(store = Store.YES)
-    @FieldBridge(impl = IntegerBridge.class)
-    public Integer getNodeId() {
-        return item.getNode() != null ? item.getNode().getNodeId() : null;
-    }
-
-    @Field
-    @FieldBridge(impl = IntegerBridge.class)
-    public Integer getFundId() {
-        return item.getFundId();
-    }
-
-    @Field(store = Store.NO)
-    @FieldBridge(impl = IntegerBridge.class)
-    public Integer getDescItemTypeId() {
-        return item.getItemType().getItemTypeId();
-    }
-
-    @Field
-    @Analyzer(definition = "customanalyzer")
-    public Integer getSpecification() {
-        RulItemSpec descItemSpec = item.getItemSpec();
-        if (descItemSpec == null) {
-            return null;
-        }
-
-        return descItemSpec.getItemSpecId();
-    }
 
     public Integer getDataId() {
         return dataId;
@@ -114,14 +71,6 @@ public abstract class ArrData {
 
     public void setDataType(final RulDataType dataType) {
         this.dataType = dataType;
-    }
-
-    public ArrItem getItem() {
-        return item;
-    }
-
-    public void setItem(final ArrItem item) {
-        this.item = item;
     }
 
     @Override

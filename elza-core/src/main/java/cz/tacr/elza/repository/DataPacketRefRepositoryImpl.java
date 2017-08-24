@@ -55,8 +55,12 @@ public class DataPacketRefRepositoryImpl implements DataPacketRefRepositoryCusto
 
     @Override
     public int countInFundVersionByPacketIds(final List<Integer> packetIds, final ArrFundVersion version) {
-        String hql = "SELECT count(d) FROM arr_data_packet_ref d " +
+        /*String hql = "SELECT count(d) FROM arr_data_packet_ref d " +
                 "JOIN d.packet p JOIN d.item di JOIN di.node n JOIN n.fund f JOIN f.versions v " +
+                "WHERE v = :version AND p.packetId IN :packetIds";*/
+
+        String hql = "SELECT count(di.data) FROM arr_item di " +
+                "JOIN di.data d JOIN d.packet p JOIN di.node n JOIN n.fund f JOIN f.versions v " +
                 "WHERE v = :version AND p.packetId IN :packetIds";
 
         Query query = entityManager.createQuery(hql);

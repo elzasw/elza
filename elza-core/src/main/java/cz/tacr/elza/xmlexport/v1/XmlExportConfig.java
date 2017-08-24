@@ -19,7 +19,7 @@ public class XmlExportConfig {
     private Set<Integer> nodeIds;
 
     public XmlExportConfig(final Integer versionId) {
-        Assert.notNull(versionId);
+        Assert.notNull(versionId, "Nebyl vyplněn identifikátor verze AS");
 
         this.versionId = versionId;
     }

@@ -1,5 +1,6 @@
 package cz.tacr.elza.search;
 
+import cz.tacr.elza.domain.ArrDescItem;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
@@ -44,9 +45,8 @@ public class ParentNodeIdsBridge implements StringBridge, FieldBridge , Applicat
 
     @Override
     public void set(String name, Object value, Document document, LuceneOptions luceneOptions) {
-        ArrData arrData = (ArrData) value;
-        Integer nodeId = arrData.getItem().getNode().getNodeId();
-
+        ArrDescItem descItem = (ArrDescItem) value;
+        Integer nodeId = descItem.getNode().getNodeId();
         String fieldValue = nodeId.toString();
         Field field = new StringField(name, fieldValue, luceneOptions.getStore());
         document.add( field );

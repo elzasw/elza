@@ -162,7 +162,7 @@ public class UpdateConformityInfoService {
      * @param version      verze, do které nody spadají
      */
     synchronized private void startNewWorker(Collection<ArrNode> updatedNodes, ArrFundVersion version) {
-        Assert.notNull(version);
+        Assert.notNull(version, "Verze AS musí být vyplněna");
 
         UpdateConformityInfoWorker updateConformityInfoWorker = createConformityInfoWorker(
                 version.getFundVersionId());
@@ -207,7 +207,7 @@ public class UpdateConformityInfoService {
      * @return běží nad verzí validace?
      */
     public boolean isRunning(final ArrFundVersion version) {
-        Assert.notNull(version);
+        Assert.notNull(version, "Verze AS musí být vyplněna");
 
         UpdateConformityInfoWorker updateConformityInfoWorker = versionWorkers.get(version);
         if (updateConformityInfoWorker != null) {

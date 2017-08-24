@@ -145,8 +145,8 @@ public class RuleService {
      * @return stav validovaného uzlu
      */
     public ArrNodeConformityExt setConformityInfo(final Integer faLevelId, final Integer fundVersionId) {
-        Assert.notNull(faLevelId);
-        Assert.notNull(fundVersionId);
+        Assert.notNull(faLevelId, "Musí být vyplněn identifikátor levelu");
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
         ArrLevel level = levelRepository.findOne(faLevelId);
         Integer nodeId = level.getNode().getNodeId();
@@ -425,8 +425,8 @@ public class RuleService {
     private void deleteConformityInfo(final Integer fundVersionId,
                                       final Collection<Integer> nodeIds,
                                       final Collection<RelatedNodeDirection> deleteDirections) {
-        Assert.notNull(fundVersionId);
-        Assert.notEmpty(nodeIds);
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notEmpty(nodeIds, "Musí být vyplněna alespoň jedna JP");
 
         List<ArrNode> nodes = nodeRepository.findAll(nodeIds);
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
@@ -487,8 +487,8 @@ public class RuleService {
      */
     public List<RulItemTypeExt> getDescriptionItemTypes(final Integer fundVersionId,
                                                         final Integer nodeId) {
-        Assert.notNull(fundVersionId);
-        Assert.notNull(nodeId);
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
 
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 
@@ -680,7 +680,7 @@ public class RuleService {
      * @return seznam typů hodnot atributů se specifikacemi
      */
     public List<RulItemTypeExt> getOutputItemTypes(final Integer outputDefinitionId) {
-        Assert.notNull(outputDefinitionId);
+        Assert.notNull(outputDefinitionId, "Identifikátor definice výstupu musí být vyplněn");
 
         ArrOutputDefinition outputDefinition = outputService.findOutputDefinition(outputDefinitionId);
 

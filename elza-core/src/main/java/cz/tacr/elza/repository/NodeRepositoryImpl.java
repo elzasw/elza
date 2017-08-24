@@ -77,9 +77,9 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     public List<ArrNode> findNodesByDirection(final ArrNode node,
                                               final ArrFundVersion version,
                                               final RelatedNodeDirection direction) {
-        Assert.notNull(node);
-        Assert.notNull(version);
-        Assert.notNull(direction);
+        Assert.notNull(node, "JP musí být vyplněna");
+        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Assert.notNull(direction, "Směr musí být vyplněn");
 
 
         ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootNode(),
@@ -96,7 +96,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      */
     @Override
     public Set<Integer> findByFulltextAndVersionLockChangeId(final String text, final Integer fundId, final Integer lockChangeId) {
-        Assert.notNull(fundId);
+        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
 
         List<String> descItemIds = findDescItemIdsByData(text, fundId);
         if (descItemIds.isEmpty()) {
@@ -113,7 +113,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     @Override
     public Set<Integer> findByLuceneQueryAndVersionLockChangeId(final String queryText, final Integer fundId, final Integer lockChangeId)
             throws InvalidQueryException {
-        Assert.notNull(fundId);
+        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
 
         List<String> descItemIds = findDescItemIdsByLuceneQuery(queryText, fundId);
         if (descItemIds.isEmpty()) {
@@ -130,8 +130,8 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     @Override
     public Set<Integer> findBySearchParamsAndVersionLockChangeId(final List<SearchParam> searchParams, final Integer fundId,
             final Integer lockChangeId) {
-        Assert.notNull(fundId);
-        Assert.notEmpty(searchParams);
+        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
+        Assert.notEmpty(searchParams, "Musí být vyplněn alespoň jeden parametr vyhledávání");
 
         List<TextSearchParam> textParams = new LinkedList<>();
         List<UnitdateSearchParam> dateParams = new LinkedList<>();
@@ -203,8 +203,8 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      */
     private Set<Integer> findByTextSearchParamsAndVersionLockChangeId(final List<TextSearchParam> searchParams, final Integer fundId,
             final Integer lockChangeId) {
-        Assert.notNull(fundId);
-        Assert.notEmpty(searchParams);
+        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
+        Assert.notEmpty(searchParams, "Musí být vyplněn alespoň jeden parametr vyhledávání");
 
         List<String> descItemIds = findDescItemIdsByTextSearchParamsData(searchParams, fundId);
         if (descItemIds.isEmpty()) {
@@ -228,8 +228,8 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      */
     private Set<Integer> findByDateSearchParamsAndVersionLockChangeId(final List<UnitdateSearchParam> searchParams, final Integer fundId,
             final Integer lockChangeId) {
-        Assert.notNull(fundId);
-        Assert.notEmpty(searchParams);
+        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
+        Assert.notEmpty(searchParams, "Musí být vyplněn alespoň jeden parametr vyhledávání");
 
         List<String> descItemIds = findDescItemIdsByDateSearchParamsData(searchParams, fundId);
         if (descItemIds.isEmpty()) {
@@ -291,9 +291,9 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      */
     private Query createDateQuery(final String value, final Integer calendarId, final UnitdateCondition condition,
             final QueryBuilder queryBuilder) {
-        Assert.notNull(value);
-        Assert.notNull(calendarId);
-        Assert.notNull(condition);
+        Assert.notNull(value, "Hodnota musí být vyplněna");
+        Assert.notNull(calendarId, "Identifikátor typu kalendáře musí být vyplněn");
+        Assert.notNull(condition, "Podmínka musí být vyplněna");
 
         IUnitdate unitdate = new ArrDataUnitdate();
         UnitDateConvertor.convertToUnitDate(value, unitdate);
@@ -390,7 +390,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
             return Collections.EMPTY_LIST;
         }
 
-        Class<ArrData> entityClass = ArrData.class;
+        Class<ArrDescItem> entityClass = ArrDescItem.class;
         QueryBuilder queryBuilder = createQueryBuilder(entityClass);
 
         Query textQuery = createTextQuery(text, queryBuilder);
@@ -560,8 +560,8 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
     @Override
     public Set<Integer> findNodeIdsByFilters(final ArrFundVersion version, final List<DescItemTypeFilter> filters) {
-        Assert.notNull(version);
-        Assert.notEmpty(filters);
+        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Assert.notEmpty(filters, "Musí být vyplněn alespoň jeden filter");
 
         Integer fundId = version.getFund().getFundId();
         Integer lockChangeId = version.getLockChange() == null ? null : version.getLockChange().getChangeId();

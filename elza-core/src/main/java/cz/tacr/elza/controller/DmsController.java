@@ -91,9 +91,9 @@ public class DmsController {
      * @throws IOException
      */
     private DmsFile create(final DmsFileVO objVO, final Function<DmsFileVO, DmsFile> factory) throws IOException {
-        Assert.notNull(objVO);
+        Assert.notNull(objVO, "Soubor musí být vyplněn");
         MultipartFile multipartFile = objVO.getFile();
-        Assert.notNull(multipartFile);
+        Assert.notNull(multipartFile, "Soubor musí být vyplněn");
 
         objVO.setFileName(FilenameUtils.getName(multipartFile.getOriginalFilename()));
         objVO.setMimeType(multipartFile.getContentType());
@@ -159,8 +159,8 @@ public class DmsController {
      * @throws IOException
      */
     private DmsFile update(final Integer fileId, final DmsFileVO objVO, final Function<DmsFileVO, DmsFile> factory) throws IOException {
-        Assert.notNull(fileId);
-        Assert.notNull(objVO);
+        Assert.notNull(fileId, "Identifikátor souboru musí být vyplněn");
+        Assert.notNull(objVO, "Soubor musí být vyplněn");
         Assert.isTrue(fileId.equals(objVO.getId()), "Id v URL neodpovídá ID objektu");
 
         DmsFile objDO = factory.apply(objVO);
@@ -190,7 +190,7 @@ public class DmsController {
      */
     @RequestMapping(value = "/api/dms/{fileId}", method = RequestMethod.GET)
     public void getFile(HttpServletResponse response, @PathVariable(value = "fileId") Integer fileId) throws IOException {
-        Assert.notNull(fileId);
+        Assert.notNull(fileId, "Identifikátor souboru musí být vyplněn");
         DmsFile file = dmsService.getFile(fileId);
         Assert.notNull(file, "Soubor s fileId " + fileId + " neexistuje!");
         response.setHeader("Content-Disposition", "attachment;filename="+file.getFileName());
@@ -210,7 +210,7 @@ public class DmsController {
      */
     @RequestMapping(value = "/api/outputResult/{outputResultId}", method = RequestMethod.GET)
     public void getOutputResultZip(HttpServletResponse response, @PathVariable(value = "outputResultId") Integer outputResultId) throws IOException {
-        Assert.notNull(outputResultId);
+        Assert.notNull(outputResultId, "Identifikátor výstupu musí být vyplněn");
         ArrOutputResult result = outputResultRepository.getOneCheckExist(outputResultId);
         File outputFilesZip = dmsService.getOutputFilesZip(result);
         response.setHeader("Content-Disposition", "attachment;filename="+outputFilesZip.getName());
