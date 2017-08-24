@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataNull;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -207,11 +208,16 @@ public class ScriptModelFactory {
             descItem.setItemSpec(rulDescItemSpec);
         }
 
-        // set initial value
-        if (descItemVO.getInteger() != null && rulDescItemType.getCode().equals("INT")) {
-            ArrDataInteger data = new ArrDataInteger();
-            data.setValue(descItemVO.getInteger());
-            descItem.setData(data);
+        if (!descItemVO.isUndefined()) {
+            // set initial value
+            if (descItemVO.getInteger() != null && rulDescItemType.getCode().equals("INT")) {
+                ArrDataInteger data = new ArrDataInteger();
+                data.setValue(descItemVO.getInteger());
+                descItem.setData(data);
+            } else {
+                ArrDataNull data = new ArrDataNull();
+                descItem.setData(data);
+            }
         }
         return descItem;
     }

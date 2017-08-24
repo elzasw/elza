@@ -5,6 +5,7 @@ import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.config.ConfigView;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
@@ -17,6 +18,7 @@ import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.events.EventFunds;
@@ -39,6 +41,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TemporalType;
+import javax.persistence.TypedQuery;
 import javax.validation.constraints.NotNull;
 import java.math.BigInteger;
 import java.sql.Timestamp;
@@ -98,6 +101,9 @@ public class RevertingChangesService {
 
     @Autowired
     private NodeCacheService nodeCacheService;
+
+    @Autowired
+    private DataRepository dataRepository;
 
     /**
      * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.
@@ -282,11 +288,16 @@ public class RevertingChangesService {
         updateEntityQuery = createExtendUpdateEntityQuery(fund, node, "deleteChange", "arr_desc_item", "arr_item", toChange);
         updateEntityQuery.executeUpdate();
 
-        deleteEntityQuery = createDeleteForeignEntityQuery(fund, node, "createChange", "arr_desc_item", "item", "arr_data", toChange);
-        deleteEntityQuery.executeUpdate();
+        TypedQuery<ArrData> arrDataQuery = findChangeArrDataQuery(fund, node, toChange);
+        Set<ArrData> arrDataList = new HashSet<>(arrDataQuery.getResultList());
+
+        /*deleteEntityQuery = createDeleteForeignEntityQuery(fund, node, "createChange", "arr_desc_item", "item", "arr_data", toChange);
+        deleteEntityQuery.executeUpdate();*/
 
         deleteEntityQuery = createExtendDeleteEntityQuery(fund, node, "createChange", "arr_desc_item", /*"item",*/ "arr_item", toChange);
         deleteEntityQuery.executeUpdate();
+
+        dataRepository.delete(arrDataList);
 
         updateEntityQuery = createUpdateOutputQuery(fund, node, toChange);
         updateEntityQuery.executeUpdate();
@@ -339,6 +350,27 @@ public class RevertingChangesService {
 
         levelTreeCacheService.invalidateFundVersion(fund);
         startupService.revalidateNodes();
+    }
+
+    private TypedQuery<ArrData> findChangeArrDataQuery(final ArrFund fund, final ArrNode node, final ArrChange change) {
+
+        String changeNameColumn = "createChange";
+        String table = "arr_desc_item";
+        String subTable = "arr_item";
+
+        String nodesHql = createHQLFindChanges(changeNameColumn, table, createHqlSubNodeQuery(fund, node));
+
+        String hql = String.format("SELECT i.data FROM %1$s i WHERE i.%2$s IN (%3$s)", subTable, changeNameColumn, nodesHql);
+        TypedQuery<ArrData> query = entityManager.createQuery(hql, ArrData.class);
+
+        // nastavení parametrů dotazu
+        query.setParameter("fund", fund);
+        query.setParameter("change", change);
+        if (node != null) {
+            query.setParameter("node", node);
+        }
+
+        return query;
     }
 
     /**
