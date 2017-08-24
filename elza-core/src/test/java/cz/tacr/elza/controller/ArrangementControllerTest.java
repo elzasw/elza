@@ -1048,7 +1048,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @Ignore // TODO
     public void filterUniqueValuesTest(){
         // vytvoření
         ArrFundVersionVO fundVersion = getOpenVersion(createdFund());
