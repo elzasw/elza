@@ -19,7 +19,6 @@ import org.castor.core.util.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -147,24 +146,6 @@ public class NodeCacheService {
             logger.info("Ukončení synchronizace cache pro JP");
         } finally {
             writeLock.unlock();
-        }
-    }
-
-    /**
-     * Synchronizace záznamů v databázi s callbackem.
-     */
-    @Async("syncCacheTaskExecutor")
-    @Transactional
-    public void syncCache(final SyncCallback o) {
-        writeLock.lock();
-        try {
-            logger.info("Spuštění synchronizace cache pro JP");
-            syncCacheInternal();
-            logger.info("Ukončení synchronizace cache pro JP");
-        } finally {
-            cachedNodeRepository.flush(); // uložení do DB, aby callback mohl mít všechny data k dispozici
-            writeLock.unlock();
-            o.call();
         }
     }
 
