@@ -44,6 +44,7 @@ AppCopyright={#Copyright}
 VersionInfoCopyright={#Copyright}
 SetupIconFile=.\classes\Nastaveni\favicon.ico
 AllowCancelDuringInstall=False
+PrivilegesRequired=admin
 
 [Files]
 Source: "compiler:\WizModernSmallImage.bmp"; Flags: dontcopy
@@ -264,13 +265,17 @@ end;
 
 //funkce kontroluje povinná a duplicitní pole pro test pøipojení db - v pøípadì chyby vrací text s popisem - pokud je vše ok, vrací prázdný string
 //vstupní parametry
-//TypDB: 0 - MSSQL, 1 - Oracle
+//TypDB: 0 - H2, 1 - MSSQL, 2 - Postgresql
 //UrlSeveru,Port,Sid,NazevDBApp,NazevDBHist,Jmeno,Heslo: Vstupní parametry k porovnání
 function KontrolaPovinnaPole (TypDB:Integer; UrlSeveru,Port,Sid,NazevDB,Jmeno,Heslo: String):String;
 var
   NevyplnenaPovinnaPole: String;
 begin
   if (TypDB = 0) then
+  begin
+    
+  end;
+  if (TypDB = 1) or (TypDB = 2) then
   begin
     if (UrlSeveru = '') then
       NevyplnenaPovinnaPole := _NevyplnenoUrlServeru + _Enter;
@@ -283,22 +288,18 @@ begin
     if (Heslo = '') then
       NevyplnenaPovinnaPole := NevyplnenaPovinnaPole + _NevyplnenoHeslo + _Enter;
   end;
-  if (TypDB = 1) then
-  begin
     
-  end;
-  
   result := NevyplnenaPovinnaPole;
 end;
 
 //funkce vrátí jdbc dle typu db a ze zadaných vstupních dat
 //vstupní parametry
-//TypDB: 0 - Postgresql, 1 - MSSQL
+//TypDB: 2 - Postgresql, 1 - MSSQL
 //UrlSeveru,Port,NazevDB,Sid: Vstupní parametry k vytvoøení jdbc
 function VytvorJdbc(TypDB:Integer; UrlSeveru,Port,NazevDB,Instance: String):string;
 var Jdbc: String;
 begin
-  if (TypDB = 0) then
+  if (TypDB = 2) then
   begin
     Jdbc := _Postgresql + UrlSeveru + ':' + Port + '/' + NazevDB;
   end
@@ -335,13 +336,9 @@ begin
     exit;
   end;
   
-  //výbìr databáze Posgresql
+  //výbìr databáze H2
   if ComboTypDatabaze.ItemIndex = 0 then 
   begin
-    Jdbc := VytvorJdbc(ComboTypDatabaze.ItemIndex, EditUrlServeru.Text, EditPort.Text, EditNazevDB.Text, '');
-    Parametr := ' -jar ' + ExpandConstant(TestDbCesta + TestDbSoubor) + ' "'+ Jdbc + '" "'+ EditJmeno.Text + '" "'+ EditHeslo.Text + '"'; 
-    TextOdpoved := _TestDbVysledek + Jdbc + _Enter + _TestJmeno + EditJmeno.Text + _Enter + _TestOdpoved; 
-    OdpovedCela := ProvedTestZalozeniDB(Parametr, TestDbCesta, TextOdpoved);
   end
   //výbìr databáze MSSQL
   else if ComboTypDatabaze.ItemIndex = 1 then 
@@ -351,9 +348,13 @@ begin
     TextOdpoved := _TestDbVysledek + Jdbc + _Enter + _TestJmeno + EditJmeno.Text + _Enter + _TestOdpoved; 
     OdpovedCela := ProvedTestZalozeniDB(Parametr, TestDbCesta, TextOdpoved);
   end
-  //H2
-  else if ComboTypDatabaze.ItemIndex = 0 then 
+  //výbìr databáze Postgresql
+  else if ComboTypDatabaze.ItemIndex = 2 then 
   begin
+    Jdbc := VytvorJdbc(ComboTypDatabaze.ItemIndex, EditUrlServeru.Text, EditPort.Text, EditNazevDB.Text, '');
+    Parametr := ' -jar ' + ExpandConstant(TestDbCesta + TestDbSoubor) + ' "'+ Jdbc + '" "'+ EditJmeno.Text + '" "'+ EditHeslo.Text + '"'; 
+    TextOdpoved := _TestDbVysledek + Jdbc + _Enter + _TestJmeno + EditJmeno.Text + _Enter + _TestOdpoved; 
+    OdpovedCela := ProvedTestZalozeniDB(Parametr, TestDbCesta, TextOdpoved);
   end;
  
   result := OdpovedCela;
@@ -387,18 +388,17 @@ end;
 
 //procedura ze vstupních parametrù poskládá string pro jdbc.properties a uloží k AS
 //vstupní parametry
-//TypDB: 0 - Postgresql, 1 - MSSQL, 2 - H2
+//TypDB: 0 - H2, 1 - MSSQL, 2 - Postgresql
 procedure UlozJdbcDoSouboruProperties(TypDB:Integer; UrlSeveru,Port,Instance,NazevDB,Jmeno,Heslo: String);
 var JdbcProperties: String;
 
 begin
   if (ComboTypDatabaze.ItemIndex = 0) then
   begin
-    
-    NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbURL>', VytvorJdbc(TypDB, UrlSeveru, Port, NazevDB, ''));
-    NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbUser>', Jmeno);
-    NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbPass>', Heslo);
-    NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbDialect>', 'dialect: org.hibernate.spatial.dialect.postgis.PostgisDialect');
+    NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbURL>', 'jdbc:h2:file:./elza.db;DB_CLOSE_DELAY=-1');
+    NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbUser>', 'sa');
+    NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbPass>', '');
+    NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbDialect>', 'dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect');  
   end
   else if ComboTypDatabaze.ItemIndex = 1 then
   begin
@@ -409,34 +409,31 @@ begin
   end
   else if ComboTypDatabaze.ItemIndex = 2 then
   begin
-    NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbURL>', 'jdbc:h2:file:./elza.db;DB_CLOSE_DELAY=-1');
-    NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbUser>', 'sa');
-    NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbPass>', '');
-    NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbDialect>', 'dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect');
+    NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbURL>', VytvorJdbc(TypDB, UrlSeveru, Port, NazevDB, ''));
+    NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbUser>', Jmeno);
+    NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbPass>', Heslo);
+    NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbDialect>', 'dialect: org.hibernate.spatial.dialect.postgis.PostgisDialect');
   end;end;
 
 //spuštìné akce pøi zmìnì výbìru typu databáze v comboboxu
 procedure ComboBoxOnChange(Sender: TObject);
 begin
-  //Výbìr databáze Postgresql - skryje Instanci 
+  //Výbìr databáze H2 
   if ComboTypDatabaze.ItemIndex = 0 then 
   begin
-    LabelUrlServeru.Visible := true;
-    EditUrlServeru.Visible := true;
-    LabelPort.Visible := true;
-    EditPort.Visible := true;
+    LabelUrlServeru.Visible := false;
+    EditUrlServeru.Visible := false;
+    LabelPort.Visible := false;
+    EditPort.Visible := false;
     LabelInstance.Visible := false;
     EditInstance.Visible := false;
-    LabelNazevDB.Visible := true;
-    EditNazevDB.Visible := true;
-    LabelJmeno.Visible := true;
-    EditJmeno.Visible := true;
-    LabelHeslo.Visible := true;
-    EditHeslo.Visible := true;
-    ButtonTestPripojeniDB.Visible := true;
-
-    EditPort.Text := '5432';
-    EditJmeno.PasswordChar := #0;
+    LabelNazevDB.Visible := false;
+    EditNazevDB.Visible := false;
+    LabelJmeno.Visible := false;
+    EditJmeno.Visible := false;
+    LabelHeslo.Visible := false;
+    EditHeslo.Visible := false;
+    ButtonTestPripojeniDB.Visible := false;
   end
   //Výbìr databáze MSSQL - zobrazí Instanci 
   else if ComboTypDatabaze.ItemIndex = 1 then 
@@ -457,22 +454,25 @@ begin
 
     EditPort.Text := '1433';
   end
-  //Výbìr embedded databáze 
+  //Výbìr databáze Postgresql 
   else if ComboTypDatabaze.ItemIndex = 2 then 
   begin 
-    LabelUrlServeru.Visible := false;
-    EditUrlServeru.Visible := false;
-    LabelPort.Visible := false;
-    EditPort.Visible := false;
+    LabelUrlServeru.Visible := true;
+    EditUrlServeru.Visible := true;
+    LabelPort.Visible := true;
+    EditPort.Visible := true;
     LabelInstance.Visible := false;
     EditInstance.Visible := false;
-    LabelNazevDB.Visible := false;
-    EditNazevDB.Visible := false;
-    LabelJmeno.Visible := false;
-    EditJmeno.Visible := false;
-    LabelHeslo.Visible := false;
-    EditHeslo.Visible := false;
-    ButtonTestPripojeniDB.Visible := false;
+    LabelNazevDB.Visible := true;
+    EditNazevDB.Visible := true;
+    LabelJmeno.Visible := true;
+    EditJmeno.Visible := true;
+    LabelHeslo.Visible := true;
+    EditHeslo.Visible := true;
+    ButtonTestPripojeniDB.Visible := true;
+
+    EditPort.Text := '5432';
+    EditJmeno.PasswordChar := #0;
   end;
 end;
 //funkce je volána pøed spuštìním instalátoru
@@ -601,8 +601,9 @@ begin
       NahradHodnotuVSouboru('{app}\start.bat','<NazevSluzby>',NazevSluzby ('')); //nastaví název služby do dávky pro start služby
       NahradHodnotuVSouboru('{app}\stop.bat','<NazevSluzby>',NazevSluzby ('')); //nastaví název služby do dávky pro vypnutí služby
       
-      TextService := 'set CATALINA_HOME=' + _Enter + 'set "JAVA_HOME='  + _Enter + '"set JRE_HOME=%cd%\..\jre"' + _Enter + 'setlocal'
+      TextService := 'set CATALINA_HOME=' + _Enter + 'set JAVA_HOME='  + _Enter + 'set JRE_HOME=%cd%\..\jre' + _Enter + 'setlocal'
       NahradHodnotuVSouboru('{app}\apache-tomcat\bin\service.bat','setlocal',TextService); //nastaví lokální JRE
+      NahradHodnotuVSouboru('{app}\apache-tomcat\bin\service.bat','SERVICE_STARTUP_MODE=manual','SERVICE_STARTUP_MODE=auto'); //nastaví lokální JRE
       NahradHodnotuVSouboru('{app}\apache-tomcat\conf\server.xml','8080',PortAplikace); //nastaví port aplikace
                                      
       SeznamUkolu.Checked[i] := true;
@@ -813,9 +814,9 @@ begin
   ComboTypDatabaze.Width := Page.SurfaceWidth div 2 - ScaleX(26);
   ComboTypDatabaze.Parent := Page.Surface;
   ComboTypDatabaze.Style := csDropDownList;
-  ComboTypDatabaze.Items.Add('PostgreSQL');
-  ComboTypDatabaze.Items.Add('MSSQL');
   ComboTypDatabaze.Items.Add('Embedded databáze (H2)');
+  ComboTypDatabaze.Items.Add('MSSQL');
+  ComboTypDatabaze.Items.Add('PostgreSQL');
   ComboTypDatabaze.ItemIndex := 0;
   ComboTypDatabaze.OnChange := @ComboBoxOnChange;
 
@@ -906,6 +907,21 @@ begin
   ButtonTestPripojeniDB.Caption := 'Otestovat pøipojení k databázi';
   ButtonTestPripojeniDB.OnClick := @ButtonTestPripojeniDBOnClick;
   ButtonTestPripojeniDB.Parent := Page.Surface;
+
+  // Skryje všechny prvky db pro výchozí H2
+  LabelUrlServeru.Visible := false;
+  EditUrlServeru.Visible := false;
+  LabelPort.Visible := false;
+  EditPort.Visible := false;
+  LabelInstance.Visible := false;
+  EditInstance.Visible := false;
+  LabelNazevDB.Visible := false;
+  EditNazevDB.Visible := false;
+  LabelJmeno.Visible := false;
+  EditJmeno.Visible := false;
+  LabelHeslo.Visible := false;
+  EditHeslo.Visible := false;
+  ButtonTestPripojeniDB.Visible := false;
 end;
 
 //prvky v lištì s tlaèítky
