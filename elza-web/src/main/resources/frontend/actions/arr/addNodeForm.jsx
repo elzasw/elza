@@ -12,6 +12,7 @@ import {i18n} from 'components/shared';
 import AddNodeForm from "../../components/arr/nodeForm/AddNodeForm";
 import CopyConflictForm from "../../components/arr/nodeForm/CopyConflictForm";
 
+import {importForm} from 'actions/global/global.jsx';
 import {WebApi} from "../WebApi"
 import {globalFundTreeInvalidate} from "./globalFundTree";
 /**
@@ -52,8 +53,14 @@ export function addNodeForm(direction, node, parentNode, versionId, afterCreateC
                     break;
                 }
                 case "FILE": {
-                    //TODO
-                    console.log("TODO file upload");
+                    let formData = new FormData();
+                    for (const key in data) {
+                        if (data.hasOwnProperty(key)) {
+                            let value = data[key];
+                            formData.append(key, value);
+                        }
+                    }
+                    dispatch(importForm(formData, "Fund"));
                     break;
                 }
                 case "OTHER": {
