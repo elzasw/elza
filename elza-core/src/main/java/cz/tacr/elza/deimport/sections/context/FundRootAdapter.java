@@ -72,7 +72,6 @@ class FundRootAdapter implements SectionRootAdapter {
         if (fundVersion == null) {
             throw new DEImportException("Root level not found, fund name:" + fund.getName());
         }
-        // TODO: prenest mimo import, udelat interfrace pro volani z vnejsku
         EventId event = EventFactory.createIdEvent(EventType.FUND_CREATE, fund.getFundId());
         eventNotificationService.publishEvent(event);
     }

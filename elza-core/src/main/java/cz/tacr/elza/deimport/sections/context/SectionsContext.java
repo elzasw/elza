@@ -28,6 +28,7 @@ import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.schema.v2.FundInfo;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.IEventNotificationService;
+import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -59,6 +60,8 @@ public class SectionsContext {
 
     private final LevelRepository levelRepository;
 
+    private final LevelTreeCacheService levelTreeCacheService;
+
     private ContextSection currentSection;
 
     public SectionsContext(SectionStorageDispatcher storageDispatcher,
@@ -69,7 +72,8 @@ public class SectionsContext {
                            ArrangementService arrangementService,
                            InstitutionRepository institutionRepository,
                            IEventNotificationService eventNotificationService,
-                           LevelRepository levelRepository) {
+                           LevelRepository levelRepository,
+                           LevelTreeCacheService levelTreeCacheService) {
         this.storageDispatcher = storageDispatcher;
         this.createChange = createChange;
         this.importScope = importScope;
@@ -79,6 +83,7 @@ public class SectionsContext {
         this.institutionRepository = institutionRepository;
         this.eventNotificationService = eventNotificationService;
         this.levelRepository = levelRepository;
+        this.levelTreeCacheService = levelTreeCacheService;
     }
 
     public boolean isSubsection() {
@@ -87,12 +92,12 @@ public class SectionsContext {
 
     public void init(ImportObserver importObserver) {
         if (isSubsection()) {
-            importObserver.registerPhaseChangeListener(new SubsectionPhaseEndListener());
+            //importObserver.registerPhaseChangeListener(new SubsectionPhaseEndListener());
         }
     }
 
     public void beginSection(String ruleSetCode) {
-        Assert.isNull(currentSection);
+        Assert.isNull(currentSection, "Current section must be closed first");
 
         // find rule system
         if (StringUtils.isEmpty(ruleSetCode)) {
@@ -113,7 +118,7 @@ public class SectionsContext {
                 throw new DEImportException(
                         "Rule set must match with fund, subsection code:" + ruleSetCode + ", fund code:" + fundRuleSetCode);
             }
-            currentSection.setRootAdapter(new SubsectionRootAdapter(importPosition, createChange, levelRepository));
+            section.setRootAdapter(new SubsectionRootAdapter(importPosition, createChange, levelRepository, levelTreeCacheService));
         }
 
         // set current section
@@ -121,7 +126,7 @@ public class SectionsContext {
     }
 
     public void setFundInfo(FundInfo fundInfo) {
-        Assert.notNull(currentSection);
+        Assert.notNull(currentSection, "No active section");
 
         if (isSubsection()) {
             LOG.warn("Fund info will be ignored during subsection import");
@@ -132,13 +137,13 @@ public class SectionsContext {
     }
 
     public ContextSection getCurrentSection() {
-        Assert.notNull(currentSection);
+        Assert.notNull(currentSection, "No active section");
 
         return currentSection;
     }
 
     public void endSection() {
-        Assert.notNull(currentSection);
+        Assert.notNull(currentSection, "No active section");
 
         storeAll();
         currentSection.close();

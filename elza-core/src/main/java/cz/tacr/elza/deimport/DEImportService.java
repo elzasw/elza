@@ -75,6 +75,7 @@ import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.GroovyScriptService;
 import cz.tacr.elza.service.IEventNotificationService;
+import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.utils.XmlUtils;
@@ -124,6 +125,8 @@ public class DEImportService {
 
     private final LevelRepository levelRepository;
 
+    private final LevelTreeCacheService levelTreeCacheService;
+
     private final String transformationsDirectory;
 
     @Autowired
@@ -148,6 +151,7 @@ public class DEImportService {
                            ScopeRepository scopeRepository,
                            FundVersionRepository fundVersionRepository,
                            LevelRepository levelRepository,
+                           LevelTreeCacheService levelTreeCacheService,
                            @Value("${elza.xmlImport.transformationDir}") String transformationsDirectory) {
         this.em = em;
         this.recordRepository = recordRepository;
@@ -170,6 +174,7 @@ public class DEImportService {
         this.scopeRepository = scopeRepository;
         this.fundVersionRepository = fundVersionRepository;
         this.levelRepository = levelRepository;
+        this.levelTreeCacheService = levelTreeCacheService;
         this.transformationsDirectory = transformationsDirectory;
     }
 
@@ -315,6 +320,6 @@ public class DEImportService {
             pos = new ImportPosition(fundVersion, parentLevel, targetLevel, posParams.getDirection());
         }
         return new SectionsContext(storageDispatcher, createChange, importScope, pos, staticData, arrangementService,
-                institutionRepository, eventNotificationService, levelRepository);
+                institutionRepository, eventNotificationService, levelRepository, levelTreeCacheService);
     }
 }
