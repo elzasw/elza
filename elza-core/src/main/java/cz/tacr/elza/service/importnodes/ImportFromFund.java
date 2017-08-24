@@ -303,6 +303,11 @@ public class ImportFromFund implements ImportSource {
 
         CachedNode cachedNode = levelsIterator.getNode(node.getNodeId());
 
+        if (!levelsIterator.hasNext()) {
+            reset = false;
+            nodeParents.clear();
+        }
+
         return new Node() {
             @Override
             public String getUuid() {

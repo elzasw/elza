@@ -460,6 +460,30 @@ public class ImportProcess {
                     break;
                 case RESET: {
 
+                    flushData(true);
+
+                    if (levelsToShift != null && levelsToShift.size() > 0) {
+                        DeepData data = null;
+                        while (!stack.isEmpty()) {
+                            data = stack.pop();
+                        }
+                        if (data != null) {
+                            switch (selectedDirection) {
+                                case BEFORE: {
+                                    // není třeba měnit
+                                    break;
+                                }
+                                case AFTER:
+                                    targetNode = data.getPrevNode();
+                                    break;
+                                default: {
+                                    throw new SystemException("Neplatný směr založení levelu: " + selectedDirection, BaseCode.INVALID_STATE);
+                                }
+                            }
+                            arrMoveLevelService.shiftNodes(levelsToShift, change, data.position + 1);
+                        }
+                    }
+
                     switch (selectedDirection) {
                         case CHILD: {
                             Integer position = levelRepository.findMaxPositionUnderParent(targetNode);
