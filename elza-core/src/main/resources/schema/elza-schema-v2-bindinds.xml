@@ -44,6 +44,10 @@
 			<inheritance:extends>cz.tacr.elza.deimport.sections.items.DescriptionItem</inheritance:extends>
 			<jxb:class implClass="cz.tacr.elza.deimport.sections.items.DescriptionItemStringImpl"/>
 		</jxb:bindings>
+		<jxb:bindings node="//xs:complexType[@name='DescriptionItemUndefined']">
+			<inheritance:extends>cz.tacr.elza.deimport.sections.items.DescriptionItem</inheritance:extends>
+			<jxb:class implClass="cz.tacr.elza.deimport.sections.items.DescriptionItemUndefinedImpl"/>
+		</jxb:bindings>
 	</jxb:bindings>
 
 </jxb:bindings>

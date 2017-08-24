@@ -1,7 +1,6 @@
 package cz.tacr.elza.deimport.sections.items;
 
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.deimport.DEImportException;
 import cz.tacr.elza.deimport.context.ImportContext;
 import cz.tacr.elza.deimport.sections.context.PacketImportInfo;
@@ -20,7 +19,7 @@ public class DescriptionItemPacketRefImpl extends DescriptionItemPacketRef {
     }
 
     @Override
-    protected ArrData createData(ImportContext context, RuleSystemItemType itemType) {
+    protected ArrData createData(ImportContext context, DataType dataType) {
         PacketImportInfo packetInfo = context.getSections().getCurrentSection().getPacketInfo(getPcid());
         if (packetInfo == null) {
             throw new DEImportException("Referenced packet not found, packetId:" + getPcid());

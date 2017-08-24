@@ -1,7 +1,6 @@
 package cz.tacr.elza.deimport.sections.items;
 
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.deimport.DEImportException;
 import cz.tacr.elza.deimport.context.ImportContext;
 import cz.tacr.elza.deimport.parties.context.PartyImportInfo;
@@ -18,7 +17,7 @@ public class DescriptionItemPartyRefImpl extends DescriptionItemPartyRef {
     }
 
     @Override
-    protected ArrData createData(ImportContext context, RuleSystemItemType itemType) {
+    protected ArrData createData(ImportContext context, DataType dataType) {
         PartyImportInfo partyInfo = context.getParties().getPartyInfo(getPaid());
         if (partyInfo == null) {
             throw new DEImportException("Referenced party not found, partyId:" + getPaid());

@@ -170,8 +170,11 @@ public class SectionsContext {
         storageDispatcher.addLevel(level, depth);
     }
 
-    void addDescItem(ArrDescItemWrapper descItem, ArrDataWrapper data, int depth) {
+    void addDescItem(ArrDescItemWrapper descItem, int depth) {
         storageDispatcher.addDescItem(descItem, depth);
+    }
+
+    void addData(ArrDataWrapper data, int depth) {
         storageDispatcher.addData(data, depth);
     }
 

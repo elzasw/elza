@@ -15,6 +15,7 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.deimport.DEImportException;
 import cz.tacr.elza.deimport.aps.context.AccessPointWrapper;
+import cz.tacr.elza.deimport.context.EntityState;
 import cz.tacr.elza.domain.RegExternalSystem;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.projection.RegRecordInfo;
@@ -128,7 +129,7 @@ class RegRecordStorage extends EntityStorage<AccessPointWrapper> {
         ExternalSystemAggregator aggregator = new ExternalSystemAggregator();
         for (AccessPointWrapper rw : rws) {
             // check for eid existence and if not already paired (uuid priority)
-            if (rw.getEntity().getExternalId() != null && rw.isCreate()) {
+            if (rw.getEntity().getExternalId() != null && rw.getState().equals(EntityState.CREATE)) {
                 aggregator.addRecord(rw);
             }
         }

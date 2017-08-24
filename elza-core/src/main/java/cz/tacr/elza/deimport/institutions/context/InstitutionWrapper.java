@@ -4,7 +4,7 @@ import java.util.Objects;
 
 import org.hibernate.Session;
 
-import cz.tacr.elza.deimport.context.StatefulIdHolder.State;
+import cz.tacr.elza.deimport.context.EntityState;
 import cz.tacr.elza.deimport.parties.context.PartyImportInfo;
 import cz.tacr.elza.deimport.storage.EntityWrapper;
 import cz.tacr.elza.domain.ParInstitution;
@@ -22,13 +22,16 @@ public class InstitutionWrapper implements EntityWrapper {
     }
 
     @Override
-    public boolean isCreate() {
-        return isNotIgnored() && entity.getInstitutionId() == null;
-    }
-
-    @Override
-    public boolean isUpdate() {
-        return isNotIgnored() && entity.getInstitutionId() != null;
+    public EntityState getState() {
+        switch (partyInfo.getState()) {
+            case IGNORE:
+                return EntityState.IGNORE;
+            case CREATE:
+            case UPDATE:
+                return entity.getInstitutionId() != null ? EntityState.UPDATE : EntityState.CREATE;
+            default:
+                throw new IllegalStateException("Invalid entity state:" + partyInfo.getState());
+        }
     }
 
     @Override
@@ -39,9 +42,5 @@ public class InstitutionWrapper implements EntityWrapper {
     @Override
     public void beforeEntityPersist(Session session) {
         entity.setParty(partyInfo.getEntityRef(session, ParParty.class));
-    }
-
-    private boolean isNotIgnored() {
-        return !partyInfo.getState().equals(State.IGNORE);
     }
 }

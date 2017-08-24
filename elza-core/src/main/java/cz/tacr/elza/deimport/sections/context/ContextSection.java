@@ -126,8 +126,12 @@ public class ContextSection {
         context.addNodeRegister(wrapper, depth);
     }
 
-    void addDescItem(ArrDescItemWrapper itemWrapper, ArrDataWrapper dataWrapper, int depth) {
-        context.addDescItem(itemWrapper, dataWrapper, depth);
+    void addDescItem(ArrDescItemWrapper itemWrapper, int depth) {
+        context.addDescItem(itemWrapper, depth);
+    }
+
+    void addData(ArrDataWrapper dataWrapper, int depth) {
+        context.addData(dataWrapper, depth);
     }
 
     void setRootAdapter(SectionRootAdapter rootAdapter) {

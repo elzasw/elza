@@ -5,7 +5,7 @@ import java.util.Objects;
 import org.hibernate.Session;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.deimport.context.StatefulIdHolder.State;
+import cz.tacr.elza.deimport.context.EntityState;
 import cz.tacr.elza.deimport.storage.EntityMetrics;
 import cz.tacr.elza.deimport.storage.EntityWrapper;
 import cz.tacr.elza.domain.RegCoordinates;
@@ -26,13 +26,8 @@ public class APGeoLocationWrapper implements EntityWrapper, EntityMetrics {
     }
 
     @Override
-    public boolean isCreate() {
-        return !recordInfo.getState().equals(State.IGNORE);
-    }
-
-    @Override
-    public boolean isUpdate() {
-        return false;
+    public EntityState getState() {
+        return recordInfo.getState().equals(EntityState.IGNORE) ? EntityState.IGNORE : EntityState.CREATE;
     }
 
     @Override

@@ -1,7 +1,6 @@
 package cz.tacr.elza.deimport.sections.items;
 
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.deimport.DEImportException;
 import cz.tacr.elza.deimport.aps.context.RecordImportInfo;
 import cz.tacr.elza.deimport.context.ImportContext;
@@ -18,7 +17,7 @@ public class DescriptionItemAPRefImpl extends DescriptionItemAPRef {
     }
 
     @Override
-    protected ArrData createData(ImportContext context, RuleSystemItemType itemType) {
+    protected ArrData createData(ImportContext context, DataType dataType) {
         RecordImportInfo recordInfo = context.getAccessPoints().getRecordInfo(getApid());
         if (recordInfo == null) {
             throw new DEImportException("Referenced access point not found, apeId:" + getApid());

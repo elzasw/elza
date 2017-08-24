@@ -6,6 +6,7 @@ import org.hibernate.Session;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.deimport.context.IdHolder;
+import cz.tacr.elza.deimport.context.EntityState;
 import cz.tacr.elza.deimport.context.SimpleIdHolder;
 import cz.tacr.elza.deimport.storage.EntityWrapper;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -29,13 +30,8 @@ public class ArrDescItemWrapper implements EntityWrapper {
     }
 
     @Override
-    public boolean isCreate() {
-        return true;
-    }
-
-    @Override
-    public boolean isUpdate() {
-        return false;
+    public EntityState getState() {
+        return EntityState.CREATE;
     }
 
     @Override

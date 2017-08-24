@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,10 +38,10 @@ public class DEImportController {
     }
 
     @RequestMapping(value = "import", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public void importData(@RequestParam(required = false, value = "transformationName") final String transformationName,
-                           @RequestParam(required = false, value = "importPositionParams") final ImportPositionParams importPositionParams,
-                           @RequestParam(required = true, value = "scopeId") final int scopeId,
-                           @RequestParam(required = true, value = "xmlFile") final MultipartFile xmlFile) {
+    public void importData(@RequestPart(name = "importPositionParams", required = false) final ImportPositionParams importPositionParams,
+                           @RequestParam(name = "transformationName", required = false) final String transformationName,
+                           @RequestParam("scopeId") final int scopeId,
+                           @RequestParam("xmlFile") final MultipartFile xmlFile) {
 
         // prepare import parameters
         DEImportParams params = new DEImportParams(scopeId, 1000, 10000, importPositionParams);

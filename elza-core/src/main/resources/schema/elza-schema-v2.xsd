@@ -298,6 +298,16 @@ Item ID</xs:documentation>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
+	<xs:complexType name="DescriptionItemUndefined">
+		<xs:annotation>
+			<xs:documentation>Value is undefined</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="e:DescriptionItem">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
 	<xs:complexType name="DescriptionItemUnitDate">
 		<xs:annotation>
 			<xs:documentation>Date value.</xs:documentation>
@@ -481,6 +491,7 @@ Item ID</xs:documentation>
 						<xs:documentation>Description item date</xs:documentation>
 					</xs:annotation>
 				</xs:element>
+				<xs:element name="du" type="e:DescriptionItemUndefined" minOccurs="1" maxOccurs="1"/>
 			</xs:choice>
 			<xs:element name="aprs" type="e:AccessPointRefs" minOccurs="0" maxOccurs="1">
 				<xs:annotation>

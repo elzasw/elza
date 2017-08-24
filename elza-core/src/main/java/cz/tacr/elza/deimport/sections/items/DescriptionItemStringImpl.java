@@ -1,7 +1,6 @@
 package cz.tacr.elza.deimport.sections.items;
 
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.deimport.DEImportException;
 import cz.tacr.elza.deimport.aps.AccessPointProcessor;
 import cz.tacr.elza.deimport.context.ImportContext;
@@ -19,8 +18,8 @@ public class DescriptionItemStringImpl extends DescriptionItemString {
     }
 
     @Override
-    protected ArrData createData(ImportContext context, RuleSystemItemType itemType) {
-        switch (itemType.getDataType()) {
+    protected ArrData createData(ImportContext context, DataType dataType) {
+        switch (dataType) {
             case STRING:
                 ArrDataString str = new ArrDataString();
                 str.setValue(getV());
@@ -34,7 +33,7 @@ public class DescriptionItemStringImpl extends DescriptionItemString {
                 coords.setValue(AccessPointProcessor.convertGeoLocation(getV()));
                 return coords;
             default:
-                throw new DEImportException("Unsupported item type for string, code:" + itemType.getCode());
+                throw new DEImportException("Unsupported data type for string, code:" + dataType.getCode());
         }
     }
 }

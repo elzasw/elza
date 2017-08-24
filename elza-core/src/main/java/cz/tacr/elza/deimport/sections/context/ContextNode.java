@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import org.springframework.util.Assert;
+
 import cz.tacr.elza.deimport.context.IdHolder;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -48,20 +50,25 @@ public class ContextNode {
     /**
      * Stores description item and his data. <br>
      * # Process updates: <br>
-     * - Data type for data by description item. <br>
-     * - Position of description item by current item count. <br>
-     * - Reference between description item and data during before persist handler.
+     * - Position of item by current count. <br>
+     * - Reference between item and data (before persist).
      */
     public void addDescItem(ArrDescItem descItem, ArrData data) {
-        // set data type
-        data.setDataType(descItem.getItemType().getDataType());
         // set item position
         Integer count = descItemCount.compute(DescItemKey.of(descItem), (k, v) -> v == null ? 1 : ++v);
         descItem.setPosition(count);
-        // store item and data
+        // store item
         ArrDescItemWrapper itemWrapper = new ArrDescItemWrapper(descItem, nodeIdHolder);
-        ArrDataWrapper dataWrapper = new ArrDataWrapper(data, itemWrapper.getIdHolder());
-        section.addDescItem(itemWrapper, dataWrapper, depth);
+        section.addDescItem(itemWrapper, depth);
+        // store data
+        if (data != null) {
+            Assert.isTrue(data.getDataType() == descItem.getItemType().getDataType(), "Data type does not match");
+            Assert.isTrue(!descItem.getUndefined(), "Existing data for undefined item");
+            ArrDataWrapper dataWrapper = new ArrDataWrapper(data, itemWrapper.getIdHolder());
+            section.addData(dataWrapper, depth);
+        } else {
+            Assert.isTrue(descItem.getUndefined(), "Missing data for not undefined item");
+        }
     }
 
     private ArrLevelWrapper createChildLevelWrapper(IdHolder childNodeIdHolder) {

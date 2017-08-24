@@ -17,7 +17,7 @@ import cz.tacr.elza.deimport.DEImportException;
 import cz.tacr.elza.deimport.context.ImportContext;
 import cz.tacr.elza.deimport.context.ImportContext.ImportPhase;
 import cz.tacr.elza.deimport.context.ImportPhaseChangeListener;
-import cz.tacr.elza.deimport.context.StatefulIdHolder.State;
+import cz.tacr.elza.deimport.context.EntityState;
 import cz.tacr.elza.deimport.parties.context.PartiesContext;
 import cz.tacr.elza.deimport.parties.context.PartyImportInfo;
 import cz.tacr.elza.domain.ParInstitution;
@@ -80,7 +80,7 @@ class InstitutionImportManager implements ImportPhaseChangeListener {
         List<Integer> updatedPartyIds = new ArrayList<>();
         for (PartyImportInfo info : allPartyInfo) {
             Assert.isTrue(info.isInitialized());
-            if (info.getState().equals(State.UPDATE)) {
+            if (info.getState().equals(EntityState.UPDATE)) {
                 updatedPartyIds.add(info.getId());
             }
         }

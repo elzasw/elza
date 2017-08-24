@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.deimport.context.ImportContext;
 import cz.tacr.elza.deimport.processor.TimeIntervalConvertor;
 import cz.tacr.elza.deimport.processor.TimeIntervalConvertor.TimeIntervalConversionResult;
@@ -21,7 +20,7 @@ public class DescriptionItemUnitDateImpl extends DescriptionItemUnitDate {
     }
 
     @Override
-    protected ArrData createData(ImportContext context, RuleSystemItemType itemType) {
+    protected ArrData createData(ImportContext context, DataType dataType) {
         ArrDataUnitdate data = new ArrDataUnitdate();
 
         // time interval conversion

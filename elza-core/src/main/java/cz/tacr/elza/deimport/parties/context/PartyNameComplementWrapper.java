@@ -5,8 +5,8 @@ import java.util.Objects;
 import org.hibernate.Session;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.deimport.context.EntityState;
 import cz.tacr.elza.deimport.context.StatefulIdHolder;
-import cz.tacr.elza.deimport.context.StatefulIdHolder.State;
 import cz.tacr.elza.deimport.storage.EntityMetrics;
 import cz.tacr.elza.deimport.storage.EntityWrapper;
 import cz.tacr.elza.domain.ParPartyName;
@@ -24,13 +24,8 @@ public class PartyNameComplementWrapper implements EntityWrapper, EntityMetrics 
     }
 
     @Override
-    public boolean isCreate() {
-        return !partyNameIdHolder.getState().equals(State.IGNORE);
-    }
-
-    @Override
-    public boolean isUpdate() {
-        return false;
+    public EntityState getState() {
+        return partyNameIdHolder.getState().equals(EntityState.IGNORE) ? EntityState.IGNORE : EntityState.CREATE;
     }
 
     @Override

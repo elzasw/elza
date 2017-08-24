@@ -5,7 +5,7 @@ import java.util.Objects;
 import org.hibernate.Session;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.deimport.context.StatefulIdHolder.State;
+import cz.tacr.elza.deimport.context.EntityState;
 import cz.tacr.elza.deimport.storage.EntityMetrics;
 import cz.tacr.elza.deimport.storage.EntityWrapper;
 import cz.tacr.elza.domain.RegRecord;
@@ -21,7 +21,7 @@ public class AccessPointWrapper implements EntityWrapper, EntityMetrics {
 
     private final RecordImportInfo parentRecordInfo;
 
-    private State entityState = State.CREATE;
+    private EntityState entityState = EntityState.CREATE;
 
     AccessPointWrapper(RegRecord entity, RecordImportInfo recordInfo, RecordImportInfo parentRecordInfo) {
         this.entity = Objects.requireNonNull(entity);
@@ -30,17 +30,12 @@ public class AccessPointWrapper implements EntityWrapper, EntityMetrics {
     }
 
     public void markAsPaired(boolean updateRequired) {
-        entityState = updateRequired ? State.UPDATE : State.IGNORE;
+        entityState = updateRequired ? EntityState.UPDATE : EntityState.IGNORE;
     }
 
     @Override
-    public boolean isCreate() {
-        return entityState.equals(State.CREATE);
-    }
-
-    @Override
-    public boolean isUpdate() {
-        return entityState.equals(State.UPDATE);
+    public EntityState getState() {
+        return entityState;
     }
 
     @Override

@@ -23,11 +23,13 @@ public class DescriptionItem extends AbstractDescriptionItem {
     @Override
     public final void importItem(ContextNode contextNode, ImportContext context) {
         ContextSection section = contextNode.getSection();
-        RuleSystemItemType itemType = getRuleSystemItemType(section);
+        RuleSystemItemType itemType = resolveItemType(section.getRuleSystem());
         ArrDescItem descItem = createDescItem(section, itemType);
-        ArrData data = createData(context, itemType);
-        if (data == null) {
-            throw new IllegalStateException("Description item data cannot be null");
+        DataType dataType = itemType.getDataType();
+        ArrData data = createData(context, dataType);
+        if (data != null) {
+            data.setDataType(dataType.getEntity());
+            descItem.setUndefined(false);
         }
         contextNode.addDescItem(descItem, data);
     }
@@ -37,17 +39,15 @@ public class DescriptionItem extends AbstractDescriptionItem {
     }
 
     /**
-     * Creates new data. Implementation should set only value because type and item reference will
-     * be updated during process.
+     * Creates new data. Implementation shouldn't set item reference and data type.
      *
      * @see ContextNode#addDescItem(ArrDescItem, ArrData)
      */
-    protected ArrData createData(ImportContext context, RuleSystemItemType itemType) {
+    protected ArrData createData(ImportContext context, DataType dataType) {
         return null;
     }
 
-    private RuleSystemItemType getRuleSystemItemType(ContextSection section) {
-        RuleSystem ruleSystem = section.getRuleSystem();
+    private RuleSystemItemType resolveItemType(RuleSystem ruleSystem) {
         RuleSystemItemType itemType = ruleSystem.getItemTypeByCode(getT());
         if (itemType == null) {
             throw new DEImportException("Description item type not found, code:" + getT());
@@ -64,6 +64,7 @@ public class DescriptionItem extends AbstractDescriptionItem {
         descItem.setCreateChange(section.getCreateChange());
         descItem.setDescItemObjectId(section.generateDescItemObjectId());
         descItem.setItemType(itemType.getEntity());
+        descItem.setUndefined(true);
 
         // resolve item spec
         boolean specCodeExists = StringUtils.isNotEmpty(getS());
@@ -76,8 +77,7 @@ public class DescriptionItem extends AbstractDescriptionItem {
                 }
                 descItem.setItemSpec(itemSpec);
             } else {
-                throw new DEImportException(
-                        "Description item specification missing, typeCode:" + getT() + ", specCode:" + getS());
+                throw new DEImportException("Description item specification missing, typeCode:" + getT() + ", specCode:" + getS());
             }
         } else if (specCodeExists) {
             throw new DEImportException(

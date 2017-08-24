@@ -4,7 +4,7 @@ import java.util.Objects;
 
 import org.hibernate.Session;
 
-import cz.tacr.elza.deimport.context.StatefulIdHolder.State;
+import cz.tacr.elza.deimport.context.EntityState;
 import cz.tacr.elza.deimport.storage.EntityMetrics;
 import cz.tacr.elza.deimport.storage.EntityWrapper;
 import cz.tacr.elza.domain.RegRecord;
@@ -29,13 +29,8 @@ public class PartyAccessPointWrapper implements EntityWrapper, EntityMetrics {
     }
 
     @Override
-    public boolean isCreate() {
-        return false;
-    }
-
-    @Override
-    public boolean isUpdate() {
-        return !partyInfo.getState().equals(State.IGNORE);
+    public EntityState getState() {
+        return partyInfo.getState().equals(EntityState.IGNORE) ? EntityState.IGNORE : EntityState.UPDATE;
     }
 
     @Override

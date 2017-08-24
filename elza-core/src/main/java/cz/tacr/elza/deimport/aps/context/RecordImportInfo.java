@@ -3,6 +3,7 @@ package cz.tacr.elza.deimport.aps.context;
 import java.io.Serializable;
 import java.util.Objects;
 
+import cz.tacr.elza.deimport.context.EntityState;
 import cz.tacr.elza.deimport.context.StatefulIdHolder;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
@@ -52,7 +53,7 @@ public class RecordImportInfo extends StatefulIdHolder {
     }
 
     @Override
-    protected void init(Serializable id, State state) {
+    protected void init(Serializable id, EntityState state) {
         super.init(id, state);
     }
 }

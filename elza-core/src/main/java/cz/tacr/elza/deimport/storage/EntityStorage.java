@@ -32,12 +32,16 @@ class EntityStorage<T extends EntityWrapper> {
         List<T> updates = new ArrayList<>(items.size());
 
         for (T item : items) {
-            if (item.isCreate()) {
-                creates.add(item);
-            } else if (item.isUpdate()) {
-                updates.add(item);
+            switch (item.getState()) {
+                case CREATE:
+                    creates.add(item);
+                    break;
+                case UPDATE:
+                    updates.add(item);
+                    break;
+                default:
+                    // ignored entity
             }
-            // NOP: ignored entity
         }
         // add to persistent context
         if (creates.size() > 0) {

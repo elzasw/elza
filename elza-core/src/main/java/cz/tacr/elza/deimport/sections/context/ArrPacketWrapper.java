@@ -5,6 +5,7 @@ import java.util.Objects;
 import org.hibernate.Session;
 
 import cz.tacr.elza.deimport.context.IdHolder;
+import cz.tacr.elza.deimport.context.EntityState;
 import cz.tacr.elza.deimport.storage.EntityWrapper;
 import cz.tacr.elza.domain.ArrPacket;
 
@@ -24,13 +25,8 @@ public class ArrPacketWrapper implements EntityWrapper {
     }
 
     @Override
-    public boolean isCreate() {
-        return true;
-    }
-
-    @Override
-    public boolean isUpdate() {
-        return false;
+    public EntityState getState() {
+        return EntityState.CREATE;
     }
 
     @Override

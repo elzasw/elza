@@ -6,11 +6,7 @@ import javax.xml.ws.Holder;
 
 public abstract class StatefulIdHolder extends IdHolder {
 
-    public enum State {
-        CREATE, UPDATE, IGNORE
-    }
-
-    private final Holder<State> stateHolder;
+    private final Holder<EntityState> stateHolder;
 
     public StatefulIdHolder() {
         stateHolder = new Holder<>();
@@ -23,11 +19,11 @@ public abstract class StatefulIdHolder extends IdHolder {
         stateHolder = sourceHolder.stateHolder;
     }
 
-    public State getState() {
+    public EntityState getState() {
         return stateHolder.value;
     }
 
-    protected void init(Serializable id, State state) {
+    protected void init(Serializable id, EntityState state) {
         init(id);
         stateHolder.value = state;
     }
