@@ -34,7 +34,7 @@ public class ArrDataCoordinates extends ArrData {
 
     @Override
     public String toString() {
-        return new WKTWriter().writeFormatted(value);
+        return value == null ? null : new WKTWriter().writeFormatted(value);
     }
 
     @Override
