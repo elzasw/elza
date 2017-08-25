@@ -15,7 +15,6 @@ import javax.persistence.Table;
  * @author Martin Šlapa
  * @since 1.9.2015
  */
-@Indexed
 @Entity(name = "arr_data_unitid")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})

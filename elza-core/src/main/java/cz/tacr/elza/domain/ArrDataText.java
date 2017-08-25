@@ -16,7 +16,6 @@ import javax.persistence.Table;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */
-@Indexed
 @Entity(name = "arr_data_text")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})

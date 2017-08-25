@@ -2,7 +2,10 @@ package cz.tacr.elza.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import cz.tacr.elza.domain.enumeration.StringLength;
+import cz.tacr.elza.filter.condition.LuceneDescItemCondition;
+import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.Store;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,7 +18,6 @@ import javax.persistence.Table;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */
-@Indexed
 @Entity(name = "arr_data_string")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})

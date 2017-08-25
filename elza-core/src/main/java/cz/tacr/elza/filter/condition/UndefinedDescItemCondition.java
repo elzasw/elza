@@ -23,7 +23,7 @@ public class UndefinedDescItemCondition implements HibernateDescItemCondition {
                 .append("join arr_level l on n.node_id = l.node_id ")
                 .append("left join arr_desc_item di on n.node_id = di.node_id ")
                 .append("left join arr_item it on di.item_id = it.item_id ")
-                .append("where n.fund_id = :fundId and it.undefined = true and it.item_type_id = :descItemTypeId and it.delete_change_id is null ");
+                .append("where n.fund_id = :fundId and it.data_id IS NULL and it.item_type_id = :descItemTypeId and it.delete_change_id is null ");
 
         if (lockChangeId == null) {
             sb.append("and l.delete_change_id is null "); // v otevřené verzi

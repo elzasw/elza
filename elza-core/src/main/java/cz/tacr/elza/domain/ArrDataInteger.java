@@ -1,6 +1,7 @@
 package cz.tacr.elza.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import cz.tacr.elza.filter.condition.LuceneDescItemCondition;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.NumericField;
@@ -17,7 +18,6 @@ import javax.persistence.Table;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */
-@Indexed
 @Entity(name = "arr_data_integer")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -26,7 +26,7 @@ public class ArrDataInteger extends ArrData {
     @Column(nullable = false)
     private Integer value;
 
-    @Field(name = "valueInt", store = Store.YES)
+    @Field(name = LuceneDescItemCondition.INTGER_ATT, store = Store.YES)
     @NumericField
     public Integer getValue() {
         return value;

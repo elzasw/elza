@@ -1,30 +1,5 @@
 package cz.tacr.elza.controller.config;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.filter.condition.UndefinedDescItemCondition;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
 import cz.tacr.elza.FilterTools;
 import cz.tacr.elza.controller.vo.ArrFileVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
@@ -55,7 +30,6 @@ import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrItemData;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutputFile;
@@ -79,6 +53,9 @@ import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.CalendarConverter.CalendarType;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.filter.condition.BeginDescItemCondition;
 import cz.tacr.elza.filter.condition.ContainDescItemCondition;
@@ -106,6 +83,7 @@ import cz.tacr.elza.filter.condition.SelectedSpecificationsDescItemEnumCondition
 import cz.tacr.elza.filter.condition.SelectedValuesDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.SelectsNothingCondition;
 import cz.tacr.elza.filter.condition.SubsetDescItemCondition;
+import cz.tacr.elza.filter.condition.UndefinedDescItemCondition;
 import cz.tacr.elza.filter.condition.UnselectedSpecificationsDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.UnselectedValuesDescItemEnumCondition;
 import cz.tacr.elza.repository.CalendarTypeRepository;
@@ -119,6 +97,25 @@ import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.xmlimport.v1.utils.XmlImportConfig;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import javax.annotation.Nullable;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Továrna na vytváření DO objektů z VO objektů.
@@ -477,7 +474,7 @@ public class ClientFactoryDO {
         if (conditionType != null && conditionType != Condition.NONE) {
             conditionType.checkSupport(descItemType.getDataType().getCode());
 
-            DescItemCondition condition = null;
+            DescItemCondition condition;
             switch(conditionType) {
                 case BEGIN: {
                     String conditionValue = getConditionValueString(filter.getCondition());
@@ -530,7 +527,8 @@ public class ClientFactoryDO {
                         condition = new GtDescItemCondition<Long>(unitDate.getNormalizedTo(), attributeName);
                     } else if (descItemType.getDataType().getCode().equals("INT")) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
-                        String attributeName = LuceneDescItemCondition.INTGER_ATT;
+                        // TODO slapam: přepsat
+                        String attributeName = "data." + LuceneDescItemCondition.INTGER_ATT;
                         condition = new GtDescItemCondition<Integer>(conditionValue, attributeName);
                     } else {
                         Double conditionValue = getConditionValueDouble(filter.getCondition());
@@ -625,14 +623,11 @@ public class ClientFactoryDO {
                     throw new IllegalArgumentException("Neznámý typ podmínky " + conditionType);
             }
 
-            if (condition != null) {
-                conditions.add(condition);
-            }
+            conditions.add(condition);
         }
 
         if (!valuesConditions.isEmpty() || !specsConditions.isEmpty() || !conditions.isEmpty()) {
-            Class<? extends ArrData> typeClass = descriptionItemService.getDescItemDataTypeClass(descItemType);
-            return new DescItemTypeFilter(descItemType, typeClass, valuesConditions, specsConditions, conditions);
+            return new DescItemTypeFilter(descItemType, valuesConditions, specsConditions, conditions);
         }
 
         return null;

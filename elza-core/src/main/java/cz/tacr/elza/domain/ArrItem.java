@@ -107,7 +107,6 @@ public abstract class ArrItem implements NodeCacheSerializable {
     @Column(nullable = false)
     private Integer position;
 
-    @IndexedEmbedded
     @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrData.class)
     @JoinColumn(name = "dataId")
     private ArrData data;

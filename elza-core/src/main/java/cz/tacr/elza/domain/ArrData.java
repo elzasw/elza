@@ -40,8 +40,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public abstract class ArrData {
 
-    public static final String LUCENE_DESC_ITEM_TYPE_ID = "descItemTypeId";
-
     @Id
     @GeneratedValue
     private Integer dataId;

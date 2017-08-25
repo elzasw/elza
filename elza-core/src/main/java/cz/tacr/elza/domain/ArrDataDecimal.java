@@ -6,8 +6,10 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import cz.tacr.elza.filter.condition.LuceneDescItemCondition;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.NumericField;
 import org.hibernate.search.annotations.Store;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -18,7 +20,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @author Martin Šlapa
  * @since 12.10.2015
  */
-@Indexed
 @Entity(name = "arr_data_decimal")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -31,7 +32,8 @@ public class ArrDataDecimal extends ArrData {
         return value;
     }
 
-    @Field(name = "valueDecimal", store = Store.YES)
+    @Field(name = LuceneDescItemCondition.DECIMAL_ATT, store = Store.YES)
+    @NumericField
     public Double getValueDouble() {
         return value.doubleValue();
     }

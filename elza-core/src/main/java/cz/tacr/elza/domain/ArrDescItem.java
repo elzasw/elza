@@ -10,6 +10,7 @@ import org.hibernate.search.annotations.AnalyzerDef;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.annotations.TokenFilterDef;
 import org.hibernate.search.annotations.TokenizerDef;
@@ -49,6 +50,7 @@ public class ArrDescItem extends ArrItem {
     public static final String NODE = "node";
     public static final String CREATE_CHANGE_ID = "createChangeId";
     public static final String DELETE_CHANGE_ID = "deleteChangeId";
+    public static final String LUCENE_DESC_ITEM_TYPE_ID = "descItemTypeId";
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrNode.class)
@@ -120,6 +122,12 @@ public class ArrDescItem extends ArrItem {
     @Override
     public ArrNode getNode() {
         return node;
+    }
+
+    @IndexedEmbedded
+    @Override
+    public ArrData getData() {
+        return super.getData();
     }
 
     @Override

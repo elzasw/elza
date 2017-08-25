@@ -18,7 +18,6 @@ import javax.persistence.Table;
  * @author Petr Compel <petr.compel@marbes.cz>
  * @since 17.6.2016
  */
-@Indexed
 @Entity(name = "arr_data_file_ref")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
