@@ -134,15 +134,15 @@ public class SectionsContext {
     public void endSection() {
         Validate.notNull(currentSection);
 
-        // save & close current section
+        // store all changes
         storeAll();
-        currentSection.close();
 
         // notify listeners
         List<SectionProcessedListener> listeners = new ArrayList<>(sectionProcessedListeners);
         listeners.forEach(l -> l.onSectionProcessed(currentSection));
 
-        // clear current section
+        // close & clear current section
+        currentSection.close();
         currentSection = null;
     }
 
