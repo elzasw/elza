@@ -255,7 +255,7 @@ class Ribbon extends AbstractReactComponent {
             <RibbonGroup className="small" right>
                 <Dropdown className="user-menu" bsStyle='default' key='user-menu' id='user-menu'>
                     <Dropdown.Toggle  noCaret>
-                        {userDetail.username} test <Icon glyph="fa-user" />
+                        {userDetail.username} <Icon glyph="fa-user" />
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
                         <MenuItem eventKey="1" onClick={this.handlePasswordChangeForm}>{i18n('ribbon.action.admin.user.passwordChange')}</MenuItem>
