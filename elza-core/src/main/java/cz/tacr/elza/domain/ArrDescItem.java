@@ -1,5 +1,6 @@
 package cz.tacr.elza.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import cz.tacr.elza.search.DescItemIndexingInterceptor;
@@ -55,6 +56,7 @@ public class ArrDescItem extends ArrItem {
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrNode.class)
     @JoinColumn(name = "nodeId", nullable = false)
+    @JsonIgnore
     private ArrNode node;
 
     @Column(name = "nodeId", updatable = false, insertable = false)

@@ -25,4 +25,8 @@
 
     </changeSet>
 
+    <changeSet id="201708251407" author="slapa">
+        <delete tableName="arr_cached_node" />
+    </changeSet>
+
 </databaseChangeLog>

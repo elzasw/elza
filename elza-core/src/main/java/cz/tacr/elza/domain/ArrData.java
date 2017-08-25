@@ -1,7 +1,16 @@
 package cz.tacr.elza.domain;
 
-import java.io.Serializable;
-import java.math.BigDecimal;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import cz.tacr.elza.filter.condition.LuceneDescItemCondition;
+import cz.tacr.elza.service.cache.NodeCacheSerializable;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.hibernate.search.annotations.Analyzer;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.NumericField;
+import org.hibernate.search.annotations.Store;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -12,23 +21,6 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-
-import cz.tacr.elza.filter.condition.LuceneDescItemCondition;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.lucene.analysis.core.KeywordTokenizerFactory;
-import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
-import org.hibernate.search.annotations.Analyzer;
-import org.hibernate.search.annotations.AnalyzerDef;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.FieldBridge;
-import org.hibernate.search.annotations.NumericField;
-import org.hibernate.search.annotations.Store;
-import org.hibernate.search.annotations.TokenFilterDef;
-import org.hibernate.search.annotations.TokenizerDef;
-import org.hibernate.search.bridge.builtin.IntegerBridge;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
@@ -41,7 +33,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public abstract class ArrData {
+@JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
+public abstract class ArrData implements NodeCacheSerializable {
 
     @Id
     @GeneratedValue
@@ -54,28 +47,33 @@ public abstract class ArrData {
     /**
      * @return vrací hodnotu pro fulltextové hledání
      */
+    @JsonIgnore
     @Field
     @Analyzer(definition = "customanalyzer")
     public abstract String getFulltextValue();
 
+    @JsonIgnore
     @Field(name = LuceneDescItemCondition.INTGER_ATT, store = Store.YES)
     @NumericField
     public Integer getValueInt() {
         return null;
     }
 
+    @JsonIgnore
     @Field(name = LuceneDescItemCondition.DECIMAL_ATT, store = Store.YES)
     @NumericField
     public Double getValueDouble() {
         return null;
     }
 
+    @JsonIgnore
     @Field(name = LuceneDescItemCondition.NORMALIZED_FROM_ATT, store = Store.YES)
     @NumericField
     public Long getNormalizedFrom() {
         return null;
     }
 
+    @JsonIgnore
     @Field(name = LuceneDescItemCondition.NORMALIZED_TO_ATT, store = Store.YES)
     @NumericField
     public Long getNormalizedTo() {

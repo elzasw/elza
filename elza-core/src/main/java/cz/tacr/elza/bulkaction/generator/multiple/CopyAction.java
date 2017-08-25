@@ -1,5 +1,6 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
+import com.google.common.base.Objects;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.CopyActionResult;
@@ -44,7 +45,7 @@ public class CopyAction extends Action {
     /**
      * Seznam kopírovaných hodnot atributů
      */
-    private List<ArrItem> dataItems = new ArrayList<>();
+    private List<ArrDescItem> dataItems = new ArrayList<>();
 
     /**
      * Provést distinct při vracení výsledků?
@@ -77,16 +78,19 @@ public class CopyAction extends Action {
 
     @Override
     public void apply(final ArrNode node, final List<ArrDescItem> items, final LevelWithItems parentLevelWithItems) {
-        for (ArrItem item : items) {
+        for (ArrDescItem item : items) {
             // pouze hledaný typ
             if (inputItemTypes.contains(item.getItemType())) {
-                ArrData itemData = item.getData();
                 if (distinct) {
-                    for (ArrDescItem descItem : items) {
-                        if (descItem.getData() != null && descItem.getData().equals(itemData)) {
-                            dataItems.add(item);
+                    boolean exist = false;
+                    for (ArrDescItem descItem : dataItems) {
+                        if (Objects.equal(item.getFulltextValue(), descItem.getFulltextValue())) {
+                            exist = true;
                             break;
                         }
+                    }
+                    if (!exist) {
+                        dataItems.add(item);
                     }
                 } else {
                     dataItems.add(item);
@@ -112,7 +116,7 @@ public class CopyAction extends Action {
     public ActionResult getResult() {
         CopyActionResult copyActionResult = new CopyActionResult();
         copyActionResult.setItemType(outputItemType.getCode());
-        copyActionResult.setDataItems(dataItems);
+        copyActionResult.setDataItems(new ArrayList<>(dataItems));
         return copyActionResult;
     }
 
