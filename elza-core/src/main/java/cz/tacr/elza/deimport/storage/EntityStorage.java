@@ -3,8 +3,8 @@ package cz.tacr.elza.deimport.storage;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 
+import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
 /**
@@ -17,7 +17,7 @@ class EntityStorage<T extends EntityWrapper> {
     private final StorageListener storageListener;
 
     public EntityStorage(Session session, StorageListener storageListener) {
-        this.session = Objects.requireNonNull(session);
+        this.session = Validate.notNull(session);
         this.storageListener = storageListener;
     }
 

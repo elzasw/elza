@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
+import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
-import org.springframework.util.Assert;
 
 import cz.tacr.elza.deimport.DEImportException;
 import cz.tacr.elza.deimport.aps.context.AccessPointWrapper;
@@ -81,7 +81,7 @@ class RegRecordStorage extends EntityStorage<AccessPointWrapper> {
         List<RegRecord> records = new ArrayList<>(items.size());
         for (AccessPointWrapper rw : items) {
             RegRecord record = rw.getEntity();
-            Assert.notNull(record.getRecordId());
+            Validate.notNull(record.getRecordId());
             records.add(record);
         }
         variantRecordRepository.deleteByRegRecordIn(records);
@@ -175,7 +175,7 @@ class RegRecordStorage extends EntityStorage<AccessPointWrapper> {
 
         public void addRecord(AccessPointWrapper record) {
             RegExternalSystem system = record.getEntity().getExternalSystem();
-            Assert.notNull(system);
+            Validate.notNull(system);
             ExternalSystemGroup group = codeMap.computeIfAbsent(system.getCode(), k -> new ExternalSystemGroup());
             group.addRecord(record);
         }
@@ -198,7 +198,7 @@ class RegRecordStorage extends EntityStorage<AccessPointWrapper> {
 
             private void addRecord(AccessPointWrapper record) {
                 String externalId = record.getEntity().getExternalId();
-                Assert.hasLength(externalId);
+                Validate.notEmpty(externalId);
                 if (eIdMap.putIfAbsent(externalId, record) != null) {
                     throw new DEImportException("Access point has duplicate external id, externalSystemCode:"
                             + record.getEntity().getExternalSystem().getCode() + ", externalId:" + externalId);

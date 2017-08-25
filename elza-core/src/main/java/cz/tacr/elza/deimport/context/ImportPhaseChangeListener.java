@@ -1,7 +1,5 @@
 package cz.tacr.elza.deimport.context;
 
-import cz.tacr.elza.deimport.context.ImportContext.ImportPhase;
-
 /**
  * Listener for import phase changes.
  */

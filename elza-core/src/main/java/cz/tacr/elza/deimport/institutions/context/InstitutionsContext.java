@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 import cz.tacr.elza.deimport.context.ImportContext;
-import cz.tacr.elza.deimport.context.ImportContext.ImportPhase;
-import cz.tacr.elza.deimport.context.ImportObserver;
+import cz.tacr.elza.deimport.context.ImportPhase;
 import cz.tacr.elza.deimport.context.ImportPhaseChangeListener;
+import cz.tacr.elza.deimport.context.ObservableImport;
 import cz.tacr.elza.deimport.parties.context.PartyImportInfo;
 import cz.tacr.elza.deimport.storage.StorageManager;
 import cz.tacr.elza.domain.ParInstitution;
@@ -38,9 +38,9 @@ public class InstitutionsContext {
         this.institutionTypeCodeMap = loadInstitutionTypeCodeMap(institutionTypeRepository);
     }
 
-    public void init(ImportObserver importObserver) {
-        importObserver.registerPhaseChangeListener(institutionsImportManager);
-        importObserver.registerPhaseChangeListener(new InstitutionsPhaseEndListener());
+    public void init(ObservableImport observableImport) {
+        observableImport.registerPhaseChangeListener(institutionsImportManager);
+        observableImport.registerPhaseChangeListener(new InstitutionsPhaseEndListener());
     }
 
     public ParInstitutionType getInstitutionTypeByCode(String code) {

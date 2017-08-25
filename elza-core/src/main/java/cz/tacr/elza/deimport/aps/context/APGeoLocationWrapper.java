@@ -1,9 +1,7 @@
 package cz.tacr.elza.deimport.aps.context;
 
-import java.util.Objects;
-
+import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
-import org.springframework.util.Assert;
 
 import cz.tacr.elza.deimport.context.EntityState;
 import cz.tacr.elza.deimport.storage.EntityMetrics;
@@ -21,8 +19,8 @@ public class APGeoLocationWrapper implements EntityWrapper, EntityMetrics {
     private final RecordImportInfo recordInfo;
 
     APGeoLocationWrapper(RegCoordinates entity, RecordImportInfo recordInfo) {
-        this.entity = Objects.requireNonNull(entity);
-        this.recordInfo = Objects.requireNonNull(recordInfo);
+        this.entity = Validate.notNull(entity);
+        this.recordInfo = Validate.notNull(recordInfo);
     }
 
     @Override
@@ -42,7 +40,7 @@ public class APGeoLocationWrapper implements EntityWrapper, EntityMetrics {
 
     @Override
     public void beforeEntityPersist(Session session) {
-        Assert.isNull(entity.getRegRecord());
+        Validate.isTrue(entity.getRegRecord() == null);
         entity.setRegRecord(recordInfo.getEntityRef(session, RegRecord.class));
     }
 }

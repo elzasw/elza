@@ -1,9 +1,7 @@
 package cz.tacr.elza.deimport.parties.context;
 
-import java.util.Objects;
-
+import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
-import org.springframework.util.Assert;
 
 import cz.tacr.elza.deimport.context.EntityState;
 import cz.tacr.elza.deimport.context.StatefulIdHolder;
@@ -19,8 +17,8 @@ public class PartyNameComplementWrapper implements EntityWrapper, EntityMetrics 
     private final StatefulIdHolder partyNameIdHolder;
 
     PartyNameComplementWrapper(ParPartyNameComplement entity, StatefulIdHolder partyNameIdHolder) {
-        this.entity = Objects.requireNonNull(entity);
-        this.partyNameIdHolder = Objects.requireNonNull(partyNameIdHolder);
+        this.entity = Validate.notNull(entity);
+        this.partyNameIdHolder = Validate.notNull(partyNameIdHolder);
     }
 
     @Override
@@ -40,7 +38,7 @@ public class PartyNameComplementWrapper implements EntityWrapper, EntityMetrics 
 
     @Override
     public void beforeEntityPersist(Session session) {
-        Assert.isNull(entity.getPartyName());
+        Validate.isTrue(entity.getPartyName() == null);
         entity.setPartyName(partyNameIdHolder.getEntityRef(session, ParPartyName.class));
     }
 }

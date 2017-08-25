@@ -1,7 +1,6 @@
 package cz.tacr.elza.deimport.institutions.context;
 
-import java.util.Objects;
-
+import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
 import cz.tacr.elza.deimport.context.EntityState;
@@ -17,8 +16,8 @@ public class InstitutionWrapper implements EntityWrapper {
     private final PartyImportInfo partyInfo;
 
     public InstitutionWrapper(ParInstitution entity, PartyImportInfo partyInfo) {
-        this.entity = Objects.requireNonNull(entity);
-        this.partyInfo = Objects.requireNonNull(partyInfo);
+        this.entity = Validate.notNull(entity);
+        this.partyInfo = Validate.notNull(partyInfo);
     }
 
     @Override

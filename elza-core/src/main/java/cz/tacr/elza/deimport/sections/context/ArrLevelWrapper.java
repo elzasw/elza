@@ -1,12 +1,10 @@
 package cz.tacr.elza.deimport.sections.context;
 
-import java.util.Objects;
-
+import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
-import org.springframework.util.Assert;
 
-import cz.tacr.elza.deimport.context.IdHolder;
 import cz.tacr.elza.deimport.context.EntityState;
+import cz.tacr.elza.deimport.context.IdHolder;
 import cz.tacr.elza.deimport.context.SimpleIdHolder;
 import cz.tacr.elza.deimport.storage.EntityWrapper;
 import cz.tacr.elza.domain.ArrLevel;
@@ -23,8 +21,8 @@ public class ArrLevelWrapper implements EntityWrapper {
     private final IdHolder parentNodeIdHolder;
 
     ArrLevelWrapper(ArrLevel entity, IdHolder nodeIdHolder, IdHolder parentNodeIdHolder) {
-        this.entity = Objects.requireNonNull(entity);
-        this.nodeIdHolder = Objects.requireNonNull(nodeIdHolder);
+        this.entity = Validate.notNull(entity);
+        this.nodeIdHolder = Validate.notNull(nodeIdHolder);
         this.parentNodeIdHolder = parentNodeIdHolder;
     }
 
@@ -44,11 +42,11 @@ public class ArrLevelWrapper implements EntityWrapper {
 
     @Override
     public void beforeEntityPersist(Session session) {
-        Assert.isNull(entity.getNode());
+        Validate.isTrue(entity.getNode() == null);
         entity.setNode(nodeIdHolder.getEntityRef(session, ArrNode.class));
 
         // sets parent reference (null for root level)
-        Assert.isNull(entity.getNodeParent());
+        Validate.isTrue(entity.getNodeParent() == null);
         if (parentNodeIdHolder != null) {
             entity.setNodeParent(parentNodeIdHolder.getEntityRef(session, ArrNode.class));
         }

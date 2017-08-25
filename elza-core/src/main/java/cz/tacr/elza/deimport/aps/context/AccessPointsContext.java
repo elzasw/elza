@@ -7,9 +7,9 @@ import java.util.Map;
 
 import cz.tacr.elza.deimport.DEImportException;
 import cz.tacr.elza.deimport.context.ImportContext;
-import cz.tacr.elza.deimport.context.ImportContext.ImportPhase;
-import cz.tacr.elza.deimport.context.ImportObserver;
+import cz.tacr.elza.deimport.context.ImportPhase;
 import cz.tacr.elza.deimport.context.ImportPhaseChangeListener;
+import cz.tacr.elza.deimport.context.ObservableImport;
 import cz.tacr.elza.deimport.storage.StorageManager;
 import cz.tacr.elza.domain.RegCoordinates;
 import cz.tacr.elza.domain.RegExternalSystem;
@@ -49,8 +49,8 @@ public class AccessPointsContext {
         this.externalSystemCodeMap = loadExternalSystemCodeMap(externalSystemRepository);
     }
 
-    public void init(ImportObserver importObserver) {
-        importObserver.registerPhaseChangeListener(new AccessPointsPhaseEndListener());
+    public void init(ObservableImport observableImport) {
+        observableImport.registerPhaseChangeListener(new AccessPointsPhaseEndListener());
     }
 
     public RegScope getImportScope() {

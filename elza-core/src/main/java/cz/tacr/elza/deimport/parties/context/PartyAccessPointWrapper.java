@@ -1,7 +1,6 @@
 package cz.tacr.elza.deimport.parties.context;
 
-import java.util.Objects;
-
+import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
 import cz.tacr.elza.deimport.context.EntityState;
@@ -22,8 +21,8 @@ public class PartyAccessPointWrapper implements EntityWrapper, EntityMetrics {
     private RegRecord recordRef;
 
     public PartyAccessPointWrapper(PartyImportInfo partyInfo, String name, String characteristics, String note) {
-        this.partyInfo = Objects.requireNonNull(partyInfo);
-        this.name = Objects.requireNonNull(name);
+        this.partyInfo = Validate.notNull(partyInfo);
+        this.name = Validate.notNull(name);
         this.characteristics = characteristics;
         this.note = note;
     }

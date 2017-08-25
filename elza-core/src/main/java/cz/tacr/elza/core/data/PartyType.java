@@ -2,7 +2,7 @@ package cz.tacr.elza.core.data;
 
 import java.util.List;
 
-import org.springframework.util.Assert;
+import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.repository.PartyTypeRepository;
@@ -41,7 +41,7 @@ public enum PartyType {
      * @return Null when not found.
      */
     public static PartyType fromCode(String code) {
-        Assert.hasLength(code);
+        Validate.notEmpty(code);
         try {
             return valueOf(code);
         } catch (IllegalArgumentException e) {
@@ -71,7 +71,7 @@ public enum PartyType {
         }
         // init enum
         nextVal: for (PartyType value : values) {
-            Assert.isNull(value.entity);
+            Validate.isTrue(value.entity == null);
             for (ParPartyType entity : entities) {
                 if (value.name().equals(entity.getCode())) {
                     value.entity = entity;

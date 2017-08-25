@@ -1,7 +1,6 @@
 package cz.tacr.elza.deimport.parties.context;
 
-import java.util.Objects;
-
+import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
 import cz.tacr.elza.deimport.aps.context.RecordImportInfo;
@@ -19,7 +18,7 @@ public class PartyUnitDateWrapper implements EntityWrapper, EntityMetrics {
     private final SimpleStatefulIdHolder idHolder;
 
     PartyUnitDateWrapper(ParUnitdate entity, RecordImportInfo recordInfo) {
-        this.entity = Objects.requireNonNull(entity);
+        this.entity = Validate.notNull(entity);
         this.idHolder = new SimpleStatefulIdHolder(ParUnitdate.class, recordInfo);
     }
 

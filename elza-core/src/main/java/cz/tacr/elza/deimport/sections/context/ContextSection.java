@@ -2,9 +2,8 @@ package cz.tacr.elza.deimport.sections.context;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
-import org.springframework.util.Assert;
+import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.deimport.DEImportException;
@@ -34,14 +33,11 @@ public class ContextSection {
 
     private SectionRootAdapter rootAdapter;
 
-    ContextSection(SectionsContext context,
-            ArrChange createChange,
-            RuleSystem ruleSystem,
-            ArrangementService arrangementService) {
-        this.context = Objects.requireNonNull(context);
-        this.createChange = Objects.requireNonNull(createChange);
-        this.ruleSystem = Objects.requireNonNull(ruleSystem);
-        this.arrangementService = Objects.requireNonNull(arrangementService);
+    ContextSection(SectionsContext context, ArrChange createChange, RuleSystem ruleSystem, ArrangementService arrangementService) {
+        this.context = Validate.notNull(context);
+        this.createChange = Validate.notNull(createChange);
+        this.ruleSystem = Validate.notNull(ruleSystem);
+        this.arrangementService = Validate.notNull(arrangementService);
     }
 
     public SectionsContext getContext() {
@@ -57,7 +53,7 @@ public class ContextSection {
     }
 
     public ArrFund getFund() {
-        Assert.notNull(rootAdapter);
+        Validate.notNull(rootAdapter);
 
         return rootAdapter.getFund();
     }
@@ -94,8 +90,9 @@ public class ContextSection {
      * Create root node for section and stores all remaining packets.
      */
     public ContextNode addRootNode(ArrNode rootNode, String importId) {
-        Assert.notNull(rootAdapter);
-        Assert.isTrue(!isRootSet());
+        Validate.notNull(rootAdapter);
+        Validate.isTrue(!isRootSet());
+
         // save processed packets
         context.storePackets();
         // create root context node
@@ -105,7 +102,8 @@ public class ContextSection {
     }
 
     public void close() {
-        Assert.notNull(rootAdapter);
+        Validate.notNull(rootAdapter);
+
         rootAdapter.onSectionClose();
         rootAdapter = null;
     }

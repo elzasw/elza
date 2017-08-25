@@ -3,12 +3,13 @@ package cz.tacr.elza.deimport.reader;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
+
+import org.apache.commons.lang3.Validate;
 
 public class XmlElementReader {
 
@@ -21,7 +22,7 @@ public class XmlElementReader {
     }
 
     public void addElementHandler(String localPath, XmlElementHandler elementHandler) {
-        XmlElementHandler currentHandler = elementHandlerMap.put(Objects.requireNonNull(localPath), elementHandler);
+        XmlElementHandler currentHandler = elementHandlerMap.put(Validate.notNull(localPath), elementHandler);
         if (currentHandler != null && currentHandler != elementHandler) {
             throw new IllegalStateException("Path for element handler already registered, path:" + localPath);
         }

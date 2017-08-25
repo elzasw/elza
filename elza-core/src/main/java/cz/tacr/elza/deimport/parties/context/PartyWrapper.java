@@ -1,9 +1,7 @@
 package cz.tacr.elza.deimport.parties.context;
 
-import java.util.Objects;
-
+import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
-import org.springframework.util.Assert;
 
 import cz.tacr.elza.deimport.context.EntityState;
 import cz.tacr.elza.deimport.storage.EntityMetrics;
@@ -20,8 +18,8 @@ public class PartyWrapper implements EntityWrapper, EntityMetrics {
     private final PartyImportInfo info;
 
     PartyWrapper(ParParty entity, PartyImportInfo info) {
-        this.entity = Objects.requireNonNull(entity);
-        this.info = Objects.requireNonNull(info);
+        this.entity = Validate.notNull(entity);
+        this.info = Validate.notNull(info);
     }
 
     public PartyImportInfo getInfo() {
@@ -45,7 +43,7 @@ public class PartyWrapper implements EntityWrapper, EntityMetrics {
 
     @Override
     public void beforeEntityPersist(Session session) {
-        Assert.isNull(entity.getRecord());
+        Validate.isTrue(entity.getRecord() == null);
         entity.setRecord(info.getRecordRef(session));
     }
 

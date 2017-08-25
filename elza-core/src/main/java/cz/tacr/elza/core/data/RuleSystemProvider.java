@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.util.Assert;
+import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ItemSpecRepository;
@@ -26,7 +26,7 @@ public class RuleSystemProvider {
     }
 
     public RuleSystem getByRuleSetCode(String code) {
-        Assert.hasLength(code);
+        Validate.notEmpty(code);
         return ruleSetCodeMap.get(code);
     }
 

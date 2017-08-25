@@ -1,9 +1,7 @@
 package cz.tacr.elza.deimport.aps.context;
 
-import java.util.Objects;
-
+import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
-import org.springframework.util.Assert;
 
 import cz.tacr.elza.deimport.context.EntityState;
 import cz.tacr.elza.deimport.storage.EntityMetrics;
@@ -24,8 +22,8 @@ public class AccessPointWrapper implements EntityWrapper, EntityMetrics {
     private EntityState entityState = EntityState.CREATE;
 
     AccessPointWrapper(RegRecord entity, RecordImportInfo recordInfo, RecordImportInfo parentRecordInfo) {
-        this.entity = Objects.requireNonNull(entity);
-        this.recordInfo = Objects.requireNonNull(recordInfo);
+        this.entity = Validate.notNull(entity);
+        this.recordInfo = Validate.notNull(recordInfo);
         this.parentRecordInfo = parentRecordInfo;
     }
 
@@ -51,7 +49,7 @@ public class AccessPointWrapper implements EntityWrapper, EntityMetrics {
     @Override
     public void beforeEntityPersist(Session session) {
         if (parentRecordInfo != null) {
-            Assert.isNull(entity.getParentRecord());
+            Validate.isTrue(entity.getParentRecord() == null);
             entity.setParentRecord(parentRecordInfo.getEntityRef(session, RegRecord.class));
         }
     }

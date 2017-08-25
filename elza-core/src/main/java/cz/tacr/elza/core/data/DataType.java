@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.util.Assert;
+import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.exception.SystemException;
@@ -46,7 +46,7 @@ public enum DataType {
      * @return Null when not found.
      */
     public static DataType fromCode(String code) {
-        Assert.hasLength(code);
+        Validate.notEmpty(code);
         try {
             return valueOf(code);
         } catch (IllegalArgumentException e) {
@@ -76,7 +76,7 @@ public enum DataType {
         Map<Integer, DataType> idMap = new HashMap<>(values.length);
         // init enum
         nextVal: for (DataType value : values) {
-            Assert.isNull(value.entity);
+            Validate.isTrue(value.entity == null);
             for (RulDataType entity : entities) {
                 if (value.name().equals(entity.getCode())) {
                     value.entity = entity;

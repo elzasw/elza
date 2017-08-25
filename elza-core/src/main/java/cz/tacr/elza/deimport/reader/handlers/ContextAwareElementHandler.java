@@ -3,7 +3,7 @@ package cz.tacr.elza.deimport.reader.handlers;
 import javax.xml.stream.XMLEventReader;
 
 import cz.tacr.elza.deimport.context.ImportContext;
-import cz.tacr.elza.deimport.context.ImportContext.ImportPhase;
+import cz.tacr.elza.deimport.context.ImportPhase;
 import cz.tacr.elza.deimport.reader.XmlElementHandler;
 
 public abstract class ContextAwareElementHandler implements XmlElementHandler {

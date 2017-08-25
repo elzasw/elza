@@ -1,7 +1,8 @@
 package cz.tacr.elza.deimport.aps.context;
 
 import java.io.Serializable;
-import java.util.Objects;
+
+import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.deimport.context.EntityState;
 import cz.tacr.elza.deimport.context.StatefulIdHolder;
@@ -20,8 +21,8 @@ public class RecordImportInfo extends StatefulIdHolder {
     private String fulltext;
 
     RecordImportInfo(String apEntryId, RegRegisterType registerType) {
-        this.apEntryId = Objects.requireNonNull(apEntryId);
-        this.registerType = Objects.requireNonNull(registerType);
+        this.apEntryId = Validate.notNull(apEntryId);
+        this.registerType = Validate.notNull(registerType);
     }
 
     public String getApEntryId() {
@@ -33,7 +34,7 @@ public class RecordImportInfo extends StatefulIdHolder {
     }
 
     public String getFulltext() {
-        return Objects.requireNonNull(fulltext);
+        return Validate.notNull(fulltext);
     }
 
     public void setFulltext(String fulltext) {

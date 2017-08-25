@@ -5,8 +5,8 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
-import org.springframework.util.Assert;
 
 import cz.tacr.elza.deimport.aps.context.APGeoLocationWrapper;
 import cz.tacr.elza.deimport.aps.context.APVariantNameWrapper;
@@ -86,8 +86,8 @@ public class StorageManager implements StorageListener {
 
     @Override
     public void onEntityPersist(EntityWrapper item, Object entity) {
-        Assert.notNull(item);
-        Assert.notNull(entity);
+        Validate.notNull(item);
+        Validate.notNull(entity);
 
         persistEntities.add(entity);
         // estimate memory score

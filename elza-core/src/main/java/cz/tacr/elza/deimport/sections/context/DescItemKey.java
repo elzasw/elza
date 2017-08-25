@@ -2,6 +2,8 @@ package cz.tacr.elza.deimport.sections.context;
 
 import java.util.Objects;
 
+import org.apache.commons.lang3.Validate;
+
 import cz.tacr.elza.domain.ArrDescItem;
 
 class DescItemKey {
@@ -11,7 +13,7 @@ class DescItemKey {
 	private final String specCode;
 
 	DescItemKey(String typeCode, String specCode) {
-		this.typeCode = Objects.requireNonNull(typeCode);
+		this.typeCode = Validate.notNull(typeCode);
 		this.specCode = specCode;
 	}
 
@@ -38,7 +40,7 @@ class DescItemKey {
 		String typeCode = descItem.getItemType().getCode();
 		String specCode = null;
 		if (descItem.getItemSpec() != null) {
-			specCode = Objects.requireNonNull(descItem.getItemSpec().getCode());
+			specCode = Validate.notNull(descItem.getItemSpec().getCode());
 		}
 		return new DescItemKey(typeCode, specCode);
 	}

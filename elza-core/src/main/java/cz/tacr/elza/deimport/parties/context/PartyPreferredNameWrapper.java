@@ -1,7 +1,6 @@
 package cz.tacr.elza.deimport.parties.context;
 
-import java.util.Objects;
-
+import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
 import cz.tacr.elza.deimport.context.EntityState;
@@ -20,8 +19,8 @@ public class PartyPreferredNameWrapper implements EntityWrapper, EntityMetrics {
     private ParParty partyRef;
 
     PartyPreferredNameWrapper(PartyImportInfo partyInfo, StatefulIdHolder partyNameIdHolder) {
-        this.partyInfo = Objects.requireNonNull(partyInfo);
-        this.partyNameIdHolder = Objects.requireNonNull(partyNameIdHolder);
+        this.partyInfo = Validate.notNull(partyInfo);
+        this.partyNameIdHolder = Validate.notNull(partyNameIdHolder);
     }
 
     @Override

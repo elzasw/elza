@@ -20,23 +20,9 @@ import cz.tacr.elza.deimport.sections.context.SectionsContext;
 /**
  * Context for single import execution.
  */
-public class ImportContext implements ImportObserver {
+public class ImportContext implements ObservableImport {
 
     private static final Logger LOG = LoggerFactory.getLogger(ImportContext.class);
-
-    /**
-     * Defines import phase. Ordinal value must be preserved.
-     */
-    public enum ImportPhase {
-        INIT, ACCESS_POINTS, PARTIES, INSTITUTIONS, RELATIONS, SECTIONS, FINISHED;
-
-        /**
-         * @return True when specified phase is subsequent.
-         */
-        public boolean isSubsequent(ImportPhase phase) {
-            return ordinal() < phase.ordinal();
-        }
-    }
 
     private final List<ImportPhaseChangeListener> phaseChangeListeners = new LinkedList<>();
 
@@ -57,23 +43,18 @@ public class ImportContext implements ImportObserver {
     private ImportPhase currentPhase = ImportPhase.INIT;
 
     public ImportContext(Session session,
+                         StaticDataProvider staticData,
                          AccessPointsContext accessPoints,
                          PartiesContext parties,
                          InstitutionsContext institutions,
-                         SectionsContext sections,
-                         StaticDataProvider staticData) {
+                         SectionsContext sections) {
         this.session = session;
+        this.staticData = staticData;
         this.accessPoints = accessPoints;
         this.parties = parties;
         this.institutions = institutions;
         this.sections = sections;
-        this.staticData = staticData;
-
-        // init all contexts
-        accessPoints.init(this);
-        parties.init(this);
-        institutions.init(this);
-        sections.init(this);
+        initAllContexts();
     }
 
     public DatatypeFactory getDatatypeFactory() {
@@ -82,6 +63,10 @@ public class ImportContext implements ImportObserver {
 
     public Session getSession() {
         return session;
+    }
+
+    public StaticDataProvider getStaticData() {
+        return staticData;
     }
 
     public AccessPointsContext getAccessPoints() {
@@ -100,31 +85,34 @@ public class ImportContext implements ImportObserver {
         return sections;
     }
 
-    public StaticDataProvider getStaticData() {
-        return staticData;
-    }
-
-    public void setCurrentPhase(ImportPhase nextPhase) {
-        if (currentPhase == nextPhase) {
+    public void setCurrentPhase(ImportPhase phase) {
+        if (currentPhase == phase) {
             return;
         }
-        if (nextPhase.isSubsequent(currentPhase)) {
+        if (phase.isSubsequent(currentPhase)) {
             throw new IllegalStateException("Next phase is not subsequent");
         }
         List<ImportPhaseChangeListener> listeners = new ArrayList<>(phaseChangeListeners);
         for (ImportPhaseChangeListener l : listeners) {
-            boolean unregister = !l.onPhaseChange(currentPhase, nextPhase, this);
+            boolean unregister = !l.onPhaseChange(currentPhase, phase, this);
             if (unregister) {
                 phaseChangeListeners.remove(l);
             }
         }
-        LOG.info("Import phase changed, previous:" + currentPhase + ", next:" + nextPhase);
-        currentPhase = nextPhase;
+        LOG.info("Import phase changed, previous:" + currentPhase + ", next:" + phase);
+        currentPhase = phase;
     }
 
     @Override
     public void registerPhaseChangeListener(ImportPhaseChangeListener phaseChangeListener) {
         phaseChangeListeners.add(phaseChangeListener);
+    }
+
+    private void initAllContexts() {
+        accessPoints.init(this);
+        parties.init(this);
+        institutions.init(this);
+        sections.init(this);
     }
 
     private static DatatypeFactory createDatatypeFactory() {

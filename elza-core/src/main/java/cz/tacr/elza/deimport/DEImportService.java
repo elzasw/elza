@@ -17,12 +17,12 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import org.apache.commons.lang3.Validate;
 import org.hibernate.FlushMode;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 import org.xml.sax.SAXException;
 
 import cz.tacr.elza.annotation.AuthMethod;
@@ -32,7 +32,7 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.deimport.DEImportParams.ImportPositionParams;
 import cz.tacr.elza.deimport.aps.context.AccessPointsContext;
 import cz.tacr.elza.deimport.context.ImportContext;
-import cz.tacr.elza.deimport.context.ImportContext.ImportPhase;
+import cz.tacr.elza.deimport.context.ImportPhase;
 import cz.tacr.elza.deimport.institutions.context.InstitutionsContext;
 import cz.tacr.elza.deimport.parties.context.PartiesContext;
 import cz.tacr.elza.deimport.reader.XmlElementReader;
@@ -74,7 +74,6 @@ import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.GroovyScriptService;
-import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -113,8 +112,6 @@ public class DEImportService {
 
     private final RegExternalSystemRepository externalSystemRepository;
 
-    private final IEventNotificationService eventNotificationService;
-
     private final InstitutionTypeRepository institutionTypeRepository;
 
     private final GroovyScriptService groovyScriptService;
@@ -145,7 +142,6 @@ public class DEImportService {
                            StaticDataService staticDataService,
                            NodeCacheService nodeCacheService,
                            RegExternalSystemRepository externalSystemRepository,
-                           IEventNotificationService eventNotificationService,
                            InstitutionTypeRepository institutionTypeRepository,
                            GroovyScriptService groovyScriptService,
                            ScopeRepository scopeRepository,
@@ -168,7 +164,6 @@ public class DEImportService {
         this.staticDataService = staticDataService;
         this.nodeCacheService = nodeCacheService;
         this.externalSystemRepository = externalSystemRepository;
-        this.eventNotificationService = eventNotificationService;
         this.institutionTypeRepository = institutionTypeRepository;
         this.groovyScriptService = groovyScriptService;
         this.scopeRepository = scopeRepository;
@@ -215,6 +210,11 @@ public class DEImportService {
             reader.readDocument();
             context.setCurrentPhase(ImportPhase.FINISHED);
             nodeCacheService.syncCache();
+            // clear lever tree cache
+            ImportPosition importPosition = context.getSections().getImportPostition();
+            if (importPosition != null) {
+                levelTreeCacheService.invalidateFundVersion(importPosition.getFundVersion());
+            }
         } catch (XMLStreamException e) {
             throw new SystemException(e);
         } finally {
@@ -229,8 +229,8 @@ public class DEImportService {
     }
 
     private void checkParameters(DEImportParams params) {
-        Assert.isTrue(params.getBatchSize() > 0, "Import batch size must be greater than 0");
-        Assert.isTrue(params.getMemoryScoreLimit() > 0, "Import memory score limit must be greater than 0");
+        Validate.isTrue(params.getBatchSize() > 0, "Import batch size must be greater than 0");
+        Validate.isTrue(params.getMemoryScoreLimit() > 0, "Import memory score limit must be greater than 0");
     }
 
     private FlushMode configureBatchSession(Session session, int batchSize) {
@@ -270,8 +270,45 @@ public class DEImportService {
                 institutionRepository, institutionTypeRepository, groovyScriptService);
         InstitutionsContext institutionsContext = new InstitutionsContext(storageManager, params.getBatchSize(),
                 institutionRepository, institutionTypeRepository);
-        SectionsContext sectionsContext = createSectionsContext(storageManager, params, importScope, staticData);
-        return new ImportContext(session, accessPointsContext, partiesContext, institutionsContext, sectionsContext, staticData);
+        SectionsContext sectionsContext = initSectionsContext(storageManager, params, importScope, staticData);
+
+        ImportContext context = new ImportContext(session, staticData, accessPointsContext, partiesContext, institutionsContext,
+                sectionsContext);
+
+        // register listeners
+        params.getImportPhaseChangeListeners().forEach(context::registerPhaseChangeListener);
+
+        return context;
+    }
+
+    private SectionsContext initSectionsContext(StorageManager storageManager,
+                                                DEImportParams params,
+                                                RegScope scope,
+                                                StaticDataProvider staticData) {
+        // create global import change
+        ArrChange createChange = arrangementService.createChange(Type.IMPORT);
+
+        // init storage dispatcher
+        SectionStorageDispatcher storageDispatcher = new SectionStorageDispatcher(storageManager, params.getBatchSize());
+
+        // prepare import position
+        ImportPositionParams posParams = params.getPositionParams();
+        ImportPosition pos = null;
+        if (posParams != null) {
+            // find fund version
+            ArrFundVersion fundVersion = fundVersionRepository.findOne(posParams.getFundVersionId());
+            // find & lock parent level
+            ArrLevel parentLevel = arrangementService.lockLevel(posParams.getParentNode(), fundVersion);
+            // find & lock target level
+            ArrLevel targetLevel = null;
+            if (posParams.getTargetNode() != null) {
+                targetLevel = arrangementService.lockLevel(posParams.getTargetNode(), fundVersion);
+            }
+            pos = new ImportPosition(fundVersion, parentLevel, targetLevel, posParams.getDirection());
+        }
+
+        return new SectionsContext(storageDispatcher, createChange, scope, pos, staticData, arrangementService,
+                institutionRepository, levelRepository);
     }
 
     private XmlElementReader prepareReader(InputStream is, ImportContext context) {
@@ -292,34 +329,5 @@ public class DEImportService {
         reader.addElementHandler("/edx/fs/s/pcks/pck", new SectionPacketElementHandler(context));
         reader.addElementHandler("/edx/fs/s/lvls/lvl", new SectionLevelElementHandler(context));
         return reader;
-    }
-
-    private SectionsContext createSectionsContext(StorageManager storageManager,
-                                                  DEImportParams importParams,
-                                                  RegScope importScope,
-                                                  StaticDataProvider staticData) {
-        // create global import change
-        ArrChange createChange = arrangementService.createChange(Type.IMPORT);
-
-        // init storage dispatcher
-        SectionStorageDispatcher storageDispatcher = new SectionStorageDispatcher(storageManager, importParams.getBatchSize());
-
-        // prepare import position
-        ImportPositionParams posParams = importParams.getPositionParams();
-        ImportPosition pos = null;
-        if (posParams != null) {
-            // find fund version
-            ArrFundVersion fundVersion = fundVersionRepository.findOne(posParams.getFundVersionId());
-            // find & lock parent level
-            ArrLevel parentLevel = arrangementService.lockLevel(posParams.getParentNode(), fundVersion);
-            // find & lock target level
-            ArrLevel targetLevel = null;
-            if (posParams.getTargetNode() != null) {
-                targetLevel = arrangementService.lockLevel(posParams.getTargetNode(), fundVersion);
-            }
-            pos = new ImportPosition(fundVersion, parentLevel, targetLevel, posParams.getDirection());
-        }
-        return new SectionsContext(storageDispatcher, createChange, importScope, pos, staticData, arrangementService,
-                institutionRepository, eventNotificationService, levelRepository, levelTreeCacheService);
     }
 }

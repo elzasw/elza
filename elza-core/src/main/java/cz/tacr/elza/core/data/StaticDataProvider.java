@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.springframework.util.Assert;
+import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParPartyNameFormType;
@@ -67,27 +67,27 @@ public class StaticDataProvider {
     }
 
     public ParPartyNameFormType getPartyNameFormTypeByCode(String code) {
-        Assert.hasLength(code);
+        Validate.notEmpty(code);
         return partyNameFormTypeCodeMap.get(code);
     }
 
     public ParComplementType getComplementTypeByCode(String code) {
-        Assert.hasLength(code);
+        Validate.notEmpty(code);
         return complementTypeCodeMap.get(code);
     }
 
     public PartyTypeComplementTypes getComplementTypesByPartyTypeCode(String code) {
-        Assert.hasLength(code);
+        Validate.notEmpty(code);
         return partyTypeComplementTypesCodeMap.get(code);
     }
 
     public RegRegisterType getRegisterTypeById(Integer id) {
-        Assert.notNull(id);
+        Validate.notNull(id);
         return registerTypeIdMap.get(id);
     }
 
     public RegRegisterType getRegisterTypeByCode(String code) {
-        Assert.hasLength(code);
+        Validate.notEmpty(code);
         return registerTypeCodeMap.get(code);
     }
 
@@ -116,7 +116,7 @@ public class StaticDataProvider {
 
         // ensure reference equality
         for (ParPartyNameFormType ft : formTypes) {
-            Assert.isTrue(ft.getRulPackage() == packageIdMap.get(ft.getRulPackage().getPackageId()));
+            Validate.isTrue(ft.getRulPackage() == packageIdMap.get(ft.getRulPackage().getPackageId()));
         }
         // update fields
         this.partyNameFormTypes = Collections.unmodifiableList(formTypes);
@@ -138,7 +138,7 @@ public class StaticDataProvider {
         }
         // ensure reference equality
         for (ParComplementType ct : cmplTypes) {
-            Assert.isTrue(ct.getRulPackage() == packageIdMap.get(ct.getRulPackage().getPackageId()));
+            Validate.isTrue(ct.getRulPackage() == packageIdMap.get(ct.getRulPackage().getPackageId()));
         }
         // update fields
         this.complementTypes = Collections.unmodifiableList(cmplTypes);
@@ -153,9 +153,9 @@ public class StaticDataProvider {
 
         for (RegRegisterType rt : regTypes) {
             // ensure reference equality
-            Assert.isTrue(rt.getRulPackage() == packageIdMap.get(rt.getRulPackage().getPackageId()));
+            Validate.isTrue(rt.getRulPackage() == packageIdMap.get(rt.getRulPackage().getPackageId()));
             if (rt.getParentRegisterType() != null) {
-                Assert.isTrue(rt.getParentRegisterType() == idMap.get(rt.getParentRegisterType().getRegisterTypeId()));
+                Validate.isTrue(rt.getParentRegisterType() == idMap.get(rt.getParentRegisterType().getRegisterTypeId()));
             }
             // update reference to party type
             if (rt.getPartyType() != null) {

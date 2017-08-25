@@ -4,9 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
-import org.springframework.util.Assert;
+import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPacketType;
@@ -30,7 +29,7 @@ public class RuleSystem {
     private Map<String, RuleSystemItemType> itemTypeCodeMap;
 
     RuleSystem(RulRuleSet ruleSet) {
-        this.ruleSet = Objects.requireNonNull(ruleSet);
+        this.ruleSet = Validate.notNull(ruleSet);
     }
 
     public RulRuleSet getRuleSet() {
@@ -42,7 +41,7 @@ public class RuleSystem {
     }
 
     public RulPacketType getPacketTypeByCode(String code) {
-        Assert.hasLength(code);
+        Validate.notEmpty(code);
         return packetTypeCodeMap.get(code);
     }
 
@@ -51,12 +50,12 @@ public class RuleSystem {
     }
 
     public RuleSystemItemType getItemTypeById(Integer id) {
-        Assert.notNull(id);
+        Validate.notNull(id);
         return itemTypeIdMap.get(id);
     }
 
     public RuleSystemItemType getItemTypeByCode(String code) {
-        Assert.hasLength(code);
+        Validate.notEmpty(code);
         return itemTypeCodeMap.get(code);
     }
 
@@ -75,7 +74,7 @@ public class RuleSystem {
 
         // ensure reference equality
         for (RulPacketType pt : packetTypes) {
-            Assert.isTrue(ruleSet.getPackage() == pt.getPackage());
+            Validate.isTrue(ruleSet.getPackage() == pt.getPackage());
         }
         // update fields
         this.packetTypes = Collections.unmodifiableList(packetTypes);

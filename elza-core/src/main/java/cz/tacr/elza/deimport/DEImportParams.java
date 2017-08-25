@@ -1,8 +1,14 @@
 package cz.tacr.elza.deimport;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.deimport.context.ImportPhaseChangeListener;
 
 public class DEImportParams {
+
+    private final List<ImportPhaseChangeListener> importPhaseChangeListeners = new LinkedList<>();
 
     private final int scopeId;
 
@@ -36,6 +42,14 @@ public class DEImportParams {
 
     public ImportPositionParams getPositionParams() {
         return positionParams;
+    }
+
+    public List<ImportPhaseChangeListener> getImportPhaseChangeListeners() {
+        return importPhaseChangeListeners;
+    }
+
+    public void addImportPhaseChangeListeners(ImportPhaseChangeListener phaseChangeListener) {
+        importPhaseChangeListeners.add(phaseChangeListener);
     }
 
     public enum ImportDirection {

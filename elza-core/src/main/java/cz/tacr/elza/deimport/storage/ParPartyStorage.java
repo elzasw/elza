@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
-import org.springframework.util.Assert;
 
 import cz.tacr.elza.core.data.PartyType;
 import cz.tacr.elza.deimport.parties.context.PartyWrapper;
@@ -71,7 +71,7 @@ class ParPartyStorage extends EntityStorage<PartyWrapper> {
         // init record id - party wrapper map
         for (PartyWrapper item : items) {
             Integer recordId = item.getInfo().getRecordId();
-            Assert.notNull(recordId);
+            Validate.notNull(recordId);
             recordIdMap.put(recordId, item);
         }
         // find all current parties
@@ -99,7 +99,7 @@ class ParPartyStorage extends EntityStorage<PartyWrapper> {
         // fill party search collections
         for (PartyWrapper item : items) {
             ParParty party = item.getEntity();
-            Assert.notNull(party.getPartyId());
+            Validate.notNull(party.getPartyId());
             parties.add(party);
             if (item.getInfo().getPartyType() == PartyType.GROUP_PARTY) {
                 partyGroups.add((ParPartyGroup) party);

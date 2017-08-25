@@ -5,9 +5,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
-import org.springframework.util.Assert;
+import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.projection.PartyTypeComplementTypeInfo;
@@ -34,13 +33,13 @@ public class PartyTypeComplementTypes {
     }
 
     public ParComplementType getTypeByCode(String code) {
-        Assert.hasLength(code);
+        Validate.notEmpty(code);
         PartyTypeComplementType type = complementTypeCodeMap.get(code);
         return type != null ? type.entity : null;
     }
 
     public Boolean getRepeatableByCode(String code) {
-        Assert.hasLength(code);
+        Validate.notEmpty(code);
         PartyTypeComplementType type = complementTypeCodeMap.get(code);
         return type != null ? type.repeatable : null;
     }
@@ -60,7 +59,7 @@ public class PartyTypeComplementTypes {
         // create lookups
         for (PartyTypeComplementTypeInfo info : cmplTypesInfo) {
             ParComplementType cmplType = complementTypeCodeMap.get(info.getComplementTypeCode());
-            cmplTypes.add(Objects.requireNonNull(cmplType));
+            cmplTypes.add(Validate.notNull(cmplType));
             boolean repeatable = info.getRepeatable() != null ? info.getRepeatable() : false;
             codeMap.put(cmplType.getCode(), new PartyTypeComplementType(cmplType, repeatable));
         }

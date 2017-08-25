@@ -8,7 +8,7 @@ import javax.xml.stream.XMLEventReader;
 
 import cz.tacr.elza.deimport.DEImportException;
 import cz.tacr.elza.deimport.context.ImportContext;
-import cz.tacr.elza.deimport.context.ImportContext.ImportPhase;
+import cz.tacr.elza.deimport.context.ImportPhase;
 
 /**
  * Created by todtj on 11.05.2017.

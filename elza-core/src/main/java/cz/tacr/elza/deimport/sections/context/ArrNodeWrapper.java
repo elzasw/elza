@@ -1,11 +1,10 @@
 package cz.tacr.elza.deimport.sections.context;
 
-import java.util.Objects;
-
+import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
-import cz.tacr.elza.deimport.context.IdHolder;
 import cz.tacr.elza.deimport.context.EntityState;
+import cz.tacr.elza.deimport.context.IdHolder;
 import cz.tacr.elza.deimport.context.SimpleIdHolder;
 import cz.tacr.elza.deimport.storage.EntityWrapper;
 import cz.tacr.elza.domain.ArrNode;
@@ -17,7 +16,7 @@ public class ArrNodeWrapper implements EntityWrapper {
     protected final ArrNode entity;
 
     ArrNodeWrapper(ArrNode entity) {
-        this.entity = Objects.requireNonNull(entity);
+        this.entity = Validate.notNull(entity);
     }
 
     public IdHolder getIdHolder() {

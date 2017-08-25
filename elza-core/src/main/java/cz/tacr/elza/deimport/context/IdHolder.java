@@ -2,9 +2,9 @@ package cz.tacr.elza.deimport.context;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang3.Validate;
 import org.hibernate.CacheMode;
 import org.hibernate.Session;
-import org.springframework.util.Assert;
 
 import cz.tacr.elza.utils.HibernateUtils;
 
@@ -32,7 +32,7 @@ public abstract class IdHolder {
      * @see HibernateUtils#getReference(Session, Class, Serializable, boolean)
      */
     public final <E> E getEntityRef(Session session, Class<E> entityClass) {
-        Assert.isTrue(isInitialized(), "Holder is not initialized");
+        Validate.isTrue(isInitialized(), "Holder is not initialized");
         checkReferenceClass(entityClass);
         return HibernateUtils.getReference(session, entityClass, id, false);
     }
@@ -43,8 +43,8 @@ public abstract class IdHolder {
     public abstract void checkReferenceClass(Class<?> entityClass);
 
     protected void init(Serializable id) {
-        Assert.isTrue(!isInitialized(), "Holder is already initialized");
-        Assert.notNull(id);
+        Validate.isTrue(!isInitialized(), "Holder is already initialized");
+        Validate.notNull(id);
         this.id = id;
     }
 }

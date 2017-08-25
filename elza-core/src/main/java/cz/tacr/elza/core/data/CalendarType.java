@@ -2,7 +2,7 @@ package cz.tacr.elza.core.data;
 
 import java.util.List;
 
-import org.springframework.util.Assert;
+import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.repository.CalendarTypeRepository;
@@ -41,7 +41,7 @@ public enum CalendarType {
      * @return Null when not found.
      */
     public static CalendarType fromCode(String code) {
-        Assert.hasLength(code);
+        Validate.notEmpty(code);
         try {
             return valueOf(code);
         } catch (IllegalArgumentException e) {
@@ -71,7 +71,7 @@ public enum CalendarType {
         }
         // init enum
         nextVal: for (CalendarType value : values) {
-            Assert.isNull(value.entity);
+            Validate.isTrue(value.entity == null);
             for (ArrCalendarType entity : entities) {
                 if (value.name().equals(entity.getCode())) {
                     value.entity = entity;

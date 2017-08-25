@@ -9,12 +9,12 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.resource.transaction.spi.TransactionStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 import com.google.common.collect.MapMaker;
 
@@ -154,7 +154,7 @@ public class StaticDataService {
         reloadLock.lock();
         try {
             // lock for exclusive read of active provider
-            Assert.notNull(activeProvider);
+            Validate.notNull(activeProvider);
             provider = activeProvider;
         } finally {
             reloadLock.unlock();
@@ -175,7 +175,7 @@ public class StaticDataService {
         }
         // prepare modified provider in current transaction
         try {
-            Assert.isNull(modifiedProvider);
+            Validate.isTrue(modifiedProvider == null);
             modifiedProvider = initializeProvider();
         } catch (Throwable t) {
             tx.markRollbackOnly();
@@ -190,7 +190,7 @@ public class StaticDataService {
             // check for modified transaction
             if (modifiedTxSet.remove(tx)) {
                 if (tx.getStatus() == TransactionStatus.COMMITTED) {
-                    Assert.notNull(modifiedProvider);
+                    Validate.notNull(modifiedProvider);
                     activeProvider = modifiedProvider;
                 }
                 modifiedProvider = null;

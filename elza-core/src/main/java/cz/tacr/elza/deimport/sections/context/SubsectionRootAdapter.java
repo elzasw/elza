@@ -14,7 +14,6 @@ import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.service.LevelTreeCacheService;
 
 class SubsectionRootAdapter implements SectionRootAdapter {
 
@@ -24,17 +23,14 @@ class SubsectionRootAdapter implements SectionRootAdapter {
 
     private final LevelRepository levelRepository;
 
-    private final LevelTreeCacheService levelTreeCacheService;
-
     public SubsectionRootAdapter(ImportPosition importPosition,
                                  ArrChange createChange,
-                                 LevelRepository levelRepository,
-                                 LevelTreeCacheService levelTreeCacheService) {
+                                 LevelRepository levelRepository) {
         this.importPosition = importPosition;
         this.createChange = createChange;
         this.levelRepository = levelRepository;
-        this.levelTreeCacheService = levelTreeCacheService;
     }
+
 
     @Override
     public ArrFund getFund() {
@@ -55,7 +51,7 @@ class SubsectionRootAdapter implements SectionRootAdapter {
 
     @Override
     public void onSectionClose() {
-        levelTreeCacheService.invalidateFundVersion(importPosition.getFundVersion());
+        // NOP
     }
 
     private int getNextLevelPosition() {

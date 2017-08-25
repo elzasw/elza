@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
 
 import cz.tacr.elza.core.data.PartyTypeComplementTypes;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -60,8 +60,7 @@ public class PartiesAccessPointsBuilder {
     }
 
     private PartyAccessPointWrapper createPartyAccessPoint(PartyImportInfo info, RegRecord partyRecord) {
-        String name = partyRecord.getRecord();
-        Assert.hasLength(name);
+        String name = Validate.notEmpty(partyRecord.getRecord());
         // update fulltext index
         info.setFulltext(name);
         // create party access point

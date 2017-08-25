@@ -1,11 +1,10 @@
 package cz.tacr.elza.deimport.parties.context;
 
 import java.io.Serializable;
-import java.util.Objects;
 
+import org.apache.commons.lang3.Validate;
 import org.hibernate.CacheMode;
 import org.hibernate.Session;
-import org.springframework.util.Assert;
 
 import cz.tacr.elza.core.data.PartyType;
 import cz.tacr.elza.deimport.aps.context.RecordImportInfo;
@@ -24,9 +23,9 @@ public class PartyImportInfo extends StatefulIdHolder {
 
     public PartyImportInfo(String importId, RecordImportInfo recordInfo, PartyType partyType) {
         super(recordInfo);
-        this.importId = Objects.requireNonNull(importId);
-        this.recordInfo = Objects.requireNonNull(recordInfo);
-        this.partyType = Objects.requireNonNull(partyType);
+        this.importId = Validate.notNull(importId);
+        this.recordInfo = Validate.notNull(recordInfo);
+        this.partyType = Validate.notNull(partyType);
     }
 
     public String getImportId() {
@@ -74,7 +73,7 @@ public class PartyImportInfo extends StatefulIdHolder {
      * @see HibernateUtils#getReferenceWithoutCache(Session, Class, Serializable, boolean)
      */
     ParParty getUpdatablePartyRef(Session session) {
-        Assert.isTrue(isInitialized(), "Holder is not initialized");
+        Validate.isTrue(isInitialized(), "Holder is not initialized");
         checkReferenceClass(ParParty.class);
         return HibernateUtils.getReference(session, ParParty.class, getId(), true);
     }
@@ -87,7 +86,7 @@ public class PartyImportInfo extends StatefulIdHolder {
      * @see HibernateUtils#getReferenceWithoutCache(Session, Class, Serializable, boolean)
      */
     RegRecord getUpdatableRecordRef(Session session) {
-        Assert.isTrue(recordInfo.isInitialized(), "Holder is not initialized");
+        Validate.isTrue(recordInfo.isInitialized(), "Holder is not initialized");
         recordInfo.checkReferenceClass(RegRecord.class);
         return HibernateUtils.getReference(session, RegRecord.class, recordInfo.getId(), true);
     }

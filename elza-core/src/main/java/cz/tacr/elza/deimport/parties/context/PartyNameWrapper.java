@@ -1,9 +1,7 @@
 package cz.tacr.elza.deimport.parties.context;
 
-import java.util.Objects;
-
+import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
-import org.springframework.util.Assert;
 
 import cz.tacr.elza.deimport.context.EntityState;
 import cz.tacr.elza.deimport.context.SimpleStatefulIdHolder;
@@ -27,8 +25,8 @@ public class PartyNameWrapper implements EntityWrapper, EntityMetrics {
     private StatefulIdHolder validToIdHolder;
 
     PartyNameWrapper(ParPartyName entity, PartyImportInfo partyInfo) {
-        this.entity = Objects.requireNonNull(entity);
-        this.partyInfo = Objects.requireNonNull(partyInfo);
+        this.entity = Validate.notNull(entity);
+        this.partyInfo = Validate.notNull(partyInfo);
         this.idHolder = new SimpleStatefulIdHolder(ParPartyName.class, partyInfo);
     }
 
@@ -62,15 +60,15 @@ public class PartyNameWrapper implements EntityWrapper, EntityMetrics {
     @Override
     public void beforeEntityPersist(Session session) {
         // party relation
-        Assert.isNull(entity.getParty());
+        Validate.isTrue(entity.getParty() == null);
         entity.setParty(partyInfo.getEntityRef(session, ParParty.class));
         // valid from relation
-        Assert.isNull(entity.getValidFrom());
+        Validate.isTrue(entity.getValidFrom() == null);
         if (validFromIdHolder != null) {
             entity.setValidFrom(validFromIdHolder.getEntityRef(session, ParUnitdate.class));
         }
         // valid to relation
-        Assert.isNull(entity.getValidTo());
+        Validate.isTrue(entity.getValidTo() == null);
         if (validToIdHolder != null) {
             entity.setValidTo(validToIdHolder.getEntityRef(session, ParUnitdate.class));
         }

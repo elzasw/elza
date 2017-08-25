@@ -9,15 +9,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.util.Assert;
+import org.apache.commons.lang3.Validate;
 
 import com.google.common.collect.Iterables;
 
 import cz.tacr.elza.deimport.DEImportException;
-import cz.tacr.elza.deimport.context.ImportContext;
-import cz.tacr.elza.deimport.context.ImportContext.ImportPhase;
-import cz.tacr.elza.deimport.context.ImportPhaseChangeListener;
 import cz.tacr.elza.deimport.context.EntityState;
+import cz.tacr.elza.deimport.context.ImportContext;
+import cz.tacr.elza.deimport.context.ImportPhase;
+import cz.tacr.elza.deimport.context.ImportPhaseChangeListener;
 import cz.tacr.elza.deimport.parties.context.PartiesContext;
 import cz.tacr.elza.deimport.parties.context.PartyImportInfo;
 import cz.tacr.elza.domain.ParInstitution;
@@ -41,8 +41,8 @@ class InstitutionImportManager implements ImportPhaseChangeListener {
     }
 
     public InstitutionWrapper createWrapper(ParInstitution entity, PartyImportInfo partyInfo) {
-        Assert.notNull(partyIdCurrentInstitutionMap);
-        Assert.isTrue(partyInfo.isInitialized());
+        Validate.notNull(partyIdCurrentInstitutionMap);
+        Validate.isTrue(partyInfo.isInitialized());
 
         InstitutionInfo info = partyIdCurrentInstitutionMap.get(partyInfo.getId());
         if (info != null) {
@@ -63,12 +63,12 @@ class InstitutionImportManager implements ImportPhaseChangeListener {
     public boolean onPhaseChange(ImportPhase previousPhase, ImportPhase nextPhase, ImportContext context) {
         PartiesContext parties = context.getParties();
         if (nextPhase == ImportPhase.INSTITUTIONS) {
-            Assert.isNull(partyIdCurrentInstitutionMap);
+            Validate.isTrue(partyIdCurrentInstitutionMap == null);
             partyIdCurrentInstitutionMap = createPartyIdCurrentInstitutionMap(parties.getAllPartyInfo());
             return true;
         }
         if (previousPhase == ImportPhase.INSTITUTIONS) {
-            Assert.notNull(partyIdCurrentInstitutionMap);
+            Validate.notNull(partyIdCurrentInstitutionMap);
             deleteNotImportedInstitutions(partyIdCurrentInstitutionMap.values());
             return false;
         }
@@ -79,7 +79,7 @@ class InstitutionImportManager implements ImportPhaseChangeListener {
         // prepare party id list, all parties should be stored
         List<Integer> updatedPartyIds = new ArrayList<>();
         for (PartyImportInfo info : allPartyInfo) {
-            Assert.isTrue(info.isInitialized());
+            Validate.isTrue(info.isInitialized());
             if (info.getState().equals(EntityState.UPDATE)) {
                 updatedPartyIds.add(info.getId());
             }

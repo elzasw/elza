@@ -7,8 +7,8 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
+import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
 import com.google.common.collect.Iterables;
@@ -20,9 +20,9 @@ import cz.tacr.elza.deimport.DEImportException;
 import cz.tacr.elza.deimport.aps.context.AccessPointsContext;
 import cz.tacr.elza.deimport.aps.context.RecordImportInfo;
 import cz.tacr.elza.deimport.context.ImportContext;
-import cz.tacr.elza.deimport.context.ImportContext.ImportPhase;
-import cz.tacr.elza.deimport.context.ImportObserver;
+import cz.tacr.elza.deimport.context.ImportPhase;
 import cz.tacr.elza.deimport.context.ImportPhaseChangeListener;
+import cz.tacr.elza.deimport.context.ObservableImport;
 import cz.tacr.elza.deimport.context.StatefulIdHolder;
 import cz.tacr.elza.deimport.parties.PartiesAccessPointsBuilder;
 import cz.tacr.elza.deimport.storage.StorageManager;
@@ -74,8 +74,8 @@ public class PartiesContext {
         this.groovyScriptService = groovyScriptService;
     }
 
-    public void init(ImportObserver importObserver) {
-        importObserver.registerPhaseChangeListener(new PartiesRelatedPhaseChangeListener());
+    public void init(ObservableImport observableImport) {
+        observableImport.registerPhaseChangeListener(new PartiesRelatedPhaseChangeListener());
     }
 
     public Collection<PartyImportInfo> getAllPartyInfo() {
@@ -214,7 +214,7 @@ public class PartiesContext {
         private final PartyType partyType;
 
         public PartyTypeGroup(PartyType partyType) {
-            this.partyType = Objects.requireNonNull(partyType);
+            this.partyType = Validate.notNull(partyType);
         }
 
         public int getSize() {

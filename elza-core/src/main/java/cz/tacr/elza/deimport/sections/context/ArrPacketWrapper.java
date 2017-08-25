@@ -1,11 +1,10 @@
 package cz.tacr.elza.deimport.sections.context;
 
-import java.util.Objects;
-
+import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
-import cz.tacr.elza.deimport.context.IdHolder;
 import cz.tacr.elza.deimport.context.EntityState;
+import cz.tacr.elza.deimport.context.IdHolder;
 import cz.tacr.elza.deimport.storage.EntityWrapper;
 import cz.tacr.elza.domain.ArrPacket;
 
@@ -16,8 +15,8 @@ public class ArrPacketWrapper implements EntityWrapper {
     private final PacketImportInfo info;
 
     ArrPacketWrapper(ArrPacket entity, PacketImportInfo info) {
-        this.entity = Objects.requireNonNull(entity);
-        this.info = Objects.requireNonNull(info);
+        this.entity = Validate.notNull(entity);
+        this.info = Validate.notNull(info);
     }
 
     public IdHolder getIdHolder() {

@@ -1,6 +1,6 @@
 package cz.tacr.elza.deimport.context;
 
-public interface ImportObserver {
+public interface ObservableImport {
 
     void registerPhaseChangeListener(ImportPhaseChangeListener phaseChangeListener);
 }

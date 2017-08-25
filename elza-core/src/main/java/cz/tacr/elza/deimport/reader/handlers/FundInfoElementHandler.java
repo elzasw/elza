@@ -3,7 +3,7 @@ package cz.tacr.elza.deimport.reader.handlers;
 import javax.xml.bind.JAXBElement;
 
 import cz.tacr.elza.deimport.context.ImportContext;
-import cz.tacr.elza.deimport.context.ImportContext.ImportPhase;
+import cz.tacr.elza.deimport.context.ImportPhase;
 import cz.tacr.elza.schema.v2.FundInfo;
 
 public class FundInfoElementHandler extends JaxbElementHandler<FundInfo> {

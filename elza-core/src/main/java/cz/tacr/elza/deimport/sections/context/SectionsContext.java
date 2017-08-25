@@ -1,22 +1,20 @@
 package cz.tacr.elza.deimport.sections.context;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Objects;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
 
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.deimport.DEImportException;
 import cz.tacr.elza.deimport.DEImportParams.ImportDirection;
-import cz.tacr.elza.deimport.context.ImportContext;
-import cz.tacr.elza.deimport.context.ImportContext.ImportPhase;
-import cz.tacr.elza.deimport.context.ImportObserver;
-import cz.tacr.elza.deimport.context.ImportPhaseChangeListener;
+import cz.tacr.elza.deimport.context.ObservableImport;
+import cz.tacr.elza.deimport.sections.SectionProcessedListener;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -27,11 +25,6 @@ import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.schema.v2.FundInfo;
 import cz.tacr.elza.service.ArrangementService;
-import cz.tacr.elza.service.IEventNotificationService;
-import cz.tacr.elza.service.LevelTreeCacheService;
-import cz.tacr.elza.service.eventnotification.EventFactory;
-import cz.tacr.elza.service.eventnotification.events.EventId;
-import cz.tacr.elza.service.eventnotification.events.EventType;
 
 /**
  * Context for new funds or subtrees of import node.
@@ -40,7 +33,9 @@ public class SectionsContext {
 
     private static final Logger LOG = LoggerFactory.getLogger(SectionsContext.class);
 
-    private final Collection<ArrPacketWrapper> packetQueue = new ArrayList<>();
+    private final List<SectionProcessedListener> sectionProcessedListeners = new LinkedList<>();
+
+    private final List<ArrPacketWrapper> packetQueue = new ArrayList<>();
 
     private final SectionStorageDispatcher storageDispatcher;
 
@@ -56,11 +51,7 @@ public class SectionsContext {
 
     private final InstitutionRepository institutionRepository;
 
-    private final IEventNotificationService eventNotificationService;
-
     private final LevelRepository levelRepository;
-
-    private final LevelTreeCacheService levelTreeCacheService;
 
     private ContextSection currentSection;
 
@@ -71,9 +62,7 @@ public class SectionsContext {
                            StaticDataProvider staticData,
                            ArrangementService arrangementService,
                            InstitutionRepository institutionRepository,
-                           IEventNotificationService eventNotificationService,
-                           LevelRepository levelRepository,
-                           LevelTreeCacheService levelTreeCacheService) {
+                           LevelRepository levelRepository) {
         this.storageDispatcher = storageDispatcher;
         this.createChange = createChange;
         this.importScope = importScope;
@@ -81,23 +70,23 @@ public class SectionsContext {
         this.staticData = staticData;
         this.arrangementService = arrangementService;
         this.institutionRepository = institutionRepository;
-        this.eventNotificationService = eventNotificationService;
         this.levelRepository = levelRepository;
-        this.levelTreeCacheService = levelTreeCacheService;
     }
 
-    public boolean isSubsection() {
-        return importPosition != null;
+    public ImportPosition getImportPostition() {
+        return importPosition;
     }
 
-    public void init(ImportObserver importObserver) {
-        if (isSubsection()) {
-            //importObserver.registerPhaseChangeListener(new SubsectionPhaseEndListener());
-        }
+    public void init(ObservableImport observableImport) {
+        // NOP
+    }
+
+    public void registerSectionProcessedListener(SectionProcessedListener sectionProcessedListener) {
+        sectionProcessedListeners.add(sectionProcessedListener);
     }
 
     public void beginSection(String ruleSetCode) {
-        Assert.isNull(currentSection, "Current section must be closed first");
+        Validate.isTrue(currentSection == null);
 
         // find rule system
         if (StringUtils.isEmpty(ruleSetCode)) {
@@ -112,13 +101,13 @@ public class SectionsContext {
         ContextSection section = new ContextSection(this, createChange, ruleSystem, arrangementService);
 
         // set subsection root adapter when present
-        if (isSubsection()) {
+        if (importPosition != null) {
             String fundRuleSetCode = importPosition.getFundVersion().getRuleSet().getCode();
             if (!ruleSetCode.equals(fundRuleSetCode)) {
                 throw new DEImportException(
                         "Rule set must match with fund, subsection code:" + ruleSetCode + ", fund code:" + fundRuleSetCode);
             }
-            section.setRootAdapter(new SubsectionRootAdapter(importPosition, createChange, levelRepository, levelTreeCacheService));
+            section.setRootAdapter(new SubsectionRootAdapter(importPosition, createChange, levelRepository));
         }
 
         // set current section
@@ -126,9 +115,9 @@ public class SectionsContext {
     }
 
     public void setFundInfo(FundInfo fundInfo) {
-        Assert.notNull(currentSection, "No active section");
+        Validate.notNull(currentSection);
 
-        if (isSubsection()) {
+        if (importPosition != null) {
             LOG.warn("Fund info will be ignored during subsection import");
         } else {
             currentSection.setRootAdapter(
@@ -137,16 +126,23 @@ public class SectionsContext {
     }
 
     public ContextSection getCurrentSection() {
-        Assert.notNull(currentSection, "No active section");
+        Validate.notNull(currentSection);
 
         return currentSection;
     }
 
     public void endSection() {
-        Assert.notNull(currentSection, "No active section");
+        Validate.notNull(currentSection);
 
+        // save & close current section
         storeAll();
         currentSection.close();
+
+        // notify listeners
+        List<SectionProcessedListener> listeners = new ArrayList<>(sectionProcessedListeners);
+        listeners.forEach(l -> l.onSectionProcessed(currentSection));
+
+        // clear current section
         currentSection = null;
     }
 
@@ -205,26 +201,7 @@ public class SectionsContext {
         ArrFund fund = arrangementService.createFund(fundInfo.getN(), fundInfo.getC(), institution);
         arrangementService.addScopeToFund(fund, importScope);
 
-        return new FundRootAdapter(fund, ruleSystem, createChange, fundInfo.getTr(), arrangementService, eventNotificationService);
-    }
-
-    /**
-     * Listens for end of subsection.
-     */
-    // TODO: prenest mimo import, udelat interfrace pro volani z vnejsku
-    private static class SubsectionPhaseEndListener implements ImportPhaseChangeListener {
-
-        @Override
-        public boolean onPhaseChange(ImportPhase previousPhase, ImportPhase nextPhase, ImportContext context) {
-            if (previousPhase == ImportPhase.SECTIONS) {
-                SectionsContext sections = context.getSections();
-                ArrFundVersion fundVer = sections.importPosition.getFundVersion();
-                EventId event = EventFactory.createIdEvent(EventType.FUND_UPDATE, fundVer.getFund().getFundId());
-                sections.eventNotificationService.publishEvent(event);
-                return false;
-            }
-            return !ImportPhase.SECTIONS.isSubsequent(nextPhase);
-        }
+        return new FundRootAdapter(fund, ruleSystem, createChange, fundInfo.getTr(), arrangementService);
     }
 
     public static class ImportPosition {
@@ -240,10 +217,10 @@ public class SectionsContext {
         private Integer levelPosition;
 
         public ImportPosition(ArrFundVersion fundVersion, ArrLevel parentLevel, ArrLevel targetLevel, ImportDirection direction) {
-            this.fundVersion = Objects.requireNonNull(fundVersion);
-            this.parentLevel = Objects.requireNonNull(parentLevel);
+            this.fundVersion = Validate.notNull(fundVersion);
+            this.parentLevel = Validate.notNull(parentLevel);
             this.targetLevel = targetLevel;
-            this.direction = Objects.requireNonNull(direction);
+            this.direction = Validate.notNull(direction);
         }
 
         public ArrFundVersion getFundVersion() {

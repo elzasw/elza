@@ -2,9 +2,8 @@ package cz.tacr.elza.deimport.sections.context;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
-import org.springframework.util.Assert;
+import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.deimport.context.IdHolder;
 import cz.tacr.elza.domain.ArrChange;
@@ -27,8 +26,8 @@ public class ContextNode {
     private int levelPosition;
 
     ContextNode(ContextSection section, IdHolder nodeIdHolder, int depth) {
-        this.section = Objects.requireNonNull(section);
-        this.nodeIdHolder = Objects.requireNonNull(nodeIdHolder);
+        this.section = Validate.notNull(section);
+        this.nodeIdHolder = Validate.notNull(nodeIdHolder);
         this.depth = depth;
     }
 
@@ -62,12 +61,12 @@ public class ContextNode {
         section.addDescItem(itemWrapper, depth);
         // store data
         if (data != null) {
-            Assert.isTrue(data.getDataType() == descItem.getItemType().getDataType(), "Data type does not match");
-            Assert.isTrue(!descItem.getUndefined(), "Existing data for undefined item");
+            Validate.isTrue(data.getDataType() == descItem.getItemType().getDataType());
+            Validate.isTrue(!descItem.getUndefined());
             ArrDataWrapper dataWrapper = new ArrDataWrapper(data, itemWrapper.getIdHolder());
             section.addData(dataWrapper, depth);
         } else {
-            Assert.isTrue(descItem.getUndefined(), "Missing data for not undefined item");
+            Validate.isTrue(descItem.getUndefined());
         }
     }
 

@@ -1,12 +1,10 @@
 package cz.tacr.elza.deimport.sections.context;
 
-import java.util.Objects;
-
+import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
-import org.springframework.util.Assert;
 
-import cz.tacr.elza.deimport.context.IdHolder;
 import cz.tacr.elza.deimport.context.EntityState;
+import cz.tacr.elza.deimport.context.IdHolder;
 import cz.tacr.elza.deimport.storage.EntityWrapper;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -18,8 +16,8 @@ public class ArrDataWrapper implements EntityWrapper {
     private final IdHolder descItemIdHolder;
 
     ArrDataWrapper(ArrData entity, IdHolder descItemIdHolder) {
-        this.entity = Objects.requireNonNull(entity);
-        this.descItemIdHolder = Objects.requireNonNull(descItemIdHolder);
+        this.entity = Validate.notNull(entity);
+        this.descItemIdHolder = Validate.notNull(descItemIdHolder);
     }
 
     @Override
@@ -34,7 +32,7 @@ public class ArrDataWrapper implements EntityWrapper {
 
     @Override
     public void beforeEntityPersist(Session session) {
-        Assert.isNull(entity.getItem());
+        Validate.isTrue(entity.getItem() == null);
         entity.setItem(descItemIdHolder.getEntityRef(session, ArrDescItem.class));
     }
 }

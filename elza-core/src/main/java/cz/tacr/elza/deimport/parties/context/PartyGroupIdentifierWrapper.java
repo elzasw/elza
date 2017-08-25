@@ -1,9 +1,7 @@
 package cz.tacr.elza.deimport.parties.context;
 
-import java.util.Objects;
-
+import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
-import org.springframework.util.Assert;
 
 import cz.tacr.elza.deimport.context.EntityState;
 import cz.tacr.elza.deimport.context.StatefulIdHolder;
@@ -24,8 +22,8 @@ public class PartyGroupIdentifierWrapper implements EntityWrapper, EntityMetrics
     private StatefulIdHolder toIdHolder;
 
     PartyGroupIdentifierWrapper(ParPartyGroupIdentifier entity, PartyImportInfo partyGroupInfo) {
-        this.entity = Objects.requireNonNull(entity);
-        this.partyGroupInfo = Objects.requireNonNull(partyGroupInfo);
+        this.entity = Validate.notNull(entity);
+        this.partyGroupInfo = Validate.notNull(partyGroupInfo);
     }
 
     public void setFrom(StatefulIdHolder fromIdHolder) {
@@ -54,15 +52,15 @@ public class PartyGroupIdentifierWrapper implements EntityWrapper, EntityMetrics
     @Override
     public void beforeEntityPersist(Session session) {
         // party group relation
-        Assert.isNull(entity.getPartyGroup());
+        Validate.isTrue(entity.getPartyGroup() == null);
         entity.setPartyGroup(partyGroupInfo.getEntityRef(session, ParPartyGroup.class));
         // from relation
-        Assert.isNull(entity.getFrom());
+        Validate.isTrue(entity.getFrom() == null);
         if (fromIdHolder != null) {
             entity.setFrom(fromIdHolder.getEntityRef(session, ParUnitdate.class));
         }
         // to relation
-        Assert.isNull(entity.getTo());
+        Validate.isTrue(entity.getTo() == null);
         if (toIdHolder != null) {
             entity.setTo(toIdHolder.getEntityRef(session, ParUnitdate.class));
         }

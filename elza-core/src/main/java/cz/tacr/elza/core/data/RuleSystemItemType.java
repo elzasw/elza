@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.util.Assert;
+import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -28,8 +28,8 @@ public class RuleSystemItemType {
         this.dataType = dataType;
 
         // ensure reference equality
-        Assert.isTrue(ruleSystem.getRuleSet().getPackage() == itemType.getPackage());
-        Assert.isTrue(itemType.getDataType() == dataType.getEntity());
+        Validate.isTrue(ruleSystem.getRuleSet().getPackage() == itemType.getPackage());
+        Validate.isTrue(itemType.getDataType() == dataType.getEntity());
     }
 
     public RuleSystem getRuleSystem() {
@@ -61,7 +61,7 @@ public class RuleSystemItemType {
     }
 
     public RulItemSpec getItemSpecByCode(String code) {
-        Assert.hasLength(code);
+        Validate.notEmpty(code);
         return itemSpecCodeMap.get(code);
     }
 
@@ -79,8 +79,8 @@ public class RuleSystemItemType {
 
             // ensure reference equality
             for (RulItemSpec is : itemSpecs) {
-                Assert.isTrue(itemType == is.getItemType());
-                Assert.isTrue(itemType.getPackage() == is.getPackage());
+                Validate.isTrue(itemType == is.getItemType());
+                Validate.isTrue(itemType.getPackage() == is.getPackage());
             }
         }
         // update fields

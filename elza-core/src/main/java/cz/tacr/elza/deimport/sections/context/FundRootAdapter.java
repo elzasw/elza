@@ -10,10 +10,6 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.service.ArrangementService;
-import cz.tacr.elza.service.IEventNotificationService;
-import cz.tacr.elza.service.eventnotification.EventFactory;
-import cz.tacr.elza.service.eventnotification.events.EventId;
-import cz.tacr.elza.service.eventnotification.events.EventType;
 
 class FundRootAdapter implements SectionRootAdapter {
 
@@ -27,22 +23,18 @@ class FundRootAdapter implements SectionRootAdapter {
 
     private final ArrangementService arrangementService;
 
-    private final IEventNotificationService eventNotificationService;
-
     private ArrFundVersion fundVersion;
 
     public FundRootAdapter(ArrFund fund,
                            RuleSystem ruleSystem,
                            ArrChange createChange,
                            String timeRange,
-                           ArrangementService arrangementService,
-                           IEventNotificationService eventNotificationService) {
+                           ArrangementService arrangementService) {
         this.fund = fund;
         this.ruleSystem = ruleSystem;
         this.createChange = createChange;
         this.timeRange = timeRange;
         this.arrangementService = arrangementService;
-        this.eventNotificationService = eventNotificationService;
     }
 
     @Override
@@ -72,7 +64,5 @@ class FundRootAdapter implements SectionRootAdapter {
         if (fundVersion == null) {
             throw new DEImportException("Root level not found, fund name:" + fund.getName());
         }
-        EventId event = EventFactory.createIdEvent(EventType.FUND_CREATE, fund.getFundId());
-        eventNotificationService.publishEvent(event);
     }
 }

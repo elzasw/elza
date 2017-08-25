@@ -5,9 +5,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.Validate;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,7 +139,7 @@ public class GroovyScriptService {
         private long lastModified = -1;
 
         private GroovyScriptFile(File scriptFile) {
-            this.scriptFile = Objects.requireNonNull(scriptFile);
+            this.scriptFile = Validate.notNull(scriptFile);
         }
 
         public Object evaluate(Map<String, Object> variables) {
