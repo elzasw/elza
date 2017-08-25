@@ -10,6 +10,7 @@ import org.hibernate.search.annotations.Store;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import java.math.BigDecimal;
 
 
 /**
@@ -26,8 +27,6 @@ public class ArrDataInteger extends ArrData {
     @Column(nullable = false)
     private Integer value;
 
-    @Field(name = LuceneDescItemCondition.INTGER_ATT, store = Store.YES)
-    @NumericField
     public Integer getValue() {
         return value;
     }
@@ -40,4 +39,10 @@ public class ArrDataInteger extends ArrData {
     public String getFulltextValue() {
         return value.toString();
     }
+
+    @Override
+    public Integer getValueInt() {
+        return value;
+    }
+
 }

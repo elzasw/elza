@@ -1,5 +1,6 @@
 package cz.tacr.elza;
 
+import cz.tacr.elza.domain.ArrItem;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.hibernate.proxy.HibernateProxy;

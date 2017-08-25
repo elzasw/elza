@@ -49,11 +49,9 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
     @Column(length = 50, nullable = false)
     private String format;
 
-    @Field
     @Column(nullable = false)
     private Long normalizedFrom;
 
-    @Field
     @Column(nullable = false)
     private Long normalizedTo;
 

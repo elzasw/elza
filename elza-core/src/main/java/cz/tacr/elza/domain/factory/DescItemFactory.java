@@ -1,27 +1,5 @@
 package cz.tacr.elza.domain.factory;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.NotImplementedException;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
@@ -39,7 +17,6 @@ import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrItemCoordinates;
-import cz.tacr.elza.domain.ArrItemData;
 import cz.tacr.elza.domain.ArrItemDecimal;
 import cz.tacr.elza.domain.ArrItemEnum;
 import cz.tacr.elza.domain.ArrItemFileRef;
@@ -53,8 +30,9 @@ import cz.tacr.elza.domain.ArrItemString;
 import cz.tacr.elza.domain.ArrItemText;
 import cz.tacr.elza.domain.ArrItemUnitdate;
 import cz.tacr.elza.domain.ArrItemUnitid;
-import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DataCoordinatesRepository;
 import cz.tacr.elza.repository.DataDecimalRepository;
 import cz.tacr.elza.repository.DataFileRefRepository;
@@ -75,6 +53,20 @@ import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MappingContext;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.NotImplementedException;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 
 /**
@@ -913,50 +905,6 @@ public class DescItemFactory implements InitializingBean {
         }
 
         return descItemRepository.save(descItem);
-    }
-
-    /**
-     * Vytvoření objektu podle datového typu.
-     *
-     * @param dataType zvolený datový typ
-     * @return nový objekt
-     */
-    @Deprecated
-    public ArrItemData createItemByType(final RulDataType dataType) {
-        Assert.notNull(dataType, "Musí být vyplněn datový typ");
-
-        switch (dataType.getCode()) {
-            case "INT":
-                return new ArrItemInt();
-            case "STRING":
-                return new ArrItemString();
-            case "TEXT":
-                return new ArrItemText();
-            case "UNITDATE":
-                return new ArrItemUnitdate();
-            case "UNITID":
-                return new ArrItemUnitid();
-            case "FORMATTED_TEXT":
-                return new ArrItemFormattedText();
-            case "COORDINATES":
-                return new ArrItemCoordinates();
-            case "PARTY_REF":
-                return new ArrItemPartyRef();
-            case "RECORD_REF":
-                return new ArrItemRecordRef();
-            case "DECIMAL":
-                return new ArrItemDecimal();
-            case "FILE_REF":
-                return new ArrItemFileRef();
-            case "PACKET_REF":
-                return new ArrItemPacketRef();
-            case "ENUM":
-                return new ArrItemEnum();
-            case "JSON_TABLE":
-                return new ArrItemJsonTable();
-            default:
-                throw new NotImplementedException("Nebyl namapován datový typ");
-        }
     }
 
     /**

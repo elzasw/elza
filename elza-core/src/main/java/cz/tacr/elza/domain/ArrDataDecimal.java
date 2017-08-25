@@ -32,12 +32,6 @@ public class ArrDataDecimal extends ArrData {
         return value;
     }
 
-    @Field(name = LuceneDescItemCondition.DECIMAL_ATT, store = Store.YES)
-    @NumericField
-    public Double getValueDouble() {
-        return value.doubleValue();
-    }
-
     public void setValue(final BigDecimal value) {
         this.value = value;
     }
@@ -45,5 +39,10 @@ public class ArrDataDecimal extends ArrData {
     @Override
     public String getFulltextValue() {
         return value.toPlainString();
+    }
+
+    @Override
+    public Double getValueDouble() {
+        return value.doubleValue();
     }
 }

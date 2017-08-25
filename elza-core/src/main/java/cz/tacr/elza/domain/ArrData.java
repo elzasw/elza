@@ -1,6 +1,7 @@
 package cz.tacr.elza.domain;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -12,6 +13,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import cz.tacr.elza.filter.condition.LuceneDescItemCondition;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.lucene.analysis.core.KeywordTokenizerFactory;
@@ -20,6 +22,7 @@ import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.AnalyzerDef;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
+import org.hibernate.search.annotations.NumericField;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.annotations.TokenFilterDef;
 import org.hibernate.search.annotations.TokenizerDef;
@@ -54,6 +57,30 @@ public abstract class ArrData {
     @Field
     @Analyzer(definition = "customanalyzer")
     public abstract String getFulltextValue();
+
+    @Field(name = LuceneDescItemCondition.INTGER_ATT, store = Store.YES)
+    @NumericField
+    public Integer getValueInt() {
+        return null;
+    }
+
+    @Field(name = LuceneDescItemCondition.DECIMAL_ATT, store = Store.YES)
+    @NumericField
+    public Double getValueDouble() {
+        return null;
+    }
+
+    @Field(name = LuceneDescItemCondition.NORMALIZED_FROM_ATT, store = Store.YES)
+    @NumericField
+    public Long getNormalizedFrom() {
+        return null;
+    }
+
+    @Field(name = LuceneDescItemCondition.NORMALIZED_TO_ATT, store = Store.YES)
+    @NumericField
+    public Long getNormalizedTo() {
+        return null;
+    }
 
     public Integer getDataId() {
         return dataId;

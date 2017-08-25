@@ -50,7 +50,7 @@ public enum Condition {
 
     private List<String> supportedDescItemTypes;
 
-    private Condition(final String... supportedTypes) {
+    Condition(final String... supportedTypes) {
         Assert.notEmpty(supportedTypes);
 
         supportedDescItemTypes = Arrays.asList(supportedTypes);

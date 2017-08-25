@@ -50,21 +50,6 @@ public abstract class ArrItem implements NodeCacheSerializable {
 
     }
 
-    /*public ArrItem(final Class<? extends ArrItemData> clazz) throws IllegalAccessException, InstantiationException {
-        this.item = clazz.newInstance();
-    }
-
-    public ArrItem(final ArrItemData item) {
-        this.item = item;
-    }*/
-
-    /*@Transient
-    protected ArrItemData item;*/
-
-    /*public void setItem(final ArrItemData item) {
-        this.item = item;
-    }*/
-
     @Id
     @GeneratedValue
     private Integer itemId;
@@ -249,10 +234,6 @@ public abstract class ArrItem implements NodeCacheSerializable {
     public abstract ArrNode getNode();
 
     public abstract ArrOutputDefinition getOutputDefinition();
-
-    /*public ArrItemData getItem() {
-        return item;
-    }*/
 
     public void setCreateChangeId(final Integer createChangeId) {
         this.createChangeId = createChangeId;

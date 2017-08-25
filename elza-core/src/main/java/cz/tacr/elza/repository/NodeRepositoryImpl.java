@@ -310,15 +310,15 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         Query query;
         switch (condition) {
             case CONTAINS:
-                Query fromQuery = queryBuilder.range().onField("normalizedFrom").above(secondsFrom).createQuery();
-                Query toQuery = queryBuilder.range().onField("normalizedTo").below(secondsTo).createQuery();
+                Query fromQuery = queryBuilder.range().onField(ArrDescItem.concatDataAttribute(LuceneDescItemCondition.NORMALIZED_FROM_ATT)).above(secondsFrom).createQuery();
+                Query toQuery = queryBuilder.range().onField(ArrDescItem.concatDataAttribute(LuceneDescItemCondition.NORMALIZED_TO_ATT)).below(secondsTo).createQuery();
                 query = queryBuilder.bool().must(fromQuery).must(toQuery).createQuery();
                 break;
             case GE:
-                query = queryBuilder.range().onField("normalizedFrom").above(secondsFrom).createQuery();
+                query = queryBuilder.range().onField(ArrDescItem.concatDataAttribute(LuceneDescItemCondition.NORMALIZED_FROM_ATT)).above(secondsFrom).createQuery();
                 break;
             case LE:
-                query = queryBuilder.range().onField("normalizedTo").below(secondsTo).createQuery();
+                query = queryBuilder.range().onField(ArrDescItem.concatDataAttribute(LuceneDescItemCondition.NORMALIZED_TO_ATT)).below(secondsTo).createQuery();
                 break;
             default:
                 throw new IllegalStateException("Neznámý typ podmínky " + condition);
@@ -435,9 +435,9 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 //        stringNumericConfigHashMap.put("normalizedTo", longConfig);
 //        parser.setPointsConfigMap(stringNumericConfigHashMap);
         HashMap<String, NumericConfig> stringNumericConfigHashMap = new HashMap<>();
-        stringNumericConfigHashMap.put("specification", new NumericConfig(1, NumberFormat.getIntegerInstance(), FieldType.NumericType.INT));
-        stringNumericConfigHashMap.put("normalizedFrom", new NumericConfig(16, NumberFormat.getNumberInstance(), FieldType.NumericType.LONG));
-        stringNumericConfigHashMap.put("normalizedTo", new NumericConfig(16, NumberFormat.getNumberInstance(), FieldType.NumericType.LONG));
+        stringNumericConfigHashMap.put(LuceneDescItemCondition.SPECIFICATION_ATT, new NumericConfig(1, NumberFormat.getIntegerInstance(), FieldType.NumericType.INT));
+        stringNumericConfigHashMap.put(ArrDescItem.concatDataAttribute(LuceneDescItemCondition.NORMALIZED_FROM_ATT), new NumericConfig(16, NumberFormat.getNumberInstance(), FieldType.NumericType.LONG));
+        stringNumericConfigHashMap.put(ArrDescItem.concatDataAttribute(LuceneDescItemCondition.NORMALIZED_TO_ATT), new NumericConfig(16, NumberFormat.getNumberInstance(), FieldType.NumericType.LONG));
         parser.setNumericConfigMap(stringNumericConfigHashMap);
 
         Query query;

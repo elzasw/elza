@@ -144,4 +144,8 @@ public class ArrDescItem extends ArrItem {
     public String toString() {
         return "ArrDescItem pk=" + getItemId();
     }
+
+    public static String concatDataAttribute(final String attribute) {
+        return ArrItem.DATA + "." + attribute;
+    }
 }
