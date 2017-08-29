@@ -65,7 +65,7 @@ public class FundFileRepositoryImpl extends AbstractFileRepository<ArrFile> impl
 
         String sql = "SELECT f.*, af.* FROM dms_file f JOIN arr_file af ON f.file_id = af.file_id WHERE f.file_id IN" +
                 " (" +
-                "  SELECT dfr.file_id FROM arr_data_file_ref dfr JOIN dms_file df ON df.file_id = dfr.file_id WHERE dfr.data_id IN (SELECT d.data_id FROM arr_data d JOIN arr_item i ON d.item_id = i.item_id JOIN arr_desc_item di ON di.item_id = i.item_id WHERE i.delete_change_id IS NULL AND d.data_type_id = 13 AND di.node_id IN (" + sql_nodes + "))" +
+                "  SELECT dfr.file_id FROM arr_data_file_ref dfr JOIN dms_file df ON df.file_id = dfr.file_id WHERE dfr.data_id IN (SELECT d.data_id FROM arr_item i JOIN arr_data d ON d.data_id = i.data_id JOIN arr_desc_item di ON di.item_id = i.item_id WHERE i.delete_change_id IS NULL AND d.data_type_id = 13 AND di.node_id IN (" + sql_nodes + "))" +
                 " )";
 
         Query query = entityManager.createNativeQuery(sql, ArrFile.class);

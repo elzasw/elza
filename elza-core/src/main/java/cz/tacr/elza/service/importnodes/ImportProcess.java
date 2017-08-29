@@ -304,7 +304,6 @@ public class ImportProcess {
                     ArrData data = createArrData(filesMapper, packetsMapper, item, descItem);
 
                     if (data != null) {
-                        //data.setItem(descItem);
                         descItem.setData(data);
                         data.setDataType(itemType.getDataType());
                         dataList.add(data);
@@ -647,11 +646,11 @@ public class ImportProcess {
             nodeRegisterRepository.save(nodeRegisters);
             nodeRegisterRepository.flush();
 
-            descItemRepository.save(descItems);
-            descItemRepository.flush();
-
             dataRepository.save(dataList);
             dataRepository.flush();
+
+            descItemRepository.save(descItems);
+            descItemRepository.flush();
 
             levels = new ArrayList<>();
             nodeRegisters = new ArrayList<>();

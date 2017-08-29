@@ -640,10 +640,12 @@ public class ArrangementService {
                 outputResultRepository.deleteByOutputDefinition(outputDefinition);
                 outputDefinitionRepository.delete(outputDefinition);
             }
+            outputItemRepository.flush();
             ObjectListIterator<Integer> dataIdsToDeleteIterator = new ObjectListIterator<>(dataIdsToDelete);
             while (dataIdsToDeleteIterator.hasNext()) {
                 List<Integer> ids = dataIdsToDeleteIterator.next();
                 dataRepository.deleteByIds(ids);
+                dataRepository.flush();
             }
         }
 

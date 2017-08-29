@@ -104,7 +104,7 @@ public class PacketRepositoryImpl implements PacketRepositoryCustom {
 
         String sql = "SELECT p.* FROM arr_packet p WHERE p.packet_id IN" +
                 " (" +
-                "  SELECT dpr.packet_id FROM arr_data_packet_ref dpr JOIN arr_packet ap ON ap.packet_id = dpr.packet_id WHERE dpr.data_id IN (SELECT d.data_id FROM arr_data d JOIN arr_item i ON d.item_id = i.item_id JOIN arr_desc_item di ON di.item_id = i.item_id WHERE i.delete_change_id IS NULL AND d.data_type_id = 11 AND di.node_id IN (" + sql_nodes + "))" +
+                "  SELECT dpr.packet_id FROM arr_data_packet_ref dpr JOIN arr_packet ap ON ap.packet_id = dpr.packet_id WHERE dpr.data_id IN (SELECT d.data_id FROM arr_item i JOIN arr_data d ON d.data_id = i.data_id JOIN arr_desc_item di ON di.item_id = i.item_id WHERE i.delete_change_id IS NULL AND d.data_type_id = 11 AND di.node_id IN (" + sql_nodes + "))" +
                 " )";
 
         Query query = entityManager.createNativeQuery(sql, ArrPacket.class);
