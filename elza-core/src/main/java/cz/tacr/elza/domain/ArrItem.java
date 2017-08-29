@@ -12,6 +12,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import cz.tacr.elza.service.cache.NodeCacheSerializable;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.lucene.analysis.core.KeywordTokenizerFactory;
@@ -96,12 +97,14 @@ public abstract class ArrItem implements NodeCacheSerializable {
     @JoinColumn(name = "dataId")
     private ArrData data;
 
+    @JsonIgnore
     @Field
     @NumericField
     public Integer getCreateChangeId() {
         return createChangeId;
     }
 
+    @JsonIgnore
     @Field
     @NumericField
     public Integer getDeleteChangeId() {

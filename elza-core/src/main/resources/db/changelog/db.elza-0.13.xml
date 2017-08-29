@@ -29,4 +29,17 @@
         <delete tableName="arr_cached_node" />
     </changeSet>
 
+    <changeSet id="201708291239" author="slapa">
+        <sql><![CDATA[
+            UPDATE
+              arr_bulk_action_run SET state = 'ERROR', error = 'Migrace dat ID=201708291239'
+            WHERE
+              state = 'FINISHED'
+              AND
+              result <> ''
+              AND
+              bulk_action_code NOT IN ('ZP2015_GENERATOR_SERIAL_NUMBER', 'ZP2015_FUND_VALIDATION', 'ZP2015_GENERATOR_UNIT_ID', 'ZP2015_TEST_DATA_GENERATOR')
+        ]]></sql>
+    </changeSet>
+
 </databaseChangeLog>

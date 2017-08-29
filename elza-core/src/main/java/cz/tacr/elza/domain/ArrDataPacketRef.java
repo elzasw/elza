@@ -1,5 +1,6 @@
 package cz.tacr.elza.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
@@ -33,6 +34,7 @@ public class ArrDataPacketRef extends ArrData {
     @Column(name = "packetId", updatable = false, insertable = false)
     private Integer packetId;
 
+    @JsonIgnore
     @Field
     public Integer getSpecification() {
         RulPacketType packetType = packet.getPacketType();
