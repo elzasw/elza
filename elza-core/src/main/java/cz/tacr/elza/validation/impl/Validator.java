@@ -160,7 +160,6 @@ public class Validator {
         Map<Integer, List<ArrDescItem>> descItemsInTypeMap = new HashMap<>();
 
         for (ArrDescItem descItem : descItems) {
-            descItem = descItemFactory.getDescItem(descItem);
             if (!extNodeTypes.containsKey(descItem.getItemType().getItemTypeId())) {
                 validationResults.createError(descItem, "Prvek " + descItem.getItemType().getName()
                                 + " není možný u této jednotky popisu.", extNodeTypes.get(descItem.getItemType().getItemTypeId()).getPolicyTypeCode());

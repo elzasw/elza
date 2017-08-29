@@ -971,7 +971,7 @@ public class ArrangementService {
             itemList = descItemRepository.findByNodeAndChange(node, version.getLockChange());
         }
 
-        return descItemFactory.getDescItems(itemList);
+        return itemList;
     }
 
     /**

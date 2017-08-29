@@ -1953,21 +1953,6 @@ public class ClientFactoryVO {
         return result;
     }
 
-    @Deprecated
-    public <T extends ArrItem> ArrItemVO createItem(final T item) {
-
-        Assert.notNull(item, "Hodnota musí být vyplněna");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrItemVO descItemVO = mapper.map(item.getData(), ArrItemVO.class);
-        BeanUtils.copyProperties(item, descItemVO);
-        descItemVO.setId(item.getItemId());
-
-        Integer specId = (item.getItemSpec() == null) ? null : item.getItemSpec().getItemSpecId();
-        descItemVO.setDescItemSpecId(specId);
-        return descItemVO;
-
-    }
-
     /**
      * Vytvoří {@link ParRelationTypeVO}. Pokud je předán {@link ParPartyTypeRelation} a obsahuje jméno,
      * tak bude nastaveno do výsledného objektu.

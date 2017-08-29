@@ -215,7 +215,7 @@ public class SerialNumberBulkAction extends BulkAction {
                     descItemType.getCode() + " nemuže být více než jeden (" + descItems.size() + ")",
                     BaseCode.DB_INTEGRITY_PROBLEM);
         }
-        return descItemFactory.getDescItem(descItems.get(0));
+        return descItems.get(0);
     }
 
     /**

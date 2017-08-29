@@ -277,7 +277,7 @@ public class UnitIdBulkAction extends BulkAction {
             throw new IllegalStateException(
                     descItemType.getCode() + " nemuze byt vice nez jeden (" + descItems.size() + ")");
         }
-        return descItemFactory.getDescItem(descItems.get(0));
+        return descItems.get(0);
     }
 
     /**
@@ -297,7 +297,7 @@ public class UnitIdBulkAction extends BulkAction {
             throw new IllegalStateException(
                     descItemType.getCode() + " nemuze byt vice nez jeden (" + descItems.size() + ")");
         }
-        return descItemFactory.getDescItem(descItems.get(0));
+        return descItems.get(0);
     }
 
 

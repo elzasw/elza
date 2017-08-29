@@ -815,21 +815,8 @@ public class DescItemFactory implements InitializingBean {
             return result;
         }
 
-        for (ArrDescItem descItem : descItems) {
-            result.add(getDescItem(descItem));
-        }
+        result.addAll(descItems);
         return result;
-    }
-
-    /**
-     * Načte hodnotu k atributu.
-     *
-     * @param descItem atribut ke kterému hledáme data
-     * @return nalezená data k atributu
-     */
-    @Deprecated
-    private ArrData getDataByDescItem(final ArrDescItem descItem) {
-        return descItem.getData();
     }
 
     /**

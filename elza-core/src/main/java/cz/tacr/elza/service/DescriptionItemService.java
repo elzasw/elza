@@ -930,7 +930,6 @@ public class DescriptionItemService {
             descItemOrig = descItemDB;
         }
 
-        descItemOrig = descItemFactory.getDescItem(descItemOrig);
         ArrDescItem descItemUpdated;
 
         if (createNewVersion) {

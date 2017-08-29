@@ -716,10 +716,9 @@ public class ArrangementController {
                     .set("actual", descItem.getItemType().getDataType().getCode());
         }
 
-        ArrDescItem arrDescItem = descItemFactory.getDescItem(descItem);
         OutputStream os = response.getOutputStream();
         response.setHeader("Content-Disposition", "attachment; filename=desc-item-" + descItemObjectId + ".csv");
-        arrIOService.csvExport(arrDescItem, os);
+        arrIOService.csvExport(descItem, os);
         os.close();
     }
 
@@ -1721,7 +1720,6 @@ public class ArrangementController {
         ArrLevel level = arrangementService.lockNode(node, version, change);
 
         List<ArrDescItem> newDescItems = arrangementService.copyOlderSiblingAttribute(version, descItemType, level, change);
-        newDescItems = descItemFactory.getDescItems(newDescItems);
 
         RulDescItemTypeDescItemsVO descItemTypeVO = factoryVo.createDescItemTypeVO(descItemType);
         descItemTypeVO.setDescItems(factoryVo.createDescItems(newDescItems));
