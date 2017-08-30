@@ -3,6 +3,11 @@ package cz.tacr.elza.core.data;
 import org.hibernate.EmptyInterceptor;
 import org.hibernate.Transaction;
 
+/**
+ * Interceptor for StaticDataService notifications
+ * 
+ *
+ */
 public class StaticDataTransactionInterceptor extends EmptyInterceptor {
 
     public static final StaticDataTransactionInterceptor INSTANCE = new StaticDataTransactionInterceptor();
@@ -29,13 +34,6 @@ public class StaticDataTransactionInterceptor extends EmptyInterceptor {
     public void beforeTransactionCompletion(Transaction tx) {
         if (service != null) {
             service.beforeTransactionCommit(tx);
-        }
-    }
-
-    @Override
-    public void afterTransactionCompletion(Transaction tx) {
-        if (service != null) {
-            service.unregisterTransaction(tx);
         }
     }
 }

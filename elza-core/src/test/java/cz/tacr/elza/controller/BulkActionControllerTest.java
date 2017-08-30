@@ -38,12 +38,12 @@ public class BulkActionControllerTest extends AbstractControllerTest {
     private static final String BULK_ACTIONS_LIST = BULK_ACTION_CONTROLLER_URL + "/list/{versionId}";
     private static final String BULK_ACTION_QUEUE = BULK_ACTION_CONTROLLER_URL + "/queue/{versionId}/{code}";
 
-    private static final String BULK_ACTION_FUND_VALIDATION = "FUND_VALIDATION_ZP2015";
-    private static final String BULK_ACTION_GENERATOR_UNIT = "GENERATOR_UNIT_ID_ZP2015";
-    private static final String BULK_ACTION_SERIAL_NUMBER_GENERATOR = "GENERATOR_SERIAL_NUMBER_ZP2015";
+    private static final String BULK_ACTION_FUND_VALIDATION = "ZP2015_FUND_VALIDATION";
+    private static final String BULK_ACTION_GENERATOR_UNIT = "ZP2015_GENERATOR_UNIT_ID";
+    private static final String BULK_ACTION_SERIAL_NUMBER_GENERATOR = "ZP2015_GENERATOR_SERIAL_NUMBER";
 
     private int importAndGetVersionId() {
-        importXmlFile(null, null, XmlImportType.FUND, IMPORT_SCOPE, null, XmlImportControllerTest.getResourceFile(XML_FILE), null);
+        importXmlFile(null, 1, XmlImportControllerTest.getResourceFile(XML_FILE));
         List<ArrFundVO> funds = getFunds();
         Assert.assertEquals(1, funds.size());
         Assert.assertEquals(1, funds.get(0).getVersions().size());
@@ -66,7 +66,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
         int fundVersionId = importAndGetVersionId();
         List<BulkActionVO> bulkActionVOs = Arrays.asList(get(spec -> spec.pathParam("versionId", fundVersionId), BULK_ACTIONS).getBody().as(BulkActionVO[].class));
 
-        Assert.assertEquals(4, bulkActionVOs.size());
+        Assert.assertEquals(6, bulkActionVOs.size());
 
         Boolean unit = false, serial = false, fa = false;
 

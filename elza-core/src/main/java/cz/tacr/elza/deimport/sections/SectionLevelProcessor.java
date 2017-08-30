@@ -81,7 +81,8 @@ public class SectionLevelProcessor implements ItemProcessor {
             processDescItems(item.getDeOrDiOrDd(), node);
         } catch (DEImportException e) {
             throw new DEImportException(
-                    "Fund level cannot be processed, levelId:" + item.getId() + ", detail:" + e.getMessage());
+                    "Fund level cannot be processed, levelId:" + item.getId() + ", detail:" + e.getMessage(),
+                    e);
         }
     }
 

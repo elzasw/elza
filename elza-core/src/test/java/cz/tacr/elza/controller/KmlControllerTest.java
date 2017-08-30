@@ -6,14 +6,12 @@ import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.domain.vo.XmlImportType;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,8 +19,7 @@ import java.util.List;
 
 
 /**
- * @author Petr Compel
- * @since 23.2.2016k
+ * 
  */
 public class KmlControllerTest extends AbstractControllerTest {
 
@@ -42,7 +39,7 @@ public class KmlControllerTest extends AbstractControllerTest {
 
     @After
     public void cleanUp() {
-        deleteTables();
+    	helperTestService.deleteTables();
         List<String> toDelete = Arrays.asList(IMPORT_SCOPE_FA, IMPORT_SCOPE_RECORD);
         for (RegScopeVO scope : getAllScopes()) {
             if (toDelete.contains(scope.getName())) {
@@ -56,9 +53,8 @@ public class KmlControllerTest extends AbstractControllerTest {
     @Test
     @Ignore
     public void arrImportExportTest() {
-        importFile(getFile(ALL_IN_ONE_XML), IMPORT_SCOPE_FA, XmlImportType.FUND, null);
         List<RegScopeVO> allScopes = getAllScopes();
-        importFile(getFile(ALL_IN_ONE_XML), null, XmlImportType.FUND, allScopes.get(0).getId());
+        importXmlFile(null, allScopes.get(0).getId(), getFile(ALL_IN_ONE_XML));
 
         List<ArrFundVO> funds = getFunds();
         Assert.assertTrue("Očekáváme 1 archivní pomůcku", funds.size() == 1);
@@ -106,9 +102,8 @@ public class KmlControllerTest extends AbstractControllerTest {
     @Test
     @Ignore
     public void regImportExportTest() {
-        importFile(getFile(ALL_IN_ONE_XML), IMPORT_SCOPE_RECORD, XmlImportType.RECORD, null);
         List<RegScopeVO> allScopes = getAllScopes();
-        importFile(getFile(ALL_IN_ONE_XML), null, XmlImportType.RECORD, allScopes.get(0).getId());
+        importXmlFile(null, allScopes.get(0).getId(), getFile(ALL_IN_ONE_XML));
 
 
         List<RegRecordVO> records = findRecord(null, 0, 10, null, null, null);
@@ -121,9 +116,5 @@ public class KmlControllerTest extends AbstractControllerTest {
         for (Integer id : ids) {
             get(spec -> spec.pathParam("regCoordinatesId", id), EXPORT_REG_COORDINATES);
         }
-    }
-
-    private void importFile(File xmlFile, String scopeName, XmlImportType type, Integer scopeId) {
-        importXmlFile(null, null, type, scopeName, scopeId, xmlFile, null);
     }
 }

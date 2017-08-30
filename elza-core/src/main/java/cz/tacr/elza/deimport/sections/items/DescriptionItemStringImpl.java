@@ -8,13 +8,14 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.schema.v2.DescriptionItemString;
 
 public class DescriptionItemStringImpl extends DescriptionItemString {
 
     @Override
     protected boolean isDataTypeSupported(DataType dataType) {
-        return dataType == DataType.STRING || dataType == DataType.TEXT || dataType == DataType.COORDINATES;
+        return dataType == DataType.STRING || dataType == DataType.TEXT || dataType == DataType.COORDINATES || dataType == DataType.UNITID;
     }
 
     @Override
@@ -32,6 +33,10 @@ public class DescriptionItemStringImpl extends DescriptionItemString {
                 ArrDataCoordinates coords = new ArrDataCoordinates();
                 coords.setValue(AccessPointProcessor.convertGeoLocation(getV()));
                 return coords;
+            case UNITID:
+            	ArrDataUnitid unitid = new ArrDataUnitid();
+            	unitid.setValue(getV());
+            	return unitid;
             default:
                 throw new DEImportException("Unsupported data type for string, code:" + dataType.getCode());
         }

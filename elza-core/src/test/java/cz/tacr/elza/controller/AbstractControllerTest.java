@@ -39,8 +39,11 @@ import org.springframework.http.MediaType;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.EncoderConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
+import com.jayway.restassured.internal.support.Prettifier;
 import com.jayway.restassured.response.Header;
 import com.jayway.restassured.response.Response;
+import com.jayway.restassured.response.ResponseBody;
+import com.jayway.restassured.response.ResponseOptions;
 import com.jayway.restassured.specification.RequestSpecification;
 
 import cz.tacr.elza.AbstractTest;
@@ -105,7 +108,6 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.table.ElzaTable;
-import cz.tacr.elza.domain.vo.XmlImportType;
 import cz.tacr.elza.service.ArrMoveLevelService;
 
 
@@ -337,7 +339,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         RestAssured.baseURI = RestAssured.DEFAULT_URI;  // nastavi default URI pro REST-assured. Nejcasteni localhost
         login();
         if (loadInstitutions) {
-            importXmlFile(null, null, XmlImportType.PARTY, IMPORT_SCOPE, 1, XmlImportControllerTest.getResourceFile(XML_INSTITUTION), null);
+            importXmlFile(null, 1, XmlImportControllerTest.getResourceFile(XML_INSTITUTION));
         }
     }
 
@@ -436,15 +438,29 @@ public abstract class AbstractControllerTest extends AbstractTest {
             default:
                 throw new IllegalStateException("Nedefinovaný stav " + method + ".");
         }
-
-        logger.info("Response status: " + response.statusLine() + ", response body:");
-        response.prettyPrint();
+        
+        logResponse(response);
         Assert.assertEquals(status.value(), response.statusCode());
 
         return response;
     }
 
-    /**
+    private static void logResponse(Response response) {
+        String contentType = response.contentType();
+        logger.info("Response status: " + response.statusLine() + ", content-type: " + contentType);
+        // print body in some cases
+        if(contentType!=null) {
+        	if(contentType.startsWith(JSON_CONTENT_TYPE)||contentType.startsWith("text/")) {
+        		
+        		ResponseBody<?> responseBody = (ResponseBody<?>)response;
+        		ResponseOptions<?> responseOptions = (ResponseOptions<?>)response;
+        		String body = new Prettifier().getPrettifiedBodyIfPossible(responseOptions, responseBody);
+        		logger.info("Response body:" + body);
+        	}
+        }		
+	}
+
+	/**
      * Multipart request
      *
      * @param params
@@ -461,8 +477,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
         requestSpecification.header(MULTIPART_HEADER).log().all().config(UTF8_ENCODER_CONFIG).cookies(cookies);
 
         Response response = requestSpecification.post(url);
-        logger.info("Response status: " + response.statusLine() + ", response body:");
-        response.prettyPrint();
+        logResponse(response);
+        
         Assert.assertEquals(HttpStatus.OK.value(), response.statusCode());
 
         return response;
@@ -643,8 +659,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
         ArrangementController.NodeWithParent newLevel = addLevel(addLevelParam);
 
-        org.springframework.util.Assert.notNull(newLevel.getNode());
-        org.springframework.util.Assert.notNull(newLevel.getParentNode());
+        Assert.assertNotNull(newLevel.getNode());
+        Assert.assertNotNull(newLevel.getParentNode());
 
         return newLevel;
     }
@@ -1443,7 +1459,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return otevřená verze AP
      */
     protected ArrFundVersionVO getOpenVersion(final ArrFundVO fund) {
-        org.springframework.util.Assert.notNull(fund);
+        Assert.assertNotNull(fund);
 
         List<ArrFundVO> funds = getFunds();
 
@@ -2213,31 +2229,15 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     protected Response importXmlFile(final String transformationName,
-                                     final Boolean stopOnError,
-                                     final XmlImportType type,
-                                     final String scopeName,
                                      final Integer scopeId,
-                                     final File xmlFile,
-                                     final Integer ruleSetId) {
+                                     final File xmlFile) {
         HashMap<String, Object> params = new HashMap<>();
 
         if (transformationName != null) {
             params.put("transformationName", transformationName);
         }
-        if (stopOnError != null) {
-            params.put("stopOnError", stopOnError);
-        }
-        if (type != null) {
-            params.put("importDataFormat", type);
-        }
-        if (scopeName != null) {
-            params.put("scopeName", scopeName);
-        }
         if (scopeId != null) {
             params.put("scopeId", scopeId);
-        }
-        if (ruleSetId != null) {
-            params.put("ruleSetId", ruleSetId);
         }
         return multipart(spec -> spec.multiPart("xmlFile", xmlFile).params(params), XML_IMPORT);
     }

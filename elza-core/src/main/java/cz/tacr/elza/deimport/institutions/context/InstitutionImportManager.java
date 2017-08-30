@@ -25,6 +25,11 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.InstitutionRepository;
 
+/**
+ * Manager for importing institutions.
+ * 
+ *
+ */
 class InstitutionImportManager implements ImportPhaseChangeListener {
 
     private final Set<Integer> partyIdCreateFilter = new HashSet<>();

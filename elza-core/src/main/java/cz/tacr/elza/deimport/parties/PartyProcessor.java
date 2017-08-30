@@ -174,7 +174,7 @@ public class PartyProcessor<P extends Party, E extends ParParty> implements Item
         if (StringUtils.isNotEmpty(partyName.getFt())) {
             formType = staticData.getPartyNameFormTypeByCode(partyName.getFt());
             if (formType == null) {
-                throw new DEImportException("Format type of party name not found, partyId:" + partyInfo.getImportId());
+                throw new DEImportException("Form type of party name not found, partyId:" + partyInfo.getImportId()+", formType: "+partyName.getFt());
             }
         }
         ParPartyName name = new ParPartyName();

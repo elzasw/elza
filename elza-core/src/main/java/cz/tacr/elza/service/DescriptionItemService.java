@@ -1714,7 +1714,8 @@ public class DescriptionItemService {
         }
 
         if (!descItemType.getIndefinable()) {
-            throw new BusinessException("Položku není možné nastavit jako '" + ArrangementService.UNDEFINED + "'", ArrangementCode.CANT_SET_INDEFINABLE);
+            throw new BusinessException("Položku není možné nastavit jako '" + ArrangementService.UNDEFINED + "'", ArrangementCode.CANT_SET_INDEFINABLE)
+            	.set("descItem", descItemType.getCode());
         }
 
         RulItemSpec descItemSpec = null;

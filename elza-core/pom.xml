@@ -321,6 +321,28 @@
                 </excludes>
             </resource>
         </resources>
+        <testResources>
+          <!-- Copy default test resources -->
+          <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/*.yaml</include>
+                </includes>
+          </testResource>
+          <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>**/*.yaml</exclude>
+                </excludes>
+          </testResource>
+          <!-- Add test folder with source files for packages -->
+          <testResource>
+            <directory>${basedir}/target/test-resources</directory>
+            <includes /> 
+          </testResource>
+        </testResources>    
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -393,6 +415,46 @@
 					    <version>2.2.7</version>
 					</dependency>
 				</dependencies>
+			</plugin>
+			<!-- Copy resources -->
+			<plugin>
+			 <artifactId>maven-resources-plugin</artifactId>
+			 <!-- <version>3.0.2</version> -->
+			 <executions>			 
+			   <!-- Copy test resources -->
+			   <execution>
+			     <id>copy-package-cz-base</id>
+			     <phase>generate-test-resources</phase>
+ 			     <goals>
+			       <goal>copy-resources</goal>
+			     </goals>
+			     <configuration>
+			       <outputDirectory>${project.basedir}/target/test-resources/package-cz-base</outputDirectory>
+			       <resources>
+			         <resource>
+			           <directory>${project.basedir}/../package-cz-base/src</directory>
+			           <includes />			           
+			         </resource>			         
+			       </resources>
+			     </configuration>
+			   </execution>
+               <execution>
+                 <id>copy-rules-cz-zp2015</id>
+                 <phase>generate-test-resources</phase>
+                 <goals>
+                   <goal>copy-resources</goal>
+                 </goals>
+                 <configuration>
+                   <outputDirectory>${project.basedir}/target/test-resources/rules-cz-zp2015</outputDirectory>
+                   <resources>
+                     <resource>
+                       <directory>${project.basedir}/../rules-cz-zp2015/src</directory>
+                       <includes />                    
+                     </resource>                     
+                   </resources>
+                 </configuration>
+               </execution>
+			 </executions>
 			</plugin>
            <!--<plugin>
                 <groupId>org.codehaus.mojo</groupId>

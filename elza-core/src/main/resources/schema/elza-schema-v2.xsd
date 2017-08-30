@@ -339,7 +339,7 @@ Item ID</xs:documentation>
 					<xs:documentation>List of parties.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="inst" type="e:Institutions" minOccurs="0" maxOccurs="1">
+			<xs:element name="inss" type="e:Institutions" minOccurs="0" maxOccurs="1">
 				<xs:annotation>
 					<xs:documentation>Institutions</xs:documentation>
 				</xs:annotation>

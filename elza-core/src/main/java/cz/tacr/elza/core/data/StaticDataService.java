@@ -3,16 +3,15 @@ package cz.tacr.elza.core.data;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.locks.ReentrantLock;
 
 import javax.persistence.EntityManager;
+import javax.transaction.Synchronization;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.resource.transaction.spi.TransactionStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,17 +31,25 @@ import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.utils.HibernateUtils;
 
+/**
+ * Service for static data
+ * 
+ * Service returns StaticDataProvider with valid data for given transaction
+ */
 @Service
 public class StaticDataService {
 
+	/**
+	 * Map of providers for each transaction
+	 */
     private final ConcurrentMap<Transaction, StaticDataProvider> registeredTxMap = new MapMaker().weakKeys().makeMap();
 
-    private final Set<Transaction> modifiedTxSet = new HashSet<>();
-
-    private final ReentrantLock reloadLock = new ReentrantLock();
-
-    private StaticDataProvider modifiedProvider;
-
+    /**
+     * Set of transactions which should refresh StaticDataProvider after commit
+     * 
+     */
+    private final Set<Transaction> modificationTransactions = new HashSet<Transaction>();
+    
     private StaticDataProvider activeProvider;
 
     /* managed components */
@@ -116,6 +123,18 @@ public class StaticDataService {
         // init interceptor
         StaticDataTransactionInterceptor.INSTANCE.begin(this);
     }
+    
+    /**
+     * Switch data provider for current transaction
+     */
+    @Transactional(value = TxType.MANDATORY)
+    public StaticDataProvider reloadForCurrentTransaction() {
+    	Transaction tx = getCurrentActiveTransaction();
+    	StaticDataProvider provider = initializeProvider();
+    	// update data provider for transaction
+   		registeredTxMap.put(tx, provider);
+    	return provider;
+    }
 
     public void reloadOnCommit() {
         Transaction tx = getCurrentActiveTransaction();
@@ -124,13 +143,10 @@ public class StaticDataService {
 
     public void reloadOnCommit(Transaction tx) {
         checkActiveTransaction(tx);
-        reloadLock.lock();
-        try {
-            if (!modifiedTxSet.add(tx)) {
-                throw new IllegalStateException("Transaction already registered");
-            }
-        } finally {
-            reloadLock.unlock();
+        
+        synchronized(modificationTransactions)
+        {
+        	modificationTransactions.add(tx);
         }
     }
 
@@ -148,17 +164,17 @@ public class StaticDataService {
         return provider;
     }
 
+    /**
+     * Called when new transaction if registered
+     * @param tx
+     */
     void registerTransaction(Transaction tx) {
         checkActiveTransaction(tx);
-        StaticDataProvider provider;
-        reloadLock.lock();
-        try {
-            // lock for exclusive read of active provider
-            Validate.notNull(activeProvider);
-            provider = activeProvider;
-        } finally {
-            reloadLock.unlock();
-        }
+        
+        StaticDataProvider provider = activeProvider;
+        // some provider have to exists       
+        Validate.notNull(provider);
+
         if (registeredTxMap.putIfAbsent(tx, provider) != null) {
             tx.markRollbackOnly();
             throw new IllegalStateException("Transaction already registered");
@@ -167,37 +183,37 @@ public class StaticDataService {
 
     void beforeTransactionCommit(Transaction tx) {
         checkActiveTransaction(tx);
-        reloadLock.lock();
-        // check for modified transaction
-        if (!modifiedTxSet.contains(tx)) {
-            reloadLock.unlock();
-            return;
+        
+        synchronized(modificationTransactions)
+        {
+        	// check for modified transaction
+        	if (!modificationTransactions.contains(tx)) {
+        		return;
+        	}
+        	modificationTransactions.remove(tx);
         }
+        
         // prepare modified provider in current transaction
         try {
-            Validate.isTrue(modifiedProvider == null);
-            modifiedProvider = initializeProvider();
-        } catch (Throwable t) {
-            tx.markRollbackOnly();
-            reloadLock.unlock();
-            throw t;
-        }
-    }
+        	StaticDataProvider modifiedProvider = initializeProvider();
+        		
+        	tx.registerSynchronization(new Synchronization(){
+					@Override
+					public void beforeCompletion() {
+						// nop						
+					}
 
-    void unregisterTransaction(Transaction tx) {
-        reloadLock.lock();
-        try {
-            // check for modified transaction
-            if (modifiedTxSet.remove(tx)) {
-                if (tx.getStatus() == TransactionStatus.COMMITTED) {
-                    Validate.notNull(modifiedProvider);
-                    activeProvider = modifiedProvider;
-                }
-                modifiedProvider = null;
-            }
-        } finally {
-            reloadLock.unlock();
-            registeredTxMap.remove(tx);
+					@Override
+					public void afterCompletion(int status) {
+						// set new provider if committed
+						if(status==javax.transaction.Status.STATUS_COMMITTED) {
+							activeProvider = modifiedProvider;
+						}						
+					}        			
+        		});
+        } catch (Throwable t) {
+        	tx.markRollbackOnly();
+        	throw t;
         }
     }
 

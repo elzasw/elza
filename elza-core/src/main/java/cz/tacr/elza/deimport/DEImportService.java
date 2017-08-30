@@ -323,7 +323,7 @@ public class DEImportService {
         reader.addElementHandler("/edx/pars/famy", new FamilyElementHandler(context));
         reader.addElementHandler("/edx/pars/pg", new PartyGroupElementHandler(context));
         reader.addElementHandler("/edx/pars/evnt", new EventElementHandler(context));
-        reader.addElementHandler("/edx/inst/inst", new InstitutionElementHandler(context));
+        reader.addElementHandler("/edx/inss/inst", new InstitutionElementHandler(context));
         reader.addElementHandler("/edx/fs/s", new SectionElementHandler(context));
         reader.addElementHandler("/edx/fs/s/fi", new FundInfoElementHandler(context));
         reader.addElementHandler("/edx/fs/s/pcks/pck", new SectionPacketElementHandler(context));

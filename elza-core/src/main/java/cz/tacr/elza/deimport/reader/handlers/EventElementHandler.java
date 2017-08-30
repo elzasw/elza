@@ -15,7 +15,7 @@ public class EventElementHandler extends AbstractPartyElementHandler<Event> {
 
 	@Override
 	protected void handlePartyElement(JAXBElement<Event> element) {
-		ItemProcessor processor = ItemProcessorFactory.createFamilyProcessor(context);
+		ItemProcessor processor = ItemProcessorFactory.createEventProcessor(context);
 		processor.process(element);
 	}
 

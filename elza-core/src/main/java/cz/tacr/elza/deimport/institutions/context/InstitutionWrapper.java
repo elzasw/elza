@@ -40,6 +40,7 @@ public class InstitutionWrapper implements EntityWrapper {
 
     @Override
     public void beforeEntityPersist(Session session) {
-        entity.setParty(partyInfo.getEntityRef(session, ParParty.class));
+    	ParParty partyRef = partyInfo.getEntityRef(session, ParParty.class);
+        entity.setParty(partyRef);
     }
 }
