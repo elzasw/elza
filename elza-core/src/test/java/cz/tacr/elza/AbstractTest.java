@@ -1,6 +1,12 @@
 package cz.tacr.elza;
 
+import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.other.HelperTestService;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.DataTypeRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.NodeRepository;
 
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -24,6 +30,18 @@ public abstract class AbstractTest {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractTest.class);
 
+    @Autowired
+    protected ClientFactoryVO clientFactoryVO;
+    @Autowired
+	protected DataRepository dataRepository;
+    @Autowired
+    protected DataTypeRepository dataTypeRepository;    
+    @Autowired
+    protected DescItemRepository descItemRepository;
+    @Autowired
+    protected ItemTypeRepository itemTypeRepository;
+    @Autowired
+    protected NodeRepository nodeRepository;
     /*
     @Autowired
     protected PackageRepository packageRepository;

@@ -84,8 +84,8 @@ import cz.tacr.elza.service.ArrMoveLevelService;
 /**
  * Test ArrangementController
  */
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes=ElzaCoreTest.class)
+//@RunWith(SpringRunner.class)
+//@ContextConfiguration(classes=ElzaCoreTest.class)
 public class ArrangementControllerTest extends AbstractControllerTest {
 
     public static final Logger logger = LoggerFactory.getLogger(ArrangementControllerTest.class);
@@ -104,19 +104,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     // maximální počet položek pro načtení
     public static final int MAX_SIZE = 999;
     
-    @Autowired
-    protected ClientFactoryVO clientFactoryVO;
-    @Autowired
-    private DataRepository dataRepository;
-    @Autowired
-    protected DataTypeRepository dataTypeRepository;    
-    @Autowired
-    protected DescItemRepository descItemRepository;
-    @Autowired
-    protected ItemTypeRepository itemTypeRepository;
-    @Autowired
-    protected NodeRepository nodeRepository;
-
     @Test
     public void arrangementTest() throws IOException {
 
