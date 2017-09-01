@@ -1,5 +1,5 @@
 import React from 'react';
-import {Autocomplete, Icon, i18n, AbstractReactComponent} from 'components/index.jsx';
+import {Autocomplete, Icon, i18n, AbstractReactComponent} from 'components/shared';
 import {getSetFromIdsList} from "stores/app/utils.jsx";
 import classNames from 'classnames';
 
@@ -151,7 +151,9 @@ class DescItemTypeSpec extends AbstractReactComponent {
             }
         }
     };
-
+    focus(){
+        this.refs.autocomplete.focus();
+    }
     /**
      * Načtení aktuálně vybrané hodnoty - jako desc item type - složení ref a info type.
      * @param descItem hodnota
@@ -223,6 +225,7 @@ class DescItemTypeSpec extends AbstractReactComponent {
 
         return <Autocomplete
             key="spec"
+            ref="autocomplete"
             {...descItemSpecProps}
             className={cls}
             value={value}

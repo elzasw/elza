@@ -1,5 +1,5 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import {i18n} from 'components/index.jsx';
+import {i18n} from 'components/shared';
 import {indexById} from 'stores/app/utils.jsx'
 
 
@@ -130,7 +130,6 @@ export default function subNodeRegister(state = initialState, action = {}) {
         }
         case types.FUND_SUB_NODE_REGISTER_VALUE_SAVING:{
             const register = state.data[action.index];
-            console.log("aaa", "sav", register);
             if (register) {
                 return {
                     ...state,
@@ -178,7 +177,6 @@ export default function subNodeRegister(state = initialState, action = {}) {
         // ----- Server operation ------
         case types.FUND_SUB_NODE_REGISTER_VALUE_RESPONSE_CREATE:{
             const register = state.data[action.index];
-            console.log("aaaa", register);
             if (register && !register.id && register.saving) {
                 return {
                     ...state,
@@ -239,9 +237,7 @@ export default function subNodeRegister(state = initialState, action = {}) {
         }
         case types.FUND_SUB_NODE_REGISTER_VALUE_RESPONSE_DELETE:{
             const register = state.data[action.index];
-            console.log("FUND_SUB_NODE_REGISTER_VALUE_RESPONSE_DELETE", register, action.data);
             if (register && register.saving && register.id) {
-                console.log("FUND_SUB_NODE_REGISTER_VALUE_RESPONSE_DELETE2");
                 return {
                     ...state,
                     node: action.data.node,
@@ -272,4 +268,3 @@ export default function subNodeRegister(state = initialState, action = {}) {
             return state
     }
 }
-

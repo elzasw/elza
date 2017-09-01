@@ -6,9 +6,9 @@
  * @param onShowHide handler: co se má stát po kliknutí
  * @param alwaysRender bolean default false zda se ma vzdycky vyrenderovat objekt
  * @param openedIcon String default 'chevron-up' ikona pro rozbaleni
- * @param closedIcon String default 'chevron-down' ikona pro sbaleni 
+ * @param closedIcon String default 'chevron-down' ikona pro sbaleni
  *
- * v kontextu je přístupný isParentOpened boolen - this.context.isParentOpened.
+ * v kontextu je přístupný isParentOpened boolean - this.context.isParentOpened.
  * příklad použití
  * <ToggleContent className="fa-file-toggle-container" alwaysRender opened={false} closedIcon="chevron-right" openedIcon="chevron-left">...</ToggleContent>
  *
@@ -16,12 +16,13 @@
 
 import React from 'react';
 
-var classNames = require('classnames');
+import classNames from 'classnames'
 
-import {Icon, i18n, NoFocusButton} from 'components/index.jsx';
-import {ButtonToolbar, ButtonGroup} from 'react-bootstrap';
+import i18n from "../../i18n";
+import NoFocusButton from "../button/NoFocusButton";
+import Icon from "../icon/Icon";
 
-var ToggleContent = class ToggleContent extends React.Component {
+class ToggleContent extends React.Component {
     constructor(props) {
         super(props);
 
@@ -31,8 +32,12 @@ var ToggleContent = class ToggleContent extends React.Component {
             openedIcon: this.props.openedIcon || "fa-chevron-up",
             closedIcon: this.props.closedIcon || "fa-chevron-down",
             alwaysRender: typeof this.props.alwaysRender == 'undefined' ? false : this.props.alwaysRender
-        };        
+        };
     }
+
+    static childContextTypes = {
+        isParentOpened: React.PropTypes.bool
+    };
 
     getChildContext() {
         return { isParentOpened: this.state.opened };
@@ -50,19 +55,19 @@ var ToggleContent = class ToggleContent extends React.Component {
     }
 
     render() {
-        var toggleGlyph = this.state.opened ? this.state.openedIcon : this.state.closedIcon;
+        const toggleGlyph = this.state.opened ? this.state.openedIcon : this.state.closedIcon;
 
-        var cls = classNames({
+        const cls = classNames({
             "toggle-content-container": true,
             opened: this.state.opened,
             closed: !this.state.opened,
             [this.props.className]: true
         });
 
-        var title = this.state.opened ? i18n('toggle.action.minimize') : i18n('toggle.action.restore');
+        const title = this.state.opened ? i18n('toggle.action.minimize') : i18n('toggle.action.restore');
 
-        var render = this.state.opened || this.state.alwaysRender;
-        var children = null;
+        const render = this.state.opened || this.state.alwaysRender;
+        let children = null;
         if (render) {
             children = React.Children.map(this.props.children, child => {
                 return React.cloneElement(child, {opened: this.state.opened});
@@ -82,8 +87,4 @@ var ToggleContent = class ToggleContent extends React.Component {
     }
 }
 
-ToggleContent.childContextTypes = {
-    isParentOpened: React.PropTypes.bool
-}
-
-module.exports = ToggleContent;
+export default ToggleContent;

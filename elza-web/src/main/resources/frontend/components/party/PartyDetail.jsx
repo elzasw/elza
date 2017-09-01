@@ -1,22 +1,20 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form'
+import PartyListItem from './PartyListItem';
+import PartyDetailIdentifiers from './PartyDetailIdentifiers';
+import PartyDetailNames from './PartyDetailNames';
+import PartyDetailRelations from './PartyDetailRelations';
+import PartyDetailRelationClass from './PartyDetailRelationClass';
+import PartyField from './PartyField';
 import {
-    PartyDetailCreators,
-    PartyIdentifierForm,
-    PartyDetailIdentifiers,
-    PartyDetailNames,
-    PartyDetailRelations,
-    PartyDetailRelationClass,
-    PartyNameForm,
-    PartyField,
     AbstractReactComponent,
     Search,
     i18n,
     FormInput,
     Icon,
     CollapsablePanel
-} from 'components/index.jsx';
+} from 'components/shared';
 import {Form, Button} from 'react-bootstrap';
 import {AppActions} from 'stores/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
@@ -24,8 +22,8 @@ import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {partyUpdate} from 'actions/party/party.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
-import {partyAdd, findPartyFetchIfNeeded, partyDetailFetchIfNeeded, PARTY_TYPE_CODES} from 'actions/party/party.jsx'
-import {Utils} from 'components/index.jsx';
+import {partyAdd, findPartyFetchIfNeeded, partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
+import {Utils} from 'components/shared';
 import {objectById, indexById} from 'stores/app/utils.jsx';
 import {setInputFocus, dateTimeToString} from 'components/Utils.jsx'
 import {Shortcuts} from 'react-shortcuts';
@@ -35,8 +33,9 @@ import * as perms from 'actions/user/Permission.jsx';
 import {initForm} from "actions/form/inlineForm.jsx"
 import {getMapFromList} from 'stores/app/utils.jsx'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
-import {PartyListItem} from 'components/index.jsx';
-
+import {PARTY_TYPE_CODES} from 'constants.jsx'
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './PartyDetailKeymap.jsx';
 import './PartyDetail.less';
 
 
@@ -68,6 +67,14 @@ const FIELDS_BY_PARTY_TYPE_CODE = {
  * Komponenta detailu osoby
  */
 class PartyDetail extends AbstractReactComponent {
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
 
     state = {
         activeIndexes: {},

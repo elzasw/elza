@@ -4,33 +4,40 @@ import ReactDOM from 'react-dom';
 import classNames from 'classnames';
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Loading} from 'components/index.jsx';
-import {Icon, RibbonGroup,Ribbon, ModalDialog, NodeTabs, ArrPanel,
-        SearchWithGoto, AddRegistryForm, ImportForm,
-        ListBox, Autocomplete, ExtImportForm, RegistryDetail} from 'components';
+import {AbstractReactComponent, RibbonGroup, ModalDialog, i18n, Loading, NodeTabs, Icon, Utils} from 'components/shared';
+import Ribbon from 'components/page/Ribbon'
+import ImportForm from 'components/form/ImportForm'
+import ExtImportForm from 'components/form/ExtImportForm'
+import RegistryDetail from 'components/registry/RegistryDetail'
+import RegistryList from 'components/registry/RegistryList'
 import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 import {Button} from 'react-bootstrap';
-import {PageLayout} from 'pages/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
 import {registryMoveStart, registryMove, registryMoveCancel, registryDelete, registryDetailFetchIfNeeded, registryAdd, registryListInvalidate} from 'actions/registry/registry.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
 import {Shortcuts} from 'react-shortcuts';
-import {Utils, RegistryList} from 'components/index.jsx';
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {regExtSystemListFetchIfNeeded} from 'actions/registry/regExtSystemList';
-
+import {PropTypes} from 'prop-types';
 import './RegistryPage.less';
-import {SelectPage} from 'pages'
-
+import PageLayout from "../shared/layout/PageLayout";
+import defaultKeymap from './RegistryPageKeymap.jsx';
 /**
  * Stránka rejstříků.
  * Zobrazuje stranku s vyberem rejstriku a jeho detailem/editaci
  */
 class RegistryPage extends AbstractReactComponent {
-
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
     static PropTypes = {
         splitter: React.PropTypes.object.isRequired,
         registryRegion: React.PropTypes.object.isRequired,
@@ -279,10 +286,10 @@ class RegistryPage extends AbstractReactComponent {
 
 
         const centerPanel = <div className='registry-page'>
-            <RegistryDetail />
+            <RegistryDetail goToPartyPerson={this.props.goToPartyPerson}/>
         </div>;
 
-        return <Shortcuts name='Registry' handler={this.handleShortcuts} global stopPropagation={false}>
+        return <Shortcuts name='Registry' handler={this.handleShortcuts} global stopPropagation={false} className="main-shortcuts2">
             <PageLayout
                 splitter={splitter}
                 key='registryPage'

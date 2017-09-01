@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import {WebApi} from 'actions/index.jsx';
-import {TooltipTrigger, Icon, i18n, AbstractReactComponent, Autocomplete, ExtImportForm, PartyListItem} from 'components/index.jsx';
+import {TooltipTrigger, Icon, i18n, AbstractReactComponent, Autocomplete} from 'components/shared';
 import {connect} from 'react-redux'
 import {MenuItem, DropdownButton, Button} from 'react-bootstrap';
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
@@ -10,14 +10,14 @@ import * as perms from 'actions/user/Permission.jsx';
 import {partyDetailFetchIfNeeded, partyAdd, RELATION_CLASS_CODES, partyListFilter} from 'actions/party/party.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {indexById} from 'stores/app/utils.jsx'
-import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from 'constants'
+import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from 'constants.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {debounce} from 'shared/utils'
 import classNames from 'classnames';
 
-import {PartySelectPage} from 'pages'
-
 import './PartyField.less'
+import PartyListItem from "./PartyListItem";
+import ExtImportForm from "../form/ExtImportForm";
 
 const AUTOCOMPLETE_PARTY_LIST_SIZE = DEFAULT_LIST_SIZE;
 
@@ -26,6 +26,7 @@ class PartyField extends AbstractReactComponent {
     static defaultProps = {
         detail: false,
         footer: true,
+        undefined: false,
         footerButtons: true,
         partyTypeId: null
     };
@@ -34,6 +35,7 @@ class PartyField extends AbstractReactComponent {
         detail: React.PropTypes.bool.isRequired,
         footer: React.PropTypes.bool,
         footerButtons: React.PropTypes.bool,
+        undefined: React.PropTypes.bool,
         value: React.PropTypes.object,
         onChange: React.PropTypes.func.isRequired,
         onDetail: React.PropTypes.func,
@@ -151,7 +153,7 @@ class PartyField extends AbstractReactComponent {
     };
 
     render() {
-        const {userDetail, value, detail, footer, ...otherProps} = this.props;
+        const {userDetail, value, detail, footer, undefined, ...otherProps} = this.props;
 
         let footerRender;
         if (footer) {
@@ -166,6 +168,11 @@ class PartyField extends AbstractReactComponent {
             // }
         }
 
+        let tmpVal = '';
+        if (undefined) {
+            tmpVal = i18n('subNodeForm.descItemType.notIdentified');
+        }
+
         return <Autocomplete
             ref='autocomplete'
             className="autocomplete-party"
@@ -174,7 +181,7 @@ class PartyField extends AbstractReactComponent {
             value={value}
             items={this.state.partyList}
             getItemId={(item) => item ? item.id : null}
-            getItemName={(item) => item && item.record ? item.record.record : ''}
+            getItemName={(item) => item && item.record ? item.record.record : tmpVal}
             onSearchChange={this.handleSearchChange}
             renderItem={this.renderParty}
             actions={[actions]}

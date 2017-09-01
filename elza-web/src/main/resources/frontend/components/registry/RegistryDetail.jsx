@@ -1,3 +1,6 @@
+/**
+ * Komponenta detailu rejstříku
+ */
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
@@ -9,11 +12,9 @@ import {
     Icon,
     CollapsablePanel,
     NoFocusButton,
-    RegistryLabel,
     Loading,
-    RegistryDetailVariantRecords,
-    RegistryDetailCoordinates
-} from 'components/index.jsx';
+    Utils
+} from 'components/shared';
 import {Form, Button} from 'react-bootstrap';
 import {AppActions} from 'stores/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
@@ -22,7 +23,6 @@ import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {partyUpdate} from 'actions/party/party.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 import {registryDetailFetchIfNeeded, registryUpdate} from 'actions/registry/registry.jsx'
-import {Utils, EditRegistryForm} from 'components/index.jsx';
 import {objectById, indexById} from 'stores/app/utils.jsx';
 import {setInputFocus, dateTimeToString} from 'components/Utils.jsx'
 import {Shortcuts} from 'react-shortcuts';
@@ -35,20 +35,29 @@ import {setFocus} from 'actions/global/focus.jsx'
 
 import {routerNavigate} from 'actions/router.jsx'
 import {partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
-
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './RegistryDetailKeymap.jsx';
 import './RegistryDetail.less';
+import EditRegistryForm from "./EditRegistryForm";
+import RegistryDetailVariantRecords from "./RegistryDetailVariantRecords";
+import RegistryDetailCoordinates from "./RegistryDetailCoordinates";
 
 
-/**
- * Komponenta detailu rejstříku
- */
 class RegistryDetail extends AbstractReactComponent {
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+        this.fetchIfNeeded();
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
 
     state = {note:null}
 
     componentDidMount() {
         this.trySetFocus();
-        this.fetchIfNeeded();
     }
 
     componentWillReceiveProps(nextProps) {
@@ -56,8 +65,10 @@ class RegistryDetail extends AbstractReactComponent {
         this.trySetFocus(nextProps);
         const {registryDetail:{id, fetched, data}} = nextProps;
         if ((id !== this.props.registryDetail.id && fetched) || (!this.props.registryDetail.fetched && fetched)) {
-            if (this.props.registryDetail.data) {
+            if (data) {
                 this.setState({note: data.note});
+            } else {
+                this.setState({note: null});
             }
         }
     }
@@ -87,7 +98,11 @@ class RegistryDetail extends AbstractReactComponent {
 
     handleGoToParty = () => {
         this.dispatch(partyDetailFetchIfNeeded(this.props.registryDetail.data.partyId));
-        this.dispatch(routerNavigate('party'));
+        if(!this.props.goToPartyPerson){
+            this.dispatch(routerNavigate('party'));
+        } else {
+            this.props.goToPartyPerson();
+        }
     };
 
     handleShortcuts = (action)  => {
@@ -227,7 +242,7 @@ class RegistryDetail extends AbstractReactComponent {
         var hierarchyElement = this.createHierarchyElement(hierarchy,delimiter);
 
         return <div className='registry'>
-            <Shortcuts name='RegistryDetail' handler={this.handleShortcuts}>
+            <Shortcuts name='RegistryDetail' handler={this.handleShortcuts} global>
                 <div className="registry-detail">
                     <div className="registry-header">
                         <div className="header-icon">

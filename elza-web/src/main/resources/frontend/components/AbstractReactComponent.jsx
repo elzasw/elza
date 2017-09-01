@@ -1,10 +1,9 @@
-/**
- * Abstraktní předek pro všechny komponenty.
- */
-
 import React from 'react';
 import {propsEquals} from 'components/Utils.jsx'
 
+/**
+ * Abstraktní předek pro všechny komponenty.
+ */
 class AbstractReactComponent extends React.Component {
     constructor(props) {
         super(props);

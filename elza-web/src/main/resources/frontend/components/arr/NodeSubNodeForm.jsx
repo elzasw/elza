@@ -5,16 +5,15 @@
 require('./NodeSubNodeForm.less');
 
 import React from 'react';
+import SubNodeForm from "./SubNodeForm";
 import ReactDOM from 'react-dom';
-import {Icon, i18n, AbstractReactComponent, NoFocusButton, AddPacketForm, AddPartyForm, AddRegistryForm,
-    AddPartyEventForm, AddPartyGroupForm, AddPartyDynastyForm, AddPartyOtherForm} from 'components';
+import {Icon, i18n, AbstractReactComponent, NoFocusButton} from 'components/shared';
 import {connect} from 'react-redux'
 import {lockDescItemType, unlockDescItemType, unlockAllDescItemType,
     copyDescItemType, nocopyDescItemType} from 'actions/arr/nodeSetting.jsx'
 import {addNode,deleteNode} from '../../actions/arr/node.jsx'
 import {isFundRootId} from './ArrUtils.jsx'
 import * as perms from 'actions/user/Permission.jsx';
-import {SubNodeForm} from "components/index.jsx";
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {getOneSettings} from 'components/arr/ArrUtils.jsx';
 import ArrHistoryForm from 'components/arr/ArrHistoryForm.jsx'
@@ -22,10 +21,10 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {WebApi} from 'actions/index.jsx';
 import {getMapFromList} from 'stores/app/utils.jsx'
 import {indexById} from 'stores/app/utils.jsx'
-import {fundSelectSubNode} from 'actions/arr/nodes.jsx';
+import {fundSelectSubNode} from 'actions/arr/node.jsx';
 import {addToastrSuccess, addToastr} from 'components/shared/toastr/ToastrActions.jsx';
 
-const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
+class NodeSubNodeForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -301,4 +300,4 @@ NodeSubNodeForm.propTypes = {
     readMode: React.PropTypes.bool,
 }
 
-module.exports = connect(mapStateToProps, null, null, { withRef: true })(NodeSubNodeForm);
+export default connect(mapStateToProps, null, null, { withRef: true })(NodeSubNodeForm);

@@ -1,6 +1,9 @@
+/**
+ * Komponenta list rejstříků
+ */
 import React from 'react';
 import {connect} from 'react-redux'
-import {ListBox, AbstractReactComponent, SearchWithGoto, Autocomplete, i18n, ArrPanel, Loading, Icon, RegistryListItem, registryTypes} from 'components/index.jsx';
+import {ListBox, AbstractReactComponent, SearchWithGoto, Autocomplete, i18n, ArrPanel, Loading, Icon} from 'components/shared';
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
 import {indexById, objectById} from 'stores/app/utils.jsx'
 import {registryListFetchIfNeeded, registryListFilter, registryListInvalidate, registryDetailFetchIfNeeded, registryDetailInvalidate, DEFAULT_REGISTRY_LIST_MAX_SIZE, registrySetFolder} from 'actions/registry/registry.jsx'
@@ -12,10 +15,8 @@ import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 
 
 import './RegistryList.less';
+import RegistryListItem from "./RegistryListItem";
 
-/**
- * Komponenta list rejstříků
- */
 class RegistryList extends AbstractReactComponent {
 
     static PropTypes = {
@@ -78,6 +79,10 @@ class RegistryList extends AbstractReactComponent {
         this.dispatch(registryListFilter({...this.props.registryList.filter, registryTypeId: item ? item.id : null}));
     };
 
+    filterRegistryTypeClear = () => {
+        this.handleFilterRegistryType({name:this.registryTypeDefaultValue})
+    }
+
     handleFilterTextClear = () => {
         this.dispatch(registryListFilter({...this.props.registryList.filter, text: null}));
     };
@@ -132,7 +137,30 @@ class RegistryList extends AbstractReactComponent {
 
     renderListItem = (item) => <RegistryListItem {...item}
                                                  onClick={this.handleRegistryDetail.bind(this, item)}
-                                                 onDoubleClick={this.handleRegistrySetParent.bind(this,item)} />;
+                                                 onDoubleClick={this.handleRegistrySetParent.bind(this,item)} />
+
+    /**
+     * Vrátí pole akcí pro registry type filtr
+     * @return {array} pole akcí
+     */
+    getRegistryTypeActions = () => {
+        const {registryList:{filter}} = this.props;
+        const actions = [];
+        if (filter.registryTypeId !== null && typeof filter.registryTypeId !== "undefined") {
+            actions.push(
+                <div
+                onClick={()=>this.filterRegistryTypeClear()}
+                className={'btn btn-default detail'}>
+                    <Icon glyph={'fa-times'}/>
+                </div>
+            );
+        }
+        return actions;
+    }
+    /**
+     * Výchozí hodnota/placeholder pro registry type filtr
+     */
+    registryTypeDefaultValue = i18n('registry.all');
 
     render() {
         const {registryDetail, registryList, maxSize, registryTypes} = this.props;
@@ -211,17 +239,22 @@ class RegistryList extends AbstractReactComponent {
 
         }
 
+        let regTypesWithAll = [...registryTypes];
+        regTypesWithAll.unshift({name:this.registryTypeDefaultValue});
+
+
         return <div className="registry-list">
             <div className="filter">
                 {registryTypes ? <Autocomplete
-                        inputProps={ {placeholder: filter.registryTypeId === null ? i18n('registry.all') : ""} }
-                        items={registryTypes}
+                        inputProps={ {placeholder: !filter.registryTypeId ? this.registryTypeDefaultValue : ""} }
+                        items={regTypesWithAll}
                         disabled={registryList.filter.parents.length ? true : false}
                         tree
                         alwaysExpanded
                         allowSelectItem={(id, item) => true}
-                        value={filter.registryTypeId === null ? null : getTreeItemById(filter.registryTypeId, registryTypes)}
+                        value={!filter.registryTypeId ? this.registryTypeDefaultValue : getTreeItemById(filter.registryTypeId, registryTypes)}
                         onChange={this.handleFilterRegistryType}
+                        actions={this.getRegistryTypeActions()}
                     /> : <Loading />}
                 <SearchWithGoto
                     onFulltextSearch={this.handleFilterText}

@@ -1,6 +1,6 @@
 import React from "react";
 import {WebApi} from "actions/index.jsx";
-import {AbstractReactComponent, Autocomplete} from "components/index.jsx";
+import {AbstractReactComponent, Autocomplete} from 'components/shared';
 import {connect} from "react-redux";
 
 // import "./FundField.less"
@@ -24,11 +24,16 @@ class FundField extends AbstractReactComponent {
     };
 
     handleSearchChange = (text) => {
+        const {excludedId} = this.props;
         text = text == "" ? null : text;
-
         WebApi.findFunds(text).then(json => {
+            const newFunds = json.funds.filter((i)=>{
+                if (i.id !== excludedId) {
+                    return i;
+                }
+            });
             this.setState({
-                dataList: json.funds
+                dataList: newFunds
             })
         })
     };

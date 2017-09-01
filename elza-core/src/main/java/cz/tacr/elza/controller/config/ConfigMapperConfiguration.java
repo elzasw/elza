@@ -7,10 +7,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import cz.tacr.elza.controller.vo.ArrDigitalRepositorySimpleVO;
-import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskSimpleVO;
-import cz.tacr.elza.controller.vo.RegExternalSystemSimpleVO;
-import cz.tacr.elza.packageimport.xml.SettingGridView;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +24,9 @@ import cz.tacr.elza.controller.vo.ArrChangeVO;
 import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
 import cz.tacr.elza.controller.vo.ArrDaoFileVO;
 import cz.tacr.elza.controller.vo.ArrDaoVO;
+import cz.tacr.elza.controller.vo.ArrDigitalRepositorySimpleVO;
 import cz.tacr.elza.controller.vo.ArrDigitalRepositoryVO;
+import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskSimpleVO;
 import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskVO;
 import cz.tacr.elza.controller.vo.ArrFileVO;
 import cz.tacr.elza.controller.vo.ArrFundBaseVO;
@@ -65,6 +63,7 @@ import cz.tacr.elza.controller.vo.ParRelationTypeVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.ParUnitdateVO;
 import cz.tacr.elza.controller.vo.RegCoordinatesVO;
+import cz.tacr.elza.controller.vo.RegExternalSystemSimpleVO;
 import cz.tacr.elza.controller.vo.RegExternalSystemVO;
 import cz.tacr.elza.controller.vo.RegRecordSimple;
 import cz.tacr.elza.controller.vo.RegRecordVO;
@@ -86,7 +85,6 @@ import cz.tacr.elza.controller.vo.UserPermissionInfoVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
-import cz.tacr.elza.controller.vo.XmlImportConfigVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.DescItemSpecLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
@@ -187,6 +185,7 @@ import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
+import cz.tacr.elza.packageimport.xml.SettingGridView;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.FundRepository;
@@ -197,7 +196,6 @@ import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.security.UserPermission;
 import cz.tacr.elza.service.RuleService;
-import cz.tacr.elza.xmlimport.v1.utils.XmlImportConfig;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
@@ -309,11 +307,13 @@ public class ConfigMapperConfiguration {
             public void mapAtoB(final ArrItemCoordinates coordinates,
                                 final ArrItemCoordinatesVO coordinatesVO,
                                 final MappingContext context) {
-                String type = coordinates.getValue().getGeometryType().toUpperCase();
-                if (type.equals("POINT")) {
-                    coordinatesVO.setValue(new WKTWriter().writeFormatted(coordinates.getValue()));
-                } else {
-                    coordinatesVO.setValue(type + "( " + coordinates.getValue().getCoordinates().length + " )");
+                if (coordinates.getValue() != null) {
+                    String type = coordinates.getValue().getGeometryType().toUpperCase();
+                    if (type.equals("POINT")) {
+                        coordinatesVO.setValue(new WKTWriter().writeFormatted(coordinates.getValue()));
+                    } else {
+                        coordinatesVO.setValue(type + "( " + coordinates.getValue().getCoordinates().length + " )");
+                    }
                 }
             }
 
@@ -342,8 +342,10 @@ public class ConfigMapperConfiguration {
                     public void mapAtoB(final ArrItemUnitdate unitdate,
                                         final ArrItemUnitdateVO unitdateVO,
                                         final MappingContext context) {
-                        unitdateVO.setCalendarTypeId(unitdate.getCalendarType().getCalendarTypeId());
-                        unitdateVO.setValue(UnitDateConvertor.convertToString(unitdate));
+                        if (unitdate.getCalendarType() != null) {
+                            unitdateVO.setCalendarTypeId(unitdate.getCalendarType().getCalendarTypeId());
+                            unitdateVO.setValue(UnitDateConvertor.convertToString(unitdate));
+                        }
                     }
 
                     @Override
@@ -363,7 +365,9 @@ public class ConfigMapperConfiguration {
                                         final ArrItemPacketVO descItemPacketVO,
                                         final MappingContext context) {
                         super.mapAtoB(descItemPacketRef, descItemPacketVO, context);
-                        descItemPacketVO.setValue(descItemPacketRef.getPacket().getPacketId());
+                        if (descItemPacketRef.getPacket() != null) {
+                            descItemPacketVO.setValue(descItemPacketRef.getPacket().getPacketId());
+                        }
                     }
 
                     @Override
@@ -371,7 +375,7 @@ public class ConfigMapperConfiguration {
                                         final ArrItemPacketRef descItemPacketRef,
                                         final MappingContext context) {
                         super.mapBtoA(descItemPacketVO, descItemPacketRef, context);
-                        descItemPacketRef.setPacket(packetRepository.findOne(descItemPacketVO.getValue()));
+                        descItemPacketRef.setPacket(descItemPacketVO.getValue() == null ? null : packetRepository.findOne(descItemPacketVO.getValue()));
                     }
                 }).byDefault().register();
         mapperFactory.classMap(ArrItemFileRef.class, ArrItemFileRefVO.class).customize(
@@ -381,7 +385,9 @@ public class ConfigMapperConfiguration {
                                         final ArrItemFileRefVO arrItemFileRefVO,
                                         final MappingContext context) {
                         super.mapAtoB(arrItemFileRef, arrItemFileRefVO, context);
-                        arrItemFileRefVO.setValue(arrItemFileRef.getFile().getFileId());
+                        if (arrItemFileRef.getFile() != null) {
+                            arrItemFileRefVO.setValue(arrItemFileRef.getFile().getFileId());
+                        }
                     }
 
                     @Override
@@ -399,7 +405,7 @@ public class ConfigMapperConfiguration {
                                         final ArrItemPartyRefVO patryRefVO,
                                         final MappingContext context) {
                         super.mapAtoB(partyRef, patryRefVO, context);
-                        patryRefVO.setValue(partyRef.getParty().getPartyId());
+                        patryRefVO.setValue(partyRef.getParty() == null ? null : partyRef.getParty().getPartyId());
                     }
 
                     @Override
@@ -407,7 +413,7 @@ public class ConfigMapperConfiguration {
                                         final ArrItemPartyRef partyRef,
                                         final MappingContext context) {
                         super.mapBtoA(partyRefVO, partyRef, context);
-                        partyRef.setParty(partyRepository.findOne(partyRefVO.getValue()));
+                        partyRef.setParty(partyRefVO.getValue() == null ? null : partyRepository.findOne(partyRefVO.getValue()));
                     }
                 }).byDefault().register();
         mapperFactory.classMap(ArrItemRecordRef.class, ArrItemRecordRefVO.class).customize(
@@ -417,7 +423,7 @@ public class ConfigMapperConfiguration {
                                         final ArrItemRecordRefVO recordRefVO,
                                         final MappingContext context) {
                         super.mapAtoB(recordRef, recordRefVO, context);
-                        recordRefVO.setValue(recordRef.getRecord().getRecordId());
+                        recordRefVO.setValue(recordRef == null || recordRef.getRecord() == null ? null : recordRef.getRecord().getRecordId());
                     }
 
                     @Override
@@ -425,7 +431,7 @@ public class ConfigMapperConfiguration {
                                         final ArrItemRecordRef recordRef,
                                         final MappingContext context) {
                         super.mapBtoA(recordRefVO, recordRef, context);
-                        recordRef.setRecord(recordRepository.findOne(recordRefVO.getValue()));
+                        recordRef.setRecord(recordRefVO.getValue() == null ? null : recordRepository.findOne(recordRefVO.getValue()));
                     }
                 }).byDefault().register();
         mapperFactory.classMap(ArrItemString.class, ArrItemStringVO.class).byDefault().register();
@@ -467,8 +473,8 @@ public class ConfigMapperConfiguration {
                     public void mapAtoB(final BulkActionConfig bulkActionConfig,
                                         final BulkActionVO bulkActionVO,
                                         final MappingContext context) {
-                        bulkActionVO.setName((String) bulkActionConfig.getString("name"));
-                        bulkActionVO.setDescription((String) bulkActionConfig.getString("description"));
+                        bulkActionVO.setName(bulkActionConfig.getString("name"));
+                        bulkActionVO.setDescription(bulkActionConfig.getString("description"));
                     }
                 }
         ).byDefault().register();
@@ -805,6 +811,7 @@ public class ConfigMapperConfiguration {
                         itemTypeLiteVO.setRep(rulDescItemTypeExt.getRepeatable() ? 1 : 0);
                         itemTypeLiteVO.setCal(rulDescItemTypeExt.getCalculable() ? 1 : 0);
                         itemTypeLiteVO.setCalSt(rulDescItemTypeExt.getCalculableState() ? 1 : 0);
+                        itemTypeLiteVO.setInd(rulDescItemTypeExt.getIndefinable() ? 1 : 0);
                     }
                 })
                 .register();
@@ -965,8 +972,6 @@ public class ConfigMapperConfiguration {
                         }
                     }
                 }).exclude("value").byDefault().register();
-
-        mapperFactory.classMap(XmlImportConfig.class, XmlImportConfigVO.class).byDefault().register();
 
         mapperFactory.classMap(UserDetail.class, UserInfoVO.class)
                 .byDefault()

@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
+import cz.tacr.elza.core.data.CalendarType;
+
 /**
  * Převody datumu na sekundy a naopak.
  *
@@ -18,10 +20,6 @@ public class CalendarConverter {
 
     private static final ICalendarConverter gcc = new GregorianCalendarConverter();
     private static final ICalendarConverter jcc = new JulianCalendarConverter();
-
-    public enum CalendarType {
-        JULIAN, GREGORIAN
-    }
 
     /**
      * Převede datum na počet sekund (normalizovaně).
@@ -58,14 +56,14 @@ public class CalendarConverter {
     private static ICalendarConverter getCalendarConverter(final CalendarType type) {
         ICalendarConverter converter;
         switch (type) {
-            case GREGORIAN:
-                converter = gcc;
-                break;
-            case JULIAN:
-                converter = jcc;
-                break;
-            default:
-                throw new IllegalStateException("Neimplementovaný typ kalendáře: " + type);
+        case GREGORIAN:
+            converter = gcc;
+            break;
+        case JULIAN:
+            converter = jcc;
+            break;
+        default:
+            throw new IllegalStateException("Neimplementovaný typ kalendáře: " + type);
         }
         return converter;
     }

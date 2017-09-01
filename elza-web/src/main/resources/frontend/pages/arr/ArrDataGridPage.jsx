@@ -2,8 +2,8 @@
  * Stránka archivních pomůcek.
  */
 
-require('./ArrPage.less');
-require('./ArrDataGridPage.less');
+import './ArrPage.less';
+import './ArrDataGridPage.less';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -11,27 +11,25 @@ import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {FundSettingsForm, Tabs, Icon, FundDataGrid, Ribbon, i18n, ArrFundPanel} from 'components/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 
 import ArrParentPage from "./ArrParentPage.jsx";
-
+import {Tabs, Icon, i18n, RibbonGroup, AbstractReactComponent, ListBox2, LazyListBox, Loading, Utils} from 'components/shared';
 import {
+    FundDataGrid,
+    Ribbon,
+    FundSettingsForm,
+    ArrFundPanel,
     BulkActionsDialog,
-    RibbonGroup,
-    AbstractReactComponent,
     NodeTabs,
-    ListBox2,
-    LazyListBox,
     VisiblePolicyForm,
-    Loading,
     FundPackets,
     FundFiles,
     FundTreeMain
 } from 'components/index.jsx';
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
-import {PageLayout} from 'pages/index.jsx';
+import PageLayout from "../shared/layout/PageLayout";
 import {WebApi} from 'actions/index.jsx';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {showRegisterJp, fundsFetchIfNeeded} from 'actions/arr/fund.jsx'
@@ -40,7 +38,6 @@ import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes.jsx'
 import {developerNodeScenariosRequest} from 'actions/global/developer.jsx'
-import {Utils} from 'components/index.jsx';
 import {isFundRootId, getSettings, setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {setFocus} from 'actions/global/focus.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
@@ -104,9 +101,9 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
         return userDetail.hasRdPage(activeFund ? activeFund.id : null);
     }
 
-    handleShortcuts(action) {
+    handleShortcuts(action,e) {
         console.log("#handleShortcuts ArrDataGridPage", '[' + action + ']', this);
-        super.handleShortcuts(action);
+        super.handleShortcuts(action,e);
     }
 
     renderCenterPanel(readMode, closed) {
@@ -167,4 +164,4 @@ ArrDataGridPage.propTypes = {
     ruleSet: React.PropTypes.object.isRequired,
 }
 
-module.exports = connect(mapStateToProps)(ArrDataGridPage);
+export default connect(mapStateToProps)(ArrDataGridPage);

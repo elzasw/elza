@@ -13,6 +13,7 @@ import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.model.Packet;
+import org.apache.commons.lang.BooleanUtils;
 
 /**
  * Factory method for the base Drools model objects.
@@ -33,7 +34,7 @@ public class ModelFactory {
         item.setType(descItem.getItemType().getCode());
         item.setSpecCode(descItem.getItemSpec() == null ? null : descItem.getItemSpec().getCode());
         item.setDataType(descItem.getItemType().getDataType().getCode());
-
+        item.setUndefined(BooleanUtils.isTrue(descItem.getUndefined()));
         return item;
     }
 
@@ -73,13 +74,15 @@ public class ModelFactory {
             DescItem voDescItem = createDescItem(descItem);
             result.add(voDescItem);
 
-            if (descItemTypesForPackets.contains(descItem.getItemType())) {
-                ArrItemPacketRef packetRef = lastVersion ? (ArrItemPacketRef) descItem.getItem() : (ArrItemPacketRef) descItemFactory.getDescItem(descItem).getItem();
-                ArrPacket packet = packetRef.getPacket();
-                voDescItem.setPacket(createPacket(packet));
-            } else if (descItemTypesForIntegers.contains(descItem.getItemType())) {
-                ArrItemInt integer = lastVersion ? (ArrItemInt) descItem.getItem() : (ArrItemInt) descItemFactory.getDescItem(descItem).getItem();
-                voDescItem.setInteger(integer.getValue());
+            if (!voDescItem.isUndefined()) {
+                if (descItemTypesForPackets.contains(descItem.getItemType())) {
+                    ArrItemPacketRef packetRef = lastVersion ? (ArrItemPacketRef) descItem.getItem() : (ArrItemPacketRef) descItemFactory.getDescItem(descItem).getItem();
+                    ArrPacket packet = packetRef.getPacket();
+                    voDescItem.setPacket(createPacket(packet));
+                } else if (descItemTypesForIntegers.contains(descItem.getItemType())) {
+                    ArrItemInt integer = lastVersion ? (ArrItemInt) descItem.getItem() : (ArrItemInt) descItemFactory.getDescItem(descItem).getItem();
+                    voDescItem.setInteger(integer.getValue());
+                }
             }
         }
 

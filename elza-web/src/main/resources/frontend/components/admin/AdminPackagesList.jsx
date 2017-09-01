@@ -1,7 +1,7 @@
 import React from 'react';
 import {connect} from 'react-redux'
 import {Table, Button, ButtonToolbar} from 'react-bootstrap';
-import {AbstractReactComponent, i18n} from 'components/index.jsx';
+import {AbstractReactComponent, i18n} from 'components/shared';
 
 import {getPackagesFetchIfNeeded, deletePackage} from 'actions/admin/packages.jsx';
 import {downloadFile} from "../../actions/global/download";

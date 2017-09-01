@@ -1,15 +1,16 @@
+/**
+ * Render Modálního dialogu ze store
+ */
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {ModalDialogWrapper, AbstractReactComponent} from 'components/index.jsx';
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {propsEquals} from 'components/Utils.jsx'
 
 import './ModalDialog.less'
+import AbstractReactComponent from "../../AbstractReactComponent";
+import ModalDialogWrapper from "./ModalDialogWrapper";
 
-/**
- * Render Modálního dialogu ze store
- */
 class ModalDialog extends AbstractReactComponent {
 
     /**
@@ -21,9 +22,9 @@ class ModalDialog extends AbstractReactComponent {
      */
     handleClose = (closeType) => {
         // console.log("_closeType", closeType);
+        const {items} = this.props;
         this.dispatch(modalDialogHide());
 
-        const {items} = this.props;
         items.length > 0 && items[0].onClose && items[0].onClose(closeType)
     };
 

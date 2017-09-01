@@ -20,9 +20,20 @@ import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.controller.vo.CopyNodesParams;
+import cz.tacr.elza.controller.vo.CopyNodesValidate;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.repository.FundFileRepository;
+import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.PacketRepository;
+import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.importnodes.ImportFromFund;
+import cz.tacr.elza.service.importnodes.ImportNodesFromSource;
+import cz.tacr.elza.service.importnodes.vo.ConflictResolve;
+import cz.tacr.elza.service.importnodes.vo.ImportParams;
+import cz.tacr.elza.service.importnodes.vo.ValidateResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
@@ -276,6 +287,21 @@ public class ArrangementController {
 
     @Autowired
     private ExternalSystemService externalSystemService;
+
+    @Autowired
+    private ScopeRepository scopeRepository;
+
+    @Autowired
+    private FundFileRepository fundFileRepository;
+
+    @Autowired
+    private PacketRepository packetRepository;
+
+    @Autowired
+    private LevelRepository levelRepository;
+
+    @Autowired
+    private ImportNodesFromSource importNodesFromSource;
 
     /**
      * Seznam typů obalů.
@@ -830,6 +856,129 @@ public class ArrangementController {
     }
 
     /**
+     * Nastavení atributu na "Nezjištěno".
+     *
+     * @param fundVersionId    id archivního souboru
+     * @param nodeId           id JP
+     * @param nodeVersion      verze JP
+     * @param descItemTypeId   identfikátor typu hodnoty atributu
+     * @param descItemSpecId   identfikátor specifikace hodnoty atributu
+     * @param descItemObjectId identifikátor existující hodnoty atributu
+     * @return upravená hodnota atributu nastavená na nezjištěno
+     */
+    @Transactional
+    @RequestMapping(value = "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/notUndefined/set",
+            method = RequestMethod.PUT,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public DescItemResult setNotIdentifiedDescItem(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                                   @PathVariable(value = "nodeId") final Integer nodeId,
+                                                   @PathVariable(value = "nodeVersion") final Integer nodeVersion,
+                                                   @RequestParam(value = "descItemTypeId") final Integer descItemTypeId,
+                                                   @RequestParam(value = "descItemSpecId", required = false) final Integer descItemSpecId,
+                                                   @RequestParam(value = "descItemObjectId", required = false) final Integer descItemObjectId) {
+        ArrDescItem descItemUpdated = descriptionItemService
+                .setNotIdentifiedDescItem(descItemTypeId, nodeId, nodeVersion, fundVersionId, descItemSpecId, descItemObjectId);
+
+        DescItemResult descItemResult = new DescItemResult();
+        descItemResult.setItem(factoryVo.createDescItem(descItemUpdated));
+        descItemResult.setParent(factoryVo.createArrNode(descItemUpdated.getNode()));
+
+        return descItemResult;
+    }
+
+    /**
+     * Zrušení nastavení atributu na "Nezjištěno".
+     *
+     * @param fundVersionId    id archivního souboru
+     * @param nodeId           id JP
+     * @param nodeVersion      verze JP
+     * @param descItemTypeId   identfikátor typu hodnoty atributu
+     * @param descItemSpecId   identfikátor specifikace hodnoty atributu
+     * @param descItemObjectId identifikátor existující hodnoty atributu
+     * @return odstraněný atribut
+     */
+    @Transactional
+    @RequestMapping(value = "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/notUndefined/unset",
+            method = RequestMethod.PUT,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public DescItemResult unsetNotIdentifiedDescItem(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                                     @PathVariable(value = "nodeId") final Integer nodeId,
+                                                     @PathVariable(value = "nodeVersion") final Integer nodeVersion,
+                                                     @RequestParam(value = "descItemTypeId") final Integer descItemTypeId,
+                                                     @RequestParam(value = "descItemSpecId", required = false) final Integer descItemSpecId,
+                                                     @RequestParam(value = "descItemObjectId", required = false) final Integer descItemObjectId) {
+        ArrDescItem descItemDeleted = descriptionItemService
+                .deleteDescriptionItem(descItemObjectId, nodeVersion, fundVersionId);
+        DescItemResult descItemResult = new DescItemResult();
+        descItemResult.setItem(null);
+        descItemResult.setParent(factoryVo.createArrNode(descItemDeleted.getNode()));
+        return descItemResult;
+    }
+
+    /**
+     * Nastavení atributu na "Nezjištěno".
+     *
+     * @param fundVersionId           id archivního souboru
+     * @param outputDefinitionId      identifikátor výstupu
+     * @param outputDefinitionVersion verze výstupu
+     * @param outputItemTypeId        dentfikátor typu hodnoty atributu
+     * @param outputItemSpecId        identfikátor specifikace hodnoty atributu
+     * @param outputItemObjectId      identifikátor existující hodnoty atributu
+     * @return upravená hodnota atributu nastavená na nezjištěno
+     */
+    @Transactional
+    @RequestMapping(value = "/outputItems/{fundVersionId}/{outputDefinitionId}/{outputDefinitionVersion}/notUndefined/set",
+            method = RequestMethod.PUT,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public OutputItemResult setNotIdentifiedOutputItem(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                                       @PathVariable(value = "outputDefinitionId") final Integer outputDefinitionId,
+                                                       @PathVariable(value = "outputDefinitionVersion") final Integer outputDefinitionVersion,
+                                                       @RequestParam(value = "outputItemTypeId") final Integer outputItemTypeId,
+                                                       @RequestParam(value = "outputItemSpecId", required = false) final Integer outputItemSpecId,
+                                                       @RequestParam(value = "outputItemObjectId", required = false) final Integer outputItemObjectId) {
+        ArrOutputItem outputItemUpdated = outputService
+                .setNotIdentifiedDescItem(outputItemTypeId, outputDefinitionId, outputDefinitionVersion, fundVersionId, outputItemSpecId, outputItemObjectId);
+        OutputItemResult outputItemResult = new OutputItemResult();
+        outputItemResult.setItem(factoryVo.createItem(outputItemUpdated));
+        outputItemResult.setParent(factoryVo.createOutputDefinition(outputItemUpdated.getOutputDefinition()));
+        return outputItemResult;
+    }
+
+
+    /**
+     * Zrušení nastavení atributu na "Nezjištěno".
+     *
+     * @param fundVersionId           id archivního souboru
+     * @param outputDefinitionId      identifikátor výstupu
+     * @param outputDefinitionVersion verze výstupu
+     * @param outputItemTypeId        dentfikátor typu hodnoty atributu
+     * @param outputItemSpecId        identfikátor specifikace hodnoty atributu
+     * @param outputItemObjectId      identifikátor existující hodnoty atributu
+     * @return odstraněný atribut
+     */
+    @Transactional
+    @RequestMapping(value = "/outputItems/{fundVersionId}/{outputDefinitionId}/{outputDefinitionVersion}/notUndefined/unset",
+            method = RequestMethod.PUT,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public OutputItemResult unsetNotIdentifiedOutputItem(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                                         @PathVariable(value = "outputDefinitionId") final Integer outputDefinitionId,
+                                                         @PathVariable(value = "outputDefinitionVersion") final Integer outputDefinitionVersion,
+                                                         @RequestParam(value = "outputItemTypeId") final Integer outputItemTypeId,
+                                                         @RequestParam(value = "outputItemSpecId", required = false) final Integer outputItemSpecId,
+                                                         @RequestParam(value = "outputItemObjectId", required = false) final Integer outputItemObjectId) {
+        ArrOutputItem descItemDeleted = outputService
+                .deleteOutputItem(outputItemObjectId, outputDefinitionVersion, fundVersionId);
+        OutputItemResult outputItemResult = new OutputItemResult();
+        outputItemResult.setItem(null);
+        outputItemResult.setParent(factoryVo.createArrOutputDefinition(descItemDeleted.getOutputDefinition()));
+        return outputItemResult;
+    }
+
+    /**
      * Vytvoření hodnoty atributu.
      *
      * @param descItemVO            hodnota atributu
@@ -867,6 +1016,64 @@ public class ArrangementController {
         return descItemResult;
     }
 
+    @Transactional
+    @RequestMapping(value = "/levels/copy/validate", method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ValidateResult copyLevelsValidate(@RequestBody final CopyNodesValidate copyNodesValidate) {
+        Assert.notNull(copyNodesValidate, "Neplatná struktura");
+        Assert.notNull(copyNodesValidate.getSourceFundVersionId(), "Neplatný identifikátor zdrojové verze AS");
+        Assert.notEmpty(copyNodesValidate.getSourceNodes(), "Musí být vybrána alespoň jedna cílová JP");
+        Assert.notNull(copyNodesValidate.getTargetFundVersionId(), "Neplatný identifikátor cílové verze AS");
+
+        ArrFundVersion sourceFundVersion = fundVersionRepository.findOne(copyNodesValidate.getSourceFundVersionId());
+        ArrFundVersion targetFundVersion = fundVersionRepository.findOne(copyNodesValidate.getTargetFundVersionId());
+
+        List<ArrNode> sourceNodes = factoryDO.createNodes(copyNodesValidate.getSourceNodes());
+
+        ImportFromFund importFromFund = importNodesFromSource.createImportFromFund();
+        importFromFund.init(sourceFundVersion, sourceNodes, copyNodesValidate.isIgnoreRootNodes());
+
+        return importNodesFromSource.validateData(importFromFund, targetFundVersion);
+    }
+
+    @Transactional
+    @RequestMapping(value = "/levels/copy", method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public void copyLevels(@RequestBody final CopyNodesParams copyNodesParams) {
+        Assert.notNull(copyNodesParams, "Neplatná struktura");
+        Assert.notNull(copyNodesParams.getSourceFundVersionId(), "Neplatný identifikátor zdrojové verze AS");
+        Assert.notEmpty(copyNodesParams.getSourceNodes(), "Musí být vybrána alespoň jedna cílová JP");
+        Assert.notNull(copyNodesParams.getTargetFundVersionId(), "Neplatný identifikátor cílové verze AS");
+        Assert.notNull(copyNodesParams.getTargetStaticNode(), "Neplatná cílová JP");
+        Assert.notNull(copyNodesParams.getSelectedDirection(), "Neplatný směr vložení");
+
+        ArrFundVersion sourceFundVersion = fundVersionRepository.findOne(copyNodesParams.getSourceFundVersionId());
+        ArrFundVersion targetFundVersion = fundVersionRepository.findOne(copyNodesParams.getTargetFundVersionId());
+
+        ArrNode targetStaticNode = factoryDO.createNode(copyNodesParams.getTargetStaticNode());
+        ArrNode targetStaticParentNode = copyNodesParams.getTargetStaticNodeParent() == null ? null : factoryDO
+                .createNode(copyNodesParams.getTargetStaticNodeParent());
+
+        List<ArrNode> sourceNodes = factoryDO.createNodes(copyNodesParams.getSourceNodes());
+
+
+        ImportFromFund importFromFund = importNodesFromSource.createImportFromFund();
+        importFromFund.init(sourceFundVersion, sourceNodes, copyNodesParams.isIgnoreRootNodes());
+
+        importNodesFromSource.importData(importFromFund, new ImportParams() {
+            @Override
+            public ConflictResolve getFileConflictResolve() {
+                return ConflictResolve.valueOf(copyNodesParams.getFilesConflictResolve().name());
+            }
+
+            @Override
+            public ConflictResolve getPacketConflictResolve() {
+                return ConflictResolve.valueOf(copyNodesParams.getPacketsConflictResolve().name());
+            }
+        }, targetFundVersion, targetStaticNode, targetStaticParentNode, copyNodesParams.getSelectedDirection());
+    }
 
     @Transactional
     @RequestMapping(value = "/outputItems/{fundVersionId}/{outputDefinitionVersion}/delete",
@@ -1184,7 +1391,7 @@ public class ArrangementController {
             itemTypes = ruleService.getDescriptionItemTypes(versionId, nodeId);
         } catch (Exception e) {
             logger.error("Chyba v pravidlech", e);
-            throw new BusinessException("Chyba v pravidlech",e,BaseCode.SYSTEM_ERROR);            
+            throw new BusinessException("Chyba v pravidlech",e,BaseCode.SYSTEM_ERROR);
         }
 
         Integer fundId = version.getFund().getFundId();

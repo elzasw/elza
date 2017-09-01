@@ -8,7 +8,7 @@ import recordTypes from './recordTypes.jsx'
 import rulDataTypes from './rulDataTypes.jsx';
 import calendarTypes from './calendarTypes.jsx';
 import packetTypes from './packetTypes.jsx';
-import partyList from './partyList.jsx';
+// import partyList from './partyList.jsx';
 import scopesData from './scopesData.jsx';
 import descItemTypes from './descItemTypes.jsx';
 import visiblePolicyTypes from './visiblePolicyTypes.jsx';
@@ -25,7 +25,7 @@ const initialState = {
     rulDataTypes: rulDataTypes(),
     calendarTypes: calendarTypes(),
     packetTypes: packetTypes(),
-    partyList: partyList(),
+    // partyList: partyList(),
     scopesData: scopesData(),
     descItemTypes: descItemTypes(),
     visiblePolicyTypes: visiblePolicyTypes(),

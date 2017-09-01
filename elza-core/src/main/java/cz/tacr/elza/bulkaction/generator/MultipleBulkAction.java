@@ -8,14 +8,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.bulkaction.BulkActionConfig;
-import cz.tacr.elza.bulkaction.BulkActionInterruptedException;
 import cz.tacr.elza.bulkaction.generator.multiple.Action;
 import cz.tacr.elza.bulkaction.generator.multiple.ActionFactory;
 import cz.tacr.elza.bulkaction.generator.multiple.ActionType;
@@ -27,6 +24,8 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.service.ItemService;
 import cz.tacr.elza.service.cache.CachedNode;
@@ -147,8 +146,9 @@ public class MultipleBulkAction extends BulkAction {
         for (Entry<ArrNode, LevelWithItems> entry : nodesWithItems.entrySet()) {
             ArrNode node = entry.getKey();
             // check if it is pure parent (not starting node)
-            if(nodeStartingLevels.containsKey(node))
+            if(nodeStartingLevels.containsKey(node)) {
                 continue;
+            }
 
             LevelWithItems levelWithItems = entry.getValue();
 
@@ -227,7 +227,19 @@ public class MultipleBulkAction extends BulkAction {
      */
     private void apply(final ArrNode node, final List<ArrDescItem> items, final TypeLevel typeLevel, final LevelWithItems parentLevelWithItems) {
         actions.stream().filter(action -> action.canApply(typeLevel))
-                .forEach(action -> action.apply(node, items, parentLevelWithItems));
+        .forEach(action -> action.apply(node, items, parentLevelWithItems));
+    }
+
+    /**
+     * Načtení hodnot uzlu.
+     *
+     * @param level uzel
+     * @return  hodnoty uzlu
+     */
+    private List<ArrDescItem> loadDescItems(final ArrLevel level) {
+        List<ArrDescItem> descItems = descItemRepository.findByNodeAndDeleteChangeIsNull(level.getNode());
+        itemService.loadData(descItems);
+        return descItems;
     }
 
     @Override

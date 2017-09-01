@@ -30,8 +30,7 @@ import cz.tacr.elza.controller.vo.RegScopeVO;
 
 
 /**
- * @author Petr Compel
- * @since 19.2.2016
+ * Test party creation and some updates
  */
 public class PartyControllerTest extends AbstractControllerTest {
 
@@ -77,7 +76,7 @@ public class PartyControllerTest extends AbstractControllerTest {
     public void scenarioTest() {
 
         /* Smazání tabulek (kvůli XML importu pro zakládání archivních fondů) **/
-        deleteTables();
+    	helperTestService.deleteTables();
 
         /* Testovací datumy **/
         ArrCalendarTypeVO gregorian = findCalendarByCode(getCalendarTypes(), "GREGORIAN");
@@ -221,13 +220,23 @@ public class PartyControllerTest extends AbstractControllerTest {
         newPersonName.setNote("Poznámka jména");
         newPersonName.setValidFrom(testFromDate);
         newPersonName.setValidTo(testToDate);
-        ParPartyNameComplementVO complement1 = new ParPartyNameComplementVO();
+        
+        // complement
+        ParPartyNameComplementVO complement1 = new ParPartyNameComplementVO();        
+        complement1.setComplement("IV");        
+        ParComplementTypeVO complType = findComplementTypeByCode(typeO1.getComplementTypes(), "GENERAL");
+        Assert.assertNotNull(complType);
+        complement1.setComplementTypeId(complType.getComplementTypeId());
+        
+        // complement 2
         ParPartyNameComplementVO complement2 = new ParPartyNameComplementVO();
-        complement1.setComplement("IV");
-        complement1.setComplementTypeId(findComplementTypeByCode(typeO1.getComplementTypes(), "3").getComplementTypeId());
         complement2.setComplement("rozpis");
-        complement2.setComplementTypeId(findComplementTypeByCode(typeO1.getComplementTypes(), "1").getComplementTypeId());
+        complType = findComplementTypeByCode(typeO1.getComplementTypes(), "INITIALS");
+        Assert.assertNotNull(complType);
+        complement2.setComplementTypeId(complType.getComplementTypeId());
+        
         newPersonName.setPartyNameComplements(Arrays.asList(complement1, complement2));
+        
         personO1.setPartyNames(Arrays.asList(partyNameO1, newPersonName));
         personO1 = (ParPersonVO) updateParty(personO1);
 
@@ -316,8 +325,10 @@ public class PartyControllerTest extends AbstractControllerTest {
 
 
         /* Test zda neexistuje nějaké heslo s tímto typem pro přidání (test metody findRecordForRelation) **/
-        ParRelationTypeVO spawnRelationType = findRelationTypeByCode(typeO1.getRelationTypes(), "2");
-        ParRelationRoleTypeVO spawnRelationRoleType = findRelationRoleTypeByCode(spawnRelationType.getRelationRoleTypes(), "11");
+        ParRelationTypeVO spawnRelationType = findRelationTypeByCode(typeO1.getRelationTypes(), "ACTIVE_FROM");
+        Assert.assertNotNull(spawnRelationType);
+        ParRelationRoleTypeVO spawnRelationRoleType = findRelationRoleTypeByCode(spawnRelationType.getRelationRoleTypes(), "PLACE");
+        Assert.assertNotNull(spawnRelationRoleType);
         List<RegRecordVO> recordForRelation = findRecordForRelation(null, null, null, spawnRelationRoleType.getId(), personO1.getId());
 
         Assert.assertTrue("Očekáváme 0 záznamů", recordForRelation.size() == 0);
@@ -351,7 +362,8 @@ public class PartyControllerTest extends AbstractControllerTest {
 
         /* Zánik **/
         ParRelationVO dieRelation = new ParRelationVO();
-        ParRelationTypeVO dieRelationType = findRelationTypeByCode(typeO1.getRelationTypes(), "6");
+        ParRelationTypeVO dieRelationType = findRelationTypeByCode(typeO1.getRelationTypes(), "EXTINCTION");
+        Assert.assertNotNull(dieRelationType);
         dieRelation.setRelationTypeId(dieRelationType.getId());
         dieRelation.setFrom(testFromDate);
         dieRelation.setTo(testToDate);
@@ -360,10 +372,13 @@ public class PartyControllerTest extends AbstractControllerTest {
 
         /* Zaměstnavatel **/
         ParRelationVO workRelation = new ParRelationVO();
-        ParRelationTypeVO workRelationType = findRelationTypeByCode(typeO1.getRelationTypes(), "17");
+        ParRelationTypeVO workRelationType = findRelationTypeByCode(typeO1.getRelationTypes(), "EMPLOYMENT");
+        Assert.assertNotNull(workRelationType);
         ParRelationEntityVO workRelationEntity = new ParRelationEntityVO();
         workRelationEntity.setRecord(recordK1);
-        workRelationEntity.setRoleType(findRelationRoleTypeByCode(workRelationType.getRelationRoleTypes(), "167"));
+        ParRelationRoleTypeVO workRoleType = findRelationRoleTypeByCode(workRelationType.getRelationRoleTypes(), "COLLEAGUE");
+        Assert.assertNotNull(workRoleType);
+        workRelationEntity.setRoleType(workRoleType);
         workRelation.setRelationTypeId(workRelationType.getId());
         workRelation.setPartyId(personO1.getId());
         workRelation = insertRelation(workRelation);

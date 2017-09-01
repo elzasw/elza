@@ -1,13 +1,14 @@
 
 import {normalizeDoubleWithDot} from 'components/validate.jsx'
+import {ShortcutManager} from 'react-shortcuts';
 
 /**
  * Utility metody.
  */
 
-require ("./Utils.less");
+import "./Utils.less";
 
-function consolidateState(prevState, newState) {
+export function consolidateState(prevState, newState) {
     var equals = stateEquals(prevState, newState);
     if (!equals) {
         //console.log(newState);
@@ -15,7 +16,7 @@ function consolidateState(prevState, newState) {
     return equals ? prevState : newState;
 }
 
-function chooseInputEl(el1, el2) {
+export function chooseInputEl(el1, el2) {
     var result = null;
 
     if (el1 && el2) {
@@ -43,7 +44,7 @@ function chooseInputEl(el1, el2) {
  * @param setInputFocus {bool} true, pokud má být obsah vybraný (např. u input type text)
  * @return {bool} true, pokud se podařilo najít a nastavit focus
  */
-function setInputFocus(el, selectContent = false) {
+export function setInputFocus(el, selectContent = false) {
     var elem = $('input:visible:enabled', el).get(0);
     var select = $('select:visible:enabled', el).get(0);
     elem = chooseInputEl(elem, select);
@@ -72,7 +73,7 @@ function setInputFocus(el, selectContent = false) {
     return false
 }
 
-function propsEquals(x, y, attrs) {
+export function propsEquals(x, y, attrs) {
     if (typeof attrs !== 'undefined' && attrs !== null) {
         for (var a=0; a<attrs.length; a++) {
             var p = attrs[a];
@@ -103,7 +104,7 @@ function propsEquals(x, y, attrs) {
     }
 }
 
-function stateEquals(x, y) {
+export function stateEquals(x, y) {
   for ( var p in x ) {
     if ( ! x.hasOwnProperty( p ) ) continue;
       // other properties were tested using x.constructor === y.constructor
@@ -125,7 +126,7 @@ function stateEquals(x, y) {
     return true;
 }
 
-function objectEquals( x, y ) {
+export function objectEquals( x, y ) {
   if ( x === y ) return true;
     // if both x and y are null or undefined and exactly the same
 
@@ -160,7 +161,7 @@ function objectEquals( x, y ) {
   return true;
 }
 
-function lenToBytesStr(len) {
+export function lenToBytesStr(len) {
     var lenStr;
     if (len < 1000) {
         lenStr = ('' + len).substring(0, 3) + " B";
@@ -172,7 +173,7 @@ function lenToBytesStr(len) {
     return lenStr;
 }
 
-function humanFileSize(bytes, si = false) {
+export function humanFileSize(bytes, si = false) {
     var thresh = si ? 1000 : 1024;
     if (Math.abs(bytes) < thresh) {
         return bytes + ' B';
@@ -188,7 +189,7 @@ function humanFileSize(bytes, si = false) {
     return bytes.toFixed(1) + ' ' + units[u];
 }
 
-function roughSizeOfObject( object ) {
+export function roughSizeOfObject( object ) {
 
     var objectList = [];
     var stack = [ object ];
@@ -222,7 +223,7 @@ function roughSizeOfObject( object ) {
     return bytes;
 }
 
-function StringSet() {
+export function StringSet() {
     var setObj = {}, val = {};
 
     this.add = function(str) {
@@ -260,7 +261,7 @@ function StringSet() {
     };
 }
 
-function StringMap() {
+export function StringMap() {
     var setObj = {};
 
     this.put = function(key, val) {
@@ -288,48 +289,36 @@ function StringMap() {
     };
 }
 
-var _browser
 // Inicializace typu prohlížeče
-{
-    // Opera 8.0+
-    var opera = (!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
+export function browser() {
+    return {
+        // Opera 8.0+
+        opera: (!!window.opr && !!window.opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0,
         // Firefox 1.0+
-    var firefox = typeof InstallTrigger !== 'undefined';
+        firefox: typeof InstallTrigger !== 'undefined',
         // At least Safari 3+: "[object HTMLElementConstructor]"
-    var safari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
+        safari: Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0,
         // Internet Explorer 6-11
-    var ie = /*@cc_on!@*/false || !!document.documentMode;
+        ie: /*@cc_on!@*/false || !!document.documentMode,
         // Edge 20+
-    var edge = !ie && !!window.StyleMedia;
+        edge: !window.ie && !!window.StyleMedia,
         // Chrome 1+
-    var chrome = !!window.chrome && !!window.chrome.webstore;
+        chrome: !!window.chrome && !!window.chrome.webstore,
         // Blink engine detection
-    var blink = (chrome || opera) && !!window.CSS;
-
-    _browser = {
-        opera,
-        firefox,
-        safari,
-        ie,
-        edge,
-        chrome,
-        blink,
-    }
-}
-function browser() {
-    return _browser;
+        blink: (window.chrome || window.opera) && !!window.CSS,
+    };
 }
 
-function getKeyModifier() {
-    var browser = _browser;
-    if (browser.ie || browser.edge) {
+export function getKeyModifier() {
+    const brows = browser();
+    if (brows.ie || brows.edge) {
         return 'ctrl+shift+';
     } else {
         return 'ctrl+alt+';
     }
 }
 
-function init() {
+export function init() {
     Array.prototype.each = function(callback){
         if (!callback) return false;
         for (var i=0; i<this.length; i++){
@@ -378,7 +367,7 @@ function init() {
     }
 }
 
-function barrierCall(index, promise, onData, onError) {
+export function barrierCall(index, promise, onData, onError) {
     promise
         .then((result)=>{
             //console.log("Promise #" + index + " OK", result);
@@ -390,7 +379,7 @@ function barrierCall(index, promise, onData, onError) {
         });
 }
 
-function barrier(...promises) {
+export function barrier(...promises) {
     var errors = {};
     var results = {};
     return new Promise(function (resolve, reject) {
@@ -429,7 +418,7 @@ function barrier(...promises) {
  * @param date {Date} datum
  * @return {String} datum
  */
-function dateToString(date) {
+export function dateToString(date) {
     var dd = date.getDate().toString();
     var mm = (date.getMonth() + 1).toString();
     var yyyy = date.getFullYear().toString();
@@ -441,7 +430,7 @@ function dateToString(date) {
  * @param date {Date} datum
  * @return {String} datum
  */
-function timeToString(date) {
+export function timeToString(date) {
     var hh = date.getHours().toString();
     var ii = date.getMinutes().toString();
     var ss = date.getSeconds().toString();
@@ -456,7 +445,7 @@ function timeToString(date) {
  * @return {String} datum
  * TODO Možná změnit dateTimeToString => dateToDateTimeString a dateToString => dateToDateString
  */
-function dateTimeToString(date) {
+export function dateTimeToString(date) {
     var dd = date.getDate().toString();
     var mm = (date.getMonth() + 1).toString();
     var yyyy = date.getFullYear().toString();
@@ -471,7 +460,7 @@ function dateTimeToString(date) {
  * Porovnání dvou hodnot. Undefined, null a prázdný řetězec jsou ekvivalentní.
  * @return {boolean} true, pokud jsou předané parametry stejné
  */
-function valuesEquals(v1, v2) {
+export function valuesEquals(v1, v2) {
     if (v1 === v2) {
         return true;
     }
@@ -495,7 +484,7 @@ function valuesEquals(v1, v2) {
  * @param value
  * @returns object
  */
-function objectFromWKT(value) {
+export function objectFromWKT(value) {
     if (typeof value === 'undefined' || value === null || value == '' || typeof value === "object") {
         return {type: "POINT", data: null};
     }
@@ -523,7 +512,7 @@ function objectFromWKT(value) {
  * @param val body(s desetinou ".") oddělené čárkou a 1 bod na 1 řádku
  * @returns string WK Text
  */
-function wktFromTypeAndData(type, val) {
+export function wktFromTypeAndData(type, val) {
     let points = val.split(",").map(function (dat) {
         return normalizeDoubleWithDot(dat);
     }).join(" ").split("\n").join(", ");
@@ -539,7 +528,7 @@ function wktFromTypeAndData(type, val) {
  * @param type
  * @returns string
  */
-function wktType(type) {
+export function wktType(type) {
     switch (type) {
         case "POINT":
             return "B";
@@ -556,7 +545,7 @@ function wktType(type) {
  * detect IE
  * returns version of IE or false, if browser is not Internet Explorer
  */
-function detectIE() {
+export function detectIE() {
     var ua = window.navigator.userAgent;
 
     // Test values; Uncomment to check result …
@@ -597,7 +586,7 @@ function detectIE() {
 }
 
 var _scrollbarWidth = null
-function calculateScrollbarWidth() {
+export function calculateScrollbarWidth() {
     if (_scrollbarWidth == null) {
         // Create the measurement node
         var scrollDiv = document.createElement("div");
@@ -613,7 +602,7 @@ function calculateScrollbarWidth() {
 }
 calculateScrollbarWidth();
 
-function getScrollbarWidth() {
+export function getScrollbarWidth() {
     return _scrollbarWidth;
 }
 
@@ -635,7 +624,7 @@ function _dtpad(number) {
  * @param date
  * @return {*}
  */
-function dateTimeToLocalUTC(date) {
+export function dateTimeToLocalUTC(date) {
     if (!date) {
         return date;
     }
@@ -649,7 +638,7 @@ function dateTimeToLocalUTC(date) {
         + '.' + _dtpad( date.getMilliseconds());
 }
 
-const removeUndefined = (obj) => {
+export const removeUndefined = (obj) => {
     for (let key in obj ) {
         if (obj.hasOwnProperty(key)) {
             if (obj[key] === undefined || obj[key] === null) {
@@ -659,12 +648,109 @@ const removeUndefined = (obj) => {
     }
     return obj;
 };
-const isNotBlankObject = (obj) => {
+export const isNotBlankObject = (obj) => {
     const newObj = removeUndefined(obj);
     return Object.keys(newObj).length > 0
 };
+/**
+ * Vloží zkratky z výchozí keymapy do druhé předané keymapy, pokud se v ní nenachází
+ * @param {object} defaultKeymap - výchozí keymapa, ze které budou zkratky čteny
+ * @param {object} keymap - keymapa, do které budou zkratky vloženy
+ * @return {object}
+ */
+function overrideKeymap(defaultKeymap,keymap) {
+    keymap = {...keymap};
+    for(let component in defaultKeymap){
+        if(keymap && keymap[component]){
+            let newComponentKeymap = {};
+            for(let action in defaultKeymap[component]){
+                if(!keymap[component][action]){
+                    newComponentKeymap[action] = defaultKeymap[component][action];
+                } else {
+                    newComponentKeymap[action] = keymap[component][action];
+                }
+            }
+            keymap[component] = newComponentKeymap;
+            //console.log("existing component",component,keymap);
+        } else {
+            keymap[component] = {...defaultKeymap[component]};
+            //console.log("undefined component",component,keymap);
+        }
+        checkValueDuplicity(keymap[component]);
+    }
+    return keymap;
+}
+/**
+ * Spojí dvě keymapy, případně přepíše hodnoty výchozí keymapy hodnotami z rozšiřující
+ * @param {object} defaultKeymap - výchozí keymapa
+ * @param {object} extendingKeymap - rozšiřující keymapa
+ * @return {object} mergedKeymap - nová keymapa
+ */
+export function mergeKeymaps(defaultKeymap,extendingKeymap){
+    let mergedKeymap = {};
+    for(let c in defaultKeymap){ //vytvoření nového objektu, aby se nepřepisoval původní
+        mergedKeymap[c] = {};
+        for(let a in defaultKeymap[c]){
+            mergedKeymap[c][a] = defaultKeymap[c][a];
+        }
+    }
+    for(let component in extendingKeymap){
+        if(mergedKeymap && mergedKeymap[component]){
+            for(let action in extendingKeymap[component]){
+                mergedKeymap[component][action] = extendingKeymap[component][action];
+            }
+        } else {
+            mergedKeymap[component] = {...extendingKeymap[component]};
+        }
+    }
+    return mergedKeymap;
+}
+/**
+ * Zkontroluje, jestli objekt neobsahuje duplicitní hodnoty. Pokud je hodnotou pole, jsou prohledány všechny jeho hodnoty
+ * => ["a","b"] je považováno za duplicitní s "a". hodnota "b" je pak dále porovnávána s dalšími hodnotami.
+ * Objekty jsou porovnávány jako stringy
+ * @param {object} object - objekt, ve kterém se budou hledat duplicity
+ */
+function checkValueDuplicity(object){
+    let newObj = {};
+    for(let i in object){
+        let objectValue = object[i];
+        if(!Array.isArray(objectValue)){
+            objectValue = [objectValue];
+        }
+        for(let j=0;j<objectValue.length;j++){
+            if(typeof newObj[objectValue[j]] === "undefined"){
+                newObj[objectValue[j]] = i;
+            } else {
+                console.warn("Duplicity found for '"+objectValue[j]+"' assigned to '"+i+"'. Already used in '"+newObj[objectValue[j]]+"'");
+            }
+        }
+    }
+}
+/**
+ * Přidá na předanou komponentu shortcut manager s předanou keymapou.
+ * Pokud shortcut manager existuje v kontextu komponenty je mu pouze doplněna keymapa o hodnoty z předané keymapy.
+ * Pokud je předána přepisující keymapa je ignorován kontext komponenty a je vytvořen nový shortcut manager s keymapou vytvořenou spojením obou předaných
+ * @param {object} component - komponenta, ke které se přidá shortcut manager
+ * @param {object} defaultKeymap - výchozí keymapa
+ * @param {object} overridingKeymap -
+ */
+export function addShortcutManager(component,defaultKeymap,overridingKeymap) {
+    let shortcutManager;
+    if(component.context && component.context.shortcuts && !overridingKeymap){
+        let keymap = component.context.shortcuts._keymap;
+        component.context.shortcuts._keymap = overrideKeymap(defaultKeymap,keymap);
+        shortcutManager = component.context.shortcuts;
+    } else {
+        if(overridingKeymap){
+            defaultKeymap = overrideKeymap(defaultKeymap,overridingKeymap);
+        }
+        shortcutManager = new ShortcutManager(defaultKeymap)
+    }
+    component.shortcutManager = shortcutManager;
+}
 
-module.exports = {
+/*export default {
     dateTimeToLocalUTC,
     wktType,
     wktFromTypeAndData,
@@ -689,7 +775,10 @@ module.exports = {
     removeUndefined,
     isNotBlankObject,
     humanFileSize,
+    overrideKeymap: overrideKeymap,
+    mergeKeymaps: mergeKeymaps,
+    addShortcutManager: addShortcutManager,
     init: function() {
         init();
     }
-}
+}*/

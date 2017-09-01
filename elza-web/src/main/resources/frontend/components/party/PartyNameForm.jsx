@@ -1,17 +1,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
-import {DropDownTree, AbstractReactComponent, i18n, Scope, Icon, FormInput, Loading, DatationField} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, Scope, Icon, FormInput, Loading} from 'components/shared';
+import DatationField from './DatationField'
 import {Modal, Button, Row, Col, Form} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes.jsx'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registry.jsx'
+import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRecordTypes.jsx'
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
 import {submitForm} from 'components/form/FormUtils.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
-import {PARTY_TYPE_CODES} from 'actions/party/party.jsx'
+import {PARTY_TYPE_CODES, RELATION_CLASS_CODES} from 'constants.jsx'
 
 
 import './RelationForm.less'
@@ -117,24 +118,34 @@ class PartyNameForm extends AbstractReactComponent {
         !calendarTypes.isFetching &&
         this.loadData(props);
     };
-
     /**
-     * Pokud nejsou nastaveny hodnoty - nastavíme hodnotu do pole nameFormTypeId a scopeId
+     * Funkce vracející výchozí inicializační objekt
+     * @param {object} props
+     * @return {object}
+     */
+    getDefaultInitObject(props){
+        const {refTables: {calendarTypes}} = props;
+        let firstCalId = calendarTypes.items[0].id;
+        return {
+            validFrom: {calendarTypeId:firstCalId},
+            validTo: {calendarTypeId:firstCalId}
+        }
+    }
+    /**
+     * Funkce načítající výchozí hodnoty formuláře
+     * @param {object} props
      */
     loadData(props) {
-        const {refTables: {partyNameFormTypes, calendarTypes}, partyType, initData} = props;
-        const firstCalId = calendarTypes.items[0].id;
+        const {refTables: {partyNameFormTypes}, partyType, initData = {}} = props;
         if (!this.state.initialized) {
             this.setState({initialized: true, complementsTypes: partyType.complementTypes}, () => {
-                let newLoad = null;
-                if (initData) {
-                    newLoad = {
-                        ...initData
+                let defaultInitData = {...this.getDefaultInitObject(props)};
+                for(let f in defaultInitData){
+                    if(!initData[f]){    // Přepsání prázdných položek výchozí hodnotou
+                        initData[f] = defaultInitData[f];
                     }
-                } else {
-                    newLoad = {validFrom:{calendarTypeId:firstCalId}, validTo:{calendarTypeId:firstCalId}}
                 }
-                this.props.load(newLoad);
+                this.props.load(initData);
             });
         }
     }

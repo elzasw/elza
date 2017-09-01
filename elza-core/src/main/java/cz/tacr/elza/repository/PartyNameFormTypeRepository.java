@@ -15,5 +15,4 @@ public interface PartyNameFormTypeRepository extends JpaRepository<ParPartyNameF
     ParPartyNameFormType findByCode(String partyNameFormTypeCode);
 
     ParPartyNameFormType findByName(String partyNameFormTypeName);
-
 }

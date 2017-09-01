@@ -4,9 +4,8 @@ import org.hibernate.search.indexes.interceptor.EntityIndexingInterceptor;
 import org.hibernate.search.indexes.interceptor.IndexingOverride;
 
 import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrOutputItem;
-import cz.tacr.elza.utils.ProxyUtils;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.utils.HibernateUtils;
 
 /**
  * Indexuje {@link ArrData} jen pokud patří k nějakému atributu.
@@ -22,24 +21,24 @@ public class IndexArrDataWhenHasDescItemInterceptor implements EntityIndexingInt
             return IndexingOverride.SKIP;
         }
 
-        ArrItem item = ProxyUtils.deproxy(arrData.getItem());
-        if (item instanceof ArrOutputItem) {
-            return IndexingOverride.SKIP;
+        Class<?> itemClass = HibernateUtils.getPersistentClass(arrData.getItem());
+        if (ArrDescItem.class.isAssignableFrom(itemClass)) {
+            return IndexingOverride.APPLY_DEFAULT;
         }
-        return IndexingOverride.APPLY_DEFAULT;
+        return IndexingOverride.SKIP;
     }
 
     @Override
     public IndexingOverride onUpdate(final ArrData arrData) {
         if (arrData.getItem() == null) {
-            return IndexingOverride.REMOVE;
+            return IndexingOverride.SKIP;
         }
 
-        ArrItem item = ProxyUtils.deproxy(arrData.getItem());
-        if (item instanceof ArrItem) {
-            return IndexingOverride.REMOVE;
+        Class<?> itemClass = HibernateUtils.getPersistentClass(arrData.getItem());
+        if (ArrDescItem.class.isAssignableFrom(itemClass)) {
+            return IndexingOverride.APPLY_DEFAULT;
         }
-        return IndexingOverride.UPDATE;
+        return IndexingOverride.SKIP;
     }
 
     @Override

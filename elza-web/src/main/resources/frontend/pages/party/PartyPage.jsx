@@ -2,23 +2,26 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
-import {ControllableDropdownButton, Icon, AbstractReactComponent, Ribbon, RibbonGroup, PartyList, PartyDetail, PartyEntities, i18n, ImportForm} from 'components/index.jsx';
-import {RelationForm, AddPartyForm, ExtImportForm} from 'components/index.jsx';
+import {ControllableDropdownButton, Icon, AbstractReactComponent, RibbonGroup, i18n, Utils} from 'components/shared';
+import Ribbon from '../../components/page/Ribbon'
+import PartyList from '../../components/party/PartyList'
+import PartyDetail from '../../components/party/PartyDetail'
+import ImportForm from '../../components/form/ImportForm'
+import ExtImportForm from '../../components/form/ExtImportForm'
 import {MenuItem, Button} from 'react-bootstrap';
-import {PageLayout} from 'pages/index.jsx';
 import {AppStore} from 'stores/index.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {partyDetailFetchIfNeeded, partyListInvalidate, PARTY_LIST_MAX_SIZE, partyAdd, partyCreate, insertRelation, partyDelete} from 'actions/party/party.jsx'
 import {Shortcuts} from 'react-shortcuts';
-import {Utils} from 'components/index.jsx';
 import {setFocus} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
-import {SelectPage} from 'pages'
-
+import defaultKeymap from './PartyPageKeymap.jsx';
 import './PartyPage.less';
 import {regExtSystemListFetchIfNeeded} from 'actions/registry/regExtSystemList';
+import PageLayout from "../shared/layout/PageLayout";
+import {PropTypes} from 'prop-types';
 
 /**
  * PARTY PAGE
@@ -26,6 +29,14 @@ import {regExtSystemListFetchIfNeeded} from 'actions/registry/regExtSystemList';
  * Stránka osob
  */
 class PartyPage extends AbstractReactComponent {
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
 
 
     static PropTypes = {
@@ -168,7 +179,7 @@ class PartyPage extends AbstractReactComponent {
 
         const centerPanel = <PartyDetail />;
 
-        return <Shortcuts name='Party' handler={this.handleShortcuts} global stopPropagation={false}>
+        return <Shortcuts name='Party' handler={this.handleShortcuts} global className="main-shortcuts2" alwaysFireHandler stopPropagation={false}>
             <PageLayout
                 splitter={splitter}
                 className='party-page'

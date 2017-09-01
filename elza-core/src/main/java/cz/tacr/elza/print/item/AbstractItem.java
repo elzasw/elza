@@ -5,25 +5,17 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-
-import cz.tacr.elza.print.NodeId;
+import org.apache.commons.lang3.StringUtils;
 
 /**
- * Abstraktní základ se společnými metodami pro Items.
+ * Abstract description item implementation
  *
- * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
- *         Date: 22.6.16
  */
 public abstract class AbstractItem implements Item {
-    private final NodeId nodeId; // vazba na node, může být null, v takovém případě patří přímo k output
-
     private ItemType type;
     private ItemSpec specification;
     private Integer position;
-
-    protected AbstractItem(final NodeId nodeId) {
-        this.nodeId = nodeId;
-    }
+    private Boolean undefined;
 
     @Override
     public Item getItem() {
@@ -40,16 +32,21 @@ public abstract class AbstractItem implements Item {
     }
 
     @Override
+    public Boolean getUndefined() {
+        return undefined;
+    }
+
+    public void setUndefined(final Boolean undefined) {
+        this.undefined = undefined;
+    }
+
+    @Override
     public int compareToItemViewOrderPosition(final Item o) {
         return new CompareToBuilder()
                 .append(type.getViewOrder(), o.getType().getViewOrder())
                 .append(position, o.getPosition())
+                .append(undefined, o.getUndefined())
                 .toComparison();
-    }
-
-    @Override
-    public NodeId getNodeId() {
-        return nodeId;
     }
 
     @Override
@@ -69,7 +66,7 @@ public abstract class AbstractItem implements Item {
     public void setType(final ItemType type) {
         this.type = type;
     }
-    
+
     /**
      * Method to return real value object
      * @return return value object
@@ -110,5 +107,11 @@ public abstract class AbstractItem implements Item {
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SIMPLE_STYLE);
+    }
+    
+    @Override
+    public boolean isEmpty() {
+    	String value = getSerializedValue();
+    	return StringUtils.isEmpty(value);
     }
 }

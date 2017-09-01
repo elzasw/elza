@@ -1,6 +1,9 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -14,10 +17,12 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import cz.tacr.elza.domain.ArrFund;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulPacketType;
+import org.springframework.util.Assert;
 
 /**
  * Implementace repository pro obaly.
@@ -29,6 +34,9 @@ public class PacketRepositoryImpl implements PacketRepositoryCustom {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    @Autowired
+    private LevelRepository levelRepository;
 
     @Override
     public List<ArrPacket> findPacketByTextAndType(final String searchRecord, final Integer registerTypeId,
@@ -81,6 +89,28 @@ public class PacketRepositoryImpl implements PacketRepositoryCustom {
         query.setParameter("state", state);
 
         return query.getResultList();
+    }
+
+    @Override
+    public Set<ArrPacket> findPacketsBySubtreeNodeIds(final Collection<Integer> nodeIds, final boolean ignoreRootNodes) {
+        Assert.notEmpty(nodeIds, "Identifikátor JP musí být vyplněn");
+
+        String sql_nodes = "WITH " + levelRepository.getRecursivePart() + " treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position) AS (SELECT t.* FROM arr_level t WHERE t.node_id IN (:nodeIds) UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) " +
+                "SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id WHERE t.delete_change_id IS NULL";
+
+        if (ignoreRootNodes) {
+            sql_nodes += " AND n.node_id NOT IN (:nodeIds)";
+        }
+
+        String sql = "SELECT p.* FROM arr_packet p WHERE p.packet_id IN" +
+                " (" +
+                "  SELECT dpr.packet_id FROM arr_data_packet_ref dpr JOIN arr_packet ap ON ap.packet_id = dpr.packet_id WHERE dpr.data_id IN (SELECT d.data_id FROM arr_data d JOIN arr_item i ON d.item_id = i.item_id JOIN arr_desc_item di ON di.item_id = i.item_id WHERE i.delete_change_id IS NULL AND d.data_type_id = 11 AND di.node_id IN (" + sql_nodes + "))" +
+                " )";
+
+        Query query = entityManager.createNativeQuery(sql, ArrPacket.class);
+        query.setParameter("nodeIds", nodeIds);
+
+        return new HashSet<>(query.getResultList());
     }
 
     /**

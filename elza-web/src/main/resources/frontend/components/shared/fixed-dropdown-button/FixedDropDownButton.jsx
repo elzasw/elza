@@ -1,21 +1,14 @@
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux';
-import {AbstractReactComponent} from 'components/index.jsx';
 import omit from 'lodash-compat/object/omit';
 import pick from 'lodash-compat/object/pick';
 import {Dropdown, Button, DropdownMenu} from 'react-bootstrap';
+import './FixedDropDownButton.less';
+import AbstractReactComponent from "../../AbstractReactComponent";
 
-
-require ('./FixedDropDownButton.less');
-
-var FixedDropDownButton = class FixedDropDownButton extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
-        this.bindMethods("setSizes");
-        this.state = {marginSide: 0, marginTop: 0};
-    }
+class FixedDropDownButton extends AbstractReactComponent {
+    state = {marginSide: 0, marginTop: 0};
 
     componentDidMount() {
         this.setSizes();
@@ -24,7 +17,7 @@ var FixedDropDownButton = class FixedDropDownButton extends AbstractReactCompone
         this.setSizes();
     }
 
-    setSizes() {
+    setSizes = () => {
         const dropMenu = ReactDOM.findDOMNode(this.refs.dropdown).childNodes;
 
         dropMenu[1].style.display = "block";
@@ -98,4 +91,4 @@ FixedDropDownButton.defaultProps = {
     noCaret: false
 };
 
-module.exports = connect(null, null, null, { withRef: true })(FixedDropDownButton);
+export default FixedDropDownButton;

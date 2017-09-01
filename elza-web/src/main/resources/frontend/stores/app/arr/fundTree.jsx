@@ -1,6 +1,6 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import {indexById} from 'stores/app/utils.jsx'
-import {i18n} from 'components/index.jsx';
+import {i18n} from 'components/shared';
 import {consolidateState} from 'components/Utils.jsx'
 
 const initialState = {
@@ -455,7 +455,6 @@ export default function fundTree(state = initialState, action = {}) {
                 action.expandedIdsExtension.forEach(id => {
                     result.expandedIds[id] = true;
                 });
-
                 return result;
             }
 

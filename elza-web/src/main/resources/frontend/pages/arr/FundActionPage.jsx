@@ -2,7 +2,7 @@
  * Stránka archivních pomůcek.
  */
 
-require('./FundActionPage.less');
+import './FundActionPage.less';
 
 import ArrParentPage from "./ArrParentPage.jsx";
 
@@ -11,22 +11,23 @@ import ReactDOM from 'react-dom';
 import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {
-    Loading,
-    Icon,
     Ribbon,
-    i18n,
-    AbstractReactComponent,
-    ListBox,
-    RibbonGroup,
     FundNodesSelectForm,
     FundNodesList,
     FormInput,
     ArrFundPanel
 } from 'components/index.jsx';
+import {
+    Loading,
+    Icon,
+    i18n,
+    AbstractReactComponent,
+    ListBox,
+    RibbonGroup,
+    Utils
+} from 'components/shared';
 import {Button} from 'react-bootstrap';
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {PageLayout} from 'pages/index.jsx';
-import {dateTimeToString} from 'components/Utils.jsx'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {
     fundActionFetchDetailIfNeeded,
     fundActionFetchListIfNeeded,
@@ -37,24 +38,25 @@ import {
     fundActionActionSelect,
     funcActionActionInterrupt,
     fundActionFormReset
-} from 'actions/arr/fundAction.jsx'
+} from 'actions/arr/fundAction.jsx';
 import * as perms from 'actions/user/Permission.jsx';
 import {getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {canSetFocus, setFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
-import {Utils} from 'components/index.jsx';
-
-const ActionState = {
-    RUNNING: 'RUNNING',
-    WAITING: 'WAITING',
-    PLANNED: 'PLANNED',
-    FINISHED: 'FINISHED',
-    ERROR: 'ERROR',
-    INTERRUPTED: 'INTERRUPTED',
-    OUTDATED: 'OUTDATED'
-};
+import {ActionState} from 'constants.jsx'
+import {actionStateTranslation} from "../../actions/arr/fundAction";
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './FundActionPageKeymap.jsx';
 
 class FundActionPage extends ArrParentPage {
-
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
+    componentWillMount(){
+        let newKeymap = Utils.mergeKeymaps(ArrParentPage.defaultKeymap,defaultKeymap);
+        Utils.addShortcutManager(this,newKeymap);
+    }
     static propTypes = {};
 
     constructor(props) {
@@ -92,14 +94,14 @@ class FundActionPage extends ArrParentPage {
         }
     }
 
-    handleShortcuts(action) {
+    handleShortcuts(action,e) {
         console.log("#handleShortcuts FundActionPage", '[' + action + ']', this);
         switch (action) {
             case 'newAction':
                 this.handleRibbonNewAction();
                 break;
             default:
-                super.handleShortcuts(action);
+                super.handleShortcuts(action,e);
         }
     }
 
@@ -307,26 +309,7 @@ class FundActionPage extends ArrParentPage {
         }
     }
 
-    static getStateTranslation(state) {
-        switch (state) {
-            case ActionState.RUNNING:
-                return i18n('arr.fundAction.state.running');
-            case ActionState.WAITING:
-                return i18n('arr.fundAction.state.waiting');
-            case ActionState.FINISHED:
-                return i18n('arr.fundAction.state.finished');
-            case ActionState.ERROR:
-                return i18n('arr.fundAction.state.error');
-            case ActionState.PLANNED:
-                return i18n('arr.fundAction.state.planned');
-            case ActionState.INTERRUPTED:
-                return i18n('arr.fundAction.state.interrupted');
-            case ActionState.OUTDATED:
-                return i18n('arr.fundAction.state.outdated');
-            default:
-                return null;
-        }
-    }
+    static
 
     renderRowItem(item) {
         const icon = FundActionPage.getStateIcon(item.state);
@@ -340,7 +323,7 @@ class FundActionPage extends ArrParentPage {
                     <div>{name}</div>
                     <div>
                         {item.date}
-                        {FundActionPage.getStateTranslation(item.state)}
+                        {actionStateTranslation(item.state)}
                     </div>
                 </div>
 
@@ -437,13 +420,13 @@ class FundActionPage extends ArrParentPage {
                 } else if (data.dateFinished) {
                     date = data.dateFinished;
                 }
-                date = dateTimeToString(new Date(date));
+                date = Utils.dateTimeToString(new Date(date));
 
                 return <div className='center-container'>
                     <div className='detail'>
                         <div>
                             <h1>{config.name}</h1>
-                            <h3>{FundActionPage.getStateIcon(data.state)} {FundActionPage.getStateTranslation(data.state)}
+                            <h3>{FundActionPage.getStateIcon(data.state)} {actionStateTranslation(data.state)}
                                 <small>{date}</small>
                             </h3>
                         </div>

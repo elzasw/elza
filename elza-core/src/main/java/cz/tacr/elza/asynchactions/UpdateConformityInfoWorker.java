@@ -1,14 +1,16 @@
 package cz.tacr.elza.asynchactions;
 
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.exception.SystemException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -18,24 +20,21 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.exception.LockVersionChangeException;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 
-
 /**
  * Vlákno pro aktualizaci stavů nodů v jedné verzi.
- *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 2.12.2015
  */
 @Component
 @Scope("prototype")
 public class UpdateConformityInfoWorker implements Runnable {
 
-    private Log logger = LogFactory.getLog(UpdateConformityInfoWorker.class);
+    private static final Logger LOG = LoggerFactory.getLogger(UpdateConformityInfoWorker.class);
 
     @Autowired
     private LevelRepository levelRepository;
@@ -49,137 +48,139 @@ public class UpdateConformityInfoWorker implements Runnable {
     @Autowired
     private EventNotificationService eventNotificationService;
 
+    @Autowired
+    private EntityManager em;
+
     /**
      * Fronta nodů k aktualizaci stavu.
      */
-    private Set<ArrNode> nodesToUpdate = new HashSet<>();
+    private final Set<ArrNode> updateNodeQueue = new LinkedHashSet<>();
 
-    private boolean running = true;
-    private Integer versionId;
+    private final int versionId;
 
-    /**
-     * Zámek.
-     */
-    private Object lock = new Object();
+    private WorkerStatus status = WorkerStatus.RUNNABLE;
 
-
-    public UpdateConformityInfoWorker(final Integer versionId) {
-        Assert.notNull(versionId);
+    public UpdateConformityInfoWorker(int versionId) {
         this.versionId = versionId;
     }
 
     @Override
     @Transactional
     public void run() {
-        logger.debug("Spusteno nove vlakno pro aktualizaci stavu ve verzi " + versionId);
+        LOG.debug("Spusteno nove vlakno pro aktualizaci stavu, fundVersionId: " + versionId);
 
-        ArrFundVersion version = fundVersionRepository.findOne(versionId);
-
-        Set<Integer> nodeIdsToFlush = new HashSet<>();
-
+        Set<Integer> processedNodeIds = new LinkedHashSet<>();
+        status = WorkerStatus.RUNNING;
         try {
+            ArrFundVersion version = getFundVersion();
             while (true) {
-                ArrNode node = null;
-                synchronized (getLock()) {
-                    if (nodesToUpdate.isEmpty()) {
-                        running = false;
-                        eventNotificationService.publishEvent(
-                                EventFactory.createIdsInVersionEvent(EventType.CONFORMITY_INFO, version,
-                                        nodeIdsToFlush.toArray(new Integer[nodeIdsToFlush.size()])));
-                        break;
-                    } else {
-                        node = getNode();
-                    }
+                ArrNode node = getNextNode();
+                if (node == null) {
+                    eventNotificationService.publishEvent(EventFactory.createIdsInVersionEvent(EventType.CONFORMITY_INFO, version,
+                            processedNodeIds.toArray(new Integer[processedNodeIds.size()])));
+                    break;
                 }
-
-                //bylo by lepší přepsat metodu setConformityInfo, aby brala node
-                ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootNode(),
-                        version.getLockChange());
-                try {
-                    updateConformityInfoService.updateConformityInfo(node.getNodeId(), level.getLevelId(), versionId);
-                    nodeIdsToFlush.add(node.getNodeId());
-                } catch (LockVersionChangeException e) {
-                    logger.info(
-                            "Node " + node.getNodeId() + " nema aktualizovany stav. Behem validace ke zmene uzlu.");
-                } catch (Exception e) {
-                    logger.error("Node " + node.getNodeId() + " nema aktualizovany stav. Behem validace došlo k chybě.",
-                            e);
-                }
+                processNode(node, version);
+                processedNodeIds.add(node.getNodeId());
             }
-            logger.debug("Konec vlakna pro aktualizaci stavu ve verzi" + versionId);
+            LOG.debug("Konec vlakna pro aktualizaci stavu, fundVersionId:" + versionId);
         } catch (Exception e) {
-            logger.error(e);
+            LOG.error("Unexpected error during conformity update", e);
         } finally {
-            running = false;
+            terminate();
         }
     }
 
+    private ArrFundVersion getFundVersion() {
+        ArrFundVersion version = fundVersionRepository.findOne(versionId);
+        if (version == null) {
+            throw new EntityNotFoundException("ArrFundVersion for conformity update not found, versionId:" + versionId);
+        }
+        return version;
+    }
+
+    private void processNode(ArrNode node, ArrFundVersion version) {
+        // bylo by lepší přepsat metodu setConformityInfo, aby brala node
+        ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootNode(), version.getLockChange());
+        try {
+            updateConformityInfoService.updateConformityInfo(node.getNodeId(), level.getLevelId(), versionId);
+        } catch (LockVersionChangeException e) {
+            LOG.info("Node " + node.getNodeId() + " nema aktualizovany stav. Behem validace ke zmene uzlu.");
+        } catch (Exception e) {
+            LOG.error("Node " + node.getNodeId() + " nema aktualizovany stav. Behem validace došlo k chybě.", e);
+        }
+    }
 
     /**
      * Přidá nody do fronty.
      *
      * @param nodes seznam nodů k přidání
+     * @return False when cannot be added because worker is terminated.
      */
-    public void addNodes(Collection<ArrNode> nodes) {
+    public synchronized boolean addNodes(Collection<ArrNode> nodes) {
         Assert.notNull(nodes);
-
-        nodesToUpdate.addAll(nodes);
+        if (!WorkerStatus.isRunning(status)) {
+            return false;
+        }
+        updateNodeQueue.addAll(nodes);
+        return true;
     }
-
 
     /**
      * Zjistí, jestli běží vlákno.
      *
      * @return true pokud běží, jinak false
      */
-    public boolean isRunning() {
-        return running;
+    public synchronized boolean isRunning() {
+        return WorkerStatus.isRunning(status);
     }
 
     /**
-     * Vyjme jeden nod z fronty.
+     * Vyjme jeden nod z fronty. Pokud nemá další node ukončí běh vlákna.
      *
      * @return nod z fronty
      */
-    private ArrNode getNode() {
-        ArrNode node = nodesToUpdate.iterator().next();
-        nodesToUpdate.remove(node);
+    private synchronized ArrNode getNextNode() {
+        Iterator<ArrNode> it = updateNodeQueue.iterator();
+        if (!it.hasNext()) {
+            terminate();
+            return null;
+        }
+        ArrNode node = it.next();
+        it.remove();
         return node;
-    }
-
-    /**
-     * Vrací zámek.
-     *
-     * @return zámek
-     */
-    public Object getLock() {
-        return lock;
     }
 
     /**
      * Provede ukončení běhu. Nechá dopočítat poslední uzel.
      */
-    public void terminate() {
-        synchronized (getLock()) {
-            running = false;
-            nodesToUpdate.clear();
-        }
+    public synchronized void terminate() {
+        updateNodeQueue.clear();
+        status = WorkerStatus.TERMINATED;
     }
 
     /**
      * Provede ukončení běhu. Počká než vlákno skutečně skončí.
      */
     public void terminateAndWait() {
-        synchronized (getLock()) {
-            nodesToUpdate.clear();
+        synchronized (this) {
+            updateNodeQueue.clear();
+            status = WorkerStatus.TERMINATING;
         }
-
-        while (running) {
+        while (status != WorkerStatus.TERMINATED) {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
                 throw new SystemException("Chyba při ukončování vlákna pro validaci uzlů.", e);
             }
+        }
+    }
+
+    private enum WorkerStatus {
+        RUNNABLE, RUNNING, TERMINATING, TERMINATED;
+
+        public static boolean isRunning(WorkerStatus status) {
+            return status == RUNNABLE || status == RUNNING;
         }
     }
 }

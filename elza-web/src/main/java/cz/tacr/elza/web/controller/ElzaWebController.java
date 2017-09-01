@@ -39,14 +39,14 @@ public class ElzaWebController {
         return allowDefaultUser;
     }
 
-    @Value("${version}")
+    @Value("${version:0.0.0}")
     private String appVersion;
 
     @ModelAttribute("appVersion")
     public String getAppVersion(){
     	return appVersion;
     }
-    
+
     private void initDefaults(final HttpServletRequest request, final Model model) {
         model.addAttribute("contextPath", request.getContextPath());
     }
@@ -62,7 +62,7 @@ public class ElzaWebController {
         initDefaults(request, model);
         return "web";
     }
-    
+
     @RequestMapping(value = "/fund", method = RequestMethod.GET)
     public String fundPage(final HttpServletRequest request, final Model model) {
         initDefaults(request, model);

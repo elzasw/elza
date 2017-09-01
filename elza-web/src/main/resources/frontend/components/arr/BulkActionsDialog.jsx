@@ -3,13 +3,15 @@
  */
 
 import React from 'react';
-import {AbstractReactComponent, i18n, BulkActionsTable} from 'components/index.jsx';
+import {AbstractReactComponent, i18n} from 'components/shared';
+import BulkActionsTable from './BulkActionsTable'
 import {Modal, Button} from 'react-bootstrap';
 
-var BulkActionsDialog = class BulkActionsDialog extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
-    }
+class BulkActionsDialog extends AbstractReactComponent {
+
+    static PropTypes = {
+        mandatory: React.PropTypes.bool.isRequired
+    };
 
     render() {
         const {onClose, mandatory} = this.props;
@@ -24,14 +26,9 @@ var BulkActionsDialog = class BulkActionsDialog extends AbstractReactComponent {
             </div>
         )
     }
-};
+}
 
-
-BulkActionsDialog.propTypes = {
-    mandatory: React.PropTypes.bool.isRequired
-};
-
-module.exports = BulkActionsDialog;
+export default BulkActionsDialog;
 
 
 

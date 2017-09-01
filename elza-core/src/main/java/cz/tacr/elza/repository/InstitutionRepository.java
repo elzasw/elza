@@ -1,6 +1,10 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ParInstitution;
@@ -20,4 +24,8 @@ public interface InstitutionRepository extends JpaRepository<ParInstitution, Int
 
     ParInstitution findByParty(ParParty parParty);
 
+    List<ParInstitution> findByPartyIdIn(Collection<Integer> partyIds);
+
+    @Modifying
+    int deleteByInstitutionIdIn(Collection<Integer> partyIds);
 }

@@ -1,12 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom'
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
 import {indexById} from 'stores/app/utils.jsx';
+import AbstractReactComponent from "../../AbstractReactComponent";
+import FormInput from "../form/FormInput";
 
 import './Scope.less';
-
 
 /**
  *  Komponenta pro scope

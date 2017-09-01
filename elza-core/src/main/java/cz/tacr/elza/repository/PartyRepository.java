@@ -2,11 +2,13 @@ package cz.tacr.elza.repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.jpa.repository.Query;
 
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.projection.ParPartyInfo;
 
 
 /**
@@ -51,4 +53,6 @@ public interface PartyRepository extends ElzaJpaRepository<ParParty, Integer>, P
      */
     @Query("SELECT c.creatorParty FROM par_creator c WHERE c.party = ?1 ORDER BY c.creatorId")
     List<ParParty> findCreatorsByParty(ParParty party);
+
+    List<ParPartyInfo> findInfoByRecordRecordIdIn(Collection<Integer> recordIds);
 }

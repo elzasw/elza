@@ -28,7 +28,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
 
@@ -63,6 +64,7 @@ import cz.tacr.elza.interpi.ws.wo.ZarazeniTyp;
 import cz.tacr.elza.interpi.ws.wo.ZaznamTyp;
 import cz.tacr.elza.interpi.ws.wo.ZdrojTyp;
 import cz.tacr.elza.repository.RegExternalSystemRepository;
+import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.utils.NoCheckTrustManager;
 import cz.tacr.elza.utils.XmlUtils;
 
@@ -74,7 +76,9 @@ import cz.tacr.elza.utils.XmlUtils;
  */
 @Ignore
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = ElzaCoreTest.class)
+@SpringBootTest
+@ContextConfiguration(classes = ElzaCoreTest.class)
+//@SpringApplicationConfiguration(classes = ElzaCoreTest.class)
 public class InterpiTest extends AbstractControllerTest {
 
     private String url = "https://195.113.132.114:443/csp/interpi/cust.interpi.ws.soap.cls";
@@ -90,6 +94,9 @@ public class InterpiTest extends AbstractControllerTest {
     private RegExternalSystemRepository regExternalSystemRepository;
 
     private Integer systemId;
+    
+    @Autowired
+    protected ScopeRepository scopeRepository;    
 
     @Override
     @Before

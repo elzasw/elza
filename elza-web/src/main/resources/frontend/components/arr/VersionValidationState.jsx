@@ -5,7 +5,7 @@
 require('./VersionValidationState.less');
 
 import React from 'react';
-import {AbstractReactComponent, i18n, Icon} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, Icon} from 'components/shared';
 
 var VersionValidationState = class VersionValidationState extends AbstractReactComponent {
     constructor(props) {
@@ -36,7 +36,7 @@ VersionValidationState.propTypes = {
     isFetching: React.PropTypes.bool.isRequired
 };
 
-module.exports = VersionValidationState;
+export default VersionValidationState;
 
 
 

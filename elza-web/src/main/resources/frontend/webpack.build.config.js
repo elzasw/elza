@@ -1,70 +1,126 @@
-var webpack = require('webpack');
-var path = require('path');
 process.env.BABEL_ENV = 'production';
 process.env.NODE_ENV = 'production';
+const path = require('path');
+const webpack = require('webpack');
+const CommonsChunkPlugin = require("webpack/lib/optimize/CommonsChunkPlugin");
+const CircularDependencyPlugin = require('circular-dependency-plugin');
+
+const SOURCE_MAP = false
+
 module.exports = {
-    entry: [
-        './index.jsx',
-    ],
-    debug: false,
+    devtool: SOURCE_MAP ? 'source-map' : false,
+    bail: true,
+    entry: {
+        main: [
+            'babel-polyfill',
+            './public_entry.jsx',
+            './index.jsx'
+        ]
+    },
     output: {
-        path: '../../../../target/react-dist',
-        filename: "[name].js"
+        path: path.resolve('../../../../target/react-dist'),
+        filename: "[name].js",
+        sourceMapFilename: "[name].js.map",
+    },
+    resolve: {
+        extensions: ['.js', '.jsx'],
+        modules: [
+            path.resolve(__dirname),
+            path.resolve(__dirname, "node_modules")
+        ]
     },
     module: {
-        loaders: [
+        rules: [
             {
                 test: /\.jsx?$/,
-                exclude: /(node_modules|bower_components)/,
-                loaders: ['babel-loader']
+                exclude: /node_modules/,
+                use: [
+                    {loader: 'babel-loader'}
+                ]
             },
             {
-                test: /\.json$/,
-                loader: 'json'
-            },
-            {
-                test: /\.css$/,
-                loader: 'style-loader!css-loader'
+                test: /\.css/,
+                use: [{loader: "style-loader"}, {loader: "css-loader"}]
             },
             {
                 test: /\.less$/,
-                loader: "style!css!less"
+                use: [
+                    {loader: "style-loader"},
+                    {loader: "css-loader"},
+                    {
+                        loader: "less-loader",
+                        options: {
+                            strictMath: true,
+                            noIeCompat: false,
+                            paths: [
+                                path.resolve(__dirname),
+                                path.resolve(__dirname, "node_modules")
+                            ]
+                        }
+                    }]
             },
             {
                 test: /\.scss$/,
-                loader: "style!css!sass"
+                use: [{loader: "style-loader"}, {loader: "css-loader"}, {loader: "sass-loader"}]
             },
-            {test: /\.woff(\?v=\d+\.\d+\.\d+)?$/, loader: "file"},
-            {test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/, loader: "file"},
-            {test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/, loader: "file"},
-            {test: /\.eot(\?v=\d+\.\d+\.\d+)?$/, loader: "file"},
-            {test: /\.svg(\?v=\d+\.\d+\.\d+)?$/, loader: "file"},
-            {test: /\.png(\?v=\d+\.\d+\.\d+)?$/, loader: "file"}
+            {
+                test: /\.(gif|png)$/,
+                use: [{loader: "url-loader?mimetype=image/png"}]
+            },
+            {
+                test: /\.woff(2)?(\?v=[0-9].[0-9].[0-9])?$/,
+                use: [{loader: "url-loader?mimetype=application/font-woff"}]
+            },
+            {test: /\.(ttf|eot|svg)?$/, use: [{loader: "file-loader?name=[name].[ext]"}]}
         ]
     },
     node: {
         net: "empty",
         tls: "empty"
     },
-    externals: {
-    },
-    resolve: {
-        modulesDirectories: [
-            "node_modules",
-            path.resolve('./')
-        ],
-        extensions: ['', '.js', '.jsx']
-    },
     plugins: [
+        new CircularDependencyPlugin({
+            // exclude detection of files based on a RegExp
+            exclude: /node_modules/,
+            // add errors to webpack instead of warnings
+            failOnError: true
+        }),
         new webpack.ProvidePlugin({
             $: "jquery",
             jQuery: "jquery"
         }),
+
+        // ignore dev config
+        new webpack.IgnorePlugin(/\.\/dev/, /\/config$/),
+
+
+        new webpack.LoaderOptionsPlugin({
+            minimize: true,
+            debug: false
+        }),
+
         new webpack.DefinePlugin({
+            'process.env.BABEL_ENV': JSON.stringify(process.env.NODE_ENV),
             'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+            __DEVELOPMENT__: false,
             __DEVTOOLS__: false,
             __SHOW_DEVTOOLS__: false,
             __DEV__: false
-        })
+        }),
+
+        // optimizations
+        new webpack.optimize.ModuleConcatenationPlugin(),
+        new webpack.optimize.UglifyJsPlugin({
+            compress: {
+                screw_ie8: true,
+                warnings: false
+            },
+            output: {
+                comments: false
+            },
+            sourceMap: SOURCE_MAP
+        }),
+        new webpack.optimize.OccurrenceOrderPlugin(true)
+
     ]
-}
+};

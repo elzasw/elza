@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent, i18n} from 'components/index.jsx';
+import {AbstractReactComponent, i18n} from 'components/shared';
 import {connect} from 'react-redux'
 import {decorateValue} from './DescItemUtils.jsx'
 import {OverlayTrigger, Tooltip} from 'react-bootstrap';
@@ -50,9 +50,9 @@ class DescItemUnitdate extends AbstractReactComponent {
             let index = indexById(calendarTypes.items, descItem.calendarTypeId);
             if (index !== null) {
                 let calendar = calendarTypes.items[index].name;
-                return <DescItemLabel value={calendar + ": " + value} cal={false}/>
+                return <DescItemLabel value={calendar + ": " + value} cal={false} notIdentified={descItem.undefined}/>
             } else {
-                return <DescItemLabel value="" cal={cal} />
+                return <DescItemLabel value="" cal={cal} notIdentified={descItem.undefined} />
             }
         }
 
@@ -63,19 +63,19 @@ class DescItemUnitdate extends AbstractReactComponent {
 
         return <div className='desc-item-value desc-item-value-parts'>
             <select
-                {...decorateValue(this, descItem.hasFocus, descItem.error.calendarType, locked, ['calendar-select'])}
+                {...decorateValue(this, descItem.hasFocus, descItem.error.calendarType, locked || descItem.undefined, ['calendar-select'])}
                 value={descItem.calendarTypeId}
                 onChange={this.handleCalendarTypeChange}
             >
                 <option />
                 {calendarTypes.items.map(type => <option key={type.id} value={type.id}>{type.name.charAt(0)}</option>)}
             </select>
-            <ItemTooltipWrapper tooltipTitle="dataType.unitdate.format">
+            <ItemTooltipWrapper tooltipTitle="dataType.unitdate.format" style={{"width":"100%"}}>
                 <input
-                    {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
+                    {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked || descItem.undefined, cls)}
                     ref='focusEl'
                     type="text"
-                    value={value}
+                    value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : value}
                     onChange={this.handleValueChange}
                 />
             </ItemTooltipWrapper>

@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Icon, i18n, AbstractReactComponent, NoFocusButton, AddPacketForm, AddPartyForm, AddRegistryForm,
-    AddPartyEventForm, AddPartyGroupForm, AddPartyDynastyForm, AddPartyOtherForm,
-    AddFileForm} from 'components';
+import {Icon, i18n, AbstractReactComponent, NoFocusButton } from 'components/shared';
+import AddPacketForm from './AddPacketForm';
+import AddFileForm from './AddFileForm';
 import {connect} from 'react-redux'
 import {Panel, Accordion} from 'react-bootstrap'
 import {indexById} from 'stores/app/utils.jsx'
@@ -781,6 +781,14 @@ class SubNodeForm extends AbstractReactComponent {
             }
         }
 
+        let notIdentified = false;
+
+        descItemType.descItems.forEach(descItem => {
+            if (!descItemType.rep && descItem.undefined) {
+                notIdentified = true;
+            }
+        });
+
         return <DescItemType key={descItemType.id}
              typePrefix={typePrefix}
             ref={'descItemType' + descItemType.id}
@@ -826,8 +834,19 @@ class SubNodeForm extends AbstractReactComponent {
             fundId={fundId}
             readMode={readMode}
             strictMode={strictMode}
+            notIdentified={notIdentified}
+            onDescItemNotIdentified={(descItemIndex, descItem) => this.handleDescItemNotIdentified(descItemGroupIndex, descItemTypeIndex, descItemIndex, descItem)}
         />
     }
+
+    handleDescItemNotIdentified = (descItemGroupIndex, descItemTypeIndex, descItemIndex, descItem) => {
+        let valueLocation = {
+            descItemGroupIndex,
+            descItemTypeIndex,
+            descItemIndex,
+        };
+        this.dispatch(this.props.formActions.fundSubNodeFormValueNotIdentified(this.props.versionId, this.props.routingKey, valueLocation, descItem));
+    };
 
     handleAddUnusedItem = (itemTypeId, index) => {
         const {formActions, versionId} = this.props;

@@ -5,6 +5,7 @@ import java.util.Set;
 
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import org.apache.commons.lang.BooleanUtils;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -139,7 +140,12 @@ public class DateRangeAction extends Action {
 
     @Override
     public void apply(final ArrNode node, final List<ArrDescItem> items, final LevelWithItems parentLevelWithItems) {
-        for (ArrItem item : items) {        	
+        for (ArrItem item : items) {
+
+            if (BooleanUtils.isTrue(item.getUndefined())) {
+                continue;
+            }
+
             // není použit záměrně if-else, protože teoreticky by šlo nakonfigurovat vše na stejnou položku
             if (inputItemType.equals(item.getItemType())) {
                 ArrItemUnitdate data = (ArrItemUnitdate) item.getItem();
@@ -152,7 +158,7 @@ public class DateRangeAction extends Action {
                 if(dataNormalizedTo==null) {
                 	dataNormalizedTo = Long.MIN_VALUE;
                 }
-                
+
                 if (dateMin > dataNormalizedFrom) {
                     dateMinString = UnitDateConvertor.convertToString(data);
                     dateMin = dataNormalizedFrom;

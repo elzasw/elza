@@ -1,22 +1,26 @@
 package cz.tacr.elza.repository;
 
-import java.text.NumberFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
+import cz.tacr.elza.api.IUnitdate;
+import cz.tacr.elza.controller.vo.filter.SearchParam;
+import cz.tacr.elza.controller.vo.filter.SearchParamType;
+import cz.tacr.elza.controller.vo.filter.TextSearchParam;
+import cz.tacr.elza.controller.vo.filter.UnitdateCondition;
+import cz.tacr.elza.controller.vo.filter.UnitdateSearchParam;
+import cz.tacr.elza.core.data.CalendarType;
+import cz.tacr.elza.domain.ArrCalendarType;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.convertor.CalendarConverter;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.vo.RelatedNodeDirection;
+import cz.tacr.elza.exception.InvalidQueryException;
+import cz.tacr.elza.filter.DescItemTypeFilter;
+import cz.tacr.elza.filter.condition.LuceneDescItemCondition;
+import cz.tacr.elza.utils.NodeUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.document.FieldType;
@@ -34,27 +38,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.api.IUnitdate;
-import cz.tacr.elza.controller.vo.filter.SearchParam;
-import cz.tacr.elza.controller.vo.filter.SearchParamType;
-import cz.tacr.elza.controller.vo.filter.TextSearchParam;
-import cz.tacr.elza.controller.vo.filter.UnitdateCondition;
-import cz.tacr.elza.controller.vo.filter.UnitdateSearchParam;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.convertor.CalendarConverter;
-import cz.tacr.elza.domain.convertor.CalendarConverter.CalendarType;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
-import cz.tacr.elza.domain.vo.RelatedNodeDirection;
-import cz.tacr.elza.exception.InvalidQueryException;
-import cz.tacr.elza.filter.DescItemTypeFilter;
-import cz.tacr.elza.filter.condition.LuceneDescItemCondition;
-import cz.tacr.elza.utils.NodeUtils;
+import javax.annotation.PostConstruct;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.text.NumberFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 /**
@@ -427,11 +425,21 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
         StandardQueryParser parser = new StandardQueryParser();
         parser.setAllowLeadingWildcard(true);
+
+        // Po přechodu na lucene 6.6.0 se Použije tento kód
+//        HashMap<String, PointsConfig> stringNumericConfigHashMap = new HashMap<>();
+//        PointsConfig intConfig = new PointsConfig(NumberFormat.getIntegerInstance(), Integer.class);
+//        PointsConfig longConfig = new PointsConfig(NumberFormat.getNumberInstance(), Long.class);
+//        stringNumericConfigHashMap.put("specification", intConfig);
+//        stringNumericConfigHashMap.put("normalizedFrom", longConfig);
+//        stringNumericConfigHashMap.put("normalizedTo", longConfig);
+//        parser.setPointsConfigMap(stringNumericConfigHashMap);
         HashMap<String, NumericConfig> stringNumericConfigHashMap = new HashMap<>();
         stringNumericConfigHashMap.put("specification", new NumericConfig(1, NumberFormat.getIntegerInstance(), FieldType.NumericType.INT));
         stringNumericConfigHashMap.put("normalizedFrom", new NumericConfig(16, NumberFormat.getNumberInstance(), FieldType.NumericType.LONG));
         stringNumericConfigHashMap.put("normalizedTo", new NumericConfig(16, NumberFormat.getNumberInstance(), FieldType.NumericType.LONG));
         parser.setNumericConfigMap(stringNumericConfigHashMap);
+
         Query query;
         try {
             Query textQuery = parser.parse(queryText, "fulltextValue");

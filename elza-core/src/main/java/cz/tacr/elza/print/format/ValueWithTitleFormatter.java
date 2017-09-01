@@ -8,7 +8,6 @@ import org.springframework.util.StringUtils;
 
 /**
  * Append specification and value
- * @author Petr Pytelka
  *
  */
 public class ValueWithTitleFormatter implements FormatAction {
@@ -17,6 +16,11 @@ public class ValueWithTitleFormatter implements FormatAction {
 	 * Code of item type to be formatted
 	 */
 	String itemType;
+	
+	/**
+	 * Flag to write title in lower case
+	 */
+	boolean titleLowerCase = true;
 
 	public ValueWithTitleFormatter(String itemType) {
 		this.itemType = itemType;
@@ -42,18 +46,23 @@ public class ValueWithTitleFormatter implements FormatAction {
 	 * @return Return true if item was added
 	 */
 	private boolean formatItem(final boolean firstItem, FormatContext ctx, Item item) {
-		String value = item.serializeValue();
-		// Check if not empty
-		if(StringUtils.isEmpty(value)) {
+		// Do not write empty value
+		if(item.isEmpty()) {
 			return false;
 		}
+		String value = item.serializeValue();
 		
 		// Append title
 		String oldItemSeparator = null;
 		if(firstItem) {
+			// get name
 			String name = item.getType().getShortcut();
 			if(StringUtils.isEmpty(name)) {
-				name = item.getType().getName();
+				name = item.getType().getName();				
+			}
+			// convert name
+			if(titleLowerCase) {
+				name = name.toLowerCase();
 			}
 			ctx.appendValue(name);
 			oldItemSeparator = ctx.getItemSeparator();
@@ -63,9 +72,14 @@ public class ValueWithTitleFormatter implements FormatAction {
 		// Append value
 		ItemSpec spec = item.getSpecification();			
 		if(spec!=null) {
+			// get specification
 			String specName = spec.getShortcut();
 			if(StringUtils.isEmpty(specName)) {
 				specName = spec.getName();
+			}
+			// convert name
+			if(titleLowerCase) {
+				specName = specName.toLowerCase();
 			}
 			// write value with specification
 			ctx.appendSpecWithValue(specName, value);

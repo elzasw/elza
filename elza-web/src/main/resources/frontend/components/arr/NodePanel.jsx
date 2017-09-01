@@ -2,14 +2,20 @@
  * Komponenta panelu formuláře jedné JP.
  */
 
+import scrollIntoView from "dom-scroll-into-view";
+import classNames from "classnames";
 // Konstance kolik se má maximálně zobrazit v seznamu parents a children záznamů
 const PARENT_CHILD_MAX_LENGTH = 250
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {TooltipTrigger, Icon, ListBox, AbstractReactComponent, i18n, Loading, NodeSubNodeForm, Accordion, SubNodeRegister, NodeActionsBar,
-        VisiblePolicyForm, SubNodeDao} from 'components';
+import {TooltipTrigger, Icon, ListBox, AbstractReactComponent, i18n, Loading,  Accordion} from 'components/shared';
+import VisiblePolicyForm from './VisiblePolicyForm'
+import SubNodeDao from './SubNodeDao'
+import SubNodeRegister from './SubNodeRegister'
+import NodeActionsBar from './NodeActionsBar'
+import NodeSubNodeForm from './NodeSubNodeForm'
 import {Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
 import {addNodeFormArr} from 'actions/arr/addNodeForm.jsx';
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
@@ -17,7 +23,7 @@ import {fundSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister.jsx'
 import {fundSubNodeDaosFetchIfNeeded} from 'actions/arr/subNodeDaos.jsx'
 import {fundSubNodeInfoFetchIfNeeded} from 'actions/arr/subNodeInfo.jsx'
 import {fundNodeInfoFetchIfNeeded} from 'actions/arr/nodeInfo.jsx'
-import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
+import {fundSelectSubNode} from 'actions/arr/node.jsx';
 import {fundNodeSubNodeFulltextSearch, fundSubNodesNext, fundSubNodesPrev, fundSubNodesNextPage, fundSubNodesPrevPage} from 'actions/arr/node.jsx'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
 import {indexById} from 'stores/app/utils.jsx'
@@ -28,21 +34,29 @@ import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {getOneSettings} from 'components/arr/ArrUtils.jsx';
-import {Utils} from 'components/index.jsx';
+import {Utils} from 'components/shared';
 import ArrRequestForm from "./ArrRequestForm";
 import {WebApi} from 'actions/index.jsx';
 import {Shortcuts} from 'react-shortcuts';
-const scrollIntoView = require('dom-scroll-into-view')
-var classNames = require('classnames');
 import {setFocus, canSetFocus, focusWasSet, isFocusFor, isFocusExactFor} from 'actions/global/focus.jsx'
 import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
 import {visiblePolicyTypesFetchIfNeeded} from 'actions/refTables/visiblePolicyTypes.jsx'
 import * as perms from 'actions/user/Permission.jsx';
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './NodePanelKeymap.jsx'
 
-require ('./NodePanel.less');
+import './NodePanel.less';
 
-var NodePanel = class NodePanel extends AbstractReactComponent {
+class NodePanel extends AbstractReactComponent {
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
     constructor(props) {
         super(props);
 
@@ -60,17 +74,20 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         }
     }
     selectorMoveUp = ()=>{
-        const {node} = this.props
-        if (node.selectedSubNodeId === null) {
+
+        const {node} = this.props;
+        if (node.selectedSubNodeId !== null) {
             const {focusItemIndex} = this.state
             if (focusItemIndex > node.viewStartIndex) {
+                console.log(focusItemIndex);
                 this.setState({focusItemIndex: focusItemIndex - 1}, () => {this.ensureItemVisibleNoForm(focusItemIndex - 1)})
             }
         }
     }
     selectorMoveDown = ()=>{
         const {node} = this.props
-        if (node.selectedSubNodeId === null) {
+
+        if (node.selectedSubNodeId !== null) {
             const {focusItemIndex} = this.state
             const max = Math.min(node.viewStartIndex + node.pageSize, node.childNodes.length)
             if (focusItemIndex + 1 < max) {
@@ -110,7 +127,6 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        console.log("REQUEST");
         this.requestData(nextProps.versionId, nextProps.node, nextProps.showRegisterJp, nextProps.showDaosJp);
 
         var newState = {
@@ -175,35 +191,12 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         }
 
         switch (action) {
-            case 'prevItem':
-                if (index > 0) {
-                    this.handleOpenItem(node.childNodes[index - 1])
-                    this.dispatch(setFocus('arr', 2, 'accordion'))
-                }
-                break
-            case 'nextItem':
-                if (index + 1 < node.childNodes.length) {
-                    this.handleOpenItem(node.childNodes[index + 1])
-                    this.dispatch(setFocus('arr', 2, 'accordion'))
-                }
-                break
             case 'searchItem':
                 ReactDOM.findDOMNode(this.refs.search.getInput().refs.input).focus()
                 break
             case 'addDescItemType':
                 if (node.selectedSubNodeId !== null && !readMode) {
                     this.handleAddDescItemType()
-                }
-                break
-            case 'toggleItem':
-                if (node.selectedSubNodeId === null) {
-                    const {focusItemIndex} = this.state
-                    this.handleOpenItem(node.childNodes[focusItemIndex])
-                    this.dispatch(setFocus('arr', 2, 'accordion'))
-                } else {
-                    const {focusItemIndex} = this.state
-                    this.handleCloseItem(node.childNodes[focusItemIndex])
-                    this.dispatch(setFocus('arr', 2, 'accordion'))
                 }
                 break
             case 'addNodeAfter':
@@ -226,6 +219,41 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                     this.dispatch(addNodeFormArr('ATEND', node, focusItemIndex, versionId));
                 }
                 break
+        }
+    }
+
+    handleAccordionShortcuts(action,e) {
+        const {node} = this.props;
+        const {focusItemIndex} = this.state;
+        const index = indexById(node.childNodes, node.selectedSubNodeId);
+        let preventDefaultActions = ["prevItem","nextItem","toggleItem"];
+        if(preventDefaultActions.indexOf(action) >= 0){
+            e.preventDefault();
+        }
+        switch (action) {
+            case 'prevItem':
+                if (index > 0) {
+                    this.handleOpenItem(node.childNodes[index - 1])
+                    this.dispatch(setFocus('arr', 2, 'accordion'))
+                }
+                break
+            case 'nextItem':
+                if (index + 1 < node.childNodes.length) {
+                    this.handleOpenItem(node.childNodes[index + 1])
+                    this.dispatch(setFocus('arr', 2, 'accordion'))
+                }
+                break
+            case 'toggleItem':
+                if (node.selectedSubNodeId === null) {
+                    const {focusItemIndex} = this.state
+                    this.handleOpenItem(node.childNodes[focusItemIndex])
+                    this.dispatch(setFocus('arr', 2, 'accordion'))
+                } else {
+                    const {focusItemIndex} = this.state
+                    this.handleCloseItem(node.childNodes[focusItemIndex])
+                    this.dispatch(setFocus('arr', 2, 'accordion'))
+                }
+                break
             case "ACCORDION_MOVE_UP":
                 this.selectorMoveUp();
                 break;
@@ -240,7 +268,6 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 break;
         }
     }
-
     /**
      * Zobrazení formuláře pro požadavek na digitalizaci.
      */
@@ -588,7 +615,8 @@ return true
                     holdOnHover
                     placement="auto"
                     className="status"
-                    showDelay={1}
+                    showDelay={50}
+                    hideDelay={0}
                 >
                     <div>
                         {icon}
@@ -687,7 +715,7 @@ return true
             }
         }
         return (
-            <Shortcuts name='Accordion' key='content' className='content' ref='content' handler={this.handleShortcuts} tabIndex={"0"} global stopPropagation={false}>
+            <Shortcuts name='Accordion' key='content' className='content' ref='content' handler={(action,e)=>this.handleAccordionShortcuts(action,e)} tabIndex={"0"} global stopPropagation={false}>
                 <div  className='inner-wrapper' ref="innerAccordionWrapper">
                     <div className="menu-wrapper">
                         <NodeActionsBar node={node} selectedSubNodeIndex={focusItemIndex} versionId={versionId} userDetail={userDetail} fundId={fundId} closed={closed}/>
@@ -899,4 +927,4 @@ NodePanel.propTypes = {
     userDetail: React.PropTypes.object.isRequired,
 }
 
-module.exports = connect(mapStateToProps)(NodePanel);
+export default connect(mapStateToProps)(NodePanel);

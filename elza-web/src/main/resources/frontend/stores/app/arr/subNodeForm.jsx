@@ -1,8 +1,7 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import {i18n} from 'components/index.jsx';
+import {i18n} from 'components/shared';
 import {indexById} from 'stores/app/utils.jsx'
 import {createDescItemFromDb, getItemType, updateFormData, createDescItem, consolidateDescItems} from './subNodeFormUtils.jsx'
-var subNodeFormUtils = require('./subNodeFormUtils.jsx')
 import {validateInt, validateDouble, validateCoordinatePoint} from 'components/validate.jsx'
 import {getMapFromList} from 'stores/app/utils.jsx'
 import {valuesEquals} from 'components/Utils.jsx'
@@ -147,7 +146,6 @@ export default function subNodeForm(state = initialState, action = {}) {
             state.formData = {...state.formData};
             return {...state};
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_POSITION:
-            console.log("BEFORE", loc.descItemType.descItems)
             var descItems = [...loc.descItemType.descItems];
 
             // // Odebrání přesouvané
@@ -165,10 +163,7 @@ export default function subNodeForm(state = initialState, action = {}) {
 
             descItems.splice(action.index, 0, descItems.splice(action.valueLocation.descItemIndex, 1)[0]);
 
-
             loc.descItemType.descItems = descItems
-            console.log("AFTER", loc.descItemType.descItems)
-
             state.formData = {...state.formData};
             return {...state};
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE:
@@ -329,12 +324,12 @@ export default function subNodeForm(state = initialState, action = {}) {
                     loc.descItemType.descItems.forEach((descItem, index) => {descItem.position = index + 1});
                     break;
                 case 'UPDATE':
-                    loc.descItem.descItemObjectId = action.descItemResult.item.descItemObjectId;
-                    loc.descItem.prevValue = action.descItemResult.item.value;
-                    if (loc.descItemType.useSpecification) {
+                    loc.descItem.descItemObjectId = action.descItemResult.item ? action.descItemResult.item.descItemObjectId : null;
+                    loc.descItem.prevValue = action.descItemResult.item ? action.descItemResult.item.value : null;
+                    if (action.descItemResult.item && loc.descItemType.useSpecification) {
                         loc.descItem.prevDescItemSpecId = action.descItemResult.item.descItemSpecId;
                     }
-                    if (action.descItemResult.item.calendarTypeId) {
+                    if (action.descItemResult.item && action.descItemResult.item.calendarTypeId) {
                         loc.descItem.prevCalendarTypeId = action.descItemResult.item.calendarTypeId;
                     }
                     loc.descItem.touched = false
@@ -508,4 +503,3 @@ export default function subNodeForm(state = initialState, action = {}) {
             return state
     }
 }
-

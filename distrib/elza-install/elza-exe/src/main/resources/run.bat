@@ -1,0 +1,1 @@
+"c:\Program Files (x86)\Inno Setup 5\ISCC.exe" "/DTomcatVersion=8.5.15" "/DVerzeAplikace=0.12.0-SNAPSHOT" "/DNazevInstalator=ELZA-0.12.0-SNAPSHOT" elza-instalator.iss 

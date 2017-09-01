@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {TooltipTrigger, Autocomplete, Utils, Icon, i18n, AbstractReactComponent, NoFocusButton, FormInput} from 'components/index.jsx';
+import {TooltipTrigger, Autocomplete, Utils, Icon, i18n, AbstractReactComponent, NoFocusButton, FormInput} from 'components/shared';
 import {Tooltip, OverlayTrigger} from 'react-bootstrap';
 import {addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
 import {connect} from 'react-redux'
@@ -25,7 +25,8 @@ import * as perms from 'actions/user/Permission.jsx';
 import {Shortcuts} from 'react-shortcuts';
 import {getSetFromIdsList} from "stores/app/utils.jsx";
 import DescItemTypeSpec from "./DescItemTypeSpec";
-
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './DescItemTypeKeymap.jsx';
 import './AbstractDescItem.less'
 
 const placeholder = document.createElement("div");
@@ -35,6 +36,14 @@ placeholder.className = "placeholder";
  * Atribut - desc item type.
  */
 class DescItemType extends AbstractReactComponent {
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
     constructor(props) {
         super(props);
 
@@ -166,7 +175,7 @@ class DescItemType extends AbstractReactComponent {
                 key={key}
                 ref={key}
                 descItem={descItem}
-                locked={locked}
+                locked={locked || descItem.undefined}
                 infoType={infoType}
                 refType={refType}
                 readMode={readMode}
@@ -751,7 +760,8 @@ class DescItemType extends AbstractReactComponent {
     renderLabel() {
         const {
             fundId, showNodeAddons, userDetail, descItemCopyFromPrevEnabled, singleDescItemTypeEdit,
-            copy, locked, descItemType, infoType, refType, conformityInfo, closed, readMode
+            copy, locked, descItemType, infoType, refType, conformityInfo, closed, readMode, notIdentified,
+            rulDataType, onDescItemNotIdentified
         } = this.props;
 
         const actions = [];
@@ -775,7 +785,8 @@ class DescItemType extends AbstractReactComponent {
             }
         }
 
-        if (this.getShowDeleteDescItemType()) {
+        const showDeleteButton = this.getShowDeleteDescItemType();
+        if (showDeleteButton) {
             actions.push(<NoFocusButton key="delete" onClick={this.props.onDescItemTypeRemove}
                                         title={i18n('subNodeForm.deleteDescItemType')}><Icon
                 glyph="fa-trash"/></NoFocusButton>);
@@ -854,6 +865,16 @@ class DescItemType extends AbstractReactComponent {
             }
         }
 
+        if (showDeleteButton && !closed && !readMode && !infoType.rep && infoType.ind && rulDataType.code !== 'ENUM') {
+            actions.push(<NoFocusButton key="notIdentified" onClick={() => {
+                if (descItemType.descItems.length === 1) {
+                    onDescItemNotIdentified(0, descItemType.descItems[0]);
+                }
+            }}
+                                        title={i18n('subNodeForm.descItemType.title.notIdentified')}><Icon
+                glyph="fa-low-vision" className={notIdentified ? 'notIdentified' : 'identified'} /></NoFocusButton>);
+        }
+
         // Render
         return (
             <div key="label" className='desc-item-type-label'>
@@ -904,14 +925,22 @@ class DescItemType extends AbstractReactComponent {
     }
 
     render() {
-        const {fundId, userDetail, onDescItemRemove, onDescItemAdd, descItemType, refType, infoType, locked, conformityInfo, closed, readMode} = this.props;
+        const {fundId, userDetail, onDescItemRemove, onDescItemAdd, descItemType, rulDataType, infoType,
+            locked, conformityInfo, closed, readMode, onDescItemNotIdentified} = this.props;
 
         const label = this.renderLabel();
         const showDeleteDescItemType = this.getShowDeleteDescItemType();
         const descItems = descItemType.descItems.map((descItem, descItemIndex) => {
             const actions = [];
 
-            if (!readMode && infoType.rep === 1) {
+            if (!readMode && infoType.rep === 1 && !(infoType.cal && !infoType.calSt)) {
+                if (rulDataType.code !== 'ENUM' && infoType.ind) {
+                    actions.push(<NoFocusButton disabled={!this.getShowDeleteDescItem(descItem)} key="notIdentified"
+                                                className={descItem.undefined ? 'notIdentified' : 'identified'}
+                                                onClick={() => onDescItemNotIdentified(descItemIndex, descItem)}
+                                                title={i18n('subNodeForm.descItemType.title.notIdentified')}><Icon
+                        glyph="fa-low-vision"/></NoFocusButton>);
+                }
                 actions.push(<NoFocusButton disabled={!this.getShowDeleteDescItem(descItem)} key="delete"
                                             onClick={onDescItemRemove.bind(this, descItemIndex)}
                                             title={i18n('subNodeForm.deleteDescItem')}><Icon
@@ -950,7 +979,7 @@ class DescItemType extends AbstractReactComponent {
         });
 
         return (
-            <Shortcuts name='DescItemType' className={cls} handler={this.handleDescItemTypeShortcuts}>
+            <Shortcuts name='DescItemType' className={cls} handler={this.handleDescItemTypeShortcuts} global alwaysFireHandler>
                 {label}
                 <div ref='dragOverContainer' className='desc-item-type-desc-items' onDragOver={this.handleDragOver}
                      onDragLeave={this.handleDragLeave}>
@@ -1001,6 +1030,8 @@ DescItemType.propTypes = {
     packets: React.PropTypes.array.isRequired,
     locked: React.PropTypes.bool.isRequired,
     readMode: React.PropTypes.bool.isRequired,
+    notIdentified: React.PropTypes.bool.isRequired,
+    onDescItemNotIdentified: React.PropTypes.func.isRequired,
     closed: React.PropTypes.bool.isRequired,
     copy: React.PropTypes.bool.isRequired,
     conformityInfo: React.PropTypes.object.isRequired,
@@ -1011,4 +1042,4 @@ DescItemType.propTypes = {
     strictMode: React.PropTypes.bool.isRequired,
 }
 
-module.exports = connect(mapStateToProps, null, null, {withRef: true})(DescItemType);
+export default connect(mapStateToProps, null, null, {withRef: true})(DescItemType);

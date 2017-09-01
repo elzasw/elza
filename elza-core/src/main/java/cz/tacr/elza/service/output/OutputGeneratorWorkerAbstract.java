@@ -10,7 +10,7 @@ import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.exception.ProcessException;
-import cz.tacr.elza.print.Output;
+import cz.tacr.elza.print.OutputImpl;
 import cz.tacr.elza.repository.NodeOutputRepository;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.repository.OutputRepository;
@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
@@ -157,7 +156,7 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
 
             // sestavení outputu
             logger.info("Sestavování modelu výstupu výstupu pro arr_output id={} spuštěno", arrOutputId);
-            final Output output = outputFactoryService.createOutput(arrOutput);
+            final OutputImpl output = outputFactoryService.createOutput(arrOutput);
             logger.info("Sestavování modelu výstupu výstupu pro arr_output id={} dokončeno", arrOutputId);
 
             // skutečné vytvoření výstupného souboru na základě definice
@@ -190,7 +189,7 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
      * @param output výstup
      * @return generovaný obsah výstupního souboru
      */
-    protected abstract InputStream getContent(ArrOutputDefinition arrOutputDefinition, RulTemplate rulTemplate, Output output);
+    protected abstract InputStream getContent(ArrOutputDefinition arrOutputDefinition, RulTemplate rulTemplate, OutputImpl output);
 
     /**
      * zajistí uložení výstupu do DB a DMS.

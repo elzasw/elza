@@ -6,6 +6,7 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.hibernate.search.annotations.Indexed;
 import org.springframework.data.rest.core.annotation.RestResource;
@@ -37,6 +38,20 @@ public class ArrDataPartyRef extends ArrData {
     @Column(nullable = true)
     private Integer position;
 
+    @Transient
+    private final String fulltextValue;
+
+    /**
+     * Sets fulltext value index when party is only reference (detached hibernate proxy).
+     */
+    public ArrDataPartyRef(String fulltextValue) {
+        this.fulltextValue = fulltextValue;
+    }
+
+    public ArrDataPartyRef() {
+        this(null);
+    }
+
     public Integer getPosition() {
         return position;
     }
@@ -55,6 +70,9 @@ public class ArrDataPartyRef extends ArrData {
 
     @Override
     public String getFulltextValue() {
+        if (fulltextValue != null) {
+            return fulltextValue;
+        }
         return party.getRecord().getRecord();
     }
 }

@@ -5,7 +5,7 @@
  * @since 22.12.2015
  */
 import {WebApi} from 'actions/index.jsx';
-import {i18n, Toastr, LongText} from 'components/index.jsx';
+import {i18n, Toastr, LongText} from 'components/shared';
 import * as types from 'actions/constants/ActionTypes.js';
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {savingApiWrapper} from 'actions/global/status.jsx'

@@ -1,17 +1,18 @@
+/**
+ * Formulář přidání nového / úpravu identifikátoru osobě
+ */
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, FormInput, DatationField} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
 import {Form, Modal, Button, Row, Col} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 
 import './RelationForm.less'
+import DatationField from "./DatationField";
 
-/**
- * Formulář přidání nového / úpravu identifikátoru osobě
- */
 class PartyIdentifierForm extends AbstractReactComponent {
 
     static fields = [

@@ -20,13 +20,10 @@ import cz.tacr.elza.domain.ParPartyType;
 public interface ComplementTypeRepository extends JpaRepository<ParComplementType, Integer>, Packaging<ParComplementType> {
 
     /**
-     * Najde všechy typy doplňků pro typ osoby.
-     *
-     * @param parPartyType typ osoby
-     * @return typy doplňků
+     * Returns all complement types compatible with specified party type.
      */
     @Query("SELECT pc.complementType FROM par_party_type_complement_type pc WHERE pc.partyType = ?1")
-    List<ParComplementType> findComplementTypesByPartyType(ParPartyType parPartyType);
+    List<ParComplementType> findByPartyType(ParPartyType parPartyType);
 
     ParComplementType findByCode(String partyNameComplementTypeCode);
 

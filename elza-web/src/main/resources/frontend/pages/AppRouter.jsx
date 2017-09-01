@@ -4,11 +4,12 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
+import {withRouter} from 'react-router';
 import {connect} from 'react-redux'
 import {AbstractReactComponent} from 'components/index.jsx';
 import {routerNavigateFinish} from 'actions/router.jsx'
 
-var localRouterHistory = []
+const localRouterHistory = [];
 
 function getIndexBefore(pathPrefix) {
     for (let a=localRouterHistory.length - 1; a>=0; a--) {
@@ -24,14 +25,10 @@ function getIndexBefore(pathPrefix) {
 class AppRouter extends AbstractReactComponent {
 
     componentDidMount() {
-        this.changeRouteIfNeeded(this.props.router);
+        this.changeRouteIfNeeded(this.props.routerStore);
 
-        this.context.router.listen(this.handleRouterListener)
+        this.props.history.listen(this.handleRouterListener)
     }
-
-    static contextTypes = {
-        router: React.PropTypes.object.isRequired
-    };
 
     handleRouterListener = (info) => {
         const {pathname} = info;
@@ -39,11 +36,11 @@ class AppRouter extends AbstractReactComponent {
     };
 
     componentWillReceiveProps(nextProps) {
-        this.changeRouteIfNeeded(nextProps.router);
+        this.changeRouteIfNeeded(nextProps.routerStore);
     }
 
-    changeRouteIfNeeded = (router) => {
-        const navigateTo = router.navigateTo;
+    changeRouteIfNeeded = (routerStore) => {
+        const navigateTo = routerStore.navigateTo;
 
         if (navigateTo) {
             if (navigateTo.startsWith("/~arr")) {
@@ -54,10 +51,10 @@ class AppRouter extends AbstractReactComponent {
                 } else {
                     navigateToBack = "/";
                 }
-                this.context.router.push(navigateToBack);
+                this.props.history.push(navigateToBack);
                 this.dispatch(routerNavigateFinish());
             } else {
-                this.context.router.push(navigateTo);
+                this.props.history.push(navigateTo);
                 this.dispatch(routerNavigateFinish());
             }
         }
@@ -72,8 +69,8 @@ class AppRouter extends AbstractReactComponent {
 function mapStateToProps(state) {
     const {router} = state
     return {
-        router,
+        routerStore: router,
     }
 }
 
-export default connect(mapStateToProps)(AppRouter);
+export default withRouter(connect(mapStateToProps)(AppRouter));

@@ -8,11 +8,21 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, SubNodeForm, FormInput} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, SubNodeForm, FormInput, Utils} from 'components/shared';
 import {validateInt, normalizeInt} from 'components/validate.jsx';
 import {Shortcuts} from 'react-shortcuts';
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './DescItemJsonTableCellFormKeymap.jsx';
 
 var DescItemJsonTableCellForm = class DescItemJsonTableCellForm extends AbstractReactComponent {
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
     constructor(props) {
         super(props);
 
@@ -79,7 +89,7 @@ var DescItemJsonTableCellForm = class DescItemJsonTableCellForm extends Abstract
         const {value} = this.state
 
         return (
-            <Shortcuts name="DescItemJsonTableCellForm" handler={(action,e)=>this.handleShortcuts(action,e)} className={"cell-edit-container " + (className ? className : "")}>
+            <Shortcuts name="DescItemJsonTableCellForm" handler={(action,e)=>this.handleShortcuts(action,e)} className={"cell-edit-container " + (className ? className : "")} stopPropagation={false}>
                 <FormInput
                     type="text"
                     value={value}
@@ -96,4 +106,4 @@ function mapStateToProps(state) {
     }
 }
 
-module.exports = connect(mapStateToProps)(DescItemJsonTableCellForm)
+export default connect(mapStateToProps)(DescItemJsonTableCellForm)

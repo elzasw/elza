@@ -41,6 +41,13 @@ public class ItemTypeLiteVO {
     private Integer calSt;
 
     /**
+     * atribut se může nastavit jako nedefinovaný
+     * - 0 - nemůže
+     * - 1 - může
+     */
+    private Integer ind;
+
+    /**
      * seznam specifikací atributu
      */
     private List<DescItemSpecLiteVO> specs;
@@ -109,6 +116,14 @@ public class ItemTypeLiteVO {
 
     public void setCal(final Integer cal) {
         this.cal = cal;
+    }
+
+    public Integer getInd() {
+        return ind;
+    }
+
+    public void setInd(final Integer ind) {
+        this.ind = ind;
     }
 
     public List<Integer> getFavoriteSpecIds() {

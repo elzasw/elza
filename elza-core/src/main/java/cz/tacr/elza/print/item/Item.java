@@ -5,15 +5,8 @@ import cz.tacr.elza.print.NodeId;
 /**
  * Rozhranní pro tiskový Item. Implementováno dle jednotlivých datových typů.
  *
- * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
- *         Date: 22.6.16
  */
 public interface Item {
-
-    /**
-     * @return node na který je item navázán, pokud je null, jde o navázání přímo na output
-     */
-    NodeId getNodeId();
 
     /**
      * @return typ item, odpovídá rul_item_type (+rul_data_type)
@@ -29,6 +22,11 @@ public interface Item {
      * @return pozice item v seznamu
      */
     Integer getPosition();
+
+    /**
+     * @return je nedefinovaná hodnota?
+     */
+    Boolean getUndefined();
 
     /**
      * porovnání pro řazení dle rul_item_type.view_order + arr_item.position
@@ -67,4 +65,13 @@ public interface Item {
      * @return odkaz sám na sebe
      */
     Item getItem();
+
+    /**
+     * Return if item is empty.
+     * 
+     *  Empty items are not printed
+     * @return Return true if item is empty (no value), return false if 
+     * item is not empty and should be printed.
+     */
+	boolean isEmpty();
 }

@@ -1,12 +1,12 @@
 import React from 'react';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, Icon, i18n, ListBox, Loading, FormInput} from 'components/index.jsx';
-import FundActionPage from 'pages/arr/FundActionPage.jsx'
+import {AbstractReactComponent, Icon, i18n, ListBox, Loading, FormInput} from 'components/shared';
 import {fetchFundOutputFunctionsIfNeeded, fundOutputFunctionsFilterByState, fundOutputActionRun, fundOutputActionInterrupt} from 'actions/arr/fundOutputFunctions.jsx'
 import {fundActionFetchConfigIfNeeded} from 'actions/arr/fundAction.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {dateTimeToString} from 'components/Utils.jsx';
 import './FundOutputFunctions.less'
+import {actionStateTranslation} from "../../actions/arr/fundAction";
 
 const ACTION_RUNNING_STATE = ['RUNNING', 'WAITING', 'PLANNED'];
 const ACTION_NOT_RUNNING_STATE = ['FINISHED', 'ERROR', 'INTERRUPTED', 'OUTDATED'];
@@ -63,7 +63,7 @@ class FundOutputFunctions extends AbstractReactComponent {
         }
         return null;
     };
-    
+
     handleActionRun = (code) => {
         const {versionId} = this.props;
         this.dispatch(fundOutputActionRun(versionId, code));
@@ -81,7 +81,7 @@ class FundOutputFunctions extends AbstractReactComponent {
         const {outputState, readMode} = this.props;
         const config = this.getConfigByCode(item.code);
         const name = config ? <span title={item.name} className='name'>{config.name}</span> : '';
-        const state = FundActionPage.getStateTranslation(item.state);
+        const state = actionStateTranslation(item.state);
         let buttons = null;
         if (!readMode && outputState !== OutputState.FINISHED && outputState !== OutputState.OUTDATED) {
             if (state == null || ACTION_NOT_RUNNING_STATE.indexOf(item.state) !== -1) {

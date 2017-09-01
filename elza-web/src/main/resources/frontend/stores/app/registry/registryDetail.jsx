@@ -3,8 +3,7 @@ import {RESPONSE} from 'shared/detail/DetailActions'
 
 import * as types from 'actions/constants/ActionTypes.js';
 import {indexById} from 'stores/app/utils.jsx'
-import {i18n} from 'components';
-
+import {i18n} from 'components/shared';
 
 const intialState = {
     variantRecordInternalId: 0,

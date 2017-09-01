@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {VirtualList, NoFocusButton, AbstractReactComponent, i18n, Loading, Icon, SearchWithGoto} from 'components/index.jsx';
+import {VirtualList, NoFocusButton, AbstractReactComponent, i18n, Loading, Icon, SearchWithGoto, Utils} from 'components/shared';
 import {Nav, Input, NavItem, Button, DropdownButton} from 'react-bootstrap';
 const classNames = require('classnames');
 import {propsEquals} from 'components/Utils.jsx'
@@ -9,6 +9,8 @@ import {indexById} from 'stores/app/utils.jsx'
 import {createReferenceMark, getGlyph, getNodePrevSibling, getNodeNextSibling, getNodeParent, getNodeFirstChild} from 'components/arr/ArrUtils.jsx'
 import './FundTreeLazy.less';
 import {Shortcuts} from 'react-shortcuts';
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './FundTreeLazyKeymap.jsx';
 
 // Na kolik znaků se má název položky stromu oříznout, jen pokud je nastaven vstupní atribut, že se má název ořezávat
 const TREE_NAME_MAX_CHARS = 60
@@ -16,15 +18,29 @@ const TREE_NAME_MAX_CHARS = 60
 // Odsazení odshora, musí být definováno, jinak nefunguje ensureItemVisible
 const TREE_TOP_PADDING = 0
 
+const colorMap = {
+    "fa-folder-o":{background:"#ffcc00",color:"#fff"},
+    "ez-serie":{background:"#6696dd", color:"#fff"},
+    "fa-sitemap":{background:"#4444cc", color:"#fff"},
+    "fa-file-text-o":{background:"#ff972c", color:"#fff"},
+    "ez-item-part-o":{background:"#cc3820", color: "#fff"},
+    "default":{background:"#333", color: "#fff"}
+}
+
 /**
  * Strom archivních souborů.
  */
 class FundTreeLazy extends AbstractReactComponent {
-    state = {};
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
 
-    static defaultProps = {
-        rowHeight: 16
-    };
+    state = {};
 
     static PropTypes = {
         expandedIds: React.PropTypes.object.isRequired,
@@ -117,9 +133,11 @@ class FundTreeLazy extends AbstractReactComponent {
         "MOVE_TO_CHILD_OR_OPEN":this.selectorMoveToChildOrOpen
     }
     handleShortcuts = (action,e)=>{
-        e.stopPropagation();
-        e.preventDefault();
-        this.actionMap[action](e);
+        if(this.actionMap && typeof this.actionMap[action] === "function"){
+            e.stopPropagation();
+            e.preventDefault();
+            this.actionMap[action](e);
+        }
     }
 
     componentDidMount() {
@@ -131,7 +149,7 @@ class FundTreeLazy extends AbstractReactComponent {
             return true;
         }
         var eqProps = ['ensureItemVisible', 'filterText', 'expandedIds', 'selectedId', 'selectedIds', 'nodes', 'focusId', 'isFetching',
-            'fetched', 'searchedIds', 'filterCurrentIndex', 'handleNodeClick', 'handleNodeDoubleClick']
+            'fetched', 'searchedIds', 'filterCurrentIndex', 'handleNodeClick', 'handleNodeDoubleClick', 'colorCoded']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -172,8 +190,12 @@ class FundTreeLazy extends AbstractReactComponent {
             closed: !expanded,
             active: active,
             focus: this.props.focusId === node.id,
+            "node-color": this.props.colorCoded 
         });
-
+        const iconClass = classNames({
+            "node-icon": true,
+            "node-icon-color": this.props.colorCoded
+        });
         var levels = createReferenceMark(node, clickProps);
 
         let name = node.name ? node.name : i18n('fundTree.node.name.undefined', node.id);
@@ -183,11 +205,38 @@ class FundTreeLazy extends AbstractReactComponent {
                 name = name.substring(0, TREE_NAME_MAX_CHARS - 3) + '...'
             }
         }
+        let style = {};
+        let backgroundColor, color;
 
+        if(this.props.colorCoded){
+            if(colorMap[node.icon]){
+                backgroundColor = colorMap[node.icon].background;
+                color = colorMap[node.icon].color;
+            } else {
+                backgroundColor = colorMap["default"].background;
+                color = colorMap["default"].color;
+            }
+            style = {
+                backgroundColor:backgroundColor,
+                color:color
+            };
+        }
+        let icon = getGlyph(node.icon);
+        let iconRemap = {
+            "fa-folder-o":"folder",
+            "ez-serie":"serie",
+            "fa-sitemap":"sitemap",
+            "fa-file-text-o":"fileText",
+            "ez-item-part-o":"fileTextPart",
+            "fa-exclamation-triangle":"triangleExclamation"
+        };
+        if(iconRemap[icon] && this.props.colorCoded){
+            icon = iconRemap[icon];
+        } 
         return <div key={node.id} className={cls}>
             {levels}
             {expCol}
-            <Icon {...clickProps} className="node-icon" glyph={getGlyph(node.icon)} />
+            <Icon {...clickProps} className={iconClass} style={style} fill={backgroundColor} stroke="none" glyph={icon}/>
             <span
                 title={title}
                 className='node-label'
@@ -240,7 +289,7 @@ class FundTreeLazy extends AbstractReactComponent {
                     <Button className="tree-collapse" onClick={this.props.onCollapse}><Icon glyph='fa-compress'/>Sbalit vše</Button>
                     {actionAddons}
                 </div>
-                <div className='fa-tree-lazy-container' ref="treeContainer" >
+                <div className='fa-tree-lazy-container' ref="treeContainer">
                     {this.state.treeContainer && <VirtualList
                         scrollTopPadding={TREE_TOP_PADDING}
                         tagName='div'
@@ -248,7 +297,6 @@ class FundTreeLazy extends AbstractReactComponent {
                         container={this.state.treeContainer}
                         items={this.props.nodes}
                         renderItem={this.renderNode}
-                        itemHeight={this.props.rowHeight}
                     />}
                 </div>
             </Shortcuts>

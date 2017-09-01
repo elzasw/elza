@@ -2,16 +2,15 @@
  * Komponenta seznamu vybraných uzlů pro verzi archivního souboru.
  */
 
-require('./FundNodesList.less')
-
 import React from 'react';
-import {connect} from 'react-redux'
-import {NodeLabel, AbstractReactComponent, AddRemoveList, Icon, i18n} from 'components/index.jsx';
+import NodeLabel from "./NodeLabel";
+import {AbstractReactComponent, AddRemoveList, Icon, i18n} from 'components/shared';
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
-import {Button} from 'react-bootstrap';
 
-export default class extends AbstractReactComponent {
-    static propTypes = {
+import './FundNodesList.less';
+
+class FuncNodesList extends AbstractReactComponent {
+    static PropTypes = {
         nodes: React.PropTypes.array.isRequired,
         onDeleteNode: React.PropTypes.func,
         onAddNode: React.PropTypes.func,
@@ -46,3 +45,5 @@ export default class extends AbstractReactComponent {
         )
     }
 }
+
+export default FuncNodesList;

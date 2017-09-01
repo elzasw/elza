@@ -7,7 +7,7 @@
 import React from 'react';
 import {connect} from 'react-redux';
 import {Button} from 'react-bootstrap';
-import {AbstractReactComponent, i18n} from 'components/index.jsx';
+import {AbstractReactComponent, i18n} from 'components/shared';
 import {getIndexStateFetchIfNeeded, reindex} from 'actions/admin/fulltext.jsx';
 
 var AdminFulltextReindex = class AdminFulltextReindex extends AbstractReactComponent {
@@ -26,7 +26,7 @@ var AdminFulltextReindex = class AdminFulltextReindex extends AbstractReactCompo
             this.dispatch(getIndexStateFetchIfNeeded());
         }
     }
-    
+
     renderReindexing() {
         return (
             <div>{i18n("admin.fulltext.message.reindexing")}</div>
@@ -48,4 +48,4 @@ var AdminFulltextReindex = class AdminFulltextReindex extends AbstractReactCompo
     }
 }
 
-module.exports = connect()(AdminFulltextReindex);
+export default connect()(AdminFulltextReindex);

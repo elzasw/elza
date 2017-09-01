@@ -1,13 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
-import {Autocomplete, AbstractReactComponent, i18n, Scope, FormInput} from 'components/index.jsx';
+import {Autocomplete, AbstractReactComponent, i18n, FormInput} from 'components/shared';
 import {Modal, Button, Form} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitReduxFormWithProp} from 'components/form/FormUtils.jsx'
-import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registry.jsx'
+import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRecordTypes.jsx'
 import {WebApi} from 'actions/index.jsx';
 import {getTreeItemById} from "./registryUtils";
+import Scope from "../shared/scope/Scope";
 
 /**
  * Formulář přidání nového rejstříkového hesla
@@ -53,7 +54,6 @@ class AddRegistryForm extends AbstractReactComponent {
 
     componentDidMount() {
         this.dispatch(getRegistryRecordTypesIfNeeded());
-        console.log(this.props.initialValues);
         this.prepareState(this.props);
     }
 
@@ -158,7 +158,3 @@ export default reduxForm({
 }),
 {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'addRegistryForm', data})}
 )(AddRegistryForm);
-
-
-
-

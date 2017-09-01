@@ -1,9 +1,9 @@
 package cz.tacr.elza.domain;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import cz.tacr.elza.service.cache.NodeCacheSerializable;
+
+import java.util.Objects;
 
 /**
  * Abstraktní datový objekt.
@@ -14,7 +14,11 @@ import cz.tacr.elza.service.cache.NodeCacheSerializable;
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
 public abstract class ArrItemData implements NodeCacheSerializable {
 
+    // atribut pouze pro pomocné uložení hodnoty v JSON
     protected RulItemSpec spec;
+
+    // atribut pouze pro pomocné uložení hodnoty v JSON
+    protected Boolean undefined;
 
     public RulItemSpec getSpec() {
         return spec;
@@ -24,16 +28,25 @@ public abstract class ArrItemData implements NodeCacheSerializable {
         this.spec = spec;
     }
 
+    public Boolean getUndefined() {
+        return undefined;
+    }
+
+    public void setUndefined(final Boolean undefined) {
+        this.undefined = undefined;
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ArrItemData itemData = (ArrItemData) o;
-        return Objects.equals(spec, itemData.spec);
+        ArrItemData that = (ArrItemData) o;
+        return Objects.equals(spec, that.spec) &&
+                Objects.equals(undefined, that.undefined);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(spec);
+        return Objects.hash(spec, undefined);
     }
 }

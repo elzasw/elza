@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import {TooltipTrigger, AbstractReactComponent, i18n} from 'components/index.jsx';
+import {TooltipTrigger, AbstractReactComponent, i18n} from 'components/shared';
 
 class ItemTooltipWrapper extends AbstractReactComponent {
 
@@ -21,7 +21,6 @@ class ItemTooltipWrapper extends AbstractReactComponent {
             <TooltipTrigger
                 content={tooltip}
                 holdOnHover
-                holdOnFocus
                 placement="vertical"
                 {...otherProps}
             >

@@ -11,8 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.context.embedded.MultipartConfigFactory;
-import org.springframework.boot.orm.jpa.EntityScan;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -59,8 +59,8 @@ public class ElzaCore {
 
     public static void configure() {
         System.setProperty("spring.config.name", "elza");
-        System.setProperty("liquibase.databaseChangeLogTableName", "db_databasechangelog");
-        System.setProperty("liquibase.databaseChangeLogLockTableName", "db_databasechangeloglock");
+        System.setProperty("liquibase.databaseChangeLogTableName", "DB_DATABASECHANGELOG");
+        System.setProperty("liquibase.databaseChangeLogLockTableName", "DB_DATABASECHANGELOGLOCK");
     }
 
     @Bean

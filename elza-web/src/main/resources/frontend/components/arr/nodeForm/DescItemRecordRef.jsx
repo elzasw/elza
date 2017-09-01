@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import {WebApi} from 'actions/index.jsx';
-import {Icon, i18n, AbstractReactComponent, RegistryField} from 'components/index.jsx';
+import {Icon, i18n, AbstractReactComponent} from 'components/shared';
 import {connect} from 'react-redux'
 import {decorateAutocompleteValue} from './DescItemUtils.jsx'
 import DescItemLabel from './DescItemLabel.jsx'
@@ -14,7 +14,8 @@ import {registryDetailFetchIfNeeded, registryListFilter, registryDetailClear, AR
 import {partyDetailFetchIfNeeded, partyListFilter, partyDetailClear, AREA_PARTY_LIST} from 'actions/party/party.jsx'
 import classNames from 'classnames'
 import {storeFromArea, objectById} from 'shared/utils'
-import {MODAL_DIALOG_VARIANT} from 'constants'
+import {MODAL_DIALOG_VARIANT} from 'constants.jsx'
+import RegistryField from "../../registry/RegistryField";
 
 
 class DescItemRecordRef extends AbstractReactComponent {
@@ -36,7 +37,6 @@ class DescItemRecordRef extends AbstractReactComponent {
 
     handleSelectModule = ({onSelect, filterText, value}) => {
         const {hasSpecification, descItem, registryList, partyList, fundName, nodeName, itemName, specName} = this.props;
-        console.log(filterText, "aaa");
         const open = (hasParty = false) => {
             if (hasParty) {
                 this.dispatch(partyListFilter({...partyList.filter, text: filterText, itemSpecId: hasSpecification ? descItem.descItemSpecId : null}));
@@ -73,9 +73,9 @@ class DescItemRecordRef extends AbstractReactComponent {
 
         if (readMode) {
             if (value) {
-                return <DescItemLabel onClick={onDetail.bind(this, descItem.record.recordId)} value={value.record} />
+                return <DescItemLabel onClick={onDetail.bind(this, descItem.record.recordId)} value={value.record} notIdentified={descItem.undefined} />
             } else {
-                return <DescItemLabel value={cal ? i18n("subNodeForm.descItemType.calculable") : ""} cal={cal} />
+                return <DescItemLabel value={cal ? i18n("subNodeForm.descItemType.calculable") : ""} cal={cal} notIdentified={descItem.undefined} />
             }
         }
 
@@ -94,9 +94,10 @@ class DescItemRecordRef extends AbstractReactComponent {
                     value={value}
                     footer={!singleDescItemTypeEdit}
                     footerButtons={false}
-                    detail={typePrefix == "output" ? false : !disabled}
+                    detail={!descItem.undefined && (typePrefix == "output" ? false : !disabled)}
                     onSelectModule={this.handleSelectModule}
-                    {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, disabled, ['autocomplete-record'])}
+                    undefined={descItem.undefined}
+                    {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, disabled || descItem.undefined, ['autocomplete-record'])}
                 />
             </ItemTooltipWrapper>
         </div>

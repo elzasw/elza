@@ -4,19 +4,19 @@
 
 import React from 'react';
 import {outputTypesFetchIfNeeded} from "actions/refTables/outputTypes.jsx";
-import Utils, {dateTimeToString} from "components/Utils.jsx";
+import {dateTimeToString} from "components/Utils.jsx";
 import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {
     Loading,
     i18n,
-    OutputSubNodeForm,
-    FundNodesSelectForm,
-    FundNodesList,
-    AbstractReactComponent,
     FormInput,
-    NodeLabel
-} from 'components/index.jsx';
+    AbstractReactComponent,
+    Utils
+} from 'components/shared';
+import FundNodesSelectForm from './FundNodesSelectForm';
+import FundNodesList from './FundNodesList';
+import NodeLabel from './NodeLabel';
 import {fundOutputDetailFetchIfNeeded, fundOutputEdit} from 'actions/arr/fundOutput.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
@@ -30,12 +30,20 @@ import {DIGITIZATION, DAO, DAO_LINK, getRequestType} from './ArrUtils.jsx'
 import {refExternalSystemsFetchIfNeeded} from 'actions/refTables/externalSystems';
 import {ControlLabel} from 'react-bootstrap'
 import {Shortcuts} from 'react-shortcuts';
-
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './ArrRequestDetailKeymap.jsx';
 /**
  * Formulář detailu požadavku na digitalizaci.
  */
 class ArrRequestDetail extends AbstractReactComponent {
-
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
     static PropTypes = {
         versionId: React.PropTypes.number.isRequired,
         fund: React.PropTypes.object.isRequired,

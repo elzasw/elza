@@ -5,7 +5,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux';
-import {AbstractReactComponent, i18n, Loading, Icon} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, Loading, Icon} from 'components/shared';
 import {Button, Table} from 'react-bootstrap';
 import {dateTimeToString} from 'components/Utils.jsx';
 import {indexById} from 'stores/app/utils.jsx';
@@ -111,7 +111,7 @@ BulkActionsTable.propTypes = {
     versionValidate: React.PropTypes.bool.isRequired
 };
 
-module.exports = connect((state) => ({
+export default connect((state) => ({
     store: state.arrRegion.funds[state.arrRegion.activeIndex].bulkActions,
     versionId: state.arrRegion.funds[state.arrRegion.activeIndex].versionId
 }))(BulkActionsTable);

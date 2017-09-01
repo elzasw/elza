@@ -6,7 +6,7 @@ require("./Tags.less")
 
 import React from 'react';
 import {Button} from 'react-bootstrap';
-import {AbstractReactComponent, Icon} from 'components/index.jsx';
+import {AbstractReactComponent, Icon} from 'components/shared';
 
 const Tags = class Tags extends AbstractReactComponent {
     constructor(props) {
@@ -47,4 +47,4 @@ Tags.defaultProps = {
     }
 }
 
-module.exports = Tags
+export default Tags

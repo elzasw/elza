@@ -6,19 +6,19 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {
-    FundBulkModificationsForm,
     Icon,
-    DataGridColumnsSettings,
     AbstractReactComponent,
     i18n,
     Loading,
     DataGrid,
-    FundFilterSettings,
+    DataGridColumnsSettings,
     DataGridPagination,
-    FundDataGridCellForm,
-    SearchWithGoto,
-    ArrSearchForm
-} from 'components/index.jsx';
+    SearchWithGoto
+} from 'components/shared';
+import FundBulkModificationsForm from './FundBulkModificationsForm';
+import FundFilterSettings from './FundFilterSettings';
+import FundDataGridCellForm from './FundDataGridCellForm';
+import ArrSearchForm from './ArrSearchForm';
 import {Button, MenuItem} from 'react-bootstrap';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {
@@ -47,7 +47,7 @@ import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes.jsx'
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
-import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
+import {fundSelectSubNode} from 'actions/arr/node.jsx';
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
 import {
     createReferenceMarkFromArray,
@@ -58,9 +58,9 @@ import {
 import {getMapFromList, getSetFromIdsList} from 'stores/app/utils.jsx'
 import {propsEquals} from 'components/Utils.jsx'
 import {COL_DEFAULT_WIDTH, COL_REFERENCE_MARK} from "./FundDataGridConst";
-require('./FundDataGrid.less')
+import './FundDataGrid.less'
 
-var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
+class FundDataGrid extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -804,4 +804,4 @@ function mapStateToProps(state) {
     }
 }
 
-module.exports = connect(mapStateToProps)(FundDataGrid);
+export default connect(mapStateToProps)(FundDataGrid);

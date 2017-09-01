@@ -3,30 +3,26 @@ import ReactDOM from 'react-dom';
 import {WebApi} from 'actions/index.jsx';
 import * as types from 'actions/constants/ActionTypes'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {i18n, AddPartyForm} from 'components/index.jsx';
+import {i18n} from 'components/shared';
 import {getPartyTypeById} from 'actions/refTables/partyTypes.jsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 import {storeFromArea, indexById, objectById} from 'shared/utils'
 
 
-import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from 'constants'
+import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from 'constants.jsx'
 
 import {SimpleListActions} from 'shared/list'
 import {DetailActions} from 'shared/detail'
+import AddPartyForm from "../../components/party/AddPartyForm";
+
+import {PARTY_TYPE_CODES} from 'constants.jsx'
 
 export const AREA_PARTY_LIST = 'partyList';
 export const AREA_PARTY_DETAIL = 'partyDetail';
 
 
 export const DEFAULT_PARTY_LIST_MAX_SIZE = DEFAULT_LIST_SIZE;
-
-export const PARTY_TYPE_CODES = {
-    GROUP_PARTY: 'GROUP_PARTY',
-    PERSON: 'PERSON',
-    DYNASTY: 'DYNASTY',
-    EVENT: 'EVENT',
-};
 
 export const RELATION_CLASS_TYPE_REPEATABILITY = {
     UNIQUE: "UNIQUE",
@@ -39,11 +35,6 @@ export const USE_UNITDATE_ENUM = {
     INTERVAL: 'INTERVAL',
 };
 
-export const RELATION_CLASS_CODES = {
-    RELATION: "R",
-    BIRTH: "B",
-    EXTINCTION: "E"
-};
 
 /**
  * Načtení seznamu osob dle filtru
@@ -280,6 +271,3 @@ export const normalizeDatation = (obj) => {
     }
     return null;
 };
-
-console.log(normalizeDatation({calendarTypeId:1, value:null}));
-

@@ -2,11 +2,13 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, FormInput, Icon, Loading} from 'components'
+import {FormInput, Icon, Loading} from 'components/shared'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {Modal, Form, Table, Checkbox, FormControl, Button} from 'react-bootstrap'
 import objectById from '../../shared/utils/objectById'
 import * as perms from 'actions/user/Permission.jsx';
+import AbstractReactComponent from "../AbstractReactComponent";
+import i18n from "../i18n";
 
 require('./ExtMapperForm.less');
 

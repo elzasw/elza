@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.service.ArrangementService;
+import org.apache.commons.lang.BooleanUtils;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -88,7 +90,9 @@ public class TextAggregationAction extends Action {
             if (inputItemTypes.contains(item.getItemType())) {
                 ArrItemData itemData = item.getItem();
                 String value;
-                if (itemData instanceof ArrItemString) {
+                if (BooleanUtils.isTrue(item.getUndefined())) {
+                    value = ArrangementService.UNDEFINED;
+                } else if (itemData instanceof ArrItemString) {
                     value = ((ArrItemString) itemData).getValue();
                 } else if (itemData instanceof ArrItemText) {
                     value = (((ArrItemText) itemData).getValue());

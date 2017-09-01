@@ -1,19 +1,17 @@
 package cz.tacr.elza.print.item;
 
-import cz.tacr.elza.print.NodeId;
 import cz.tacr.elza.print.Record;
 
 /**
- * @author Martin Lebeda
- * @author Petr Pytelka
+ * Record reference
  * 
  */
 public class ItemRecordRef extends AbstractItem {
 	
 	Record record;
 
-    public ItemRecordRef(final NodeId nodeId, final Record record) {
-        super(nodeId);
+    public ItemRecordRef(final Record record) {
+        super();
         
         this.record = record;
     }

@@ -2,18 +2,19 @@
  * Správa obalů.
  */
 
-require('./FundPackets.less')
+import './FundPackets.less'
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, Icon, i18n, FilterableListBox, Loading, AddPacketForm, FixedDropDownButton, FormInput} from 'components/index.jsx';
+import AddPacketForm from './AddPacketForm';
+import {AbstractReactComponent, Icon, i18n, FilterableListBox, Loading, FixedDropDownButton, FormInput} from 'components/shared';
 import {DropdownButton, MenuItem} from 'react-bootstrap'
 import {fetchFundPacketsIfNeeded, fundPacketsFilterByText, fundPacketsChangeSelection, fundPacketsFilterByState, fundPacketsChangeState, fundPacketsCreate, fundPacketsChangeNumbers, fundPacketsDelete} from 'actions/arr/fundPackets.jsx'
 import {getMapFromList, getSetFromIdsList} from 'stores/app/utils.jsx'
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import PacketFormatter from 'components/arr/packets/PacketFormatter.jsx';
 
-var FundPackets = class FundPackets extends AbstractReactComponent {
+class FundPackets extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -54,8 +55,6 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
     handleSelectionChange(selectionType, ids, unselectedIds, type) {
         const {versionId, packets, selectedIds} = this.props;
 
-        console.log(selectionType, ids, unselectedIds, type);
-
         var newSelectedIds
         switch (type) {
             case "TOGGLE_ITEM":
@@ -72,7 +71,6 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
                 newSelectedIds = []
                 break
         }
-        console.log("NEW_SELECTION: " + newSelectedIds)
         this.dispatch(fundPacketsChangeSelection(versionId, newSelectedIds))
     }
 
@@ -101,7 +99,6 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
           var id = packets.filter(function(obj){
             return obj.id == selectedIds[i];
           })
-          console.log(id);
           type = type === null || id[0].packetTypeId === type ? id[0].packetTypeId : -1;
           if(type<0) {
             break;
@@ -234,4 +231,4 @@ FundPackets.propTypes = {
     fetched: React.PropTypes.bool.isRequired
 };
 
-module.exports = connect(null, null, null, { withRef: true })(FundPackets);
+export default connect(null, null, null, { withRef: true })(FundPackets);

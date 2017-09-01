@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Icon, AbstractReactComponent, i18n} from 'components/index.jsx';
+import {Icon, AbstractReactComponent, i18n} from 'components/shared';
 import {indexById} from 'stores/app/utils.jsx'
 import {Button} from 'react-bootstrap';
 

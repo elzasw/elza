@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Button} from 'react-bootstrap'
-import {Icon, AbstractReactComponent, i18n, Loading, AddRemoveList} from 'components/index.jsx';
+import {Icon, AbstractReactComponent, i18n, Loading, AddRemoveList} from 'components/shared';
 import {indexById, getIdsList} from 'stores/app/utils.jsx'
 import {dateToString} from 'components/Utils.jsx'
 import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
@@ -106,4 +106,4 @@ function mapStateToProps(state) {
     }
 }
 
-module.exports = connect(mapStateToProps)(GroupDetail);
+export default connect(mapStateToProps)(GroupDetail);

@@ -2,7 +2,7 @@ require ('./DescItemLabel.less')
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent, Icon} from 'components/index.jsx';
+import {AbstractReactComponent, Icon, i18n} from 'components/shared';
 import {connect} from 'react-redux'
 import {decorateValue} from './DescItemUtils.jsx'
 import {Button} from 'react-bootstrap';
@@ -14,7 +14,7 @@ var DescItemLabel = class DescItemLabel extends AbstractReactComponent {
     }
 
     render() {
-        const {value, onClick, cal} = this.props;
+        const {value, onClick, cal, notIdentified} = this.props;
 
         let cls = ['desc-item-label-value'];
         if (cal) {
@@ -31,6 +31,10 @@ var DescItemLabel = class DescItemLabel extends AbstractReactComponent {
             renderItem = <a style={{'cursor': 'pointer'}} onClick={onClick} dangerouslySetInnerHTML={{__html: updatedValue}}></a>;
         }
 
+        if (notIdentified) {
+            renderItem = <i>{i18n("subNodeForm.descItemType.notIdentified")}</i>
+        }
+
         return (
             <div title={value} className={classNames(cls)}>
                 {renderItem}
@@ -41,4 +45,4 @@ var DescItemLabel = class DescItemLabel extends AbstractReactComponent {
 
 
 
-module.exports = connect(null, null, null, { withRef: true })(DescItemLabel);
+export default connect(null, null, null, { withRef: true })(DescItemLabel);

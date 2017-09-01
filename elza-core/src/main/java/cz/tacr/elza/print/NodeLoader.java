@@ -18,6 +18,6 @@ public interface NodeLoader {
      * @param nodeIds seznam identifikátorů uzlů, které načítáme
      * @return mapa - klíč identifikátor uzlu, uzel
      */
-    Map<Integer, Node> loadNodes(Output output, Collection<NodeId> nodeIds);
+    Map<Integer, Node> loadNodes(OutputImpl output, Collection<NodeId> nodeIds);
 
 }

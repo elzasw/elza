@@ -3,35 +3,37 @@
  */
 
 import React from 'react';
-import Utils from "components/Utils.jsx";
 import ReactDOM from 'react-dom';
 import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {
-    ListBox,
-    Ribbon,
-    Loading,
-    RibbonGroup,
     FundNodesSelectForm,
-    Icon,
+    Ribbon,
     FundNodesList,
-    i18n,
     ArrRequestDetail,
     ArrOutputDetail,
     AddOutputForm,
-    AbstractReactComponent,
-    Tabs,
     FundOutputFiles,
     FundOutputFunctions,
     RunActionForm,
-    FormInput,
-    ArrFundPanel,
-    SearchWithGoto
+    ArrFundPanel
 } from 'components/index.jsx';
+import {
+    ListBox,
+    FormInput,
+    Loading,
+    RibbonGroup,
+    Icon,
+    i18n,
+    AbstractReactComponent,
+    Tabs,
+    SearchWithGoto,
+    Utils
+} from 'components/shared';
 import {Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
-import {PageLayout} from 'pages/index.jsx';
+import PageLayout from "../shared/layout/PageLayout";
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {canSetFocus, setFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {
@@ -72,9 +74,9 @@ import ArrParentPage from "./ArrParentPage.jsx";
 const classNames = require('classnames');
 import {Shortcuts} from 'react-shortcuts';
 
-require("./ArrRequestPage.less");
+import "./ArrRequestPage.less";
 
-const ArrRequestPage = class extends ArrParentPage {
+class ArrRequestPage extends ArrParentPage {
     constructor(props) {
         super(props, "arr-request-page");
     }
@@ -121,7 +123,7 @@ const ArrRequestPage = class extends ArrParentPage {
         }
     }
 
-    handleShortcuts(action) {
+    handleShortcuts(action,e) {
         console.log("#handleShortcuts ArrRequestPage", '[' + action + ']', this);
         switch (action) {
             case 'newOutput':
@@ -304,7 +306,7 @@ const ArrRequestPage = class extends ArrParentPage {
     hasPageShowRights(userDetail, activeFund) {
         return userDetail.hasRdPage(activeFund ? activeFund.id : null);
     }
-};
+}
 
 function mapStateToProps(state) {
     const {splitter, arrRegion, refTables, focus, userDetail} = state

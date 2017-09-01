@@ -6,17 +6,29 @@
 require ('./LazyListBox.less');
 
 import React from "react";
+import VirtualList from "../virtual-list/VirtualList";
+import AbstractReactComponent from "../../AbstractReactComponent";
 import ReactDOM from 'react-dom';
-import {VirtualList, AbstractReactComponent, i18n} from "components";
 import {indexById} from 'stores/app/utils.jsx'
 var classNames = require('classnames');
 const scrollIntoView = require('dom-scroll-into-view')
 import {Shortcuts} from 'react-shortcuts';
+import * as Utils from "../../Utils";
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './LazyListBoxKeymap.jsx';
 
 const _LLB_FETCH_DELAY = 32
 const _LLB_FETCH_BOUNDARY = 200
 
 var LazyListBox = class LazyListBox extends AbstractReactComponent {
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
     constructor(props) {
         super(props);
 
@@ -436,7 +448,6 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
         "ITEM_SELECT": this.selectItem
     }
     handleShortcuts = (action,e)=>{
-        console.log("LAZY_LIST",action);
         e.stopPropagation();
         e.preventDefault();
         this.actionMap[action](e);
@@ -485,4 +496,4 @@ LazyListBox.defaultProps = {
     itemIdAttrName: "id",
 }
 
-module.exports = LazyListBox
+export default LazyListBox
