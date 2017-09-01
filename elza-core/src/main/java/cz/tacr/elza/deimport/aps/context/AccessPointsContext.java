@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.Validate;
+
 import cz.tacr.elza.deimport.DEImportException;
 import cz.tacr.elza.deimport.context.ImportContext;
 import cz.tacr.elza.deimport.context.ImportPhase;
@@ -65,7 +67,31 @@ public class AccessPointsContext {
         return accessPointEntryIdMap.get(apeId);
     }
 
+    /**
+     * Add access point for storage
+     * @param record access point to be saved
+     * @param apeId Import ID of the access point
+     * @param parentRecordInfo Parent information
+     * @return Return record info
+     */
     public RecordImportInfo addAccessPoint(RegRecord record, String apeId, RecordImportInfo parentRecordInfo) {
+    	// check if parent record is stored
+    	if(parentRecordInfo!=null) {
+    		RecordImportInfo parentInfo = accessPointEntryIdMap.get(parentRecordInfo.getApEntryId());
+    		if(parentInfo==null) {
+    			throw new DEImportException("Cannot find parent info for access point, apeId:" + apeId + ", parent apeId: " + parentRecordInfo.getApEntryId());
+    		}
+    		// check if has ID
+    		Integer parentId = parentInfo.getId();
+    		if(parentId == null) {
+    			// store to DB -> ID should be set
+    			storeAccessPoints();
+    			// check result
+    			Validate.notNull(parentInfo.getId(), "Cannot get parentId, access point: {}", apeId);
+    		}
+    	}
+    	
+    	// append access point info
         RecordImportInfo info = new RecordImportInfo(apeId, record.getRegisterType());
         if (accessPointEntryIdMap.putIfAbsent(apeId, info) != null) {
             throw new DEImportException("Access point has duplicate id, apeId:" + apeId);
