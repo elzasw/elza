@@ -8,6 +8,7 @@ import {Shortcuts} from 'react-shortcuts';
 
 import './DataGridPagination.less';
 import AbstractReactComponent from "../../AbstractReactComponent";
+import i18n from "../../i18n";
 
 export function getPagesCount(itemsCount, pageSize) {
     let pagesCount = Math.floor(itemsCount / pageSize);
@@ -151,6 +152,7 @@ class DataGridPagination extends AbstractReactComponent {
                         <li key='pageSize' className='input'><span><select value={pageSize} onChange={e => onChangePageSize(Number(e.target.value))}>{options}</select></span></li>
                         <li key='next'>{this.renderButton(pageIndex + 1 >= pagesCount, () => pageIndex + 1 < pagesCount && onSetPageIndex(pageIndex + 1), '›')}</li>
                         <li key='end'>{this.renderButton(pageIndex === pagesCount - 1, () => pageIndex < pagesCount - 1 && onSetPageIndex(pagesCount - 1), '»')}</li>
+                        <li key='rowsCount'><p>{i18n('fund.grid.rowsCount', itemsCount)}</p></li>
                     </ul>
                 </nav>
             </Shortcuts>

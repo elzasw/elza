@@ -349,6 +349,7 @@ var messages = {
 
     "fund.noSelection.title" : "Není vybrán archivní soubor",
     "fund.grid.morePages" : "Zobrazeny záznamy {0} až {1}.",
+    "fund.grid.rowsCount" : "Počet záznamů: {0}",
     "fund.noSelection.message" : "Prosím vyberte archivní soubor ze seznamu.",
     "fund.emptyList.title" : "Žádné archivní soubory",
     "fund.emptyList.message" : "Neexistují archivní soubory nebo nemáte oprávnění pro čtení žádného archivního souboru.",
