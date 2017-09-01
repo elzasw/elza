@@ -9,7 +9,7 @@ import {Shortcuts} from 'react-shortcuts';
 import './DataGridPagination.less';
 import AbstractReactComponent from "../../AbstractReactComponent";
 
-function getPagesCount(itemsCount, pageSize) {
+export function getPagesCount(itemsCount, pageSize) {
     let pagesCount = Math.floor(itemsCount / pageSize);
     if (itemsCount % pageSize > 0) {
         pagesCount++
@@ -131,7 +131,7 @@ class DataGridPagination extends AbstractReactComponent {
         const {onSetPageIndex, onChangePageSize, itemsCount, pageSize, pageIndex} = this.props;
         const pagesCount = getPagesCount(itemsCount, pageSize);
 
-        const options = [10, 25, 50, 100, 250].map(val => <option key={val} value={val}>{val}</option>);
+        const options = [25, 50, 100, 250].map(val => <option key={val} value={val}>{val}</option>);
 
         const cls = this.props.className ? 'pagination-container ' + this.props.className : 'pagination-container';
         return (

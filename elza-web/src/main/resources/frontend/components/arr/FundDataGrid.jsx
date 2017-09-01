@@ -59,6 +59,7 @@ import {getMapFromList, getSetFromIdsList} from 'stores/app/utils.jsx'
 import {propsEquals} from 'components/Utils.jsx'
 import {COL_DEFAULT_WIDTH, COL_REFERENCE_MARK} from "./FundDataGridConst";
 import './FundDataGrid.less'
+import {getPagesCount} from "../shared/datagrid/DataGridPagination";
 
 class FundDataGrid extends AbstractReactComponent {
     constructor(props) {
@@ -765,6 +766,8 @@ class FundDataGrid extends AbstractReactComponent {
                             onContextMenu={this.handleContextMenu}
                             onEdit={this.handleEdit}
                             disabled={readMode}
+                            startRowIndex={fundDataGrid.pageSize * fundDataGrid.pageIndex}
+                            morePages={getPagesCount(fundDataGrid.itemsCount, fundDataGrid.pageSize) > 1}
                         />
                         <DataGridPagination
                             itemsCount={fundDataGrid.itemsCount}
