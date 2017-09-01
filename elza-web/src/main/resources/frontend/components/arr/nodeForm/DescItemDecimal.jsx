@@ -4,7 +4,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent, i18n} from 'components/index.jsx';
+import {AbstractReactComponent, i18n} from 'components/shared';
 import {connect} from 'react-redux'
 import {normalizeDouble} from 'components/validate.jsx'
 import {decorateValue} from './DescItemUtils.jsx'
@@ -69,7 +69,7 @@ var DescItemDecimal = class DescItemDecimal extends AbstractReactComponent {
 
         if (readMode) {
             return (
-                <DescItemLabel value={value} cal={cal} />
+                <DescItemLabel value={value} cal={cal} notIdentified={descItem.undefined} />
             )
         }
 
@@ -78,6 +78,8 @@ var DescItemDecimal = class DescItemDecimal extends AbstractReactComponent {
             cls.push("calculable");
         }
 
+        value = cal && this.state.value === '' ? value : this.state.value;
+
         return (
             <div className='desc-item-value'>
                 <ItemTooltipWrapper tooltipTitle="dataType.decimal.format">
@@ -85,9 +87,9 @@ var DescItemDecimal = class DescItemDecimal extends AbstractReactComponent {
                         {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
                         ref='focusEl'
                         type="text"
-                        disabled={locked}
+                        disabled={locked || descItem.undefined}
                         onChange={this.handleChange}
-                        value={cal && this.state.value == '' ? value : this.state.value}
+                        value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : value}
                     />
                 </ItemTooltipWrapper>
             </div>
@@ -95,4 +97,4 @@ var DescItemDecimal = class DescItemDecimal extends AbstractReactComponent {
     }
 }
 
-module.exports = connect(null, null, null, { withRef: true })(DescItemDecimal);
+export default connect(null, null, null, { withRef: true })(DescItemDecimal);

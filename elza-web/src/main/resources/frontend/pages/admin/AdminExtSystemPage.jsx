@@ -2,8 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import {connect} from 'react-redux'
-import {Ribbon, AdminExtSystemDetail, AdminExtSystemList, AbstractReactComponent, i18n, RibbonGroup, Utils, Icon} from 'components/index.jsx';
-import {PageLayout} from 'pages/index.jsx';
+import {i18n, RibbonGroup, Utils, Icon} from 'components/shared';
+import {Ribbon, AdminExtSystemDetail, AdminExtSystemList} from 'components/index.jsx';
+import PageLayout from "../shared/layout/PageLayout";
 import {Shortcuts} from 'react-shortcuts';
 import {extSystemDetailFetchIfNeeded, extSystemCreate, extSystemDelete, extSystemUpdate, extSystemListInvalidate, AREA_EXT_SYSTEM_DETAIL} from 'actions/admin/extSystem.jsx'
 import {Button} from 'react-bootstrap'
@@ -11,6 +12,7 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import ExtSystemForm from 'components/admin/ExtSystemForm.jsx';
 import {storeFromArea} from 'shared/utils'
 import './AdminExtSystemPage.less';
+import AbstractReactComponent from "../../components/AbstractReactComponent";
 
 import {PropTypes} from 'prop-types';
 

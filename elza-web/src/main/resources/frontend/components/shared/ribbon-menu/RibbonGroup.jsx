@@ -4,10 +4,8 @@
 
 import React from 'react';
 
-import {i18n} from 'components/index.jsx';
-import {ButtonToolbar} from 'react-bootstrap';
 
-require('./RibbonMenu.less');
+import './RibbonMenu.less';
 
 /**
  * Komponenta pro skupinu tlačítek v ribbonu.
@@ -16,7 +14,7 @@ require('./RibbonMenu.less');
  * className: small = jednořádková tlačítka pod sebou, max 3 tlačítka na jednu skupinu
  */
 const GROUP_COLUMN_LINES = 3;
-const RibbonGroup = class RibbonGroup extends React.Component {
+class RibbonGroup extends React.Component {
 
     render() {
         const {className, right} = this.props
@@ -41,4 +39,4 @@ const RibbonGroup = class RibbonGroup extends React.Component {
     }
 }
 
-module.exports = RibbonGroup;
+export default RibbonGroup;

@@ -6,6 +6,8 @@ import cz.tacr.elza.domain.interfaces.Versionable;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -34,6 +36,7 @@ public class ArrNode extends AbstractVersionableEntity implements Versionable, S
 
     @Id
     @GeneratedValue
+    @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer nodeId;
 
     @Column(nullable = true)

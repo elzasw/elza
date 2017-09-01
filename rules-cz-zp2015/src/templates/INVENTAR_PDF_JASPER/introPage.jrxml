@@ -227,9 +227,42 @@
 				<textFieldExpression><![CDATA[$P{output}.getSingleItemValue( "ZP2015_UNIT_CONTENT" )]]></textFieldExpression>
 			</textField>
 		</band>
-		<band height="98" splitType="Prevent">
+		<band height="95" splitType="Prevent">
+			<textField isStretchWithOverflow="true" bookmarkLevel="1">
+				<reportElement positionType="Float" x="0" y="0" width="468" height="50" isPrintInFirstWholeBand="true" uuid="94323b71-a6d1-430e-ac07-24a7cae72910"/>
+				<textElement verticalAlignment="Middle">
+					<font size="16" isBold="true" pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA["V. Záznam o uspořádání archivního souboru a sestavení archivní pomůcky"]]></textFieldExpression>
+				<anchorNameExpression><![CDATA["V. Záznam o uspořádání archivního souboru a sestavení archivní pomůcky"]]></anchorNameExpression>
+			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="0" y="50" width="468" height="24" isRemoveLineWhenBlank="true" uuid="ecbcefb2-2271-4220-8bb4-8bd79f371862">
+				<reportElement positionType="Float" x="0" y="50" width="468" height="25" isRemoveLineWhenBlank="true" uuid="50666061-bb6a-4ea3-aa03-ffd7ac2e7751">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_ARRANGEMENT_INFO" ))]]></printWhenExpression>
+				</reportElement>
+				<box bottomPadding="7"/>
+				<textElement textAlignment="Justified" verticalAlignment="Middle" markup="none">
+					<font fontName="SansSerif" isBold="true" pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Seznam pramenů a literatury:"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="0" y="70" width="468" height="25" isRemoveLineWhenBlank="true" uuid="c65fb600-e002-4000-bb49-b44ea5e3c025">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_ARRANGEMENT_INFO" ))]]></printWhenExpression>
+				</reportElement>
+				<box bottomPadding="7"/>
+				<textElement textAlignment="Justified" markup="none">
+					<font fontName="SansSerif" pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{output}.getSingleItemValue( "ZP2015_ARRANGEMENT_INFO" )]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="24">
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="0" y="0" width="468" height="24" isRemoveLineWhenBlank="true" uuid="ecbcefb2-2271-4220-8bb4-8bd79f371862">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_ARRANGER" ))]]></printWhenExpression>
 				</reportElement>
@@ -239,8 +272,10 @@
 				</textElement>
 				<textFieldExpression><![CDATA["<b>Zpracovatel jednotky popisu: </b>"+$P{output}.getSingleItemValue( "ZP2015_ARRANGER" )]]></textFieldExpression>
 			</textField>
+		</band>
+		<band height="24">
 			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="0" y="74" width="468" height="24" isRemoveLineWhenBlank="true" uuid="13c6949c-d45b-4e95-a56c-217fb22d13ea">
+				<reportElement positionType="Float" x="0" y="0" width="468" height="24" isRemoveLineWhenBlank="true" uuid="13c6949c-d45b-4e95-a56c-217fb22d13ea">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_DESCRIPTION_DATE" ))]]></printWhenExpression>
 				</reportElement>
@@ -249,14 +284,6 @@
 					<font fontName="SansSerif" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA["<b>Datum popisu: </b>"+$P{output}.getSingleItemValue( "ZP2015_DESCRIPTION_DATE" )]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" bookmarkLevel="1">
-				<reportElement positionType="Float" x="0" y="0" width="468" height="50" isPrintInFirstWholeBand="true" uuid="94323b71-a6d1-430e-ac07-24a7cae72910"/>
-				<textElement verticalAlignment="Middle">
-					<font size="16" isBold="true" pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["V. Záznam o uspořádání archivního souboru a sestavení archivní pomůcky"]]></textFieldExpression>
-				<anchorNameExpression><![CDATA["V. Záznam o uspořádání archivního souboru a sestavení archivní pomůcky"]]></anchorNameExpression>
 			</textField>
 		</band>
 	</detail>

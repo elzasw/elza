@@ -54,6 +54,7 @@ import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulActionRecommended;
 import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.ActionRecommendedRepository;
@@ -239,11 +240,13 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
 
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(fundVersionId);
 
-        List<RulAction> byRulPackage = actionRepository.findByRulPackage(version.getRuleSet().getPackage());
+        RulRuleSet ruleSet = version.getRuleSet();
+        List<RulAction> byRulPackage = actionRepository.findByRulPackage(ruleSet.getPackage());
         String actionFileName = bulkActionCode + bulkActionConfigManager.getExtension();
         if (byRulPackage.stream().noneMatch(i -> i.getFilename().equals(actionFileName))) {
             throw new BusinessException("Hromadná akce nepatří do stejného balíčku pravidel jako pravidla verze AP.", PackageCode.OTHER_PACKAGE)
-                    .set("code", bulkActionCode);
+                    .set("code", bulkActionCode)
+                    .set("ruleSet", ruleSet.getCode());
         }
 
         arrFundVersion.setFundVersionId(fundVersionId);

@@ -3,11 +3,12 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {FormControl, Button} from 'react-bootstrap'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
-import {i18n, AbstractReactComponent, Icon, PartyNameForm} from 'components/index.jsx'
+import {i18n, AbstractReactComponent, Icon} from 'components/shared'
 import {indexById, objectById} from 'stores/app/utils.jsx'
 import {normalizeNameObject} from 'actions/party/party.jsx'
 
 import './PartyDetailNames.less'
+import PartyNameForm from "./PartyNameForm";
 
 class PartyDetailNames extends AbstractReactComponent {
 

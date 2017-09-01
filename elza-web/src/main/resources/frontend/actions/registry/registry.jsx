@@ -6,15 +6,15 @@ import {SimpleListActions} from 'shared/list'
 import {DetailActions} from 'shared/detail'
 import {storeFromArea, indexById} from 'shared/utils'
 
-import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from 'constants'
+import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from 'constants.jsx'
 export const DEFAULT_REGISTRY_LIST_MAX_SIZE = DEFAULT_LIST_SIZE;
 export const AREA_REGISTRY_LIST = "registryList";
 import * as types from 'actions/constants/ActionTypes.js';
 import {savingApiWrapper} from 'actions/global/status.jsx';
-import {i18n, AddRegistryForm} from 'components/index.jsx';
+import {i18n} from 'components/shared';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess,addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
-
+import AddRegistryForm from "../../components/registry/AddRegistryForm";
 
 
 
@@ -336,7 +336,7 @@ export function registryCoordinatesDeleted(coordinatesId) {
 export function registryCoordinatesInternalDelete(coordinatesInternalId) {
     return {
         coordinatesInternalId,
-        type: types.REGISTRY_RECORD_COORDINATES_INTERNAL_DELETE,
+        type: types.REGISTRY_RECORD_COORDINATES_INTERNAL_DELETED,
         area: AREA_REGISTRY_DETAIL
     }
 }
@@ -361,43 +361,3 @@ export function registryCoordinatesUpload(file, regRecordId) {
         });
     }
 }
-
-
-
-// Record types
-
-export function getRegistryRecordTypesIfNeeded(requestedRegistryTypeId = null) {
-    return (dispatch, getState) => {
-        const {registryRegionRecordTypes: {fetched, isFetching, registryTypeId}} = getState();
-        if ((!fetched && !isFetching) || registryTypeId !== requestedRegistryTypeId) {
-            return dispatch(getRegistryRecordTypes(requestedRegistryTypeId));
-        }
-    }
-}
-
-export function getRegistryRecordTypes(registryTypeId = null) {
-    return dispatch => {
-        dispatch(registryRecordTypesRequest(registryTypeId));
-        return WebApi.getRecordTypesForAdd(registryTypeId)
-            .then(json => {
-                dispatch(registryRecordTypesReceive(json, registryTypeId))
-            });
-    }
-}
-
-export function registryRecordTypesRequest(registryTypeId) {
-    return {
-        type: types.REGISTRY_RECORD_TYPES_REQUEST,
-        registryTypeId
-    }
-}
-
-export function registryRecordTypesReceive(json, registryTypeId) {
-    return {
-        item: json,
-        registryTypeId: registryTypeId,
-        type: types.REGISTRY_RECORD_TYPES_RECEIVE,
-        receivedAt: Date.now()
-    }
-}
-

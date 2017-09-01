@@ -725,21 +725,16 @@ public class ArrMoveLevelService {
      * @param change        změna smazání uzlů
      * @param firstPosition pozice prvního přesouvaného uzlu
      */
-    private void shiftNodes(Collection<ArrLevel> nodesToShift, ArrChange change, final int firstPosition) {
+    public void shiftNodes(Collection<ArrLevel> nodesToShift, ArrChange change, final int firstPosition) {
         Assert.notNull(nodesToShift);
         Assert.notNull(change);
 
         int position = firstPosition + nodesToShift.size() - 1;
 
         List<ArrLevel> nodesToShiftList = new ArrayList<>(nodesToShift);
-        Collections.sort(nodesToShiftList, new Comparator<ArrLevel>() {
-            @Override
-            public int compare(ArrLevel o1, ArrLevel o2) {
-                return new CompareToBuilder()
-                        .append(o2.getPosition(), o1.getPosition())
-                        .toComparison();
-            }
-        });
+        nodesToShiftList.sort((o1, o2) -> new CompareToBuilder()
+                .append(o2.getPosition(), o1.getPosition())
+                .toComparison());
 
         for (ArrLevel node : nodesToShiftList) {
             ArrLevel newNode = createNewLevelVersion(node, change);
@@ -755,7 +750,7 @@ public class ArrMoveLevelService {
      * @param movedLevel uzel
      * @return seznam uzlů se stejným rodičem a vyšší pozicí
      */
-    private List<ArrLevel> nodesToShift(ArrLevel movedLevel) {
+    public List<ArrLevel> nodesToShift(ArrLevel movedLevel) {
         Assert.notNull(movedLevel);
 
         return levelRepository.findByParentNodeAndPositionGreaterThanOrderByPositionAsc(movedLevel.getNodeParent(),

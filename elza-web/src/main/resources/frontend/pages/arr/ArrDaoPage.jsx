@@ -2,8 +2,8 @@
  * Stránka archivních pomůcek.
  */
 
-require('./ArrPage.less');
-require('./ArrDaoPage.less');
+import './ArrPage.less';
+import './ArrDaoPage.less';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -11,30 +11,30 @@ import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {FundSettingsForm, Tabs, Icon, Search, Ribbon, i18n, FundTreeDaos, ArrFundPanel, ArrDaos} from 'components/index.jsx';
+
+import ArrDaoPackages from '../../components/arr/ArrDaoPackages'
+import Ribbon from '../../components/page/Ribbon'
+import FundTreeDaos from '../../components/arr/FundTreeDaos'
+import ArrDaos from '../../components/arr/ArrDaos'
+
+import {
+    i18n,
+    Tabs, Icon, Search,
+    RibbonGroup,
+    AbstractReactComponent,
+    ListBox2,
+    LazyListBox,
+    Loading,
+    Utils
+} from 'components/shared';
 import * as types from 'actions/constants/ActionTypes.js';
 import {createFundRoot, getParentNode} from 'components/arr/ArrUtils.jsx'
 import {moveNodesUnder, moveNodesBefore, moveNodesAfter} from 'actions/arr/nodes.jsx'
 import {addNodeForm} from "actions/arr/addNodeForm.jsx"
 import ArrParentPage from "./ArrParentPage.jsx";
 import {fundTreeSelectNode} from 'actions/arr/fundTree.jsx'
-
-import {
-    BulkActionsDialog,
-    RibbonGroup,
-    AbstractReactComponent,
-    NodeTabs,
-    ListBox2,
-    LazyListBox,
-    VisiblePolicyForm,
-    Loading,
-    FundPackets,
-    FundFiles,
-    FundTreeMain,
-    ArrDaoPackages
-} from 'components/index.jsx';
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
-import {PageLayout} from 'pages/index.jsx';
+import PageLayout from "../shared/layout/PageLayout";
 import {WebApi} from 'actions/index.jsx';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {showRegisterJp, fundsFetchIfNeeded} from 'actions/arr/fund.jsx'
@@ -43,7 +43,6 @@ import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes.jsx'
 import {developerNodeScenariosRequest} from 'actions/global/developer.jsx'
-import {Utils} from 'components/index.jsx';
 import {isFundRootId, getSettings, setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {setFocus} from 'actions/global/focus.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'

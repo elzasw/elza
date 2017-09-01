@@ -1,7 +1,7 @@
 import * as types from 'actions/constants/ActionTypes.js';
 
 import React from 'react';
-import {i18n} from 'components/index.jsx';
+import {i18n} from 'components/shared';
 import {Button} from 'react-bootstrap';
 import {addToastrSuccess, addToastrInfo, addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
 import {fundOutputSelectOutput} from 'actions/arr/fundOutput.jsx'

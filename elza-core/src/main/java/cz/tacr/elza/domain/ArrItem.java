@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -38,27 +40,23 @@ public abstract class ArrItem implements NodeCacheSerializable {
     public static final String ITEM_SPEC = "itemSpec";
     public static final String ITEM_TYPE = "itemType";
 
+    @Transient
+    protected ArrItemData item;
+    
     public ArrItem() {
-
     }
-
-    public ArrItem(final Class<? extends ArrItemData> clazz) throws IllegalAccessException, InstantiationException {
-        this.item = clazz.newInstance();
-    }
-
-    public ArrItem(final ArrItemData item) {
+    
+    public ArrItem(ArrItemData item) {
         this.item = item;
     }
 
-    @Transient
-    protected ArrItemData item;
-
-    public void setItem(final ArrItemData item) {
+    public void setItem(ArrItemData item) {
         this.item = item;
     }
 
     @Id
     @GeneratedValue
+    @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer itemId;
 
     @RestResource(exported = false)
@@ -98,6 +96,9 @@ public abstract class ArrItem implements NodeCacheSerializable {
 
     @Column(nullable = false)
     private Integer position;
+
+    @Column(nullable = false)
+    private Boolean undefined;
 
     @Field
     @NumericField
@@ -264,5 +265,13 @@ public abstract class ArrItem implements NodeCacheSerializable {
 
     public void setItemSpecId(final Integer itemSpecId) {
         this.itemSpecId = itemSpecId;
+    }
+
+    public Boolean getUndefined() {
+        return undefined;
+    }
+
+    public void setUndefined(final Boolean undefined) {
+        this.undefined = undefined;
     }
 }

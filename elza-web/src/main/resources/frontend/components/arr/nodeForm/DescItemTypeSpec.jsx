@@ -1,5 +1,5 @@
 import React from 'react';
-import {Autocomplete, Icon, i18n, AbstractReactComponent} from 'components/index.jsx';
+import {Autocomplete, Icon, i18n, AbstractReactComponent} from 'components/shared';
 import {getSetFromIdsList} from "stores/app/utils.jsx";
 import classNames from 'classnames';
 

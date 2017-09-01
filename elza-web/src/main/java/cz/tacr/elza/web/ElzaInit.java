@@ -2,7 +2,7 @@ package cz.tacr.elza.web;
 
 import cz.tacr.elza.ElzaCore;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.context.web.SpringBootServletInitializer;
+import org.springframework.boot.web.support.SpringBootServletInitializer;
 
 public class ElzaInit extends SpringBootServletInitializer {
 

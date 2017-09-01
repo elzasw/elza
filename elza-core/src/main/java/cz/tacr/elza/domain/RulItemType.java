@@ -55,6 +55,9 @@ public class RulItemType {
     @Column(name = "item_type_id")
     private Integer itemTypeId;
 
+    @Column(updatable = false, insertable = false)
+    private Integer dataTypeId;
+
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulDataType.class)
     @JoinColumn(name = "dataTypeId", nullable = false)
@@ -104,6 +107,9 @@ public class RulItemType {
     @Transient
     private String policyTypeCode;
 
+    @Transient
+    private Boolean indefinable;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
@@ -116,12 +122,17 @@ public class RulItemType {
         this.itemTypeId = descItemTypeId;
     }
 
+    public Integer getDataTypeId() {
+        return dataTypeId;
+    }
+
     public RulDataType getDataType() {
         return dataType;
     }
 
     public void setDataType(final RulDataType dataType) {
         this.dataType = dataType;
+        this.dataTypeId = dataType != null ? dataType.getDataTypeId() : null;
     }
 
     public String getCode() {
@@ -292,6 +303,20 @@ public class RulItemType {
      */
     public void setCalculableState(final Boolean calculableState) {
         this.calculableState = calculableState;
+    }
+
+    /**
+     * @return lze typ atributu nastavit jako nedefinovaný?
+     */
+    public Boolean getIndefinable() {
+        return indefinable;
+    }
+
+    /**
+     * @param indefinable lze typ atributu nastavit jako nedefinovaný?
+     */
+    public void setIndefinable(final Boolean indefinable) {
+        this.indefinable = indefinable;
     }
 
     /**

@@ -1,21 +1,12 @@
+/**
+ * Ribbon aplikace - obsahuje základní globální akce v aplikaci.
+ */
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
-import {Icon, i18n} from 'components/index.jsx';
-import {
-    RibbonMenu,
-    RibbonGroup,
-    RibbonSplit,
-    ToggleContent,
-    FindindAidFileTree,
-    PasswordForm,
-    AbstractReactComponent,
-    ModalDialog,
-    NodeTabs
-} from 'components/index.jsx';
+import {RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, ModalDialog, Icon, AbstractReactComponent, i18n} from 'components/shared';
 import {Button, MenuItem, Dropdown} from 'react-bootstrap';
-import {PageLayout} from 'pages/index.jsx';
 import {AppStore} from 'stores/index.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {logout} from 'actions/global/login.jsx';
@@ -25,10 +16,8 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {userPasswordChange} from 'actions/admin/user.jsx'
 import {routerNavigate} from "actions/router.jsx"
+import PasswordForm from "../admin/PasswordForm";
 
-/**
- * Ribbon aplikace - obsahuje základní globální akce v aplikaci.
- */
 class Ribbon extends AbstractReactComponent {
 
     static PropTypes = {
@@ -266,7 +255,7 @@ class Ribbon extends AbstractReactComponent {
             <RibbonGroup className="small" right>
                 <Dropdown className="user-menu" bsStyle='default' key='user-menu' id='user-menu'>
                     <Dropdown.Toggle  noCaret>
-                        {userDetail.username}<Icon glyph="fa-user" />
+                        {userDetail.username} <Icon glyph="fa-user" />
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
                         <MenuItem eventKey="1" onClick={this.handlePasswordChangeForm}>{i18n('ribbon.action.admin.user.passwordChange')}</MenuItem>

@@ -10,41 +10,49 @@ import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {FundSettingsForm, Tabs, Icon, Ribbon, i18n, ArrFundPanel} from 'components/index.jsx';
+import {
+    RibbonGroup,
+    AbstractReactComponent,
+    ListBox2,
+    LazyListBox,
+    Loading,
+    Tabs,
+    Icon,
+    i18n,
+    Utils
+} from 'components/shared';
 import * as types from 'actions/constants/ActionTypes.js';
 
 import ArrParentPage from "./ArrParentPage.jsx";
 
 import {
+    Ribbon,
+    ArrFundPanel,
+    FundSettingsForm,
     BulkActionsDialog,
-    RibbonGroup,
-    AbstractReactComponent,
     NodeTabs,
-    ListBox2,
-    LazyListBox,
     VisiblePolicyForm,
-    Loading,
     FundPackets,
     FundFiles,
     FundTreeMain
 } from 'components/index.jsx';
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
-import {PageLayout} from 'pages/index.jsx';
+import PageLayout from "../shared/layout/PageLayout";
 import {WebApi} from 'actions/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {showRegisterJp, showDaosJp, fundExtendedView, fundsFetchIfNeeded} from 'actions/arr/fund.jsx'
+import {showRegisterJp, showDaosJp, fundsFetchIfNeeded} from 'actions/arr/fund.jsx'
+import {fundExtendedView} from 'actions/arr/fundExtended.jsx'
 import {versionValidate, versionValidationErrorNext, versionValidationErrorPrevious} from 'actions/arr/versionValidation.jsx'
 import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes.jsx'
 import {developerNodeScenariosRequest} from 'actions/global/developer.jsx'
-import {Utils} from 'components/index.jsx';
 import {isFundRootId, getSettings, setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {setFocus} from 'actions/global/focus.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {fundNodesPolicyFetchIfNeeded} from 'actions/arr/fundNodesPolicy.jsx'
 import {fundActionFormChange, fundActionFormShow} from 'actions/arr/fundAction.jsx'
-import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
+import {fundSelectSubNode} from 'actions/arr/node.jsx';
 import {createFundRoot} from 'components/arr/ArrUtils.jsx'
 import ArrHistoryForm from 'components/arr/ArrHistoryForm.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
@@ -326,6 +334,11 @@ class ArrPage extends ArrParentPage {
                         name: i18n('arr.fund.settings.panel.rightPanel'),
                         key: 'rightPanel',
                         checked: dataCenter && dataCenter.rightPanel !== undefined ? dataCenter.rightPanel : true},
+                    {
+                        name: i18n('arr.fund.settings.panel.treeColorCoding'),
+                        key: "treeColorCoding",
+                        checked: dataCenter && dataCenter.treeColorCoding !== undefined ? dataCenter.treeColorCoding : true
+                    }
                 ]
             },
             strictMode: {
@@ -965,8 +978,11 @@ class ArrPage extends ArrParentPage {
     }
 
     renderLeftPanel(readMode, closed) {
-        const {focus, arrRegion} = this.props;
+        const {focus, arrRegion, userDetail} = this.props;
         const activeFund = this.getActiveFund(this.props);
+        var centerSettings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', activeFund.id);
+        var centerSettingsValues = centerSettings.value ? JSON.parse(centerSettings.value) : null;
+        let colorCoded = centerSettingsValues && centerSettingsValues.treeColorCoding || !centerSettingsValues;
 
         if (arrRegion.extendedView) {   // extended view - jiné větší zobrazení stromu, ale renderuje se v center panelu, tento bude prázdný
             return null;
@@ -981,6 +997,7 @@ class ArrPage extends ArrParentPage {
                     ref='tree'
                     focus={focus}
                     actionAddons={<Button onClick={() => {this.handleSetExtendedView(true)}} className='extended-view-toggle'><Icon glyph='fa-arrows-alt'/></Button>}
+                    colorCoded={colorCoded}
                 />
             )
         }

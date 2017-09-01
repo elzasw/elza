@@ -1,11 +1,9 @@
-import {Utils} from 'components/index.jsx';
-
 import * as types from 'actions/constants/ActionTypes.js';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {WebApi} from 'actions/index.jsx';
 import {addToastrDanger, addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
-import {i18n} from 'components/index.jsx'
+import {i18n, Utils} from 'components/shared'
 import {registryListInvalidate} from 'actions/registry/registry.jsx'
 import {partyListInvalidate} from 'actions/party/party.jsx'
 
@@ -31,7 +29,7 @@ export const ObjectInfo = class ObjectInfo {
 
 export function getObjectInfo(objectInfo) {
     return {
-        type: types.GET_OBJECT_INFO,
+        type: types.GLOBAL_GET_OBJECT_INFO,
         objectInfo
     }
 }

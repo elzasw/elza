@@ -5,7 +5,7 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import {WebApi} from 'actions/index.jsx';
 import {permissionReceive} from "./permission.jsx"
-import {i18n} from 'components/index.jsx'
+import {i18n} from 'components/shared'
 import {savingApiWrapper} from 'actions/global/status.jsx'
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'

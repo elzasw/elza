@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ItemRepository extends JpaRepository<ArrItem, Integer> {
 
-    @Query(value = "SELECT max(i.descItemObjectId) FROM arr_item i")
+    @Query(value = "SELECT coalesce(max(i.descItemObjectId), 0) FROM arr_item i")
     Integer findMaxItemObjectId();
 
 

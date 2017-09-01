@@ -13,6 +13,7 @@ import java.util.Map;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.controller.ArrangementController;
+import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataDecimal;
@@ -599,7 +601,7 @@ public class DescItemFactory implements InitializingBean {
                         }
 
                         String codeCalendar = arrItemUnitdate.getCalendarType().getCode();
-                        CalendarConverter.CalendarType calendarType = CalendarConverter.CalendarType.valueOf(codeCalendar);
+                        CalendarType calendarType = CalendarType.valueOf(codeCalendar);
 
                         String value;
 
@@ -784,9 +786,14 @@ public class DescItemFactory implements InitializingBean {
      * @return výsledný atributu s daty
      */
     public ArrDescItem getDescItem(final ArrDescItem descItem) {
-        ArrData data = getDataByDescItem(descItem);
+        ArrData data = null;
+        if (BooleanUtils.isNotTrue(descItem.getUndefined())) {
+            data = getDataByDescItem(descItem);
+        }
         ArrItemData item = createItemByType(descItem.getItemType().getDataType());
-        BeanUtils.copyProperties(data, item);
+        if (BooleanUtils.isNotTrue(descItem.getUndefined()) && data != null) {
+            BeanUtils.copyProperties(data, item);
+        }
         descItem.setItem(item);
         return descItem;
     }
@@ -817,7 +824,7 @@ public class DescItemFactory implements InitializingBean {
      * @return výsledný atributu s daty
      */
     public ArrDescItem getDescItem(final ArrDescItem descItem, final String formatData) {
-        if (descItem.getItem() != null) {
+        if (descItem.getItem() != null || BooleanUtils.isTrue(descItem.getUndefined())) {
             return descItem;
         }
 
@@ -833,12 +840,12 @@ public class DescItemFactory implements InitializingBean {
             BeanUtils.copyProperties(data, item);
             descItem.setItem(item);
             item.setSpec(descItem.getItemSpec());
+            item.setUndefined(descItem.getUndefined());
         }
-
 
         return descItem;
     }
-    
+
     /**
      * Fill ArrItemData to ArrDescItem
      * @param descItem descItem without ArrItemData
@@ -886,6 +893,10 @@ public class DescItemFactory implements InitializingBean {
     public ArrDescItem saveDescItemWithData(final ArrDescItem descItem, final Boolean createNewVersion) {
 
         descItemRepository.save(descItem);
+
+        if (descItem.getItem() == null || BooleanUtils.isTrue(descItem.getUndefined())) {
+            return descItem;
+        }
 
         ArrItemData item = descItem.getItem();
 

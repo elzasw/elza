@@ -214,7 +214,7 @@ const read = (path, object) => {
 
 // ##########################################################################
 
-module.exports = {
+export default {
     getValues,
     setAttributes,
     mergeState,

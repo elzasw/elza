@@ -1,0 +1,30 @@
+elza:
+  data:
+    url: <dbURL>
+    user: <dbUser>
+    pass: <dbPass>
+
+  rules:
+    ZP2015:
+      default:
+        - NORMAL
+
+  treenode:
+    title: ZP2015_TITLE
+    defaultTitle: <Není nastaven popisek>
+
+spring:
+  app:
+    buildType: REL
+    
+  jpa:
+    #pametova databaze automaticky zapina hibernate.ddl-auto: create
+    hibernate.ddl-auto: none
+    generate-ddl: false
+     
+    properties:
+      hibernate:
+        <dbDialect>
+
+        hbm2ddl:
+          auto: none

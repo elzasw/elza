@@ -1,12 +1,14 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ParPartyGroup;
-import cz.tacr.elza.domain.ParPartyGroupIdentifier;
+import java.util.Collection;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import cz.tacr.elza.domain.ParPartyGroup;
+import cz.tacr.elza.domain.ParPartyGroupIdentifier;
 
 
 /**
@@ -33,5 +35,11 @@ public interface PartyGroupIdentifierRepository extends JpaRepository<ParPartyGr
      */
     @Query("SELECT pi FROM par_party_group_identifier pi WHERE pi.partyGroup = ?1")
     List<ParPartyGroupIdentifier> findByParty(ParPartyGroup partyGroup);
-    
+
+    /**
+     * Najde identifikátory pro dané korporace/skupiny osob.
+     * @param partyGroups skupiny osob
+     * @return identifikátory korporací/skupin
+     */
+	List<ParPartyGroupIdentifier> findByPartyGroupIn(Collection<ParPartyGroup> partyGroups);
 }

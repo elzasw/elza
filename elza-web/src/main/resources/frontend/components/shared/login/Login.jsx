@@ -1,31 +1,32 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, ModalDialogWrapper, FormInput} from 'components/index.jsx';
 import {Modal, Button, Form} from 'react-bootstrap';
 import {decorateFormField} from 'components/form/FormUtils.jsx'
 import {WebApi} from 'actions/index.jsx';
 import {loginSuccess} from 'actions/global/login.jsx';
 
 import './Login.less';
+import ModalDialogWrapper from "../dialog/ModalDialogWrapper";
+import FormInput from "../form/FormInput";
+import i18n from "../../i18n";
+import AbstractReactComponent from "../../AbstractReactComponent";
 
-var defaultEnabled = typeof defaultUserEnabled !== "undefined" && defaultUserEnabled;
+const defaultEnabled = typeof defaultUserEnabled !== "undefined" && defaultUserEnabled;
 
-var getDefaultLogin = () => {
-    var defaultLogin = {};
-    if(defaultEnabled){
-        defaultLogin = {
+const getDefaultLogin = () => {
+    if (defaultEnabled){
+        return {
             username: "admin",
             password: "admin"
         };
     } else {
-        defaultLogin = {
+        return {
             username: "",
             password: ""
         };
     }
-    return defaultLogin;
-}
+};
 
 
 class Login extends AbstractReactComponent {
@@ -49,6 +50,7 @@ class Login extends AbstractReactComponent {
 
         // volám nepřetížený api
         WebApi._login(username, password).then((data) => {
+            console.log("xxxxx");
             this.dispatch(loginSuccess());
             try {
                 login.callback && login.callback();
@@ -57,7 +59,12 @@ class Login extends AbstractReactComponent {
             }
             this.setState(this.defaultState);
         }).catch((err) => {
-            this.setState({error: err.data.message});
+            console.log(err);
+            if (err.data && err.data.message) {
+                this.setState({error: err.data.message});
+            } else {
+                this.setState({error: i18n('login.error.unknown')});
+            }
         });
     };
 

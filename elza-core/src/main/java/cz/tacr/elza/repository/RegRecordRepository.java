@@ -1,16 +1,17 @@
 package cz.tacr.elza.repository;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
-
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegExternalSystem;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.projection.RegRecordInfo;
+import cz.tacr.elza.domain.projection.RegRecordInfoExternal;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -86,20 +87,28 @@ public interface RegRecordRepository extends ElzaJpaRepository<RegRecord, Intege
 
     /**
      * Najde id hesel a uuid.
+     * DEP_IM20: Bude odebráno s verzí importu 2.0!
      *
      * @param uuid UUID
      * @return seznam uuid, id hesla
      */
+    @Deprecated
     @Query("SELECT uuid, recordId FROM reg_record WHERE uuid IN (?1)")
     List<Object[]> findUuidAndRecordIdByUuid(Collection<String> uuid);
 
+    List<RegRecordInfo> findByUuidIn(Collection<String> uuid);
+
     /**
      * Najde id hesel a externí id.
+     * DEP_IM20: Bude odebráno s verzí importu 2.0!
      *
      * @param externalSystemCode kód externího systému
      * @param externalIds externí id
      * @return seznam externId, id hesla
      */
+    @Deprecated
     @Query("SELECT r.externalId, r.recordId FROM reg_record r WHERE r.externalSystem.code = ?1 and r.externalId IN (?2)")
     List<Object[]> findExternIdAndRecordIdBySystemCodeAndExternalIds(String externalSystemCode, Collection<String> externalIds);
+
+    List<RegRecordInfoExternal> findByExternalSystemCodeAndExternalIdIn(String externalSystemCode, Collection<String> externalIds);
 }

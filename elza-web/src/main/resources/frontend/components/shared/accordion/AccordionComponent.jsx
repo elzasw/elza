@@ -188,4 +188,4 @@ AccordionComponent.getItems = function(viewTop, viewHeight, listTop, itemCloseHe
     return result;
 };
 
-module.exports = AccordionComponent;
+export default AccordionComponent;

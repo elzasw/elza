@@ -1,50 +1,5 @@
 package cz.tacr.elza.service.cache;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
-import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
-import com.google.common.collect.Lists;
-import cz.tacr.elza.domain.ArrCachedNode;
-import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoLink;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFile;
-import cz.tacr.elza.domain.ArrItemFileRef;
-import cz.tacr.elza.domain.ArrItemPacketRef;
-import cz.tacr.elza.domain.ArrItemPartyRef;
-import cz.tacr.elza.domain.ArrItemRecordRef;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.repository.CachedNodeRepository;
-import cz.tacr.elza.repository.DaoLinkRepository;
-import cz.tacr.elza.repository.DaoRepository;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.FundFileRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.NodeRegisterRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.PacketRepository;
-import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.service.ItemService;
-import org.apache.commons.collections.CollectionUtils;
-import org.castor.core.util.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
-
-import javax.transaction.Transactional;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -57,15 +12,63 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import javax.transaction.Transactional;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.castor.core.util.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
+import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
+import com.google.common.collect.Lists;
+
+import cz.tacr.elza.domain.ArrCachedNode;
+import cz.tacr.elza.domain.ArrCalendarType;
+import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFile;
+import cz.tacr.elza.domain.ArrItemFileRef;
+import cz.tacr.elza.domain.ArrItemPacketRef;
+import cz.tacr.elza.domain.ArrItemPartyRef;
+import cz.tacr.elza.domain.ArrItemRecordRef;
+import cz.tacr.elza.domain.ArrItemUnitdate;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.repository.CachedNodeRepository;
+import cz.tacr.elza.repository.CalendarTypeRepository;
+import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.DaoRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.FundFileRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.NodeRegisterRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.PacketRepository;
+import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.service.ItemService;
+import cz.tacr.elza.utils.HibernateUtils;
+
 /**
  * Serviska pro cachování dat jednotky popisu.
  *
  * * sestavuje jednotný objekt {@link CachedNode}, který se při ukládání do DB serializuje do JSON
  * * pro určení, co se má serializovat se využívá interface {@link NodeCacheSerializable} + základní primitivní typy
  * * při spuštění synchronizace {@link #syncCache()} je zamknuta cache pro čtení
- *
- * @author Martin Šlapa
- * @since 26.01.2017
  */
 @Service
 public class NodeCacheService {
@@ -120,6 +123,9 @@ public class NodeCacheService {
     private DescItemRepository descItemRepository;
 
     @Autowired
+    private CalendarTypeRepository calendarTypeRepository;
+
+    @Autowired
     private ItemService itemService;
 
     public NodeCacheService() {
@@ -131,7 +137,6 @@ public class NodeCacheService {
     /**
      * Synchronizace záznamů v databázi.
      */
-    @Async("syncCacheTaskExecutor")
     @Transactional
     public void syncCache() {
         writeLock.lock();
@@ -149,7 +154,6 @@ public class NodeCacheService {
      *
      * @param nodeIds seznam požadovaných JP k synchronizaci
      */
-    @Async("syncCacheTaskExecutor")
     @Transactional
     public void syncNodes(final Collection<Integer> nodeIds) {
         writeLock.lock();
@@ -384,6 +388,7 @@ public class NodeCacheService {
 
         Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = new HashMap<>();
         for (ArrDaoLink daoLink : daoLinks) {
+            daoLink = HibernateUtils.unproxy(daoLink);
             List<ArrDaoLink> links = nodeIdDaoLinks.get(daoLink.getNodeId());
             if (links == null) {
                 links = new ArrayList<>();
@@ -399,6 +404,7 @@ public class NodeCacheService {
 
         Map<Integer, List<ArrNodeRegister>> nodeIdNodeRegisters = new HashMap<>();
         for (ArrNodeRegister nodeRegister : nodeRegisters) {
+            nodeRegister = HibernateUtils.unproxy(nodeRegister);
             List<ArrNodeRegister> registers = nodeIdNodeRegisters.get(nodeRegister.getNodeId());
             if (registers == null) {
                 registers = new ArrayList<>();
@@ -415,6 +421,7 @@ public class NodeCacheService {
 
         Map<Integer, List<ArrDescItem>> nodeIdItems = new HashMap<>();
         for (ArrDescItem descItem : descItems) {
+            descItem = HibernateUtils.unproxy(descItem);
             List<ArrDescItem> items = nodeIdItems.get(descItem.getNodeId());
             if (items == null) {
                 items = new ArrayList<>();
@@ -468,6 +475,7 @@ public class NodeCacheService {
         Map<ArrDescItem, Integer> itemPartiesMap = new HashMap<>();
         Map<ArrDescItem, Integer> itemRecordsMap = new HashMap<>();
         Map<ArrDescItem, Integer> itemFilesMap = new HashMap<>();
+        Map<ArrDescItem, Integer> itemUnitdateMap = new HashMap<>();
         Map<ArrDaoLink, Integer> daoLinksMap = new HashMap<>();
         Map<ArrNodeRegister, Integer> nodeRegistersMap = new HashMap<>();
 
@@ -493,6 +501,8 @@ public class NodeCacheService {
                         itemRecordsMap.put(descItem, ((ArrItemRecordRef) descItem.getItem()).getRecordId());
                     } else if (descItem.getItem() instanceof ArrItemFileRef) {
                         itemFilesMap.put(descItem, ((ArrItemFileRef) descItem.getItem()).getFileId());
+                    } else if (descItem.getItem() instanceof ArrItemUnitdate) {
+                        itemUnitdateMap.put(descItem, ((ArrItemUnitdate) descItem.getItem()).getCalendarTypeId());
                     }
                 }
             }
@@ -514,8 +524,25 @@ public class NodeCacheService {
         fillParParties(itemPartiesMap);
         fillRegRecords(itemRecordsMap);
         fillArrFiles(itemFilesMap);
+        fillUnitdate(itemUnitdateMap);
         fillArrDaoLinks(daoLinksMap);
         fillArrNodeRegisters(nodeRegistersMap);
+    }
+
+    private void fillUnitdate(final Map<ArrDescItem, Integer> itemUnitdateMap) {
+        if (itemUnitdateMap.size() == 0) {
+            return;
+        }
+        List<ArrCalendarType> calendarTypes = calendarTypeRepository.findAll(itemUnitdateMap.values());
+        Map<Integer, ArrCalendarType> calendarTypeMapFound = new HashMap<>();
+        for (ArrCalendarType calendarType : calendarTypes) {
+            calendarTypeMapFound.put(calendarType.getCalendarTypeId(), calendarType);
+        }
+
+        for (Map.Entry<ArrDescItem, Integer> entry : itemUnitdateMap.entrySet()) {
+            ArrDescItem descItem = entry.getKey();
+            ((ArrItemUnitdate) descItem.getItem()).setCalendarType(calendarTypeMapFound.get(entry.getValue()));
+        }
     }
 
     /**
@@ -702,8 +729,8 @@ public class NodeCacheService {
 
         if (records.size() != cachedNodes.size()) {
             throw new SystemException("Počet ukládaných JP neodpovídá počtu nalezených v cache!")
-                    .set("saveCount", cachedNodes.size())
-                    .set("foundCount", records.size());
+            .set("saveCount", cachedNodes.size())
+            .set("foundCount", records.size());
         }
 
         for (ArrCachedNode record : records) {

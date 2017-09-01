@@ -1,22 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {connect} from 'react-redux'
-import {AbstractReactComponent} from 'components/index.jsx';
+import './Splitter.less'
+import AbstractReactComponent from "../../AbstractReactComponent";
 
-require ('./Splitter.less')
-var Resizer = require ('./Resizer')
-
-var Pane = class Pane extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
-
-        this.state = {
-        }
-    }
+class Pane extends AbstractReactComponent {
+    state = {};
 
     render() {
-        let style = {
-        }
+        let style = {};
         if (this.state.size) {
             style.width = this.state.size;
         }
@@ -28,4 +19,4 @@ var Pane = class Pane extends AbstractReactComponent {
     }
 }
 
-module.exports = Pane;
+export default Pane;

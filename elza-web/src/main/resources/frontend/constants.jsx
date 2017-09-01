@@ -10,3 +10,27 @@ export const MODAL_DIALOG_VARIANT = {
     FULLSCREEN: 'dialog-fullscreen',
     NO_HEADER: 'dialog-no-header'
 };
+
+
+export const PARTY_TYPE_CODES = {
+    GROUP_PARTY: 'GROUP_PARTY',
+    PERSON: 'PERSON',
+    DYNASTY: 'DYNASTY',
+    EVENT: 'EVENT',
+};
+
+export const RELATION_CLASS_CODES = {
+    RELATION: "R",
+    BIRTH: "B",
+    EXTINCTION: "E"
+};
+
+export const ActionState = {
+    RUNNING: 'RUNNING',
+    WAITING: 'WAITING',
+    PLANNED: 'PLANNED',
+    FINISHED: 'FINISHED',
+    ERROR: 'ERROR',
+    INTERRUPTED: 'INTERRUPTED',
+    OUTDATED: 'OUTDATED'
+};

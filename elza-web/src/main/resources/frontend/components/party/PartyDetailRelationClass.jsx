@@ -3,13 +3,16 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {FormControl, Button} from 'react-bootstrap'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
-import {i18n, AbstractReactComponent, Icon, RelationClassForm, RelationForm} from 'components/index.jsx'
+import {i18n, AbstractReactComponent, Icon} from 'components/shared'
 import {indexById} from 'stores/app/utils.jsx'
-import {relationCreate, relationUpdate, relationDelete, RELATION_CLASS_TYPE_REPEATABILITY, USE_UNITDATE_ENUM, RELATION_CLASS_CODES, normalizeDatation} from 'actions/party/party.jsx'
+import {relationCreate, relationUpdate, relationDelete, RELATION_CLASS_TYPE_REPEATABILITY, USE_UNITDATE_ENUM, normalizeDatation} from 'actions/party/party.jsx'
+import {RELATION_CLASS_CODES} from 'constants.jsx'
 import {getMapFromList} from 'stores/app/utils.jsx'
 import {isNotBlankObject} from 'components/Utils.jsx'
 
 import './PartyDetailRelations.less'
+import RelationClassForm from "./RelationClassForm";
+import RelationForm from "./RelationForm";
 
 class PartyDetailRelations extends AbstractReactComponent {
 

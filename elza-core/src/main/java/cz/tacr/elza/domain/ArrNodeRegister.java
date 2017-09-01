@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import cz.tacr.elza.service.importnodes.vo.NodeRegister;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.rest.core.annotation.RestResource;
 
@@ -20,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @Entity(name = "arr_node_register")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrNodeRegister {
+public class ArrNodeRegister implements NodeRegister {
 
     public static final String NODE_ID = "nodeId";
     public static final String NODE = "node";

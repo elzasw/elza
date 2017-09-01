@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import {Button} from 'react-bootstrap';
 import {objectFromWKT, wktFromTypeAndData, wktType} from 'components/Utils.jsx';
 import {connect} from 'react-redux'
-import {TooltipTrigger, AbstractReactComponent, i18n, NoFocusButton, Icon, FormInput} from 'components/index.jsx';
+import {TooltipTrigger, AbstractReactComponent, i18n, NoFocusButton, Icon, FormInput} from 'components/shared';
 import './RegistryCoordinate.less';
 
 class RegistryCoordinate extends AbstractReactComponent {

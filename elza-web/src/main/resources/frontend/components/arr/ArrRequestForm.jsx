@@ -5,7 +5,7 @@
 import React from 'react';
 import {connect} from 'react-redux'
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, FormInput, Loading} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, FormInput, Loading} from 'components/shared';
 import {Modal, Button, Input, Form} from 'react-bootstrap';
 import {createDigitizationName} from './ArrUtils.jsx'
 import {indexById} from 'stores/app/utils.jsx';

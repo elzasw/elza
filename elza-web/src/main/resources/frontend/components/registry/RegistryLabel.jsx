@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Icon, NoFocusButton, AbstractReactComponent, FormInput} from 'components/index.jsx';
+import {Icon, NoFocusButton, AbstractReactComponent, FormInput} from 'components/shared';
 
 /**
  * Komponenta pro vytvoření stejných poliček pro editaci záznamu

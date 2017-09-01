@@ -1,6 +1,6 @@
 import React from "react";
 import {WebApi} from "actions/index.jsx";
-import {AbstractReactComponent, Autocomplete} from "components/index.jsx";
+import {AbstractReactComponent, Autocomplete} from 'components/shared';
 import {connect} from "react-redux"
 import {renderGroupItem} from "./adminRenderUtils.jsx"
 
@@ -69,4 +69,4 @@ function mapStateToProps(state) {
     return {
     }
 }
-module.exports = connect(mapStateToProps, null, null, { withRef: true })(GroupField);
+export default connect(mapStateToProps, null, null, { withRef: true })(GroupField);

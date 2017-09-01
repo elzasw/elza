@@ -2,7 +2,7 @@ require ('./ArrDao.less');
 
 import React from "react";
 import {connect} from "react-redux";
-import {NoFocusButton, FormInput, Icon, AbstractReactComponent, i18n, ListBox} from "components/index.jsx";
+import {NoFocusButton, FormInput, Icon, AbstractReactComponent, i18n, ListBox} from 'components/shared';
 import {indexById} from "stores/app/utils.jsx";
 import {Form, Button} from "react-bootstrap";
 import {dateToString} from "components/Utils.jsx";

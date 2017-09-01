@@ -10,11 +10,11 @@
  * @since 19.10.2016
  */
 import React from 'react';
-import {i18n, Toastr, LongText, Exception} from 'components/index.jsx';
 import {lenToBytesStr, roughSizeOfObject} from 'components/Utils.jsx';
-import {store} from '../stores/AppStore.jsx';
+//import {store} from '../stores/AppStore.jsx';
 import {addToastrDanger, addToastrWarning, addToastrInfo, addToastr} from 'components/shared/toastr/ToastrActions.jsx'
 import {createException} from 'components/ExceptionUtils.jsx';
+import i18n from "./i18n";
 
 
 // Nastavení úrovně logování
@@ -24,6 +24,10 @@ const _logResults = true;
 const _logDuration = false;    // moznost logovani delky volani
 
 let _callIndex = 0;
+let _store = null;
+function setStore(appstore) {
+    _store = appstore;
+}
 
 function requestCounter(method, url, data) {
     let callStr;
@@ -85,7 +89,8 @@ function resolveException(status, statusText, data) {
     }
 
     if (result.createToaster) {
-        store.dispatch(createException(result));
+        console.log("___", _store);
+        _store.dispatch(createException(result));
     }
 
     return result;
@@ -311,5 +316,6 @@ export default {
     ajaxPut,
     ajaxDelete,
     ajaxCall,
-    ajaxCallRaw
+    ajaxCallRaw,
+    setStore
 }

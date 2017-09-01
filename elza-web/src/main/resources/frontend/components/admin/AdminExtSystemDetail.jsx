@@ -8,7 +8,7 @@ import {
     FormInput,
     Icon,
     CollapsablePanel
-} from 'components/index.jsx';
+} from 'components/shared';
 import {Form, Button} from 'react-bootstrap';
 import {AppActions} from 'stores/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
@@ -17,7 +17,7 @@ import {
     extSystemDetailFetchIfNeeded,
     AREA_EXT_SYSTEM_DETAIL
 } from 'actions/admin/extSystem.jsx'
-import {Utils} from 'components/index.jsx';
+import {Utils} from 'components/shared';
 import {objectById, indexById} from 'stores/app/utils.jsx';
 import {setInputFocus, dateTimeToString} from 'components/Utils.jsx'
 import {setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx'

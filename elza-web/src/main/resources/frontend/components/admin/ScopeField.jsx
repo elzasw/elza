@@ -1,7 +1,7 @@
 // require("./ScopeField.less")
 
 import React from "react";
-import {AbstractReactComponent, Autocomplete} from "components/index.jsx";
+import {AbstractReactComponent, Autocomplete} from 'components/shared';
 import {connect} from "react-redux"
 
 const ScopeField = class ScopeField extends AbstractReactComponent {
@@ -58,4 +58,4 @@ function mapStateToProps(state) {
     return {
     }
 }
-module.exports = connect(mapStateToProps, null, null, { withRef: true })(ScopeField);
+export default connect(mapStateToProps, null, null, { withRef: true })(ScopeField);

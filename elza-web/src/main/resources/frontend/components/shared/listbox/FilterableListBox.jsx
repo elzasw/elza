@@ -6,7 +6,10 @@
 require ('./FilterableListBox.less')
 
 import React from "react";
-import {Search, ListBox, AbstractReactComponent, i18n} from "components";
+import Search from "../search/Search";
+import ListBox from "./ListBox";
+import i18n from "../../i18n";
+import AbstractReactComponent from "../../AbstractReactComponent";
 import {Checkbox, Button} from "react-bootstrap";
 import {getSetFromIdsList} from "stores/app/utils.jsx";
 var __FilterableListBox_timer = null
@@ -168,7 +171,7 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
     focus() {
         this.refs.listBox.focus()
     }
-    
+
     render() {
         const {label, className, items, searchable, altSearch} = this.props
         const {filterText} = this.state
@@ -225,4 +228,4 @@ FilterableListBox.propsTypes = {
     selectionType: React.PropTypes.string
 };
 
-module.exports = FilterableListBox;
+export default FilterableListBox;

@@ -1,18 +1,21 @@
 import React from 'react';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, Autocomplete, Icon, FormInput} from 'components/index.jsx';
 import {Modal, Button, Checkbox, Form} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx';
 import {decorateFormField} from 'components/form/FormUtils.jsx';
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {WebApi} from 'actions/index.jsx';
 import {importForm} from 'actions/global/global.jsx';
+import AbstractReactComponent from "../AbstractReactComponent";
+import FormInput from "../shared/form/FormInput";
+import Autocomplete from "../shared/autocomplete/Autocomplete";
+import i18n from "../i18n";
+import Icon from "../shared/icon/Icon";
 
 /**
  * Formulář importu rejstříkových hesel
  * <ImportForm fund onSubmit={this.handleCallImportRegistry} />
  */
-
 class ImportForm extends AbstractReactComponent {
     /**
      * Validace formuláře.
@@ -45,7 +48,8 @@ class ImportForm extends AbstractReactComponent {
     state = {
         defaultScopes: [],
         transformationNames: [],
-        isRunning: false};
+        isRunning: false
+    };
 
     componentDidMount() {
         this.dispatch(refRuleSetFetchIfNeeded());

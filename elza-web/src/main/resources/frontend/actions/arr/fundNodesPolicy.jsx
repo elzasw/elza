@@ -1,5 +1,5 @@
 import {WebApi} from 'actions/index.jsx';
-import {i18n} from 'components/index.jsx';
+import {i18n} from 'components/shared';
 import * as types from 'actions/constants/ActionTypes.js';
 
 export function fundNodesPolicyFetchIfNeeded(fundVersionId) {

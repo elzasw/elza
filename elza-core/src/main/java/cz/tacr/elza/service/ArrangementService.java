@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -15,24 +14,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
 import javax.persistence.Query;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
 
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.repository.CachedNodeRepository;
-import cz.tacr.elza.repository.DaoFileGroupRepository;
-import cz.tacr.elza.repository.DaoFileRepository;
-import cz.tacr.elza.repository.DaoLinkRepository;
-import cz.tacr.elza.repository.DaoLinkRequestRepository;
-import cz.tacr.elza.repository.DaoPackageRepository;
-import cz.tacr.elza.repository.DaoRepository;
-import cz.tacr.elza.repository.DaoRequestDaoRepository;
-import cz.tacr.elza.repository.DaoRequestRepository;
-import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
-import cz.tacr.elza.repository.DigitizationRequestRepository;
-import cz.tacr.elza.repository.RequestQueueItemRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -40,7 +31,6 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -59,6 +49,7 @@ import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
@@ -88,13 +79,26 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ConcurrentUpdateException;
 import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
+import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.DaoFileGroupRepository;
+import cz.tacr.elza.repository.DaoFileRepository;
+import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.DaoLinkRequestRepository;
+import cz.tacr.elza.repository.DaoPackageRepository;
+import cz.tacr.elza.repository.DaoRepository;
+import cz.tacr.elza.repository.DaoRequestDaoRepository;
+import cz.tacr.elza.repository.DaoRequestRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
+import cz.tacr.elza.repository.DigitizationRequestRepository;
+import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -113,6 +117,7 @@ import cz.tacr.elza.repository.OutputItemRepository;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.repository.PacketRepository;
+import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.security.UserDetail;
@@ -127,6 +132,8 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
  */
 @Service
 public class ArrangementService {
+
+	private static final AtomicInteger LAST_DESC_ITEM_OBJECT_ID = new AtomicInteger(-1);
 
     //TODO smazat závislost až bude DescItemService
     @Autowired
@@ -258,6 +265,14 @@ public class ArrangementService {
     @Autowired
     private CachedNodeRepository cachedNodeRepository;
 
+    @Autowired
+    private EntityManager em;
+
+    @Autowired
+    private FundFileRepository fundFileRepository;
+
+    public static final String UNDEFINED = "Nezjištěno";
+
     /**
      * Vytvoření archivního souboru.
      *
@@ -278,14 +293,7 @@ public class ArrangementService {
                               final String internalCode,
                               final ParInstitution institution,
                               final String dateRange) {
-        ArrFund fund = new ArrFund();
-        fund.setCreateDate(LocalDateTime.now());
-        fund.setName(name);
-        fund.setInternalCode(internalCode);
-        fund.setInstitution(institution);
-        fund.setUuid(uuid);
-
-        fund = fundRepository.save(fund);
+        ArrFund fund = createFund(name, internalCode, institution);
 
         eventNotificationService
                 .publishEvent(EventFactory.createIdEvent(EventType.FUND_CREATE, fund.getFundId()));
@@ -351,10 +359,9 @@ public class ArrangementService {
                                 final Collection<RegScope> newRegScopes) {
         Assert.notNull(fund);
 
-        Map<Integer, ArrFundRegisterScope> dbIdentifiersMap = Collections.EMPTY_MAP; /// Redundantní initializer
-        dbIdentifiersMap = ElzaTools.createEntityMap(faRegisterRepository.findByFund(fund), i -> i.getScope().getScopeId());
+		Map<Integer, ArrFundRegisterScope> dbIdentifiersMap = ElzaTools
+				.createEntityMap(faRegisterRepository.findByFund(fund), i -> i.getScope().getScopeId());
         Set<ArrFundRegisterScope> removeScopes = new HashSet<>(dbIdentifiersMap.values());
-
 
         for (RegScope newScope : newRegScopes) {
             ArrFundRegisterScope oldScope = dbIdentifiersMap.get(newScope.getScopeId());
@@ -426,8 +433,20 @@ public class ArrangementService {
         return fund;
     }
 
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN})
+    public ArrFund createFund(final String name,
+				              final String internalCode,
+				              final ParInstitution institution) {
+		ArrFund fund = new ArrFund();
+		fund.setCreateDate(LocalDateTime.now());
+		fund.setName(name);
+		fund.setInternalCode(internalCode);
+		fund.setInstitution(institution);
+		return fundRepository.save(fund);
+    }
 
-    private ArrFundVersion createVersion(final ArrChange createChange,
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_VER_WR})
+    public ArrFundVersion createVersion(final ArrChange createChange,
                                          final ArrFund fund,
                                          final RulRuleSet ruleSet,
                                          final ArrNode rootNode,
@@ -467,6 +486,21 @@ public class ArrangementService {
         return levelRepository.saveAndFlush(level);
     }
 
+    public ArrLevel createLevelSimple(final ArrChange createChange,
+                                      final ArrNode parentNode,
+                                      final int position,
+                                      final String uuid,
+                                      final ArrFund fund) {
+        Assert.notNull(createChange);
+
+        ArrLevel level = new ArrLevel();
+        level.setPosition(position);
+        level.setCreateChange(createChange);
+        level.setNodeParent(parentNode);
+        level.setNode(createNodeSimple(fund, uuid, createChange));
+        return levelRepository.save(level);
+    }
+
     public ArrLevel createLevel(final ArrChange createChange, final ArrNode node, final ArrNode parentNode, final int position) {
         Assert.notNull(createChange);
 
@@ -495,6 +529,15 @@ public class ArrangementService {
         node.setFund(fund);
         nodeRepository.save(node);
         arrangementCacheService.createNode(node.getNodeId());
+        return node;
+    }
+
+    public ArrNode createNodeSimple(final ArrFund fund, final String uuid, final ArrChange createChange) {
+        ArrNode node = new ArrNode();
+        node.setLastUpdate(createChange.getChangeDate());
+        node.setUuid(uuid == null ? generateUuid() : uuid);
+        node.setFund(fund);
+        nodeRepository.save(node);
         return node;
     }
 
@@ -880,11 +923,12 @@ public class ArrangementService {
      * @return Identifikátor objektu
      */
     public Integer getNextDescItemObjectId() {
-        Integer maxDescItemObjectId = itemRepository.findMaxItemObjectId();
-        if (maxDescItemObjectId == null) {
-            maxDescItemObjectId = 0;
-        }
-        return maxDescItemObjectId + 1;
+    	return LAST_DESC_ITEM_OBJECT_ID.updateAndGet(id -> {
+    		if (id < 0) {
+    			id = itemRepository.findMaxItemObjectId();
+    		}
+    		return id + 1;
+    	});
     }
 
     /**
@@ -971,7 +1015,7 @@ public class ArrangementService {
 
         // Read source data
         List<ArrDescItem> siblingDescItems = descItemRepository.findOpenByNodeAndTypes(olderSibling.getNode(), typeSet);
-        
+
         // Delete old values for these items
         List<ArrDescItem> nodeDescItems = descItemRepository.findOpenByNodeAndTypes(level.getNode(), typeSet);
         List<ArrDescItem> deletedDescItems = new ArrayList<>();
@@ -994,11 +1038,11 @@ public class ArrangementService {
 
         eventNotificationService.publishEvent(EventFactory
                 .createIdInVersionEvent(EventType.COPY_OLDER_SIBLING_ATTRIBUTE, version, level.getNode().getNodeId()));
-        
+
         // revalidate node
-        ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(level.getNode().getNodeId()), 
+        ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(level.getNode().getNodeId()),
         		NodeTypeOperation.SAVE_DESC_ITEM, newDescItems, null, deletedDescItems);
-        
+
         // Should it be taken from cache?
         return descItemRepository.findOpenByNodeAndTypes(level.getNode(), typeSet);
     }
@@ -1162,6 +1206,18 @@ public class ArrangementService {
     }
 
     /**
+     * Finds level for fund version by node. Node will be locked during transaction.
+     */
+    @Transactional(TxType.REQUIRED)
+    public ArrLevel lockLevel(ArrNodeVO nodeVO, ArrFundVersion fundVersion) {
+        Integer nodeId = nodeVO.getId();
+        Assert.notNull(nodeId, "Node id must be set");
+        ArrNode node = em.getReference(ArrNode.class, nodeId);
+        em.lock(node, LockModeType.PESSIMISTIC_FORCE_INCREMENT);
+        return levelRepository.findNodeInRootTreeByNodeId(node, null, fundVersion.getLockChange());
+    }
+
+    /**
      * Načte počet chyb verze archivní pomůcky.
      *
      * @param fundVersion verze archivní pomůcky
@@ -1258,7 +1314,7 @@ public class ArrangementService {
     }
 
     public List<VersionValidationItem> createVersionValidationItems(final List<ArrNodeConformity> validationErrors, final ArrFundVersion version) {
-        Map<Integer, String> validations = new LinkedHashMap<Integer, String>();
+        Map<Integer, String> validations = new LinkedHashMap<>();
         for (ArrNodeConformity conformity : validationErrors) {
             String description = validations.get(conformity.getNode().getNodeId());
 
@@ -1266,7 +1322,7 @@ public class ArrangementService {
                 description = "";
             }
 
-            List<String> descriptions = new LinkedList<String>();
+            List<String> descriptions = new LinkedList<>();
             for (ArrNodeConformityError error : conformity.getErrorConformity()) {
                 descriptions.add(error.getDescription());
             }

@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 
 import {reduxForm} from 'redux-form'
 import {Form, Button, FormControl, Table, Modal, OverlayTrigger, Tooltip, Checkbox, ControlLabel} from 'react-bootstrap'
-import {AbstractReactComponent, FormInput, i18n, Icon, Loading, ExtMapperForm} from '../index.jsx';
+import {FormInput, Icon, Loading} from 'components/shared';
 import objectById from '../../shared/utils/objectById'
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx';
 import {submitForm} from 'components/form/FormUtils.jsx'
@@ -15,7 +15,12 @@ import {registryDetailFetchIfNeeded} from 'actions/registry/registry.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import Scope from '../../components/shared/scope/Scope';
 import {regExtSystemListFetchIfNeeded} from 'actions/registry/regExtSystemList';
-import {REG_EXT_SYSTEM_TYPE} from 'constants';
+import {REG_EXT_SYSTEM_TYPE} from 'constants.jsx';
+import ExtMapperForm from "./ExtMapperForm";
+import AbstractReactComponent from "../AbstractReactComponent";
+import i18n from "../i18n";
+
+
 
 const CONDITION_TYPE = {
     AND: "AND",

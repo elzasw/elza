@@ -5,19 +5,21 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, FundTreeLazy, ArrSearchForm} from 'components/index.jsx';
+import {AbstractReactComponent, i18n} from 'components/shared';
+import FundTreeLazy from './FundTreeLazy';
+import ArrSearchForm from './ArrSearchForm';
 import * as types from 'actions/constants/ActionTypes.js';
 import {AppActions} from 'stores/index.jsx';
 import {MenuItem} from 'react-bootstrap';
 import {fundTreeFulltextChange, fundTreeFulltextSearch, fundTreeFocusNode, fundTreeFetchIfNeeded, fundTreeNodeExpand, fundTreeFulltextNextItem, fundTreeFulltextPrevItem, fundTreeNodeCollapse, fundTreeCollapse} from 'actions/arr/fundTree.jsx'
-import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
+import {fundSelectSubNode} from 'actions/arr/node.jsx'
 import {createFundRoot, getParentNode} from './ArrUtils.jsx'
 import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu.jsx'
 import {propsEquals} from 'components/Utils.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 
-var FundTreeMain = class FundTreeMain extends AbstractReactComponent {
+class FundTreeMain extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -121,6 +123,7 @@ return true
      * @param e {Object} event
      */
     handleNodeClick(node, ensureItemVisible, e) {
+
         this.callFundSelectSubNode(node, false, ensureItemVisible);
     }
 
@@ -221,5 +224,5 @@ return true
     }
 }
 
-module.exports = connect()(FundTreeMain);
+export default connect()(FundTreeMain);
 

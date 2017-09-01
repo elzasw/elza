@@ -1,7 +1,6 @@
-
 import React from 'react';
 import {connect} from 'react-redux'
-import {i18n, FundTreeLazy, AbstractReactComponent} from 'components/index.jsx';
+import {i18n, AbstractReactComponent} from 'components/shared';
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Modal, Button, Input, Form} from 'react-bootstrap';
 import * as types from 'actions/constants/ActionTypes.js';
@@ -20,6 +19,7 @@ import {
 } from 'actions/arr/fundTree.jsx'
 import {getMapFromList} from 'stores/app/utils.jsx'
 import './FundNodesSelect.less';
+import FundTreeLazy from "./FundTreeLazy";
 
 /**
  * Formulář vybrání uzlů v konkrétní verzi souboru - jen vlastní obsah formuláře - výběr uzlů na základě konfigurace - např. single nebo multiple select.

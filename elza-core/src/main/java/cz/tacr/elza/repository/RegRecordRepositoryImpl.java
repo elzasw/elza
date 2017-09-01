@@ -230,6 +230,8 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
     }*/
 
     @Override
+    @Deprecated
+    // Nutno přepracovat v rámci nových exportů
     public List<Integer> findRecordParents(final Integer recordId) {
         StringBuilder sb = new StringBuilder();
         sb.append("select");

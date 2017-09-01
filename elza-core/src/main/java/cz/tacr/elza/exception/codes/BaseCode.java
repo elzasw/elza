@@ -66,6 +66,11 @@ public enum BaseCode implements ErrorCode {
     /**
      * Pole entity není správného datového typu.
      */
-    PROPERTY_HAS_INVALID_TYPE
+    PROPERTY_HAS_INVALID_TYPE,
 
+    /**
+     * Import failed.<br>
+     * Code used by DataExchange import.
+     */
+    IMPORT_FAILED
 }

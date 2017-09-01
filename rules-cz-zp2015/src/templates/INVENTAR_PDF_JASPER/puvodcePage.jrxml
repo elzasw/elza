@@ -329,7 +329,7 @@
 				</jr:list>
 			</componentElement>
 		</band>
-		<band height="50">
+		<band height="50" splitType="Prevent">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<printWhenExpression><![CDATA[StringUtils.isNotBlank($F{partyObj}.getCharacteristics())]]></printWhenExpression>
 			<textField isStretchWithOverflow="true">
@@ -356,7 +356,7 @@
 				<textFieldExpression><![CDATA[$F{partyObj}.getCharacteristics()]]></textFieldExpression>
 			</textField>
 		</band>
-		<band height="50">
+		<band height="50" splitType="Prevent">
 			<printWhenExpression><![CDATA[StringUtils.isNotBlank($F{partyObj}.getHistory())]]></printWhenExpression>
 			<textField isStretchWithOverflow="true">
 				<reportElement key="" x="0" y="0" width="468" height="25" isRemoveLineWhenBlank="true" isPrintInFirstWholeBand="true" uuid="193f30ec-6f1f-47ae-b0d0-537810c54e41">
@@ -383,7 +383,7 @@
 				<textFieldExpression><![CDATA[$F{partyObj}.getHistory()]]></textFieldExpression>
 			</textField>
 		</band>
-		<band height="50">
+		<band height="50" splitType="Prevent">
 			<printWhenExpression><![CDATA[($F{partyObj} instanceof cz.tacr.elza.print.party.PartyGroup) && StringUtils.isNotBlank($F{partyGroupObj}.getScope())]]></printWhenExpression>
 			<textField isStretchWithOverflow="true">
 				<reportElement key="" x="0" y="0" width="468" height="25" isRemoveLineWhenBlank="true" isPrintInFirstWholeBand="true" uuid="1040f23c-7191-4c6b-b9cc-ab1adf45e548">
@@ -408,7 +408,7 @@
 				<textFieldExpression><![CDATA[$F{partyGroupObj}.getScope()]]></textFieldExpression>
 			</textField>
 		</band>
-		<band height="50">
+		<band height="50" splitType="Prevent">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<printWhenExpression><![CDATA[($F{partyObj} instanceof cz.tacr.elza.print.party.PartyGroup) && StringUtils.isNotBlank($F{partyGroupObj}.getFoundingNorm())]]></printWhenExpression>
 			<textField isStretchWithOverflow="true">
@@ -434,7 +434,7 @@
 				<textFieldExpression><![CDATA[$F{partyGroupObj}.getFoundingNorm()]]></textFieldExpression>
 			</textField>
 		</band>
-		<band height="50">
+		<band height="50" splitType="Prevent">
 			<printWhenExpression><![CDATA[($F{partyObj} instanceof cz.tacr.elza.print.party.PartyGroup) && StringUtils.isNotBlank($F{partyGroupObj}.getScopeNorm())]]></printWhenExpression>
 			<textField isStretchWithOverflow="true">
 				<reportElement key="" x="0" y="0" width="468" height="25" isRemoveLineWhenBlank="true" isPrintInFirstWholeBand="true" uuid="21a51ab4-c402-4461-9215-9d7a4307359c">
@@ -459,7 +459,7 @@
 				<textFieldExpression><![CDATA[$F{partyGroupObj}.getScopeNorm()]]></textFieldExpression>
 			</textField>
 		</band>
-		<band height="50">
+		<band height="50" splitType="Prevent">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<printWhenExpression><![CDATA[($F{partyObj} instanceof cz.tacr.elza.print.party.PartyGroup) && StringUtils.isNotBlank($F{partyGroupObj}.getOrganization())]]></printWhenExpression>
 			<textField isStretchWithOverflow="true">
@@ -485,7 +485,7 @@
 				<textFieldExpression><![CDATA[$F{partyGroupObj}.getOrganization()]]></textFieldExpression>
 			</textField>
 		</band>
-		<band height="50">
+		<band height="50" splitType="Prevent">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<printWhenExpression><![CDATA[StringUtils.isNotBlank($F{partyObj}.getSourceInformation())]]></printWhenExpression>
 			<textField isStretchWithOverflow="true">
@@ -503,7 +503,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 				</reportElement>
-				<textElement textAlignment="Justified" markup="none">
+				<textElement textAlignment="Left" markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{partyObj}.getSourceInformation()]]></textFieldExpression>

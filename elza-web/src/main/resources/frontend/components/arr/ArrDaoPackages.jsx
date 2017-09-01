@@ -1,6 +1,6 @@
 import React from "react";
 import {connect} from "react-redux";
-import {FormInput, Icon, AbstractReactComponent, Search, i18n, Loading, ListBox} from "components/index.jsx";
+import {FormInput, Icon, AbstractReactComponent, Search, i18n, Loading, ListBox} from 'components/shared';
 import {indexById} from "stores/app/utils.jsx";
 import {dateToString} from "components/Utils.jsx";
 import {userDetailsSaveSettings} from "actions/user/userDetail.jsx";

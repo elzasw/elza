@@ -1,9 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {i18n, NoFocusButton, Icon, AbstractReactComponent} from 'components'
+import AbstractReactComponent from "../../AbstractReactComponent";
+import * as Utils from "../../Utils";
+import Icon from "../icon/Icon";
+import NoFocusButton from "../button/NoFocusButton";
 import {Panel, PanelGroup} from 'react-bootstrap';
 import {Shortcuts} from 'react-shortcuts';
-import {Utils} from 'components/index.jsx';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './CollapsablePanelKeymap.jsx';
 

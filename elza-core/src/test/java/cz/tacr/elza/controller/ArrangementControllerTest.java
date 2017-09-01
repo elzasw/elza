@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -16,16 +17,29 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.controller.vo.CopyNodesParams;
+import cz.tacr.elza.controller.vo.CopyNodesValidate;
+import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
 import cz.tacr.elza.service.vo.ChangesResult;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.csv.CSVRecord;
+import org.junit.Assert;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.util.Assert;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import cz.tacr.elza.ElzaCoreTest;
+import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
@@ -58,14 +72,20 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.drools.DirectionLevel;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.DataTypeRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.ArrIOService;
 import cz.tacr.elza.service.ArrMoveLevelService;
 
 
 /**
- * @author Martin Šlapa
- * @since 16.2.2016
+ * Test ArrangementController
  */
+//@RunWith(SpringRunner.class)
+//@ContextConfiguration(classes=ElzaCoreTest.class)
 public class ArrangementControllerTest extends AbstractControllerTest {
 
     public static final Logger logger = LoggerFactory.getLogger(ArrangementControllerTest.class);
@@ -83,7 +103,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
     // maximální počet položek pro načtení
     public static final int MAX_SIZE = 999;
-
+    
     @Test
     public void arrangementTest() throws IOException {
 
@@ -141,35 +161,37 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         attributeValues(fundVersion);
 
         ChangesResult changesAll = findChanges(fundVersion.getId(), MAX_SIZE, 0, null, null);
-        Assert.notNull(changesAll);
-        Assert.notNull(changesAll.getChanges());
-        Assert.isTrue(changesAll.getTotalCount().equals(changesAll.getChanges().size()) && changesAll.getChanges().size() == 26);
-        Assert.isTrue(!changesAll.getOutdated());
+        assertNotNull(changesAll);
+        assertNotNull(changesAll.getChanges());
+        assertTrue(changesAll.getTotalCount().equals(changesAll.getChanges().size()) && changesAll.getChanges().size() == 28);
+        assertTrue(!changesAll.getOutdated());
 
         ChangesResult changesByNode = findChanges(fundVersion.getId(), MAX_SIZE, 0, null, nodes.get(0).getId());
-        Assert.notNull(changesByNode);
-        Assert.notNull(changesByNode.getChanges());
-        Assert.isTrue(changesByNode.getTotalCount().equals(changesByNode.getChanges().size()) && changesByNode.getChanges().size() == 6);
+        assertNotNull(changesByNode);
+        assertNotNull(changesByNode.getChanges());
+        assertTrue(changesByNode.getTotalCount().equals(changesByNode.getChanges().size()) && changesByNode.getChanges().size() == 8);
 
         final Integer lastChangeId = changesAll.getChanges().get(0).getChangeId();
         final Integer firstChangeId = changesAll.getChanges().get(changesAll.getChanges().size() - 1).getChangeId();
         ChangesResult changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, LocalDateTime.now(), lastChangeId, null);
-        Assert.notNull(changesByDate);
-        Assert.notNull(changesByDate.getChanges());
+        assertNotNull(changesByDate);
+        assertNotNull(changesByDate.getChanges());
 
         // TODO: test
         try {
             logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size() + ", xxxxxxxxxxxxxxxxxxxx");
             Thread.sleep(5000);
+            changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, LocalDateTime.now(), lastChangeId, null);
             logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size() + ", xxxxxxxxxxxxxxxxxxxx");
             Thread.sleep(5000);
+            changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, LocalDateTime.now(), lastChangeId, null);
             logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size() + ", xxxxxxxxxxxxxxxxxxxx");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
-        Assert.isTrue(changesByDate.getTotalCount().equals(changesByDate.getChanges().size()) && changesByDate.getChanges().size() == 26);
-        Assert.isTrue(!changesByDate.getOutdated());
+        assertTrue(changesByDate.getTotalCount().equals(changesByDate.getChanges().size()) && changesByDate.getChanges().size() == 28);
+        assertTrue(!changesByDate.getOutdated());
 
         // obdoba revertChanges s fail očekáváním
         httpMethod(spec -> spec.pathParam("fundVersionId", fundVersion.getId())
@@ -192,16 +214,17 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         validateVersion(fundVersion);
 
         ArrangementController.ValidationItems validation = getValidation(fundVersion.getId(), 0, 100);
-        Assert.notNull(validation);
-        Assert.notNull(validation.getCount());
-        Assert.notEmpty(validation.getItems());
+        assertNotNull(validation);
+        assertNotNull(validation.getCount());
+        assertTrue(CollectionUtils.isNotEmpty(validation.getItems()));
+        assertTrue(CollectionUtils.isNotEmpty(validation.getItems()));
 
         ArrangementController.ValidationItems validationError = findValidationError(fundVersion.getId(), nodes.get(0).getId(), 1);
-        Assert.notNull(validationError);
-        Assert.notEmpty(validationError.getItems());
+        assertNotNull(validationError);
+        assertTrue(CollectionUtils.isNotEmpty(validationError.getItems()));
 
         List<NodeItemWithParent> visiblePolicy = getAllNodesVisiblePolicy(fundVersion.getId());
-        Assert.notNull(visiblePolicy); // TODO: přepsat na notEmpty
+        assertNotNull(visiblePolicy); // TODO: přepsat na notEmpty
     }
 
     /**
@@ -213,9 +236,9 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         filterNodes(fundVersion.getId(), new Filters());
         Set<Integer> descItemTypeIds = getDescItemTypes().stream().map(item -> item.getId()).collect(Collectors.toSet());
         List<FilterNode> filteredNodes = getFilteredNodes(fundVersion.getId(), 0, 10, descItemTypeIds);
-        Assert.notEmpty(filteredNodes);
+        assertTrue(CollectionUtils.isNotEmpty(filteredNodes));
         List<FilterNodePosition> filteredFulltextNodes = getFilteredFulltextNodes(fundVersion.getId(), "1", false);
-        Assert.notEmpty(filteredFulltextNodes);
+        assertTrue(CollectionUtils.isNotEmpty(filteredFulltextNodes));
     }
 
     /**
@@ -225,22 +248,22 @@ public class ArrangementControllerTest extends AbstractControllerTest {
      */
     private void outputs(final ArrFundVersionVO fundVersion) {
         List<ArrOutputExtVO> outputs = getOutputs(fundVersion.getId());
-        Assert.isTrue(outputs.size() == 0);
+        assertTrue(outputs.size() == 0);
 
         List<RulOutputTypeVO> outputTypes = getOutputTypes(fundVersion.getId());
-        Assert.notEmpty(outputTypes);
+        assertTrue(CollectionUtils.isNotEmpty(outputTypes));
 
         ArrOutputDefinitionVO outputDefinition = createNamedOutput(fundVersion, "Test", "TST", false, outputTypes.iterator().next().getId());
-        Assert.notNull(outputDefinition);
+        assertNotNull(outputDefinition);
 
         outputs = getOutputs(fundVersion.getId());
-        Assert.isTrue(outputs.size() == 1);
+        assertTrue(outputs.size() == 1);
         ArrOutputExtVO output = outputs.get(0);
 
         ArrOutputExtVO outputDetail = getOutput(fundVersion.getId(), output.getId());
 
-        Assert.notNull(outputDetail);
-        Assert.isTrue(outputDetail.getId().equals(output.getId()));
+        assertNotNull(outputDetail);
+        assertTrue(outputDetail.getId().equals(output.getId()));
 
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
         input.setVersionId(fundVersion.getId());
@@ -251,21 +274,21 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         addNodesNamedOutput(fundVersion.getId(), outputDetail.getId(), nodeIds);
 
         outputDetail = getOutput(fundVersion.getId(), output.getId());
-        Assert.isTrue(outputDetail.getOutputDefinition().getNodes().size() == nodeIds.size());
+        assertTrue(outputDetail.getOutputDefinition().getNodes().size() == nodeIds.size());
 
         removeNodesNamedOutput(fundVersion.getId(), outputDetail.getId(), nodeIds);
 
         outputDetail = getOutput(fundVersion.getId(), output.getId());
-        Assert.isTrue(outputDetail.getOutputDefinition().getNodes().size() == 0);
+        assertTrue(outputDetail.getOutputDefinition().getNodes().size() == 0);
 
         updateNamedOutput(fundVersion, outputDetail, "Test 2", "TST2");
         outputDetail = getOutput(fundVersion.getId(), output.getId());
-        Assert.isTrue(outputDetail.getOutputDefinition().getName().equals("Test 2"));
-        Assert.isTrue(outputDetail.getOutputDefinition().getInternalCode().equals("TST2"));
+        assertTrue(outputDetail.getOutputDefinition().getName().equals("Test 2"));
+        assertTrue(outputDetail.getOutputDefinition().getInternalCode().equals("TST2"));
 
         outputLock(fundVersion.getId(), outputDetail.getId());
         outputDetail = getOutput(fundVersion.getId(), output.getId());
-        Assert.isTrue(outputDetail.getLockDate() != null);
+        assertTrue(outputDetail.getLockDate() != null);
 
 
         outputs = getOutputs(fundVersion.getId());
@@ -273,46 +296,71 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         ArrItemStringVO item = new ArrItemStringVO();
         item.setValue("test1");
-        RulDescItemTypeExtVO typeVo = findDescItemTypeByCode("ZP2015_TITLE");
+        RulDescItemTypeExtVO typeVo = findDescItemTypeByCode("ZP2015_SCALE");
         ArrangementController.OutputItemResult outputItem = createOutputItem(item, fundVersion.getId(), typeVo.getId(), outputDefinition.getId(), outputDefinition.getVersion());
         ArrItemVO itemCreated = outputItem.getItem();
-        Assert.notNull(itemCreated);
-        Assert.notNull(itemCreated.getDescItemObjectId());
-        Assert.notNull(itemCreated.getPosition());
-        Assert.isTrue(itemCreated instanceof ArrItemStringVO);
-        Assert.isTrue(((ArrItemStringVO) itemCreated).getValue().equals(item.getValue()));
+        assertNotNull(itemCreated);
+        assertNotNull(itemCreated.getDescItemObjectId());
+        assertNotNull(itemCreated.getPosition());
+        assertTrue(itemCreated instanceof ArrItemStringVO);
+        assertTrue(((ArrItemStringVO) itemCreated).getValue().equals(item.getValue()));
 
         ((ArrItemStringVO) itemCreated).setValue("xxx");
         outputItem = updateOutputItem(itemCreated, fundVersion.getId(), outputItem.getParent().getVersion(), true);
 
         ArrItemVO itemUpdated = outputItem.getItem();
-        Assert.notNull(itemUpdated);
-        Assert.notNull(itemUpdated.getDescItemObjectId());
-        Assert.notNull(itemUpdated.getPosition());
-        Assert.isTrue(itemUpdated instanceof ArrItemStringVO);
-        Assert.isTrue(((ArrItemStringVO) itemUpdated).getValue().equals(((ArrItemStringVO) itemCreated).getValue()));
+        assertNotNull(itemUpdated);
+        assertNotNull(itemUpdated.getDescItemObjectId());
+        assertNotNull(itemUpdated.getPosition());
+        assertTrue(itemUpdated instanceof ArrItemStringVO);
+        assertTrue(((ArrItemStringVO) itemUpdated).getValue().equals(((ArrItemStringVO) itemCreated).getValue()));
 
         ArrangementController.OutputFormDataNewVO outputFormData = getOutputFormData(outputItem.getParent().getId(), fundVersion.getId());
 
-        Assert.notNull(outputFormData.getParent());
-        Assert.isTrue(outputFormData.getGroups().size() == 1);
+        assertNotNull(outputFormData.getParent());
+        assertTrue(outputFormData.getGroups().size() == 1);
 
         outputItem = deleteOutputItem(itemCreated, fundVersion.getId(), outputItem.getParent().getVersion());
+        ArrOutputDefinitionVO parent = outputItem.getParent();
 
         ArrItemVO itemDeleted = outputItem.getItem();
-        Assert.isNull(itemDeleted);
+        Assert.assertNull(itemDeleted);
 
         item = new ArrItemStringVO();
         item.setValue("test1");
-        outputItem = createOutputItem(item, fundVersion.getId(), typeVo.getId(), outputDefinition.getId(), outputItem.getParent().getVersion());
+        outputItem = createOutputItem(item, fundVersion.getId(), typeVo.getId(), outputDefinition.getId(), parent.getVersion());
+        parent = outputItem.getParent();
         itemCreated = outputItem.getItem();
 
-        deleteOutputItemsByType(fundVersion.getId(), outputItem.getParent().getId(), outputItem.getParent().getVersion(), typeVo.getId());
+        ArrangementController.OutputItemResult outputItemResult = deleteOutputItemsByType(fundVersion.getId(), parent.getId(), parent.getVersion(), typeVo.getId());
+        parent = outputItemResult.getParent();
 
+        // docasne zakazano - bude vraceno zpet pri prechodu na vyvojarska pravidla
+        /*outputItemResult = setNotIdentifiedOutputItem(fundVersion.getId(), parent.getId(), parent.getVersion(), typeVo.getId(), null, null);        
+        parent = outputItemResult.getParent();
+        // Návratová struktura nesmí být prázdná
+        assertNotNull(outputItemResult);
+        // Hodnota atributu nesmí být prázdná
+        assertNotNull(outputItemResult.getItem());
+        ArrItemTextVO textVO = (ArrItemTextVO) outputItemResult.getItem();
+        // Hodnota Nezjištěno musí být true
+        assertTrue(textVO.getUndefined());
+        // Identifikátor nesmí být prázdný
+        assertNotNull(textVO.getDescItemObjectId());
+        // Hodnota musí být prázdná
+        Assert.assertNull(textVO.getValue());
+
+        outputItemResult = unsetNotIdentifiedOutputItem(fundVersion.getId(), parent.getId(), parent.getVersion(), typeVo.getId(), null, textVO.getDescItemObjectId());
+        parent = outputItemResult.getParent();
+        // Návratová struktura nesmí být prázdná
+        assertNotNull(outputItemResult);
+        // Hodnota atributu musí být prázdná
+        Assert.assertNull(outputItemResult.getItem());*/
+        
         deleteNamedOutput(fundVersion.getId(), output.getId());
 
         outputs = getOutputs(fundVersion.getId());
-        Assert.isTrue(outputs.size() == 0);
+        assertTrue(outputs.size() == 0);
     }
 
     /**
@@ -333,34 +381,34 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         inputFa.setVersionId(fundVersion.getId());
         inputFa.setNodeIds(Arrays.asList(rootNode.getId()));
         List<TreeNodeClient> faTreeNodes = getFundTreeNodes(inputFa);
-        Assert.notEmpty(faTreeNodes);
+        assertTrue(CollectionUtils.isNotEmpty(faTreeNodes));
 
         List<TreeNodeClient> nodeParents = getNodeParents(rootNode.getId(), fundVersion.getId());
-        Assert.notNull(nodeParents);
+        assertNotNull(nodeParents);
 
         ArrangementController.DescFormDataNewVO nodeFormData = getNodeFormData(rootNode.getId(),
                 fundVersion.getId());
-        Assert.notNull(nodeFormData.getParent());
-        Assert.notEmpty(nodeFormData.getGroups());
-        Assert.notEmpty(nodeFormData.getTypeGroups());
+        assertNotNull(nodeFormData.getParent());
+        assertTrue(CollectionUtils.isNotEmpty(nodeFormData.getGroups()));
+        assertTrue(CollectionUtils.isNotEmpty(nodeFormData.getTypeGroups()));
 
         ArrangementController.NodeFormsDataVO nodeFormsData = getNodeFormsData(fundVersion.getId(), rootNode.getId());
-        Assert.notEmpty(nodeFormsData.getForms());
+        assertTrue(nodeFormsData.getForms().size()>0);
 
         nodeFormsData = getNodeWithAroundFormsData(fundVersion.getId(), nodes.get(1).getId(), 5);
-        Assert.notEmpty(nodeFormsData.getForms());
+        assertTrue(nodeFormsData.getForms().size()>0);
 
         ArrangementController.IdsParam idsParamNodes = new ArrangementController.IdsParam();
         idsParamNodes.setVersionId(fundVersion.getId());
         idsParamNodes.setIds(Arrays.asList(nodes.get(1).getId()));
         List<TreeNodeClient> treeNodeClients = getNodes(idsParamNodes);
-        Assert.notEmpty(treeNodeClients);
+        assertTrue(treeNodeClients.size()>0);
 
         ArrangementController.IdsParam idsParamFa = new ArrangementController.IdsParam();
         idsParamFa.setIds(Arrays.asList(fundVersion.getId()));
 
         List<ArrFundVO> fundsByVersionIds = getFundsByVersionIds(idsParamFa);
-        Assert.notEmpty(fundsByVersionIds);
+        assertTrue(fundsByVersionIds.size()>0);
     }
 
     /**
@@ -370,7 +418,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
      */
     protected void validateVersion(final ArrFundVersionVO fundVersion) {
         List<ArrangementController.VersionValidationItem> items = validateVersion(fundVersion.getId());
-        Assert.notNull(items);
+        assertNotNull(items);
         validateVersionCount(fundVersion.getId());
     }
 
@@ -388,17 +436,17 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrNodeVO rootNode = nodes.get(0);
 
         // vytvoření hodnoty
-        RulDescItemTypeExtVO type = findDescItemTypeByCode("ZP2015_TITLE");
+        RulDescItemTypeExtVO type = findDescItemTypeByCode("ZP2015_SCALE");
         ArrItemVO descItem = buildDescItem(type.getCode(), null, "value", null, null);
         ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, rootNode,
                 type);
         rootNode = descItemResult.getParent();
         ArrItemVO descItemCreated = descItemResult.getItem();
 
-        Assert.notNull(((ArrItemTextVO) descItem).getValue()
+        assertNotNull(((ArrItemTextVO) descItem).getValue()
                 .equals(((ArrItemTextVO) descItemCreated).getValue()));
-        Assert.notNull(descItemCreated.getPosition());
-        Assert.notNull(descItemCreated.getDescItemObjectId());
+        assertNotNull(descItemCreated.getPosition());
+        assertNotNull(descItemCreated.getDescItemObjectId());
 
         // aktualizace hodnoty
         ((ArrItemTextVO) descItemCreated).setValue("update value");
@@ -406,18 +454,42 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         rootNode = descItemResult.getParent();
         ArrItemVO descItemUpdated = descItemResult.getItem();
 
-        Assert.isTrue(descItemUpdated.getDescItemObjectId().equals(descItemCreated.getDescItemObjectId()));
-        Assert.isTrue(descItemUpdated.getPosition().equals(descItemCreated.getPosition()));
-        Assert.isTrue(!descItemUpdated.getId().equals(descItemCreated.getId()));
-        Assert.isTrue(((ArrItemTextVO) descItemUpdated).getValue()
+        assertTrue(descItemUpdated.getDescItemObjectId().equals(descItemCreated.getDescItemObjectId()));
+        assertTrue(descItemUpdated.getPosition().equals(descItemCreated.getPosition()));
+        assertTrue(!descItemUpdated.getId().equals(descItemCreated.getId()));
+        assertTrue(((ArrItemTextVO) descItemUpdated).getValue()
                 .equals(((ArrItemTextVO) descItemCreated).getValue()));
 
         // odstranění hodnoty
         descItemResult = deleteDescItem(descItemUpdated, fundVersion, rootNode);
         rootNode = descItemResult.getParent();
 
+        // nastavené nemožné hodnoty
+        descItemResult = setNotIdentifiedDescItem(fundVersion.getId(), rootNode.getId(), rootNode.getVersion(), type.getId(), null, null);
+        rootNode = descItemResult.getParent();
+
+        // Návratová struktura nesmí být prázdná
+        assertNotNull(descItemResult);
+        // Hodnota atributu nesmí být prázdná
+        assertNotNull(descItemResult.getItem());
+        ArrItemTextVO item = (ArrItemTextVO) descItemResult.getItem();
+        // Hodnota Nezjištěno musí být true
+        assertTrue(item.getUndefined());
+        // Identifikátor nesmí být prázdný
+        assertNotNull(item.getDescItemObjectId());
+        // Hodnota musí být prázdná
+        Assert.assertNull(item.getValue());
+
+        descItemResult = unsetNotIdentifiedDescItem(fundVersion.getId(), rootNode.getId(), rootNode.getVersion(), type.getId(), null, item.getDescItemObjectId());
+        rootNode = descItemResult.getParent();
+
+        // Návratová struktura nesmí být prázdná
+        assertNotNull(descItemResult);
+        // Hodnota atributu musí být prázdná
+        Assert.assertNull(descItemResult.getItem());
+
         // vytvoření další hodnoty
-        type = findDescItemTypeByCode("ZP2015_TITLE");
+        type = findDescItemTypeByCode("ZP2015_SCALE");
         descItem = buildDescItem(type.getCode(), null, "value", null, null);
         descItemResult = createDescItem(descItem, fundVersion, rootNode, type);
         rootNode = descItemResult.getParent();
@@ -482,10 +554,11 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getParent();
 
-        type = findDescItemTypeByCode("ZP2015_STATISTICS");
+        type = findDescItemTypeByCode("ZP2015_UNIT_COUNT_TABLE");
+        assertNotNull(type);        
         ElzaTable table = new ElzaTable();
-        table.addRow(new ElzaRow(new AbstractMap.SimpleEntry<>("KEY", "Test 1"), new AbstractMap.SimpleEntry<>("VALUE", "195")));
-        table.addRow(new ElzaRow(new AbstractMap.SimpleEntry<>("KEY", "Test 2"), new AbstractMap.SimpleEntry<>("VALUE", "200")));
+        table.addRow(new ElzaRow(new AbstractMap.SimpleEntry<>("NAME", "Test 1"), new AbstractMap.SimpleEntry<>("COUNT", "195")));
+        table.addRow(new ElzaRow(new AbstractMap.SimpleEntry<>("NAME", "Test 2"), new AbstractMap.SimpleEntry<>("COUNT", "200")));
 
         descItem = buildDescItem(type.getCode(), null, table, 1, null);
         descItemResult = createDescItem(descItem, fundVersion, node, type);
@@ -494,7 +567,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         // Import a export CSV pro atribut JSON_TABLE
         {
             // Import
-            type = findDescItemTypeByCode("ZP2015_STATISTICS");
+            type = findDescItemTypeByCode("ZP2015_UNIT_COUNT_TABLE");
             descItemResult = descItemCsvImport(fundVersion.getId(), node.getVersion(), node.getId(), type.getId(), getFile(JSON_TABLE_CSV));
 
             // Export a kontrola
@@ -503,25 +576,25 @@ public class ArrangementControllerTest extends AbstractControllerTest {
             Iterable<CSVRecord> records = ArrIOService.CSV_EXCEL_FORMAT.withFirstRecordAsHeader().parse(in);
             List<CSVRecord> recordsList = new ArrayList<>();
             records.forEach(recordsList::add);
-            Assert.isTrue(recordsList.size() == 6); // šest řádků bez hlavičky
+            assertTrue(recordsList.size() == 6); // šest řádků bez hlavičky
 
-            Assert.isTrue(recordsList.get(0).get("KEY").equals("klic1"));
-            Assert.isTrue(recordsList.get(0).get("VALUE").equals("1"));
+            assertTrue(recordsList.get(0).get("NAME").equals("klic1"));
+            assertTrue(recordsList.get(0).get("COUNT").equals("1"));
 
-            Assert.isTrue(recordsList.get(1).get("KEY").equals("klic2"));
-            Assert.isTrue(recordsList.get(1).get("VALUE").equals("2"));
+            assertTrue(recordsList.get(1).get("NAME").equals("klic2"));
+            assertTrue(recordsList.get(1).get("COUNT").equals("2"));
 
-            Assert.isTrue(recordsList.get(2).get("KEY").equals("klic3"));
-            Assert.isTrue(recordsList.get(2).get("VALUE").equals(""));
+            assertTrue(recordsList.get(2).get("NAME").equals("klic3"));
+            assertTrue(recordsList.get(2).get("COUNT").equals(""));
 
-            Assert.isTrue(recordsList.get(3).get("KEY").equals(""));
-            Assert.isTrue(recordsList.get(3).get("VALUE").equals("4"));
+            assertTrue(recordsList.get(3).get("NAME").equals(""));
+            assertTrue(recordsList.get(3).get("COUNT").equals("4"));
 
-            Assert.isTrue(recordsList.get(4).get("KEY").equals(""));
-            Assert.isTrue(recordsList.get(4).get("VALUE").equals(""));
+            assertTrue(recordsList.get(4).get("NAME").equals(""));
+            assertTrue(recordsList.get(4).get("COUNT").equals(""));
 
-            Assert.isTrue(recordsList.get(5).get("KEY").equals("kk"));
-            Assert.isTrue(recordsList.get(5).get("VALUE").equals("11"));
+            assertTrue(recordsList.get(5).get("NAME").equals("kk"));
+            assertTrue(recordsList.get(5).get("COUNT").equals("11"));
         }
     }
 
@@ -545,11 +618,11 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         List<ArrNodeVO> newNodes = convertTreeNodes(treeData.getNodes());
 
         // kontrola přesunu
-        Assert.isTrue(newNodes.size() == 4);
-        Assert.isTrue(newNodes.get(0).getId().equals(nodes.get(2).getId()));
-        Assert.isTrue(newNodes.get(1).getId().equals(nodes.get(1).getId()));
-        Assert.isTrue(newNodes.get(2).getId().equals(nodes.get(3).getId()));
-        Assert.isTrue(newNodes.get(3).getId().equals(nodes.get(4).getId()));
+        assertTrue(newNodes.size() == 4);
+        assertTrue(newNodes.get(0).getId().equals(nodes.get(2).getId()));
+        assertTrue(newNodes.get(1).getId().equals(nodes.get(1).getId()));
+        assertTrue(newNodes.get(2).getId().equals(nodes.get(3).getId()));
+        assertTrue(newNodes.get(3).getId().equals(nodes.get(4).getId()));
 
         rootNode.setVersion(rootNode.getVersion() + 1); // zvýšení verze root
 
@@ -563,16 +636,16 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         List<ArrNodeVO> newNodes2 = convertTreeNodes(treeData.getNodes());
 
         // kontrola přesunu
-        Assert.isTrue(newNodes2.size() == 1);
-        Assert.isTrue(newNodes2.get(0).getId().equals(newNodes.get(1).getId()));
+        assertTrue(newNodes2.size() == 1);
+        assertTrue(newNodes2.get(0).getId().equals(newNodes.get(1).getId()));
 
         rootNode.setVersion(rootNode.getVersion() + 1); // zvýšení verze root
 
         // smazání druhého uzlu v první úrovni
         ArrangementController.NodeWithParent nodeWithParent = deleteLevel(fundVersion, newNodes.get(2), rootNode);
 
-        Assert.isTrue(nodeWithParent.getNode().getId().equals(newNodes.get(2).getId()));
-        Assert.isTrue(nodeWithParent.getParentNode().getId().equals(rootNode.getId()));
+        assertTrue(nodeWithParent.getNode().getId().equals(newNodes.get(2).getId()));
+        assertTrue(nodeWithParent.getParentNode().getId().equals(rootNode.getId()));
 
         input = new ArrangementController.FaTreeParam();
         input.setVersionId(fundVersion.getId());
@@ -580,9 +653,9 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         treeData = getFundTree(input);
         List<ArrNodeVO> newNodes3 = convertTreeNodes(treeData.getNodes());
 
-        Assert.isTrue(newNodes3.size() == 2);
-        Assert.isTrue(newNodes3.get(0).getId().equals(newNodes.get(0).getId()));
-        Assert.isTrue(newNodes3.get(1).getId().equals(newNodes.get(3).getId()));
+        assertTrue(newNodes3.size() == 2);
+        assertTrue(newNodes3.get(0).getId().equals(newNodes.get(0).getId()));
+        assertTrue(newNodes3.get(1).getId().equals(newNodes.get(3).getId()));
 
         rootNode.setVersion(rootNode.getVersion() + 1);
 
@@ -600,7 +673,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         treeData = getFundTree(input);
         List<ArrNodeVO> newNodes4 = convertTreeNodes(treeData.getNodes());
 
-        Assert.isTrue(newNodes4.size() == 3);
+        assertTrue(newNodes4.size() == 3);
 
         // přesun posledního za první
         moveLevelAfter(fundVersion, newNodes4.get(2), rootNode, Arrays.asList(newNodes4.get(0)), rootNode);
@@ -619,8 +692,10 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         TreeData treeData = getFundTree(input);
         TreeNodeClient parentNode;
 
-        Assert.notNull(treeData.getNodes(), "Musí existovat root node");
-        Assert.isTrue(treeData.getNodes().size() == 1, "Musí existovat pouze root node");
+        // Musí existovat root node
+        assertNotNull(treeData.getNodes());
+        // Musí existovat pouze root node
+        assertTrue(treeData.getNodes().size() == 1);
 
         TreeNodeClient rootTreeNodeClient = treeData.getNodes().iterator().next();
         ArrNodeVO rootNode = convertTreeNode(rootTreeNodeClient);
@@ -629,10 +704,10 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrangementController.NodeWithParent newLevel1 = addLevel(ArrMoveLevelService.AddLevelDirection.CHILD,
                 fundVersion, rootNode, rootNode, "Série");
 
-        Assert.isTrue(newLevel1.getParentNode().getId().equals(rootNode.getId()),
-                "Rodič nového uzlu musí být root");
-        Assert.isTrue(!newLevel1.getParentNode().getVersion().equals(rootNode.getVersion()),
-                "Verze root uzlu musí být povýšena");
+        // Rodič nového uzlu musí být root
+        assertTrue(newLevel1.getParentNode().getId().equals(rootNode.getId()));
+        // Verze root uzlu musí být povýšena
+        assertTrue(!newLevel1.getParentNode().getVersion().equals(rootNode.getVersion()));
 
         parentNode = newLevel1.getParentNode();
         rootNode.setId(parentNode.getId());
@@ -642,10 +717,10 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrangementController.NodeWithParent newLevel2 = addLevel(ArrMoveLevelService.AddLevelDirection.CHILD,
                 fundVersion, rootNode, rootNode, null);
 
-        Assert.isTrue(newLevel2.getParentNode().getId().equals(rootNode.getId()),
-                "Rodič nového uzlu musí být root");
-        Assert.isTrue(!newLevel2.getParentNode().getVersion().equals(rootNode.getVersion()),
-                "Verze root uzlu musí být povýšena");
+        // Rodič nového uzlu musí být root
+        assertTrue(newLevel2.getParentNode().getId().equals(rootNode.getId()));
+        // Verze root uzlu musí být povýšena
+        assertTrue(!newLevel2.getParentNode().getVersion().equals(rootNode.getVersion()));
 
         parentNode = newLevel2.getParentNode();
         rootNode.setId(parentNode.getId());
@@ -655,10 +730,10 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrangementController.NodeWithParent newLevel3 = addLevel(ArrMoveLevelService.AddLevelDirection.BEFORE,
                 fundVersion, newLevel1.getNode(), rootNode, null);
 
-        Assert.isTrue(newLevel3.getParentNode().getId().equals(rootNode.getId()),
-                "Rodič nového uzlu musí být root");
-        Assert.isTrue(!newLevel3.getParentNode().getVersion().equals(rootNode.getVersion()),
-                "Verze root uzlu musí být povýšena");
+        // "Rodič nového uzlu musí být root"
+        assertTrue(newLevel3.getParentNode().getId().equals(rootNode.getId()));
+        // "Verze root uzlu musí být povýšena"
+        assertTrue(!newLevel3.getParentNode().getVersion().equals(rootNode.getVersion()));
 
         parentNode = newLevel3.getParentNode();
         rootNode.setId(parentNode.getId());
@@ -668,10 +743,10 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrangementController.NodeWithParent newLevel4 = addLevel(ArrMoveLevelService.AddLevelDirection.AFTER,
                 fundVersion, newLevel3.getNode(), rootNode, null);
 
-        Assert.isTrue(newLevel4.getParentNode().getId().equals(rootNode.getId()),
-                "Rodič nového uzlu musí být root");
-        Assert.isTrue(!newLevel4.getParentNode().getVersion().equals(rootNode.getVersion()),
-                "Verze root uzlu musí být povýšena");
+        // "Rodič nového uzlu musí být root"
+        assertTrue(newLevel4.getParentNode().getId().equals(rootNode.getId()));
+        // "Verze root uzlu musí být povýšena"
+        assertTrue(!newLevel4.getParentNode().getVersion().equals(rootNode.getVersion()));
 
         parentNode = newLevel4.getParentNode();
         rootNode.setId(parentNode.getId());
@@ -688,10 +763,10 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         TreeNodeClient node2 = nodeClientIterator.next();
         TreeNodeClient node3 = nodeClientIterator.next();
         TreeNodeClient node4 = nodeClientIterator.next();
-        Assert.isTrue(node1.getId().equals(newLevel3.getNode().getId()));
-        Assert.isTrue(node2.getId().equals(newLevel4.getNode().getId()));
-        Assert.isTrue(node3.getId().equals(newLevel1.getNode().getId()));
-        Assert.isTrue(node4.getId().equals(newLevel2.getNode().getId()));
+        assertTrue(node1.getId().equals(newLevel3.getNode().getId()));
+        assertTrue(node2.getId().equals(newLevel4.getNode().getId()));
+        assertTrue(node3.getId().equals(newLevel1.getNode().getId()));
+        assertTrue(node4.getId().equals(newLevel2.getNode().getId()));
 
         List<ArrNodeVO> nodes = new ArrayList<>(treeData.getNodes().size() + 1);
         nodes.add(rootNode);
@@ -709,11 +784,11 @@ public class ArrangementControllerTest extends AbstractControllerTest {
      * @return nová verze archivní pomůcky
      */
     private ArrFundVersionVO approvedVersion(final ArrFundVersionVO fundVersion) {
-        Assert.notNull(fundVersion);
+        assertNotNull(fundVersion);
         ArrFundVersionVO newFundVersion = approveVersion(fundVersion, fundVersion.getDateRange());
 
-        Assert.isTrue(!fundVersion.getId().equals(newFundVersion.getId()),
-                "Musí být odlišné identifikátory");
+        // "Musí být odlišné identifikátory"
+        assertTrue(!fundVersion.getId().equals(newFundVersion.getId()));
 
         return newFundVersion;
     }
@@ -733,16 +808,17 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         }
 
         ArrFundVO updatedFund = fundAid(fund, ruleSetId);
-        Assert.isTrue(RENAME_AP.equals(updatedFund.getName()), "Jméno AP musí být stejné");
+        // "Jméno AP musí být stejné"
+        assertTrue(RENAME_AP.equals(updatedFund.getName()));
         return updatedFund;
     }
 
     private void deleteFund(final ArrFundVO fund){
         deleteFund(fund.getId());
 
-        fundRepository.findAll().forEach(f -> {
+        this.helperTestService.getFundRepository().findAll().forEach(f -> {
             //není nalezen fond se smazaným id = je smazán
-            Assert.isTrue(!f.getFundId().equals(fund.getId()));
+            assertTrue(!f.getFundId().equals(fund.getId()));
         });
     }
 
@@ -751,10 +827,10 @@ public class ArrangementControllerTest extends AbstractControllerTest {
      */
     private ArrFundVO createdFund() {
         ArrFundVO fund = createFund(NAME_AP, "IC1");
-        Assert.notNull(fund);
+        assertNotNull(fund);
 
         fund = getFund(fund.getId());
-        Assert.notNull(fund);
+        assertNotNull(fund);
 
         return fund;
     }
@@ -767,7 +843,8 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         List<RulPacketTypeVO> packetTypes = getPacketTypes();
 
-        Assert.notEmpty(packetTypes, "Typy obalů nemůžou být prázdné");
+        // "Typy obalů nemůžou být prázdné"
+        assertTrue(packetTypes.size()>0);
 
         ArrPacketVO packet = new ArrPacketVO();
 
@@ -777,36 +854,36 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         ArrPacketVO insertedPacket = insertPacket(fund, packet);
 
-        Assert.notNull(insertedPacket);
-        Assert.notNull(insertedPacket.getId());
-        Assert.isTrue(packet.getState().equals(insertedPacket.getState()));
-        Assert.isTrue(packet.getPacketTypeId().equals(insertedPacket.getPacketTypeId()));
-        Assert.isTrue(packet.getStorageNumber().equals(insertedPacket.getStorageNumber()));
+        assertNotNull(insertedPacket);
+        assertNotNull(insertedPacket.getId());
+        assertTrue(packet.getState().equals(insertedPacket.getState()));
+        assertTrue(packet.getPacketTypeId().equals(insertedPacket.getPacketTypeId()));
+        assertTrue(packet.getStorageNumber().equals(insertedPacket.getStorageNumber()));
 
         List<ArrPacketVO> packets = findPackets(fund, "", ArrPacket.State.OPEN);
-        Assert.isTrue(packets.size() == 1);
+        assertTrue(packets.size() == 1);
         packet = packets.get(0);
-        Assert.isTrue(packet.getId().equals(insertedPacket.getId()));
+        assertTrue(packet.getId().equals(insertedPacket.getId()));
 
         packets = findFormPackets(fund, null, LIMIT);
-        Assert.isTrue(packets.size() == 1);
+        assertTrue(packets.size() == 1);
         packet = packets.get(0);
-        Assert.isTrue(packet.getId().equals(insertedPacket.getId()));
+        assertTrue(packet.getId().equals(insertedPacket.getId()));
 
         packets = findFormPackets(fund, STORAGE_NUMBER_FOUND, LIMIT);
-        Assert.isTrue(packets.size() == 1);
+        assertTrue(packets.size() == 1);
         packet = packets.get(0);
-        Assert.isTrue(packet.getId().equals(insertedPacket.getId()));
+        assertTrue(packet.getId().equals(insertedPacket.getId()));
 
         packets = findFormPackets(fund, STORAGE_NUMBER_NOT_FOUND, LIMIT);
-        Assert.isTrue(packets.size() == 0);
+        assertTrue(packets.size() == 0);
 
         packet.setStorageNumber(STORAGE_NUMBER_CHANGE);
         List<ArrPacketVO> setStatePackets = Arrays.asList(packet);
         setStatePackets(fund, setStatePackets, ArrPacket.State.CANCELED);
 
         packets = findFormPackets(fund, null, LIMIT);
-        Assert.isTrue(packets.size() == 0);
+        assertTrue(packets.size() == 0);
 
         packet.setStorageNumber(STORAGE_NUMBER_CHANGE);
         setStatePackets = Arrays.asList(packet);
@@ -816,37 +893,37 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         deletePackets(fund, deletePackets);
 
         packets = findFormPackets(fund, null, LIMIT);
-        Assert.isTrue(packets.size() == 0);
+        assertTrue(packets.size() == 0);
 
         generatePackets(fund, "TEST-", packetTypes.get(0).getId(), 10, 5, 7, null);
         packets = findPackets(fund, "TEST-", ArrPacket.State.OPEN);
-        Assert.isTrue(packets.size() == 7);
+        assertTrue(packets.size() == 7);
 
-        Assert.isTrue(packets.get(0).getStorageNumber().equals("TEST-00010"));
-        Assert.isTrue(packets.get(1).getStorageNumber().equals("TEST-00011"));
-        Assert.isTrue(packets.get(2).getStorageNumber().equals("TEST-00012"));
-        Assert.isTrue(packets.get(3).getStorageNumber().equals("TEST-00013"));
-        Assert.isTrue(packets.get(4).getStorageNumber().equals("TEST-00014"));
-        Assert.isTrue(packets.get(5).getStorageNumber().equals("TEST-00015"));
-        Assert.isTrue(packets.get(6).getStorageNumber().equals("TEST-00016"));
+        assertTrue(packets.get(0).getStorageNumber().equals("TEST-00010"));
+        assertTrue(packets.get(1).getStorageNumber().equals("TEST-00011"));
+        assertTrue(packets.get(2).getStorageNumber().equals("TEST-00012"));
+        assertTrue(packets.get(3).getStorageNumber().equals("TEST-00013"));
+        assertTrue(packets.get(4).getStorageNumber().equals("TEST-00014"));
+        assertTrue(packets.get(5).getStorageNumber().equals("TEST-00015"));
+        assertTrue(packets.get(6).getStorageNumber().equals("TEST-00016"));
 
         generatePackets(fund, "PAM-", packetTypes.get(0).getId(), 1, 4, 7, packets);
         packets = findPackets(fund, "PAM-", ArrPacket.State.OPEN);
-        Assert.isTrue(packets.size() == 7);
+        assertTrue(packets.size() == 7);
 
-        Assert.isTrue(packets.get(0).getStorageNumber().equals("PAM-0001"));
-        Assert.isTrue(packets.get(1).getStorageNumber().equals("PAM-0002"));
-        Assert.isTrue(packets.get(2).getStorageNumber().equals("PAM-0003"));
-        Assert.isTrue(packets.get(3).getStorageNumber().equals("PAM-0004"));
-        Assert.isTrue(packets.get(4).getStorageNumber().equals("PAM-0005"));
-        Assert.isTrue(packets.get(5).getStorageNumber().equals("PAM-0006"));
-        Assert.isTrue(packets.get(6).getStorageNumber().equals("PAM-0007"));
+        assertTrue(packets.get(0).getStorageNumber().equals("PAM-0001"));
+        assertTrue(packets.get(1).getStorageNumber().equals("PAM-0002"));
+        assertTrue(packets.get(2).getStorageNumber().equals("PAM-0003"));
+        assertTrue(packets.get(3).getStorageNumber().equals("PAM-0004"));
+        assertTrue(packets.get(4).getStorageNumber().equals("PAM-0005"));
+        assertTrue(packets.get(5).getStorageNumber().equals("PAM-0006"));
+        assertTrue(packets.get(6).getStorageNumber().equals("PAM-0007"));
     }
 
     @Test
     public void calendarsTest() {
         List<ArrCalendarTypeVO> calendarTypes = getCalendarTypes();
-        Assert.notEmpty(calendarTypes);
+        assertTrue(calendarTypes.size()>0);
     }
 
     private void fulltextTest(final ArrFundVersionVO fundVersion) {
@@ -868,7 +945,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         test.setParent(null);
         test.getParent();
 
-        Assert.notNull(fulltext);
+        assertNotNull(fulltext);
     }
 
 
@@ -913,24 +990,24 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         ArrNodeRegisterVO createdLink = createRegisterLinks(fundVersion.getId(), rootNode.getId(), nodeRegister);
 
-        Assert.notNull(createdLink);
+        assertNotNull(createdLink);
 
         List<ArrNodeRegisterVO> registerLinks = findRegisterLinks(fundVersion.getId(), rootNode.getId());
-        Assert.notEmpty(registerLinks);
+        assertTrue(registerLinks.size()>0);
 
         ArrangementController.NodeRegisterDataVO registerLinksForm = findRegisterLinksForm(fundVersion.getId(),
                 rootNode.getId());
 
-        Assert.notNull(registerLinksForm.getNode());
-        Assert.notEmpty(registerLinksForm.getNodeRegisters());
+        assertNotNull(registerLinksForm.getNode());
+        assertTrue(registerLinksForm.getNodeRegisters().size()>0);
 
         ArrNodeRegisterVO updatedLink = updateRegisterLinks(fundVersion.getId(), rootNode.getId(), createdLink);
 
-        Assert.isTrue(!createdLink.getId().equals(updatedLink.getId()));
+        assertTrue(!createdLink.getId().equals(updatedLink.getId()));
 
         ArrNodeRegisterVO deletedLink = deleteRegisterLinks(fundVersion.getId(), rootNode.getId(), updatedLink);
 
-        Assert.isTrue(updatedLink.getId().equals(deletedLink.getId()));
+        assertTrue(updatedLink.getId().equals(deletedLink.getId()));
     }
 
 
@@ -970,11 +1047,11 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         List<ArrData> nodesContainingText = dataRepository.findByNodesContainingText(nodeRepository.findAll(nodeIds),
                 type, null, "valXYZ");
 
-        Assert.isTrue(nodesContainingText.size() == nodeIds.size());
+        assertTrue(nodesContainingText.size() == nodeIds.size());
         for (ArrData arrData : nodesContainingText) {
             ArrDataText data = (ArrDataText) arrData;
-            Assert.isTrue(Pattern.compile("^(\\d+valXYZ\\d+)$").matcher(data.getValue()).matches());
-            Assert.isTrue(nodeIds.contains(arrData.getItem().getNodeId()));
+            assertTrue(Pattern.compile("^(\\d+valXYZ\\d+)$").matcher(data.getValue()).matches());
+            assertTrue(nodeIds.contains(arrData.getItem().getNodeId()));
         }
 
 
@@ -985,11 +1062,11 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         List<ArrData> byNodesAndDeleteChangeIsNull = dataRepository
                 .findByNodesAndDeleteChangeIsNull(nodeRepository.findAll(nodeIds));
-        Assert.isTrue(byNodesAndDeleteChangeIsNull.size() >= nodeIds.size());
+        assertTrue(byNodesAndDeleteChangeIsNull.size() >= nodeIds.size());
         for (ArrData arrData : byNodesAndDeleteChangeIsNull) {
             if (arrData.getItem().getItemType().getItemTypeId().equals(typeVo.getId())) {
                 ArrDataText text = (ArrDataText) arrData;
-                Assert.isTrue(text.getValue().equals("nova_value"));
+                assertTrue(text.getValue().equals("nova_value"));
             }
         }
 
@@ -1001,7 +1078,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         List<ArrDescItem> nodeDescItems = descItemRepository
                 .findOpenByNodesAndType(nodeRepository.findAll(nodeIds), type);
-        Assert.isTrue(nodeDescItems.isEmpty());
+        assertTrue(nodeDescItems.isEmpty());
     }
 
     @Test
@@ -1029,20 +1106,60 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
 
         List<String> resultList = filterUniqueValues(fundVersion.getId(), typeVo.getId(), "ue1", null);
-        Assert.isTrue(resultList.size() < nodes.size());
-        Assert.isTrue(resultList.contains("value1"));
-        Assert.isTrue(!resultList.contains("value-1"));
+        assertTrue(resultList.size() < nodes.size());
+        assertTrue(resultList.contains("value1"));
+        assertTrue(!resultList.contains("value-1"));
 
 
 
         approvedVersion(fundVersion);
         resultList = filterUniqueValues(fundVersion.getId(), typeVo.getId(), "ue1", null);
-        Assert.isTrue(resultList.size() < nodes.size());
-        Assert.isTrue(resultList.contains("value1"));
-        Assert.isTrue(!resultList.contains("value-1"));
+        assertTrue(resultList.size() < nodes.size());
+        assertTrue(resultList.contains("value1"));
+        assertTrue(!resultList.contains("value-1"));
 
 
 
+    }
+
+    @Test
+    @Ignore // TODO po implementaci
+    public void copyLevelsTest() {
+
+        ArrFundVO fundSource = createdFund();
+        ArrFundVersionVO fundVersionSource = getOpenVersion(fundSource);
+        List<ArrNodeVO> nodesSource = createLevels(fundVersionSource);
+
+        ArrFundVO fundTarget = createdFund();
+        ArrFundVersionVO fundVersionTarget = getOpenVersion(fundTarget);
+        List<ArrNodeVO> nodesTarget = createLevels(fundVersionTarget);
+
+        CopyNodesValidate copyNodesValidate = new CopyNodesValidate();
+
+        ArrNodeVO nodeSource = nodesSource.get(0);
+
+        copyNodesValidate.setSourceFundVersionId(fundVersionSource.getId());
+        copyNodesValidate.setSourceNodes(Collections.singleton(nodeSource));
+        copyNodesValidate.setTargetFundVersionId(fundVersionTarget.getId());
+
+        copyNodesValidate.setIgnoreRootNodes(true);
+
+        CopyNodesValidateResult validateResult = copyLevelsValidate(copyNodesValidate);
+        // Validation result cannot be empty
+        assertNotNull(validateResult);
+
+        CopyNodesParams copyNodesParams = new CopyNodesParams();
+
+        copyNodesParams.setSourceFundVersionId(fundVersionSource.getId());
+        copyNodesParams.setSourceNodes(Collections.singleton(nodeSource));
+        copyNodesParams.setTargetFundVersionId(fundVersionTarget.getId());
+        copyNodesParams.setTargetStaticNode(nodesTarget.get(0));
+        copyNodesParams.setTargetStaticNodeParent(null);
+        copyNodesParams.setIgnoreRootNodes(true);
+        copyNodesParams.setFilesConflictResolve(null);
+        copyNodesParams.setPacketsConflictResolve(null);
+
+        copyLevels(copyNodesParams);
     }
 
 }

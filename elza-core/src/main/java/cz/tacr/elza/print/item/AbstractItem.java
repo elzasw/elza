@@ -15,6 +15,7 @@ public abstract class AbstractItem implements Item {
     private ItemType type;
     private ItemSpec specification;
     private Integer position;
+    private Boolean undefined;
 
     @Override
     public Item getItem() {
@@ -31,10 +32,20 @@ public abstract class AbstractItem implements Item {
     }
 
     @Override
+    public Boolean getUndefined() {
+        return undefined;
+    }
+
+    public void setUndefined(final Boolean undefined) {
+        this.undefined = undefined;
+    }
+
+    @Override
     public int compareToItemViewOrderPosition(final Item o) {
         return new CompareToBuilder()
                 .append(type.getViewOrder(), o.getType().getViewOrder())
                 .append(position, o.getPosition())
+                .append(undefined, o.getUndefined())
                 .toComparison();
     }
 
@@ -55,7 +66,7 @@ public abstract class AbstractItem implements Item {
     public void setType(final ItemType type) {
         this.type = type;
     }
-    
+
     /**
      * Method to return real value object
      * @return return value object

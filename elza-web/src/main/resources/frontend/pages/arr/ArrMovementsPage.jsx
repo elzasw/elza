@@ -2,8 +2,8 @@
  * Stránka archivních pomůcek.
  */
 
-require('./ArrPage.less');
-require('./ArrMovementsPage.less');
+import './ArrPage.less';
+import './ArrMovementsPage.less';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -11,7 +11,7 @@ import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {FundSettingsForm, Tabs, Icon, Ribbon, i18n, FundTreeMovementsLeft, FundTreeMovementsRight, ArrFundPanel} from 'components/index.jsx';
+
 import * as types from 'actions/constants/ActionTypes.js';
 import {getNodeParents, getNodeParent} from 'components/arr/ArrUtils.jsx'
 import {moveNodesUnder, moveNodesBefore, moveNodesAfter, moveNodes} from 'actions/arr/nodes.jsx'
@@ -19,20 +19,31 @@ import {moveNodesUnder, moveNodesBefore, moveNodesAfter, moveNodes} from 'action
 import ArrParentPage from "./ArrParentPage.jsx";
 
 import {
-    BulkActionsDialog,
     RibbonGroup,
     AbstractReactComponent,
-    NodeTabs,
     ListBox2,
     LazyListBox,
-    VisiblePolicyForm,
     Loading,
+    Tabs,
+    Icon,
+    i18n,
+    Utils
+} from 'components/shared';
+import {
+    Ribbon,
+    FundSettingsForm,
+    BulkActionsDialog,
+    NodeTabs,
+    VisiblePolicyForm,
     FundPackets,
     FundFiles,
-    FundTreeMain
+    FundTreeMain,
+    FundTreeMovementsLeft,
+    FundTreeMovementsRight,
+    ArrFundPanel
 } from 'components/index.jsx';
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
-import {PageLayout} from 'pages/index.jsx';
+import PageLayout from "../shared/layout/PageLayout";
 import {WebApi} from 'actions/index.jsx';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {showRegisterJp, fundsFetchIfNeeded} from 'actions/arr/fund.jsx'
@@ -41,7 +52,6 @@ import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes.jsx'
 import {developerNodeScenariosRequest} from 'actions/global/developer.jsx'
-import {Utils} from 'components/index.jsx';
 import {isFundRootId, getSettings, setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {setFocus} from 'actions/global/focus.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
@@ -261,4 +271,4 @@ ArrMovementsPage.propTypes = {
     ruleSet: React.PropTypes.object.isRequired,
 }
 
-module.exports = connect(mapStateToProps)(ArrMovementsPage);
+export default connect(mapStateToProps)(ArrMovementsPage);

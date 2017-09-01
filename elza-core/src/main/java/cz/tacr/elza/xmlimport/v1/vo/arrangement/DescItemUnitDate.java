@@ -21,13 +21,13 @@ import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 public class DescItemUnitDate extends AbstractDescItem {
 
     @XmlElement(name = "value-from")
-    private Date valueFrom;
+    private String valueFrom;
 
     @XmlElement(name = "value-from-estimated")
     private Boolean valueFromEstimated;
 
     @XmlElement(name = "value-to")
-    private Date valueTo;
+    private String valueTo;
 
     @XmlElement(name = "value-to-estimated")
     private Boolean valueToEstimated;
@@ -38,11 +38,11 @@ public class DescItemUnitDate extends AbstractDescItem {
     @XmlElement(name = "format")
     private String format;
 
-    public Date getValueFrom() {
+    public String getValueFrom() {
         return valueFrom;
     }
 
-    public void setValueFrom(Date valueFrom) {
+    public void setValueFrom(String valueFrom) {
         this.valueFrom = valueFrom;
     }
 
@@ -54,11 +54,11 @@ public class DescItemUnitDate extends AbstractDescItem {
         this.valueFromEstimated = valueFromEstimated;
     }
 
-    public Date getValueTo() {
+    public String getValueTo() {
         return valueTo;
     }
 
-    public void setValueTo(Date valueTo) {
+    public void setValueTo(String valueTo) {
         this.valueTo = valueTo;
     }
 

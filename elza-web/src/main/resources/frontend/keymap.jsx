@@ -1,5 +1,5 @@
-import {Utils} from 'components/index.jsx';
-var keyModifier = Utils.getKeyModifier()
+import {Utils} from 'components/shared';
+const keyModifier = Utils.getKeyModifier();
 
 var keymap = {}
 

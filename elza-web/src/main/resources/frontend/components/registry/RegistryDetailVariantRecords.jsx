@@ -7,8 +7,8 @@ import {
     i18n,
     Icon,
     NoFocusButton,
-    RegistryLabel
-} from 'components/index.jsx';
+    Utils
+} from 'components/shared';
 import {
     registryVariantAddRow,
     registryVariantCreate,
@@ -16,11 +16,11 @@ import {
     registryVariantDelete,
     registryVariantInternalDelete
 } from 'actions/registry/registry.jsx'
-import {Utils, EditRegistryForm} from 'components/index.jsx';
 import {Shortcuts} from 'react-shortcuts';
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {PropTypes} from 'prop-types';
 import {setFocus} from 'actions/global/focus.jsx'
+import RegistryLabel from "./RegistryLabel";
 import defaultKeymap from './RegistryDetailVariantRecordsKeymap.jsx';
 
 class RegistryDetailVariantRecords extends AbstractReactComponent {

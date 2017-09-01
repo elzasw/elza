@@ -2,7 +2,7 @@
  * Komponenta zobrazuje název node včetně ikonky a reference mark.
  */
 import React from 'react';
-import {AbstractReactComponent, Icon, i18n} from 'components/index.jsx';
+import {AbstractReactComponent, Icon, i18n} from 'components/shared';
 import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils.jsx'
 
 require("./NodeLabel.less")

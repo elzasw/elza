@@ -1,10 +1,9 @@
 package cz.tacr.elza.controller.vo.nodes;
 
+import cz.tacr.elza.domain.ArrNode;
+
 /**
  * VO uzlu archivní pomůcky.
- *
- * @author Martin Šlapa
- * @since 13.1.2016
  */
 public class ArrNodeVO {
 
@@ -40,5 +39,12 @@ public class ArrNodeVO {
 
     public void setVersion(final Integer version) {
         this.version = version;
+    }
+
+    public ArrNode createEntity() {
+        ArrNode node = new ArrNode();
+        node.setNodeId(id);
+        node.setVersion(version);
+        return node;
     }
 }

@@ -4,13 +4,12 @@
     <parent>
         <artifactId>elza</artifactId>
         <groupId>cz.tacr.elza</groupId>
-        <version>0.12.12-SNAPSHOT</version>
+        <version>0.13.0-SNAPSHOT</version>
     </parent>
     <artifactId>elza-core</artifactId>
     <name>ELZA Core</name>
 
     <properties>
-        <vaadin.theme.path>VAADIN/themes/elza</vaadin.theme.path>
         <drools.version>6.5.0.Final</drools.version>
         <geotools.version>14.3</geotools.version>
     </properties>
@@ -124,6 +123,10 @@
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
             <artifactId>hibernate-ehcache</artifactId>
         </dependency>
         <dependency>
@@ -188,7 +191,7 @@
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <version>1.4.191</version>
-            <scope>test</scope>
+            <!--<scope>test</scope>-->
         </dependency>
         <dependency>
             <groupId>org.opengeo</groupId>
@@ -317,6 +320,28 @@
                 </excludes>
             </resource>
         </resources>
+        <testResources>
+          <!-- Copy default test resources -->
+          <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/*.yaml</include>
+                </includes>
+          </testResource>
+          <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>**/*.yaml</exclude>
+                </excludes>
+          </testResource>
+          <!-- Add test folder with source files for packages -->
+          <testResource>
+            <directory>${basedir}/target/test-resources</directory>
+            <includes /> 
+          </testResource>
+        </testResources>    
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -326,16 +351,131 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
-            <!-- Suzap XSD -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
-                <artifactId>jaxb2-maven-plugin</artifactId>
-                <version>2.2</version>
+                <artifactId>build-helper-maven-plugin</artifactId>
                 <executions>
+                    <execution>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.build.directory}/generated-sources/jaxb</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+				<groupId>org.jvnet.jaxb2.maven2</groupId>
+				<artifactId>maven-jaxb2-plugin</artifactId>
+				<version>0.13.1</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<phase>generate-sources</phase>
+						<configuration>
+							<extension>true</extension>
+							<args>
+								<arg>-Xinheritance</arg>
+							</args>
+							<generateDirectory>${project.build.directory}/generated-sources/jaxb</generateDirectory>
+							<schemaDirectory>${project.basedir}/src/main/resources/schema</schemaDirectory>
+							<schemaIncludes>
+								<include>elza-schema-v2.xsd</include>
+							</schemaIncludes>
+							<bindingDirectory>${project.basedir}/src/main/resources/schema</bindingDirectory>
+							<bindingIncludes>
+								<include>elza-schema-v2-bindinds.xml</include>
+							</bindingIncludes>
+							<plugins>
+								<plugin>
+									<groupId>org.jvnet.jaxb2_commons</groupId>
+									<artifactId>jaxb2-basics</artifactId>
+									<version>1.11.1</version>
+								</plugin>
+							</plugins>
+						</configuration>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+					    <groupId>com.sun.xml.bind</groupId>
+					    <artifactId>jaxb-xjc</artifactId>
+					    <version>2.2.7</version>
+					</dependency>
+					<dependency>
+					    <groupId>com.sun.xml.bind</groupId>
+					    <artifactId>jaxb-impl</artifactId>
+					    <version>2.2.7</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+			<!-- Copy resources -->
+			<plugin>
+			 <artifactId>maven-resources-plugin</artifactId>
+			 <!-- <version>3.0.2</version> -->
+			 <executions>			 
+			   <!-- Copy test resources -->
+			   <execution>
+			     <id>copy-package-cz-base</id>
+			     <phase>generate-test-resources</phase>
+ 			     <goals>
+			       <goal>copy-resources</goal>
+			     </goals>
+			     <configuration>
+			       <outputDirectory>${project.basedir}/target/test-resources/package-cz-base</outputDirectory>
+			       <resources>
+			         <resource>
+			           <directory>${project.basedir}/../package-cz-base/src</directory>
+			           <includes />			           
+			         </resource>			         
+			       </resources>
+			     </configuration>
+			   </execution>
+               <execution>
+                 <id>copy-rules-cz-zp2015</id>
+                 <phase>generate-test-resources</phase>
+                 <goals>
+                   <goal>copy-resources</goal>
+                 </goals>
+                 <configuration>
+                   <outputDirectory>${project.basedir}/target/test-resources/rules-cz-zp2015</outputDirectory>
+                   <resources>
+                     <resource>
+                       <directory>${project.basedir}/../rules-cz-zp2015/src</directory>
+                       <includes />                    
+                     </resource>                     
+                   </resources>
+                 </configuration>
+               </execution>
+			 </executions>
+			</plugin>
+           <!--<plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jaxb2-maven-plugin</artifactId>
+                <version>2.3.1</version>
+                <executions>
+                    <execution>
+                        <id>edx</id>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <extension>true</extension>
+                            <sources>
+                                <source>${project.basedir}/src/main/resources/schema/elza-schema-v2.xsd</source>
+                            </sources>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>hierarchical-structure</id>
                         <phase>compile</phase>
-
                         <configuration>
                             <outputDirectory>${project.basedir}/src/main/resources/xsd/</outputDirectory>
                             <sources>
@@ -355,7 +495,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
 <!--             <plugin> -->
 <!--                 <groupId>org.codehaus.mojo</groupId> -->
 <!--                 <artifactId>jaxb2-maven-plugin</artifactId> -->

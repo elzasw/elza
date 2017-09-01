@@ -47,10 +47,6 @@ public class EventNotificationService implements IEventNotificationService {
 
     @Override
     public void publishEvent(final AbstractEventSimple event) {
-        this.publishEvent(event, false);
-    }
-
-    public void publishEvent(final AbstractEventSimple event, final boolean onRollBack) {
         Assert.notNull(event);
 
         AfterTransactionListener listener = null;
@@ -66,9 +62,6 @@ public class EventNotificationService implements IEventNotificationService {
             TransactionSynchronizationManager.registerSynchronization(listener);
         }
         listener.registerEvent(event);
-        if (onRollBack) {
-            listener.registerRollBackEvent(event);
-        }
     }
 
     /**
@@ -110,7 +103,6 @@ public class EventNotificationService implements IEventNotificationService {
          * Mapa připravených událostí.
          */
         private List<AbstractEventSimple> uncommittedEvents = new LinkedList<>();
-        private List<AbstractEventSimple> uncommittedRollBackEvents = new LinkedList<>();
 
         /**
          * Přidá připravenou událost do mapy.
@@ -201,22 +193,9 @@ public class EventNotificationService implements IEventNotificationService {
             return arr;
         }
 
-        public void registerRollBackEvent(final AbstractEventSimple event) {
-            uncommittedRollBackEvents.add(event);
-        }
-
-
         @Override
         public void afterCommit() {
             commitEvents(uncommittedEvents);
-        }
-
-        @Override
-        public void afterCompletion(int status) {
-            if (status == STATUS_ROLLED_BACK) {
-                commitEvents(uncommittedRollBackEvents);
-            }
-            super.afterCompletion(status);
         }
     }
 

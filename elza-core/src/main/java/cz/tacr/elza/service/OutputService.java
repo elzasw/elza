@@ -1,5 +1,8 @@
 package cz.tacr.elza.service;
 
+import static cz.tacr.elza.domain.RulItemType.Type.RECOMMENDED;
+import static cz.tacr.elza.domain.RulItemType.Type.REQUIRED;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,20 +10,24 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
+
 import com.fasterxml.jackson.databind.deser.Deserializers;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.Level;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.OutputCode;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.factory.DescItemFactory;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+
+import cz.tacr.elza.repository.ItemSpecRepository;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.slf4j.Logger;
@@ -33,7 +40,6 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
-import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.CopyActionResult;
@@ -71,7 +77,14 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeAction;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.interfaces.IArrItemStringValue;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.Level;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.OutputCode;
 import cz.tacr.elza.repository.ActionRecommendedRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemSettingsRepository;
@@ -93,9 +106,6 @@ import cz.tacr.elza.service.eventnotification.events.EventChangeOutputItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.OutputGeneratorService;
-
-import static cz.tacr.elza.domain.RulItemType.Type.RECOMMENDED;
-import static cz.tacr.elza.domain.RulItemType.Type.REQUIRED;
 
 /**
  * Serviska pro práci s výstupy.
@@ -175,6 +185,12 @@ public class OutputService {
 
     @Autowired
     private RuleService ruleService;
+
+    @Autowired
+    private ItemSpecRepository itemSpecRepository;
+
+    @Autowired
+    private DescItemFactory descItemFactory;
 
     private static final Logger logger = LoggerFactory.getLogger(OutputService.class);
 
@@ -317,7 +333,7 @@ public class OutputService {
                 originalOutputDef.getTemporary(),
                 originalOutputDef.getOutputType().getOutputTypeId(),
                 originalOutputDef.getTemplate() != null ? originalOutputDef.getTemplate().getTemplateId() : null
-        );
+                );
 
         final ArrChange change = newOutputDef.getOutputs().get(0).getCreateChange();
         final ArrayList<ArrNodeOutput> newNodes = new ArrayList<>();
@@ -888,6 +904,7 @@ public class OutputService {
         }
 
         checkCalculatingAttribute(outputDefinition, item.getItemType());
+        item.setUndefined(false);
         return createOutputItem(item, outputDefinition, fundVersion, null);
     }
 
@@ -1295,7 +1312,18 @@ public class OutputService {
             itemList = outputItemRepository.findByOutputAndChange(outputDefinition, fundVersion.getLockChange());
         }
 
-        return itemService.loadData(itemList);
+        Map<Integer, RulItemTypeExt> itemTypeExtMap = ruleService.getOutputItemTypes(outputDefinition).stream().collect(Collectors.toMap(RulItemType::getItemTypeId, Function.identity()));
+        itemService.loadData(itemList);
+        for (ArrOutputItem outputItem : itemList) {
+            if (outputItem.getItem() == null) {
+                RulItemTypeExt itemTypeExt = itemTypeExtMap.get(outputItem.getItemTypeId());
+                if (itemTypeExt.getIndefinable()) {
+                    outputItem.setItem(descItemFactory.createItemByType(itemTypeExt.getDataType()));
+                }
+            }
+        }
+
+        return itemList;
     }
 
     /**
@@ -1372,7 +1400,7 @@ public class OutputService {
         ArrChange change = createChange == null ? arrangementService.createChange(null) : createChange;
         List<ArrOutputItem> createdItems = new ArrayList<>();
         for (ArrOutputItem outputItem :
-                outputItems) {
+            outputItems) {
             outputItem.setOutputDefinition(outputDefinition);
             outputItem.setCreateChange(change);
             outputItem.setDeleteChange(null);
@@ -1554,8 +1582,8 @@ public class OutputService {
 
         if (itemTypesMissing.size() > 0) {
             logger.warn("Při ukládání výsledků z hromadné akce '" + bulkActionRun.getBulkActionCode()
-                    + "' nebyly nalezeny přípustné typy atributů: "
-                    + itemTypesMissing.stream().map(RulItemType::getCode).collect(Collectors.joining(", ")));
+            + "' nebyly nalezeny přípustné typy atributů: "
+            + itemTypesMissing.stream().map(RulItemType::getCode).collect(Collectors.joining(", ")));
         }
 
         List<RulItemType> itemTypesMoreover = new ArrayList<>(itemTypes);
@@ -1563,8 +1591,8 @@ public class OutputService {
 
         if (itemTypesMoreover.size() > 0) {
             logger.warn("Při ukládání výsledků z hromadné akce '" + bulkActionRun.getBulkActionCode()
-                    + "' byly nalezeny typy atributů, které nejsou v seznamu přípustných: "
-                    + itemTypesMoreover.stream().map(RulItemType::getCode).collect(Collectors.joining(", ")));
+            + "' byly nalezeny typy atributů, které nejsou v seznamu přípustných: "
+            + itemTypesMoreover.stream().map(RulItemType::getCode).collect(Collectors.joining(", ")));
         }
     }
 
@@ -1578,10 +1606,10 @@ public class OutputService {
      * @param itemType    typ atributu
      */
     public Pair<List<RulItemType>, Boolean> storeResultInternal(final Result result,
-                            final ArrFundVersion fundVersion,
-                            final Set<ArrNode> nodes,
-                            final ArrChangeLazy change,
-                            @Nullable final RulItemType itemType) {
+                                                                final ArrFundVersion fundVersion,
+                                                                final Set<ArrNode> nodes,
+                                                                final ArrChangeLazy change,
+                                                                @Nullable final RulItemType itemType) {
         if (nodes.size() == 0) {
             return Pair.of(Collections.emptyList(), false);
         }
@@ -1716,8 +1744,8 @@ public class OutputService {
 
         if (itemTypesIgnored != null && itemTypesIgnored.contains(type)) {
             logger.warn("Při ukládání výsledků hromadné akce do výstupu " + outputDefinition.getName()
-                    + " [ID=" + outputDefinition.getOutputDefinitionId() + "] byl přeskočen atribut " + type.getName()
-                    + " [CODE=" + type.getCode() + "], protože je v seznamu ignorovaných");
+            + " [ID=" + outputDefinition.getOutputDefinitionId() + "] byl přeskočen atribut " + type.getName()
+            + " [CODE=" + type.getCode() + "], protože je v seznamu ignorovaných");
             return null;
         }
 
@@ -1753,6 +1781,7 @@ public class OutputService {
                 ArrOutputItem outputItem = new ArrOutputItem(dataItem);
                 outputItem.setItemType(type);
                 outputItem.setItemSpec(dataItem.getSpec());
+                outputItem.setUndefined(BooleanUtils.isTrue(dataItem.getUndefined()));
                 createOutputItem(outputItem, outputDefinition, fundVersion, change.getOrCreateChange());
             }
             return true;
@@ -1951,5 +1980,92 @@ public class OutputService {
         }
 
         return itemTypesResult;
+    }
+
+    /**
+     * Nastavení hodnoty atributu na "Nezjištěno".
+     *
+     * @param outputItemTypeId        identifikátor typu atributu
+     * @param outputDefinitionId      identifikátor výstupu
+     * @param outputDefinitionVersion verze výstupu
+     * @param fundVersionId           identifikátor verze fondu
+     * @param outputItemSpecId        identifikátor specifikace atributu
+     * @param outputItemObjectId      identifikátor atributu
+     * @return atribut s "Nezjištěnou" hodnotou
+     */
+    public ArrOutputItem setNotIdentifiedDescItem(final Integer outputItemTypeId,
+                                                  final Integer outputDefinitionId,
+                                                  final Integer outputDefinitionVersion,
+                                                  final Integer fundVersionId,
+                                                  final Integer outputItemSpecId,
+                                                  final Integer outputItemObjectId) {
+        ArrOutputDefinition outputDefinition = outputDefinitionRepository.findOne(outputDefinitionId);
+        if (outputDefinition == null) {
+            throw new ObjectNotFoundException("Nebyl nalezen výstup s ID=" + outputDefinitionId, OutputCode.OUTPUT_NOT_EXISTS).set("id", outputDefinitionId);
+        }
+
+        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
+        if (fundVersion == null) {
+            throw new ObjectNotFoundException("Nebyla nalezena verze AS s ID=" + fundVersionId, ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", fundVersionId);
+        }
+
+        List<RulItemTypeExt> outputItemTypes = ruleService.getOutputItemTypes(outputDefinition);
+        RulItemType outputItemType = outputItemTypes.stream().filter(rulItemTypeExt -> rulItemTypeExt.getItemTypeId().equals(outputItemTypeId)).findFirst().orElse(null);
+        if (outputItemType == null) {
+            throw new ObjectNotFoundException("Nebyla nalezen typ atributu s ID=" + outputItemTypeId, ArrangementCode.ITEM_TYPE_NOT_FOUND).set("id", outputItemTypeId);
+        }
+
+        if (!outputItemType.getIndefinable()) {
+            throw new BusinessException("Položku není možné nastavit jako '" + ArrangementService.UNDEFINED + "'", ArrangementCode.CANT_SET_INDEFINABLE)
+            	.set("itemDesc", outputItemType.getCode());
+        }
+
+        RulItemSpec outputItemSpec = null;
+        if (outputItemSpecId != null) {
+            outputItemSpec = itemSpecRepository.findOne(outputItemSpecId);
+            if (outputItemSpec == null) {
+                throw new ObjectNotFoundException("Nebyla nalezena specifikace atributu s ID=" + outputItemSpecId, ArrangementCode.ITEM_SPEC_NOT_FOUND).set("id", outputItemSpecId);
+            }
+        }
+
+        ArrChange change = arrangementService.createChange(null);
+
+        if (outputItemObjectId != null) {
+            ArrOutputItem openOutputItem = outputItemRepository.findOpenOutputItem(outputItemObjectId);
+            if (openOutputItem == null) {
+                throw new ObjectNotFoundException("Nebyla nalezena hodnota atributu s OBJID=" + outputItemObjectId, ArrangementCode.DATA_NOT_FOUND).set("descItemObjectId", outputItemObjectId);
+            } else if (openOutputItem.getUndefined()) {
+                throw new BusinessException("Položka již je nastavená jako '" + ArrangementService.UNDEFINED + "'", ArrangementCode.ALREADY_INDEFINABLE);
+            }
+
+            openOutputItem.setDeleteChange(change);
+            outputItemRepository.save(openOutputItem);
+        }
+
+        outputDefinition.setVersion(outputDefinitionVersion);
+        saveOutputDefinition(outputDefinition);
+
+        ArrOutputItem outputItem = new ArrOutputItem();
+        outputItem.setItemType(outputItemType);
+        outputItem.setItemSpec(outputItemSpec);
+        outputItem.setOutputDefinition(outputDefinition);
+        outputItem.setCreateChange(change);
+        outputItem.setDeleteChange(null);
+        outputItem.setDescItemObjectId(outputItemObjectId == null ? arrangementService.getNextDescItemObjectId() : outputItemObjectId);
+        outputItem.setUndefined(true);
+
+        ArrOutputItem outputItemCreated = createOutputItem(outputItem, fundVersion, change);
+
+        List<OutputState> allowedState = Collections.singletonList(OutputState.OPEN);
+        if (!allowedState.contains(outputDefinition.getState())) {
+            throw new BusinessException("Nelze upravit výstupu, který není ve stavu otevřený", OutputCode.NOT_PROCESS_IN_STATE);
+        }
+
+        checkCalculatingAttribute(outputDefinition, outputItem.getItemType());
+        outputItemCreated.setItem(descItemFactory.createItemByType(outputItemType.getDataType()));
+
+        // sockety
+        publishChangeOutputItem(fundVersion, outputItemCreated);
+        return outputItemCreated;
     }
 }

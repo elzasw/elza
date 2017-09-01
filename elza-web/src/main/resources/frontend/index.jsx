@@ -8,10 +8,8 @@
 import './elza-styles.less';
 
 import React from 'react';
-import { render } from 'react-dom';
-import { createHistory, useBasename } from 'history'
-import { Route, Link, History, Lifecycle } from 'react-router'
-import { Utils } from 'components/index.jsx';
+
+import {Utils} from 'components/shared';
 import {WebApi, WebApiCls} from 'actions/index.jsx';
 import {loginFail} from 'actions/global/login.jsx';
 import {userDetailChange} from 'actions/user/userDetail.jsx'
@@ -25,10 +23,10 @@ bootstrapUtils.addStyle(Button, 'action');
 // CustomEvent polyfill pro IE 9+
 if ( typeof window.CustomEvent !== "function" ){
     function CustomEvent ( event, params ) {
-    params = params || { bubbles: false, cancelable: false, detail: undefined };
-    var evt = document.createEvent( 'CustomEvent' );
-    evt.initCustomEvent( event, params.bubbles, params.cancelable, params.detail );
-    return evt;
+        params = params || { bubbles: false, cancelable: false, detail: undefined };
+        var evt = document.createEvent( 'CustomEvent' );
+        evt.initCustomEvent( event, params.bubbles, params.cancelable, params.detail );
+        return evt;
     }
 
     CustomEvent.prototype = window.Event.prototype;
@@ -37,9 +35,6 @@ if ( typeof window.CustomEvent !== "function" ){
 
 // Globální init
 Utils.init();
-// es6-symbol polyfill nefunguje s kodem vygenerovanym pres babel (for-of iterace), musime pouzit core-js
-require('core-js/fn/symbol');
-require('core-js/fn/array');
 const es6promise = require('es6-promise');
 //var es5Shim = require('es5-shim');
 es6promise.polyfill();
@@ -47,9 +42,6 @@ es6promise.polyfill();
 // Nastavení neomezeného počtu listenerů pro event emitter - v ELZA je emitter použit pro klávesové zkratky, kde je více listenerů
 const EventEmitter = require('events').EventEmitter;
 EventEmitter.defaultMaxListeners = 0
-
-// Web socket
-const websocket = require('./websocket');
 
 function xx() {
     setTimeout(fc, 1000)
@@ -82,12 +74,17 @@ if (!String.prototype.startsWith) {
 //setTimeout(fc, 1500)
 
 // Načtení dat z local storage = vrácení aplikace do předchozího stavu
-import {AppStore} from 'stores/index.jsx';
+import {store} from 'stores/index.jsx';
+import AjaxUtils from 'components/AjaxUtils.jsx';
+AjaxUtils.setStore(store);
+// Web socket - až po initu store
+import websocket from "./websocketActions.jsx";
 import {storeRestoreFromStorage} from 'actions/store/store.jsx';
 import {storeSave} from 'actions/store/storeEx.jsx';
-import {i18n, Exception} from "components/index";
+import {i18n, Exception} from "components/shared";
+
 import {addToastr} from "components/shared/toastr/ToastrActions.jsx"
-AppStore.store.dispatch(storeRestoreFromStorage());
+store.dispatch(storeRestoreFromStorage());
 
 window.onerror = function(message, url, line, column, error) {
     let devMessage = error;
@@ -97,7 +94,7 @@ window.onerror = function(message, url, line, column, error) {
         }
     } catch (e) {}
 
-    AppStore.store.dispatch(addToastr(i18n('exception.client'), [<Exception title={i18n('exception.client')} data={{
+    store.dispatch(addToastr(i18n('exception.client'), [<Exception title={i18n('exception.client')} data={{
         message,
         devMessage: devMessage,
         properties: {
@@ -120,7 +117,7 @@ import {setFocus} from 'actions/global/focus.jsx';
 {
     const testBodyfocus = () => {
         if (document.activeElement === document.body) { // focus je na body, nastavíme ho podle aktuálně přepnuté oblasti
-            AppStore.store.dispatch(setFocus(null, 1));
+            store.dispatch(setFocus(null, 1));
         }
 
         setTimeout(testBodyfocus, 150)
@@ -130,14 +127,14 @@ import {setFocus} from 'actions/global/focus.jsx';
 /*
 import {setFocus} from 'actions/global/focus.jsx';
 document.body.addEventListener("focus", () => {
-    //AppStore.store.dispatch(setFocus(null, null, 'ribbon'));
+    //store.dispatch(setFocus(null, null, 'ribbon'));
 })
 */
 
 // Ukládání stavu aplikace
 function scheduleStoreSave() {
     setTimeout(() => {
-        AppStore.store.dispatch(storeSave());
+        store.dispatch(storeSave());
         scheduleStoreSave();
     }, 1000)
 }
@@ -148,7 +145,7 @@ let calbacks = [];
 
 const login = (callback) => {
     calbacks.push(callback);
-    AppStore.store.dispatch(loginFail(() => {
+    store.dispatch(loginFail(() => {
         calbacks.forEach(callback => callback());
         calbacks = [];
     }));
@@ -186,31 +183,45 @@ for(const i in  methods) {
 // Načtení oprávnění a jeho uložení do store po přihlášení
 WebApi.getUserDetail()
     .then(userDetail => {
-        AppStore.store.dispatch(userDetailChange(userDetail))
+        store.dispatch(userDetailChange(userDetail))
     })
 
 // Aplikace
 import {AppContainer} from 'react-hot-loader'
-//import Redbox from 'redbox-react'
+import Redbox from 'redbox-react'
+import ReactDOM from 'react-dom'
+
+
+
+
+class CustomRedbox extends React.Component {
+    static PropTypes = {
+        error: React.PropTypes.instanceOf(Error).isRequired
+    };
+
+    render() {
+        const {error} = this.props;
+        console.error(error);
+        return <Redbox error={error} />;
+    }
+}
+
+const render = Component => {
+    const MOUNT_POINT = document.getElementById('content');
+
+    ReactDOM.render(
+        <AppContainer errorReported={CustomRedbox}>
+            <Component store={store} />
+        </AppContainer>,
+        MOUNT_POINT
+    )
+};
+
+
 import Root from './router';
 
-render(
-    //<AppContainer errorReporter={Redbox}><Root store={AppStore.store} /></AppContainer>,
-    <Root store={AppStore.store} />,
-    document.getElementById('content')
-);
+render(Root);
 
-
-if (process.env.NODE_ENV === 'development' && module.hot) {
-    // Accept changes to this file for hot reloading.
-    module.hot.accept();
-    // Any changes to our routes will cause a hotload re-render.
-    module.hot.accept('./router.jsx', () => {
-        const NewRoot = require('./router').default;
-        render(
-            //<AppContainer errorReporter={Redbox}><NewRoot store={AppStore.store} /></AppContainer>, //HOT 3
-            <NewRoot store={AppStore.store} />, /// HOT 1
-            document.getElementById('content')
-        )
-    });
+if (module.hot) {
+    module.hot.accept(['./router', './stores', './actions', './pages', './components'], () => render(Root));
 }

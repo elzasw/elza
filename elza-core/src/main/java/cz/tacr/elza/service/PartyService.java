@@ -15,10 +15,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.Level;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.RegistryCode;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +51,10 @@ import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.Level;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.DataPartyRefRepository;
@@ -73,13 +73,13 @@ import cz.tacr.elza.repository.PartyRelationRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.RegVariantRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RelationEntityRepository;
 import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
-import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.ActionEvent;
@@ -158,7 +158,7 @@ public class PartyService {
     private EntityManager entityManager;
 
     @Autowired
-    private VariantRecordRepository variantRecordRepository;
+    private RegVariantRecordRepository variantRecordRepository;
 
     @Autowired
     private GroovyScriptService groovyScriptService;
@@ -353,7 +353,8 @@ public class PartyService {
         }
 
         //vytvoření rejstříkového hesla v groovy
-        RegRecord recordFromGroovy = groovyScriptService.getRecordFromGroovy(party);
+        List<ParComplementType> complementTypes = complementTypeRepository.findByPartyType(party.getPartyType());
+        RegRecord recordFromGroovy = groovyScriptService.getRecordFromGroovy(party, complementTypes);
         List<RegVariantRecord> variantRecords = new ArrayList<>(recordFromGroovy.getVariantRecordList());
 
         //uložení hesla
@@ -425,7 +426,7 @@ public class PartyService {
         Map<Integer, ParPartyGroupIdentifier> dbIdentifiersMap = Collections.emptyMap();
         if(partyGroup.getPartyId() != null){
             dbIdentifiersMap = ElzaTools
-                .createEntityMap(partyGroupIdentifierRepository.findByParty(partyGroup), ParPartyGroupIdentifier::getPartyGroupIdentifierId);
+                    .createEntityMap(partyGroupIdentifierRepository.findByParty(partyGroup), ParPartyGroupIdentifier::getPartyGroupIdentifierId);
         }
         Set<ParPartyGroupIdentifier> removeIdentifiers = new HashSet<>(dbIdentifiersMap.values());
 
@@ -515,7 +516,7 @@ public class PartyService {
 
             ParPartyName save = partyNameRepository.save(oldPartyName);
             save = synchComplementTypes(save, newPartyName.getPartyNameComplements() == null
-                                               ? Collections.emptyList() : newPartyName.getPartyNameComplements());
+                    ? Collections.emptyList() : newPartyName.getPartyNameComplements());
             saved.add(save);
         }
 
@@ -639,12 +640,12 @@ public class PartyService {
         ParPartyGroup partyGroup = partyGroupRepository.findOne(party.getPartyId());
         if (partyGroup != null) {
             partyGroupIdentifierRepository.findByParty(partyGroup).forEach((pg) -> {
-                        ParUnitdate from = pg.getFrom();
-                        ParUnitdate to = pg.getTo();
-                        partyGroupIdentifierRepository.delete(pg);
-                        deleteUnitDates(from, to);
-                    }
-            );
+                ParUnitdate from = pg.getFrom();
+                ParUnitdate to = pg.getTo();
+                partyGroupIdentifierRepository.delete(pg);
+                deleteUnitDates(from, to);
+            }
+                    );
         }
 
         partyRepository.flush();
@@ -867,7 +868,7 @@ public class PartyService {
         if (!possibleRelationTypes.contains(relationEntity.getRelation().getRelationType())) {
             throw new SystemException(
                     "Typ role entity " + roleType.getName() + " nespadá do typu vztahu " + relationEntity.getRelation()
-                            .getRelationType().getName());
+                    .getRelationType().getName());
         }
 
 
@@ -877,9 +878,9 @@ public class PartyService {
             throw new BusinessException(
                     "Navázaná entita musí mít stejnou třídu rejstříkového hesla jako osoba, ke které entitu navazujeme.",
                     RegistryCode.FOREIGN_ENTITY_INVALID_SCOPE).level(Level.WARNING)
-                    .set("recordScope", entityScope.getCode())
-                    .set("entityScope", relationEntity.getRelation().getParty().getRecord().getScope().getCode());
-    }
+            .set("recordScope", entityScope.getCode())
+            .set("entityScope", relationEntity.getRelation().getParty().getRecord().getScope().getCode());
+        }
 
         //navázaná entita povoleného typu rejstříku dle par_registry_role (mělo by to ideálně i dědit)
         RegRegisterType entityRegisterType = relationEntity.getRecord().getRegisterType();
@@ -890,8 +891,8 @@ public class PartyService {
             throw new BusinessException(
                     "Navázaná entita musí mít typ rejstříku nebo podtyp, který je navázaný na roli entity.",
                     RegistryCode.FOREIGN_ENTITY_INVALID_SUBTYPE).level(Level.WARNING)
-                    .set("entityRegisterType", entityRegisterType.getCode())
-                    .set("roleType", roleType.getCode());
+            .set("entityRegisterType", entityRegisterType.getCode())
+            .set("roleType", roleType.getCode());
         }
 
     }

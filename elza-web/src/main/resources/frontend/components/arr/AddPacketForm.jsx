@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
 import {Modal, Button, Form} from 'react-bootstrap';
 import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {indexById, getMapFromList} from 'stores/app/utils.jsx'

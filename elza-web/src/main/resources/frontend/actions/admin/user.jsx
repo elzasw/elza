@@ -5,10 +5,10 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import {WebApi} from 'actions/index.jsx';
 import {permissionReceive} from "./permission.jsx"
-import {i18n} from 'components/index.jsx'
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
+import i18n from "../../components/i18n";
 
 export function joinGroups(userId, groupIds) {
     return (dispatch, getState) => {

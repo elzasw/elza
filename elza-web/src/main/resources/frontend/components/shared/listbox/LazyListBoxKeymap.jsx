@@ -1,4 +1,4 @@
-import {Utils} from 'components/index.jsx';
+import * as Utils from "../../Utils";
 var keyModifier = Utils.getKeyModifier()
 
 var defaultKeymap = {

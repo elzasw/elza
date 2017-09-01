@@ -2,14 +2,20 @@
  * Komponenta panelu formuláře jedné JP.
  */
 
+import scrollIntoView from "dom-scroll-into-view";
+import classNames from "classnames";
 // Konstance kolik se má maximálně zobrazit v seznamu parents a children záznamů
 const PARENT_CHILD_MAX_LENGTH = 250
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {TooltipTrigger, Icon, ListBox, AbstractReactComponent, i18n, Loading, NodeSubNodeForm, Accordion, SubNodeRegister, NodeActionsBar,
-        VisiblePolicyForm, SubNodeDao} from 'components';
+import {TooltipTrigger, Icon, ListBox, AbstractReactComponent, i18n, Loading,  Accordion} from 'components/shared';
+import VisiblePolicyForm from './VisiblePolicyForm'
+import SubNodeDao from './SubNodeDao'
+import SubNodeRegister from './SubNodeRegister'
+import NodeActionsBar from './NodeActionsBar'
+import NodeSubNodeForm from './NodeSubNodeForm'
 import {Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
 import {addNodeFormArr} from 'actions/arr/addNodeForm.jsx';
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
@@ -17,7 +23,7 @@ import {fundSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister.jsx'
 import {fundSubNodeDaosFetchIfNeeded} from 'actions/arr/subNodeDaos.jsx'
 import {fundSubNodeInfoFetchIfNeeded} from 'actions/arr/subNodeInfo.jsx'
 import {fundNodeInfoFetchIfNeeded} from 'actions/arr/nodeInfo.jsx'
-import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
+import {fundSelectSubNode} from 'actions/arr/node.jsx';
 import {fundNodeSubNodeFulltextSearch, fundSubNodesNext, fundSubNodesPrev, fundSubNodesNextPage, fundSubNodesPrevPage} from 'actions/arr/node.jsx'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
 import {indexById} from 'stores/app/utils.jsx'
@@ -28,12 +34,10 @@ import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {getOneSettings} from 'components/arr/ArrUtils.jsx';
-import {Utils} from 'components/index.jsx';
+import {Utils} from 'components/shared';
 import ArrRequestForm from "./ArrRequestForm";
 import {WebApi} from 'actions/index.jsx';
 import {Shortcuts} from 'react-shortcuts';
-const scrollIntoView = require('dom-scroll-into-view')
-var classNames = require('classnames');
 import {setFocus, canSetFocus, focusWasSet, isFocusFor, isFocusExactFor} from 'actions/global/focus.jsx'
 import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
@@ -42,9 +46,9 @@ import * as perms from 'actions/user/Permission.jsx';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './NodePanelKeymap.jsx'
 
-require ('./NodePanel.less');
+import './NodePanel.less';
 
-var NodePanel = class NodePanel extends AbstractReactComponent {
+class NodePanel extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
     componentWillMount(){
@@ -70,17 +74,20 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         }
     }
     selectorMoveUp = ()=>{
-        const {node} = this.props
-        if (node.selectedSubNodeId === null) {
+
+        const {node} = this.props;
+        if (node.selectedSubNodeId !== null) {
             const {focusItemIndex} = this.state
             if (focusItemIndex > node.viewStartIndex) {
+                console.log(focusItemIndex);
                 this.setState({focusItemIndex: focusItemIndex - 1}, () => {this.ensureItemVisibleNoForm(focusItemIndex - 1)})
             }
         }
     }
     selectorMoveDown = ()=>{
         const {node} = this.props
-        if (node.selectedSubNodeId === null) {
+
+        if (node.selectedSubNodeId !== null) {
             const {focusItemIndex} = this.state
             const max = Math.min(node.viewStartIndex + node.pageSize, node.childNodes.length)
             if (focusItemIndex + 1 < max) {
@@ -920,4 +927,4 @@ NodePanel.propTypes = {
     userDetail: React.PropTypes.object.isRequired,
 }
 
-module.exports = connect(mapStateToProps)(NodePanel);
+export default connect(mapStateToProps)(NodePanel);

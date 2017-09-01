@@ -4,7 +4,7 @@
 
 import React from "react";
 import {connect} from "react-redux";
-import {AbstractReactComponent, i18n, Tabs, FundTreeLazy} from "components/index.jsx";
+import {AbstractReactComponent, i18n, Tabs} from 'components/shared';
 import * as types from "actions/constants/ActionTypes.js";
 import {AppActions} from "stores/index.jsx";
 import {MenuItem} from "react-bootstrap";
@@ -23,8 +23,9 @@ import {
 } from "actions/arr/fundTree.jsx";
 
 import {contextMenuShow, contextMenuHide} from "actions/global/contextMenu.jsx";
+import FundTreeLazy from "./FundTreeLazy";
 
-var FundTreeDaos = class FundTreeDaos extends AbstractReactComponent {
+class FundTreeDaos extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -100,7 +101,7 @@ var FundTreeDaos = class FundTreeDaos extends AbstractReactComponent {
         const {fund} = this.props;
 
         return (
-            <FundTreeLazy 
+            <FundTreeLazy
                 {...this.props}
                 cutLongLabels={true}
                 onOpenCloseNode={(node, expand) => {expand ? this.dispatch(fundTreeNodeExpand(this.props.area, node)) : this.dispatch(fundTreeNodeCollapse(this.props.area, this.props.versionId, node))}}
@@ -116,5 +117,5 @@ var FundTreeDaos = class FundTreeDaos extends AbstractReactComponent {
     }
 }
 
-module.exports = connect()(FundTreeDaos);
+export default connect()(FundTreeDaos);
 

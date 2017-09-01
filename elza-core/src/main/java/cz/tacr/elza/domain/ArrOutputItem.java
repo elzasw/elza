@@ -35,12 +35,8 @@ public class ArrOutputItem extends ArrItem {
     public ArrOutputItem() {
     }
 
-    public ArrOutputItem(final ArrItemData item) {
+    public ArrOutputItem(ArrItemData item) {
         super(item);
-    }
-
-    public ArrOutputItem(final Class<? extends ArrItemData> clazz) throws IllegalAccessException, InstantiationException {
-        super(clazz.newInstance());
     }
 
     @Override

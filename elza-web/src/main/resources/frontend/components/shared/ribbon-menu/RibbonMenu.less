@@ -1,4 +1,4 @@
-@import "~variables.less";
+@import "/variables.less";
 
 
 //---- Size -----
@@ -9,7 +9,7 @@
 @ribbon-lg-btn-height: 100%;
 @ribbon-lg-btn-width: auto;
 @ribbon-sm-grp-lines: 3; //mělo by odpovídat počtu tlačítek na sloupec v komponentě RibbonGroup
-@ribbon-sm-btn-height: 100% / @ribbon-sm-grp-lines;
+@ribbon-sm-btn-height: ~"calc(100% / @{ribbon-sm-grp-lines})";
 
 //---- Colors ----
 
@@ -56,7 +56,7 @@
                 background: @ribbon-btn-active-bg;
             }
         }
-        .dropdown, .btn,{
+        .dropdown, .btn {
             &:focus{
                 outline: 1px @focus-border-color solid !important;
                 outline-offset:-1px;
@@ -103,7 +103,7 @@
         flex-wrap:nowrap;
         flex-direction: column;
         font-size: @ribbon-font-size; //potřeba zadat, jelikož react-bootstrap již zavádí třídu .small, která zmenšuje velikost fontu.
-        .dropdown, .btn,{
+        .dropdown, .btn {
             height:@ribbon-sm-btn-height; // 1/3 výšky obalujícího elementu - max 3 tlačítka nad sebou
             flex-grow: 0;
             flex-shrink: 0;

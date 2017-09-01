@@ -5,6 +5,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.service.ArrangementService;
+import org.apache.commons.lang.BooleanUtils;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -90,10 +92,15 @@ public class TableStatisticAction extends Action {
     public void apply(final ArrNode node, final List<ArrDescItem> items, final LevelWithItems parentLevelWithItems) {
         for (ArrItem item : items) {
             if (inputItemTypes.contains(item.getItemType())) {
-                ArrItemData itemData = item.getItem();
+                String text;
                 RulItemSpec itemSpec = item.getItemSpec();
-                itemData.setSpec(itemSpec);
-                String text = itemData.toString();
+                if (BooleanUtils.isTrue(item.getUndefined())) {
+                    text = ArrangementService.UNDEFINED;
+                } else {
+                    ArrItemData itemData = item.getItem();
+                    itemData.setSpec(itemSpec);
+                    text = itemData.toString();
+                }
                 if (itemSpec != null) {
                     text = itemSpec.getName() + ": " + text;
                 }

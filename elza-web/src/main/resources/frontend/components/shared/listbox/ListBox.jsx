@@ -1,24 +1,29 @@
-/**
- *  ListBox komponenta.
- *
- **/
-
 import React from 'react';
-import {AbstractReactComponent, Utils} from 'components/index.jsx';
+import AbstractReactComponent from "../../AbstractReactComponent";
+import * as Utils from "../../Utils";
 import ReactDOM from 'react-dom';
 import {Shortcuts} from 'react-shortcuts';
-const scrollIntoView = require('dom-scroll-into-view')
+const scrollIntoView = require('dom-scroll-into-view');
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './ListBoxKeymap.jsx'
 require ('./ListBox.less');
 
-var _ListBox_placeholder = document.createElement("div");
-var _ListBox_placeholder_cls = "placeholder"
+let _ListBox_placeholder = document.createElement("div");
+let _ListBox_placeholder_cls = "placeholder"
 _ListBox_placeholder.className = _ListBox_placeholder_cls;
 
 const PAGE_SIZE = 10;
 
-var ListBox = class ListBox extends AbstractReactComponent {
+/**
+ *  ListBox komponenta.
+ *
+ **/
+class ListBox extends AbstractReactComponent {
+    state = {
+        activeIndexes: null,
+        lastFocus: null
+    };
+
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
     componentWillMount(){
@@ -30,9 +35,6 @@ var ListBox = class ListBox extends AbstractReactComponent {
 
     constructor(props) {
         super(props);
-
-        this.bindMethods('ensureItemVisible',
-            'dragStart', 'dragEnd', 'dragOver', 'handleClick', 'unFocus', 'focus', 'handleDoubleClick')
 
         if (props.multiselect) {
             var activeIndexes = {}
@@ -50,6 +52,34 @@ var ListBox = class ListBox extends AbstractReactComponent {
             }
         }
     }
+
+    static PropTypes = {
+        items: React.PropTypes.array.isRequired,
+        onSelect: React.PropTypes.func,
+        onCheck: React.PropTypes.func,
+        onDelete: React.PropTypes.func,
+        canSelectItem: React.PropTypes.bool,
+        multiselect: React.PropTypes.bool,
+        onFocus: React.PropTypes.func,
+        onChangeSelection: React.PropTypes.func,
+        activeIndexes: React.PropTypes.array,
+        onChangeOrder: React.PropTypes.func,
+        className: React.PropTypes.string,
+        renderItemContent: React.PropTypes.func.isRequired,
+        sortable: React.PropTypes.bool
+    };
+
+    static defaultProps = {
+        renderItemContent: (item, isActive, index) => {
+            return (
+                <div>{item.name}</div>
+            )
+        },
+        canSelectItem: (item, index) => {
+            return true
+        }
+    };
+
     selectorMoveUp = (e)=>{
         this.selectorMoveRelative(-1);
     }
@@ -137,7 +167,7 @@ var ListBox = class ListBox extends AbstractReactComponent {
         }
     }
 
-    handleClick(index, e) {
+    handleClick = (index, e) => {
         const {items, multiselect, canSelectItem} = this.props
         var {activeIndexes, lastFocus} = this.state
 
@@ -186,7 +216,7 @@ var ListBox = class ListBox extends AbstractReactComponent {
         }
     }
 
-    unFocus() {
+    unFocus = () => {
         if (document.selection) {
             document.selection.empty();
         } else {
@@ -194,7 +224,7 @@ var ListBox = class ListBox extends AbstractReactComponent {
         }
     }
 
-    dragStart(index, e) {
+    dragStart = (index, e) => {
         const {items, multiselect, canSelectItem} = this.props;
 
         this.dragged = e.currentTarget;
@@ -205,7 +235,7 @@ var ListBox = class ListBox extends AbstractReactComponent {
         var canSelect = canSelectItem(items[index], index);
     }
 
-    dragEnd(e) {
+    dragEnd = (e) => {
         this.dragged.style.display = "block";
         this.dragged.parentNode.removeChild(_ListBox_placeholder);
         // Update data
@@ -220,7 +250,7 @@ var ListBox = class ListBox extends AbstractReactComponent {
         }
     }
 
-    dragOver(e) {
+    dragOver = (e) => {
         e.preventDefault();
         this.dragged.style.display = "none";
         if(e.target.className == _ListBox_placeholder_cls) return;
@@ -307,15 +337,15 @@ var ListBox = class ListBox extends AbstractReactComponent {
         return index
     }
 
-    ensureItemVisible(index) {
+    ensureItemVisible = (index) => {
         var itemNode = ReactDOM.findDOMNode(this.refs['item-' + index])
         if (itemNode !== null) {
             var containerNode = ReactDOM.findDOMNode(this.refs.container)
             scrollIntoView(itemNode, containerNode, { onlyScrollIfNeeded: true, alignWithTop:false })
         }
-    }
+    };
 
-    handleDoubleClick(e) {
+    handleDoubleClick = (e) => {
         const {onDoubleClick} = this.props
 
         if (onDoubleClick) {
@@ -324,17 +354,17 @@ var ListBox = class ListBox extends AbstractReactComponent {
         }
     }
 
-    unFocus() {
+    unFocus = () => {
         if (document.selection) {
             document.selection.empty();
         } else {
             window.getSelection().removeAllRanges()
         }
-    }
+    };
 
-    focus() {
+    focus = () => {
         this.setState({}, () => {ReactDOM.findDOMNode(this.refs.wrapper).focus()})
-    }
+    };
 
     render() {
         const {className, items, renderItemContent, multiselect} = this.props;
@@ -379,31 +409,5 @@ var ListBox = class ListBox extends AbstractReactComponent {
         );
     }
 }
-ListBox.propsTypes = {
-    items: React.PropTypes.array.isRequired,
-    onSelect: React.PropTypes.func,
-    onCheck: React.PropTypes.func,
-    onDelete: React.PropTypes.func,
-    canSelectItem: React.PropTypes.bool,
-    multiselect: React.PropTypes.bool,
-    onFocus: React.PropTypes.func,
-    onChangeSelection: React.PropTypes.func,
-    activeIndexes: React.PropTypes.array,
-    onChangeOrder: React.PropTypes.func,
-    className: React.PropTypes.string,
-    renderItemContent: React.PropTypes.func.isRequired,
-    sortable: React.PropTypes.bool
-};
 
-ListBox.defaultProps = {
-    renderItemContent: (item, isActive, index) => {
-        return (
-            <div>{item.name}</div>
-        )
-    },
-    canSelectItem: (item, index) => {
-        return true
-    }
-};
-
-module.exports = ListBox;
+export default ListBox;

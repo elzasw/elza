@@ -5,6 +5,31 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import {WebApi} from 'actions/index.jsx';
 import {indexById} from 'stores/app/utils.jsx';
+import {ActionState} from 'constants.jsx'
+import i18n from "../../components/i18n";
+
+
+export function actionStateTranslation(state) {
+    switch (state) {
+        case ActionState.RUNNING:
+            return i18n('arr.fundAction.state.running');
+        case ActionState.WAITING:
+            return i18n('arr.fundAction.state.waiting');
+        case ActionState.FINISHED:
+            return i18n('arr.fundAction.state.finished');
+        case ActionState.ERROR:
+            return i18n('arr.fundAction.state.error');
+        case ActionState.PLANNED:
+            return i18n('arr.fundAction.state.planned');
+        case ActionState.INTERRUPTED:
+            return i18n('arr.fundAction.state.interrupted');
+        case ActionState.OUTDATED:
+            return i18n('arr.fundAction.state.outdated');
+        default:
+            return null;
+    }
+}
+
 
 export function isFundActionAction(action) {
     switch (action.type) {

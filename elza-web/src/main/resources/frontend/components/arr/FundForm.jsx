@@ -1,6 +1,6 @@
 import React from 'react';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, Icon, Autocomplete, VersionValidationState, FormInput} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, Icon, Autocomplete, VersionValidationState, FormInput} from 'components/shared';
 import {Modal, Button, Form} from 'react-bootstrap';
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx'
@@ -138,7 +138,7 @@ class FundForm extends AbstractReactComponent {
                                 return;
                             }
                             let index = this.findIndexInFields(this.props.fields.regScopes, value.name, 'name');
-                            if (index == null) {
+                            if (index === null) {
                                 this.props.fields.regScopes.addField(value);
                             } else {
                                 this.props.fields.regScopes.removeField(index);

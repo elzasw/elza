@@ -1,16 +1,15 @@
+//
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
 import {FormControl, Modal, Button, Input, Radio, ControlLabel, Form, FormGroup} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx';
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
 import {getSpecsIds} from 'components/arr/ArrUtils.jsx';
 import  './FundBulkModificationsForm.less';
-
-const SimpleCheckListBox = require('./SimpleCheckListBox');
-
+import SimpleCheckListBox from "./SimpleCheckListBox";
 
 const getDefaultOperationType = props => {
     const {dataType} = props;
@@ -48,7 +47,6 @@ const getDefaultItemsArea = props => {
 /**
  * Formulář hledání a nahrazení.
  */
-
 class FundBulkModificationsForm extends AbstractReactComponent {
 
     /**

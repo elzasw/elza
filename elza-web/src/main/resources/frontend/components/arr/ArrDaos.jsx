@@ -1,11 +1,11 @@
 /**
  * Seznam balíčků se zobrazením detailu po kliknutí na balíček.
  */
-require ('./ArrDaos.less');
+import './ArrDaos.less';
 
 import React from "react";
 import {connect} from "react-redux";
-import {Icon, Loading, AbstractReactComponent, i18n, ArrDao} from "components/index.jsx";
+import {Icon, Loading, AbstractReactComponent, i18n} from 'components/shared';
 import {indexById} from "stores/app/utils.jsx";
 import {Button} from "react-bootstrap";
 import {dateToString} from "components/Utils.jsx";
@@ -13,18 +13,15 @@ import {userDetailsSaveSettings} from "actions/user/userDetail.jsx";
 import * as daoActions from "actions/arr/daoActions.jsx";
 import {fundChangeReadMode} from "actions/arr/fund.jsx";
 import {setSettings, getOneSettings} from "components/arr/ArrUtils.jsx";
-import {LazyListBox, ListBox} from 'components/index.jsx';
+import {LazyListBox, ListBox} from 'components/shared';
 import {WebApi} from 'actions/index.jsx';
+import ArrDao from "./ArrDao";
 
 class ArrDaos extends AbstractReactComponent {
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            selectedItemId: null,
-        }
-    }
+    state = {
+        selectedItemId: null,
+    };
 
     static PropTypes = {
         type: React.PropTypes.oneOf(['PACKAGE', 'NODE', 'NODE_ASSIGN']).isRequired,

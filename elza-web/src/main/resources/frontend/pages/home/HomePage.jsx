@@ -4,15 +4,15 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Icon, i18n} from 'components/index.jsx';
-import {TooltipTrigger, Splitter, Autocomplete, FundForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent, PartyListItem} from 'components/index.jsx';
+import {TooltipTrigger, Splitter, Autocomplete, RibbonGroup, ToggleContent, AbstractReactComponent, Utils} from 'components/shared';
+import {FundForm, Ribbon, FindindAidFileTree, PartyListItem} from 'components/index.jsx';
 import {NodeTabs} from 'components/index.jsx';
 import {Button} from 'react-bootstrap';
-import {PageLayout} from 'pages/index.jsx';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {createFund} from 'actions/arr/fund.jsx'
 import {storeLoadData, storeLoad} from 'actions/store/store.jsx'
-import {setInputFocus, dateToString} from 'components/Utils.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
+import PageLayout from "../shared/layout/PageLayout";
 
 // Testování
 // import AutocompleteTest from "./test/AutocompleteTest";
@@ -40,14 +40,14 @@ class HomePage extends AbstractReactComponent {
                 if (this.refs.list) {   // ještě nemusí existovat
                     this.setState({}, () => {
                         const listEl = ReactDOM.findDOMNode(this.refs.list);
-                        setInputFocus(listEl, false);
+                        Utils.setInputFocus(listEl, false);
                         focusWasSet()
                     })
                 }
             } else if (isFocusFor(focus, 'home', 1) || isFocusFor(focus, 'home', 1, 'list')) {
                 this.setState({}, () => {
                     const listEl = ReactDOM.findDOMNode(this.refs.list);
-                    setInputFocus(listEl, false);
+                    Utils.setInputFocus(listEl, false);
                     focusWasSet()
                 })
             }
@@ -143,7 +143,7 @@ class HomePage extends AbstractReactComponent {
             }
         });
         const arrItems = stateRegion.arrRegionFront.map((x, index) => {
-            const name = x.name + (x.lockDate ? ' ' + dateToString(new Date(x.lockDate)) : '');
+            const name = x.name + (x.lockDate ? ' ' + Utils.dateToString(new Date(x.lockDate)) : '');
             const desc = this.getFundDesc(x);
             return this.renderHistoryItem(name, desc, 'ARR_REGION_FUND', x, index)
         });
@@ -158,9 +158,9 @@ class HomePage extends AbstractReactComponent {
             partyItems.push(this.renderMessage(i18n('home.recent.party.emptyList.title'), i18n('home.recent.party.emptyList.message')));
         }
 
-        arrItems.push(this.renderLink("/fund",i18n('home.recent.fund.goTo')));
-        partyItems.push(this.renderLink("/party",i18n('home.recent.party.goTo')));
-        registryItems.push(this.renderLink("/registry",i18n('home.recent.registry.goTo')));
+        arrItems.push(this.renderLink("/fund", i18n('home.recent.fund.goTo')));
+        partyItems.push(this.renderLink("/party", i18n('home.recent.party.goTo')));
+        registryItems.push(this.renderLink("/registry", i18n('home.recent.registry.goTo')));
 
         return <div ref='list' className='history-list-container'>
             <div className="button-container">
@@ -185,8 +185,8 @@ class HomePage extends AbstractReactComponent {
     /**
      * Vykreslení odkazu do příslušných modulů
      */
-    renderLink = (to, text, glyph = "fa-arrow-right") => <LinkContainer key={to} to={to}>
-        <Button className='history-list-item history-button link'>
+    renderLink = (to, text, glyph = "fa-arrow-right") => <LinkContainer key={to} to={to} className='history-list-item history-button link'>
+        <Button>
             <Icon glyph={glyph}/>
             <div className='history-name'>{text}</div>
         </Button>

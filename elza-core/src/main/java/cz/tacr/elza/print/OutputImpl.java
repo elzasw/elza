@@ -46,14 +46,14 @@ import cz.tacr.elza.print.party.PartyGroup;
 import cz.tacr.elza.print.party.PartyInitHelper;
 import cz.tacr.elza.print.party.Person;
 import cz.tacr.elza.print.party.Relation;
-import cz.tacr.elza.print.party.RelationToType;
 import cz.tacr.elza.print.party.RelationTo;
+import cz.tacr.elza.print.party.RelationToType;
 import cz.tacr.elza.print.party.RelationType;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.output.OutputFactoryService;
 import cz.tacr.elza.utils.AppContext;
+import cz.tacr.elza.utils.HibernateUtils;
 import cz.tacr.elza.utils.PartyType;
-import cz.tacr.elza.utils.ProxyUtils;
 
 /**
  * Základní objekt pro generování výstupu, při tisku se vytváří 1 instance.
@@ -95,17 +95,17 @@ public class OutputImpl implements Output
      * Record type cache
      */
     private Map<Integer, RecordType> recordTypes = new HashMap<>();
-    
+
     /**
      * Cache for party
      */
     private Map<Integer, Party> partyCache = new HashMap<>();
-    
+
     /**
      * Cache for records
      */
     private Map<Integer, Record> recordCache = new HashMap<>();
-    
+
     /**
      * Cache ro relation types
      */
@@ -115,9 +115,9 @@ public class OutputImpl implements Output
 
     Map<Integer, ItemType> itemTypeMap = new HashMap<>();
     Map<Integer, ItemSpec> itemSpecMap = new HashMap<>();
-    
+
     private Map<Integer, RelationToType> relToTypeCache = new HashMap<>();
-    
+
     /**
      * Vytvoření instance s povinnými údaji
      *
@@ -247,31 +247,31 @@ public class OutputImpl implements Output
                 .collect(Collectors.toList());
     }
 
-	@Override
-	public List<Party> getParties(Collection<String> codes) {
+    @Override
+    public List<Party> getParties(Collection<String> codes) {
         Assert.notNull(codes);
         List<Party> parties = new ArrayList<>();
         // set to check if party was added
         Set<Integer> exportedParties = new HashSet<>();
         items.forEach(item-> {
-        	// check item code
-        	if(codes.contains(item.getType().getCode())) {
-        		
-        		ItemPartyRef partyRef = (ItemPartyRef)item;
-        		Party party = partyRef.getParty();
-        		
-        		// check if party already added and add it
-        		if(!exportedParties.contains(party.getPartyId())) {
-        			exportedParties.add(party.getPartyId());
-        			parties.add(party);
-        		}
-        	}
-        });
-        
-        return parties;
-	}
+            // check item code
+            if(codes.contains(item.getType().getCode())) {
 
-	@Override
+                ItemPartyRef partyRef = (ItemPartyRef)item;
+                Party party = partyRef.getParty();
+
+                // check if party already added and add it
+                if(!exportedParties.contains(party.getPartyId())) {
+                    exportedParties.add(party.getPartyId());
+                    parties.add(party);
+                }
+            }
+        });
+
+        return parties;
+    }
+
+    @Override
     public Item getSingleItem(final String itemTypeCode) {
         Item found = null;
         for(Item item: items)
@@ -383,14 +383,14 @@ public class OutputImpl implements Output
 
     @Override
     public FilteredRecords getRecordsByType(final String code) {
-    	FilteredRecords recs = filteredRecords.get(code);
-    	if(recs==null) {
-    		// prepare records
-    		recs = filterRecords(code);
-    		filteredRecords.put(code, recs);
-    	}
-    	
-    	return recs;
+        FilteredRecords recs = filteredRecords.get(code);
+        if(recs==null) {
+            // prepare records
+            recs = filterRecords(code);
+            filteredRecords.put(code, recs);
+        }
+
+        return recs;
     }
 
     /**
@@ -399,20 +399,20 @@ public class OutputImpl implements Output
      * @return
      */
     private FilteredRecords filterRecords(String code) {
-    	FilteredRecords records = new FilteredRecords(code);
-    	
-    	// Add all nodes
+        FilteredRecords records = new FilteredRecords(code);
+
+        // Add all nodes
         IteratorNodes iteratorNodes = new IteratorNodes(this, new ArrayList<>(nodeIdsMap.values()), outputFactoryService, MAX_CACHED_NODES);
         while (iteratorNodes.hasNext()) {
-        	Node node = iteratorNodes.next();
+            Node node = iteratorNodes.next();
             records.addNode(node);
         }
-        
+
         // Sort collection
         records.nodesAdded();
-        
+
         return records;
-	}
+    }
 
     @Override
     public Fund getFund() {
@@ -444,7 +444,7 @@ public class OutputImpl implements Output
     public int getOutputId() {
         return outputId;
     }
-    
+
     @Override
     public String getType() {
         return type;
@@ -474,29 +474,29 @@ public class OutputImpl implements Output
 
     /**
      * Return item type for output
-     * 
+     *
      * Item type is created if does not exist
      * @param rulItemType
      * @return
      */
-	public ItemType getItemType(RulItemType rulItemType) {
+    public ItemType getItemType(RulItemType rulItemType) {
         Integer itemTypeId = rulItemType.getItemTypeId();
         ItemType itemType = itemTypeMap.get(itemTypeId);
         if (itemType == null) {
             itemType = ItemType.instanceOf(rulItemType);
             itemTypeMap.put(itemTypeId, itemType);
         }
-		return itemType;
-	}
+        return itemType;
+    }
 
     /**
      * Return item specification for output
-     * 
+     *
      * Item specification is created if does not exist
      * @param rulItemType
      * @return
      */
-	public ItemSpec getItemSpec(RulItemSpec rulItemSpec) {
+    public ItemSpec getItemSpec(RulItemSpec rulItemSpec) {
         Integer itemSpecId = rulItemSpec.getItemSpecId();
         ItemSpec itemSpec = itemSpecMap.get(itemSpecId);
         if (itemSpec == null) {
@@ -504,26 +504,26 @@ public class OutputImpl implements Output
             itemSpecMap.put(itemSpecId, itemSpec);
         }
         return itemSpec;
-	}
-	
-	/**
-	 * Return party from cache
-	 * @param partyId
-	 * @return
-	 */
-	public Party getParty(final ParParty parParty) {
-		Party party = partyCache.get(parParty.getPartyId());
-		if(party==null) {
-			party = createParty(parParty);
-		}
-		return party;
-	}	
-    
-	/**
-	 * Create party object and store it in cache
-	 * @param parParty
-	 * @return
-	 */
+    }
+
+    /**
+     * Return party from cache
+     * @param partyId
+     * @return
+     */
+    public Party getParty(final ParParty parParty) {
+        Party party = partyCache.get(parParty.getPartyId());
+        if(party==null) {
+            party = createParty(parParty);
+        }
+        return party;
+    }
+
+    /**
+     * Create party object and store it in cache
+     * @param parParty
+     * @return
+     */
     private Party createParty(final ParParty parParty)
     {
         String partyTypeCode = parParty.getPartyType().getCode();
@@ -532,39 +532,39 @@ public class OutputImpl implements Output
         // Prepare corresponding record
         Record record = this.recordCache.get(parParty.getRecord());
         if(record==null) {
-        	record = createRecord(parParty.getRecord());
+            record = createRecord(parParty.getRecord());
         }
-        
+
         // create relations
         List<ParRelation> dbrelations = parParty.getRelations();
         List<Relation> rels = null;
         if(CollectionUtils.isNotEmpty(dbrelations)) {
-        	rels = new ArrayList<>();
-        	for(ParRelation dbRelation: dbrelations) {
-        		Relation rel = createRelation(dbRelation);
-        		rels.add(rel);
-        	}
+            rels = new ArrayList<>();
+            for(ParRelation dbRelation: dbrelations) {
+                Relation rel = createRelation(dbRelation);
+                rels.add(rel);
+            }
         }
-        
+
         // prepare init helper
-        PartyInitHelper initHelper = new PartyInitHelper(record, rels); 
-        
+        PartyInitHelper initHelper = new PartyInitHelper(record, rels);
+
         Party party;
         switch (partyType) {
             case DYNASTY:
-                ParDynasty parDynasty = ProxyUtils.deproxy(parParty);
+                ParDynasty parDynasty = HibernateUtils.unproxy(parParty);
                 party = Dynasty.newInstance(parDynasty, initHelper);
                 break;
             case EVENT:
-                ParEvent parEvent = ProxyUtils.deproxy(parParty);
+                ParEvent parEvent = HibernateUtils.unproxy(parParty);
                 party = Event.newInstance(parEvent, initHelper);
                 break;
             case PARTY_GROUP:
-                ParPartyGroup parPartyGroup = ProxyUtils.deproxy(parParty);
+                ParPartyGroup parPartyGroup = HibernateUtils.unproxy(parParty);
                 party = PartyGroup.newInstance(parPartyGroup, initHelper);
                 break;
             case PERSON:
-                ParPerson parPerson = ProxyUtils.deproxy(parParty);
+                ParPerson parPerson = HibernateUtils.unproxy(parParty);
                 party = Person.newInstance(parPerson, initHelper);
                 break;
             default :
@@ -575,107 +575,107 @@ public class OutputImpl implements Output
     }
 
     private Relation createRelation(ParRelation dbRelation) {
-    	// prepare relation type
-    	ParRelationType dbRelType = dbRelation.getRelationType();
-    	RelationType relType = this.partyRelationTypeCache.get(dbRelType.getRelationTypeId());
-    	if(relType==null) {
-    		relType = RelationType.newInstance(dbRelType);
-    		partyRelationTypeCache.put(dbRelType.getRelationTypeId(), relType);
-    	}
-    	// prepare list of relationTo
-    	List<ParRelationEntity> entities = dbRelation.getRelationEntities();
-    	List<RelationTo> relsTo = null;
-    	if(CollectionUtils.isNotEmpty(entities)) {
-    		relsTo = new ArrayList<>(entities.size());
-    		for(ParRelationEntity dbEntity: entities)
-    		{
-    			RelationTo relTo = createRelationTo(dbEntity);
-    			relsTo.add(relTo);
-    		}
-    	}
-    	
-    	// create relation
-    	Relation relation = Relation.newInstance(dbRelation, relType, relsTo);
-		return relation;
-	}
+        // prepare relation type
+        ParRelationType dbRelType = dbRelation.getRelationType();
+        RelationType relType = this.partyRelationTypeCache.get(dbRelType.getRelationTypeId());
+        if(relType==null) {
+            relType = RelationType.newInstance(dbRelType);
+            partyRelationTypeCache.put(dbRelType.getRelationTypeId(), relType);
+        }
+        // prepare list of relationTo
+        List<ParRelationEntity> entities = dbRelation.getRelationEntities();
+        List<RelationTo> relsTo = null;
+        if(CollectionUtils.isNotEmpty(entities)) {
+            relsTo = new ArrayList<>(entities.size());
+            for(ParRelationEntity dbEntity: entities)
+            {
+                RelationTo relTo = createRelationTo(dbEntity);
+                relsTo.add(relTo);
+            }
+        }
 
-	private RelationTo createRelationTo(ParRelationEntity dbEntity) {
-		// prepare RelationToType
-		ParRelationRoleType roleType = dbEntity.getRoleType();
-		RelationToType relToType = relToTypeCache.get(roleType.getRoleTypeId());
-		if(relToType==null) {
-			relToType = RelationToType.newInstance(roleType);
-			relToTypeCache.put(roleType.getRoleTypeId(), relToType);
-		}
-		// get record
-		RegRecord dbRecord = dbEntity.getRecord();
-		Record record = this.getRecord(dbRecord);
-		
-		// prepare RelationTo
-		RelationTo relTo = RelationTo.newInstance(dbEntity, relToType, record);
-		return relTo;
-	}
-
-	public Record getRecord(final RegRecord regRecord)
-    {
-    	Record record = recordCache.get(regRecord.getRecord());
-		if(record==null) {
-			record = createRecord(regRecord);
-		}
-		return record;
+        // create relation
+        Relation relation = Relation.newInstance(dbRelation, relType, relsTo);
+        return relation;
     }
 
-	private Record createRecord(RegRecord regRecord) {
-		RegRegisterType dbRegisterType = regRecord.getRegisterType();
-		// lookup via recordTypeId
-		RecordType recordType = this.recordTypes.get(regRecord.getRegisterTypeId());
-		if(recordType==null) {
-			recordType = this.createRecordType(dbRegisterType);
-		}
-		
-		Record record = Record.newInstance(recordType, regRecord);
-		recordCache.put(record.getRecordId(), record);
-		return record;
-	}
+    private RelationTo createRelationTo(ParRelationEntity dbEntity) {
+        // prepare RelationToType
+        ParRelationRoleType roleType = dbEntity.getRoleType();
+        RelationToType relToType = relToTypeCache.get(roleType.getRoleTypeId());
+        if(relToType==null) {
+            relToType = RelationToType.newInstance(roleType);
+            relToTypeCache.put(roleType.getRoleTypeId(), relToType);
+        }
+        // get record
+        RegRecord dbRecord = dbEntity.getRecord();
+        Record record = this.getRecord(dbRecord);
 
-	/**
+        // prepare RelationTo
+        RelationTo relTo = RelationTo.newInstance(dbEntity, relToType, record);
+        return relTo;
+    }
+
+    public Record getRecord(final RegRecord regRecord)
+    {
+        Record record = recordCache.get(regRecord.getRecord());
+        if(record==null) {
+            record = createRecord(regRecord);
+        }
+        return record;
+    }
+
+    private Record createRecord(RegRecord regRecord) {
+        RegRegisterType dbRegisterType = regRecord.getRegisterType();
+        // lookup via recordTypeId
+        RecordType recordType = this.recordTypes.get(regRecord.getRegisterTypeId());
+        if(recordType==null) {
+            recordType = this.createRecordType(dbRegisterType);
+        }
+
+        Record record = Record.newInstance(recordType, regRecord);
+        recordCache.put(record.getRecordId(), record);
+        return record;
+    }
+
+    /**
      * Return record type
      * @return
      */
-	public RecordType getRecordType(RegRegisterType dbRegisterType) {
-		RecordType  recordType = this.recordTypes.get(dbRegisterType.getRegisterTypeId());
-		if(recordType==null) {
-			recordType = createRecordType(dbRegisterType);
-		}
-		return recordType;
-	}
+    public RecordType getRecordType(RegRegisterType dbRegisterType) {
+        RecordType  recordType = this.recordTypes.get(dbRegisterType.getRegisterTypeId());
+        if(recordType==null) {
+            recordType = createRecordType(dbRegisterType);
+        }
+        return recordType;
+    }
 
     /**
      * Add new record type
      * @return
      */
     private RecordType createRecordType(RegRegisterType dbRegisterType) {
-		// prepare parent
-		RecordType parentType = null;
-		RegRegisterType dbParentRegisterType = dbRegisterType.getParentRegisterType();
-		if(dbParentRegisterType!=null) {
-			parentType = getRecordType(dbParentRegisterType);
-		}
-		RecordType recordType = RecordType.newInstance(parentType, dbRegisterType);
-		recordTypes.put(dbRegisterType.getRegisterTypeId(), recordType);
-		return recordType;
-	}
+        // prepare parent
+        RecordType parentType = null;
+        RegRegisterType dbParentRegisterType = dbRegisterType.getParentRegisterType();
+        if(dbParentRegisterType!=null) {
+            parentType = getRecordType(dbParentRegisterType);
+        }
+        RecordType recordType = RecordType.newInstance(parentType, dbRegisterType);
+        recordTypes.put(dbRegisterType.getRegisterTypeId(), recordType);
+        return recordType;
+    }
 
     /**
      * Return record from cache
      * @param recordId
      * @return
      */
-	public Record getRecordFromCache(Integer recordId) {
-		return recordCache.get(recordId);
-	}
+    public Record getRecordFromCache(Integer recordId) {
+        return recordCache.get(recordId);
+    }
 
-	public Party getPartyFromCache(Integer partyId) {
-		return partyCache.get(partyId);
-	}    
+    public Party getPartyFromCache(Integer partyId) {
+        return partyCache.get(partyId);
+    }
 }

@@ -24,6 +24,11 @@ public interface Item {
     Integer getPosition();
 
     /**
+     * @return je nedefinovaná hodnota?
+     */
+    Boolean getUndefined();
+
+    /**
      * porovnání pro řazení dle rul_item_type.view_order + arr_item.position
      */
     int compareToItemViewOrderPosition(Item o);

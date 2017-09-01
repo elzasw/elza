@@ -1,1 +1,4 @@
-export AppStore from 'stores/AppStore.jsx';
+import * as AppStore from './AppStore';
+
+export const store = AppStore.store;
+export const save = AppStore.save;

@@ -12,7 +12,9 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
@@ -407,6 +409,7 @@ public class DescriptionItemService {
         descItem.setCreateChange(change);
         descItem.setDeleteChange(null);
         descItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
+        descItem.setUndefined(false);
 
         ArrDescItem descItemCreated = createDescriptionItemWithData(descItem, version, change);
 
@@ -498,7 +501,8 @@ public class DescriptionItemService {
 
             ArrDescItem descItemNew = null;
             try {
-                descItemNew = new ArrDescItem(descItemMove.getItem().getClass());
+                ArrItemData itemData = descItemMove.getItem().getClass().newInstance();
+                descItemNew = new ArrDescItem(itemData);
             } catch (InstantiationException | IllegalAccessException e) {
                 throw new SystemException(e);
             }
@@ -540,9 +544,13 @@ public class DescriptionItemService {
         Assert.notNull(descItemType, "Hodnota atributu musí mít vyplněný typ");
 
         if (descItemType.getUseSpecification()) {
-            Assert.notNull(descItemSpec, "Pro typ atributu je nutné specifikaci vyplnit");
+            if (descItemSpec == null) {
+                throw new BusinessException("Pro typ atributu je nutné specifikaci vyplnit", ArrangementCode.ITEM_SPEC_NOT_FOUND).level(Level.WARNING);
+            }
         } else {
-            Assert.isNull(descItemSpec, "Pro typ atributu nesmí být specifikace vyplněná");
+            if (descItemSpec != null) {
+                throw new BusinessException("Pro typ atributu nesmí být specifikace vyplněná", ArrangementCode.ITEM_SPEC_FOUND).level(Level.WARNING);
+            }
         }
 
         if (descItemSpec != null) {
@@ -585,7 +593,7 @@ public class DescriptionItemService {
         }
 
         descItem.setDeleteChange(change);
-        
+
         ArrDescItem retDescItem = descItemRepository.save(descItem);
 
         // sockety
@@ -678,7 +686,7 @@ public class DescriptionItemService {
             // pro odverzovanou hodnotu atributu je nutné vytvořit kopii dat
             copyDescItemData(sourceDescItem, descItemNew);
             result.add(descItemNew);
-        }        
+        }
         if (CollectionUtils.isNotEmpty(result)) {
             arrangementCacheService.createDescItems(node.getNodeId(), result);
         }
@@ -704,16 +712,18 @@ public class DescriptionItemService {
      * @param descItemTo   do hodnoty atributu
      */
     private void copyDescItemData(final ArrDescItem descItemFrom, final ArrDescItem descItemTo) {
-        List<ArrData> dataList = dataRepository.findByItem(descItemFrom);
+        if (BooleanUtils.isNotTrue(descItemFrom.getUndefined())) {
+            List<ArrData> dataList = dataRepository.findByItem(descItemFrom);
 
-        if (dataList.size() != 1) {
-            throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
+            if (dataList.size() != 1) {
+                throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
+            }
+
+            ArrData data = dataList.get(0);
+            ArrData dataNew = createCopyDescItemData(data, descItemTo);
+            descItemFactory.fillItemData(descItemTo, data);
+            dataRepository.save(dataNew);
         }
-
-        ArrData data = dataList.get(0);
-        ArrData dataNew = createCopyDescItemData(data, descItemTo);
-        descItemFactory.fillItemData(descItemTo, data);
-        dataRepository.save(dataNew);        
     }
 
     /**
@@ -1141,6 +1151,22 @@ public class DescriptionItemService {
             addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
         }
 
+        if (CollectionUtils.isNotEmpty(nodeIds) && CollectionUtils.isNotEmpty(descItemTypes)) {
+            List<ArrDescItem> undefinedDescItem = descItemRepository.findUndefinedByNodeAndTypesAndChange(nodeIds, descItemTypes, version.getLockChange());
+            for (ArrDescItem descItem : undefinedDescItem) {
+
+                String iconValue = null;
+                if (descItem.getItemSpec() != null) {
+                    iconValue = descItem.getItemSpec().getCode();
+                }
+                String code = descItem.getItemType().getCode();
+                String specCode = descItem.getItemSpec() == null ? null : descItem.getItemSpec().getCode();
+                Integer nodeId = descItem.getNodeId();
+                Integer position = descItem.getPosition();
+                addValuesToMap(valueMap, new TitleValue(ArrangementService.UNDEFINED), code, specCode, nodeId, iconValue, position);
+            }
+        }
+
         return valueMap;
     }
 
@@ -1507,6 +1533,7 @@ public class DescriptionItemService {
             newDescItem.setCreateChange(change);
             newDescItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
             newDescItem.setPosition(1);
+            newDescItem.setUndefined(false);
 
             descItemFactory.saveDescItemWithData(newDescItem, true);
             arrangementCacheService.createDescItem(newDescItem.getNodeId(), newDescItem);
@@ -1653,4 +1680,92 @@ public class DescriptionItemService {
         return descItems;
     }
 
+    /**
+     * Nastaví hodnotu atributu na "Nezjištěno".
+     *
+     * @param descItemTypeId    identifikátor typu hodnoty atributu
+     * @param nodeId            identifikátor uzlu
+     * @param nodeVersion       verze uzlu (optimistické zámky)
+     * @param fundVersionId     identifikátor verze archivní pomůcky
+     * @param descItemSpecId    identifikátor specifikace hodnoty atributu
+     * @param descItemObjectId  identifikátor hodnoty atributu
+     * @return vytvořený atribut s příznamek "Nezjištěno"
+     */
+    public ArrDescItem setNotIdentifiedDescItem(final Integer descItemTypeId,
+                                                final Integer nodeId,
+                                                final Integer nodeVersion,
+                                                final Integer fundVersionId,
+                                                final Integer descItemSpecId,
+                                                final Integer descItemObjectId) {
+        ArrNode node = nodeRepository.findOne(nodeId);
+        if (node == null) {
+            throw new ObjectNotFoundException("Nebyla nalezena JP s ID=" + nodeId, ArrangementCode.NODE_NOT_FOUND).set("id", nodeId);
+        }
+
+        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
+        if (fundVersion == null) {
+            throw new ObjectNotFoundException("Nebyla nalezena verze AS s ID=" + fundVersionId, ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", fundVersionId);
+        }
+
+        List<RulItemTypeExt> descriptionItemTypes = ruleService.getDescriptionItemTypes(fundVersion, node);
+        RulItemType descItemType = descriptionItemTypes.stream().filter(rulItemTypeExt -> rulItemTypeExt.getItemTypeId().equals(descItemTypeId)).findFirst().orElse(null);
+        if (descItemType == null) {
+            throw new ObjectNotFoundException("Nebyla nalezen typ atributu s ID=" + nodeId, ArrangementCode.ITEM_TYPE_NOT_FOUND).set("id", descItemTypeId);
+        }
+
+        if (!descItemType.getIndefinable()) {
+            throw new BusinessException("Položku není možné nastavit jako '" + ArrangementService.UNDEFINED + "'", ArrangementCode.CANT_SET_INDEFINABLE)
+            	.set("descItem", descItemType.getCode());
+        }
+
+        RulItemSpec descItemSpec = null;
+        if (descItemSpecId != null) {
+            descItemSpec = itemSpecRepository.findOne(descItemSpecId);
+            if (descItemSpec == null) {
+                throw new ObjectNotFoundException("Nebyla nalezena specifikace atributu s ID=" + descItemSpecId, ArrangementCode.ITEM_SPEC_NOT_FOUND).set("id", descItemSpecId);
+            }
+        }
+
+        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_DESC_ITEM, node);
+
+        if (descItemObjectId != null) {
+            ArrDescItem openDescItem = descItemRepository.findOpenDescItem(descItemObjectId);
+            if (openDescItem == null) {
+                throw new ObjectNotFoundException("Nebyla nalezena hodnota atributu s OBJID=" + descItemObjectId, ArrangementCode.DATA_NOT_FOUND).set("descItemObjectId", descItemObjectId);
+            } else if (openDescItem.getUndefined()) {
+                throw new BusinessException("Položka již je nastavená jako '" + ArrangementService.UNDEFINED + "'", ArrangementCode.ALREADY_INDEFINABLE);
+            }
+
+            openDescItem.setDeleteChange(change);
+            descItemRepository.save(openDescItem);
+        }
+
+        // uložení uzlu (kontrola optimistických zámků)
+        node.setVersion(nodeVersion);
+        saveNode(node, change);
+
+        ArrDescItem descItem = new ArrDescItem();
+
+        descItem.setNode(node);
+        descItem.setItemType(descItemType);
+        descItem.setItemSpec(descItemSpec);
+        descItem.setCreateChange(change);
+        descItem.setDeleteChange(null);
+        descItem.setDescItemObjectId(descItemObjectId == null ? arrangementService.getNextDescItemObjectId() : descItemObjectId);
+        descItem.setUndefined(true);
+
+        ArrDescItem descItemCreated = createDescriptionItemWithData(descItem, fundVersion, change);
+
+        // nastavujeme prázdné hodnoty
+        descItem.setItem(descItemFactory.createItemByType(descItemType.getDataType()));
+
+        // validace uzlu
+        ruleService.conformityInfo(fundVersion.getFundVersionId(), Collections.singletonList(descItem.getNode().getNodeId()),
+                NodeTypeOperation.SAVE_DESC_ITEM, Collections.singletonList(descItem), null, null);
+
+        // sockety
+        publishChangeDescItem(fundVersion, descItemCreated);
+
+        return descItemCreated;
+    }
 }
