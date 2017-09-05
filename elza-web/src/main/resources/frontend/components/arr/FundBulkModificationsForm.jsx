@@ -10,6 +10,7 @@ import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
 import {getSpecsIds} from 'components/arr/ArrUtils.jsx';
 import  './FundBulkModificationsForm.less';
 import SimpleCheckListBox from "./SimpleCheckListBox";
+import {validateInt} from "../validate";
 
 const getDefaultOperationType = props => {
     const {dataType} = props;
@@ -61,7 +62,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
         }
 
         if (props.refType.useSpecification) {
-            const specsIds = getSpecsIds(props.refType, values.specs.type, values.specs.ids)
+            const specsIds = getSpecsIds(props.refType, values.specs.type, values.specs.ids);
             if (specsIds.length === 0) {
                 errors.specs = i18n('global.validation.required');
             }
@@ -72,15 +73,25 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                 if (!values.findText) {
                     errors.findText = i18n('global.validation.required');
                 }
-                break
+                break;
             case 'replace':
                 if (!values.replaceText) {
                     errors.replaceText = i18n('global.validation.required');
                 }
+
+                switch (props.dataType.code) {
+                    case 'INT':
+                        const result = validateInt(values.replaceText);
+                        if (result) {
+                            errors.replaceText = result;
+                        }
+                        break;
+                }
+
                 if (props.refType.useSpecification && !values.replaceSpec) {
                     errors.replaceSpec = i18n('global.validation.required');
                 }
-                break
+                break;
             case 'delete':
                 break
         }
@@ -135,6 +146,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
             case 'STRING':
             case 'FORMATTED_TEXT':
             case 'UNITID':
+            case 'INT':
                 result = true;
                 break;
             default:
@@ -148,7 +160,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
     submitReduxForm = (values, dispatch) => submitForm(FundBulkModificationsForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
 
     render() {
-        const {allItemsCount, checkedItemsCount, refType, fields: {findText, replaceText, itemsArea, operationType, specs, replaceSpec}, handleSubmit, onClose, descItemTypes} = this.props;
+        const {allItemsCount, checkedItemsCount, refType, fields: {findText, replaceText, itemsArea, operationType, specs, replaceSpec}, handleSubmit, onClose, dataType} = this.props;
         const uncheckedItemsCount = allItemsCount - checkedItemsCount;
 
         let operationInputs = [];

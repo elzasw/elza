@@ -1474,9 +1474,13 @@ public class DescriptionItemService {
                     itemString.setValue(text);
                     data = itemString;
                     break;
+                case "INT":
+                    ArrDataInteger itemInteger = new ArrDataInteger();
+                    itemInteger.setValue(Integer.valueOf(text));
+                    data = itemInteger;
+                    break;
                 default:
-                    throw new IllegalStateException("Neplatný typ atributu " + descItemType.getDataType().getCode()
-                            + ". Pouze textové hodnoty jdou nahradit.");
+                    throw new SystemException("Neplatný typ atributu " + descItemType.getDataType().getCode(), BaseCode.INVALID_STATE);
             }
 
             ArrDescItem newDescItem = new ArrDescItem();
