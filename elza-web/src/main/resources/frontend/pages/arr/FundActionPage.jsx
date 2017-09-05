@@ -309,8 +309,6 @@ class FundActionPage extends ArrParentPage {
         }
     }
 
-    static
-
     renderRowItem(item) {
         const icon = FundActionPage.getStateIcon(item.state);
         const config = this.getConfigByCode(item.code);

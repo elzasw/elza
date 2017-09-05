@@ -871,7 +871,7 @@ class ArrPage extends ArrParentPage {
         var tabsItems = tabs.items;
         selectedTab = tabs.selectedTab;
 
-        if(!selectedTab || (centerSettingsValues && !centerSettingsValues.rightPanel)){ //pokud neexistuje žádná vybratelná záložka nebo je vypnutý pravý panel
+        if(!selectedTab || (centerSettingsValues && centerSettingsValues.rightPanel === false)){ //pokud neexistuje žádná vybratelná záložka nebo je vypnutý pravý panel
             return false;
         }
 
@@ -982,7 +982,7 @@ class ArrPage extends ArrParentPage {
         const activeFund = this.getActiveFund(this.props);
         var centerSettings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', activeFund.id);
         var centerSettingsValues = centerSettings.value ? JSON.parse(centerSettings.value) : null;
-        let colorCoded = centerSettingsValues && centerSettingsValues.treeColorCoding || !centerSettingsValues;
+        let colorCoded = !(centerSettingsValues && centerSettingsValues.treeColorCoding === false);
 
         if (arrRegion.extendedView) {   // extended view - jiné větší zobrazení stromu, ale renderuje se v center panelu, tento bude prázdný
             return null;
