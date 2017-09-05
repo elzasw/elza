@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -12,6 +13,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import com.google.common.collect.Lists;
+import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
@@ -145,6 +148,9 @@ public class DescriptionItemService {
 
     @Autowired
     private ArrangementCacheService arrangementCacheService;
+
+    @Autowired
+    private LevelTreeCacheService levelTreeCacheService;
 
     /**
      * Kontrola otevřené verze.
@@ -1281,29 +1287,41 @@ public class DescriptionItemService {
 
     /**
      * Nahrazení textu v hodnotách textových atributů.
-     *
-     * @param version        verze stromu
+     *  @param version        verze stromu
      * @param descItemType   typ atributu
      * @param nodes          seznam uzlů, ve kterých hledáme
      * @param specifications seznam specifikací (pokud se jedná o typ atributu se specifikací)
      * @param findText       hledaný text v atributu
      * @param replaceText    text, který nahradí hledaný text v celém textu
+     * @param allNodes       najít u všech JP a nahradit
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void replaceDescItemValues(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                       final RulItemType descItemType,
                                       final Set<ArrNode> nodes,
                                       final Set<RulItemSpec> specifications, final String findText,
-                                      final String replaceText) {
+                                      final String replaceText,
+                                      final boolean allNodes) {
         Assert.notNull(version, "Verze AS musí být vyplněna");
         Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
         Assert.hasText(findText, "Musí být vyplněn hledaný text");
-        Assert.notEmpty(nodes, "Musí být zvolena alespoň jedna JP");
 
-        Map<Integer, ArrNode> nodesMap = ElzaTools.createEntityMap(nodes, n -> n.getNodeId());
+        Map<Integer, ArrNode> nodesMap = ElzaTools.createEntityMap(nodes, ArrNode::getNodeId);
 
-        //List<ArrData> dataToReplaceText = dataRepository.findByNodesContainingText(nodes, descItemType, specifications, findText);
-        List<ArrDescItem> descItemsToReplaceText = descItemRepository.findByNodesContainingText(nodes, descItemType, specifications, findText);
+        List<ArrDescItem> descItemsToReplaceText;
+        if (allNodes) {
+            descItemsToReplaceText = new LinkedList<>();
+
+            Integer rootNodeId = version.getRootNode().getNodeId();
+            Set<Integer> nodeIds = levelTreeCacheService.getAllNodeIdsByVersionAndParent(version, rootNodeId, ArrangementController.Depth.SUBTREE);
+            nodeIds.add(rootNodeId);
+            for (List<ArrNode> partNodes : Lists.partition(nodeRepository.findAll(nodeIds), 1000)) {
+                descItemsToReplaceText.addAll(descItemRepository.findByNodesContainingText(partNodes, descItemType, specifications, findText));
+            }
+        } else {
+            descItemsToReplaceText = descItemRepository.findByNodesContainingText(nodes, descItemType, specifications, findText);
+        }
+
         if (!descItemsToReplaceText.isEmpty()) {
 
 
@@ -1311,7 +1329,7 @@ public class DescriptionItemService {
 
             for (ArrDescItem descItem: descItemsToReplaceText) {
                 ArrNode clientNode = nodesMap.get(descItem.getNodeId());
-                arrangementService.lockNode(descItem.getNode(), clientNode, change);
+                arrangementService.lockNode(descItem.getNode(), clientNode == null ? descItem.getNode() : clientNode, change);
 
                 replaceDescItemValue(descItem, findText, replaceText, change);
 
@@ -1367,19 +1385,20 @@ public class DescriptionItemService {
 
     /**
      * Nastavení textu hodnotám atributu.
-     *
-     * @param version              verze stromu
+     *  @param version              verze stromu
      * @param descItemType         typ atributu
      * @param newItemSpecification pokud se jedná o atribut se specifikací ->  specifikace, která bude nastavena
-     * @param text                 text, který nahradí text v celém textu
      * @param specifications       seznam specifikací, ve kterých se má hledat hodnota
+     * @param text                 text, který nahradí text v celém textu
+     * @param allNodes             vložit u všech JP
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void placeDescItemValues(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                     final RulItemType descItemType,
                                     final Set<ArrNode> nodes,
                                     final RulItemSpec newItemSpecification,
-                                    final Set<RulItemSpec> specifications, final String text) {
+                                    final Set<RulItemSpec> specifications, final String text,
+                                    final boolean allNodes) {
         Assert.hasText(text, "Musí být vyplněn text");
         Assert.isTrue(!descItemType.getUseSpecification() || newItemSpecification != null, "Neplatný stav specifikace");
         if (descItemType.getUseSpecification() && CollectionUtils.isEmpty(specifications)) {
@@ -1387,23 +1406,26 @@ public class DescriptionItemService {
         }
 
 
-        Map<Integer, ArrNode> nodesMap = ElzaTools.createEntityMap(nodes, n -> n.getNodeId());
-        List<ArrNode> dbNodes = nodeRepository.findAll(nodesMap.keySet());
+        Map<Integer, ArrNode> nodesMap = ElzaTools.createEntityMap(nodes, ArrNode::getNodeId);
 
-        List<ArrDescItem> descItems = descItemType.getUseSpecification() ?
-                descItemRepository
-                        .findOpenByNodesAndTypeAndSpec(nodes, descItemType, specifications) :
-                descItemRepository.findOpenByNodesAndType(nodes, descItemType);
+        List<ArrDescItem> descItems;
+        if (allNodes) {
+            descItems = descItemType.getUseSpecification() ?
+                    descItemRepository
+                            .findOpenByFundAndTypeAndSpec(version.getFund(), descItemType, specifications) :
+                    descItemRepository.findOpenByFundAndType(version.getFund(), descItemType);
+        } else {
+            descItems = descItemType.getUseSpecification() ?
+                    descItemRepository
+                            .findOpenByNodesAndTypeAndSpec(nodes, descItemType, specifications) :
+                    descItemRepository.findOpenByNodesAndType(nodes, descItemType);
+        }
 
         ArrChange change = arrangementService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
 
         Map<Integer, List<Integer>> nodeDescItems = new HashMap<>();
         for (ArrDescItem descItem : descItems) {
-            List<Integer> descItemList = nodeDescItems.get(descItem.getNodeId());
-            if (descItemList == null) {
-                descItemList = new ArrayList<>();
-                nodeDescItems.put(descItem.getNodeId(), descItemList);
-            }
+            List<Integer> descItemList = nodeDescItems.computeIfAbsent(descItem.getNodeId(), k -> new ArrayList<>());
             descItemList.add(descItem.getDescItemObjectId());
             deleteDescriptionItem(descItem, version, change, false);
         }
@@ -1418,7 +1440,17 @@ public class DescriptionItemService {
         Set<ArrNode> ignoreNodes = new HashSet<>();
         if (descItemType.getUseSpecification() && BooleanUtils.isNotTrue(descItemType.getRepeatable())) {
             List<ArrDescItem> remainSpecItems = descItemRepository.findOpenByNodesAndType(nodes, descItemType);
-            ignoreNodes = remainSpecItems.stream().map(n -> n.getNode()).collect(Collectors.toSet());
+            ignoreNodes = remainSpecItems.stream().map(ArrDescItem::getNode).collect(Collectors.toSet());
+        }
+
+        List<ArrNode> dbNodes;
+        if (allNodes) {
+            Integer rootNodeId = version.getRootNode().getNodeId();
+            Set<Integer> nodeIds = levelTreeCacheService.getAllNodeIdsByVersionAndParent(version, rootNodeId, ArrangementController.Depth.SUBTREE);
+            nodeIds.add(rootNodeId);
+            dbNodes = nodeRepository.findAll(nodeIds);
+        } else {
+            dbNodes = nodeRepository.findAll(nodesMap.keySet());
         }
 
         for (ArrNode dbNode : dbNodes) {
@@ -1426,10 +1458,10 @@ public class DescriptionItemService {
                 continue;
             }
 
-            arrangementService.lockNode(dbNode, nodesMap.get(dbNode.getNodeId()), change);
+            ArrNode arrNode = nodesMap.get(dbNode.getNodeId());
+            arrangementService.lockNode(dbNode, arrNode == null ? dbNode : arrNode, change);
 
-            ArrData data; // TODO: vytvořit správnou strukturu pro uložení
-
+            ArrData data;
             switch (descItemType.getDataType().getCode()) {
                 case "FORMATTED_TEXT":
                 case "TEXT":
@@ -1504,39 +1536,44 @@ public class DescriptionItemService {
 
     /**
      * Smazání hodnot atributů daného typu pro vybrané uzly.
-     *
-     * @param version        verze stromu
+     *  @param version        verze stromu
      * @param descItemType   typ atributu, jehož hodnoty budou smazány
      * @param nodes          seznam uzlů, jejichž hodnoty mažeme
      * @param specifications seznam specifikací pro typ se specifikací, kterým budou smazány hodnoty
+     * @param allNodes       odstranit u všech JP
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void deleteDescItemValues(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                      final RulItemType descItemType,
                                      final Set<ArrNode> nodes,
-                                     final Set<RulItemSpec> specifications) {
+                                     final Set<RulItemSpec> specifications,
+                                     final boolean allNodes) {
         Assert.notNull(version, "Verze AS musí být vyplněna");
         Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
         if (descItemType.getUseSpecification() && CollectionUtils.isEmpty(specifications)) {
             throw new BusinessException("Musí být zadána alespoň jedna filtrovaná specifikace.", BaseCode.PROPERTY_NOT_EXIST).set("property", specifications);
         }
 
+        List<ArrDescItem> descItems;
+        if (allNodes) {
+            descItems = descItemType.getUseSpecification() ?
+                    descItemRepository
+                            .findOpenByFundAndTypeAndSpec(version.getFund(), descItemType, specifications) :
+                    descItemRepository.findOpenByFundAndType(version.getFund(), descItemType);
+        } else {
+            descItems = descItemType.getUseSpecification() ?
+                    descItemRepository.findOpenByNodesAndTypeAndSpec(nodes, descItemType,
+                            specifications) :
+                    descItemRepository.findOpenByNodesAndType(nodes, descItemType);
+        }
 
-        List<ArrDescItem> descItems = descItemType.getUseSpecification() ?
-                descItemRepository.findOpenByNodesAndTypeAndSpec(nodes, descItemType,
-                        specifications) :
-                descItemRepository.findOpenByNodesAndType(nodes, descItemType);
         if (!descItems.isEmpty()) {
             ArrChange change = arrangementService.createChange(ArrChange.Type.BATCH_DELETE_DESC_ITEM);
 
             Map<Integer, List<Integer>> nodeDescItems = new HashMap<>();
 
             for (ArrDescItem descItem : descItems) {
-                List<Integer> descItemList = nodeDescItems.get(descItem.getNodeId());
-                if (descItemList == null) {
-                    descItemList = new ArrayList<>();
-                    nodeDescItems.put(descItem.getNodeId(), descItemList);
-                }
+                List<Integer> descItemList = nodeDescItems.computeIfAbsent(descItem.getNodeId(), k -> new ArrayList<>());
                 descItemList.add(descItem.getDescItemObjectId());
                 deleteDescriptionItem(descItem, version, change, false);
             }

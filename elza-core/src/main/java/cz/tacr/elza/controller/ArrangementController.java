@@ -2004,7 +2004,7 @@ public class ArrangementController {
                 CollectionUtils.isEmpty(replaceDataBody.getSpecIds()) ? null :
                 new HashSet<>(itemSpecRepository.findAll(replaceDataBody.getSpecIds()));
 
-        descriptionItemService.replaceDescItemValues(version, descItemType, nodesDO, specifications, searchText, replaceText);
+        descriptionItemService.replaceDescItemValues(version, descItemType, nodesDO, specifications, searchText, replaceText, replaceDataBody.getSelectionType() == SelectionType.FUND);
     }
 
     /**
@@ -2035,7 +2035,7 @@ public class ArrangementController {
                 new HashSet<>(itemSpecRepository.findAll(replaceDataBody.getSpecIds()));
 
         descriptionItemService
-                .placeDescItemValues(version, descItemType, nodesDO, newDescItemSpec, specifications, text);
+                .placeDescItemValues(version, descItemType, nodesDO, newDescItemSpec, specifications, text, replaceDataBody.getSelectionType() == SelectionType.FUND);
     }
 
 
@@ -2060,7 +2060,7 @@ public class ArrangementController {
                 CollectionUtils.isEmpty(replaceDataBody.getSpecIds()) ? null :
                 new HashSet<>(itemSpecRepository.findAll(replaceDataBody.getSpecIds()));
 
-        descriptionItemService.deleteDescItemValues(version, descItemType, nodesDO, specifications);
+        descriptionItemService.deleteDescItemValues(version, descItemType, nodesDO, specifications, replaceDataBody.getSelectionType() == SelectionType.FUND);
     }
 
     @RequestMapping(value = "/validation/{fundVersionId}/{fromIndex}/{toIndex}", method = RequestMethod.GET)
@@ -3525,8 +3525,19 @@ public class ArrangementController {
 
     public static class ReplaceDataBody {
 
+        private SelectionType selectionType;
+
         private Set<ArrNodeVO> nodes;
+
         private Set<Integer> specIds;
+
+        public SelectionType getSelectionType() {
+            return selectionType;
+        }
+
+        public void setSelectionType(final SelectionType selectionType) {
+            this.selectionType = selectionType;
+        }
 
         public Set<ArrNodeVO> getNodes() {
             return nodes;
@@ -3543,6 +3554,25 @@ public class ArrangementController {
         public void setSpecIds(final Set<Integer> specIds) {
             this.specIds = specIds;
         }
+    }
+
+    /**
+     * Výběrový typ.
+     *
+     * @since 05.09.2017
+     */
+    public enum SelectionType {
+
+        /**
+         * Akce se provádí podle nodů.
+         */
+        NODES,
+
+        /**
+         * Akce se provede nad celým AS.
+         */
+        FUND
+
     }
 
     /**

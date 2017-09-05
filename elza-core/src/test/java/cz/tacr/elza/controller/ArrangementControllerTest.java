@@ -1002,6 +1002,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         List<ArrNodeVO> allNodes = clientFactoryVO.createArrNodes(nodeRepository.findAll(nodeIds));
         ArrangementController.ReplaceDataBody body = new ArrangementController.ReplaceDataBody();
         body.setNodes(new HashSet<>(allNodes));
+        body.setSelectionType(ArrangementController.SelectionType.NODES);
         replaceDataValues(fundVersion.getId(), typeVo.getId(), "value", "valXYZ", body);
 
 
@@ -1022,6 +1023,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         //test nahrazení všech hodnot na konkrétní hodnotu
         allNodes = clientFactoryVO.createArrNodes(nodeRepository.findAll(nodeIds));
         body.setNodes(new HashSet<>(allNodes));
+        body.setSelectionType(ArrangementController.SelectionType.NODES);
         placeDataValues(fundVersion.getId(), typeVo.getId(), "nova_value", body);
 
         List<ArrDescItem> byNodesAndDeleteChangeIsNull = descItemRepository
@@ -1037,6 +1039,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         //smazání hodnot atributů
         allNodes = clientFactoryVO.createArrNodes(nodeRepository.findAll(nodeIds));
         body.setNodes(new HashSet<>(allNodes));
+        body.setSelectionType(ArrangementController.SelectionType.NODES);
         deleteDescItems(fundVersion.getId(), typeVo.getId(), body);
 
         List<ArrDescItem> nodeDescItems = descItemRepository

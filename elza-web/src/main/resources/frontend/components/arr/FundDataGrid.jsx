@@ -467,40 +467,50 @@ class FundDataGrid extends AbstractReactComponent {
     handleBulkModifications(refType, dataType) {
         const {versionId, fundDataGrid} = this.props
 
-        var submit = (data) => {
+        const submit = (data) => {
             // Sestavení seznamu node s id a verzí, pro které se má daná operace provést
-            var nodes;
+            let nodes;
+            let selectionType;
             switch (data.itemsArea) {
-                case 'all':
-                    nodes = fundDataGrid.items.map(i => ({id: i.node.id, version: i.node.version}))
-                    break
+                case 'page':
+                    nodes = fundDataGrid.items.map(i => ({id: i.node.id, version: i.node.version}));
+                    selectionType = 'NODES';
+                    break;
                 case 'selected': {
-                    const set = getSetFromIdsList(fundDataGrid.selectedIds)
-                    nodes = []
+                    const set = getSetFromIdsList(fundDataGrid.selectedIds);
+                    nodes = [];
+                    selectionType = 'NODES';
                     fundDataGrid.items.forEach(i => {
                         if (set[i.id]) {
                             nodes.push({id: i.node.id, version: i.node.version})
                         }
-                    })
+                    });
                     break
                 }
                 case 'unselected': {
-                    nodes = []
-                    const set = getSetFromIdsList(fundDataGrid.selectedIds)
+                    nodes = [];
+                    selectionType = 'NODES';
+                    const set = getSetFromIdsList(fundDataGrid.selectedIds);
                     fundDataGrid.items.forEach(i => {
                         if (!set[i.id]) {
                             nodes.push({id: i.node.id, version: i.node.version})
                         }
-                    })
+                    });
                     break
                 }
+                case 'all':
+                    nodes = [];
+                    selectionType = 'FUND';
+                    break
             }
 
             // Získání seznam specifikací
-            const specsIds = getSpecsIds(refType, data.specs.type, data.specs.ids)
+            const specsIds = getSpecsIds(refType, data.specs.type, data.specs.ids);
 
-            return this.dispatch(fundBulkModifications(versionId, refType.id, specsIds, data.operationType, data.findText, data.replaceText, data.replaceSpec, nodes))
-        }
+            if (selectionType !== 'FUND' || confirm(i18n('arr.fund.bulkModifications.warn'))) {
+                return this.dispatch(fundBulkModifications(versionId, refType.id, specsIds, data.operationType, data.findText, data.replaceText, data.replaceSpec, nodes, selectionType))
+            }
+        };
 
         this.dispatch(modalDialogShow(this, i18n('arr.fund.bulkModifications.title'),
             <FundBulkModificationsForm

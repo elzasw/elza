@@ -40,19 +40,19 @@ export function isFundDataGridAction(action) {
     }
 }
 
-export function fundBulkModifications(versionId, descItemTypeId, specsIds, operationType, findText, replaceText, replaceSpecId, nodes) {
-    console.log('#####findAndReplace', versionId, descItemTypeId, specsIds, operationType, findText, replaceText, replaceSpecId, nodes)
+export function fundBulkModifications(versionId, descItemTypeId, specsIds, operationType, findText, replaceText, replaceSpecId, nodes, selectionType) {
+    console.log('#####findAndReplace', versionId, descItemTypeId, specsIds, operationType, findText, replaceText, replaceSpecId, nodes, selectionType)
 
     return (dispatch, getState) => {
         switch (operationType) {
             case 'findAndReplace':
-                    return WebApi.replaceDataValues(versionId, descItemTypeId, specsIds, findText, replaceText, nodes);
+                    return WebApi.replaceDataValues(versionId, descItemTypeId, specsIds, findText, replaceText, nodes, selectionType);
                 break
             case 'replace':
-                    return WebApi.placeDataValues(versionId, descItemTypeId, specsIds, replaceText, replaceSpecId, nodes);
+                    return WebApi.placeDataValues(versionId, descItemTypeId, specsIds, replaceText, replaceSpecId, nodes, selectionType);
                 break
             case 'delete':
-                    return WebApi.deleteDataValues(versionId, descItemTypeId, specsIds, nodes);
+                    return WebApi.deleteDataValues(versionId, descItemTypeId, specsIds, nodes, selectionType);
                 break
         }
     }
