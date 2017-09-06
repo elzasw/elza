@@ -11,6 +11,8 @@ import {getSpecsIds} from 'components/arr/ArrUtils.jsx';
 import  './FundBulkModificationsForm.less';
 import SimpleCheckListBox from "./SimpleCheckListBox";
 import {validateInt} from "../validate";
+import DescItemUnitdate from "./nodeForm/DescItemUnitdate";
+import DatationField from './../party/DatationField';
 
 const getDefaultOperationType = props => {
     const {dataType} = props;
@@ -80,12 +82,27 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                 }
 
                 switch (props.dataType.code) {
-                    case 'INT':
+                    case 'INT': {
                         const result = validateInt(values.replaceText);
                         if (result) {
                             errors.replaceText = result;
                         }
                         break;
+                    }
+                    case 'UNITDATE': {
+
+                        try {
+                            DatationField.validate(values.replaceText.value);
+                        } catch (err) {
+                            errors.replaceText = err && err.message ? err.message : ' ';
+                        }
+
+                        if (!errors.replaceText && values.replaceText && !values.replaceText.calendarTypeId) {
+                            errors.replaceText = i18n('global.validation.required');
+                        }
+
+                        break;
+                    }
                 }
 
                 if (props.refType.useSpecification && !values.replaceSpec) {
@@ -147,6 +164,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
             case 'FORMATTED_TEXT':
             case 'UNITID':
             case 'INT':
+            case 'UNITDATE':
                 result = true;
                 break;
             default:
@@ -160,7 +178,8 @@ class FundBulkModificationsForm extends AbstractReactComponent {
     submitReduxForm = (values, dispatch) => submitForm(FundBulkModificationsForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
 
     render() {
-        const {allItemsCount, checkedItemsCount, refType, fields: {findText, replaceText, itemsArea, operationType, specs, replaceSpec}, handleSubmit, onClose, dataType} = this.props;
+        const {allItemsCount, checkedItemsCount, refType, fields: {findText, replaceText, itemsArea, operationType,
+            specs, replaceSpec}, handleSubmit, onClose, dataType, calendarTypes} = this.props;
         const uncheckedItemsCount = allItemsCount - checkedItemsCount;
 
         let operationInputs = [];
@@ -184,7 +203,35 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                     )
                 }
 
-                operationInputs.push(<FormInput type="text" label={i18n('arr.fund.bulkModifications.replace.replaceText')} {...replaceText} {...decorateFormField(replaceText)} />);
+                switch (dataType.code) {
+                    case 'UNITDATE':
+                        const data = {
+                            hasSpecification: false,
+                            descItem: {
+                                error: {
+                                    calendarType: replaceText.error ? replaceText.error : null,
+                                    value: replaceText.error ? replaceText.error : null
+                                },
+                                value: replaceText.value.value,
+                                calendarTypeId: replaceText.value.calendarTypeId
+                            },
+                            locked: false,
+                            readMode: false,
+                            cal: false,
+                            readOnly: false,
+                            onChange: (data) => {
+                                replaceText.onChange({value: data});
+                            },
+                            onBlur: (e) => {
+                                // záměrně ignorujeme
+                            }
+                        };
+                        operationInputs.push(<FormInput componentClass={DescItemUnitdate} label={i18n('arr.fund.bulkModifications.replace.replaceText')} calendarTypes={calendarTypes} {...replaceText} {...data} />);
+                        break;
+                    default:
+                        operationInputs.push(<FormInput type="text" label={i18n('arr.fund.bulkModifications.replace.replaceText')} {...replaceText} {...decorateFormField(replaceText)} />);
+                }
+
                 break;
             case 'delete':
                 submitButtonTitle = 'arr.fund.bulkModifications.action.delete';
@@ -236,8 +283,18 @@ export default reduxForm({
     form: 'fundBulkModificationsForm',
     fields: ['findText', 'replaceText', 'itemsArea', 'operationType', 'specs', 'replaceSpec'],
 }, (state, props) => {
+
+        let val = '';
+
+        if (props.dataType.code === 'UNITDATE') {
+            val = {
+                value: '',
+                calendarTypeId: 1
+            }
+        }
+
         return {
-            initialValues: {findText: '', replaceText: '', itemsArea: getDefaultItemsArea(props), operationType: getDefaultOperationType(props), specs: {type: 'unselected'}},
+            initialValues: {findText: '', replaceText: val, itemsArea: getDefaultItemsArea(props), operationType: getDefaultOperationType(props), specs: {type: 'unselected'}},
             descItemTypes: state.refTables.descItemTypes
         }
     },

@@ -465,7 +465,7 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     handleBulkModifications(refType, dataType) {
-        const {versionId, fundDataGrid} = this.props
+        const {versionId, fundDataGrid, calendarTypes} = this.props;
 
         const submit = (data) => {
             // Sestavení seznamu node s id a verzí, pro které se má daná operace provést
@@ -504,11 +504,16 @@ class FundDataGrid extends AbstractReactComponent {
                     break
             }
 
+            let replaceText = data.replaceText;
+            if (dataType.code === 'UNITDATE' && replaceText != null && typeof replaceText === 'object') {
+                replaceText = replaceText.calendarTypeId + '|' + replaceText.value;
+            }
+
             // Získání seznam specifikací
             const specsIds = getSpecsIds(refType, data.specs.type, data.specs.ids);
 
             if (selectionType !== 'FUND' || confirm(i18n('arr.fund.bulkModifications.warn'))) {
-                return this.dispatch(fundBulkModifications(versionId, refType.id, specsIds, data.operationType, data.findText, data.replaceText, data.replaceSpec, nodes, selectionType))
+                return this.dispatch(fundBulkModifications(versionId, refType.id, specsIds, data.operationType, data.findText, replaceText, data.replaceSpec, nodes, selectionType))
             }
         };
 
@@ -516,6 +521,7 @@ class FundDataGrid extends AbstractReactComponent {
             <FundBulkModificationsForm
                 refType={refType}
                 dataType={dataType}
+                calendarTypes={calendarTypes}
                 onSubmitForm={submit}
                 allItemsCount={fundDataGrid.items.length}
                 checkedItemsCount={fundDataGrid.selectedIds.length}

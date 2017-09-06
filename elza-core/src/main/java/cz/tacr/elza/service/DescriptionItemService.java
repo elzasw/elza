@@ -1,5 +1,7 @@
 package cz.tacr.elza.service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -15,13 +17,16 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.Lists;
 import cz.tacr.elza.controller.ArrangementController;
+import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.CalendarTypeRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -51,10 +56,6 @@ import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItemData;
-import cz.tacr.elza.domain.ArrItemFormattedText;
-import cz.tacr.elza.domain.ArrItemString;
-import cz.tacr.elza.domain.ArrItemText;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrPacket;
@@ -151,6 +152,9 @@ public class DescriptionItemService {
 
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
+
+    @Autowired
+    private CalendarTypeRepository calendarTypeRepository;
 
     /**
      * Kontrola otevřené verze.
@@ -1479,6 +1483,10 @@ public class DescriptionItemService {
                     itemInteger.setValue(Integer.valueOf(text));
                     data = itemInteger;
                     break;
+                case "UNITDATE":
+                    ArrDataUnitdate itemUnitdate = createArrDataUnitdate(text);
+                    data = itemUnitdate;
+                    break;
                 default:
                     throw new SystemException("Neplatný typ atributu " + descItemType.getDataType().getCode(), BaseCode.INVALID_STATE);
             }
@@ -1496,6 +1504,47 @@ public class DescriptionItemService {
             arrangementCacheService.createDescItem(newDescItem.getNodeId(), newDescItem);
             publishChangeDescItem(version, newDescItem);
         }
+    }
+
+    /**
+     * Vytvoření unitdate struktury.
+     *
+     * @param text vstupní text ve formátu '[calendarTypeId]|[unitDateText]'
+     * @return vytvořená struktura
+     */
+    private ArrDataUnitdate createArrDataUnitdate(final String text) {
+        String[] splitText = text.split("\\|", 2);
+
+        if (splitText.length != 2 || !StringUtils.isNumeric(splitText[0])) {
+            throw new SystemException("Neplatný vstupní řetězec: " + text, BaseCode.PROPERTY_IS_INVALID);
+        }
+
+        ArrCalendarType calendarType = calendarTypeRepository.findOne(Integer.valueOf(splitText[0]));
+
+        if (calendarType == null) {
+            throw new ObjectNotFoundException("Neexistující kalendář: " + splitText[0], BaseCode.ID_NOT_EXIST).setId(splitText[0]);
+        }
+
+        ArrDataUnitdate itemUnitdate = new ArrDataUnitdate();
+        itemUnitdate.setCalendarType(calendarType);
+        UnitDateConvertor.convertToUnitDate(splitText[1], itemUnitdate);
+
+        CalendarConverter.CalendarType calendar = CalendarConverter.CalendarType.valueOf(calendarType.getCode());
+        String value;
+        value = itemUnitdate.getValueFrom();
+        if (value != null) {
+            itemUnitdate.setNormalizedFrom(CalendarConverter.toSeconds(calendar, LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+        } else {
+            itemUnitdate.setNormalizedFrom(Long.MIN_VALUE);
+        }
+
+        value = itemUnitdate.getValueTo();
+        if (value != null) {
+            itemUnitdate.setNormalizedTo(CalendarConverter.toSeconds(calendar, LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+        } else {
+            itemUnitdate.setNormalizedTo(Long.MAX_VALUE);
+        }
+        return itemUnitdate;
     }
 
     /**

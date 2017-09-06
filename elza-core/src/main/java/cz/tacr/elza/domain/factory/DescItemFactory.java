@@ -838,7 +838,6 @@ public class DescItemFactory implements InitializingBean {
      *                         false - načte původní hodnotu a upraví jí podle nové
      * @return uložená hodnota atributu
      */
-    @Deprecated
     public ArrDescItem saveDescItemWithData(final ArrDescItem descItem, final Boolean createNewVersion) {
         ArrData data = descItem.getData();
 
