@@ -487,7 +487,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
         onSubmitForm(data)
     };
 
-    handleRefMarkClearSubmit = () => {
+    handleClearSubmit = () => {
         const {onSubmitForm} = this.props;
         onSubmitForm(null);
     };
@@ -573,7 +573,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
         var conditionContent;
         var hasAllValues = true
 
-        let okButtons;
+        let okButtons = [<Button className="pull-left" onClick={this.handleClearSubmit}>{i18n('arr.fund.filterSettings.action.clear')}</Button>];
         if (refType.id !== COL_REFERENCE_MARK) {
             valueContent = this.renderValueFilter()
 
@@ -594,8 +594,8 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
             }
 
             const okDisabled = conditionHasErrors || !hasAllValues;
-            okButtons = <Button disabled={okDisabled}
-                    onClick={this.handleSubmit}>{i18n('global.action.store')}</Button>
+            okButtons.push(<Button disabled={okDisabled}
+                                   onClick={this.handleSubmit}>{i18n('global.action.store')}</Button>);
         } else {    // referenční označení
             valueContent = <FundNodesSelect
                 selectedId={filter && filter.nodeId != null ? filter.nodeId : null}
@@ -604,12 +604,8 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                 />
 
             const okDisabled = refMarkSelectedNode === null;
-            okButtons = [
-                <Button className="pull-left"
-                        onClick={this.handleRefMarkClearSubmit}>{i18n('arr.fund.filterSettings.action.clear')}</Button>,
-                <Button disabled={okDisabled}
-                        onClick={this.handleRefMarkSubmit}>{i18n('global.action.select')}</Button>
-            ]
+            okButtons.push(<Button disabled={okDisabled}
+                                   onClick={this.handleRefMarkSubmit}>{i18n('global.action.select')}</Button>);
         }
 
         return (
