@@ -205,8 +205,8 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             private Join<ArrPacket, RulPacketType> packetTypeJoin;
 
             @Override
-            public void init(final Root<? extends ArrData> root, final Join<? extends ArrData, ArrDescItem> descItemJoin) {
-                packetTypeJoin = root.join(ArrDataPacketRef.PACKET, JoinType.INNER)
+            public void init(final Root<ArrDescItem> descItemJoin, final Join<? extends ArrData, ArrDescItem> dataJoin) {
+                packetTypeJoin = dataJoin.join(ArrDataPacketRef.PACKET, JoinType.INNER)
                         .join(ArrPacket.PACKET_TYPE, JoinType.LEFT);
             }
 
@@ -259,7 +259,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             private Join<ArrDescItem, RulItemSpec> specJoin;
 
             @Override
-            public void init(final Root<? extends ArrData> root, final Join<? extends ArrData, ArrDescItem> descItemJoin) {
+            public void init(final Root<ArrDescItem> descItemJoin, final Join<? extends ArrData, ArrDescItem> dasatJoin) {
                 specJoin = descItemJoin.join(ArrDescItem.ITEM_SPEC, JoinType.LEFT);
             }
 
@@ -348,7 +348,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         andPredicates.add(versionPredicate);
         andPredicates.add(builder.equal(descItem.get(ArrDescItem.ITEM_TYPE), itemType));
         if (specificationDataTypeHelper.useSpec()) {
-            specificationDataTypeHelper.init(data, dataJoin);
+            specificationDataTypeHelper.init(descItem, dataJoin);
 
             andPredicates.add(specificationDataTypeHelper.getPredicate(builder));
         }
@@ -517,7 +517,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
     private interface SpecificationDataTypeHelper {
         boolean useSpec();
 
-        void init(Root<? extends ArrData> root, Join<? extends ArrData, ArrDescItem> descItemJoin);
+        void init(Root<ArrDescItem> descItemJoin, Join<? extends ArrData, ArrDescItem> dasatJoin);
 
         Predicate getPredicate(CriteriaBuilder builder);
 
