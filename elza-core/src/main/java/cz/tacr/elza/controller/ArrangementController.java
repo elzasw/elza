@@ -1978,6 +1978,23 @@ public class ArrangementController {
         return filterTreeService.filterUniqueValues(version, descItemType, specIds, fulltext, max);
     }
 
+    /**
+     * Získání unikátních specifikací atributů podle typu.
+     *
+     * @param fundVersionId verze stromu
+     * @param itemTypeId    id typu atributu
+     *
+     * @return seznam unikátních hodnot
+     */
+    @RequestMapping(value = "/findUniqueSpecIds/{fundVersionId}", method = RequestMethod.GET)
+    public List<Integer> findUniqueSpecIds(@PathVariable("fundVersionId") final Integer fundVersionId,
+                                           @RequestParam("itemTypeId") final Integer itemTypeId) {
+
+        ArrFundVersion version = fundVersionRepository.getOneCheckExist(fundVersionId);
+        RulItemType descItemType = itemTypeRepository.findOne(itemTypeId);
+
+        return filterTreeService.findUniqueSpecIds(version, descItemType);
+    }
 
     /**
      * Nahrazení textu v hodnotách textových atributů.

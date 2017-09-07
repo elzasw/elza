@@ -827,6 +827,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/filterUniqueValues/' + versionId, {descItemTypeId, fulltext, max}, descItemSpecIds)
     }
 
+    findUniqueSpecIds(fundVersionId, itemTypeId) {
+        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/findUniqueSpecIds/' + fundVersionId, {itemTypeId})
+    }
+
     getVisiblePolicy(nodeId, fundVersionId, includeParents = true) {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/policy/' + nodeId + '/' + fundVersionId + '/' + includeParents);
     }

@@ -149,7 +149,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
             'handleValueItemsChange', 'renderConditionFilter', 'handleSpecItemsChange', 'handleConditionChange',
             'handleSubmit', 'renderValueFilter', 'getConditionInfo')
 
-        var state = {
+        let state = {
             valueItems: [],
             valueSearchText: '',
             selectedValueItems: [],
@@ -159,16 +159,17 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
             conditionSelectedCode: 'NONE',
             conditionValues: [],
             conditionHasErrors: false,
-            refMarkSelectedNode: null
-        }
+            refMarkSelectedNode: null,
+            specItems: []
+        };
 
-        const {filter} = props
+        const {filter} = props;
         if (typeof filter !== 'undefined' && filter) {
-            state.selectedValueItems = filter.values
-            state.selectedValueItemsType = filter.valuesType
-            state.selectedSpecItems = filter.specs
-            state.selectedSpecItemsType = filter.specsType
-            state.conditionSelectedCode = filter.conditionType
+            state.selectedValueItems = filter.values;
+            state.selectedValueItemsType = filter.valuesType;
+            state.selectedSpecItems = filter.specs;
+            state.selectedSpecItemsType = filter.specsType;
+            state.conditionSelectedCode = filter.conditionType;
             state.conditionValues = filter.condition
         }
 
@@ -181,7 +182,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
     componentDidMount() {
         const {refType} = this.props;
         if (refType.id !== COL_REFERENCE_MARK) {
-            this.callValueSearch('')
+            this.callFilterUniqueSpecs();
         }
     }
 
@@ -190,6 +191,37 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
             valueSearchText: text
         }, this.callValueSearch)
     }
+
+    callFilterUniqueSpecs = () => {
+        const {versionId, refType, packetTypes, dataType} = this.props
+        WebApi.findUniqueSpecIds(versionId, refType.id).then(specIds => {
+
+            let specItems = [];
+
+            if (specIds.indexOf(null) >= 0) {
+                specItems.push({
+                    id: FILTER_NULL_VALUE,
+                    name: i18n('arr.fund.filterSettings.value.empty')
+                });
+            }
+
+            if (dataType.code === 'PACKET_REF') {
+                packetTypes.items.forEach((type) => {
+                    if (specIds.indexOf(type.id) >= 0) {
+                        specItems.push(type);
+                    }
+                });
+            } else {
+                refType.descItemSpecs.forEach((spec) => {
+                    if (specIds.indexOf(spec.id) >= 0) {
+                        specItems.push(spec);
+                    }
+                });
+            }
+
+            this.setState({specItems}, () => this.callValueSearch(''));
+        });
+    };
 
     callValueSearch() {
         const {versionId, refType, dataType} = this.props
@@ -531,37 +563,27 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
     }
 
     render() {
-        const {filter, refType, onClose, dataType, packetTypes} = this.props
-        const {refMarkSelectedNode, conditionHasErrors, conditionSelectedCode, conditionValues, selectedSpecItems, selectedSpecItemsType} = this.state
+        const {filter, refType, onClose, dataType} = this.props
+        const {refMarkSelectedNode, conditionHasErrors, conditionSelectedCode, conditionValues, selectedSpecItems, selectedSpecItemsType, specItems} = this.state
 
         var specContent = null
         if (refType.id === COL_REFERENCE_MARK) {
             // nemá specifikaci
         } else if (refType.useSpecification) {
-            var items = [{
-                id: FILTER_NULL_VALUE,
-                name: i18n('arr.fund.filterSettings.value.empty')
-            }, ...refType.descItemSpecs]
-
             specContent = (
                 <SimpleCheckListBox
                     ref='specsListBox'
-                    items={items}
+                    items={specItems}
                     label={i18n('arr.fund.filterSettings.filterBySpecification.title')}
                     value={{type: selectedSpecItemsType, ids: selectedSpecItems}}
                     onChange={this.handleSpecItemsChange}
                 />
             )
         } else if (dataType.code === 'PACKET_REF') { // u obalů budeme místo specifikací zobrazovat výběr typů obsalů
-            var items = [{
-                id: FILTER_NULL_VALUE,
-                name: i18n('arr.fund.filterSettings.value.empty')
-            }, ...packetTypes.items]
-
             specContent = (
                 <SimpleCheckListBox
                     ref='specsListBox'
-                    items={items}
+                    items={specItems}
                     label={i18n('arr.fund.filterSettings.filterByPacketType.title')}
                     value={{type: selectedSpecItemsType, ids: selectedSpecItems}}
                     onChange={this.handleSpecItemsChange}
@@ -573,7 +595,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
         var conditionContent;
         var hasAllValues = true
 
-        let okButtons = [<Button className="pull-left" onClick={this.handleClearSubmit}>{i18n('arr.fund.filterSettings.action.clear')}</Button>];
+        let okButtons = [<Button key="clear" className="pull-left" onClick={this.handleClearSubmit}>{i18n('arr.fund.filterSettings.action.clear')}</Button>];
         if (refType.id !== COL_REFERENCE_MARK) {
             valueContent = this.renderValueFilter()
 
@@ -594,7 +616,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
             }
 
             const okDisabled = conditionHasErrors || !hasAllValues;
-            okButtons.push(<Button disabled={okDisabled}
+            okButtons.push(<Button key="store" disabled={okDisabled}
                                    onClick={this.handleSubmit}>{i18n('global.action.store')}</Button>);
         } else {    // referenční označení
             valueContent = <FundNodesSelect
@@ -604,7 +626,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                 />
 
             const okDisabled = refMarkSelectedNode === null;
-            okButtons.push(<Button disabled={okDisabled}
+            okButtons.push(<Button key="store" disabled={okDisabled}
                                    onClick={this.handleRefMarkSubmit}>{i18n('global.action.select')}</Button>);
         }
 

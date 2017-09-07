@@ -9,9 +9,7 @@ import {indexById, getSetFromIdsList} from 'stores/app/utils.jsx'
 
 class SimpleCheckListBox extends AbstractReactComponent {
     constructor(props) {
-        super(props)
-
-        this.bindMethods('handleSpecItemsChange', 'handleSpecSearch', 'getSpecsIds', 'getValue')
+        super(props);
 
         this.state = {
             specItems: [],
@@ -20,10 +18,17 @@ class SimpleCheckListBox extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
+        const props = this.props;
+        const {specSearchText} = this.state;
+        if (props.items !== nextProps.items) {
+            this.setState({
+                specItems: props.items
+            }, () => this.callSpecSearch(specSearchText))
+        }
     }
 
-    getValue() {
-        var {value} = this.props
+    getValue = () => {
+        let {value} = this.props;
         if (typeof value === 'undefined') {
             value = {type: 'unselected', ids: []}
         }
@@ -32,28 +37,28 @@ class SimpleCheckListBox extends AbstractReactComponent {
             type: value.type || 'unselected',
             ids: value.ids || [],
         }
-    }
+    };
 
     componentDidMount() {
-        this.callSpecSearch('')
+        this.callSpecSearch('');
     }
 
-    handleSpecItemsChange(type, ids) {
+    handleSpecItemsChange = (type, ids) => {
         this.props.onChange({type, ids})
-    }
+    };
 
-    handleSpecSearch(text) {
+    handleSpecSearch = (text) => {
         this.setState({
             specSearchText: text
-        }, this.callSpecSearch)
-    }
+        }, this.callSpecSearch);
+    };
 
-    getSpecsIdsExt(items, selectionType, selectedIds) {
-        var specIds = []
+    getSpecsIdsExt = (items, selectionType, selectedIds) => {
+        let specIds = [];
         if (selectionType === 'selected') {
             specIds = selectedIds
         } else {
-            var set = getSetFromIdsList(selectedIds)
+            let set = getSetFromIdsList(selectedIds);
             items.forEach(i => {
                 if (!set[i.id]) {
                     specIds.push(i.id)
@@ -61,34 +66,34 @@ class SimpleCheckListBox extends AbstractReactComponent {
             })
         }
         return specIds
-    }
+    };
 
-    getSpecsIds() {
-        const {items} = this.props
-        const value = this.getValue()
+    getSpecsIds = () => {
+        const {items} = this.props;
+        const value = this.getValue();
         return this.getSpecsIdsExt(items, value.type, value.ids)
-    }
+    };
 
-    callSpecSearch() {
-        const {items} = this.props
-        const {specSearchText} = this.state
+    callSpecSearch = () => {
+        const {items} = this.props;
+        const {specSearchText} = this.state;
 
-        var fspecSearchText = specSearchText.toLowerCase()
-        var specItems = []
+        let fspecSearchText = specSearchText.toLowerCase();
+        let specItems = [];
         items.forEach(i => {
             if (!specSearchText || i.name.toLowerCase().indexOf(fspecSearchText) !== -1) {
                 specItems.push(i)
             }
-        })
+        });
         this.setState({
             specItems: specItems,
         })
-    }
+    };
 
     render() {
-        const {label} = this.props
-        const {specItems} = this.state
-        const value = this.getValue()
+        const {label} = this.props;
+        const {specItems} = this.state;
+        const value = this.getValue();
 
         return (
             <FilterableListBox

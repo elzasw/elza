@@ -20,7 +20,9 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.util.List;
 
 
 /**
@@ -35,6 +37,8 @@ import javax.persistence.Table;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
 public abstract class ArrData implements NodeCacheSerializable {
+
+    public static String ID = "dataId";
 
     @Id
     @GeneratedValue
@@ -74,6 +78,10 @@ public abstract class ArrData implements NodeCacheSerializable {
     }
 
     @JsonIgnore
+    @OneToMany(fetch = FetchType.LAZY, targetEntity = ArrItem.class, mappedBy = ArrItem.DATA)
+    private List<ArrItem> items;
+
+    @JsonIgnore
     @Field(name = LuceneDescItemCondition.NORMALIZED_TO_ATT, store = Store.YES)
     @NumericField
     public Long getNormalizedTo() {
@@ -94,6 +102,14 @@ public abstract class ArrData implements NodeCacheSerializable {
 
     public void setDataType(final RulDataType dataType) {
         this.dataType = dataType;
+    }
+
+    public List<ArrItem> getItems() {
+        return items;
+    }
+
+    public void setItems(final List<ArrItem> items) {
+        this.items = items;
     }
 
     @Override

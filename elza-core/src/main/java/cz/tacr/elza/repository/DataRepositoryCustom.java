@@ -86,4 +86,26 @@ public interface DataRepositoryCustom {
                                                @Nullable Set<RulItemSpec> specs,
                                                boolean withoutSpec, @Nullable String fulltext,
                                                int max);
+
+    /**
+     * Provede načtení unikátních specifikací hodnot atributů.
+     *
+     * @param version       id verze stromu
+     * @param descItemType  typ atributu
+     *
+     * @return seznam unikátních hodnot
+     */
+    List<Integer> findUniqueSpecIdsInVersion(ArrFundVersion version,
+                                             RulItemType descItemType);
+
+    /**
+     * Provede načtení unikátních typů obalů z hodnot atributů.
+     *
+     * @param version       id verze stromu
+     * @param descItemType  typ atributu
+     *
+     * @return seznam unikátních hodnot
+     */
+    List<Integer> findUniquePacketTypeIdsInVersion(ArrFundVersion version,
+                                                   RulItemType descItemType);
 }

@@ -136,7 +136,7 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
 
     renderItemContent(item, isActive) {
         const {selectionType, selectedIds} = this.state
-        const checked = selectionType === 'selected' ? selectedIds[item.id] : !selectedIds[item.id]
+        const checked = selectionType === 'selected' ? !!selectedIds[item.id] : !selectedIds[item.id]
 
         return (
             <div className='checkbox-item'>

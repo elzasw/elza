@@ -243,6 +243,27 @@ public class FilterTreeService {
         }
     }
 
+    /**
+     * Získání unikátních specifikací atributů podle typu.
+     *
+     * Pokud typ je PACKET_REF, výsledek je seznamem typů obalů.
+     *
+     * @param fundVersion verze stromu
+     * @param itemType    typ atributu
+     * @return seznam hodnot
+     */
+    public List<Integer> findUniqueSpecIds(final ArrFundVersion fundVersion,
+                                          final RulItemType itemType) {
+
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Assert.notNull(itemType, "Typ atributu musí být vyplněn");
+
+        if (itemType.getDataType().getCode().equals("PACKET_REF")) {
+            return dataRepository.findUniquePacketTypeIdsInVersion(fundVersion, itemType);
+        } else {
+            return dataRepository.findUniqueSpecIdsInVersion(fundVersion, itemType);
+        }
+    }
 
     /**
      * Vytvoří výslednou mapu.
