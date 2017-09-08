@@ -61,6 +61,8 @@ import cz.tacr.elza.utils.ObjectListIterator;
  */
 public class DataRepositoryImpl implements DataRepositoryCustom {
 
+    public static final String SPEC_SEPARATOR = ": ";
+
     @Autowired
     private EntityManager entityManager;
 
@@ -537,7 +539,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         Expression<String> result;
         if (specHelper.useSpec()) {
             Path<String> specSelection = specHelper.getSpecSelection();
-            Expression<String> concat = builder.concat(specSelection, ": ");
+            Expression<String> concat = builder.concat(specSelection, SPEC_SEPARATOR);
             result = builder.concat(concat, valuePath);
         } else {
             result = valuePath;
