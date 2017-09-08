@@ -78,10 +78,6 @@ public abstract class ArrData implements NodeCacheSerializable {
     }
 
     @JsonIgnore
-    @OneToMany(fetch = FetchType.LAZY, targetEntity = ArrItem.class, mappedBy = ArrItem.DATA)
-    private List<ArrItem> items;
-
-    @JsonIgnore
     @Field(name = LuceneDescItemCondition.NORMALIZED_TO_ATT, store = Store.YES)
     @NumericField
     public Long getNormalizedTo() {
@@ -102,14 +98,6 @@ public abstract class ArrData implements NodeCacheSerializable {
 
     public void setDataType(final RulDataType dataType) {
         this.dataType = dataType;
-    }
-
-    public List<ArrItem> getItems() {
-        return items;
-    }
-
-    public void setItems(final List<ArrItem> items) {
-        this.items = items;
     }
 
     @Override
