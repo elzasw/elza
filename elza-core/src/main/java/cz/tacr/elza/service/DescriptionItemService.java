@@ -26,7 +26,10 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.CalendarTypeRepository;
+import cz.tacr.elza.repository.ItemSpecRegisterRepository;
+import cz.tacr.elza.repository.RegisterTypeRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -155,6 +158,12 @@ public class DescriptionItemService {
 
     @Autowired
     private CalendarTypeRepository calendarTypeRepository;
+
+    @Autowired
+    private ItemSpecRegisterRepository itemSpecRegisterRepository;
+
+    @Autowired
+    private RegisterTypeRepository registerTypeRepository;
 
     /**
      * Kontrola otevřené verze.
@@ -550,6 +559,16 @@ public class DescriptionItemService {
             if (descItemSpec == null) {
                 throw new BusinessException("Pro typ atributu je nutné specifikaci vyplnit", ArrangementCode.ITEM_SPEC_NOT_FOUND).level(Level.WARNING);
             }
+
+            if (descItemType.getDataType().getCode().equals("RECORD_REF")) {
+                Set<Integer> registerTypeIds = itemSpecRegisterRepository.findIdsByItemSpecId(descItemSpec);
+                Set<Integer> registerTypeIdTree = registerTypeRepository.findSubtreeIds(registerTypeIds);
+                ArrDataRecordRef data = (ArrDataRecordRef) descItem.getData();
+                if (!registerTypeIdTree.contains(data.getRecord().getRegisterTypeId())) {
+                    throw new BusinessException("Hodnota neodpovídá typu rejstříku podle specifikace", RegistryCode.FOREIGN_ENTITY_INVALID_SUBTYPE).level(Level.WARNING);
+                }
+            }
+
         } else {
             if (descItemSpec != null) {
                 throw new BusinessException("Pro typ atributu nesmí být specifikace vyplněná", ArrangementCode.ITEM_SPEC_FOUND).level(Level.WARNING);
@@ -993,6 +1012,8 @@ public class DescriptionItemService {
             descItemOrig.setItemSpec(descItem.getItemSpec());
             descItemUpdated = descItemFactory.saveDescItemWithData(descItemOrig, false);
         }
+
+        checkValidTypeAndSpec(descItemUpdated);
 
         arrangementCacheService.changeDescItem(descItemUpdated.getNodeId(), descItemUpdated, false);
 
