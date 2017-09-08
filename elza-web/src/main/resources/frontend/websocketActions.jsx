@@ -96,6 +96,10 @@ class ws {
 
     static stompConnect = stompConnect;
 
+    stompConnect = () => {
+        ws.stompConnect();
+    };
+
     send = (url, headers, data, successCallback, errorCallback) => {
         const useHeaders = headers ? headers : {};
         if (successCallback || errorCallback) {
@@ -105,7 +109,7 @@ class ws {
             this.nextReceiptId++;
         }
         stompClient.send(url, headers, data);
-    }
+    };
 
     processCallback(body, headers) {
         if (!body || !headers) {
