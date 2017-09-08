@@ -206,11 +206,13 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         SpecificationDataTypeHelper specHelper = new SpecificationDataTypeHelper() {
 
             private Join<ArrPacket, RulPacketType> packetTypeJoin;
+            private Join<ArrDataPacketRef, ArrPacket> packetJoin;
 
             @Override
-            public void init(final Root<ArrDescItem> descItemJoin, final Join<? extends ArrData, ArrDescItem> dataJoin) {
-                packetTypeJoin = dataJoin.join(ArrDataPacketRef.PACKET, JoinType.INNER)
-                        .join(ArrPacket.PACKET_TYPE, JoinType.LEFT);
+            public void init(final Root<ArrDescItem> descItemJoin, final Join<ArrDescItem, ArrData> dataJoin) {
+                Join<ArrDescItem, ArrDataPacketRef> treat = entityManager.getCriteriaBuilder().treat(dataJoin, ArrDataPacketRef.class);
+                packetJoin = treat.join(ArrDataPacketRef.PACKET, JoinType.INNER);
+                packetTypeJoin = packetJoin.join(ArrPacket.PACKET_TYPE, JoinType.LEFT);
             }
 
             @Override
@@ -242,6 +244,11 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             public Path<String> getSpecSelection() {
                 return packetTypeJoin.get(RulPacketType.NAME);
             }
+
+            @Override
+            public Join<ArrDataPacketRef, ArrPacket> getPacketJoin() {
+                return packetJoin;
+            }
         };
 
         return findUniqueValuesInVersion(version, itemType, dataTypeClass, specHelper, fulltext, max, withoutType);
@@ -262,7 +269,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             private Join<ArrDescItem, RulItemSpec> specJoin;
 
             @Override
-            public void init(final Root<ArrDescItem> descItemJoin, final Join<? extends ArrData, ArrDescItem> dasatJoin) {
+            public void init(final Root<ArrDescItem> descItemJoin, final Join<ArrDescItem, ArrData> dataJoin) {
                 specJoin = descItemJoin.join(ArrDescItem.ITEM_SPEC, JoinType.LEFT);
             }
 
@@ -291,6 +298,11 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             @Override
             public Path<String> getSpecSelection() {
                 return specJoin.get("name");
+            }
+
+            @Override
+            public Join<ArrDataPacketRef, ArrPacket> getPacketJoin() {
+                return null;
             }
         };
 
@@ -426,14 +438,13 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         CriteriaQuery<Tuple> query = builder.createTupleQuery();
 
         Root<? extends ArrData> data = query.from(dataTypeClass);
-        AbstractDescItemDataTypeHelper typeHelper = getDataTypeHelper(dataTypeClass, data);
 
-        Subquery<ArrDescItem> sq = query.subquery(ArrDescItem.class);
         Root<ArrDescItem> descItem = query.from(ArrDescItem.class);
 
-        sq.select(descItem.get(ArrItem.DATA));
-        Join<? extends ArrData, ArrDescItem> dataJoin = descItem.join(ArrItem.DATA, JoinType.INNER);
-        query.where(builder.equal(data, sq));
+        Join<ArrDescItem, ArrData> dataJoin = null;
+        if (dataTypeClass.equals(ArrDataPacketRef.class)) {
+            dataJoin = descItem.join(ArrItem.DATA, JoinType.INNER);
+        }
 
         Predicate versionPredicate;
         if (version.getLockChange() == null) {
@@ -452,6 +463,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
         //seznam AND podmínek
         List<Predicate> andPredicates = new LinkedList<>();
+        andPredicates.add(builder.equal(descItem.get(ArrItem.DATA), data));
         andPredicates.add(builder.equal(descItem.get(ArrDescItem.NODE).get(ArrNode.FUND), version.getFund()));
         andPredicates.add(versionPredicate);
         andPredicates.add(builder.equal(descItem.get(ArrDescItem.ITEM_TYPE), itemType));
@@ -461,11 +473,12 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             andPredicates.add(specificationDataTypeHelper.getPredicate(builder));
         }
 
+        AbstractDescItemDataTypeHelper typeHelper = getDataTypeHelper(dataTypeClass, data, specificationDataTypeHelper);
 
         //seznam vracených sloupců
         List<Selection<?>> selections = new LinkedList<>();
         Expression<String> valueSelection = typeHelper.getValueStringSelection(builder).as(String.class);    //hodnota pro select
-        Expression valueExpression = createUniqueValueExpression(valueSelection, specificationDataTypeHelper, builder);
+        Expression<String> valueExpression = createUniqueValueExpression(valueSelection, specificationDataTypeHelper, builder);
         selections.add(valueExpression);
 
         //oříznutá hodnota převedená na string, kvůli řazení
@@ -518,10 +531,10 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
      * @return výraz pro výběr hodnoty atributu. Pokud se jedná o specifikaci, je výraz spojen do název specifikace:
      * hodnota.
      */
-    private Expression createUniqueValueExpression(final Expression valuePath,
+    private Expression<String> createUniqueValueExpression(final Expression<String> valuePath,
                                                    final SpecificationDataTypeHelper specHelper,
                                                    final CriteriaBuilder builder) {
-        Expression result;
+        Expression<String> result;
         if (specHelper.useSpec()) {
             Path<String> specSelection = specHelper.getSpecSelection();
             Expression<String> concat = builder.concat(specSelection, ": ");
@@ -537,10 +550,12 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
      * Podle typu atributu vrací informace pro načtení a filtrování konkrétních dat.
      * @param dataClassType typ třídy ukládající hodnotu atributu
      * @param dataRoot kořen vehledání (dataClassType)
+     * @param specificationDataTypeHelper
      * @return služba pro načtení hodnot konkrétního typu atributu
      */
     private AbstractDescItemDataTypeHelper getDataTypeHelper(final Class<? extends ArrData> dataClassType,
-                                                             final Root dataRoot) {
+                                                             final Root dataRoot,
+                                                             final SpecificationDataTypeHelper specificationDataTypeHelper) {
         if (dataClassType.equals(ArrDataString.class) ||
                 dataClassType.equals(ArrDataText.class) ||
                 dataClassType.equals(ArrDataCoordinates.class) ||
@@ -589,7 +604,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             return new AbstractDescItemDataTypeHelper() {
                 @Override
                 protected void init() {
-                    targetJoin = dataRoot.join(ArrDataPacketRef.PACKET, JoinType.INNER);
+                    targetJoin = specificationDataTypeHelper.getPacketJoin() == null ? dataRoot.join(ArrDataPacketRef.PACKET, JoinType.INNER) : specificationDataTypeHelper.getPacketJoin();
                 }
 
                 @Override
@@ -625,10 +640,12 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
     private interface SpecificationDataTypeHelper {
         boolean useSpec();
 
-        void init(Root<ArrDescItem> descItemJoin, Join<? extends ArrData, ArrDescItem> dasatJoin);
+        void init(Root<ArrDescItem> descItemJoin, Join<ArrDescItem, ArrData> dataJoin);
 
         Predicate getPredicate(CriteriaBuilder builder);
 
         Path<String> getSpecSelection();
+
+        Join<ArrDataPacketRef, ArrPacket> getPacketJoin();
     }
 }
