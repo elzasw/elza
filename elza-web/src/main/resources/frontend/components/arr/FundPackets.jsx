@@ -57,23 +57,24 @@ class FundPackets extends AbstractReactComponent {
 
         console.log(selectionType, ids, unselectedIds, type);
 
-        var newSelectedIds
+        let newSelectedIds;
         switch (type) {
             case "TOGGLE_ITEM":
-                var s = getSetFromIdsList([...selectedIds, ...ids])
+                let s = getSetFromIdsList([...selectedIds, ...ids]);
                 unselectedIds.forEach(id => {
                     delete s[id]
-                })
-                newSelectedIds = Object.keys(s)
-                break
+                });
+                newSelectedIds = Object.keys(s);
+                break;
             case "SELECT_ALL":
-                newSelectedIds = Object.keys(getSetFromIdsList([...selectedIds, ...ids]))
-                break
+                newSelectedIds = Object.keys(getSetFromIdsList([...selectedIds, ...ids]));
+                break;
             case "UNSELECT_ALL":
-                newSelectedIds = []
+                newSelectedIds = Object.keys(getSetFromIdsList([...selectedIds]));
+                newSelectedIds = newSelectedIds.filter(id => unselectedIds.indexOf(parseInt(id)) === -1);
                 break
         }
-        console.log("NEW_SELECTION: " + newSelectedIds)
+        console.log("NEW_SELECTION: " + newSelectedIds);
         this.dispatch(fundPacketsChangeSelection(versionId, newSelectedIds))
     }
 
@@ -169,16 +170,20 @@ class FundPackets extends AbstractReactComponent {
         }
     }
 
+    createItems = (packets) => {
+        return packets.map(packet => {
+            const name = this.pf.format(packet);
+            return {id: packet.id, name: name}
+        });
+    };
+
     render() {
         const {versionId, filterState, filterText, fetched, packets, selectedIds, packetTypes} = this.props;
         if (!fetched || !packetTypes.fetched || !this.pf) {
             return <Loading/>
         }
 
-        const items = packets.map(packet => {
-            var name = this.pf.format(packet);
-            return {id: packet.id, name: name}
-        })
+        const items = this.createItems(packets);
 
         const altSearch = (
             <div className="state-filter">
