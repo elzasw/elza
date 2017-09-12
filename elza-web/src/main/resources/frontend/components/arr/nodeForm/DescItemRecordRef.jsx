@@ -37,27 +37,42 @@ class DescItemRecordRef extends AbstractReactComponent {
 
     handleSelectModule = ({onSelect, filterText, value}) => {
         const {hasSpecification, descItem, registryList, partyList, fundName, nodeName, itemName, specName} = this.props;
+        const oldFilter = {...registryList.filter};
         const open = (hasParty = false) => {
             if (hasParty) {
-                this.dispatch(partyListFilter({...partyList.filter, text: filterText, itemSpecId: hasSpecification ? descItem.descItemSpecId : null}));
+                this.dispatch(partyListFilter({
+                    ...partyList.filter,
+                    text: filterText,
+                    itemSpecId: hasSpecification ? descItem.descItemSpecId : null
+                }));
                 this.dispatch(partyDetailClear());
-
             }
-            this.dispatch(registryListFilter({...registryList.filter, text: filterText, itemSpecId: hasSpecification ? descItem.descItemSpecId : null}));
+            this.dispatch(registryListFilter({
+                ...registryList.filter,
+                registryTypeId: null,
+                text: filterText,
+                itemSpecId: hasSpecification ? descItem.descItemSpecId : null
+            }));
+
             this.dispatch(registryDetailFetchIfNeeded(value ? value.id : null));
             this.dispatch(modalDialogShow(this, null, <RegistrySelectPage
                 titles={[fundName, nodeName, itemName + (hasSpecification ? ': ' + specName : '')]}
                 hasParty={hasParty} onSelect={(data) => {
                     onSelect(data);
                     if (hasParty) {
-                        this.dispatch(partyListFilter({text:null, type:null, itemSpecId: null}));
+                        this.dispatch(partyListFilter({
+                            text:null,
+                            type:null,
+                            itemSpecId: null
+                        }));
                         this.dispatch(partyDetailClear());
                     }
-                    this.dispatch(registryListFilter({text: null, registryParentId: null, registryTypeId: null, versionId: null, itemSpecId: null, parents: [], typesToRoot: null}));
+                    this.dispatch(registryListFilter({...oldFilter}));
                     this.dispatch(registryDetailClear());
                     this.dispatch(modalDialogHide());
-            }}
-            />, classNames(MODAL_DIALOG_VARIANT.FULLSCREEN, MODAL_DIALOG_VARIANT.NO_HEADER)));
+                }}/>,
+                classNames(MODAL_DIALOG_VARIANT.FULLSCREEN, MODAL_DIALOG_VARIANT.NO_HEADER),
+                ()=>{this.dispatch(registryListFilter({...oldFilter}))}));
         };
 
         if (hasSpecification) {

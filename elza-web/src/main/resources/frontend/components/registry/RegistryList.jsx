@@ -76,7 +76,7 @@ class RegistryList extends AbstractReactComponent {
     };
 
     handleFilterRegistryType = (item) => {
-        this.dispatch(registryListFilter({...this.props.registryList.filter, registryTypeId: item ? item.id : null}));
+        this.dispatch(registryListFilter({...this.props.registryList.filter, itemSpecId:null, registryTypeId: item ? item.id : null}));
     };
 
     filterRegistryTypeClear = () => {
@@ -241,14 +241,13 @@ class RegistryList extends AbstractReactComponent {
 
         let regTypesWithAll = [...registryTypes];
         regTypesWithAll.unshift({name:this.registryTypeDefaultValue});
-
-
+        
         return <div className="registry-list">
             <div className="filter">
                 {registryTypes ? <Autocomplete
                         inputProps={ {placeholder: !filter.registryTypeId ? this.registryTypeDefaultValue : ""} }
                         items={regTypesWithAll}
-                        disabled={registryList.filter.parents.length ? true : false}
+                        disabled={registryList.filter.parents.length || registryList.filter.itemSpecId ? true : false}
                         tree
                         alwaysExpanded
                         allowSelectItem={(id, item) => true}
