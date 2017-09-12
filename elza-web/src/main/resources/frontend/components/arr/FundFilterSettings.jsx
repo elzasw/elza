@@ -277,8 +277,47 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
     }
 
     handleValueItemsChange(type, ids) {
+        const {selectedValueItems, selectedValueItemsType, valueSearchText, valueItems} = this.state;
+        const filtered = valueSearchText !== '';
+        const prevType = selectedValueItemsType;
+        //console.warn('input', type, ids, selectedValueItems, prevType, filtered, valueItems);
+
+        const valueItemsMap = valueItems.map(item => item.id);
+
+        let resultValueItems = [];
+        if (filtered) {
+            resultValueItems = selectedValueItems.filter(item => valueItemsMap.indexOf(item) === -1);
+            if (prevType === 'selected') {
+                if (type === 'selected') {
+                    resultValueItems.push(...ids);
+                } else {
+                    valueItemsMap.forEach(item => resultValueItems.push(item));
+                    ids.forEach(item => {
+                        if (resultValueItems.indexOf(item) === -1) {
+                            resultValueItems.push(item)
+                        }
+                    });
+                    type = 'selected';
+                }
+            } else {
+                if (type === 'selected') {
+                    valueItemsMap.forEach(item => resultValueItems.push(item));
+                    ids.forEach(item => {
+                        if (resultValueItems.indexOf(item) === -1) {
+                            resultValueItems.push(item)
+                        }
+                    });
+                    type = 'unselected';
+                } else {
+                    resultValueItems.push(...ids);
+                }
+            }
+        } else {
+            resultValueItems = ids;
+        }
+
         this.setState({
-            selectedValueItems: ids,
+            selectedValueItems: resultValueItems,
             selectedValueItemsType: type,
         })
     }

@@ -18,8 +18,7 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
     constructor(props) {
         super(props)
 
-        this.bindMethods('renderItemContent', 'handleCheckItem', 'handleSelectAll',
-            'handleUnselectAll', 'handleSearch', 'handleSearchClear', 'handleSearchChange', 'focus')
+        this.bindMethods('renderItemContent', 'handleCheckItem', 'handleSearch', 'handleSearchClear', 'handleSearchChange', 'focus')
 
         // Typ výběru:
         //   selectionType === 'selected', selectedIds obsahuje seznam vybraných id
@@ -88,51 +87,51 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
         onChange && onChange(selectionType, Object.keys(newSelectedIds), unselectedIds, "TOGGLE_ITEM")
     }
 
-    handleSelectAll() {
-        const {onChange, items} = this.props
-        const {supportInverseSelection} = this.state
-        let type
-        let selectedIds
+    handleSelectAll = () => {
+        const {onChange, items} = this.props;
+        const {supportInverseSelection} = this.state;
+        let type;
+        let selectedIds;
         if (supportInverseSelection) {
-            type = 'unselected'
-            selectedIds = {}
+            type = 'unselected';
+            selectedIds = {};
         } else {
-            type = 'selected'
-            selectedIds = {}
+            type = 'selected';
+            selectedIds = {};
             items.forEach(item => {
                 selectedIds[item.id] = true
-            })
+            });
         }
 
         this.setState({
             selectionType: type,
             selectedIds: selectedIds,
-        })
+        });
 
-        onChange && onChange(type, Object.keys(selectedIds), [], "SELECT_ALL")
-    }
+        onChange && onChange(type, Object.keys(selectedIds), [], "SELECT_ALL");
+    };
 
-    handleUnselectAll() {
-        const {onChange, items} = this.props
-        const {supportInverseSelection, selectedIds} = this.state
-        const type = 'selected'
+    handleUnselectAll = () => {
+        const {onChange, items} = this.props;
+        const {supportInverseSelection, selectedIds} = this.state;
+        const type = 'selected';
 
         this.setState({
             selectionType: type,
             selectedIds: {},
-        })
+        });
 
-        var unselectedIds = []
+        let unselectedIds = [];
         if (!supportInverseSelection) {
             items.forEach(item => {
                 if (selectedIds[item.id]) {
-                    unselectedIds.push(item.id)
+                    unselectedIds.push(item.id);
                 }
-            })
+            });
         }
 
-        onChange && onChange(type, [], unselectedIds, "UNSELECT_ALL")
-    }
+        onChange && onChange(type, [], unselectedIds, "UNSELECT_ALL");
+    };
 
     renderItemContent(item, isActive) {
         const {selectionType, selectedIds} = this.state

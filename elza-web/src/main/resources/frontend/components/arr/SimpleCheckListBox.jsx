@@ -44,7 +44,81 @@ class SimpleCheckListBox extends AbstractReactComponent {
     }
 
     handleSpecItemsChange = (type, ids) => {
-        this.props.onChange({type, ids})
+        const {specItems} = this.state;
+        const {items, value} = this.props;
+
+        let resultIds;
+
+        const prevType = value.type;
+        const prevIds = value.ids;
+        const filtered = specItems.length !== items.length;
+
+        //console.warn(type, ids, specItems, items, prevType, prevIds, filtered);
+
+        if (filtered) {
+            resultIds = [];
+            let filteredItemIds = {};
+            specItems.forEach(item => filteredItemIds[item.id] = true);
+
+            let selectedItemIds = {};
+            if (prevType === 'selected') {
+                items.forEach((item) => {
+                    if (prevIds.indexOf("" + item.id) !== -1 || prevIds.indexOf(item.id) !== -1) {
+                        selectedItemIds[item.id] = true;
+                    }
+                });
+                if (type === 'selected') {
+                    items.forEach((item) => {
+                        if ((selectedItemIds[item.id] && !filteredItemIds[item.id])) {
+                            resultIds.push(item.id);
+                        }
+                    });
+                } else {
+                    items.forEach((item) => {
+                        if (selectedItemIds[item.id] || filteredItemIds[item.id]) {
+                            resultIds.push(item.id);
+                        }
+                    });
+                    type = 'selected';
+                }
+
+                ids.forEach((id) => {
+                    resultIds.push(parseInt(id));
+                });
+
+            } else {
+
+                items.forEach((item) => {
+                    if (prevIds.indexOf("" + item.id) === -1 && prevIds.indexOf(item.id) === -1) {
+                        selectedItemIds[item.id] = true;
+                    }
+                });
+
+                if (type === 'selected') {
+                    items.forEach((item) => {
+                        if (!selectedItemIds[item.id] || filteredItemIds[item.id]) {
+                            resultIds.push(item.id);
+                        }
+                    });
+                    type = 'unselected';
+                } else {
+                    items.forEach((item) => {
+                        if (!selectedItemIds[item.id] && !filteredItemIds[item.id]) {
+                            resultIds.push(item.id);
+                        }
+                    });
+                }
+
+                ids.forEach((id) => {
+                    resultIds.push(parseInt(id));
+                });
+            }
+
+        } else {
+            resultIds = ids;
+        }
+
+        this.props.onChange({type, ids: resultIds})
     };
 
     handleSpecSearch = (text) => {
