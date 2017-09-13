@@ -172,10 +172,8 @@ public class SectionStorageDispatcher {
             storeNodes();
             storeNodeRegistry();
             storeLevels();
+            storeData();
             storeDescItems();
-            for (DataType dt : DataType.values()) {
-                storeData(dt);
-            }
         }
 
         public void storeNodes() {
@@ -209,18 +207,23 @@ public class SectionStorageDispatcher {
                 return;
             }
             storeNodes();
+            storeData();
             storageManager.saveSectionDescItems(descItems);
             descItems.clear();
         }
 
         public void storeData(DataType dataType) {
             Collection<ArrDataWrapper> group = data.get(dataType);
-            if (group.isEmpty()) {
-                return;
+            if (group.size() > 0) {
+                storageManager.saveSectionData(group);
+                group.clear();
             }
-            storeDescItems();
-            storageManager.saveSectionData(group);
-            group.clear();
+        }
+
+        public void storeData() {
+            for (DataType dt : DataType.values()) {
+                storeData(dt);
+            }
         }
     }
 }
