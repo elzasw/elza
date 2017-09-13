@@ -84,11 +84,11 @@ class DescItemRecordRef extends AbstractReactComponent {
 
     render() {
         const {descItem, locked, singleDescItemTypeEdit, hasSpecification, readMode, cal, onDetail, typePrefix, ...otherProps} = this.props;
-        const value = descItem.record ? descItem.record : null;
+        const record = descItem.record ? descItem.record : null;
 
         if (readMode) {
-            if (value) {
-                return <DescItemLabel onClick={onDetail.bind(this, descItem.record.recordId)} value={value.record} notIdentified={descItem.undefined} />
+            if (record) {
+                return <DescItemLabel onClick={onDetail.bind(this, record.id)} value={record.record} notIdentified={descItem.undefined} />
             } else {
                 return <DescItemLabel value={cal ? i18n("subNodeForm.descItemType.calculable") : ""} cal={cal} notIdentified={descItem.undefined} />
             }
@@ -106,7 +106,7 @@ class DescItemRecordRef extends AbstractReactComponent {
                     ref='registryField'
                     {...otherProps}
                     itemSpecId={descItem.descItemSpecId}
-                    value={value}
+                    value={record}
                     footer={!singleDescItemTypeEdit}
                     footerButtons={false}
                     detail={!descItem.undefined && (typePrefix == "output" ? false : !disabled)}
