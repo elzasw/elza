@@ -71,7 +71,7 @@ public class PolicyService {
      * @return seznam JP
      */
     public List<NodeItemWithParent> getTreePolicy(final ArrFundVersion fundVersion) {
-        Assert.notNull(fundVersion);
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
         Set<Integer> nodeIds = nodeRepository.findNodeIdsForFondWithPolicy(fundVersion.getFund());
         List<NodeItemWithParent> nodeItemWithParents = levelTreeCacheService.getNodeItemsWithParents(nodeIds, fundVersion);
         return nodeItemWithParents;
@@ -84,7 +84,7 @@ public class PolicyService {
      * @return seznam typů oprávnění
      */
     public List<RulPolicyType> getPolicyTypes(final ArrFundVersion fundVersion) {
-        Assert.notNull(fundVersion);
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
         RulRuleSet ruleSet = fundVersion.getRuleSet();
         return policyTypeRepository.findByRuleSet(ruleSet);
     }
@@ -109,9 +109,9 @@ public class PolicyService {
     public Map<RulPolicyType, Boolean> getVisiblePolicy(final Integer nodeId,
                                                         final ArrFundVersion fundVersion,
                                                         final Boolean includeParents) {
-        Assert.notNull(nodeId);
-        Assert.notNull(fundVersion);
-        Assert.notNull(includeParents);
+        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Assert.notNull(includeParents, "Vložení rodičů musí být vyplněné");
         Map<Integer, Map<RulPolicyType, Boolean>> nodeIdsMap =
                 getVisiblePolicy(Arrays.asList(nodeId), fundVersion, includeParents);
         return nodeIdsMap.get(nodeId);
@@ -128,9 +128,9 @@ public class PolicyService {
     public Map<Integer, Map<RulPolicyType, Boolean>> getVisiblePolicy(final List<Integer> nodeIds,
                                                                       final ArrFundVersion fundVersion,
                                                                       final Boolean includeParents) {
-        Assert.notNull(nodeIds);
-        Assert.notNull(fundVersion);
-        Assert.notNull(includeParents);
+        Assert.notNull(nodeIds, "Nebyly vyplněny identifikátory JP");
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Assert.notNull(includeParents, "Vložení rodičů musí být vyplněné");
 
         RulRuleSet ruleSet = fundVersion.getRuleSet();
         List<RulPolicyType> policyTypes = policyTypeRepository.findByRuleSet(ruleSet);
@@ -285,10 +285,10 @@ public class PolicyService {
                                  @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                  final Map<Integer, Boolean> policyTypeIdsMap,
                                  final Boolean includeSubtree) {
-        Assert.notNull(node);
-        Assert.notNull(fundVersion);
-        Assert.notNull(policyTypeIdsMap);
-        Assert.notNull(includeSubtree);
+        Assert.notNull(node, "JP musí být vyplněna");
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Assert.notNull(policyTypeIdsMap, "Mapa nesmí být null");
+        Assert.notNull(includeSubtree, "Hodnota musí být vyplněna");
 
         List<RulPolicyType> policyTypes = policyTypeIdsMap.size() == 0 ? new ArrayList<>() : policyTypeRepository.findByIds(policyTypeIdsMap.keySet());
 
@@ -373,7 +373,7 @@ public class PolicyService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void deleteFundVisiblePolicies(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund) {
-        Assert.notNull(fund);
+        Assert.notNull(fund, "AS musí být vyplněn");
 
         List<UIVisiblePolicy> policies = visiblePolicyRepository.findByFund(fund);
         if (!policies.isEmpty()) {

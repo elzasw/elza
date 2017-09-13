@@ -115,14 +115,14 @@ public class RuleController {
     @RequestMapping(value = "/deletePackage/{code}", method = RequestMethod.GET)
     @Transactional
     public void deletePackage(@PathVariable(value = "code") final String code) {
-        Assert.notNull(code);
+        Assert.notNull(code, "Kód musí být vyplněn");
         packageService.deletePackage(code);
     }
 
     @RequestMapping(value = "/exportPackage/{code}", method = RequestMethod.GET)
     public void exportPackageRest(@PathVariable(value = "code") final String code,
                                   HttpServletResponse response) {
-        Assert.notNull(code);
+        Assert.notNull(code, "Kód musí být vyplněn");
         try {
             File file = packageService.exportPackage(code);
             response.setContentType("application/zip");
@@ -176,9 +176,9 @@ public class RuleController {
     public void setVisiblePolicy(@PathVariable(value = "nodeId") final Integer nodeId,
                                  @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                  @RequestBody final VisiblePolicyParams visiblePolicyParams) {
-        Assert.notNull(nodeId);
-        Assert.notNull(fundVersionId);
-        Assert.notNull(visiblePolicyParams);
+        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(visiblePolicyParams, "Parametry musí být vyplněny");
 
         ArrNode node = nodeRepository.findOne(nodeId);
         Assert.notNull(node, "Uzel s id=" + nodeId + " neexistuje");
@@ -202,9 +202,9 @@ public class RuleController {
     public VisiblePolicyTypes getVisiblePolicy(@PathVariable(value = "nodeId") final Integer nodeId,
                                  @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                  @PathVariable(value = "includeParents") final Boolean includeParents) {
-        Assert.notNull(nodeId);
-        Assert.notNull(fundVersionId);
-        Assert.notNull(includeParents);
+        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(includeParents, "Vložení rodičů musí být vyplněné");
 
         ArrNode node = nodeRepository.findOne(nodeId);
         Assert.notNull(node, "Uzel s id=" + nodeId + " neexistuje");
@@ -221,7 +221,7 @@ public class RuleController {
     @Transactional
     @RequestMapping(value="/importPackage", method=RequestMethod.POST)
     public void importPackageRest(@RequestParam("file") final MultipartFile file){
-        Assert.notNull(file);
+        Assert.notNull(file, "Soubor musí být vyplněn");
         File temp = null;
         try {
             temp = File.createTempFile("importPackage", ".zip");

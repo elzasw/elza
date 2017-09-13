@@ -12,7 +12,7 @@ const initialState = {
     fetchedData: false,
     rowsDirty: false,   // zda jsou data tabulky již neaktuální - počet řádek na serveru již nemusí odpovídat řádkům na klientovi - např. byla přidána nová JP
     filterDirty: false,  // pokud nastala od poskledního přefiltrování nějaká změna v hodnotách PP - výsledek filtru již nemusí odpovídat tomu, co se zobrazuje
-    pageSize: 10,   // aktuální velikost stránky
+    pageSize: 25,   // aktuální velikost stránky
     pageIndex: 0,   // aktuální stránka
     items: [],
     itemsCount: 0,

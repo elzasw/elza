@@ -38,7 +38,7 @@ public class ScopeRepositoryImpl implements ScopeRepositoryCustom {
 
         String sqlPartyRef = "SELECT rs.* FROM reg_record r JOIN reg_scope rs ON r.scope_id = rs.scope_id WHERE r.record_id IN" +
                 " (" +
-                "  SELECT p.record_id FROM arr_data_party_ref dpf JOIN par_party p ON p.party_id = dpf.party_id WHERE dpf.data_id IN (SELECT d.data_id FROM arr_data d JOIN arr_item i ON d.item_id = i.item_id JOIN arr_desc_item di ON di.item_id = i.item_id WHERE i.delete_change_id IS NULL AND d.data_type_id = 8 AND di.node_id IN (" + sql_nodes + "))" +
+                "  SELECT p.record_id FROM arr_data_party_ref dpf JOIN par_party p ON p.party_id = dpf.party_id WHERE dpf.data_id IN (SELECT d.data_id FROM arr_item i JOIN arr_data d ON d.data_id = i.data_id JOIN arr_desc_item di ON di.item_id = i.item_id WHERE i.delete_change_id IS NULL AND d.data_type_id = 8 AND di.node_id IN (" + sql_nodes + "))" +
                 " )";
 
         Query queryPartyRef = entityManager.createNativeQuery(sqlPartyRef, RegScope.class);
@@ -47,7 +47,7 @@ public class ScopeRepositoryImpl implements ScopeRepositoryCustom {
 
         String sqlRecordRef = "SELECT rs.* FROM reg_record r JOIN reg_scope rs ON r.scope_id = rs.scope_id WHERE r.record_id IN" +
                 " (" +
-                "  SELECT drf.record_id FROM arr_data_record_ref drf WHERE drf.data_id IN (SELECT d.data_id FROM arr_data d JOIN arr_item i ON d.item_id = i.item_id JOIN arr_desc_item di ON di.item_id = i.item_id WHERE i.delete_change_id IS NULL AND d.data_type_id = 9 AND di.node_id IN (" + sql_nodes + "))" +
+                "  SELECT drf.record_id FROM arr_data_record_ref drf WHERE drf.data_id IN (SELECT d.data_id FROM arr_item i JOIN arr_data d ON d.data_id = i.data_id JOIN arr_desc_item di ON di.item_id = i.item_id WHERE i.delete_change_id IS NULL AND d.data_type_id = 9 AND di.node_id IN (" + sql_nodes + "))" +
                 " )";
 
         Query queryRecordRef = entityManager.createNativeQuery(sqlRecordRef, RegScope.class);

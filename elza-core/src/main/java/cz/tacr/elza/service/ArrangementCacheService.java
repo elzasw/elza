@@ -289,7 +289,7 @@ public class ArrangementCacheService {
                 ArrDescItem descItemLocal = descItems.get(i);
                 if (descItemLocal.getDescItemObjectId().equals(descItem.getDescItemObjectId())) {
                     if (move) {
-                        descItem.setItem(descItemLocal.getItem());
+                        descItem.setData(descItemLocal.getData());
                     }
                     index = i;
                     break;

@@ -2,6 +2,7 @@ package cz.tacr.elza;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 
 import org.springframework.util.Assert;
 
@@ -27,9 +28,9 @@ public class FilterTools {
      * @return podpole nebo prázdné pole, pokud indexy přesahují rozsah pole
      */
     public static <T> ArrayList<T> getSublist(final int page, final int pageSize, final ArrayList<T> items) {
-        Assert.notNull(items);
-        Assert.isTrue(page >= 0);
-        Assert.isTrue(pageSize > 0);
+        Assert.notNull(items, "Položky nesmí být prázdné");
+        Assert.isTrue(page >= 0, "Počet stran musí být kladné");
+        Assert.isTrue(pageSize > 0, "Velikost stránky musí být větší než 0");
 
 
         int fromIndex = page * pageSize;
@@ -51,8 +52,8 @@ public class FilterTools {
      * @return příznak zda byl ve vstupních datech null
      */
     public static <T> boolean removeNullValues(final Collection<T> values) {
-        Assert.notNull(values);
+        Assert.notNull(values, "Hodnoty musí být vyplněny");
 
-        return values.removeIf(i -> i == null);
+        return values.removeIf(Objects::isNull);
     }
 }

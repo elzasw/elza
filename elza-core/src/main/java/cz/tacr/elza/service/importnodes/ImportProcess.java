@@ -291,7 +291,7 @@ public class ImportProcess {
                 Map<String, Integer> descItemPositionMap = new HashMap<>();
                 for (Item item : items) {
                     ArrDescItem descItem = new ArrDescItem();
-                    descItem.setUndefined(false);
+                    //descItem.setUndefined(false);
 
                     Integer position = descItemPositionMap.merge(item.getTypeCode(), 1, (a, b) -> a + b);
 
@@ -307,7 +307,7 @@ public class ImportProcess {
                     ArrData data = createArrData(filesMapper, packetsMapper, item, descItem);
 
                     if (data != null) {
-                        data.setItem(descItem);
+                        descItem.setData(data);
                         data.setDataType(itemType.getDataType());
                         dataList.add(data);
                     }
@@ -358,7 +358,7 @@ public class ImportProcess {
      * @param descItem      vazební item   @return vytvořená data
      */
     private ArrData createArrData(final Map<String, ArrFile> filesMapper, final Map<Pair<String, String>, ArrPacket> packetsMapper, final Item item, final ArrDescItem descItem) {
-        ArrData data = null;
+        ArrData data;
         if (item instanceof ItemInt) {
             data = new ArrDataInteger();
             ((ArrDataInteger) data).setValue(((ItemInt) item).getValue());
@@ -420,7 +420,8 @@ public class ImportProcess {
             data = new ArrDataRecordRef();
             ((ArrDataRecordRef) data).setRecord(regRecordRepository.getOne(((ItemRecordRef) item).getRecordId()));
         } else {
-            descItem.setUndefined(true);
+            //descItem.setUndefined(true);
+            data = null;
         }
         return data;
     }
@@ -650,11 +651,11 @@ public class ImportProcess {
             nodeRegisterRepository.save(nodeRegisters);
             nodeRegisterRepository.flush();
 
-            descItemRepository.save(descItems);
-            descItemRepository.flush();
-
             dataRepository.save(dataList);
             dataRepository.flush();
+
+            descItemRepository.save(descItems);
+            descItemRepository.flush();
 
             levels = new ArrayList<>();
             nodeRegisters = new ArrayList<>();

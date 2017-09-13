@@ -118,7 +118,7 @@ public class UpdateConformityInfoWorker implements Runnable {
      * @return False when cannot be added because worker is terminated.
      */
     public synchronized boolean addNodes(Collection<ArrNode> nodes) {
-        Assert.notNull(nodes);
+        Assert.notNull(nodes, "JP musí být vyplněny");
         if (!WorkerStatus.isRunning(status)) {
             return false;
         }

@@ -226,10 +226,10 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
                                   final String bulkActionCode,
                                   @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
                                   final List<Integer> inputNodeIds) {
-        Assert.notNull(bulkActionCode);
-        Assert.isTrue(StringUtils.isNotBlank(bulkActionCode));
-        Assert.notNull(fundVersionId);
-        Assert.notEmpty(inputNodeIds);
+        Assert.notNull(bulkActionCode, "Musí být vyplněn kód hromadné akce");
+        Assert.isTrue(StringUtils.isNotBlank(bulkActionCode), "Musí být vyplněn kód hromadné akce");
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notEmpty(inputNodeIds, "Musí být vyplněna alespoň jedna JP");
 
         ArrBulkActionRun bulkActionRun = new ArrBulkActionRun();
 
@@ -485,7 +485,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * @return hromadná akce
      */
     public ArrBulkActionRun getArrBulkActionRun(final Integer bulkActionRunId) {
-        Assert.notNull(bulkActionRunId);
+        Assert.notNull(bulkActionRunId, "Identifikátor běhu hromadné akce musí být vyplněn");
         ArrBulkActionRun bulkActionRun = bulkActionRepository.findOne(bulkActionRunId);
         checkAuthBA(bulkActionRun.getFundVersion());
         return bulkActionRun;

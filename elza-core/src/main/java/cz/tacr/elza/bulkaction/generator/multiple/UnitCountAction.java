@@ -3,9 +3,9 @@ package cz.tacr.elza.bulkaction.generator.multiple;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.UnitCountActionResult;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataPacketRef;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrItemInt;
-import cz.tacr.elza.domain.ArrItemPacketRef;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -15,7 +15,6 @@ import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.utils.Yaml;
 import org.apache.commons.lang.BooleanUtils;
@@ -288,8 +287,8 @@ public class UnitCountAction extends Action {
         RulItemSpec countSpec = itemSpecs.get("FOLDER_SINGLE_TYPE");
 
         for (ArrDescItem item : items) {
-            if (countType.equals(item.getItemType()) && BooleanUtils.isNotTrue(item.getUndefined())) {
-                addToCount(countSpec.getShortcut(), ((ArrItemInt) item.getItem()).getValue());
+            if (countType.equals(item.getItemType()) && BooleanUtils.isNotTrue(item.isUndefined())) {
+                addToCount(countSpec.getShortcut(), ((ArrDataInteger) item.getData()).getValue());
             }
         }
     }
@@ -303,8 +302,8 @@ public class UnitCountAction extends Action {
         RulItemType extraType = itemTypes.get("STORAGE");
 
         for (ArrDescItem item : items) {
-            if (item.getItemType().equals(extraType) && BooleanUtils.isNotTrue(item.getUndefined())) {
-                ArrPacket packet = ((ArrItemPacketRef) item.getItem()).getPacket();
+            if (item.getItemType().equals(extraType) && BooleanUtils.isNotTrue(item.isUndefined())) {
+                ArrPacket packet = ((ArrDataPacketRef) item.getData()).getPacket();
                 String storageNumber = packet.getStorageNumber();
                 if (!storageNumbers.contains(storageNumber)) {
                 	RulPacketType packetType = packet.getPacketType();
@@ -326,9 +325,9 @@ public class UnitCountAction extends Action {
     private void countExtraUnit(final List<ArrDescItem> items) {
         RulItemType extraType = itemTypes.get("EXTRA_UNITS");
         for (ArrDescItem item : items) {
-            if (item.getItemType().equals(extraType) && BooleanUtils.isNotTrue(item.getUndefined())) {
+            if (item.getItemType().equals(extraType) && BooleanUtils.isNotTrue(item.isUndefined())) {
                 RulItemSpec itemSpec = item.getItemSpec();
-                addToCount(itemSpec.getShortcut(), ((ArrItemInt) item.getItem()).getValue());
+                addToCount(itemSpec.getShortcut(), ((ArrDataInteger) item.getData()).getValue());
             }
         }
     }
@@ -344,7 +343,7 @@ public class UnitCountAction extends Action {
 
         for (ArrDescItem item : items) {
             if (item.getItemType().equals(extraType)) {
-                addToCount(extraSpec.getShortcut(), ((ArrItemInt) item.getItem()).getValue());
+                addToCount(extraSpec.getShortcut(), ((ArrDataInteger) item.getData()).getValue());
             }
         }
     }
@@ -394,7 +393,7 @@ public class UnitCountAction extends Action {
     private void addItemWithTypeToCount(RulItemType unitType, List<ArrDescItem> items) {
     	for(ArrDescItem descItem: items)
     	{
-    		if(descItem.getItemType().equals(unitType) && BooleanUtils.isNotTrue(descItem.getUndefined()))
+    		if(descItem.getItemType().equals(unitType) && BooleanUtils.isNotTrue(descItem.isUndefined()))
     		{
     			// TODO: ignore some types
     			addToCount(descItem.getItemSpec().getShortcut(), 1);

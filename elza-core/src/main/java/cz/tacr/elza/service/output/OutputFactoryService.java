@@ -11,6 +11,21 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDecimal;
+import cz.tacr.elza.domain.ArrDataFileRef;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataJsonTable;
+import cz.tacr.elza.domain.ArrDataNull;
+import cz.tacr.elza.domain.ArrDataPacketRef;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUnitid;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -355,49 +370,51 @@ public class OutputFactoryService implements NodeLoader {
      * @return item
      */
     private AbstractItem getItemByType(final OutputImpl output, final ArrItem arrItem) {
-        final ArrItemData itemData = arrItem.getItem();
+        final ArrData data = arrItem.getData();
 
         AbstractItem item;
-        if (itemData instanceof ArrItemUnitid) {
-            item = getItemUnitid((ArrItemUnitid) itemData);
-        } else if (itemData instanceof ArrItemUnitdate) {
-            item = getItemUnitdate((ArrItemUnitdate) itemData);
-        } else if (itemData instanceof ArrItemText) {
-            item = getItemUnitText((ArrItemText) itemData);
-        } else if (itemData instanceof ArrItemString) {
-            item = getItemUnitString((ArrItemString) itemData);
-        } else if (itemData instanceof ArrItemRecordRef) {
-            item = getItemUnitRecordRef(output, (ArrItemRecordRef) itemData);
-        } else if (itemData instanceof ArrItemPartyRef) {
-            item = getItemUnitPartyRef(output, (ArrItemPartyRef) itemData);
-        } else if (itemData instanceof ArrItemPacketRef) {
-            item = getItemUnitPacketRef((ArrItemPacketRef) itemData);
-        } else if (itemData instanceof ArrItemJsonTable) {
-            item = getItemUnitJsonTable(output, arrItem.getItemType(), (ArrItemJsonTable) itemData);
-        } else if (itemData instanceof ArrItemInt) {
-            item = getItemUnitInteger((ArrItemInt) itemData);
-        } else if (itemData instanceof ArrItemFormattedText) {
-            item = getItemUnitFormatedText((ArrItemFormattedText) itemData);
-        } else if (itemData instanceof ArrItemFileRef) {
-            item = getItemFile((ArrItemFileRef) itemData);
-        } else if (itemData instanceof ArrItemEnum) {
+        if (data == null) {
+            item = new ItemString(data.toString());
+        } else if (data instanceof ArrDataUnitid) {
+            item = getItemUnitid((ArrDataUnitid) data);
+        } else if (data instanceof ArrDataUnitdate) {
+            item = getItemUnitdate((ArrDataUnitdate) data);
+        } else if (data instanceof ArrDataText && arrItem.getItemType().getDataType().getCode().equals("TEXT")) {
+            item = getItemUnitText((ArrDataText) data);
+        } else if (data instanceof ArrDataString) {
+            item = getItemUnitString((ArrDataString) data);
+        } else if (data instanceof ArrDataRecordRef) {
+            item = getItemUnitRecordRef(output, (ArrDataRecordRef) data);
+        } else if (data instanceof ArrDataPartyRef) {
+            item = getItemUnitPartyRef(output, (ArrDataPartyRef) data);
+        } else if (data instanceof ArrDataPacketRef) {
+            item = getItemUnitPacketRef((ArrDataPacketRef) data);
+        } else if (data instanceof ArrDataJsonTable) {
+            item = getItemUnitJsonTable((ArrDataJsonTable) data);
+        } else if (data instanceof ArrDataInteger) {
+            item = getItemUnitInteger((ArrDataInteger) data);
+        } else if (data instanceof ArrDataText && arrItem.getItemType().getDataType().getCode().equals("FORMATTED_TEXT")) {
+            item = getItemUnitFormatedText((ArrDataText) data);
+        } else if (data instanceof ArrDataFileRef) {
+            item = getItemFile((ArrDataFileRef) data);
+        } else if (data instanceof ArrDataNull && arrItem.getItemType().getDataType().getCode().equals("ENUM")) {
             item = ItemEnum.newInstance();
-        } else if (itemData instanceof ArrItemDecimal) {
-            item = getItemUnitDecimal((ArrItemDecimal) itemData);
-        } else if (itemData instanceof ArrItemCoordinates) {
-            item = getItemUnitCoordinates((ArrItemCoordinates) itemData);
+        } else if (data instanceof ArrDataDecimal) {
+            item = getItemUnitDecimal((ArrDataDecimal) data);
+        } else if (data instanceof ArrDataCoordinates) {
+            item = getItemUnitCoordinates((ArrDataCoordinates) data);
         } else {
-            logger.warn("Neznámý datový typ hodnoty Item ({}) je zpracován jako string.", itemData.getClass().getName());
-            item = new ItemString(itemData.toString());
+            logger.warn("Neznámý datový typ hodnoty Item ({}) je zpracován jako string.", data.getClass().getName());
+            item = new ItemString(data.toString());
         }
 
         item.setPosition(arrItem.getPosition());
-        item.setUndefined(arrItem.getUndefined());
+        item.setUndefined(arrItem.getData() == null);
 
         return item;
     }
 
-    private AbstractItem getItemFile(final ArrItemFileRef itemData) {
+    private AbstractItem getItemFile(final ArrDataFileRef itemData) {
         final ArrFile arrFile = itemData.getFile();
         final ItemFile itemFile = new ItemFile(arrFile);
         itemFile.setName(arrFile.getName());
@@ -409,11 +426,11 @@ public class OutputFactoryService implements NodeLoader {
         return itemFile;
     }
 
-    private AbstractItem getItemUnitString(final ArrItemString itemData) {
+    private AbstractItem getItemUnitString(final ArrDataString itemData) {
         return new ItemString(itemData.getValue());
     }
 
-    private AbstractItem getItemUnitRecordRef(final OutputImpl output, final ArrItemRecordRef itemData) {
+    private AbstractItem getItemUnitRecordRef(final OutputImpl output, final ArrDataRecordRef itemData) {
         Record record = output.getRecordFromCache(itemData.getRecordId());
         if(record == null) {
             RegRecord regRecord = itemData.getRecord();
@@ -422,7 +439,7 @@ public class OutputFactoryService implements NodeLoader {
         return new ItemRecordRef(record);
     }
 
-    private AbstractItem getItemUnitPartyRef(final OutputImpl output, final ArrItemPartyRef itemData) {
+    private AbstractItem getItemUnitPartyRef(final OutputImpl output, final ArrDataPartyRef itemData) {
         Party party = output.getPartyFromCache(itemData.getPartyId());
         if(party==null) {
             final ParParty parParty = itemData.getParty();
@@ -431,7 +448,7 @@ public class OutputFactoryService implements NodeLoader {
         return new ItemPartyRef(party);
     }
 
-    private AbstractItem getItemUnitPacketRef(final ArrItemPacketRef itemData) {
+    private AbstractItem getItemUnitPacketRef(final ArrDataPacketRef itemData) {
         Packet packet = packetMap.get(itemData.getPacketId());
         if (packet == null) {
             final ArrPacket arrPacket = itemData.getPacket();
@@ -449,32 +466,32 @@ public class OutputFactoryService implements NodeLoader {
         return new ItemPacketRef(packet);
     }
 
-    private AbstractItem getItemUnitJsonTable(OutputImpl output, RulItemType rulItemType, final ArrItemJsonTable itemData) {
+    private AbstractItem getItemUnitJsonTable(OutputImpl output, RulItemType rulItemType, final ArrDataJsonTable itemData) {
         ItemType itemType = output.getItemType(rulItemType);
         return new ItemJsonTable(itemType.getTableDefinition(), itemData.getValue());
     }
 
-    private AbstractItem getItemUnitFormatedText(final ArrItemFormattedText itemData) {
+    private AbstractItem getItemUnitFormatedText(final ArrDataText itemData) {
         return new ItemText(itemData.getValue());
     }
 
-    private AbstractItem getItemUnitInteger(final ArrItemInt itemData) {
+    private AbstractItem getItemUnitInteger(final ArrDataInteger itemData) {
         return new ItemInteger(itemData.getValue());
     }
 
-    private AbstractItem getItemUnitDecimal(final ArrItemDecimal itemData) {
+    private AbstractItem getItemUnitDecimal(final ArrDataDecimal itemData) {
         return new ItemDecimal(itemData.getValue());
     }
 
-    private AbstractItem getItemUnitCoordinates(final ArrItemCoordinates itemData) {
+    private AbstractItem getItemUnitCoordinates(final ArrDataCoordinates itemData) {
         return new ItemCoordinates(itemData.getValue());
     }
 
-    private AbstractItem getItemUnitText(final ArrItemText itemData) {
+    private AbstractItem getItemUnitText(final ArrDataText itemData) {
         return new ItemText(itemData.getValue());
     }
 
-    private AbstractItem getItemUnitdate(final ArrItemUnitdate itemData) {
+    private AbstractItem getItemUnitdate(final ArrDataUnitdate itemData) {
         // lazy initialization of calendar types
         if(calendarTypes.size()==0) {
             calendarTypeRepository.findAll().forEach(calendarType -> calendarTypes.put(calendarType.getCalendarTypeId(), calendarType));
@@ -484,7 +501,7 @@ public class OutputFactoryService implements NodeLoader {
         return new ItemUnitdate(data);
     }
 
-    private AbstractItem getItemUnitid(final ArrItemUnitid itemData) {
+    private AbstractItem getItemUnitid(final ArrDataUnitid itemData) {
         return new ItemUnitId(itemData.getValue());
     }
 

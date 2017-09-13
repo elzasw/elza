@@ -83,7 +83,7 @@ public class ArrMoveLevelService {
                                  final Collection<ArrNode> transportNodes,
                                  final ArrNode transportParentNode) {
 
-        Assert.notEmpty(transportNodes);
+        Assert.notEmpty(transportNodes, "Musí být vyplněn alespoň jedna JP");
 
         ArrChange change = arrangementService.createChange(ArrChange.Type.MOVE_LEVEL, staticNode);
         arrangementService.setPrimaryNode(change, staticNode);
@@ -93,7 +93,7 @@ public class ArrMoveLevelService {
                                         ? staticLevelParent: arrangementService.lockNode(transportParentNode, version, change);
         ArrLevel staticLevel = levelRepository
                 .findNodeInRootTreeByNodeId(staticNode, version.getRootNode(), version.getLockChange());
-        Assert.notNull(staticLevel);
+        Assert.notNull(staticLevel, "Referenční level musí být vyplněn");
 
 
         List<ArrLevel> transportLevels = new ArrayList<>(transportNodes.size());
@@ -203,7 +203,7 @@ public class ArrMoveLevelService {
                                 final ArrNode staticParentNode,
                                 final List<ArrNode> transportNodes,
                                 final ArrNode transportParentNode) {
-        Assert.notEmpty(transportNodes);
+        Assert.notEmpty(transportNodes, "Musí být vyplněn alespoň jedna JP");
 
         ArrChange change = arrangementService.createChange(ArrChange.Type.MOVE_LEVEL, staticNode);
 
@@ -212,7 +212,7 @@ public class ArrMoveLevelService {
                                         ? staticLevelParent : arrangementService.lockNode(transportParentNode, version, change);
         ArrLevel staticLevel = levelRepository
                 .findNodeInRootTreeByNodeId(staticNode, version.getRootNode(), version.getLockChange());
-        Assert.notNull(staticLevel);
+        Assert.notNull(staticLevel, "Referenční level musí být vyplněn");
 
 
         List<ArrLevel> transportLevels = new ArrayList<>(transportNodes.size());
@@ -403,8 +403,8 @@ public class ArrMoveLevelService {
     public ArrLevel deleteLevel(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                 final ArrNode deleteNode,
                                 final ArrNode deleteNodeParent) {
-        Assert.notNull(version);
-        Assert.notNull(deleteNode);
+        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Assert.notNull(deleteNode, "Mazané JP musí být vyplněna");
 
         ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_LEVEL, deleteNode);
 
@@ -453,7 +453,7 @@ public class ArrMoveLevelService {
                                          final ArrChange change,
                                          @Nullable final ArrLevel beforeLevel,
                                          @Nullable final ArrLevel afterLevel) {
-        Assert.isTrue((beforeLevel == null && afterLevel != null) || (beforeLevel != null && afterLevel == null));
+        Assert.isTrue((beforeLevel == null && afterLevel != null) || (beforeLevel != null && afterLevel == null), "Musí být platné");
 
         boolean needInsert = true;
         int position = firstPosition;
@@ -521,8 +521,8 @@ public class ArrMoveLevelService {
                                 @Nullable final String scenarionName,
                                 @Nullable final Set<RulItemType> descItemCopyTypes) {
 
-        Assert.notNull(staticNode);
-        Assert.notNull(staticNodeParent);
+        Assert.notNull(staticNode, "Refereční JP musí být vyplněna");
+        Assert.notNull(staticNodeParent, "Rodič JP musí být vyplněn");
         final ArrLevel staticLevel = levelRepository
                 .findNodeInRootTreeByNodeId(staticNode, version.getRootNode(), version.getLockChange());
 
@@ -540,7 +540,7 @@ public class ArrMoveLevelService {
                 throw new IllegalStateException("Neznámý typ směru přidání uzlu " + direction.name());
         }
 
-        Assert.notNull(newLevel);
+        Assert.notNull(newLevel, "Level musí být vyplněn");
         ArrChange change = newLevel.getCreateChange();
 
         Map<Integer, RulItemType> descItemTypeCopyMap = ElzaTools
@@ -594,9 +594,9 @@ public class ArrMoveLevelService {
                                          final ArrNode staticNode,
                                          final ArrNode staticNodeParent,
                                          final AddLevelDirection direction) {
-        Assert.notNull(version);
-        Assert.notNull(staticNode);
-        Assert.notNull(staticNodeParent);
+        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Assert.notNull(staticNode, "Refereční JP musí být vyplněna");
+        Assert.notNull(staticNodeParent, "Rodič JP musí být vyplněn");
 
 
         arrangementService.isValidAndOpenVersion(version);
@@ -604,7 +604,7 @@ public class ArrMoveLevelService {
         ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_LEVEL, staticNodeParent);
 
         final ArrLevel staticLevelParent = arrangementService.lockNode(staticNodeParent, version, change);
-        Assert.notNull(staticLevelParent);
+        Assert.notNull(staticLevelParent, "Rodič levelu musí být vyplněn");
 
         final ArrLevel staticLevel = levelRepository
                 .findNodeInRootTreeByNodeId(staticNode, version.getRootNode(), version.getLockChange());
@@ -634,15 +634,15 @@ public class ArrMoveLevelService {
      */
     private ArrLevel addLevelUnder(final ArrFundVersion version,
                                    final ArrNode staticNode) {
-        Assert.notNull(version);
-        Assert.notNull(staticNode);
+        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Assert.notNull(staticNode, "Refereční JP musí být vyplněna");
 
 
         arrangementService.isValidAndOpenVersion(version);
 
         ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_LEVEL, staticNode);
         final ArrLevel staticLevel = arrangementService.lockNode(staticNode, version, change);
-        Assert.notNull(staticLevel);
+        Assert.notNull(staticLevel, "Referenční level musí být vyplněn");
 
 
         Integer maxPosition = levelRepository.findMaxPositionUnderParent(staticLevel.getNode());
@@ -664,8 +664,8 @@ public class ArrMoveLevelService {
      * @param targetNode cílový statický uzel
      */
     private void checkCycle(ArrLevel movedNode, ArrLevel targetNode) {
-        Assert.notNull(movedNode);
-        Assert.notNull(targetNode);
+        Assert.notNull(movedNode, "Level musí být vyplněn");
+        Assert.notNull(targetNode, "Level musí být vyplněn");
 
         if (targetNode.getNodeParent() == null) {
             return;
@@ -690,8 +690,8 @@ public class ArrMoveLevelService {
      * @return nový level
      */
     private ArrLevel createNewLevelVersion(ArrLevel node, ArrChange change) {
-        Assert.notNull(node);
-        Assert.notNull(change);
+        Assert.notNull(node, "JP musí být vyplněna");
+        Assert.notNull(change, "Změna musí být vyplněna");
 
         ArrLevel newNode = copyLevelData(node);
         newNode.setCreateChange(change);
@@ -708,7 +708,7 @@ public class ArrMoveLevelService {
      * @return kopie
      */
     private ArrLevel copyLevelData(ArrLevel level) {
-        Assert.notNull(level);
+        Assert.notNull(level, "Level musí být vyplněn");
 
         ArrLevel newNode = new ArrLevel();
         newNode.setNode(level.getNode());
@@ -726,8 +726,8 @@ public class ArrMoveLevelService {
      * @param firstPosition pozice prvního přesouvaného uzlu
      */
     public void shiftNodes(Collection<ArrLevel> nodesToShift, ArrChange change, final int firstPosition) {
-        Assert.notNull(nodesToShift);
-        Assert.notNull(change);
+        Assert.notNull(nodesToShift, "Level k posunu musí být vyplněny");
+        Assert.notNull(change, "Změna musí být vyplněna");
 
         int position = firstPosition + nodesToShift.size() - 1;
 
@@ -751,7 +751,7 @@ public class ArrMoveLevelService {
      * @return seznam uzlů se stejným rodičem a vyšší pozicí
      */
     public List<ArrLevel> nodesToShift(ArrLevel movedLevel) {
-        Assert.notNull(movedLevel);
+        Assert.notNull(movedLevel, "Level k posunu musí být vyplněn");
 
         return levelRepository.findByParentNodeAndPositionGreaterThanOrderByPositionAsc(movedLevel.getNodeParent(),
                 movedLevel.getPosition());

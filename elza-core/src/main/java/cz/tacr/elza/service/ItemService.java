@@ -234,50 +234,40 @@ public class ItemService implements InitializingBean {
     }
 
     public ArrData getDataByItem(final ArrItem item) {
-        if (BooleanUtils.isTrue(item.getUndefined())) {
-            return null;
-        }
-        List<ArrData> dataList = dataRepository.findByItem(item);
-        if (dataList.size() != 1) {
-            throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
-        }
-        return dataList.get(0);
+        return item.getData();
     }
 
+    @Deprecated
     public <T extends ArrItem> T save(final T item,
                                       final boolean createNewVersion) {
-        itemRepository.save(item);
+        ArrData data = item.getData();
 
-        ArrItemData itemData = item.getItem();
+        if (data != null) {
+            if (data instanceof ArrDataJsonTable) {
+                checkJsonTableData(((ArrDataJsonTable) data).getValue(), item.getItemType().getColumnsDefinition());
+            }
 
-        if (itemData == null || BooleanUtils.isTrue(itemData.getUndefined())) {
-            return item;
+            ArrData dataNew;
+            if (createNewVersion) {
+                dataNew = facade.map(data, ArrData.class);
+                //data.setItem(item);
+                dataNew.setDataType(item.getItemType().getDataType());
+            } else {
+                dataNew = data;
+            }
+
+            try {
+                mapRepository.get(dataNew.getClass()).save(dataNew);
+            } catch (NullPointerException e) {
+                throw new NotImplementedException("Nebyla namapována repozitory pro datový typ");
+            }
+
+            item.setData(dataNew);
         }
-
-        if (itemData instanceof ArrItemJsonTable) {
-            checkJsonTableData(((ArrItemJsonTable) itemData).getValue(), item.getItemType().getColumnsDefinition());
-        }
-
-        ArrData data;
-        if (createNewVersion) {
-            data = facade.map(itemData, ArrData.class);
-            data.setItem(item);
-            data.setDataType(item.getItemType().getDataType());
-        } else {
-            data = getDataByItem(item);
-            facade.map(itemData, data);
-        }
-
-        try {
-            mapRepository.get(data.getClass()).save(data);
-        } catch (NullPointerException e) {
-            throw new NotImplementedException("Nebyla namapována repozitory pro datový typ");
-        }
-
-        return item;
+        return itemRepository.save(item);
     }
 
-    public <T extends ArrItem> T loadData(final T item) {
+    /*public <T extends ArrItem> T loadData(final T item) {
         ArrData data = getDataByItem(item);
         ArrItemData itemData;
         if (data == null) {
@@ -287,33 +277,7 @@ public class ItemService implements InitializingBean {
         }
         item.setItem(itemData);
         return item;
-    }
-
-    public void loadData(final List<? extends ArrItem> items) {
-        if (items.isEmpty()) {
-            return;
-        }
-        List<ArrData> itemsData = dataRepository.findByItem(items);
-        if (itemsData.size() != items.size()) {
-            // Will be probably removed in MT05 (item without data).
-            throw new IllegalStateException("Missing data for specified items");
-        }
-        for (ArrData data : itemsData) {
-            data = HibernateUtils.unproxy(data);
-            for (ArrItem item : items) {
-                if (item.getItemId().equals(data.getItem().getItemId())) {
-                    ArrItemData itemData = facade.map(data, ArrItemData.class);
-                    item.setItem(itemData);
-                    break;
-                }
-            }
-        }
-        for (ArrItem item : items) {
-            if (item.getItem() == null) {
-                item.setItem(descItemFactory.createItemByType(item.getItemType().getDataType()));
-            }
-        }
-    }
+    }*/
 
     public <T extends ArrItem> void moveDown(final List<T> items, final ArrChange change) {
         for (ArrItem itemMove : items) {
@@ -323,7 +287,7 @@ public class ItemService implements InitializingBean {
 
             ArrItem itemNew;
             try {
-                itemNew = itemMove.getClass().getConstructor().newInstance(itemMove.getItem().getClass());
+                itemNew = itemMove.getClass().getConstructor().newInstance();
             } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
                 throw new SystemException(e);
             }
@@ -332,10 +296,9 @@ public class ItemService implements InitializingBean {
             itemNew.setCreateChange(change);
             itemNew.setPosition(itemMove.getPosition() + 1);
 
-            itemRepository.save(itemNew);
-
             // pro odverzovanou hodnotu atributu je nutné vytvořit kopii dat
             copyItemData(itemMove, itemNew);
+            itemRepository.save(itemNew);
         }
     }
 
@@ -387,16 +350,16 @@ public class ItemService implements InitializingBean {
         }).register();
 
         factory.classMap(ArrDataCoordinates.class, ArrDataCoordinates.class)
-        .customize(new CustomMapper<ArrDataCoordinates, ArrDataCoordinates>() {
-            @Override
-            public void mapAtoB(final ArrDataCoordinates arrDataCoordinates,
-                                final ArrDataCoordinates arrDataCoordinatesNew,
-                                final MappingContext context) {
-                arrDataCoordinatesNew.setDataType(arrDataCoordinates.getDataType());
-                arrDataCoordinatesNew.setItem(arrDataCoordinates.getItem());
-                arrDataCoordinatesNew.setValue(arrDataCoordinates.getValue());
-            }
-        }).register();
+                .customize(new CustomMapper<ArrDataCoordinates, ArrDataCoordinates>() {
+                    @Override
+                    public void mapAtoB(final ArrDataCoordinates arrDataCoordinates,
+                                        final ArrDataCoordinates arrDataCoordinatesNew,
+                                        final MappingContext context) {
+                        arrDataCoordinatesNew.setDataType(arrDataCoordinates.getDataType());
+
+                        arrDataCoordinatesNew.setValue(arrDataCoordinates.getValue());
+                    }
+                }).register();
     }
 
     /**
@@ -423,16 +386,15 @@ public class ItemService implements InitializingBean {
         }).register();
 
         factory.classMap(ArrDataJsonTable.class, ArrDataJsonTable.class)
-        .customize(new CustomMapper<ArrDataJsonTable, ArrDataJsonTable>() {
-            @Override
-            public void mapAtoB(final ArrDataJsonTable arrDataJsonTable,
-                                final ArrDataJsonTable arrDataJsonTableNew,
-                                final MappingContext context) {
-                arrDataJsonTableNew.setDataType(arrDataJsonTable.getDataType());
-                arrDataJsonTableNew.setItem(arrDataJsonTable.getItem());
-                arrDataJsonTableNew.setValue(arrDataJsonTable.getValue());
-            }
-        }).register();
+                .customize(new CustomMapper<ArrDataJsonTable, ArrDataJsonTable>() {
+                    @Override
+                    public void mapAtoB(final ArrDataJsonTable arrDataJsonTable,
+                                        final ArrDataJsonTable arrDataJsonTableNew,
+                                        final MappingContext context) {
+                        arrDataJsonTableNew.setDataType(arrDataJsonTable.getDataType());
+                        arrDataJsonTableNew.setValue(arrDataJsonTable.getValue());
+                    }
+                }).register();
     }
 
     /**
@@ -462,7 +424,7 @@ public class ItemService implements InitializingBean {
             @Override
             public void mapAtoB(final ArrDataText arrDataText, final ArrDataText arrDataTextNew, final MappingContext context) {
                 arrDataTextNew.setDataType(arrDataText.getDataType());
-                arrDataTextNew.setItem(arrDataText.getItem());
+                //arrDataTextNew.setItem(arrDataText.getItem());
                 arrDataTextNew.setValue(arrDataText.getValue());
             }
         }).register();
@@ -492,16 +454,15 @@ public class ItemService implements InitializingBean {
         }).register();
 
         factory.classMap(ArrDataInteger.class, ArrDataInteger.class)
-        .customize(new CustomMapper<ArrDataInteger, ArrDataInteger>() {
-            @Override
-            public void mapAtoB(final ArrDataInteger arrDataInteger,
-                                final ArrDataInteger arrDataIntegerNew,
-                                final MappingContext context) {
-                arrDataIntegerNew.setDataType(arrDataInteger.getDataType());
-                arrDataIntegerNew.setItem(arrDataInteger.getItem());
-                arrDataIntegerNew.setValue(arrDataInteger.getValue());
-            }
-        }).register();
+                .customize(new CustomMapper<ArrDataInteger, ArrDataInteger>() {
+                    @Override
+                    public void mapAtoB(final ArrDataInteger arrDataInteger,
+                                        final ArrDataInteger arrDataIntegerNew,
+                                        final MappingContext context) {
+                        arrDataIntegerNew.setDataType(arrDataInteger.getDataType());
+                        arrDataIntegerNew.setValue(arrDataInteger.getValue());
+                    }
+                }).register();
     }
 
     /**
@@ -528,16 +489,15 @@ public class ItemService implements InitializingBean {
         }).register();
 
         factory.classMap(ArrDataPartyRef.class, ArrDataPartyRef.class)
-        .customize(new CustomMapper<ArrDataPartyRef, ArrDataPartyRef>() {
-            @Override
-            public void mapAtoB(final ArrDataPartyRef arrDataPartyRef,
-                                final ArrDataPartyRef arrDataPartyRefNew,
-                                final MappingContext context) {
-                arrDataPartyRefNew.setDataType(arrDataPartyRef.getDataType());
-                arrDataPartyRefNew.setItem(arrDataPartyRef.getItem());
-                arrDataPartyRefNew.setParty(arrDataPartyRef.getParty());
-            }
-        }).register();
+                .customize(new CustomMapper<ArrDataPartyRef, ArrDataPartyRef>() {
+                    @Override
+                    public void mapAtoB(final ArrDataPartyRef arrDataPartyRef,
+                                        final ArrDataPartyRef arrDataPartyRefNew,
+                                        final MappingContext context) {
+                        arrDataPartyRefNew.setDataType(arrDataPartyRef.getDataType());
+                        arrDataPartyRefNew.setParty(arrDataPartyRef.getParty());
+                    }
+                }).register();
     }
 
     /**
@@ -564,16 +524,15 @@ public class ItemService implements InitializingBean {
         }).register();
 
         factory.classMap(ArrDataPacketRef.class, ArrDataPacketRef.class)
-        .customize(new CustomMapper<ArrDataPacketRef, ArrDataPacketRef>() {
-            @Override
-            public void mapAtoB(final ArrDataPacketRef arrDataPartyRef,
-                                final ArrDataPacketRef arrDataPartyRefNew,
-                                final MappingContext context) {
-                arrDataPartyRefNew.setDataType(arrDataPartyRef.getDataType());
-                arrDataPartyRefNew.setItem(arrDataPartyRef.getItem());
-                arrDataPartyRefNew.setPacket(arrDataPartyRef.getPacket());
-            }
-        }).register();
+                .customize(new CustomMapper<ArrDataPacketRef, ArrDataPacketRef>() {
+                    @Override
+                    public void mapAtoB(final ArrDataPacketRef arrDataPartyRef,
+                                        final ArrDataPacketRef arrDataPartyRefNew,
+                                        final MappingContext context) {
+                        arrDataPartyRefNew.setDataType(arrDataPartyRef.getDataType());
+                        arrDataPartyRefNew.setPacket(arrDataPartyRef.getPacket());
+                    }
+                }).register();
     }
 
     /**
@@ -600,16 +559,15 @@ public class ItemService implements InitializingBean {
         }).register();
 
         factory.classMap(ArrDataFileRef.class, ArrDataFileRef.class)
-        .customize(new CustomMapper<ArrDataFileRef, ArrDataFileRef>() {
-            @Override
-            public void mapAtoB(final ArrDataFileRef arrDataPartyRef,
-                                final ArrDataFileRef arrDataPartyRefNew,
-                                final MappingContext context) {
-                arrDataPartyRefNew.setDataType(arrDataPartyRef.getDataType());
-                arrDataPartyRefNew.setItem(arrDataPartyRef.getItem());
-                arrDataPartyRefNew.setFile(arrDataPartyRef.getFile());
-            }
-        }).register();
+                .customize(new CustomMapper<ArrDataFileRef, ArrDataFileRef>() {
+                    @Override
+                    public void mapAtoB(final ArrDataFileRef arrDataPartyRef,
+                                        final ArrDataFileRef arrDataPartyRefNew,
+                                        final MappingContext context) {
+                        arrDataPartyRefNew.setDataType(arrDataPartyRef.getDataType());
+                        arrDataPartyRefNew.setFile(arrDataPartyRef.getFile());
+                    }
+                }).register();
     }
 
     /**
@@ -636,16 +594,15 @@ public class ItemService implements InitializingBean {
         }).register();
 
         factory.classMap(ArrDataRecordRef.class, ArrDataRecordRef.class)
-        .customize(new CustomMapper<ArrDataRecordRef, ArrDataRecordRef>() {
-            @Override
-            public void mapAtoB(final ArrDataRecordRef arrDataRecordRef,
-                                final ArrDataRecordRef arrDataRecordRefNew,
-                                final MappingContext context) {
-                arrDataRecordRefNew.setDataType(arrDataRecordRef.getDataType());
-                arrDataRecordRefNew.setItem(arrDataRecordRef.getItem());
-                arrDataRecordRefNew.setRecord(arrDataRecordRef.getRecord());
-            }
-        }).register();
+                .customize(new CustomMapper<ArrDataRecordRef, ArrDataRecordRef>() {
+                    @Override
+                    public void mapAtoB(final ArrDataRecordRef arrDataRecordRef,
+                                        final ArrDataRecordRef arrDataRecordRefNew,
+                                        final MappingContext context) {
+                        arrDataRecordRefNew.setDataType(arrDataRecordRef.getDataType());
+                        arrDataRecordRefNew.setRecord(arrDataRecordRef.getRecord());
+                    }
+                }).register();
     }
 
     /**
@@ -672,16 +629,15 @@ public class ItemService implements InitializingBean {
                 }).register();
 
         factory.classMap(ArrDataString.class, ArrDataString.class)
-        .customize(new CustomMapper<ArrDataString, ArrDataString>() {
-            @Override
-            public void mapAtoB(final ArrDataString arrDataString,
-                                final ArrDataString arrDataStringNew,
-                                final MappingContext context) {
-                arrDataStringNew.setDataType(arrDataString.getDataType());
-                arrDataStringNew.setItem(arrDataString.getItem());
-                arrDataStringNew.setValue(arrDataString.getValue());
-            }
-        }).register();
+                .customize(new CustomMapper<ArrDataString, ArrDataString>() {
+                    @Override
+                    public void mapAtoB(final ArrDataString arrDataString,
+                                        final ArrDataString arrDataStringNew,
+                                        final MappingContext context) {
+                        arrDataStringNew.setDataType(arrDataString.getDataType());
+                        arrDataStringNew.setValue(arrDataString.getValue());
+                    }
+                }).register();
     }
 
     /**
@@ -711,7 +667,7 @@ public class ItemService implements InitializingBean {
             @Override
             public void mapAtoB(final ArrDataText arrDataText, final ArrDataText arrDataTextNew, final MappingContext context) {
                 arrDataTextNew.setDataType(arrDataText.getDataType());
-                arrDataTextNew.setItem(arrDataText.getItem());
+                //arrDataTextNew.setItem(arrDataText.getItem());
                 arrDataTextNew.setValue(arrDataText.getValue());
             }
         }).register();
@@ -825,23 +781,22 @@ public class ItemService implements InitializingBean {
         }).register();
 
         factory.classMap(ArrDataUnitdate.class, ArrDataUnitdate.class)
-        .customize(new CustomMapper<ArrDataUnitdate, ArrDataUnitdate>() {
-            @Override
-            public void mapAtoB(final ArrDataUnitdate arrDataUnitdate,
-                                final ArrDataUnitdate arrDataUnitdateNew,
-                                final MappingContext context) {
-                arrDataUnitdateNew.setDataType(arrDataUnitdate.getDataType());
-                arrDataUnitdateNew.setItem(arrDataUnitdate.getItem());
-                arrDataUnitdateNew.setCalendarType(arrDataUnitdate.getCalendarType());
-                arrDataUnitdateNew.setValueFrom(arrDataUnitdate.getValueFrom());
-                arrDataUnitdateNew.setValueFromEstimated(arrDataUnitdate.getValueFromEstimated());
-                arrDataUnitdateNew.setValueTo(arrDataUnitdate.getValueTo());
-                arrDataUnitdateNew.setValueToEstimated(arrDataUnitdate.getValueToEstimated());
-                arrDataUnitdateNew.setFormat(arrDataUnitdate.getFormat());
-                arrDataUnitdateNew.setNormalizedTo(arrDataUnitdate.getNormalizedTo());
-                arrDataUnitdateNew.setNormalizedFrom(arrDataUnitdate.getNormalizedFrom());
-            }
-        }).register();
+                .customize(new CustomMapper<ArrDataUnitdate, ArrDataUnitdate>() {
+                    @Override
+                    public void mapAtoB(final ArrDataUnitdate arrDataUnitdate,
+                                        final ArrDataUnitdate arrDataUnitdateNew,
+                                        final MappingContext context) {
+                        arrDataUnitdateNew.setDataType(arrDataUnitdate.getDataType());
+                        arrDataUnitdateNew.setCalendarType(arrDataUnitdate.getCalendarType());
+                        arrDataUnitdateNew.setValueFrom(arrDataUnitdate.getValueFrom());
+                        arrDataUnitdateNew.setValueFromEstimated(arrDataUnitdate.getValueFromEstimated());
+                        arrDataUnitdateNew.setValueTo(arrDataUnitdate.getValueTo());
+                        arrDataUnitdateNew.setValueToEstimated(arrDataUnitdate.getValueToEstimated());
+                        arrDataUnitdateNew.setFormat(arrDataUnitdate.getFormat());
+                        arrDataUnitdateNew.setNormalizedTo(arrDataUnitdate.getNormalizedTo());
+                        arrDataUnitdateNew.setNormalizedFrom(arrDataUnitdate.getNormalizedFrom());
+                    }
+                }).register();
     }
 
     /**
@@ -867,16 +822,15 @@ public class ItemService implements InitializingBean {
         }).register();
 
         factory.classMap(ArrDataUnitid.class, ArrDataUnitid.class)
-        .customize(new CustomMapper<ArrDataUnitid, ArrDataUnitid>() {
-            @Override
-            public void mapAtoB(final ArrDataUnitid arrDataUnitid,
-                                final ArrDataUnitid arrDataUnitidNew,
-                                final MappingContext context) {
-                arrDataUnitidNew.setDataType(arrDataUnitid.getDataType());
-                arrDataUnitidNew.setItem(arrDataUnitid.getItem());
-                arrDataUnitidNew.setValue(arrDataUnitid.getValue());
-            }
-        }).register();
+                .customize(new CustomMapper<ArrDataUnitid, ArrDataUnitid>() {
+                    @Override
+                    public void mapAtoB(final ArrDataUnitid arrDataUnitid,
+                                        final ArrDataUnitid arrDataUnitidNew,
+                                        final MappingContext context) {
+                        arrDataUnitidNew.setDataType(arrDataUnitid.getDataType());
+                        arrDataUnitidNew.setValue(arrDataUnitid.getValue());
+                    }
+                }).register();
     }
 
     /**
@@ -902,16 +856,15 @@ public class ItemService implements InitializingBean {
         }).register();
 
         factory.classMap(ArrDataDecimal.class, ArrDataDecimal.class)
-        .customize(new CustomMapper<ArrDataDecimal, ArrDataDecimal>() {
-            @Override
-            public void mapAtoB(final ArrDataDecimal arrDataDecimal,
-                                final ArrDataDecimal arrDataDecimalNew,
-                                final MappingContext context) {
-                arrDataDecimalNew.setDataType(arrDataDecimal.getDataType());
-                arrDataDecimalNew.setItem(arrDataDecimal.getItem());
-                arrDataDecimalNew.setValue(arrDataDecimal.getValue());
-            }
-        }).register();
+                .customize(new CustomMapper<ArrDataDecimal, ArrDataDecimal>() {
+                    @Override
+                    public void mapAtoB(final ArrDataDecimal arrDataDecimal,
+                                        final ArrDataDecimal arrDataDecimalNew,
+                                        final MappingContext context) {
+                        arrDataDecimalNew.setDataType(arrDataDecimal.getDataType());
+                        arrDataDecimalNew.setValue(arrDataDecimal.getValue());
+                    }
+                }).register();
     }
 
     /**
@@ -939,7 +892,7 @@ public class ItemService implements InitializingBean {
             @Override
             public void mapAtoB(final ArrDataNull arrDataNull, final ArrDataNull arrDataNullNew, final MappingContext context) {
                 arrDataNullNew.setDataType(arrDataNull.getDataType());
-                arrDataNullNew.setItem(arrDataNull.getItem());
+                //arrDataNullNew.setItem(arrDataNull.getItem());
             }
         }).register();
     }
@@ -986,20 +939,15 @@ public class ItemService implements InitializingBean {
         return valueRet;
     }
 
+    @Deprecated
     public <T extends ArrItem> void copyItemData(final T dataFrom, final T dataTo) {
-        List<ArrData> dataList = dataRepository.findByItem(dataFrom);
-
-        if (dataList.size() != 1) {
-            throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
-        }
-
-        ArrData data = dataList.get(0);
+        ArrData data = dataFrom.getData();
 
         ArrData dataNew;
         try {
             dataNew = data.getClass().getConstructor().newInstance();
             BeanUtils.copyProperties(data, dataNew, "dataId");
-            dataNew.setItem(dataTo);
+            dataTo.setData(dataNew);
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new SystemException(e.getCause());
         }
@@ -1064,6 +1012,7 @@ public class ItemService implements InitializingBean {
 
             // pro odverzovanou hodnotu atributu je nutné vytvořit kopii dat
             copyItemData(itemMove, itemNew);
+            itemRepository.save(itemNew);
         }
     }
 
@@ -1090,7 +1039,7 @@ public class ItemService implements InitializingBean {
         itemNew.setCreateChange(change);
         itemNew.setPosition(position);
 
-        return itemRepository.save(itemNew);
+        return itemNew;
     }
 
     /**
@@ -1120,8 +1069,7 @@ public class ItemService implements InitializingBean {
      * @return item dle příslušného typu
      */
     public ArrItem loadDataById(final Integer itemId) {
-        final ArrItem arrItem = itemRepository.findOne(itemId);
-        return loadData(arrItem);
+        return itemRepository.findOne(itemId);
     }
 
     /**
@@ -1129,29 +1077,30 @@ public class ItemService implements InitializingBean {
      *
      * @param dataItems seznam položek, které je potřeba donačíst podle ID návazných entit
      */
-    public void refItemsLoader(final List<ArrItemData> dataItems) {
+    public void refItemsLoader(final List<ArrItem> dataItems) {
 
         // mapy pro naplnění ID entit
-        Map<Integer, ArrItemPartyRef> partyMap = new HashMap<>();
-        Map<Integer, ArrItemPacketRef> packetMap = new HashMap<>();
-        Map<Integer, ArrItemFileRef> fileMap = new HashMap<>();
-        Map<Integer, ArrItemRecordRef> recordMap = new HashMap<>();
+        Map<Integer, ArrDataPartyRef> partyMap = new HashMap<>();
+        Map<Integer, ArrDataPacketRef> packetMap = new HashMap<>();
+        Map<Integer, ArrDataFileRef> fileMap = new HashMap<>();
+        Map<Integer, ArrDataRecordRef> recordMap = new HashMap<>();
 
         // prohledávám pouze entity, které mají návazné data
-        for (ArrItemData dataItem : dataItems) {
-            if (BooleanUtils.isNotTrue(dataItem.getUndefined())) {
-                if (dataItem instanceof ArrItemPartyRef) {
-                    ParParty party = ((ArrItemPartyRef) dataItem).getParty();
-                    partyMap.put(party.getPartyId(), (ArrItemPartyRef) dataItem);
-                } else if (dataItem instanceof ArrItemPacketRef) {
-                    ArrPacket packet = ((ArrItemPacketRef) dataItem).getPacket();
-                    packetMap.put(packet.getPacketId(), (ArrItemPacketRef) dataItem);
-                } else if (dataItem instanceof ArrItemFileRef) {
-                    ArrFile file = ((ArrItemFileRef) dataItem).getFile();
-                    fileMap.put(file.getFileId(), (ArrItemFileRef) dataItem);
-                } else if (dataItem instanceof ArrItemRecordRef) {
-                    RegRecord record = ((ArrItemRecordRef) dataItem).getRecord();
-                    recordMap.put(record.getRecordId(), (ArrItemRecordRef) dataItem);
+        for (ArrItem dataItem : dataItems) {
+            ArrData data = dataItem.getData();
+            if (data != null) {
+                if (data instanceof ArrDataPartyRef) {
+                    ParParty party = ((ArrDataPartyRef) data).getParty();
+                    partyMap.put(party.getPartyId(), (ArrDataPartyRef) data);
+                } else if (data instanceof ArrDataPacketRef) {
+                    ArrPacket packet = ((ArrDataPacketRef) data).getPacket();
+                    packetMap.put(packet.getPacketId(), (ArrDataPacketRef) data);
+                } else if (data instanceof ArrDataFileRef) {
+                    ArrFile file = ((ArrDataFileRef) data).getFile();
+                    fileMap.put(file.getFileId(), (ArrDataFileRef) data);
+                } else if (data instanceof ArrDataRecordRef) {
+                    RegRecord record = ((ArrDataRecordRef) data).getRecord();
+                    recordMap.put(record.getRecordId(), (ArrDataRecordRef) data);
                 }
             }
         }
@@ -1171,7 +1120,7 @@ public class ItemService implements InitializingBean {
         Set<Integer> fileIds = partyMap.keySet();
         List<ArrFile> fileEntities = fundFileRepository.findAll(fileIds);
         for (ArrFile fileEntity : fileEntities) {
-            ArrItemFileRef ref = fileMap.get(fileEntity.getFileId());
+            ArrDataFileRef ref = fileMap.get(fileEntity.getFileId());
             if (ref != null) {
                 ref.setFile(fileEntity);
             }

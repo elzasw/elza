@@ -6,14 +6,13 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import cz.tacr.elza.filter.condition.LuceneDescItemCondition;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.NumericField;
 import org.hibernate.search.annotations.Store;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
-
 
 /**
  * Hodnota atributu archivního popisu typu desetinného čísla.
@@ -21,7 +20,6 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
  * @author Martin Šlapa
  * @since 12.10.2015
  */
-@Indexed(interceptor = IndexArrDataWhenHasDescItemInterceptor.class)
 @Entity(name = "arr_data_decimal")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -34,11 +32,6 @@ public class ArrDataDecimal extends ArrData {
         return value;
     }
 
-    @Field(name = "valueDecimal", store = Store.YES)
-    public Double getValueDouble() {
-        return value.doubleValue();
-    }
-
     public void setValue(final BigDecimal value) {
         this.value = value;
     }
@@ -46,5 +39,10 @@ public class ArrDataDecimal extends ArrData {
     @Override
     public String getFulltextValue() {
         return value.toPlainString();
+    }
+
+    @Override
+    public Double getValueDouble() {
+        return value.doubleValue();
     }
 }

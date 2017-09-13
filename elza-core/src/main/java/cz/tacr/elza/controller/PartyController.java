@@ -153,7 +153,7 @@ public class PartyController {
     @RequestMapping(value = "/", method = RequestMethod.POST)
     @Transactional
     public ParPartyVO createParty(@RequestBody final ParPartyVO partyVO) {
-        Assert.notNull(partyVO);
+        Assert.notNull(partyVO, "Osoba musí být vyplněna");
 
         if(partyVO.getId() != null){
             throw new SystemException("Nová osoba nesmí mít nastaveno ID", BaseCode.ID_EXIST).set("id", partyVO.getId());
@@ -176,7 +176,7 @@ public class PartyController {
      */
     @RequestMapping(value = "/{partyId}", method = RequestMethod.GET)
     public ParPartyVO getParty(@PathVariable final Integer partyId) {
-        Assert.notNull(partyId);
+        Assert.notNull(partyId, "Identifikátor osoby musí být vyplněna");
         ParParty party = partyService.getParty(partyId);
         if (party == null) {
             throw new ObjectNotFoundException("Osoba s ID=" + partyId + " nebyla nalezena", RegistryCode.PARTY_NOT_EXIST).set("id", partyId);
@@ -193,8 +193,8 @@ public class PartyController {
     @RequestMapping(value = "/{partyId}", method = RequestMethod.PUT)
     @Transactional
     public ParPartyVO updateParty(@PathVariable final Integer partyId, @RequestBody final ParPartyVO partyVO) {
-        Assert.notNull(partyId);
-        Assert.notNull(partyVO);
+        Assert.notNull(partyId, "Identifikátor osoby musí být vyplněna");
+        Assert.notNull(partyVO, "Osoba musí být vyplněna");
 
         Assert.isTrue(
                 partyId.equals(partyVO.getId()),
@@ -216,7 +216,7 @@ public class PartyController {
     @Transactional
     @RequestMapping(value = "/{partyId}", method = RequestMethod.DELETE)
     public void deleteParty(@PathVariable final Integer partyId) {
-        Assert.notNull(partyId);
+        Assert.notNull(partyId, "Identifikátor osoby musí být vyplněna");
 
         ParParty party = partyRepository.getOneCheckExist(partyId);
 
@@ -303,7 +303,7 @@ public class PartyController {
     @RequestMapping(value = "/relation", method = RequestMethod.POST)
     public ParRelationVO createRelation(@RequestBody final ParRelationVO relationVO) {
 
-        Assert.isNull(relationVO.getId());
+        Assert.isNull(relationVO.getId(), "Identifikátor vztahu musí být vyplněn");
 
         validationVOService.checkRelation(relationVO);
 

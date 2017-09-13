@@ -22,7 +22,7 @@ public class InterpiMappingVO {
     private ExternalRecordVO externalRecord;
 
     public InterpiMappingVO(final Integer partyTypeId, final List<InterpiRelationMappingVO> mappings, final ExternalRecordVO externalRecord) {
-        Assert.notNull(partyTypeId);
+        Assert.notNull(partyTypeId, "Identifikátor typu osoby musí být vyplněn");
 
         this.partyTypeId = partyTypeId;
         this.mappings = mappings;

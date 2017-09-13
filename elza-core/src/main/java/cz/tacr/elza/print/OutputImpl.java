@@ -131,7 +131,7 @@ public class OutputImpl implements Output
      * Přidá {@link NodeId} do výstupu.
      */
     public NodeId addNodeId(final NodeId nodeId) {
-        Assert.notNull(nodeId);
+        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
 
         NodeId nodeIdOrig = nodeIdsMap.get(nodeId.getArrNodeId());
         if (nodeIdOrig == null) {
@@ -240,7 +240,7 @@ public class OutputImpl implements Output
 
     @Override
     public List<Item> getItems(@NotNull final Collection<String> codes) {
-        Assert.notNull(codes);
+        Assert.notNull(codes, "Kódy musí být vyplněny");
         return items.stream()
                 .filter(item -> codes.contains(item.getType().getCode()))
                 .sorted(Item::compareToItemViewOrderPosition)
@@ -299,7 +299,7 @@ public class OutputImpl implements Output
 
     @Override
     public List<Item> getAllItems(@NotNull final Collection<String> codes) {
-        Assert.notNull(codes);
+        Assert.notNull(codes, "Kódy musí být vyplněny");
         return items.stream()
                 .filter(item -> !codes.contains(item.getType().getCode()))
                 .sorted(Item::compareToItemViewOrderPosition)

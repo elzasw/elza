@@ -34,8 +34,8 @@ public class NodeId implements Comparable<NodeId> {
      */
     public NodeId(final OutputImpl output, final int arrNodeId, final Integer parentNodeId, final int position,
             final int depth) {
-        Assert.notNull(position);
-        Assert.notNull(depth);
+        Assert.notNull(position, "Pozice musí být vyplněna");
+        Assert.notNull(depth, "Hloubka musí být vyplněna");
 
         this.output = output;
         this.arrNodeId = arrNodeId;

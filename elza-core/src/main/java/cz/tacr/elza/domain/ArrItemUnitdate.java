@@ -11,6 +11,7 @@ import cz.tacr.elza.api.IUnitdate;
  * @author Martin Šlapa
  * @since 15.9.15
  */
+@Deprecated
 public class ArrItemUnitdate extends ArrItemData implements IUnitdate {
 
     private String valueFrom;

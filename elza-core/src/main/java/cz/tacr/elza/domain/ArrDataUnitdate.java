@@ -1,6 +1,11 @@
 package cz.tacr.elza.domain;
 
-import java.io.Serializable;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import cz.tacr.elza.api.IUnitdate;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Indexed;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -9,16 +14,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.Indexed;
-import org.springframework.data.rest.core.annotation.RestResource;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import cz.tacr.elza.api.IUnitdate;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
-import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
-
 
 /**
  * Hodnota atributu archivního popisu typu strojově zpracovatelná datace.
@@ -26,7 +21,6 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
  * @author Martin Šlapa
  * @since 1.9.2015
  */
-@Indexed(interceptor = IndexArrDataWhenHasDescItemInterceptor.class)
 @Entity(name = "arr_data_unitdate")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -36,6 +30,9 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrCalendarType.class)
     @JoinColumn(name = "calendarTypeId", nullable = false)
     private ArrCalendarType calendarType;
+
+    @Column(name = "calendarTypeId", updatable = false, insertable = false)
+    private Integer calendarTypeId;
 
     @Column(length = 19, nullable = true)
     private String valueFrom;
@@ -52,11 +49,9 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
     @Column(length = 50, nullable = false)
     private String format;
 
-    @Field
     @Column(nullable = false)
     private Long normalizedFrom;
 
-    @Field
     @Column(nullable = false)
     private Long normalizedTo;
 
@@ -105,9 +100,14 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
         return calendarType;
     }
 
+    public Integer getCalendarTypeId() {
+        return calendarTypeId;
+    }
+
     @Override
     public void setCalendarType(final ArrCalendarType calendarType) {
         this.calendarType = calendarType;
+        this.calendarTypeId = calendarType == null ? null : calendarType.getCalendarTypeId();
     }
 
 
@@ -143,7 +143,7 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
     }
 
     /**
-     * @param normalizedFrom počet sekund v normalizačním kalendáři - do
+     * @param normalizedTo počet sekund v normalizačním kalendáři - do
      */
     public void setNormalizedTo(final Long normalizedTo) {
         this.normalizedTo = normalizedTo;

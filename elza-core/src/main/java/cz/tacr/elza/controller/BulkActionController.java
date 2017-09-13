@@ -71,7 +71,7 @@ public class BulkActionController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     BulkActionRunVO getBulkAction(final @PathVariable("bulkActionRunId") Integer bulkActionRunId) {
-        Assert.notNull(bulkActionRunId);
+        Assert.notNull(bulkActionRunId, "Identifikátor běhu hromadné akce musí být vyplněn");
         return factoryVo.createBulkActionRunWithNodes(bulkActionService.getArrBulkActionRun(bulkActionRunId));
     }
 
@@ -80,7 +80,7 @@ public class BulkActionController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     void interruptBulkAction(final @PathVariable("bulkActionRunId") Integer bulkActionRunId) {
-        Assert.notNull(bulkActionRunId);
+        Assert.notNull(bulkActionRunId, "Identifikátor běhu hromadné akce musí být vyplněn");
         bulkActionService.interruptBulkAction(bulkActionRunId);
     }
 
@@ -90,8 +90,8 @@ public class BulkActionController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     BulkActionRunVO queueByFa(final @PathVariable("versionId") Integer fundVersionId, final @PathVariable("code") String code) {
-        Assert.notNull(fundVersionId);
-        Assert.notNull(code);
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(code, "Kód musí být vyplněn");
         UserDetail userDetail = userService.getLoggedUserDetail();
         Integer userId = userDetail != null ? userDetail.getId() : null;
         return factoryVo.createBulkActionRun(bulkActionService.queue(userId, code, fundVersionId));
@@ -103,8 +103,8 @@ public class BulkActionController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     BulkActionRunVO queueByIds(final @PathVariable("versionId") Integer fundVersionId, final @PathVariable("code") String code,
                     final @RequestBody List<Integer> nodeIds) {
-        Assert.notNull(fundVersionId);
-        Assert.notNull(code);
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(code, "Kód musí být vyplněn");
         Assert.notEmpty(nodeIds, "Pro sputění hromadné akce je vyžadován alespon 1 uzel");
         UserDetail userDetail = userService.getLoggedUserDetail();
         Integer userId = userDetail != null ? userDetail.getId() : null;
@@ -121,7 +121,7 @@ public class BulkActionController {
     @RequestMapping(value = "/output/{outputId}", method = RequestMethod.GET)
     public List<BulkActionRunVO> getOutputBulkActions(@PathVariable final Integer outputId,
                                                  @RequestParam(required = false, defaultValue = "false") @Nullable final Boolean recommended) {
-        Assert.notNull(outputId);
+        Assert.notNull(outputId, "Identifikátor výstupu musí být vyplněn");
         final ArrOutput output = outputService.getOutput(outputId);
         final ArrOutputDefinition outputDefinition = output.getOutputDefinition();
         final Set<ArrNode> nodes = outputDefinition.getOutputNodes().stream()

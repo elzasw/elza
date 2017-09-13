@@ -1,26 +1,24 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.collect.Sets;
+import cz.tacr.elza.bulkaction.generator.LevelWithItems;
+import cz.tacr.elza.bulkaction.generator.result.ActionResult;
+import cz.tacr.elza.bulkaction.generator.result.DateRangeActionResult;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.utils.Yaml;
 import org.apache.commons.lang.BooleanUtils;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.google.common.collect.Sets;
-
-import cz.tacr.elza.bulkaction.generator.LevelWithItems;
-import cz.tacr.elza.bulkaction.generator.result.ActionResult;
-import cz.tacr.elza.bulkaction.generator.result.DateRangeActionResult;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrItemUnitdate;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
-import cz.tacr.elza.utils.Yaml;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Akce na zjištění rozsahu datací.
@@ -142,13 +140,13 @@ public class DateRangeAction extends Action {
     public void apply(final ArrNode node, final List<ArrDescItem> items, final LevelWithItems parentLevelWithItems) {
         for (ArrItem item : items) {
 
-            if (BooleanUtils.isTrue(item.getUndefined())) {
+            if (BooleanUtils.isTrue(item.isUndefined())) {
                 continue;
             }
 
             // není použit záměrně if-else, protože teoreticky by šlo nakonfigurovat vše na stejnou položku
             if (inputItemType.equals(item.getItemType())) {
-                ArrItemUnitdate data = (ArrItemUnitdate) item.getItem();
+                ArrDataUnitdate data = (ArrDataUnitdate) item.getData();
                 data.setFormat(UnitDateConvertor.DATE);
                 Long dataNormalizedFrom = data.getNormalizedFrom();
                 if(dataNormalizedFrom==null) {
@@ -169,7 +167,7 @@ public class DateRangeAction extends Action {
                 }
             }
             if (inputItemTypePrior.equals(item.getItemType())) {
-                ArrItemUnitdate data = (ArrItemUnitdate) item.getItem();
+                ArrDataUnitdate data = (ArrDataUnitdate) item.getData();
                 data.setFormat(UnitDateConvertor.DATE);
                 Long dataNormalizedFrom = data.getNormalizedFrom();
                 if(dataNormalizedFrom==null) {
@@ -181,7 +179,7 @@ public class DateRangeAction extends Action {
                 }
             }
             if (inputItemTypePosterior.equals(item.getItemType())) {
-                ArrItemUnitdate data = (ArrItemUnitdate) item.getItem();
+                ArrDataUnitdate data = (ArrDataUnitdate) item.getData();
                 data.setFormat(UnitDateConvertor.DATE);
                 Long dataNormalizedTo = data.getNormalizedTo();
                 if(dataNormalizedTo==null) {

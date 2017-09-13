@@ -2,12 +2,32 @@ package cz.tacr.elza.controller.config;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import cz.tacr.elza.controller.vo.ArrDigitalRepositorySimpleVO;
+import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskSimpleVO;
+import cz.tacr.elza.controller.vo.RegExternalSystemSimpleVO;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDecimal;
+import cz.tacr.elza.domain.ArrDataFileRef;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataJsonTable;
+import cz.tacr.elza.domain.ArrDataNull;
+import cz.tacr.elza.domain.ArrDataPacketRef;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUnitid;
+import cz.tacr.elza.domain.convertor.CalendarConverter;
+import cz.tacr.elza.packageimport.xml.SettingGridView;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -24,9 +44,7 @@ import cz.tacr.elza.controller.vo.ArrChangeVO;
 import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
 import cz.tacr.elza.controller.vo.ArrDaoFileVO;
 import cz.tacr.elza.controller.vo.ArrDaoVO;
-import cz.tacr.elza.controller.vo.ArrDigitalRepositorySimpleVO;
 import cz.tacr.elza.controller.vo.ArrDigitalRepositoryVO;
-import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskSimpleVO;
 import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskVO;
 import cz.tacr.elza.controller.vo.ArrFileVO;
 import cz.tacr.elza.controller.vo.ArrFundBaseVO;
@@ -63,7 +81,6 @@ import cz.tacr.elza.controller.vo.ParRelationTypeVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.ParUnitdateVO;
 import cz.tacr.elza.controller.vo.RegCoordinatesVO;
-import cz.tacr.elza.controller.vo.RegExternalSystemSimpleVO;
 import cz.tacr.elza.controller.vo.RegExternalSystemVO;
 import cz.tacr.elza.controller.vo.RegRecordSimple;
 import cz.tacr.elza.controller.vo.RegRecordVO;
@@ -185,7 +202,6 @@ import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
-import cz.tacr.elza.packageimport.xml.SettingGridView;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.FundRepository;
@@ -1032,6 +1048,196 @@ public class ConfigMapperConfiguration {
                 .exclude("dao")
                 .byDefault()
                 .register();
+
+        mapperFactory.classMap(ArrDataCoordinates.class, ArrItemCoordinatesVO.class)
+                .customize(new CustomMapper<ArrDataCoordinates, ArrItemCoordinatesVO>() {
+                    @Override
+                    public void mapAtoB(final ArrDataCoordinates coordinates,
+                                        final ArrItemCoordinatesVO coordinatesVO,
+                                        final MappingContext context) {
+                        if (coordinates.getValue() != null) {
+                            String type = coordinates.getValue().getGeometryType().toUpperCase();
+                            if (type.equals("POINT")) {
+                                coordinatesVO.setValue(new WKTWriter().writeFormatted(coordinates.getValue()));
+                            } else {
+                                coordinatesVO.setValue(type + "( " + coordinates.getValue().getCoordinates().length + " )");
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void mapBtoA(final ArrItemCoordinatesVO coordinatesVO,
+                                        final ArrDataCoordinates coordinates,
+                                        final MappingContext context) {
+                        WKTReader reader = new WKTReader();
+                        try {
+                            coordinates.setValue(reader.read(coordinatesVO.getValue()));
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).exclude("value").byDefault().register();
+        mapperFactory.classMap(ArrDataNull.class, ArrItemEnumVO.class).byDefault().register();
+        mapperFactory.classMap(ArrDataInteger.class, ArrItemIntVO.class).byDefault().register();
+        mapperFactory.classMap(ArrDataJsonTable.class, ArrItemJsonTableVO.class).byDefault().register();
+        mapperFactory.classMap(ArrDataDecimal.class, ArrItemDecimalVO.class).byDefault().register();
+        mapperFactory.classMap(ArrDataUnitid.class, ArrItemUnitidVO.class).byDefault().register();
+        mapperFactory.classMap(ArrDataUnitdate.class, ArrItemUnitdateVO.class).customize(
+                new CustomMapper<ArrDataUnitdate, ArrItemUnitdateVO>() {
+                    @Override
+                    public void mapAtoB(final ArrDataUnitdate unitdate,
+                                        final ArrItemUnitdateVO unitdateVO,
+                                        final MappingContext context) {
+                        if (unitdate.getCalendarType() != null) {
+                            unitdateVO.setCalendarTypeId(unitdate.getCalendarType().getCalendarTypeId());
+                            unitdateVO.setValue(UnitDateConvertor.convertToString(unitdate));
+                        }
+                    }
+
+                    @Override
+                    public void mapBtoA(final ArrItemUnitdateVO arrItemUnitdateVO,
+                                        final ArrDataUnitdate unitdate,
+                                        final MappingContext context) {
+                        unitdate.setCalendarType(
+                                calendarTypeRepository.findOne(arrItemUnitdateVO.getCalendarTypeId()));
+                        UnitDateConvertor.convertToUnitDate(arrItemUnitdateVO.getValue(), unitdate);
+
+
+                        String codeCalendar = unitdate.getCalendarType().getCode();
+                        CalendarConverter.CalendarType calendarType = CalendarConverter.CalendarType.valueOf(codeCalendar);
+
+                        String value;
+
+                        value = unitdate.getValueFrom();
+                        if (value != null) {
+                            unitdate.setNormalizedFrom(CalendarConverter.toSeconds(calendarType, LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+                        } else {
+                            unitdate.setNormalizedFrom(Long.MIN_VALUE);
+                        }
+
+                        unitdate.setNormalizedFrom(unitdate.getNormalizedFrom());
+
+                        value = unitdate.getValueTo();
+                        if (value != null) {
+                            unitdate.setNormalizedTo(CalendarConverter.toSeconds(calendarType, LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+                        } else {
+                            unitdate.setNormalizedTo(Long.MAX_VALUE);
+                        }
+
+                        unitdate.setNormalizedTo(unitdate.getNormalizedTo());
+                    }
+                }).byDefault().register();
+
+        mapperFactory.classMap(ArrDataPacketRef.class, ArrItemPacketVO.class).customize(
+                new CustomMapper<ArrDataPacketRef, ArrItemPacketVO>() {
+                    @Override
+                    public void mapAtoB(final ArrDataPacketRef descItemPacketRef,
+                                        final ArrItemPacketVO descItemPacketVO,
+                                        final MappingContext context) {
+                        super.mapAtoB(descItemPacketRef, descItemPacketVO, context);
+                        if (descItemPacketRef.getPacket() != null) {
+                            descItemPacketVO.setValue(descItemPacketRef.getPacket().getPacketId());
+                        }
+                    }
+
+                    @Override
+                    public void mapBtoA(final ArrItemPacketVO descItemPacketVO,
+                                        final ArrDataPacketRef descItemPacketRef,
+                                        final MappingContext context) {
+                        super.mapBtoA(descItemPacketVO, descItemPacketRef, context);
+                        descItemPacketRef.setPacket(descItemPacketVO.getValue() == null ? null : packetRepository.findOne(descItemPacketVO.getValue()));
+                    }
+                }).byDefault().register();
+        mapperFactory.classMap(ArrDataFileRef.class, ArrItemFileRefVO.class).customize(
+                new CustomMapper<ArrDataFileRef, ArrItemFileRefVO>() {
+                    @Override
+                    public void mapAtoB(final ArrDataFileRef arrItemFileRef,
+                                        final ArrItemFileRefVO arrItemFileRefVO,
+                                        final MappingContext context) {
+                        super.mapAtoB(arrItemFileRef, arrItemFileRefVO, context);
+                        if (arrItemFileRef.getFile() != null) {
+                            arrItemFileRefVO.setValue(arrItemFileRef.getFile().getFileId());
+                        }
+                    }
+
+                    @Override
+                    public void mapBtoA(final ArrItemFileRefVO arrItemFileRefVO,
+                                        final ArrDataFileRef arrItemFileRef,
+                                        final MappingContext context) {
+                        super.mapBtoA(arrItemFileRefVO, arrItemFileRef, context);
+                        arrItemFileRef.setFile(fundFileRepository.findOne(arrItemFileRefVO.getValue()));
+                    }
+                }).byDefault().register();
+        mapperFactory.classMap(ArrDataPartyRef.class, ArrItemPartyRefVO.class).customize(
+                new CustomMapper<ArrDataPartyRef, ArrItemPartyRefVO>() {
+                    @Override
+                    public void mapAtoB(final ArrDataPartyRef partyRef,
+                                        final ArrItemPartyRefVO patryRefVO,
+                                        final MappingContext context) {
+                        super.mapAtoB(partyRef, patryRefVO, context);
+                        patryRefVO.setValue(partyRef.getParty() == null ? null : partyRef.getParty().getPartyId());
+                    }
+
+                    @Override
+                    public void mapBtoA(final ArrItemPartyRefVO partyRefVO,
+                                        final ArrDataPartyRef partyRef,
+                                        final MappingContext context) {
+                        super.mapBtoA(partyRefVO, partyRef, context);
+                        partyRef.setParty(partyRefVO.getValue() == null ? null : partyRepository.findOne(partyRefVO.getValue()));
+                    }
+                }).byDefault().register();
+        mapperFactory.classMap(ArrDataRecordRef.class, ArrItemRecordRefVO.class).customize(
+                new CustomMapper<ArrDataRecordRef, ArrItemRecordRefVO>() {
+                    @Override
+                    public void mapAtoB(final ArrDataRecordRef recordRef,
+                                        final ArrItemRecordRefVO recordRefVO,
+                                        final MappingContext context) {
+                        super.mapAtoB(recordRef, recordRefVO, context);
+                        recordRefVO.setValue(recordRef == null || recordRef.getRecord() == null ? null : recordRef.getRecord().getRecordId());
+                    }
+
+                    @Override
+                    public void mapBtoA(final ArrItemRecordRefVO recordRefVO,
+                                        final ArrDataRecordRef recordRef,
+                                        final MappingContext context) {
+                        super.mapBtoA(recordRefVO, recordRef, context);
+                        recordRef.setRecord(recordRefVO.getValue() == null ? null : recordRepository.findOne(recordRefVO.getValue()));
+                    }
+                }).byDefault().register();
+        mapperFactory.classMap(ArrDataString.class, ArrItemStringVO.class).byDefault().register();
+
+        /*mapperFactory.classMap(ArrDataText.class, ArrItemAbstractTextVO.class).customize(new CustomMapper<ArrDataText, ArrItemAbstractTextVO>() {
+            @Override
+            public void mapAtoB(final ArrDataText arrDataText, ArrItemAbstractTextVO arrItemAbstractTextVO, final MappingContext context) {
+                switch (arrDataText.getDataType().getCode()) {
+                    case "TEXT":
+                        arrItemAbstractTextVO = new ArrItemTextVO();
+                        ((ArrItemTextVO) arrItemAbstractTextVO).setValue(arrDataText.getValue());
+                        break;
+                    case "FORMATTED_TEXT":
+                        arrItemAbstractTextVO = new ArrItemFormattedTextVO();
+                        ((ArrItemFormattedTextVO) arrItemAbstractTextVO).setValue(arrDataText.getValue());
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+
+            @Override
+            public void mapBtoA(final ArrItemAbstractTextVO arrItemAbstractTextVO, final ArrDataText arrDataText, final MappingContext context) {
+                if (arrItemAbstractTextVO instanceof ArrItemTextVO) {
+                    arrDataText.setValue(((ArrItemTextVO) arrItemAbstractTextVO).getValue());
+                } else if (arrItemAbstractTextVO instanceof ArrItemFormattedTextVO) {
+                    arrDataText.setValue(((ArrItemFormattedTextVO) arrItemAbstractTextVO).getValue());
+                } else {
+                    throw new NotImplementedException();
+                }
+            }
+        }).register();*/
+
+        mapperFactory.classMap(ArrDataText.class, ArrItemTextVO.class).byDefault().register();
+        mapperFactory.classMap(ArrDataText.class, ArrItemFormattedTextVO.class).byDefault().register();
+
     }
 
     /**

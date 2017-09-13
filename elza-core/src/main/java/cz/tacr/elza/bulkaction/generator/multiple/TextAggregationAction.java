@@ -1,27 +1,25 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import cz.tacr.elza.bulkaction.generator.LevelWithItems;
+import cz.tacr.elza.bulkaction.generator.result.ActionResult;
+import cz.tacr.elza.bulkaction.generator.result.TextAggregationActionResult;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.utils.Yaml;
 import org.apache.commons.lang.BooleanUtils;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.bulkaction.generator.LevelWithItems;
-import cz.tacr.elza.bulkaction.generator.result.ActionResult;
-import cz.tacr.elza.bulkaction.generator.result.TextAggregationActionResult;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrItemData;
-import cz.tacr.elza.domain.ArrItemFormattedText;
-import cz.tacr.elza.domain.ArrItemString;
-import cz.tacr.elza.domain.ArrItemText;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.utils.Yaml;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Akce na agregaci textových hodnot.
@@ -70,7 +68,7 @@ public class TextAggregationAction extends Action {
 
     @Override
     public void init() {
-        Set<String> inputTypes = config.getStringList("input_types", null).stream().collect(Collectors.toSet());
+        Set<String> inputTypes = new HashSet<>(config.getStringList("input_types", null));
         String outputType = config.getString("output_type", null);
         ignoreDuplicated = config.getBoolean("ignore_duplicated", false);
         createEmpty = config.getBoolean("create_empty", true);
@@ -88,18 +86,16 @@ public class TextAggregationAction extends Action {
     public void apply(final ArrNode node, final List<ArrDescItem> items, final LevelWithItems parentLevelWithItems) {
         for (ArrItem item : items) {
             if (inputItemTypes.contains(item.getItemType())) {
-                ArrItemData itemData = item.getItem();
+                ArrData data = item.getData();
                 String value;
-                if (BooleanUtils.isTrue(item.getUndefined())) {
+                if (BooleanUtils.isTrue(item.isUndefined())) {
                     value = ArrangementService.UNDEFINED;
-                } else if (itemData instanceof ArrItemString) {
-                    value = ((ArrItemString) itemData).getValue();
-                } else if (itemData instanceof ArrItemText) {
-                    value = (((ArrItemText) itemData).getValue());
-                } else if (itemData instanceof ArrItemFormattedText) {
-                    value = (((ArrItemFormattedText) itemData).getValue());
+                } else if (data instanceof ArrDataString) {
+                    value = ((ArrDataString) data).getValue();
+                } else if (data instanceof ArrDataText) {
+                    value = (((ArrDataText) data).getValue());
                 } else {
-                    throw new IllegalStateException("Neplatmý typ dat: " + itemData.getClass().getSimpleName());
+                    throw new IllegalStateException("Neplatmý typ dat: " + data.getClass().getSimpleName());
                 }
                 if (!ignoreDuplicated || !texts.contains(value)) {
                     texts.add(value);

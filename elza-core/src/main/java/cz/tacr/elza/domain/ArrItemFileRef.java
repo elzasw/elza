@@ -12,6 +12,7 @@ import javax.persistence.ManyToOne;
  * @author Petr Compel <petr.compel@marbes.cz>
  * @since 27.6.16
  */
+@Deprecated
 public class ArrItemFileRef extends ArrItemData {
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFile.class)

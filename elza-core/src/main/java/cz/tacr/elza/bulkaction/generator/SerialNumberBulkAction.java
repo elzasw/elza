@@ -2,6 +2,7 @@ package cz.tacr.elza.bulkaction.generator;
 
 import java.util.List;
 
+import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
@@ -108,13 +109,13 @@ public class SerialNumberBulkAction extends BulkAction {
      */
     private void init(final BulkActionConfig bulkActionConfig) {
 
-        Assert.notNull(bulkActionConfig);
+        Assert.notNull(bulkActionConfig, "Nastavení hromadné akce musí být vyplněno");
 
         String serialIdCode = (String) bulkActionConfig.getString("serial_id_code");
-        Assert.notNull(serialIdCode);
+        Assert.notNull(serialIdCode, "Musí být vyplněno");
 
         descItemType = itemTypeRepository.getOneByCode(serialIdCode);
-        Assert.notNull(descItemType);
+        Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
 
         String stopWhenType = (String) bulkActionConfig.getString("stop_when_type");
         if (stopWhenType != null) {
@@ -165,23 +166,24 @@ public class SerialNumberBulkAction extends BulkAction {
 
         // vytvoření nového atributu
         if (descItem == null) {
-            descItem = new ArrDescItem(new ArrItemInt());
+            descItem = new ArrDescItem();
             descItem.setItemType(descItemType);
             descItem.setNode(currNode);
+            descItem.setData(new ArrDataInteger());
         }
 
-        if (!(descItem.getItem() instanceof ArrItemInt)) {
+        if (!(descItem.getData() instanceof ArrDataInteger)) {
             throw new BusinessException(descItemType.getCode() + " není typu ArrDescItemInt", BaseCode.PROPERTY_HAS_INVALID_TYPE)
                     .set("property", descItemType.getCode())
                     .set("expected", "ArrItemInt")
-                    .set("actual", descItem.getItem().getClass().getSimpleName());
+                    .set("actual", descItem.getData().getClass().getSimpleName());
         }
 
-        ArrItemInt item = (ArrItemInt) descItem.getItem();
+        ArrDataInteger item = (ArrDataInteger) descItem.getData();
 
         // uložit pouze při rozdílu
-        if (item.getValue() == null || sn != item.getValue() || BooleanUtils.isNotFalse(descItem.getUndefined())) {
-            descItem.setUndefined(false);
+        if (item.getValue() == null || sn != item.getValue() || BooleanUtils.isNotFalse(descItem.isUndefined())) {
+            //descItem.setUndefined(false);
             item.setValue(sn);
             ArrDescItem ret = saveDescItem(descItem, version, change);
             level.setNode(ret.getNode());
@@ -213,13 +215,13 @@ public class SerialNumberBulkAction extends BulkAction {
                     descItemType.getCode() + " nemuže být více než jeden (" + descItems.size() + ")",
                     BaseCode.DB_INTEGRITY_PROBLEM);
         }
-        return descItemFactory.getDescItem(descItems.get(0));
+        return descItems.get(0);
     }
 
     /**
      * Načtení atributu.
      *
-     * @param node           uzel
+     * @param level           uzel
      * @param rulDescItemSpec specifikace atributu
      * @param rulDescItemType typ atributu
      * @return nalezený atribut
@@ -238,7 +240,7 @@ public class SerialNumberBulkAction extends BulkAction {
                     rulDescItemType.getCode() + " nemuže být více než jeden (" + descItems.size() + ")",
                     BaseCode.DB_INTEGRITY_PROBLEM);
         }
-        return descItemFactory.getDescItem(descItems.get(0));
+        return descItems.get(0);
     }
 
     @Override
@@ -251,7 +253,7 @@ public class SerialNumberBulkAction extends BulkAction {
 
         ArrFundVersion version = bulkActionRun.getFundVersion();
 
-        Assert.notNull(version);
+        Assert.notNull(version, "Verze AS musí být vyplněna");
         checkVersion(version);
         this.version = version;
 

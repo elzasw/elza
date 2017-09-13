@@ -10,6 +10,7 @@ import java.util.Objects;
  * @author Martin Šlapa
  * @since 12.10.2015
  */
+@Deprecated
 public class ArrItemDecimal extends ArrItemData {
 
     private BigDecimal value;

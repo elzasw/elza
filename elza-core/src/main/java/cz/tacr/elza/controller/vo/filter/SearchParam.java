@@ -22,8 +22,8 @@ public abstract class SearchParam {
     }
 
     public SearchParam(final SearchParamType type, final String value) {
-        Assert.notNull(type);
-        Assert.notNull(value);
+        Assert.notNull(type, "Typ musí být vyplněn");
+        Assert.notNull(value, "Hodnota musí být vyplněna");
 
         this.type = type;
         this.value = value;

@@ -105,7 +105,7 @@ public class DaoService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
     public List<ArrDao> findDaos(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                  @Nullable final ArrNode node, final Integer index, final Integer maxResults) {
-        Assert.notNull(fundVersion);
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
         return daoRepository.findByFundAndNodePaginating(fundVersion, node, index, maxResults);
     }
 
@@ -122,8 +122,8 @@ public class DaoService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
     public List<ArrDao> findDaosByPackage(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                           final ArrDaoPackage daoPackage, final Integer index, final Integer maxResults, final boolean unassigned) {
-        Assert.notNull(fundVersion);
-        Assert.notNull(daoPackage);
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Assert.notNull(daoPackage, "DAO obal musí být vyplněn");
         return daoRepository.findByFundAndPackagePaginating(fundVersion, daoPackage, index, maxResults, unassigned);
     }
 

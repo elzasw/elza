@@ -175,6 +175,8 @@ public class HelperTestService {
     protected GroupRepository groupRepository;
     @Autowired
     protected ExternalSystemRepository externalSystemRepository;
+    @Autowired
+    private NodeOutputRepository nodeOutputRepository;
 
     @Autowired
     private PackageService packageService;
@@ -214,6 +216,11 @@ public class HelperTestService {
         groupUserRepository.deleteAll();
         groupRepository.deleteAll();
         userRepository.deleteAll();
+        nodeConformityErrorsRepository.deleteAll();
+        nodeConformityMissingRepository.deleteAll();
+        nodeConformityInfoRepository.deleteAll();
+        descItemRepository.deleteAll();
+        itemRepository.deleteAll();
         dataRepository.deleteAll();
         bulkActionNodeRepository.deleteAll();
         faBulkActionRepository.deleteAll();
@@ -228,16 +235,12 @@ public class HelperTestService {
         variantRecordRepository.deleteAll();
         nodeRegisterRepository.deleteAll();
         regCoordinatesRepository.deleteAll();        
-        nodeConformityErrorsRepository.deleteAll();
-        nodeConformityMissingRepository.deleteAll();
-        nodeConformityInfoRepository.deleteAll();
         fundVersionRepository.deleteAll();
         fundRegisterScopeRepository.deleteAll();
         levelRepository.deleteAll();
+        nodeOutputRepository.deleteAll();
         outputRepository.deleteAll();
         outputDefinitionRepository.deleteAll();
-        descItemRepository.deleteAll();
-        itemRepository.deleteAll();
         itemSpecRegisterRepository.deleteAll();
         changeRepository.deleteAll();
         nodeRepository.deleteAll();

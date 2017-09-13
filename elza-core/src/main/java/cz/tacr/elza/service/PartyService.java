@@ -188,7 +188,7 @@ public class PartyService {
      * @return osoba s daným rejstříkovým heslem nebo null
      */
     public ParParty findParPartyByRecord(final RegRecord record) {
-        Assert.notNull(record);
+        Assert.notNull(record, "Rejstříkové heslo musí být vyplněno");
 
 
         List<ParParty> recordParties = partyRepository.findParPartyByRecordId(record.getRecordId());
@@ -286,7 +286,7 @@ public class PartyService {
      * @return uložená osoba
      */
     public ParParty saveParty(final ParParty newParty) {
-        Assert.notNull(newParty);
+        Assert.notNull(newParty, "Osoba musí být vyplněna");
 
         ParPartyType partyType = partyTypeRepository.findOne(newParty.getPartyType().getPartyTypeId());
 
@@ -300,7 +300,7 @@ public class PartyService {
             synchRecord(newParty);
         } else {
             saveParty = partyRepository.findOne(newParty.getPartyId());
-            Assert.notNull(saveParty);
+            Assert.notNull(saveParty, "Osoba neexistuje");
 
             BeanUtils.copyProperties(newParty, saveParty, "partyGroupIdentifiers", "record",
                     "preferredName", "from", "to", "partyNames", "partyCreators", "relations");
@@ -341,7 +341,7 @@ public class PartyService {
      * @param party osoba
      */
     private void synchRecord(final ParParty party) {
-        Assert.notNull(party);
+        Assert.notNull(party, "Osoba nesmí být prázdná");
 
         Assert.notNull(party.getRecord(), "Osoba nemá zadané rejstříkové heslo.");
         Assert.notNull(party.getRecord().getRegisterType(), "Není vyplněný typ rejstříkového hesla.");
@@ -395,13 +395,13 @@ public class PartyService {
         Set<ParCreator> remove = new HashSet<>(creatorMap.values());
 
         for (ParCreator newCreator : newCreators) {
-            Assert.notNull(newCreator.getCreatorParty().getPartyId());
+            Assert.notNull(newCreator.getCreatorParty().getPartyId(), "Nesmí být nulové");
             ParCreator oldCreator = creatorMap.get(newCreator.getCreatorParty().getPartyId());
 
             if (oldCreator == null) {
                 oldCreator = newCreator;
                 ParParty creatorParty = partyRepository.findOne(newCreator.getCreatorParty().getPartyId());
-                Assert.notNull(creatorParty);
+                Assert.notNull(creatorParty, "Osoba neexistuje");
                 oldCreator.setCreatorParty(creatorParty);
             } else {
                 remove.remove(oldCreator);
@@ -420,7 +420,7 @@ public class PartyService {
      */
     private void synchPartyGroupIdentifiers(final ParPartyGroup partyGroup,
                                             final Collection<ParPartyGroupIdentifier> newPartyGroupIdentifiers) {
-        Assert.notNull(partyGroup);
+        Assert.notNull(partyGroup, "Musí být vyplněno");
 
 
         Map<Integer, ParPartyGroupIdentifier> dbIdentifiersMap = Collections.emptyMap();
@@ -546,12 +546,12 @@ public class PartyService {
             ParPartyNameComplement oldComplementType = dbComplementMap
                     .get(newComplementType.getPartyNameComplementId());
 
-            Assert.notNull(newComplementType.getComplementType());
-            Assert.notNull(newComplementType.getComplementType().getComplementTypeId());
+            Assert.notNull(newComplementType.getComplementType(), "Musí být nenulové");
+            Assert.notNull(newComplementType.getComplementType().getComplementTypeId(), "Musí být nenulové");
 
             ParComplementType complementType = complementTypeRepository
                     .findOne(newComplementType.getComplementType().getComplementTypeId());
-            Assert.notNull(complementType);
+            Assert.notNull(complementType, "Musí být nenulové");
 
             if (oldComplementType == null) {
                 oldComplementType = newComplementType;
@@ -609,7 +609,7 @@ public class PartyService {
      * @param partyName jméno ke smazání
      */
     public void deletePartyName(final ParPartyName partyName) {
-        Assert.notNull(partyName);
+        Assert.notNull(partyName, "Musí být nenulové");
         partyNameComplementRepository.delete(partyName.getPartyNameComplements());
         partyNameRepository.delete(partyName);
         deleteUnitDates(partyName.getValidFrom(), partyName.getValidTo());
@@ -620,7 +620,7 @@ public class PartyService {
      * @param party osoba ke smazání
      */
     public void deleteParty(final ParParty party){
-        Assert.notNull(party);
+        Assert.notNull(party, "Osoba nesmí být prázdná");
 
         checkPartyUsage(party);
 
@@ -667,8 +667,8 @@ public class PartyService {
                                     @Nullable final Collection<ParRelationEntity> relationEntities) {
 
 
-        Assert.notNull(relationSource.getRelationType());
-        Assert.notNull(relationSource.getRelationType().getRelationTypeId());
+        Assert.notNull(relationSource.getRelationType(), "Musí být nenulové");
+        Assert.notNull(relationSource.getRelationType().getRelationTypeId(), "Musí být nenulové");
 
         Set<ParUnitdate> unitdateRemove = new HashSet<>();
 
@@ -710,7 +710,7 @@ public class PartyService {
 
 
         ParParty party = partyRepository.findOne(relationSource.getParty().getPartyId());
-        Assert.notNull(party);
+        Assert.notNull(party, "Osoba nesmí být prázdná");
 
         relation.setParty(party);
         relation.setRelationType(relationType);
@@ -826,14 +826,14 @@ public class PartyService {
             }
 
 
-            Assert.notNull(newRelationEntity.getRoleType());
-            Assert.notNull(newRelationEntity.getRoleType().getRoleTypeId());
+            Assert.notNull(newRelationEntity.getRoleType(), "Musí být nenulové");
+            Assert.notNull(newRelationEntity.getRoleType().getRoleTypeId(), "Musí být nenulové");
             ParRelationRoleType relationRoleType = relationRoleTypeRepository
                     .findOne(newRelationEntity.getRoleType().getRoleTypeId());
             saveEntity.setRoleType(relationRoleType);
 
-            Assert.notNull(newRelationEntity.getRecord());
-            Assert.notNull(newRelationEntity.getRecord().getRecordId());
+            Assert.notNull(newRelationEntity.getRecord(), "Musí být nenulové");
+            Assert.notNull(newRelationEntity.getRecord().getRecordId(), "Musí být nenulové");
             RegRecord record = recordRepository.findOne(newRelationEntity.getRecord().getRecordId());
             saveEntity.setRecord(record);
 
@@ -857,10 +857,10 @@ public class PartyService {
      * @param relationEntity navázaná entita
      */
     private void checkRelationEntitySave(final ParRelationEntity relationEntity) {
-        Assert.notNull(relationEntity);
-        Assert.notNull(relationEntity.getRoleType());
-        Assert.notNull(relationEntity.getRelation());
-        Assert.notNull(relationEntity.getRecord());
+        Assert.notNull(relationEntity, "Musí být nenulové");
+        Assert.notNull(relationEntity.getRoleType(), "Musí být nenulové");
+        Assert.notNull(relationEntity.getRelation(), "Musí být nenulové");
+        Assert.notNull(relationEntity.getRecord(), "Musí být nenulové");
 
         //typ role entity odpovídající typu vztahu dle par_relation_type_role_type
         ParRelationRoleType roleType = relationEntity.getRoleType();
@@ -959,7 +959,7 @@ public class PartyService {
      * @return uložená instituce
      */
     public ParInstitution saveInstitution(final ParInstitution institution, final boolean notification) {
-        Assert.notNull(institution);
+        Assert.notNull(institution, "Instituce musí být vyplněny");
         if (notification) {
             eventNotificationService.publishEvent(new ActionEvent(EventType.INSTITUTION_CHANGE));
         }
@@ -968,7 +968,7 @@ public class PartyService {
 
     @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_RD_ALL, UsrPermission.Permission.REG_SCOPE_RD})
     public ParParty getParty(@AuthParam(type = AuthParam.Type.PARTY) final Integer partyId) {
-        Assert.notNull(partyId);
+        Assert.notNull(partyId, "Identifikátor osoby musí být vyplněna");
         return partyRepository.findOne(partyId);
     }
 }

@@ -330,8 +330,8 @@ public class ArrangementController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ArrPacketVO insertPacket(@PathVariable(value = "fundId") final Integer fundId,
                                     @RequestBody final ArrPacketVO packetVO) {
-        Assert.notNull(fundId);
-        Assert.notNull(packetVO);
+        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
+        Assert.notNull(packetVO, "Obal musí být vyplněn");
 
         ArrPacket packet = factoryDO.createPacket(packetVO, fundId);
         return factoryVo.createPacket(packetService.insertPacket(packet));
@@ -350,9 +350,9 @@ public class ArrangementController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public List<ArrPacketVO> findPacketsForm(@PathVariable(value = "fundId") final Integer fundId,
                                              @RequestBody final PacketFindFormParam input) {
-        Assert.notNull(fundId);
-        Assert.notNull(input);
-        Assert.notNull(input.getLimit());
+        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
+        Assert.notNull(input, "Vstupní data musí být vyplněny");
+        Assert.notNull(input.getLimit(), "Limit musí být vyplněn");
 
         ArrFund fund = fundRepository.getOneCheckExist(fundId);
         List<ArrPacket> packets = packetService.findPackets(fund, input.getLimit(), input.getText());
@@ -377,7 +377,7 @@ public class ArrangementController {
             @RequestParam(value = "search", required = false) final String search,
             @RequestParam(value = "unassigned", required = false, defaultValue = "false") final Boolean unassigned,
             @RequestParam(value = "maxResults", required = false, defaultValue = "200") final Integer maxResults) {
-        Assert.notNull(fundVersionId);
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
 
         final List<ArrDaoPackage> arrDaoList = daoService.findDaoPackages(fundVersion, search, unassigned, maxResults);
@@ -404,7 +404,7 @@ public class ArrangementController {
                             @RequestParam(value = "detail", required = false, defaultValue = "false") final Boolean detail,
                             @RequestParam(value = "index", required = false, defaultValue = "0") final Integer index,
                             @RequestParam(value = "maxResults", required = false, defaultValue = "99999") final Integer maxResults) {
-        Assert.notNull(fundVersionId);
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
 
         ArrNode node = null;
@@ -437,8 +437,8 @@ public class ArrangementController {
                                          @RequestParam(value = "unassigned", required = false, defaultValue = "false") final Boolean unassigned,
                                          @RequestParam(value = "index", required = false, defaultValue = "0") final Integer index,
                                          @RequestParam(value = "maxResults", required = false, defaultValue = "99999") final Integer maxResults) {
-            Assert.notNull(fundVersionId);
-            Assert.notNull(daoPackageId);
+            Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+            Assert.notNull(daoPackageId, "Idenitifikátor DAO obalu musí být vyplněn");
 
             ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
             final ArrDaoPackage arrDaoPackage = daoPackageRepository.getOneCheckExist(daoPackageId);
@@ -469,9 +469,9 @@ public class ArrangementController {
     public void createDaoLink(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                               @PathVariable(value = "daoId") final Integer daoId,
                               @PathVariable(value = "nodeId") final Integer nodeId) {
-        Assert.notNull(fundVersionId);
-        Assert.notNull(daoId);
-        Assert.notNull(nodeId);
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(daoId, "Identifikátor DAO musí být vyplněn");
+        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
 
         final ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         final ArrDao dao = daoRepository.getOneCheckExist(daoId);
@@ -491,8 +491,8 @@ public class ArrangementController {
                 produces = MediaType.APPLICATION_JSON_VALUE)
     public void deleteDaoLink(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                               @PathVariable(value = "daoLinkId") final Integer daoLinkId) {
-        Assert.notNull(fundVersionId);
-        Assert.notNull(daoLinkId);
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(daoLinkId, "Identifikátor DAO linku musí být vyplněn");
 
         final ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         final ArrDaoLink daoLink = daoLinkRepository.getOneCheckExist(daoLinkId);
@@ -514,9 +514,9 @@ public class ArrangementController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public List<ArrPacketVO> findPackets(@PathVariable(value = "fundId") final Integer fundId,
                                          @RequestBody final PacketFindParam input) {
-        Assert.notNull(fundId);
-        Assert.notNull(input);
-        Assert.notNull(input.getState());
+        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
+        Assert.notNull(input, "Vstupní data musí být vyplněny");
+        Assert.notNull(input.getState(), "Stav musí být vyplněn");
 
         ArrFund fund = fundRepository.getOneCheckExist(fundId);
         List<ArrPacket> packets = packetService.findPackets(fund, input.getPrefix(), input.getState());
@@ -536,8 +536,8 @@ public class ArrangementController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public void deletePackets(@PathVariable(value = "fundId") final Integer fundId,
                               @RequestBody final PacketDeleteParam input) {
-        Assert.notNull(fundId);
-        Assert.notNull(input);
+        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
+        Assert.notNull(input, "Vstupní data musí být vyplněny");
 
         ArrFund fund = fundRepository.getOneCheckExist(fundId);
         packetService.deletePackets(fund, input.getPacketIds());
@@ -556,8 +556,8 @@ public class ArrangementController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public void setStatePackets(@PathVariable(value = "fundId") final Integer fundId,
                                 @RequestBody final PacketSetStateParam input) {
-        Assert.notNull(fundId);
-        Assert.notNull(input);
+        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
+        Assert.notNull(input, "Vstupní data musí být vyplněny");
 
         ArrFund fund = fundRepository.getOneCheckExist(fundId);
         packetService.setStatePackets(fund, input.getPacketIds(), input.getState());
@@ -576,12 +576,12 @@ public class ArrangementController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public void generatePackets(@PathVariable(value = "fundId") final Integer fundId,
                                 @RequestBody final PacketGenerateParam input) {
-        Assert.notNull(fundId);
-        Assert.notNull(input);
+        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
+        Assert.notNull(input, "Vstupní data musí být vyplněny");
 
-        Assert.notNull(input.getFromNumber());
-        Assert.notNull(input.getLenNumber());
-        Assert.notNull(input.getCount());
+        Assert.notNull(input.getFromNumber(), "Musí být vyplněno");
+        Assert.notNull(input.getLenNumber(), "Musí být vyplněno");
+        Assert.notNull(input.getCount(), "Musí být vyplněno");
 
         ArrFund fund = fundRepository.getOneCheckExist(fundId);
         RulPacketType packetType = input.getPacketTypeId() != null ?
@@ -614,10 +614,10 @@ public class ArrangementController {
                                                 @PathVariable(value = "nodeVersion") final Integer nodeVersion,
                                                 @PathVariable(value = "descItemTypeId") final Integer descItemTypeId) {
 
-        Assert.notNull(fundVersionId);
-        Assert.notNull(nodeVersion);
-        Assert.notNull(descItemTypeId);
-        Assert.notNull(nodeId);
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
+        Assert.notNull(descItemTypeId, "Nebyl vyplněn identifikátor typu atributu");
+        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
 
         ArrNode node = descriptionItemService
                 .deleteDescriptionItemsByType(fundVersionId, nodeId, nodeVersion, descItemTypeId);
@@ -647,10 +647,10 @@ public class ArrangementController {
                                                     @PathVariable(value = "outputDefinitionVersion") final Integer nodeVersion,
                                                     @PathVariable(value = "itemTypeId") final Integer itemTypeId) {
 
-        Assert.notNull(fundVersionId);
-        Assert.notNull(nodeVersion);
-        Assert.notNull(itemTypeId);
-        Assert.notNull(nodeId);
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
+        Assert.notNull(itemTypeId, "Nebyl vyplněn identifikátor typu atributu");
+        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
 
         ArrOutputDefinition node = outputService
                 .deleteOutputItemsByType(fundVersionId, nodeId, nodeVersion, itemTypeId);
@@ -677,9 +677,9 @@ public class ArrangementController {
     public DescItemResult deleteDescItem(@RequestBody final ArrItemVO descItemVO,
                                          @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                          @PathVariable(value = "nodeVersion") final Integer nodeVersion) {
-        Assert.notNull(descItemVO);
-        Assert.notNull(fundVersionId);
-        Assert.notNull(nodeVersion);
+        Assert.notNull(descItemVO, "Hodnota atributu musí být vyplněna");
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
 
         ArrDescItem descItemDeleted = descriptionItemService
                 .deleteDescriptionItem(descItemVO.getDescItemObjectId(), nodeVersion, fundVersionId);
@@ -705,8 +705,8 @@ public class ArrangementController {
             final HttpServletResponse response,
             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
             @RequestParam(value = "descItemObjectId") final Integer descItemObjectId) throws IOException {
-        Assert.notNull(fundVersionId);
-        Assert.notNull(descItemObjectId);
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(descItemObjectId, "Nebyl vyplněn jednoznačný identifikátor descItem");
 
         ArrDescItem descItem = descItemRepository.findOpenDescItem(descItemObjectId);
         if (!"JSON_TABLE".equals(descItem.getItemType().getDataType().getCode())) {
@@ -716,10 +716,9 @@ public class ArrangementController {
                     .set("actual", descItem.getItemType().getDataType().getCode());
         }
 
-        ArrDescItem arrDescItem = descItemFactory.getDescItem(descItem);
         OutputStream os = response.getOutputStream();
         response.setHeader("Content-Disposition", "attachment; filename=desc-item-" + descItemObjectId + ".csv");
-        arrIOService.csvExport(arrDescItem, os);
+        arrIOService.csvExport(descItem, os);
         os.close();
     }
 
@@ -737,8 +736,8 @@ public class ArrangementController {
             final HttpServletResponse response,
             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
             @RequestParam(value = "descItemObjectId") final Integer descItemObjectId) throws IOException {
-        Assert.notNull(fundVersionId);
-        Assert.notNull(descItemObjectId);
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(descItemObjectId, "Nebyl vyplněn jednoznačný identifikátor descItem");
 
         ArrOutputItem outputItem = outputItemRepository.findOpenOutputItem(descItemObjectId);
         if (!"JSON_TABLE".equals(outputItem.getItemType().getDataType().getCode())) {
@@ -748,7 +747,7 @@ public class ArrangementController {
                     .set("actual", outputItem.getItemType().getDataType().getCode());
         }
 
-        outputItem = itemService.loadData(outputItem);
+        //outputItem = itemService.loadData(outputItem);
         OutputStream os = response.getOutputStream();
         response.setHeader("Content-Disposition", "attachment; filename=output-item-" + descItemObjectId + ".csv");
         arrIOService.csvExport(outputItem, os);
@@ -774,16 +773,16 @@ public class ArrangementController {
             @RequestParam(value = "nodeId", required = false) final Integer nodeId,
             @RequestParam(value = "descItemTypeId", required = false) final Integer descItemTypeId,
             @RequestParam(value = "file") final MultipartFile importFile) throws IOException {
-        Assert.notNull(fundVersionId);
-        Assert.notNull(nodeVersion);
-        Assert.notNull(descItemTypeId);
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
+        Assert.notNull(descItemTypeId, "Nebyl vyplněn identifikátor typu atributu");
 
         InputStream is = importFile.getInputStream();
         ArrDescItem descItemCreated = arrIOService.csvDescImport(fundVersionId, nodeId, nodeVersion, descItemTypeId, is);
         is.close();
 
         DescItemResult descItemResult = new DescItemResult();
-        descItemResult.setItem(factoryVo.createItem(descItemCreated));
+        descItemResult.setItem(factoryVo.createDescItem(descItemCreated));
         descItemResult.setParent(factoryVo.createArrNode(descItemCreated.getNode()));
         return descItemResult;
     }
@@ -807,16 +806,16 @@ public class ArrangementController {
             @RequestParam(value = "outputDefinitionId", required = false) final Integer outputDefinitionId,
             @RequestParam(value = "descItemTypeId", required = false) final Integer descItemTypeId,
             @RequestParam(value = "file") final MultipartFile importFile) throws IOException {
-        Assert.notNull(fundVersionId);
-        Assert.notNull(outputDefinitionVersion);
-        Assert.notNull(descItemTypeId);
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(outputDefinitionVersion, "Verze definice výstupu musí být vyplněna");
+        Assert.notNull(descItemTypeId, "Nebyl vyplněn identifikátor typu atributu");
 
         InputStream is = importFile.getInputStream();
         ArrOutputItem outputItemCreated = arrIOService.csvOutputImport(fundVersionId, outputDefinitionId, outputDefinitionVersion, descItemTypeId, is);
         is.close();
 
         OutputItemResult outputItemResult = new OutputItemResult();
-        outputItemResult.setItem(factoryVo.createItem(outputItemCreated));
+        outputItemResult.setItem(factoryVo.createDescItem(outputItemCreated));
         outputItemResult.setParent(factoryVo.createArrOutputDefinition(outputItemCreated.getOutputDefinition()));
         return outputItemResult;
     }
@@ -838,10 +837,10 @@ public class ArrangementController {
                                          @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                          @PathVariable(value = "nodeVersion") final Integer nodeVersion,
                                          @PathVariable(value = "createNewVersion") final Boolean createNewVersion) {
-        Assert.notNull(descItemVO);
-        Assert.notNull(fundVersionId);
-        Assert.notNull(nodeVersion);
-        Assert.notNull(createNewVersion);
+        Assert.notNull(descItemVO, "Hodnota atributu musí být vyplněna");
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
+        Assert.notNull(createNewVersion, "Vytvořit novou verzi musí být vyplněno");
 
         ArrDescItem descItem = factoryDO.createDescItem(descItemVO);
 
@@ -942,7 +941,7 @@ public class ArrangementController {
         ArrOutputItem outputItemUpdated = outputService
                 .setNotIdentifiedDescItem(outputItemTypeId, outputDefinitionId, outputDefinitionVersion, fundVersionId, outputItemSpecId, outputItemObjectId);
         OutputItemResult outputItemResult = new OutputItemResult();
-        outputItemResult.setItem(factoryVo.createItem(outputItemUpdated));
+        outputItemResult.setItem(factoryVo.createDescItem(outputItemUpdated));
         outputItemResult.setParent(factoryVo.createOutputDefinition(outputItemUpdated.getOutputDefinition()));
         return outputItemResult;
     }
@@ -998,11 +997,11 @@ public class ArrangementController {
                                          @PathVariable(value = "descItemTypeId") final Integer descItemTypeId,
                                          @PathVariable(value = "nodeId") final Integer nodeId,
                                          @PathVariable(value = "nodeVersion") final Integer nodeVersion) {
-        Assert.notNull(descItemVO);
-        Assert.notNull(fundVersionId);
-        Assert.notNull(descItemTypeId);
-        Assert.notNull(nodeId);
-        Assert.notNull(nodeVersion);
+        Assert.notNull(descItemVO, "Hodnota atributu musí být vyplněna");
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(descItemTypeId, "Nebyl vyplněn identifikátor typu atributu");
+        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
+        Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
 
         ArrDescItem descItem = factoryDO.createDescItem(descItemVO, descItemTypeId);
 
@@ -1083,9 +1082,9 @@ public class ArrangementController {
     public OutputItemResult deleteOutputItem(@RequestBody final ArrItemVO outputItemVO,
                                              @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                              @PathVariable(value = "outputDefinitionVersion") final Integer outputDefinitionVersion) {
-        Assert.notNull(outputItemVO);
-        Assert.notNull(fundVersionId);
-        Assert.notNull(outputDefinitionVersion);
+        Assert.notNull(outputItemVO, "Výstup musí být vyplněn");
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(outputDefinitionVersion, "Verze definice výstupu musí být vyplněna");
 
         ArrOutputItem outputItemDeleted = outputService
                 .deleteOutputItem(outputItemVO.getDescItemObjectId(), outputDefinitionVersion, fundVersionId);
@@ -1107,11 +1106,11 @@ public class ArrangementController {
                                              @PathVariable(value = "itemTypeId") final Integer itemTypeId,
                                              @PathVariable(value = "outputDefinitionId") final Integer outputDefinitionId,
                                              @PathVariable(value = "outputDefinitionVersion") final Integer outputDefinitionVersion) {
-        Assert.notNull(outputItemVO);
-        Assert.notNull(fundVersionId);
-        Assert.notNull(itemTypeId);
-        Assert.notNull(outputDefinitionId);
-        Assert.notNull(outputDefinitionVersion);
+        Assert.notNull(outputItemVO, "Výstup musí být vyplněn");
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(itemTypeId, "Nebyl vyplněn identifikátor typu atributu");
+        Assert.notNull(outputDefinitionId, "Identifikátor definice výstupu musí být vyplněn");
+        Assert.notNull(outputDefinitionVersion, "Verze definice výstupu musí být vyplněna");
 
         ArrOutputItem outputItem = factoryDO.createOutputItem(outputItemVO, itemTypeId);
 
@@ -1119,7 +1118,7 @@ public class ArrangementController {
                 outputDefinitionVersion, fundVersionId);
 
         OutputItemResult outputItemResult = new OutputItemResult();
-        outputItemResult.setItem(factoryVo.createItem(outputItemCreated));
+        outputItemResult.setItem(factoryVo.createDescItem(outputItemCreated));
         outputItemResult.setParent(factoryVo.createArrOutputDefinition(outputItemCreated.getOutputDefinition()));
 
         return outputItemResult;
@@ -1134,10 +1133,10 @@ public class ArrangementController {
                                              @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                              @PathVariable(value = "outputDefinitionVersion") final Integer outputDefinitionVersion,
                                              @PathVariable(value = "createNewVersion") final Boolean createNewVersion) {
-        Assert.notNull(outputItemVO);
-        Assert.notNull(fundVersionId);
-        Assert.notNull(outputDefinitionVersion);
-        Assert.notNull(createNewVersion);
+        Assert.notNull(outputItemVO, "Výstup musí být vyplněn");
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(outputDefinitionVersion, "Verze definice výstupu musí být vyplněna");
+        Assert.notNull(createNewVersion, "Vytvořit novou verzi musí být vyplněno");
 
         ArrOutputItem outputItem = factoryDO.createOutputItem(outputItemVO);
 
@@ -1145,7 +1144,7 @@ public class ArrangementController {
                 .updateOutputItem(outputItem, outputDefinitionVersion, fundVersionId, createNewVersion);
 
         OutputItemResult outputItemResult = new OutputItemResult();
-        outputItemResult.setItem(factoryVo.createItem(outputItemUpdated));
+        outputItemResult.setItem(factoryVo.createDescItem(outputItemUpdated));
         outputItemResult.setParent(factoryVo.createOutputDefinition(outputItemUpdated.getOutputDefinition()));
 
         return outputItemResult;
@@ -1299,8 +1298,8 @@ public class ArrangementController {
     @RequestMapping(value = "/fundTree", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public TreeData getFundTree(final @RequestBody FaTreeParam input) {
-        Assert.notNull(input);
-        Assert.notNull(input.getVersionId());
+        Assert.notNull(input, "Vstupní data musí být vyplněny");
+        Assert.notNull(input.getVersionId(), "Nebyla vyplněn identifikátor verze AS");
 
         return levelTreeCacheService
                 .getFaTree(input.getVersionId(), input.getNodeId(), input.getExpandedIds(), input.getIncludeIds());
@@ -1315,9 +1314,9 @@ public class ArrangementController {
     @RequestMapping(value = "/fundTree/nodes", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public Collection<TreeNodeClient> getFundTreeNodes(final @RequestBody FaTreeNodesParam input) {
-        Assert.notNull(input);
-        Assert.notNull(input.getVersionId());
-        Assert.notNull(input.getNodeIds());
+        Assert.notNull(input, "Vstupní data musí být vyplněny");
+        Assert.notNull(input.getVersionId(), "Nebyl vyplněn identifikátor verze AS");
+        Assert.notNull(input.getNodeIds(), "Nebyly vyplně¨ny identifikátoy JP");
 
         return levelTreeCacheService.getFaTreeNodes(input.getVersionId(), input.getNodeIds());
     }
@@ -1333,8 +1332,8 @@ public class ArrangementController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public Collection<TreeNodeClient> getNodeParents(@RequestParam(value = "nodeId") final Integer nodeId,
                                                @RequestParam(value = "versionId") final Integer versionId) {
-        Assert.notNull(nodeId);
-        Assert.notNull(versionId);
+        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
+        Assert.notNull(versionId, "Nebyl vyplněn identifikátor verze AS");
 
         return levelTreeCacheService.getNodeParents(nodeId, versionId);
     }
@@ -1351,7 +1350,7 @@ public class ArrangementController {
     @RequestMapping(value = "/approveVersion", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     public ArrFundVersionVO approveVersion(@RequestParam("versionId") final Integer versionId,
                                            @RequestParam(value = "dateRange", required = false) final String dateRange) {
-        Assert.notNull(versionId);
+        Assert.notNull(versionId, "Nebyl vyplněn identifikátor verze AS");
 
         ArrFundVersion version = fundVersionRepository.findOne(versionId);
 
@@ -1487,9 +1486,9 @@ public class ArrangementController {
                                 @RequestParam(value = "institutionId") final Integer institutionId,
                                 @RequestParam(value = "dateRange", required = false) final String dateRange) {
 
-        Assert.hasText(name);
-        Assert.notNull(institutionId);
-        Assert.notNull(ruleSetId);
+        Assert.hasText(name, "Musí být vyplněn název");
+        Assert.notNull(institutionId, "Identifikátor instituce musí být vyplněn");
+        Assert.notNull(ruleSetId, "Identifikátor pravidel musí být vyplněn");
 
         RulRuleSet ruleSet = ruleSetRepository.findOne(ruleSetId);
         Assert.notNull(ruleSet, "Nebyla nalezena pravidla tvorby s id " + ruleSetId);
@@ -1513,7 +1512,7 @@ public class ArrangementController {
     @RequestMapping(value = "/updateFund", method = RequestMethod.POST)
     public ArrFundVO updateFund(@RequestParam("ruleSetId") final Integer ruleSetId,
             @RequestBody final ArrFundVO arrFundVO) {
-        Assert.notNull(arrFundVO);
+        Assert.notNull(arrFundVO, "AS musí být vyplněn");
 
         return factoryVo.createFundVO(
                 arrangementService.updateFund(
@@ -1535,7 +1534,7 @@ public class ArrangementController {
     @Transactional
     @RequestMapping(value = "/moveLevelBefore", method = RequestMethod.PUT)
     public void moveLevelBefore(@RequestBody final LevelMoveParam moveParam) {
-        Assert.notNull(moveParam);
+        Assert.notNull(moveParam, "Parametry přesunu musí být vyplněny");
 
 
         ArrFundVersion version = fundVersionRepository.findOne(moveParam.getVersionId());
@@ -1557,7 +1556,7 @@ public class ArrangementController {
     @Transactional
     @RequestMapping(value = "/moveLevelAfter", method = RequestMethod.PUT)
     public void moveLevelAfter(@RequestBody final LevelMoveParam moveParam) {
-        Assert.notNull(moveParam);
+        Assert.notNull(moveParam, "Parametry přesunu musí být vyplněny");
 
 
         ArrFundVersion version = fundVersionRepository.findOne(moveParam.getVersionId());
@@ -1580,7 +1579,7 @@ public class ArrangementController {
     @Transactional
     @RequestMapping(value = "/moveLevelUnder", method = RequestMethod.PUT)
     public void moveLevelUnder(@RequestBody final LevelMoveParam moveParam) {
-        Assert.notNull(moveParam);
+        Assert.notNull(moveParam, "Parametry přesunu musí být vyplněny");
 
         ArrFundVersion version = fundVersionRepository.findOne(moveParam.getVersionId());
 
@@ -1645,10 +1644,10 @@ public class ArrangementController {
     @Transactional
     @RequestMapping(value = "/levels", method = RequestMethod.PUT)
     public NodeWithParent addLevel(@RequestBody final AddLevelParam addLevelParam) {
-        Assert.notNull(addLevelParam);
-        Assert.notNull(addLevelParam.getVersionId());
+        Assert.notNull(addLevelParam, "Parametry musí být vyplněny");
+        Assert.notNull(addLevelParam.getVersionId(), "Nebyla vyplněn identifikátor verze AS");
 
-        Assert.notNull(addLevelParam.getDirection());
+        Assert.notNull(addLevelParam.getDirection(), "Směr musí být vyplněn");
 
         ArrFundVersion version = fundVersionRepository.findOne(addLevelParam.getVersionId());
 
@@ -1668,7 +1667,7 @@ public class ArrangementController {
 
         Collection<TreeNodeClient> nodeClients = levelTreeCacheService
                 .getNodesByIds(Arrays.asList(newLevel.getNodeParent().getNodeId()), version.getFundVersionId());
-        Assert.notEmpty(nodeClients);
+        Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
         return new NodeWithParent(factoryVo.createArrNode(newLevel.getNode()), nodeClients.iterator().next());
     }
 
@@ -1679,9 +1678,9 @@ public class ArrangementController {
     @Transactional
     @RequestMapping(value = "/levels", method = RequestMethod.DELETE)
     public NodeWithParent deleteLevel(@RequestBody final NodeParam nodeParam){
-        Assert.notNull(nodeParam);
-        Assert.notNull(nodeParam.getVersionId());
-        Assert.notNull(nodeParam.getStaticNode());
+        Assert.notNull(nodeParam, "Parametry JP musí být vyplněny");
+        Assert.notNull(nodeParam.getVersionId(), "Nebyl vyplněn identifikátor verze AS");
+        Assert.notNull(nodeParam.getStaticNode(), "Nebyla zvolena referenční JP");
 
         ArrNode deleteNode = factoryDO.createNode(nodeParam.getStaticNode());
         ArrNode deleteParent = nodeParam.getStaticNodeParent() == null ? null : factoryDO
@@ -1694,7 +1693,7 @@ public class ArrangementController {
         Collection<TreeNodeClient> nodeClients = levelTreeCacheService
                 .getNodesByIds(Arrays.asList(deleteLevel.getNodeParent().getNodeId()),
                         version.getFundVersionId());
-        Assert.notEmpty(nodeClients);
+        Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
         return new NodeWithParent(factoryVo.createArrNode(deleteLevel.getNode()), nodeClients.iterator().next());
     }
 
@@ -1721,7 +1720,6 @@ public class ArrangementController {
         ArrLevel level = arrangementService.lockNode(node, version, change);
 
         List<ArrDescItem> newDescItems = arrangementService.copyOlderSiblingAttribute(version, descItemType, level, change);
-        newDescItems = descItemFactory.getDescItems(newDescItems);
 
         RulDescItemTypeDescItemsVO descItemTypeVO = factoryVo.createDescItemTypeVO(descItemType);
         descItemTypeVO.setDescItems(factoryVo.createDescItems(newDescItems));
@@ -1740,8 +1738,8 @@ public class ArrangementController {
      */
     @RequestMapping(value = "/fulltext", method = RequestMethod.POST)
     public List<TreeNodeFulltext> fulltext(final @RequestBody FaFulltextParam input) {
-        Assert.notNull(input);
-        Assert.notNull(input.getVersionId());
+        Assert.notNull(input, "Vstupní data musí být vyplněny");
+        Assert.notNull(input.getVersionId(), "Nebyl vyplněn identifikátor verze AS");
 
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(input.getVersionId());
 
@@ -1870,8 +1868,8 @@ public class ArrangementController {
     @RequestMapping(value = "/validateVersion/{versionId}/{showAll}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<VersionValidationItem> validateVersion(@PathVariable("versionId") final Integer versionId,
                                                        @PathVariable("showAll") final Boolean showAll) {
-        Assert.notNull(versionId);
-        Assert.notNull(showAll);
+        Assert.notNull(versionId, "Nebyl vyplněn identifikátor verze AS");
+        Assert.notNull(showAll, "Parametr musí být vyplněn");
 
         ArrFundVersion fundVersion = fundVersionRepository.findOne(versionId);
         if (fundVersion == null) {
@@ -1892,7 +1890,7 @@ public class ArrangementController {
      */
     @RequestMapping(value = "/validateVersionCount/{versionId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public Integer validateVersionCount(@PathVariable("versionId") final Integer versionId) {
-        Assert.notNull(versionId);
+        Assert.notNull(versionId, "Nebyl vyplněn identifikátor verze AS");
 
         ArrFundVersion fundVersion = fundVersionRepository.findOne(versionId);
         if (fundVersion == null) {
@@ -2006,7 +2004,7 @@ public class ArrangementController {
                 CollectionUtils.isEmpty(replaceDataBody.getSpecIds()) ? null :
                 new HashSet<>(itemSpecRepository.findAll(replaceDataBody.getSpecIds()));
 
-        descriptionItemService.replaceDescItemValues(version, descItemType, nodesDO, specifications, searchText, replaceText);
+        descriptionItemService.replaceDescItemValues(version, descItemType, nodesDO, specifications, searchText, replaceText, replaceDataBody.getSelectionType() == SelectionType.FUND);
     }
 
     /**
@@ -2037,7 +2035,7 @@ public class ArrangementController {
                 new HashSet<>(itemSpecRepository.findAll(replaceDataBody.getSpecIds()));
 
         descriptionItemService
-                .placeDescItemValues(version, descItemType, nodesDO, newDescItemSpec, specifications, text);
+                .placeDescItemValues(version, descItemType, nodesDO, newDescItemSpec, specifications, text, replaceDataBody.getSelectionType() == SelectionType.FUND);
     }
 
 
@@ -2062,7 +2060,7 @@ public class ArrangementController {
                 CollectionUtils.isEmpty(replaceDataBody.getSpecIds()) ? null :
                 new HashSet<>(itemSpecRepository.findAll(replaceDataBody.getSpecIds()));
 
-        descriptionItemService.deleteDescItemValues(version, descItemType, nodesDO, specifications);
+        descriptionItemService.deleteDescItemValues(version, descItemType, nodesDO, specifications, replaceDataBody.getSelectionType() == SelectionType.FUND);
     }
 
     @RequestMapping(value = "/validation/{fundVersionId}/{fromIndex}/{toIndex}", method = RequestMethod.GET)
@@ -2151,7 +2149,7 @@ public class ArrangementController {
     @RequestMapping(value = "/output/{fundVersionId}", method = RequestMethod.PUT)
     public ArrOutputDefinitionVO createNamedOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                                    @RequestBody final OutputNameParam param) {
-        Assert.notNull(param);
+        Assert.notNull(param, "Vstupní data musí být vyplněny");
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutputDefinition outputDefinition = outputService.createOutputDefinition(fundVersion, param.getName(), param.getInternalCode(),
                 param.getTemporary(), param.getOutputTypeId(), param.getTemplateId());
@@ -2265,7 +2263,7 @@ public class ArrangementController {
     public void updateNamedOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                   @PathVariable(value = "outputId") final Integer outputId,
                                   @RequestBody final OutputNameParam param) {
-        Assert.notNull(param);
+        Assert.notNull(param, "Vstupní data musí být vyplněny");
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
         outputService.updateNamedOutput(fundVersion, output, param.getName(), param.getInternalCode(), param.getTemplateId());
@@ -2369,8 +2367,8 @@ public class ArrangementController {
     public void digitizationRequestAdd(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                        @RequestParam(name = "send", defaultValue = "false") final Boolean send,
                                        @RequestBody final DigitizationRequestParam param) {
-        Assert.notNull(param);
-        Assert.notEmpty(param.nodeIds);
+        Assert.notNull(param, "Vstupní data musí být vyplněny");
+        Assert.notEmpty(param.nodeIds, "Musí být vyplněna alespoň jedna JP");
 
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         List<ArrNode> nodes = nodeRepository.findAll(param.nodeIds);
@@ -2407,9 +2405,9 @@ public class ArrangementController {
     public void daoRequestAdd(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                               @RequestParam(name = "send", defaultValue = "false") final Boolean send,
                               @RequestBody final DaoRequestParam param) {
-        Assert.notNull(param);
-        Assert.notNull(param.type);
-        Assert.notEmpty(param.daoIds);
+        Assert.notNull(param, "Vstupní data musí být vyplněny");
+        Assert.notNull(param.type, "Musí být vyplněn typ");
+        Assert.notEmpty(param.daoIds, "Musí být vyplněno alespoň jedno DAO");
 
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         List<ArrDao> daos = daoRepository.findAll(param.daoIds);
@@ -2460,7 +2458,7 @@ public class ArrangementController {
     public void requestChange(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                               @PathVariable(value = "requestId") final Integer digitizationId,
                               @RequestBody final DigitizationRequestParam param) {
-        Assert.notNull(param);
+        Assert.notNull(param, "Vstupní data musí být vyplněny");
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrRequest request = requestService.getRequest(digitizationId);
         requestService.changeRequest(request, fundVersion, param.getDescription());
@@ -2476,9 +2474,9 @@ public class ArrangementController {
     @Transactional
     public void digitizationRequestRemove(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                           @RequestBody final DigitizationRequestParam param) {
-        Assert.notNull(param);
-        Assert.notNull(param.id);
-        Assert.notEmpty(param.nodeIds);
+        Assert.notNull(param, "Vstupní data musí být vyplněny");
+        Assert.notNull(param.id, "Nebyl vyplněn identifikátor");
+        Assert.notEmpty(param.nodeIds, "Musí být vyplněna alespoň jedna JP");
 
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         List<ArrNode> nodes = nodeRepository.findAll(param.nodeIds);
@@ -3527,8 +3525,19 @@ public class ArrangementController {
 
     public static class ReplaceDataBody {
 
+        private SelectionType selectionType;
+
         private Set<ArrNodeVO> nodes;
+
         private Set<Integer> specIds;
+
+        public SelectionType getSelectionType() {
+            return selectionType;
+        }
+
+        public void setSelectionType(final SelectionType selectionType) {
+            this.selectionType = selectionType;
+        }
 
         public Set<ArrNodeVO> getNodes() {
             return nodes;
@@ -3545,6 +3554,25 @@ public class ArrangementController {
         public void setSpecIds(final Set<Integer> specIds) {
             this.specIds = specIds;
         }
+    }
+
+    /**
+     * Výběrový typ.
+     *
+     * @since 05.09.2017
+     */
+    public enum SelectionType {
+
+        /**
+         * Akce se provádí podle nodů.
+         */
+        NODES,
+
+        /**
+         * Akce se provede nad celým AS.
+         */
+        FUND
+
     }
 
     /**

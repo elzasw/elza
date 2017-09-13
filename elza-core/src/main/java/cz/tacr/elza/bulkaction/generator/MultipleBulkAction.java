@@ -38,8 +38,8 @@ import cz.tacr.elza.utils.Yaml;
  * @since 29.06.2016
  */
 public class MultipleBulkAction extends BulkAction {
-	
-	/** 
+
+	/**
 	 * Size of batch for fetching child nodes from DB
 	 */
 	private final static int BATCH_CHILD_NODE_SIZE = 100;
@@ -52,8 +52,8 @@ public class MultipleBulkAction extends BulkAction {
 
     @Autowired
     private DescItemRepository descItemRepository;
-    
-    @Autowired 
+
+    @Autowired
     private NodeCacheService nodeCacheService;
 
     /**
@@ -159,7 +159,7 @@ public class MultipleBulkAction extends BulkAction {
         for (ArrNode node : startingNodes) {
 
             LevelWithItems levelWithItems = nodeStartingLevels.get(node);
-            Assert.notNull(levelWithItems);
+            Assert.notNull(levelWithItems, "Musí být vyplněno");
 
             generate(levelWithItems);
         }
@@ -209,8 +209,8 @@ public class MultipleBulkAction extends BulkAction {
 
         // apply on child nodes in batch
         List<ArrLevel> childLevels = getChildren(level);
-        
-        BatchNodeProcessor bnp = new BatchNodeProcessor(this, BATCH_CHILD_NODE_SIZE, actions, levelWithItems, nodeCacheService); 
+
+        BatchNodeProcessor bnp = new BatchNodeProcessor(this, BATCH_CHILD_NODE_SIZE, actions, levelWithItems, nodeCacheService);
         for (ArrLevel childLevel : childLevels) {
         	bnp.addItem(childLevel);
         }

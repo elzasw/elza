@@ -2,6 +2,7 @@ package cz.tacr.elza.controller;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -90,10 +91,10 @@ public class ArrangementWebsocketController {
         sc.setAuthentication(token);
         SecurityContextHolder.setContext(sc);
 
-        Assert.notNull(descItemVO);
-        Assert.notNull(fundVersionId);
-        Assert.notNull(nodeVersion);
-        Assert.notNull(createNewVersion);
+        Assert.notNull(descItemVO, "Hodnota atributu musí být vyplněna");
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
+        Assert.notNull(createNewVersion, "Vytvořit novou verzi musí být vyplněno");
 
         ArrDescItem descItem = factoryDO.createDescItem(descItemVO);
 
@@ -120,10 +121,10 @@ public class ArrangementWebsocketController {
             @Payload final ArrangementController.AddLevelParam addLevelParam,
             final SimpMessageHeaderAccessor headerAccessor
     ) {
-        Assert.notNull(addLevelParam);
-        Assert.notNull(addLevelParam.getVersionId());
+        Assert.notNull(addLevelParam, "Parametry musí být vyplněny");
+        Assert.notNull(addLevelParam.getVersionId(), "Nebyla vyplněn identifikátor verze AS");
 
-        Assert.notNull(addLevelParam.getDirection());
+        Assert.notNull(addLevelParam.getDirection(), "Směr musí být vyplněn");
 
         ArrFundVersion version = fundVersionRepository.findOne(addLevelParam.getVersionId());
 
@@ -142,8 +143,8 @@ public class ArrangementWebsocketController {
                 descItemCopyTypes);
 
         Collection<TreeNodeClient> nodeClients = levelTreeCacheService
-                .getNodesByIds(Arrays.asList(newLevel.getNodeParent().getNodeId()), version.getFundVersionId());
-        Assert.notEmpty(nodeClients);
+                .getNodesByIds(Collections.singletonList(newLevel.getNodeParent().getNodeId()), version.getFundVersionId());
+        Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
         final ArrangementController.NodeWithParent result = new ArrangementController.NodeWithParent(factoryVo.createArrNode(newLevel.getNode()), nodeClients.iterator().next());
 
         // Odeslání dat zpět
@@ -176,9 +177,9 @@ public class ArrangementWebsocketController {
             @Payload final ArrangementController.NodeParam nodeParam,
             final SimpMessageHeaderAccessor headerAccessor
     ) {
-        Assert.notNull(nodeParam);
-        Assert.notNull(nodeParam.getVersionId());
-        Assert.notNull(nodeParam.getStaticNode());
+        Assert.notNull(nodeParam, "Parametry JP musí být vyplněny");
+        Assert.notNull(nodeParam.getVersionId(), "Nebyl vyplněn identifikátor verze AS");
+        Assert.notNull(nodeParam.getStaticNode(), "Nebyla zvolena referenční JP");
 
         ArrNode deleteNode = factoryDO.createNode(nodeParam.getStaticNode());
         ArrNode deleteParent = nodeParam.getStaticNodeParent() == null ? null : factoryDO
@@ -191,7 +192,7 @@ public class ArrangementWebsocketController {
         Collection<TreeNodeClient> nodeClients = levelTreeCacheService
                 .getNodesByIds(Arrays.asList(deleteLevel.getNodeParent().getNodeId()),
                         version.getFundVersionId());
-        Assert.notEmpty(nodeClients);
+        Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
         final ArrangementController.NodeWithParent result = new ArrangementController.NodeWithParent(factoryVo.createArrNode(deleteLevel.getNode()), nodeClients.iterator().next());
 
         // Odeslání dat zpět
@@ -216,10 +217,10 @@ public class ArrangementWebsocketController {
 //        final List<String> receipt = headerAccessor.getNativeHeader("receipt");
 //        final String receiptId = receipt == null || receipt.isEmpty() ? null : receipt.get(0);
 //
-//        Assert.notNull(descItemVO);
-//        Assert.notNull(fundVersionId);
-//        Assert.notNull(nodeVersion);
-//        Assert.notNull(createNewVersion);
+//        Assert.notNull(descItemVO, "Hodnota atributu musí být vyplněna");
+//        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+//        Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
+//        Assert.notNull(createNewVersion, "Vytvořit novou verzi musí být vyplněno");
 //
 //        ArrDescItem descItem = factoryDO.createDescItem(descItemVO);
 //

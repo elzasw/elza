@@ -8,6 +8,7 @@ import java.util.Objects;
  * @author Martin Šlapa
  * @since 15.9.15
  */
+@Deprecated
 public class ArrItemPartyRef extends ArrItemData {
 
     private ParParty party;

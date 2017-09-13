@@ -1,26 +1,26 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.google.common.base.Objects;
+import cz.tacr.elza.bulkaction.generator.LevelWithItems;
+import cz.tacr.elza.bulkaction.generator.result.ActionResult;
+import cz.tacr.elza.bulkaction.generator.result.CopyActionResult;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.utils.Yaml;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.bulkaction.generator.LevelWithItems;
-import cz.tacr.elza.bulkaction.generator.result.ActionResult;
-import cz.tacr.elza.bulkaction.generator.result.CopyActionResult;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrItemData;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.utils.Yaml;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Akce pro kopírování hodnot atributů.
@@ -45,7 +45,7 @@ public class CopyAction extends Action {
     /**
      * Seznam kopírovaných hodnot atributů
      */
-    private List<ArrItemData> dataItems = new ArrayList<>();
+    private List<ArrDescItem> dataItems = new ArrayList<>();
 
     /**
      * Provést distinct při vracení výsledků?
@@ -78,22 +78,22 @@ public class CopyAction extends Action {
 
     @Override
     public void apply(final ArrNode node, final List<ArrDescItem> items, final LevelWithItems parentLevelWithItems) {
-        for (ArrItem item : items) {
+        for (ArrDescItem item : items) {
             // pouze hledaný typ
             if (inputItemTypes.contains(item.getItemType())) {
-                ArrItemData itemData = item.getItem();
-                if (itemData == null) {
-                    itemData = descItemFactory.createItemByType(item.getItemType().getDataType());
-                }
-                itemData.setSpec(item.getItemSpec());
-                itemData.setUndefined(item.getUndefined());
-
                 if (distinct) {
-                    if (!dataItems.contains(itemData)) {
-                        dataItems.add(itemData);
+                    boolean exist = false;
+                    for (ArrDescItem descItem : dataItems) {
+                        if (Objects.equal(item.getFulltextValue(), descItem.getFulltextValue())) {
+                            exist = true;
+                            break;
+                        }
+                    }
+                    if (!exist) {
+                        dataItems.add(item);
                     }
                 } else {
-                    dataItems.add(itemData);
+                    dataItems.add(item);
                 }
             }
         }
@@ -116,7 +116,7 @@ public class CopyAction extends Action {
     public ActionResult getResult() {
         CopyActionResult copyActionResult = new CopyActionResult();
         copyActionResult.setItemType(outputItemType.getCode());
-        copyActionResult.setDataItems(dataItems);
+        copyActionResult.setDataItems(new ArrayList<>(dataItems));
         return copyActionResult;
     }
 
