@@ -230,18 +230,6 @@ public class MultipleBulkAction extends BulkAction {
         .forEach(action -> action.apply(node, items, parentLevelWithItems));
     }
 
-    /**
-     * Načtení hodnot uzlu.
-     *
-     * @param level uzel
-     * @return  hodnoty uzlu
-     */
-    private List<ArrDescItem> loadDescItems(final ArrLevel level) {
-        List<ArrDescItem> descItems = descItemRepository.findByNodeAndDeleteChangeIsNull(level.getNode());
-        itemService.loadData(descItems);
-        return descItems;
-    }
-
     @Override
     public String toString() {
         return "MultipleBulkAction{" +

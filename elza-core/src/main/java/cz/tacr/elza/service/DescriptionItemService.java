@@ -15,18 +15,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import com.google.common.collect.Lists;
-import cz.tacr.elza.controller.ArrangementController;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.convertor.CalendarConverter;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.Level;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.CalendarTypeRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -36,10 +24,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import com.google.common.collect.Lists;
+
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.vo.TreeNode;
+import cz.tacr.elza.core.data.CalendarType;
+import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
@@ -62,8 +55,10 @@ import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.CoordinatesTitleValue;
@@ -75,6 +70,13 @@ import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.domain.vo.UnitdateTitleValue;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.drools.RulesExecutor;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.Level;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataPacketRefRepository;
 import cz.tacr.elza.repository.DataPartyRefRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
@@ -1529,7 +1531,7 @@ public class DescriptionItemService {
         itemUnitdate.setCalendarType(calendarType);
         UnitDateConvertor.convertToUnitDate(splitText[1], itemUnitdate);
 
-        CalendarConverter.CalendarType calendar = CalendarConverter.CalendarType.valueOf(calendarType.getCode());
+        CalendarType calendar = CalendarType.valueOf(calendarType.getCode());
         String value;
         value = itemUnitdate.getValueFrom();
         if (value != null) {

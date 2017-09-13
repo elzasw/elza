@@ -29,7 +29,6 @@ public class DescriptionItem extends AbstractDescriptionItem {
         ArrData data = createData(context, dataType);
         if (data != null) {
             data.setDataType(dataType.getEntity());
-            descItem.setUndefined(false);
         }
         contextNode.addDescItem(descItem, data);
     }
@@ -64,7 +63,6 @@ public class DescriptionItem extends AbstractDescriptionItem {
         descItem.setCreateChange(section.getCreateChange());
         descItem.setDescItemObjectId(section.generateDescItemObjectId());
         descItem.setItemType(itemType.getEntity());
-        descItem.setUndefined(true);
 
         // resolve item spec
         boolean specCodeExists = StringUtils.isNotEmpty(getS());

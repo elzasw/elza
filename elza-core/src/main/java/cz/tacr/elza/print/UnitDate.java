@@ -6,7 +6,6 @@ import org.apache.commons.lang.builder.ToStringStyle;
 
 import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ArrItemUnitdate;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 
 /**
@@ -132,10 +131,4 @@ public class UnitDate extends UnitDateText implements IUnitdate {
 		UnitDate unitDate = new UnitDate(itemData, calendarType);
 		return unitDate;
 	}
-
-    public static UnitDate valueOf(IUnitdate itemData) {
-        UnitDate unitDate = new UnitDate(itemData);
-        return unitDate;
-    }
-
 }
