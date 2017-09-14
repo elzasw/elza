@@ -60,6 +60,7 @@ import {propsEquals} from 'components/Utils.jsx'
 import {COL_DEFAULT_WIDTH, COL_REFERENCE_MARK} from "./FundDataGridConst";
 import './FundDataGrid.less'
 import {getPagesCount} from "../shared/datagrid/DataGridPagination";
+import {FILTER_NULL_VALUE} from 'actions/arr/fundDataGrid.jsx'
 
 class FundDataGrid extends AbstractReactComponent {
     constructor(props) {
@@ -510,8 +511,9 @@ class FundDataGrid extends AbstractReactComponent {
             }
 
             // Získání seznam specifikací
-            const specsIds = getSpecsIds(refType, data.specs.type, data.specs.ids);
-
+            const refTypeX = {...refType, descItemSpecs: [{id: FILTER_NULL_VALUE, name: i18n('arr.fund.filterSettings.value.empty')}, ...refType.descItemSpecs]};
+            let specsIds = getSpecsIds(refTypeX, data.specs.type, data.specs.ids);
+            specsIds = specsIds.map(specsId => specsId !== FILTER_NULL_VALUE ? specsId : null);
             if (selectionType !== 'FUND' || confirm(i18n('arr.fund.bulkModifications.warn'))) {
                 return this.dispatch(fundBulkModifications(versionId, refType.id, specsIds, data.operationType, data.findText, replaceText, data.replaceSpec, nodes, selectionType))
             }

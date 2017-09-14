@@ -33,7 +33,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     List<ArrDescItem> findOpenByNodesAndTypeAndSpec(Collection<ArrNode> nodes, RulItemType type, Collection<RulItemSpec> specs);
 
     @Query("SELECT di FROM arr_desc_item di JOIN FETCH di.node n WHERE n.fund = :fund AND di.deleteChange IS NULL AND di.itemType = :type")
-    List<ArrDescItem> findOpenByFundAndType(@Param("fund")ArrFund fund,
+    List<ArrDescItem> findOpenByFundAndType(@Param("fund") ArrFund fund,
                                             @Param("type") RulItemType type);
 
     @Query("SELECT di FROM arr_desc_item di JOIN FETCH di.node n WHERE n.fund = :fund AND di.deleteChange IS NULL AND di.itemType = :type AND di.itemSpec IN :specs")

@@ -2055,6 +2055,32 @@ public class ArrangementController {
                 .placeDescItemValues(version, descItemType, nodesDO, newDescItemSpec, specifications, text, replaceDataBody.getSelectionType() == SelectionType.FUND);
     }
 
+    /**
+     * Nastavit specifikaci hodnotám atributu.
+     *
+     * @param fundVersionId   id verze stromu
+     * @param itemTypeId      typ atributu
+     * @param replaceSpecId   id specifikace, která bude nastavena
+     * @param replaceDataBody seznam uzlů, ve kterých hledáme a seznam specifikací
+     */
+    @Transactional
+    @RequestMapping(value = "/setSpecification/{fundVersionId}", method = RequestMethod.PUT)
+    public void setSpecification(@PathVariable("fundVersionId") final Integer fundVersionId,
+                                 @RequestParam("itemTypeId") final Integer itemTypeId,
+                                 @RequestParam("replaceSpecId") final Integer replaceSpecId,
+                                 @RequestBody final ReplaceDataBody replaceDataBody) {
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        RulItemType itemType = itemTypeRepository.findOne(itemTypeId);
+
+        Set<ArrNode> nodesDO = new HashSet<>(factoryDO.createNodes(replaceDataBody.getNodes()));
+
+        RulItemSpec setSpecification = replaceSpecId == null ? null : itemSpecRepository.findOne(replaceSpecId);
+        Set<RulItemSpec> specifications = CollectionUtils.isEmpty(replaceDataBody.getSpecIds()) ? null :
+                new HashSet<>(itemSpecRepository.findAll(replaceDataBody.getSpecIds()));
+
+        descriptionItemService.setSpecification(fundVersion, itemType, nodesDO,
+                setSpecification, specifications, replaceDataBody.getSpecIds().contains(null), replaceDataBody.getSelectionType() == SelectionType.FUND);
+    }
 
     /**
      * Smazání hodnot atributů daného typu pro vybrané uzly.

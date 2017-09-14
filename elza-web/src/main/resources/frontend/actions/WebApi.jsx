@@ -722,6 +722,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/placeDataValues/' + versionId, {descItemTypeId, newDescItemSpecId: replaceSpecId, text: replaceText }, {nodes, specIds: specsIds, selectionType})
     }
 
+    setSpecification(fundVersionId, itemTypeId, specIds, replaceSpecId, nodes, selectionType) {
+        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/setSpecification/' + fundVersionId, {itemTypeId, replaceSpecId}, {nodes, specIds, selectionType})
+    }
+
     deleteDataValues(versionId, descItemTypeId, specsIds, nodes, selectionType) {
         return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/deleteDataValues/' + versionId, {descItemTypeId}, {nodes, specIds: specsIds, selectionType})
     }
