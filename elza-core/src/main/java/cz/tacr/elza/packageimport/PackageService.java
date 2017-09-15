@@ -34,9 +34,12 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
+import cz.tacr.elza.domain.RulPackageDependency;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.packageimport.xml.PackageDependency;
 import cz.tacr.elza.packageimport.xml.SettingGridView;
+import cz.tacr.elza.repository.PackageDependencyRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -378,6 +381,9 @@ public class PackageService {
 
     @Autowired
     private InterpiService interpiService;
+
+    @Autowired
+    private PackageDependencyRepository packageDependencyRepository;
 
     private List<RulTemplate> newRultemplates = null;
 
@@ -806,7 +812,7 @@ public class PackageService {
                                               @NotNull final RulPackage rulPackage,
                                               @NotNull final List<ParRelationRoleType> parRelationRoleTypes,
                                               @NotNull final List<ParRelationType> parRelationTypes) {
-    	
+
         List<ParRelationTypeRoleType> parRelationTypeRoleTypes = relationTypeRoleTypeRepository.findByRulPackage(rulPackage);
         List<ParRelationTypeRoleType> parRelationTypeRoleTypesNew = new ArrayList<>();
 
@@ -814,12 +820,12 @@ public class PackageService {
         {
         	List<RelationTypeRoleType> types = relationTypeRoleTypes.getRelationTypeRoleTypes();
         	if(types!=null)
-        	{        	
+        	{
         		// set to check if input items is not multiple times in collection
         		Set<Pair<String,String>> uniqueRelations = new HashSet<>();
-        	
+
         		for (RelationTypeRoleType relation : relationTypeRoleTypes.getRelationTypeRoleTypes()) {
-        			
+
         			// Check if exists
         			Pair<String, String> uniqueRelation = Pair.of(relation.getRelationType(), relation.getRoleType());
         			if(!uniqueRelations.add(uniqueRelation)) {
@@ -828,7 +834,7 @@ public class PackageService {
          						.set("roleType", relation.getRoleType())
          						.set("file", RELATION_TYPE_ROLE_TYPE_XML);
         			}
-        			
+
         			// Find in DB
         			ParRelationTypeRoleType parRelationTypeRoleType = findEntity(parRelationTypeRoleTypes,
         					relation.getRelationType(), relation.getRoleType(),
@@ -2180,7 +2186,97 @@ public class PackageService {
         rulPackage.setDescription(packageInfo.getDescription());
         rulPackage.setVersion(packageInfo.getVersion());
 
-        return packageRepository.save(rulPackage);
+        rulPackage = packageRepository.save(rulPackage);
+
+        processRulPackageDependencies(packageInfo, rulPackage);
+
+        detectCyclicDependencies();
+        return rulPackage;
+    }
+
+    /**
+     * Zkontroluje závislosti, zda-li neobsahují cyklus.
+     */
+    private void detectCyclicDependencies() {
+        packageDependencyRepository.flush();
+        List<RulPackageDependency> packageDependencies = packageDependencyRepository.findAll();
+
+        Map<Integer, Set<Integer>> dependencies = new HashMap<>();
+        for (RulPackageDependency packageDependency : packageDependencies) {
+            Set<Integer> targetIds = dependencies.computeIfAbsent(packageDependency.getSourcePackageId(), k -> new HashSet<>());
+            targetIds.add(packageDependency.getTargetPackageId());
+        }
+
+        for (Integer id : dependencies.keySet()) {
+            detectCyclic(id, id, dependencies);
+        }
+    }
+
+    /**
+     * Rekurzivní prohledávání stromu a hledání cyklu.
+     *
+     * @param nextId       prohledávaný uzel
+     * @param findId       hledaný konfliktní uzel
+     * @param dependencies mapa stromu
+     */
+    private void detectCyclic(final Integer nextId, final Integer findId, final Map<Integer, Set<Integer>> dependencies) {
+        Set<Integer> nextIds = dependencies.get(nextId);
+        if (nextIds == null) {
+            return;
+        }
+        if (nextIds.contains(findId)) {
+            throw new BusinessException("Detekován cyklus v závislostech balíčků", PackageCode.CIRCULAR_DEPENDENCY);
+        }
+        for (Integer newNextId : nextIds) {
+            detectCyclic(newNextId, findId, dependencies);
+        }
+    }
+
+    /**
+     * Zpracování a kontrola závislostí mezi balíčky.
+     *
+     * @param packageInfo VO importovaného balíčku
+     * @param rulPackage  importovaný balíček
+     */
+    private void processRulPackageDependencies(final PackageInfo packageInfo, final RulPackage rulPackage) {
+
+        // odeberu současné vazby
+        packageDependencyRepository.deleteBySourcePackage(rulPackage);
+
+        // packageCode / minVersion
+        Map<String, Integer> packageCodeVersion = new HashMap<>();
+        if (CollectionUtils.isNotEmpty(packageInfo.getDependencies())) {
+            for (PackageDependency dependency : packageInfo.getDependencies()) {
+                if (dependency.getCode().equalsIgnoreCase(packageInfo.getCode())) {
+                    throw new BusinessException("Nelze vytvořit závislost na definovaný balíček", PackageCode.CIRCULAR_DEPENDENCY);
+                }
+                packageCodeVersion.put(dependency.getCode(), dependency.getMinVersion());
+            }
+        }
+
+        Collection<String> requiredDependencyCodes = packageCodeVersion.keySet();
+        List<RulPackage> requiredDependencies = packageRepository.findByCodeIn(requiredDependencyCodes);
+        if (requiredDependencies.size() != requiredDependencyCodes.size()) {
+            Set<String> requiredDependencyFoundCodes = requiredDependencies.stream().map(RulPackage::getCode).collect(Collectors.toSet());
+            requiredDependencyCodes.removeAll(requiredDependencyFoundCodes);
+            throw new BusinessException("Balíčky nenalezeny: " + requiredDependencyCodes, PackageCode.FOREIGN_PACKAGES_NOT_EXIST).set("codes", requiredDependencyCodes);
+        }
+
+        List<RulPackageDependency> newDependencies = new ArrayList<>();
+        for (RulPackage requiredDependency : requiredDependencies) {
+            Integer minVersion = packageCodeVersion.get(requiredDependency.getCode());
+            if (requiredDependency.getVersion() < minVersion) {
+                throw new BusinessException("Není splněna minimální verze balíčku " + requiredDependency.getCode() + ": " + minVersion, PackageCode.MIN_DEPENDENCY)
+                        .set("code", requiredDependency.getCode())
+                        .set("version", minVersion);
+            }
+            RulPackageDependency packageDependency = new RulPackageDependency();
+            packageDependency.setMinVersion(minVersion);
+            packageDependency.setSourcePackage(rulPackage);
+            packageDependency.setTargetPackage(requiredDependency);
+            newDependencies.add(packageDependency);
+        }
+        packageDependencyRepository.save(newDependencies);
     }
 
     /**
@@ -2244,6 +2340,14 @@ public class PackageService {
         if (rulPackage == null) {
             throw new ObjectNotFoundException("Balíček s kódem " + code + " neexistuje", BaseCode.ID_NOT_EXIST);
         }
+
+        // kontrola na existující zavíslostí z jiných balíčků
+        List<RulPackageDependency> targetPackages = packageDependencyRepository.findByTargetPackage(rulPackage);
+        if (targetPackages.size() > 0) {
+            throw new BusinessException("Balíček nelze odebrat, protože je používán jiným balíčkem", PackageCode.FOREIGN_DEPENDENCY)
+                    .set("foreignPackageCodes", targetPackages.stream().map(pd -> pd.getSourcePackage().getCode()).collect(Collectors.toList()));
+        }
+        packageDependencyRepository.deleteBySourcePackage(rulPackage);
 
         List<RulItemSpec> rulDescItemSpecs = itemSpecRepository.findByRulPackage(rulPackage);
         for (RulItemSpec rulDescItemSpec : rulDescItemSpecs) {
@@ -2359,6 +2463,15 @@ public class PackageService {
      */
     public List<RulPackage> getPackages() {
         return packageRepository.findAll();
+    }
+
+    /**
+     * Vrací seznam importovaných balíčků.
+     *
+     * @return seznam balíčků
+     */
+    public List<RulPackageDependency> getPackagesDependencies() {
+        return packageDependencyRepository.findAll();
     }
 
     /**

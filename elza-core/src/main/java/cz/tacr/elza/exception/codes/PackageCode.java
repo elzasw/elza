@@ -36,6 +36,26 @@ public enum PackageCode implements ErrorCode {
     /**
      * Balíček neexistuje.
      */
-    PACKAGE_NOT_EXIST;
+    PACKAGE_NOT_EXIST,
+
+    /**
+     * Cyklická závislost.
+     */
+    CIRCULAR_DEPENDENCY,
+
+    /**
+     * Není splněna minimální verze balíčku {code}: {version}.
+     */
+    MIN_DEPENDENCY,
+
+    /**
+     * Existuje  {code}: {version}.
+     */
+    FOREIGN_DEPENDENCY,
+
+    /**
+     * Nebyly nalezeny požadované balíčky: {codes}.
+     */
+    FOREIGN_PACKAGES_NOT_EXIST,
 
 }
