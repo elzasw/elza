@@ -1,6 +1,6 @@
 import React from 'react';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, Icon, i18n, ListBox, Loading, FormInput} from 'components/shared';
+import {AbstractReactComponent, Icon, i18n, ListBox, StoreHorizontalLoader, HorizontalLoader, FormInput} from 'components/shared';
 import {fetchFundOutputFunctionsIfNeeded, fundOutputFunctionsFilterByState, fundOutputActionRun, fundOutputActionInterrupt} from 'actions/arr/fundOutputFunctions.jsx'
 import {fundActionFetchConfigIfNeeded} from 'actions/arr/fundAction.jsx'
 import {indexById} from 'stores/app/utils.jsx'
@@ -31,11 +31,9 @@ class FundOutputFunctions extends AbstractReactComponent {
         actionConfig: React.PropTypes.array,
         outputId: React.PropTypes.number.isRequired,
         versionId: React.PropTypes.number.isRequired,
-        data: React.PropTypes.array,
-        filterRecommended: React.PropTypes.bool.isRequired,
-        fetched: React.PropTypes.bool.isRequired,
         readMode: React.PropTypes.bool.isRequired,
-        outputState: React.PropTypes.string.isRequired
+        outputState: React.PropTypes.string.isRequired,
+        fundOutputFunctions: React.PropTypes.object.isRequired,
     };
 
     componentDidMount() {
@@ -113,22 +111,22 @@ class FundOutputFunctions extends AbstractReactComponent {
     };
 
     render() {
-        const {fetched, data, filterRecommended, actionConfig} = this.props;
-
-        if (!fetched || !actionConfig) {
-            return <Loading/>
+       const {fundOutputFunctions, actionConfig} = this.props;
+        if (!actionConfig) {
+            return <HorizontalLoader />
         }
 
         return <div className='functions-list-container'>
-            <FormInput componentClass="select" onChange={(e) => this.handleStateSearch(e.target.value)} value={filterRecommended}>
+            <FormInput componentClass="select" onChange={(e) => this.handleStateSearch(e.target.value)} value={fundOutputFunctions.filterRecommended} disabled={!fundOutputFunctions.fetched}>
                 <option value={true} key="recommended-filter">{i18n('arr.output.functions.recommended')}</option>
                 <option value={false} key="no-filter">{i18n('arr.output.functions.all')}</option>
             </FormInput>
 
-            <ListBox
+            <StoreHorizontalLoader store={fundOutputFunctions} />
+            {fundOutputFunctions.fetched && <ListBox
                 ref="listBox"
                 className="functions-listbox"
-                items={data.sort((a,b) => {
+                items={fundOutputFunctions.data.sort((a,b) => {
                     const configA = this.getConfigByCode(a.code);
                     const configB = this.getConfigByCode(b.code);
 
@@ -145,7 +143,7 @@ class FundOutputFunctions extends AbstractReactComponent {
                     return 0;
                 })}
                 renderItemContent={this.renderListItem}
-            />
+            />}
         </div>;
     }
 }

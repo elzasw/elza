@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import {connect} from 'react-redux'
-import {ListBox, AbstractReactComponent, i18n, Loading, Icon} from 'components/shared';
+import {ListBox, AbstractReactComponent, i18n, StoreHorizontalLoader, Icon} from 'components/shared';
 import {indexById} from 'stores/app/utils.jsx'
 import {extSystemListFetchIfNeeded, extSystemListFilter, extSystemListInvalidate, extSystemDetailFetchIfNeeded, extSystemArrReset, AREA_EXT_SYSTEM_LIST,  AREA_EXT_SYSTEM_DETAIL} from 'actions/admin/extSystem.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
@@ -71,10 +71,7 @@ class AdminExtSystemList extends AbstractReactComponent {
         }
 
         let list;
-
-        const isFetched = !extSystemList.isFetching && extSystemList.fetched;
-
-        if (isFetched) {
+        if (extSystemList.fetched) {
             if (extSystemList.rows.length > 0) {
                 list = <ListBox
                     ref='extSystemList'
@@ -87,14 +84,13 @@ class AdminExtSystemList extends AbstractReactComponent {
             } else {
                 list = <ul><li className="noResult">{i18n('search.action.noResult')}</li></ul>;
             }
-        } else {
-            list = <div className="listbox-container"><Loading /></div>;
-        }
-        // Wrap
-        list = <div className="list">{list}</div>;
 
+            // Wrap
+            list = <div className="list">{list}</div>;
+        }
 
         return <div className="ext-system-list">
+            <StoreHorizontalLoader store={extSystemList} />
             {list}
         </div>
     }

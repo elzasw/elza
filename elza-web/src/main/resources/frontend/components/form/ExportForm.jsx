@@ -9,7 +9,7 @@ import {Modal, Button, Form} from 'react-bootstrap';
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
 import {WebApi} from 'actions/index.jsx';
 import AbstractReactComponent from "../AbstractReactComponent";
-import Loading from "../shared/loading/Loading";
+import HorizontalLoader from "../shared/loading/HorizontalLoader";
 import FormInput from "../shared/form/FormInput";
 import i18n from "../i18n";
 
@@ -20,7 +20,8 @@ class ExportForm extends AbstractReactComponent {
     state = {
         defaultScopes: [],
         transformationNames: [],
-        iExportFormsFetching: true
+        iExportFormsFetching: true,
+        isFetching: true
     };
 
     componentDidMount() {
@@ -43,10 +44,12 @@ class ExportForm extends AbstractReactComponent {
     submitReduxForm = (values, dispatch) => submitForm(this.validate,values,this.props,this.props.onSubmitForm,dispatch,this.submitOptions);
 
     render() {
-        const {fields: {transformationName}, onClose, handleSubmit, isFetching} = this.props;
+        const {fields: {transformationName}, onClose, handleSubmit} = this.props;
+        const {isFetching} = this.state;
+
         return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
             <Modal.Body>
-                {isFetching ? <Loading /> : <FormInput componentClass="select"
+                {isFetching ? <HorizontalLoader /> : <FormInput componentClass="select"
                            label={i18n('export.transformationName')}
                             {...transformationName}
                             {...decorateFormField(transformationName)}

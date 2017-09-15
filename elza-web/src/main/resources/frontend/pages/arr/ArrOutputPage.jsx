@@ -543,7 +543,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
             versionId={activeFund.versionId}
             outputId={fundOutput.fundOutputDetail.id}
             outputState={fundOutput.fundOutputDetail.outputDefinition.state}
-            {...fundOutput.fundOutputFunctions}
+            fundOutputFunctions={fundOutput.fundOutputFunctions}
         />
     }
 
@@ -561,7 +561,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
             ref="fundOutputFiles"
             versionId={activeFund.versionId}
             outputResultId={fundOutputDetail.outputDefinition.outputResultId}
-            {...fundOutputFiles}
+            fundOutputFiles={fundOutputFiles}
         />
     }
 

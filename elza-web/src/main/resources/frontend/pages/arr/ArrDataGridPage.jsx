@@ -15,7 +15,7 @@ import * as types from 'actions/constants/ActionTypes.js';
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 
 import ArrParentPage from "./ArrParentPage.jsx";
-import {Tabs, Icon, i18n, RibbonGroup, AbstractReactComponent, ListBox2, LazyListBox, Loading, Utils} from 'components/shared';
+import {Tabs, Icon, i18n, RibbonGroup, AbstractReactComponent, ListBox2, LazyListBox, StoreHorizontalLoader, Utils} from 'components/shared';
 import {
     FundDataGrid,
     Ribbon,
@@ -109,27 +109,22 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
         const {packetTypes, descItemTypes, calendarTypes, rulDataTypes, ruleSet, userDetail} = this.props;
         const fund = this.getActiveFund(this.props);
 
-        if (ruleSet.fetched) {
-            return (
-                <div className="datagrid-content-container">
-                    <FundDataGrid
-                        versionId={fund.versionId}
-                        fundId={fund.id}
-                        fund={fund}
-                        closed={fund.closed}
-                        readMode={readMode}
-                        fundDataGrid={fund.fundDataGrid}
-                        descItemTypes={descItemTypes}
-                        packetTypes={packetTypes}
-                        calendarTypes={calendarTypes}
-                        rulDataTypes={rulDataTypes}
-                        ruleSet={ruleSet}
-                    />
-                </div>
-            )
-        } else {
-            return <div className="datagrid-content-container"></div>
-        }
+        return <div className="datagrid-content-container">
+            <StoreHorizontalLoader store={ruleSet} />
+            {ruleSet.fetched && <FundDataGrid
+                versionId={fund.versionId}
+                fundId={fund.id}
+                fund={fund}
+                closed={fund.closed}
+                readMode={readMode}
+                fundDataGrid={fund.fundDataGrid}
+                descItemTypes={descItemTypes}
+                packetTypes={packetTypes}
+                calendarTypes={calendarTypes}
+                rulDataTypes={rulDataTypes}
+                ruleSet={ruleSet}
+            />}
+        </div>
     }
 }
 

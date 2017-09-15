@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, Scope, Icon, FormInput, Loading} from 'components/shared';
+import {AbstractReactComponent, i18n, Scope, Icon, FormInput, HorizontalLoader} from 'components/shared';
 import DatationField from './DatationField'
 import {Modal, Button, Row, Col, Form} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
@@ -236,7 +236,7 @@ class PartyNameForm extends AbstractReactComponent {
                 <Button type="submit" disabled={submitting}>{i18n('global.action.store')}</Button>
                 <Button bsStyle="link" onClick={onClose} disabled={submitting}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
-        </Form> : <Loading />;
+        </Form> : <HorizontalLoader />;
     }
 }
 

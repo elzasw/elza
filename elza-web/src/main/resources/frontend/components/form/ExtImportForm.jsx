@@ -45,8 +45,6 @@ const ATTRIBUTE_TYPES = [
 ];
 
 class ExtImportSearch extends AbstractReactComponent {
-    state = {extSystems: null};
-
     validate = (values, props) => {
         const {extSystems} = props;
         let errors = {};
