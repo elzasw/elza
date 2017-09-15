@@ -21,7 +21,6 @@ import {
     Ribbon,
     FundSettingsForm,
     ArrFundPanel,
-    BulkActionsDialog,
     NodeTabs,
     VisiblePolicyForm,
     FundPackets,

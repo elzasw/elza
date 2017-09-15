@@ -1,8 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {Button} from 'react-bootstrap'
-import {Icon, AbstractReactComponent, i18n, Loading, AddRemoveList} from 'components/shared';
+import {Icon, AbstractReactComponent, i18n, StoreHorizontalLoader, AddRemoveList} from 'components/shared';
 import {indexById, getIdsList} from 'stores/app/utils.jsx'
 import {dateToString} from 'components/Utils.jsx'
 import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
@@ -67,12 +66,9 @@ const GroupDetail = class GroupDetail extends AbstractReactComponent {
                     </div>
         }
 
-        if (!groupDetail.fetched) {
-            return <div className='group-detail-container'><Loading/></div>
-        }
-
-        return (
-            <div className='group-detail-container'>
+        let content;
+        if (groupDetail.fetched) {
+            content = <div className='group-detail-container'>
                 <h1>{groupDetail.name}</h1>
                 <h2>{i18n("admin.group.title.users")}</h2>
                 <AddRemoveList
@@ -91,8 +87,13 @@ const GroupDetail = class GroupDetail extends AbstractReactComponent {
                     addTitle="admin.group.permission.action.add"
                     removeTitle="admin.group.permission.action.delete"
                 />
-            </div>
-        );
+            </div>;
+        }
+
+        return <div>
+            <StoreHorizontalLoader store={groupDetail}/>
+            {content}
+        </div>;
     }
 };
 

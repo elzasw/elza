@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import {connect} from 'react-redux'
-import {ListBox, AbstractReactComponent, SearchWithGoto, Autocomplete, i18n, ArrPanel, Loading, Icon} from 'components/shared';
+import {ListBox, AbstractReactComponent, SearchWithGoto, Autocomplete, i18n, ArrPanel, StoreHorizontalLoader, Icon} from 'components/shared';
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
 import {indexById, objectById} from 'stores/app/utils.jsx'
 import {registryListFetchIfNeeded, registryListFilter, registryListInvalidate, registryDetailFetchIfNeeded, registryDetailInvalidate, DEFAULT_REGISTRY_LIST_MAX_SIZE, registrySetFolder} from 'actions/registry/registry.jsx'
@@ -139,15 +139,10 @@ class RegistryList extends AbstractReactComponent {
         const {registryDetail, registryList, maxSize, registryTypes} = this.props;
 
 
-        if (!registryList || !registryList.fetched) {
-            return <div className="registry-list"><Loading /></div>;
-        }
         let activeIndex = null;
         if (registryList.fetched && registryDetail.id !== null) {
             activeIndex = indexById(registryList.filteredRows, registryDetail.id);
         }
-
-
 
         let list;
 
@@ -165,11 +160,7 @@ class RegistryList extends AbstractReactComponent {
                 />;
             } else {
                 list = <div className='search-norecord'>{i18n('registry.list.noRecord')}</div>;
-
-                //list = <ul><li className="noResult">{i18n('search.action.noResult')}</li></ul>;
             }
-        } else {
-            list = <div className="listbox-container"><Loading /></div>;
         }
 
         const {filter} = registryList;
@@ -214,16 +205,16 @@ class RegistryList extends AbstractReactComponent {
 
         return <div className="registry-list">
             <div className="filter">
-                {registryTypes ? <Autocomplete
+                <Autocomplete
                         inputProps={ {placeholder: filter.registryTypeId === null ? i18n('registry.all') : ""} }
-                        items={registryTypes}
-                        disabled={registryList.filter.parents.length ? true : false}
+                        items={registryTypes || []}
+                        disabled={!registryTypes || registryList.filter.parents.length ? true : false}
                         tree
                         alwaysExpanded
                         allowSelectItem={(id, item) => true}
                         value={filter.registryTypeId === null ? null : getTreeItemById(filter.registryTypeId, registryTypes)}
                         onChange={this.handleFilterRegistryType}
-                    /> : <Loading />}
+                    />
                 <SearchWithGoto
                     onFulltextSearch={this.handleFilterText}
                     onClear={this.handleFilterTextClear}
@@ -236,6 +227,7 @@ class RegistryList extends AbstractReactComponent {
                 />
             </div>
             <div className='registry-list-breadcrumbs' key='breadcrumbs'>{navParents}</div>
+            <StoreHorizontalLoader store={registryList}/>
             {list}
             {isFetched && registryList.filteredRows.length > maxSize && <span className="items-count">{i18n('party.list.itemsVisibleCountFrom', registryList.filteredRows.length, registryList.count)}</span>}
         </div>

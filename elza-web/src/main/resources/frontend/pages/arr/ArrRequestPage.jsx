@@ -30,7 +30,8 @@ import {
     i18n,
     AbstractReactComponent,
     Tabs,
-    SearchWithGoto
+    SearchWithGoto,
+    StoreHorizontalLoader
 } from 'components/shared';
 import {Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import PageLayout from "../shared/layout/PageLayout";
@@ -277,7 +278,8 @@ class ArrRequestPage extends ArrParentPage {
                         allItemsCount={requestList.count}
                     />
                 </div>
-                <ListBox
+                <StoreHorizontalLoader store={requestList} />
+                {requestList.fetched && <ListBox
                     className='fund-request-listbox'
                     ref='fundDigitizationRequestList'
                     items={requestList.rows}
@@ -285,7 +287,7 @@ class ArrRequestPage extends ArrParentPage {
                     renderItemContent={this.renderListItem}
                     onFocus={this.handleSelect}
                     onSelect={this.handleSelect}
-                />
+                />}
             </div>
         )
     }

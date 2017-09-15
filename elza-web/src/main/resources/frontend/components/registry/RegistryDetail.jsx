@@ -12,7 +12,7 @@ import {
     Icon,
     CollapsablePanel,
     NoFocusButton,
-    Loading,
+    StoreHorizontalLoader,
     Utils
 } from 'components/shared';
 import {Form, Button} from 'react-bootstrap';
@@ -216,7 +216,7 @@ class RegistryDetail extends AbstractReactComponent {
         }
 
         if (!fetched || (id && !data)) {
-            return <Loading />
+            return <StoreHorizontalLoader store={registryDetail}/>
         }
 
         const disableEdit = !this.canEdit();

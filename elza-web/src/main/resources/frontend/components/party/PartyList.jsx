@@ -1,6 +1,6 @@
 import React from 'react';
 import {connect} from 'react-redux'
-import {ListBox, AbstractReactComponent, SearchWithGoto, i18n, ArrPanel, Loading, Icon, FormInput} from 'components/shared';
+import {ListBox, AbstractReactComponent, SearchWithGoto, i18n, ArrPanel, StoreHorizontalLoader, Icon, FormInput} from 'components/shared';
 import {AppActions} from 'stores/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
 import {partyListFetchIfNeeded, partyListFilter, partyListInvalidate, partyDetailFetchIfNeeded, partyArrReset, PARTY_TYPE_CODES, RELATION_CLASS_CODES, DEFAULT_PARTY_LIST_MAX_SIZE} from 'actions/party/party.jsx'
@@ -67,7 +67,7 @@ class PartyList extends AbstractReactComponent {
     };
 
     handleFilterText = (filterText) => {
-        this.dispatch(partyListFilter({...this.props.partyList.filter, text: filterText.length === 0 ? null : filterText}));
+        this.dispatch(partyListFilter({...this.props.partyList.filter, text: !filterText || filterText.length === 0 ? null : filterText}));
     };
 
     handleFilterTextClear = () => {
@@ -105,16 +105,16 @@ class PartyList extends AbstractReactComponent {
             } else {
                 list = <ul><li className="noResult">{i18n('search.action.noResult')}</li></ul>;
             }
-        } else {
-            list = <div className="listbox-container"><Loading /></div>;
         }
+
+        const partyTypesFetched = partyTypes ? true : false;
 
         return <div className="party-list">
             <div className="filter">
-                {partyTypes ? <FormInput componentClass="select" className="type" onChange={this.handleFilterType} value={partyList.filter.type}>
+                <FormInput componentClass="select" className="type" onChange={this.handleFilterType} value={partyList.filter.type} disabled={!partyTypesFetched}>
                     <option value={-1}>{i18n('global.all')}</option>
-                    {partyTypes.map(type => <option value={type.id} key={type.id}>{type.name}</option>)}
-                </FormInput> : <Loading />}
+                    {partyTypes && partyTypes.map(type => <option value={type.id} key={type.id}>{type.name}</option>)}
+                </FormInput>
                 <SearchWithGoto
                     onFulltextSearch={this.handleFilterText}
                     onClear={this.handleFilterTextClear}
@@ -126,6 +126,7 @@ class PartyList extends AbstractReactComponent {
                     allItemsCount={partyList.count}
                 />
             </div>
+            <StoreHorizontalLoader store={partyList}/>
             {list}
             {isFetched && partyList.rows.length > maxSize && <span className="items-count">{i18n('party.list.itemsVisibleCountFrom', partyList.filteredRows.length, partyList.count)}</span>}
         </div>

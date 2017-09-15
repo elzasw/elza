@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, Icon, i18n, FileListBox, Loading, FormInput} from 'components/shared';
+import {AbstractReactComponent, Icon, i18n, FileListBox, StoreHorizontalLoader, FormInput} from 'components/shared';
 import AddFileForm from './AddFileForm'
 import {Button} from 'react-bootstrap'
 import {fetchFundFilesIfNeeded, fundFilesFilterByText, fundFilesCreate, fundFilesDelete, fundFilesReplace} from 'actions/arr/fundFiles.jsx'
@@ -23,7 +23,8 @@ class FundFiles extends AbstractReactComponent {
         versionId: React.PropTypes.number.isRequired,
         files: React.PropTypes.array,
         filterText: React.PropTypes.string.isRequired,
-        fetched: React.PropTypes.bool.isRequired
+        fetched: React.PropTypes.bool.isRequired,
+        fundFiles: React.PropTypes.object.isRequired,   // store fund files
     };
 
     state = {
@@ -94,30 +95,28 @@ class FundFiles extends AbstractReactComponent {
     };
 
     render() {
-        const {filterText, fetched, data} = this.props;
-
-        if (!fetched) {
-            return <Loading/>
-        }
+        const {fundFiles} = this.props;
 
         return <div className='fund-files'>
-            <div className="actions-container">
+            <StoreHorizontalLoader store={fundFiles}/>
+
+            {fundFiles.fetched && <div className="actions-container">
                 <div className="actions">
                     <Button onClick={this.handleCreate} eventKey='add'><Icon glyph='fa-plus' /> {i18n('arr.fund.files.action.add')}</Button>
                 </div>
-            </div>
+            </div>}
             <FormInput className="hidden" type="file" ref='uploadInput' onChange={this.handleReplaceSubmit} />
 
-            <FileListBox
+            {fundFiles.fetched && <FileListBox
                 ref="listBox"
-                items={data.rows}
+                items={fundFiles.data.rows}
                 searchable
-                filterText={filterText}
+                filterText={fundFiles.filterText}
                 onSearch={this.handleTextSearch}
                 onDownload={this.handleDownload}
                 onReplace={this.handleReplace}
                 onDelete={this.handleDelete}
-            />
+            />}
         </div>
     }
 }

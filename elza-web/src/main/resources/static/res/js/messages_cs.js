@@ -851,7 +851,6 @@ var messages = {
     "party.detail.creators": "Autoři",
     "party.detail.genealogy": "Genealogie",
     "party.detail.creator.delete": "Opravdu chcete smazat tohoto autora?",
-    "party.detail.finding": "Vyhledávám osobu",
     "party.detail.identifiers": "Identifikátory korporace",
     "party.detail.identifier.new": "Nový identifikátor",
     "party.detail.identifier.update": "Úprava identifikátoru",

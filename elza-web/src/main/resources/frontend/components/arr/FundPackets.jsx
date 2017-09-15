@@ -7,7 +7,7 @@ import './FundPackets.less'
 import React from 'react';
 import {connect} from 'react-redux'
 import AddPacketForm from './AddPacketForm';
-import {AbstractReactComponent, Icon, i18n, FilterableListBox, Loading, FixedDropDownButton, FormInput} from 'components/shared';
+import {AbstractReactComponent, Icon, i18n, FilterableListBox, HorizontalLoader, FixedDropDownButton, FormInput} from 'components/shared';
 import {DropdownButton, MenuItem} from 'react-bootstrap'
 import {fetchFundPacketsIfNeeded, fundPacketsFilterByText, fundPacketsChangeSelection, fundPacketsFilterByState, fundPacketsChangeState, fundPacketsCreate, fundPacketsChangeNumbers, fundPacketsDelete} from 'actions/arr/fundPackets.jsx'
 import {getMapFromList, getSetFromIdsList} from 'stores/app/utils.jsx'
@@ -178,25 +178,28 @@ class FundPackets extends AbstractReactComponent {
     };
 
     render() {
-        const {versionId, filterState, filterText, fetched, packets, selectedIds, packetTypes} = this.props;
-        if (!fetched || !packetTypes.fetched || !this.pf) {
-            return <Loading/>
-        }
+        const {filterState, isFetching, filterText, fetched, packets, selectedIds, packetTypes} = this.props;
 
-        const items = this.createItems(packets);
+        const allFetched = (fetched && packetTypes.fetched && this.pf) ? true : false;
+        const someFetching = isFetching || packetTypes.isFetching;
 
-        const altSearch = (
-            <div className="state-filter">
+        let altSearch;
+        if (allFetched) {
+            altSearch = <div className="state-filter">
                 <FormInput componentClass="select" _label={i18n('arr.fund.packets.state')} value={filterState} onChange={this.handleFilterStateChange}>
                     <option value="OPEN">{i18n('arr.fund.packets.state.open')}</option>
                     <option value="CLOSED">{i18n('arr.fund.packets.state.closed')}</option>
                     <option value="CANCELED">{i18n('arr.fund.packets.state.canceled')}</option>
                 </FormInput>
-            </div>
-        )
+            </div>;
+        }
+
         return (
             <div className='fund-packets'>
-                <div className="actions-container">
+                {allFetched && someFetching && <HorizontalLoader hover showText={false} />}
+                {!allFetched && <HorizontalLoader/>}
+
+                {allFetched && <div className="actions-container">
                     <div className="actions">
                         <DropdownButton id='dropdown-packet' noCaret title={<div><Icon glyph='fa-plus' /> {i18n('arr.fund.packets.action.add')}</div>}>
                             <MenuItem onClick={this.handleAddOne} eventKey='changeNumbers'>{i18n('arr.fund.packets.action.add.single')}</MenuItem>
@@ -212,11 +215,11 @@ class FundPackets extends AbstractReactComponent {
                             <MenuItem onClick={this.handleDelete} eventKey='delete'>{i18n('arr.fund.packets.action.delete')}</MenuItem>
                         </FixedDropDownButton>
                     </div>
-                </div>
+                </div>}
 
-                <FilterableListBox
+                {allFetched && <FilterableListBox
                     ref="listBox"
-                    items={items}
+                    items={this.createItems(packets)}
                     searchable
                     filterText={filterText}
                     supportInverseSelection={false}
@@ -224,7 +227,7 @@ class FundPackets extends AbstractReactComponent {
                     altSearch={altSearch}
                     onChange={this.handleSelectionChange}
                     onSearch={this.handleTextSearch}
-                />
+                />}
             </div>
         )
     }

@@ -28,6 +28,7 @@ import {
     ListBox,
     Loading,
     RibbonGroup,
+    StoreHorizontalLoader,
     Icon,
     i18n,
     Tabs,
@@ -411,9 +412,12 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     }
 
     renderRightPanel(readMode, closed) {
+        const {calendarTypes, descItemTypes} = this.props;
         const fund = this.getActiveFund(this.props);
-        if (!fund.fundOutput.fundOutputDetail.fetched) {
-            return <span></span>;
+        const fundOutputDetail = fund.fundOutput.fundOutputDetail;
+        const fetched = fundOutputDetail.fetched && fundOutputDetail.subNodeForm.fetched && calendarTypes.fetched && descItemTypes.fetched;
+        if (!fetched) {
+            return null;
         }
 
         // Záložky a obsah aktuálně vybrané založky
@@ -455,7 +459,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
 
     renderLeftPanel(readMode, closed) {
         const fund = this.getActiveFund(this.props);
-        const fundOutput = fund.fundOutput;;
+        const fundOutput = fund.fundOutput;
 
         let activeIndex = null;
         if (fundOutput.fundOutputDetail.id !== null) {
@@ -476,7 +480,8 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                     <option value={-1} key="no-filter">{i18n('arr.output.list.state.all')}</option>
                     {filterStates}
                 </FormInput>
-                <ListBox
+                <StoreHorizontalLoader store={fundOutput} />
+                {fundOutput.fetched && <ListBox
                     className='fund-output-listbox'
                     ref='fundOutputList'
                     items={fundOutput.outputs}
@@ -484,7 +489,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                     renderItemContent={this.renderListItem}
                     onFocus={this.handleSelect}
                     onSelect={this.handleSelect}
-                />
+                />}
             </div>
         )
     }
@@ -532,17 +537,14 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         }
 
         const {fundOutput} = activeFund;
-        if (fundOutput.fundOutputDetail.fetched) {
-            return <FundOutputFunctions
-                ref="fundOutputFunctions"
-                readMode={readMode}
-                versionId={activeFund.versionId}
-                outputId={fundOutput.fundOutputDetail.id}
-                outputState={fundOutput.fundOutputDetail.outputDefinition.state}
-                {...fundOutput.fundOutputFunctions}
-            />
-        }
-        return <Loading />
+        return <FundOutputFunctions
+            ref="fundOutputFunctions"
+            readMode={readMode}
+            versionId={activeFund.versionId}
+            outputId={fundOutput.fundOutputDetail.id}
+            outputState={fundOutput.fundOutputDetail.outputDefinition.state}
+            {...fundOutput.fundOutputFunctions}
+        />
     }
 
     renderTemplatesPanel() {
@@ -555,15 +557,12 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         if (fundOutputDetail.outputDefinition.outputResultId === null) {
             return <div>{i18n('arr.output.panel.files.notGenerated')}</div>
         }
-        if (fundOutputDetail.fetched) {
-            return <FundOutputFiles
-                ref="fundOutputFiles"
-                versionId={activeFund.versionId}
-                outputResultId={fundOutputDetail.outputDefinition.outputResultId}
-                {...fundOutputFiles}
-            />
-        }
-        return <Loading />
+        return <FundOutputFiles
+            ref="fundOutputFiles"
+            versionId={activeFund.versionId}
+            outputResultId={fundOutputDetail.outputDefinition.outputResultId}
+            {...fundOutputFiles}
+        />
     }
 
 

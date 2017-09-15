@@ -16,6 +16,7 @@ import {
     ListBox2,
     LazyListBox,
     Loading,
+    StoreHorizontalLoader,
     Tabs,
     Icon,
     i18n,
@@ -29,7 +30,6 @@ import {
     Ribbon,
     ArrFundPanel,
     FundSettingsForm,
-    BulkActionsDialog,
     NodeTabs,
     VisiblePolicyForm,
     FundPackets,
@@ -91,7 +91,7 @@ class ArrPage extends ArrParentPage {
         super(props, "fa-page");
 
         this.bindMethods('getActiveInfo', 'buildRibbon', 'handleRegisterJp',
-            'handleBulkActionsDialog', 'handleSelectVisiblePoliciesNode', 'handleShowVisiblePolicies',
+            'handleSelectVisiblePoliciesNode', 'handleShowVisiblePolicies',
             'handleShortcuts', 'renderFundErrors', 'renderFundVisiblePolicies', 'handleSetVisiblePolicy',
             'renderPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs', 'handleTabSelect', 'handleSelectErrorNode',
             'renderFundPackets', 'handleErrorPrevious', 'handleErrorNext', 'trySetFocus', 'handleOpenFundActionForm',
@@ -250,13 +250,6 @@ class ArrPage extends ArrParentPage {
      */
     handleRegisterJp() {
         this.dispatch(showRegisterJp(!this.props.arrRegion.showRegisterJp));
-    }
-
-    handleBulkActionsDialog() {
-        this.dispatch(modalDialogShow(this, i18n('arr.fund.title.bulkActions'),
-            <BulkActionsDialog mandatory={false}/>
-            )
-        );
     }
 
     handleOpenFundActionForm(versionId, subNode) {
@@ -895,14 +888,12 @@ class ArrPage extends ArrParentPage {
         const {arrRegion} = this.props;
         const activeFund = arrRegion.activeIndex !== null ? arrRegion.funds[arrRegion.activeIndex] : null;
 
-        return (
-            <FundFiles
-                ref="fundFiles"
-                versionId={activeFund.versionId}
-                fundId={activeFund.id}
-                {...activeFund.fundFiles}
-            />
-        )
+        return <FundFiles
+            ref="fundFiles"
+            versionId={activeFund.versionId}
+            fundId={activeFund.id}
+            fundFiles={activeFund.fundFiles}
+        />
     }
 
     handleSetExtendedView(showExtendedView) {
