@@ -4,8 +4,6 @@ var messages = {
 
     "global.insufficient.right": "Nemáte dostatečná oprávnění pro přístup.",
 
-    "global.data.loading.register": "Načítání rejstříků",
-    "global.data.loading.dao": "Načítání digitalizátů",
     "global.data.loading.form": "Načítání formuláře JP",
     "global.data.loading.node": "Načítání seznamu JP",
     "global.data.loading.node.children": "Načítání seznamu potomků JP",

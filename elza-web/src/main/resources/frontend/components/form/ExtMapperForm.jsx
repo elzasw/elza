@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import {reduxForm} from 'redux-form';
-import {FormInput, Icon, Loading} from 'components/shared'
+import {FormInput, Icon, HorizontalLoader} from 'components/shared'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {Modal, Form, Table, Checkbox, FormControl, Button} from 'react-bootstrap'
 import objectById from '../../shared/utils/objectById'
@@ -60,7 +60,7 @@ class ExtMapperForm extends AbstractReactComponent {
         const {handleSubmit, submitting, onClose, fields: {mappings, partyTypeId}, partyTypes, record, userDetail, isUpdate} = this.props;
 
         if (partyTypes === false) {
-            return <Loading />;
+            return <HorizontalLoader />;
         }
         const hasPermission = userDetail.hasOne(perms.INTERPI_MAPPING_WR);
 
