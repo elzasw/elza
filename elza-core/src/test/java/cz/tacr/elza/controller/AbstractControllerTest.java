@@ -23,6 +23,7 @@ import javax.annotation.Nullable;
 import cz.tacr.elza.controller.vo.CopyNodesParams;
 import cz.tacr.elza.controller.vo.CopyNodesValidate;
 import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
+import cz.tacr.elza.controller.vo.PackageVO;
 import cz.tacr.elza.service.vo.ChangesResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -861,8 +862,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      *
      * @return list RulPackage
      */
-    protected List<RulPackage> getPackages() {
-        return Arrays.asList(get(PACKAGES).getBody().as(RulPackage[].class));
+    protected List<PackageVO> getPackages() {
+        return Arrays.asList(get(PACKAGES).getBody().as(PackageVO[].class));
     }
 
     /**
