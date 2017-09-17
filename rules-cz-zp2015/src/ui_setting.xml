@@ -67,6 +67,8 @@
                 <type code="ZP2015_UNIT_ID" width="1"/>
                 <type code="ZP2015_SERIAL_NUMBER" width="1"/>
                 <type code="ZP2015_OTHER_ID" width="2"/>
+                <type code="ZP2015_INV_CISLO" width="2"/>
+                <type code="ZP2015_ITEM_ORDER" width="1"/>
             </group>
             <group code="04_GROUP3">
                 <name>Hlavní popis jednotky</name>

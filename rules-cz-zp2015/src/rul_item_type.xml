@@ -571,4 +571,13 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
+    <!-- Inventární číslo pro starší pomůcky (dle pravidel 1958) -->
+    <item-type code="ZP2015_INV_CISLO" data-type="STRING">
+        <name>Inventární číslo</name>
+        <shortcut>Inv. č.</shortcut>
+        <description>Inventární číslo</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
 </item-types>
