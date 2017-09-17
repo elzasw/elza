@@ -34,8 +34,6 @@ then
     $itemType.setIndefinable(true);
 end
 
-
-
 // Nastaveni vychozi neopakovatelnosti atributu
 rule "U atributu je zapotrebi nove explicitne nastavit neopakovatelnost"
 salience 100
@@ -344,15 +342,91 @@ then
     $itemType.setType(RulItemType.Type.REQUIRED);
 end
 
-// U jednotlivosti lze zvolit libovolny typ jednotlivosti
-// (plati i pro slozku s jednotlivostmi)
-rule "Druh archiválie - lze vybrat libovolný typ"
+
+rule "Druh archiválie u jednotlivosti (všechny typy pomůcek)"
 no-loop
 when
     $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM") ) from $activeLevel.descItems
+    //DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $activeLevel.descItems
     $itemType : RulItemTypeExt(code == "ZP2015_UNIT_TYPE")
-    $itemSpec : RulItemSpecExt() from $itemType.rulItemSpecList
+    $itemSpec : RulItemSpecExt(code in ( "ZP2015_UNIT_TYPE_LIO", "ZP2015_UNIT_TYPE_LIP",
+        "ZP2015_UNIT_TYPE_UKN", 
+        // Rukopisy 
+        "ZP2015_UNIT_TYPE_RKP",
+        // Hudebniny
+        "ZP2015_UNIT_TYPE_HDB",
+        // Podací protokoly
+        "ZP2015_UNIT_TYPE_PPR",
+        // Indexy
+        "ZP2015_UNIT_TYPE_IND", 
+        // Elenchy
+        "ZP2015_UNIT_TYP_ELE",
+        // Repertáře
+        "ZP2015_UNIT_TYPE_REP",
+        // Kartotéky
+        "ZP2015_UNIT_TYPE_KTT",
+        // Pečetidla
+        "ZP2015_UNIT_TYPE_PEC",
+        // Razítka
+        "ZP2015_UNIT_TYPE_RAZ",
+        // Samostatné pečetě, odlitky pečetí a otisky typářů
+        "ZP2015_UNIT_TYPE_OTD",
+        // Kopie otisků 
+        "ZP2015_UNIT_TYPE_OTC",
+        // Mapy
+        "ZP2015_UNIT_TYPE_MAP",
+        // Atlasy
+        "ZP2015_UNIT_TYPE_ATL",
+        // Technické výkresy
+        "ZP2015_UNIT_TYPE_TVY",
+        // Grafické listy
+        "ZP2015_UNIT_TYPE_GLI",
+        // Kresby
+        "ZP2015_UNIT_TYPE_KRE",
+        // Fotografie na papírové podložce
+        "ZP2015_UNIT_TYPE_FSN",
+        // Fotografické desky
+        "ZP2015_UNIT_TYPE_FSD",
+        // Listové filmy
+        "ZP2015_UNIT_TYPE_LFI",
+        // Svitkové filmy
+        "ZP2015_UNIT_TYPE_SFI",
+        // Kinofilmy
+        "ZP2015_UNIT_TYPE_KIN",
+        // Mikrofilmy
+        "ZP2015_UNIT_TYPE_MF",
+        // Mikrofiše
+        "ZP2015_UNIT_TYPE_MFS",
+        // Fotoalba
+        "ZP2015_UNIT_TYPE_FAL",
+        // Digitální fotografie
+        "ZP2015_UNIT_TYPE_DFO",
+        // Kinematografické záznamy (díla) v analogové i digitální podobě
+        "ZP2015_UNIT_TYPE_KZA",
+        // Zvukové záznamy (díla) v analogové i digitální podobě
+        "ZP2015_UNIT_TYPE_ZZA",
+        // Tisky do roku 1800
+        "ZP2015_UNIT_TYPE_TIO",
+        // Tisky po roce 1800
+        "ZP2015_UNIT_TYPE_TIP",
+        // Pohlednice
+        "ZP2015_UNIT_TYPE_POH",
+        // Plakáty
+        "ZP2015_UNIT_TYPE_PKT",
+        // Cenné papíry
+        "ZP2015_UNIT_TYPE_CPA",
+        // Štočky
+        "ZP2015_UNIT_TYPE_STO",
+        // Předměty numizmatické povahy
+        "ZP2015_UNIT_TYPE_PNP",
+        // Předměty faleristické povahy
+        "ZP2015_UNIT_TYPE_PFP",
+        // Jiné
+        "ZP2015_UNIT_TYPE_JIN",
+        // Neevidovaná jednotlivost
+        "ZP2015_UNIT_TYPE_OTHER"    
+         ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
@@ -559,7 +633,7 @@ rule "Doporučení pro nastavení typu pomůcky MAN, INV, KAT"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
-    $descItem : DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode not in ("ZP2015_ARRANGEMENT_OTHER") ) from $activeLevel.descItems
+    $descItem : DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $activeLevel.descItems
     // nesmi existovat rodic, ktery by mel jiz vyhodnoceni nastaveno
     not ( $level: Level( this!=$activeLevel && $parentItems: descItems ) and
          DescItem(type in ( "ZP2015_ARRANGEMENT_TYPE" ) )
@@ -594,6 +668,45 @@ then
 end
 
 //----------------------------------------------
+// Inventář 1958 - 2015
+//----------------------------------------------
+
+rule "Inventární číslo možné na všech úrovních starší pomůcky"
+no-loop
+when $activeLevel: ActiveLevel( )
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_OTHER")) from $activeLevel.descItems
+    $itemType: RulItemTypeExt( code in (
+        // Inventární číslo
+        "ZP2015_INV_CISLO"
+        ) )
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+end
+
+rule "Inventární číslo doporučené pro složky a jednotlivosti"
+no-loop
+when $activeLevel: ActiveLevel( )
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_OTHER")) from $activeLevel.descItems
+    $itemType: RulItemTypeExt( code in (
+        // Inventární číslo
+        "ZP2015_INV_CISLO"
+        ) )
+then
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
+end
+
+rule "Datace u starší pomůcky nemusí být zjištěna (sine dato)"
+salience 100
+no-loop
+when $activeLevel: ActiveLevel( )
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_OTHER")) from $activeLevel.descItems
+    $itemType : RulItemTypeExt(code in ("ZP2015_UNIT_DATE"))
+then
+    $itemType.setIndefinable(true);
+end
+
+//----------------------------------------------
 // Inventář
 //----------------------------------------------
 
@@ -604,7 +717,6 @@ end
 // Katalog
 //----------------------------------------------
 
-// Povinné prvky na úrovni jednotlivosti pro katalog
 rule "Povinné prvky na úrovni jednotlivosti pro katalog"
 no-loop
 salience -100
