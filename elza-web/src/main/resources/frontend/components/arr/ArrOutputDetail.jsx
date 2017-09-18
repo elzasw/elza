@@ -2,6 +2,7 @@ import React from 'react';
 import {outputTypesFetchIfNeeded} from "actions/refTables/outputTypes.jsx";
 import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
+import {addShortcutManager} from "components/Utils.jsx";
 import {HorizontalLoader, i18n, AbstractReactComponent, FormInput} from 'components/shared';
 import {fundOutputDetailFetchIfNeeded, fundOutputEdit} from 'actions/arr/fundOutput.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
@@ -35,7 +36,7 @@ class ArrOutputDetail extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
     componentWillMount(){
-        Utils.addShortcutManager(this,defaultKeymap);
+        addShortcutManager(this,defaultKeymap);
     }
     getChildContext() {
         return { shortcuts: this.shortcutManager };
