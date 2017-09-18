@@ -8,7 +8,7 @@ import React from 'react';
 import {reduxForm} from 'redux-form';
 import {FilterableListBox, AbstractReactComponent, HorizontalLoader, i18n, FormInput} from 'components/shared';
 import DescItemCoordinates from './nodeForm/DescItemCoordinates.jsx'
-import {Modal, Button} from 'react-bootstrap';
+import {Modal, Button, Accordion, Panel} from 'react-bootstrap';
 import {WebApi} from 'actions/index.jsx';
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx'
 import {FILTER_NULL_VALUE} from 'actions/arr/fundDataGrid.jsx'
@@ -173,6 +173,14 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
             state.selectedSpecItemsType = filter.specsType;
             state.conditionSelectedCode = filter.conditionType;
             state.conditionValues = filter.condition
+        }
+
+        const conditionHasValue = state.conditionSelectedCode !== "NONE";
+        const valueHasValue = state.selectedValueItemsType === "selected" || state.selectedValueItems.length > 0;
+        if (conditionHasValue || !valueHasValue) {
+            state.valueAccodrionType = "CONDITION";
+        } else {
+            state.valueAccodrionType = "VALUE";
         }
 
         this.state = state
@@ -374,14 +382,14 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
     }
 
     renderValueFilter() {
-        const {refType, dataType} = this.props;
+        const {dataType} = this.props;
         const {isFetchingItemTypeValues, valueItems, selectedValueItems, selectedValueItemsType, conditionSelectedCode} = this.state;
 
         if (!hasDescItemTypeValue(dataType)) {
             return null
         }
 
-        if (dataType.code === 'UNITDATE' || dataType.code === 'TEXT' || dataType.code === 'COORDINATES' || conditionSelectedCode === 'UNDEFINED') { // zde je výjimka a nechceme dle hodnoty
+        if (dataType.code === 'UNITDATE' || dataType.code === 'TEXT' || dataType.code === 'COORDINATES') { // zde je výjimka a nechceme dle hodnoty
             return null
         }
 
@@ -390,7 +398,6 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                 className='filter-content-container'
                 searchable
                 items={valueItems}
-                label={i18n('arr.fund.filterSettings.filterByValue.title')}
                 selectionType={selectedValueItemsType}
                 selectedIds={selectedValueItems}
                 onChange={this.handleValueItemsChange}
@@ -530,7 +537,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
     }
 
     renderConditionFilter() {
-        const {refType, dataType, calendarTypes} = this.props;
+        const {dataType} = this.props;
         const {conditionSelectedCode, conditionValues} = this.state;
 
         if (!hasDescItemTypeValue(dataType)) {
@@ -546,7 +553,6 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
         return (
             <FundFilterCondition
                 className='filter-content-container'
-                label={i18n('arr.fund.filterSettings.filterByCondition.title')}
                 selectedCode={conditionSelectedCode}
                 values={conditionValues}
                 onChange={this.handleConditionChange}
@@ -575,25 +581,37 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
     };
 
     handleSubmit() {
-        const {selectedValueItems, selectedValueItemsType, selectedSpecItems, selectedSpecItemsType, conditionSelectedCode, conditionValues} = this.state
-        const {onSubmitForm, refType, dataType} = this.props
+        const {selectedValueItems, selectedValueItemsType, valueAccodrionType, selectedSpecItems, selectedSpecItemsType, conditionSelectedCode, conditionValues} = this.state;
+        const {onSubmitForm, refType, dataType} = this.props;
 
         var data = {
             values: selectedValueItems,
             valuesType: selectedValueItemsType,
             condition: conditionValues,
             conditionType: conditionSelectedCode,
-        }
+        };
 
         if (refType.useSpecification || dataType.code === 'PACKET_REF') {
             data.specs = selectedSpecItems
             data.specsType = selectedSpecItemsType
         }
 
+        // Filtrování podle podmínky a hodnoty - jsou výlučné a jedno musí být zrušeno - dle valueAccodrionType
+        switch (valueAccodrionType) {
+            case "CONDITION":
+                data.valuesType = "unselected";
+                data.values = [];
+                break;
+            case "VALUE":
+                data.conditionType = "NONE";
+                data.condition = null;
+                break;
+        }
+
         // ##
         // # Test, zda není filtr prázdný
         // ##
-        var outData = null
+        var outData = null;
 
         if (data.valuesType === 'selected' || data.values.length > 0) {      // je zadáno filtrování podle hodnoty
             outData = data
@@ -614,7 +632,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
 
     render() {
         const {filter, refType, onClose, dataType} = this.props;
-        const {isFetchingSpecIds, refMarkSelectedNode, conditionHasErrors, conditionSelectedCode, conditionValues, selectedSpecItems, selectedSpecItemsType, specItems} = this.state;
+        const {isFetchingSpecIds, refMarkSelectedNode, conditionHasErrors, valueAccodrionType, conditionSelectedCode, conditionValues, selectedValueItems, selectedSpecItems, selectedSpecItemsType, specItems} = this.state;
 
         var specContent = null
         if (refType.id === COL_REFERENCE_MARK) {
@@ -684,13 +702,35 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                                    onClick={this.handleRefMarkSubmit}>{i18n('global.action.select')}</Button>);
         }
 
+        let accordion;
+        if (conditionContent && valueContent) {
+            accordion = <Accordion className="accordion-simple bordered" activeKey={valueAccodrionType} onSelect={type => { this.setState({valueAccodrionType: type}) }}>
+                <Panel className={valueAccodrionType === "CONDITION" ? "open" : ""} header={<h4>{i18n('arr.fund.filterSettings.filterByCondition.title')}</h4>} eventKey="CONDITION">
+                    {conditionContent}
+                </Panel>
+                <Panel className={valueAccodrionType === "VALUE" ? "open" : ""} header={<h4>{i18n('arr.fund.filterSettings.filterByValue.title')}</h4>} eventKey="VALUE">
+                    {valueContent}
+                </Panel>
+            </Accordion>;
+        } else {
+            accordion = <div>
+                {conditionContent && <div>
+                    <h4>{i18n('arr.fund.filterSettings.filterByCondition.title')}</h4>
+                    {conditionContent}
+                </div>}
+                {valueContent && <div>
+                    <h4>{i18n('arr.fund.filterSettings.filterByValue.title')}</h4>
+                    {valueContent}
+                </div>}
+            </div>
+        }
+
         return (
             <div className='fund-filter-settings-container'>
                 <Modal.Body>
                     <div className='filters-container'>
                         {specContent}
-                        {conditionContent}
-                        {valueContent}
+                        {accordion}
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
