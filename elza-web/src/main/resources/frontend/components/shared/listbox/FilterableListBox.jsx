@@ -15,10 +15,23 @@ import {getSetFromIdsList} from "stores/app/utils.jsx";
 var __FilterableListBox_timer = null
 
 var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
-    constructor(props) {
-        super(props)
+    static PropTypes = {
+        supportInverseSelection: React.PropTypes.bool,
+        selectedIds: React.PropTypes.array.isRequired,
+        label:React.PropTypes.string,
+        className:React.PropTypes.string,
+        items: React.PropTypes.array.isRequired,
+        searchable: React.PropTypes.bool,
+        altSearch: React.PropTypes.object,
+        onSearch: React.PropTypes.func,
+        onChange: React.PropTypes.func,
+        selectionType: React.PropTypes.string
+    };
 
-        this.bindMethods('renderItemContent', 'handleCheckItem', 'handleSearch', 'handleSearchClear', 'handleSearchChange', 'focus')
+    constructor(props) {
+        super(props);
+
+        this.bindMethods('renderItemContent', 'handleSearch', 'handleSearchClear', 'handleSearchChange', 'focus')
 
         // Typ výběru:
         //   selectionType === 'selected', selectedIds obsahuje seznam vybraných id
@@ -31,6 +44,7 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
             selectedIds: {},
             filterText: props.filterText || '',
             supportInverseSelection,
+            rerender: {}
         }
 
         if (selectedIds) {
@@ -53,38 +67,57 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
                 selectedIds: nextSelectedIds,
                 selectionType: nextProps.selectionType || this.state.selectionType,
                 filterText: nextProps.filterText || this.state.filterText || '',
+                rerender: {}
             })
         }
     }
 
-    handleCheckItem(item) {
+    handleCheckItem = (item) => {
         const {selectionType, selectedIds} = this.state
         const {onChange} = this.props
 
         var newSelectedIds = {...selectedIds}
-        var unselectedIds = []
+        var unselectedIds = [];
 
+        let chekckedCount = 0;
+        let unchekckedCount = 0;
+        item.forEach(i => {
+            if (selectedIds[i.id]) {
+                chekckedCount++;
+            } else {
+                unchekckedCount++;
+            }
+        });
         if (selectionType === 'selected') {
-            if (selectedIds[item.id]) { // je označená, odznačíme ji
-                delete newSelectedIds[item.id]
-                unselectedIds.push(item.id)
-            } else {    // není označená, označíme ji
-                newSelectedIds[item.id] = true
+            if (chekckedCount === item.length) {    // všechny byly označené, všechny je odznačíme
+                item.forEach(i => {
+                    delete newSelectedIds[i.id];
+                    unselectedIds.push(i.id)
+                });
+            } else {    // minimálně jedna nebyla označená - všechny je označíme
+                item.forEach(i => {
+                    newSelectedIds[i.id] = true;
+                });
             }
         } else {
-            if (selectedIds[item.id]) { // je odznačená, odznačíme ji
-                delete newSelectedIds[item.id]
-                unselectedIds.push(item.id)
-            } else {    // není odznačená, označíme ji
-                newSelectedIds[item.id] = true
+            if (unchekckedCount === item.length) {    // všechny byly označené, všechny je odznačíme
+                item.forEach(i => {
+                    newSelectedIds[i.id] = true;
+                });
+            } else {    // minimálně jedna nebyla označená - všechny je označíme
+                item.forEach(i => {
+                    delete newSelectedIds[i.id];
+                    unselectedIds.push(i.id)
+                });
             }
         }
 
-        this.setState({
-            selectedIds: newSelectedIds
-        })
-
         onChange && onChange(selectionType, Object.keys(newSelectedIds), unselectedIds, "TOGGLE_ITEM")
+
+        this.setState({
+            selectedIds: newSelectedIds,
+            rerender: {}
+        });
     }
 
     handleSelectAll = () => {
@@ -106,6 +139,7 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
         this.setState({
             selectionType: type,
             selectedIds: selectedIds,
+            rerender: {}
         });
 
         onChange && onChange(type, Object.keys(selectedIds), [], "SELECT_ALL");
@@ -119,6 +153,7 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
         this.setState({
             selectionType: type,
             selectedIds: {},
+            rerender: {}
         });
 
         let unselectedIds = [];
@@ -133,13 +168,18 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
         onChange && onChange(type, [], unselectedIds, "UNSELECT_ALL");
     };
 
-    renderItemContent(item, isActive) {
+    handleCheckboxClick = (e) => {
+
+    };
+
+    renderItemContent(item, isActive, index, onCheckItem) {
         const {selectionType, selectedIds} = this.state
         const checked = selectionType === 'selected' ? !!selectedIds[item.id] : !selectedIds[item.id]
 
         return (
             <div className='checkbox-item'>
-                <Checkbox tabIndex={-1} checked={checked} onChange={(e) => {this.handleCheckItem.bind(this, item)()}}>{item.name}</Checkbox>
+                <Checkbox tabIndex={-1} checked={checked} onMouseDown={onCheckItem} ></Checkbox>
+                {item.name}
             </div>
         )
     }
@@ -147,6 +187,7 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
     handleSearchChange(e) {
         this.setState({
             filterText: e.target.value,
+            rerender: {}
         }, ()=> {
             if (__FilterableListBox_timer) {
                 clearTimeout(__FilterableListBox_timer)
@@ -164,6 +205,7 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
     handleSearchClear() {
         this.setState({
             filterText: '',
+            rerender: {}
         }, () => this.handleSearch())
     }
 
@@ -172,8 +214,8 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
     }
 
     render() {
-        const {label, className, items, searchable, altSearch} = this.props
-        const {filterText} = this.state
+        const {label, className, items, searchable, altSearch} = this.props;
+        const {filterText, rerender} = this.state;
         const lbl = label ? <h4>{label}</h4> : null
 
         var cls = "filterable-listbox-container";
@@ -204,7 +246,9 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
                 <div className='list-container'>
                     {this.props.children}
                     <ListBox
+                        multiselect
                         ref="listBox"
+                        rerender={rerender}
                         items={items}
                         renderItemContent={this.renderItemContent}
                         onCheck={this.handleCheckItem}
@@ -213,19 +257,6 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
             </div>
         )
     }
-};
-
-FilterableListBox.propsTypes = {
-    supportInverseSelection: React.PropTypes.bool,
-    selectedIds: React.PropTypes.array.isRequired,
-    label:React.PropTypes.string,
-    className:React.PropTypes.string,
-    items: React.PropTypes.array.isRequired,
-    searchable: React.PropTypes.bool,
-    altSearch: React.PropTypes.object,
-    onSearch: React.PropTypes.func,
-    onChange: React.PropTypes.func,
-    selectionType: React.PropTypes.string
 };
 
 export default FilterableListBox;
