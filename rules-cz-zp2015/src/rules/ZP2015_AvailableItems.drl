@@ -25,11 +25,15 @@ import cz.tacr.elza.domain.RulItemType;
 // - addWithAllSpec
 // - addWithoutSpec - ?kde je vzit pozdeji?
 
-rule "Atributy lze nastavit na Nezjištěno"
+rule "Prvky popisu lze nastavit na Nezjištěno"
 salience 100
 no-loop
 when
-    $itemType : RulItemTypeExt(code in ("ZP2015_SCALE", "ZP2015_ENTITY_ROLE"))
+    $itemType : RulItemTypeExt(code in (
+        "ZP2015_SCALE", 
+        // ZP5.2.2 Název autorského díla
+        "ZP2015_ITEM_TITLE",
+        "ZP2015_ENTITY_ROLE"))
 then
     $itemType.setIndefinable(true);
 end
@@ -566,12 +570,16 @@ when
       "ZP2015_FORMAL_TITLE",
       // ZP4.2.10 Ukládací jednotka a číslo
       "ZP2015_STORAGE_ID",
+      // ZP5.2.2 Název autorského díla
+      "ZP2015_ITEM_TITLE",
       // ZP5.2.3 Způsob a forma dochování
       "ZP2015_STORAGE_COND",
       // ZP5.2.4 Rozměry, hmotnost, velikost, množství 
       "ZP2015_SIZE",
       // ZP5.2.8 Technika, adjustace, nosič a látka záznamu
-      "ZP2015_ITEM_MAT"      
+      "ZP2015_ITEM_MAT",
+      // ZP5.2.9 Díl, část, pořadí vydání jednotky popisu
+      "ZP2015_PART"
      ) )
     $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
 then
@@ -1807,12 +1815,12 @@ when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_GLI", "ZP2015_UNIT_TYPE_KRE") ) from $activeLevel.descItems
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
+        // autoři výtvarné stránky
+        "ZP2015_ENTITY_ROLE_14",
         // vydavatelé / nakladatelé 
         "ZP2015_ENTITY_ROLE_16",
         // příjemci
         "ZP2015_ENTITY_ROLE_21",
-        // autoři výtvarné stránky
-        "ZP2015_ENTITY_ROLE_24",
         // tvůrci technického zpracování
         "ZP2015_ENTITY_ROLE_38",
         // tiskárny/tiskaři
@@ -1859,7 +1867,7 @@ when $activeLevel: ActiveLevel( )
     // nastaveni prvku  
     $itemType: RulItemTypeExt( code in (
         // ZP5.2.2 Název autorského díla
-        "ZP2015_ITEM_TITLE",    
+        "ZP2015_ITEM_TITLE",
         // ZP5.11.1 Legenda
         "ZP2015_LEGEND",  "ZP2015_ENTITY_ROLE"  ) )
 then
@@ -1879,7 +1887,7 @@ when $activeLevel: ActiveLevel( )
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in ( 
         // autoři výtvarné stránky
-        "ZP2015_ENTITY_ROLE_24",
+        "ZP2015_ENTITY_ROLE_14",
         // tvůrci technického zpracování
         "ZP2015_ENTITY_ROLE_38"
      ) ) from $itemType.rulItemSpecList
@@ -1899,12 +1907,12 @@ when $activeLevel: ActiveLevel( )
     // nastaveni prvku  
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in ( 
+        // autoři výtvarné stránky
+        "ZP2015_ENTITY_ROLE_14",
         // vydavatelé / nakladatelé 
         "ZP2015_ENTITY_ROLE_16",
         // příjemci
         "ZP2015_ENTITY_ROLE_21",
-        // autoři výtvarné stránky
-        "ZP2015_ENTITY_ROLE_24",
         // tvůrci technického zpracování
         "ZP2015_ENTITY_ROLE_38",
         // tiskárny/tiskaři
@@ -2502,7 +2510,10 @@ when $activeLevel: ActiveLevel( )
 	$level: Level( $items: descItems ) 
 	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT")) from $items
 	// nastaveni prvku	
-	$itemType: RulItemTypeExt( code in ("ZP2015_ENTITY_ROLE") )
+	$itemType: RulItemTypeExt( code in (
+        // ZP5.2.2 Název autorského díla
+        "ZP2015_ITEM_TITLE",
+	    "ZP2015_ENTITY_ROLE") )
 then
 	$itemType.setType(RulItemType.Type.REQUIRED);
 end
