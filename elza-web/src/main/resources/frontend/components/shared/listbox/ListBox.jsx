@@ -1,9 +1,11 @@
 import React from 'react';
-import AbstractReactComponent from 'components/AbstractReactComponent.jsx';
+import AbstractReactComponent from "../../AbstractReactComponent";
+import * as Utils from "../../Utils";
 import ReactDOM from 'react-dom';
 import {Shortcuts} from 'react-shortcuts';
 const scrollIntoView = require('dom-scroll-into-view');
-
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './ListBoxKeymap.jsx'
 require ('./ListBox.less');
 
 let _ListBox_placeholder = document.createElement("div");
@@ -21,6 +23,15 @@ class ListBox extends AbstractReactComponent {
         activeIndexes: null,
         lastFocus: null
     };
+
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
 
     constructor(props) {
         super(props);
@@ -149,7 +160,6 @@ class ListBox extends AbstractReactComponent {
     handleShortcuts = (action, e)=>{
         e.stopPropagation();
         e.preventDefault();
-        console.log(action)
         this.actionMap[action](e);
     }
     componentWillReceiveProps(nextProps) {
@@ -309,7 +319,6 @@ class ListBox extends AbstractReactComponent {
             while (step) {
                 var i = index + step;
                 while (i >= 0 && i < items.length) {
-                    console.log(i);
                     if (canSelectItem(items[i], i)) {
                         return i;
                     }
@@ -317,7 +326,6 @@ class ListBox extends AbstractReactComponent {
                 }
                 isDecrementing ? step++ : step--;
             }
-            console.log(index);
             return index;
         } else {
             return 0;
@@ -342,11 +350,9 @@ class ListBox extends AbstractReactComponent {
     }
 
     ensureItemVisible = (index) => {
-
         var itemNode = ReactDOM.findDOMNode(this.refs['item-' + index])
         if (itemNode !== null) {
             var containerNode = ReactDOM.findDOMNode(this.refs.container)
-            console.log("ensureItemVisible",itemNode,containerNode);
             scrollIntoView(itemNode, containerNode, { onlyScrollIfNeeded: true, alignWithTop:false })
         }
     };

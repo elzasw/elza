@@ -1,52 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<ns2:xml-import xmlns:ns2="http://v1_0_0.import.elza.tacr.cz">
-    <fund rule-set-code="ZP2015" institution-code="in1">
-        <!--finding-aid-->
-        <name>Import z XML</name>
-        <root-level>
-            <position>1</position>
-            <uuid>44a39a98-79c5-48c2-8515-af93758fad15</uuid>
-            <sub-level-list>
-                <level>
-                    <position>0</position>
-                    <uuid>f4b883cd-b140-4282-9d42-5a080a7a8333</uuid>
-                    <desc-item-list>
-                        <desc-item-text desc-item-type-code="ZP2015_ARRANGER_TEXT">
-                            <position>7</position>
-                            <value>text 7</value>
-                        </desc-item-text>
-                        <desc-item-unit-id desc-item-type-code="ZP2015_UNIT_ID">
-                            <position>9</position>
-                            <value>1//11/1</value>
-                        </desc-item-unit-id>
-                    </desc-item-list>
-                </level>
-                <level>
-                    <position>1</position>
-                    <uuid>bc0d5237-c921-4ab3-88f5-87dc1fb199aa</uuid>
-                    <desc-item-list>
-                        <desc-item-coordinates desc-item-type-code="ZP2015_POSITION">
-                            <position>0</position>
-                            <value>POINT (14 49)</value>
-                        </desc-item-coordinates>
-                    </desc-item-list>
-                </level>
-                <level>
-                    <position>2</position>
-                    <uuid>9ab651f6-a278-4486-b45e-180cd19ab3b9</uuid>
-                    <desc-item-list>
-                        <desc-item-enum desc-item-type-code="ZP2015_LANGUAGE" desc-item-spec-code="ZP2015_LANGUAGE_3">
-                            <position>3</position>
-                        </desc-item-enum>
-                    </desc-item-list>
-                </level>
-            </sub-level-list>
-            <desc-item-list>
-                <desc-item-text desc-item-type-code="ZP2015_ARRANGER_TEXT">
-                    <position>7</position>
-                    <value>text 7</value>
-                </desc-item-text>
-            </desc-item-list>
-        </root-level>
-    </fund>
-</ns2:xml-import>
+<ns2:edx xmlns:ns2="http://elza.tacr.cz/schema/v2">
+  <fs>
+    <s rule="ZP2015">
+      <fi n="Import z XML" ic="in1" />
+      <lvls>
+        <lvl id="1" uuid="44a39a98-79c5-48c2-8515-af93758fad15">
+          <de s="ZP2015_LANGUAGE_3" t="ZP2015_LANGUAGE"/>
+        </lvl>
+        <lvl id="2" pid="1" uuid="f4b883cd-b140-4282-9d42-5a080a7a8333">
+          <de s="ZP2015_LANGUAGE_3" t="ZP2015_LANGUAGE"/>
+          <ds t="ZP2015_UNIT_ID">
+            <v>1//11/1</v>
+          </ds>
+        </lvl>
+        <lvl id="3" pid="1" uuid="bc0d5237-c921-4ab3-88f5-87dc1fb199aa">
+          <de s="ZP2015_LANGUAGE_3" t="ZP2015_LANGUAGE"/>
+        </lvl>
+        <lvl id="4" pid="1" uuid="9ab651f6-a278-4486-b45e-180cd19ab3b9">
+          <de s="ZP2015_LANGUAGE_3" t="ZP2015_LANGUAGE"/>
+        </lvl>
+      </lvls>
+    </s>
+  </fs>
+</ns2:edx>

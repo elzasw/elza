@@ -100,9 +100,9 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
         return userDetail.hasRdPage(activeFund ? activeFund.id : null);
     }
 
-    handleShortcuts(action) {
+    handleShortcuts(action,e) {
         console.log("#handleShortcuts ArrDataGridPage", '[' + action + ']', this);
-        super.handleShortcuts(action);
+        super.handleShortcuts(action,e);
     }
 
     renderCenterPanel(readMode, closed) {

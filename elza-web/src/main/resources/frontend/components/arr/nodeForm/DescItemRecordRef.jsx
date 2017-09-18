@@ -37,7 +37,6 @@ class DescItemRecordRef extends AbstractReactComponent {
 
     handleSelectModule = ({onSelect, filterText, value}) => {
         const {hasSpecification, descItem, registryList, partyList, fundName, nodeName, itemName, specName} = this.props;
-        console.log(filterText, "aaa");
         const open = (hasParty = false) => {
             if (hasParty) {
                 this.dispatch(partyListFilter({...partyList.filter, text: filterText, itemSpecId: hasSpecification ? descItem.descItemSpecId : null}));

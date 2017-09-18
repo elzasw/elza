@@ -63,7 +63,7 @@ import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
-import cz.tacr.elza.repository.VariantRecordRepository;
+import cz.tacr.elza.repository.RegVariantRecordRepository;
 import cz.tacr.elza.service.PartyService;
 import cz.tacr.elza.service.RegistryService;
 import cz.tacr.elza.utils.PartyType;
@@ -106,7 +106,7 @@ public class InterpiFactory {
     private RegRecordRepository recordRepository;
 
     @Autowired
-    private VariantRecordRepository variantRecordRepository;
+    private RegVariantRecordRepository variantRecordRepository;
 
     @Autowired
     private GroovyScriptService groovyScriptService;

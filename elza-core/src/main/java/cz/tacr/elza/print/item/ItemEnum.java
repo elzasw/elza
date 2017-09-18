@@ -1,7 +1,5 @@
 package cz.tacr.elza.print.item;
 
-import cz.tacr.elza.print.NodeId;
-
 /**
  * Enumerated Item for outputs
  * 
@@ -9,13 +7,13 @@ import cz.tacr.elza.print.NodeId;
  */
 public class ItemEnum extends AbstractItem {
 
-    private ItemEnum(final NodeId nodeId) {
-        super(nodeId);
+    private ItemEnum() {
+        super();
     }
 
     @Override
     public String serializeValue() {
-        return getSpecification().getName();
+        return "";
     }
 
     @Override
@@ -28,8 +26,15 @@ public class ItemEnum extends AbstractItem {
     	return "";
     }
 
-	public static AbstractItem newInstance(NodeId nodeId) {
-		return new ItemEnum(nodeId);
+	@Override
+	public boolean isEmpty() {
+		// Item without specification is considered empty
+		ItemSpec itemSpec = this.getSpecification();
+		return itemSpec==null;
+	}
+
+	public static ItemEnum newInstance() {
+		return new ItemEnum();
 	}
 
 }

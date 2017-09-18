@@ -25,7 +25,8 @@ import * as perms from 'actions/user/Permission.jsx';
 import {Shortcuts} from 'react-shortcuts';
 import {getSetFromIdsList} from "stores/app/utils.jsx";
 import DescItemTypeSpec from "./DescItemTypeSpec";
-
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './DescItemTypeKeymap.jsx';
 import './AbstractDescItem.less'
 
 const placeholder = document.createElement("div");
@@ -35,6 +36,14 @@ placeholder.className = "placeholder";
  * Atribut - desc item type.
  */
 class DescItemType extends AbstractReactComponent {
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
     constructor(props) {
         super(props);
 
@@ -970,7 +979,7 @@ class DescItemType extends AbstractReactComponent {
         });
 
         return (
-            <Shortcuts name='DescItemType' className={cls} handler={this.handleDescItemTypeShortcuts}>
+            <Shortcuts name='DescItemType' className={cls} handler={this.handleDescItemTypeShortcuts} global alwaysFireHandler>
                 {label}
                 <div ref='dragOverContainer' className='desc-item-type-desc-items' onDragOver={this.handleDragOver}
                      onDragLeave={this.handleDragLeave}>

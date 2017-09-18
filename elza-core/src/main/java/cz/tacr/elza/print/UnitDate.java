@@ -6,7 +6,6 @@ import org.apache.commons.lang.builder.ToStringStyle;
 
 import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ArrItemUnitdate;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 
 /**
@@ -25,13 +24,13 @@ public class UnitDate extends UnitDateText implements IUnitdate {
     private String calendarCode;
     private ArrCalendarType calendarType;
 
-    private UnitDate(IUnitdate srcItemData) {
+    private UnitDate(IUnitdate srcItemData, ArrCalendarType calendarType) {
 		this.valueFrom = srcItemData.getValueFrom();
 		this.valueTo = srcItemData.getValueTo();
 		this.valueFromEstimated = srcItemData.getValueFromEstimated();
 		this.valueToEstimated = srcItemData.getValueToEstimated();
 		this.format = srcItemData.getFormat();
-        this.calendarType = srcItemData.getCalendarType();
+        this.calendarType = calendarType;
         this.calendar = calendarType.getName();
         this.calendarCode = calendarType.getCode();
 
@@ -128,14 +127,8 @@ public class UnitDate extends UnitDateText implements IUnitdate {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SIMPLE_STYLE);
     }
 
-	public static UnitDate valueOf(ArrItemUnitdate itemData) {
-		UnitDate unitDate = new UnitDate(itemData);
+	public static UnitDate valueOf(IUnitdate itemData, ArrCalendarType calendarType) {
+		UnitDate unitDate = new UnitDate(itemData, calendarType);
 		return unitDate;
 	}
-
-    public static UnitDate valueOf(IUnitdate itemData) {
-        UnitDate unitDate = new UnitDate(itemData);
-        return unitDate;
-    }
-
 }

@@ -64,6 +64,7 @@ import cz.tacr.elza.interpi.ws.wo.ZarazeniTyp;
 import cz.tacr.elza.interpi.ws.wo.ZaznamTyp;
 import cz.tacr.elza.interpi.ws.wo.ZdrojTyp;
 import cz.tacr.elza.repository.RegExternalSystemRepository;
+import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.utils.NoCheckTrustManager;
 import cz.tacr.elza.utils.XmlUtils;
 
@@ -93,6 +94,9 @@ public class InterpiTest extends AbstractControllerTest {
     private RegExternalSystemRepository regExternalSystemRepository;
 
     private Integer systemId;
+    
+    @Autowired
+    protected ScopeRepository scopeRepository;    
 
     @Override
     @Before

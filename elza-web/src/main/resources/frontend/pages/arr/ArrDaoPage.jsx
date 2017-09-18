@@ -24,7 +24,8 @@ import {
     AbstractReactComponent,
     ListBox2,
     LazyListBox,
-    Loading
+    Loading,
+    Utils
 } from 'components/shared';
 import * as types from 'actions/constants/ActionTypes.js';
 import {createFundRoot, getParentNode} from 'components/arr/ArrUtils.jsx'
@@ -42,7 +43,6 @@ import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes.jsx'
 import {developerNodeScenariosRequest} from 'actions/global/developer.jsx'
-import {Utils} from 'components/index.jsx';
 import {isFundRootId, getSettings, setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {setFocus} from 'actions/global/focus.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'

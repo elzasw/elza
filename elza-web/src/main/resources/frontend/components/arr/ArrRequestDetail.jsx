@@ -30,12 +30,20 @@ import {DIGITIZATION, DAO, DAO_LINK, getRequestType} from './ArrUtils.jsx'
 import {refExternalSystemsFetchIfNeeded} from 'actions/refTables/externalSystems';
 import {ControlLabel} from 'react-bootstrap'
 import {Shortcuts} from 'react-shortcuts';
-
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './ArrRequestDetailKeymap.jsx';
 /**
  * Formulář detailu požadavku na digitalizaci.
  */
 class ArrRequestDetail extends AbstractReactComponent {
-
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
     static PropTypes = {
         versionId: React.PropTypes.number.isRequired,
         fund: React.PropTypes.object.isRequired,

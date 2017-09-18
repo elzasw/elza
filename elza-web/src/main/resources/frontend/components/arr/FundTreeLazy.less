@@ -69,6 +69,17 @@
             margin: 0 5px 0 3px;
         }
 
+        .node-icon-color {
+            padding:0 2px;
+            width:2em;
+            height:2em;
+            text-align:center;
+            font-size: 0.7em;
+            flex-shrink: 0;
+            border-radius: 20px;
+            line-height:2em;
+        }
+
         .node {
             display: flex;
             height: @rowHeight;
@@ -78,6 +89,16 @@
             &:hover {
                 background: @tree-node-label-active-bg;
                 cursor: pointer;
+            }
+        }
+
+        .node-color {
+            height: auto;
+            padding:1px;
+            .exp-col{
+                width:20px;
+                min-width:auto;
+                max-width:auto;
             }
         }
 

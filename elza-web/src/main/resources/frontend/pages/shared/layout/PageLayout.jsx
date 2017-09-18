@@ -40,7 +40,7 @@ class PageLayout extends React.Component {
                 <div className='status-header'>
                     {status}
                 </div>
-                {/*<div className='app-content'>*/}
+                <div className='app-content'>
 
                     <Splitter
                         leftSize={splitter.leftWidth}
@@ -50,7 +50,7 @@ class PageLayout extends React.Component {
                         center={centerPanel}
                         right={rightPanel}
                     />
-                {/*</div>*/}
+                </div>
             </div>
         )
     }

@@ -19,7 +19,6 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.tacr.elza.api.interfaces.IArrFund;
-import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.domain.interfaces.Versionable;
 
 /**
@@ -32,103 +31,92 @@ import cz.tacr.elza.domain.interfaces.Versionable;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class ArrFund extends AbstractVersionableEntity implements Versionable, Serializable, IArrFund {
 
-    @Id
-    @GeneratedValue
-    private Integer fundId;
+	@Id
+	@GeneratedValue
+	private Integer fundId;
 
-    @Column(length = 255, nullable = false)
-    private String name;
+	@Column(length = 255, nullable = false)
+	private String name;
 
-    @Column(nullable = false)
-    private LocalDateTime createDate;
+	@Column(nullable = false)
+	private LocalDateTime createDate;
 
-    @Column(length = 250)
-    private String internalCode;
+	@Column(length = 250)
+	private String internalCode;
 
-    @Column(length = StringLength.LENGTH_36)
-    private String uuid;
+	@OneToOne(fetch = FetchType.LAZY, targetEntity = ParInstitution.class)
+	@JoinColumn(name = "institutionId", nullable = false)
+	private ParInstitution institution;
 
-    @OneToOne(fetch = FetchType.LAZY, targetEntity = ParInstitution.class)
-    @JoinColumn(name = "institutionId", nullable = false)
-    private ParInstitution institution;
+	@OneToMany(mappedBy = "fund", fetch = FetchType.LAZY)
+	private List<ArrFundVersion> versions;
 
-    @OneToMany(mappedBy = "fund", fetch = FetchType.LAZY)
-    private List<ArrFundVersion> versions;
+	@OneToMany(mappedBy = "fund", fetch = FetchType.LAZY)
+	private List<ArrOutputDefinition> outputDefinitions;
 
-    @OneToMany(mappedBy = "fund", fetch = FetchType.LAZY)
-    private List<ArrOutputDefinition> outputDefinitions;
+	public Integer getFundId() {
+		return fundId;
+	}
 
-    public Integer getFundId() {
-        return fundId;
-    }
+	public void setFundId(final Integer fundId) {
+		this.fundId = fundId;
+	}
 
-    public void setFundId(final Integer fundId) {
-        this.fundId = fundId;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public void setName(final String name) {
+		this.name = name;
+	}
 
-    public void setName(final String name) {
-        this.name = name;
-    }
+	public LocalDateTime getCreateDate() {
+		return createDate;
+	}
 
-    public LocalDateTime getCreateDate() {
-        return createDate;
-    }
+	public void setCreateDate(final LocalDateTime createDate) {
+		this.createDate = createDate;
+	}
 
-    public void setCreateDate(final LocalDateTime createDate) {
-        this.createDate = createDate;
-    }
+	public String getInternalCode() {
+		return internalCode;
+	}
 
-    public String getInternalCode() {
-        return internalCode;
-    }
+	public void setInternalCode(final String internalCode) {
+		this.internalCode = internalCode;
+	}
 
-    public void setInternalCode(final String internalCode) {
-        this.internalCode = internalCode;
-    }
+	public ParInstitution getInstitution() {
+		return institution;
+	}
 
-    public ParInstitution getInstitution() {
-        return institution;
-    }
+	public void setInstitution(final ParInstitution institution) {
+		this.institution = institution;
+	}
 
-    public void setInstitution(final ParInstitution institution) {
-        this.institution = institution;
-    }
+	public List<ArrFundVersion> getVersions() {
+		return versions;
+	}
 
-    public List<ArrFundVersion> getVersions() {
-        return versions;
-    }
+	public void setVersions(final List<ArrFundVersion> versions) {
+		this.versions = versions;
+	}
 
-    public void setVersions(final List<ArrFundVersion> versions) {
-        this.versions = versions;
-    }
+	@Override
+	public String toString() {
+		return "ArrFund pk=" + fundId;
+	}
 
-    @Override
-    public String toString() {
-        return "ArrFund pk=" + fundId;
-    }
+	@Override
+	public ArrFund getFund() {
+		return this;
+	}
 
-    @Override
-    public ArrFund getFund() {
-        return this;
-    }
+	public List<ArrOutputDefinition> getOutputDefinitions() {
+		return outputDefinitions;
+	}
 
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(final String uuid) {
-        this.uuid = uuid;
-    }
-
-    public List<ArrOutputDefinition> getOutputDefinitions() {
-        return outputDefinitions;
-    }
-
-    public void setOutputDefinitions(final List<ArrOutputDefinition> outputDefinitions) {
-        this.outputDefinitions = outputDefinitions;
-    }
+	public void setOutputDefinitions(final List<ArrOutputDefinition> outputDefinitions) {
+		this.outputDefinitions = outputDefinitions;
+	}
 }

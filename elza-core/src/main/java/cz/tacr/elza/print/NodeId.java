@@ -15,7 +15,7 @@ import org.springframework.util.Assert;
  */
 public class NodeId implements Comparable<NodeId> {
 
-    private final Output output; // vazba na parent output
+    private final OutputImpl output; // vazba na parent output
     private final int arrNodeId; // vazba na DB objekt, povinný údaj
 
     private Integer parentNodeId = null; // vazba na parentNode
@@ -32,7 +32,7 @@ public class NodeId implements Comparable<NodeId> {
      * @param depth hloubka uzlu od kořene
      * @param position pozice uzlu
      */
-    public NodeId(final Output output, final int arrNodeId, final Integer parentNodeId, final int position,
+    public NodeId(final OutputImpl output, final int arrNodeId, final Integer parentNodeId, final int position,
             final int depth) {
         Assert.notNull(position, "Pozice musí být vyplněna");
         Assert.notNull(depth, "Hloubka musí být vyplněna");

@@ -1,6 +1,7 @@
 package cz.tacr.elza.service;
 
 import com.google.common.collect.Sets;
+
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.config.ConfigView;
 import cz.tacr.elza.domain.ArrBulkActionRun;
@@ -322,17 +323,12 @@ public class RevertingChangesService {
         Set<Integer> deleteNodeIds = getNodeIdsToDelete();
         nodeIdsChange.removeAll(deleteNodeIds);
 
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-            @Override
-            public void afterCommit() {
-                nodeCacheService.syncNodes(nodeIdsChange);
-            }
-        });
-
         nodeCacheService.deleteNodes(deleteNodeIds);
 
         Query deleteNotUseNodesQuery = createDeleteNotUseNodesQuery();
         deleteNotUseNodesQuery.executeUpdate();
+
+        nodeCacheService.syncNodes(nodeIdsChange);
 
         if (CollectionUtils.isNotEmpty(deleteNodeIds) && openFundVersion != null) {
             eventNotificationService.publishEvent(new EventIdsInVersion(EventType.DELETE_NODES, openFundVersion.getFundVersionId(),
@@ -349,7 +345,7 @@ public class RevertingChangesService {
         }
 
         levelTreeCacheService.invalidateFundVersion(fund);
-        startupService.revalidateNodes();
+        startupService.startNodeValidation();
     }
 
     private TypedQuery<ArrData> findChangeArrDataQuery(final ArrFund fund, final ArrNode node, final ArrChange change) {
@@ -601,18 +597,18 @@ public class RevertingChangesService {
 
     private List<String[]> getNodesTables() {
         String[][] configUnionTables = new String[][]{
-                {"arr_level", "node"},
-                {"arr_level", "nodeParent"},
-                {"arr_node_register", "node"},
-                {"arr_node_conformity", "node"},
-                {"arr_fund_version", "rootNode"},
-                {"ui_visible_policy", "node"},
-                {"arr_node_output", "node"},
-                {"arr_bulk_action_node", "node"},
-                {"arr_desc_item", "node"},
-                {"arr_change", "primaryNode"},
-                {"arr_dao_link", "node"},
-                {"arr_digitization_request_node", "node"},
+            {"arr_level", "node"},
+            {"arr_level", "nodeParent"},
+            {"arr_node_register", "node"},
+            {"arr_node_conformity", "node"},
+            {"arr_fund_version", "rootNode"},
+            {"ui_visible_policy", "node"},
+            {"arr_node_output", "node"},
+            {"arr_bulk_action_node", "node"},
+            {"arr_desc_item", "node"},
+            {"arr_change", "primaryNode"},
+            {"arr_dao_link", "node"},
+            {"arr_digitization_request_node", "node"},
         };
 
         return Arrays.asList(configUnionTables);
@@ -621,27 +617,27 @@ public class RevertingChangesService {
     public Query createDeleteNotUseChangesQuery() {
 
         String[][] configUnionTables = new String[][]{
-                {"arr_level", "createChange"},
-                {"arr_level", "deleteChange"},
-                {"arr_item", "createChange"},
-                {"arr_item", "deleteChange"},
-                {"arr_node_register", "createChange"},
-                {"arr_node_register", "deleteChange"},
+            {"arr_level", "createChange"},
+            {"arr_level", "deleteChange"},
+            {"arr_item", "createChange"},
+            {"arr_item", "deleteChange"},
+            {"arr_node_register", "createChange"},
+            {"arr_node_register", "deleteChange"},
 
-                {"arr_fund_version", "createChange"},
-                {"arr_fund_version", "lockChange"},
-                {"arr_bulk_action_run", "change"},
-                {"arr_output", "createChange"},
-                {"arr_output", "lockChange"},
-                {"arr_node_output", "createChange"},
-                {"arr_node_output", "deleteChange"},
-                {"arr_output_result", "change"},
+            {"arr_fund_version", "createChange"},
+            {"arr_fund_version", "lockChange"},
+            {"arr_bulk_action_run", "change"},
+            {"arr_output", "createChange"},
+            {"arr_output", "lockChange"},
+            {"arr_node_output", "createChange"},
+            {"arr_node_output", "deleteChange"},
+            {"arr_output_result", "change"},
 
-                {"arr_dao_link", "createChange"},
-                {"arr_dao_link", "deleteChange"},
+            {"arr_dao_link", "createChange"},
+            {"arr_dao_link", "deleteChange"},
 
-                {"arr_request_queue_item", "createChange"},
-                {"arr_request", "createChange"},
+            {"arr_request_queue_item", "createChange"},
+            {"arr_request", "createChange"},
         };
 
         List<String[]> changeTables = Arrays.asList(configUnionTables);
@@ -706,10 +702,10 @@ public class RevertingChangesService {
                                          @Nullable final ArrNode node,
                                          @NotNull final ArrChange change) {
         String[][] tables = new String[][]{
-                {"arr_level", "node"},
-                {"arr_node_register", "node"},
-                {"arr_dao_link", "node"},
-                {"arr_desc_item", "node"},
+            {"arr_level", "node"},
+            {"arr_node_register", "node"},
+            {"arr_dao_link", "node"},
+            {"arr_desc_item", "node"},
         };
 
         List<String> hqls = new ArrayList<>();
@@ -1062,7 +1058,7 @@ public class RevertingChangesService {
                 "      SELECT delete_change_id, node_id, 1 AS weight FROM arr_dao_link WHERE node_id IN (%2$s)\n" +
                 "      UNION ALL\n" +
                 "      SELECT change_id, null, 0 AS weight FROM arr_bulk_action_run r JOIN arr_fund_version v ON r.fund_version_id = v.fund_version_id WHERE v.fund_id = :fundId AND r.state = '" + ArrBulkActionRun.State.FINISHED + "'\n" +
-//                "    ) chlx ORDER BY change_id DESC\n" +
+                //                "    ) chlx ORDER BY change_id DESC\n" +
                 "    ) chlx \n" +
                 "  ) chlxx GROUP BY change_id \n" +
                 ") chl\n" +

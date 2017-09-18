@@ -146,7 +146,6 @@ export default function subNodeForm(state = initialState, action = {}) {
             state.formData = {...state.formData};
             return {...state};
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_POSITION:
-            console.log("BEFORE", loc.descItemType.descItems)
             var descItems = [...loc.descItemType.descItems];
 
             // // Odebrání přesouvané
@@ -164,10 +163,7 @@ export default function subNodeForm(state = initialState, action = {}) {
 
             descItems.splice(action.index, 0, descItems.splice(action.valueLocation.descItemIndex, 1)[0]);
 
-
             loc.descItemType.descItems = descItems
-            console.log("AFTER", loc.descItemType.descItems)
-
             state.formData = {...state.formData};
             return {...state};
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE:
@@ -507,4 +503,3 @@ export default function subNodeForm(state = initialState, action = {}) {
             return state
     }
 }
-

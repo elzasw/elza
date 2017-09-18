@@ -43,6 +43,9 @@ public class RulItemSpec {
     @GeneratedValue
     private Integer itemSpecId;
 
+    @Column(updatable = false, insertable = false)
+    private Integer itemTypeId;
+
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulItemType.class)
     @JoinColumn(name = "itemTypeId", nullable = false)
@@ -89,12 +92,17 @@ public class RulItemSpec {
         this.itemSpecId = itemSpecId;
     }
 
+    public Integer getItemTypeId() {
+        return itemTypeId;
+    }
+
     public RulItemType getItemType() {
         return itemType;
     }
 
     public void setItemType(final RulItemType itemType) {
         this.itemType = itemType;
+        this.itemTypeId = itemType != null ? itemType.getItemTypeId() : null;
     }
 
     public String getCode() {

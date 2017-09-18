@@ -1,6 +1,9 @@
 package cz.tacr.elza.controller;
 
 import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.other.HelperTestService;
+
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -30,11 +33,12 @@ public class PackageTest extends AbstractControllerTest {
         List<RulPackage> packages = getPackages();
         RulPackage packageItem = null;
         for (RulPackage item : packages) {
-            if (!item.getCode().equals("CZ_BASE")) {
+            if (item.getCode().equals("ZP2015")) {
                 packageItem = item;
                 break;
             }
         }
+        Assert.assertNotNull(packageItem);
 
         deletePackage(packageItem.getCode());
         importPackage();
@@ -42,7 +46,7 @@ public class PackageTest extends AbstractControllerTest {
     }
 
     private void importPackage() throws Exception {
-        File file = buildPackageFileZip();
+        File file = HelperTestService.buildPackageFileZip("rules-cz-zp2015");
         multipart(spec -> spec.multiPart("file", file), IMPORT_PACKAGE);
         file.delete();
     }

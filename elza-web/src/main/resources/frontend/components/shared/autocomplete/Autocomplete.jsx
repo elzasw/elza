@@ -5,15 +5,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Button, Input, HelpBlock} from 'react-bootstrap';
+import AbstractReactComponent from "../../AbstractReactComponent";
+import * as Utils from "../../Utils";
+import Icon from "../icon/Icon";
 import {getBootstrapInputComponentInfo} from 'components/form/FormUtils.jsx';
 import scrollIntoView from 'dom-scroll-into-view';
 import './Autocomplete.less';
 let _debugStates = false;
 import {propsEquals} from 'components/Utils.jsx'
 import {Shortcuts} from 'react-shortcuts';
-import AbstractReactComponent from "../../AbstractReactComponent";
-import Icon from "../icon/Icon";
-
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './AutocompleteKeymap.jsx'
 class TextInput extends AbstractReactComponent {
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -26,6 +28,11 @@ class TextInput extends AbstractReactComponent {
 }
 
 export default class Autocomplete extends AbstractReactComponent {
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
     constructor(props) {
         super();
 
@@ -279,6 +286,7 @@ export default class Autocomplete extends AbstractReactComponent {
 
     componentWillMount() {
         this._ignoreBlur = false;
+        Utils.addShortcutManager(this,defaultKeymap);
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -686,7 +694,6 @@ export default class Autocomplete extends AbstractReactComponent {
         var elementWidth = element.clientWidth;
         var elementHeight = element.clientHeight;
         $(element).css({height: height,width: width});
-        console.log("origElSize: ",height,width,"autoElSize: ",elementHeight,elementWidth);
         return {
             width: elementWidth,
             height: elementHeight
@@ -1052,7 +1059,7 @@ export default class Autocomplete extends AbstractReactComponent {
     getParentNodeIndex = (index) => {
         const {itemsDepth} = this.state;
         const currDepth = itemsDepth[index];
-        var parentIndex = index - 1;
+        var parentIndex = index;
         while (parentIndex >= 0 && itemsDepth[parentIndex] >= currDepth) {
             parentIndex--;
         }
@@ -1124,7 +1131,6 @@ export default class Autocomplete extends AbstractReactComponent {
                     })
                 } else {
                     const item = this.getHighlightedNode();
-                    console.log("HIGHLIGHTED_ITEM",item);
                     const id = getItemId(item);
 
                     if (allowSelectItem(id, item)) {
@@ -1157,10 +1163,11 @@ export default class Autocomplete extends AbstractReactComponent {
         "CLOSE_MENU": () => {this.closeMenu()}
     }
     handleShortcuts = (action,e)=>{
-        console.log(action);
-        e.stopPropagation();
-        e.preventDefault();
-        this.actionMap[action](e);
+        let whileClosedActions = ["OPEN_MENU"];
+        if(this.state.isOpen || whileClosedActions.indexOf(action) >= 0){
+            e.preventDefault();
+            this.actionMap[action](e);
+        }
     }
     render() {
         const {customFilter, error, title, touched, inline} = this.props;
@@ -1181,9 +1188,8 @@ export default class Autocomplete extends AbstractReactComponent {
 
         var bootInfo = getBootstrapInputComponentInfo(this.props);
         var cls = bootInfo.cls;
-
         return (
-            <Shortcuts handler={this.handleShortcuts} name="Autocomplete" className={clsMain}>
+            <Shortcuts handler={this.handleShortcuts} name="Autocomplete" className={clsMain} alwaysFireHandler>
                 <div className='autocomplete-control-box'>
                     <div className={cls}>
                         {this.props.label && <label className='control-label'>{this.props.label}</label>}

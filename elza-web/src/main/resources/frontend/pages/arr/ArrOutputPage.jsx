@@ -6,7 +6,6 @@ import classNames from "classnames";
 import './ArrOutputPage.less';
 
 import React from 'react';
-import * as Utils from "components/Utils.jsx";
 import ReactDOM from 'react-dom';
 import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
@@ -32,7 +31,8 @@ import {
     Icon,
     i18n,
     Tabs,
-    AbstractReactComponent
+    AbstractReactComponent,
+    Utils
 } from 'components/shared';
 import {Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import PageLayout from "../shared/layout/PageLayout";
@@ -65,6 +65,8 @@ import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
 import {outputTypesFetchIfNeeded} from "actions/refTables/outputTypes.jsx";
 import {getDescItemsAddTree, getOneSettings} from 'components/arr/ArrUtils.jsx';
 import ArrParentPage from "./ArrParentPage.jsx";
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './ArrOutputPageKeymap.jsx';
 
 import {Shortcuts} from 'react-shortcuts';
 
@@ -80,6 +82,15 @@ const OutputState = {
 };
 
 const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
+    componentWillMount(){
+        let newKeymap = Utils.mergeKeymaps(ArrParentPage.defaultKeymap,defaultKeymap);
+        Utils.addShortcutManager(this,newKeymap);
+    }
     constructor(props) {
         super(props, "arr-output-page");
 
@@ -148,8 +159,9 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         isDirty && !isFetching && this.dispatch(versionValidate(versionId, false))
     }
 
-    handleShortcuts(action) {
+    handleShortcuts(action,e) {
         console.log("#handleShortcuts ArrOutputPage", '[' + action + ']', this);
+        e.preventDefault();
         switch (action) {
             case 'newOutput':
                 this.handleAddOutput();
@@ -164,7 +176,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                 this.dispatch(setFocus('fund-output', 3));
                 break
             default:
-                super.handleShortcuts(action);
+                super.handleShortcuts(action,e);
         }
     }
 

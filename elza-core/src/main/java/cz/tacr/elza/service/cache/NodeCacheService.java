@@ -1,11 +1,33 @@
 package cz.tacr.elza.service.cache;
 
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import javax.transaction.Transactional;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.castor.core.util.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
 import com.google.common.collect.Lists;
+
 import cz.tacr.elza.domain.ArrCachedNode;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDao;
@@ -44,26 +66,7 @@ import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.service.ItemService;
-import org.apache.commons.collections.CollectionUtils;
-import org.castor.core.util.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
-
-import javax.transaction.Transactional;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import cz.tacr.elza.utils.HibernateUtils;
 
 /**
  * Serviska pro cachování dat jednotky popisu.
@@ -71,9 +74,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * * sestavuje jednotný objekt {@link CachedNode}, který se při ukládání do DB serializuje do JSON
  * * pro určení, co se má serializovat se využívá interface {@link NodeCacheSerializable} + základní primitivní typy
  * * při spuštění synchronizace {@link #syncCache()} je zamknuta cache pro čtení
- *
- * @author Martin Šlapa
- * @since 26.01.2017
  */
 @Service
 public class NodeCacheService {
@@ -142,7 +142,6 @@ public class NodeCacheService {
     /**
      * Synchronizace záznamů v databázi.
      */
-    @Async("syncCacheTaskExecutor")
     @Transactional
     public void syncCache() {
         writeLock.lock();
@@ -156,29 +155,10 @@ public class NodeCacheService {
     }
 
     /**
-     * Synchronizace záznamů v databázi s callbackem.
-     */
-    @Async("syncCacheTaskExecutor")
-    @Transactional
-    public void syncCache(final SyncCallback o) {
-        writeLock.lock();
-        try {
-            logger.info("Spuštění synchronizace cache pro JP");
-            syncCacheInternal();
-            logger.info("Ukončení synchronizace cache pro JP");
-        } finally {
-            cachedNodeRepository.flush(); // uložení do DB, aby callback mohl mít všechny data k dispozici
-            writeLock.unlock();
-            o.call();
-        }
-    }
-
-    /**
      * Synchronizace požadovaných JP.
      *
      * @param nodeIds seznam požadovaných JP k synchronizaci
      */
-    @Async("syncCacheTaskExecutor")
     @Transactional
     public void syncNodes(final Collection<Integer> nodeIds) {
         writeLock.lock();
@@ -413,6 +393,7 @@ public class NodeCacheService {
 
         Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = new HashMap<>();
         for (ArrDaoLink daoLink : daoLinks) {
+            daoLink = HibernateUtils.unproxy(daoLink);
             List<ArrDaoLink> links = nodeIdDaoLinks.get(daoLink.getNodeId());
             if (links == null) {
                 links = new ArrayList<>();
@@ -428,6 +409,7 @@ public class NodeCacheService {
 
         Map<Integer, List<ArrNodeRegister>> nodeIdNodeRegisters = new HashMap<>();
         for (ArrNodeRegister nodeRegister : nodeRegisters) {
+            nodeRegister = HibernateUtils.unproxy(nodeRegister);
             List<ArrNodeRegister> registers = nodeIdNodeRegisters.get(nodeRegister.getNodeId());
             if (registers == null) {
                 registers = new ArrayList<>();
@@ -444,6 +426,7 @@ public class NodeCacheService {
 
         Map<Integer, List<ArrDescItem>> nodeIdItems = new HashMap<>();
         for (ArrDescItem descItem : descItems) {
+            descItem = HibernateUtils.unproxy(descItem);
             List<ArrDescItem> items = nodeIdItems.get(descItem.getNodeId());
             if (items == null) {
                 items = new ArrayList<>();
@@ -751,8 +734,8 @@ public class NodeCacheService {
 
         if (records.size() != cachedNodes.size()) {
             throw new SystemException("Počet ukládaných JP neodpovídá počtu nalezených v cache!")
-                    .set("saveCount", cachedNodes.size())
-                    .set("foundCount", records.size());
+            .set("saveCount", cachedNodes.size())
+            .set("foundCount", records.size());
         }
 
         for (ArrCachedNode record : records) {

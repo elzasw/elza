@@ -483,7 +483,7 @@ public class ClientFactoryVO {
         unitdateRepository.findForToPartyNameByParties(parties);
         recordRepository.findByParties(parties);
 
-        List<ParPartyName> allPartyNames = partyNameRepository.findByParties(parties);
+        List<ParPartyName> allPartyNames = partyNameRepository.findByPartyIn(parties);
         Map<Integer, List<ParPartyName>> partyNameMap = ElzaTools
                 .createGroupMap(allPartyNames, p -> p.getParty().getPartyId());
 

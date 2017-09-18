@@ -17,10 +17,11 @@ import {partyDetailFetchIfNeeded, partyListInvalidate, PARTY_LIST_MAX_SIZE, part
 import {Shortcuts} from 'react-shortcuts';
 import {setFocus} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
-
+import defaultKeymap from './PartyPageKeymap.jsx';
 import './PartyPage.less';
 import {regExtSystemListFetchIfNeeded} from 'actions/registry/regExtSystemList';
 import PageLayout from "../shared/layout/PageLayout";
+import {PropTypes} from 'prop-types';
 
 /**
  * PARTY PAGE
@@ -28,6 +29,14 @@ import PageLayout from "../shared/layout/PageLayout";
  * Stránka osob
  */
 class PartyPage extends AbstractReactComponent {
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
 
 
     static PropTypes = {
@@ -170,7 +179,7 @@ class PartyPage extends AbstractReactComponent {
 
         const centerPanel = <PartyDetail />;
 
-        return <Shortcuts name='Party' handler={this.handleShortcuts} global stopPropagation={false} className="main-shortcuts2">
+        return <Shortcuts name='Party' handler={this.handleShortcuts} global className="main-shortcuts2" alwaysFireHandler stopPropagation={false}>
             <PageLayout
                 splitter={splitter}
                 className='party-page'

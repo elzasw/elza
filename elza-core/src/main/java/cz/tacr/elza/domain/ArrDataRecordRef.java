@@ -10,6 +10,7 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 
 /**
@@ -33,6 +34,20 @@ public class ArrDataRecordRef extends ArrData {
     @Column(name = "recordId", updatable = false, insertable = false)
     private Integer recordId;
 
+    @Transient
+    private final String fulltextValue;
+    
+    /**
+     * Sets fulltext value index when record is only reference (detached hibernate proxy).
+     */
+    public ArrDataRecordRef(String fulltextValue) {
+        this.fulltextValue = fulltextValue;
+    }
+    
+    public ArrDataRecordRef() {
+        this(null);
+    }
+    
     public RegRecord getRecord() {
         return record;
     }
@@ -48,6 +63,9 @@ public class ArrDataRecordRef extends ArrData {
 
     @Override
     public String getFulltextValue() {
+        if (fulltextValue != null) {
+            return fulltextValue;
+        }
         return record.getRecord();
     }
 }

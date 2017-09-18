@@ -90,7 +90,14 @@ class RegistrySelectPage extends SelectPage {
 
         return parts;
     };
+    getPageProps(){
+        let props = {
+            ...super.getPageProps(),
+            goToPartyPerson: this.handlePageChange.bind(this, OPEN_PAGE.PARTY)
+        };
 
+        return props;
+    }
 
     render() {
         const {openPage} = this.state;

@@ -455,6 +455,7 @@ var messages = {
     "arr.fund.settings.panel.center.parents": "Seznam rodičů jednotky popisu",
     "arr.fund.settings.panel.center.children": "Seznam potomků jednotky popisu",
     "arr.fund.settings.panel.rightPanel": "Pravý panel",
+    "arr.fund.settings.panel.treeColorCoding": "Barevné označení úrovní ve stromu",
     "arr.fund.settings.panel.right.title": "Záložky v pravém panelu",
 
     "arr.fund.version": "Verze {0}",
@@ -1111,7 +1112,7 @@ var messages = {
     "extMapperForm.import": "Importovat",
     "extMapperForm.update": "Aktualizovat",
 
-    "export.title.fund": "Import archivního souboru",
+    "export.title.fund": "Export archivního souboru",
     "export.transformationName": "Šablona transformace",
 
     "validate.validateInt.notInt": "Nejedná se o celé číslo",

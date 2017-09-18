@@ -9,13 +9,13 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {Nav, NavItem} from 'react-bootstrap';
 import * as Utils from "../../Utils";
-import NoFocusButton from "../button/NoFocusButton";
-import ShortcutsManager from 'react-shortcuts';
 import {Shortcuts} from 'react-shortcuts';
-const keyModifier = Utils.getKeyModifier()
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './TabsKeymap.jsx';
 
 import './Tabs.less';
 import Icon from "../icon/Icon";
+import NoFocusButton from "../button/NoFocusButton";
 import i18n from "../../i18n";
 
 /**
@@ -24,6 +24,14 @@ import i18n from "../../i18n";
  *  $param obj children                 vnitřní části komponenty (přepínací panel, data zobrazovaná pod záložkami)
 **/
 export const Container = class TabsContainer extends React.Component {
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
 
     handleShortcuts = (action, e) =>  {
         e.stopPropagation()

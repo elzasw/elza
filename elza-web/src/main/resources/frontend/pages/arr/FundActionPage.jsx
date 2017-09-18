@@ -23,11 +23,11 @@ import {
     i18n,
     AbstractReactComponent,
     ListBox,
-    RibbonGroup
+    RibbonGroup,
+    Utils
 } from 'components/shared';
 import {Button} from 'react-bootstrap';
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {dateTimeToString} from 'components/Utils.jsx'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {
     fundActionFetchDetailIfNeeded,
     fundActionFetchListIfNeeded,
@@ -38,16 +38,25 @@ import {
     fundActionActionSelect,
     funcActionActionInterrupt,
     fundActionFormReset
-} from 'actions/arr/fundAction.jsx'
+} from 'actions/arr/fundAction.jsx';
 import * as perms from 'actions/user/Permission.jsx';
 import {getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {canSetFocus, setFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
-import {Utils} from 'components/index.jsx';
 import {ActionState} from 'constants.jsx'
 import {actionStateTranslation} from "../../actions/arr/fundAction";
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './FundActionPageKeymap.jsx';
 
 class FundActionPage extends ArrParentPage {
-
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
+    componentWillMount(){
+        let newKeymap = Utils.mergeKeymaps(ArrParentPage.defaultKeymap,defaultKeymap);
+        Utils.addShortcutManager(this,newKeymap);
+    }
     static propTypes = {};
 
     constructor(props) {
@@ -85,14 +94,14 @@ class FundActionPage extends ArrParentPage {
         }
     }
 
-    handleShortcuts(action) {
+    handleShortcuts(action,e) {
         console.log("#handleShortcuts FundActionPage", '[' + action + ']', this);
         switch (action) {
             case 'newAction':
                 this.handleRibbonNewAction();
                 break;
             default:
-                super.handleShortcuts(action);
+                super.handleShortcuts(action,e);
         }
     }
 
@@ -405,7 +414,7 @@ class FundActionPage extends ArrParentPage {
                 } else if (data.dateFinished) {
                     date = data.dateFinished;
                 }
-                date = dateTimeToString(new Date(date));
+                date = Utils.dateTimeToString(new Date(date));
             }
 
             return <div className='center-container'>

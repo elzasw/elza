@@ -35,7 +35,8 @@ import {initForm} from "actions/form/inlineForm.jsx"
 import {getMapFromList} from 'stores/app/utils.jsx'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
 import {PARTY_TYPE_CODES} from 'constants.jsx'
-
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './PartyDetailKeymap.jsx';
 import './PartyDetail.less';
 
 
@@ -67,6 +68,14 @@ const FIELDS_BY_PARTY_TYPE_CODE = {
  * Komponenta detailu osoby
  */
 class PartyDetail extends AbstractReactComponent {
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
 
     state = {
         activeIndexes: {},
@@ -98,12 +107,6 @@ class PartyDetail extends AbstractReactComponent {
     static validate = (values) => {
         const required = [];
 
-        if (typeof values.genealogy !== "undefined") {
-            required.push("genealogy")
-        }
-        if (typeof values.scope !== "undefined") {
-            required.push("scope")
-        }
         const errors = PartyDetail.requireFields(...required)(values);
         errors.creators = [];
 

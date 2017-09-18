@@ -35,14 +35,6 @@ public class ArrOutputItem extends ArrItem {
     public ArrOutputItem() {
     }
 
-    //public ArrOutputItem(final ArrItemData item) {
-    //    super(item);
-    //}
-
-    //public ArrOutputItem(final Class<? extends ArrItemData> clazz) throws IllegalAccessException, InstantiationException {
-    //    super(clazz.newInstance());
-    //}
-
     @Override
     public ArrOutputDefinition getOutputDefinition() {
         return outputDefinition;

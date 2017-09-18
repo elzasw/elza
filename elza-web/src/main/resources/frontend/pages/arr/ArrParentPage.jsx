@@ -51,11 +51,12 @@ import * as perms from 'actions/user/Permission.jsx';
 import {selectTab} from 'actions/global/tab.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 import PageLayout from "../shared/layout/PageLayout";
-
-const keyModifier = Utils.getKeyModifier()
+import {fundChangeReadMode} from 'actions/arr/fund.jsx'
+import defaultKeymap from './ArrParentPageKeymap.jsx';
 
 export default class ArrParentPage extends AbstractReactComponent {
 
+    static defaultKeymap = defaultKeymap;
 
 
     static propTypes = {
@@ -81,8 +82,9 @@ export default class ArrParentPage extends AbstractReactComponent {
         this.state = {};
     }
 
-    handleShortcuts(action) {
+    handleShortcuts(action,e) {
         console.log("#handleShortcuts ArrParentPage", '[' + action + ']', this);
+        e.preventDefault();
         switch (action) {
             case 'back':
                 this.dispatch(routerNavigate("/~arr"));
@@ -106,6 +108,9 @@ export default class ArrParentPage extends AbstractReactComponent {
             case 'actions':
                 this.dispatch(routerNavigate('/arr/actions'));
                 this.dispatch(setFocus('fund-action', 1))
+                break;
+            case "TOGGLE_READ_MODE":
+                this.toggleReadMode();
                 break;
         }
     }
@@ -138,6 +143,16 @@ export default class ArrParentPage extends AbstractReactComponent {
         this.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_MAIN, activeFund.versionId, activeFund.fundTree.expandedIds));
     }
 
+    toggleReadMode() {
+        const {userDetail} = this.props;
+        var settings = userDetail.settings;
+        var activeFund = this.getActiveFund(this.props);
+        var item = {...getOneSettings(settings, 'FUND_READ_MODE', 'FUND', activeFund.id)};
+        item.value = item.value === null || item.value === "true" ? false : true;
+        settings = setSettings(settings, item.id, item);
+        this.dispatch(fundChangeReadMode(activeFund.versionId, item.value));
+        this.dispatch(userDetailsSaveSettings(settings));
+    }
     getActiveFund(props) {
         var arrRegion = props.arrRegion;
         return arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
@@ -208,7 +223,7 @@ export default class ArrParentPage extends AbstractReactComponent {
         }
 
         return (
-            <Shortcuts name='ArrParent' handler={this.handleShortcuts} global className="main-shortcuts2">
+            <Shortcuts name='ArrParent' handler={this.handleShortcuts} global className="main-shortcuts2" stopPropagation={false} alwaysFireHandler>
                 <PageLayout
                     splitter={splitter}
                     _className='fa-page'

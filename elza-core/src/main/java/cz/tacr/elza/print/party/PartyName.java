@@ -18,6 +18,7 @@ import cz.tacr.elza.print.UnitDateText;
  */
 public class PartyName {
 
+	private int partyNameId;
     private String mainPart;
     private String otherPart;
     private String note;
@@ -28,6 +29,7 @@ public class PartyName {
     private String formTypeName;
     
     private PartyName(ParPartyName parPartyName) {
+    	this.partyNameId = parPartyName.getPartyNameId();
         this.mainPart = parPartyName.getMainPart();
         this.otherPart = parPartyName.getOtherPart();
         this.note = parPartyName.getNote();
@@ -43,9 +45,10 @@ public class PartyName {
     }
 
     /**
+     * Return formatted name with all details
      * @return obsah fieldů "mainPart otherPart degreeBefore degreeAfter" oddělený mezerou
      */
-    public String serialize() {
+    public String formatWithAllDetails() {
         List<String> resultList = new ArrayList<>();
         if (StringUtils.isNotBlank(mainPart)) {
             resultList.add(mainPart);
@@ -59,6 +62,7 @@ public class PartyName {
         if (StringUtils.isNotBlank(degreeAfter)) {
             resultList.add(degreeAfter);
         }
+        // TODO: add party name details
         return StringUtils.join(resultList, " ").trim();
     }
 
@@ -89,10 +93,46 @@ public class PartyName {
     public UnitDateText getValidTo() {
         return validTo;
     }
+    
+    /**
+     * Format time/date when date was used.
+     * @return
+     */
+    public String formatValidFromTo() {
+    	String formattedFrom = null, formattedTo = null;    	
+    	if(validFrom!=null) {
+    		formattedFrom = validFrom.getValueText();
+    	}
+    	if(validTo!=null) {
+    		formattedTo = validTo.getValueText();
+    	}
+    	boolean blankFrom = StringUtils.isBlank(formattedFrom), blankTo = StringUtils.isBlank(formattedTo);
+    	if(blankFrom&&blankTo) {
+    		return null;
+    	}
+    	StringBuilder sb = new StringBuilder();
+    	if(!blankFrom) {
+    		sb.append(formattedFrom);
+    	}
+    	sb.append(" - ");
+    	if(!blankTo) {
+    		sb.append(formattedTo);
+    	}
+    	return sb.toString();
+    }
 
 
 	public String getFormTypeName() {
 		return formTypeName;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(obj.getClass()!=PartyName.class) {
+			return false;
+		}
+		PartyName other = (PartyName)(obj);
+		return this.partyNameId == other.partyNameId;
 	}
 
 	@Override

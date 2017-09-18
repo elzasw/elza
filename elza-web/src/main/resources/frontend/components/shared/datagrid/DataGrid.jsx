@@ -5,11 +5,14 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import AbstractReactComponent from "../../AbstractReactComponent";
+import * as Utils from "../../Utils";
 import Resizer from "../resizer/Resizer";
 import i18n from "../../i18n";
 const scrollIntoView = require('dom-scroll-into-view')
 import {propsEquals, getScrollbarWidth} from 'components/Utils.jsx'
 import {Shortcuts} from 'react-shortcuts';
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './DataGridKeymap.jsx';
 
 import './DataGrid.less';
 
@@ -17,6 +20,14 @@ const __emptyColWidth = 8000
 const __minColWidth = 16
 
 class DataGrid extends AbstractReactComponent {
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
     constructor(props) {
         super(props);
 
@@ -498,7 +509,6 @@ class DataGrid extends AbstractReactComponent {
         }
     }
     handleFocus(e){
-        console.log("focus",this.props.onFocus)
         this.props.onFocus && this.props.onFocus(e);
     }
     changeFocus = (newFocus) => {
@@ -570,7 +580,6 @@ class DataGrid extends AbstractReactComponent {
         "ITEM_ROW_CHECK": (e) => this.handleCheckboxChange(this.props.rows[this.state.focus.row], this.state.focus.row, e)
     }
     handleShortcuts = (action,e)=>{
-        console.log("DataGrid",action);
         e.stopPropagation();
         e.preventDefault();
         this.actionMap[action](e);

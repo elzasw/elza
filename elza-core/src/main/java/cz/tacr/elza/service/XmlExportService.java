@@ -91,7 +91,7 @@ import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RelationEntityRepository;
 import cz.tacr.elza.service.vo.XmlExportResult;
 import cz.tacr.elza.utils.ObjectListIterator;
-import cz.tacr.elza.utils.ProxyUtils;
+import cz.tacr.elza.utils.HibernateUtils;
 import cz.tacr.elza.utils.XmlUtils;
 import cz.tacr.elza.xmlexport.v1.XmlExportConfig;
 import cz.tacr.elza.xmlimport.v1.utils.XmlImportUtils;
@@ -422,7 +422,7 @@ public class XmlExportService {
             final Map<AbstractParty, List<String>> partyCreatorsMap) {
         Assert.notNull(parParty, "Osoba musí být vyplněna");
 
-        ParParty deproxiedParty = ProxyUtils.deproxy(parParty);
+        ParParty deproxiedParty = HibernateUtils.unproxy(parParty);
 
         AbstractParty party;
         if (deproxiedParty instanceof ParDynasty) {
@@ -1204,9 +1204,9 @@ public class XmlExportService {
 
                 descItem.setCalendarTypeCode(arrDataUnitdate.getCalendarType().getCode());
                 descItem.setFormat(arrDataUnitdate.getFormat());
-                descItem.setValueFrom(XmlImportUtils.stringToDate(arrDataUnitdate.getValueFrom()));
+                descItem.setValueFrom(arrDataUnitdate.getValueFrom());
                 descItem.setValueFromEstimated(arrDataUnitdate.getValueFromEstimated());
-                descItem.setValueTo(XmlImportUtils.stringToDate(arrDataUnitdate.getValueTo()));
+                descItem.setValueTo(arrDataUnitdate.getValueTo());
                 descItem.setValueToEstimated(arrDataUnitdate.getValueToEstimated());
 
                 descItems.add(descItem);

@@ -201,7 +201,7 @@ public class DaoCoreServiceImpl implements DaoService {
     private ArrDaoPackage createArrDaoPackage(final DaoPackage daoPackage) {
         Assert.notNull(daoPackage, "DAO obal musí být vyplněn");
 
-        ArrFund fund = fundRepository.findOneByUuid(daoPackage.getFundIdentifier());
+        ArrFund fund = fundRepository.findByRootNodeUuid(daoPackage.getFundIdentifier());
         ArrDigitalRepository repository = digitalRepositoryRepository.findOneByCode(daoPackage.getRepositoryIdentifier());
 
         if (fund == null) {

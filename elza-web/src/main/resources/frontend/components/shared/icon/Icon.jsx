@@ -1,29 +1,35 @@
-import React from 'react';
-import {propsEquals} from 'components/Utils.jsx'
-import classNames from 'classnames';
-import AbstractReactComponent from "../../AbstractReactComponent";
+import React from "react";
+import FontIcon from "components/shared/icon/FontIcon.jsx";
+import * as Glyphs from "components/shared/icon/glyphs";
+import * as Utils from "components/shared/icon/utils/IconUtils";
+import "./Icon.less";
 
-class Icon extends AbstractReactComponent {
-    static eqProps = ['className', 'glyph', 'onClick'];
+const iconMap = {
+    "folder": Utils.inCircle(Glyphs.Folder),
+    "circle": Glyphs.Circle,
+    "serie": Utils.inCircle(Glyphs.Serie),
+    "sitemap": Utils.inCircle(Glyphs.Sitemap),
+    "fileText": Utils.inCircle(Glyphs.FileText),
+    "fileTextPart": Utils.inCircle(Glyphs.FileTextPart),
+    "triangleExclamation": Utils.inCircle(Glyphs.TriangleExclamation)
+}
 
-    shouldComponentUpdate(nextProps, nextState) {
-        if (this.state !== nextState) {
-            return true;
-        }
-
-        return !propsEquals(this.props, nextProps, Icon.eqProps);
-    }
-
-    render() {
-        const {glyph, className, ...otherProps} = this.props;
-        const cls = {
-            icon: true,
-            ez: glyph.indexOf("ez-") === 0,
-            fa: glyph.indexOf("fa-") === 0,
-        };
-
-        return <span className={classNames(cls, glyph, className)} {...otherProps} />;
+const Icon = (props) => {
+    const {glyph, ...otherProps} = props;
+    
+    if(iconMap[glyph]){
+        let Glyph = iconMap[glyph];
+        return (
+            <svg className="svg-icon" fill={props.fill} viewBox="0 0 20 20">
+                <Glyph secondaryStyle={props.secondaryStyle}/>
+            </svg>
+        )
+    } else {
+        return <FontIcon glyph={glyph} {...otherProps}/>
     }
 }
 
 export default Icon;
+
+
+

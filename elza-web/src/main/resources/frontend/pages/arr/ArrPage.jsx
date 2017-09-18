@@ -64,10 +64,17 @@ import * as perms from 'actions/user/Permission.jsx';
 import {selectTab} from 'actions/global/tab.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 import {getMapFromList} from 'stores/app/utils.jsx'
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './ArrPageKeymap.jsx';
 
-
+var keyModifier = Utils.getKeyModifier()
 
 class ArrPage extends ArrParentPage {
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
     static PropTypes = {
         splitter: React.PropTypes.object.isRequired,
         arrRegion: React.PropTypes.object.isRequired,
@@ -88,8 +95,7 @@ class ArrPage extends ArrParentPage {
     };
 
     constructor(props) {
-        super(props, "fa-page");
-
+        super(props,"fa-page");
         this.bindMethods('getActiveInfo', 'buildRibbon', 'handleRegisterJp',
             'handleSelectVisiblePoliciesNode', 'handleShowVisiblePolicies',
             'handleShortcuts', 'renderFundErrors', 'renderFundVisiblePolicies', 'handleSetVisiblePolicy',
@@ -105,6 +111,8 @@ class ArrPage extends ArrParentPage {
     }
     componentWillMount(){
         this.registerTabs(this.props);
+        let newKeymap = Utils.mergeKeymaps(ArrParentPage.defaultKeymap,defaultKeymap);
+        Utils.addShortcutManager(this,newKeymap);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -190,8 +198,9 @@ class ArrPage extends ArrParentPage {
         isDirty && !isFetching && this.dispatch(versionValidate(versionId, false))
     }
 
-    handleShortcuts(action) {
+    handleShortcuts(action, e) {
         console.log("#handleShortcuts ArrPage", '[' + action + ']', this);
+        e.preventDefault();
         switch (action) {
             case 'registerJp':
                 this.handleRegisterJp()
@@ -206,7 +215,7 @@ class ArrPage extends ArrParentPage {
                 this.dispatch(setFocus('arr', 3))
                 break
             default:
-                super.handleShortcuts(action);
+                super.handleShortcuts(action, e);
         }
     }
 
@@ -318,6 +327,11 @@ class ArrPage extends ArrParentPage {
                         name: i18n('arr.fund.settings.panel.rightPanel'),
                         key: 'rightPanel',
                         checked: dataCenter && dataCenter.rightPanel !== undefined ? dataCenter.rightPanel : true},
+                    {
+                        name: i18n('arr.fund.settings.panel.treeColorCoding'),
+                        key: "treeColorCoding",
+                        checked: dataCenter && dataCenter.treeColorCoding !== undefined ? dataCenter.treeColorCoding : true
+                    }
                 ]
             },
             strictMode: {
@@ -850,7 +864,7 @@ class ArrPage extends ArrParentPage {
         var tabsItems = tabs.items;
         selectedTab = tabs.selectedTab;
 
-        if(!selectedTab || (centerSettingsValues && !centerSettingsValues.rightPanel)){ //pokud neexistuje žádná vybratelná záložka nebo je vypnutý pravý panel
+        if(!selectedTab || (centerSettingsValues && centerSettingsValues.rightPanel === false)){ //pokud neexistuje žádná vybratelná záložka nebo je vypnutý pravý panel
             return false;
         }
 
@@ -955,8 +969,11 @@ class ArrPage extends ArrParentPage {
     }
 
     renderLeftPanel(readMode, closed) {
-        const {focus, arrRegion} = this.props;
+        const {focus, arrRegion, userDetail} = this.props;
         const activeFund = this.getActiveFund(this.props);
+        var centerSettings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', activeFund.id);
+        var centerSettingsValues = centerSettings.value ? JSON.parse(centerSettings.value) : null;
+        let colorCoded = !(centerSettingsValues && centerSettingsValues.treeColorCoding === false);
 
         if (arrRegion.extendedView) {   // extended view - jiné větší zobrazení stromu, ale renderuje se v center panelu, tento bude prázdný
             return null;
@@ -971,6 +988,7 @@ class ArrPage extends ArrParentPage {
                     ref='tree'
                     focus={focus}
                     actionAddons={<Button onClick={() => {this.handleSetExtendedView(true)}} className='extended-view-toggle'><Icon glyph='fa-arrows-alt'/></Button>}
+                    colorCoded={colorCoded}
                 />
             )
         }

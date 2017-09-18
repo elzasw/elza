@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -17,11 +16,6 @@ import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 
 import cz.tacr.elza.domain.factory.DescItemFactory;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.FundFileRepository;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -33,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.controller.ArrangementController;
+import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
@@ -75,6 +70,10 @@ import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DataCoordinatesRepository;
 import cz.tacr.elza.repository.DataDecimalRepository;
 import cz.tacr.elza.repository.DataFileRefRepository;
@@ -89,11 +88,13 @@ import cz.tacr.elza.repository.DataStringRepository;
 import cz.tacr.elza.repository.DataTextRepository;
 import cz.tacr.elza.repository.DataUnitdateRepository;
 import cz.tacr.elza.repository.DataUnitidRepository;
+import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.utils.HibernateUtils;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MappingContext;
@@ -201,7 +202,7 @@ public class ItemService implements InitializingBean {
                 ElzaColumn.DataType dataType = typeMap.get(entry.getKey());
                 if (dataType == null) {
                     throw new BusinessException("Sloupec s kódem '" + entry.getKey() +  "' neexistuje v definici tabulky", BaseCode.PROPERTY_IS_INVALID)
-                            .set("property", entry.getKey());
+                    .set("property", entry.getKey());
                 }
 
                 switch (dataType) {
@@ -211,7 +212,7 @@ public class ItemService implements InitializingBean {
                         } catch (NumberFormatException e) {
                             throw new BusinessException("Neplatný vstup: Hodnota sloupce '" + entry.getKey() + "' musí být celé číslo", e,
                                     BaseCode.PROPERTY_IS_INVALID)
-                                    .set("property", entry.getKey());
+                            .set("property", entry.getKey());
                         }
                         break;
 
@@ -219,14 +220,14 @@ public class ItemService implements InitializingBean {
                         if (entry.getValue() == null) {
                             throw new BusinessException("Neplatný vstup: Hodnota sloupce '" + entry.getKey() + "' nesmí být null",
                                     BaseCode.PROPERTY_IS_INVALID)
-                                    .set("property", entry.getKey());
+                            .set("property", entry.getKey());
                         }
                         break;
 
                     default:
                         throw new BusinessException("Neznámý typ sloupce '" + dataType.name() + "' ve validaci JSON tabulky",
                                 BaseCode.PROPERTY_IS_INVALID)
-                                .set("property", dataType.name());
+                        .set("property", dataType.name());
                 }
             }
         }
@@ -276,25 +277,6 @@ public class ItemService implements InitializingBean {
         }
         item.setItem(itemData);
         return item;
-    }*/
-
-    /*public <T extends ArrItem> List<T> loadData(final List<T> items) {
-        List<ArrData> dataList = getDataByItems(items);
-        for (ArrData data : dataList) {
-            for (T item : items) {
-                if (item.getItemId().equals(data.getItem().getItemId())) {
-                    ArrItemData itemData = facade.map(data, ArrItemData.class);
-                    item.setItem(itemData);
-                    break;
-                }
-            }
-        }
-        for (T item : items) {
-            if (item.getItem() == null) {
-                item.setItem(descItemFactory.createItemByType(item.getItemType().getDataType()));
-            }
-        }
-        return items;
     }*/
 
     public <T extends ArrItem> void moveDown(final List<T> items, final ArrChange change) {
@@ -349,23 +331,23 @@ public class ItemService implements InitializingBean {
      */
     private void defineMapCoordinates() {
         factory.classMap(ArrItemCoordinates.class, ArrDataCoordinates.class)
-                .customize(new CustomMapper<ArrItemCoordinates, ArrDataCoordinates>() {
+        .customize(new CustomMapper<ArrItemCoordinates, ArrDataCoordinates>() {
 
-                    @Override
-                    public void mapAtoB(final ArrItemCoordinates arrDescItemCoordinates,
-                                        final ArrDataCoordinates arrDataCoordinates,
-                                        final MappingContext context) {
-                        arrDataCoordinates.setValue(arrDescItemCoordinates.getValue());
-                    }
+            @Override
+            public void mapAtoB(final ArrItemCoordinates arrDescItemCoordinates,
+                                final ArrDataCoordinates arrDataCoordinates,
+                                final MappingContext context) {
+                arrDataCoordinates.setValue(arrDescItemCoordinates.getValue());
+            }
 
-                    @Override
-                    public void mapBtoA(final ArrDataCoordinates arrDataCoordinates,
-                                        final ArrItemCoordinates arrDescItemExtCoordinates,
-                                        final MappingContext context) {
-                        arrDescItemExtCoordinates.setValue(arrDataCoordinates.getValue());
-                    }
+            @Override
+            public void mapBtoA(final ArrDataCoordinates arrDataCoordinates,
+                                final ArrItemCoordinates arrDescItemExtCoordinates,
+                                final MappingContext context) {
+                arrDescItemExtCoordinates.setValue(arrDataCoordinates.getValue());
+            }
 
-                }).register();
+        }).register();
 
         factory.classMap(ArrDataCoordinates.class, ArrDataCoordinates.class)
                 .customize(new CustomMapper<ArrDataCoordinates, ArrDataCoordinates>() {
@@ -374,7 +356,7 @@ public class ItemService implements InitializingBean {
                                         final ArrDataCoordinates arrDataCoordinatesNew,
                                         final MappingContext context) {
                         arrDataCoordinatesNew.setDataType(arrDataCoordinates.getDataType());
-                        //arrDataCoordinatesNew.setItem(arrDataCoordinates.getItem());
+
                         arrDataCoordinatesNew.setValue(arrDataCoordinates.getValue());
                     }
                 }).register();
@@ -385,23 +367,23 @@ public class ItemService implements InitializingBean {
      */
     private void defineMapJsonTable() {
         factory.classMap(ArrItemJsonTable.class, ArrDataJsonTable.class)
-                .customize(new CustomMapper<ArrItemJsonTable, ArrDataJsonTable>() {
+        .customize(new CustomMapper<ArrItemJsonTable, ArrDataJsonTable>() {
 
-                    @Override
-                    public void mapAtoB(final ArrItemJsonTable arrItemJsonTable,
-                                        final ArrDataJsonTable arrDataJsonTable,
-                                        final MappingContext context) {
-                        arrDataJsonTable.setValue(arrItemJsonTable.getValue());
-                    }
+            @Override
+            public void mapAtoB(final ArrItemJsonTable arrItemJsonTable,
+                                final ArrDataJsonTable arrDataJsonTable,
+                                final MappingContext context) {
+                arrDataJsonTable.setValue(arrItemJsonTable.getValue());
+            }
 
-                    @Override
-                    public void mapBtoA(final ArrDataJsonTable arrDataJsonTable,
-                                        final ArrItemJsonTable arrItemJsonTable,
-                                        final MappingContext context) {
-                        arrItemJsonTable.setValue(arrDataJsonTable.getValue());
-                    }
+            @Override
+            public void mapBtoA(final ArrDataJsonTable arrDataJsonTable,
+                                final ArrItemJsonTable arrItemJsonTable,
+                                final MappingContext context) {
+                arrItemJsonTable.setValue(arrDataJsonTable.getValue());
+            }
 
-                }).register();
+        }).register();
 
         factory.classMap(ArrDataJsonTable.class, ArrDataJsonTable.class)
                 .customize(new CustomMapper<ArrDataJsonTable, ArrDataJsonTable>() {
@@ -410,7 +392,6 @@ public class ItemService implements InitializingBean {
                                         final ArrDataJsonTable arrDataJsonTableNew,
                                         final MappingContext context) {
                         arrDataJsonTableNew.setDataType(arrDataJsonTable.getDataType());
-                        //arrDataJsonTableNew.setItem(arrDataJsonTable.getItem());
                         arrDataJsonTableNew.setValue(arrDataJsonTable.getValue());
                     }
                 }).register();
@@ -421,23 +402,23 @@ public class ItemService implements InitializingBean {
      */
     private void defineMapFormattedText() {
         factory.classMap(ArrItemFormattedText.class, ArrDataText.class)
-                .customize(new CustomMapper<ArrItemFormattedText, ArrDataText>() {
+        .customize(new CustomMapper<ArrItemFormattedText, ArrDataText>() {
 
-                    @Override
-                    public void mapAtoB(final ArrItemFormattedText arrItemFormattedText,
-                                        final ArrDataText arrDataText,
-                                        final MappingContext context) {
-                        arrDataText.setValue(arrItemFormattedText.getValue());
-                    }
+            @Override
+            public void mapAtoB(final ArrItemFormattedText arrItemFormattedText,
+                                final ArrDataText arrDataText,
+                                final MappingContext context) {
+                arrDataText.setValue(arrItemFormattedText.getValue());
+            }
 
-                    @Override
-                    public void mapBtoA(final ArrDataText arrDataText,
-                                        final ArrItemFormattedText arrItemFormattedText,
-                                        final MappingContext context) {
-                        String formattedValue = formatString(context, arrDataText.getValue());
-                        arrItemFormattedText.setValue(formattedValue);
-                    }
-                }).register();
+            @Override
+            public void mapBtoA(final ArrDataText arrDataText,
+                                final ArrItemFormattedText arrItemFormattedText,
+                                final MappingContext context) {
+                String formattedValue = formatString(context, arrDataText.getValue());
+                arrItemFormattedText.setValue(formattedValue);
+            }
+        }).register();
 
         factory.classMap(ArrDataText.class, ArrDataText.class).customize(new CustomMapper<ArrDataText, ArrDataText>() {
             @Override
@@ -454,23 +435,23 @@ public class ItemService implements InitializingBean {
      */
     private void defineMapInt() {
         factory.classMap(ArrItemInt.class, ArrDataInteger.class)
-                .customize(new CustomMapper<ArrItemInt, ArrDataInteger>() {
+        .customize(new CustomMapper<ArrItemInt, ArrDataInteger>() {
 
-                    @Override
-                    public void mapAtoB(final ArrItemInt arrItemInt,
-                                        final ArrDataInteger arrDataInteger,
-                                        final MappingContext context) {
-                        arrDataInteger.setValue(arrItemInt.getValue());
-                    }
+            @Override
+            public void mapAtoB(final ArrItemInt arrItemInt,
+                                final ArrDataInteger arrDataInteger,
+                                final MappingContext context) {
+                arrDataInteger.setValue(arrItemInt.getValue());
+            }
 
-                    @Override
-                    public void mapBtoA(final ArrDataInteger arrDataInteger,
-                                        final ArrItemInt arrItemInt,
-                                        final MappingContext context) {
-                        arrItemInt.setValue(arrDataInteger.getValue());
-                    }
+            @Override
+            public void mapBtoA(final ArrDataInteger arrDataInteger,
+                                final ArrItemInt arrItemInt,
+                                final MappingContext context) {
+                arrItemInt.setValue(arrDataInteger.getValue());
+            }
 
-                }).register();
+        }).register();
 
         factory.classMap(ArrDataInteger.class, ArrDataInteger.class)
                 .customize(new CustomMapper<ArrDataInteger, ArrDataInteger>() {
@@ -479,7 +460,6 @@ public class ItemService implements InitializingBean {
                                         final ArrDataInteger arrDataIntegerNew,
                                         final MappingContext context) {
                         arrDataIntegerNew.setDataType(arrDataInteger.getDataType());
-                        //arrDataIntegerNew.setItem(arrDataInteger.getItem());
                         arrDataIntegerNew.setValue(arrDataInteger.getValue());
                     }
                 }).register();
@@ -490,23 +470,23 @@ public class ItemService implements InitializingBean {
      */
     private void defineMapPartyRef() {
         factory.classMap(ArrItemPartyRef.class, ArrDataPartyRef.class)
-                .customize(new CustomMapper<ArrItemPartyRef, ArrDataPartyRef>() {
+        .customize(new CustomMapper<ArrItemPartyRef, ArrDataPartyRef>() {
 
-                    @Override
-                    public void mapAtoB(final ArrItemPartyRef arrItemPartyRef,
-                                        final ArrDataPartyRef arrDataPartyRef,
-                                        final MappingContext context) {
-                        arrDataPartyRef.setParty(arrItemPartyRef.getParty());
-                    }
+            @Override
+            public void mapAtoB(final ArrItemPartyRef arrItemPartyRef,
+                                final ArrDataPartyRef arrDataPartyRef,
+                                final MappingContext context) {
+                arrDataPartyRef.setParty(arrItemPartyRef.getParty());
+            }
 
-                    @Override
-                    public void mapBtoA(final ArrDataPartyRef arrDataPartyRef,
-                                        final ArrItemPartyRef arrItemPartyRef,
-                                        final MappingContext context) {
-                        arrItemPartyRef.setParty(arrDataPartyRef.getParty());
-                    }
+            @Override
+            public void mapBtoA(final ArrDataPartyRef arrDataPartyRef,
+                                final ArrItemPartyRef arrItemPartyRef,
+                                final MappingContext context) {
+                arrItemPartyRef.setParty(arrDataPartyRef.getParty());
+            }
 
-                }).register();
+        }).register();
 
         factory.classMap(ArrDataPartyRef.class, ArrDataPartyRef.class)
                 .customize(new CustomMapper<ArrDataPartyRef, ArrDataPartyRef>() {
@@ -515,7 +495,6 @@ public class ItemService implements InitializingBean {
                                         final ArrDataPartyRef arrDataPartyRefNew,
                                         final MappingContext context) {
                         arrDataPartyRefNew.setDataType(arrDataPartyRef.getDataType());
-                        //arrDataPartyRefNew.setItem(arrDataPartyRef.getItem());
                         arrDataPartyRefNew.setParty(arrDataPartyRef.getParty());
                     }
                 }).register();
@@ -526,23 +505,23 @@ public class ItemService implements InitializingBean {
      */
     private void defineMapPacketRef() {
         factory.classMap(ArrItemPacketRef.class, ArrDataPacketRef.class)
-                .customize(new CustomMapper<ArrItemPacketRef, ArrDataPacketRef>() {
+        .customize(new CustomMapper<ArrItemPacketRef, ArrDataPacketRef>() {
 
-                    @Override
-                    public void mapAtoB(final ArrItemPacketRef arrDescItemPartyRef,
-                                        final ArrDataPacketRef arrDataPartyRef,
-                                        final MappingContext context) {
-                        arrDataPartyRef.setPacket(arrDescItemPartyRef.getPacket());
-                    }
+            @Override
+            public void mapAtoB(final ArrItemPacketRef arrDescItemPartyRef,
+                                final ArrDataPacketRef arrDataPartyRef,
+                                final MappingContext context) {
+                arrDataPartyRef.setPacket(arrDescItemPartyRef.getPacket());
+            }
 
-                    @Override
-                    public void mapBtoA(final ArrDataPacketRef arrDataPartyRef,
-                                        final ArrItemPacketRef arrDescItemPartyRef,
-                                        final MappingContext context) {
-                        arrDescItemPartyRef.setPacket(arrDataPartyRef.getPacket());
-                    }
+            @Override
+            public void mapBtoA(final ArrDataPacketRef arrDataPartyRef,
+                                final ArrItemPacketRef arrDescItemPartyRef,
+                                final MappingContext context) {
+                arrDescItemPartyRef.setPacket(arrDataPartyRef.getPacket());
+            }
 
-                }).register();
+        }).register();
 
         factory.classMap(ArrDataPacketRef.class, ArrDataPacketRef.class)
                 .customize(new CustomMapper<ArrDataPacketRef, ArrDataPacketRef>() {
@@ -551,7 +530,6 @@ public class ItemService implements InitializingBean {
                                         final ArrDataPacketRef arrDataPartyRefNew,
                                         final MappingContext context) {
                         arrDataPartyRefNew.setDataType(arrDataPartyRef.getDataType());
-                        //arrDataPartyRefNew.setItem(arrDataPartyRef.getItem());
                         arrDataPartyRefNew.setPacket(arrDataPartyRef.getPacket());
                     }
                 }).register();
@@ -562,23 +540,23 @@ public class ItemService implements InitializingBean {
      */
     private void defineMapFileRef() {
         factory.classMap(ArrItemFileRef.class, ArrDataFileRef.class)
-                .customize(new CustomMapper<ArrItemFileRef, ArrDataFileRef>() {
+        .customize(new CustomMapper<ArrItemFileRef, ArrDataFileRef>() {
 
-                    @Override
-                    public void mapAtoB(final ArrItemFileRef arrDescItemPartyRef,
-                                        final ArrDataFileRef arrDataPartyRef,
-                                        final MappingContext context) {
-                        arrDataPartyRef.setFile(arrDescItemPartyRef.getFile());
-                    }
+            @Override
+            public void mapAtoB(final ArrItemFileRef arrDescItemPartyRef,
+                                final ArrDataFileRef arrDataPartyRef,
+                                final MappingContext context) {
+                arrDataPartyRef.setFile(arrDescItemPartyRef.getFile());
+            }
 
-                    @Override
-                    public void mapBtoA(final ArrDataFileRef arrDataPartyRef,
-                                        final ArrItemFileRef arrDescItemPartyRef,
-                                        final MappingContext context) {
-                        arrDescItemPartyRef.setFile(arrDataPartyRef.getFile());
-                    }
+            @Override
+            public void mapBtoA(final ArrDataFileRef arrDataPartyRef,
+                                final ArrItemFileRef arrDescItemPartyRef,
+                                final MappingContext context) {
+                arrDescItemPartyRef.setFile(arrDataPartyRef.getFile());
+            }
 
-                }).register();
+        }).register();
 
         factory.classMap(ArrDataFileRef.class, ArrDataFileRef.class)
                 .customize(new CustomMapper<ArrDataFileRef, ArrDataFileRef>() {
@@ -587,7 +565,6 @@ public class ItemService implements InitializingBean {
                                         final ArrDataFileRef arrDataPartyRefNew,
                                         final MappingContext context) {
                         arrDataPartyRefNew.setDataType(arrDataPartyRef.getDataType());
-                        //arrDataPartyRefNew.setItem(arrDataPartyRef.getItem());
                         arrDataPartyRefNew.setFile(arrDataPartyRef.getFile());
                     }
                 }).register();
@@ -598,23 +575,23 @@ public class ItemService implements InitializingBean {
      */
     private void defineMapRecordRef() {
         factory.classMap(ArrItemRecordRef.class, ArrDataRecordRef.class)
-                .customize(new CustomMapper<ArrItemRecordRef, ArrDataRecordRef>() {
+        .customize(new CustomMapper<ArrItemRecordRef, ArrDataRecordRef>() {
 
-                    @Override
-                    public void mapAtoB(final ArrItemRecordRef arrItemRecordRef,
-                                        final ArrDataRecordRef arrDataRecordRef,
-                                        final MappingContext context) {
-                        arrDataRecordRef.setRecord(arrItemRecordRef.getRecord());
-                    }
+            @Override
+            public void mapAtoB(final ArrItemRecordRef arrItemRecordRef,
+                                final ArrDataRecordRef arrDataRecordRef,
+                                final MappingContext context) {
+                arrDataRecordRef.setRecord(arrItemRecordRef.getRecord());
+            }
 
-                    @Override
-                    public void mapBtoA(final ArrDataRecordRef arrDataRecordRef,
-                                        final ArrItemRecordRef arrItemRecordRef,
-                                        final MappingContext context) {
-                        arrItemRecordRef.setRecord(arrDataRecordRef.getRecord());
-                    }
+            @Override
+            public void mapBtoA(final ArrDataRecordRef arrDataRecordRef,
+                                final ArrItemRecordRef arrItemRecordRef,
+                                final MappingContext context) {
+                arrItemRecordRef.setRecord(arrDataRecordRef.getRecord());
+            }
 
-                }).register();
+        }).register();
 
         factory.classMap(ArrDataRecordRef.class, ArrDataRecordRef.class)
                 .customize(new CustomMapper<ArrDataRecordRef, ArrDataRecordRef>() {
@@ -623,7 +600,6 @@ public class ItemService implements InitializingBean {
                                         final ArrDataRecordRef arrDataRecordRefNew,
                                         final MappingContext context) {
                         arrDataRecordRefNew.setDataType(arrDataRecordRef.getDataType());
-                        //arrDataRecordRefNew.setItem(arrDataRecordRef.getItem());
                         arrDataRecordRefNew.setRecord(arrDataRecordRef.getRecord());
                     }
                 }).register();
@@ -659,7 +635,6 @@ public class ItemService implements InitializingBean {
                                         final ArrDataString arrDataStringNew,
                                         final MappingContext context) {
                         arrDataStringNew.setDataType(arrDataString.getDataType());
-                        //arrDataStringNew.setItem(arrDataString.getItem());
                         arrDataStringNew.setValue(arrDataString.getValue());
                     }
                 }).register();
@@ -670,23 +645,23 @@ public class ItemService implements InitializingBean {
      */
     private void defineMapText() {
         factory.classMap(ArrItemText.class, ArrDataText.class)
-                .customize(new CustomMapper<ArrItemText, ArrDataText>() {
+        .customize(new CustomMapper<ArrItemText, ArrDataText>() {
 
-                    @Override
-                    public void mapAtoB(final ArrItemText arrItemText,
-                                        final ArrDataText arrDataText,
-                                        final MappingContext context) {
-                        arrDataText.setValue(arrItemText.getValue());
-                    }
+            @Override
+            public void mapAtoB(final ArrItemText arrItemText,
+                                final ArrDataText arrDataText,
+                                final MappingContext context) {
+                arrDataText.setValue(arrItemText.getValue());
+            }
 
-                    @Override
-                    public void mapBtoA(final ArrDataText arrDataText,
-                                        final ArrItemText arrItemText,
-                                        final MappingContext context) {
-                        String formattedValue = formatString(context, arrDataText.getValue());
-                        arrItemText.setValue(formattedValue);
-                    }
-                }).register();
+            @Override
+            public void mapBtoA(final ArrDataText arrDataText,
+                                final ArrItemText arrItemText,
+                                final MappingContext context) {
+                String formattedValue = formatString(context, arrDataText.getValue());
+                arrItemText.setValue(formattedValue);
+            }
+        }).register();
 
         factory.classMap(ArrDataText.class, ArrDataText.class).customize(new CustomMapper<ArrDataText, ArrDataText>() {
             @Override
@@ -703,107 +678,107 @@ public class ItemService implements InitializingBean {
      */
     private void defineMapUnitdate() {
         factory.classMap(ArrItemUnitdate.class, ArrDataUnitdate.class)
-                .customize(new CustomMapper<ArrItemUnitdate, ArrDataUnitdate>() {
+        .customize(new CustomMapper<ArrItemUnitdate, ArrDataUnitdate>() {
 
-                    @Override
-                    public void mapAtoB(final ArrItemUnitdate arrItemUnitdate,
-                                        final ArrDataUnitdate arrDataUnitdate,
-                                        final MappingContext context) {
+            @Override
+            public void mapAtoB(final ArrItemUnitdate arrItemUnitdate,
+                                final ArrDataUnitdate arrDataUnitdate,
+                                final MappingContext context) {
 
-                        if (arrItemUnitdate.getFormat() == null) {
-                            throw new BusinessException("Nebyl odeslán formát dat", BaseCode.PROPERTY_NOT_EXIST).set("property", "format");
-                        } else {
-                            String format = arrItemUnitdate.getFormat();
-                            if (!format.matches(
-                                    "(" + PATTERN_UNIT_DATA + ")|(" + PATTERN_UNIT_DATA + INTERVAL_DELIMITER_UNIT_DATA
-                                            + PATTERN_UNIT_DATA + ")")) {
-                                throw new BusinessException("Neplatný formát dat", BaseCode.PROPERTY_IS_INVALID).set("property", "format");
-                            }
-                        }
-                        arrDataUnitdate.setFormat(arrItemUnitdate.getFormat());
+                if (arrItemUnitdate.getFormat() == null) {
+                    throw new BusinessException("Nebyl odeslán formát dat", BaseCode.PROPERTY_NOT_EXIST).set("property", "format");
+                } else {
+                    String format = arrItemUnitdate.getFormat();
+                    if (!format.matches(
+                            "(" + PATTERN_UNIT_DATA + ")|(" + PATTERN_UNIT_DATA + INTERVAL_DELIMITER_UNIT_DATA
+                            + PATTERN_UNIT_DATA + ")")) {
+                        throw new BusinessException("Neplatný formát dat", BaseCode.PROPERTY_IS_INVALID).set("property", "format");
+                    }
+                }
+                arrDataUnitdate.setFormat(arrItemUnitdate.getFormat());
 
-                        if (arrItemUnitdate.getCalendarType() == null) {
-                            throw new BusinessException("Nebyl zvolen kalendar", BaseCode.PROPERTY_NOT_EXIST).set("property", "calendarType");
-                        }
-                        arrDataUnitdate.setCalendarType(arrItemUnitdate.getCalendarType());
+                if (arrItemUnitdate.getCalendarType() == null) {
+                    throw new BusinessException("Nebyl zvolen kalendar", BaseCode.PROPERTY_NOT_EXIST).set("property", "calendarType");
+                }
+                arrDataUnitdate.setCalendarType(arrItemUnitdate.getCalendarType());
 
-                        try {
-                            String value = arrItemUnitdate.getValueFrom();
-                            if (value != null) {
-                                value = DateTimeFormatter.ISO_LOCAL_DATE_TIME
-                                        .format(LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-                            }
-                            arrDataUnitdate.setValueFrom(value);
-                        } catch (DateTimeParseException e) {
-                            throw new BusinessException("Nebyl zadan platny format datumu 'od'", e, BaseCode.PROPERTY_IS_INVALID).set("property", "valueFrom");
-                        }
+                try {
+                    String value = arrItemUnitdate.getValueFrom();
+                    if (value != null) {
+                        value = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+                                .format(LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+                    }
+                    arrDataUnitdate.setValueFrom(value);
+                } catch (DateTimeParseException e) {
+                    throw new BusinessException("Nebyl zadan platny format datumu 'od'", e, BaseCode.PROPERTY_IS_INVALID).set("property", "valueFrom");
+                }
 
-                        arrDataUnitdate.setValueFromEstimated(arrItemUnitdate.getValueFromEstimated());
+                arrDataUnitdate.setValueFromEstimated(arrItemUnitdate.getValueFromEstimated());
 
-                        try {
-                            String value = arrItemUnitdate.getValueTo();
-                            if (value != null) {
-                                value = DateTimeFormatter.ISO_LOCAL_DATE_TIME
-                                        .format(LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-                            }
-                            arrDataUnitdate.setValueTo(value);
-                        } catch (DateTimeParseException e) {
-                            throw new BusinessException("Nebyl zadan platny format datumu 'od'", e, BaseCode.PROPERTY_IS_INVALID).set("property", "valueTo");
-                        }
+                try {
+                    String value = arrItemUnitdate.getValueTo();
+                    if (value != null) {
+                        value = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+                                .format(LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+                    }
+                    arrDataUnitdate.setValueTo(value);
+                } catch (DateTimeParseException e) {
+                    throw new BusinessException("Nebyl zadan platny format datumu 'od'", e, BaseCode.PROPERTY_IS_INVALID).set("property", "valueTo");
+                }
 
-                        if (arrItemUnitdate.getValueFrom() != null && arrItemUnitdate.getValueTo() != null) {
-                            LocalDateTime from = LocalDateTime
-                                    .parse(arrItemUnitdate.getValueFrom(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-                            LocalDateTime to = LocalDateTime
-                                    .parse(arrItemUnitdate.getValueTo(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-                            if (from.isAfter(to)) {
-                                throw new BusinessException("Neplatný interval ISO datumů: od > do", BaseCode.PROPERTY_IS_INVALID).set("property", "valueFrom > valueTo");
-                            }
-                        } else if (arrItemUnitdate.getValueFrom() == null
-                                && arrItemUnitdate.getValueTo() == null) {
-                            throw new BusinessException("Neplatný interval ISO datumů: od > do", BaseCode.PROPERTY_NOT_EXIST).set("property", Arrays.asList("valueFrom", "valueTo"));
-                        }
+                if (arrItemUnitdate.getValueFrom() != null && arrItemUnitdate.getValueTo() != null) {
+                    LocalDateTime from = LocalDateTime
+                            .parse(arrItemUnitdate.getValueFrom(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                    LocalDateTime to = LocalDateTime
+                            .parse(arrItemUnitdate.getValueTo(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                    if (from.isAfter(to)) {
+                        throw new BusinessException("Neplatný interval ISO datumů: od > do", BaseCode.PROPERTY_IS_INVALID).set("property", "valueFrom > valueTo");
+                    }
+                } else if (arrItemUnitdate.getValueFrom() == null
+                        && arrItemUnitdate.getValueTo() == null) {
+                    throw new BusinessException("Neplatný interval ISO datumů: od > do", BaseCode.PROPERTY_NOT_EXIST).set("property", Arrays.asList("valueFrom", "valueTo"));
+                }
 
-                        String codeCalendar = arrItemUnitdate.getCalendarType().getCode();
-                        CalendarConverter.CalendarType calendarType = CalendarConverter.CalendarType.valueOf(codeCalendar);
+                String codeCalendar = arrItemUnitdate.getCalendarType().getCode();
+                CalendarType calendarType = CalendarType.valueOf(codeCalendar);
 
-                        String value;
+                String value;
 
-                        value = arrItemUnitdate.getValueFrom();
-                        if (value != null) {
-                            arrDataUnitdate.setNormalizedFrom(CalendarConverter.toSeconds(calendarType, LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
-                        } else {
-                            arrDataUnitdate.setNormalizedFrom(Long.MIN_VALUE);
-                        }
+                value = arrItemUnitdate.getValueFrom();
+                if (value != null) {
+                    arrDataUnitdate.setNormalizedFrom(CalendarConverter.toSeconds(calendarType, LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+                } else {
+                    arrDataUnitdate.setNormalizedFrom(Long.MIN_VALUE);
+                }
                         //TODO Hotfix to set normalizedFrom on memory object
                         arrItemUnitdate.setNormalizedFrom(arrDataUnitdate.getNormalizedFrom());
 
-                        value = arrItemUnitdate.getValueTo();
-                        if (value != null) {
-                            arrDataUnitdate.setNormalizedTo(CalendarConverter.toSeconds(calendarType, LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
-                        } else {
-                            arrDataUnitdate.setNormalizedTo(Long.MAX_VALUE);
-                        }
+                value = arrItemUnitdate.getValueTo();
+                if (value != null) {
+                    arrDataUnitdate.setNormalizedTo(CalendarConverter.toSeconds(calendarType, LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+                } else {
+                    arrDataUnitdate.setNormalizedTo(Long.MAX_VALUE);
+                }
                         //TODO Hotfix to set normalizedTo on memory object
                         arrItemUnitdate.setNormalizedTo(arrDataUnitdate.getNormalizedTo());
 
-                        arrDataUnitdate.setValueToEstimated(arrItemUnitdate.getValueToEstimated());
-                    }
+                arrDataUnitdate.setValueToEstimated(arrItemUnitdate.getValueToEstimated());
+            }
 
-                    @Override
-                    public void mapBtoA(final ArrDataUnitdate arrDataUnitdate,
-                                        final ArrItemUnitdate arrItemUnitdate,
-                                        final MappingContext context) {
-                        arrItemUnitdate.setCalendarType(arrDataUnitdate.getCalendarType());
-                        arrItemUnitdate.setValueFrom(arrDataUnitdate.getValueFrom());
-                        arrItemUnitdate.setValueFromEstimated(arrDataUnitdate.getValueFromEstimated());
-                        arrItemUnitdate.setValueTo(arrDataUnitdate.getValueTo());
-                        arrItemUnitdate.setValueToEstimated(arrDataUnitdate.getValueToEstimated());
-                        arrItemUnitdate.setFormat(arrDataUnitdate.getFormat());
-                        arrItemUnitdate.setNormalizedTo(arrDataUnitdate.getNormalizedTo());
-                        arrItemUnitdate.setNormalizedFrom(arrDataUnitdate.getNormalizedFrom());
-                    }
-                }).register();
+            @Override
+            public void mapBtoA(final ArrDataUnitdate arrDataUnitdate,
+                                final ArrItemUnitdate arrItemUnitdate,
+                                final MappingContext context) {
+                arrItemUnitdate.setCalendarType(arrDataUnitdate.getCalendarType());
+                arrItemUnitdate.setValueFrom(arrDataUnitdate.getValueFrom());
+                arrItemUnitdate.setValueFromEstimated(arrDataUnitdate.getValueFromEstimated());
+                arrItemUnitdate.setValueTo(arrDataUnitdate.getValueTo());
+                arrItemUnitdate.setValueToEstimated(arrDataUnitdate.getValueToEstimated());
+                arrItemUnitdate.setFormat(arrDataUnitdate.getFormat());
+                arrItemUnitdate.setNormalizedTo(arrDataUnitdate.getNormalizedTo());
+                arrItemUnitdate.setNormalizedFrom(arrDataUnitdate.getNormalizedFrom());
+            }
+        }).register();
 
         factory.classMap(ArrDataUnitdate.class, ArrDataUnitdate.class)
                 .customize(new CustomMapper<ArrDataUnitdate, ArrDataUnitdate>() {
@@ -812,7 +787,6 @@ public class ItemService implements InitializingBean {
                                         final ArrDataUnitdate arrDataUnitdateNew,
                                         final MappingContext context) {
                         arrDataUnitdateNew.setDataType(arrDataUnitdate.getDataType());
-                        //arrDataUnitdateNew.setItem(arrDataUnitdate.getItem());
                         arrDataUnitdateNew.setCalendarType(arrDataUnitdate.getCalendarType());
                         arrDataUnitdateNew.setValueFrom(arrDataUnitdate.getValueFrom());
                         arrDataUnitdateNew.setValueFromEstimated(arrDataUnitdate.getValueFromEstimated());
@@ -830,22 +804,22 @@ public class ItemService implements InitializingBean {
      */
     private void defineMapUnitid() {
         factory.classMap(ArrItemUnitid.class, ArrDataUnitid.class)
-                .customize(new CustomMapper<ArrItemUnitid, ArrDataUnitid>() {
+        .customize(new CustomMapper<ArrItemUnitid, ArrDataUnitid>() {
 
-                    @Override
-                    public void mapAtoB(final ArrItemUnitid arrItemUnitid,
-                                        final ArrDataUnitid arrDataUnitid,
-                                        final MappingContext context) {
-                        arrDataUnitid.setValue(arrItemUnitid.getValue());
-                    }
+            @Override
+            public void mapAtoB(final ArrItemUnitid arrItemUnitid,
+                                final ArrDataUnitid arrDataUnitid,
+                                final MappingContext context) {
+                arrDataUnitid.setValue(arrItemUnitid.getValue());
+            }
 
-                    @Override
-                    public void mapBtoA(final ArrDataUnitid arrDataUnitid,
-                                        final ArrItemUnitid arrItemUnitid,
-                                        final MappingContext context) {
-                        arrItemUnitid.setValue(arrDataUnitid.getValue());
-                    }
-                }).register();
+            @Override
+            public void mapBtoA(final ArrDataUnitid arrDataUnitid,
+                                final ArrItemUnitid arrItemUnitid,
+                                final MappingContext context) {
+                arrItemUnitid.setValue(arrDataUnitid.getValue());
+            }
+        }).register();
 
         factory.classMap(ArrDataUnitid.class, ArrDataUnitid.class)
                 .customize(new CustomMapper<ArrDataUnitid, ArrDataUnitid>() {
@@ -854,7 +828,6 @@ public class ItemService implements InitializingBean {
                                         final ArrDataUnitid arrDataUnitidNew,
                                         final MappingContext context) {
                         arrDataUnitidNew.setDataType(arrDataUnitid.getDataType());
-                        //arrDataUnitidNew.setItem(arrDataUnitid.getItem());
                         arrDataUnitidNew.setValue(arrDataUnitid.getValue());
                     }
                 }).register();
@@ -865,22 +838,22 @@ public class ItemService implements InitializingBean {
      */
     private void defineMapDecimal() {
         factory.classMap(ArrItemDecimal.class, ArrDataDecimal.class)
-                .customize(new CustomMapper<ArrItemDecimal, ArrDataDecimal>() {
+        .customize(new CustomMapper<ArrItemDecimal, ArrDataDecimal>() {
 
-                    @Override
-                    public void mapAtoB(final ArrItemDecimal arrItemDecimal,
-                                        final ArrDataDecimal arrDataDecimal,
-                                        final MappingContext context) {
-                        arrDataDecimal.setValue(arrItemDecimal.getValue());
-                    }
+            @Override
+            public void mapAtoB(final ArrItemDecimal arrItemDecimal,
+                                final ArrDataDecimal arrDataDecimal,
+                                final MappingContext context) {
+                arrDataDecimal.setValue(arrItemDecimal.getValue());
+            }
 
-                    @Override
-                    public void mapBtoA(final ArrDataDecimal arrDataDecimal,
-                                        final ArrItemDecimal arrItemDecimal,
-                                        final MappingContext context) {
-                        arrItemDecimal.setValue(arrDataDecimal.getValue());
-                    }
-                }).register();
+            @Override
+            public void mapBtoA(final ArrDataDecimal arrDataDecimal,
+                                final ArrItemDecimal arrItemDecimal,
+                                final MappingContext context) {
+                arrItemDecimal.setValue(arrDataDecimal.getValue());
+            }
+        }).register();
 
         factory.classMap(ArrDataDecimal.class, ArrDataDecimal.class)
                 .customize(new CustomMapper<ArrDataDecimal, ArrDataDecimal>() {
@@ -889,7 +862,6 @@ public class ItemService implements InitializingBean {
                                         final ArrDataDecimal arrDataDecimalNew,
                                         final MappingContext context) {
                         arrDataDecimalNew.setDataType(arrDataDecimal.getDataType());
-                        //arrDataDecimalNew.setItem(arrDataDecimal.getItem());
                         arrDataDecimalNew.setValue(arrDataDecimal.getValue());
                     }
                 }).register();
@@ -900,21 +872,21 @@ public class ItemService implements InitializingBean {
      */
     private void defineMapEnum() {
         factory.classMap(ArrItemEnum.class, ArrDataNull.class)
-                .customize(new CustomMapper<ArrItemEnum, ArrDataNull>() {
+        .customize(new CustomMapper<ArrItemEnum, ArrDataNull>() {
 
-                    @Override
-                    public void mapAtoB(final ArrItemEnum arrItemEnum,
-                                        final ArrDataNull arrDataNull,
-                                        final MappingContext context) {
-                    }
+            @Override
+            public void mapAtoB(final ArrItemEnum arrItemEnum,
+                                final ArrDataNull arrDataNull,
+                                final MappingContext context) {
+            }
 
-                    @Override
-                    public void mapBtoA(final ArrDataNull arrDataNull,
-                                        final ArrItemEnum arrItemEnum,
-                                        final MappingContext context) {
+            @Override
+            public void mapBtoA(final ArrDataNull arrDataNull,
+                                final ArrItemEnum arrItemEnum,
+                                final MappingContext context) {
 
-                    }
-                }).register();
+            }
+        }).register();
 
         factory.classMap(ArrDataNull.class, ArrDataNull.class).customize(new CustomMapper<ArrDataNull, ArrDataNull>() {
             @Override
