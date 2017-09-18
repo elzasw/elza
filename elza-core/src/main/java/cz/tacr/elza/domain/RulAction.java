@@ -33,6 +33,10 @@ public class RulAction {
     @Column(length = 250, nullable = false)
     private String filename;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
+    @JoinColumn(name = "ruleSetId", nullable = false)
+    private RulRuleSet ruleSet;
+
     /**
      * @return identifikátor entity
      */
@@ -73,5 +77,19 @@ public class RulAction {
      */
     public void setFilename(final String filename) {
         this.filename = filename;
+    }
+
+    /**
+     * @return pravidla
+     */
+    public RulRuleSet getRuleSet() {
+        return ruleSet;
+    }
+
+    /**
+     * @param ruleSet pravidla
+     */
+    public void setRuleSet(final RulRuleSet ruleSet) {
+        this.ruleSet = ruleSet;
     }
 }

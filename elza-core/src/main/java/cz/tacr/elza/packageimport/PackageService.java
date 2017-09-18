@@ -452,17 +452,20 @@ public class PackageService {
 
             PacketTypes packetTypes = convertXmlStreamToObject(PacketTypes.class, mapEntry.get(PACKET_TYPE_XML));
 
-            processPacketTypes(packetTypes, rulPackage);
-
             List<RulRuleSet> rulRuleSets = processRuleSets(ruleSets, rulPackage);
+            RulRuleSet rulRuleSet = rulRuleSets.stream().filter(rs -> rs.getPackage().equals(rulPackage)).findFirst().orElse(null);
+
+            processPacketTypes(packetTypes, rulPackage, rulRuleSet);
+
             rulPackageRules = processPackageRules(packageRules, rulPackage, mapEntry, rulRuleSets, dirRules);
 
-            List<RulOutputType> rulOutputTypes = processOutputTypes(outputTypes, templates, rulPackage, mapEntry, dirTemplates, rulPackageRules);
+            List<RulOutputType> rulOutputTypes = processOutputTypes(outputTypes, templates, rulPackage, mapEntry, dirTemplates, rulPackageRules, rulRuleSet);
 
             processPolicyTypes(policyTypes, rulPackage, rulRuleSets);
 
-            List<RulItemType> rulDescItemTypes = processItemTypes(itemTypes, itemSpecs, rulPackage);
-            rulPackageActions = processPackageActions(packageActions, rulPackage, mapEntry, dirActions);
+
+            List<RulItemType> rulDescItemTypes = processItemTypes(itemTypes, itemSpecs, rulPackage, rulRuleSet);
+            rulPackageActions = processPackageActions(packageActions, rulPackage, mapEntry, dirActions, rulRuleSet);
 
             // OSOBY ---------------------------------------------------------------------------------------------------
 
@@ -1412,11 +1415,11 @@ public class PackageService {
 
     /**
      * Zpracování packet.
-     *
-     * @param packetTypes importovaný seznam packets
+     *  @param packetTypes importovaný seznam packets
      * @param rulPackage  balíček
+     * @param rulRuleSet  pravidla
      */
-    private void processPacketTypes(final PacketTypes packetTypes, final RulPackage rulPackage) {
+    private void processPacketTypes(final PacketTypes packetTypes, final RulPackage rulPackage, final RulRuleSet rulRuleSet) {
         List<RulPacketType> rulPacketTypes = packetTypeRepository.findByRulPackage(rulPackage);
         List<RulPacketType> rulPacketTypesNew = new ArrayList<>();
 
@@ -1432,7 +1435,7 @@ public class PackageService {
                     item = new RulPacketType();
                 }
 
-                convertRulPacketTypes(rulPackage, packetType, item);
+                convertRulPacketTypes(rulPackage, packetType, item, rulRuleSet);
                 rulPacketTypesNew.add(item);
             }
         }
@@ -1446,32 +1449,35 @@ public class PackageService {
 
     /**
      * Převod VO na DAO packet.
-     *
-     * @param rulPackage    balíček
+     *  @param rulPackage    balíček
      * @param packetType    VO packet
      * @param rulPacketType DAO packet
+     * @param rulRuleSet    pravidla
      */
     private void convertRulPacketTypes(final RulPackage rulPackage,
                                        final PacketType packetType,
-                                       final RulPacketType rulPacketType) {
+                                       final RulPacketType rulPacketType,
+                                       final RulRuleSet rulRuleSet) {
         rulPacketType.setPackage(rulPackage);
         rulPacketType.setCode(packetType.getCode());
         rulPacketType.setName(packetType.getName());
         rulPacketType.setShortcut(packetType.getShortcut());
+        rulPacketType.setRuleSet(rulRuleSet);
     }
 
     /**
      * Převod VO na DAO packet.
-     *
-     * @param rulPackage    balíček
+     *  @param rulPackage    balíček
      * @param outputType    VO packet
      * @param rulOutputType DAO packet
      * @param rulRuleList   seznam souborů s pravidly
+     * @param rulRuleSet    pravidla
      */
     private void convertRulOutputType(final RulPackage rulPackage,
                                       final OutputType outputType,
                                       final RulOutputType rulOutputType,
-                                      final List<RulRule> rulRuleList) {
+                                      final List<RulRule> rulRuleList,
+                                      final RulRuleSet rulRuleSet) {
         if (rulRuleList == null) {
             throw new BusinessException("Soubor " + PACKAGE_RULES_XML + " nenalezen", PackageCode.FILE_NOT_FOUND).set("file", PACKAGE_RULES_XML);
         }
@@ -1479,6 +1485,7 @@ public class PackageService {
         rulOutputType.setPackage(rulPackage);
         rulOutputType.setCode(outputType.getCode());
         rulOutputType.setName(outputType.getName());
+        rulOutputType.setRuleSet(rulRuleSet);
 
         String filename = outputType.getFilename();
         if (filename != null) {
@@ -1597,16 +1604,17 @@ public class PackageService {
 
     /**
      * Zpracování hromadných akcí.
-     *
-     * @param packageActions   importovaných seznam hromadných akcí
+     *  @param packageActions   importovaných seznam hromadných akcí
      * @param rulPackage       balíček
      * @param mapEntry         mapa streamů souborů v ZIP
      * @param dir              adresář hromadných akcí  @return seznam hromadných akcí
+     * @param rulRuleSet       pravidla
      */
     private List<RulAction> processPackageActions(final PackageActions packageActions,
                                                   final RulPackage rulPackage,
                                                   final Map<String, ByteArrayInputStream> mapEntry,
-                                                  final File dir) {
+                                                  final File dir,
+                                                  final RulRuleSet rulRuleSet) {
 
         List<RulAction> rulPackageActions = packageActionsRepository.findByRulPackage(rulPackage);
         List<RulAction> rulPackageActionsNew = new ArrayList<>();
@@ -1636,7 +1644,7 @@ public class PackageService {
                 }
 
                 // vytvořím/úpravím a uložím akci
-                convertRulPackageAction(rulPackage, packageAction, item);
+                convertRulPackageAction(rulPackage, packageAction, item, rulRuleSet);
                 packageActionsRepository.save(item);
 
                 List<RulItemTypeAction> rulTypeActionsNew = new ArrayList<>();
@@ -1859,16 +1867,18 @@ public class PackageService {
 
     /**
      * Převod VO na DAO hromadné akce.
-     *
-     * @param rulPackage       balíček
+     *  @param rulPackage       balíček
      * @param packageAction    VO hromadné akce
      * @param rulPackageAction DAO hromadné akce
+     * @param rulRuleSet       pravidla
      */
     private void convertRulPackageAction(final RulPackage rulPackage,
                                          final PackageAction packageAction,
-                                         final RulAction rulPackageAction) {
+                                         final RulAction rulPackageAction,
+                                         final RulRuleSet rulRuleSet) {
         rulPackageAction.setPackage(rulPackage);
         rulPackageAction.setFilename(packageAction.getFilename());
+        rulPackageAction.setRuleSet(rulRuleSet);
     }
 
     /**
@@ -1877,16 +1887,18 @@ public class PackageService {
      * @param itemTypes       seznam importovaných typů
      * @param itemSpecs       seznam importovaných specifikací
      * @param rulPackage      balíček
+     * @param rulRuleSet      pravidla
      * @return                výsledný seznam atributů v db
      */
     private List<RulItemType> processItemTypes(final ItemTypes itemTypes,
                                                final ItemSpecs itemSpecs,
-                                               final RulPackage rulPackage) {
+                                               final RulPackage rulPackage,
+                                               final RulRuleSet rulRuleSet) {
         List<RulDataType> rulDataTypes = dataTypeRepository.findAll();
 
         ItemTypeUpdater updater = AppContext.getBean(ItemTypeUpdater.class);
 
-        return updater.update(rulDataTypes, rulPackage, itemTypes, itemSpecs);
+        return updater.update(rulDataTypes, rulPackage, itemTypes, itemSpecs, rulRuleSet);
     }
 
     /**
@@ -1897,6 +1909,7 @@ public class PackageService {
      * @param rulPackage   balíček
      * @param dirTemplates
      * @param rulRuleList  seznam souborů s pravidly
+     * @param rulRuleSet   pravidla
      * @return výsledný seznam atributů v db
      */
     private List<RulOutputType> processOutputTypes(final OutputTypes outputTypes,
@@ -1904,7 +1917,8 @@ public class PackageService {
                                                    final RulPackage rulPackage,
                                                    final Map<String, ByteArrayInputStream> mapEntry,
                                                    final File dirTemplates,
-                                                   final List<RulRule> rulRuleList) {
+                                                   final List<RulRule> rulRuleList,
+                                                   final RulRuleSet rulRuleSet) {
 
         List<RulOutputType> rulOutputTypes = outputTypeRepository.findByRulPackage(rulPackage);
         List<RulOutputType> rulOutputTypesNew = new ArrayList<>();
@@ -1920,7 +1934,7 @@ public class PackageService {
                     item = new RulOutputType();
                 }
 
-                convertRulOutputType(rulPackage, outputType, item, rulRuleList);
+                convertRulOutputType(rulPackage, outputType, item, rulRuleList, rulRuleSet);
                 rulOutputTypesNew.add(item);
             }
         }
@@ -2380,15 +2394,13 @@ public class PackageService {
 
             policyTypeRepository.deleteByRulPackage(rulPackage);
 
-            ruleSetRepository.findByRulPackage(rulPackage).forEach(this::deleteRuleSet);
-
             packetTypeRepository.deleteByRulPackage(rulPackage);
 
             templateRepository.deleteByRulPackage(rulPackage);
 
             outputTypeRepository.deleteByRulPackage(rulPackage);
 
-
+            ruleSetRepository.findByRulPackage(rulPackage).forEach(this::deleteRuleSet);
 
             registryRoleRepository.deleteByRulPackage(rulPackage);
 

@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -149,12 +150,15 @@ public class ItemTypeUpdater {
 
 	/**
 	 * Do the update
-	 * @param itemSpecs
 	 * @param itemTypes
-	 * @return return list of updated types
+	 * @param itemSpecs
+	 * @param rulRuleSet
+     * @return return list of updated types
 	 */
 	public List<RulItemType> update(final List<RulDataType> rulDataTypes, final RulPackage rulPackage,
-			final ItemTypes itemTypes, final ItemSpecs itemSpecs) {
+                                    final ItemTypes itemTypes,
+                                    final ItemSpecs itemSpecs,
+                                    final RulRuleSet rulRuleSet) {
 		this.rulDataTypes = rulDataTypes;
 		this.rulPackage = rulPackage;
 
@@ -165,7 +169,7 @@ public class ItemTypeUpdater {
             // prepare list of updated/new items
             List<ItemType> itemTypesList = itemTypes.getItemTypes();
             if (!CollectionUtils.isEmpty(itemTypesList)) {
-                rulItemTypesUpdated = updateItemTypes(rulItemTypesOrig, itemTypesList);
+                rulItemTypesUpdated = updateItemTypes(rulItemTypesOrig, itemTypesList, rulRuleSet);
                 // try to save updated items
                 rulItemTypesUpdated = itemTypeRepository.save(rulItemTypesUpdated);
             }
@@ -187,9 +191,11 @@ public class ItemTypeUpdater {
 	 * Update items types
 	 * @param rulItemTypesOrig
 	 * @param itemTypes
-	 * @return Return new list of active item types
+	 * @param rulRuleSet
+     * @return Return new list of active item types
 	 */
-    private List<RulItemType> updateItemTypes(List<RulItemType> rulItemTypesOrig, List<ItemType> itemTypes) {
+    private List<RulItemType> updateItemTypes(List<RulItemType> rulItemTypesOrig, List<ItemType> itemTypes,
+                                              final RulRuleSet rulRuleSet) {
     	List<RulItemType> rulItemTypesUpdated = new ArrayList<>();
     	int lastUsedViewOrder = -1;
 		for (ItemType itemType : itemTypes) {
@@ -229,7 +235,7 @@ public class ItemTypeUpdater {
 				lastUsedViewOrder = getNextViewOrderPos();
 			}
 
-			convertRulDescItemType(rulPackage, itemType, dbItemType, rulDataTypes);
+			convertRulDescItemType(rulPackage, itemType, dbItemType, rulDataTypes, rulRuleSet);
 
 			// update view order
 			dbItemType.setViewOrder(lastUsedViewOrder);
@@ -267,16 +273,17 @@ public class ItemTypeUpdater {
 
 	/**
      * Převod VO na DAO typu atributu.
-     *
-     * @param rulPackage      balíček
+     *  @param rulPackage      balíček
      * @param itemType    VO typu
      * @param rulDescItemType DAO typy
      * @param rulDataTypes    datové typy atributů
+     * @param rulRuleSet    pravidla
      */
     private void convertRulDescItemType(final RulPackage rulPackage,
                                         final ItemType itemType,
                                         final RulItemType rulDescItemType,
-                                        final List<RulDataType> rulDataTypes) {
+                                        final List<RulDataType> rulDataTypes,
+                                        final RulRuleSet rulRuleSet) {
 
         rulDescItemType.setCode(itemType.getCode());
         rulDescItemType.setName(itemType.getName());
@@ -315,6 +322,7 @@ public class ItemTypeUpdater {
         }
 
         rulDescItemType.setPackage(rulPackage);
+        rulDescItemType.setRuleSet(rulRuleSet);
     }
 
     /**

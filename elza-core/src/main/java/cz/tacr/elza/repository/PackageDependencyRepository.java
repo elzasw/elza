@@ -30,6 +30,13 @@ public interface PackageDependencyRepository extends JpaRepository<RulPackageDep
     void deleteBySourcePackage(RulPackage sourcePackage);
 
     /**
+     * Odstraní současné vazby podle cílového balíčku.
+     *
+     * @param targetPackage cílový balíček
+     */
+    void deleteByTargetPackage(RulPackage targetPackage);
+
+    /**
      * Vyhledá závislé balíčky.
      *
      * @param targetPackage závislý balíček

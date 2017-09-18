@@ -46,6 +46,10 @@ public class RulPacketType {
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
+    @JoinColumn(name = "ruleSetId", nullable = false)
+    private RulRuleSet ruleSet;
+
     public Integer getPacketTypeId() {
         return packetTypeId;
     }
@@ -84,6 +88,14 @@ public class RulPacketType {
 
     public void setPackage(final RulPackage rulPackage) {
         this.rulPackage = rulPackage;
+    }
+
+    public RulRuleSet getRuleSet() {
+        return ruleSet;
+    }
+
+    public void setRuleSet(final RulRuleSet ruleSet) {
+        this.ruleSet = ruleSet;
     }
 
     @Override

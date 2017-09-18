@@ -23,4 +23,92 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="201709180951" author="slapa">
+        <!-- Přidání nullable vazeb na pravidla -->
+        <addColumn tableName="rul_item_type">
+            <column name="rule_set_id" type="int" />
+        </addColumn>
+        <addColumn tableName="rul_output_type">
+            <column name="rule_set_id" type="int" />
+        </addColumn>
+        <addColumn tableName="rul_action">
+            <column name="rule_set_id" type="int" />
+        </addColumn>
+        <addColumn tableName="rul_packet_type">
+            <column name="rule_set_id" type="int" />
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20170918095801" author="slapa">
+        <!-- Pokud existují pravidla ZP2015, přiřadí se entity -->
+        <preConditions onFail="CONTINUE">
+            <sqlCheck expectedResult="1">SELECT COUNT(*) FROM rul_rule_set WHERE code = 'ZP2015'</sqlCheck>
+        </preConditions>
+
+        <sql>UPDATE rul_item_type SET rule_set_id = (SELECT rule_set_id FROM rul_rule_set WHERE code = 'ZP2015') WHERE package_id = (SELECT package_id FROM rul_package WHERE code = 'ZP2015')</sql>
+        <sql>UPDATE rul_output_type SET rule_set_id = (SELECT rule_set_id FROM rul_rule_set WHERE code = 'ZP2015') WHERE package_id = (SELECT package_id FROM rul_package WHERE code = 'ZP2015')</sql>
+        <sql>UPDATE rul_action SET rule_set_id = (SELECT rule_set_id FROM rul_rule_set WHERE code = 'ZP2015') WHERE package_id = (SELECT package_id FROM rul_package WHERE code = 'ZP2015')</sql>
+        <sql>UPDATE rul_packet_type SET rule_set_id = (SELECT rule_set_id FROM rul_rule_set WHERE code = 'ZP2015') WHERE package_id = (SELECT package_id FROM rul_package WHERE code = 'ZP2015')</sql>
+    </changeSet>
+
+    <changeSet id="20170918095802" author="slapa">
+        <!-- Pokud existují pravidla SIMPLE-DEV, přiřadí se entity -->
+        <preConditions onFail="CONTINUE">
+            <sqlCheck expectedResult="1">SELECT COUNT(*) FROM rul_rule_set WHERE code = 'SIMPLE-DEV'</sqlCheck>
+        </preConditions>
+
+        <sql>UPDATE rul_item_type SET rule_set_id = (SELECT rule_set_id FROM rul_rule_set WHERE code = 'SIMPLE-DEV') WHERE package_id = (SELECT package_id FROM rul_package WHERE code = 'SIMPLE-DEV')</sql>
+        <sql>UPDATE rul_output_type SET rule_set_id = (SELECT rule_set_id FROM rul_rule_set WHERE code = 'SIMPLE-DEV') WHERE package_id = (SELECT package_id FROM rul_package WHERE code = 'SIMPLE-DEV')</sql>
+        <sql>UPDATE rul_action SET rule_set_id = (SELECT rule_set_id FROM rul_rule_set WHERE code = 'SIMPLE-DEV') WHERE package_id = (SELECT package_id FROM rul_package WHERE code = 'SIMPLE-DEV')</sql>
+        <sql>UPDATE rul_packet_type SET rule_set_id = (SELECT rule_set_id FROM rul_rule_set WHERE code = 'SIMPLE-DEV') WHERE package_id = (SELECT package_id FROM rul_package WHERE code = 'SIMPLE-DEV')</sql>
+    </changeSet>
+
+    <changeSet id="201709181003" author="slapa">
+        <!-- odstranění typů obalů -->
+        <sql>DELETE FROM rul_packet_type WHERE rule_set_id IS NULL</sql>
+    </changeSet>
+
+    <changeSet id="201709181040" author="slapa">
+
+        <addNotNullConstraint tableName="rul_item_type"
+                              columnDataType="int"
+                              columnName="rule_set_id"/>
+        <addForeignKeyConstraint constraintName="fk_rul_item_type_rul_rule_set"
+                                 baseTableName="rul_item_type"
+                                 baseColumnNames="rule_set_id"
+                                 referencedTableName="rul_rule_set"
+                                 referencedColumnNames="rule_set_id"
+                                 onDelete="NO ACTION"/>
+
+        <addNotNullConstraint tableName="rul_output_type"
+                              columnDataType="int"
+                              columnName="rule_set_id"/>
+        <addForeignKeyConstraint constraintName="fk_rul_output_type_rul_rule_set"
+                                 baseTableName="rul_output_type"
+                                 baseColumnNames="rule_set_id"
+                                 referencedTableName="rul_rule_set"
+                                 referencedColumnNames="rule_set_id"
+                                 onDelete="NO ACTION"/>
+
+        <addNotNullConstraint tableName="rul_action"
+                              columnDataType="int"
+                              columnName="rule_set_id"/>
+        <addForeignKeyConstraint constraintName="fk_rul_action_rul_rule_set"
+                                 baseTableName="rul_action"
+                                 baseColumnNames="rule_set_id"
+                                 referencedTableName="rul_rule_set"
+                                 referencedColumnNames="rule_set_id"
+                                 onDelete="NO ACTION"/>
+
+        <addNotNullConstraint tableName="rul_packet_type"
+                              columnDataType="int"
+                              columnName="rule_set_id"/>
+        <addForeignKeyConstraint constraintName="fk_rul_packet_type_rul_rule_set"
+                                 baseTableName="rul_packet_type"
+                                 baseColumnNames="rule_set_id"
+                                 referencedTableName="rul_rule_set"
+                                 referencedColumnNames="rule_set_id"
+                                 onDelete="NO ACTION"/>
+    </changeSet>
+
 </databaseChangeLog>
