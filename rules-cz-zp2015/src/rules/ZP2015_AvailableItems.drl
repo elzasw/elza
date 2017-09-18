@@ -235,18 +235,37 @@ then
   $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
 
+
+//----------------------------------------------------------------
 // Složka manipulačního seznamu
+//----------------------------------------------------------------
+
 rule "Složka manipulačního seznamu"
 no-loop
 when
     // nesmi jiz mit deti
     $activeLevel : ActiveLevel( !hasChildren )
-    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode=="ZP2015_ARRANGEMENT_MAN") from $activeLevel.descItems
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_OTHER") ) from $activeLevel.descItems
     DescItem(type=="ZP2015_FOLDER_TYPE" && specCode=="ZP2015_FOLDER_UNITS" ) from $activeLevel.descItems
     $itemType : RulItemTypeExt(code == "ZP2015_EXTRA_UNITS")
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
+
+rule "Složka manipulačního seznamu - všechny typy archiválií"
+no-loop
+when
+    $activeLevel : ActiveLevel( !hasChildren )
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_OTHER") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_FOLDER_TYPE" && specCode=="ZP2015_FOLDER_UNITS" ) from $activeLevel.descItems
+    $itemType : RulItemTypeExt(code == "ZP2015_EXTRA_UNITS")
+    $itemSpec : RulItemSpecExt() from $itemType.rulItemSpecList
+then
+  $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+
+
 
 // Pořadové číslo povinné pokud je určen způsob pořádání
 // zde je označeno, jen jako možné - je generováno akcí
