@@ -78,9 +78,8 @@ class DescItemFileRef extends AbstractReactComponent {
         const footer = this.renderFooter();
 
         return <div className='desc-item-value desc-item-value-parts'>
-            <ItemTooltipWrapper tooltipTitle="dataType.fileRef.format">
+            <ItemTooltipWrapper tooltipTitle="dataType.fileRef.format" {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked || descItem.undefined, ['autocomplete-file'])}>
                 <Autocomplete
-                    {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked || descItem.undefined, ['autocomplete-file'])}
                     ref='autocomplete'
                     customFilter
                     value={descItem.undefined ? {name: i18n('subNodeForm.descItemType.notIdentified')} : value}
