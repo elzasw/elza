@@ -179,7 +179,9 @@ class SimpleCheckListBox extends AbstractReactComponent {
                 selectedIds={value.ids}
                 onChange={this.handleSpecItemsChange}
                 onSearch={this.handleSpecSearch}
-            />
+            >
+                {this.props.children}
+            </FilterableListBox>
         )
     }
 }

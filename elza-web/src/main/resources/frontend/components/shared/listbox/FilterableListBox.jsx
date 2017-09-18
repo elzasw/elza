@@ -202,6 +202,7 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
                     </div>
                 </div>
                 <div className='list-container'>
+                    {this.props.children}
                     <ListBox
                         ref="listBox"
                         items={items}

@@ -6,7 +6,7 @@ require('./FundFilterSettings.less')
 
 import React from 'react';
 import {reduxForm} from 'redux-form';
-import {FilterableListBox, AbstractReactComponent, i18n, FormInput} from 'components/shared';
+import {FilterableListBox, AbstractReactComponent, HorizontalLoader, i18n, FormInput} from 'components/shared';
 import DescItemCoordinates from './nodeForm/DescItemCoordinates.jsx'
 import {Modal, Button} from 'react-bootstrap';
 import {WebApi} from 'actions/index.jsx';
@@ -160,7 +160,9 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
             conditionValues: [],
             conditionHasErrors: false,
             refMarkSelectedNode: null,
-            specItems: []
+            specItems: [],
+            isFetchingSpecIds: false,
+            isFetchingItemTypeValues: false
         };
 
         const {filter} = props;
@@ -180,9 +182,13 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
     }
 
     componentDidMount() {
-        const {refType} = this.props;
+        const {dataType, refType} = this.props;
         if (refType.id !== COL_REFERENCE_MARK) {
-            this.callFilterUniqueSpecs();
+            if (refType.useSpecification || dataType && dataType.code === 'PACKET_REF') {  // má specifikace, nebo u obalů budeme místo specifikací zobrazovat výběr typů obsalů
+                this.callFilterUniqueSpecs();   // v metodě se dále volá value search - až po načtení specifikací
+            } else {
+                this.callValueSearch('');   // zde musíme volat value search ručně, protože se nenačítají specifikace
+            }
         }
     }
 
@@ -194,8 +200,9 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
 
     callFilterUniqueSpecs = () => {
         const {versionId, refType, packetTypes, dataType} = this.props
-        WebApi.findUniqueSpecIds(versionId, refType.id).then(specIds => {
 
+        this.setState({isFetchingSpecIds: true});
+        WebApi.findUniqueSpecIds(versionId, refType.id).then(specIds => {
             let specItems = [];
 
             if (specIds.indexOf(null) >= 0) {
@@ -219,7 +226,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                 });
             }
 
-            this.setState({specItems}, () => this.callValueSearch(''));
+            this.setState({specItems, isFetchingSpecIds: false}, () => this.callValueSearch(''));
         });
     };
 
@@ -249,6 +256,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                 return id === FILTER_NULL_VALUE ? null : id
             })
 
+            this.setState({isFetchingItemTypeValues: true});
             WebApi.getDescItemTypeValues(versionId, refType.id, valueSearchText, useSpecIds, 200)
                 .then(json => {
                     var valueItems = json.map(i => ({id: i, name: i}))
@@ -263,6 +271,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
 
                     this.setState({
                         valueItems: valueItems,
+                        isFetchingItemTypeValues: false
                     })
                 })
         }
@@ -365,8 +374,8 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
     }
 
     renderValueFilter() {
-        const {refType, dataType} = this.props
-        const {valueItems, selectedValueItems, selectedValueItemsType, conditionSelectedCode} = this.state
+        const {refType, dataType} = this.props;
+        const {isFetchingItemTypeValues, valueItems, selectedValueItems, selectedValueItemsType, conditionSelectedCode} = this.state;
 
         if (!hasDescItemTypeValue(dataType)) {
             return null
@@ -386,7 +395,9 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                 selectedIds={selectedValueItems}
                 onChange={this.handleValueItemsChange}
                 onSearch={this.handleValueSearch}
-            />
+            >
+                {isFetchingItemTypeValues && <HorizontalLoader hover showText={false}/>}
+            </FilterableListBox>
         )
     }
 
@@ -519,8 +530,8 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
     }
 
     renderConditionFilter() {
-        const {refType, dataType, calendarTypes} = this.props
-        const {conditionSelectedCode, conditionValues} = this.state
+        const {refType, dataType, calendarTypes} = this.props;
+        const {conditionSelectedCode, conditionValues} = this.state;
 
         if (!hasDescItemTypeValue(dataType)) {
             return null
@@ -602,8 +613,8 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
     }
 
     render() {
-        const {filter, refType, onClose, dataType} = this.props
-        const {refMarkSelectedNode, conditionHasErrors, conditionSelectedCode, conditionValues, selectedSpecItems, selectedSpecItemsType, specItems} = this.state
+        const {filter, refType, onClose, dataType} = this.props;
+        const {isFetchingSpecIds, refMarkSelectedNode, conditionHasErrors, conditionSelectedCode, conditionValues, selectedSpecItems, selectedSpecItemsType, specItems} = this.state;
 
         var specContent = null
         if (refType.id === COL_REFERENCE_MARK) {
@@ -616,7 +627,9 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                     label={i18n('arr.fund.filterSettings.filterBySpecification.title')}
                     value={{type: selectedSpecItemsType, ids: selectedSpecItems}}
                     onChange={this.handleSpecItemsChange}
-                />
+                >
+                    {isFetchingSpecIds && <HorizontalLoader hover showText={false}/>}
+                </SimpleCheckListBox>
             )
         } else if (dataType.code === 'PACKET_REF') { // u obalů budeme místo specifikací zobrazovat výběr typů obsalů
             specContent = (
@@ -626,7 +639,9 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                     label={i18n('arr.fund.filterSettings.filterByPacketType.title')}
                     value={{type: selectedSpecItemsType, ids: selectedSpecItems}}
                     onChange={this.handleSpecItemsChange}
-                />
+                >
+                    {isFetchingSpecIds && <HorizontalLoader hover showText={false}/>}
+                </SimpleCheckListBox>
             )
         }
 
