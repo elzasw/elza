@@ -1,6 +1,5 @@
 package cz.tacr.elza.print.item;
 
-import cz.tacr.elza.print.NodeId;
 import cz.tacr.elza.print.Packet;
 
 /**
@@ -10,8 +9,8 @@ public class ItemPacketRef extends AbstractItem {
 	
 	Packet packet;
 
-    public ItemPacketRef(final NodeId nodeId, final Packet packet) {
-        super(nodeId);
+    public ItemPacketRef(final Packet packet) {
+        super();
         this.packet = packet;
     }
 

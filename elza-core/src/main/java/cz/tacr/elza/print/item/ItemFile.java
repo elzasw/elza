@@ -5,11 +5,9 @@ import java.io.File;
 
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.DmsFile;
-import cz.tacr.elza.print.NodeId;
 
 /**
- * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
- *         Date: 22.6.16
+ * Link to the file
  */
 public class ItemFile extends AbstractItem {
 
@@ -21,8 +19,8 @@ public class ItemFile extends AbstractItem {
     private Integer pagesCount;
     DmsFile value;
 
-    public ItemFile(final NodeId nodeId, final ArrFile value) {
-        super(nodeId);
+    public ItemFile(final ArrFile value) {
+        super();
         this.value = value;
     }
 

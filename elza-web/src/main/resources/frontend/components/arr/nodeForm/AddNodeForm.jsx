@@ -26,7 +26,7 @@ import {
     AbstractReactComponent,
     i18n,
     FormInput,
-    Loading,
+    HorizontalLoader,
     Autocomplete
 } from 'components/shared';
 import { isFundRootId, getOneSettings } from 'components/arr/ArrUtils.jsx';
@@ -215,9 +215,29 @@ class AddNodeForm extends AbstractReactComponent {
 
             onSubmit(submitData, 'NEW');
         } else if (this.state.selectedSourceAS === 'FILE') {
-            alert('FILE SUMBTI');
-            const sumbitData = {};
-            //onSubmit(sumbitData, 'FILE');
+            
+            const submitData = {
+                xmlFile:this.state.importXml,
+                scopeId:this.state.selectedScopeId,
+            };
+            //Upravena rozhodovaci logika pro umisteni uzlu
+            let importPositionParams = {
+                fundVersionId: versionId,
+            };
+            if(selectedDirection === "CHILD"){
+                importPositionParams.parentNode = node;
+                importPositionParams.direction = "AFTER";
+            } else if(selectedDirection === "ATEND"){
+                importPositionParams.parentNode = parentNode;
+                importPositionParams.direction = "AFTER";
+            } else {
+                importPositionParams.targetNode = node;
+                importPositionParams.parentNode = parentNode;
+                importPositionParams.direction = selectedDirection;
+            }
+            submitData.importPositionParams = new Blob([JSON.stringify(importPositionParams)],{type:"application/json"});
+            
+            onSubmit(submitData, 'FILE');
         } else if (this.state.selectedSourceAS === 'OTHER') {
             const newNode = {
                 id: node.id,
@@ -471,7 +491,7 @@ class AddNodeForm extends AbstractReactComponent {
                         {i18n('arr.fund.addNode.scenario')}
                     </ControlLabel>
                     {loading
-                        ? <Loading />
+                        ? <HorizontalLoader />
                         : <FormGroup key="Scenarios">
                               {scnRadios}
                           </FormGroup>}
@@ -534,7 +554,12 @@ class AddNodeForm extends AbstractReactComponent {
                 : this.renderCreateFromFile()
         ];
     }
-
+    handleScopeChange = (e) => {
+        this.setState({selectedScopeId:e.id}); 
+    }
+    handleFileChange = (e) => {
+        this.setState({importXml:e.target.files[0]});
+    }
     renderCreateFromFile() {
         const { scopeList, submitting } = this.state;
         return [
@@ -547,11 +572,17 @@ class AddNodeForm extends AbstractReactComponent {
                     getItemName={item => {
                         return item ? item.name : '';
                     }}
-                    value={this.props.value}
+                    value={this.state.selectedScopeId}
+                    onChange={this.handleScopeChange}
                 />
             </FormGroup>,
             <FormGroup>
-                <FormControl disabled={submitting} name="soubor" type="file" />
+                <FormControl 
+                    disabled={submitting} 
+                    name="soubor" 
+                    type="file" 
+                    onChange={this.handleFileChange} 
+                />
             </FormGroup>
         ];
     }

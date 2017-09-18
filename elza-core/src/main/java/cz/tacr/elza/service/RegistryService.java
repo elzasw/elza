@@ -58,7 +58,7 @@ import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.SettingsRepository;
-import cz.tacr.elza.repository.VariantRecordRepository;
+import cz.tacr.elza.repository.RegVariantRecordRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -77,7 +77,7 @@ public class RegistryService {
     private RegRecordRepository regRecordRepository;
 
     @Autowired
-    private VariantRecordRepository variantRecordRepository;
+    private RegVariantRecordRepository variantRecordRepository;
 
     @Autowired
     private RegisterTypeRepository registerTypeRepository;

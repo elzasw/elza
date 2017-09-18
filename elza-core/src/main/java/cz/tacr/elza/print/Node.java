@@ -25,10 +25,10 @@ import cz.tacr.elza.utils.AppContext;
 /**
  * Node with data
  */
-public class Node implements Comparable<Node>, NodesOrder {
+public class Node implements Comparable<Node> {
 
     private final NodeId nodeId; // vazba na node
-    private final Output output;
+    private final OutputImpl output;
 
     private List<Item> items = new ArrayList<>();
     private List<Record> records = new ArrayList<>();
@@ -40,7 +40,7 @@ public class Node implements Comparable<Node>, NodesOrder {
      * @param nodeId vazba na nodeId
      * @param output vazba na output
      */
-    public Node(final NodeId nodeId, final Output output) {
+    public Node(final NodeId nodeId, final OutputImpl output) {
         this.nodeId = nodeId;
         this.output = output;
     }
@@ -222,12 +222,16 @@ public class Node implements Comparable<Node>, NodesOrder {
         return CompareToBuilder.reflectionCompare(this, o);
     }
 
-    @Override
+    /**
+     * @return instance iterátoru, který prochází jednotky popisu do hloubky
+     */
     public IteratorNodes getNodesDFS() {
-        return new IteratorNodes(output, output.getNodesChildsModel(nodeId), outputFactoryService, Output.MAX_CACHED_NODES);
+        return new IteratorNodes(output, output.getNodesChildsModel(nodeId), outputFactoryService, OutputImpl.MAX_CACHED_NODES);
     }
 
-    @Override
+    /**
+     * @return instance iterátoru, který prochází jednotky popisu do šířky
+     */
     public IteratorNodes getNodesBFS() {
         List<NodeId> nodeIds = output.getNodesChildsModel(nodeId);
         nodeIds.sort((o1, o2) -> new CompareToBuilder()
@@ -235,7 +239,7 @@ public class Node implements Comparable<Node>, NodesOrder {
                 .append(o1.getParent(), o2.getParent()) // pak sezkupit dle parenta
                 .append(o1.getPosition(), o2.getPosition()) // pak dle pořadí
                 .toComparison());
-        return new IteratorNodes(output, nodeIds, outputFactoryService, Output.MAX_CACHED_NODES);
+        return new IteratorNodes(output, nodeIds, outputFactoryService, OutputImpl.MAX_CACHED_NODES);
     }
 
     public void setItems(final List<Item> items) {

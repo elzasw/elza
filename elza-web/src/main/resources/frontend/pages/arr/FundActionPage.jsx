@@ -18,16 +18,16 @@ import {
     ArrFundPanel
 } from 'components/index.jsx';
 import {
-    Loading,
+    StoreHorizontalLoader,
     Icon,
     i18n,
     AbstractReactComponent,
     ListBox,
-    RibbonGroup
+    RibbonGroup,
+    Utils
 } from 'components/shared';
 import {Button} from 'react-bootstrap';
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {dateTimeToString} from 'components/Utils.jsx'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {
     fundActionFetchDetailIfNeeded,
     fundActionFetchListIfNeeded,
@@ -38,16 +38,25 @@ import {
     fundActionActionSelect,
     funcActionActionInterrupt,
     fundActionFormReset
-} from 'actions/arr/fundAction.jsx'
+} from 'actions/arr/fundAction.jsx';
 import * as perms from 'actions/user/Permission.jsx';
 import {getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {canSetFocus, setFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
-import {Utils} from 'components/index.jsx';
 import {ActionState} from 'constants.jsx'
 import {actionStateTranslation} from "../../actions/arr/fundAction";
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './FundActionPageKeymap.jsx';
 
 class FundActionPage extends ArrParentPage {
-
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
+    componentWillMount(){
+        let newKeymap = Utils.mergeKeymaps(ArrParentPage.defaultKeymap,defaultKeymap);
+        Utils.addShortcutManager(this,newKeymap);
+    }
     static propTypes = {};
 
     constructor(props) {
@@ -85,14 +94,14 @@ class FundActionPage extends ArrParentPage {
         }
     }
 
-    handleShortcuts(action) {
+    handleShortcuts(action,e) {
         console.log("#handleShortcuts FundActionPage", '[' + action + ']', this);
         switch (action) {
             case 'newAction':
                 this.handleRibbonNewAction();
                 break;
             default:
-                super.handleShortcuts(action);
+                super.handleShortcuts(action,e);
         }
     }
 
@@ -323,20 +332,18 @@ class FundActionPage extends ArrParentPage {
     renderLeftPanel(readMode, closed) {
         const fund = this.getActiveFund(this.props);
 
-        return (
-            <div className='actions-list-container'>{
-                fund.fundAction.list.fetched ?
-                    <ListBox
-                        className='actions-listbox'
-                        key='actions-list'
-                        activeIndex={indexById(fund.fundAction.list.data, fund.fundAction.detail.currentDataKey)}
-                        items={fund.fundAction.list.data}
-                        renderItemContent={this.renderRowItem.bind(this)}
-                        onSelect={this.handleListBoxActionSelect}
-                        onFocus={this.handleListBoxActionSelect}
-                    /> : <Loading />}
-            </div>
-        )
+        return <div className='actions-list-container'>
+            <StoreHorizontalLoader store={fund.fundAction.list}/>
+            {fund.fundAction.list.fetched && <ListBox
+                className='actions-listbox'
+                key='actions-list'
+                activeIndex={indexById(fund.fundAction.list.data, fund.fundAction.detail.currentDataKey)}
+                items={fund.fundAction.list.data}
+                renderItemContent={this.renderRowItem.bind(this)}
+                onSelect={this.handleListBoxActionSelect}
+                onFocus={this.handleListBoxActionSelect}
+            />}
+        </div>;
     }
 
     renderCenterPanel(readMode, closed) {
@@ -344,12 +351,8 @@ class FundActionPage extends ArrParentPage {
         const {fundAction: {detail, isFormVisible, config, form}, versionId} = fund;
         const fundActionCount = fund.fundAction.list.data ? fund.fundAction.list.data.length : 0;
         if (isFormVisible) {
-            if (config.isFetching || !config.fetched) {
-                return <Loading />
-            }
-
-            var description = null;
-            if (form.code !== null) {
+            let description = null;
+            if (config.fetched && form.code !== null) {
                 const index = indexById(config.data, form.code, 'code');
                 if (index !== null) {
                     const text = config.data[index].description;
@@ -361,47 +364,49 @@ class FundActionPage extends ArrParentPage {
             }
 
             return <div className='center-container'>
-                <h2>{i18n('arr.fundAction.form.newAction')}</h2>
-                <div>
-                    <FormInput componentClass="select"
-                               label={i18n('arr.fundAction.form.type')}
-                               key='code-action'
-                               ref='code-action'
-                               className='form-control'
-                               value={form.code}
-                               onChange={(e) => {this.dispatch(fundActionFormChange(versionId, {code: e.target.value}))}}
-                    >
-                        <option key="novalue" />
-                        {config.data.map((item) => (<option key={item.code} value={item.code}>{item.name}</option>))}
-                    </FormInput>
-                </div>
-                {description}
-                <h2>{i18n("arr.fundAction.title.nodes")}</h2>
-                <FundNodesList
-                    nodes={form.nodes}
-                    onAddNode={this.handleFormNodesAdd}
-                    onDeleteNode={this.handleFormNodeDelete}
-                />
+                <StoreHorizontalLoader store={config}/>
+                {config.fetched && <div>
+                    <h2>{i18n('arr.fundAction.form.newAction')}</h2>
+                    <div>
+                        <FormInput componentClass="select"
+                                   label={i18n('arr.fundAction.form.type')}
+                                   key='code-action'
+                                   ref='code-action'
+                                   className='form-control'
+                                   value={form.code}
+                                   onChange={(e) => {this.dispatch(fundActionFormChange(versionId, {code: e.target.value}))}}
+                        >
+                            <option key="novalue" />
+                            {config.data.map((item) => (<option key={item.code} value={item.code}>{item.name}</option>))}
+                        </FormInput>
+                    </div>
+                    {description}
+                    <h2>{i18n("arr.fundAction.title.nodes")}</h2>
+                    <FundNodesList
+                        nodes={form.nodes}
+                        onAddNode={this.handleFormNodesAdd}
+                        onDeleteNode={this.handleFormNodeDelete}
+                    />
+                </div>}
             </div>
         }
 
         if (detail) {
-            if (detail.isFetching && !detail.fetched) { // Pokud načítá ale nemá načteno
-                return <div className='center-container'><Loading /></div>
-            }
-            else if(!detail.fetched){ // Pokud nenačítá a nemá načteno
-                return(
-                <div className='center-container'>
+            if (!detail.isFetching && !detail.fetched) {    // pokud načítá ale nemá načteno
+                return <div className='center-container'>
                     <div className="unselected-msg">
                         <div className="title">{fundActionCount > 0 ? i18n('arr.fundAction.noSelection.title') : i18n('arr.fundAction.emptyList.title')}</div>
                         <div className="msg-text">{fundActionCount > 0 ? i18n('arr.fundAction.noSelection.message') : i18n('arr.fundAction.emptyList.message')}</div>
                     </div>
-                </div>);
+                </div>;
             }
-            else if (detail.fetched) { //Pokud má načteno
-                const {data} = detail;
-                const config = this.getConfigByCode(data.code);
-                let date = null;
+
+            let config;
+            let date;
+            let data;
+            if (detail.fetched) {
+                data = detail.data;
+                config = this.getConfigByCode(data.code);
                 if (data.datePlanned) {
                     date = data.datePlanned;
                 } else if (data.dateStarted) {
@@ -409,27 +414,29 @@ class FundActionPage extends ArrParentPage {
                 } else if (data.dateFinished) {
                     date = data.dateFinished;
                 }
-                date = dateTimeToString(new Date(date));
-
-                return <div className='center-container'>
-                    <div className='detail'>
-                        <div>
-                            <h1>{config.name}</h1>
-                            <h3>{FundActionPage.getStateIcon(data.state)} {actionStateTranslation(data.state)}
-                                <small>{date}</small>
-                            </h3>
-                        </div>
-                        <div><textarea className='config' readOnly={true} value=""/></div>
-                        {data.error ? <div><h3>{i18n('arr.fundAction.error')}</h3>
-                            <div>{data.error}</div>
-                        </div> : ''}
-                        <FundNodesList
-                            nodes={data.nodes}
-                            readOnly={true}
-                        />
-                    </div>
-                </div>
+                date = Utils.dateTimeToString(new Date(date));
             }
+
+            return <div className='center-container'>
+                <StoreHorizontalLoader store={detail} />
+
+                {detail.fetched && <div className='detail'>
+                    <div>
+                        <h1>{config.name}</h1>
+                        <h3>{FundActionPage.getStateIcon(data.state)} {actionStateTranslation(data.state)}
+                            <small>{date}</small>
+                        </h3>
+                    </div>
+                    <div><textarea className='config' readOnly={true} value=""/></div>
+                    {data.error ? <div><h3>{i18n('arr.fundAction.error')}</h3>
+                        <div>{data.error}</div>
+                    </div> : ''}
+                    <FundNodesList
+                        nodes={data.nodes}
+                        readOnly={true}
+                    />
+                </div>}
+            </div>
         }
     }
 };

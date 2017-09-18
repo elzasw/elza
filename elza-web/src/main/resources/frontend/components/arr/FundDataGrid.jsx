@@ -10,6 +10,8 @@ import {
     AbstractReactComponent,
     i18n,
     Loading,
+    StoreHorizontalLoader,
+    HorizontalLoader,
     DataGrid,
     DataGridColumnsSettings,
     DataGridPagination,
@@ -725,11 +727,6 @@ class FundDataGrid extends AbstractReactComponent {
         const {fundId, fund, fundDataGrid, versionId, rulDataTypes, descItemTypes, packetTypes, dispatch, readMode} = this.props;
         const {cols} = this.state;
 
-        if (!descItemTypes.fetched || !packetTypes.fetched || !rulDataTypes.fetched) {
-            // if (!fundDataGrid.fetchedFilter || !descItemTypes.fetched || !packetTypes.fetched || !rulDataTypes.fetched) {
-            return <Loading/>
-        }
-
         // Hledání
         var search = (
             <SearchWithGoto
@@ -768,6 +765,10 @@ class FundDataGrid extends AbstractReactComponent {
                                     title={i18n('arr.fund.columnSettings.action')}><Icon glyph='fa-columns'/></Button>
                         </div>
                     </div>
+                    <StoreHorizontalLoader store={{
+                        isFetching: fundDataGrid.isFetchingData || fundDataGrid.isFetchingFilter || descItemTypes.isFetching || packetTypes.isFetching || rulDataTypes.isFetching,
+                        fetched: fundDataGrid.fetchedData || fundDataGrid.fetchedFilter || descItemTypes.fetched || packetTypes.fetched || rulDataTypes.fetched
+                    }} />
                     <div className='grid-container'>
                         <DataGrid
                             ref='dataGrid'

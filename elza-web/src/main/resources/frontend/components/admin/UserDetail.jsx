@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {Icon, AbstractReactComponent, NoFocusButton, AddRemoveList, i18n, Loading} from 'components/shared';
+import {Icon, AbstractReactComponent, NoFocusButton, AddRemoveList, i18n, StoreHorizontalLoader} from 'components/shared';
 import {indexById, getIdsList} from 'stores/app/utils.jsx'
 import {dateToString} from 'components/Utils.jsx'
 import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
@@ -69,31 +69,30 @@ class UserDetail extends AbstractReactComponent {
                 </div>);
         }
 
-        if (!userDetail.fetched) {
-            return <div className='user-detail-container'><Loading/></div>
-        }
-
-        return <div className='user-detail-container'>
-            <h1>{userDetail.party.record.record}</h1>
-            <div>{i18n("admin.user.label.username")}</div>
-            <div>{userDetail.username}</div>
-            <h2>{i18n("admin.user.title.groups")}</h2>
-            <AddRemoveList
-                items={userDetail.groups}
-                onAdd={this.handleAddGroups}
-                onRemove={this.handleRemoveGroup}
-                addTitle="admin.user.group.action.add"
-                removeTitle="admin.user.group.action.delete"
-                renderItem={renderGroupItem}
-            />
-            <h2>{i18n("admin.user.title.permissions")}</h2>
-            <Permissions
-                area="USER"
-                initData={{permissions: userDetail.permissions}}
-                onSave={this.handleSavePermissions}
-                addTitle="admin.user.permission.action.add"
-                removeTitle="admin.user.permission.action.delete"
-            />
+        return <div>
+            <StoreHorizontalLoader store={userDetail}/>
+            {userDetail.fetched && <div className='user-detail-container'>
+                <h1>{userDetail.party.record.record}</h1>
+                <div>{i18n("admin.user.label.username")}</div>
+                <div>{userDetail.username}</div>
+                <h2>{i18n("admin.user.title.groups")}</h2>
+                <AddRemoveList
+                    items={userDetail.groups}
+                    onAdd={this.handleAddGroups}
+                    onRemove={this.handleRemoveGroup}
+                    addTitle="admin.user.group.action.add"
+                    removeTitle="admin.user.group.action.delete"
+                    renderItem={renderGroupItem}
+                />
+                <h2>{i18n("admin.user.title.permissions")}</h2>
+                <Permissions
+                    area="USER"
+                    initData={{permissions: userDetail.permissions}}
+                    onSave={this.handleSavePermissions}
+                    addTitle="admin.user.permission.action.add"
+                    removeTitle="admin.user.permission.action.delete"
+                />
+            </div>}
         </div>;
     }
 }

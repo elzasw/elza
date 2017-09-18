@@ -1,6 +1,41 @@
 package cz.tacr.elza.service;
 
+import java.text.Normalizer;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
+import javax.persistence.Query;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import com.google.common.collect.Iterables;
+
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
@@ -14,6 +49,7 @@ import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -90,36 +126,6 @@ import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventFund;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.utils.ObjectListIterator;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestParam;
-
-import javax.annotation.Nullable;
-import javax.persistence.Query;
-import java.text.Normalizer;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 
 /**
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
@@ -127,6 +133,8 @@ import java.util.stream.Collectors;
  */
 @Service
 public class ArrangementService {
+
+	private static final AtomicInteger LAST_DESC_ITEM_OBJECT_ID = new AtomicInteger(-1);
 
     //TODO smazat závislost až bude DescItemService
     @Autowired
@@ -259,14 +267,12 @@ public class ArrangementService {
     private CachedNodeRepository cachedNodeRepository;
 
     @Autowired
+    private EntityManager em;
+
+    @Autowired
     private FundFileRepository fundFileRepository;
 
     public static final String UNDEFINED = "Nezjištěno";
-
-    /**
-     * Poslední přidělené object id.
-     */
-    private Integer maxDescItemObjectId = null;
 
     /**
      * Vytvoření archivního souboru.
@@ -288,14 +294,7 @@ public class ArrangementService {
                               final String internalCode,
                               final ParInstitution institution,
                               final String dateRange) {
-        ArrFund fund = new ArrFund();
-        fund.setCreateDate(LocalDateTime.now());
-        fund.setName(name);
-        fund.setInternalCode(internalCode);
-        fund.setInstitution(institution);
-        fund.setUuid(uuid);
-
-        fund = fundRepository.save(fund);
+        ArrFund fund = createFund(name, internalCode, institution);
 
         eventNotificationService
                 .publishEvent(EventFactory.createIdEvent(EventType.FUND_CREATE, fund.getFundId()));
@@ -361,10 +360,9 @@ public class ArrangementService {
                                 final Collection<RegScope> newRegScopes) {
         Assert.notNull(fund, "AS musí být vyplněn");
 
-        Map<Integer, ArrFundRegisterScope> dbIdentifiersMap = Collections.EMPTY_MAP; /// Redundantní initializer
-        dbIdentifiersMap = ElzaTools.createEntityMap(faRegisterRepository.findByFund(fund), i -> i.getScope().getScopeId());
+		Map<Integer, ArrFundRegisterScope> dbIdentifiersMap = ElzaTools
+				.createEntityMap(faRegisterRepository.findByFund(fund), i -> i.getScope().getScopeId());
         Set<ArrFundRegisterScope> removeScopes = new HashSet<>(dbIdentifiersMap.values());
-
 
         for (RegScope newScope : newRegScopes) {
             ArrFundRegisterScope oldScope = dbIdentifiersMap.get(newScope.getScopeId());
@@ -436,8 +434,20 @@ public class ArrangementService {
         return fund;
     }
 
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN})
+    public ArrFund createFund(final String name,
+				              final String internalCode,
+				              final ParInstitution institution) {
+		ArrFund fund = new ArrFund();
+		fund.setCreateDate(LocalDateTime.now());
+		fund.setName(name);
+		fund.setInternalCode(internalCode);
+		fund.setInstitution(institution);
+		return fundRepository.save(fund);
+    }
 
-    private ArrFundVersion createVersion(final ArrChange createChange,
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_VER_WR})
+    public ArrFundVersion createVersion(final ArrChange createChange,
                                          final ArrFund fund,
                                          final RulRuleSet ruleSet,
                                          final ArrNode rootNode,
@@ -929,15 +939,13 @@ public class ArrangementService {
      *
      * @return Identifikátor objektu
      */
-    public synchronized Integer getNextDescItemObjectId() {
-        if (maxDescItemObjectId == null) {
-            maxDescItemObjectId = itemRepository.findMaxItemObjectId();
-            if (maxDescItemObjectId == null) {
-                maxDescItemObjectId = 0;
-            }
-        }
-        maxDescItemObjectId++;
-        return maxDescItemObjectId;
+    public Integer getNextDescItemObjectId() {
+    	return LAST_DESC_ITEM_OBJECT_ID.updateAndGet(id -> {
+    		if (id < 0) {
+    			id = itemRepository.findMaxItemObjectId();
+    		}
+    		return id + 1;
+    	});
     }
 
     /**
@@ -1215,6 +1223,18 @@ public class ArrangementService {
     }
 
     /**
+     * Finds level for fund version by node. Node will be locked during transaction.
+     */
+    @Transactional(TxType.REQUIRED)
+    public ArrLevel lockLevel(ArrNodeVO nodeVO, ArrFundVersion fundVersion) {
+        Integer nodeId = nodeVO.getId();
+        Assert.notNull(nodeId, "Node id must be set");
+        ArrNode node = em.getReference(ArrNode.class, nodeId);
+        em.lock(node, LockModeType.PESSIMISTIC_FORCE_INCREMENT);
+        return levelRepository.findNodeInRootTreeByNodeId(node, null, fundVersion.getLockChange());
+    }
+
+    /**
      * Načte počet chyb verze archivní pomůcky.
      *
      * @param fundVersion verze archivní pomůcky
@@ -1311,7 +1331,7 @@ public class ArrangementService {
     }
 
     public List<VersionValidationItem> createVersionValidationItems(final List<ArrNodeConformity> validationErrors, final ArrFundVersion version) {
-        Map<Integer, String> validations = new LinkedHashMap<Integer, String>();
+        Map<Integer, String> validations = new LinkedHashMap<>();
         for (ArrNodeConformity conformity : validationErrors) {
             String description = validations.get(conformity.getNode().getNodeId());
 
@@ -1319,7 +1339,7 @@ public class ArrangementService {
                 description = "";
             }
 
-            List<String> descriptions = new LinkedList<String>();
+            List<String> descriptions = new LinkedList<>();
             for (ArrNodeConformityError error : conformity.getErrorConformity()) {
                 descriptions.add(error.getDescription());
             }

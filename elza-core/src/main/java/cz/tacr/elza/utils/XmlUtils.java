@@ -9,8 +9,12 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.text.Collator;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -19,6 +23,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.JAXBIntrospector;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -27,7 +32,6 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import cz.tacr.elza.exception.SystemException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -35,6 +39,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.interpi.ws.wo.SetTyp;
 import cz.tacr.elza.service.ByteStreamResult;
 import liquibase.util.file.FilenameUtils;
@@ -383,5 +388,19 @@ public class XmlUtils {
         } catch (TransformerException e) {
             throw new SystemException("Chyba při formátování xml.", e);
         }
+    }
+
+    /**
+     * Converts {@link XMLGregorianCalendar} to  {@link LocalDateTime}.
+     * @param calendar xml date-time, can be null
+     * @return {@link LocalDateTime} or null when calendar was null.
+     */
+    public static LocalDateTime convertXmlDate(XMLGregorianCalendar calendar) {
+        if (calendar == null) {
+            return null;
+        }
+        GregorianCalendar gc = calendar.toGregorianCalendar();
+        Instant instant = Instant.ofEpochMilli(gc.getTimeInMillis());
+        return LocalDateTime.ofEpochSecond(instant.getEpochSecond(), instant.getNano(), ZoneOffset.UTC);
     }
 }

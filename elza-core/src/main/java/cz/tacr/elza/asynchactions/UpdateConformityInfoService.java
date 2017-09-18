@@ -8,9 +8,8 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 
 import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
 
-import cz.tacr.elza.config.ConfigRules;
-import cz.tacr.elza.domain.ArrFundVersion;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,6 +25,7 @@ import org.springframework.util.Assert;
 
 import com.google.common.eventbus.EventBus;
 
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.events.ConformityInfoUpdatedEvent;
@@ -34,9 +34,6 @@ import cz.tacr.elza.service.RuleService;
 
 /**
  * Servisní třída pro spouštění vláken na aktualizaci {@link ArrNodeConformity}.
- *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 2.12.2015
  */
 @Service
 @Configuration
@@ -53,9 +50,6 @@ public class UpdateConformityInfoService {
 
     @Autowired
     private EventBus eventBus;
-
-    @Autowired
-    private ConfigRules elzaRules;
 
     private ThreadLocal<Set<ArrNode>> nodesToUpdate = new ThreadLocal<>();
 
@@ -100,37 +94,14 @@ public class UpdateConformityInfoService {
      * @param version      verze, do které spadají nody
      */
     synchronized private void updateInfoForNodes(final Collection<ArrNode> updatedNodes,
-                                                final ArrFundVersion version) {
-
+                                                 final ArrFundVersion version) {
         if (CollectionUtils.isEmpty(updatedNodes)) {
             return;
         }
-
-        UpdateConformityInfoWorker updateConformityInfoWorker = versionWorkers.get(version);
-
-        if (updateConformityInfoWorker == null) {
+        UpdateConformityInfoWorker worker = versionWorkers.get(version);
+        if (worker == null || !worker.addNodes(updatedNodes)) {
             startNewWorker(updatedNodes, version);
-        } else {
-            synchronized (updateConformityInfoWorker.getLock()) {
-                if (updateConformityInfoWorker.isRunning()) {
-                    updateConformityInfoWorker.addNodes(updatedNodes);
-                } else {
-                    startNewWorker(updatedNodes, version);
-                }
-            }
         }
-    }
-
-    /**
-     * Registruje listener, který po úspěšném commitu transakce spustí výpočet stavu nodů.
-     */
-    private void registerAfterCommitListener() {
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-            @Override
-            public void afterCommit() {
-
-            }
-        });
     }
 
     /**
@@ -172,8 +143,7 @@ public class UpdateConformityInfoService {
         taskExecutor.execute(updateConformityInfoWorker);
     }
 
-
-    @Transactional(value = Transactional.TxType.REQUIRES_NEW)
+    @Transactional(value = TxType.REQUIRES_NEW)
     public void updateConformityInfo(final Integer nodeId, final Integer levelId, final Integer versionId) {
         logger.debug("Aktualizace stavu " + nodeId + " ve verzi " + versionId);
 

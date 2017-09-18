@@ -3,6 +3,8 @@ import ReactDOM from "react-dom";
 import utils from "./utils";
 import Loading from "../loading/Loading";
 
+const DEFAULT_ITEM_HEIGHT = 16;
+
 var VirtualList = React.createClass({
     propTypes: {
         items: React.PropTypes.array,   // v případě, že máme položky na klientovi, je zde seznam všech položek
@@ -35,11 +37,11 @@ var VirtualList = React.createClass({
 
         const lazyItems = props.items ? false : true
         const itemsCount = lazyItems ? props.lazyItemsCount : props.items.length
-
+        let itemHeight = currState.itemHeight;
         // early return if nothing to render
-        if (typeof props.container === 'undefined' || itemsCount === 0 || props.itemHeight <= 0 || !isMounted) return state;
+        if (typeof props.container === 'undefined' || itemsCount === 0 || itemHeight <= 0 || !isMounted) return state;
 
-        state.height = itemsCount * props.itemHeight;
+        state.height = itemsCount * itemHeight;
 
         var container = props.container;
 
@@ -59,7 +61,7 @@ var VirtualList = React.createClass({
 
         var viewTop = typeof container.scrollY !== 'undefined' ? container.scrollY : container.scrollTop;
 
-        var renderStats = VirtualList.getItems(viewTop, viewHeight, offsetTop, props.itemHeight, itemsCount, props.itemBuffer);
+        var renderStats = VirtualList.getItems(viewTop, viewHeight, offsetTop, itemHeight, itemsCount, props.itemBuffer);
 
         // no items to render
         if (renderStats.itemsInView.length === 0) return state;
@@ -72,7 +74,7 @@ var VirtualList = React.createClass({
         } else {
             state.items = props.items.slice(renderStats.firstItemIndex, renderStats.lastItemIndex + 1);
         }
-        state.bufferStart = renderStats.firstItemIndex * props.itemHeight;
+        state.bufferStart = renderStats.firstItemIndex * itemHeight;
 
         state.prevFirstItemIndex = renderStats.firstItemIndex
 
@@ -87,14 +89,15 @@ var VirtualList = React.createClass({
         return {
             ...this.getVirtualState(this.props, false, {prevFirstItemIndex: -1}),
             isMounted: false,
+            itemHeight: this.props.itemHeight || DEFAULT_ITEM_HEIGHT
         }
     },
     shouldComponentUpdate: function(nextProps, nextState) {
-return true;
+        return true;
     },
     componentWillReceiveProps: function(nextProps) {
         var state = this.getVirtualState(nextProps, this.state.isMounted, this.state);
-
+        let itemHeight = this.state.itemHeight;
         this.props.container.removeEventListener('scroll', this.onScrollDebounced);
 
         this.onScrollDebounced = utils.debounce(this.onScroll, nextProps.scrollDelay, false);
@@ -108,22 +111,22 @@ return true;
 
             if (scrollToIndexNum !== null) {
                 this.setState(state, () => {
-                    var box = ReactDOM.findDOMNode(this.refs.box)
-                    var itemTop = scrollToIndexNum * this.props.itemHeight + this.props.scrollTopPadding
+                    var box = this.container;
+                    var itemTop = scrollToIndexNum * itemHeight + this.props.scrollTopPadding
 
                     var from = this.state.bufferStart + this.props.scrollTopPadding
                     var to = from + box.parentNode.clientHeight - 2*this.props.scrollTopPadding
 
                     //console.log('itemTop', itemTop, 'from', from, 'to', to, 'itemHeight', this.props.itemHeight)
                     if (itemTop <= from) {
-                        if (itemTop - this.props.itemHeight < this.props.scrollTopPadding) {
+                        if (itemTop - itemHeight < this.props.scrollTopPadding) {
                             box.parentNode.scrollTop = 0
                         } else {
-                            box.parentNode.scrollTop = itemTop - this.props.itemHeight  // chceme alespon o jednu vice, aby nebyla vybrana moc nahore
+                            box.parentNode.scrollTop = itemTop - itemHeight  // chceme alespon o jednu vice, aby nebyla vybrana moc nahore
                         }
-                    } else if (itemTop + this.props.itemHeight > to) {
+                    } else if (itemTop + itemHeight > to) {
                         // box.parentNode.scrollTop = itemTop + this.props.itemHeight  // chceme alespon o jednu vice, aby nebyla vybrana moc dole
-                        box.parentNode.scrollTop = itemTop - this.props.itemHeight
+                        box.parentNode.scrollTop = itemTop - itemHeight
                     }
                 });
             }
@@ -131,18 +134,44 @@ return true;
             this.setState(state);
         }
     },
+    componentDidUpdate: function(prevProps) {
+        if(!this.props.itemHeight){
+            this.updateItemHeightIfChanged(); 
+        }
+    },
+    updateItemHeightIfChanged: function() {
+        let itemNode = this.container && this.container.children[0];
+        if(itemNode){
+            let itemHeight = this.getItemHeight(itemNode);
+            if(itemHeight !== this.state.itemHeight){
+                let state = {
+                    ...this.state,
+                    itemHeight: itemHeight,
+                    itemsRendered: true
+                };
+                let virtState = this.getVirtualState(this.props, this.state.isMounted, state);
+                state = {
+                    ...state,
+                    ...virtState
+                };
+                this.setState(state);
+            }
+        }
+    },
     componentWillMount: function() {
         this.onScrollDebounced = utils.debounce(this.onScroll, this.props.scrollDelay, false);
     },
     componentDidMount: function() {
         var state = this.getVirtualState(this.props, true, this.state);
-
         this.setState({
             ...state,
             isMounted: true
         })
 
         this.props.container.addEventListener('scroll', this.onScrollDebounced);
+    },
+    getItemHeight: function(element) {
+        return this.props.itemHeight || element.clientHeight;
     },
     componentWillUnmount: function() {
         this.props.container.removeEventListener('scroll', this.onScrollDebounced);
@@ -164,9 +193,9 @@ return true;
             content = this.state.items.map(this.props.renderItem);
         }
         return (
-        <this.props.tagName className="virtual-list" ref='box' {...this.props} style={{boxSizing: 'border-box', height: this.state.height, paddingTop: this.state.bufferStart}} >
-            {content}
-        </this.props.tagName>
+            <this.props.tagName className="virtual-list" ref={(container)=>{this.container = container;}} {...this.props} style={{boxSizing: 'border-box', height: this.state.height, paddingTop: this.state.bufferStart}} >
+                {content}
+            </this.props.tagName>
         );
     }
 });

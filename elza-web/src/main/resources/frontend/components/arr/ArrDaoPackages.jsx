@@ -1,6 +1,6 @@
 import React from "react";
 import {connect} from "react-redux";
-import {FormInput, Icon, AbstractReactComponent, Search, i18n, Loading, ListBox} from 'components/shared';
+import {FormInput, Icon, AbstractReactComponent, Search, i18n, StoreHorizontalLoader, ListBox} from 'components/shared';
 import {indexById} from "stores/app/utils.jsx";
 import {dateToString} from "components/Utils.jsx";
 import {userDetailsSaveSettings} from "actions/user/userDetail.jsx";
@@ -69,13 +69,14 @@ class ArrDaoPackages extends AbstractReactComponent {
                     onSearch={this.handleSearch}
                     onClear={this.handleClear}
                 />
-                {list.fetched ? <ListBox
+                <StoreHorizontalLoader store={list} />
+                {list.fetched && <ListBox
                     key="list"
                     items={list.rows}
                     onFocus={this.handleSelect}
                     activeIndex={activeIndex}
                     renderItemContent={(item, isActive, index) => <div className={classNames({active: isActive})}>{item.code}</div>}
-                /> : <Loading/>}
+                />}
             </div>
         );
     }

@@ -21,4 +21,8 @@
         </addColumn>
     </changeSet>
 
+	<changeSet id="201708230001" author="jtodt">
+		<dropColumn tableName="arr_fund" columnName="uuid"/>
+	</changeSet>
+	
 </databaseChangeLog>

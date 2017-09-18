@@ -1,9 +1,11 @@
 import React from 'react';
-import AbstractReactComponent from 'components/AbstractReactComponent.jsx';
+import AbstractReactComponent from "../../AbstractReactComponent";
+import * as Utils from "../../Utils";
 import ReactDOM from 'react-dom';
 import {Shortcuts} from 'react-shortcuts';
 const scrollIntoView = require('dom-scroll-into-view');
-
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './ListBoxKeymap.jsx'
 require ('./ListBox.less');
 
 let _ListBox_placeholder = document.createElement("div");
@@ -21,6 +23,15 @@ class ListBox extends AbstractReactComponent {
         activeIndexes: null,
         lastFocus: null
     };
+
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
 
     constructor(props) {
         super(props);
@@ -59,7 +70,7 @@ class ListBox extends AbstractReactComponent {
     };
 
     static defaultProps = {
-        renderItemContent: (item, isActive, index) => {
+        renderItemContent: (item, isActive, index, onCheckItem) => {
             return (
                 <div>{item.name}</div>
             )
@@ -101,10 +112,22 @@ class ListBox extends AbstractReactComponent {
      * @param {function} operation
      */
     selectedItemOperation = (operation)=>{
-        const {items} = this.props;
-        const {activeIndex} = this.state;
-        if(operation && activeIndex !== null){
-            operation(items[activeIndex],activeIndex)
+        const {items, multiselect} = this.props;
+        if (multiselect) {
+            const {activeIndexes} = this.state;
+            const selectedIndexes = Object.keys(activeIndexes);
+            if (operation && selectedIndexes.length > 0) {
+                const selectedItems = [];
+                for (let a=0; a<selectedIndexes.length; a++) {
+                    selectedItems.push(items[selectedIndexes[a]]);
+                }
+                operation(selectedItems, selectedIndexes);
+            }
+        } else {
+            const {activeIndex} = this.state;
+            if(operation && activeIndex !== null){
+                operation(items[activeIndex],activeIndex)
+            }
         }
     }
     selectorMoveRelative = (step) => {
@@ -137,7 +160,6 @@ class ListBox extends AbstractReactComponent {
     handleShortcuts = (action, e)=>{
         e.stopPropagation();
         e.preventDefault();
-        console.log(action)
         this.actionMap[action](e);
     }
     componentWillReceiveProps(nextProps) {
@@ -297,7 +319,6 @@ class ListBox extends AbstractReactComponent {
             while (step) {
                 var i = index + step;
                 while (i >= 0 && i < items.length) {
-                    console.log(i);
                     if (canSelectItem(items[i], i)) {
                         return i;
                     }
@@ -305,7 +326,6 @@ class ListBox extends AbstractReactComponent {
                 }
                 isDecrementing ? step++ : step--;
             }
-            console.log(index);
             return index;
         } else {
             return 0;
@@ -330,11 +350,9 @@ class ListBox extends AbstractReactComponent {
     }
 
     ensureItemVisible = (index) => {
-
         var itemNode = ReactDOM.findDOMNode(this.refs['item-' + index])
         if (itemNode !== null) {
             var containerNode = ReactDOM.findDOMNode(this.refs.container)
-            console.log("ensureItemVisible",itemNode,containerNode);
             scrollIntoView(itemNode, containerNode, { onlyScrollIfNeeded: true, alignWithTop:false })
         }
     };
@@ -358,6 +376,32 @@ class ListBox extends AbstractReactComponent {
 
     focus = () => {
         this.setState({}, () => {ReactDOM.findDOMNode(this.refs.wrapper).focus()})
+    };
+
+    handleCheckItem = (e, item, index) => {
+        const {multiselect} = this.props;
+
+        e.stopPropagation();
+        e.preventDefault();
+
+        // Pokud je položka v seznamu označených, bud event obsahovat všechny, jinak je aktuálně kliknutou
+        let isItemActive;
+        if (multiselect) {
+            const {activeIndexes} = this.state;
+            isItemActive = activeIndexes[index];
+        } else {
+            const {activeIndex} = this.state;
+            isItemActive === activeIndex;
+        }
+
+        if (isItemActive) { // je jedna z označených
+            this.selectedItemOperation(this.props.onCheck);
+        } else {    // je mimo
+            this.handleClick(index, e);
+            this.setState({}, () => {
+                this.selectedItemOperation(this.props.onCheck);
+            });
+        }
     };
 
     render() {
@@ -389,7 +433,7 @@ class ListBox extends AbstractReactComponent {
                     onDoubleClick={this.handleDoubleClick}
                     {...draggableProps}
                 >
-                    {renderItemContent(item, active, index)}
+                    {renderItemContent(item, active, index, (e) => this.handleCheckItem(e, item, index))}
                 </div>
             )
         })

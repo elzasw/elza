@@ -1,27 +1,23 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.Indexed;
-import org.springframework.data.rest.core.annotation.RestResource;
-
-import javax.persistence.Column;
+import javax.persistence.Column;  
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Indexed;
+import org.springframework.data.rest.core.annotation.RestResource;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-/**
- * @author Martin Šlapa
- * @since 1.9.2015
- */
 @Entity(name = "arr_data_packet_ref")
 @Table
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class ArrDataPacketRef extends ArrData {
 
     public static final String PACKET = "packet";
@@ -34,12 +30,25 @@ public class ArrDataPacketRef extends ArrData {
     @Column(name = "packetId", updatable = false, insertable = false)
     private Integer packetId;
 
-    @JsonIgnore
-    @Field
-    public Integer getSpecification() {
-        RulPacketType packetType = packet.getPacketType();
+    @Transient
+    private final ArrDataPacketRefIndexProvider indexProvider;
 
-        return packetType == null ? null : packetType.getPacketTypeId();
+    public ArrDataPacketRef(ArrDataPacketRefIndexProvider indexProvider) {
+        this.indexProvider = indexProvider;
+    }
+
+    public ArrDataPacketRef() {
+        this.indexProvider = new ArrDataPacketRefIndexProvider() {
+            @Override
+            public String getStorageNumber() {
+                return getPacket().getStorageNumber();
+            }
+
+            @Override
+            public RulPacketType getPacketType() {
+                return getPacket().getPacketType();
+            }
+        };
     }
 
     public ArrPacket getPacket() {
@@ -55,15 +64,39 @@ public class ArrDataPacketRef extends ArrData {
         return packetId;
     }
 
+    @JsonIgnore
+    @Field 
+    public Integer getSpecification() {
+        return indexProvider.getSpecification();
+    }
+
     @Override
     public String getFulltextValue() {
-        RulPacketType packetType = packet.getPacketType();
-        String fulltext;
-        if (packetType == null) {
-            fulltext = packet.getStorageNumber();
-        } else {
-            fulltext = packetType.getName() + ": " + packet.getStorageNumber();
+        return indexProvider.getFulltextValue();
+    }
+
+    public static abstract class ArrDataPacketRefIndexProvider {
+
+        public abstract String getStorageNumber();
+
+        public abstract RulPacketType getPacketType();
+
+        public Integer getSpecification() {
+            RulPacketType packetType = getPacketType();
+            if (packetType == null) {
+                return null;
+            }
+            return packetType.getPacketTypeId();
         }
-        return fulltext;
+
+        public String getFulltextValue() {
+            String fulltext = getStorageNumber();
+            RulPacketType packetType = getPacketType();
+            if (packetType != null) {
+                return packetType.getName() + ": " + fulltext;
+            }
+            return fulltext;
+        }
     }
 }
+

@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.RulTemplate;
-import cz.tacr.elza.print.Output;
+import cz.tacr.elza.print.OutputImpl;
 import freemarker.cache.FileTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -37,7 +37,7 @@ class OutputGeneratorWorkerFreemarker extends OutputGeneratorWorkerAbstract {
     private static final String FREEMARKER_MAIN_TEMPLATE = MAIN_TEMPLATE_BASE_NAME + FREEMARKER_TEMPLATE_SUFFIX;
 
     @Override
-    protected InputStream getContent(final ArrOutputDefinition arrOutputDefinition, final RulTemplate rulTemplate, final Output output) {
+    protected InputStream getContent(final ArrOutputDefinition arrOutputDefinition, final RulTemplate rulTemplate, final OutputImpl output) {
         try {
             // dohledání šablony
             final File mainFreemarkerTemplate = getTemplate(rulTemplate, FREEMARKER_MAIN_TEMPLATE);

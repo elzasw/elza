@@ -9,7 +9,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Link, IndexLink} from 'react-router';
 import {Icon, i18n} from 'components/index.jsx';
-import {Splitter, Autocomplete, ListBox, RibbonGroup, ToggleContent, AbstractReactComponent, SearchWithGoto} from 'components/shared';
+import {Splitter, Autocomplete, ListBox, RibbonGroup, ToggleContent, AbstractReactComponent, SearchWithGoto, Utils} from 'components/shared';
 import {NodeTabs, FundForm, FundDetail, Ribbon, FindindAidFileTree, ImportForm, ExportForm, FundDetailExt} from 'components'
 import {ButtonGroup, Button, Panel} from 'react-bootstrap';
 import PageLayout from "../shared/layout/PageLayout";
@@ -17,7 +17,6 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {createFund} from 'actions/arr/fund.jsx'
 import {storeLoadData, storeLoad} from 'actions/store/store.jsx'
 import {WebApi} from 'actions/index.jsx';
-import {setInputFocus, dateToString} from 'components/Utils.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {selectFundTab} from 'actions/arr/fund.jsx'
@@ -25,7 +24,6 @@ import {routerNavigate} from 'actions/router.jsx'
 import {fundsFetchIfNeeded, fundsSelectFund, fundsFundDetailFetchIfNeeded, fundsSearch} from 'actions/fund/fund.jsx'
 import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
 import {approveFund, deleteFund, exportFund, updateFund} from 'actions/arr/fund.jsx'
-import {barrier} from 'components/Utils.jsx';
 import {scopesDirty} from 'actions/refTables/scopesData.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {globalFundTreeInvalidate} from "../../actions/arr/globalFundTree";
@@ -136,7 +134,7 @@ class FundPage extends AbstractReactComponent {
         const fundDetail = fundRegion.fundDetail
 
         const that = this;
-        barrier(
+        Utils.barrier(
             WebApi.getScopes(fundDetail.versionId),
             WebApi.getAllScopes()
         )
@@ -205,13 +203,13 @@ class FundPage extends AbstractReactComponent {
                     </Button>,
                 )
             }
-            if (userDetail.hasOne(perms.FUND_EXPORT_ALL, {type: perms.FUND_EXPORT, fundId: fundRegion.fundDetail.id})) {
+            /*if (userDetail.hasOne(perms.FUND_EXPORT_ALL, {type: perms.FUND_EXPORT, fundId: fundRegion.fundDetail.id})) {
                 itemActions.push(
                     <Button key="fa-export" onClick={this.handleExportDialog}><Icon glyph='fa-download'/>
                         <div><span className="btnText">{i18n('ribbon.action.arr.fund.export')}</span></div>
                     </Button>
                 )
-            }
+            }*/
         }
 
         let altSection;
@@ -307,20 +305,19 @@ class FundPage extends AbstractReactComponent {
             </div>
         )
 
-        const centerPanel = (
-            <FundDetail
-                fundDetail={fundRegion.fundDetail}
-                focus={focus}
-                fundCount={fundRegion.funds.length}
-            />
-        )
+        const centerPanel = <FundDetail
+            fundDetail={fundRegion.fundDetail}
+            focus={focus}
+            fundCount={fundRegion.funds.length}
+        />;
 
-        const rightPanel = (
-            <FundDetailExt
+        let rightPanel;
+        if (fundRegion.fundDetail.fetched) {
+            rightPanel = <FundDetailExt
                 fundDetail={fundRegion.fundDetail}
                 focus={focus}
-            />
-        )
+            />;
+        }
 
         return (
             <PageLayout
@@ -346,5 +343,3 @@ function mapStateToProps(state) {
 }
 
 export default connect(mapStateToProps)(FundPage);
-
-

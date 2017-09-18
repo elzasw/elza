@@ -1,647 +1,188 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<ns2:xml-import xmlns:ns2="http://v1_0_0.import.elza.tacr.cz">
-  <record-list>
-    <record record-id="recordId-0" register-type-code="PERSON_INDIVIDUAL" external-system-code="externalSourceCode 1341799512" external-id="externalId 0" local="false">
-      <preferred-name>record 0</preferred-name>
-      <characteristics>characteristics 0</characteristics>
-      <note>comment 0</note>
-      <variant-name-list>
-        <variant-name>
-          <variant-name>variantRecord 0</variant-name>
-        </variant-name>
-      </variant-name-list>
-      <record-coordinates area-type="line" system="WGS84">
-        <note>note</note>
-        <coordinate-list>
-          <coordinate position="0">
-            <coordinate>point 0</coordinate>
-          </coordinate>
-          <coordinate position="1">
-            <coordinate>point 1</coordinate>
-          </coordinate>
-        </coordinate-list>
-      </record-coordinates>
-    </record>
-    <record record-id="recordId-1" register-type-code="FAMILY_BRANCH" external-system-code="externalSourceCode 1097950573" external-id="externalId 1" local="false">
-      <preferred-name>record 1</preferred-name>
-      <characteristics>characteristics 1</characteristics>
-      <note>comment 1</note>
-      <variant-name-list>
-        <variant-name>
-          <variant-name>variantRecord 0</variant-name>
-        </variant-name>
-      </variant-name-list>
-      <record-coordinates area-type="line" system="WGS84">
-        <note>note</note>
-        <coordinate-list>
-          <coordinate position="0">
-            <coordinate>point 0</coordinate>
-          </coordinate>
-          <coordinate position="1">
-            <coordinate>point 1</coordinate>
-          </coordinate>
-        </coordinate-list>
-      </record-coordinates>
-<!--       <sub-record-list> -->
-<!--         <record record-id="recordId-1-1" register-type-code="FAMILY_BRANCH" external-system-code="externalSourceCode 226261935" external-id="externalId 1" local="false"> -->
-<!--           <preferred-name>record 1</preferred-name> -->
-<!--           <characteristics>characteristics 1</characteristics> -->
-<!--           <note>comment 1</note> -->
-<!--           <variant-name-list> -->
-<!--             <variant-name> -->
-<!--               <variant-name>variantRecord 0</variant-name> -->
-<!--             </variant-name> -->
-<!--           </variant-name-list> -->
-<!--           <record-coordinates area-type="line" system="WGS84"> -->
-<!--             <note>note</note> -->
-<!--             <coordinate-list> -->
-<!--               <coordinate position="0"> -->
-<!--                 <coordinate>point 0</coordinate> -->
-<!--               </coordinate> -->
-<!--               <coordinate position="1"> -->
-<!--                 <coordinate>point 1</coordinate> -->
-<!--               </coordinate> -->
-<!--             </coordinate-list> -->
-<!--           </record-coordinates> -->
-<!--           <sub-record-list> -->
-<!--             <record record-id="recordId-1-1-1" register-type-code="FAMILY_BRANCH" external-system-code="externalSourceCode 747662184" external-id="externalId 1" local="true"> -->
-<!--               <preferred-name>record 1</preferred-name> -->
-<!--               <characteristics>characteristics 1</characteristics> -->
-<!--               <note>comment 1</note> -->
-<!--               <variant-name-list> -->
-<!--                 <variant-name> -->
-<!--                   <variant-name>variantRecord 0</variant-name> -->
-<!--                 </variant-name> -->
-<!--               </variant-name-list> -->
-<!--               <record-coordinates area-type="line" system="WGS84"> -->
-<!--                 <note>note</note> -->
-<!--                 <coordinate-list> -->
-<!--                   <coordinate position="0"> -->
-<!--                     <coordinate>point 0</coordinate> -->
-<!--                   </coordinate> -->
-<!--                   <coordinate position="1"> -->
-<!--                     <coordinate>point 1</coordinate> -->
-<!--                   </coordinate> -->
-<!--                 </coordinate-list> -->
-<!--               </record-coordinates> -->
-<!--             </record> -->
-<!--           </sub-record-list> -->
-<!--         </record> -->
-<!--       </sub-record-list> -->
-    </record>
-    <record record-id="recordId-2" register-type-code="EVENT_EVENT" external-system-code="externalSourceCode 1015647040" external-id="externalId 2" local="false">
-      <preferred-name>record 2</preferred-name>
-      <characteristics>characteristics 2</characteristics>
-      <note>comment 2</note>
-      <variant-name-list>
-        <variant-name>
-          <variant-name>variantRecord 0</variant-name>
-        </variant-name>
-      </variant-name-list>
-      <record-coordinates area-type="line" system="WGS84">
-        <note>note</note>
-        <coordinate-list>
-          <coordinate position="0">
-            <coordinate>point 0</coordinate>
-          </coordinate>
-          <coordinate position="1">
-            <coordinate>point 1</coordinate>
-          </coordinate>
-        </coordinate-list>
-      </record-coordinates>
-<!--       <sub-record-list> -->
-<!--         <record record-id="recordId-2-1" register-type-code="GEO_WATERS" external-system-code="externalSourceCode 537051127" external-id="externalId 1" local="false"> -->
-<!--           <preferred-name>record 2-1</preferred-name> -->
-<!--           <characteristics>characteristics 1</characteristics> -->
-<!--           <note>comment 1</note> -->
-<!--           <variant-name-list> -->
-<!--             <variant-name> -->
-<!--               <variant-name>variantRecord 0</variant-name> -->
-<!--             </variant-name> -->
-<!--           </variant-name-list> -->
-<!--           <record-coordinates area-type="line" system="WGS84"> -->
-<!--             <note>note</note> -->
-<!--             <coordinate-list> -->
-<!--               <coordinate position="0"> -->
-<!--                 <coordinate>point 0</coordinate> -->
-<!--               </coordinate> -->
-<!--               <coordinate position="1"> -->
-<!--                 <coordinate>point 1</coordinate> -->
-<!--               </coordinate> -->
-<!--             </coordinate-list> -->
-<!--           </record-coordinates> -->
-<!--           <sub-record-list> -->
-<!--             <record record-id="recordId-2-1-1" register-type-code="GEO_WATERS" external-system-code="externalSourceCode 2142619247" external-id="externalId 1" local="true"> -->
-<!--               <preferred-name>record 2-1-1</preferred-name> -->
-<!--               <characteristics>characteristics 1</characteristics> -->
-<!--               <note>comment 1</note> -->
-<!--               <variant-name-list> -->
-<!--                 <variant-name> -->
-<!--                   <variant-name>variantRecord 0</variant-name> -->
-<!--                 </variant-name> -->
-<!--               </variant-name-list> -->
-<!--               <record-coordinates area-type="line" system="WGS84"> -->
-<!--                 <note>note</note> -->
-<!--                 <coordinate-list> -->
-<!--                   <coordinate position="0"> -->
-<!--                     <coordinate>point 0</coordinate> -->
-<!--                   </coordinate> -->
-<!--                   <coordinate position="1"> -->
-<!--                     <coordinate>point 1</coordinate> -->
-<!--                   </coordinate> -->
-<!--                 </coordinate-list> -->
-<!--               </record-coordinates> -->
-<!--             </record> -->
-<!--           </sub-record-list> -->
-<!--         </record> -->
-<!--       </sub-record-list> -->
-    </record>
-    <record record-id="recordId-3" register-type-code="ORGANIZATION" external-system-code="externalSourceCode 1097950573" external-id="externalId 1" local="false">
-      <preferred-name>record 3</preferred-name>
-      <characteristics>characteristics 1</characteristics>
-      <note>comment 1</note>
-      <variant-name-list>
-        <variant-name>
-          <variant-name>variantRecord 0</variant-name>
-        </variant-name>
-      </variant-name-list>
-      <record-coordinates area-type="line" system="WGS84">
-        <note>note</note>
-        <coordinate-list>
-          <coordinate position="0">
-            <coordinate>point 0</coordinate>
-          </coordinate>
-          <coordinate position="1">
-            <coordinate>point 1</coordinate>
-          </coordinate>
-        </coordinate-list>
-      </record-coordinates>
-<!--       <sub-record-list> -->
-<!--         <record record-id="recordId-3-1" register-type-code="ORGANIZATION" external-system-code="externalSourceCode 226261935" external-id="externalId 1" local="false"> -->
-<!--           <preferred-name>record 3-1</preferred-name> -->
-<!--           <characteristics>characteristics 1</characteristics> -->
-<!--           <note>comment 1</note> -->
-<!--           <variant-name-list> -->
-<!--             <variant-name> -->
-<!--               <variant-name>variantRecord 0</variant-name> -->
-<!--             </variant-name> -->
-<!--           </variant-name-list> -->
-<!--           <record-coordinates area-type="line" system="WGS84"> -->
-<!--             <note>note</note> -->
-<!--             <coordinate-list> -->
-<!--               <coordinate position="0"> -->
-<!--                 <coordinate>point 0</coordinate> -->
-<!--               </coordinate> -->
-<!--               <coordinate position="1"> -->
-<!--                 <coordinate>point 1</coordinate> -->
-<!--               </coordinate> -->
-<!--             </coordinate-list> -->
-<!--           </record-coordinates> -->
-<!--           <sub-record-list> -->
-<!--             <record record-id="recordId-3-1-1" register-type-code="BRANCH" external-system-code="externalSourceCode 747662184" external-id="externalId 1" local="true"> -->
-<!--               <preferred-name>record 3</preferred-name> -->
-<!--               <characteristics>characteristics 1</characteristics> -->
-<!--               <note>comment 1</note> -->
-<!--               <variant-name-list> -->
-<!--                 <variant-name> -->
-<!--                   <variant-name>variantRecord 0</variant-name> -->
-<!--                 </variant-name> -->
-<!--               </variant-name-list> -->
-<!--               <record-coordinates area-type="line" system="WGS84"> -->
-<!--                 <note>note</note> -->
-<!--                 <coordinate-list> -->
-<!--                   <coordinate position="0"> -->
-<!--                     <coordinate>point 0</coordinate> -->
-<!--                   </coordinate> -->
-<!--                   <coordinate position="1"> -->
-<!--                     <coordinate>point 1</coordinate> -->
-<!--                   </coordinate> -->
-<!--                 </coordinate-list> -->
-<!--               </record-coordinates> -->
-<!--             </record> -->
-<!--           </sub-record-list> -->
-<!--         </record> -->
-<!--       </sub-record-list> -->
-    </record>
-  </record-list>
-  <party-list>
-    <person party-id="partyId-0" record-id="recordId-0">
-      <preferred-name party-name-form-type-code="1">
-        <main-part>mainPart 0</main-part>
-        <other-part>otherPart 0</other-part>
+<ns2:edx xmlns:ns2="http://elza.tacr.cz/schema/v2">
+  <pars>
+    <per id="recordId-0">
+      <chr>characteristics</chr>
+      <hst>history 0</hst>
+      <src>sourceInformations 0</src>
+
+      <ape id="partyId-0" t="PERSON_INDIVIDUAL">
+      <!--  <eid>
+          <esc>externalSourceCode 1341799512</esc>
+          <id>externalId 0</id>
+        </eid> -->
+      </ape>
+
+      <name ft="LEGAL">
+        <dga>degreeAfter 0</dga>
+        <dgb>degreeBefore 0</dgb>
+        <main>mainPart 0</main>
         <note>anotation 0</note>
-        <degree-before>degreeBefore 0</degree-before>
-        <degree-after>degreeAfter 0</degree-after>
-        <valid-from>
-          <specific-date-from>2016-02-23T18:53:22.234+01:00</specific-date-from>
-          <specific-date-to>2016-02-23T18:53:22.234+01:00</specific-date-to>
-        </valid-from>
-        <valid-to>
-          <specific-date-from>2016-02-23T18:53:22.234+01:00</specific-date-from>
-          <specific-date-to>2016-02-23T18:53:22.234+01:00</specific-date-to>
-        </valid-to>
-        <party-name-complement-list>
-          <party-name-complement party-name-complement-type-code="2">
-            <complement>complement</complement>
-          </party-name-complement>
-          <party-name-complement party-name-complement-type-code="5">
-            <complement>complement</complement>
-          </party-name-complement>
-        </party-name-complement-list>
-      </preferred-name>
-      <history>history 0</history>
-      <source-informations>sourceInformations 0</source-informations>
-      <from-date>
-        <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-        <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-      </from-date>
-      <to-date>
-        <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-        <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-      </to-date>
-      <relation-list>
-        <relation class-type-code="R" relation-type-code="25">
-          <from-date>
-            <specific-date-from>2016-02-23T18:53:22.234+01:00</specific-date-from>
-            <specific-date-to>2016-02-23T18:53:22.234+01:00</specific-date-to>
-          </from-date>
-          <to-date>
-            <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-            <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-          </to-date>
-          <date-note>dateNote 0</date-note>
-          <note>note 0</note>
-          <role-type-list>
-            <role-type role-type-code="53" record-id="recordId-0">
-              <source>source</source>
-            </role-type>
-          </role-type-list>
-        </relation>
-        <relation class-type-code="E" relation-type-code="5">
-          <from-date>
-            <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-            <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-          </from-date>
-          <to-date>
-            <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-            <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-          </to-date>
-          <date-note>dateNote 1</date-note>
-          <note>note 1</note>
-          <role-type-list>
-            <role-type role-type-code="21" record-id="recordId-0">
-              <source>source</source>
-            </role-type>
-          </role-type-list>
-        </relation>
-      </relation-list>
-      <characteristics>characteristics</characteristics>
-    </person>
-    <dynasty party-id="partyId-1" record-id="recordId-1">
-      <preferred-name party-name-form-type-code="7">
-        <main-part>mainPart 1</main-part>
-        <other-part>otherPart 1</other-part>
+        <oth>otherPart 0</oth>
+        <ncs>
+          <nc ct="GENERAL" v="complement" />
+          <nc ct="GEO" v="complement" />
+        </ncs>
+        <vf f="2016-02-23T18:53:22.234+01:00" to="2016-02-23T18:53:22.234+01:00" />
+        <vto f="2016-02-23T18:53:22.234+01:00" to="2016-02-23T18:53:22.234+01:00" />
+      </name>
+    </per>
+
+    <famy id="recordId-1">
+      <chr>characteristics</chr>
+      <hst>history 1</hst>
+      <src>sourceInformations 1</src>
+
+      <ape id="partyId-1" t="FAMILY_BRANCH">
+      <!--  <eid>
+          <esc>externalSourceCode 1341799512</esc>
+          <id>externalId 1</id>
+        </eid> -->
+      </ape>
+
+      <name ft="LEGAL">
+        <dga>degreeAfter 1</dga>
+        <dgb>degreeBefore 1</dgb>
+        <main>mainPart 1</main>
         <note>anotation 1</note>
-        <degree-before>degreeBefore 1</degree-before>
-        <degree-after>degreeAfter 1</degree-after>
-        <valid-from>
-          <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-          <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-        </valid-from>
-        <valid-to>
-          <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-          <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-        </valid-to>
-        <party-name-complement-list>
-          <party-name-complement party-name-complement-type-code="2">
-            <complement>complement</complement>
-          </party-name-complement>
-          <party-name-complement party-name-complement-type-code="4">
-            <complement>complement</complement>
-          </party-name-complement>
-        </party-name-complement-list>
-      </preferred-name>
-      <history>history 1</history>
-      <source-informations>sourceInformations 1</source-informations>
-      <from-date>
-        <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-        <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-      </from-date>
-      <to-date>
-        <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-        <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-      </to-date>
-      <creator-name-list>
-        <creator>partyId-0</creator>
-      </creator-name-list>
-      <relation-list>
-        <relation class-type-code="R" relation-type-code="26">
-          <from-date>
-            <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-            <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-          </from-date>
-          <to-date>
-            <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-            <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-          </to-date>
-          <date-note>dateNote 0</date-note>
-          <note>note 0</note>
-          <role-type-list>
-            <role-type role-type-code="136" record-id="recordId-2">
-              <source>source</source>
-            </role-type>
-          </role-type-list>
-        </relation>
-        <relation class-type-code="E" relation-type-code="6">
-          <from-date>
-            <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-            <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-          </from-date>
-          <to-date>
-            <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-            <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-          </to-date>
-          <date-note>dateNote 1</date-note>
-          <note>note 1</note>
-          <role-type-list>
-            <role-type role-type-code="181" record-id="recordId-2">
-              <source>source</source>
-            </role-type>
-          </role-type-list>
-        </relation>
-      </relation-list>
-      <characteristics>characteristics</characteristics>
-      <genealogy>rod</genealogy>
-    </dynasty>
-    <event party-id="partyId-2" record-id="recordId-2">
-      <preferred-name party-name-form-type-code="23">
-        <main-part>mainPart 2</main-part>
-        <other-part>otherPart 2</other-part>
+        <oth>otherPart 1</oth>
+        <ncs>
+          <nc ct="GENERAL" v="complement" />
+          <nc ct="GEO" v="complement" />
+        </ncs>
+        <vf f="2016-02-23T18:53:22.234+01:00" to="2016-02-23T18:53:22.234+01:00" />
+        <vto f="2016-02-23T18:53:22.234+01:00" to="2016-02-23T18:53:22.234+01:00" />
+      </name>
+      <gen>rod</gen>
+
+    </famy>
+    <evnt id="recordId-2">
+      <chr>characteristics</chr>
+      <hst>history 2</hst>
+      <src>sourceInformations 2</src>
+
+      <ape id="partyId-2" t="EVENT_EVENT">
+      <!--  <eid>
+          <esc>externalSourceCode 1341799512</esc>
+          <id>externalId 2</id>
+        </eid> -->
+      </ape>
+
+      <name ft="LEGAL">
+        <dga>degreeAfter 2</dga>
+        <dgb>degreeBefore 2</dgb>
+        <main>mainPart 2</main>
         <note>anotation 2</note>
-        <degree-before>degreeBefore 2</degree-before>
-        <degree-after>degreeAfter 2</degree-after>
-        <valid-from>
-          <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-          <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-        </valid-from>
-        <valid-to>
-          <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-          <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-        </valid-to>
-        <party-name-complement-list>
-          <party-name-complement party-name-complement-type-code="2">
-            <complement>complement</complement>
-          </party-name-complement>
-          <party-name-complement party-name-complement-type-code="5">
-            <complement>complement</complement>
-          </party-name-complement>
-        </party-name-complement-list>
-      </preferred-name>
-      <variant-name-list>
-        <variant-name party-name-form-type-code="15">
-          <main-part>mainPart 2</main-part>
-          <other-part>otherPart 2</other-part>
+        <oth>otherPart 2</oth>
+        <ncs>
+          <nc ct="GENERAL" v="complement" />
+          <nc ct="GEO" v="complement" />
+        </ncs>
+        <vf f="2016-02-23T18:53:22.234+01:00" to="2016-02-23T18:53:22.234+01:00" />
+        <vto f="2016-02-23T18:53:22.234+01:00" to="2016-02-23T18:53:22.234+01:00" />
+      </name>
+
+      <vnms>
+        <vnm ft="ABBRV">
+          <dga>degreeAfter 2</dga>
+          <dgb>degreeBefore 2</dgb>
+          <main>mainPart 2</main>
           <note>anotation 2</note>
-          <degree-before>degreeBefore 2</degree-before>
-          <degree-after>degreeAfter 2</degree-after>
-          <valid-from>
-            <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-            <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-          </valid-from>
-          <valid-to>
-            <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-            <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-          </valid-to>
-          <party-name-complement-list>
-            <party-name-complement party-name-complement-type-code="5">
-              <complement>complement</complement>
-            </party-name-complement>
-            <party-name-complement party-name-complement-type-code="4">
-              <complement>complement</complement>
-            </party-name-complement>
-          </party-name-complement-list>
-        </variant-name>
-        <variant-name party-name-form-type-code="16">
-          <main-part>mainPart 2</main-part>
-          <other-part>otherPart 2</other-part>
+          <oth>otherPart 2</oth>
+          <ncs>
+            <nc ct="GENERAL" v="complement" />
+            <nc ct="GEO" v="complement" />
+          </ncs>
+          <vf f="2016-02-23T18:53:22.234+01:00" to="2016-02-23T18:53:22.234+01:00" />
+          <vto f="2016-02-23T18:53:22.234+01:00" to="2016-02-23T18:53:22.234+01:00" />
+        </vnm>
+        <vnm ft="ABBRV">
+          <dga>degreeAfter 2</dga>
+          <dgb>degreeBefore 2</dgb>
+          <main>mainPart 2</main>
           <note>anotation 2</note>
-          <degree-before>degreeBefore 2</degree-before>
-          <degree-after>degreeAfter 2</degree-after>
-          <valid-from>
-            <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-            <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-          </valid-from>
-          <valid-to>
-            <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-            <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-          </valid-to>
-          <party-name-complement-list>
-            <party-name-complement party-name-complement-type-code="2">
-              <complement>complement</complement>
-            </party-name-complement>
-            <party-name-complement party-name-complement-type-code="4">
-              <complement>complement</complement>
-            </party-name-complement>
-          </party-name-complement-list>
-        </variant-name>
-        <variant-name party-name-form-type-code="10">
-          <main-part>mainPart 2</main-part>
-          <other-part>otherPart 2</other-part>
+          <oth>otherPart 2</oth>
+          <ncs>
+            <nc ct="GENERAL" v="complement" />
+            <nc ct="GEO" v="complement" />
+          </ncs>
+          <vf f="2016-02-23T18:53:22.234+01:00" to="2016-02-23T18:53:22.234+01:00" />
+          <vto f="2016-02-23T18:53:22.234+01:00" to="2016-02-23T18:53:22.234+01:00" />
+        </vnm>
+        <vnm ft="ABBRV">
+          <dga>degreeAfter 2</dga>
+          <dgb>degreeBefore 2</dgb>
+          <main>mainPart 2</main>
           <note>anotation 2</note>
-          <degree-before>degreeBefore 2</degree-before>
-          <degree-after>degreeAfter 2</degree-after>
-          <valid-from>
-            <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-            <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-          </valid-from>
-          <valid-to>
-            <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-            <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-          </valid-to>
-          <party-name-complement-list>
-            <party-name-complement party-name-complement-type-code="5">
-              <complement>complement</complement>
-            </party-name-complement>
-            <party-name-complement party-name-complement-type-code="4">
-              <complement>complement</complement>
-            </party-name-complement>
-          </party-name-complement-list>
-        </variant-name>
-        <variant-name party-name-form-type-code="1">
-          <main-part>mainPart 2</main-part>
-          <other-part>otherPart 2</other-part>
+          <oth>otherPart 2</oth>
+          <ncs>
+            <nc ct="GENERAL" v="complement" />
+            <nc ct="GEO" v="complement" />
+          </ncs>
+          <vf f="2016-02-23T18:53:22.234+01:00" to="2016-02-23T18:53:22.234+01:00" />
+          <vto f="2016-02-23T18:53:22.234+01:00" to="2016-02-23T18:53:22.234+01:00" />
+        </vnm>
+        <vnm ft="AUTHOR">
+          <dga>degreeAfter 2</dga>
+          <dgb>degreeBefore 2</dgb>
+          <main>mainPart 2</main>
           <note>anotation 2</note>
-          <degree-before>degreeBefore 2</degree-before>
-          <degree-after>degreeAfter 2</degree-after>
-          <valid-from>
-            <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-            <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-          </valid-from>
-          <valid-to>
-            <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-            <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-          </valid-to>
-          <party-name-complement-list>
-            <party-name-complement party-name-complement-type-code="2">
-              <complement>complement</complement>
-            </party-name-complement>
-            <party-name-complement party-name-complement-type-code="5">
-              <complement>complement</complement>
-            </party-name-complement>
-          </party-name-complement-list>
-        </variant-name>
-      </variant-name-list>
-      <history>history 2</history>
-      <source-informations>sourceInformations 2</source-informations>
-      <from-date>
-        <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-        <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-      </from-date>
-      <to-date>
-        <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-        <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-      </to-date>
-      <relation-list>
-        <relation class-type-code="R" relation-type-code="18">
-          <from-date>
-            <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-            <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-          </from-date>
-          <to-date>
-            <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-            <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-          </to-date>
-          <date-note>dateNote 0</date-note>
-          <note>note 0</note>
-          <role-type-list>
-            <role-type role-type-code="243" record-id="recordId-2">
-              <source>source</source>
-            </role-type>
-          </role-type-list>
-        </relation>
-        <relation class-type-code="R" relation-type-code="24">
-          <from-date>
-            <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-            <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-          </from-date>
-          <to-date>
-            <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-            <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-          </to-date>
-          <date-note>dateNote 1</date-note>
-          <note>note 1</note>
-          <role-type-list>
-            <role-type role-type-code="164" record-id="recordId-1">
-              <source>source</source>
-            </role-type>
-          </role-type-list>
-        </relation>
-      </relation-list>
-      <characteristics>characteristics</characteristics>
-    </event>
-    <party-group party-id="partyId-3" record-id="recordId-3">
-      <institution internal-code="in1" type-code="DEFAULT"/>
-      <preferred-name party-name-form-type-code="3">
-        <main-part>mainPart 3</main-part>
-        <other-part>otherPart 3</other-part>
+          <oth>otherPart 2</oth>
+          <ncs>
+            <nc ct="GENERAL" v="complement" />
+            <nc ct="GEO" v="complement" />
+          </ncs>
+          <vf f="2016-02-23T18:53:22.234+01:00" to="2016-02-23T18:53:22.234+01:00" />
+          <vto f="2016-02-23T18:53:22.234+01:00" to="2016-02-23T18:53:22.234+01:00" />
+        </vnm>
+      </vnms>
+    </evnt>
+    <pg id="recordId-3">
+      <chr>characteristics</chr>
+      <hst>history 3</hst>
+      <src>sourceInformations 3</src>
+
+      <ape id="partyId-3" t="ORGANIZATION">
+      <!--  <eid>
+          <esc>externalSourceCode 1097950573</esc>
+          <id>externalId 3</id>
+        </eid> -->
+      </ape>
+
+      <name ft="LEGAL">
+        <dga>degreeAfter 3</dga>
+        <dgb>degreeBefore 3</dgb>
+        <main>mainPart 3</main>
         <note>anotation 3</note>
-        <degree-before>degreeBefore 3</degree-before>
-        <degree-after>degreeAfter 3</degree-after>
-        <valid-from>
-          <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-          <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-        </valid-from>
-        <valid-to>
-          <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-          <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-        </valid-to>
-        <party-name-complement-list>
-          <party-name-complement party-name-complement-type-code="4">
-            <complement>complement</complement>
-          </party-name-complement>
-          <party-name-complement party-name-complement-type-code="5">
-            <complement>complement</complement>
-          </party-name-complement>
-        </party-name-complement-list>
-      </preferred-name>
-      <history>history 3</history>
-      <source-informations>sourceInformations 3</source-informations>
-      <from-date>
-        <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-        <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-      </from-date>
-      <to-date>
-        <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-        <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-      </to-date>
-      <relation-list>
-        <relation class-type-code="B" relation-type-code="2">
-          <from-date>
-            <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-            <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-          </from-date>
-          <to-date>
-            <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-            <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-          </to-date>
-          <date-note>dateNote 0</date-note>
-          <note>note 0</note>
-          <role-type-list>
-            <role-type role-type-code="159" record-id="recordId-1">
-              <source>source</source>
-            </role-type>
-          </role-type-list>
-        </relation>
-        <relation class-type-code="B" relation-type-code="3">
-          <from-date>
-            <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-            <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-          </from-date>
-          <to-date>
-            <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-            <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-          </to-date>
-          <date-note>dateNote 1</date-note>
-          <note>note 1</note>
-          <role-type-list>
-            <role-type role-type-code="60" record-id="recordId-1">
-              <source>source</source>
-            </role-type>
-          </role-type-list>
-        </relation>
-      </relation-list>
-      <characteristics>characteristics</characteristics>
-      <scope>scope</scope>
-      <founding-norm>foundingNorm</founding-norm>
-      <scope-norm>scopeNorm</scope-norm>
-      <organization>organization</organization>
-      <party-group-id-list>
-        <party-group-id id="id 0">
-          <source>source</source>
+        <oth>otherPart 3</oth>
+        <ncs>
+          <nc ct="GENERAL" v="complement" />
+          <nc ct="GEO" v="complement" />
+        </ncs>
+        <vf f="2016-02-23T18:53:22.234+01:00" to="2016-02-23T18:53:22.234+01:00" />
+        <vto f="2016-02-23T18:53:22.234+01:00" to="2016-02-23T18:53:22.234+01:00" />
+      </name>
+      <fn>foundingNorm</fn>
+      <scp>scope</scp>
+      <sn>scopeNorm</sn>
+      <str>organization</str>
+      <pis>
+        <pi v="id 0">
           <note>note</note>
-          <valid-from>
-            <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-            <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-          </valid-from>
-          <valid-to>
-            <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-            <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-          </valid-to>
-        </party-group-id>
-        <party-group-id id="id 1">
-          <source>source</source>
+          <src>source</src>
+          <vf f="2016-02-23T18:53:22.234+01:00" to="2016-02-23T18:53:22.234+01:00" />
+          <vto f="2016-02-23T18:53:22.234+01:00" to="2016-02-23T18:53:22.234+01:00" />
+        </pi>
+        <pi v="id 1">
           <note>note</note>
-          <valid-from>
-            <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-            <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-          </valid-from>
-          <valid-to>
-            <specific-date-from>2016-02-23T18:53:22.235+01:00</specific-date-from>
-            <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
-          </valid-to>
-        </party-group-id>
-      </party-group-id-list>
-    </party-group>
-  </party-list>
-  <packet-list/>
-</ns2:xml-import>
+          <src>source</src>
+          <vf f="2016-02-23T18:53:22.234+01:00" to="2016-02-23T18:53:22.234+01:00" />
+          <vto f="2016-02-23T18:53:22.234+01:00" to="2016-02-23T18:53:22.234+01:00" />
+        </pi>
+      </pis>
+    </pg>
+  </pars>
+  <inss>
+    <inst c="in1" t="DEFAULT" paid="recordId-3" />
+  </inss>
+</ns2:edx>

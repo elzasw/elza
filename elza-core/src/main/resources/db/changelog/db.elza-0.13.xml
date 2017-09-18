@@ -5,6 +5,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
     <changeSet id="201708211001" author="slapa">
+        <validCheckSum>7:bd6de2694a42ecba0d9d25184c1c96f7</validCheckSum>
 
         <addColumn tableName="arr_item">
             <column name="data_id" type="int" />
@@ -17,8 +18,10 @@
                                  referencedColumnNames="data_id"
                                  onDelete="NO ACTION"/>
 
-        <!-- Provede nastavení opačné vazby pro existující data -->
-        <sql>UPDATE arr_item i SET data_id = (SELECT data_id FROM arr_data d WHERE item_id = i.item_id)</sql>
+        <!-- Provede nastavení opačné vazby pro existující data
+        <sql>UPDATE arr_item i SET data_id = (SELECT data_id FROM arr_data d WHERE item_id = i.item_id)</sql>-->
+        <sql dbms="postgresql">UPDATE arr_item i SET data_id = d.data_id FROM arr_data d WHERE i.item_id = d.item_id</sql>
+        <sql dbms="mssql">UPDATE i SET data_id = d.data_id FROM arr_item as i, arr_data as d WHERE i.item_id = d.item_id</sql>
 
         <dropColumn tableName="arr_item" columnName="undefined" />
         <dropColumn tableName="arr_data" columnName="item_id" />

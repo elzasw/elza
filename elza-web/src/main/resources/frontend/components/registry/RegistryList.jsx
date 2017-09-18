@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import {connect} from 'react-redux'
-import {ListBox, AbstractReactComponent, SearchWithGoto, Autocomplete, i18n, ArrPanel, Loading, Icon} from 'components/shared';
+import {ListBox, AbstractReactComponent, SearchWithGoto, Autocomplete, i18n, ArrPanel, StoreHorizontalLoader, Icon} from 'components/shared';
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
 import {indexById, objectById} from 'stores/app/utils.jsx'
 import {registryListFetchIfNeeded, registryListFilter, registryListInvalidate, registryDetailFetchIfNeeded, registryDetailInvalidate, DEFAULT_REGISTRY_LIST_MAX_SIZE, registrySetFolder} from 'actions/registry/registry.jsx'
@@ -79,6 +79,10 @@ class RegistryList extends AbstractReactComponent {
         this.dispatch(registryListFilter({...this.props.registryList.filter, registryTypeId: item ? item.id : null}));
     };
 
+    filterRegistryTypeClear = () => {
+        this.handleFilterRegistryType({name:this.registryTypeDefaultValue})
+    }
+
     handleFilterTextClear = () => {
         this.dispatch(registryListFilter({...this.props.registryList.filter, text: null}));
     };
@@ -133,21 +137,39 @@ class RegistryList extends AbstractReactComponent {
 
     renderListItem = (item) => <RegistryListItem {...item}
                                                  onClick={this.handleRegistryDetail.bind(this, item)}
-                                                 onDoubleClick={this.handleRegistrySetParent.bind(this,item)} />;
+                                                 onDoubleClick={this.handleRegistrySetParent.bind(this,item)} />
+
+    /**
+     * Vrátí pole akcí pro registry type filtr
+     * @return {array} pole akcí
+     */
+    getRegistryTypeActions = () => {
+        const {registryList:{filter}} = this.props;
+        const actions = [];
+        if (filter.registryTypeId !== null && typeof filter.registryTypeId !== "undefined") {
+            actions.push(
+                <div
+                onClick={()=>this.filterRegistryTypeClear()}
+                className={'btn btn-default detail'}>
+                    <Icon glyph={'fa-times'}/>
+                </div>
+            );
+        }
+        return actions;
+    }
+    /**
+     * Výchozí hodnota/placeholder pro registry type filtr
+     */
+    registryTypeDefaultValue = i18n('registry.all');
 
     render() {
         const {registryDetail, registryList, maxSize, registryTypes} = this.props;
 
 
-        if (!registryList || !registryList.fetched) {
-            return <div className="registry-list"><Loading /></div>;
-        }
         let activeIndex = null;
         if (registryList.fetched && registryDetail.id !== null) {
             activeIndex = indexById(registryList.filteredRows, registryDetail.id);
         }
-
-
 
         let list;
 
@@ -165,11 +187,7 @@ class RegistryList extends AbstractReactComponent {
                 />;
             } else {
                 list = <div className='search-norecord'>{i18n('registry.list.noRecord')}</div>;
-
-                //list = <ul><li className="noResult">{i18n('search.action.noResult')}</li></ul>;
             }
-        } else {
-            list = <div className="listbox-container"><Loading /></div>;
         }
 
         const {filter} = registryList;
@@ -212,18 +230,23 @@ class RegistryList extends AbstractReactComponent {
 
         }
 
+        let regTypesWithAll = [...registryTypes];
+        regTypesWithAll.unshift({name:this.registryTypeDefaultValue});
+
+
         return <div className="registry-list">
             <div className="filter">
-                {registryTypes ? <Autocomplete
-                        inputProps={ {placeholder: filter.registryTypeId === null ? i18n('registry.all') : ""} }
-                        items={registryTypes}
-                        disabled={registryList.filter.parents.length ? true : false}
+                <Autocomplete
+                        inputProps={ {placeholder: !filter.registryTypeId ? this.registryTypeDefaultValue : ""} }
+                        items={regTypesWithAll}
+                        disabled={!registryTypes || registryList.filter.parents.length ? true : false}
                         tree
                         alwaysExpanded
                         allowSelectItem={(id, item) => true}
-                        value={filter.registryTypeId === null ? null : getTreeItemById(filter.registryTypeId, registryTypes)}
+                        value={!filter.registryTypeId ? this.registryTypeDefaultValue : getTreeItemById(filter.registryTypeId, registryTypes)}
                         onChange={this.handleFilterRegistryType}
-                    /> : <Loading />}
+                        actions={this.getRegistryTypeActions()}
+                    />
                 <SearchWithGoto
                     onFulltextSearch={this.handleFilterText}
                     onClear={this.handleFilterTextClear}
@@ -236,6 +259,7 @@ class RegistryList extends AbstractReactComponent {
                 />
             </div>
             <div className='registry-list-breadcrumbs' key='breadcrumbs'>{navParents}</div>
+            <StoreHorizontalLoader store={registryList}/>
             {list}
             {isFetched && registryList.filteredRows.length > maxSize && <span className="items-count">{i18n('party.list.itemsVisibleCountFrom', registryList.filteredRows.length, registryList.count)}</span>}
         </div>

@@ -3,7 +3,6 @@
  */
 
 import React from 'react';
-import * as Utils from "components/Utils.jsx";
 import ReactDOM from 'react-dom';
 import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
@@ -30,7 +29,9 @@ import {
     i18n,
     AbstractReactComponent,
     Tabs,
-    SearchWithGoto
+    SearchWithGoto,
+    StoreHorizontalLoader,
+    Utils
 } from 'components/shared';
 import {Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import PageLayout from "../shared/layout/PageLayout";
@@ -123,7 +124,7 @@ class ArrRequestPage extends ArrParentPage {
         }
     }
 
-    handleShortcuts(action) {
+    handleShortcuts(action,e) {
         console.log("#handleShortcuts ArrRequestPage", '[' + action + ']', this);
         switch (action) {
             case 'newOutput':
@@ -277,7 +278,8 @@ class ArrRequestPage extends ArrParentPage {
                         allItemsCount={requestList.count}
                     />
                 </div>
-                <ListBox
+                <StoreHorizontalLoader store={requestList} />
+                {requestList.fetched && <ListBox
                     className='fund-request-listbox'
                     ref='fundDigitizationRequestList'
                     items={requestList.rows}
@@ -285,7 +287,7 @@ class ArrRequestPage extends ArrParentPage {
                     renderItemContent={this.renderListItem}
                     onFocus={this.handleSelect}
                     onSelect={this.handleSelect}
-                />
+                />}
             </div>
         )
     }

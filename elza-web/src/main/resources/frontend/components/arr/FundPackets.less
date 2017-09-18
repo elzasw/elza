@@ -26,6 +26,10 @@
   display: flex;
   flex-direction: column;
 
+  button {
+      margin-bottom: 5px;
+  }
+
   > .actions-container {
     flex-shrink: 0;
     height: 1.8em;
@@ -42,7 +46,8 @@
   .filterable-listbox-container {
     display: flex;
     flex-direction: column;
-      flex-grow: 1;
+    flex-grow: 1;
+    height:100%;
     .search-action-container {
       flex-shrink: 0;
     }
@@ -51,6 +56,7 @@
       flex-grow: 1;
       display: flex;
       flex-direction: column;
+      height:100%;
 
       .listbox-container {
         flex-grow: 1;

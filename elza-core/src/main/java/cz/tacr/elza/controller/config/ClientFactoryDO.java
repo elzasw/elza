@@ -1,5 +1,27 @@
 package cz.tacr.elza.controller.config;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
+import cz.tacr.elza.filter.condition.UndefinedDescItemCondition;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import cz.tacr.elza.FilterTools;
 import cz.tacr.elza.controller.vo.ArrFileVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
@@ -17,13 +39,13 @@ import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.controller.vo.UISettingsVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
-import cz.tacr.elza.controller.vo.XmlImportConfigVO;
 import cz.tacr.elza.controller.vo.filter.Condition;
 import cz.tacr.elza.controller.vo.filter.Filter;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.filter.ValuesTypes;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUnitdate;
@@ -52,7 +74,6 @@ import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
-import cz.tacr.elza.domain.convertor.CalendarConverter.CalendarType;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
@@ -95,28 +116,8 @@ import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.service.DescriptionItemService;
-import cz.tacr.elza.xmlimport.v1.utils.XmlImportConfig;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import javax.annotation.Nullable;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Továrna na vytváření DO objektů z VO objektů.
@@ -419,14 +420,6 @@ public class ClientFactoryDO {
         return nodeRegister;
     }
 
-    public XmlImportConfig createXmlImportConfig(final XmlImportConfigVO configVO) {
-        Assert.notNull(configVO, "Nastavení musí být vyplněno");
-
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-
-        return mapper.map(configVO, XmlImportConfig.class);
-    }
-
     public List<DescItemTypeFilter> createFilters(final Filters filters) {
         if (filters == null || filters.getFilters() == null || filters.getFilters().isEmpty()) {
             return null;
@@ -667,7 +660,7 @@ public class ClientFactoryDO {
 
         T to = getConditionValue(toString, cls);
 
-        return new Interval<T>(from, to);
+        return new Interval<>(from, to);
     }
 
     @SuppressWarnings("unchecked")
@@ -761,7 +754,7 @@ public class ClientFactoryDO {
     private Interval<Long> getConditionValueIntervalLong(final List<String> conditions) {
         ArrDataUnitdate unitdate = getConditionValueUnitdate(conditions);
 
-        return new Interval<Long>(unitdate.getNormalizedFrom(), unitdate.getNormalizedTo());
+        return new Interval<>(unitdate.getNormalizedFrom(), unitdate.getNormalizedTo());
     }
 
     /**

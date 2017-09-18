@@ -1,17 +1,15 @@
 package cz.tacr.elza.print.item;
 
-import cz.tacr.elza.print.NodeId;
 
 /**
- * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
- *         Date: 22.6.16
+ * Integer item for print
  */
 public class ItemInteger extends AbstractItem {
 	
 	Integer value;
 
-    public ItemInteger(final NodeId nodeId, final Integer value) {
-        super(nodeId);
+    public ItemInteger(final Integer value) {
+        super();
         this.value = value;
     }
 

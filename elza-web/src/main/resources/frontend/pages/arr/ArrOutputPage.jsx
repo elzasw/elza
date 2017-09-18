@@ -6,7 +6,6 @@ import classNames from "classnames";
 import './ArrOutputPage.less';
 
 import React from 'react';
-import * as Utils from "components/Utils.jsx";
 import ReactDOM from 'react-dom';
 import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
@@ -28,10 +27,12 @@ import {
     ListBox,
     Loading,
     RibbonGroup,
+    StoreHorizontalLoader,
     Icon,
     i18n,
     Tabs,
-    AbstractReactComponent
+    AbstractReactComponent,
+    Utils
 } from 'components/shared';
 import {Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import PageLayout from "../shared/layout/PageLayout";
@@ -64,6 +65,8 @@ import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
 import {outputTypesFetchIfNeeded} from "actions/refTables/outputTypes.jsx";
 import {getDescItemsAddTree, getOneSettings} from 'components/arr/ArrUtils.jsx';
 import ArrParentPage from "./ArrParentPage.jsx";
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './ArrOutputPageKeymap.jsx';
 
 import {Shortcuts} from 'react-shortcuts';
 
@@ -79,6 +82,15 @@ const OutputState = {
 };
 
 const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
+    componentWillMount(){
+        let newKeymap = Utils.mergeKeymaps(ArrParentPage.defaultKeymap,defaultKeymap);
+        Utils.addShortcutManager(this,newKeymap);
+    }
     constructor(props) {
         super(props, "arr-output-page");
 
@@ -147,8 +159,9 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         isDirty && !isFetching && this.dispatch(versionValidate(versionId, false))
     }
 
-    handleShortcuts(action) {
+    handleShortcuts(action,e) {
         console.log("#handleShortcuts ArrOutputPage", '[' + action + ']', this);
+        e.preventDefault();
         switch (action) {
             case 'newOutput':
                 this.handleAddOutput();
@@ -163,7 +176,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                 this.dispatch(setFocus('fund-output', 3));
                 break
             default:
-                super.handleShortcuts(action);
+                super.handleShortcuts(action,e);
         }
     }
 
@@ -411,9 +424,12 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     }
 
     renderRightPanel(readMode, closed) {
+        const {calendarTypes, descItemTypes} = this.props;
         const fund = this.getActiveFund(this.props);
-        if (!fund.fundOutput.fundOutputDetail.fetched) {
-            return <span></span>;
+        const fundOutputDetail = fund.fundOutput.fundOutputDetail;
+        const fetched = fundOutputDetail.fetched && fundOutputDetail.subNodeForm.fetched && calendarTypes.fetched && descItemTypes.fetched;
+        if (!fetched) {
+            return null;
         }
 
         // Záložky a obsah aktuálně vybrané založky
@@ -455,7 +471,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
 
     renderLeftPanel(readMode, closed) {
         const fund = this.getActiveFund(this.props);
-        const fundOutput = fund.fundOutput;;
+        const fundOutput = fund.fundOutput;
 
         let activeIndex = null;
         if (fundOutput.fundOutputDetail.id !== null) {
@@ -476,7 +492,8 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                     <option value={-1} key="no-filter">{i18n('arr.output.list.state.all')}</option>
                     {filterStates}
                 </FormInput>
-                <ListBox
+                <StoreHorizontalLoader store={fundOutput} />
+                {fundOutput.fetched && <ListBox
                     className='fund-output-listbox'
                     ref='fundOutputList'
                     items={fundOutput.outputs}
@@ -484,7 +501,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                     renderItemContent={this.renderListItem}
                     onFocus={this.handleSelect}
                     onSelect={this.handleSelect}
-                />
+                />}
             </div>
         )
     }
@@ -532,17 +549,14 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         }
 
         const {fundOutput} = activeFund;
-        if (fundOutput.fundOutputDetail.fetched) {
-            return <FundOutputFunctions
-                ref="fundOutputFunctions"
-                readMode={readMode}
-                versionId={activeFund.versionId}
-                outputId={fundOutput.fundOutputDetail.id}
-                outputState={fundOutput.fundOutputDetail.outputDefinition.state}
-                {...fundOutput.fundOutputFunctions}
-            />
-        }
-        return <Loading />
+        return <FundOutputFunctions
+            ref="fundOutputFunctions"
+            readMode={readMode}
+            versionId={activeFund.versionId}
+            outputId={fundOutput.fundOutputDetail.id}
+            outputState={fundOutput.fundOutputDetail.outputDefinition.state}
+            fundOutputFunctions={fundOutput.fundOutputFunctions}
+        />
     }
 
     renderTemplatesPanel() {
@@ -555,15 +569,12 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         if (fundOutputDetail.outputDefinition.outputResultId === null) {
             return <div>{i18n('arr.output.panel.files.notGenerated')}</div>
         }
-        if (fundOutputDetail.fetched) {
-            return <FundOutputFiles
-                ref="fundOutputFiles"
-                versionId={activeFund.versionId}
-                outputResultId={fundOutputDetail.outputDefinition.outputResultId}
-                {...fundOutputFiles}
-            />
-        }
-        return <Loading />
+        return <FundOutputFiles
+            ref="fundOutputFiles"
+            versionId={activeFund.versionId}
+            outputResultId={fundOutputDetail.outputDefinition.outputResultId}
+            fundOutputFiles={fundOutputFiles}
+        />
     }
 
 

@@ -32,7 +32,6 @@ import {
 import {
     Ribbon,
     FundSettingsForm,
-    BulkActionsDialog,
     NodeTabs,
     VisiblePolicyForm,
     FundPackets,
@@ -93,9 +92,9 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
         return fund.fundTreeMovementsRight.nodes[indexById(fund.fundTreeMovementsRight.nodes, fund.fundTreeMovementsRight.selectedId)];
     }
 
-    handleShortcuts(action) {
+    handleShortcuts(action,e) {
         console.log("#handleShortcuts ArrMovementsPage", '[' + action + ']', this);
-        super.handleShortcuts(action);
+        super.handleShortcuts(action,e);
     }
 
     getMoveInfo() {
@@ -209,7 +208,6 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
         var active = leftHasSelection && rightHasSelection && !readMode && !fund.closed && !fund.moving;
         var moveUnder = active && this.checkMoveUnder();
         var moveBeforeAfter = active && this.checkMoveBeforeAfter();
-        console.log(this.props.arrRegion);
 
         return (
             <div className="movements-content-container">

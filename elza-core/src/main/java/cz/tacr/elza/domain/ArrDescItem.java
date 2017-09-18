@@ -27,6 +27,7 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 
 /**
@@ -63,8 +64,18 @@ public class ArrDescItem extends ArrItem {
     @Column(name = "nodeId", updatable = false, insertable = false)
     private Integer nodeId;
 
+    @Transient
+    private final Integer fundId;
+    
+    /**
+     * Sets fund id for index when node is only reference (detached hibernate proxy).
+     */
+    public ArrDescItem(Integer fundId) {
+        this.fundId = fundId;
+    }
+    
     public ArrDescItem() {
-
+        this((Integer) null);
     }
 
     @Field(store = Store.YES)
@@ -119,6 +130,9 @@ public class ArrDescItem extends ArrItem {
     @Field
     @FieldBridge(impl = IntegerBridge.class)
     public Integer getFundId() {
+        if (fundId != null) {
+            return fundId;
+        }
         return node.getFundId();
     }
 

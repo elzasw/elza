@@ -4,14 +4,13 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Icon, i18n} from 'components/index.jsx';
-import {TooltipTrigger, Splitter, Autocomplete, RibbonGroup, ToggleContent, AbstractReactComponent} from 'components/shared';
+import {TooltipTrigger, Splitter, Autocomplete, RibbonGroup, ToggleContent, AbstractReactComponent, Utils} from 'components/shared';
 import {FundForm, Ribbon, FindindAidFileTree, PartyListItem} from 'components/index.jsx';
 import {NodeTabs} from 'components/index.jsx';
 import {Button} from 'react-bootstrap';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {createFund} from 'actions/arr/fund.jsx'
 import {storeLoadData, storeLoad} from 'actions/store/store.jsx'
-import {setInputFocus, dateToString} from 'components/Utils.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import PageLayout from "../shared/layout/PageLayout";
 
@@ -41,14 +40,14 @@ class HomePage extends AbstractReactComponent {
                 if (this.refs.list) {   // ještě nemusí existovat
                     this.setState({}, () => {
                         const listEl = ReactDOM.findDOMNode(this.refs.list);
-                        setInputFocus(listEl, false);
+                        Utils.setInputFocus(listEl, false);
                         focusWasSet()
                     })
                 }
             } else if (isFocusFor(focus, 'home', 1) || isFocusFor(focus, 'home', 1, 'list')) {
                 this.setState({}, () => {
                     const listEl = ReactDOM.findDOMNode(this.refs.list);
-                    setInputFocus(listEl, false);
+                    Utils.setInputFocus(listEl, false);
                     focusWasSet()
                 })
             }
@@ -144,7 +143,7 @@ class HomePage extends AbstractReactComponent {
             }
         });
         const arrItems = stateRegion.arrRegionFront.map((x, index) => {
-            const name = x.name + (x.lockDate ? ' ' + dateToString(new Date(x.lockDate)) : '');
+            const name = x.name + (x.lockDate ? ' ' + Utils.dateToString(new Date(x.lockDate)) : '');
             const desc = this.getFundDesc(x);
             return this.renderHistoryItem(name, desc, 'ARR_REGION_FUND', x, index)
         });

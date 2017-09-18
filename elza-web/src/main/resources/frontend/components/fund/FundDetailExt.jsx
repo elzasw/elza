@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Button, Panel} from 'react-bootstrap'
-import {Icon, AbstractReactComponent, i18n, Loading, FundDetailTree} from 'components/shared';
+import {Icon, AbstractReactComponent, i18n, FundDetailTree} from 'components/shared';
 import {indexById} from 'stores/app/utils.jsx'
 import {dateToString} from 'components/Utils.jsx'
 import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
@@ -45,27 +45,6 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
         if (fundDetail.id === null) {
             return <div className='fund-detail-container'></div>
         }
-
-        if (fundDetail.fetching || !fundDetail.fetched) {
-            return <div className='fund-detail-container'><Loading/></div>
-        }
-
-        // fundDetail.validNamedOutputs = [
-        //     {id: 1, code: 'ccc', name: 'nazev 1'},
-        //     {id: 2, code: 'ddd', name: 'nazev 2'},
-        // ]
-        // fundDetail.validNamedOutputs = [
-        //     {id: 1, code: 'ccc', name: 'nazev 1',
-        //         outputs: [
-        //             {id: 1, lockDate: 1460469000591},
-        //             {id: 2, lockDate: 1460462260849},
-        //         ]},
-        //     {id: 2, code: 'ddd', name: 'nazev 2',
-        //         outputs: [
-        //             {id: 133, lockDate: 1464469000591},
-        //             {id: 244, lockDate: 1465462260849},
-        //         ]},
-        // ]
 
         const validOutputs = fundDetail.validNamedOutputs.map((outputDefinition, index) => {
             return (

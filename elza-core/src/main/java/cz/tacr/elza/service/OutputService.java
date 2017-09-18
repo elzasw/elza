@@ -1,5 +1,8 @@
 package cz.tacr.elza.service;
 
+import static cz.tacr.elza.domain.RulItemType.Type.RECOMMENDED;
+import static cz.tacr.elza.domain.RulItemType.Type.REQUIRED;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,6 +19,7 @@ import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
+
 import com.fasterxml.jackson.databind.deser.Deserializers;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
@@ -26,13 +30,8 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.factory.DescItemFactory;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.OutputCode;
+
 import cz.tacr.elza.repository.ItemSpecRepository;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.ObjectUtils;
@@ -47,7 +46,6 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
-import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.CopyActionResult;
@@ -85,7 +83,14 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeAction;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.interfaces.IArrItemStringValue;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.Level;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.OutputCode;
 import cz.tacr.elza.repository.ActionRecommendedRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemSettingsRepository;
@@ -107,9 +112,6 @@ import cz.tacr.elza.service.eventnotification.events.EventChangeOutputItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.OutputGeneratorService;
-
-import static cz.tacr.elza.domain.RulItemType.Type.RECOMMENDED;
-import static cz.tacr.elza.domain.RulItemType.Type.REQUIRED;
 
 /**
  * Serviska pro práci s výstupy.
@@ -337,7 +339,7 @@ public class OutputService {
                 originalOutputDef.getTemporary(),
                 originalOutputDef.getOutputType().getOutputTypeId(),
                 originalOutputDef.getTemplate() != null ? originalOutputDef.getTemplate().getTemplateId() : null
-        );
+                );
 
         final ArrChange change = newOutputDef.getOutputs().get(0).getCreateChange();
         final ArrayList<ArrNodeOutput> newNodes = new ArrayList<>();
@@ -1391,7 +1393,7 @@ public class OutputService {
         ArrChange change = createChange == null ? arrangementService.createChange(null) : createChange;
         List<ArrOutputItem> createdItems = new ArrayList<>();
         for (ArrOutputItem outputItem :
-                outputItems) {
+            outputItems) {
             outputItem.setOutputDefinition(outputDefinition);
             outputItem.setCreateChange(change);
             outputItem.setDeleteChange(null);
@@ -1573,8 +1575,8 @@ public class OutputService {
 
         if (itemTypesMissing.size() > 0) {
             logger.warn("Při ukládání výsledků z hromadné akce '" + bulkActionRun.getBulkActionCode()
-                    + "' nebyly nalezeny přípustné typy atributů: "
-                    + itemTypesMissing.stream().map(RulItemType::getCode).collect(Collectors.joining(", ")));
+            + "' nebyly nalezeny přípustné typy atributů: "
+            + itemTypesMissing.stream().map(RulItemType::getCode).collect(Collectors.joining(", ")));
         }
 
         List<RulItemType> itemTypesMoreover = new ArrayList<>(itemTypes);
@@ -1582,8 +1584,8 @@ public class OutputService {
 
         if (itemTypesMoreover.size() > 0) {
             logger.warn("Při ukládání výsledků z hromadné akce '" + bulkActionRun.getBulkActionCode()
-                    + "' byly nalezeny typy atributů, které nejsou v seznamu přípustných: "
-                    + itemTypesMoreover.stream().map(RulItemType::getCode).collect(Collectors.joining(", ")));
+            + "' byly nalezeny typy atributů, které nejsou v seznamu přípustných: "
+            + itemTypesMoreover.stream().map(RulItemType::getCode).collect(Collectors.joining(", ")));
         }
     }
 
@@ -1597,10 +1599,10 @@ public class OutputService {
      * @param itemType    typ atributu
      */
     public Pair<List<RulItemType>, Boolean> storeResultInternal(final Result result,
-                            final ArrFundVersion fundVersion,
-                            final Set<ArrNode> nodes,
-                            final ArrChangeLazy change,
-                            @Nullable final RulItemType itemType) {
+                                                                final ArrFundVersion fundVersion,
+                                                                final Set<ArrNode> nodes,
+                                                                final ArrChangeLazy change,
+                                                                @Nullable final RulItemType itemType) {
         if (nodes.size() == 0) {
             return Pair.of(Collections.emptyList(), false);
         }
@@ -1735,8 +1737,8 @@ public class OutputService {
 
         if (itemTypesIgnored != null && itemTypesIgnored.contains(type)) {
             logger.warn("Při ukládání výsledků hromadné akce do výstupu " + outputDefinition.getName()
-                    + " [ID=" + outputDefinition.getOutputDefinitionId() + "] byl přeskočen atribut " + type.getName()
-                    + " [CODE=" + type.getCode() + "], protože je v seznamu ignorovaných");
+            + " [ID=" + outputDefinition.getOutputDefinitionId() + "] byl přeskočen atribut " + type.getName()
+            + " [CODE=" + type.getCode() + "], protože je v seznamu ignorovaných");
             return null;
         }
 
@@ -2020,7 +2022,8 @@ public class OutputService {
         }
 
         if (!outputItemType.getIndefinable()) {
-            throw new BusinessException("Položku není možné nastavit jako '" + ArrangementService.UNDEFINED + "'", ArrangementCode.CANT_SET_INDEFINABLE);
+            throw new BusinessException("Položku není možné nastavit jako '" + ArrangementService.UNDEFINED + "'", ArrangementCode.CANT_SET_INDEFINABLE)
+            	.set("itemDesc", outputItemType.getCode());
         }
 
         RulItemSpec outputItemSpec = null;

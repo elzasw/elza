@@ -4,8 +4,6 @@ var messages = {
 
     "global.insufficient.right": "Nemáte dostatečná oprávnění pro přístup.",
 
-    "global.data.loading.register": "Načítání rejstříků",
-    "global.data.loading.dao": "Načítání digitalizátů",
     "global.data.loading.form": "Načítání formuláře JP",
     "global.data.loading.node": "Načítání seznamu JP",
     "global.data.loading.node.children": "Načítání seznamu potomků JP",
@@ -461,6 +459,7 @@ var messages = {
     "arr.fund.settings.panel.center.parents": "Seznam rodičů jednotky popisu",
     "arr.fund.settings.panel.center.children": "Seznam potomků jednotky popisu",
     "arr.fund.settings.panel.rightPanel": "Pravý panel",
+    "arr.fund.settings.panel.treeColorCoding": "Barevné označení úrovní ve stromu",
     "arr.fund.settings.panel.right.title": "Záložky v pravém panelu",
 
     "arr.fund.version": "Verze {0}",
@@ -855,7 +854,6 @@ var messages = {
     "party.detail.creators": "Autoři",
     "party.detail.genealogy": "Genealogie",
     "party.detail.creator.delete": "Opravdu chcete smazat tohoto autora?",
-    "party.detail.finding": "Vyhledávám osobu",
     "party.detail.identifiers": "Identifikátory korporace",
     "party.detail.identifier.new": "Nový identifikátor",
     "party.detail.identifier.update": "Úprava identifikátoru",
@@ -963,7 +961,6 @@ var messages = {
     "admin.extSystem.submit.edit": "Upravit",
     "admin.extSystem.add.title": "Vytvoření externího systému",
     "admin.extSystem.edit.title": "Upravení externího systému",
-    "admin.extSystem.detail.finding": "Načítání...",
     "admin.extSystem.delete.confirm": "Opravdu chcete externí systém odstranit?",
 
     "admin.packages.action.export": "Stáhnout",
@@ -1121,7 +1118,7 @@ var messages = {
     "extMapperForm.import": "Importovat",
     "extMapperForm.update": "Aktualizovat",
 
-    "export.title.fund": "Import archivního souboru",
+    "export.title.fund": "Export archivního souboru",
     "export.transformationName": "Šablona transformace",
 
     "validate.validateInt.notInt": "Nejedná se o celé číslo",

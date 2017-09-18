@@ -8,7 +8,7 @@ import {dateTimeToString} from "components/Utils.jsx";
 import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {
-    Loading,
+    StoreHorizontalLoader,
     i18n,
     FormInput,
     AbstractReactComponent,
@@ -30,12 +30,20 @@ import {DIGITIZATION, DAO, DAO_LINK, getRequestType} from './ArrUtils.jsx'
 import {refExternalSystemsFetchIfNeeded} from 'actions/refTables/externalSystems';
 import {ControlLabel} from 'react-bootstrap'
 import {Shortcuts} from 'react-shortcuts';
-
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './ArrRequestDetailKeymap.jsx';
 /**
  * Formulář detailu požadavku na digitalizaci.
  */
 class ArrRequestDetail extends AbstractReactComponent {
-
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
     static PropTypes = {
         versionId: React.PropTypes.number.isRequired,
         fund: React.PropTypes.object.isRequired,
@@ -174,20 +182,19 @@ class ArrRequestDetail extends AbstractReactComponent {
                 <div className="title">{i18n('arr.request.noSelection.title')}</div>
                 <div className="msg-text">{i18n('arr.request.noSelection.message')}</div>
             </div>;
-        } else if (requestDetail.fetched && externalSystems.fetched) {
-
-            let externalSystemsMap = {};
-
-            externalSystems.items.forEach((item) => externalSystemsMap[item.id] = item);
-
+        } else if (requestDetail.fetched) {
             const req = requestDetail.data;
             const reqType = getRequestType(req);
 
             let extSystem = {};
-            if (reqType === DIGITIZATION) {
-                extSystem = externalSystemsMap[req.digitizationFrontdeskId];
-            } else {
-                extSystem = externalSystemsMap[req.digitalRepositoryId]
+            if (externalSystems.fetched) {
+                let externalSystemsMap = {};
+                externalSystems.items.forEach((item) => externalSystemsMap[item.id] = item);
+                if (reqType === DIGITIZATION) {
+                    extSystem = externalSystemsMap[req.digitizationFrontdeskId];
+                } else {
+                    extSystem = externalSystemsMap[req.digitalRepositoryId]
+                }
             }
 
             form = (
@@ -207,7 +214,7 @@ class ArrRequestDetail extends AbstractReactComponent {
                     </div>
 
                     <div className="form-group">
-                        <label>{i18n("arr.request.title.daoRequest.system")}</label> {extSystem.name}
+                        <label>{i18n("arr.request.title.daoRequest.system")}</label> {extSystem ? extSystem.name : "-"}
                     </div>
 
                     {reqType === DAO && <div className="form-group">
@@ -251,11 +258,10 @@ class ArrRequestDetail extends AbstractReactComponent {
                     </div>}
                 </div>
             )
-        } else {
-            form = <Loading value={i18n('global.data.loading')}/>;
         }
 
         return <Shortcuts name='ArrRequestDetail' handler={this.handleShortcuts}>
+            {requestDetail.id !== null && <StoreHorizontalLoader store={requestDetail} />}
             <div className='arr-request-detail-container'>
                 {form}
             </div>

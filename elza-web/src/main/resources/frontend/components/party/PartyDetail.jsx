@@ -13,6 +13,7 @@ import {
     i18n,
     FormInput,
     Icon,
+    StoreHorizontalLoader,
     CollapsablePanel
 } from 'components/shared';
 import {Form, Button} from 'react-bootstrap';
@@ -34,7 +35,8 @@ import {initForm} from "actions/form/inlineForm.jsx"
 import {getMapFromList} from 'stores/app/utils.jsx'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
 import {PARTY_TYPE_CODES} from 'constants.jsx'
-
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './PartyDetailKeymap.jsx';
 import './PartyDetail.less';
 
 
@@ -66,6 +68,14 @@ const FIELDS_BY_PARTY_TYPE_CODE = {
  * Komponenta detailu osoby
  */
 class PartyDetail extends AbstractReactComponent {
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
 
     state = {
         activeIndexes: {},
@@ -97,12 +107,6 @@ class PartyDetail extends AbstractReactComponent {
     static validate = (values) => {
         const required = [];
 
-        if (typeof values.genealogy !== "undefined") {
-            required.push("genealogy")
-        }
-        if (typeof values.scope !== "undefined") {
-            required.push("scope")
-        }
         const errors = PartyDetail.requireFields(...required)(values);
         errors.creators = [];
 
@@ -273,32 +277,30 @@ class PartyDetail extends AbstractReactComponent {
         const {sourceInformation, creators} = fields;
         const party = partyDetail.data;
         const {activeIndexes, visibilitySettingsValue} = this.state;
-        if (!party) {
 
-            if (partyDetail.isFetching) {
-                return <div>{i18n('party.detail.finding')}</div>
-            }
-
+        if (!partyDetail.fetched && !partyDetail.isFetching) {
             return <div className="unselected-msg">
                 <div className="title">{i18n('party.noSelection.title')}</div>
                 <div className="msg-text">{i18n('party.noSelection.message')}</div>
             </div>
         }
-        var type = party.partyType.code;
-        var icon = PartyListItem.partyIconByPartyTypeCode(type);
 
-        let canEdit = userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: party.record.scopeId});
+        let content;
+        if (partyDetail.fetched) {
+            var type = party.partyType.code;
+            var icon = PartyListItem.partyIconByPartyTypeCode(type);
 
-        const partyType = this.getPartyType();
+            let canEdit = userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: party.record.scopeId});
 
-        let parts = partyType && partyType.partyGroups ? partyType.partyGroups : [];
+            const partyType = this.getPartyType();
 
-        let relationClassTypes = partyType && partyType.relationTypes ? getMapFromList(partyType.relationTypes.map(i => i.relationClassType), "code") : [];
+            let parts = partyType && partyType.partyGroups ? partyType.partyGroups : [];
 
-        const events = {onPin:this.handlePinToggle, onSelect: this.handleToggleActive};
+            let relationClassTypes = partyType && partyType.relationTypes ? getMapFromList(partyType.relationTypes.map(i => i.relationClassType), "code") : [];
 
-        return <Shortcuts name='PartyDetail' handler={this.handleShortcuts}>
-            <div tabIndex={"0"} ref='partyDetail' className="party-detail">
+            const events = {onPin:this.handlePinToggle, onSelect: this.handleToggleActive};
+
+            content = <div tabIndex={"0"} ref='partyDetail' className="party-detail">
                 <div className="party-header">
                     <div className="header-icon">
                         <Icon glyph={icon}/>
@@ -425,6 +427,11 @@ class PartyDetail extends AbstractReactComponent {
                     })}
                 </Form>
             </div>
+        }
+
+        return <Shortcuts name='PartyDetail' handler={this.handleShortcuts}>
+            <StoreHorizontalLoader store={partyDetail} />
+            {content}
         </Shortcuts>;
     }
 }

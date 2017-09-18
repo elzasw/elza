@@ -10,7 +10,7 @@ const PARENT_CHILD_MAX_LENGTH = 250
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {TooltipTrigger, Icon, ListBox, AbstractReactComponent, i18n, Loading,  Accordion} from 'components/shared';
+import {TooltipTrigger, Icon, ListBox, AbstractReactComponent, i18n, HorizontalLoader, Loading,  Accordion} from 'components/shared';
 import VisiblePolicyForm from './VisiblePolicyForm'
 import SubNodeDao from './SubNodeDao'
 import SubNodeRegister from './SubNodeRegister'
@@ -43,10 +43,20 @@ import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
 import {visiblePolicyTypesFetchIfNeeded} from 'actions/refTables/visiblePolicyTypes.jsx'
 import * as perms from 'actions/user/Permission.jsx';
+import {PropTypes} from 'prop-types';
+import defaultKeymap from './NodePanelKeymap.jsx'
 
 import './NodePanel.less';
 
 class NodePanel extends AbstractReactComponent {
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    componentWillMount(){
+        Utils.addShortcutManager(this,defaultKeymap);
+    }
+    getChildContext() {
+        return { shortcuts: this.shortcutManager };
+    }
     constructor(props) {
         super(props);
 
@@ -162,8 +172,6 @@ class NodePanel extends AbstractReactComponent {
         console.log("#handleShortcuts", '[' + action + ']', this);
         e.preventDefault()
         e.stopPropagation()
-        console.log(e);
-
         const {node, versionId, closed, userDetail, fundId} = this.props
         const {focusItemIndex} = this.state;
         const index = indexById(node.childNodes, node.selectedSubNodeId)
@@ -183,35 +191,12 @@ class NodePanel extends AbstractReactComponent {
         }
 
         switch (action) {
-            case 'prevItem':
-                if (index > 0) {
-                    this.handleOpenItem(node.childNodes[index - 1])
-                    this.dispatch(setFocus('arr', 2, 'accordion'))
-                }
-                break
-            case 'nextItem':
-                if (index + 1 < node.childNodes.length) {
-                    this.handleOpenItem(node.childNodes[index + 1])
-                    this.dispatch(setFocus('arr', 2, 'accordion'))
-                }
-                break
             case 'searchItem':
                 ReactDOM.findDOMNode(this.refs.search.getInput().refs.input).focus()
                 break
             case 'addDescItemType':
                 if (node.selectedSubNodeId !== null && !readMode) {
                     this.handleAddDescItemType()
-                }
-                break
-            case 'toggleItem':
-                if (node.selectedSubNodeId === null) {
-                    const {focusItemIndex} = this.state
-                    this.handleOpenItem(node.childNodes[focusItemIndex])
-                    this.dispatch(setFocus('arr', 2, 'accordion'))
-                } else {
-                    const {focusItemIndex} = this.state
-                    this.handleCloseItem(node.childNodes[focusItemIndex])
-                    this.dispatch(setFocus('arr', 2, 'accordion'))
                 }
                 break
             case 'addNodeAfter':
@@ -234,6 +219,41 @@ class NodePanel extends AbstractReactComponent {
                     this.dispatch(addNodeFormArr('ATEND', node, focusItemIndex, versionId));
                 }
                 break
+        }
+    }
+
+    handleAccordionShortcuts(action,e) {
+        const {node} = this.props;
+        const {focusItemIndex} = this.state;
+        const index = indexById(node.childNodes, node.selectedSubNodeId);
+        let preventDefaultActions = ["prevItem","nextItem","toggleItem"];
+        if(preventDefaultActions.indexOf(action) >= 0){
+            e.preventDefault();
+        }
+        switch (action) {
+            case 'prevItem':
+                if (index > 0) {
+                    this.handleOpenItem(node.childNodes[index - 1])
+                    this.dispatch(setFocus('arr', 2, 'accordion'))
+                }
+                break
+            case 'nextItem':
+                if (index + 1 < node.childNodes.length) {
+                    this.handleOpenItem(node.childNodes[index + 1])
+                    this.dispatch(setFocus('arr', 2, 'accordion'))
+                }
+                break
+            case 'toggleItem':
+                if (node.selectedSubNodeId === null) {
+                    const {focusItemIndex} = this.state
+                    this.handleOpenItem(node.childNodes[focusItemIndex])
+                    this.dispatch(setFocus('arr', 2, 'accordion'))
+                } else {
+                    const {focusItemIndex} = this.state
+                    this.handleCloseItem(node.childNodes[focusItemIndex])
+                    this.dispatch(setFocus('arr', 2, 'accordion'))
+                }
+                break
             case "ACCORDION_MOVE_UP":
                 this.selectorMoveUp();
                 break;
@@ -248,7 +268,6 @@ class NodePanel extends AbstractReactComponent {
                 break;
         }
     }
-
     /**
      * Zobrazení formuláře pro požadavek na digitalizaci.
      */
@@ -596,7 +615,8 @@ return true
                     holdOnHover
                     placement="auto"
                     className="status"
-                    showDelay={1}
+                    showDelay={50}
+                    hideDelay={0}
                 >
                     <div>
                         {icon}
@@ -618,7 +638,7 @@ return true
         var rows = [];
 
         if (!node.nodeInfoFetched) {
-            rows.push(<Loading key="loading" value={i18n('global.data.loading.node')}/>);
+            rows.push(<HorizontalLoader key="loading" text={i18n('global.data.loading.node')}/>);
         } else{
             if (node.viewStartIndex > 0) {
                 rows.push(
@@ -695,7 +715,7 @@ return true
             }
         }
         return (
-            <Shortcuts name='Accordion' key='content' className='content' ref='content' handler={readMode && this.handleShortcuts} tabIndex={"0"} global stopPropagation={false}>
+            <Shortcuts name='Accordion' key='content' className='content' ref='content' handler={(action,e)=>this.handleAccordionShortcuts(action,e)} tabIndex={"0"} global stopPropagation={false}>
                 <div  className='inner-wrapper' ref="innerAccordionWrapper">
                     <div className="menu-wrapper">
                         <NodeActionsBar node={node} selectedSubNodeIndex={focusItemIndex} versionId={versionId} userDetail={userDetail} fundId={fundId} closed={closed}/>
@@ -736,7 +756,7 @@ return true
             if (node.subNodeInfo.fetched || node.selectedSubNodeId == null) {
                 children = this.renderChildren(this.getChildNodes());
             } else {
-                children = <div key='children' className='children'><Loading value={i18n('global.data.loading.node.children')} /></div>
+                children = <div key='children' className='children'><HorizontalLoader text={i18n('global.data.loading.node.children')} /></div>
             }
         }
 
@@ -784,7 +804,7 @@ return true
                 readMode={readMode}
             />
         } else {
-            form = <Loading value={i18n('global.data.loading.form')}/>
+            form = <HorizontalLoader text={i18n('global.data.loading.form')}/>
         }
 
         let record;

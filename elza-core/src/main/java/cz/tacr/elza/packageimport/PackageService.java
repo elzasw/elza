@@ -53,6 +53,7 @@ import cz.tacr.elza.api.UseUnitdateEnum;
 import cz.tacr.elza.api.enums.ParRelationClassTypeRepeatabilityEnum;
 import cz.tacr.elza.api.enums.UIPartyGroupTypeEnum;
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
@@ -381,6 +382,9 @@ public class PackageService {
 
     @Autowired
     private InterpiService interpiService;
+    
+    @Autowired
+    StaticDataService staticDataService;
 
     @Autowired
     private PackageDependencyRepository packageDependencyRepository;
@@ -532,6 +536,8 @@ public class PackageService {
                     cleanBackupTemplates(dirTemplates, newRultemplates);
                 }
             }
+            
+            staticDataService.reloadOnCommit();
 
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
                 @Override
@@ -2436,6 +2442,7 @@ public class PackageService {
 
             bulkActionConfigManager.load();
 
+            staticDataService.reloadOnCommit();
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
                 @Override
                 public void afterCommit() {

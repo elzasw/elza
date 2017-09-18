@@ -9,7 +9,7 @@ import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.RulTemplate.Engine;
 import cz.tacr.elza.print.Node;
 import cz.tacr.elza.print.NodeId;
-import cz.tacr.elza.print.Output;
+import cz.tacr.elza.print.OutputImpl;
 
 /**
  * Factory metoda pro vytváření objektů {@link OutputGeneratorWorkerJasper} a objektů vytvářených při jeho běhu s dependency injections.
@@ -40,8 +40,8 @@ public class OutputGeneratorWorkerFactory {
      * @param arrOutput zdrojová deinice výstupu
      * @return vytvořený objekt s provedeným dependency injections
      */
-    public Output getOutput(final ArrOutput arrOutput) {
-        return new Output(arrOutput);
+    public OutputImpl getOutput(final ArrOutput arrOutput) {
+        return new OutputImpl(arrOutput);
     }
 
 
@@ -54,7 +54,7 @@ public class OutputGeneratorWorkerFactory {
      * @param depth hloubka uzlu od kořene
      * @return vytvořený objekt s provedeným dependency injections
      */
-    public NodeId getNodeId(final Output output, final Integer arrNodeId, final Integer parentNodeId,
+    public NodeId getNodeId(final OutputImpl output, final Integer arrNodeId, final Integer parentNodeId,
             final Integer position, final Integer depth) {
         return new NodeId(output, arrNodeId, parentNodeId, position, depth);
     }
@@ -65,7 +65,7 @@ public class OutputGeneratorWorkerFactory {
      * @param output output ke kterému je node zařazen
      * @return vytvořený objekt s provedeným dependency injections
      */
-    public Node getNode(final NodeId nodeId, final Output output) {
+    public Node getNode(final NodeId nodeId, final OutputImpl output) {
         return new Node(nodeId, output);
     }
 }

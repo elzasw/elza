@@ -112,7 +112,7 @@ public class RegistryControllerTest extends AbstractControllerTest {
     public void scenarioTest() {
 
         /** Smazání tabulek (kvůli XML importu pro zakládání archivních fondů) **/
-        deleteTables();
+    	helperTestService.deleteTables();
 
         RegRecordVO recordA = new RegRecordVO();
         RegRecordVO recordB = new RegRecordVO();

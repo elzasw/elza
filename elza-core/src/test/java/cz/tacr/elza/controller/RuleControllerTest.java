@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Assert;
 import org.junit.Test;
-import org.springframework.util.Assert;
 
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
@@ -17,8 +17,7 @@ import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 
 
 /**
- * @author Petr Compel
- * @since 17.2.2016
+ * Test for rule controller
  */
 public class RuleControllerTest extends AbstractControllerTest {
 
@@ -60,21 +59,23 @@ public class RuleControllerTest extends AbstractControllerTest {
         ArrNodeVO rootNode = convertTreeNode(rootTreeNodeClient);
 
         List<RulPolicyTypeVO> policyAllTypes = getAllPolicyTypes();
-        Assert.notEmpty(policyAllTypes);
+        Assert.assertNotNull(policyAllTypes);
+        Assert.assertTrue(policyAllTypes.size()==4);
 
         List<RulPolicyTypeVO> policyTypes = getPolicyTypes(fundVersion.getId());
-        Assert.notEmpty(policyTypes);
+        Assert.assertNotNull(policyTypes);
 
+        // check that all are visible by default
         RuleController.VisiblePolicyTypes visiblePolicy = getVisiblePolicy(rootNode.getId(), fundVersion.getId(), false);
-        Assert.notNull(visiblePolicy);
+        Assert.assertNotNull(visiblePolicy);
         Map<Integer, Boolean> policyTypeIdsMap = visiblePolicy.getPolicyTypeIdsMap();
-        Assert.notNull(policyTypeIdsMap);
-        Assert.isTrue(policyTypeIdsMap.size() == 3);
+        Assert.assertNotNull(policyTypeIdsMap);
+        Assert.assertTrue(policyTypeIdsMap.size() == 4);
 
         for (RulPolicyTypeVO policyType : policyTypes) {
             Boolean state = policyTypeIdsMap.get(policyType.getId());
-            Assert.notNull(state, "Stav musí být vyplněn");
-            Assert.isTrue(state);
+            Assert.assertNotNull(state);
+            Assert.assertTrue(state);
         }
 
         RuleController.VisiblePolicyParams params = new RuleController.VisiblePolicyParams();
@@ -85,17 +86,19 @@ public class RuleControllerTest extends AbstractControllerTest {
         setVisiblePolicy(rootNode.getId(), fundVersion.getId(), params);
 
         visiblePolicy = getVisiblePolicy(rootNode.getId(), fundVersion.getId(), false);
-        Assert.notNull(visiblePolicy);
+        Assert.assertNotNull(visiblePolicy);
         policyTypeIdsMap = visiblePolicy.getPolicyTypeIdsMap();
-        Assert.notNull(policyTypeIdsMap);
-        Assert.isTrue(policyTypeIdsMap.size() == 3);
+        Assert.assertNotNull(policyTypeIdsMap);
+        Assert.assertTrue(policyTypeIdsMap.size() == 4);
 
+        // check that all are false
         for (RulPolicyTypeVO policyType : policyTypes) {
             Boolean state = policyTypeIdsMap.get(policyType.getId());
-            Assert.notNull(state, "Stav musí být vyplněn");
-            Assert.isTrue(!state);
+            Assert.assertNotNull(state);
+            Assert.assertTrue(!state);
         }
 
+        // drop old settings
         params = new RuleController.VisiblePolicyParams();
         Map<Integer, Boolean> policyTypeIdsMapDelete = new HashMap<>();
         params.setIncludeSubtree(false);
@@ -103,15 +106,16 @@ public class RuleControllerTest extends AbstractControllerTest {
         setVisiblePolicy(rootNode.getId(), fundVersion.getId(), params);
 
         visiblePolicy = getVisiblePolicy(rootNode.getId(), fundVersion.getId(), false);
-        Assert.notNull(visiblePolicy);
+        Assert.assertNotNull(visiblePolicy);
         policyTypeIdsMap = visiblePolicy.getPolicyTypeIdsMap();
-        Assert.notNull(policyTypeIdsMap);
-        Assert.isTrue(policyTypeIdsMap.size() == 3);
+        Assert.assertNotNull(policyTypeIdsMap);
+        Assert.assertTrue(policyTypeIdsMap.size() == 4);
 
+        // check that all are true
         for (RulPolicyTypeVO policyType : policyTypes) {
             Boolean state = policyTypeIdsMap.get(policyType.getId());
-            Assert.notNull(state, "Stav musí být vyplněn");
-            Assert.isTrue(state);
+            Assert.assertNotNull(state);
+            Assert.assertTrue(state);
         }
     }
 

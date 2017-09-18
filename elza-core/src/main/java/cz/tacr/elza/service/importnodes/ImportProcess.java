@@ -1,8 +1,35 @@
 package cz.tacr.elza.service.importnodes;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.Stack;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.castor.core.util.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
+
+import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -79,30 +106,6 @@ import cz.tacr.elza.service.importnodes.vo.descitems.ItemText;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemUnitdate;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemUnitid;
 import cz.tacr.elza.utils.StringUtils;
-import org.apache.commons.collections4.CollectionUtils;
-import org.castor.core.util.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.Stack;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Obsluha importního procesu zdroje do AS.
@@ -331,17 +334,19 @@ public class ImportProcess {
 
         levelTreeCacheService.invalidateFundVersion(targetFundVersion);
 
-        eventNotificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, targetFundVersion.getFundVersionId(), targetNode.getNodeId()));
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-            @Override
-            public void afterCommit() {
-                logger.info("Dokončení importu do AS: " + nodeIds.size() + " uzlů");
-                if (nodeIds.size() > 0) {
-                    nodeCacheService.syncCache(() -> ruleService.conformityInfo(targetFundVersion.getFundVersionId(),
-                            nodeIds, NodeTypeOperation.CREATE_NODE, null, null, null));
+        if (nodeIds.size() > 0) {
+            nodeCacheService.syncCache();
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                @Override
+                public void afterCommit() {
+                    ruleService.conformityInfo(targetFundVersion.getFundVersionId(), nodeIds, NodeTypeOperation.CREATE_NODE, null,
+                            null, null);
                 }
-            }
-        });
+            });
+        }
+        logger.info("Dokončení importu do AS: " + nodeIds.size() + " uzlů");
+
+        eventNotificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, targetFundVersion.getFundVersionId(), targetNode.getNodeId()));
     }
 
     /**
@@ -381,13 +386,13 @@ public class ImportProcess {
             ArrCalendarType calendarType = calendarTypeMap.get(((ItemUnitdate) item).getCalendarTypeCode());
             value = ((ArrDataUnitdate) data).getValueFrom();
             if (value != null) {
-                ((ArrDataUnitdate) data).setNormalizedFrom(CalendarConverter.toSeconds(CalendarConverter.CalendarType.valueOf(calendarType.getCode()), LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+                ((ArrDataUnitdate) data).setNormalizedFrom(CalendarConverter.toSeconds(CalendarType.valueOf(calendarType.getCode()), LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
             } else {
                 ((ArrDataUnitdate) data).setNormalizedFrom(Long.MIN_VALUE);
             }
             value = ((ArrDataUnitdate) data).getValueTo();
             if (value != null) {
-                ((ArrDataUnitdate) data).setNormalizedTo(CalendarConverter.toSeconds(CalendarConverter.CalendarType.valueOf(calendarType.getCode()), LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+                ((ArrDataUnitdate) data).setNormalizedTo(CalendarConverter.toSeconds(CalendarType.valueOf(calendarType.getCode()), LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
             } else {
                 ((ArrDataUnitdate) data).setNormalizedTo(Long.MAX_VALUE);
             }
@@ -745,8 +750,12 @@ public class ImportProcess {
 
         @Override
         public boolean equals(final Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
             Pair pair = (Pair) o;
             return Objects.equals(key, pair.key) &&
                     Objects.equals(value, pair.value);

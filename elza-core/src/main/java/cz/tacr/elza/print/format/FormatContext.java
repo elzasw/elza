@@ -3,9 +3,10 @@ package cz.tacr.elza.print.format;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * Context of active formatting
- * @author Petr Pytelka
  *
  */
 public class FormatContext {
@@ -98,9 +99,14 @@ public class FormatContext {
 	 * @param value
 	 */
 	public void appendValue(String value) {
+		if(StringUtils.isBlank(value)) {
+			return;
+		}
+
 		if(resultBuffer.length()>0) {
 			resultBuffer.append(itemSeparator);
 		}
+		
 		resultBuffer.append(value);	
 	}
 	
@@ -112,9 +118,11 @@ public class FormatContext {
 		if(resultBuffer.length()>0) {
 			resultBuffer.append(itemSeparator);
 		}
-		resultBuffer.append(spec);
-		resultBuffer.append(specificationSeparator);
-		resultBuffer.append(value);	
+		resultBuffer.append(spec);		
+		if(StringUtils.isNoneBlank(value)) {
+			resultBuffer.append(specificationSeparator);
+			resultBuffer.append(value);
+		}
 	}
 	
 	/**

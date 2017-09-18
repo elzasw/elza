@@ -1,0 +1,60 @@
+package cz.tacr.elza.deimport.aps.context;
+
+import java.io.Serializable;
+
+import org.apache.commons.lang3.Validate;
+
+import cz.tacr.elza.deimport.context.EntityState;
+import cz.tacr.elza.deimport.context.StatefulIdHolder;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegRegisterType;
+
+/**
+ * Access point import info which primarily stores id and result of record pairing.
+ */
+public class RecordImportInfo extends StatefulIdHolder {
+
+    private final String apEntryId;
+
+    private final RegRegisterType registerType;
+
+    private String fulltext;
+
+    RecordImportInfo(String apEntryId, RegRegisterType registerType) {
+        this.apEntryId = Validate.notNull(apEntryId);
+        this.registerType = Validate.notNull(registerType);
+    }
+
+    public String getApEntryId() {
+        return apEntryId;
+    }
+
+    public RegRegisterType getRegisterType() {
+        return registerType;
+    }
+
+    public String getFulltext() {
+        return Validate.notNull(fulltext);
+    }
+
+    public void setFulltext(String fulltext) {
+        this.fulltext = fulltext;
+    }
+
+    @Override
+    public Integer getId() {
+        return (Integer) super.getId();
+    }
+
+    @Override
+    public void checkReferenceClass(Class<?> entityClass) {
+        if (RegRecord.class != entityClass) {
+            throw new IllegalStateException("Class " + entityClass + " is not suitable as entity reference");
+        }
+    }
+
+    @Override
+    protected void init(Serializable id, EntityState state) {
+        super.init(id, state);
+    }
+}

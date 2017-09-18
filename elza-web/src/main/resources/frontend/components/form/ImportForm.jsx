@@ -22,15 +22,8 @@ class ImportForm extends AbstractReactComponent {
      */
     static validate = (values, props) => {
         const errors = {};
-
-        if (values.transformationName) {
-            if (!values.ruleSetId) {
-                errors.ruleSetId = i18n('global.validation.required');
-            }
-
-        }
-
-        if (!values.recordScope || !values.recordScope.name) {
+        
+        if (!values.recordScope || !values.recordScope.id) {
             errors.recordScope = i18n('global.validation.required');
         }
         if (!values.xmlFile || values.xmlFile == null) {
@@ -53,19 +46,11 @@ class ImportForm extends AbstractReactComponent {
 
     componentDidMount() {
         this.dispatch(refRuleSetFetchIfNeeded());
-        if (this.props.fund) {
-            WebApi.getAllScopes().then(json => {
-                this.setState({
-                    defaultScopes: json
-                });
+        WebApi.getAllScopes().then(json => {
+            this.setState({
+                defaultScopes: json
             });
-        } else {
-            WebApi.getDefaultScopes().then(json => {
-                this.setState({
-                    defaultScopes: json
-                });
-            });
-        }
+        });
         WebApi.getTransformations().then(json => {
             this.setState({
                 transformationNames: json
@@ -81,25 +66,14 @@ class ImportForm extends AbstractReactComponent {
 
         const data = {
             xmlFile: values.xmlFile[0],
-            importDataFormat: this.props.fund ? 'FUND' : (this.props.record ? 'RECORD' : 'PARTY'),
-            stopOnError: values.stopOnError && values.stopOnError == 1 ? values.stopOnError : false
         };
-
-        if (values.ruleSetId) {
-            data.ruleSetId = values.ruleSetId;
-        }
 
         if (values.transformationName) {
             data.transformationName = values.transformationName;
         }
 
-        if (values.recordScope) {
-            if (values.recordScope.id) {
-                data.scopeId = values.recordScope.id;
-            }
-            if (values.recordScope.name) {
-                data.scopeName = values.recordScope.name;
-            }
+        if (values.recordScope && values.recordScope.id) {
+            data.scopeId = values.recordScope.id;
         }
 
         const formData = new FormData();
@@ -114,8 +88,7 @@ class ImportForm extends AbstractReactComponent {
     };
 
     render() {
-        const {fields: {ruleSetId, transformationName, recordScope, stopOnError, xmlFile}, onClose, handleSubmit, refTables, values} = this.props;
-        const ruleSets = refTables.ruleSet.items;
+        const {fields: {transformationName, recordScope, xmlFile}, onClose, handleSubmit, refTables, values} = this.props;
 
         return (
             <div>
@@ -135,7 +108,6 @@ class ImportForm extends AbstractReactComponent {
                                             {...recordScope}
                                             {...decorateFormField(recordScope)}
                                             help={null} /// TODO odstranit z decorateFormField help
-                                            tags={this.props.fund == true}
                                             label={i18n('import.registryScope')}
                                             items={this.state.defaultScopes}
                                             getItemId={(item) => item ? item : null}
@@ -157,18 +129,7 @@ class ImportForm extends AbstractReactComponent {
                                         }
                                     </div>
                                 }
-                                {
-                                    this.props.fund && transformationName.value && <div>
-                                        <FormInput componentClass="select" label={i18n('arr.fund.ruleSet')} {...ruleSetId} {...decorateFormField(ruleSetId)}>
-                                            <option key='-ruleSetId'/>
-                                            {ruleSets.map(i=> {
-                                                return <option value={i.id}>{i.name}</option>
-                                            })}
-                                        </FormInput>
-                                    </div>
-                                }
-                                <Checkbox{...stopOnError} {...decorateFormField(stopOnError)}>{i18n('import.stopOnError')}</Checkbox>
-
+                                
                                 <label>{i18n('import.file')}</label>
                                 <FormInput type="file" {...xmlFile} {...decorateFormField(xmlFile)} value={null}/>
                             </Modal.Body>
