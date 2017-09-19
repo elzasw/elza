@@ -7,6 +7,7 @@ import {connect} from 'react-redux'
 import AbstractReactComponent from "../../AbstractReactComponent";
 import * as Utils from "../../Utils";
 import Resizer from "../resizer/Resizer";
+import DataGridRow from "./DataGridRow";
 import i18n from "../../i18n";
 const scrollIntoView = require('dom-scroll-into-view')
 import {propsEquals, getScrollbarWidth} from 'components/Utils.jsx'
@@ -34,23 +35,18 @@ class DataGrid extends AbstractReactComponent {
         this.bindMethods(
             'handleScroll',
             'renderHeaderCol',
-            'renderCell',
             'ensureFocusVisible',
             'handleResizerMouseDown',
             'handleMouseUp',
             'handleMouseMove',
             'unFocus',
-            'handleCellClick',
-            'handleCheckboxChange',
             'getExtColumnIndex',
-            'handleEdit',
             'handleDelete',
-            'handleContextMenu',
             'computeColumnsWidth',
             "focus",
         );
 
-        let state = this.getStateFromProps(props, {fixedLeft: 0});
+        let state = this.getStateFromProps(props, {fixedLeft: 0}, {});
         state.columnSizeDragged = false;
         state.selectedRowIndexes = {[state.focus.row]: true} ;  // označené řádky v aktuálním zobrazení - pouze klientské označení
 
@@ -101,7 +97,7 @@ class DataGrid extends AbstractReactComponent {
     };
 
     componentWillReceiveProps(nextProps) {
-        this.setState(this.getStateFromProps(nextProps, this.state),
+        this.setState(this.getStateFromProps(nextProps, this.state, this.props),
         () => {
             this.ensureFocusVisible(this.state.focus);
             this.computeColumnsWidth();
@@ -122,65 +118,102 @@ class DataGrid extends AbstractReactComponent {
         this.refs.dataGrid.focus()
     }
 
-    getStateFromProps(props, currState) {
-        var cols = []
-        var colWidths = {}
-        if (props.allowRowCheck) {
-            cols.push({_rowCheck: true, width: 45, resizeable: false})
-            colWidths[0] = 45;
-        }
-        var needComputeColumnsWidth = props.staticColumns;
-        props.cols.forEach((col, colIndex) => {
-            var useColIndex = props.allowRowCheck ? colIndex + 1 : colIndex;
+    getStateFromProps(props, currState, currProps) {
+        // Cols a widths
+        let cols;
+        let colWidths;
+        let needComputeColumnsWidth;
+        if (this.props.staticColumns !== props.staticColumns
+            || this.props.allowRowCheck !== props.allowRowCheck
+            || this.props.cols !== props.cols
+        ) {
+            cols = [];
+            colWidths = {};
+            needComputeColumnsWidth = props.staticColumns;
 
-            if (props.staticColumns) {
-                if (currState.colWidths) {
-                    colWidths[useColIndex] = currState.colWidths[useColIndex];
-                } else {
-                    colWidths[useColIndex] = 10;
-                }
-            } else {
-                colWidths[useColIndex] = col.width
+            if (props.allowRowCheck) {
+                cols.push({_rowCheck: true, width: 45, resizeable: false})
+                colWidths[0] = 45;
             }
-            cols.push(col)
-        })
+            props.cols.forEach((col, colIndex) => {
+                var useColIndex = props.allowRowCheck ? colIndex + 1 : colIndex;
 
-        var selectedIds = {}
-        if (typeof props.selectedIds !== 'undefined') {
-            props.selectedIds.forEach(id => {
-                selectedIds[id] = true
+                if (props.staticColumns) {
+                    if (currState.colWidths) {
+                        colWidths[useColIndex] = currState.colWidths[useColIndex];
+                    } else {
+                        colWidths[useColIndex] = 10;
+                    }
+                } else {
+                    colWidths[useColIndex] = col.width
+                }
+                cols.push(col)
             });
         } else {
-            selectedIds = currState.selectedIds;
+            cols = currState.cols || [];
+            colWidths = currState.colWidths || {};
+            needComputeColumnsWidth = currState.needComputeColumnsWidth || false;
         }
 
-        var selectedRowIndexes = {};
-        if (typeof props.selectedRowIndexes !== 'undefined') {
-            props.selectedRowIndexes.forEach(id => {
-                selectedRowIndexes[id] = true
-            });
+        // Selected ids a row indexes
+        let selectedIds;
+        let selectedRowIndexes;
+        if (props.selectedIds !== currProps.selectedIds
+            || props.selectedRowIndexes !== currProps.selectedRowIndexes
+        ) {
+
+            selectedIds = {};
+            if (typeof props.selectedIds !== 'undefined') {
+                props.selectedIds.forEach(id => {
+                    selectedIds[id] = true
+                });
+            } else {
+                selectedIds = currState.selectedIds;
+            }
+            selectedRowIndexes = {};
+            if (typeof props.selectedRowIndexes !== 'undefined') {
+                props.selectedRowIndexes.forEach(id => {
+                    selectedRowIndexes[id] = true
+                });
+            } else {
+                selectedRowIndexes = currState.selectedRowIndexes;
+            }
         } else {
-            selectedRowIndexes = currState.selectedRowIndexes;
+            selectedIds = currProps.selectedIds || {};
+            selectedRowIndexes = currProps.selectedRowIndexes || {};
         }
 
-        var focusRow
-        if (typeof props.focusRow !== 'undefined') {
-            focusRow = props.focusRow
-        } else if (currState.focus) {
-            focusRow = currState.focus.row
+        // Focus
+        let focus;
+        if (props.focusRow !== currProps.focusRow
+            || props.focusCol !== currProps.focusCol
+        ) {
+            let focusRow;
+            if (typeof props.focusRow !== 'undefined') {
+                focusRow = props.focusRow
+            } else if (currState.focus) {
+                focusRow = currState.focus.row
+            } else {
+                focusRow = 0
+            }
+            let focusCol;
+            if (typeof props.focusCol !== 'undefined') {
+                focusCol = props.focusCol
+            } else if (currState.focus) {
+                focusCol = currState.focus.col
+            } else {
+                focusCol = 0
+            }
+            focus = {row: focusRow, col: focusCol}
         } else {
-            focusRow = 0
+            if (currState.focus) {
+                focus = currState.focus;
+            } else {
+                focus = {row: 0, col: 0}
+            }
         }
 
-        var focusCol
-        if (typeof props.focusCol !== 'undefined') {
-            focusCol = props.focusCol
-        } else if (currState.focus) {
-            focusCol = currState.focus.col
-        } else {
-            focusCol = 0
-        }
-        var focus = {row: focusRow, col: focusCol}
+        // ---
 
         return {
             focus,
@@ -242,13 +275,7 @@ class DataGrid extends AbstractReactComponent {
         }
     }
 
-    handleCellClick(rowIndex, colIndex, e) {
-        const {allowRowCheck} = this.props
-
-        if (allowRowCheck && (colIndex === 0 && e.target.tagName === 'INPUT')) {   // první sloupec - označování řádků, zde neřešíme, pokud klikne na checkbox
-            return
-        }
-
+    handleCellClick = (rowIndex, colIndex, e) => {
         this.unFocus()
 
         const {focus, selectedRowIndexes} = this.state
@@ -356,7 +383,7 @@ class DataGrid extends AbstractReactComponent {
         }
     }
 
-    handleCheckboxChange(row, rowIndex, e) {
+    handleCheckboxChange = (row, rowIndex) => {
         const {rows, onSelectedIdsChange} = this.props
         const {selectedIds, selectedRowIndexes} = this.state
 
@@ -384,69 +411,19 @@ class DataGrid extends AbstractReactComponent {
         }
 
         onSelectedIdsChange(Object.keys(newSelectedIds))
-    }
+    };
 
-    handleContextMenu(row, rowIndex, col, colIndex, e) {
-        const {onContextMenu} = this.props
-        this.handleCellClick(rowIndex, colIndex, e)
-        onContextMenu && onContextMenu(row, rowIndex, col, col._rowCheck ? colIndex - 1 : colIndex, e)
-    }
-
-    renderCell(row, rowIndex, col, colIndex, colFocus, cellFocus) {
-        const {colWidths, selectedIds, fixedLeft} = this.state
-        const {startRowIndex} = this.props;
-
-        var content
-        if (col._rowCheck) {    // speciální slupeček pro označování řádků
-            const checked = selectedIds[row.id] === true
-            let style = {};
-            style.left = fixedLeft;
-
-            /// TODO - asi použít Checkbox místo input
-            content = (
-                <div key="content" className='cell-container' style={style}>
-                    <div>
-                        <input type='checkbox' checked={checked} onChange={this.handleCheckboxChange.bind(this, row, rowIndex)} /> {rowIndex + 1 + startRowIndex}
-                    </div>
-                </div>
-            )
-        } else {
-            if (col.cellRenderer) {
-                content = <div key={"content-"+colIndex} className='cell-container'>{col.cellRenderer(row, rowIndex, col, colIndex, colFocus, cellFocus)}</div>
-            } else {
-                content = <div key={"content-"+colIndex} className='cell-container'><div key={colIndex} className='value'>{row[col.dataName]}</div></div>
-            }
-        }
-
-        const colCls = colFocus ? 'focus' : '';
-        const cellCls = cellFocus ? ' cell-focus' : '';
-        const colRowCheckCls = col._rowCheck && fixedLeft > 0 ? ' col-fixed' : '';
-
-        var style = {}
-        if (rowIndex === 0) {
-            style = {width: colWidths[colIndex], maxWidth: colWidths[colIndex] }
-        }
-
-        return (
-            <td
-                key={rowIndex + '-' + colIndex}
-                ref={rowIndex + '-' + colIndex}
-                className={colCls + cellCls + colRowCheckCls}
-                style={style}
-                onClick={this.handleCellClick.bind(this, rowIndex, colIndex)}
-                onDoubleClick={this.handleEdit.bind(this, rowIndex, colIndex)}
-                onContextMenu={this.handleContextMenu.bind(this, row, rowIndex, col, colIndex)}
-            >
-                {content}
-            </td>
-        )
-    }
+    handleContextMenu = (row, rowIndex, col, colIndex, e) => {
+        const {onContextMenu} = this.props;
+        this.handleCellClick(rowIndex, colIndex, {});
+        onContextMenu && onContextMenu(row, rowIndex, col, col._rowCheck ? colIndex - 1 : colIndex, e);
+    };
 
     getCellElement(rowIndex, colIndex) {
         return this.refs[rowIndex + '-' + colIndex]
     }
 
-    handleEdit(rowIndex, colIndex) {
+    handleEdit = (rowIndex, colIndex) => {
         const {rows, onEdit, disabled} = this.props;
         const {cols} = this.state;
         if (disabled == null || !disabled) {
@@ -577,18 +554,20 @@ class DataGrid extends AbstractReactComponent {
         "MOVE_RIGHT": this.selectorMoveRight,
         "ITEM_EDIT": (e) => this.handleEdit(this.state.focus.row,this.state.focus.col),
         "ITEM_DELETE": (e) => this.handleDelete(this.state.focus.row,this.state.focus.col),
-        "ITEM_ROW_CHECK": (e) => this.handleCheckboxChange(this.props.rows[this.state.focus.row], this.state.focus.row, e)
-    }
+        "ITEM_ROW_CHECK": (e) => this.handleCheckboxChange(this.props.rows[this.state.focus.row], this.state.focus.row)
+    };
+
     handleShortcuts = (action,e)=>{
         e.stopPropagation();
         e.preventDefault();
         this.actionMap[action](e);
-    }
+    };
+
     render() {
         var cls = this.props.className ? 'datagrid-container ' + this.props.className : 'datagrid-container'
 
         const {rows, onFocus, onBlur, staticColumns, disabled, startRowIndex, morePages} = this.props;
-        const {focus, cols, colWidths, selectedRowIndexes, selectedIds} = this.state;
+        const {focus, cols, colWidths, selectedRowIndexes, selectedIds, fixedLeft} = this.state;
 
         let fullWidth = 0;
         cols.forEach((col, colIndex) => {
@@ -632,25 +611,23 @@ class DataGrid extends AbstractReactComponent {
                     <div ref='body' key="body" className='body-container' onScroll={this.handleScroll}>
                         <table className="body-table" style={bodyStyle}>
                             <tbody>
-                                {rows.map((row, rowIndex) => {
-                                    const rowWasFocus = focus.row === rowIndex
-
-                                    var rowCls = rowWasFocus ? 'focus' : ''
-                                    if (selectedRowIndexes[rowIndex]) {
-                                        rowCls += ' selected-index'
-                                    }
-                                    if (selectedIds[row.id]) {
-                                        rowCls += ' selected'
-                                    }
-
-                                    const cells = cols.map((col, colIndex) => this.renderCell(row, rowIndex, col, colIndex, focus.col === colIndex, rowWasFocus && focus.col === colIndex))
-                                    return (
-                                        <tr key={rowIndex} className={rowCls}>
-                                            {cells}
-                                            {staticColumns && <td key={-1} />}
-                                        </tr>
-                                    )
-                                })}
+                                {rows.map((row, rowIndex) => <DataGridRow
+                                    checked={selectedIds[row.id] === true}
+                                    rowIndex={rowIndex}
+                                    hasFocus={focus.row === rowIndex}
+                                    colFocus={focus.col}
+                                    cols={cols}
+                                    selected={selectedRowIndexes[rowIndex]}
+                                    row={row}
+                                    staticColumns={staticColumns}
+                                    startRowIndex={startRowIndex}
+                                    fixedLeft={fixedLeft}
+                                    colWidths={colWidths}
+                                    onCheckboxChange={this.handleCheckboxChange}
+                                    onCellClick={this.handleCellClick}
+                                    onEdit={this.handleEdit}
+                                    onContextMenu={this.handleContextMenu}
+                                />)}
                             </tbody>
                         </table>
                         {morePages && rows.length > 0 && <div>
