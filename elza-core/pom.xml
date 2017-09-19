@@ -322,27 +322,35 @@
             </resource>
         </resources>
         <testResources>
-          <!-- Copy default test resources -->
-          <testResource>
+            <!-- Copy default test resources -->
+            <testResource>
                 <directory>src/test/resources</directory>
                 <filtering>true</filtering>
                 <includes>
                     <include>**/*.yaml</include>
                 </includes>
-          </testResource>
-          <testResource>
+            </testResource>
+            <testResource>
                 <directory>src/test/resources</directory>
                 <filtering>false</filtering>
                 <excludes>
                     <exclude>**/*.yaml</exclude>
                 </excludes>
-          </testResource>
-          <!-- Add test folder with source files for packages -->
-          <testResource>
-            <directory>${basedir}/target/test-resources</directory>
-            <includes /> 
-          </testResource>
-        </testResources>    
+            </testResource>
+            <!-- Add test folder with source files for packages -->
+            <testResource>
+                <directory>${basedir}/target/test-resources</directory>
+                <includes/>
+            </testResource>
+            <testResource>
+                <directory>${project.basedir}/../package-cz-base/src</directory>
+                <targetPath>${project.basedir}/target/test-classes/package-cz-base</targetPath>
+            </testResource>
+            <testResource>
+                <directory>${project.basedir}/../rules-cz-zp2015/src</directory>
+                <targetPath>${project.basedir}/target/test-classes/rules-cz-zp2015</targetPath>
+            </testResource>
+        </testResources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -417,11 +425,11 @@
 				</dependencies>
 			</plugin>
 			<!-- Copy resources -->
-			<plugin>
+<!--			<plugin>
 			 <artifactId>maven-resources-plugin</artifactId>
-			 <!-- <version>3.0.2</version> -->
-			 <executions>			 
-			   <!-- Copy test resources -->
+			 &lt;!&ndash; <version>3.0.2</version> &ndash;&gt;
+			 <executions>
+			   &lt;!&ndash; Copy test resources &ndash;&gt;
 			   <execution>
 			     <id>copy-package-cz-base</id>
 			     <phase>generate-test-resources</phase>
@@ -433,8 +441,8 @@
 			       <resources>
 			         <resource>
 			           <directory>${project.basedir}/../package-cz-base/src</directory>
-			           <includes />			           
-			         </resource>			         
+			           <includes />
+			         </resource>
 			       </resources>
 			     </configuration>
 			   </execution>
@@ -449,13 +457,13 @@
                    <resources>
                      <resource>
                        <directory>${project.basedir}/../rules-cz-zp2015/src</directory>
-                       <includes />                    
-                     </resource>                     
+                       <includes />
+                     </resource>
                    </resources>
                  </configuration>
                </execution>
 			 </executions>
-			</plugin>
+			</plugin>-->
            <!--<plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>jaxb2-maven-plugin</artifactId>
