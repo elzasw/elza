@@ -1,10 +1,15 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import AbstractReactComponent from "../../AbstractReactComponent";
 import DataGridCol from "./DataGridCol";
 import classNames from 'classnames';
 
 class DataGridRow extends AbstractReactComponent {
     static PropTypes = {
+    };
+
+    getCellElement = (colIndex) => {
+        return ReactDOM.findDOMNode(this.refs[`col-${colIndex}`]);
     };
 
     render() {
@@ -18,6 +23,7 @@ class DataGridRow extends AbstractReactComponent {
 
         const cells = cols.map((col, colIndex) => <DataGridCol
             key={colIndex}
+            ref={`col-${colIndex}`}
             hasFocus={hasFocus && colFocus === colIndex}
             onCheckboxChange={onCheckboxChange}
             onCellClick={onCellClick}

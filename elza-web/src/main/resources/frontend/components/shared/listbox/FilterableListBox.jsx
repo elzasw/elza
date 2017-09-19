@@ -118,7 +118,7 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
             selectedIds: newSelectedIds,
             rerender: {}
         });
-    }
+    };
 
     handleSelectAll = () => {
         const {onChange, items} = this.props;
@@ -166,10 +166,6 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
         }
 
         onChange && onChange(type, [], unselectedIds, "UNSELECT_ALL");
-    };
-
-    handleCheckboxClick = (e) => {
-
     };
 
     renderItemContent(item, isActive, index, onCheckItem) {

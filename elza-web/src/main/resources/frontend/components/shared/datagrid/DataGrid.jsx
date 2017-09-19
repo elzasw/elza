@@ -123,9 +123,9 @@ class DataGrid extends AbstractReactComponent {
         let cols;
         let colWidths;
         let needComputeColumnsWidth;
-        if (this.props.staticColumns !== props.staticColumns
-            || this.props.allowRowCheck !== props.allowRowCheck
-            || this.props.cols !== props.cols
+        if (currProps.staticColumns !== props.staticColumns
+            || currProps.allowRowCheck !== props.allowRowCheck
+            || currProps.cols !== props.cols
         ) {
             cols = [];
             colWidths = {};
@@ -419,9 +419,15 @@ class DataGrid extends AbstractReactComponent {
         onContextMenu && onContextMenu(row, rowIndex, col, col._rowCheck ? colIndex - 1 : colIndex, e);
     };
 
-    getCellElement(rowIndex, colIndex) {
-        return this.refs[rowIndex + '-' + colIndex]
-    }
+    getCellElement = (rowIndex, colIndex) => {
+        let rowElement = this.getRowElement(rowIndex);
+        return rowElement ? rowElement.getCellElement(colIndex) : null;
+        // return this.refs[rowIndex + '-' + colIndex]
+    };
+
+    getRowElement = (rowIndex) => {
+        return this.refs[`row-${rowIndex}`]
+    };
 
     handleEdit = (rowIndex, colIndex) => {
         const {rows, onEdit, disabled} = this.props;
@@ -429,7 +435,7 @@ class DataGrid extends AbstractReactComponent {
         if (disabled == null || !disabled) {
             onEdit(rows[rowIndex], rowIndex, cols[colIndex], colIndex)
         }
-    }
+    };
 
     handleDelete(rowIndex, colIndex) {
         const {rows, onDelete} = this.props;
@@ -479,7 +485,8 @@ class DataGrid extends AbstractReactComponent {
     }
 
     ensureFocusVisible(focus) {
-        var cellNode = ReactDOM.findDOMNode(this.refs[focus.row + '-' + focus.col])
+        // var cellNode = ReactDOM.findDOMNode(this.refs[focus.row + '-' + focus.col])
+        const cellNode = this.getCellElement(focus.row, focus.col);
         if (cellNode !== null) {
             var bodyNode = ReactDOM.findDOMNode(this.refs.body)
             scrollIntoView(cellNode, bodyNode, { onlyScrollIfNeeded: true })
@@ -612,6 +619,7 @@ class DataGrid extends AbstractReactComponent {
                         <table className="body-table" style={bodyStyle}>
                             <tbody>
                                 {rows.map((row, rowIndex) => <DataGridRow
+                                    ref={`row-${rowIndex}`}
                                     checked={selectedIds[row.id] === true}
                                     rowIndex={rowIndex}
                                     hasFocus={focus.row === rowIndex}
