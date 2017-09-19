@@ -166,9 +166,8 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
                     ))}
                 </select>*/}
 
-                <ItemTooltipWrapper tooltipTitle="dataType.packetRef.format">
+                <ItemTooltipWrapper tooltipTitle="dataType.packetRef.format" {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked || descItem.undefined, ['autocomplete-packet'])}>
                     <Autocomplete
-                        {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked || descItem.undefined, ['autocomplete-packet'])}
                         ref='focusEl'
                         customFilter
                         onFocus={this.handleFocus}
