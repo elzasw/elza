@@ -599,13 +599,23 @@ class FundDataGrid extends AbstractReactComponent {
         const cellEl = dataGridComp.getCellElement(rowIndex, colIndex);
         const cellRect = cellEl.getBoundingClientRect();
 
+        let x = cellRect.left;
+        let y = cellRect.top;
+        const dataGridCompRect = ReactDOM.findDOMNode(dataGridComp).getBoundingClientRect();
+        if (x < dataGridCompRect.left) {
+            x = dataGridCompRect.left;
+        }
+        if (y < dataGridCompRect.top) {
+            y = dataGridCompRect.top;
+        }
+
         this.dispatch(modalDialogShow(this, null,
             <FundDataGridCellForm
                 versionId={versionId}
                 fundId={fundId}
                 routingKey='DATA_GRID'
                 closed={closed}
-                position={{x: cellRect.left, y: cellRect.top}}
+                position={{x, y}}
             />,
             'fund-data-grid-cell-edit', this.handleEditClose));
     }
@@ -613,7 +623,7 @@ class FundDataGrid extends AbstractReactComponent {
     handleEditClose() {
         const {versionId} = this.props;
 
-        this.dispatch(nodeFormActions.fundSubNodeFormHandleClose(versionId, 'DATA_GRID'))
+        this.dispatch(nodeFormActions.fundSubNodeFormHandleClose(versionId, 'DATA_GRID'));
 
         this.setState({},
             ()=> {
