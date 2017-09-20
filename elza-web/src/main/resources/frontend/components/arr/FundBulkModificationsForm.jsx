@@ -12,8 +12,10 @@ import  './FundBulkModificationsForm.less';
 import SimpleCheckListBox from "./SimpleCheckListBox";
 import {validateInt} from "../validate";
 import DescItemUnitdate from "./nodeForm/DescItemUnitdate";
+import DescItemRecordRef from "./nodeForm/DescItemRecordRef";
 import DatationField from './../party/DatationField';
 import {FILTER_NULL_VALUE} from 'actions/arr/fundDataGrid.jsx'
+import {getMapFromList} from './../../stores/app/utils.jsx';
 
 const getDefaultOperationType = props => {
     const {dataType} = props;
@@ -92,7 +94,6 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                         break;
                     }
                     case 'UNITDATE': {
-
                         try {
                             DatationField.validate(values.replaceText.value);
                         } catch (err) {
@@ -102,8 +103,10 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                         if (!errors.replaceText && values.replaceText && !values.replaceText.calendarTypeId) {
                             errors.replaceText = i18n('global.validation.required');
                         }
-
                         break;
+                    }
+                    case 'RECORD_REF': {
+                        console.log(222222222, values)
                     }
                 }
 
@@ -170,6 +173,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
             case 'UNITID':
             case 'INT':
             case 'UNITDATE':
+            case 'RECORD_REF':
                 result = true;
                 break;
             default:
@@ -235,10 +239,25 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                     );
                 }
 
+                // Pomocné props pro předávání na hodnoty typu desc item
+                const descItemProps = {
+                    hasSpecification: refType.useSpecification,
+                    locked: false,
+                    readMode: false,
+                    cal: false,
+                    readOnly: false,
+                    onChange: (data) => {
+                        replaceText.onChange({value: data});
+                    },
+                    onBlur: (e) => {
+                        // záměrně ignorujeme
+                    }
+                };
+
                 switch (dataType.code) {
-                    case 'UNITDATE':
-                        const data = {
-                            hasSpecification: false,
+                    case 'UNITDATE': {
+                        let data = {
+                            ...descItemProps,
                             descItem: {
                                 error: {
                                     calendarType: replaceText.error ? replaceText.error : null,
@@ -247,18 +266,31 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                                 value: replaceText.value.value,
                                 calendarTypeId: replaceText.value.calendarTypeId
                             },
-                            locked: false,
-                            readMode: false,
-                            cal: false,
-                            readOnly: false,
-                            onChange: (data) => {
-                                replaceText.onChange({value: data});
-                            },
-                            onBlur: (e) => {
-                                // záměrně ignorujeme
-                            }
                         };
                         operationInputs.push(<FormInput componentClass={DescItemUnitdate} label={i18n('arr.fund.bulkModifications.replace.replaceText')} calendarTypes={calendarTypes} {...replaceText} {...data} />);
+                    }
+                        break;
+                    case "RECORD_REF": {
+                        let specName = null;
+                        if (replaceSpec.value) {
+                            const map = getMapFromList(refType.descItemSpecs);
+                            specName = map[replaceSpec.value].name;
+                        }
+
+                        let data = {
+                            ...descItemProps,
+                            itemName: refType.shortcut,
+                            specName: specName,
+                            descItem: {
+                                error: {
+                                    value: replaceText.error ? replaceText.error : null,
+                                },
+                                record: replaceText.value,
+                                descItemSpecId: replaceSpec.value,
+                            },
+                        };
+                        operationInputs.push(<FormInput componentClass={DescItemRecordRef} label={i18n('arr.fund.bulkModifications.replace.replaceText')} {...replaceText} {...data} />);
+                    }
                         break;
                     default:
                         operationInputs.push(<FormInput type="text" label={i18n('arr.fund.bulkModifications.replace.replaceText')} {...replaceText} {...decorateFormField(replaceText)} />);
