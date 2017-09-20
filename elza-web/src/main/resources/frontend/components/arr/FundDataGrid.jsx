@@ -65,6 +65,20 @@ import {getPagesCount} from "../shared/datagrid/DataGridPagination";
 import {FILTER_NULL_VALUE} from 'actions/arr/fundDataGrid.jsx'
 
 class FundDataGrid extends AbstractReactComponent {
+    static PropTypes = {
+        fundId: React.PropTypes.number.isRequired,
+        versionId: React.PropTypes.number.isRequired,
+        fund: React.PropTypes.object.isRequired,
+        rulDataTypes: React.PropTypes.object.isRequired,
+        descItemTypes: React.PropTypes.object.isRequired,
+        packetTypes: React.PropTypes.object.isRequired,
+        calendarTypes: React.PropTypes.object.isRequired,
+        ruleSet: React.PropTypes.object.isRequired,
+        readMode: React.PropTypes.bool.isRequired,
+        closed: React.PropTypes.bool.isRequired,
+        fundDataGrid: React.PropTypes.object.isRequired,    // store
+    };
+
     constructor(props) {
         super(props);
 
@@ -159,7 +173,7 @@ class FundDataGrid extends AbstractReactComponent {
         }
     }
 
-    referenceMarkCellRenderer(row, rowIndex, col, colIndex, colFocus, cellFocus) {
+    referenceMarkCellRenderer(row, rowIndex, col, colIndex, cellFocus) {
         const referenceMark = row.referenceMark;
 
         let itemValue;
@@ -172,7 +186,7 @@ class FundDataGrid extends AbstractReactComponent {
         return <div className='cell-value-wrapper'>{itemValue}</div>
     }
 
-    cellRenderer(row, rowIndex, col, colIndex, colFocus, cellFocus) {
+    cellRenderer(row, rowIndex, col, colIndex, cellFocus) {
         const colValue = row[col.dataName]
 
         var displayValue
@@ -507,9 +521,22 @@ class FundDataGrid extends AbstractReactComponent {
                     break
             }
 
+            // Zpracování hodnoty pro odeslání - musíme ji správně převést do testového formáltu pro odeslání na serveru
             let replaceText = data.replaceText;
-            if (dataType.code === 'UNITDATE' && replaceText != null && typeof replaceText === 'object') {
-                replaceText = replaceText.calendarTypeId + '|' + replaceText.value;
+            if (replaceText) {
+                switch (dataType.code) {
+                    case "UNITDATE":
+                        if (typeof replaceText === 'object') {
+                            replaceText = replaceText.calendarTypeId + '|' + replaceText.value;
+                        }
+                        break;
+                    case "RECORD_REF":
+                        replaceText = replaceText.id;
+                        break;
+                    default:
+                        // standardně nic neděláme, zpracovávají se jen speciální typy
+                        break;
+                }
             }
 
             // Získání seznam specifikací
@@ -585,13 +612,23 @@ class FundDataGrid extends AbstractReactComponent {
         const cellEl = dataGridComp.getCellElement(rowIndex, colIndex);
         const cellRect = cellEl.getBoundingClientRect();
 
+        let x = cellRect.left;
+        let y = cellRect.top;
+        const dataGridCompRect = ReactDOM.findDOMNode(dataGridComp).getBoundingClientRect();
+        if (x < dataGridCompRect.left) {
+            x = dataGridCompRect.left;
+        }
+        if (y < dataGridCompRect.top) {
+            y = dataGridCompRect.top;
+        }
+
         this.dispatch(modalDialogShow(this, null,
             <FundDataGridCellForm
                 versionId={versionId}
                 fundId={fundId}
                 routingKey='DATA_GRID'
                 closed={closed}
-                position={{x: cellRect.left, y: cellRect.top}}
+                position={{x, y}}
             />,
             'fund-data-grid-cell-edit', this.handleEditClose));
     }
@@ -599,7 +636,7 @@ class FundDataGrid extends AbstractReactComponent {
     handleEditClose() {
         const {versionId} = this.props;
 
-        this.dispatch(nodeFormActions.fundSubNodeFormHandleClose(versionId, 'DATA_GRID'))
+        this.dispatch(nodeFormActions.fundSubNodeFormHandleClose(versionId, 'DATA_GRID'));
 
         this.setState({},
             ()=> {
@@ -805,19 +842,6 @@ class FundDataGrid extends AbstractReactComponent {
         )
     }
 }
-
-
-FundDataGrid.propTypes = {
-    fundId: React.PropTypes.number.isRequired,
-    versionId: React.PropTypes.number.isRequired,
-    fund: React.PropTypes.object.isRequired,
-    rulDataTypes: React.PropTypes.object.isRequired,
-    descItemTypes: React.PropTypes.object.isRequired,
-    packetTypes: React.PropTypes.object.isRequired,
-    ruleSet: React.PropTypes.object.isRequired,
-    readMode: React.PropTypes.bool.isRequired,
-    closed: React.PropTypes.bool.isRequired,
-};
 
 function mapStateToProps(state) {
     const {splitter} = state;

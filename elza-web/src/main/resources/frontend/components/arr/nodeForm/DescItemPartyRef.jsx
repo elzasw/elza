@@ -46,7 +46,6 @@ class DescItemPartyRef extends AbstractReactComponent {
                 onSelect(data);
                 this.dispatch(partyListFilter({text:null, type:null, itemSpecId: null}));
                 this.dispatch(partyDetailClear());
-                this.dispatch(modalDialogHide());
             }}
         />, classNames(MODAL_DIALOG_VARIANT.FULLSCREEN, MODAL_DIALOG_VARIANT.NO_HEADER)));
     };

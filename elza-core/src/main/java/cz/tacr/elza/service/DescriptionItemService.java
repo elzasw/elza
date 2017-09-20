@@ -18,6 +18,7 @@ import javax.annotation.Nullable;
 import com.google.common.collect.Lists;
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.domain.ArrCalendarType;
+import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.exception.BusinessException;
@@ -29,8 +30,12 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ItemSpecRegisterRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
+import cz.tacr.elza.service.importnodes.ImportProcess;
+import cz.tacr.elza.service.importnodes.vo.descitems.ItemPacketRef;
+import cz.tacr.elza.service.importnodes.vo.descitems.ItemRecordRef;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -124,6 +129,9 @@ public class DescriptionItemService {
 
     @Autowired
     private DescItemRepository descItemRepository;
+
+    @Autowired
+    private RegRecordRepository regRecordRepository;
 
     @Autowired
     private DataTypeRepository dataTypeRepository;
@@ -1518,6 +1526,12 @@ public class DescriptionItemService {
                 case "UNITDATE":
                     ArrDataUnitdate itemUnitdate = createArrDataUnitdate(text);
                     data = itemUnitdate;
+                    break;
+                case "RECORD_REF":
+                    ArrDataRecordRef itemRecordRef = new ArrDataRecordRef();
+                    RegRecord record = regRecordRepository.getOneCheckExist(Integer.valueOf(text));
+                    itemRecordRef.setRecord(record);
+                    data = itemRecordRef;
                     break;
                 default:
                     throw new SystemException("Neplatný typ atributu " + descItemType.getDataType().getCode(), BaseCode.INVALID_STATE);
