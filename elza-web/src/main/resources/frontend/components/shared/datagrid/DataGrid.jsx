@@ -244,14 +244,14 @@ class DataGrid extends AbstractReactComponent {
     }
 
     computeColumnsWidth() {
-        const {cols, staticColumns} = this.props
-        const {needComputeColumnsWidth} = this.state
+        const {cols, staticColumns} = this.props;
+        const {needComputeColumnsWidth} = this.state;
 
         if (staticColumns && needComputeColumnsWidth) {
             const dataGrid = ReactDOM.findDOMNode(this.refs.dataGrid);
             const rect = dataGrid.getBoundingClientRect();
             var width = rect.width - getScrollbarWidth() - 4;   // konstanta 3 - kvůli padding atp.
-            var colWidths = {}
+            var colWidths = {};
 
             // Nejdříve sloupce s pevnou šířkou
             cols.forEach((col, colIndex) => {
@@ -259,14 +259,14 @@ class DataGrid extends AbstractReactComponent {
                     colWidths[colIndex] = col.width;
                     width -= col.width;
                 }
-            })
+            });
 
             // Sloupce s šířkou definovanou v procentech
             cols.forEach((col, colIndex) => {
                 if (col.widthPercent) {
                     colWidths[colIndex] = Math.floor(col.width * width / 100);
                 }
-            })
+            });
             // console.log("width", rect.width, "scrollbar", getScrollbarWidth(), "colWidths", colWidths, "cols", cols)
 
             this.setState({
@@ -330,10 +330,13 @@ class DataGrid extends AbstractReactComponent {
     handleResizerMouseDown(colIndex, e) {
         this.unFocus();
 
+        const {colWidths} = this.state;
+
         this.setState({
             position: e.clientX,
             columnSizeDragged: true,
             columnSizeDraggedIndex: colIndex,
+            beforeDraggedColWidths: colWidths
         });
     }
 
@@ -371,12 +374,12 @@ class DataGrid extends AbstractReactComponent {
                     const position = this.state.position;
 
                     let newSize = size - (position - current);
-                    if (newSize < __minColWidth) newSize = __minColWidth
-                    var {colWidths} = this.state
-                    colWidths[this.state.columnSizeDraggedIndex] = newSize
+                    if (newSize < __minColWidth) newSize = __minColWidth;
+                    const {colWidths} = this.state;
+                    colWidths[this.state.columnSizeDraggedIndex] = newSize;
 
                     this.setState({
-                        colWidths: colWidths,
+                        colWidths: {...colWidths},
                     })
                 }
             }
@@ -574,12 +577,17 @@ class DataGrid extends AbstractReactComponent {
         var cls = this.props.className ? 'datagrid-container ' + this.props.className : 'datagrid-container'
 
         const {rows, onFocus, onBlur, staticColumns, disabled, startRowIndex, morePages} = this.props;
-        const {focus, cols, colWidths, selectedRowIndexes, selectedIds, fixedLeft} = this.state;
+        const {columnSizeDragged, focus, cols, colWidths, beforeDraggedColWidths, selectedRowIndexes, selectedIds, fixedLeft} = this.state;
 
         let fullWidth = 0;
+        let beforeDraggedFullWidth = 0;
         cols.forEach((col, colIndex) => {
-            fullWidth += colWidths[colIndex]
+            fullWidth += colWidths[colIndex];
+            if (columnSizeDragged) {
+                beforeDraggedFullWidth += beforeDraggedColWidths[colIndex];
+            }
         });
+
 //var t1 = new Date().getTime()
 
         var headerStyle;
@@ -593,7 +601,7 @@ class DataGrid extends AbstractReactComponent {
         if (staticColumns) {
             bodyStyle = { };
         } else {
-            bodyStyle = { width: fullWidth };
+            bodyStyle = { width: columnSizeDragged ? beforeDraggedFullWidth : fullWidth};
         }
 
         var tabIndexProp = {}
@@ -630,7 +638,7 @@ class DataGrid extends AbstractReactComponent {
                                     staticColumns={staticColumns}
                                     startRowIndex={startRowIndex}
                                     fixedLeft={fixedLeft}
-                                    colWidths={colWidths}
+                                    colWidths={columnSizeDragged ? beforeDraggedColWidths : colWidths}
                                     onCheckboxChange={this.handleCheckboxChange}
                                     onCellClick={this.handleCellClick}
                                     onEdit={this.handleEdit}
