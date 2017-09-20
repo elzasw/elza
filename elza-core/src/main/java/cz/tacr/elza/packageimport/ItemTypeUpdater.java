@@ -114,7 +114,8 @@ public class ItemTypeUpdater {
      * @param rulDescItemTypes    seznam typů atributů
      */
     private void processDescItemSpecs(final ItemSpecs itemSpecs,
-                                      final RulPackage rulPackage, final List<RulItemType> rulDescItemTypes) {
+                                      final RulPackage rulPackage,
+                                      final List<RulItemType> rulDescItemTypes) {
 
         List<RulItemSpec> rulDescItemSpecs = itemSpecRepository.findByRulPackage(rulPackage);
         List<RulItemSpec> rulDescItemSpecsNew = new ArrayList<>();
@@ -174,8 +175,11 @@ public class ItemTypeUpdater {
                 rulItemTypesUpdated = itemTypeRepository.save(rulItemTypesUpdated);
             }
 
+            List<RulItemType> rulItemTypesAllByRules = new ArrayList<>(rulItemTypesUpdated);
+            rulItemTypesAllByRules.addAll(itemTypeRepository.findByRuleSet(rulRuleSet));
+
             // update specifications
-            processDescItemSpecs(itemSpecs, rulPackage, rulItemTypesUpdated);
+            processDescItemSpecs(itemSpecs, rulPackage, rulItemTypesAllByRules);
         }
 
 		// delete unused item types

@@ -11,7 +11,6 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -2438,17 +2437,14 @@ public class PackageService {
             zos = new ZipOutputStream(fos);
 
             exportPackageInfo(rulPackage, zos);
-            List<RulRuleSet> rulRuleSets = exportRuleSet(rulPackage, zos);
-            for (RulRuleSet rulRuleSet : rulRuleSets) {
-                exportDescItemSpecs(rulPackage, rulRuleSet, zos);
-                exportDescItemTypes(rulPackage, rulRuleSet, zos);
-                exportPackageActions(rulPackage, rulRuleSet, zos);
-                exportPackageRules(rulPackage, rulRuleSet, zos);
-                exportPacketTypes(rulPackage, rulRuleSet, zos);
-                exportOutputTypes(rulPackage, rulRuleSet, zos);
-                exportTemplates(rulPackage, rulRuleSet, zos);
-                exportSettings(rulPackage, rulRuleSet, zos);
-            }
+            exportRuleSet(rulPackage, zos);
+            exportDescItemSpecs(rulPackage, zos);
+            exportDescItemTypes(rulPackage, zos);
+            exportPackageActions(rulPackage, zos);
+            exportPackageRules(rulPackage, zos);
+            exportPacketTypes(rulPackage, zos);
+            exportOutputTypes(rulPackage, zos);
+            exportTemplates(rulPackage, zos);
             exportRegistryRoles(rulPackage, zos);
             exportRegisterTypes(rulPackage, zos);
             exportRelationTypeRoleTypes(rulPackage, zos);
@@ -2460,7 +2456,7 @@ public class PackageService {
             exportPartyRelationClassTypes(rulPackage, zos);
             exportPartyNameFormTypes(rulPackage, zos);
             exportRelationRoleTypes(rulPackage, zos);
-            exportSettings(rulPackage, null, zos);
+            exportSettings(rulPackage, zos);
 
             file.deleteOnExit();
         } catch (Exception e) {
@@ -2499,15 +2495,51 @@ public class PackageService {
      * Přidání nastavení do zip souboru.
      *
      * @param rulPackage balíček
-     * @param ruleSet    pravidla
      * @param zos        stream zip souboru
      */
-    private void exportSettings(final RulPackage rulPackage, final RulRuleSet ruleSet, final ZipOutputStream zos) {
-        String path = ruleSet == null ? SETTING_XML : ZIP_DIR_RULE_SET + "/" + ruleSet.getCode() + "/" + SETTING_XML;
-        export(rulPackage, zos, settingsRepository, Settings.class, Setting.class,
-                (settingList, settings) -> settings.setSettings(settingList),
-                (uiSetting, setting) -> setting.setValue(uiSetting.getValue()),
-                this::convertSetting, (s) -> filterSettingByType(s, ruleSet), path, ruleSet);
+    private void exportSettings(final RulPackage rulPackage, final ZipOutputStream zos) {
+        List<UISettings> uiSettings = settingsRepository.findByRulPackage(rulPackage);
+
+        if (uiSettings.size() == 0) {
+            return;
+        }
+
+        Map<Integer, RulRuleSet> ruleSetMap = ruleSetRepository.findAll().stream()
+                .collect(Collectors.toMap(RulRuleSet::getRuleSetId, Function.identity()));
+        Map<Integer, RulItemType> itemTypeMap = itemTypeRepository.findAll().stream()
+                .collect(Collectors.toMap(RulItemType::getItemTypeId, Function.identity()));
+
+        List<RulRuleSet> ruleSetList = new ArrayList<>();
+        Set<Integer> ruleSetIdAdd = new HashSet<>();
+        ruleSetList.add(null);
+        Collection<UISettings.SettingsType> settingsTypesRule = UISettings.SettingsType.findByType(UISettings.EntityType.RULE);
+        Collection<UISettings.SettingsType> settingsTypesItemType = UISettings.SettingsType.findByType(UISettings.EntityType.ITEM_TYPE);
+
+        for (UISettings uiSetting : uiSettings) {
+            if (settingsTypesRule.contains(uiSetting.getSettingsType())) {
+                Integer ruleSetId = uiSetting.getEntityId();
+                if (!ruleSetIdAdd.contains(ruleSetId)) {
+                    ruleSetIdAdd.add(ruleSetId);
+                    ruleSetList.add(ruleSetMap.get(ruleSetId));
+                }
+            } else if (settingsTypesItemType.contains(uiSetting.getSettingsType())) {
+                Integer itemTypeId = uiSetting.getEntityId();
+                RulItemType rulItemType = itemTypeMap.get(itemTypeId);
+                Integer ruleSetId = rulItemType.getRuleSet().getRuleSetId();
+                if (!ruleSetIdAdd.contains(ruleSetId)) {
+                    ruleSetIdAdd.add(ruleSetId);
+                    ruleSetList.add(ruleSetMap.get(ruleSetId));
+                }
+            }
+        }
+
+        for (RulRuleSet ruleSet : ruleSetList) {
+            String path = ruleSet == null ? SETTING_XML : ZIP_DIR_RULE_SET + "/" + ruleSet.getCode() + "/" + SETTING_XML;
+            export(rulPackage, zos, settingsRepository, Settings.class, Setting.class,
+                    (settingList, settings) -> settings.setSettings(settingList),
+                    (uiSetting, setting) -> setting.setValue(uiSetting.getValue()),
+                    this::convertSetting, (s) -> filterSettingByType(s, ruleSet), path, ruleSet);
+        }
     }
 
     private boolean filterSettingByType(final UISettings setting, final RulRuleSet ruleSet) {
@@ -2823,44 +2855,58 @@ public class PackageService {
         registryRole.setRoleType(parRegistryRole.getRoleType().getCode());
     }
 
-    private void exportOutputTypes(final RulPackage rulPackage, final RulRuleSet rulRuleSet, final ZipOutputStream zos) throws IOException {
-        OutputTypes outputTypes = new OutputTypes();
-        List<RulOutputType> rulRuleSets = outputTypeRepository.findByRulPackageAndRuleSet(rulPackage, rulRuleSet);
+    private void exportOutputTypes(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+        List<RulOutputType> rulRuleSets = outputTypeRepository.findByRulPackage(rulPackage);
         if (rulRuleSets.size() == 0) {
             return;
         }
-        List<OutputType> ruleSetList = new ArrayList<>(rulRuleSets.size());
-        outputTypes.setOutputTypes(ruleSetList);
 
-        for (RulOutputType rulOutputType : rulRuleSets) {
-            OutputType outputType = new OutputType();
-            convertOutputType(rulOutputType, outputType);
-            ruleSetList.add(outputType);
+        Map<RulRuleSet, List<RulOutputType>> ruleSetOutputTypeMap = rulRuleSets.stream()
+                .collect(Collectors.groupingBy(RulOutputType::getRuleSet));
+
+        for (Map.Entry<RulRuleSet, List<RulOutputType>> entry : ruleSetOutputTypeMap.entrySet()) {
+            OutputTypes outputTypes = new OutputTypes();
+            List<RulOutputType> rulRuleSetList = entry.getValue();
+            List<OutputType> ruleSetList = new ArrayList<>(rulRuleSetList.size());
+            outputTypes.setOutputTypes(ruleSetList);
+
+            for (RulOutputType rulOutputType : rulRuleSetList) {
+                OutputType outputType = new OutputType();
+                convertOutputType(rulOutputType, outputType);
+                ruleSetList.add(outputType);
+            }
+
+            addObjectToZipFile(outputTypes, zos, ZIP_DIR_RULE_SET + "/" + entry.getKey().getCode() + "/" + OUTPUT_TYPE_XML);
         }
-
-        addObjectToZipFile(outputTypes, zos, ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + OUTPUT_TYPE_XML);
     }
 
-    private void exportTemplates(final RulPackage rulPackage, final RulRuleSet rulRuleSet, final ZipOutputStream zos) throws IOException {
-        Templates outputTypes = new Templates();
-        List<RulTemplate> rulRuleSets = templateRepository.findByRulPackageAndNotDeleted(rulPackage);
-        if (rulRuleSets.size() == 0) {
+    private void exportTemplates(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+        List<RulTemplate> rulTemplates = templateRepository.findByRulPackageAndNotDeleted(rulPackage);
+        if (rulTemplates.size() == 0) {
             return;
         }
-        List<Template> ruleSetList = new ArrayList<>(rulRuleSets.size());
-        outputTypes.setTemplates(ruleSetList);
 
-        for (RulTemplate rulOutputType : rulRuleSets) {
-            Template outputType = new Template();
-            convertTemplate(rulOutputType, outputType);
-            ruleSetList.add(outputType);
-            File dir = new File(outputGeneratorService.getTemplatesDir(rulPackage.getCode()) + File.separator + rulOutputType.getDirectory() + File.separator);
-            for (File dirFile : dir.listFiles()) {
-                addToZipFile(ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + ZIP_DIR_TEMPLATES + "/" + rulOutputType.getDirectory() + "/" + dirFile.getName(), dirFile, zos);
+        Map<RulRuleSet, List<RulTemplate>> ruleSetTemplateMap = rulTemplates.stream()
+                .collect(Collectors.groupingBy(t -> t.getOutputType().getRuleSet()));
+
+        for (Map.Entry<RulRuleSet, List<RulTemplate>> entry : ruleSetTemplateMap.entrySet()) {
+            Templates outputTypes = new Templates();
+            List<RulTemplate> rulTemplatesList = entry.getValue();
+            List<Template> templateList = new ArrayList<>(rulTemplatesList.size());
+            outputTypes.setTemplates(templateList);
+            String ruleSetCode = entry.getKey().getCode();
+            for (RulTemplate rulOutputType : rulTemplatesList) {
+                Template outputType = new Template();
+                convertTemplate(rulOutputType, outputType);
+                templateList.add(outputType);
+                File dir = new File(outputGeneratorService.getTemplatesDir(rulPackage.getCode()) + File.separator + rulOutputType.getDirectory() + File.separator);
+                for (File dirFile : dir.listFiles()) {
+                    addToZipFile(ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + ZIP_DIR_TEMPLATES + "/" + rulOutputType.getDirectory() + "/" + dirFile.getName(), dirFile, zos);
+                }
             }
-        }
 
-        addObjectToZipFile(outputTypes, zos, ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + TEMPLATE_XML);
+            addObjectToZipFile(outputTypes, zos, ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + TEMPLATE_XML);
+        }
     }
 
     /**
@@ -2869,11 +2915,11 @@ public class PackageService {
      * @param rulPackage balíček
      * @param zos        stream zip souboru
      */
-    private List<RulRuleSet> exportRuleSet(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+    private void exportRuleSet(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
         RuleSets ruleSets = new RuleSets();
         List<RulRuleSet> rulRuleSets = ruleSetRepository.findByRulPackage(rulPackage);
         if (rulRuleSets.size() == 0) {
-            return Collections.emptyList();
+            return;
         }
         List<RuleSet> ruleSetList = new ArrayList<>(rulRuleSets.size());
         ruleSets.setRuleSets(ruleSetList);
@@ -2885,7 +2931,6 @@ public class PackageService {
         }
 
         addObjectToZipFile(ruleSets, zos, RULE_SET_XML);
-        return rulRuleSets;
     }
 
     /**
@@ -2902,134 +2947,178 @@ public class PackageService {
         packageInfo.setDescription(rulPackage.getDescription());
         packageInfo.setVersion(rulPackage.getVersion());
 
+        List<RulPackageDependency> dependencies = packageDependencyRepository.findBySourcePackage(rulPackage);
+        packageInfo.setDependencies(dependencies.stream()
+                .map(d -> {
+                    PackageDependency pd = new PackageDependency();
+                    pd.setCode(d.getTargetPackage().getCode());
+                    pd.setMinVersion(d.getMinVersion());
+                    return pd;
+                }).collect(Collectors.toList()));
+
         addObjectToZipFile(packageInfo, zos, PACKAGE_XML);
     }
 
     /**
      * Exportování packet typů.
-     *  @param rulPackage balíček
-     * @param rulRuleSet
+     *
+     * @param rulPackage balíček
      * @param zos        stream zip souboru
      */
-    private void exportPacketTypes(final RulPackage rulPackage, final RulRuleSet rulRuleSet, final ZipOutputStream zos) throws IOException {
-        PacketTypes packetTypes = new PacketTypes();
-        List<RulPacketType> rulPacketTypes = packetTypeRepository.findByRulPackageAndRuleSet(rulPackage, rulRuleSet);
+    private void exportPacketTypes(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+        List<RulPacketType> rulPacketTypes = packetTypeRepository.findByRulPackage(rulPackage);
+
         if (rulPacketTypes.size() == 0) {
             return;
         }
-        List<PacketType> packetTypeList = new ArrayList<>(rulPacketTypes.size());
-        packetTypes.setPacketTypes(packetTypeList);
 
-        for (RulPacketType rulPacketType : rulPacketTypes) {
-            PacketType packetType = new PacketType();
-            covertPacketType(rulPacketType, packetType);
-            packetTypeList.add(packetType);
+        Map<RulRuleSet, List<RulPacketType>> ruleSetPacketTypeMap = rulPacketTypes.stream()
+                .collect(Collectors.groupingBy(RulPacketType::getRuleSet));
+
+        for (Map.Entry<RulRuleSet, List<RulPacketType>> entry : ruleSetPacketTypeMap.entrySet()) {
+            PacketTypes packetTypes = new PacketTypes();
+            List<RulPacketType> rulPacketTypeList = entry.getValue();
+            List<PacketType> packetTypeList = new ArrayList<>(rulPacketTypeList.size());
+            packetTypes.setPacketTypes(packetTypeList);
+
+            for (RulPacketType rulPacketType : rulPacketTypeList) {
+                PacketType packetType = new PacketType();
+                covertPacketType(rulPacketType, packetType);
+                packetTypeList.add(packetType);
+            }
+
+            addObjectToZipFile(packetTypes, zos, ZIP_DIR_RULE_SET + "/" + entry.getKey().getCode() + "/" + PACKET_TYPE_XML);
         }
-
-        addObjectToZipFile(packetTypes, zos, ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + PACKET_TYPE_XML);
     }
 
     /**
      * Exportování pravidel.
-     *  @param rulPackage balíček
-     * @param rulRuleSet
+     *
+     * @param rulPackage balíček
      * @param zos        stream zip souboru
      */
-    private void exportPackageRules(final RulPackage rulPackage, final RulRuleSet rulRuleSet, final ZipOutputStream zos) throws IOException {
-        PackageRules packageRules = new PackageRules();
-        List<RulRule> rulPackageRules = packageRulesRepository.findByRulPackageAndRuleSet(rulPackage, rulRuleSet);
+    private void exportPackageRules(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+        List<RulRule> rulPackageRules = packageRulesRepository.findByRulPackage(rulPackage);
+
         if (rulPackageRules.size() == 0) {
             return;
         }
-        List<PackageRule> packageRuleList = new ArrayList<>(rulPackageRules.size());
-        packageRules.setPackageRules(packageRuleList);
 
-        for (RulRule rulPackageRule : rulPackageRules) {
-            PackageRule packageRule = new PackageRule();
-            convertPackageRule(rulPackageRule, packageRule);
-            packageRuleList.add(packageRule);
+        Map<RulRuleSet, List<RulRule>> ruleSetRuleMap = rulPackageRules.stream()
+                .collect(Collectors.groupingBy(RulRule::getRuleSet));
 
-            addToZipFile(ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + ZIP_DIR_RULES + "/" + rulPackageRule.getFilename(), new File(rulesExecutor.getDroolsDir(rulPackage.getCode())
-                    + File.separator + rulPackageRule.getFilename()), zos);
+        for (Map.Entry<RulRuleSet, List<RulRule>> entry : ruleSetRuleMap.entrySet()) {
+            PackageRules packageRules = new PackageRules();
+            List<RulRule> ruleList = entry.getValue();
+            List<PackageRule> packageRuleList = new ArrayList<>(ruleList.size());
+            packageRules.setPackageRules(packageRuleList);
+            String ruleSetCode = entry.getKey().getCode();
+            for (RulRule rulPackageRule : ruleList) {
+                PackageRule packageRule = new PackageRule();
+                convertPackageRule(rulPackageRule, packageRule);
+                packageRuleList.add(packageRule);
 
+                addToZipFile(ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + ZIP_DIR_RULES + "/" + rulPackageRule.getFilename(), new File(rulesExecutor.getDroolsDir(ruleSetCode)
+                        + File.separator + rulPackageRule.getFilename()), zos);
+
+            }
+
+            addObjectToZipFile(packageRules, zos, ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + PACKAGE_RULES_XML);
         }
-
-        addObjectToZipFile(packageRules, zos, ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + PACKAGE_RULES_XML);
     }
 
     /**
      * Exportování hromadných akcí.
      *  @param rulPackage balíček
-     * @param rulRuleSet
      * @param zos        stream zip souboru
      */
-    private void exportPackageActions(final RulPackage rulPackage, final RulRuleSet rulRuleSet, final ZipOutputStream zos) throws IOException {
-        PackageActions packageActions = new PackageActions();
-        List<RulAction> rulPackageActions = packageActionsRepository.findByRulPackageAndRuleSet(rulPackage, rulRuleSet);
+    private void exportPackageActions(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+        List<RulAction> rulPackageActions = packageActionsRepository.findByRulPackage(rulPackage);
         if (rulPackageActions.size() == 0) {
             return;
         }
-        List<PackageAction> packageActionList = new ArrayList<>(rulPackageActions.size());
-        packageActions.setPackageActions(packageActionList);
 
-        for (RulAction rulPackageAction : rulPackageActions) {
-            PackageAction packageAction = new PackageAction();
-            convertPackageAction(rulPackageAction, packageAction);
-            packageActionList.add(packageAction);
+        Map<RulRuleSet, List<RulAction>> ruleSetActionMap = rulPackageActions.stream()
+                .collect(Collectors.groupingBy(RulAction::getRuleSet));
 
-            addToZipFile(ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + ZIP_DIR_ACTIONS + "/" + rulPackageAction.getFilename(),
-                    new File(bulkActionConfigManager.getFunctionsDir(rulPackage.getCode()) + File.separator + rulPackageAction.getFilename()), zos);
+        for (Map.Entry<RulRuleSet, List<RulAction>> entry : ruleSetActionMap.entrySet()) {
+            PackageActions packageActions = new PackageActions();
+            List<RulAction> actionList = entry.getValue();
+            List<PackageAction> packageActionList = new ArrayList<>(actionList.size());
+            packageActions.setPackageActions(packageActionList);
+            String ruleSetCode = entry.getKey().getCode();
+            for (RulAction rulPackageAction : actionList) {
+                PackageAction packageAction = new PackageAction();
+                convertPackageAction(rulPackageAction, packageAction);
+                packageActionList.add(packageAction);
+
+                addToZipFile(ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + ZIP_DIR_ACTIONS + "/" + rulPackageAction.getFilename(),
+                        new File(bulkActionConfigManager.getFunctionsDir(ruleSetCode) + File.separator + rulPackageAction.getFilename()), zos);
+            }
+
+            addObjectToZipFile(packageActions, zos, ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + PACKAGE_ACTIONS_XML);
         }
-
-        addObjectToZipFile(packageActions, zos, ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + PACKAGE_ACTIONS_XML);
     }
 
     /**
      * Exportování typů atributů.
-     *  @param rulPackage balíček
-     * @param rulRuleSet
+     *
+     * @param rulPackage balíček
      * @param zos        stream zip souboru
      */
-    private void exportDescItemTypes(final RulPackage rulPackage, final RulRuleSet rulRuleSet, final ZipOutputStream zos) throws IOException {
-        ItemTypes itemTypes = new ItemTypes();
-        List<RulItemType> rulDescItemTypes = itemTypeRepository.findByRulPackageAndRuleSetOrderByViewOrderAsc(rulPackage, rulRuleSet);
+    private void exportDescItemTypes(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+        List<RulItemType> rulDescItemTypes = itemTypeRepository.findByRulPackageOrderByViewOrderAsc(rulPackage);
         if (rulDescItemTypes.size() == 0) {
             return;
         }
-        List<ItemType> itemTypeList = new ArrayList<>(rulDescItemTypes.size());
-        itemTypes.setItemTypes(itemTypeList);
 
-        for (RulItemType rulDescItemType : rulDescItemTypes) {
-            ItemType itemType = new ItemType();
-            convertDescItemType(rulDescItemType, itemType);
-            itemTypeList.add(itemType);
+        Map<RulRuleSet, List<RulItemType>> ruleSetTypesMap = rulDescItemTypes.stream()
+                .collect(Collectors.groupingBy(RulItemType::getRuleSet));
+
+        for (Map.Entry<RulRuleSet, List<RulItemType>> entry : ruleSetTypesMap.entrySet()) {
+            ItemTypes itemTypes = new ItemTypes();
+            List<RulItemType> typeList = entry.getValue();
+            List<ItemType> itemTypeList = new ArrayList<>(typeList.size());
+            itemTypes.setItemTypes(itemTypeList);
+
+            for (RulItemType rulDescItemType : typeList) {
+                ItemType itemType = new ItemType();
+                convertDescItemType(rulDescItemType, itemType);
+                itemTypeList.add(itemType);
+            }
+
+            addObjectToZipFile(itemTypes, zos, ZIP_DIR_RULE_SET + "/" + entry.getKey().getCode() + "/" + ITEM_TYPE_XML);
         }
-
-        addObjectToZipFile(itemTypes, zos, ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + ITEM_TYPE_XML);
     }
 
     /**
      * Exportování specifikací atributů.
      *  @param rulPackage balíček
-     * @param rulRuleSet
      * @param zos        stream zip souboru
      */
-    private void exportDescItemSpecs(final RulPackage rulPackage, final RulRuleSet rulRuleSet, final ZipOutputStream zos) throws IOException {
-        ItemSpecs itemSpecs = new ItemSpecs();
-        List<RulItemSpec> rulDescItemSpecs = itemSpecRepository.findByRulPackageAndRuleSet(rulPackage, rulRuleSet);
+    private void exportDescItemSpecs(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+        List<RulItemSpec> rulDescItemSpecs = itemSpecRepository.findByRulPackage(rulPackage);
         if (rulDescItemSpecs.size() == 0) {
             return;
         }
-        List<ItemSpec> itemSpecList = new ArrayList<>(rulDescItemSpecs.size());
-        itemSpecs.setItemSpecs(itemSpecList);
 
-        for (RulItemSpec rulDescItemSpec : rulDescItemSpecs) {
-            ItemSpec itemSpec = new ItemSpec();
-            convertDescItemSpec(rulDescItemSpec, itemSpec);
-            itemSpecList.add(itemSpec);
+        Map<RulRuleSet, List<RulItemSpec>> ruleSetSpecsMap = rulDescItemSpecs.stream()
+                .collect(Collectors.groupingBy(spec -> spec.getItemType().getRuleSet()));
+
+        for (Map.Entry<RulRuleSet, List<RulItemSpec>> entry : ruleSetSpecsMap.entrySet()) {
+            ItemSpecs itemSpecs = new ItemSpecs();
+            List<RulItemSpec> specList = entry.getValue();
+            List<ItemSpec> itemSpecList = new ArrayList<>(specList.size());
+            itemSpecs.setItemSpecs(itemSpecList);
+
+            for (RulItemSpec rulDescItemSpec : specList) {
+                ItemSpec itemSpec = new ItemSpec();
+                convertDescItemSpec(rulDescItemSpec, itemSpec);
+                itemSpecList.add(itemSpec);
+            }
+
+            addObjectToZipFile(itemSpecs, zos, ZIP_DIR_RULE_SET + "/" + entry.getKey().getCode() + "/" + ITEM_SPEC_XML);
         }
-
-        addObjectToZipFile(itemSpecs, zos, ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + ITEM_SPEC_XML);
     }
 
     /**

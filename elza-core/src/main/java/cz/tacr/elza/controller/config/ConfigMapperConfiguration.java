@@ -854,6 +854,7 @@ public class ConfigMapperConfiguration {
                     public void mapAtoB(final RulPacketType rulPacketType, final RulPacketTypeVO rulPacketTypeVO, final MappingContext context) {
                         super.mapAtoB(rulPacketType, rulPacketTypeVO, context);
                         rulPacketTypeVO.setPackageId(rulPacketType.getPackage().getPackageId());
+                        rulPacketTypeVO.setRuleSetId(rulPacketType.getRuleSet().getRuleSetId());
                     }
                 })
                 .register();
@@ -878,7 +879,7 @@ public class ConfigMapperConfiguration {
                             }
                             rulRuleSetVO.setGridViews(gridViews);
                         }
-                        rulRuleSetVO.setItemTypeCodes(ruleService.getItemTypeCodesByPackage(rulRuleSet.getPackage()));
+                        rulRuleSetVO.setItemTypeCodes(ruleService.getItemTypeCodesByRuleSet(rulRuleSet));
                     }
                 })
                 .register();

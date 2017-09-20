@@ -50,7 +50,7 @@ public interface ItemTypeRepository extends ElzaJpaRepository<RulItemType, Integ
 
     List<RulItemType> findByRuleSet(RulRuleSet ruleSet);
 
-    List<RulItemType> findByRulPackageAndRuleSetOrderByViewOrderAsc(RulPackage rulPackage, RulRuleSet ruleSet);
+    List<RulItemType> findByRulPackageOrderByViewOrderAsc(RulPackage rulPackage);
 
     /**
      * Return item type with the highest view-order

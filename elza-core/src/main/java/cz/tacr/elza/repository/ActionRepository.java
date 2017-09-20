@@ -22,6 +22,8 @@ public interface ActionRepository extends JpaRepository<RulAction, Integer> {
 
     List<RulAction> findByRulPackage(RulPackage rulPackage);
 
+    List<RulAction> findByRuleSet(RulRuleSet ruleSet);
+
     List<RulAction> findByRulPackageAndRuleSet(RulPackage rulPackage, RulRuleSet ruleSet);
 
 

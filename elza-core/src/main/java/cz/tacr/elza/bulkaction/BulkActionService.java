@@ -241,10 +241,10 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(fundVersionId);
 
         RulRuleSet ruleSet = version.getRuleSet();
-        List<RulAction> byRulPackage = actionRepository.findByRulPackage(ruleSet.getPackage());
+        List<RulAction> byRulPackage = actionRepository.findByRuleSet(ruleSet);
         String actionFileName = bulkActionCode + bulkActionConfigManager.getExtension();
         if (byRulPackage.stream().noneMatch(i -> i.getFilename().equals(actionFileName))) {
-            throw new BusinessException("Hromadná akce nepatří do stejného balíčku pravidel jako pravidla verze AP.", PackageCode.OTHER_PACKAGE)
+            throw new BusinessException("Hromadná akce nepatří do stejných pravidel jako pravidla verze AP.", PackageCode.OTHER_PACKAGE)
                     .set("code", bulkActionCode)
                     .set("ruleSet", ruleSet.getCode());
         }
@@ -573,7 +573,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
             throw new IllegalArgumentException("Verze archivní pomůcky neexistuje!");
         }
 
-        Map<String, RulAction> byRulPackage = actionRepository.findByRulPackage(version.getRuleSet().getPackage())
+        Map<String, RulAction> byRulPackage = actionRepository.findByRuleSet(version.getRuleSet())
                 .stream()
                 .collect(Collectors.toMap(RulAction::getFilename, p -> p));
 

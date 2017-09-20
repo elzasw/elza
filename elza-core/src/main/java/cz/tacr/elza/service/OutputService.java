@@ -876,7 +876,7 @@ public class OutputService {
      */
     public List<RulOutputType> getOutputTypes(final Integer versionId) {
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
-        return outputTypeRepository.findByRulPackage(version.getRuleSet().getPackage());
+        return outputTypeRepository.findByRuleSet(version.getRuleSet());
     }
 
     /**

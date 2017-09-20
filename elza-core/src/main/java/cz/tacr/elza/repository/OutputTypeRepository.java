@@ -16,6 +16,8 @@ public interface OutputTypeRepository extends ElzaJpaRepository<RulOutputType, I
 
     List<RulOutputType> findByRulPackage(RulPackage rulPackage);
 
+    List<RulOutputType> findByRuleSet(RulRuleSet ruleSet);
+
     List<RulOutputType> findByRulPackageAndRuleSet(RulPackage rulPackage, RulRuleSet ruleSet);
 
     void deleteByRulPackage(RulPackage rulPackage);
