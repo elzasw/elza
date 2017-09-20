@@ -188,7 +188,7 @@ public class RulesExecutor implements InitializingBean {
     /**
      * Vrací úplnou cestu k adresáři drools podle balíčku.
      *
-     * @param code kód balíčku (pravidel)
+     * @param code kód pravidel
      * @return cesta k adresáři drools
      */
     public String getDroolsDir(final String code) {

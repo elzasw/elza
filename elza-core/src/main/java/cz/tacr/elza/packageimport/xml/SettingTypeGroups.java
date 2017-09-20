@@ -41,10 +41,6 @@ public class SettingTypeGroups extends Setting {
     })
     private List<Item> items;
 
-    @XmlAttribute(name = "code", required = true)
-    @JsonIgnore
-    private String code;
-
     public List<Item> getItems() {
         return items;
     }
@@ -74,14 +70,6 @@ public class SettingTypeGroups extends Setting {
         } catch (IOException e) {
             throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
         }
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(final String code) {
-        this.code = code;
     }
 
     @XmlTransient

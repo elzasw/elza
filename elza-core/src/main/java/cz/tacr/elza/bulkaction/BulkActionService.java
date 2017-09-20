@@ -606,13 +606,6 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
             }
 
             bulkActionRun.setFundVersion(version);
-
-            String ruleCode = (String) bulkActionConfigOrig.getString("rule_code");
-            if (ruleCode == null || !version.getRuleSet().getCode().equals(ruleCode)) {
-                throw new IllegalArgumentException("Nastavení kódu pravidel (rule_code: " + ruleCode
-                        + ") hromadné akce neodpovídá verzi archivní pomůcky (rule_code: " + version.getRuleSet().getCode()
-                        + ")!");
-            }
         }
 
         bulkActionRepository.save(bulkActionRun);

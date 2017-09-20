@@ -3,6 +3,7 @@ package cz.tacr.elza.repository;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulRuleSet;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -12,7 +13,7 @@ import java.util.Set;
 
 /**
  * Repository for RulItemType
- * 
+ *
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @author Petr Pytelka
  * @since 20.8.2015
@@ -46,12 +47,14 @@ public interface ItemTypeRepository extends ElzaJpaRepository<RulItemType, Integ
 
 
     List<RulItemType> findByRulPackage(RulPackage rulPackage);
-    
-    List<RulItemType> findByRulPackageOrderByViewOrderAsc(RulPackage rulPackage);
-    
+
+    List<RulItemType> findByRuleSet(RulRuleSet ruleSet);
+
+    List<RulItemType> findByRulPackageAndRuleSetOrderByViewOrderAsc(RulPackage rulPackage, RulRuleSet ruleSet);
+
     /**
      * Return item type with the highest view-order
-     * @return return item with highest view_order 
+     * @return return item with highest view_order
      */
     RulItemType findFirstByOrderByViewOrderDesc();
 

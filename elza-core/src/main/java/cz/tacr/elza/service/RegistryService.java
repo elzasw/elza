@@ -745,7 +745,7 @@ public class RegistryService {
             List<UISettings> uiSettingsList = settingsRepository.findByUserAndSettingsTypeAndEntityType(null, UISettings.SettingsType.RECORD, null);
             if (uiSettingsList.size() > 0) {
                 uiSettingsList.forEach(uiSettings -> {
-                    SettingRecord setting = (SettingRecord) packageService.convertSetting(uiSettings);
+                    SettingRecord setting = (SettingRecord) packageService.convertSetting(uiSettings, null);
                     List<SettingRecord.ScopeCode> scopeCodes = setting.getScopeCodes();
                     if (CollectionUtils.isEmpty(scopeCodes)) {
                         this.scopeCodes = new ArrayList<>();

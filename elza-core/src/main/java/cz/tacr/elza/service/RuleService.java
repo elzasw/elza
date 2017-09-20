@@ -627,7 +627,7 @@ public class RuleService {
 
         for (UISettings gridView : gridViews) {
             if (gridView.getRulPackage().getPackageId().equals(ruleSet.getPackage().getPackageId())) {
-                SettingGridView view = (SettingGridView) packageService.convertSetting(gridView);
+                SettingGridView view = (SettingGridView) packageService.convertSetting(gridView, ruleSet);
                 if (CollectionUtils.isNotEmpty(view.getItemTypes())) {
                     return view.getItemTypes();
                 }

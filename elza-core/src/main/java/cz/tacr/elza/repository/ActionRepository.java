@@ -2,6 +2,7 @@ package cz.tacr.elza.repository;
 
 import java.util.List;
 
+import cz.tacr.elza.domain.RulRuleSet;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -20,6 +21,8 @@ public interface ActionRepository extends JpaRepository<RulAction, Integer> {
 
 
     List<RulAction> findByRulPackage(RulPackage rulPackage);
+
+    List<RulAction> findByRulPackageAndRuleSet(RulPackage rulPackage, RulRuleSet ruleSet);
 
 
     void deleteByRulPackage(RulPackage rulPackage);

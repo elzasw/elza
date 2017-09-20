@@ -65,7 +65,7 @@ public class DescItemTypesRules extends Rules {
                 rulRuleSet, RulRule.RuleType.ATTRIBUTE_TYPES);
 
         for (RulRule rulPackageRule : rulPackageRules) {
-            path = Paths.get(rulesExecutor.getDroolsDir(rulPackageRule.getPackage().getCode()) + File.separator + rulPackageRule.getFilename());
+            path = Paths.get(rulesExecutor.getDroolsDir(rulPackageRule.getRuleSet().getCode()) + File.separator + rulPackageRule.getFilename());
             StatelessKieSession session = createNewStatelessKieSession(path);
             //session.setGlobal("results", results);
             execute(session, facts);

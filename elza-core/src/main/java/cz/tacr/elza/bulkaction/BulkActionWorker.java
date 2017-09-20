@@ -78,7 +78,7 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
         versionId = bulkActionRun.getFundVersionId();
         inputNodeIds = bulkActionService.getBulkActionNodeIds(bulkActionRun);
         bulkActionConfig = bulkActionService.getBulkActionConfig(bulkActionRun.getBulkActionCode());
-        bulkAction = bulkActionService.getBulkAction((String) bulkActionConfig.getString("code_type_bulk_action"));
+        bulkAction = bulkActionService.getBulkAction(bulkActionConfig.getString("code_type_bulk_action"));
     }
 
 

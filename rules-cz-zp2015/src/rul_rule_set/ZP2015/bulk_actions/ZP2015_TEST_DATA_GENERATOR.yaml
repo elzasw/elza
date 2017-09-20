@@ -1,6 +1,5 @@
 code_type_bulk_action: TEST_DATA_GENERATOR
 name: Generátor testovacích dat
-rule_code: ZP2015
 
 # number of items to generate
 items_to_generate:

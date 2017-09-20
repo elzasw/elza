@@ -16,9 +16,6 @@ public class PolicyType {
     @XmlAttribute(name = "code", required = true)
     private String code;
 
-    @XmlAttribute(name = "rule-set", required = true)
-    private String ruleSet;
-
     @XmlElement(name = "name", required = true)
     private String name;
 
@@ -28,14 +25,6 @@ public class PolicyType {
 
     public void setCode(final String code) {
         this.code = code;
-    }
-
-    public String getRuleSet() {
-        return ruleSet;
-    }
-
-    public void setRuleSet(final String ruleSet) {
-        this.ruleSet = ruleSet;
     }
 
     public String getName() {
