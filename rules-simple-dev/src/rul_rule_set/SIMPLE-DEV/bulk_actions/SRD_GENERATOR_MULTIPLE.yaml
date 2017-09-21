@@ -1,6 +1,5 @@
 name: Vícenásobný generátor
 code_type_bulk_action: GENERATOR_MULTIPLE
-rule_code: SIMPLE-DEV
 
 action:
   - DATE_RANGE

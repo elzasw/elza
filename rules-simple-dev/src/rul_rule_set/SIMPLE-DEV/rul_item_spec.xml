@@ -3,151 +3,126 @@
         <name>Soubor</name>
         <description>Soubor</description>
         <shortcut>Soubor</shortcut>
-        <view-order>1</view-order>
     </item-spec>
     <item-spec code="SRD_LEVEL_SECTION" item-type="SRD_LEVEL_TYPE">
         <name>Dílčí list</name>
         <description>Dílčí list</description>
         <shortcut>Dílčí list</shortcut>
-        <view-order>2</view-order>
     </item-spec>
     <item-spec code="SRD_LEVEL_SERIES" item-type="SRD_LEVEL_TYPE">
         <name>Série</name>
         <description>Série</description>
         <shortcut>Série</shortcut>
-        <view-order>3</view-order>
     </item-spec>
     <item-spec code="SRD_LEVEL_FOLDER" item-type="SRD_LEVEL_TYPE">
         <name>Složka</name>
         <description>Složka</description>
         <shortcut>Složka</shortcut>
-        <view-order>4</view-order>
     </item-spec>
     <item-spec code="SRD_LEVEL_ITEM" item-type="SRD_LEVEL_TYPE">
         <name>Jednotlivost</name>
         <description>Jednotlivost</description>
         <shortcut>Jednotlivost</shortcut>
-        <view-order>5</view-order>
     </item-spec>
     <item-spec code="SRD_LEVEL_PART" item-type="SRD_LEVEL_TYPE">
         <name>Část jednotlivosti</name>
         <description>Část jednotlivosti</description>
         <shortcut>Část</shortcut>
-        <view-order>6</view-order>
     </item-spec>
     <item-spec code="SRD_FOLDER_LOGICAL" item-type="SRD_FOLDER_TYPE">
         <name>Logická</name>
         <description>Logická složka</description>
         <shortcut>Logická</shortcut>
-        <view-order>1</view-order>
     </item-spec>
     <item-spec code="SRD_FOLDER_UNITS" item-type="SRD_FOLDER_TYPE">
         <name>Množstevní EJ</name>
         <description>Množstevní evidenční jednotka</description>
         <shortcut>Množstevní EJ</shortcut>
-        <view-order>2</view-order>
     </item-spec>
     <item-spec code="SRD_FOLDER_SINGLE_TYPE" item-type="SRD_FOLDER_TYPE">
         <name>S typem EJ</name>
         <description>Více evidenčních jednotek stejného typu</description>
         <shortcut>Typ EJ</shortcut>
-        <view-order>3</view-order>
     </item-spec>
     <item-spec code="SRD_UNIT_TYPE_LIO" item-type="SRD_UNIT_TYPE">
         <name>Listiny do roku 1850</name>
         <description>Listiny do roku 1850</description>
         <shortcut>lio</shortcut>
-        <view-order>1</view-order>
     </item-spec>
     <item-spec code="SRD_UNIT_TYPE_LIP" item-type="SRD_UNIT_TYPE">
         <name>Listiny po roce 1850</name>
         <description>Listiny po roce 1850</description>
         <shortcut>lip</shortcut>
-        <view-order>2</view-order>
     </item-spec>
     <item-spec code="SRD_UNIT_TYPE_UKN" item-type="SRD_UNIT_TYPE">
         <name>Úřední knihy</name>
         <description>Úřední knihy</description>
         <shortcut>ukn</shortcut>
-        <view-order>3</view-order>
     </item-spec>
     <item-spec code="SRD_UNIT_TYPE_RKP" item-type="SRD_UNIT_TYPE">
         <name>Rukopisy</name>
         <description>Rukopisy</description>
         <shortcut>rkp</shortcut>
-        <view-order>4</view-order>
     </item-spec>
     <item-spec code="SRD_UNIT_TYPE_PPR" item-type="SRD_UNIT_TYPE">
         <name>Podací protokoly</name>
         <description>Podací protokoly</description>
         <shortcut>ppr</shortcut>
-        <view-order>5</view-order>
     </item-spec>
     <item-spec code="SRD_UNIT_TYPE_KTT" item-type="SRD_UNIT_TYPE">
         <name>Kartotéky</name>
         <description>Kartotéky</description>
         <shortcut>ktt</shortcut>
-        <view-order>9</view-order>
     </item-spec>
     <item-spec code="SRD_EXTRA_UNITS_LIO" item-type="SRD_EXTRA_UNITS">
         <name>Listiny do roku 1850</name>
         <description>Listiny do roku 1850</description>
         <shortcut>lio</shortcut>
-        <view-order>1</view-order>
     </item-spec>
     <item-spec code="SRD_EXTRA_UNITS_LIP" item-type="SRD_EXTRA_UNITS">
         <name>Listiny po roce 1850</name>
         <description>Listiny po roce 1850</description>
         <shortcut>lip</shortcut>
-        <view-order>2</view-order>
     </item-spec>
     <item-spec code="SRD_EXTRA_UNITS_UKN" item-type="SRD_EXTRA_UNITS">
         <name>Úřední knihy</name>
         <description>Úřední knihy</description>
         <shortcut>ukn</shortcut>
-        <view-order>3</view-order>
     </item-spec>
     <item-spec code="SRD_EXTRA_UNITS_RKP" item-type="SRD_EXTRA_UNITS">
         <name>Rukopisy</name>
         <description>Rukopisy</description>
         <shortcut>rkp</shortcut>
-        <view-order>4</view-order>
     </item-spec>
     <item-spec code="SRD_EXTRA_UNITS_KTT" item-type="SRD_EXTRA_UNITS">
         <name>Kartotéky</name>
         <description>Kartotéky</description>
         <shortcut>ktt</shortcut>
-        <view-order>9</view-order>
     </item-spec>
     <item-spec code="SRD_OTHERID_SIG_ORIG" item-type="SRD_OTHER_ID">
         <name>Signatura přidělená původcem</name>
         <description>Signatura přidělená původcem</description>
         <shortcut>sign.pův.</shortcut>
-        <view-order>1</view-order>
     </item-spec>
     <item-spec code="SRD_OTHERID_SIG" item-type="SRD_OTHER_ID">
         <name>Signatura přidělená při zpracování archiválie</name>
         <description>Signatura přidělená při zpracování archiválie</description>
         <shortcut>sign.</shortcut>
-        <view-order>2</view-order>
     </item-spec>
     <item-spec code="SRD_OTHERID_STORAGE_ID" item-type="SRD_OTHER_ID">
         <name>Ukládací znak</name>
         <description>Ukládací znak</description>
         <shortcut>ukl.znak</shortcut>
-        <view-order>3</view-order>
     </item-spec>
     <item-spec code="SRD_OTHERID_CJ" item-type="SRD_OTHER_ID">
         <name>Číslo jednací</name>
         <description>Číslo jednací</description>
         <shortcut>č.j.</shortcut>
-        <view-order>4</view-order>
     </item-spec>
     <item-spec code="SRD_OTHERID_INVALID_REFNO" item-type="SRD_OTHER_ID">
         <name>Neplatné referenční označení</name>
         <description>Neplatné referenční označení</description>
         <shortcut>nepl. ref. ozn.</shortcut>
-        <view-order>11</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_1" item-type="SRD_LANGUAGE">
         <name>indoevropské - blíže neurčené</name>
@@ -156,7 +131,6 @@
         <categories>
             <category>indoevropské</category>
         </categories>
-        <view-order>1</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_2" item-type="SRD_LANGUAGE">
         <name>indoevropské - baltské - blíže neurčené</name>
@@ -166,7 +140,6 @@
             <category>indoevropské</category>
             <category>baltské</category>
         </categories>
-        <view-order>2</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_3" item-type="SRD_LANGUAGE">
         <name>indoevropské - baltské - litevština</name>
@@ -176,7 +149,6 @@
             <category>indoevropské</category>
             <category>baltské</category>
         </categories>
-        <view-order>3</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_4" item-type="SRD_LANGUAGE">
         <name>indoevropské - baltské - lotyština</name>
@@ -186,7 +158,6 @@
             <category>indoevropské</category>
             <category>baltské</category>
         </categories>
-        <view-order>4</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_5" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - blíže neurčené</name>
@@ -196,7 +167,6 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
-        <view-order>5</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_6" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - afrikánština</name>
@@ -206,7 +176,6 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
-        <view-order>6</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_7" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - alsaština</name>
@@ -216,7 +185,6 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
-        <view-order>7</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_8" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - angličtina</name>
@@ -226,7 +194,6 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
-        <view-order>8</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_9" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - dánština</name>
@@ -236,7 +203,6 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
-        <view-order>9</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_10" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - dolnoněmčina</name>
@@ -246,7 +212,6 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
-        <view-order>10</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_11" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - faerština</name>
@@ -256,7 +221,6 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
-        <view-order>11</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_12" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - fríština</name>
@@ -266,7 +230,6 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
-        <view-order>12</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_13" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - holandština (nizozemština)</name>
@@ -276,7 +239,6 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
-        <view-order>13</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_14" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - islandština</name>
@@ -286,7 +248,6 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
-        <view-order>14</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_15" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - jidiš</name>
@@ -296,7 +257,6 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
-        <view-order>15</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_16" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - judendeutsch</name>
@@ -306,7 +266,6 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
-        <view-order>16</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_17" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - lucemburština</name>
@@ -316,7 +275,6 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
-        <view-order>17</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_18" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - němčina</name>
@@ -326,7 +284,6 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
-        <view-order>18</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_19" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - norština</name>
@@ -336,7 +293,6 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
-        <view-order>19</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_20" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - švédština</name>
@@ -346,7 +302,6 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
-        <view-order>20</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_21" item-type="SRD_LANGUAGE">
         <name>indoevropské - keltské - blíže neurčené</name>
@@ -356,7 +311,6 @@
             <category>indoevropské</category>
             <category>keltské</category>
         </categories>
-        <view-order>21</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_22" item-type="SRD_LANGUAGE">
         <name>indoevropské - keltské - bretonština</name>
@@ -366,7 +320,6 @@
             <category>indoevropské</category>
             <category>keltské</category>
         </categories>
-        <view-order>22</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_23" item-type="SRD_LANGUAGE">
         <name>indoevropské - keltské - irština</name>
@@ -376,7 +329,6 @@
             <category>indoevropské</category>
             <category>keltské</category>
         </categories>
-        <view-order>23</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_24" item-type="SRD_LANGUAGE">
         <name>indoevropské - keltské - skotská gaelština</name>
@@ -386,7 +338,6 @@
             <category>indoevropské</category>
             <category>keltské</category>
         </categories>
-        <view-order>24</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_25" item-type="SRD_LANGUAGE">
         <name>indoevropské - keltské - velština</name>
@@ -396,7 +347,6 @@
             <category>indoevropské</category>
             <category>keltské</category>
         </categories>
-        <view-order>25</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_26" item-type="SRD_LANGUAGE">
         <name>indoevropské - románské - blíže neurčené</name>
@@ -406,7 +356,6 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
-        <view-order>26</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_27" item-type="SRD_LANGUAGE">
         <name>indoevropské - románské - francouzština</name>
@@ -416,7 +365,6 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
-        <view-order>27</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_28" item-type="SRD_LANGUAGE">
         <name>indoevropské - románské - galicijština</name>
@@ -426,7 +374,6 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
-        <view-order>28</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_29" item-type="SRD_LANGUAGE">
         <name>indoevropské - románské - italština</name>
@@ -436,7 +383,6 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
-        <view-order>29</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_30" item-type="SRD_LANGUAGE">
         <name>indoevropské - románské - katalánština</name>
@@ -446,7 +392,6 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
-        <view-order>30</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_31" item-type="SRD_LANGUAGE">
         <name>indoevropské - románské - korsičtina</name>
@@ -456,7 +401,6 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
-        <view-order>31</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_32" item-type="SRD_LANGUAGE">
         <name>indoevropské - románské - latina</name>
@@ -466,7 +410,6 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
-        <view-order>32</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_33" item-type="SRD_LANGUAGE">
         <name>indoevropské - románské - moldavština</name>
@@ -476,7 +419,6 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
-        <view-order>33</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_34" item-type="SRD_LANGUAGE">
         <name>indoevropské - románské - okcitánština</name>
@@ -486,7 +428,6 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
-        <view-order>34</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_35" item-type="SRD_LANGUAGE">
         <name>indoevropské - románské - portugalština</name>
@@ -496,7 +437,6 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
-        <view-order>35</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_36" item-type="SRD_LANGUAGE">
         <name>indoevropské - románské - rétorománština</name>
@@ -506,7 +446,6 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
-        <view-order>36</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_37" item-type="SRD_LANGUAGE">
         <name>indoevropské - románské - rumunština</name>
@@ -516,7 +455,6 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
-        <view-order>37</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_38" item-type="SRD_LANGUAGE">
         <name>indoevropské - románské - španělština</name>
@@ -526,7 +464,6 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
-        <view-order>38</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_39" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - blíže neurčené</name>
@@ -536,7 +473,6 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
-        <view-order>39</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_40" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - běloruština</name>
@@ -546,7 +482,6 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
-        <view-order>40</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_41" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - bosenština</name>
@@ -556,7 +491,6 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
-        <view-order>41</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_42" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - bulharština</name>
@@ -566,7 +500,6 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
-        <view-order>42</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_43" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - čeština</name>
@@ -576,7 +509,6 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
-        <view-order>43</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_44" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - chorvatština</name>
@@ -586,7 +518,6 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
-        <view-order>44</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_45" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - kašubština</name>
@@ -596,7 +527,6 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
-        <view-order>45</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_46" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - lužická srbština dolní (dolnolužičtina)</name>
@@ -606,7 +536,6 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
-        <view-order>46</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_47" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - lužická srbština horní (hornolužičtina)</name>
@@ -616,7 +545,6 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
-        <view-order>47</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_48" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - makedonština</name>
@@ -626,7 +554,6 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
-        <view-order>48</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_49" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - polština</name>
@@ -636,7 +563,6 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
-        <view-order>49</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_50" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - rusínština</name>
@@ -646,7 +572,6 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
-        <view-order>50</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_51" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - ruština</name>
@@ -656,7 +581,6 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
-        <view-order>51</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_52" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - slovenština</name>
@@ -666,7 +590,6 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
-        <view-order>52</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_53" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - slovinština</name>
@@ -676,7 +599,6 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
-        <view-order>53</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_54" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - srbochorvatština</name>
@@ -686,7 +608,6 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
-        <view-order>54</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_55" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - srbština</name>
@@ -696,13 +617,11 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
-        <view-order>55</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_56" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - staroslověnština, církevní slovanština</name>
         <description>indoevropské - slovanské - staroslověnština, církevní slovanština</description>
         <shortcut>staroslověnština, církevní slovanština</shortcut>
-        <view-order>56</view-order>
         <categories>
             <category>indoevropské</category>
             <category>slovanské</category>
@@ -716,7 +635,6 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
-        <view-order>57</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_58" item-type="SRD_LANGUAGE">
         <name>indoevropské - ostatní - blíže neurčené</name>
@@ -726,7 +644,6 @@
             <category>indoevropské</category>
             <category>ostatní</category>
         </categories>
-        <view-order>58</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_59" item-type="SRD_LANGUAGE">
         <name>indoevropské - ostatní - albánština</name>
@@ -736,7 +653,6 @@
             <category>indoevropské</category>
             <category>ostatní</category>
         </categories>
-        <view-order>59</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_60" item-type="SRD_LANGUAGE">
         <name>indoevropské - ostatní - arménština</name>
@@ -746,7 +662,6 @@
             <category>indoevropské</category>
             <category>ostatní</category>
         </categories>
-        <view-order>60</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_61" item-type="SRD_LANGUAGE">
         <name>indoevropské - ostatní - řečtina</name>
@@ -756,7 +671,6 @@
             <category>indoevropské</category>
             <category>ostatní</category>
         </categories>
-        <view-order>61</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_62" item-type="SRD_LANGUAGE">
         <name>uralské - blíže neurčené</name>
@@ -765,7 +679,6 @@
         <categories>
             <category>uralské</category>
         </categories>
-        <view-order>62</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_63" item-type="SRD_LANGUAGE">
         <name>uralské - estonština</name>
@@ -774,13 +687,11 @@
         <categories>
             <category>uralské</category>
         </categories>
-        <view-order>63</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_64" item-type="SRD_LANGUAGE">
         <name>uralské - finština</name>
         <description>uralské - finština</description>
         <shortcut>finština</shortcut>
-        <view-order>64</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_65" item-type="SRD_LANGUAGE">
         <name>uralské - maďarština</name>
@@ -789,7 +700,6 @@
         <categories>
             <category>uralské</category>
         </categories>
-        <view-order>65</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_66" item-type="SRD_LANGUAGE">
         <name>uralské - livština</name>
@@ -798,7 +708,6 @@
         <categories>
             <category>uralské</category>
         </categories>
-        <view-order>66</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_67" item-type="SRD_LANGUAGE">
         <name>izolované - baskičtina</name>
@@ -807,7 +716,6 @@
         <categories>
             <category>izolované</category>
         </categories>
-        <view-order>67</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_68" item-type="SRD_LANGUAGE">
         <name>afroasijské - blíže neurčené</name>
@@ -816,7 +724,6 @@
         <categories>
             <category>afroasijské</category>
         </categories>
-        <view-order>68</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_69" item-type="SRD_LANGUAGE">
         <name>afroasijské - semitské - blíže neurčené</name>
@@ -826,7 +733,6 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
-        <view-order>69</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_70" item-type="SRD_LANGUAGE">
         <name>afroasijské - semitské - (novo)hebrejština</name>
@@ -836,7 +742,6 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
-        <view-order>70</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_71" item-type="SRD_LANGUAGE">
         <name>afroasijské - semitské - amharština</name>
@@ -846,7 +751,6 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
-        <view-order>71</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_72" item-type="SRD_LANGUAGE">
         <name>afroasijské - semitské - arabština</name>
@@ -856,7 +760,6 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
-        <view-order>72</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_73" item-type="SRD_LANGUAGE">
         <name>afroasijské - semitské - aramejština</name>
@@ -866,7 +769,6 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
-        <view-order>73</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_74" item-type="SRD_LANGUAGE">
         <name>afroasijské - semitské - hauština</name>
@@ -876,7 +778,6 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
-        <view-order>74</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_75" item-type="SRD_LANGUAGE">
         <name>afroasijské - semitské - maltština</name>
@@ -886,7 +787,6 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
-        <view-order>75</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_76" item-type="SRD_LANGUAGE">
         <name>afroasijské - semitské - stará hebrejština</name>
@@ -896,7 +796,6 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
-        <view-order>76</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_77" item-type="SRD_LANGUAGE">
         <name>afroasijské - semitské - akkadština</name>
@@ -906,7 +805,6 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
-        <view-order>77</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_78" item-type="SRD_LANGUAGE">
         <name>afroasijské - semitské - assyrština</name>
@@ -916,7 +814,6 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
-        <view-order>78</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_79" item-type="SRD_LANGUAGE">
         <name>afroasijské - semitské - babylonština</name>
@@ -926,7 +823,6 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
-        <view-order>79</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_80" item-type="SRD_LANGUAGE">
         <name>afroasijské - semitské - chetitština</name>
@@ -936,7 +832,6 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
-        <view-order>80</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_81" item-type="SRD_LANGUAGE">
         <name>afroasijské - semitské - sumerština</name>
@@ -946,7 +841,6 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
-        <view-order>81</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_82" item-type="SRD_LANGUAGE">
         <name>afroasijské - egyptština</name>
@@ -955,7 +849,6 @@
         <categories>
             <category>afroasijské</category>
         </categories>
-        <view-order>82</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_83" item-type="SRD_LANGUAGE">
         <name>afroasijské - koptština</name>
@@ -964,7 +857,6 @@
         <categories>
             <category>afroasijské</category>
         </categories>
-        <view-order>83</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_84" item-type="SRD_LANGUAGE">
         <name>nigerokonžské - blíže neurčené</name>
@@ -973,7 +865,6 @@
         <categories>
             <category>nigerokonžské</category>
         </categories>
-        <view-order>84</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_85" item-type="SRD_LANGUAGE">
         <name>nigerokonžské - svahilština</name>
@@ -982,7 +873,6 @@
         <categories>
             <category>nigerokonžské</category>
         </categories>
-        <view-order>85</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_86" item-type="SRD_LANGUAGE">
         <name>altajské - blíže neurčené</name>
@@ -991,7 +881,6 @@
         <categories>
             <category>altajské</category>
         </categories>
-        <view-order>86</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_87" item-type="SRD_LANGUAGE">
         <name>altajské - japonština</name>
@@ -1000,7 +889,6 @@
         <categories>
             <category>altajské</category>
         </categories>
-        <view-order>87</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_88" item-type="SRD_LANGUAGE">
         <name>altajské - korejština</name>
@@ -1009,7 +897,6 @@
         <categories>
             <category>altajské</category>
         </categories>
-        <view-order>88</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_89" item-type="SRD_LANGUAGE">
         <name>altajské - mongolské - blíže neurčené</name>
@@ -1019,7 +906,6 @@
             <category>altajské</category>
             <category>mongolské</category>
         </categories>
-        <view-order>89</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_90" item-type="SRD_LANGUAGE">
         <name>altajské - mongolské - mongolština</name>
@@ -1029,7 +915,6 @@
             <category>altajské</category>
             <category>mongolské</category>
         </categories>
-        <view-order>90</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_91" item-type="SRD_LANGUAGE">
         <name>altajské - turkické - blíže neurčené</name>
@@ -1039,7 +924,6 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
-        <view-order>91</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_92" item-type="SRD_LANGUAGE">
         <name>altajské - turkické - azerbajdžánština</name>
@@ -1049,7 +933,6 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
-        <view-order>92</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_93" item-type="SRD_LANGUAGE">
         <name>altajské - turkické - baškirština</name>
@@ -1059,7 +942,6 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
-        <view-order>93</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_94" item-type="SRD_LANGUAGE">
         <name>altajské - turkické - gagauzština</name>
@@ -1069,7 +951,6 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
-        <view-order>94</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_95" item-type="SRD_LANGUAGE">
         <name>altajské - turkické - hazarština</name>
@@ -1079,7 +960,6 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
-        <view-order>95</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_96" item-type="SRD_LANGUAGE">
         <name>altajské - turkické - kyrgyzština</name>
@@ -1089,7 +969,6 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
-        <view-order>96</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_97" item-type="SRD_LANGUAGE">
         <name>altajské - turkické - krymská tatarština</name>
@@ -1099,7 +978,6 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
-        <view-order>97</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_98" item-type="SRD_LANGUAGE">
         <name>altajské - turkické - tatarština</name>
@@ -1109,7 +987,6 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
-        <view-order>98</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_99" item-type="SRD_LANGUAGE">
         <name>altajské - turkické - turečtina</name>
@@ -1119,7 +996,6 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
-        <view-order>99</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_100" item-type="SRD_LANGUAGE">
         <name>altajské - turkické - turkménština</name>
@@ -1129,7 +1005,6 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
-        <view-order>100</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_101" item-type="SRD_LANGUAGE">
         <name>altajské - turkické - ujgurština</name>
@@ -1139,7 +1014,6 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
-        <view-order>101</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_102" item-type="SRD_LANGUAGE">
         <name>altajské - turkické - uzbečtina</name>
@@ -1149,7 +1023,6 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
-        <view-order>102</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_103" item-type="SRD_LANGUAGE">
         <name>austroasijské - blíže neurčené</name>
@@ -1158,7 +1031,6 @@
         <categories>
             <category>austroasijské</category>
         </categories>
-        <view-order>103</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_104" item-type="SRD_LANGUAGE">
         <name>austroasijské - mundské - santalština</name>
@@ -1168,7 +1040,6 @@
             <category>austroasijské</category>
             <category>mundské</category>
         </categories>
-        <view-order>104</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_105" item-type="SRD_LANGUAGE">
         <name>austroasijské - khmérština</name>
@@ -1177,7 +1048,6 @@
         <categories>
             <category>austroasijské</category>
         </categories>
-        <view-order>105</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_106" item-type="SRD_LANGUAGE">
         <name>austroasijské - vietnamština</name>
@@ -1186,7 +1056,6 @@
         <categories>
             <category>austroasijské</category>
         </categories>
-        <view-order>106</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_107" item-type="SRD_LANGUAGE">
         <name>austronéské - blíže neurčené</name>
@@ -1195,7 +1064,6 @@
         <categories>
             <category>austronéské</category>
         </categories>
-        <view-order>107</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_108" item-type="SRD_LANGUAGE">
         <name>austronéské - indonéština</name>
@@ -1204,7 +1072,6 @@
         <categories>
             <category>austronéské</category>
         </categories>
-        <view-order>108</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_109" item-type="SRD_LANGUAGE">
         <name>austronéské - malajština</name>
@@ -1213,7 +1080,6 @@
         <categories>
             <category>austronéské</category>
         </categories>
-        <view-order>109</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_110" item-type="SRD_LANGUAGE">
         <name>drávidské - blíže neurčené</name>
@@ -1222,7 +1088,6 @@
         <categories>
             <category>drávidské</category>
         </categories>
-        <view-order>110</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_111" item-type="SRD_LANGUAGE">
         <name>drávidské - kannadština (též kannarština)</name>
@@ -1231,7 +1096,6 @@
         <categories>
             <category>drávidské</category>
         </categories>
-        <view-order>111</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_112" item-type="SRD_LANGUAGE">
         <name>drávidské - malajalámština</name>
@@ -1240,7 +1104,6 @@
         <categories>
             <category>drávidské</category>
         </categories>
-        <view-order>112</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_113" item-type="SRD_LANGUAGE">
         <name>drávidské - tamilština</name>
@@ -1249,7 +1112,6 @@
         <categories>
             <category>drávidské</category>
         </categories>
-        <view-order>113</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_114" item-type="SRD_LANGUAGE">
         <name>drávidské - telugština</name>
@@ -1258,7 +1120,6 @@
         <categories>
             <category>drávidské</category>
         </categories>
-        <view-order>114</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_115" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - blíže neurčené</name>
@@ -1268,7 +1129,6 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
-        <view-order>115</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_116" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - asámština</name>
@@ -1278,7 +1138,6 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
-        <view-order>116</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_117" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - bengálština</name>
@@ -1288,7 +1147,6 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
-        <view-order>117</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_118" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - Bihárštiina (maithilština)</name>
@@ -1298,7 +1156,6 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
-        <view-order>118</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_119" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - dógrí</name>
@@ -1308,7 +1165,6 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
-        <view-order>119</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_120" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - gudžarátština</name>
@@ -1318,7 +1174,6 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
-        <view-order>120</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_121" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - hindština</name>
@@ -1328,7 +1183,6 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
-        <view-order>121</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_122" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - kašmírština</name>
@@ -1338,7 +1192,6 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
-        <view-order>122</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_123" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - konkánština</name>
@@ -1348,7 +1201,6 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
-        <view-order>123</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_124" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - maráthština</name>
@@ -1358,7 +1210,6 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
-        <view-order>124</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_125" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - pahárské jazyky (nepálština)</name>
@@ -1368,7 +1219,6 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
-        <view-order>125</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_126" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - pandžábština</name>
@@ -1378,7 +1228,6 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
-        <view-order>126</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_127" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - romština</name>
@@ -1388,7 +1237,6 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
-        <view-order>127</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_128" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - sanskrt</name>
@@ -1398,7 +1246,6 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
-        <view-order>128</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_129" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - sindština</name>
@@ -1408,7 +1255,6 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
-        <view-order>129</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_130" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - sinhálština</name>
@@ -1418,7 +1264,6 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
-        <view-order>130</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_131" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - urdština</name>
@@ -1428,7 +1273,6 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
-        <view-order>131</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_132" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - urijština</name>
@@ -1438,7 +1282,6 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
-        <view-order>132</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_133" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoíránské - blíže neurčené</name>
@@ -1448,7 +1291,6 @@
             <category>indoevropské</category>
             <category>indoíránské</category>
         </categories>
-        <view-order>133</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_134" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoíránské - (novo)perština</name>
@@ -1458,7 +1300,6 @@
             <category>indoevropské</category>
             <category>indoíránské</category>
         </categories>
-        <view-order>134</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_135" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoíránské - kurdština</name>
@@ -1468,7 +1309,6 @@
             <category>indoevropské</category>
             <category>indoíránské</category>
         </categories>
-        <view-order>135</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_136" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoíránské - paštština</name>
@@ -1478,7 +1318,6 @@
             <category>indoevropské</category>
             <category>indoíránské</category>
         </categories>
-        <view-order>136</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_137" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoíránské - stará perština</name>
@@ -1488,7 +1327,6 @@
             <category>indoevropské</category>
             <category>indoíránské</category>
         </categories>
-        <view-order>137</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_138" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoíránské - střední perština</name>
@@ -1498,7 +1336,6 @@
             <category>indoevropské</category>
             <category>indoíránské</category>
         </categories>
-        <view-order>138</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_139" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoíránské - tádžičtina</name>
@@ -1508,7 +1345,6 @@
             <category>indoevropské</category>
             <category>indoíránské</category>
         </categories>
-        <view-order>139</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_140" item-type="SRD_LANGUAGE">
         <name>kartvelské - blíže neurčené</name>
@@ -1517,7 +1353,6 @@
         <categories>
             <category>kartvelské</category>
         </categories>
-        <view-order>140</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_141" item-type="SRD_LANGUAGE">
         <name>kartvelské - gruzínština</name>
@@ -1526,7 +1361,6 @@
         <categories>
             <category>kartvelské</category>
         </categories>
-        <view-order>141</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_142" item-type="SRD_LANGUAGE">
         <name>severokavkazské - blíže neurčené</name>
@@ -1535,7 +1369,6 @@
         <categories>
             <category>severokavkazské</category>
         </categories>
-        <view-order>142</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_143" item-type="SRD_LANGUAGE">
         <name>severokavkazské - abcházština</name>
@@ -1544,7 +1377,6 @@
         <categories>
             <category>severokavkazské</category>
         </categories>
-        <view-order>143</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_144" item-type="SRD_LANGUAGE">
         <name>tajsko-kadajské - blíže neurčené</name>
@@ -1553,7 +1385,6 @@
         <categories>
             <category>tajsko-kadajské</category>
         </categories>
-        <view-order>144</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_145" item-type="SRD_LANGUAGE">
         <name>tajsko-kadajské - laoština</name>
@@ -1562,7 +1393,6 @@
         <categories>
             <category>tajsko-kadajské</category>
         </categories>
-        <view-order>145</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_146" item-type="SRD_LANGUAGE">
         <name>tajsko-kadajské - thajština</name>
@@ -1571,7 +1401,6 @@
         <categories>
             <category>tajsko-kadajské</category>
         </categories>
-        <view-order>146</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_147" item-type="SRD_LANGUAGE">
         <name>tibetskočínské - blíže neurčené</name>
@@ -1580,7 +1409,6 @@
         <categories>
             <category>tibetskočínské</category>
         </categories>
-        <view-order>147</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_148" item-type="SRD_LANGUAGE">
         <name>tibetskočínské - barmština</name>
@@ -1589,7 +1417,6 @@
         <categories>
             <category>tibetskočínské</category>
         </categories>
-        <view-order>148</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_149" item-type="SRD_LANGUAGE">
         <name>tibetskočínské - bodo</name>
@@ -1598,7 +1425,6 @@
         <categories>
             <category>tibetskočínské</category>
         </categories>
-        <view-order>149</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_150" item-type="SRD_LANGUAGE">
         <name>tibetskočínské - bhútánština</name>
@@ -1607,7 +1433,6 @@
         <categories>
             <category>tibetskočínské</category>
         </categories>
-        <view-order>150</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_151" item-type="SRD_LANGUAGE">
         <name>tibetskočínské - manípurština</name>
@@ -1616,7 +1441,6 @@
         <categories>
             <category>tibetskočínské</category>
         </categories>
-        <view-order>151</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_152" item-type="SRD_LANGUAGE">
         <name>tibetskočínské - čínština</name>
@@ -1625,7 +1449,6 @@
         <categories>
             <category>tibetskočínské</category>
         </categories>
-        <view-order>152</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_153" item-type="SRD_LANGUAGE">
         <name>tibetskočínské - tibetština</name>
@@ -1634,7 +1457,6 @@
         <categories>
             <category>tibetskočínské</category>
         </categories>
-        <view-order>153</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_154" item-type="SRD_LANGUAGE">
         <name>eskymácko - aleutské - blíže neurčené</name>
@@ -1644,7 +1466,6 @@
             <category>eskymácko</category>
             <category>aleutské</category>
         </categories>
-        <view-order>154</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_155" item-type="SRD_LANGUAGE">
         <name>eskymácko - aleutské - grónština</name>
@@ -1654,7 +1475,6 @@
             <category>eskymácko</category>
             <category>aleutské</category>
         </categories>
-        <view-order>155</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_156" item-type="SRD_LANGUAGE">
         <name>indiánské - blíže neurčené</name>
@@ -1663,13 +1483,11 @@
         <categories>
             <category>indiánské</category>
         </categories>
-        <view-order>156</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_157" item-type="SRD_LANGUAGE">
         <name>blíže neurčený</name>
         <description>blíže neurčený</description>
         <shortcut></shortcut>
-        <view-order>157</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_158" item-type="SRD_LANGUAGE">
         <name>izolované - blíže neurčené</name>
@@ -1678,7 +1496,6 @@
         <categories>
             <category>izolované</category>
         </categories>
-        <view-order>158</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_159" item-type="SRD_LANGUAGE">
         <name>kreolské - blíže neurčené</name>
@@ -1687,7 +1504,6 @@
         <categories>
             <category>kreolské</category>
         </categories>
-        <view-order>159</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_160" item-type="SRD_LANGUAGE">
         <name>umělé - blíže neurčené</name>
@@ -1696,7 +1512,6 @@
         <categories>
             <category>umělé</category>
         </categories>
-        <view-order>160</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_161" item-type="SRD_LANGUAGE">
         <name>umělé - esperanto</name>
@@ -1705,7 +1520,6 @@
         <categories>
             <category>umělé</category>
         </categories>
-        <view-order>161</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_162" item-type="SRD_LANGUAGE">
         <name>umělé - ido</name>
@@ -1714,7 +1528,6 @@
         <categories>
             <category>umělé</category>
         </categories>
-        <view-order>162</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_163" item-type="SRD_LANGUAGE">
         <name>umělé - interlingua</name>
@@ -1723,7 +1536,6 @@
         <categories>
             <category>umělé</category>
         </categories>
-        <view-order>163</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_164" item-type="SRD_LANGUAGE">
         <name>umělé - interlingue</name>
@@ -1732,7 +1544,6 @@
         <categories>
             <category>umělé</category>
         </categories>
-        <view-order>164</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_165" item-type="SRD_LANGUAGE">
         <name>umělé - volapük</name>
@@ -1741,7 +1552,6 @@
         <categories>
             <category>umělé</category>
         </categories>
-        <view-order>165</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_166" item-type="SRD_LANGUAGE">
         <name>umělé - slovio</name>
@@ -1750,13 +1560,11 @@
         <categories>
             <category>umělé</category>
         </categories>
-        <view-order>166</view-order>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_1" item-type="SRD_ENTITY_ROLE">
         <name>autoři</name>
         <description>autoři</description>
         <shortcut></shortcut>
-        <view-order>1</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -1766,7 +1574,6 @@
         <name>autoři dialogů</name>
         <description>autoři dialogů</description>
         <shortcut></shortcut>
-        <view-order>2</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -1776,7 +1583,6 @@
         <name>autoři doprovodných textů</name>
         <description>autoři doprovodných textů</description>
         <shortcut></shortcut>
-        <view-order>3</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -1786,7 +1592,6 @@
         <name>autoři fotografií</name>
         <description>autoři fotografií</description>
         <shortcut></shortcut>
-        <view-order>4</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -1796,7 +1601,6 @@
         <name>autoři hudební složky</name>
         <description>autoři hudební složky</description>
         <shortcut></shortcut>
-        <view-order>5</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -1806,7 +1610,6 @@
         <name>autoři hudby</name>
         <description>autoři hudby</description>
         <shortcut></shortcut>
-        <view-order>6</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -1816,7 +1619,6 @@
         <name>autoři choreografií</name>
         <description>autoři choreografií</description>
         <shortcut></shortcut>
-        <view-order>7</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -1826,7 +1628,6 @@
         <name>autoři komentářů</name>
         <description>autoři komentářů</description>
         <shortcut></shortcut>
-        <view-order>8</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -1836,7 +1637,6 @@
         <name>autoři námětů</name>
         <description>autoři námětů</description>
         <shortcut></shortcut>
-        <view-order>9</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -1846,7 +1646,6 @@
         <name>autoři textové složky</name>
         <description>autoři textové složky</description>
         <shortcut></shortcut>
-        <view-order>10</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -1856,7 +1655,6 @@
         <name>autoři textů</name>
         <description>autoři textů</description>
         <shortcut></shortcut>
-        <view-order>11</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -1866,7 +1664,6 @@
         <name>autoři triků a speciálních efektů</name>
         <description>autoři triků a speciálních efektů</description>
         <shortcut></shortcut>
-        <view-order>12</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -1876,7 +1673,6 @@
         <name>autoři výtvarné a obrazové stránky</name>
         <description>autoři výtvarné a obrazové stránky</description>
         <shortcut></shortcut>
-        <view-order>13</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -1886,7 +1682,6 @@
         <name>autoři výtvarné stránky</name>
         <description>autoři výtvarné stránky</description>
         <shortcut></shortcut>
-        <view-order>14</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -1896,7 +1691,6 @@
         <name>vydavatelé</name>
         <description>vydavatelé</description>
         <shortcut></shortcut>
-        <view-order>15</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -1906,7 +1700,6 @@
         <name>vydavatelé / nakladatelé</name>
         <description>vydavatelé / nakladatelé</description>
         <shortcut></shortcut>
-        <view-order>16</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -1916,7 +1709,6 @@
         <name>pečetitelé</name>
         <description>pečetitelé</description>
         <shortcut></shortcut>
-        <view-order>17</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -1926,7 +1718,6 @@
         <name>produkční společnosti/producenti</name>
         <description>produkční společnosti/producenti</description>
         <shortcut></shortcut>
-        <view-order>18</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -1936,7 +1727,6 @@
         <name>objednatelé / příjemci</name>
         <description>objednatelé / příjemci</description>
         <shortcut></shortcut>
-        <view-order>19</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -1946,7 +1736,6 @@
         <name>distributoři</name>
         <description>distributoři</description>
         <shortcut></shortcut>
-        <view-order>20</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -1956,7 +1745,6 @@
         <name>příjemci</name>
         <description>příjemci</description>
         <shortcut></shortcut>
-        <view-order>21</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -1966,7 +1754,6 @@
         <name>žadatelé</name>
         <description>žadatelé</description>
         <shortcut></shortcut>
-        <view-order>22</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -1976,7 +1763,6 @@
         <name>držitelé</name>
         <description>držitelé</description>
         <shortcut></shortcut>
-        <view-order>23</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -1986,7 +1772,6 @@
         <name>odesilatelé</name>
         <description>odesilatelé</description>
         <shortcut></shortcut>
-        <view-order>24</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -1996,7 +1781,6 @@
         <name>schvalovatelé</name>
         <description>schvalovatelé</description>
         <shortcut></shortcut>
-        <view-order>25</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -2006,7 +1790,6 @@
         <name>stavitelé</name>
         <description>stavitelé</description>
         <shortcut></shortcut>
-        <view-order>26</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -2016,7 +1799,6 @@
         <name>režiséři</name>
         <description>režiséři</description>
         <shortcut></shortcut>
-        <view-order>27</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PERSON"/>
         </item-spec-registers>
@@ -2025,7 +1807,6 @@
         <name>scénáristé</name>
         <description>scénáristé</description>
         <shortcut></shortcut>
-        <view-order>28</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PERSON"/>
         </item-spec-registers>
@@ -2034,7 +1815,6 @@
         <name>kameramani</name>
         <description>kameramani</description>
         <shortcut></shortcut>
-        <view-order>29</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PERSON"/>
         </item-spec-registers>
@@ -2043,7 +1823,6 @@
         <name>interpreti hudby</name>
         <description>interpreti hudby</description>
         <shortcut></shortcut>
-        <view-order>30</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -2053,7 +1832,6 @@
         <name>fotografové</name>
         <description>fotografové</description>
         <shortcut></shortcut>
-        <view-order>31</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -2063,7 +1841,6 @@
         <name>redaktoři</name>
         <description>redaktoři</description>
         <shortcut></shortcut>
-        <view-order>32</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PERSON"/>
         </item-spec-registers>
@@ -2072,7 +1849,6 @@
         <name>kartografové</name>
         <description>kartografové</description>
         <shortcut></shortcut>
-        <view-order>33</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -2082,7 +1858,6 @@
         <name>editoři</name>
         <description>editoři</description>
         <shortcut></shortcut>
-        <view-order>34</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PERSON"/>
         </item-spec-registers>
@@ -2091,7 +1866,6 @@
         <name>editoři / redaktoři</name>
         <description>editoři / redaktoři</description>
         <shortcut></shortcut>
-        <view-order>35</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PERSON"/>
         </item-spec-registers>
@@ -2100,7 +1874,6 @@
         <name>kresliči</name>
         <description>kresliči</description>
         <shortcut></shortcut>
-        <view-order>36</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PERSON"/>
         </item-spec-registers>
@@ -2109,7 +1882,6 @@
         <name>majitelé typářů</name>
         <description>majitelé typářů</description>
         <shortcut></shortcut>
-        <view-order>37</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -2119,7 +1891,6 @@
         <name>tvůrci technického zpracování</name>
         <description>tvůrci technického zpracování</description>
         <shortcut></shortcut>
-        <view-order>38</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -2129,7 +1900,6 @@
         <name>tvůrci výtvarné stránky</name>
         <description>tvůrci výtvarné stránky</description>
         <shortcut></shortcut>
-        <view-order>39</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -2139,7 +1909,6 @@
         <name>dramaturgové</name>
         <description>dramaturgové</description>
         <shortcut></shortcut>
-        <view-order>40</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PERSON"/>
         </item-spec-registers>
@@ -2148,7 +1917,6 @@
         <name>střih</name>
         <description>střih</description>
         <shortcut></shortcut>
-        <view-order>41</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -2158,7 +1926,6 @@
         <name>zvuk</name>
         <description>zvuk</description>
         <shortcut></shortcut>
-        <view-order>42</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -2168,7 +1935,6 @@
         <name>účinkující</name>
         <description>účinkující</description>
         <shortcut></shortcut>
-        <view-order>43</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -2178,7 +1944,6 @@
         <name>překladatelé</name>
         <description>překladatelé</description>
         <shortcut></shortcut>
-        <view-order>44</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -2188,7 +1953,6 @@
         <name>lektoři</name>
         <description>lektoři</description>
         <shortcut></shortcut>
-        <view-order>45</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PERSON"/>
         </item-spec-registers>
@@ -2197,7 +1961,6 @@
         <name>svědci</name>
         <description>svědci</description>
         <shortcut></shortcut>
-        <view-order>46</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PERSON"/>
         </item-spec-registers>
@@ -2206,7 +1969,6 @@
         <name>ručitelé (rukojmě)</name>
         <description>ručitelé (rukojmě)</description>
         <shortcut></shortcut>
-        <view-order>47</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PERSON"/>
         </item-spec-registers>
@@ -2215,7 +1977,6 @@
         <name>písaři</name>
         <description>písaři</description>
         <shortcut></shortcut>
-        <view-order>48</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PERSON"/>
         </item-spec-registers>
@@ -2224,7 +1985,6 @@
         <name>zpracovatelé nosičů záznamů</name>
         <description>zpracovatelé nosičů záznamů</description>
         <shortcut></shortcut>
-        <view-order>49</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -2234,7 +1994,6 @@
         <name>výrobci nosičů záznamů</name>
         <description>výrobci nosičů záznamů</description>
         <shortcut></shortcut>
-        <view-order>50</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -2244,7 +2003,6 @@
         <name>tiskárny</name>
         <description>tiskárny</description>
         <shortcut></shortcut>
-        <view-order>51</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
         </item-spec-registers>
@@ -2253,7 +2011,6 @@
         <name>tiskárny/tiskaři</name>
         <description>tiskárny/tiskaři</description>
         <shortcut></shortcut>
-        <view-order>52</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -2263,7 +2020,6 @@
         <name>výrobci</name>
         <description>výrobci</description>
         <shortcut></shortcut>
-        <view-order>53</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -2273,7 +2029,6 @@
         <name>výrobci typářů</name>
         <description>výrobci typářů</description>
         <shortcut></shortcut>
-        <view-order>54</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -2283,7 +2038,6 @@
         <name>výrobci odlitků otisků / otisků typářů</name>
         <description>výrobci odlitků otisků / otisků typářů</description>
         <shortcut></shortcut>
-        <view-order>55</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -2293,7 +2047,6 @@
         <name>místa vzniku záznamů</name>
         <description>místa vzniku záznamů</description>
         <shortcut></shortcut>
-        <view-order>56</view-order>
         <item-spec-registers>
             <item-spec-register register-type="GEO"/>
         </item-spec-registers>
@@ -2302,7 +2055,6 @@
         <name>místa vydavatelů</name>
         <description>místa vydavatelů</description>
         <shortcut></shortcut>
-        <view-order>57</view-order>
         <item-spec-registers>
             <item-spec-register register-type="GEO"/>
         </item-spec-registers>
@@ -2311,7 +2063,6 @@
         <name>místa vydání</name>
         <description>místa vydání</description>
         <shortcut></shortcut>
-        <view-order>58</view-order>
         <item-spec-registers>
             <item-spec-register register-type="GEO"/>
         </item-spec-registers>
@@ -2320,7 +2071,6 @@
         <name>místa vydání dokumentů</name>
         <description>místa vydání dokumentů</description>
         <shortcut></shortcut>
-        <view-order>59</view-order>
         <item-spec-registers>
             <item-spec-register register-type="GEO"/>
         </item-spec-registers>
@@ -2329,7 +2079,6 @@
         <name>místa výroby jednotek popisu</name>
         <description>místa výroby jednotek popisu</description>
         <shortcut></shortcut>
-        <view-order>60</view-order>
         <item-spec-registers>
             <item-spec-register register-type="GEO"/>
         </item-spec-registers>
@@ -2338,7 +2087,6 @@
         <name>místa vzniku jednotek popisu</name>
         <description>místa vzniku jednotek popisu</description>
         <shortcut></shortcut>
-        <view-order>61</view-order>
         <item-spec-registers>
             <item-spec-register register-type="GEO"/>
         </item-spec-registers>
@@ -2347,7 +2095,6 @@
         <name>místa vzniku předloh popisovaných kopií</name>
         <description>místa vzniku předloh popisovaných kopií</description>
         <shortcut></shortcut>
-        <view-order>62</view-order>
         <item-spec-registers>
             <item-spec-register register-type="GEO"/>
         </item-spec-registers>
@@ -2356,7 +2103,6 @@
         <name>typová označení a názvy výrobků a typových staveb</name>
         <description>typová označení a názvy výrobků a typových staveb</description>
         <shortcut></shortcut>
-        <view-order>63</view-order>
         <item-spec-registers>
             <item-spec-register register-type="ARTWORK"/>
         </item-spec-registers>
@@ -2365,7 +2111,6 @@
         <name>entity zachycené jednotkami popisu</name>
         <description>entity zachycené jednotkami popisu</description>
         <shortcut></shortcut>
-        <view-order>64</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -2378,7 +2123,6 @@
         <name>ostatní entity zachycené jednotkami popisu</name>
         <description>ostatní entity zachycené jednotkami popisu</description>
         <shortcut></shortcut>
-        <view-order>65</view-order>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
@@ -2391,24 +2135,20 @@
         <name>Manipulační seznam</name>
         <description>Manipulační seznam</description>
         <shortcut>Manipulační seznam</shortcut>
-        <view-order>66</view-order>
     </item-spec>
     <item-spec code="SRD_ARRANGEMENT_INV" item-type="SRD_ARRANGEMENT_TYPE">
         <name>Inventář</name>
         <description>Inventář</description>
         <shortcut>Inventář</shortcut>
-        <view-order>67</view-order>
     </item-spec>
     <item-spec code="SRD_ARRANGEMENT_KAT" item-type="SRD_ARRANGEMENT_TYPE">
         <name>Katalog</name>
         <description>Katalog</description>
         <shortcut>Katalog</shortcut>
-        <view-order>68</view-order>
     </item-spec>
     <item-spec code="SRD_ARRANGEMENT_OTHER" item-type="SRD_ARRANGEMENT_TYPE">
         <name>Starší pomůcka</name>
         <description>Starší pomůcka</description>
         <shortcut>Starší pomůcka</shortcut>
-        <view-order>69</view-order>
     </item-spec>
 </item-specs>

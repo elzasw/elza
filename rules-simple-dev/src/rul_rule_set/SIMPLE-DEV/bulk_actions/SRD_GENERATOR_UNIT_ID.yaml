@@ -1,5 +1,4 @@
 code_type_bulk_action: GENERATOR_UNIT_ID
-rule_code: SIMPLE-DEV
 unit_id_code: SRD_UNIT_ID
 previous_id_code: SRD_OTHER_ID
 previous_id_spec_code: SRD_OTHERID_SIG_ORIG

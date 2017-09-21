@@ -1,14 +1,14 @@
 <policy-types>
-    <policy-type code="SRD_BASIC" rule-set="SIMPLE-DEV">
+    <policy-type code="SRD_BASIC">
         <name>Základní</name>
     </policy-type>
-    <policy-type code="SRD_STORAGE_ID" rule-set="SIMPLE-DEV">
+    <policy-type code="SRD_STORAGE_ID">
         <name>Ukládací jendotky</name>
     </policy-type>
-    <policy-type code="SRD_REF_NO" rule-set="SIMPLE-DEV">
+    <policy-type code="SRD_REF_NO">
         <name>Referenční označení</name>
     </policy-type>
-    <policy-type code="SRD_SERIAL_NO" rule-set="SIMPLE-DEV">
+    <policy-type code="SRD_SERIAL_NO">
         <name>Pořadové číslo</name>
     </policy-type>
 </policy-types>
