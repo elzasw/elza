@@ -29,9 +29,6 @@ public class ItemSpec {
     @XmlElement(name = "description", required = true)
     private String description;
 
-    @XmlElement(name = "view-order", required = true)
-    private Integer viewOrder;
-
     @XmlElement(name = "item-spec-register")
     @XmlElementWrapper(name = "item-spec-registers")
     private List<ItemSpecRegister> itemSpecRegisters;
@@ -78,14 +75,6 @@ public class ItemSpec {
 
     public void setDescription(final String description) {
         this.description = description;
-    }
-
-    public Integer getViewOrder() {
-        return viewOrder;
-    }
-
-    public void setViewOrder(final Integer viewOrder) {
-        this.viewOrder = viewOrder;
     }
 
     public List<ItemSpecRegister> getItemSpecRegisters() {

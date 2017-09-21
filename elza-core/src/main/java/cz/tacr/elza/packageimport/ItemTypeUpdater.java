@@ -1,32 +1,22 @@
 package cz.tacr.elza.packageimport;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.PackageCode;
-import cz.tacr.elza.packageimport.xml.Category;
-import cz.tacr.elza.packageimport.xml.ItemSpecRegister;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemSpecRegister;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulPackageDependency;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.table.ElzaColumn;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.PackageCode;
+import cz.tacr.elza.packageimport.xml.Category;
 import cz.tacr.elza.packageimport.xml.Column;
 import cz.tacr.elza.packageimport.xml.ItemSpec;
+import cz.tacr.elza.packageimport.xml.ItemSpecRegister;
 import cz.tacr.elza.packageimport.xml.ItemSpecs;
 import cz.tacr.elza.packageimport.xml.ItemType;
 import cz.tacr.elza.packageimport.xml.ItemTypes;
@@ -34,7 +24,21 @@ import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.ItemSpecRegisterRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.PackageDependencyRepository;
+import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static cz.tacr.elza.packageimport.PackageService.ITEM_TYPE_XML;
 
@@ -70,6 +74,12 @@ public class ItemTypeUpdater {
 
     @Autowired
 	private RegisterTypeRepository registerTypeRepository;
+
+    @Autowired
+    private PackageRepository packageRepository;
+
+    @Autowired
+    private PackageDependencyRepository packageDependencyRepository;
 
     public static final String CATEGORY_SEPARATOR = "|";
 
@@ -120,6 +130,9 @@ public class ItemTypeUpdater {
         List<RulItemSpec> rulDescItemSpecs = itemSpecRepository.findByRulPackage(rulPackage);
         List<RulItemSpec> rulDescItemSpecsNew = new ArrayList<>();
 
+        // item type code -> local view order
+        Map<String, Integer> viewOrderMap = new HashMap<>();
+
         if (itemSpecs != null && !CollectionUtils.isEmpty(itemSpecs.getItemSpecs())) {
             for (ItemSpec itemSpec : itemSpecs.getItemSpecs()) {
                 List<RulItemSpec> findItems = rulDescItemSpecs.stream()
@@ -133,6 +146,11 @@ public class ItemTypeUpdater {
                 }
 
                 convertRulDescItemSpec(rulPackage, itemSpec, item, rulDescItemTypes);
+
+                Integer nextViewOrder = viewOrderMap.computeIfAbsent(item.getItemType().getCode(), next -> 1);
+                item.setViewOrder(nextViewOrder);
+                viewOrderMap.put(item.getItemType().getCode(), ++nextViewOrder);
+
                 rulDescItemSpecsNew.add(item);
             }
         }
@@ -165,7 +183,7 @@ public class ItemTypeUpdater {
 
 		prepareForUpdate();
 
-        List<RulItemType> rulItemTypesUpdated = Collections.emptyList();
+        List<RulItemType> rulItemTypesUpdated = new ArrayList<>();
         if (itemTypes != null) {
             // prepare list of updated/new items
             List<ItemType> itemTypesList = itemTypes.getItemTypes();
@@ -175,12 +193,13 @@ public class ItemTypeUpdater {
                 rulItemTypesUpdated = itemTypeRepository.save(rulItemTypesUpdated);
             }
 
-            List<RulItemType> rulItemTypesAllByRules = new ArrayList<>(rulItemTypesUpdated);
-            rulItemTypesAllByRules.addAll(itemTypeRepository.findByRuleSet(rulRuleSet));
-
-            // update specifications
-            processDescItemSpecs(itemSpecs, rulPackage, rulItemTypesAllByRules);
         }
+        List<RulItemType> rulItemTypesAllByRules = new ArrayList<>(rulItemTypesUpdated);
+        rulItemTypesAllByRules.addAll(itemTypeRepository.findByRuleSet(rulRuleSet));
+
+        // update specifications
+        processDescItemSpecs(itemSpecs, rulPackage, rulItemTypesAllByRules);
+        postSpecsOrder();
 
 		// delete unused item types
 		List<RulItemType> rulDescItemTypesDelete = new ArrayList<>(rulItemTypesOrig);
@@ -190,8 +209,58 @@ public class ItemTypeUpdater {
 		return rulItemTypesUpdated;
 	}
 
+    /**
+     * Seřazení specifikací podle balíčků.
+     */
+    private void postSpecsOrder() {
 
-	/**
+        // potřeba seřadit podle typu, balíčku a "lokálnímu" ražení
+        Sort sort = new Sort(
+                new Sort.Order(Sort.Direction.ASC, "itemType"),
+                new Sort.Order(Sort.Direction.ASC, "rulPackage"),
+                new Sort.Order(Sort.Direction.ASC, "viewOrder")
+        );
+        List<RulItemSpec> itemSpecList = itemSpecRepository.findAll(sort);
+
+        final List<RulPackage> sortedPackages = getSortedPackages();
+
+        // item type id -> list spec
+        Map<Integer, List<RulItemSpec>> itemSpecMap = itemSpecList.stream()
+                .collect(Collectors.groupingBy(RulItemSpec::getItemTypeId));
+
+        for (List<RulItemSpec> rulItemSpecs : itemSpecMap.values()) {
+
+            // seřazení podle priority balíčků (lokální seřazení se změní na globální)
+            rulItemSpecs.sort((o1, o2) -> {
+                int i1 = sortedPackages.indexOf(o1.getPackage());
+                int i2 = sortedPackages.indexOf(o2.getPackage());
+                return Integer.compare(i1, i2);
+            });
+
+            // provede přečíslování
+            for (int i = 0; i < rulItemSpecs.size(); i++) {
+                RulItemSpec rulItemSpec = rulItemSpecs.get(i);
+                rulItemSpec.setViewOrder(i + 1);
+            }
+        }
+
+        itemSpecRepository.save(itemSpecList);
+    }
+
+    /**
+     * Vrací všechny balíčky serazené podle topologického řazení - podle závislostí mezi sebou.
+     *
+     * @return seznam balíčků
+     */
+    private List<RulPackage> getSortedPackages() {
+        List<RulPackage> packages = packageRepository.findAll();
+        PackageUtils.Graph<RulPackage> g = new PackageUtils.Graph<>(packages.size());
+        List<RulPackageDependency> dependencies = packageDependencyRepository.findAll();
+        dependencies.forEach(d -> g.addEdge(d.getSourcePackage(), d.getTargetPackage()));
+        return g.topologicalSort();
+    }
+
+    /**
 	 * Update items types
 	 * @param rulItemTypesOrig
 	 * @param itemTypes
@@ -227,7 +296,7 @@ public class ItemTypeUpdater {
 				}
 
 				// update view order
-				int i = dbItemType.getViewOrder().intValue();
+				int i = dbItemType.getViewOrder();
 				if(i<=lastUsedViewOrder) {
 					lastUsedViewOrder = getNextViewOrderPos();
 				} else {
@@ -343,7 +412,6 @@ public class ItemTypeUpdater {
                                         final List<RulItemType> rulDescItemTypes) {
         rulDescItemSpec.setName(itemSpec.getName());
         rulDescItemSpec.setCode(itemSpec.getCode());
-        rulDescItemSpec.setViewOrder(itemSpec.getViewOrder());
         rulDescItemSpec.setDescription(itemSpec.getDescription());
         rulDescItemSpec.setShortcut(itemSpec.getShortcut());
         rulDescItemSpec.setPackage(rulPackage);

@@ -3213,7 +3213,6 @@ public class PackageService {
     private void convertDescItemSpec(final RulItemSpec rulDescItemSpec, final ItemSpec itemSpec) {
         itemSpec.setCode(rulDescItemSpec.getCode());
         itemSpec.setName(rulDescItemSpec.getName());
-        itemSpec.setViewOrder(rulDescItemSpec.getViewOrder());
         itemSpec.setDescription(rulDescItemSpec.getDescription());
         itemSpec.setItemType(rulDescItemSpec.getItemType().getCode());
         itemSpec.setShortcut(rulDescItemSpec.getShortcut());
