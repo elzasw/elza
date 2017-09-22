@@ -111,4 +111,12 @@
                                  onDelete="NO ACTION"/>
     </changeSet>
 
+    <changeSet id="201709220800" author="vanek">
+        <addColumn tableName="reg_record">
+            <column name="invalid" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

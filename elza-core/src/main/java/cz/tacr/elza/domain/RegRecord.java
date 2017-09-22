@@ -103,6 +103,9 @@ public class RegRecord extends AbstractVersionableEntity implements Versionable,
     @Column(nullable = false)
     private LocalDateTime lastUpdate;
 
+    @Column(nullable = false)
+    private boolean invalid;
+
     /* Konstanty pro vazby a fieldy. */
     public static final String VARIANT_RECORD_LIST = "variantRecordList";
     public static final String REGISTER_TYPE = "registerType";
@@ -301,6 +304,14 @@ public class RegRecord extends AbstractVersionableEntity implements Versionable,
      */
     public void setLastUpdate(final LocalDateTime lastUpdate) {
         this.lastUpdate = lastUpdate;
+    }
+
+    public boolean isInvalid() {
+        return invalid;
+    }
+
+    public void setInvalid(boolean invalid) {
+        this.invalid = invalid;
     }
 
     @Override

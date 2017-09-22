@@ -100,6 +100,8 @@ public class RegRecordVO extends AbstractRegRecord {
 
     private Date lastUpdate;
 
+    private boolean invalid;
+
     public Integer getId() {
         return id;
     }
@@ -267,6 +269,14 @@ public class RegRecordVO extends AbstractRegRecord {
     public void setLastUpdate(final Date lastUpdate) {
         this.lastUpdate = lastUpdate;
     }
+
+	public boolean isInvalid() {
+		return invalid;
+	}
+
+	public void setInvalid(final boolean invalid) {
+		this.invalid = invalid;
+	}
 
     public static class RecordParent{
         private Integer id;
