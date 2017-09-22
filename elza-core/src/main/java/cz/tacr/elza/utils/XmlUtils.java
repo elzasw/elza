@@ -23,6 +23,8 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.JAXBIntrospector;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -402,5 +404,13 @@ public class XmlUtils {
         GregorianCalendar gc = calendar.toGregorianCalendar();
         Instant instant = Instant.ofEpochMilli(gc.getTimeInMillis());
         return LocalDateTime.ofEpochSecond(instant.getEpochSecond(), instant.getNano(), ZoneOffset.UTC);
+    }
+
+    public static DatatypeFactory createDatatypeFactory() {
+        try {
+            return DatatypeFactory.newInstance();
+        } catch (DatatypeConfigurationException e) {
+            throw new SystemException(e);
+        }
     }
 }
