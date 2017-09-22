@@ -1,12 +1,8 @@
 package cz.tacr.elza.deimport.sections.items;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.deimport.context.ImportContext;
-import cz.tacr.elza.deimport.processor.TimeIntervalConvertor;
-import cz.tacr.elza.deimport.processor.TimeIntervalConvertor.TimeIntervalConversionResult;
+import cz.tacr.elza.deimport.timeinterval.TimeInterval;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
@@ -24,19 +20,17 @@ public class DescriptionItemUnitDateImpl extends DescriptionItemUnitDate {
         ArrDataUnitdate data = new ArrDataUnitdate();
 
         // time interval conversion
-        TimeIntervalConversionResult convResult = new TimeIntervalConvertor(context.getDatatypeFactory()).convert(getD());
-        data.setCalendarType(convResult.getCalendarType().getEntity());
-        data.setFormat(convResult.getFormat());
-        data.setValueFrom(convResult.getFormattedFrom());
-        data.setValueTo(convResult.getFormattedTo());
-        data.setValueFromEstimated(convResult.isFromEst());
-        data.setValueToEstimated(convResult.isToEst());
+        TimeInterval it = TimeInterval.create(getD());
+        data.setCalendarType(it.getCalendarType().getEntity());
+        data.setFormat(it.getFormat());
+        data.setValueFrom(it.getFormattedFrom());
+        data.setValueTo(it.getFormattedTo());
+        data.setValueFromEstimated(it.isFromEst());
+        data.setValueToEstimated(it.isToEst());
 
         // normalization of time interval
-        LocalDateTime fromLDT = LocalDateTime.ofInstant(convResult.getFrom().toInstant(), ZoneId.systemDefault()); // TODO: time zone
-        LocalDateTime toLDT = LocalDateTime.ofInstant(convResult.getTo().toInstant(), ZoneId.systemDefault()); // TODO: time zone
-        long normFromSec = CalendarConverter.toSeconds(convResult.getCalendarType(), fromLDT);
-        long normToSec = CalendarConverter.toSeconds(convResult.getCalendarType(), toLDT);
+        long normFromSec = CalendarConverter.toSeconds(it.getCalendarType(), it.getFrom());
+        long normToSec = CalendarConverter.toSeconds(it.getCalendarType(), it.getTo());
         data.setNormalizedFrom(normFromSec);
         data.setNormalizedTo(normToSec);
 
