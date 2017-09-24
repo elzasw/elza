@@ -17,13 +17,11 @@
         <shortcut>Katalog</shortcut>
         <view-order>3</view-order>
     </item-spec>
-    <!-- Dříve: Starší pomůcka
-         Nový typ bude: ZP2015_ARRANGEMENT_INV_1958 - nutno ještě změnit 
-       -->
+    <!-- Typ pořádání pro starší pomůcky -->
     <item-spec code="ZP2015_ARRANGEMENT_OTHER" item-type="ZP2015_ARRANGEMENT_TYPE">
-        <name>Inventář (pravidla 1958)</name>
-        <description>Inventář (pravidla 1958)</description>
-        <shortcut>Inventář (pravidla 1958)</shortcut>
+        <name>Starší pomůcka</name>
+        <description>Starší pomůcka</description>
+        <shortcut>Starší pomůcka</shortcut>
         <view-order>4</view-order>
     </item-spec>    
     <item-spec code="ZP2015_LEVEL_ROOT" item-type="ZP2015_LEVEL_TYPE">
@@ -317,9 +315,15 @@
     <item-spec code="ZP2015_UNIT_TYPE_OTHER" item-type="ZP2015_UNIT_TYPE">
         <name>Neevidovaná jednotlivost</name>
         <description>Neevidovaná jednotlivost</description>
-        <shortcut>other</shortcut>
+        <shortcut>njn</shortcut>
         <view-order>54</view-order>
     </item-spec>
+    <item-spec code="ZP2015_UNIT_TYPE_PART" item-type="ZP2015_UNIT_TYPE">
+        <name>Část jednotlivosti</name>
+        <description>Část jednotlivosti</description>
+        <shortcut>část</shortcut>
+        <view-order>55</view-order>
+    </item-spec>    
     
     <!-- Specifikace pro složky v manip.seznamu -->
     <item-spec code="ZP2015_EXTRA_UNITS_LIO" item-type="ZP2015_EXTRA_UNITS">
