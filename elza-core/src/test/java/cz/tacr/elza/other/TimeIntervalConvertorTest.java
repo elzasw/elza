@@ -51,13 +51,6 @@ public class TimeIntervalConvertorTest {
         assertEquals("DT-DT", result.getFormat());
 
         interval = new cz.tacr.elza.schema.v2.TimeInterval();
-        interval.setF("1846-10-03T00:00:00");
-        interval.setTo("1846-10-03T15:12:00");
-        interval.setFmt("D-DT");
-        result = TimeInterval.create(interval);
-        assertEquals("D-DT", result.getFormat());
-
-        interval = new cz.tacr.elza.schema.v2.TimeInterval();
         interval.setF("1846-10-03T15:00:00");
         interval.setTo("1846-10-03T15:00:00");
         result = TimeInterval.create(interval);
@@ -68,13 +61,6 @@ public class TimeIntervalConvertorTest {
         interval.setTo("1990-01");
         result = TimeInterval.create(interval);
         assertEquals("YM", result.getFormat());
-
-        interval = new cz.tacr.elza.schema.v2.TimeInterval();
-        interval.setF("1846-10-03T15:00:00");
-        interval.setTo("1846-10-03T15:00:00");
-        interval.setFmt("DT");
-        result = TimeInterval.create(interval);
-        assertEquals("DT", result.getFormat());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -104,7 +90,7 @@ public class TimeIntervalConvertorTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testInvalidFormat() {
+    public void testInvalidCustomFormat() {
         cz.tacr.elza.schema.v2.TimeInterval interval = new cz.tacr.elza.schema.v2.TimeInterval();
         interval.setF("1990");
         interval.setTo("1995-06-16");
@@ -113,7 +99,7 @@ public class TimeIntervalConvertorTest {
     }
 
     @Test
-    public void testValidFormat() {
+    public void testValidCustomFormat() {
         cz.tacr.elza.schema.v2.TimeInterval interval = null;
         TimeInterval result = null;
 
@@ -130,6 +116,34 @@ public class TimeIntervalConvertorTest {
         interval.setFmt("D-DT");
         result = TimeInterval.create(interval);
         assertEquals("D-DT", result.getFormat());
+
+        interval = new cz.tacr.elza.schema.v2.TimeInterval();
+        interval.setF("1846-10-03T00:00:00");
+        interval.setTo("1846-10-03T15:12:00");
+        interval.setFmt("D-DT");
+        result = TimeInterval.create(interval);
+        assertEquals("D-DT", result.getFormat());
+
+        interval = new cz.tacr.elza.schema.v2.TimeInterval();
+        interval.setF("1783-01-01T00:00:00");
+        interval.setTo("1783-12-31T23:59:59");
+        interval.setFmt("Y");
+        result = TimeInterval.create(interval);
+        assertEquals("Y", result.getFormat());
+
+        interval = new cz.tacr.elza.schema.v2.TimeInterval();
+        interval.setF("1846-10-03T15:00:00");
+        interval.setTo("1846-10-03T15:00:00");
+        interval.setFmt("DT");
+        result = TimeInterval.create(interval);
+        assertEquals("DT", result.getFormat());
+
+        interval = new cz.tacr.elza.schema.v2.TimeInterval();
+        interval.setF("1737-01-07T00:00:00");
+        interval.setTo("1737-12-31T23:59:59");
+        interval.setFmt("D-D");
+        result = TimeInterval.create(interval);
+        assertEquals("D-D", result.getFormat());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -274,5 +288,28 @@ public class TimeIntervalConvertorTest {
             exMsg = e.getMessage();
         }
         assertEquals("Cannot create boundary with timezone", exMsg);
+    }
+
+    @Test
+    public void testOldGregorianDate() {
+        cz.tacr.elza.schema.v2.TimeInterval interval = new cz.tacr.elza.schema.v2.TimeInterval();
+        interval.setF("1178-01-01T00:00:00");
+        interval.setTo("1178-12-31T23:59:59");
+        TimeInterval result = TimeInterval.create(interval);
+        assertEquals("1178-01-01T00:00:00", result.getFormattedFrom());
+        assertEquals("1178-12-31T23:59:59", result.getFormattedTo());
+        assertEquals(CalendarType.GREGORIAN, result.getCalendarType());
+    }
+
+    @Test
+    public void testJulianDate() {
+        cz.tacr.elza.schema.v2.TimeInterval interval = new cz.tacr.elza.schema.v2.TimeInterval();
+        interval.setF("1178-01-01T00:00:00");
+        interval.setTo("1178-12-31T23:59:59");
+        interval.setCt("J");
+        TimeInterval result = TimeInterval.create(interval);
+        assertEquals("1178-01-01T00:00:00", result.getFormattedFrom());
+        assertEquals("1178-12-31T23:59:59", result.getFormattedTo());
+        assertEquals(CalendarType.JULIAN, result.getCalendarType());
     }
 }

@@ -8,6 +8,7 @@ import java.util.Calendar;
 import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.core.data.CalendarType;
+import cz.tacr.elza.deimport.CalendarTypeConvertor;
 
 public class TimeInterval {
 
@@ -146,8 +147,11 @@ public class TimeInterval {
         if (!format.isValid(lBoundary) || !format.isValid(uBoundary)) {
             return false;
         }
-        if (emptyInterval) { // e.g. "Y" for 1990-1990
-            return true;
+        if (emptyInterval) {
+            return true; // e.g. "Y" for 1990 - 1990
+        }
+        if (lBoundary.compareTo(uBoundary, format.getCalendarFieldPrecision()) == 0) {
+            return true; // e.g. "Y" for 1990-1-1 - 1990-12-31
         }
         if (format == BoundaryFormat.CENTURY) { // e.g. "C" for 1901-2000
             int begin = lBoundary.getCalendarValue(Calendar.YEAR);
@@ -156,20 +160,6 @@ public class TimeInterval {
             }
         }
         return false;
-    }
-
-    public static TimeInterval create(cz.tacr.elza.schema.v2.TimeInterval source) {
-        Boundary lBoundary = Boundary.create(source.getF(), true);
-        Boundary uBoundary = Boundary.create(source.getTo(), false);
-
-        CalendarType ct = convertCalendarType(source.getCt());
-
-        boolean lbEst = source.isFe() == null ? false : source.isFe();
-        boolean ubEst = source.isToe() == null ? false : source.isToe();
-
-        TimeInterval ti = new TimeInterval(lBoundary, uBoundary, ct, lbEst, ubEst);
-        ti.applyFormat(source.getFmt());
-        return ti;
     }
 
     /**
@@ -194,20 +184,17 @@ public class TimeInterval {
         return sb.toString();
     }
 
-    // TODO: create calendar type converter
-    private static CalendarType convertCalendarType(String code) {
-        if (code == null) {
-            return CalendarType.GREGORIAN;
-        } else if (code.length() == 1) {
-            switch (code.charAt(0)) {
-                case 'G':
-                case 'g':
-                    return CalendarType.GREGORIAN;
-                case 'J':
-                case 'j':
-                    return CalendarType.JULIAN;
-            }
-        }
-        throw new IllegalArgumentException("Invalid type of time interval calendar, value:" + code);
+    public static TimeInterval create(cz.tacr.elza.schema.v2.TimeInterval source) {
+        Boundary lBoundary = Boundary.create(source.getF(), true);
+        Boundary uBoundary = Boundary.create(source.getTo(), false);
+
+        CalendarType ct = CalendarTypeConvertor.convert(source.getCt());
+
+        boolean lbEst = source.isFe() == null ? false : source.isFe();
+        boolean ubEst = source.isToe() == null ? false : source.isToe();
+
+        TimeInterval ti = new TimeInterval(lBoundary, uBoundary, ct, lbEst, ubEst);
+        ti.applyFormat(source.getFmt());
+        return ti;
     }
 }

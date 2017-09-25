@@ -3,6 +3,7 @@ package cz.tacr.elza.deimport.timeinterval;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
@@ -10,7 +11,7 @@ import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.utils.XmlUtils;
 
@@ -73,6 +74,8 @@ class Boundary implements Comparable<Boundary> {
 
     private static final int FIELD_UNDEFINED = DatatypeConstants.FIELD_UNDEFINED;
 
+    private static final Date GREGORIAN_CHANGE = new Date(Long.MIN_VALUE);
+
     private static final TimeZone UTC_TZ = TimeZone.getTimeZone("UTC");
 
     private final Calendar calendar;
@@ -129,17 +132,21 @@ class Boundary implements Comparable<Boundary> {
      * positive integer as this object is less than, equal to, or greater than the specified
      * boundary.<br>
      * <br>
-     * Comparison is processed in sequence of boundary format calendar fields.
+     * Defined fields are compared in sequence of boundary format calendar fields. Precision of
+     * comparison is limited by last field.
      */
-    @Override
-    public int compareTo(Boundary o) {
+    public int compareTo(Boundary o, int lastField) {
         if (this == o) {
             return 0;
         }
-        int lastField = Math.min(lastDefinedField, o.lastDefinedField);
+        int definedLimit = Math.min(lastDefinedField, o.lastDefinedField);
         for (BoundaryFormat bf : BoundaryFormat.values()) {
             for (int cf : bf.getCalendarFields()) {
                 if (cf > lastField) {
+                    return 0;
+                }
+                if (cf > definedLimit) {
+                    // defined limit reached -> compare last defined field
                     if (lastDefinedField != o.lastDefinedField) {
                         return lastDefinedField > o.lastDefinedField ? 1 : -1;
                     }
@@ -152,7 +159,19 @@ class Boundary implements Comparable<Boundary> {
                 }
             }
         }
-        return 0;
+        return 0; // all format fields and equal
+    }
+
+    /**
+     * Compares this boundary with the specified boundary. Returns a negative integer, zero, or a
+     * positive integer as this object is less than, equal to, or greater than the specified
+     * boundary.<br>
+     * <br>
+     * Defined fields are compared in sequence of boundary format calendar fields.
+     */
+    @Override
+    public int compareTo(Boundary o) {
+        return compareTo(o, Integer.MAX_VALUE);
     }
 
     /**
@@ -172,13 +191,15 @@ class Boundary implements Comparable<Boundary> {
             throw new IllegalArgumentException("Cannot create boundary with timezone");
         }
 
-        Calendar cal = GregorianCalendar.getInstance(UTC_TZ);
         int lastNonDefaultField = FIELD_UNDEFINED;
         int lastDefinedField = FIELD_UNDEFINED;
 
+        GregorianCalendar gc = new GregorianCalendar(UTC_TZ);
+        gc.setGregorianChange(GREGORIAN_CHANGE);
+
         for (XmlCalendarField cf : XML_CALENDAR_FIELDS) {
             int value = cf.getValue(xmlgc);
-            int defValue = lowerBoundary ? cal.getActualMinimum(cf.field) : cal.getActualMaximum(cf.field);
+            int defValue = lowerBoundary ? gc.getActualMinimum(cf.field) : gc.getActualMaximum(cf.field);
 
             if (value == FIELD_UNDEFINED) {
                 value = defValue;
@@ -188,13 +209,13 @@ class Boundary implements Comparable<Boundary> {
                     lastNonDefaultField = cf.field;
                 }
             }
-            cal.set(cf.field, value);
+            gc.set(cf.field, value);
         }
 
+        Validate.isTrue(lastNonDefaultField <= lastDefinedField);
         Validate.isTrue(lastNonDefaultField != FIELD_UNDEFINED);
-        Validate.isTrue(lastDefinedField != FIELD_UNDEFINED);
 
-        Boundary boundary = new Boundary(cal, lastNonDefaultField, lastDefinedField, lowerBoundary);
+        Boundary boundary = new Boundary(gc, lastNonDefaultField, lastDefinedField, lowerBoundary);
         return boundary;
     }
 

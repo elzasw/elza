@@ -45,6 +45,10 @@ enum BoundaryFormat {
         return calendarFields;
     }
 
+    public int getCalendarFieldPrecision() {
+        return calendarFields[calendarFields.length - 1];
+    }
+
     /**
      * Returns true if this format is valid against the specified boundary.
      */
@@ -52,7 +56,7 @@ enum BoundaryFormat {
         if (boundary.getLastDefinedField() < calendarFields[0]) {
             return false; // format after defined fields
         }
-        if (boundary.getLastNonDefaultField() > calendarFields[calendarFields.length - 1]) {
+        if (boundary.getLastNonDefaultField() > getCalendarFieldPrecision()) {
             return false; // format hides non-default fields
         }
         return true;
