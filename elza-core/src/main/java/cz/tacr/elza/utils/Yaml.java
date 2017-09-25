@@ -1,6 +1,11 @@
 package cz.tacr.elza.utils;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PushbackInputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -26,15 +31,14 @@ import java.util.stream.Collectors;
  *
  * @author <a href="mailto:petr.compel@marbes.cz">Petr Compel</a>
  */
-@SuppressWarnings("unused")
 public class Yaml {
     private static final int BOM_SIZE = 4;
     private static final int BUFFER_SIZE = 512;
 
-    private HashMap<String, String> data;
-    private List<String> writeHistory;
-    private HashSet<String> keys;
-    private HashSet<String> emptyKeys;
+	private HashMap<String, String> data = new HashMap<>();
+	private List<String> writeHistory = new LinkedList<>();
+	private HashSet<String> keys = new HashSet<>();
+	private HashSet<String> emptyKeys = new HashSet<>();
 
     /**
      * Základní konstruktor
@@ -42,10 +46,6 @@ public class Yaml {
      * Default Constructor for initializing an empty YAML object
      */
     public Yaml() {
-        data = new HashMap<>();
-        writeHistory = new LinkedList<>();
-        keys = new HashSet<>();
-        emptyKeys = new HashSet<>();
     }
 
     /**
@@ -241,132 +241,6 @@ public class Yaml {
     }
 
     /**
-     * Uložení dat do souboru
-     * -------
-     * Saves the content of the YAML object into a file
-     *
-     * @throws YAMLNotInitializedException If the YAML object is not initialized properly
-     * @throws FileNotFoundException       If the file could not be found
-     */
-    public void save(File file) throws YAMLNotInitializedException, FileNotFoundException {
-        FileOutputStream stream = new FileOutputStream(file);
-        PrintStream out = new PrintStream(stream);
-        out.append(saveAsString());
-        out.flush();
-        out.close();
-    }
-
-    /**
-     * Vytvoření result streamu s daty
-     * -------
-     * Saves the content of the YAML object into a stream
-     *
-     * @return The YAML stream that represents the object
-     * @throws YAMLNotInitializedException If the YAML object is not initialized properly
-     * @throws IOException                 If any IO handling fails
-     */
-    public OutputStream saveAsStream() throws YAMLNotInitializedException, IOException {
-        OutputStream stream = new ByteArrayOutputStream();
-        DataOutputStream out = new DataOutputStream(stream);
-        out.writeBytes(saveAsString());
-        out.flush();
-        out.close();
-        return stream;
-    }
-
-    /**
-     * Vytvoření stringu s daty
-     * -------
-     * Saves the content of the YAML object into a string
-     *
-     * @return The YAML string that represents the object
-     * @throws YAMLNotInitializedException If the YAML object is not initialized properly
-     */
-    public String saveAsString() throws YAMLNotInitializedException {
-        StringBuilder yamlString = new StringBuilder();
-        int writeCount = getLogicalLineCount();
-        String writeLine;
-        String inlineKey = "";
-        boolean inline = false;
-        for (int i = 0; i < writeCount; i++) {
-            writeLine = getLogicalLine(i);
-            if (inline && writeLine.startsWith("inline." + inlineKey + '.')) {
-                continue;
-            }
-            inline = false;
-            yamlString.append("\n");
-            if (writeLine.equals("emptyline")) { /** Prázdná přebytečná řádka */
-                continue;
-            } else if (writeLine.startsWith("empty.")) { /** Prázdná hodnota */
-                writeLine = writeLine.substring(6);
-                yamlString.append(getIndentation(writeLine, null));
-                yamlString.append(getWriteKey(writeLine, null));
-                yamlString.append(": []");
-            } else if (writeLine.startsWith("group.")) { /** Skupina */
-                writeLine = writeLine.substring(6);
-                yamlString.append(getIndentation(writeLine, null));
-                yamlString.append(getWriteKey(writeLine, null)).append(':');
-            } else if (writeLine.startsWith("inline.")) { /** Inline hodnota */
-                inline = true;
-                writeLine = writeLine.substring(7);
-                inlineKey = writeLine.substring(0, writeLine.lastIndexOf('.'));
-                try {
-                    List<String> list = getStringList(inlineKey, null);
-                    int listSize = list == null ? 0 : list.size();
-                    if ((i + listSize < writeCount && !getLogicalLine(i + listSize + 1).startsWith("inline." + inlineKey + '.')) || (i + listSize >= writeCount)) {
-                        yamlString.append(inlineKey).append(": [");
-                        yamlString.append(getWriteValue(inlineKey + ".0"));
-                        for (int j = 1; j < listSize; j++) {
-                            yamlString.append(", ");
-                            yamlString.append(getWriteValue(inlineKey + '.' + j));
-                        }
-                        yamlString.append("]");
-                        i += listSize - 1;
-                    } else {
-                        yamlString.append(inlineKey).append(": {");
-                        yamlString.append(getKeyValuePair(writeLine, false, null));
-                        while (i < writeCount) {
-                            writeLine = getLogicalLine(++i);
-                            if (writeLine.startsWith("inline." + inlineKey + '.')) {
-                                yamlString.append(", ");
-                                yamlString.append(getKeyValuePair(writeLine.substring(7), false, null));
-                            } else {
-                                break;
-                            }
-                        }
-                        --i;
-                        yamlString.append("}");
-                    }
-                    if (list != null) {
-                        list.clear();
-                    }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            } else if (writeLine.startsWith("key.")) { /** Hodnota */
-                writeLine = writeLine.substring(4);
-                String group = "";
-                /** Detekce skupiny hodnoty */
-                if (writeLine.contains(".")) {
-                    String tempLine = "group." + writeLine;
-                    int dotCount = tempLine.split("\\.").length - 1;
-                    for (int q = i - 1; q >= 0; q--) {
-                        String logicLine = getLogicalLine(q);
-                        if (tempLine.contains(logicLine) && (dotCount - (logicLine.split("\\.").length - 1)) > 0 && group.length() < tempLine.length()) {
-                            group = logicLine;
-                            break;
-                        }
-                    }
-                }
-                yamlString.append(getKeyValuePair(writeLine, true, group.isEmpty() ? null : group.substring(6)));
-            } else {
-                yamlString.append(writeLine);
-            }
-        }
-        return yamlString.toString().substring(1);
-    }
-
-    /**
      * Zkontroluje zda YAML obsahuje klíč
      * -------
      * Checks if the given key exists in the YAML object
@@ -384,12 +258,8 @@ public class Yaml {
      * Function to get the amount of logical lines of the YAML object
      *
      * @return Amount of logical lines
-     * @throws YAMLNotInitializedException If the YAML object is not initialized properly
      */
-    public int getLogicalLineCount() throws YAMLNotInitializedException {
-        if (writeHistory == null) {
-            throw new YAMLNotInitializedException("The write history of the YAML object ist not initialized");
-        }
+	public int getLogicalLineCount() {
         return writeHistory.size();
     }
 
@@ -400,12 +270,8 @@ public class Yaml {
      *
      * @param lineIndex Index of the line you want to get the content from
      * @return Content of the selected logical line
-     * @throws YAMLNotInitializedException If the YAML object is not initialized properly
      */
-    public String getLogicalLine(int lineIndex) throws YAMLNotInitializedException {
-        if (writeHistory == null) {
-            throw new YAMLNotInitializedException("The write history of the YAML object ist not initialized");
-        }
+	public String getLogicalLine(int lineIndex) {
         return writeHistory.get(lineIndex);
     }
 
@@ -416,9 +282,8 @@ public class Yaml {
      *
      * @param key Key of the section you want to get
      * @return The selected section
-     * @throws YAMLNotInitializedException If the YAML object is not initialized properly
      */
-    public Yaml getSection(String key) throws YAMLNotInitializedException {
+	public Yaml getSection(String key) {
         int lineCount = getLogicalLineCount();
         String line;
         Yaml section = new Yaml();
@@ -976,7 +841,9 @@ public class Yaml {
      */
     public List<String> getStringList(String key) throws YAMLKeyNotFoundException {
         List<String> values = getStringsList(key);
-        if (values != null) return values;
+		if (values != null) {
+			return values;
+		}
         throw new YAMLKeyNotFoundException("The key you wanted to retrieve (\"" + key + "\") could not be found in the YAML object");
     }
 
@@ -1117,19 +984,6 @@ public class Yaml {
         writeHistory.clear();
         keys.clear();
         emptyKeys.clear();
-    }
-
-    /**
-     * Funkce pro uvolnění zdrojů
-     * -------
-     * Function that frees all resources of the YAML object
-     */
-    public void dispose() {
-        clear();
-        data = null;
-        writeHistory = null;
-        keys = null;
-        emptyKeys = null;
     }
 
     /**
@@ -1378,18 +1232,4 @@ public class Yaml {
         }
     }
 
-    /**
-     * Neplatný YAML / špatně inicializovaný objekt
-     * -------
-     * Not inicialized by YAML
-     */
-    public class YAMLNotInitializedException extends Exception {
-        public YAMLNotInitializedException() {
-            super();
-        }
-
-        public YAMLNotInitializedException(String message) {
-            super(message);
-        }
-    }
 }

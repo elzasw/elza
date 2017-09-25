@@ -11,26 +11,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cz.tacr.elza.domain.RulAction;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.ActionRepository;
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import cz.tacr.elza.domain.RulAction;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.repository.ActionRepository;
 import cz.tacr.elza.utils.Yaml;
 import liquibase.util.file.FilenameUtils;
-
-import javax.transaction.Transactional;
 
 
 /**
  * Manager konfigurace hromadných akcí.
- *
- * @author Martin Šlapa
- * @author Petr Pytelka
- * @since 10.11.2015
  */
 @Component
 public class BulkActionConfigManager {
@@ -160,84 +155,6 @@ public class BulkActionConfigManager {
      */
     public List<BulkActionConfig> getBulkActions() {
         return new ArrayList<>(bulkActionConfigMap.values());
-    }
-
-    /**
-     * Uložení nastavení hromadných akcí do konfuguračních souborů.
-     */
-    public void save() throws IOException, Yaml.YAMLNotInitializedException {
-        for (Map.Entry<String, BulkActionConfig> bulkActionConfigEntry : bulkActionConfigMap.entrySet()) {
-            String name = getFileName(bulkActionConfigEntry.getValue());
-            saveFile(bulkActionConfigEntry.getValue().getYaml(), name);
-        }
-    }
-
-    /**
-     * Aktualizace nastavení hromadné akce.
-     *
-     * @param bulkActionConfig nastavení hromadné akce
-     * @return upravené nastavení hromadné akce
-     */
-    public BulkActionConfig update(final BulkActionConfig bulkActionConfig) throws IOException, Yaml.YAMLNotInitializedException {
-        BulkActionConfig bulkActionConfigOrig = get(bulkActionConfig.getCode());
-
-        if (bulkActionConfigOrig == null) {
-            throw new SystemException("Hromadná akce '" + bulkActionConfig.getCode() + "' neexistuje!", BaseCode.ID_NOT_EXIST);
-        }
-
-        // uložení do souboru
-        save(bulkActionConfig);
-
-        // uložení do paměti
-        put(bulkActionConfig);
-
-        return bulkActionConfig;
-
-    }
-
-    /**
-     * Smazání nastavení hromadné akce.
-     *
-     * @param bulkActionConfig nastavení hromadné akce
-     */
-    public void delete(final BulkActionConfig bulkActionConfig) {
-        BulkActionConfig bulkActionConfigOrig = get(bulkActionConfig.getCode());
-        if (bulkActionConfigOrig == null) {
-            throw new SystemException("Hromadná akce '" + bulkActionConfig.getCode() + "' neexistuje!", BaseCode.ID_NOT_EXIST);
-        }
-        String name = getFileName(bulkActionConfigOrig);
-        File file = new File(name);
-
-        if (!file.exists()) {
-            throw new SystemException("Soubor hromadné akce neexistuje!");
-        }
-
-        file.delete();
-        bulkActionConfigMap.remove(bulkActionConfig.getCode());
-    }
-
-    /**
-     * Uložení nastavení hromadné akce do souboru.
-     *  @param yaml struktura kofiguračního souboru
-     * @param name název konfiguračního souboru
-     */
-    private void saveFile(final Yaml yaml, final String name) throws IOException, Yaml.YAMLNotInitializedException {
-        File file = new File(name);
-        if (!file.exists()) {
-            file.getParentFile().mkdirs();
-            file.createNewFile();
-        }
-        yaml.save(file);
-    }
-
-    /**
-     * Uložení nastavení hromadné akce.
-     *
-     * @param bulkActionConfig nastavení hromadné akce
-     */
-    public void save(final BulkActionConfig bulkActionConfig) throws IOException, Yaml.YAMLNotInitializedException {
-        String name = getFileName(bulkActionConfig);
-        saveFile(bulkActionConfig.getYaml(), name);
     }
 
     /**

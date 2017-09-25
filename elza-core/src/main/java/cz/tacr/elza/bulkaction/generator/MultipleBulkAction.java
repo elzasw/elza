@@ -96,7 +96,7 @@ public class MultipleBulkAction extends BulkAction {
                 actions.add(action);
             }
 
-        } catch (Yaml.YAMLNotInitializedException | Yaml.YAMLKeyNotFoundException e) {
+		} catch (Yaml.YAMLKeyNotFoundException e) {
             throw new IllegalArgumentException(e);
         }
 

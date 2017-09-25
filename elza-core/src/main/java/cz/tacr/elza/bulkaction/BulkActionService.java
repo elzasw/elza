@@ -15,11 +15,6 @@ import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.PackageCode;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +52,10 @@ import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.PackageCode;
 import cz.tacr.elza.repository.ActionRecommendedRepository;
 import cz.tacr.elza.repository.ActionRepository;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
@@ -71,13 +70,10 @@ import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.utils.Yaml;
 
 /**
  * Serviska pro obsluhu hromadných akcí.
  *
- * @author Martin Šlapa
- * @since 11.11.2015
  */
 @Service
 public class BulkActionService implements InitializingBean, ListenableFutureCallback<BulkActionWorker> {
@@ -165,14 +161,6 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         return !runningWorkers.containsKey(bulkActionRun.getFundVersionId());
     }
 
-    /**
-     * Smazání nastavení hromadné akce.
-     *
-     * @param bulkActionConfig nastavení hromadné akce
-     */
-    public void delete(final BulkActionConfig bulkActionConfig) {
-        bulkActionConfigManager.delete(bulkActionConfig);
-    }
 
     @Override
     public void onFailure(final Throwable ex) {
@@ -412,20 +400,6 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
             bulkActionRepository.save(bulkActionRun);
             eventPublishBulkAction(bulkActionRun);
             bulkActionRepository.flush();
-        }
-    }
-
-    /**
-     * Upravení nastavení hromadné akce.
-     *
-     * @param bulkActionConfig nastavení hromadné akce
-     * @return upravené nastavení hromadné akce
-     */
-    public BulkActionConfig update(final BulkActionConfig bulkActionConfig) {
-        try {
-            return bulkActionConfigManager.update(bulkActionConfig);
-        } catch (IOException | Yaml.YAMLNotInitializedException e) {
-            throw new IllegalStateException("Problém při aktualizaci hromadné akce", e);
         }
     }
 
