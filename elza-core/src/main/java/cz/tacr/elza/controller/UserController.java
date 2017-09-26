@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -217,6 +218,21 @@ public class UserController {
     }
 
     /**
+     * Načtení uživatele s daty pro zobrazení na detailu s možností editace.
+     *
+     * @param userId id
+     * @return VO
+     */
+    @RequestMapping(value = "/{userId}/old", method = RequestMethod.GET)
+    @Deprecated
+    public UsrUserVO getUserOld(@PathVariable(value = "userId") final Integer userId) {
+        Assert.notNull(userId, "Identifikátor uživatele musí být vyplněno");
+
+        UsrUser user = userService.getUser(userId);
+        return factoryVO.createUserOld(user);
+    }
+
+    /**
      * Načtení skupiny s daty pro zobrazení na detailu s možností editace.
      *
      * @param groupId id
@@ -362,6 +378,37 @@ public class UserController {
         UsrUser user = userService.getUser(userId);
         List<UsrPermission> usrPermissions = factoryDO.createPermissionList(permissions.getPermissions());
         userService.changeUserPermission(user, usrPermissions);
+    }
+
+    /**
+     * Přidání oprávnění uživatele.
+     *
+     * @param userId      identifikátor uživatele
+     * @param permissions seznam oprávnění pro přidání
+     */
+    @Transactional
+    @RequestMapping(value = "/{userId}/permission/add", method = RequestMethod.POST)
+    public UsrPermissionVO addUserPermission(@PathVariable(value = "userId") final Integer userId,
+                                     @RequestBody final UsrPermissionVO permissions) {
+        UsrUser user = userService.getUser(userId);
+        List<UsrPermission> usrPermissions = factoryDO.createPermissionList(Collections.singletonList(permissions));
+        List<UsrPermission> result = userService.addUserPermission(user, usrPermissions);
+        return factoryVO.createPermission(result.get(0));
+    }
+
+    /**
+     * Odebrání oprávnění uživatele.
+     *
+     * @param userId      identifikátor uživatele
+     * @param permissions seznam oprávnění pro odebr8n9
+     */
+    @Transactional
+    @RequestMapping(value = "/{userId}/permission/delete", method = RequestMethod.POST)
+    public void deleteUserPermission(@PathVariable(value = "userId") final Integer userId,
+                                     @RequestBody final UsrPermissionVO permissions) {
+        UsrUser user = userService.getUser(userId);
+        List<UsrPermission> usrPermissions = factoryDO.createPermissionList(Collections.singletonList(permissions));
+        userService.deleteUserPermission(user, usrPermissions);
     }
 
     /**

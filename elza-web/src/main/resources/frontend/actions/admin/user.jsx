@@ -80,16 +80,17 @@ export function usersSearch(filterText, filterState) {
 
 /**
  * Fetch dat pro detail uživatele.
+ * @param force - pokud bude true, provede se fetch vždy
  */
-export function usersUserDetailFetchIfNeeded() {
+export function usersUserDetailFetchIfNeeded(force=false) {
     return (dispatch, getState) => {
         var state = getState();
         const userDetail = state.adminRegion.user.userDetail
         const dataKey = _userDetailDataKey(userDetail)
 
-        if (userDetail.currentDataKey !== dataKey) {
-            dispatch(usersUserDetailRequest(dataKey))
-            WebApi.getUser(userDetail.id)
+        if (force || userDetail.currentDataKey !== dataKey) {
+            dispatch(usersUserDetailRequest(dataKey));
+            WebApi.getUserOld(userDetail.id)
                 .then(json => {
                     var newState = getState();
                     const newUserDetail = newState.adminRegion.user.userDetail;

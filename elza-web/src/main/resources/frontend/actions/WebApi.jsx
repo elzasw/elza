@@ -877,6 +877,14 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl + "/" + userId + '/permission', null, permissions);
     }
 
+    addUserPermission(userId, permissions) {
+        return AjaxUtils.ajaxPost(WebApiCls.userUrl + "/" + userId + '/permission/add', null, permissions);
+    }
+
+    deleteUserPermission(userId, permissions) {
+        return AjaxUtils.ajaxPost(WebApiCls.userUrl + "/" + userId + '/permission/delete', null, permissions);
+    }
+
     changeGroupPermission(groupId, permissions) {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl + "/group/" + groupId + '/permission', null, permissions);
     }
@@ -888,6 +896,10 @@ export class WebApiCls {
 
     getUser(userId) {
         return AjaxUtils.ajaxGet(WebApiCls.userUrl + '/' + userId);
+    }
+
+    getUserOld(userId) {
+        return AjaxUtils.ajaxGet(WebApiCls.userUrl + '/' + userId + "/old");
     }
 
     createGroup(name, code, description) {

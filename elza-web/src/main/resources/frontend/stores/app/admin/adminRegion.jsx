@@ -12,6 +12,9 @@ import fulltext from './fulltext.jsx'
 import {isUserAction} from 'actions/admin/user.jsx'
 import {isGroupAction} from 'actions/admin/group.jsx'
 import {isPermissionAction} from 'actions/admin/permission.jsx'
+import DetailReducer from "shared/detail/DetailReducer";
+import * as DetailActions from "shared/detail/DetailActions";
+import processAreaStores from "../../../shared/utils/processAreaStores";
 
 /**
  * Výchozí stav store
@@ -23,10 +26,17 @@ const initialState = {
     fulltext: fulltext(),
     user: user(),
     group: group(),
+    userPermissions: DetailReducer(), // pro správu oprávnění uživatele
 };
 
 export default function adminRegion(state = initialState, action = {}) {
-    if (isPermissionAction(action)) {
+    if (action.area && action.area.startsWith("adminRegion.")) { // area pro zpracování na předaný fund, ten zde můžeme zpracovat
+        let newArea = action.area.split(".");
+        return processAreaStores(state, {
+            ...action,
+            area: newArea.slice(1).join(".")
+        });
+    } else if (isPermissionAction(action)) {
         return {
             ...state,
             user: action.area === "USER" ? user(state.user, action) : state.user,

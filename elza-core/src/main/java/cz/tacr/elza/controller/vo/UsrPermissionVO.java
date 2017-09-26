@@ -11,6 +11,10 @@ import cz.tacr.elza.domain.UsrPermission;
 public class UsrPermissionVO {
     /** Identifikátor. */
     private Integer id;
+
+    /** Pokud je právo ze skupiny, je zde id skupiny. */
+    private Integer groupId;
+
     /** Typ oprávnění. */
     private UsrPermission.Permission permission;
 
@@ -51,5 +55,13 @@ public class UsrPermissionVO {
 
     public void setId(final Integer id) {
         this.id = id;
+    }
+
+    public Integer getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(Integer groupId) {
+        this.groupId = groupId;
     }
 }

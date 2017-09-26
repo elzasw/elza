@@ -24,7 +24,7 @@ const ScopeField = class ScopeField extends AbstractReactComponent {
      * @param id
      * @param valueObj
      */
-    handleChange(id, valueObj) {
+    handleChange(valueObj) {
         this.props.onChange(valueObj.id ? valueObj : null);
     }
 

@@ -116,10 +116,18 @@ public class UserService {
                 });
     }
 
-    private void changePermission(final @NotNull UsrUser user,
+    private enum ChangePermissionType {
+        SYNCHRONIZE,
+        ADD,
+        DELETE
+    }
+
+    private List<UsrPermission> changePermission(final @NotNull UsrUser user,
                                   final @NotNull UsrGroup group,
                                   final @NotNull List<UsrPermission> permissions,
-                                  final @NotNull List<UsrPermission> permissionsDB) {
+                                  final @NotNull List<UsrPermission> permissionsDB,
+                                  final @NotNull ChangePermissionType changePermissionType
+                                  ) {
         Map<Integer, UsrPermission> permissionMap = permissionsDB.stream()
                 .collect(Collectors.toMap(UsrPermission::getPermissionId, Function.identity()));
 
@@ -128,25 +136,49 @@ public class UserService {
 
         for (UsrPermission permission : permissions) {
             if (permission.getPermissionId() == null) {
+                if (changePermissionType == ChangePermissionType.DELETE) {  // pokud se jedná o akci delete, nesmí být předán záznam bez id
+                    throw new SystemException("V akci delete nelze předat oprávnění s nevyplněným id", UserCode.PERM_ILLEGAL_INPUT);
+                }
                 permission.setUser(user);
                 permission.setGroup(group);
                 setFundRelation(permission, permission.getFundId());
                 setScopeRelation(permission, permission.getScopeId());
                 permissionsAdd.add(permission);
             } else {
-                UsrPermission permissionDB = permissionMap.get(permission.getPermissionId());
-                if (permissionDB == null) {
-                    throw new SystemException("Oprávnění neexistuje a proto nemůže být upraveno", UserCode.PERM_NOT_EXIST);
+                if (changePermissionType == ChangePermissionType.ADD) { // pro akci add nelze předat vyplněné id
+                    throw new SystemException("V akci add nelze předat oprávnění s vyplněným id", UserCode.PERM_ILLEGAL_INPUT);
+                } else if (changePermissionType == ChangePermissionType.SYNCHRONIZE) {  // jen zde přidáváme, jinak se jedná o akci delete
+                    UsrPermission permissionDB = permissionMap.get(permission.getPermissionId());
+                    if (permissionDB == null) {
+                        throw new SystemException("Oprávnění neexistuje a proto nemůže být upraveno", UserCode.PERM_NOT_EXIST);
+                    }
+                    permissionDB.setPermission(permission.getPermission());
+                    setFundRelation(permissionDB, permission.getFundId());
+                    setScopeRelation(permissionDB, permission.getScopeId());
+                    permissionsUpdate.add(permissionDB);
                 }
-                permissionDB.setPermission(permission.getPermission());
-                setFundRelation(permissionDB, permission.getFundId());
-                setScopeRelation(permissionDB, permission.getScopeId());
-                permissionsUpdate.add(permissionDB);
             }
         }
 
-        List<UsrPermission> permissionsDelete = new ArrayList<>(permissionsDB);
-        permissionsDelete.removeAll(permissionsUpdate);
+        List<UsrPermission> permissionsDelete;
+        if (changePermissionType == ChangePermissionType.DELETE) {  // v delete budou ty, co jsou předané
+            permissionsDelete = permissions.stream()
+                    .map(permission -> {
+                        UsrPermission permissionDB = permissionMap.get(permission.getPermissionId());
+                        if (permissionDB == null) {
+                            throw new SystemException("Oprávnění neexistuje a proto nemůže být upraveno", UserCode.PERM_NOT_EXIST);
+                        }
+                        return permissionDB;
+                    })
+                    .collect(Collectors.toList());
+        } else if (changePermissionType == ChangePermissionType.ADD) {    // v delete nebude nic
+            permissionsDelete = new ArrayList<>();
+        } else if (changePermissionType == ChangePermissionType.SYNCHRONIZE) {    // v delete budou ty, co se neaktualizovaly
+            permissionsDelete = new ArrayList<>(permissionsDB);
+            permissionsDelete.removeAll(permissionsUpdate);
+        } else {
+            throw new IllegalStateException("Nepodporovaný typ změny oprávění: " + changePermissionType);
+        }
 
         for (UsrPermission permission : permissions) {
             switch (permission.getPermission().getType()) {
@@ -176,6 +208,11 @@ public class UserService {
         permissionRepository.delete(permissionsDelete);
         permissionRepository.save(permissionsAdd);
         permissionRepository.save(permissionsUpdate);
+
+        List<UsrPermission> result = new ArrayList<>();
+        result.addAll(permissionsAdd);
+        result.addAll(permissionsUpdate);
+        return result;
     }
 
     /**
@@ -218,7 +255,7 @@ public class UserService {
     public void changeGroupPermission(@NotNull final UsrGroup group,
                                       @NotNull final List<UsrPermission> permissions) {
         List<UsrPermission> permissionsDB = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
-        changePermission(null, group, permissions, permissionsDB);
+        changePermission(null, group, permissions, permissionsDB, ChangePermissionType.SYNCHRONIZE);
         changeGroupEvent(group);
     }
 
@@ -226,7 +263,26 @@ public class UserService {
     public void changeUserPermission(@NotNull final UsrUser user,
                                      @NotNull final List<UsrPermission> permissions) {
         List<UsrPermission> permissionsDB = permissionRepository.findByUserOrderByPermissionIdAsc(user);
-        changePermission(user, null, permissions, permissionsDB);
+        changePermission(user, null, permissions, permissionsDB, ChangePermissionType.SYNCHRONIZE);
+        invalidateCache(user);
+        changeUserEvent(user);
+    }
+
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
+    public List<UsrPermission> addUserPermission(@NotNull final UsrUser user,
+                                     @NotNull final List<UsrPermission> permissions) {
+        List<UsrPermission> permissionsDB = permissionRepository.findByUserOrderByPermissionIdAsc(user);
+        List<UsrPermission> result = changePermission(user, null, permissions, permissionsDB, ChangePermissionType.ADD);
+        invalidateCache(user);
+        changeUserEvent(user);
+        return result;
+    }
+
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
+    public void deleteUserPermission(@NotNull final UsrUser user,
+                                     @NotNull final List<UsrPermission> permissions) {
+        List<UsrPermission> permissionsDB = permissionRepository.findByUserOrderByPermissionIdAsc(user);
+        changePermission(user, null, permissions, permissionsDB, ChangePermissionType.DELETE);
         invalidateCache(user);
         changeUserEvent(user);
     }

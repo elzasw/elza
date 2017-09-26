@@ -33,6 +33,8 @@ export default function storeFromArea(store, area, showErrors=true) {
 
         if (areaItems[0].startsWith("fund[")) {
             st = store.arrRegion;
+        } else if (areaItems[0] == "adminRegion") {
+            st = store;
         } else {
             st = store.app;
         }

@@ -1846,6 +1846,16 @@ public class ClientFactoryVO {
     }
 
     /**
+     * Vytvoří VO.
+     * @param permission vstupní oprávnění
+     * @return VO
+     */
+    public UsrPermissionVO createPermission(final UsrPermission permission) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        return mapper.map(permission, UsrPermissionVO.class);
+    }
+
+    /**
      * Vytvoří VO uživatele s návaznými daty.
      * @param user uživatel
      * @return VO
@@ -1856,7 +1866,31 @@ public class ClientFactoryVO {
         UsrUserVO result = mapper.map(user, UsrUserVO.class);
 
         // Načtení oprávnění
+//        List<UsrPermission> permissions = permissionRepository.findByUserOrderByPermissionIdAsc(user);
+        List<UsrPermission> permissions = permissionRepository.getAllPermissionsWithGroups(user);
+        result.setPermissions(createPermissionList(permissions));
+
+        // Načtení členství ve skupinách
+        List<UsrGroup> groups = groupRepository.findByUser(user);
+        result.setGroups(createGroupList(groups, false, false));
+
+        return result;
+    }
+
+    /**
+     * Vytvoří VO uživatele s návaznými daty.
+     * @param user uživatel
+     * @return VO
+     */
+    @Deprecated
+    public UsrUserVO createUserOld(final UsrUser user) {
+        // Hlavní objekt
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        UsrUserVO result = mapper.map(user, UsrUserVO.class);
+
+        // Načtení oprávnění
         List<UsrPermission> permissions = permissionRepository.findByUserOrderByPermissionIdAsc(user);
+//        List<UsrPermission> permissions = permissionRepository.getAllPermissionsWithGroups(user);
         result.setPermissions(createPermissionList(permissions));
 
         // Načtení členství ve skupinách

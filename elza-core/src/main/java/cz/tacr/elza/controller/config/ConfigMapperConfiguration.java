@@ -1009,6 +1009,14 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(UsrPermission.class, UsrPermissionVO.class)
                 .byDefault()
                 .field("permissionId", "id")
+                .customize(new CustomMapper<UsrPermission, UsrPermissionVO>() {
+                    @Override
+                    public void mapAtoB(final UsrPermission usrPermission, final UsrPermissionVO usrPermissionVO, final MappingContext context) {
+                        if (usrPermission.getGroup() != null) {
+                            usrPermissionVO.setGroupId(usrPermission.getGroup().getGroupId());
+                        }
+                    }
+                })
                 .register();
 
         mapperFactory.classMap(RulTemplate.class, RulTemplateVO.class)

@@ -1,6 +1,4 @@
-/**
- * Stránka pro správu uživatelů.
- */
+// ---
 import './AdminUserPage.less';
 
 import React from 'react';
@@ -11,7 +9,6 @@ import {FormControl, Button} from 'react-bootstrap';
 import {i18n, Search, ListBox, StoreHorizontalLoader, AbstractReactComponent, RibbonGroup, Icon} from 'components/shared';
 import {UserDetail, Ribbon, AddUserForm, PasswordForm} from 'components/index.jsx';
 import {usersFetchIfNeeded,
-    usersUserDetailFetchIfNeeded,
     usersSelectUser,
     usersSearch,
     userCreate,
@@ -25,6 +22,9 @@ import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx';
 import {renderUserItem} from 'components/admin/adminRenderUtils.jsx';
 import {partyAdd} from 'actions/party/party.jsx'
 
+/**
+ * Stránka pro správu uživatelů.
+ */
 class AdminUserPage extends AbstractReactComponent{
     constructor(props) {
         super(props);

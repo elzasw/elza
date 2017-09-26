@@ -1,7 +1,33 @@
-.user-detail-container {
-    padding: 10px;
-    overflow-x: hidden;
-    overflow-y: auto;
+.user-detail-container-wrapper {
     height: 100%;
-    padding-bottom: 50px;
+
+    .admin-rights-container {
+        display: flex;
+        flex-direction: column;
+
+        height: 100%;
+        padding: 10px;
+        overflow: hidden;
+        height: 100%;
+
+        .admin-rights-header {
+            flex-shrink: 0;
+        }
+
+        .admin-rights-content {
+            flex-grow: 1;
+            height: 100%;
+            overflow: hidden;
+            display: flex;
+
+            .left-container {
+                flex-shrink: 0;
+                overflow: scroll;
+            }
+            .right-container {
+                padding-left: 5px;
+                flex-grow: 1;
+            }
+        }
+    }
 }
