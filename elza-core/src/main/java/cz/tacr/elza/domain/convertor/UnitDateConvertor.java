@@ -9,13 +9,13 @@ import java.time.format.ResolverStyle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 
 import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.domain.ParUnitdate;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 
 
 /**
@@ -197,22 +197,57 @@ public class UnitDateConvertor {
 
         String format = unitdate.getFormat();
 
+		String formatted;
         if (isInterval(format)) {
-            format = convertInterval(format, unitdate);
+			formatted = convertInterval(format, unitdate);
         } else {
-            format = convertToken(format, unitdate, true, true);
+			formatted = convertToken(format, unitdate, true, true);
         }
 
-        return format;
+		return formatted;
+	}
+
+	/**
+	 * Begin of interval to string
+	 * 
+	 * @param unitdate
+	 * @return
+	 */
+	public static String beginToString(final IUnitdate unitdate) {
+		String format = unitdate.getFormat();
+		if (isInterval(format)) {
+			String[] data = format.split(DEFAULT_INTERVAL_DELIMITER);
+			format = data[0];
+		}
+		String formatted = convertToken(format, unitdate, true, false);
+		return formatted;
     }
 
-    /**
-     * Konverze intervalu.
-     *
-     * @param format   vstupní formát
-     * @param unitdate doplňovaný objekt
-     * @return výsledný řetězec
-     */
+	/**
+	 * End of interval to string
+	 * 
+	 * @param unitdate
+	 * @return
+	 */
+	public static String endToString(final IUnitdate unitdate) {
+		String format = unitdate.getFormat();
+		if (isInterval(format)) {
+			String[] data = format.split(DEFAULT_INTERVAL_DELIMITER);
+			format = data[1];
+		}
+		String formatted = convertToken(format, unitdate, false, false);
+		return formatted;
+	}
+
+	/**
+	 * Konverze intervalu.
+	 *
+	 * @param format
+	 *            vstupní formát
+	 * @param unitdate
+	 *            doplňovaný objekt
+	 * @return výsledný řetězec
+	 */
     private static String convertInterval(final String format, final IUnitdate unitdate) {
 
         String[] data = format.split(DEFAULT_INTERVAL_DELIMITER);
