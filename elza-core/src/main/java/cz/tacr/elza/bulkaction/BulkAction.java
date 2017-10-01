@@ -1,18 +1,19 @@
-package cz.tacr.elza.bulkaction.generator;
+package cz.tacr.elza.bulkaction;
 
 import java.util.List;
 
-import cz.tacr.elza.bulkaction.BulkActionService;
-import cz.tacr.elza.domain.*;
+import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.repository.NodeRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
-
-import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.DescriptionItemService;
 
 
@@ -36,9 +37,6 @@ public abstract class BulkAction {
     @Autowired
     protected DescriptionItemService descriptionItemService;
 
-    @Autowired
-    private BulkActionService bulkActionService;
-
     /**
      * Abstrakní metoda pro spuštění hromadné akce.
      *
@@ -46,9 +44,7 @@ public abstract class BulkAction {
      * @param bulkActionConfig  nastavení hromadné akce
      * @param bulkActionRun     stav hromadné akce
      */
-    abstract public void run(final List<Integer> inputNodeIds,
-                             final BulkActionConfig bulkActionConfig,
-                             final ArrBulkActionRun bulkActionRun);
+	abstract public void run(ActionRunContext runContext);
 
 
     @Override
@@ -103,7 +99,7 @@ public abstract class BulkAction {
      * @param version verze archivní pomůcky
      */
     protected void checkVersion(ArrFundVersion version) {
-        Assert.notNull(version);
+		Validate.notNull(version);
         if (version.getLockChange() != null) {
             throw new BusinessException("Nelze aplikovat na uzavřenou verzi archivní pomůcky", ArrangementCode.VERSION_ALREADY_CLOSED);
         }

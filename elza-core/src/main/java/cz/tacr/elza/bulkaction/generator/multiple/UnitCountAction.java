@@ -1,43 +1,42 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
-import cz.tacr.elza.bulkaction.generator.LevelWithItems;
-import cz.tacr.elza.bulkaction.generator.result.ActionResult;
-import cz.tacr.elza.bulkaction.generator.result.UnitCountActionResult;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrItemInt;
-import cz.tacr.elza.domain.ArrItemPacketRef;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulPacketType;
-import cz.tacr.elza.domain.table.ElzaColumn;
-import cz.tacr.elza.domain.table.ElzaRow;
-import cz.tacr.elza.domain.table.ElzaTable;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.utils.Yaml;
-import org.apache.commons.lang.BooleanUtils;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang3.Validate;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
+import cz.tacr.elza.bulkaction.ActionRunContext;
+import cz.tacr.elza.bulkaction.generator.LevelWithItems;
+import cz.tacr.elza.bulkaction.generator.result.ActionResult;
+import cz.tacr.elza.bulkaction.generator.result.UnitCountActionResult;
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.RuleSystem;
+import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrItemInt;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.table.ElzaColumn;
+import cz.tacr.elza.domain.table.ElzaRow;
+import cz.tacr.elza.domain.table.ElzaTable;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
+
 /**
- * Akce na počítání Evidenčních jednotek.
+ * Unit count action
  *
- * @author Martin Šlapa
- * @author Petr Pytelka
- * @since 01.07.2016
  */
 @Component
 @Scope("prototype")
@@ -46,7 +45,17 @@ public class UnitCountAction extends Action {
     /**
      * Výstupní atribut
      */
-    private RulItemType outputItemType;
+	private RuleSystemItemType outputItemType;
+
+	/**
+	 * Skip subtree
+	 */
+	LevelWithItems skipSubtree;
+
+	/**
+	 * List of counters
+	 */
+	List<UnitCounter> counters = new ArrayList<>();
 
     /**
      * Typy
@@ -59,82 +68,84 @@ public class UnitCountAction extends Action {
     private Map<String, RulItemSpec> itemSpecs = new HashMap<>();
 
     /**
-     * Počet EJ
-     */
-    private Map<String, Integer> countMap = new HashMap<>();
-
+	 * Počet EJ
+	 * 
+	 * Map is order according type
+	 */
+	private Map<String, Integer> resultMap = new TreeMap<>();
+    
     /**
      * Seznam ignorovaných uzlů, které byly již započítané.
      */
     private Set<Integer> ignoredNodeId = new HashSet<>();
 
-    /**
-     * Již zapracované obaly
-     */
-    private Set<String> storageNumbers = new HashSet<>();
+	final UnitCountConfig config;
 
-    /**
-     * Name of column where to store Unit type
-     */
-    private String outputColumnUnitName;
-
-    /**
-     * Name of column where to store Unit count
-     */
-    private String outputColumnUnitCount;
-
-    UnitCountAction(final Yaml config) {
-        super(config);
+	UnitCountAction(final UnitCountConfig config) {
+		Validate.notNull(config);
+		this.config = config;
     }
 
     @Override
-    public void init() {
-        String outputType = config.getString("output_type", null);
-        outputItemType = findItemType(outputType, "output_type");
-        checkValidDataType(outputItemType, "JSON_TABLE");
+	public void init(ActionRunContext runContext) {
+		RuleSystem ruleSystem = getRuleSystem(runContext);
 
-        outputColumnUnitName = config.getString("output_column_unit_name", null);
-        checkValidateParam("output_column_unit_name", outputColumnUnitName);
-        outputColumnUnitCount = config.getString("output_column_unit_value", null);
-        checkValidateParam("output_column_unit_value", outputColumnUnitCount);
+		String outputType = config.getOutputType();
+		outputItemType = ruleSystem.getItemTypeByCode(outputType);
+		checkValidDataType(outputItemType, DataType.JSON_TABLE);
 
-        List<ElzaColumn> columnsDefinition = outputItemType.getColumnsDefinition();
-        Map<String, ElzaColumn> outputColumns = columnsDefinition.stream().collect(Collectors.toMap(ElzaColumn::getCode, Function.identity()));
+		// validate column names
+		Validate.notBlank(config.getOutputColumnUnitName());
+		Validate.notBlank(config.getOutputColumnUnitCount());
 
-        validateColumn(outputColumnUnitName, ElzaColumn.DataType.TEXT,  outputColumns);
-        validateColumn(outputColumnUnitCount, ElzaColumn.DataType.INTEGER, outputColumns);
+		// validate column definitions
+		List<ElzaColumn> columnsDefinition = outputItemType.getEntity().getColumnsDefinition();
+		Map<String, ElzaColumn> outputColumns = columnsDefinition.stream()
+		        .collect(Collectors.toMap(ElzaColumn::getCode, Function.identity()));
 
-        loadType("UNIT_TYPE");
+		validateColumn(config.getOutputColumnUnitName(), ElzaColumn.DataType.TEXT, outputColumns);
+		validateColumn(config.getOutputColumnUnitCount(), ElzaColumn.DataType.INTEGER, outputColumns);
 
-        loadTypeAndSpec("ITEM");
+		// initialize counters
+		for (UnitCounterConfig counterCfg : config.getAggegators()) {
+			UnitCounter uc = new UnitCounter(counterCfg, ruleSystem);
+			counters.add(uc);
+		}
 
-        loadTypeAndSpec("SERIES");
-
-        loadTypeAndSpec("KTT");
-        loadType("KTT_count");
-
-        loadTypeAndSpec("FOLDER_LOGICAL");
-
-        loadTypeAndSpec("FOLDER_UNITS");
-
-        loadTypeAndSpec("FOLDER_SINGLE_TYPE");
-        loadType("FOLDER_SINGLE_TYPE_count");
-
-        loadTypeAndSpec("FOLDER_UNITS");
-        loadType("STORAGE");
-
-        loadType("EXTRA_UNITS");
-
-    }
-
-    /**
-     * Ověření vyplnění parametru - sloupce v tabulce.
-     *
-     * @param paramName         název parametru
-     * @param outputTableColumn sloupec v tabulce
-     */
-    private void checkValidateParam(final String paramName, final String outputTableColumn) {
-        Assert.hasText(outputTableColumn, "Nebyl nastaven parametr: " + paramName);
+		/*
+		
+		loadType("UNIT_TYPE");
+		
+		loadTypeAndSpec("ITEM");
+		
+		loadTypeAndSpec(SERIES);
+		
+		loadTypeAndSpec("KTT");
+		loadType("KTT_count");
+		
+		loadTypeAndSpec("FOLDER_LOGICAL");
+		
+		loadTypeAndSpec("FOLDER_UNITS");
+		
+		loadTypeAndSpec("FOLDER_SINGLE_TYPE");
+		loadType("FOLDER_SINGLE_TYPE_count");
+		
+		loadTypeAndSpec("FOLDER_UNITS");
+		loadType("STORAGE");
+		
+		loadType("EXTRA_UNITS");
+		
+		// Load item type mapping
+		Yaml mappingCfg = config.getSection("item_type_mapping");
+		for (String key : mappingCfg.getKeys()) {
+			try {
+				String value = mappingCfg.getString(key);
+				this.itemTypeMap.put(key, value);
+			} catch (YAMLKeyNotFoundException e) {
+				throw new BusinessException("Failed to read configuration for action UnitCount", BaseCode.SYSTEM_ERROR);
+			}
+		}
+		*/
     }
 
     /**
@@ -167,40 +178,26 @@ public class UnitCountAction extends Action {
      * @param code kódy typu a specifikace jako řetězec oddělený mezerou
      */
     protected void loadTypeAndSpec(final String code) {
-        String attribute = config.getString(code, null);
-        if (attribute == null) {
-            throw new BusinessException("Neplatný atribut: " + attribute, BaseCode.PROPERTY_NOT_EXIST).set("property", code);
-        }
-        String[] split = attribute.split(" ");
-        if (split.length != 2) {
-            throw new BusinessException("Neplatný atribut: musí obsahovat kód typu a specifikace", BaseCode.PROPERTY_IS_INVALID).set("property", code);
-        }
-
-        RulItemType type = findItemType(split[0], code);
-        RulItemSpec spec = findItemSpec(split[1]);
-
-        if (!spec.getItemType().equals(type)) {
-            throw new BusinessException("Neplatný atribut: specifikace nepatří pod typ", BaseCode.PROPERTY_IS_INVALID).set("property", code);
-        }
-
-        itemTypes.put(code, type);
-        itemSpecs.put(code, spec);
-    }
-
-    /**
-     * Přičtení počtu podle typu.
-     *
-     * @param type typ sumy
-     * @param inc  počet o který se suma navyšuje
-     */
-    private void addToCount(final String type, final Integer inc) {
-        Assert.isTrue(inc >= 0, "Číslo nemůže být záporné");
-        Integer sum = countMap.get(type);
-        if (sum == null) {
-            countMap.put(type, inc);
-        } else {
-            countMap.put(type, sum + inc);
-        }
+		/*
+		String attribute = config.getString(code, null);
+		if (attribute == null) {
+		    throw new BusinessException("Neplatný atribut: " + attribute, BaseCode.PROPERTY_NOT_EXIST).set("property", code);
+		}
+		String[] split = attribute.split(" ");
+		if (split.length != 2) {
+		    throw new BusinessException("Neplatný atribut: musí obsahovat kód typu a specifikace", BaseCode.PROPERTY_IS_INVALID).set("property", code);
+		}
+		
+		RulItemType type = findItemType(split[0], code);
+		RulItemSpec spec = findItemSpec(split[1]);
+		
+		if (!spec.getItemType().equals(type)) {
+		    throw new BusinessException("Neplatný atribut: specifikace nepatří pod typ", BaseCode.PROPERTY_IS_INVALID).set("property", code);
+		}
+		
+		itemTypes.put(code, type);
+		itemSpecs.put(code, spec);
+		*/
     }
 
     /**
@@ -209,34 +206,72 @@ public class UnitCountAction extends Action {
      * @param code kód atributu
      */
     protected void loadType(final String code) {
-        String attribute = config.getString(code, null);
-        RulItemType type = findItemType(attribute, code);
-        itemTypes.put(code, type);
+		/*
+		String attribute = config.getString(code, null);
+		RulItemType type = findItemType(attribute, code);
+		itemTypes.put(code, type);
+		*/
     }
 
     @Override
-    public void apply(final ArrNode node, final List<ArrDescItem> items, final LevelWithItems parentLevelWithItems) {
+	public void apply(LevelWithItems level, TypeLevel typeLevel) {
+		// Units are counted only on real nodes in finding aid
+		// parents above root are not counted
+		if (!typeLevel.equals(TypeLevel.CHILD)) {
+			return;
+		}
 
-        // Jednotlivost přímo pod Sérii
-        itemUnderType(node, items, parentLevelWithItems, "SERIES");
+		for (UnitCounter counter : counters) {
 
-        // Jednotlivost přímo pod Logickou složkou
-        itemUnderType(node, items, parentLevelWithItems, "FOLDER_LOGICAL");
+			// Check if node stopped
+			if (skipSubtree != null) {
+				if (isInTree(skipSubtree, level)) {
+					return;
+				}
+				// reset limit
+				skipSubtree = null;
+			}
 
-        // Množstevní EJ
-        isTypeEJ1(node, items, parentLevelWithItems);
+			counter.apply(level, this);
+		}
 
-        // S uvedením EJ
-        isTypeEJ2(node, items, parentLevelWithItems);
+		//List<ArrDescItem> items = level.getDescItems();
+		/*
+		// Jednotlivost přímo pod Sérii
+				itemUnderType(node, items, parentLevelWithItems, SERIES);
+		
+		// Jednotlivost přímo pod Logickou složkou
+		itemUnderType(node, items, parentLevelWithItems, "FOLDER_LOGICAL");
+		
+		// Množstevní EJ
+		isTypeEJ1(node, items, parentLevelWithItems);
+		
+		// S uvedením EJ
+		isTypeEJ2(node, items, parentLevelWithItems);
+		*/
     }
 
-    /**
-     * Počítání podle "S uvedením EJ".
-     *
-     * @param node                procházený uzel
-     * @param items               seznam hodnot uzlu
-     * @param parentLevelWithItems rodiče uzlu
-     */
+	private boolean isInTree(LevelWithItems parent, LevelWithItems subLevel) {
+		if (parent == subLevel) {
+			return true;
+		}
+		LevelWithItems level = subLevel.getParent();
+		if (level == null) {
+			return false;
+		}
+		return isInTree(parent, level);
+	}
+
+	/**
+	 * Počítání podle "S uvedením EJ".
+	 *
+	 * @param node
+	 *            procházený uzel
+	 * @param items
+	 *            seznam hodnot uzlu
+	 * @param parentLevelWithItems
+	 *            rodiče uzlu
+	 */
     private void isTypeEJ2(final ArrNode node, final List<ArrDescItem> items, final LevelWithItems parentLevelWithItems) {
         boolean isFind = isItem(items, "FOLDER_SINGLE_TYPE");
 
@@ -272,7 +307,7 @@ public class UnitCountAction extends Action {
         boolean count = !hasIgnoredParent(parentLevelWithItems);
 
         if (count) {
-            countItemValue(items);
+			//countItemValue(items);
             countExtraUnit(items);
             ignoredNodeId.add(node.getNodeId());
         }
@@ -289,31 +324,7 @@ public class UnitCountAction extends Action {
 
         for (ArrDescItem item : items) {
             if (countType.equals(item.getItemType()) && BooleanUtils.isNotTrue(item.getUndefined())) {
-                addToCount(countSpec.getShortcut(), ((ArrItemInt) item.getItem()).getValue());
-            }
-        }
-    }
-
-    /**
-     * Připočítání položek podle typu.
-     *
-     * @param items seznam hodnot uzlu
-     */
-    private void countItemValue(final List<ArrDescItem> items) {
-        RulItemType extraType = itemTypes.get("STORAGE");
-
-        for (ArrDescItem item : items) {
-            if (item.getItemType().equals(extraType) && BooleanUtils.isNotTrue(item.getUndefined())) {
-                ArrPacket packet = ((ArrItemPacketRef) item.getItem()).getPacket();
-                String storageNumber = packet.getStorageNumber();
-                if (!storageNumbers.contains(storageNumber)) {
-                	RulPacketType packetType = packet.getPacketType();
-                	if(packetType!=null) {
-                		String shortcut = packetType.getShortcut();
-                		addToCount(shortcut, 1);
-                	}
-                	storageNumbers.add(storageNumber);
-                }
+				addValue(countSpec.getShortcut(), ((ArrItemInt) item.getItem()).getValue());
             }
         }
     }
@@ -328,7 +339,7 @@ public class UnitCountAction extends Action {
         for (ArrDescItem item : items) {
             if (item.getItemType().equals(extraType) && BooleanUtils.isNotTrue(item.getUndefined())) {
                 RulItemSpec itemSpec = item.getItemSpec();
-                addToCount(itemSpec.getShortcut(), ((ArrItemInt) item.getItem()).getValue());
+				addValue(itemSpec.getShortcut(), ((ArrItemInt) item.getItem()).getValue());
             }
         }
     }
@@ -344,47 +355,11 @@ public class UnitCountAction extends Action {
 
         for (ArrDescItem item : items) {
             if (item.getItemType().equals(extraType)) {
-                addToCount(extraSpec.getShortcut(), ((ArrItemInt) item.getItem()).getValue());
+				addValue(extraSpec.getShortcut(), ((ArrItemInt) item.getItem()).getValue());
             }
         }
     }
 
-    /**
-     * Detekce jednotlivosti pod danou úrovní.
-     *
-     * @param node                procházený uzel
-     * @param items               seznam hodnot uzlu
-     * @param parentLevelWithItems rodiče uzlu
-     * @param type                typ, pod kterým hledáme (z předpisu akce)
-     */
-    public void itemUnderType(final ArrNode node, final List<ArrDescItem> items, final LevelWithItems parentLevelWithItems, final String type) {
-
-        // jedna se o jednotlivost?
-        boolean found = isItem(items, "ITEM");
-
-        if (!found) {
-            // pokud ne, není co počítat
-            return;
-        }
-
-        // Check if under given type
-        boolean isUnder = isDirectlyUnder(parentLevelWithItems, type);
-        if (!isUnder) {
-        	return;
-        }
-
-        // Flag if item should be counted
-        boolean canCount = !hasIgnoredParent(parentLevelWithItems);
-        if(canCount) {
-            RulItemType unitType = itemTypes.get("UNIT_TYPE");
-            addItemWithTypeToCount(unitType, items);
-        }
-
-        /*
-        if (isItem(items, "KTT")) {
-                countKkt(items);
-        }*/
-    }
 
     /**
      * Add all items with given type
@@ -396,8 +371,7 @@ public class UnitCountAction extends Action {
     	{
     		if(descItem.getItemType().equals(unitType) && BooleanUtils.isNotTrue(descItem.getUndefined()))
     		{
-    			// TODO: ignore some types
-    			addToCount(descItem.getItemSpec().getShortcut(), 1);
+				addValue(descItem.getItemSpec().getShortcut(), 1);
     		}
     	}
 
@@ -463,29 +437,42 @@ public class UnitCountAction extends Action {
     }
 
     @Override
-    public boolean canApply(final TypeLevel typeLevel) {
-    	// Units are counted only on real nodes in finding aid
-        if (typeLevel.equals(TypeLevel.CHILD) && applyChildren) {
-            return true;
-        }
-
-        return false;
-    }
-
-    @Override
     public ActionResult getResult() {
         UnitCountActionResult result = new UnitCountActionResult();
         result.setItemType(outputItemType.getCode());
         ElzaTable table = new ElzaTable();
 
-        for (Map.Entry<String, Integer> entry : countMap.entrySet()) {
-            Map.Entry<String, String> key = new AbstractMap.SimpleEntry<>(outputColumnUnitName, entry.getKey());
-            Map.Entry<String, String> value = new AbstractMap.SimpleEntry<>(outputColumnUnitCount, entry.getValue().toString());
+        for (Map.Entry<String, Integer> entry : resultMap.entrySet()) {
+			Map.Entry<String, String> key = new AbstractMap.SimpleEntry<>(config.getOutputColumnUnitName(),
+			        entry.getKey());
+			Map.Entry<String, String> value = new AbstractMap.SimpleEntry<>(config.getOutputColumnUnitCount(),
+			        entry.getValue().toString());
             table.addRow(new ElzaRow(key, value));
         }
 
         result.setTable(table);
         return result;
     }
+
+	public void setSkipSubtree(LevelWithItems level) {
+		this.skipSubtree = level;
+	}
+
+	/**
+	 * Add value to the result
+	 * 
+	 * @param value
+	 * @param count
+	 */
+	public void addValue(String value, int inc) {
+		Validate.isTrue(inc >= 0, "Číslo nemůže být záporné");
+
+		Integer sum = resultMap.get(value);
+		if (sum == null) {
+			resultMap.put(value, inc);
+		} else {
+			resultMap.put(value, sum + inc);
+		}
+	}
 
 }

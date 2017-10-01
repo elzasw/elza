@@ -21,6 +21,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
@@ -35,9 +38,6 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
-import cz.tacr.elza.bulkaction.factory.BulkActionFactory;
-import cz.tacr.elza.bulkaction.factory.BulkActionWorkerFactory;
-import cz.tacr.elza.bulkaction.generator.BulkAction;
 import cz.tacr.elza.domain.ArrBulkActionNode;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
@@ -76,6 +76,7 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
  *
  */
 @Service
+@Configuration
 public class BulkActionService implements InitializingBean, ListenableFutureCallback<BulkActionWorker> {
 
 
@@ -97,9 +98,6 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     private BulkActionConfigManager bulkActionConfigManager;
 
     @Autowired
-    private BulkActionFactory bulkActionFactory;
-
-    @Autowired
     private BulkActionRunRepository bulkActionRepository;
 
     @Autowired
@@ -107,9 +105,6 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
 
     @Autowired
     private BulkActionNodeRepository bulkActionNodeRepository;
-
-    @Autowired
-    private BulkActionWorkerFactory workerFactory;
 
     @Autowired
     private EventNotificationService eventNotificationService;
@@ -267,7 +262,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * @return objekt hromadné akce
      */
     private ArrBulkActionRun run(final ArrBulkActionRun bulkActionRun) {
-        BulkActionWorker bulkActionWorker = workerFactory.getWorker();
+		BulkActionWorker bulkActionWorker = new BulkActionWorker(this, bulkActionRepository);
         bulkActionWorker.init(bulkActionRun.getBulkActionRunId());
         runningWorkers.put(bulkActionRun.getFundVersionId(), bulkActionWorker);
 
@@ -507,18 +502,13 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * @param code the code
      * @return the bulk action
      */
+	@Bean
+	@Scope("prototype")
     public BulkAction getBulkAction(final String code) {
-        return bulkActionFactory.getByCode(code);
-    }
-
-    /**
-     * Gets bulk action config.
-     *
-     * @param code the code
-     * @return the bulk action config
-     */
-    public BulkActionConfig getBulkActionConfig(final String code) {
-        return bulkActionConfigManager.get(code);
+		// get configuration object
+		BulkActionConfig bac = bulkActionConfigManager.get(code);
+		return bac.createBulkAction();
+		//return bulkActionFactory.getByCode(code);
     }
 
     /**
@@ -581,7 +571,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
 
             bulkActionRun.setFundVersion(version);
 
-            String ruleCode = (String) bulkActionConfigOrig.getString("rule_code");
+			String ruleCode = bulkActionConfigOrig.getRules();
             if (ruleCode == null || !version.getRuleSet().getCode().equals(ruleCode)) {
                 throw new IllegalArgumentException("Nastavení kódu pravidel (rule_code: " + ruleCode
                         + ") hromadné akce neodpovídá verzi archivní pomůcky (rule_code: " + version.getRuleSet().getCode()

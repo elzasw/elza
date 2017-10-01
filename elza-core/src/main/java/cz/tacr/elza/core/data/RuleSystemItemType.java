@@ -44,9 +44,13 @@ public class RuleSystemItemType {
         return itemType;
     }
 
-    public Integer getId() {
+	public Integer getDataTypeId() {
         return itemType.getDataTypeId();
     }
+
+	public Integer getItemTypeId() {
+		return itemType.getItemTypeId();
+	}
 
     public String getCode() {
         return itemType.getCode();

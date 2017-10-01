@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,14 +11,28 @@ import java.util.Map;
 
 import javax.transaction.Transactional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.yaml.snakeyaml.TypeDescription;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
 
+import cz.tacr.elza.bulkaction.generator.FundValidationConfig;
+import cz.tacr.elza.bulkaction.generator.MultiActionConfig;
+import cz.tacr.elza.bulkaction.generator.SerialNumberConfig;
+import cz.tacr.elza.bulkaction.generator.TestDataConfig;
+import cz.tacr.elza.bulkaction.generator.UnitIdConfig;
+import cz.tacr.elza.bulkaction.generator.multiple.CopyConfig;
+import cz.tacr.elza.bulkaction.generator.multiple.DateRangeConfig;
+import cz.tacr.elza.bulkaction.generator.multiple.NodeCountConfig;
+import cz.tacr.elza.bulkaction.generator.multiple.TextAggregationConfig;
+import cz.tacr.elza.bulkaction.generator.multiple.UnitCountConfig;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.ActionRepository;
-import cz.tacr.elza.utils.Yaml;
 import liquibase.util.file.FilenameUtils;
 
 
@@ -29,6 +41,8 @@ import liquibase.util.file.FilenameUtils;
  */
 @Component
 public class BulkActionConfigManager {
+
+	private static final Logger logger = LoggerFactory.getLogger(BulkActionConfigManager.class);
 
     /**
      * Název složky v pravidlech.
@@ -96,37 +110,39 @@ public class BulkActionConfigManager {
             }
         }
 
+		// prepare yaml loader
+		Constructor yamlCons = new Constructor();
+		yamlCons.addTypeDescription(new TypeDescription(FundValidationConfig.class, "!FundValidation"));
+		yamlCons.addTypeDescription(new TypeDescription(SerialNumberConfig.class, "!SerialNumberGenerator"));
+		yamlCons.addTypeDescription(new TypeDescription(UnitIdConfig.class, "!UnitIdGenerator"));
+		yamlCons.addTypeDescription(new TypeDescription(TestDataConfig.class, "!TestDataGenerator"));
+		yamlCons.addTypeDescription(new TypeDescription(MultiActionConfig.class, "!MultiAction"));
+		yamlCons.addTypeDescription(new TypeDescription(DateRangeConfig.class, "!DateRange"));
+		yamlCons.addTypeDescription(new TypeDescription(TextAggregationConfig.class, "!TextAggregation"));
+		yamlCons.addTypeDescription(new TypeDescription(CopyConfig.class, "!Copy"));
+		yamlCons.addTypeDescription(new TypeDescription(NodeCountConfig.class, "!NodeCount"));
+		yamlCons.addTypeDescription(new TypeDescription(UnitCountConfig.class, "!UnitCount"));
+		Yaml yamlLoader = new Yaml(yamlCons);
+
+		// load files
         for (File file : files) {
-            try {
-                InputStream ios = new FileInputStream(file);
-                BulkActionConfig bulkActionConfig = new BulkActionConfig();
-                bulkActionConfig.setCode(FilenameUtils.getBaseName(file.getName()));
-                bulkActionConfig.getYaml().load(ios);
-                ios.close();
-                bulkActionConfigMap.put(bulkActionConfig.getCode(), bulkActionConfig);
-            } catch(Yaml.YAMLInvalidContentException ye) {
-                throw new IllegalArgumentException("Failed to read configuration file: "+file.getAbsolutePath(), ye);
-            }
+			// load bulk action
+			String actionCode = FilenameUtils.getBaseName(file.getName());
+
+			BulkActionConfig bulkActionConfig = null;
+			try (InputStream ios = new FileInputStream(file)) {
+				bulkActionConfig = (BulkActionConfig) yamlLoader.load(ios);
+			} catch (Exception e) {
+				logger.error(
+				        "Failed to initialize action, consider updating package with action, actionCode=" + actionCode,
+				        e);
+				// on failure - log problem and create empty action
+				bulkActionConfig = new BrokenActionConfig(e);
+			}
+			bulkActionConfig.setCode(actionCode);
+			bulkActionConfigMap.put(actionCode, bulkActionConfig);
         }
 
-    }
-
-    /**
-     * Zkopíruje (+nahradí) výchozí nastavení hromadných akcí.
-     *
-     * @param dir složka pro uložení
-     */
-    private void copyDefaultFromResources(final File dir) throws IOException {
-        ClassLoader classLoader = getClass().getClassLoader();
-        File defaultDir = new File(classLoader.getResource("bulkactions").getFile());
-        File[] files = defaultDir.listFiles((dir1, name) -> name.endsWith(extension));
-        if (files != null) {
-            for (File file : files) {
-                File fileCopy = new File(
-                        dir.toString() + File.separator + FilenameUtils.getBaseName(file.getName()) + extension);
-                Files.copy(file.toPath(), fileCopy.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            }
-        }
     }
 
     /**
@@ -140,31 +156,12 @@ public class BulkActionConfigManager {
     }
 
     /**
-     * Vložení nastavení hromadné akce.
-     *
-     * @param bulkActionConfig nastavení hromadné akce
-     */
-    public void put(final BulkActionConfig bulkActionConfig) {
-        bulkActionConfigMap.put(bulkActionConfig.getCode(), bulkActionConfig);
-    }
-
-    /**
      * Vrací seznam všech nastavení hromadných akcí.
      *
      * @return seznam nastavení hromadných akcí
      */
     public List<BulkActionConfig> getBulkActions() {
         return new ArrayList<>(bulkActionConfigMap.values());
-    }
-
-    /**
-     * Vrací cestu k souboru podle nastavení hromadné akce.
-     *
-     * @param bulkActionConfig nastavení hromadné akce
-     * @return cesta k souboru
-     */
-    private String getFileName(final BulkActionConfig bulkActionConfig) {
-        return rulesDir + File.separator + bulkActionConfig.getCode() + extension;
     }
 
     /**

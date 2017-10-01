@@ -4,17 +4,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
 import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 
-import cz.tacr.elza.bulkaction.BulkActionConfig;
-import cz.tacr.elza.bulkaction.BulkActionInterruptedException;
+import cz.tacr.elza.bulkaction.ActionRunContext;
+import cz.tacr.elza.bulkaction.BulkAction;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.bulkaction.generator.result.UnitIdResult;
+import cz.tacr.elza.core.data.RuleSystem;
+import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.domain.ArrChange;
@@ -28,9 +30,9 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
 
 /**
  * Hromadná akce prochází strom otevřené verze archivní pomůcky a doplňuje u položek požadované atributy.
@@ -101,61 +103,69 @@ public class UnitIdBulkAction extends BulkAction {
     private Integer countChanges = 0;
 
     @Autowired
-    private ItemTypeRepository itemTypeRepository;
-
-    @Autowired
-    private ItemSpecRepository itemSpecRepository;
-
-    @Autowired
     private DescItemRepository descItemRepository;
 
     @Autowired
     private DescItemFactory descItemFactory;
 
-    /**
-     * Inicializace hromadné akce.
-     *
-     * @param bulkActionConfig nastavení hromadné akce
-     */
-    private void init(final BulkActionConfig bulkActionConfig) {
+	@Autowired
+	private StaticDataService staticDataService;
 
-        Assert.notNull(bulkActionConfig);
+	protected final UnitIdConfig config;
 
-        String unitIdCode = (String) bulkActionConfig.getString("unit_id_code");
-        Assert.notNull(unitIdCode);
+	public UnitIdBulkAction(UnitIdConfig unitIdConfig) {
+		Validate.notNull(unitIdConfig);
+		this.config = unitIdConfig;
+	}
 
-        descItemType = itemTypeRepository.getOneByCode(unitIdCode);
-        Assert.notNull(descItemType);
+	/**
+	 * Inicializace hromadné akce.
+	 *
+	 */
+	private void init() {
+		StaticDataProvider sdp = staticDataService.getData();
+		RuleSystem ruleSystem = sdp.getRuleSystems().getByRuleSetCode(config.getRules());
+		Validate.notNull(ruleSystem, "Rule system not available, code:" + config.getRules());
 
-        String levelTypeCode = (String) bulkActionConfig.getString("level_type_code");
-        Assert.notNull(levelTypeCode);
+		// read item type for UnitId
+		String unitIdCode = config.getItemType();
+		Validate.notNull(unitIdCode);
+		RuleSystemItemType itemTypeWrapper = ruleSystem.getItemTypeByCode(unitIdCode);
+		Validate.notNull(itemTypeWrapper);
+		descItemType = itemTypeWrapper.getEntity();
 
-        descItemLevelType = itemTypeRepository.getOneByCode(levelTypeCode);
-        Assert.notNull(descItemLevelType);
+		// read level type
+		String levelTypeCode = config.getLevelTypeCode();
+		Validate.notNull(levelTypeCode);
+		RuleSystemItemType levelTypeWrapper = ruleSystem.getItemTypeByCode(levelTypeCode);
+		Validate.notNull(levelTypeWrapper);
+		descItemLevelType = levelTypeWrapper.getEntity();
+		
+		// read delimiters
+		delimiterMajor = config.getDelimiterMajor();
+		Validate.notNull(delimiterMajor);
 
-        String delimiterMajor = (String) bulkActionConfig.getString("delimiter_major");
-        Assert.notNull(delimiterMajor);
-        this.delimiterMajor = delimiterMajor;
-
-        String delimiterMinor = (String) bulkActionConfig.getString("delimiter_minor");
-        Assert.notNull(delimiterMinor);
-        this.delimiterMinor = delimiterMinor;
-
-        String previousIdCode = (String) bulkActionConfig.getString("previous_id_code");
-        descItemPreviousType = itemTypeRepository.getOneByCode(previousIdCode);
-        Assert.notNull(descItemPreviousType);
-
-        String previousIdSpecCode = (String) bulkActionConfig.getString("previous_id_spec_code");
-        descItemPreviousSpec = itemSpecRepository.getOneByCode(previousIdSpecCode);
-        Assert.notNull(descItemPreviousSpec);
-
-        String delimiterMajorLevelTypeNotUse = (String) bulkActionConfig
-                .getString("delimiter_major_level_type_not_use");
-        if (delimiterMajorLevelTypeNotUse == null) {
-            delimiterMajorLevelTypeNotUseList = new ArrayList<>();
-        } else {
-            delimiterMajorLevelTypeNotUseList = Arrays.asList(delimiterMajorLevelTypeNotUse.split("\\|"));
-        }
+		delimiterMinor = config.getDelimiterMinor();
+		Validate.notNull(delimiterMinor);
+		
+		// item for previous value
+		String previousIdCode = config.getPreviousIdCode();
+		Validate.notNull(previousIdCode);
+		RuleSystemItemType previousIdTypeWrapper = ruleSystem.getItemTypeByCode(previousIdCode);
+		Validate.notNull(previousIdTypeWrapper);
+		descItemPreviousType = previousIdTypeWrapper.getEntity();
+		
+		String previousIdSpecCode = config.getPreviousIdSpecCode();
+		Validate.notNull(previousIdSpecCode);
+		descItemPreviousSpec = previousIdTypeWrapper.getItemSpecByCode(previousIdSpecCode);
+		Validate.notNull(descItemPreviousSpec);
+		
+		String delimiterMajorLevelTypeNotUse = config.getDelimiterMajorLevelTypeNotUse();
+		if (delimiterMajorLevelTypeNotUse == null) {
+		    delimiterMajorLevelTypeNotUseList = new ArrayList<>();
+		} else {
+		    delimiterMajorLevelTypeNotUseList = Arrays.asList(delimiterMajorLevelTypeNotUse.split("\\|"));
+		}
     }
 
     /**
@@ -308,25 +318,24 @@ public class UnitIdBulkAction extends BulkAction {
 
     @Override
     @Transactional
-    public void run(final List<Integer> inputNodeIds,
-                    final BulkActionConfig bulkAction,
-                    final ArrBulkActionRun bulkActionRun) {
-        this.bulkActionRun = bulkActionRun;
-        init(bulkAction);
+	public void run(ActionRunContext runContext) {
+		this.bulkActionRun = runContext.getBulkActionRun();
+		init();
 
         ArrFundVersion version = fundVersionRepository.findOne(bulkActionRun.getFundVersionId());
 
-        Assert.notNull(version);
+		Validate.notNull(version);
         checkVersion(version);
         this.version = version;
 
         ArrNode rootNode = version.getRootNode();
 
-        for (Integer nodeId : inputNodeIds) {
+		for (Integer nodeId : runContext.getInputNodeIds()) {
             ArrNode node = nodeRepository.findOne(nodeId);
-            Assert.notNull("Node s nodeId=" + nodeId + " neexistuje");
+			Validate.notNull(nodeId, "Node s nodeId=" + nodeId + " neexistuje");
             ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, rootNode, null);
-            Assert.notNull("Level neexistuje, nodeId=" + node.getNodeId() + ", rootNodeId=" + rootNode.getNodeId());
+			Validate.notNull(level,
+			        "Level neexistuje, nodeId=" + node.getNodeId() + ", rootNodeId=" + rootNode.getNodeId());
 
             ArrDescItem descItem = loadDescItem(level);
             ArrDescItem descItemLevel = loadDescItemLevel(level);

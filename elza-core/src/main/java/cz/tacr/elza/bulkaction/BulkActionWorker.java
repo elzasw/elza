@@ -4,32 +4,23 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import cz.tacr.elza.domain.ArrBulkActionRun.State;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.BulkActionRunRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import cz.tacr.elza.bulkaction.generator.BulkAction;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Úloha hromadné akce.
  *
- * @author Martin Šlapa
- * @since 11.11.2015
  */
-@Component
-@Scope("prototype")
 public class BulkActionWorker implements Callable<BulkActionWorker> {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+	private static final Logger logger = LoggerFactory.getLogger(BulkActionWorker.class);
 
     /**
      * Hromadná akce
@@ -47,19 +38,12 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
     private List<Integer> inputNodeIds;
 
     /**
-     * Nastavení hromadné akce
-     */
-    private BulkActionConfig bulkActionConfig;
-
-    /**
      * Hromadná akce reprezentovaná v DB
      */
     private ArrBulkActionRun bulkActionRun;
 
-    @Autowired
     private BulkActionService bulkActionService;
 
-    @Autowired
     private BulkActionRunRepository bulkActionRunRepository;
 
     /**
@@ -69,7 +53,11 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
 
     private Integer processId;
 
-    @Transactional(readOnly = true)
+	public BulkActionWorker(BulkActionService bulkActionService, BulkActionRunRepository bulkActionRunRepository) {
+		this.bulkActionService = bulkActionService;
+		this.bulkActionRunRepository = bulkActionRunRepository;
+	}
+
     public void init(final int bulkActionRunId) {
         bulkActionRun = bulkActionRunRepository.findOne(bulkActionRunId);
         if (bulkActionRun == null) {
@@ -77,8 +65,8 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
         }
         versionId = bulkActionRun.getFundVersionId();
         inputNodeIds = bulkActionService.getBulkActionNodeIds(bulkActionRun);
-        bulkActionConfig = bulkActionService.getBulkActionConfig(bulkActionRun.getBulkActionCode());
-        bulkAction = bulkActionService.getBulkAction((String) bulkActionConfig.getString("code_type_bulk_action"));
+		// create bulk action object
+		bulkAction = bulkActionService.getBulkAction(bulkActionRun.getBulkActionCode());
     }
 
 
@@ -129,7 +117,10 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
         try {
             //bulkActionRun.setChange(createChange(userId));
             bulkActionService.storeBulkActionRun(bulkActionRun);
-            bulkAction.run(inputNodeIds, bulkActionConfig, bulkActionRun);
+			// prepare context object
+			ActionRunContext runContext = new ActionRunContext(inputNodeIds, bulkActionRun);
+
+			bulkAction.run(runContext);
 
             //Thread.sleep(30000); // PRO TESTOVÁNÍ A DALŠÍ VÝVOJ
 
@@ -163,21 +154,11 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
         return versionId;
     }
 
-    /**
-     * Vrací nastavení hromadné akce.
-     *
-     * @return nastavení hromadné akce
-     */
-    public BulkActionConfig getBulkActionConfig() {
-        return bulkActionConfig;
-    }
-
     @Override
     public String toString() {
         return "BulkActionWorker{" +
                 "bulkAction=" + bulkAction +
                 ", versionId=" + versionId +
-                ", bulkActionConfig=" + bulkActionConfig +
                 ", bulkActionRun=" + bulkActionRun +
                 '}';
     }

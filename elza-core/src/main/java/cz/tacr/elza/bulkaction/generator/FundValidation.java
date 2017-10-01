@@ -1,36 +1,31 @@
 package cz.tacr.elza.bulkaction.generator;
 
-import cz.tacr.elza.domain.ArrBulkActionRun.State;
+import java.util.List;
+
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
-import cz.tacr.elza.bulkaction.BulkActionConfig;
-import cz.tacr.elza.bulkaction.BulkActionInterruptedException;
+import cz.tacr.elza.bulkaction.ActionRunContext;
+import cz.tacr.elza.bulkaction.BulkAction;
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-
-import java.util.List;
 
 /**
  * Hromadná akce pro kontrolu validace (stavů popisu) celé archivní pomůcky.
  *
- * @author Martin Šlapa
- * @since 30.11.2015
  */
-@Component
-@Scope("prototype")
-public class FundValidationBulkAction extends BulkAction {
+public class FundValidation extends BulkAction {
 
     /**
      * Identifikátor hromadné akce
@@ -58,16 +53,7 @@ public class FundValidationBulkAction extends BulkAction {
     @Autowired
     private BulkActionService bulkActionService;
 
-    private static final Logger logger = LoggerFactory.getLogger(FundValidationBulkAction.class);
-
-    /**
-     * Inicializace hromadné akce.
-     *
-     * @param bulkActionConfig nastavení hromadné akce
-     */
-    private void init(final BulkActionConfig bulkActionConfig) {
-        Assert.notNull(bulkActionConfig);
-    }
+    private static final Logger logger = LoggerFactory.getLogger(FundValidation.class);
 
     /**
      * Generování hodnot - rekurzivní volání pro procházení celého stromu
@@ -91,15 +77,12 @@ public class FundValidationBulkAction extends BulkAction {
 
     @Override
     @Transactional
-    public void run(final List<Integer> inputNodeIds,
-                    final BulkActionConfig bulkAction,
-                    final ArrBulkActionRun bulkActionRun) {
-        this.bulkActionRun = bulkActionRun;
-        init(bulkAction);
+	public void run(ActionRunContext runContext) {
+		this.bulkActionRun = runContext.getBulkActionRun();
 
         ArrFundVersion version = bulkActionRun.getFundVersion();
 
-        Assert.notNull(version);
+		Validate.notNull(version);
         checkVersion(version);
         this.version = version;
 
@@ -107,11 +90,12 @@ public class FundValidationBulkAction extends BulkAction {
         updateConformityInfoService.terminateWorkerInVersion(version);
 
         ArrNode rootNode = version.getRootNode();
-        for (Integer nodeId : inputNodeIds) {
+		for (Integer nodeId : runContext.getInputNodeIds()) {
             ArrNode node = nodeRepository.findOne(nodeId);
-            Assert.notNull("Node s nodeId=" + nodeId + " neexistuje");
+			Validate.notNull(nodeId, "Node s nodeId=" + nodeId + " neexistuje");
             ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, rootNode, null);
-            Assert.notNull("Level neexistuje, nodeId=" + node.getNodeId() + ", rootNodeId=" + rootNode.getNodeId());
+			Validate.notNull(level,
+			        "Level neexistuje, nodeId=" + node.getNodeId() + ", rootNodeId=" + rootNode.getNodeId());
 
             generate(level);
         }

@@ -2,21 +2,22 @@ package cz.tacr.elza.bulkaction.generator;
 
 import java.util.List;
 
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
 import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.bulkaction.BulkActionConfig;
-import cz.tacr.elza.bulkaction.BulkActionInterruptedException;
+import cz.tacr.elza.bulkaction.ActionRunContext;
+import cz.tacr.elza.bulkaction.BulkAction;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.bulkaction.generator.result.SerialNumberResult;
+import cz.tacr.elza.core.data.RuleSystem;
+import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.domain.ArrChange;
@@ -25,29 +26,22 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItemInt;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
 
 
 /**
  * Hromadná akce prochází strom otevřené verze archivní pomůcky a doplňuje u položek požadované atributy.
  *
- * @author Martin Šlapa
- * @author Petr Pytelka
- * @since 21.10.2015
  */
 @Component
 @Scope("prototype")
 public class SerialNumberBulkAction extends BulkAction {
-
-    /**
-     * Identifikátor hromadné akce
-     */
-    public static final String TYPE = "GENERATOR_SERIAL_NUMBER";
 
     /**
      * Verze archivní pomůcky
@@ -62,7 +56,7 @@ public class SerialNumberBulkAction extends BulkAction {
     /**
      * Pomocná třída pro generování pořadových čísel
      */
-    private SerialNumber serialNumber;
+	final private SerialNumber serialNumber = new SerialNumber();
 
     /**
      * Typ atributu
@@ -75,58 +69,41 @@ public class SerialNumberBulkAction extends BulkAction {
     private ArrBulkActionRun bulkActionRun;
 
     /**
-     * Typ atributu pro zastaveni
-     */
-    private RulItemType descItemStopType;
-
-    /**
-     * Specifikace atributu pro zastaveni
-     */
-    private RulItemSpec descItemStopSpec;
-
-    /**
      * Počet změněných položek.
      */
     private Integer countChanges = 0;
 
     @Autowired
-    private ItemTypeRepository itemTypeRepository;
-
-    @Autowired
     private DescItemRepository descItemRepository;
 
     @Autowired
-    private ItemSpecRepository itemSpecRepository;
-
-    @Autowired
     private DescItemFactory descItemFactory;
+
+	@Autowired
+	private StaticDataService staticDataService;
+
+	protected final SerialNumberConfig config;
+
+	SerialNumberBulkAction(SerialNumberConfig config) {
+		Validate.notNull(config);
+		this.config = config;
+	}
 
     /**
      * Inicializace hromadné akce.
      *
      * @param bulkActionConfig nastavení hromadné akce
      */
-    private void init(final BulkActionConfig bulkActionConfig) {
+	private void init() {
+		StaticDataProvider sdp = staticDataService.getData();
+		RuleSystem ruleSystem = sdp.getRuleSystems().getByRuleSetCode(config.getRules());
+		Validate.notNull(ruleSystem, "Rule system not available, code:" + config.getRules());
 
-        Assert.notNull(bulkActionConfig);
+		// prepare item type
+		RuleSystemItemType itemType = ruleSystem.getItemTypeByCode(config.getItemType());
+		Validate.notNull(itemType);
 
-        String serialIdCode = (String) bulkActionConfig.getString("serial_id_code");
-        Assert.notNull(serialIdCode);
-
-        descItemType = itemTypeRepository.getOneByCode(serialIdCode);
-        Assert.notNull(descItemType);
-
-        String stopWhenType = (String) bulkActionConfig.getString("stop_when_type");
-        if (stopWhenType != null) {
-            descItemStopType = itemTypeRepository.getOneByCode(stopWhenType);
-            Assert.notNull(descItemStopType, "Description item not found: " + stopWhenType);
-
-            String stopOnValue = (String) bulkActionConfig.getString(
-                        "stop_on_value");
-            Assert.notNull(stopOnValue, "stop_on_value is not defined");
-            descItemStopSpec = itemSpecRepository.getOneByCode(stopOnValue);
-            Assert.notNull(descItemStopSpec, "Specification: "+stopOnValue+" does not exists");
-        }
+		descItemType = itemType.getEntity();
     }
 
     /**
@@ -187,13 +164,6 @@ public class SerialNumberBulkAction extends BulkAction {
             level.setNode(ret.getNode());
             countChanges++;
         }
-
-        if (descItemStopType != null) {
-            ArrDescItem descItemLevel = loadDescItem(level, descItemStopType, descItemStopSpec);
-            if (descItemLevel != null) {
-                return;
-            }
-        }
     }
 
     /**
@@ -216,50 +186,21 @@ public class SerialNumberBulkAction extends BulkAction {
         return descItemFactory.getDescItem(descItems.get(0));
     }
 
-    /**
-     * Načtení atributu.
-     *
-     * @param node           uzel
-     * @param rulDescItemSpec specifikace atributu
-     * @param rulDescItemType typ atributu
-     * @return nalezený atribut
-     */
-    private ArrDescItem loadDescItem(final ArrLevel level,
-                                     final RulItemType rulDescItemType,
-                                     final RulItemSpec rulDescItemSpec) {
-        List<ArrDescItem> descItems = descItemRepository
-                .findByNodeAndDeleteChangeIsNullAndItemTypeIdAndSpecItemTypeId(
-                        level.getNode(), rulDescItemType.getItemTypeId(), rulDescItemSpec.getItemSpecId());
-        if (descItems.size() == 0) {
-            return null;
-        }
-        if (descItems.size() > 1) {
-            throw new SystemException(
-                    rulDescItemType.getCode() + " nemuže být více než jeden (" + descItems.size() + ")",
-                    BaseCode.DB_INTEGRITY_PROBLEM);
-        }
-        return descItemFactory.getDescItem(descItems.get(0));
-    }
-
     @Override
     @Transactional
-    public void run(final List<Integer> inputNodeIds,
-                    final BulkActionConfig bulkAction,
-                    final ArrBulkActionRun bulkActionRun) {
-        this.bulkActionRun = bulkActionRun;
-        init(bulkAction);
+	public void run(ActionRunContext runContext) {
+		this.bulkActionRun = runContext.getBulkActionRun();
+		init();
 
         ArrFundVersion version = bulkActionRun.getFundVersion();
 
-        Assert.notNull(version);
+		Validate.notNull(version);
         checkVersion(version);
-        this.version = version;
-
-        this.serialNumber = new SerialNumber();
+		this.version = version;
 
         ArrNode rootNode = version.getRootNode();
 
-        for (Integer nodeId : inputNodeIds) {
+		for (Integer nodeId : runContext.getInputNodeIds()) {
             ArrNode node = nodeRepository.findOne(nodeId);
             Assert.notNull(nodeId, "Node s nodeId=" + nodeId + " neexistuje");
             ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, rootNode, null);

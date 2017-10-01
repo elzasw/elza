@@ -2,23 +2,21 @@ package cz.tacr.elza.bulkaction.generator;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import com.google.common.primitives.Ints;
 
-import cz.tacr.elza.bulkaction.BulkActionConfig;
+import cz.tacr.elza.bulkaction.ActionRunContext;
+import cz.tacr.elza.bulkaction.BulkAction;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.bulkaction.generator.result.TestDataGeneratorResult;
 import cz.tacr.elza.domain.ArrBulkActionRun;
@@ -28,12 +26,14 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.utils.Yaml;
 
 /**
  * Bulk action to generate test data
@@ -70,19 +70,38 @@ public class TestDataGenerator extends BulkAction {
     @Autowired
     private RuleService ruleService;
 
+	TestDataConfig config;
+
+	public TestDataGenerator(TestDataConfig testDataConfig) {
+		Validate.notNull(testDataConfig);
+
+		this.config = testDataConfig;
+	}
+
+	private void init() {
+		List<Integer> unitsCount = config.getItemsToGenerate();
+		unitsToGenerate = Ints.toArray(unitsCount);
+		if(unitsToGenerate.length==0) {
+			throw new BusinessException("empty configuration of items_to_generate", BaseCode.PROPERTY_NOT_EXIST)
+			        .set("property", "itemsToGenerate");
+		}
+	}
+
 	@Override
 	@Transactional
-	public void run(List<Integer> inputNodeIds, BulkActionConfig bulkActionConfig, ArrBulkActionRun bulkActionRun) {
-		init(bulkActionConfig);
+	public void run(ActionRunContext runContext) {
+		init();
 
-		this.change = bulkActionRun.getChange();
-		this.version = bulkActionRun.getFundVersion();
+		ArrBulkActionRun arrBulkActionRun = runContext.getBulkActionRun();
 
-        Assert.notNull(version);
+		this.change = arrBulkActionRun.getChange();
+		this.version = arrBulkActionRun.getFundVersion();
+
+		Validate.notNull(version);
         checkVersion(version);
 		ArrNode rootNode = version.getRootNode();
 
-		for(Integer nodeId: inputNodeIds)
+		for (Integer nodeId : runContext.getInputNodeIds())
 		{
 			// get node
             ArrNode node = nodeRepository.findOne(nodeId);
@@ -98,8 +117,7 @@ public class TestDataGenerator extends BulkAction {
         TestDataGeneratorResult result = new TestDataGeneratorResult();
         //result.setCountChanges(countChanges);
         resultBA.getResults().add(result);
-        bulkActionRun.setResult(resultBA);
-
+		arrBulkActionRun.setResult(resultBA);
 	}
 
 	private void generate(ArrLevel parentLevel) {
@@ -186,19 +204,6 @@ public class TestDataGenerator extends BulkAction {
 	private void copyDescrItems(ArrLevel srcLevel, ArrLevel trgLevel) {
 		List<ArrDescItem> sourceDescItems = arrangementService.getArrDescItems(version, srcLevel.getNode());
 		descriptionItemService.copyDescItemWithDataToNode(trgLevel.getNode(), sourceDescItems, this.change, version);
-	}
-
-	private void init(BulkActionConfig bulkActionConfig) {
-        Assert.notNull(bulkActionConfig);
-
-		Yaml config = bulkActionConfig.getYaml();
-		List<Integer> unitsCount = config.getIntList("items_to_generate", Collections.singletonList(10));
-		unitsToGenerate = Ints.toArray(unitsCount);
-		if(unitsToGenerate.length==0) {
-			throw new BusinessException("empty configuration of items_to_generate", BaseCode.PROPERTY_NOT_EXIST)
-					.set("property", "items_to_generate");
-		}
-
 	}
 
 	@Override
