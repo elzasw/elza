@@ -691,6 +691,7 @@ V. Záznam o uspořádání archivního souboru a sestavení archivní pomůcky 
 		</band>
 		<band height="23">
 			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+			<printWhenExpression><![CDATA[!$V{unitItems}.isEmpty()]]></printWhenExpression>
 			<componentElement>
 				<reportElement x="37" y="7" width="294" height="16" uuid="02aaa3d9-17ed-4f0c-a7a9-8be4439ecdbb"/>
 				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
@@ -725,7 +726,9 @@ V. Záznam o uspořádání archivního souboru a sestavení archivní pomůcky 
 				</jr:list>
 			</componentElement>
 		</band>
-		<band height="11"/>
+		<band height="11">
+			<printWhenExpression><![CDATA[!$V{unitItems}.isEmpty()]]></printWhenExpression>
+		</band>
 	</detail>
 	<pageFooter>
 		<band height="30" splitType="Stretch">
