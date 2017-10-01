@@ -4,63 +4,45 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import cz.tacr.elza.bulkaction.ActionRunContext;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.RuleSystem;
+import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.utils.Yaml;
 
 /**
  * Akce pro vícenásobnou hromadnou akci.
  *
- * @author Martin Šlapa
- * @since 29.06.2016
  */
-public abstract class Action implements InitializingBean {
+public abstract class Action {
 
-    @Autowired
-    protected ItemTypeRepository itemTypeRepository;
+	@Autowired
+	protected ItemTypeRepository itemTypeRepository;
 
-    @Autowired
-    protected ItemSpecRepository itemSpecRepository;
+	@Autowired
+	protected ItemSpecRepository itemSpecRepository;
 
-    /**
-     * Konfigurace akce.
-     */
-    protected final Yaml config;
+	@Autowired
+	protected StaticDataService staticDataService;
 
     /**
-     * Aplikovat na předky uzlů
-     */
-    protected boolean applyParents;
-
-    /**
-     * Aplikovat na potomky
-     */
-    protected boolean applyChildren;
-
-    Action(final Yaml config) {
-        this.config = config;
-        applyParents = config.getBoolean("apply_parents", true);
-        applyChildren = config.getBoolean("apply_children", true);
-    }
-
-    /**
-     * Inicializace akce.
-     */
-    abstract public void init();
+	 * Inicializace akce.
+	 * 
+	 * @param runContext
+	 */
+	abstract public void init(ActionRunContext runContext);
 
     /**
      * Aplikování akce na uzel.
@@ -69,15 +51,7 @@ public abstract class Action implements InitializingBean {
      * @param items                 hodnoty atributy uzlu
      * @param parentLevelWithItems   hodnoty atributu nadřízených uzlů
      */
-    abstract public void apply(final ArrNode node, final List<ArrDescItem> items, final LevelWithItems parentLevelWithItems);
-
-    /**
-     * Má se vykonat aplikování?
-     *
-     * @param typeLevel typ levelu
-     * @return  aplikovat?
-     */
-    abstract public boolean canApply(final TypeLevel typeLevel);
+	abstract public void apply(LevelWithItems level, TypeLevel typeLevel);
 
     /**
      * Nashromážděný výsledek akce.
@@ -85,6 +59,17 @@ public abstract class Action implements InitializingBean {
      * @return výsledek akce, je serializovan do JSON pro uložení
      */
     abstract public ActionResult getResult();
+
+	/**
+	 * Return rule system for given context
+	 * 
+	 * @return
+	 */
+	RuleSystem getRuleSystem(ActionRunContext runContext) {
+		RulRuleSet rrs = runContext.getFundVersion().getRuleSet();
+		StaticDataProvider sdp = staticDataService.getData();
+		return sdp.getRuleSystems().getByRuleSetId(rrs.getRuleSetId());
+	}
 
     /**
      * Vyhledá typ podle kódu.
@@ -129,22 +114,21 @@ public abstract class Action implements InitializingBean {
         return itemTypes;
     }
 
-    /**
-     * Kontrola datového typu atributů
-     *
-     * @param inputItemType kontrolované atributy
-     * @param codes kódy povolených datových typů
-     */
-    protected void checkValidDataType(final RulItemType inputItemType, final String ...codes) {
-        RulDataType dataType = inputItemType.getDataType();
-        List<String> codeList = Arrays.asList(codes);
-        if (!codeList.contains(dataType.getCode())) {
-            throw new BusinessException("Datový typ atributu musí být " + codeList + " (item type " + inputItemType.getCode() + ")", BaseCode.ID_NOT_EXIST);
-        }
-    }
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        init();
-    }
+	/**
+	 * Kontrola datového typu atributů
+	 *
+	 * @param inputItemType
+	 *            kontrolované atributy
+	 * @param codes
+	 *            kódy povolených datových typů
+	 */
+	protected void checkValidDataType(final RuleSystemItemType itemType, final DataType... codes) {
+		DataType dataType = itemType.getDataType();
+		List<DataType> codeList = Arrays.asList(codes);
+		if (!codeList.contains(dataType)) {
+			throw new BusinessException(
+			        "Datový typ atributu musí být " + codeList + " (item type " + itemType.getCode() + ")",
+			        BaseCode.ID_NOT_EXIST);
+		}
+	}
 }

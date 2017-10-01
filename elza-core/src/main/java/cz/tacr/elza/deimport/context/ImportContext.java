@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-
 import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +22,6 @@ public class ImportContext implements ObservableImport {
     private static final Logger LOG = LoggerFactory.getLogger(ImportContext.class);
 
     private final List<ImportPhaseChangeListener> phaseChangeListeners = new LinkedList<>();
-
-    private final DatatypeFactory datatypeFactory = createDatatypeFactory();
 
     private final Session session;
 
@@ -55,10 +50,6 @@ public class ImportContext implements ObservableImport {
         this.institutions = institutions;
         this.sections = sections;
         initAllContexts();
-    }
-
-    public DatatypeFactory getDatatypeFactory() {
-        return datatypeFactory;
     }
 
     public Session getSession() {
@@ -113,13 +104,5 @@ public class ImportContext implements ObservableImport {
         parties.init(this);
         institutions.init(this);
         sections.init(this);
-    }
-
-    private static DatatypeFactory createDatatypeFactory() {
-        try {
-            return DatatypeFactory.newInstance();
-        } catch (DatatypeConfigurationException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

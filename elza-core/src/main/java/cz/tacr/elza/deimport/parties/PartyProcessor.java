@@ -20,8 +20,7 @@ import cz.tacr.elza.deimport.parties.context.PartiesContext;
 import cz.tacr.elza.deimport.parties.context.PartyImportInfo;
 import cz.tacr.elza.deimport.parties.context.PartyNameWrapper;
 import cz.tacr.elza.deimport.processor.ItemProcessor;
-import cz.tacr.elza.deimport.processor.TimeIntervalConvertor;
-import cz.tacr.elza.deimport.processor.TimeIntervalConvertor.TimeIntervalConversionResult;
+import cz.tacr.elza.deimport.timeinterval.TimeInterval;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyName;
@@ -43,8 +42,6 @@ public class PartyProcessor<P extends Party, E extends ParParty> implements Item
 
     protected final Class<E> partyClass;
 
-    protected final TimeIntervalConvertor intervalConvertor;
-
     protected final PartiesContext partiesContext;
 
     protected final AccessPointsContext accessPointsContext;
@@ -57,7 +54,6 @@ public class PartyProcessor<P extends Party, E extends ParParty> implements Item
 
     public PartyProcessor(ImportContext context, Class<E> partyClass) {
         this.partyClass = partyClass;
-        this.intervalConvertor = new TimeIntervalConvertor(context.getDatatypeFactory());
         this.partiesContext = context.getParties();
         this.accessPointsContext = context.getAccessPoints();
         this.staticData = context.getStaticData();
@@ -146,23 +142,23 @@ public class PartyProcessor<P extends Party, E extends ParParty> implements Item
         ParUnitdate unitDate = new ParUnitdate();
         unitDate.setNote(interval.getNote());
         unitDate.setTextDate(interval.getTf());
-        TimeIntervalConversionResult convResult;
+        TimeInterval it = null;
         try {
-            convResult = intervalConvertor.convert(interval);
+            it = TimeInterval.create(interval);
         } catch (IllegalArgumentException e) {
             throw new DEImportException(
                     "Conversion of time interval failed, partyId:" + partyImportId + ", detail:" + e.getMessage());
         }
-        CalendarType calendarType = convResult.getCalendarType();
+        CalendarType calendarType = it.getCalendarType();
         if (calendarType == null) {
-            throw new IllegalArgumentException("Calendar type for time interval not found, code:" + convResult.getCalendarType());
+            throw new IllegalArgumentException("Calendar type for time interval not found, code:" + it.getCalendarType());
         }
         unitDate.setCalendarType(calendarType.getEntity());
-        unitDate.setFormat(convResult.getFormat());
-        unitDate.setValueFrom(convResult.getFormattedFrom());
-        unitDate.setValueTo(convResult.getFormattedTo());
-        unitDate.setValueFromEstimated(convResult.isFromEst());
-        unitDate.setValueToEstimated(convResult.isToEst());
+        unitDate.setFormat(it.getFormat());
+        unitDate.setValueFrom(it.getFormattedFrom());
+        unitDate.setValueTo(it.getFormattedTo());
+        unitDate.setValueFromEstimated(it.isFromEst());
+        unitDate.setValueToEstimated(it.isToEst());
         return partiesContext.addUnitDate(unitDate, recordInfo);
     }
 

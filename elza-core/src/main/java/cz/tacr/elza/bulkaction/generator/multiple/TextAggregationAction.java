@@ -1,27 +1,29 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Map;
 
-import cz.tacr.elza.service.ArrangementService;
 import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import cz.tacr.elza.bulkaction.ActionRunContext;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.TextAggregationActionResult;
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.RuleSystem;
+import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrItemData;
 import cz.tacr.elza.domain.ArrItemFormattedText;
 import cz.tacr.elza.domain.ArrItemString;
 import cz.tacr.elza.domain.ArrItemText;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.utils.Yaml;
 
 /**
  * Akce na agregaci textových hodnot.
@@ -42,83 +44,79 @@ public class TextAggregationAction extends Action {
     /**
      * Vstupní atributy
      */
-    private Set<RulItemType> inputItemTypes;
+	private Map<Integer, RuleSystemItemType> inputItemTypes = new HashMap<>();
 
     /**
      * Výstupní atribut
      */
-    private RulItemType outputItemType;
+	private RuleSystemItemType outputItemType;
 
     /**
      * Seznam textových hodnot
      */
     private List<String> texts = new ArrayList<>();
 
-    /**
-     * Ignorovat duplikáty?
-     */
-    private boolean ignoreDuplicated;
+	TextAggregationConfig config;
 
-    /**
-     * Flag if text item should be created for empty result
-     */
-    private boolean createEmpty;
-
-    TextAggregationAction(final Yaml config) {
-        super(config);
+	TextAggregationAction(final TextAggregationConfig config) {
+		Validate.notNull(config);
+		this.config = config;
     }
 
     @Override
-    public void init() {
-        Set<String> inputTypes = config.getStringList("input_types", null).stream().collect(Collectors.toSet());
-        String outputType = config.getString("output_type", null);
-        ignoreDuplicated = config.getBoolean("ignore_duplicated", false);
-        createEmpty = config.getBoolean("create_empty", true);
+	public void init(ActionRunContext runContext) {
+		RuleSystem ruleSystem = getRuleSystem(runContext);
 
-        inputItemTypes = findItemTypes(inputTypes);
-        for (RulItemType inputItemType : inputItemTypes) {
-            checkValidDataType(inputItemType, "TEXT", "STRING", "FORMATTED_TEXT");
-        }
+		String outputType = config.getOutputType();
+		outputItemType = ruleSystem.getItemTypeByCode(outputType);
+		checkValidDataType(outputItemType, DataType.TEXT);
 
-        outputItemType = findItemType(outputType, "output_type");
-        checkValidDataType(outputItemType, "TEXT");
+		for (String inputTypeCode : config.getInputTypes()) {
+			RuleSystemItemType inputType = ruleSystem.getItemTypeByCode(inputTypeCode);
+
+			checkValidDataType(inputType, DataType.TEXT, DataType.STRING, DataType.FORMATTED_TEXT);
+
+			inputItemTypes.put(inputType.getItemTypeId(), inputType);
+
+		}
     }
 
     @Override
-    public void apply(final ArrNode node, final List<ArrDescItem> items, final LevelWithItems parentLevelWithItems) {
-        for (ArrItem item : items) {
-            if (inputItemTypes.contains(item.getItemType())) {
+	public void apply(LevelWithItems level, TypeLevel typeLevel) {
+		List<ArrDescItem> items = level.getDescItems();
+
+		for (ArrItem item : items) {
+			// check if item is in inputItemTypes set
+			RuleSystemItemType itemType = inputItemTypes.get(item.getItemTypeId());
+			if (itemType != null) {
                 ArrItemData itemData = item.getItem();
-                String value;
+
                 if (BooleanUtils.isTrue(item.getUndefined())) {
-                    value = ArrangementService.UNDEFINED;
-                } else if (itemData instanceof ArrItemString) {
-                    value = ((ArrItemString) itemData).getValue();
-                } else if (itemData instanceof ArrItemText) {
-                    value = (((ArrItemText) itemData).getValue());
-                } else if (itemData instanceof ArrItemFormattedText) {
-                    value = (((ArrItemFormattedText) itemData).getValue());
-                } else {
-                    throw new IllegalStateException("Neplatmý typ dat: " + itemData.getClass().getSimpleName());
+					// skip if not defined
+					continue;
                 }
-                if (!ignoreDuplicated || !texts.contains(value)) {
-                    texts.add(value);
+                
+				String value;
+                switch(itemType.getDataType())
+                {
+				case STRING:
+					value = ((ArrItemString) itemData).getValue();
+				case TEXT:
+					value = (((ArrItemText) itemData).getValue());
+                	break;
+				case FORMATTED_TEXT:
+					value = (((ArrItemFormattedText) itemData).getValue());
+				default:
+					throw new IllegalStateException(
+					        "Neplatný typ dat: " + itemType.getDataType() + ", itemId: " + item.getItemId());
+                }
+				if (StringUtils.isNotBlank(value)) {
+					if (!config.isIgnoreDuplicated() || !texts.contains(value)) {
+						texts.add(value);
+					}
                 }
             }
         }
-    }
-
-    @Override
-    public boolean canApply(final TypeLevel typeLevel) {
-        if (typeLevel.equals(TypeLevel.PARENT) && applyParents) {
-            return true;
-        }
-
-        if (typeLevel.equals(TypeLevel.CHILD) && applyChildren) {
-            return true;
-        }
-
-        return false;
     }
 
     @Override
@@ -131,7 +129,7 @@ public class TextAggregationAction extends Action {
         textAggregationActionResult.setItemType(outputItemType.getCode());
         textAggregationActionResult.setText(resultText);
         // check if not empty
-        textAggregationActionResult.setCreateInOutput(createEmpty || !resultText.isEmpty());
+		textAggregationActionResult.setCreateInOutput(config.isCreateEmpty() || !resultText.isEmpty());
 
         return textAggregationActionResult;
     }

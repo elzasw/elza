@@ -21,7 +21,7 @@ import RegistryField from "../../registry/RegistryField";
 class DescItemRecordRef extends AbstractReactComponent {
 
     focus() {
-        this.refs.registryField.refs.wrappedInstance.focus()
+        this.registryField.wrappedInstance.focus()
     }
 
     static defaultProps = {
@@ -103,7 +103,7 @@ class DescItemRecordRef extends AbstractReactComponent {
         return <div className='desc-item-value desc-item-value-parts'>
             <ItemTooltipWrapper tooltipTitle="dataType.recordRef.format" className="tooltipWrapper">
                 <RegistryField
-                    ref='registryField'
+                    ref={(registryField) => { this.registryField = registryField; }}
                     {...otherProps}
                     itemSpecId={descItem.descItemSpecId}
                     value={record}

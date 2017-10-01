@@ -1,9 +1,10 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import cz.tacr.elza.service.cache.NodeCacheSerializable;
-
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+import cz.tacr.elza.service.cache.NodeCacheSerializable;
 
 /**
  * Abstraktní datový objekt.
@@ -40,6 +41,8 @@ public abstract class ArrItemData implements NodeCacheSerializable {
     public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+		// Tento kod napsal nekdo bez schopnosti premyslet nebo po tezke noci.
+		// Tato metoda equals musi pryc.
         ArrItemData that = (ArrItemData) o;
         return Objects.equals(spec, that.spec) &&
                 Objects.equals(undefined, that.undefined);
