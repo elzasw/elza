@@ -2,7 +2,6 @@ package cz.tacr.elza.bulkaction.generator.multiple;
 
 import java.util.List;
 
-import org.apache.commons.lang.BooleanUtils;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -141,7 +140,7 @@ public class DateRangeAction extends Action {
 
         for (ArrItem item : items) {
 
-            if (BooleanUtils.isTrue(item.getUndefined())) {
+			if (item.getUndefined()) {
                 continue;
             }
 

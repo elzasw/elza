@@ -247,8 +247,12 @@ public class MultipleBulkAction extends BulkAction {
      */
     //private void apply(final ArrNode node, final List<ArrDescItem> items, final TypeLevel typeLevel, final LevelWithItems parentLevelWithItems) {
     private void apply(LevelWithItems level, TypeLevel typeLevel) {
-		for (Action action : actions) {
-			action.apply(level, typeLevel);
+		try {
+			for (Action action : actions) {
+				action.apply(level, typeLevel);
+			}
+		} catch (Exception e) {
+			throw e;
 		}
     }
 

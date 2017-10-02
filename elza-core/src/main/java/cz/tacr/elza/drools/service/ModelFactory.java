@@ -7,13 +7,18 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItemInt;
+import cz.tacr.elza.domain.ArrItemPacketRef;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.model.Packet;
-import org.apache.commons.lang.BooleanUtils;
 
 /**
  * Factory method for the base Drools model objects.
@@ -34,7 +39,7 @@ public class ModelFactory {
         item.setType(descItem.getItemType().getCode());
         item.setSpecCode(descItem.getItemSpec() == null ? null : descItem.getItemSpec().getCode());
         item.setDataType(descItem.getItemType().getDataType().getCode());
-        item.setUndefined(BooleanUtils.isTrue(descItem.getUndefined()));
+		item.setUndefined(descItem.getUndefined());
         return item;
     }
 
