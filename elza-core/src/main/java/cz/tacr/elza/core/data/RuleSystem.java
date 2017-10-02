@@ -54,6 +54,13 @@ public class RuleSystem {
         return itemTypeIdMap.get(id);
     }
 
+	/**
+	 * Return description item by code
+	 * 
+	 * @param code
+	 *            Item type code
+	 * @return Return description item. If item does not exist return null.
+	 */
     public RuleSystemItemType getItemTypeByCode(String code) {
         Validate.notEmpty(code);
         return itemTypeCodeMap.get(code);
@@ -97,7 +104,7 @@ public class RuleSystem {
         }
         // update fields
         this.itemTypes = Collections.unmodifiableList(rsItemTypes);
-        this.itemTypeIdMap = StaticDataProvider.createLookup(rsItemTypes, RuleSystemItemType::getId);
+		this.itemTypeIdMap = StaticDataProvider.createLookup(rsItemTypes, RuleSystemItemType::getItemTypeId);
         this.itemTypeCodeMap = StaticDataProvider.createLookup(rsItemTypes, RuleSystemItemType::getCode);
     }
 }

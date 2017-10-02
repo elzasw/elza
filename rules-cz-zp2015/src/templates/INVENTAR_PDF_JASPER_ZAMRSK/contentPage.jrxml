@@ -1,0 +1,748 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.4.0.final using JasperReports Library version 6.4.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="contentPage" language="groovy" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="70" bottomMargin="70" uuid="71cc9236-0f65-4a0a-bb66-bbfe841a66c1">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<import value="org.apache.commons.lang.StringUtils"/>
+	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table_CH" mode="Opaque" backcolor="#BFE1FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Serie1">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$F{depth}==2]]></conditionExpression>
+			<style fontSize="14" isBold="true" isUnderline="true"/>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[($F{depth}==3)&&($F{node}.getItemsWithSpec( "ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_SERIES" ).size()==1)]]></conditionExpression>
+			<style fontSize="12" isBold="true" isUnderline="false"/>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[($F{depth}==4)&&($F{node}.getItemsWithSpec( "ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_SERIES" ).size()==1)]]></conditionExpression>
+			<style fontSize="10" isBold="true" isUnderline="false"/>
+		</conditionalStyle>
+	</style>
+	<style name="Table 1_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table 1_TH" mode="Opaque" backcolor="#F0F8FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table 1_CH" mode="Opaque" backcolor="#BFE1FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<subDataset name="Packets" uuid="ee50314f-e295-4cb5-bf43-2621ef7f1818">
+		<queryString>
+			<![CDATA[]]>
+		</queryString>
+		<field name="packet" class="cz.tacr.elza.print.Packet">
+			<fieldDescription><![CDATA[packet]]></fieldDescription>
+		</field>
+	</subDataset>
+	<subDataset name="Items" uuid="981513c8-027f-4b8b-a906-cdd467ac9b78">
+		<queryString>
+			<![CDATA[]]>
+		</queryString>
+		<field name="item" class="cz.tacr.elza.print.item.AbstractItem">
+			<fieldDescription><![CDATA[item]]></fieldDescription>
+		</field>
+	</subDataset>
+	<parameter name="fund" class="cz.tacr.elza.print.Fund"/>
+	<parameter name="output" class="cz.tacr.elza.print.Output"/>
+	<parameter name="formatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
+		<parameterDescription><![CDATA[]]></parameterDescription>
+		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
+	.setTitleSeparator(": ")
+	.setItemSeparator("<br>")
+	.setSpecSeparator(" ")
+	.setBlockSeparators("<br>","")
+	.addValue("ZP2015_TITLE")
+	.beginBlock().addValueWithTitle("ZP2015_OTHER_ID").endBlock()
+	.beginBlock().addValueWithTitle("ZP2015_ORIGINATOR").endBlock()
+	.beginBlock().addValueWithTitle("ZP2015_UNIT_COUNT").endBlock()
+	.beginBlock()
+		.addValueWithTitle("ZP2015_DATE_OTHER")
+		.addValueWithTitle("ZP2015_FORMAL_TITLE")
+		.addValueWithTitle("ZP2015_ITEM_TITLE")
+		.addValueWithTitle("ZP2015_PART")
+		.addValueWithTitle("ZP2015_ENTITY_ROLE")
+		.setSpecSeparator(": ")
+		.addValue("ZP2015_ENTITY_ROLE")
+		.addValueWithTitle("ZP2015_UNIT_HIST")
+		.addValueWithTitle("ZP2015_UNIT_SOURCE")
+		.addValueWithTitle("ZP2015_UNIT_ARR")
+		.addValueWithTitle("ZP2015_FUTURE_UNITS")
+		.addValueWithTitle("ZP2015_UNIT_CONTENT")
+		.addValueWithTitle("ZP2015_UNIT_ACCESS")
+		.addValueWithTitle("ZP2015_UNIT_INFO_RIGHTS")
+		.addValueWithTitle("ZP2015_UNIT_COPY_RIGHTS")
+		.addValueWithTitle("ZP2015_IMPRINT_COUNT")
+		.addValueWithTitle("ZP2015_EXERQUE")
+		.addValueWithTitle("ZP2015_PAINTING_CHAR")
+		.addValueWithTitle("ZP2015_CORROBORATION")
+		.addValueWithTitle("ZP2015_IMPRINT_ORDER")
+		.addValueWithTitle("ZP2015_SCALE")
+		.addValueWithTitle("ZP2015_POSITION")
+		.addValueWithTitle("ZP2015_ORIENTATION")
+		.addValueWithTitle("ZP2015_LEGEND")
+		.addValueWithTitle("ZP2015_MOVIE_LENGTH")
+		.addValueWithTitle("ZP2015_UNIT_CURRENT_STATUS")
+		.addValueWithTitle("ZP2015_STORAGE_COND")
+		.addValueWithTitle("ZP2015_SIZE")
+		.addValueWithTitle("ZP2015_ITEM_MAT")
+		.addValueWithTitle("ZP2015_LANGUAGE")
+		.addValueWithTitle("ZP2015_RELATED_UNITS")
+		.addValueWithTitle("ZP2015_EXISTING_COPY")
+		.addValueWithTitle("ZP2015_COPY_SOURCE")
+		.addValueWithTitle("ZP2015_ARRANGE_RULES")
+		.addValueWithTitle("ZP2015_EDITION")
+		.addValueWithTitle("ZP2015_NOTE")
+		.addValueWithTitle("ZP2015_ARRANGER")
+		.addValueWithTitle("ZP2015_DESCRIPTION_DATE")
+	.endBlock()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="titleFormatter" class="cz.tacr.elza.print.format.Formatter">
+		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
+	.setTitleSeparator(": ")
+	.setItemSeparator("; ")
+	.setSpecSeparator(" ")
+	.setBlockSeparators("<br>","")
+		.addValueWithTitle("ZP2015_UNIT_TYPE")
+		.addValueWithTitle("ZP2015_LANGUAGE")
+		.addValueWithTitle("ZP2015_STORAGE_COND")
+		.addValueWithTitle("ZP2015_SIZE")
+		.addValueWithTitle("ZP2015_SCALE")
+		.addValueWithTitle("ZP2015_POSITION")
+		.addValueWithTitle("ZP2015_ORIENTATION")
+		.addValueWithTitle("ZP2015_ITEM_MAT")
+		.addValueWithTitle("ZP2015_PART")
+		.addValueWithTitle("ZP2015_EDITION")
+		.setSpecSeparator(": ")
+		.addValue("ZP2015_ENTITY_ROLE")
+		.addValueWithTitle("ZP2015_EXERQUE")
+		.addValueWithTitle("ZP2015_PAINTING_CHAR")	
+		.addValueWithTitle("ZP2015_CORROBORATION")
+		.addValueWithTitle("ZP2015_IMPRINT_COUNT")
+		.addValueWithTitle("ZP2015_IMPRINT_ORDER")
+		.addValueWithTitle("ZP2015_LEGEND")
+		.addValueWithTitle("ZP2015_MOVIE_LENGTH")
+		.addValueWithTitle("ZP2015_RECORD_LENGTH")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="fundFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
+		<parameterDescription><![CDATA[]]></parameterDescription>
+		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
+	.setTitleSeparator(": ")
+	.setItemSeparator("<br>")
+	.setSpecSeparator(" ")
+	.setBlockSeparators("<br>","")
+	.beginBlock().addValueWithTitle("ZP2015_OTHER_ID").endBlock()
+	.beginBlock()
+		.addValueWithTitle("ZP2015_UNIT_ACCESS")
+		.addValueWithTitle("ZP2015_UNIT_INFO_RIGHTS")
+		.addValueWithTitle("ZP2015_UNIT_COPY_RIGHTS")
+		.addValueWithTitle("ZP2015_EXISTING_COPY")
+		.addValueWithTitle("ZP2015_ARRANGE_RULES")
+		.addValueWithTitle("ZP2015_EDITION")
+		.addValueWithTitle("ZP2015_NOTE")
+	.endBlock()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="unitFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
+		<parameterDescription><![CDATA[]]></parameterDescription>
+		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
+	.setTitleSeparator(": ")
+	.setItemSeparator("<br>")
+	.setSpecSeparator(" ")
+	.setBlockSeparators("<br>","")
+	.addValue("ZP2015_TITLE")
+	.beginBlock().addValueWithTitle("ZP2015_OTHER_ID").endBlock()
+	.beginBlock().addValueWithTitle("ZP2015_UNIT_COUNT").endBlock()
+	.beginBlock()
+		.addValueWithTitle("ZP2015_DATE_OTHER")
+		.addValueWithTitle("ZP2015_FORMAL_TITLE")
+		.addValueWithTitle("ZP2015_ITEM_TITLE")
+		.addValueWithTitle("ZP2015_PART")
+		.addValueWithTitle("ZP2015_ENTITY_ROLE")
+		.setSpecSeparator(": ")
+		.addValue("ZP2015_ENTITY_ROLE")
+		.addValueWithTitle("ZP2015_UNIT_HIST")
+		.addValueWithTitle("ZP2015_UNIT_SOURCE")
+		.addValueWithTitle("ZP2015_UNIT_ARR")
+		.addValueWithTitle("ZP2015_FUTURE_UNITS")
+		.addValueWithTitle("ZP2015_UNIT_CONTENT")
+		.addValueWithTitle("ZP2015_UNIT_ACCESS")
+		.addValueWithTitle("ZP2015_UNIT_INFO_RIGHTS")
+		.addValueWithTitle("ZP2015_UNIT_COPY_RIGHTS")
+		.addValueWithTitle("ZP2015_IMPRINT_COUNT")
+		.addValueWithTitle("ZP2015_EXERQUE")
+		.addValueWithTitle("ZP2015_PAINTING_CHAR")
+		.addValueWithTitle("ZP2015_CORROBORATION")
+		.addValueWithTitle("ZP2015_IMPRINT_ORDER")
+		.addValueWithTitle("ZP2015_SCALE")
+		.addValueWithTitle("ZP2015_POSITION")
+		.addValueWithTitle("ZP2015_ORIENTATION")
+		.addValueWithTitle("ZP2015_LEGEND")
+		.addValueWithTitle("ZP2015_MOVIE_LENGTH")
+		.addValueWithTitle("ZP2015_UNIT_CURRENT_STATUS")
+		.addValueWithTitle("ZP2015_STORAGE_COND")
+		.addValueWithTitle("ZP2015_SIZE")
+		.addValueWithTitle("ZP2015_ITEM_MAT")
+		.addValueWithTitle("ZP2015_LANGUAGE")
+		.addValueWithTitle("ZP2015_RELATED_UNITS")
+		.addValueWithTitle("ZP2015_EXISTING_COPY")
+		.addValueWithTitle("ZP2015_COPY_SOURCE")
+		.addValueWithTitle("ZP2015_ARRANGE_RULES")
+		.addValueWithTitle("ZP2015_EDITION")
+		.addValueWithTitle("ZP2015_NOTE")
+		.addValueWithTitle("ZP2015_ARRANGER")
+		.addValueWithTitle("ZP2015_DESCRIPTION_DATE")
+	.endBlock()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="folderFormater" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
+		<parameterDescription><![CDATA[]]></parameterDescription>
+		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
+	.setTitleSeparator(": ")
+	.setItemSeparator("<br>")
+	.setSpecSeparator(" ")
+	.setBlockSeparators("<br>","")
+	.addValue("ZP2015_TITLE")
+	.beginBlock().addValueWithTitle("ZP2015_OTHER_ID").endBlock()
+	.beginBlock().addValueWithTitle("ZP2015_UNIT_COUNT").endBlock()
+	.beginBlock()
+		.addValueWithTitle("ZP2015_DATE_OTHER")
+		.addValueWithTitle("ZP2015_FORMAL_TITLE")
+		.addValueWithTitle("ZP2015_ITEM_TITLE")
+		.addValueWithTitle("ZP2015_PART")
+		.addValueWithTitle("ZP2015_ENTITY_ROLE")
+		.setSpecSeparator(": ")
+		.addValue("ZP2015_ENTITY_ROLE")
+		.addValueWithTitle("ZP2015_UNIT_HIST")
+		.addValueWithTitle("ZP2015_UNIT_SOURCE")
+		.addValueWithTitle("ZP2015_UNIT_ARR")
+		.addValueWithTitle("ZP2015_FUTURE_UNITS")
+		.addValueWithTitle("ZP2015_UNIT_CONTENT")
+		.addValueWithTitle("ZP2015_UNIT_ACCESS")
+		.addValueWithTitle("ZP2015_UNIT_INFO_RIGHTS")
+		.addValueWithTitle("ZP2015_UNIT_COPY_RIGHTS")
+		.addValueWithTitle("ZP2015_UNIT_CURRENT_STATUS")
+		.addValueWithTitle("ZP2015_STORAGE_COND")
+		.addValueWithTitle("ZP2015_SIZE")
+		.addValueWithTitle("ZP2015_ITEM_MAT")
+		.addValueWithTitle("ZP2015_LANGUAGE")
+		.addValueWithTitle("ZP2015_RELATED_UNITS")
+		.addValueWithTitle("ZP2015_EXISTING_COPY")
+		.addValueWithTitle("ZP2015_COPY_SOURCE")
+		.addValueWithTitle("ZP2015_ARRANGE_RULES")
+		.addValueWithTitle("ZP2015_EDITION")
+		.addValueWithTitle("ZP2015_NOTE")
+		.addValueWithTitle("ZP2015_ARRANGER")
+		.addValueWithTitle("ZP2015_DESCRIPTION_DATE")
+	.endBlock()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="seriesFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
+		<parameterDescription><![CDATA[]]></parameterDescription>
+		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
+	.setTitleSeparator(": ")
+	.setItemSeparator("<br>")
+	.setSpecSeparator(" ")
+	.setBlockSeparators("<br>","")
+	.addValue("ZP2015_TITLE")
+	.beginBlock().addValueWithTitle("ZP2015_OTHER_ID").endBlock()
+	.beginBlock().addValueWithTitle("ZP2015_ORIGINATOR").endBlock()
+	.beginBlock()
+		.addValueWithTitle("ZP2015_FORMAL_TITLE")
+		.addValueWithTitle("ZP2015_UNIT_HIST")
+		.addValueWithTitle("ZP2015_UNIT_SOURCE")
+		.addValueWithTitle("ZP2015_UNIT_ARR")
+		.addValueWithTitle("ZP2015_FUTURE_UNITS")
+		.addValueWithTitle("ZP2015_UNIT_CONTENT")
+		.addValueWithTitle("ZP2015_UNIT_ACCESS")
+		.addValueWithTitle("ZP2015_UNIT_INFO_RIGHTS")
+		.addValueWithTitle("ZP2015_UNIT_COPY_RIGHTS")
+		.addValueWithTitle("ZP2015_UNIT_CURRENT_STATUS")
+		.addValueWithTitle("ZP2015_RELATED_UNITS")
+		.addValueWithTitle("ZP2015_EXISTING_COPY")
+		.addValueWithTitle("ZP2015_COPY_SOURCE")
+		.addValueWithTitle("ZP2015_ARRANGE_RULES")
+		.addValueWithTitle("ZP2015_EDITION")
+		.addValueWithTitle("ZP2015_NOTE")
+		.addValueWithTitle("ZP2015_ARRANGER")
+		.addValueWithTitle("ZP2015_DESCRIPTION_DATE")
+	.endBlock()]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<field name="depth" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="node" class="cz.tacr.elza.print.Node">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<variable name="unitItems" class="java.util.Collection">
+		<variableExpression><![CDATA[$F{node}.getItems( 
+		Collections.unmodifiableList(
+			new ArrayList<String>(
+				Arrays.asList(
+					"ZP2015_UNIT_ID",
+					"ZP2015_INVENT_CISLO",
+					"ZP2015_OTHER_ID",
+					"ZP2015_ORIGINATOR",					
+					"ZP2015_UNIT_COUNT",
+					"ZP2015_DATE_OTHER",
+					"ZP2015_FORMAL_TITLE",
+					"ZP2015_ITEM_TITLE",
+					"ZP2015_PART",
+					"ZP2015_ENTITY_ROLE",
+					"ZP2015_UNIT_HIST",
+					"ZP2015_UNIT_SOURCE",
+					"ZP2015_UNIT_ARR",
+					"ZP2015_FUTURE_UNITS",
+					"ZP2015_UNIT_CONTENT",
+					"ZP2015_UNIT_ACCESS",
+					"ZP2015_UNIT_INFO_RIGHTS",
+					"ZP2015_UNIT_COPY_RIGHTS",
+					"ZP2015_IMPRINT_COUNT",
+					"ZP2015_EXERQUE",
+					"ZP2015_PAINTING_CHAR",
+					"ZP2015_CORROBORATION",
+					"ZP2015_IMPRINT_ORDER",
+					"ZP2015_SCALE",
+					"ZP2015_POSITION",
+					"ZP2015_ORIENTATION",
+					"ZP2015_LEGEND",
+					"ZP2015_MOVIE_LENGTH",
+					"ZP2015_UNIT_CURRENT_STATUS",
+					"ZP2015_STORAGE_COND",
+					"ZP2015_SIZE",
+					"ZP2015_ITEM_MAT",
+					"ZP2015_LANGUAGE",
+					"ZP2015_RELATED_UNITS",
+					"ZP2015_EXISTING_COPY",
+					"ZP2015_COPY_SOURCE",
+					"ZP2015_ARRANGE_RULES",
+					"ZP2015_EDITION",
+					"ZP2015_NOTE",
+					"ZP2015_ARRANGER",
+					"ZP2015_DESCRIPTION_DATE"					
+				)
+			)
+		)
+	)]]></variableExpression>
+	</variable>
+	<variable name="fundItems" class="java.util.Collection">
+		<variableExpression><![CDATA[$F{node}.getItems( 
+		Collections.unmodifiableList(
+			new ArrayList<String>(
+				Arrays.asList(
+					"ZP2015_OTHER_ID",
+					"ZP2015_UNIT_ACCESS",
+					"ZP2015_UNIT_INFO_RIGHTS",
+					"ZP2015_UNIT_COPY_RIGHTS",
+					"ZP2015_EXISTING_COPY",
+					"ZP2015_ARRANGE_RULES",
+					"ZP2015_LANGUAGE",
+					"ZP2015_EDITION",
+					"ZP2015_NOTE",					
+				)
+			)
+		)
+	)]]></variableExpression>
+	</variable>
+	<variable name="seriesItems" class="java.util.Collection">
+		<variableExpression><![CDATA[$F{node}.getItems( 
+		Collections.unmodifiableList(
+			new ArrayList<String>(
+				Arrays.asList(
+					"ZP2015_OTHER_ID",
+					"ZP2015_ORIGINATOR",
+					"ZP2015_FORMAL_TITLE",
+					"ZP2015_UNIT_HIST",
+					"ZP2015_UNIT_SOURCE",
+					"ZP2015_UNIT_ARR",
+					"ZP2015_FUTURE_UNITS",
+					"ZP2015_UNIT_CONTENT",
+					"ZP2015_UNIT_ACCESS",
+					"ZP2015_UNIT_INFO_RIGHTS",
+					"ZP2015_UNIT_COPY_RIGHTS",
+					"ZP2015_UNIT_CURRENT_STATUS",
+					"ZP2015_RELATED_UNITS",
+					"ZP2015_EXISTING_COPY",
+					"ZP2015_COPY_SOURCE",
+					"ZP2015_ARRANGE_RULES",
+					"ZP2015_EDITION",
+					"ZP2015_NOTE",
+					"ZP2015_ARRANGER",
+					"ZP2015_DESCRIPTION_DATE"					
+				)
+			)
+		)
+	)]]></variableExpression>
+	</variable>
+	<variable name="folderItems" class="java.util.Collection">
+		<variableExpression><![CDATA[$F{node}.getItems( 
+		Collections.unmodifiableList(
+			new ArrayList<String>(
+				Arrays.asList(
+					"ZP2015_OTHER_ID",
+					"ZP2015_UNIT_COUNT",
+					"ZP2015_DATE_OTHER",
+					"ZP2015_FORMAL_TITLE",
+					"ZP2015_ITEM_TITLE",
+					"ZP2015_PART",
+					"ZP2015_ENTITY_ROLE",
+					"ZP2015_UNIT_HIST",
+					"ZP2015_UNIT_SOURCE",
+					"ZP2015_UNIT_ARR",
+					"ZP2015_FUTURE_UNITS",
+					"ZP2015_UNIT_CONTENT",
+					"ZP2015_UNIT_ACCESS",
+					"ZP2015_UNIT_INFO_RIGHTS",
+					"ZP2015_UNIT_COPY_RIGHTS",
+					"ZP2015_UNIT_CURRENT_STATUS",
+					"ZP2015_STORAGE_COND",
+					"ZP2015_SIZE",
+					"ZP2015_ITEM_MAT",
+					"ZP2015_LANGUAGE",
+					"ZP2015_RELATED_UNITS",
+					"ZP2015_EXISTING_COPY",
+					"ZP2015_COPY_SOURCE",
+					"ZP2015_ARRANGE_RULES",
+					"ZP2015_EDITION",
+					"ZP2015_NOTE",
+					"ZP2015_ARRANGER",
+					"ZP2015_DESCRIPTION_DATE"					
+				)
+			)
+		)
+	)]]></variableExpression>
+	</variable>
+	<variable name="allItems" class="java.util.Collection">
+		<variableExpression><![CDATA[$F{node}.getAllItems( 
+		Collections.unmodifiableList(
+			new ArrayList<String>(
+				Arrays.asList(
+					""					
+				)
+			)
+		)
+	)]]></variableExpression>
+	</variable>
+	<variable name="fundReferenceMark" class="java.lang.String">
+		<variableExpression><![CDATA[$P{fund}.getInstitution().getCode()+"//"+$P{output}.getNodesDFS().next().getItemsValueByCode("ZP2015_NAD")]]></variableExpression>
+	</variable>
+	<columnHeader>
+		<band height="25" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<staticText>
+				<reportElement x="37" y="0" width="294" height="20" uuid="3f76dd88-10e4-4ecf-bedc-dd9b62aa3717">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<box>
+					<bottomPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font pdfEncoding="Cp1250"/>
+				</textElement>
+				<text><![CDATA[Obsah / další informace]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="337" y="0" width="84" height="20" uuid="ac9a6763-2fb6-4c34-b7d7-e31f38bf25c1">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<box>
+					<bottomPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font pdfEncoding="Cp1250"/>
+				</textElement>
+				<text><![CDATA[Datace]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="426" y="0" width="28" height="20" uuid="2559ac97-563d-4a56-a543-0c50d9aeb663">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<box>
+					<bottomPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font pdfEncoding="Cp1250"/>
+				</textElement>
+				<text><![CDATA[Ukl. č.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="0" width="32" height="20" uuid="a1c59bd0-c9e1-4e99-9a7d-3941bd8adc97"/>
+				<box>
+					<bottomPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font pdfEncoding="Cp1250"/>
+				</textElement>
+				<text><![CDATA[Poř. č.]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="168" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<printWhenExpression><![CDATA[$F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]></printWhenExpression>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="0" y="7" width="32" height="18" uuid="f980e23b-f26b-472c-a762-6ecf0fd8c221">
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<printWhenExpression><![CDATA[($F{depth}>4)||($F{node}.getItemsWithSpec( "ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_SERIES" ).size()!=1)]]></printWhenExpression>
+				</reportElement>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="3"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="14" pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{node}.getItemsValueByCode( "ZP2015_SERIAL_NUMBER" )]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="">
+				<reportElement x="337" y="7" width="84" height="18" uuid="1bef197d-ba70-4bdf-bbf4-7304a968186b">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement markup="html">
+					<font fontName="SansSerif" size="14" pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA[(StringUtils.isNotEmpty($F{node}.getItemsValueByCode( "ZP2015_UNIT_DATE_PRE" ))?("("+$F{node}.getItemsValueByCode( "ZP2015_UNIT_DATE_PRE" )+")<br>"):"")
++$F{node}.getItemsValueByCode( "ZP2015_UNIT_DATE" )+"<br>"
++$F{node}.getItemsValueByCode( "ZP2015_UNIT_DATE_TEXT" )
++(StringUtils.isNotEmpty($F{node}.getItemsValueByCode( "ZP2015_UNIT_DATE_POST" ))?("<br>("+$F{node}.getItemsValueByCode( "ZP2015_UNIT_DATE_POST" )+")"):"")]]></textFieldExpression>
+			</textField>
+			<componentElement>
+				<reportElement key="" positionType="Float" x="426" y="7" width="28" height="18" uuid="fdce67b7-6db3-4319-a65e-da940c7c2195">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.CONTENTS.height" value="pixel"/>
+				</reportElement>
+				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Horizontal">
+					<datasetRun subDataset="Packets" uuid="d96077e9-2af4-49cf-9c79-e0c9cb76a6ad">
+						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{node}.getItems( Collections.singleton("ZP2015_STORAGE_ID") ) )]]></dataSourceExpression>
+					</datasetRun>
+					<jr:listContents height="18" width="28">
+						<textField isStretchWithOverflow="true">
+							<reportElement x="0" y="0" width="21" height="18" uuid="f7c83574-67f5-4fe3-af0a-16f5b14136a6">
+								<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+							</reportElement>
+							<textElement>
+								<font size="12"/>
+							</textElement>
+							<textFieldExpression><![CDATA[$F{packet}.getStorageNumber() + (($F{packet}.getTypeShortcut()==null||$F{packet}.getStorageNumber().startsWith($F{packet}.getTypeShortcut()))?"":(" (" + $F{packet}.getTypeShortcut() + ")"))]]></textFieldExpression>
+						</textField>
+					</jr:listContents>
+				</jr:list>
+			</componentElement>
+			<textField isStretchWithOverflow="true" bookmarkLevel="1">
+				<reportElement x="37" y="26" width="294" height="18" uuid="67412211-0c06-4893-a264-07a30d4e83cc">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement markup="none">
+					<font fontName="SansSerif" size="14" isBold="true" pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{fund}.getName()]]></textFieldExpression>
+				<anchorNameExpression><![CDATA["Jednotky popisu"]]></anchorNameExpression>
+			</textField>
+			<textField>
+				<reportElement x="37" y="7" width="294" height="18" uuid="b7381beb-8d35-4db8-9c44-f451c86f83ca">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement markup="none">
+					<font fontName="SansSerif" size="14" isBold="true" pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Referenční označení: "+$V{fundReferenceMark}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="37" y="57" width="294" height="106" uuid="44920850-7d28-40e7-b06c-5012df59743e"/>
+				<textElement>
+					<font size="12" pdfEncoding="Cp1250"/>
+				</textElement>
+				<text><![CDATA[I. Dějiny původce archivního souboru – viz úvod
+II. Dějiny archivního souboru – viz úvod
+III. Archivní charakteristika archivního souboru – viz úvod
+IV. Tematický popis archivního souboru – viz úvod
+V. Záznam o uspořádání archivního souboru a sestavení archivní pomůcky – viz úvod
+]]></text>
+			</staticText>
+		</band>
+		<band height="30">
+			<printWhenExpression><![CDATA[$F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() <= 0]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" pattern="">
+				<reportElement x="334" y="7" width="86" height="16" uuid="ca85acbb-fff0-48a2-af71-d328e3507e75">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement markup="html">
+					<font fontName="SansSerif" size="12" pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA[(StringUtils.isNotEmpty($F{node}.getItemsValueByCode( "ZP2015_UNIT_DATE_PRE" ))?("("+$F{node}.getItemsValueByCode( "ZP2015_UNIT_DATE_PRE" )+")<br>"):"")
++$F{node}.getItemsValueByCode( "ZP2015_UNIT_DATE" )+"<br>"
++$F{node}.getItemsValueByCode( "ZP2015_UNIT_DATE_TEXT" )
++(StringUtils.isNotEmpty($F{node}.getItemsValueByCode( "ZP2015_UNIT_DATE_POST" ))?("<br>("+$F{node}.getItemsValueByCode( "ZP2015_UNIT_DATE_POST" )+")"):"")]]></textFieldExpression>
+			</textField>
+			<componentElement>
+				<reportElement key="" positionType="Float" x="426" y="7" width="28" height="16" uuid="4708b234-43fb-495e-98fa-eefcea1c41fb">
+					<property name="com.jaspersoft.studio.unit.CONTENTS.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Horizontal">
+					<datasetRun subDataset="Packets" uuid="12cad3e6-7e14-465a-b463-35fa0708e0f7">
+						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{node}.getItems( Collections.singleton("ZP2015_STORAGE_ID") ) )]]></dataSourceExpression>
+					</datasetRun>
+					<jr:listContents height="16" width="28">
+						<textField isStretchWithOverflow="true">
+							<reportElement x="0" y="0" width="21" height="16" uuid="91ddf8fa-f426-4c00-b665-ef8e7d79c10c">
+								<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+							</reportElement>
+							<textElement>
+								<font size="9"/>
+							</textElement>
+							<textFieldExpression><![CDATA[$F{packet}.getStorageNumber() + (($F{packet}.getTypeShortcut()==null||$F{packet}.getStorageNumber().startsWith($F{packet}.getTypeShortcut()))?"":(" (" + $F{packet}.getTypeShortcut() + ")"))]]></textFieldExpression>
+						</textField>
+					</jr:listContents>
+				</jr:list>
+			</componentElement>
+			<textField isStretchWithOverflow="true" bookmarkLevel="2">
+				<reportElement x="0" y="7" width="32" height="22" uuid="dbcf6958-f228-4e8f-8b1d-355482134f3a">
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+				</reportElement>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="3"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="12" pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{node}.getItemsValueByCode( "ZP2015_SERIAL_NUMBER" )]]></textFieldExpression>
+				<anchorNameExpression><![CDATA[$F{node}.getItemsValueByCode( "ZP2015_SERIAL_NUMBER" )]]></anchorNameExpression>
+			</textField>
+			<componentElement>
+				<reportElement isPrintRepeatedValues="false" x="37" y="7" width="294" height="16" uuid="e6ae090b-33a7-4f89-a249-79fea74c63d3"/>
+				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
+					<datasetRun subDataset="Items" uuid="52fbf543-8d7c-428f-85dd-f5b2bc948d9d">
+						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource(
+	$F{node}.getItems( 
+		Collections.unmodifiableList(
+			new ArrayList<String>(
+				Arrays.asList(
+					"ZP2015_TITLE"	
+				)
+			)
+		)
+	)
+)]]></dataSourceExpression>
+					</datasetRun>
+					<jr:listContents height="16" width="294">
+						<textField isStretchWithOverflow="true">
+							<reportElement x="0" y="0" width="294" height="16" uuid="b961138a-d992-473b-84d0-11c0852da6b7"/>
+							<textElement markup="html">
+								<font fontName="SansSerif" size="12" pdfEncoding="Cp1250"/>
+							</textElement>
+							<textFieldExpression><![CDATA[$F{item}.getSerializedValue()]]></textFieldExpression>
+						</textField>
+					</jr:listContents>
+				</jr:list>
+			</componentElement>
+		</band>
+		<band height="23">
+			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+			<printWhenExpression><![CDATA[!$V{unitItems}.isEmpty()]]></printWhenExpression>
+			<componentElement>
+				<reportElement x="37" y="7" width="294" height="16" uuid="02aaa3d9-17ed-4f0c-a7a9-8be4439ecdbb"/>
+				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
+					<datasetRun subDataset="Items" uuid="73d0a2f3-14a0-4eb6-b6b6-e7cfee485a4b">
+						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($V{unitItems})]]></dataSourceExpression>
+					</datasetRun>
+					<jr:listContents height="16" width="294">
+						<textField isStretchWithOverflow="true">
+							<reportElement key="" stretchType="ContainerBottom" x="0" y="0" width="90" height="16" uuid="3a3a75b0-e423-46a9-b237-3ead2e1ec72d">
+								<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+							</reportElement>
+							<textElement textAlignment="Right" markup="none">
+								<font fontName="SansSerif" size="12" isBold="true" pdfEncoding="Cp1250"/>
+							</textElement>
+							<textFieldExpression><![CDATA[$F{item}.getType().getShortcut()]]></textFieldExpression>
+						</textField>
+						<textField isStretchWithOverflow="true">
+							<reportElement x="97" y="0" width="196" height="16" uuid="04629875-99f8-4ab0-92b7-bd3500b84cdd"/>
+							<textElement markup="none">
+								<font fontName="SansSerif" size="12" isBold="false" pdfEncoding="Cp1250"/>
+							</textElement>
+							<textFieldExpression><![CDATA[$F{item}.getSpecification() != null ? $F{item}.getSpecification().getName() + ($F{item}.getSerializedValue() != "" ? ": "+$F{item}.getSerializedValue() : "") : $F{item}.getSerializedValue()]]></textFieldExpression>
+						</textField>
+						<textField isStretchWithOverflow="true">
+							<reportElement x="90" y="0" width="6" height="16" uuid="0823afab-8303-4d6f-9ba0-a2cb4a93c491"/>
+							<textElement markup="none">
+								<font fontName="SansSerif" size="12" isBold="false" pdfEncoding="Cp1250"/>
+							</textElement>
+							<textFieldExpression><![CDATA[":"]]></textFieldExpression>
+						</textField>
+					</jr:listContents>
+				</jr:list>
+			</componentElement>
+		</band>
+		<band height="11">
+			<printWhenExpression><![CDATA[!$V{unitItems}.isEmpty()]]></printWhenExpression>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="30" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<textField evaluationTime="Master">
+				<reportElement x="-3" y="10" width="449" height="19" uuid="ee75b069-80cb-408d-98ad-5e56a0d82bdf">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{MASTER_CURRENT_PAGE}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+</jasperReport>

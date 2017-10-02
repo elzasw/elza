@@ -9,7 +9,7 @@ var defaultKeymap = {
         movements: keyModifier + 'm',       //GOTO_MOVEMENTS_PAGE
         actions: keyModifier + 'h',         //GOTO_ACTIONS_PAGE
         output: keyModifier + 'o',          //GOTO_OUTPUT_PAGE
-        "TOGGLE_READ_MODE": "shift+space"
+        "TOGGLE_READ_MODE": ""
     }
 }
 

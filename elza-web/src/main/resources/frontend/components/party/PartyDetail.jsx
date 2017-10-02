@@ -106,12 +106,6 @@ class PartyDetail extends AbstractReactComponent {
     static validate = (values) => {
         const required = [];
 
-        if (typeof values.genealogy !== "undefined") {
-            required.push("genealogy")
-        }
-        if (typeof values.scope !== "undefined") {
-            required.push("scope")
-        }
         const errors = PartyDetail.requireFields(...required)(values);
         errors.creators = [];
 

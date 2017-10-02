@@ -21,7 +21,7 @@ import RegistryField from "../../registry/RegistryField";
 class DescItemRecordRef extends AbstractReactComponent {
 
     focus() {
-        this.refs.registryField.refs.wrappedInstance.focus()
+        this.registryField.wrappedInstance.focus()
     }
 
     static defaultProps = {
@@ -37,27 +37,42 @@ class DescItemRecordRef extends AbstractReactComponent {
 
     handleSelectModule = ({onSelect, filterText, value}) => {
         const {hasSpecification, descItem, registryList, partyList, fundName, nodeName, itemName, specName} = this.props;
+        const oldFilter = {...registryList.filter};
         const open = (hasParty = false) => {
             if (hasParty) {
-                this.dispatch(partyListFilter({...partyList.filter, text: filterText, itemSpecId: hasSpecification ? descItem.descItemSpecId : null}));
+                this.dispatch(partyListFilter({
+                    ...partyList.filter,
+                    text: filterText,
+                    itemSpecId: hasSpecification ? descItem.descItemSpecId : null
+                }));
                 this.dispatch(partyDetailClear());
-
             }
-            this.dispatch(registryListFilter({...registryList.filter, text: filterText, itemSpecId: hasSpecification ? descItem.descItemSpecId : null}));
+            this.dispatch(registryListFilter({
+                ...registryList.filter,
+                registryTypeId: null,
+                text: filterText,
+                itemSpecId: hasSpecification ? descItem.descItemSpecId : null
+            }));
+
             this.dispatch(registryDetailFetchIfNeeded(value ? value.id : null));
             this.dispatch(modalDialogShow(this, null, <RegistrySelectPage
                 titles={[fundName, nodeName, itemName + (hasSpecification ? ': ' + specName : '')]}
                 hasParty={hasParty} onSelect={(data) => {
                     onSelect(data);
                     if (hasParty) {
-                        this.dispatch(partyListFilter({text:null, type:null, itemSpecId: null}));
+                        this.dispatch(partyListFilter({
+                            text:null,
+                            type:null,
+                            itemSpecId: null
+                        }));
                         this.dispatch(partyDetailClear());
                     }
-                    this.dispatch(registryListFilter({text: null, registryParentId: null, registryTypeId: null, versionId: null, itemSpecId: null, parents: [], typesToRoot: null}));
+                    this.dispatch(registryListFilter({...oldFilter}));
                     this.dispatch(registryDetailClear());
                     this.dispatch(modalDialogHide());
-            }}
-            />, classNames(MODAL_DIALOG_VARIANT.FULLSCREEN, MODAL_DIALOG_VARIANT.NO_HEADER)));
+                }}/>,
+                classNames(MODAL_DIALOG_VARIANT.FULLSCREEN, MODAL_DIALOG_VARIANT.NO_HEADER),
+                ()=>{this.dispatch(registryListFilter({...oldFilter}))}));
         };
 
         if (hasSpecification) {
@@ -69,11 +84,11 @@ class DescItemRecordRef extends AbstractReactComponent {
 
     render() {
         const {descItem, locked, singleDescItemTypeEdit, hasSpecification, readMode, cal, onDetail, typePrefix, ...otherProps} = this.props;
-        const value = descItem.record ? descItem.record : null;
+        const record = descItem.record ? descItem.record : null;
 
         if (readMode) {
-            if (value) {
-                return <DescItemLabel onClick={onDetail.bind(this, descItem.record.recordId)} value={value.record} notIdentified={descItem.undefined} />
+            if (record) {
+                return <DescItemLabel onClick={onDetail.bind(this, record.id)} value={record.record} notIdentified={descItem.undefined} />
             } else {
                 return <DescItemLabel value={cal ? i18n("subNodeForm.descItemType.calculable") : ""} cal={cal} notIdentified={descItem.undefined} />
             }
@@ -88,10 +103,10 @@ class DescItemRecordRef extends AbstractReactComponent {
         return <div className='desc-item-value desc-item-value-parts'>
             <ItemTooltipWrapper tooltipTitle="dataType.recordRef.format" className="tooltipWrapper">
                 <RegistryField
-                    ref='registryField'
+                    ref={(registryField) => { this.registryField = registryField; }}
                     {...otherProps}
                     itemSpecId={descItem.descItemSpecId}
-                    value={value}
+                    value={record}
                     footer={!singleDescItemTypeEdit}
                     footerButtons={false}
                     detail={!descItem.undefined && (typePrefix == "output" ? false : !disabled)}

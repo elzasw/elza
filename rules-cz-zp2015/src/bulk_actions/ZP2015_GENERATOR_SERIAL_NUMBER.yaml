@@ -1,7 +1,7 @@
-code_type_bulk_action: GENERATOR_SERIAL_NUMBER
-serial_id_code: ZP2015_SERIAL_NUMBER
+!SerialNumberGenerator
 name: Generátor pořadového čísla
-rule_code: ZP2015
+rules: ZP2015
+itemType: ZP2015_SERIAL_NUMBER
 #
 # It is possible to limit generation of serial number by some value
 #

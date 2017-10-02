@@ -15,16 +15,21 @@
     flex:1;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 
     .app-header {
         //height: @header-height;
         border-bottom: 1px solid @app-header-border;
+        //overflow-x:auto;
+        background-color:transparent;
 
     }
     .app-content {
-        height: calc(~"100% - "@header-height);
-        background: @body-bg;
+        //height: calc(~"100% - "@header-height);
+        //background: @body-bg;
         //overflow: auto;
+        flex:1;
+        overflow:hidden;
     }
 }
 
@@ -34,30 +39,32 @@
     &.noRibbon {
         .app-header {
             height: @header-minimized-height;
+            border-bottom: none;
+            background-color: #222;
             .ribbon-toggle-container {
                 border-bottom: none;
             }
         }
         .app-content {
-            height: calc(~"100% - "@header-minimized-height);
+            //height: calc(~"100% - "@header-minimized-height);
         }
     }
 
     &.app-exists-status {
         .app-content {
-            height: calc(~"100% - "@header-height + @header-status-height);
+            //height: calc(~"100% - "@header-height - @header-status-height);
         }
     }
 
     &.noRibbon.app-exists-status {
         .app-header {
-            height: @header-minimized-height;
+            //height: @header-minimized-height;
             .ribbon-toggle-container {
                 border-bottom: none;
             }
         }
         .app-content {
-            height: calc(~"100% - "@header-minimized-height + @header-status-height);
+            //height: calc(~"100% - "@header-minimized-height + @header-status-height);
         }
     }
 
@@ -68,14 +75,14 @@
             //height: @header-height;
             //border-bottom: 1px solid @app-header-border;
             .toggle.btn {
-                height: 14px;
-                line-height: 12px;
-                padding: 1px 2px 1px 2px;
+                height: 10px;
+                line-height: 10px;
+                //padding: 1px 2px 1px 2px;
                 margin: 0;
                 position:absolute;
                 border-radius: 0;
-                border: 1px solid @btn-min-max-border;
-                background: @btn-min-max-bg;
+                border: none;
+                background: transparent;
                 bottom:2px;
                 right:0;
                 .icon {
@@ -87,6 +94,7 @@
             &.closed {
                 .toggle.btn {
                     top:0;
+                    color:white;
                 }
             }
         }

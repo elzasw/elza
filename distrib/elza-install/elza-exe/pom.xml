@@ -3,7 +3,7 @@
     <parent>
         <artifactId>elza-install</artifactId>
         <groupId>cz.tacr.elza</groupId>
-        <version>0.13.1</version>
+        <version>0.13.4</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -23,7 +23,9 @@
     </pluginRepositories>
 
     <properties>
-        <tomcat.version>8.5.15</tomcat.version>
+        <tomcat.version>8.5.16</tomcat.version>
+        <tomcat.url>http://apache.miloslavbrada.cz/tomcat/tomcat-8/v8.5.16/bin/apache-tomcat-8.5.16-windows-x64.zip</tomcat.url>
+        <tomcat.md5>d8017cb472aaa18b93dd285be610e10a</tomcat.md5>
     </properties>
 
     <profiles>
@@ -43,12 +45,10 @@
                                     <goal>wget</goal>
                                 </goals>
                                 <configuration>
-                                    <url>
-                                        http://apache.miloslavbrada.cz/tomcat/tomcat-8/v${tomcat.version}/bin/apache-tomcat-${tomcat.version}-windows-x64.zip
-                                    </url>
+                                    <url>${tomcat.url}</url>
+                                    <md5>${tomcat.md5}</md5>
                                     <unpack>true</unpack>
                                     <outputDirectory>${project.build.directory}</outputDirectory>
-                                    <md5>db8f0f5fcd878b5cf14392347f3597f5</md5>
                                 </configuration>
                             </execution>
                         </executions>

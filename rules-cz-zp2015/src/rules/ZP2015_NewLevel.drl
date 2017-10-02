@@ -42,11 +42,11 @@ when
 	$level: NewLevel( parent!=null && $items: parent.descItems )
     DescItem( type == "ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION", "ZP2015_LEVEL_SERIES") ) from $items
 	// Serii nelze pridat pokud pred existuje neco jineho nez serie
-	//not ( NewLevel ( siblingBefore!=null && $itemsBefore: siblingBefore.descItems ) and
-	//	DescItem( type == "ZP2015_LEVEL_TYPE" && specCode != "ZP2015_LEVEL_SERIES" ) from $itemsBefore )
+	not ( NewLevel ( siblingBefore!=null && $itemsBefore: siblingBefore.descItems ) and
+		DescItem( type == "ZP2015_LEVEL_TYPE" && specCode != "ZP2015_LEVEL_SERIES" ) from $itemsBefore )
 	// Serii nelze pridat pokud za existuje neco jineho nez serie 
-	//not ( NewLevel ( siblingAfter!=null && $itemsAfter: siblingAfter.descItems ) and
-	//	DescItem( type == "ZP2015_LEVEL_TYPE" && specCode != "ZP2015_LEVEL_SERIES" ) from $itemsAfter ) 
+	not ( NewLevel ( siblingAfter!=null && $itemsAfter: siblingAfter.descItems ) and
+		DescItem( type == "ZP2015_LEVEL_TYPE" && specCode != "ZP2015_LEVEL_SERIES" ) from $itemsAfter ) 
 then
 	NewLevelApproach approach = results.create("Série");
 	approach.addDescItem("ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_SERIES");
@@ -55,23 +55,28 @@ end
 //
 // Pravidlo pro přidání složky
 //
-// Dřívější verze umožňovali rovnou nabídnout daný typ složky, 
-// nově je toto ponecháno až na uživateli.
-//
 rule "Složka"
 when
 	$level: NewLevel( parent!=null && $items: parent.descItems)
-	DescItem( type == "ZP2015_LEVEL_TYPE" && ( specCode == "ZP2015_LEVEL_SERIES" || specCode == "ZP2015_LEVEL_FOLDER" ) ) from $items
+	// rodič je série nebo složka
+	DescItem( type == "ZP2015_LEVEL_TYPE" && ( specCode in ("ZP2015_LEVEL_SERIES", "ZP2015_LEVEL_FOLDER") ) ) from $items
+	// rodič nesmí být složka jednotlivostí
 	not DescItem( type == "ZP2015_FOLDER_TYPE" && specCode == "ZP2015_FOLDER_SINGLE_TYPE" ) from $items
-	// Složku nelze přidat pokud je rodič složka a sourozenec před je jednotlivost
+	// Složku nelze přidat pokud je rodič složka a "sourozenec před" je jednotlivost
 	not ( DescItem( type == "ZP2015_LEVEL_TYPE" && specCode == "ZP2015_LEVEL_FOLDER" ) from $items and
 		  NewLevel ( siblingBefore!=null && $itemsBefore: siblingBefore.descItems ) and
 		  DescItem( type == "ZP2015_LEVEL_TYPE" && specCode != "ZP2015_LEVEL_FOLDER" ) from $itemsBefore )
-	// Složku nelze přidat pokud je rodič složka a sourozenec za je jednotlivost
+	// Složku nelze přidat pokud je rodič složka a "sourozenec za" je jednotlivost
 	not ( DescItem( type == "ZP2015_LEVEL_TYPE" && specCode == "ZP2015_LEVEL_FOLDER" ) from $items and
 		  NewLevel ( siblingAfter!=null && $itemsAfter: siblingAfter.descItems ) and
 		  DescItem( type == "ZP2015_LEVEL_TYPE" && specCode != "ZP2015_LEVEL_FOLDER" ) from $itemsAfter )
-	// Nesmi byt slozka manip seznamu s vice prvky popisu
+    // Složku nelze přidat pokud "sourozenec před" je série
+    not ( NewLevel ( siblingBefore!=null && $itemsBefore: siblingBefore.descItems ) and
+          DescItem( type == "ZP2015_LEVEL_TYPE" && specCode == "ZP2015_LEVEL_SERIES" ) from $itemsBefore )
+    // Složku nelze přidat pokud "sourozenec za" je série
+    not ( NewLevel ( siblingAfter!=null && $itemsAfter: siblingAfter.descItems ) and
+          DescItem( type == "ZP2015_LEVEL_TYPE" && specCode == "ZP2015_LEVEL_SERIES" ) from $itemsAfter )
+	// rodič nesmi byt slozka manip seznamu s vice prvky popisu
 	not ( DescItem( type == "ZP2015_EXTRA_UNITS" ) from $items )
 then
 	NewLevelApproach approach = results.create("Složka");
@@ -83,11 +88,11 @@ when
 	$level: NewLevel( parent!=null && $items: parent.descItems )
 	DescItem( type == "ZP2015_LEVEL_TYPE" && specCode == "ZP2015_LEVEL_SERIES" ) from $items 
 	// Jednotlivost nejde pridat pokud pred existuje serie
-	// not ( NewLevel ( siblingBefore!=null && $itemsBefore: siblingBefore.descItems ) and
-	//	DescItem( type == "ZP2015_LEVEL_TYPE" && specCode == "ZP2015_LEVEL_SERIES" ) from $itemsBefore )
+	 not ( NewLevel ( siblingBefore!=null && $itemsBefore: siblingBefore.descItems ) and
+		DescItem( type == "ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_SERIES", "ZP2015_LEVEL_SECTION") ) from $itemsBefore )
 	// Jednotlivost nejde pridat pokud za existuje serie 
-	// not ( NewLevel ( siblingAfter!=null && $itemsAfter: siblingAfter.descItems ) and
-	//	DescItem( type == "ZP2015_LEVEL_TYPE" && specCode == "ZP2015_LEVEL_SERIES" ) from $itemsAfter ) 
+	not ( NewLevel ( siblingAfter!=null && $itemsAfter: siblingAfter.descItems ) and
+		DescItem( type == "ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_SERIES", "ZP2015_LEVEL_SECTION") ) from $itemsAfter ) 
 then
     NewLevelApproach approach = results.create("Jednotlivost");
     approach.addDescItem("ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_ITEM");

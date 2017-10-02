@@ -3,13 +3,15 @@ package cz.tacr.elza.bulkaction.generator;
 import java.util.ArrayList;
 import java.util.List;
 
+import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulItemSpec;
 
 
 /**
  * Class to bound level, its description items and parent
- * @author Petr Pytelka
  */
 public class LevelWithItems {
 	LevelWithItems parent;
@@ -46,5 +48,35 @@ public class LevelWithItems {
 
 	public List<ArrDescItem> getDescItems() {
 		return descItems;
+	}
+
+	public ArrNode getNode() {
+		return level.getNode();
+	}
+
+	/**
+	 * Return list of items with given spec
+	 * @param itemType
+	 * @param itemSpec
+	 * @return Return null if such itema does not exists
+	 */
+	public List<ArrDescItem> getDescItems(RuleSystemItemType itemType, RulItemSpec itemSpec) {
+		List<ArrDescItem> result = null;
+
+		for (ArrDescItem item : descItems) {
+			if (itemType.getItemTypeId().equals(item.getItemTypeId())) {
+				// check if no itemSpec or have to match
+				if (itemSpec == null || itemSpec.getItemSpecId().equals(item.getItemSpecId())) {
+
+					// append to result
+					if (result == null) {
+						result = new ArrayList<>(1);
+					}
+					result.add(item);
+				}
+			}
+		}
+
+		return result;
 	}
 }

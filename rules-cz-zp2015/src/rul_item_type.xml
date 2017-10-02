@@ -297,12 +297,22 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
     </item-type>
+    <!-- Starší prvek popisu, nahrazen prvkem popisu ZP2015_ITEM_TITLE_REF -->
     <item-type code="ZP2015_ITEM_TITLE" data-type="TEXT">
-        <name>Název autorského díla</name>
-        <shortcut>Náz. aut. díla</shortcut>
-        <description>ZP5.2.2 Název autorského díla</description>
+        <name>Název autorského díla (neplatný prvek popisu, nahrazeno Autorským dílem od 9/2017)</name>
+        <shortcut>Náz. aut. díla (neplatný prvek)</shortcut>
+        <description>ZP5.2.2 Název autorského díla (neplatný prvek popisu, nahrazeno Autorským dílem od 9/2017)</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <!-- Nahrazuje prvek popisu ZP2015_ITEM_TITLE -->
+    <item-type code="ZP2015_ITEM_TITLE_REF" data-type="RECORD_REF">
+        <name>Autorské dílo</name>
+        <shortcut>Aut. dílo</shortcut>
+        <description>ZP5.2.2 Název autorského díla</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="ZP2015_STORAGE_COND" data-type="TEXT">
@@ -362,7 +372,7 @@
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="ZP2015_LANGUAGE" data-type="ENUM">
-        <name>Jazyk, písmo</name>
+        <name>Jazyk</name>
         <shortcut>Jazyk</shortcut>
         <description>ZP5.2.10 Jazyk</description>
         <is-value-unique>false</is-value-unique>
@@ -569,6 +579,15 @@
         <description>Pořadí v ukládací jednotce</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <!-- Inventární číslo pro starší pomůcky (dle pravidel 1958) -->
+    <item-type code="ZP2015_INV_CISLO" data-type="STRING">
+        <name>Inventární číslo</name>
+        <shortcut>Inv. č.</shortcut>
+        <description>Inventární číslo</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
 </item-types>

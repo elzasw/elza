@@ -473,8 +473,8 @@ public class ConfigMapperConfiguration {
                     public void mapAtoB(final BulkActionConfig bulkActionConfig,
                                         final BulkActionVO bulkActionVO,
                                         final MappingContext context) {
-                        bulkActionVO.setName(bulkActionConfig.getString("name"));
-                        bulkActionVO.setDescription(bulkActionConfig.getString("description"));
+				        bulkActionVO.setName(bulkActionConfig.getName());
+				        bulkActionVO.setDescription(bulkActionConfig.getDescription());
                     }
                 }
         ).byDefault().register();

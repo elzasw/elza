@@ -1,131 +1,215 @@
+!MultiAction
 name: Agregace úvodu inventáře a katalogu
-code_type_bulk_action: GENERATOR_MULTIPLE
-rule_code: ZP2015
+rules: ZP2015
 
-action:
-    - DATE_RANGE
-        input_type: ZP2015_UNIT_DATE
-        input_type_prior: ZP2015_UNIT_DATE_PRE
-        input_type_posterior: ZP2015_UNIT_DATE_POST
-        output_type: ZP2015_DATE_RANGE
+actions:
+    - !DateRange
+      inputType: ZP2015_UNIT_DATE
+      inputTypePrior: ZP2015_UNIT_DATE_PRE
+      inputTypePosterior: ZP2015_UNIT_DATE_POST
+      outputType: ZP2015_DATE_RANGE
 
-    - TEXT_AGGREGATION
-        input_types:
-            - ZP2015_UNIT_SOURCE
-        output_type: ZP2015_UNIT_SOURCE
-
+    - !TextAggregation
+      inputTypes:
+        - ZP2015_UNIT_SOURCE
+      outputType: ZP2015_UNIT_SOURCE
     # ZP4.3.2 Manipulacni seznam ma historii nepovinnou
-    - TEXT_AGGREGATION    
-        input_types:
+    - !TextAggregation
+        inputTypes:
             - ZP2015_UNIT_HIST
-        output_type: ZP2015_UNIT_HIST
+        outputType: ZP2015_UNIT_HIST
 
     # ZP4.3.3 Způsob uspořádání jednotky popisu
-    - TEXT_AGGREGATION    
-        input_types:
+    - !TextAggregation    
+        inputTypes:
             - ZP2015_UNIT_ARR
-        output_type: ZP2015_UNIT_ARR
+        outputType: ZP2015_UNIT_ARR
         
     # ZP4.3.4 Tematický popis jednotky popisu
-    - TEXT_AGGREGATION    
-        input_types:
+    - !TextAggregation    
+        inputTypes:
             - ZP2015_UNIT_CONTENT
-        output_type: ZP2015_UNIT_CONTENT        
+        outputType: ZP2015_UNIT_CONTENT        
 
     # ZP4.3.6 Budoucí přírůstky
-    - TEXT_AGGREGATION    
-        input_types:
+    - !TextAggregation    
+        inputTypes:
             - ZP2015_FUTURE_UNITS
-        output_type: ZP2015_FUTURE_UNITS
+        outputType: ZP2015_FUTURE_UNITS
 
     # ZP4.4.4 Fyzický stav jednotky popisu a technické požadavky
-    - TEXT_AGGREGATION
-        input_types:
+    - !TextAggregation
+        inputTypes:
             - ZP2015_UNIT_CURRENT_STATUS
-        output_type: ZP2015_UNIT_CURRENT_STATUS
+        outputType: ZP2015_UNIT_CURRENT_STATUS
 
     # 4.5.2 Odkazy na příbuzné dokumenty, archiválie a pomůcky pro vyhledávání
-    - TEXT_AGGREGATION    
-        create_empty: false
-        input_types:
+    - !TextAggregation    
+        createEmpty: false
+        inputTypes:
             - ZP2015_RELATED_UNITS
-        output_type: ZP2015_RELATED_UNITS
+        outputType: ZP2015_RELATED_UNITS
         
-  	# 4.7.1 Zpracovatel jednotky popisu
-	  # ZP2015_ARRANGER - doposud neimplementovano
-    - COPY
-        input_types:
+    # 4.7.1 Zpracovatel jednotky popisu
+    - !Copy
+        inputTypes:
             - ZP2015_ARRANGER
         distinct: true
-        output_type: ZP2015_ARRANGER
+        outputType: ZP2015_ARRANGER
 
     # 4.7.1 Informace o zpracování
-    - TEXT_AGGREGATION    
-        create_empty: false
-        input_types:
+    - !TextAggregation
+        createEmpty: false
+        inputTypes:
             - ZP2015_ARRANGEMENT_INFO
-        output_type: ZP2015_ARRANGEMENT_INFO
-	
+        outputType: ZP2015_ARRANGEMENT_INFO
+
     # 4.7.2 Pravidla zpracování jednotky popisu
-    - TEXT_AGGREGATION    
-        input_types:
+    - !TextAggregation
+        inputTypes:
             - ZP2015_ARRANGE_RULES
-        output_type: ZP2015_ARRANGE_RULES
+        outputType: ZP2015_ARRANGE_RULES
 
     # 4.7.3 Datum popisu
-    - TEXT_AGGREGATION    
-        input_types:
+    - !TextAggregation
+        inputTypes:
             - ZP2015_DESCRIPTION_DATE
-        output_type: ZP2015_DESCRIPTION_DATE
- 
+        outputType: ZP2015_DESCRIPTION_DATE
+
    # Agregace původce
-    - COPY
-        input_types:
+    - !Copy
+        inputTypes:
             - ZP2015_ORIGINATOR
         distinct: true
-        output_type: ZP2015_ORIGINATOR
- 
+        outputType: ZP2015_ORIGINATOR
+
     # Agregace jazyků - zatim nefunkcni
-    - COPY
-        input_types:
+    - !Copy
+        inputTypes:
             - ZP2015_LANGUAGE
         distinct: true
-        output_type: ZP2015_LANGUAGE
+        outputType: ZP2015_LANGUAGE
 
     # Počet JP v pomůcce        
-    - NODE_COUNT
-        output_type: ZP2015_UNIT_COUNT_SUM
+    - !NodeCount
+        outputType: ZP2015_UNIT_COUNT_SUM
 
-    - UNIT_COUNT
-        output_type: ZP2015_UNIT_COUNT_TABLE
-        output_column_unit_name: NAME
-        output_column_unit_value: COUNT
-        # typ pro typ archiválie
-        UNIT_TYPE: ZP2015_UNIT_TYPE
-
-        # typ a specifikace jednotlivosti
-        ITEM: ZP2015_LEVEL_TYPE ZP2015_LEVEL_ITEM
-
-        # typ a specifikace série
-        SERIES: ZP2015_LEVEL_TYPE ZP2015_LEVEL_SERIES
-
-        # typ a specifikace kartotéky a typ počtu zásuvek
-        KTT: ZP2015_UNIT_TYPE ZP2015_UNIT_TYPE_KTT
-        KTT_count: ZP2015_UNIT_COUNT
-
-        # typ a specifikace logické složky
-        FOLDER_LOGICAL: ZP2015_FOLDER_TYPE ZP2015_FOLDER_LOGICAL
-
-        # typ a specifikace množstevní EJ
-        FOLDER_UNITS: ZP2015_FOLDER_TYPE ZP2015_FOLDER_UNITS
-
-        # typ a specifikace složky s typem EJ a typ počtu ej
-        FOLDER_SINGLE_TYPE: ZP2015_FOLDER_TYPE ZP2015_FOLDER_SINGLE_TYPE
-        FOLDER_SINGLE_TYPE_count: ZP2015_UNIT_COUNT
-
-        # typ a specifikace množstevní EJ a typ pro ukládací číslo
-        FOLDER_UNITS: ZP2015_FOLDER_TYPE ZP2015_FOLDER_UNITS
-        STORAGE: ZP2015_STORAGE_ID
-
-        # typ pro extra EJ
-        EXTRA_UNITS: ZP2015_EXTRA_UNITS
+    - !UnitCount
+        outputType: ZP2015_UNIT_COUNT_TABLE
+        outputColumnUnitName: NAME
+        outputColumnUnitCount: COUNT
+        aggegators:
+           # Extra EJ - kdekoliv
+           - when:
+               # Je nastaven typ i pocet
+               itemType: ZP2015_EXTRA_UNITS
+             itemType: ZP2015_EXTRA_UNITS
+             itemSpecMapping:
+               ZP2015_EXTRA_UNITS_LIO: lio
+               ZP2015_EXTRA_UNITS_LIP: lip
+               ZP2015_EXTRA_UNITS_UKN: ukn
+               ZP2015_EXTRA_UNITS_RKP: rkp
+               ZP2015_EXTRA_UNITS_PPR: ppr
+               ZP2015_EXTRA_UNITS_IND: ind
+               ZP2015_EXTRA_UNITS_ELE: ele
+               ZP2015_EXTRA_UNITS_REP: rep
+               ZP2015_EXTRA_UNITS_KTT: ktt
+               ZP2015_EXTRA_UNITS_PEC: pec
+               ZP2015_EXTRA_UNITS_RAZ: raz
+               ZP2015_EXTRA_UNITS_OTD: otd
+               ZP2015_EXTRA_UNITS_MAP: map
+               ZP2015_EXTRA_UNITS_ATL: atl
+               ZP2015_EXTRA_UNITS_TVY: tvy
+               ZP2015_EXTRA_UNITS_GLI: gli
+               ZP2015_EXTRA_UNITS_KRE: kre
+               ZP2015_EXTRA_UNITS_FSN: fsn
+               ZP2015_EXTRA_UNITS_FSD: fsd
+               ZP2015_EXTRA_UNITS_LFI: lfi
+               ZP2015_EXTRA_UNITS_SFI: sfi
+               ZP2015_EXTRA_UNITS_KIN: kin
+               ZP2015_EXTRA_UNITS_MF: mf
+               ZP2015_EXTRA_UNITS_MFS: mfis
+               ZP2015_EXTRA_UNITS_FAL: fal
+               ZP2015_EXTRA_UNITS_DFO: dfo
+               ZP2015_EXTRA_UNITS_KZA: kza
+               ZP2015_EXTRA_UNITS_ZZA: zza
+               ZP2015_EXTRA_UNITS_TIO: tio
+               ZP2015_EXTRA_UNITS_TIP: tip
+               ZP2015_EXTRA_UNITS_POH: poh
+               ZP2015_EXTRA_UNITS_PKT: pkt
+               ZP2015_EXTRA_UNITS_CPA: cpa
+               ZP2015_EXTRA_UNITS_STO: sto
+               ZP2015_EXTRA_UNITS_PNP: pnp
+               ZP2015_EXTRA_UNITS_PFP: pfp
+               ZP2015_EXTRA_UNITS_JIN: jin
+           - when:
+               someOf:
+                 # Složka s počtem EJ
+                 - all:
+                   - itemType: ZP2015_FOLDER_TYPE
+                     itemSpec: ZP2015_FOLDER_SINGLE_TYPE
+                   - itemType: ZP2015_UNIT_COUNT
+                 # Jednotlivost pod serii nebo logickou slozkou
+                 - itemType: ZP2015_LEVEL_TYPE
+                   itemSpec: ZP2015_LEVEL_ITEM
+                   someOf:
+                     # test na serii
+                     - parent:
+                         itemType: ZP2015_LEVEL_TYPE
+                         itemSpec: ZP2015_LEVEL_SERIES
+                     # test na logickou slozku
+                     - parent:
+                         itemType: ZP2015_FOLDER_TYPE
+                         itemSpec: ZP2015_FOLDER_LOGICAL
+             stopProcessing: true
+             itemCount: ZP2015_UNIT_COUNT
+             itemType: ZP2015_UNIT_TYPE             
+             itemSpecMapping:
+               ZP2015_UNIT_TYPE_LIO: lio
+               ZP2015_UNIT_TYPE_LIP: lip
+               ZP2015_UNIT_TYPE_UKN: ukn
+               ZP2015_UNIT_TYPE_RKP: rkp
+               ZP2015_UNIT_TYPE_HDB: rkp
+               ZP2015_UNIT_TYPE_PPR: ppr
+               ZP2015_UNIT_TYPE_IND: ind
+               ZP2015_UNIT_TYP_ELE: ele
+               ZP2015_UNIT_TYPE_REP: rep
+               ZP2015_UNIT_TYPE_KTT: ktt
+               ZP2015_UNIT_TYPE_PEC: pec
+               ZP2015_UNIT_TYPE_RAZ: raz
+               ZP2015_UNIT_TYPE_OTD: otd
+               ZP2015_UNIT_TYPE_OTC: otc
+               ZP2015_UNIT_TYPE_MAP: map
+               ZP2015_UNIT_TYPE_ATL: atl
+               ZP2015_UNIT_TYPE_TVY: tvy
+               ZP2015_UNIT_TYPE_GLI: gli
+               ZP2015_UNIT_TYPE_KRE: kre
+               ZP2015_UNIT_TYPE_FSN: fsn
+               ZP2015_UNIT_TYPE_FSD: fsd
+               ZP2015_UNIT_TYPE_LFI: lfi
+               ZP2015_UNIT_TYPE_SFI: sfi
+               ZP2015_UNIT_TYPE_KIN: kin
+               ZP2015_UNIT_TYPE_MF: mf
+               ZP2015_UNIT_TYPE_MFS: mfis
+               ZP2015_UNIT_TYPE_FAL: fal
+               ZP2015_UNIT_TYPE_DFO: dfo
+               ZP2015_UNIT_TYPE_KZA: kza
+               ZP2015_UNIT_TYPE_ZZA: zza
+               ZP2015_UNIT_TYPE_TIO: tio
+               ZP2015_UNIT_TYPE_TIP: tip
+               ZP2015_UNIT_TYPE_POH: poh
+               ZP2015_UNIT_TYPE_PKT: pkt
+               ZP2015_UNIT_TYPE_CPA: cpa
+               ZP2015_UNIT_TYPE_STO: sto
+               ZP2015_UNIT_TYPE_PNP: pnp
+               ZP2015_UNIT_TYPE_PFP: pfp
+               ZP2015_UNIT_TYPE_JIN: jin
+           # Složka s hromadinou
+           - when:
+               itemType: ZP2015_FOLDER_TYPE
+               itemSpec: ZP2015_FOLDER_UNITS
+             stopProcessing: true
+             objectType: ZP2015_STORAGE_ID
+             objectMapping:
+               ZP2015_BOX: kar
+               ZP2015_FASCICLE: fas

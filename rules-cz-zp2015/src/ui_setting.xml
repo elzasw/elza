@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <settings xmlns:ns2="fund-views" xmlns:ns3="type-groups">
     <favorite-item-specs code="ZP2015_LANGUAGE">
+        <!-- čeština -->
         <favorite-item>ZP2015_LANGUAGE_43</favorite-item>
-        <favorite-item>ZP2015_LANGUAGE_8</favorite-item>
+        <!-- němčina -->
+        <favorite-item>ZP2015_LANGUAGE_18</favorite-item>
+        <!-- latina -->
+        <favorite-item>ZP2015_LANGUAGE_32</favorite-item>
     </favorite-item-specs>
     <fund-views settings-type="FUND_VIEW" entity-type="RULE" code="ZP2015">
         <ns2:default>
@@ -67,6 +71,8 @@
                 <type code="ZP2015_UNIT_ID" width="1"/>
                 <type code="ZP2015_SERIAL_NUMBER" width="1"/>
                 <type code="ZP2015_OTHER_ID" width="2"/>
+                <type code="ZP2015_INV_CISLO" width="2"/>
+                <type code="ZP2015_ITEM_ORDER" width="1"/>
             </group>
             <group code="04_GROUP3">
                 <name>Hlavní popis jednotky</name>
@@ -80,7 +86,8 @@
                 <!-- 5.2.1 Jiné datace jednotky popisu než datace vzniku jednotky popisu - specifikace a hodnota -->
                 <type code="ZP2015_DATE_OTHER" width="2"/>
                 <!-- 5.2.2 Název autorského díla -->
-                <type code="ZP2015_ITEM_TITLE" width="0"/>                
+                <type code="ZP2015_ITEM_TITLE" width="0"/>
+                <type code="ZP2015_ITEM_TITLE_REF" width="0"/>
             </group>
             <group code="05_ZP2015_CH4">
                 <name>Společné prvky popisu</name>

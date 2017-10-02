@@ -6,16 +6,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 
-import cz.tacr.elza.bulkaction.BulkActionConfig;
+import cz.tacr.elza.bulkaction.ActionRunContext;
+import cz.tacr.elza.bulkaction.BulkAction;
 import cz.tacr.elza.bulkaction.generator.multiple.Action;
-import cz.tacr.elza.bulkaction.generator.multiple.ActionFactory;
-import cz.tacr.elza.bulkaction.generator.multiple.ActionType;
+import cz.tacr.elza.bulkaction.generator.multiple.ActionConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.TypeLevel;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.domain.ArrBulkActionRun;
@@ -30,7 +30,6 @@ import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.service.ItemService;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
-import cz.tacr.elza.utils.Yaml;
 
 /**
  * Vícenásobná hromadná akce prochází strom otevřené verze archivní pomůcky a doplňuje u položek požadované atributy.
@@ -43,9 +42,6 @@ public class MultipleBulkAction extends BulkAction {
 	 * Size of batch for fetching child nodes from DB
 	 */
 	private final static int BATCH_CHILD_NODE_SIZE = 100;
-
-    @Autowired
-    private ActionFactory actionFactory;
 
     @Autowired
     private ItemService itemService;
@@ -75,45 +71,67 @@ public class MultipleBulkAction extends BulkAction {
 
     private ArrBulkActionRun bulkActionRun;
 
-    /**
-     * Inicializace hromadné akce.
-     * @param bulkActionConfig nastavení hromadné akce
-     * @param bulkActionRun
-     */
-    private void init(final BulkActionConfig bulkActionConfig, final ArrBulkActionRun bulkActionRun) {
+	MultiActionConfig config;
+
+	@Autowired
+	ApplicationContext appCtx;
+
+	public MultipleBulkAction(MultiActionConfig multiActionConfig) {
+		this.config = multiActionConfig;
+	}
+
+	/**
+	 * Inicializace hromadné akce.
+	 * 
+	 * @param bulkActionConfig
+	 *            nastavení hromadné akce
+	 * @param runContext
+	 */
+	private void init(final ActionRunContext runContext) {
+		// initialize actions from configuration
+		for (ActionConfig ac : config.getActions()) {
+			Action a = appCtx.getBean(ac.getActionClass(), ac);
+			// initialize each action after all properties are autowired
+			a.init(runContext);
+			actions.add(a);
+		}
+
         try {
-            Yaml yaml = bulkActionConfig.getYaml();
-            List<String> actionCodes = yaml.getStringList("action");
-
-            if (actionCodes.size() == 0) {
-                throw new IllegalArgumentException("Musí být definována alespoň jedna akce");
-            }
-
-            List<ActionType> actionTypes = actionCodes.stream().map(ActionType::valueOf).collect(Collectors.toList());
-
+			/*
+			// Yaml yaml = bulkActionConfig.getConfiguration(); //.getYaml();
+			// List<String> actionCodes = yaml.getStringList("action");
+			Object obj = bulkActionConfig.getConfiguration();
+			List<String> actionCodes = new ArrayList<>();
+			
+			if (actionCodes.size() == 0) {
+			    throw new IllegalArgumentException("Musí být definována alespoň jedna akce");
+			}
+			
+			List<ActionType> actionTypes = actionCodes.stream().map(ActionType::valueOf).collect(Collectors.toList());
+			*/
+            /*
             for (int i = 0; i < actionTypes.size(); i++) {
                 Action action = actionFactory.createNewAction(actionTypes.get(i), yaml.getSection("action." + i + "."));
                 actions.add(action);
             }
+            */
 
-        } catch (Yaml.YAMLNotInitializedException | Yaml.YAMLKeyNotFoundException e) {
+		} catch (Exception e) {
             throw new IllegalArgumentException(e);
         }
 
-        this.bulkActionRun = bulkActionRun;
-        this.fundVersion = bulkActionRun.getFundVersion();
-        this.change = bulkActionRun.getChange();
+		this.bulkActionRun = runContext.getBulkActionRun();
+		this.fundVersion = runContext.getFundVersion();
+		this.change = runContext.getChange();
     }
 
 
     @Override
     @Transactional
-    public void run(final List<Integer> inputNodeIds,
-                    final BulkActionConfig bulkAction,
-                    final ArrBulkActionRun bulkActionRun) {
-        init(bulkAction, bulkActionRun);
+	public void run(ActionRunContext runContext) {
+		init(runContext);
 
-        List<ArrNode> startingNodes = nodeRepository.findAll(inputNodeIds);
+		List<ArrNode> startingNodes = nodeRepository.findAll(runContext.getInputNodeIds());
 
         // map of root nodes for action
         Map<ArrNode, LevelWithItems> nodeStartingLevels = new HashMap<>();
@@ -152,14 +170,15 @@ public class MultipleBulkAction extends BulkAction {
 
             LevelWithItems levelWithItems = entry.getValue();
 
-            apply(node, levelWithItems.descItems, TypeLevel.PARENT, levelWithItems.getParent());
+			//apply(node, levelWithItems.descItems, TypeLevel.PARENT, levelWithItems.getParent());
+			apply(levelWithItems, TypeLevel.PARENT);
         }
 
         // apply on all connected nodes
         for (ArrNode node : startingNodes) {
 
             LevelWithItems levelWithItems = nodeStartingLevels.get(node);
-            Assert.notNull(levelWithItems);
+			Validate.notNull(levelWithItems);
 
             generate(levelWithItems);
         }
@@ -205,7 +224,8 @@ public class MultipleBulkAction extends BulkAction {
         ArrLevel level = levelWithItems.getLevel();
         ArrNode node = level.getNode();
 
-        apply(node, levelWithItems.descItems, TypeLevel.CHILD, parentLevel);
+		//apply(node, levelWithItems.descItems, TypeLevel.CHILD, parentLevel);
+		apply(levelWithItems, TypeLevel.CHILD);
 
         // apply on child nodes in batch
         List<ArrLevel> childLevels = getChildren(level);
@@ -225,9 +245,11 @@ public class MultipleBulkAction extends BulkAction {
      * @param typeLevel             typ uzlu
      * @param parentNodeDescItems   data předků
      */
-    private void apply(final ArrNode node, final List<ArrDescItem> items, final TypeLevel typeLevel, final LevelWithItems parentLevelWithItems) {
-        actions.stream().filter(action -> action.canApply(typeLevel))
-        .forEach(action -> action.apply(node, items, parentLevelWithItems));
+    //private void apply(final ArrNode node, final List<ArrDescItem> items, final TypeLevel typeLevel, final LevelWithItems parentLevelWithItems) {
+    private void apply(LevelWithItems level, TypeLevel typeLevel) {
+		for (Action action : actions) {
+			action.apply(level, typeLevel);
+		}
     }
 
     /**
