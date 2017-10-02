@@ -10,8 +10,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -56,6 +54,8 @@ import cz.tacr.elza.domain.ArrItemUnitdate;
 import cz.tacr.elza.domain.ArrItemUnitid;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DataCoordinatesRepository;
 import cz.tacr.elza.repository.DataDecimalRepository;
 import cz.tacr.elza.repository.DataFileRefRepository;
@@ -787,7 +787,7 @@ public class DescItemFactory implements InitializingBean {
      */
     public ArrDescItem getDescItem(final ArrDescItem descItem) {
         ArrData data = null;
-        if (BooleanUtils.isNotTrue(descItem.getUndefined())) {
+		if (!descItem.getUndefined()) {
             data = getDataByDescItem(descItem);
         }
         ArrItemData item = createItemByType(descItem.getItemType().getDataType());
@@ -824,7 +824,7 @@ public class DescItemFactory implements InitializingBean {
      * @return výsledný atributu s daty
      */
     public ArrDescItem getDescItem(final ArrDescItem descItem, final String formatData) {
-        if (descItem.getItem() != null || BooleanUtils.isTrue(descItem.getUndefined())) {
+		if (descItem.getItem() != null || descItem.getUndefined()) {
             return descItem;
         }
 
@@ -894,7 +894,7 @@ public class DescItemFactory implements InitializingBean {
 
         descItemRepository.save(descItem);
 
-        if (descItem.getItem() == null || BooleanUtils.isTrue(descItem.getUndefined())) {
+		if (descItem.getItem() == null || descItem.getUndefined()) {
             return descItem;
         }
 

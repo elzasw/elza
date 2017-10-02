@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -15,7 +16,6 @@ import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
-import cz.tacr.elza.domain.factory.DescItemFactory;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -28,6 +28,7 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.core.data.CalendarType;
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
@@ -67,6 +68,7 @@ import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
+import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -234,7 +236,7 @@ public class ItemService implements InitializingBean {
     }
 
     public ArrData getDataByItem(final ArrItem item) {
-        if (BooleanUtils.isTrue(item.getUndefined())) {
+		if (item.getUndefined()) {
             return null;
         }
         List<ArrData> dataList = dataRepository.findByItem(item);
@@ -293,16 +295,68 @@ public class ItemService implements InitializingBean {
         if (items.isEmpty()) {
             return;
         }
-        List<ArrData> itemsData = dataRepository.findByItem(items);
-        if (itemsData.size() != items.size()) {
+		// do not load items without data
+		List<ArrItem> loadItems = new ArrayList<>(items.size());
+		for (ArrItem item : items) {
+			if (!item.getUndefined()) {
+				loadItems.add(item);
+			}
+		}
+
+		List<ArrData> itemsData = dataRepository.findByItem(loadItems);
+		if (itemsData.size() != loadItems.size()) {
+
+			// prepare error
+			Map<Integer, ArrData> item2data = new HashMap<>();
+			// populate keys
+			for(ArrItem item: items) {
+				item2data.put(item.getItemId(), null);
+			}
+			if (item2data.size() != itemsData.size()) {
+				List<ArrData> dataWithoutItems = new ArrayList<>();
+				List<Integer> itemsWithMoreData = new ArrayList<>();
+				List<Integer> itemsWithoutData = new ArrayList<>();
+			for(ArrData itemData: itemsData) {
+				Integer key = itemData.getItem().getItemId();
+				if(!item2data.containsKey(key)) {
+					dataWithoutItems.add(itemData);
+				} else {
+					ArrData value = item2data.get(key);
+					if (value != null) {
+						itemsWithMoreData.add(key);
+					} else {
+						item2data.put(key, itemData);
+					}
+				}
+			}
+				
+			// try to find missing data
+			item2data.forEach((id, data) -> {
+				if (data == null) {
+					itemsWithoutData.add(id);
+				}
+			});
+			
             // Will be probably removed in MT05 (item without data).
             throw new IllegalStateException("Missing data for specified items");
+			}
         }
         for (ArrData data : itemsData) {
             data = HibernateUtils.unproxy(data);
             for (ArrItem item : items) {
                 if (item.getItemId().equals(data.getItem().getItemId())) {
-                    ArrItemData itemData = facade.map(data, ArrItemData.class);
+					//TODO: odstranit objekt facade - zdroj chyb
+					// zde musime rozlisit mezi formatovanym a neformatovanym textem
+					// mapper toho jiz neni schopen
+					// problem nastava pri obnove cache
+					Class<? extends ArrItemData> targetClass = ArrItemData.class;
+					if (data.getDataType().getDataTypeId() == DataType.TEXT.getId()) {
+						targetClass = ArrItemText.class;
+					} else if (data.getDataType().getDataTypeId() == DataType.FORMATTED_TEXT.getId()) {
+						targetClass = ArrItemFormattedText.class;
+					}
+
+					ArrItemData itemData = facade.map(data, targetClass);
                     item.setItem(itemData);
                     break;
                 }

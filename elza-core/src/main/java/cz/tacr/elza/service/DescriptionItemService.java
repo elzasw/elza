@@ -12,13 +12,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.Level;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -58,6 +51,7 @@ import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
@@ -71,6 +65,12 @@ import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.domain.vo.UnitdateTitleValue;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.drools.RulesExecutor;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.Level;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DataPacketRefRepository;
 import cz.tacr.elza.repository.DataPartyRefRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
@@ -712,7 +712,7 @@ public class DescriptionItemService {
      * @param descItemTo   do hodnoty atributu
      */
     private void copyDescItemData(final ArrDescItem descItemFrom, final ArrDescItem descItemTo) {
-        if (BooleanUtils.isNotTrue(descItemFrom.getUndefined())) {
+		if (!descItemFrom.getUndefined()) {
             List<ArrData> dataList = dataRepository.findByItem(descItemFrom);
 
             if (dataList.size() != 1) {

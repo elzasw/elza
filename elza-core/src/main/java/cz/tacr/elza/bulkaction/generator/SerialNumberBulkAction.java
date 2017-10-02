@@ -2,7 +2,6 @@ package cz.tacr.elza.bulkaction.generator;
 
 import java.util.List;
 
-import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -157,7 +156,7 @@ public class SerialNumberBulkAction extends BulkAction {
         ArrItemInt item = (ArrItemInt) descItem.getItem();
 
         // uložit pouze při rozdílu
-        if (item.getValue() == null || sn != item.getValue() || BooleanUtils.isNotFalse(descItem.getUndefined())) {
+		if (item.getValue() == null || sn != item.getValue() || descItem.getUndefined()) {
             descItem.setUndefined(false);
             item.setValue(sn);
             ArrDescItem ret = saveDescItem(descItem, version, change);

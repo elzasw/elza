@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.commons.lang.BooleanUtils;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -98,7 +97,7 @@ public class TableStatisticAction extends Action {
             if (inputItemTypes.contains(item.getItemType())) {
                 String text;
                 RulItemSpec itemSpec = item.getItemSpec();
-                if (BooleanUtils.isTrue(item.getUndefined())) {
+				if (item.getUndefined()) {
                     text = ArrangementService.UNDEFINED;
                 } else {
                     ArrItemData itemData = item.getItem();
