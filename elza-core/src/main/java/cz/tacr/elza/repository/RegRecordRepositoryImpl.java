@@ -1,16 +1,11 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RegVariantRecord;
-import cz.tacr.elza.domain.UsrPermissionView;
-import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.domain.enumeration.StringLength;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -22,13 +17,17 @@ import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import javax.persistence.criteria.Subquery;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
+
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.enumeration.StringLength;
 
 /**
  * Implementace respozitory pro regrecord.
@@ -46,9 +45,9 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
                                                       final Integer firstReult,
                                                       final Integer maxResults,
                                                       final RegRecord parentRecord,
-                                                      final Set<Integer> scopeIdsForRecord, final boolean readAllScopes, final UsrUser user) {
-        if(CollectionUtils.isEmpty(scopeIdsForRecord)){
-            return Collections.EMPTY_LIST;
+                                                      final Set<Integer> scopeIdsForSearch) {
+        if(CollectionUtils.isEmpty(scopeIdsForSearch)){
+            return Collections.emptyList();
         }
 
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
@@ -56,15 +55,7 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
         Root<RegRecord> record = query.from(RegRecord.class);
 
         Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeIds, record, builder,
-                scopeIdsForRecord, readAllScopes, user, query);
-
-        if (parentRecord != null) {
-            if (condition == null) {
-                condition = builder.equal(record.get(RegRecord.PARENT_RECORD), parentRecord);
-            } else {
-                condition = builder.and(condition, builder.equal(record.get(RegRecord.PARENT_RECORD), parentRecord));
-            }
-        }
+                scopeIdsForSearch, query, parentRecord);
 
         query.select(record).distinct(true);
         if (condition != null) {
@@ -83,10 +74,8 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
     public long findRegRecordByTextAndTypeCount(final String searchRecord,
                                                 final Collection<Integer> registerTypeIds,
                                                 final RegRecord parentRecord,
-                                                final Set<Integer> scopeIdsForRecord,
-                                                final boolean readAllScopes,
-                                                final UsrUser user) {
-        if(CollectionUtils.isEmpty(scopeIdsForRecord)){
+                                                final Set<Integer> scopeIdsForSearch) {
+        if (CollectionUtils.isEmpty(scopeIdsForSearch)) {
             return 0;
         }
 
@@ -95,15 +84,7 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
         Root<RegRecord> record = query.from(RegRecord.class);
 
         Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeIds, record, builder,
-                scopeIdsForRecord, readAllScopes, user, query);
-
-        if (parentRecord != null) {
-            if (condition == null) {
-                condition = builder.equal(record.get(RegRecord.PARENT_RECORD), parentRecord);
-            } else {
-                condition = builder.and(condition, builder.equal(record.get(RegRecord.PARENT_RECORD), parentRecord));
-            }
-        }
+                scopeIdsForSearch, query, parentRecord);
 
         query.select(builder.countDistinct(record));
         if (condition != null) {
@@ -116,25 +97,23 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
 
     /**
      * Připraví dotaz pro nalezení rejstříkových záznamů.
-     *
      * @param searchRecord      hledaný řetězec, může být null
      * @param registerTypeId    ty záznamu
      * @param record            kořen dotazu pro danou entitu
      * @param builder           buider pro vytváření podmínek
-     * @param scopeIdsForRecord id tříd, do který spadají rejstříky
-     * @param readAllScopes
-     *@param user
-     * @param query @return                  výsledné podmínky pro dotaz, nebo null pokud není za co filtrovat
+     * @param scopeIdsForSearch id tříd, do který spadají rejstříky
+     * @param query
+     * @param parentRecord
+     * @return                  výsledné podmínky pro dotaz, nebo null pokud není za co filtrovat
      */
     private <T> Predicate preparefindRegRecordByTextAndType(final String searchRecord,
-                                                        final Collection<Integer> registerTypeId,
-                                                        final Root<RegRecord> record,
-                                                        final CriteriaBuilder builder,
-                                                        final Set<Integer> scopeIdsForRecord,
-                                                            final boolean readAllScopes,
-                                                            final UsrUser user,
-                                                            final CriteriaQuery<T> query) {
-        Assert.notEmpty(scopeIdsForRecord);
+                                                            final Collection<Integer> registerTypeId,
+                                                            final Root<RegRecord> record,
+                                                            final CriteriaBuilder builder,
+                                                            final Set<Integer> scopeIdsForSearch,
+                                                            final CriteriaQuery<T> query,
+                                                            final RegRecord parentRecord) {
+        Assert.notEmpty(scopeIdsForSearch);
 
         Join<Object, Object> variantRecord = record.join(RegRecord.VARIANT_RECORD_LIST, JoinType.LEFT);
         Join<Object, Object> registerType = record.join(RegRecord.REGISTER_TYPE);
@@ -157,20 +136,14 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
             condition = condition == null ? typePred : builder.and(condition, typePred);
         }
 
-        if (!readAllScopes && user != null) {
-
-            Subquery<UsrPermissionView> subquery = query.subquery(UsrPermissionView.class);
-            Root<UsrPermissionView> rootSubquery = subquery.from(UsrPermissionView.class);
-            subquery.select(rootSubquery.get(UsrPermissionView.SCOPE));
-            subquery.where(builder.equal(rootSubquery.get(UsrPermissionView.USER), user));
-
-            conditions.add(scope.get(RegScope.SCOPE_ID).in(subquery));
-        } else {
-            conditions.add(scope.get(RegScope.SCOPE_ID).in(scopeIdsForRecord));
-        }
+        conditions.add(scope.get(RegScope.SCOPE_ID).in(scopeIdsForSearch));
 
         if (condition != null) {
             conditions.add(condition);
+        }
+
+        if (parentRecord != null) {
+            conditions.add(builder.equal(record.get(RegRecord.PARENT_RECORD), parentRecord));
         }
 
         return builder.and(conditions.toArray(new Predicate[conditions.size()]));

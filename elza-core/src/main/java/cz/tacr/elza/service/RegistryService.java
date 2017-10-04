@@ -15,11 +15,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.ExceptionUtils;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.RegistryCode;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.springframework.beans.factory.BeanFactory;
@@ -45,6 +40,11 @@ import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ExceptionUtils;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingRecord;
 import cz.tacr.elza.repository.DataRecordRefRepository;
@@ -55,10 +55,10 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RegCoordinatesRepository;
 import cz.tacr.elza.repository.RegExternalSystemRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.RegVariantRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.SettingsRepository;
-import cz.tacr.elza.repository.RegVariantRecordRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -160,7 +160,8 @@ public class RegistryService {
      * @param firstResult     index prvního záznamu, začíná od 0
      * @param maxResults      počet výsledků k vrácení
      * @param parentRecordId  id rodičovského rejstříku
-     * @param fund   AP, ze které se použijí třídy rejstříků
+     * @param fund            AP, ze které se použijí třídy rejstříků
+     * @param scopeId         id scope, pokud je vyplněno hledají se rejstříky pouze s tímto scope
      * @return vybrané záznamy dle popisu seřazené za record, nbeo prázdná množina
      */
     public List<RegRecord> findRegRecordByTextAndType(@Nullable final String searchRecord,
@@ -168,45 +169,45 @@ public class RegistryService {
                                                       final Integer firstResult,
                                                       final Integer maxResults,
                                                       final Integer parentRecordId,
-                                                      @Nullable final ArrFund fund) {
+                                                      @Nullable final ArrFund fund,
+                                                      @Nullable final Integer scopeId) {
 
-        Set<Integer> scopeIdsForRecord = getScopeIdsByFund(fund);
+        Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId);
 
         RegRecord parentRecord = null;
         if (parentRecordId != null) {
             parentRecord = regRecordRepository.getOneCheckExist(parentRecordId);
         }
 
-        UsrUser user = userService.getLoggedUser();
-        boolean readAllScopes = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_RD_ALL);
         return regRecordRepository.findRegRecordByTextAndType(searchRecord, registerTypeIds, firstResult,
-                maxResults, parentRecord, scopeIdsForRecord, readAllScopes, user);
+                maxResults, parentRecord, scopeIdsForSearch);
     }
 
 
     /**
-     * Celkový počet záznamů v DB pro funkci {@link #findRegRecordByTextAndType(String, Collection, Integer, Integer, Integer, ArrFund)}
+     * Celkový počet záznamů v DB pro funkci {@link #findRegRecordByTextAndType(String, Collection, Integer, Integer, Integer, ArrFund, Integer)}
      *
      * @param searchRecord    hledaný řetězec, může být null
      * @param registerTypeIds typ záznamu
      * @param parentRecordId  id rodičovského rejstříku
      * @param fund   AP, ze které se použijí třídy rejstříků
+     * @param id scope, pokud je vyplněno hledají se rejstříky pouze s tímto scope
      * @return celkový počet záznamů, který je v db za dané parametry
      */
     public long findRegRecordByTextAndTypeCount(@Nullable final String searchRecord,
-            @Nullable final Collection<Integer> registerTypeIds, final Integer parentRecordId, @Nullable final ArrFund fund) {
+                                                @Nullable final Collection<Integer> registerTypeIds,
+                                                final Integer parentRecordId, @Nullable final ArrFund fund,
+                                                final Integer scopeId) {
 
-        Set<Integer> scopeIdsForRecord = getScopeIdsByFund(fund);
+        Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId);
 
         RegRecord parentRecord = null;
         if (parentRecordId != null) {
             parentRecord = regRecordRepository.getOneCheckExist(parentRecordId);
         }
 
-        UsrUser user = userService.getLoggedUser();
-        boolean readAllScopes = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_RD_ALL);
-
-        return regRecordRepository.findRegRecordByTextAndTypeCount(searchRecord, registerTypeIds, parentRecord, scopeIdsForRecord, readAllScopes, user);
+        return regRecordRepository.findRegRecordByTextAndTypeCount(searchRecord, registerTypeIds, parentRecord,
+                scopeIdsForSearch);
     }
 
     /**
@@ -556,17 +557,35 @@ public class RegistryService {
     }
 
     /**
-     * Načte seznam id tříd pro archivní pomůcku. Pokud není AP nastavena, vrací výchozí třídy.
+     * Načte seznam id tříd ve kterých se má vyhledávat. Výsledek je průnikem tříd požadovaných a těch na které ma uživatel právo.
      *
-     * @param fund AP, podle jejíž tříd se má hledat (pokud je null, hledá se podle výchozích)
+     * @param fund AP, podle jejíž tříd se má hledat
+     * @param scopeId id scope, pokud je vyplněno hledá se jen v tomto scope
      * @return množina id tříd, podle kterých se bude hledat
      */
-    public Set<Integer> getScopeIdsByFund(@Nullable final ArrFund fund){
-        if(fund == null){
-            return getDefaultScopeIds();
-        }else{
-            return scopeRepository.findIdsByFund(fund);
-        }
+    public Set<Integer> getScopeIdsForSearch(@Nullable final ArrFund fund, @Nullable final Integer scopeId) {
+    	boolean readAllScopes = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_RD_ALL);
+    	UsrUser user = userService.getLoggedUser();
+
+    	Set<Integer> scopeIdsToSearch;
+    	if (readAllScopes || user == null) {
+    		scopeIdsToSearch = scopeRepository.findAllIds();
+    	} else {
+    		scopeIdsToSearch = userService.getUserScopeIds();
+    	}
+
+		if (!scopeIdsToSearch.isEmpty()) {
+			if (fund != null) {
+				Set<Integer> fundScopeIds = scopeRepository.findIdsByFund(fund);
+				scopeIdsToSearch.retainAll(fundScopeIds);
+			}
+
+			if (scopeId != null) {
+    			scopeIdsToSearch.removeIf( id -> !id.equals(scopeId));
+			}
+		}
+
+        return scopeIdsToSearch;
     }
 
     /**

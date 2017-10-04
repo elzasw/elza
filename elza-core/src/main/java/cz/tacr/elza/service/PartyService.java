@@ -50,7 +50,6 @@ import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.SystemException;
@@ -226,23 +225,24 @@ public class PartyService {
      * @param firstResult  první vrácená osoba
      * @param maxResults   max počet vrácených osob
      * @param fund   AP, ze které se použijí třídy rejstříků
+     * @param id scope, pokud je vyplněno hledají se osoby pouze s tímto scope
      */
     public List<ParParty> findPartyByTextAndType(final String searchRecord,
                                                  final Integer partyTypeId,
                                                  final Integer itemSpecId,
                                                  final Integer firstResult,
                                                  final Integer maxResults,
-                                                 @Nullable final ArrFund fund) {
-        UsrUser user = userService.getLoggedUser();
-        boolean readAllScopes = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_RD_ALL);
-        Set<Integer> scopeIdsForRecord = registryService.getScopeIdsByFund(fund);
+                                                 @Nullable final ArrFund fund,
+                                                 @Nullable final Integer scopeId) {
+        Set<Integer> scopeIdsForSearch = registryService.getScopeIdsForSearch(fund, scopeId);
 
         Set<Integer> registerTypesIds = null;
         if (itemSpecId != null) {
             registerTypesIds = this.find(itemSpecId);
         }
 
-        return partyRepository.findPartyByTextAndType(searchRecord, partyTypeId, registerTypesIds, firstResult, maxResults, scopeIdsForRecord, readAllScopes, user);
+        return partyRepository.findPartyByTextAndType(searchRecord, partyTypeId, registerTypesIds, firstResult,
+                maxResults, scopeIdsForSearch);
     }
 
     private Set<Integer> find(final Integer itemSpecId) {
@@ -257,19 +257,21 @@ public class PartyService {
 
     /**
      * Vrátí počet osob vyhovující zadané frázi. Osobu vyhledává podle hesla v rejstříku včetně variantních hesel.
+     *
      * @param searchRecord hledaný řetězec, může být null
      * @param partyTypeId typ osoby
      * @param itemSpecId specifikace
      * @param fund   AP, ze které se použijí třídy rejstříků
+     * @param id scope, pokud je vyplněno hledají se osoby pouze s tímto scope
+     *
      * @return
      */
     public long findPartyByTextAndTypeCount(final String searchRecord,
                                             final Integer partyTypeId,
                                             final Integer itemSpecId,
-                                            @Nullable final ArrFund fund){
-        UsrUser user = userService.getLoggedUser();
-        boolean readAllScopes = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_RD_ALL);
-        Set<Integer> scopeIdsForRecord = registryService.getScopeIdsByFund(fund);
+                                            @Nullable final ArrFund fund,
+                                            @Nullable final Integer scopeId){
+        Set<Integer> scopeIdsForSearch = registryService.getScopeIdsForSearch(fund, scopeId);
 
 
         Set<Integer> registerTypesIds = null;
@@ -277,7 +279,8 @@ public class PartyService {
             registerTypesIds = this.find(itemSpecId);
         }
 
-        return partyRepository.findPartyByTextAndTypeCount(searchRecord, partyTypeId, registerTypesIds, scopeIdsForRecord, readAllScopes, user);
+        return partyRepository.findPartyByTextAndTypeCount(searchRecord, partyTypeId, registerTypesIds,
+                scopeIdsForSearch);
     }
 
     /**

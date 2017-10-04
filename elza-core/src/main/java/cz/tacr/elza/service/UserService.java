@@ -14,11 +14,6 @@ import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.RegistryCode;
-import cz.tacr.elza.exception.codes.UserCode;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,7 +39,12 @@ import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrGroupUser;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.RegistryCode;
+import cz.tacr.elza.exception.codes.UserCode;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.GroupRepository;
@@ -922,5 +922,19 @@ public class UserService {
     public Map<Integer, UsrUser> findUserMap(final Collection<Integer> userIds) {
         List<UsrUser> users = userRepository.findAll(userIds);
         return users.stream().collect(Collectors.toMap(UsrUser::getUserId, Function.identity()));
+    }
+
+    /**
+     * Vrátí id scope na které ma uživatel právo. Nebere v úvahu právo {@link UsrPermission.Permission#REG_SCOPE_RD_ALL}.
+     *
+     * @return množina id scope na které ma uživatel právo
+     */
+    public Set<Integer> getUserScopeIds() {
+        return getUserPermission()
+                .stream()
+                .filter(p -> p.getPermission() == UsrPermission.Permission.REG_SCOPE_RD)
+                .findFirst()
+                .map(p -> new HashSet<>(p.getScopeIds()))
+                .orElse(new HashSet<>());
     }
 }

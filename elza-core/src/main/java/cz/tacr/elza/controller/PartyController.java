@@ -11,12 +11,6 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.exception.Level;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.RegistryCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -55,9 +49,12 @@ import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.ParRelationTypeRoleType;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.UIPartyGroup;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.DeleteException;
+import cz.tacr.elza.exception.Level;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.exception.codes.UserCode;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -235,6 +232,7 @@ public class PartyController {
      * @param count       počet vrácených záznamů
      * @param partyTypeId id typu osoby
      * @param versionId   id verze, podle které se budou filtrovat třídy rejstříků, null - výchozí třídy
+     * @param scopeId     id scope, pokud je vyplněn vrací se jen osoby s tímto scope
      * @return seznam osob s počtem všech osob
      */
     @RequestMapping(value = "/", method = RequestMethod.GET)
@@ -243,7 +241,8 @@ public class PartyController {
                                        @RequestParam final Integer count,
                                        @Nullable @RequestParam(required = false) final Integer partyTypeId,
                                        @Nullable @RequestParam(required = false) final Integer itemSpecId,
-                                       @RequestParam(required = false) @Nullable final Integer versionId) {
+                                       @RequestParam(required = false) @Nullable final Integer versionId,
+                                       @RequestParam(required = false) @Nullable final Integer scopeId) {
 
         ArrFund fund;
         if (versionId == null) {
@@ -253,10 +252,11 @@ public class PartyController {
             fund = version.getFund();
         }
 
-        List<ParParty> partyList = partyService.findPartyByTextAndType(search, partyTypeId, itemSpecId, from, count, fund);
+        List<ParParty> partyList = partyService.findPartyByTextAndType(search, partyTypeId, itemSpecId, from, count,
+                fund, scopeId);
         List<ParPartyVO> resultVo = factoryVo.createPartyList(partyList);
 
-        long countAll = partyService.findPartyByTextAndTypeCount(search, partyTypeId, itemSpecId, fund);
+        long countAll = partyService.findPartyByTextAndTypeCount(search, partyTypeId, itemSpecId, fund, scopeId);
         return new FilteredResultVO<>(resultVo, countAll);
     }
 
@@ -282,13 +282,12 @@ public class PartyController {
         Set<Integer> scopeIds = new HashSet<>();
         scopeIds.add(party.getRecord().getScope().getScopeId());
 
-        UsrUser user = userService.getLoggedUser();
-        boolean readAllScopes = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_RD_ALL);
-        List<ParParty> partyList = partyRepository.findPartyByTextAndType(search, partyTypeId, null, from, count, scopeIds, readAllScopes, user);
+        List<ParParty> partyList = partyRepository.findPartyByTextAndType(search, partyTypeId, null,
+                from, count, scopeIds);
 
         List<ParPartyVO> resultVo = factoryVo.createPartyList(partyList);
 
-        long countAll = partyRepository.findPartyByTextAndTypeCount(search, partyTypeId, null, scopeIds, readAllScopes, user);
+        long countAll = partyRepository.findPartyByTextAndTypeCount(search, partyTypeId, null, scopeIds);
         return new FilteredResultVO<>(resultVo, countAll);
     }
 

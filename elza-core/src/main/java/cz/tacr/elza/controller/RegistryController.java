@@ -13,10 +13,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.controller.vo.FilteredResultVO;
-import cz.tacr.elza.controller.vo.RegExternalSystemSimpleVO;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -33,10 +29,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.InterpiMappingVO;
 import cz.tacr.elza.controller.vo.InterpiSearchVO;
 import cz.tacr.elza.controller.vo.RecordImportVO;
 import cz.tacr.elza.controller.vo.RegCoordinatesVO;
+import cz.tacr.elza.controller.vo.RegExternalSystemSimpleVO;
 import cz.tacr.elza.controller.vo.RegRecordSimple;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
@@ -54,8 +52,8 @@ import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.interpi.service.InterpiService;
 import cz.tacr.elza.interpi.service.vo.ExternalRecordVO;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -65,14 +63,13 @@ import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RegCoordinatesRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.RegVariantRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.RegVariantRecordRepository;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.PartyService;
 import cz.tacr.elza.service.RegistryService;
-import cz.tacr.elza.service.UserService;
 
 
 /**
@@ -131,9 +128,6 @@ public class RegistryController {
     private RelationRoleTypeRepository relationRoleTypeRepository;
 
     @Autowired
-    private UserService userService;
-
-    @Autowired
     private ItemSpecRepository itemSpecRepository;
 
     @Autowired
@@ -153,6 +147,7 @@ public class RegistryController {
      * @param parentRecordId    id rodiče, pokud je null načtou se všechny záznamy, jinak potomci daného rejstříku
      * @param versionId   id verze, podle které se budou filtrovat třídy rejstříků, null - výchozí třídy
      * @param itemSpecId   id specifikace
+     * @param scopeId           id scope, pokud je vyplněn vrací se jen rejstříky s tímto scope
      * @return                  vybrané záznamy dle popisu seřazené za text hesla, nebo prázdná množina
      */
     @RequestMapping(value = "/", method = RequestMethod.GET)
@@ -162,7 +157,9 @@ public class RegistryController {
                                        @RequestParam(required = false) @Nullable final Integer registerTypeId,
                                        @RequestParam(required = false) @Nullable final Integer parentRecordId,
                                        @RequestParam(required = false) @Nullable final Integer versionId,
-                                       @RequestParam(required = false) @Nullable final Integer itemSpecId) {
+                                       @RequestParam(required = false) @Nullable final Integer itemSpecId,
+                                       @RequestParam(required = false) @Nullable final Integer scopeId,
+                                       @RequestParam(required = false) @Nullable final Integer lastRecordNr) {
 
         Set<Integer> registerTypeIdTree = Collections.emptySet();
 
@@ -191,10 +188,11 @@ public class RegistryController {
             regRecordRepository.getOneCheckExist(parentRecordId);
         }
 
-        final long foundRecordsCount = registryService.findRegRecordByTextAndTypeCount(search, registerTypeIdTree, parentRecordId, fund);
+        final long foundRecordsCount = registryService.findRegRecordByTextAndTypeCount(search, registerTypeIdTree,
+                parentRecordId, fund, scopeId);
 
-        List<RegRecord> foundRecords = registryService
-                .findRegRecordByTextAndType(search, registerTypeIdTree, from, count, parentRecordId, fund);
+        List<RegRecord> foundRecords = registryService.findRegRecordByTextAndType(search, registerTypeIdTree, from,
+                count, parentRecordId, fund, scopeId);
 
 
         Map<Integer, Integer> recordIdPartyIdMap = partyService.findParPartyIdsByRecords(foundRecords);
@@ -269,14 +267,11 @@ public class RegistryController {
         Set<Integer> scopeIds = new HashSet<>();
         scopeIds.add(party.getRecord().getScope().getScopeId());
 
-        UsrUser user = userService.getLoggedUser();
-        boolean readAllScopes = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_RD_ALL);
+        final long foundRecordsCount = regRecordRepository.findRegRecordByTextAndTypeCount(search, registerTypeIds,
+                null, scopeIds);
 
-        final long foundRecordsCount = regRecordRepository
-                .findRegRecordByTextAndTypeCount(search, registerTypeIds, null, scopeIds, readAllScopes, user);
-
-        final List<RegRecord> foundRecords = regRecordRepository
-                .findRegRecordByTextAndType(search, registerTypeIds, from, count, null, scopeIds, readAllScopes, user);
+        final List<RegRecord> foundRecords = regRecordRepository.findRegRecordByTextAndType(search, registerTypeIds,
+                from, count, null, scopeIds);
 
         List<RegRecordSimple> foundRecordsVO = factoryVo.createRegRecordsSimple(foundRecords);
         return new FilteredResultVO(foundRecordsVO, foundRecordsCount);
@@ -505,7 +500,7 @@ public class RegistryController {
             fund = version.getFund();
         }
 
-        Set<Integer> scopeIdsByFund = registryService.getScopeIdsByFund(fund);
+        Set<Integer> scopeIdsByFund = registryService.getScopeIdsForSearch(fund, null);
         if (CollectionUtils.isEmpty(scopeIdsByFund)) {
             return Collections.emptyList();
         } else {
