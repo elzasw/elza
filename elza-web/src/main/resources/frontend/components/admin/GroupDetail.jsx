@@ -10,11 +10,12 @@ import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx'
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import Permissions from "./Permissions.jsx"
-import SelectUsersForm from "./SelectUsersForm.jsx"
 import {changeGroupPermission} from 'actions/admin/permission.jsx'
 import {joinUsers, leaveUser} from 'actions/admin/group.jsx'
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {renderUserItem} from "components/admin/adminRenderUtils.jsx"
+import SelectItemsForm from "./SelectItemsForm";
+import UserField from "./UserField";
 
 require('./GroupDetail.less');
 
@@ -48,10 +49,15 @@ const GroupDetail = class GroupDetail extends AbstractReactComponent {
     handleAddUsers() {
         const {groupDetail} = this.props;
         this.dispatch(modalDialogShow(this, i18n('admin.group.user.add.title'),
-            <SelectUsersForm onSubmitForm={(users) => {
-                this.dispatch(joinUsers(groupDetail.id, getIdsList(users)));
-            }} excludedGroupId={groupDetail.id} />
-        ))
+            <SelectItemsForm
+                onSubmitForm={(users) => {
+                    this.dispatch(joinUsers(groupDetail.id, getIdsList(users)));
+                }}
+                fieldComponent={UserField}
+                fieldComponentProps={{excludedGroupId: groupDetail.id}}
+                renderItem={renderUserItem}
+            />
+        ));
     }
 
     render() {

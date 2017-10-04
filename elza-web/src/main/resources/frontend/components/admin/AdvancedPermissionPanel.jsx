@@ -8,6 +8,7 @@ import storeFromArea from "../../shared/utils/storeFromArea";
 import * as userPermissions from "./../../actions/admin/userPermissions";
 import {WebApi} from "../../actions/WebApi";
 import PermissionCheckboxsForm from "./PermissionCheckboxsForm";
+import AdminRightsContainer from "./AdminRightsContainer";
 
 /**
  * Panel spravující pokročilá oprávnění.
@@ -109,9 +110,7 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
         const {permission} = this.state;
         const {userPermissions} = this.props;
 
-        return <div>
-            {userPermissions.isFetching && <HorizontalLoader/>}
-            <div>
+        return <AdminRightsContainer>
                 {permission && <PermissionCheckboxsForm
                     permCodes={AdvancedPermissionPanel.permCodes}
                     onChangePermission={this.changePermission}
@@ -119,8 +118,7 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
                     permission={permission}
                     groups={userPermissions.data.groups}
                 />}
-            </div>
-        </div>
+        </AdminRightsContainer>;
     }
 }
 

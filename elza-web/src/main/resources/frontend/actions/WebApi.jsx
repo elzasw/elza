@@ -885,6 +885,14 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl + "/" + userId + '/permission/delete', null, permissions);
     }
 
+    deleteUserFundPermission(userId, fundId) {
+        return AjaxUtils.ajaxPost(WebApiCls.userUrl + "/" + userId + '/permission/delete/fund/' + fundId);
+    }
+
+    deleteUserScopePermission(userId, scopeId) {
+        return AjaxUtils.ajaxPost(WebApiCls.userUrl + "/" + userId + '/permission/delete/scope/' + scopeId);
+    }
+
     changeGroupPermission(groupId, permissions) {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl + "/group/" + groupId + '/permission', null, permissions);
     }

@@ -1,7 +1,7 @@
 import React from "react";
 
 export function renderUserItem(user, isHighlighted = false, isSelected = false) {
-    var cls = 'item';
+    let cls = 'item';
     if (isHighlighted) {
         cls += ' focus'
     }
@@ -9,7 +9,7 @@ export function renderUserItem(user, isHighlighted = false, isSelected = false) 
         cls += ' active'
     }
 
-    var itemStr = user.party.record.record + " (" + user.username + ")";
+    const itemStr = user.party.record.record + " (" + user.username + ")";
     return (
         <div
             className={cls}
@@ -17,8 +17,9 @@ export function renderUserItem(user, isHighlighted = false, isSelected = false) 
         >{itemStr}</div>
     )
 }
+
 export function renderGroupItem(group, isHighlighted = false, isSelected = false) {
-    var cls = 'item';
+    let cls = 'item';
     if (isHighlighted) {
         cls += ' focus'
     }
@@ -26,11 +27,47 @@ export function renderGroupItem(group, isHighlighted = false, isSelected = false
         cls += ' active'
     }
 
-    var itemStr = group.name;
+    const itemStr = group.name;
     return (
         <div
             className={cls}
             key={group.id}
+        >{itemStr}</div>
+    )
+}
+
+export function renderFundItem(fund, isHighlighted = false, isSelected = false) {
+    let cls = 'item';
+    if (isHighlighted) {
+        cls += ' focus'
+    }
+    if (isSelected) {
+        cls += ' active'
+    }
+
+    const itemStr = fund.name;
+    return (
+        <div
+            className={cls}
+            key={fund.id}
+        >{itemStr}</div>
+    )
+}
+
+export function renderScopeItem(scope, isHighlighted = false, isSelected = false) {
+    let cls = 'item';
+    if (isHighlighted) {
+        cls += ' focus'
+    }
+    if (isSelected) {
+        cls += ' active'
+    }
+
+    const itemStr = scope.name;
+    return (
+        <div
+            className={cls}
+            key={scope.id}
         >{itemStr}</div>
     )
 }

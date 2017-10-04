@@ -1,7 +1,7 @@
 // --
 import React from 'react';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, Icon, i18n, fetching} from 'components/shared';
+import {AbstractReactComponent, i18n, fetching} from 'components/shared';
 import ListBox from "./../../components/shared/listbox/ListBox";
 import * as perms from './../../actions/user/Permission.jsx';
 import {HorizontalLoader} from "../shared/index";
@@ -9,6 +9,15 @@ import storeFromArea from "../../shared/utils/storeFromArea";
 import * as userPermissions from "./../../actions/admin/userPermissions";
 import {WebApi} from "../../actions/WebApi";
 import PermissionCheckboxsForm from "./PermissionCheckboxsForm";
+import AdminRightsContainer from "./AdminRightsContainer";
+import NoFocusButton from "../shared/button/NoFocusButton";
+import Icon from "../shared/icon/Icon";
+import {modalDialogShow, modalDialogHide} from "../../actions/global/modalDialog";
+import SelectItemsForm from "./SelectItemsForm";
+import FundField from "./FundField";
+import {renderFundItem, renderGroupItem} from "./adminRenderUtils";
+import getMapFromList from "../../shared/utils/getMapFromList";
+import AddRemoveListBox from "../shared/listbox/AddRemoveListBox";
 
 /**
  * Panel spravující oprávnění na archivní soubory.
@@ -65,6 +74,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
         if (this.props.userPermissions.isFetching && !nextProps.userPermissions.isFetching) {
             // Mapa fundId na mapu hodnot oprávnění pro danou položku AS, pokud se jedná o položku all, má id ALL_ID
             const permFundMap = {};
+            permFundMap[FundsPermissionPanel.ALL_ID] = {id: FundsPermissionPanel.ALL_ID, groupIds: {}};
 
             nextProps.userPermissions.data.permissions.forEach(p => {
                 let id = null;
@@ -102,6 +112,16 @@ class FundsPermissionPanel extends AbstractReactComponent {
             });
 
             const permissions = Object.values(permFundMap);
+            permissions.sort((a, b) => {
+                if (a.id === FundsPermissionPanel.ALL_ID) {
+                    return -1;
+                } else if (b.id === FundsPermissionPanel.ALL_ID) {
+                    return 1;
+                } else {
+                    return a.fund.name.localeCompare(b.fund.name);
+                }
+            });
+
             this.setState({permissions});
         }
     }
@@ -153,6 +173,93 @@ class FundsPermissionPanel extends AbstractReactComponent {
         }
     };
 
+    handleRemove = (item, index) => {
+        const {userId} = this.props;
+        const {selectedPermissionIndex, permissions} = this.state;
+
+        // Pokud má nějaké právo zděděné, musí položka po smazání zůstat
+        let newPermissions;
+        let permissionAll = permissions[permissions.findIndex(x => x.id === FundsPermissionPanel.ALL_ID)];
+        const permission = permissions[selectedPermissionIndex];
+        let hasInheritRight = false;
+        Object.values(FundsPermissionPanel.permCodesMap).forEach(permCode => {
+            if (permissionAll[permCode] && Object.keys(permissionAll[permCode].groupIds).length > 0) {
+                hasInheritRight = true;
+            }
+        });
+        let newSelectedPermissionIndex;
+        if (!hasInheritRight) {
+            newSelectedPermissionIndex = null;
+            newPermissions = [
+                ...permissions.slice(0, selectedPermissionIndex),
+                ...permissions.slice(selectedPermissionIndex + 1)
+            ];
+        } else {
+            newSelectedPermissionIndex = selectedPermissionIndex;
+
+            const newPermission = {...permission};
+            Object.values(FundsPermissionPanel.permCodesMap).forEach(permCode => {
+                if (newPermission[permCode]) {
+                    newPermission[permCode] = {
+                        ...newPermission[permCode],
+                        id: null,
+                        checked: false
+                    };
+                }
+            });
+
+            newPermissions = [
+                ...permissions.slice(0, selectedPermissionIndex),
+                newPermission,
+                ...permissions.slice(selectedPermissionIndex + 1)
+            ];
+        }
+
+        WebApi.deleteUserFundPermission(userId, item.id).then(data => {
+            this.setState({
+                permissions: newPermissions,
+                selectedPermissionIndex: newSelectedPermissionIndex
+            });
+        });
+    };
+
+    handleAdd = () => {
+        this.props.dispatch(modalDialogShow(this, i18n('admin.user.tabs.funds.add.title'),
+            <SelectItemsForm
+                onSubmitForm={(funds) => {
+                    const {permissions} = this.state;
+                    const permissionsMap = getMapFromList(permissions);
+                    const newPermissions = [...permissions];
+
+                    funds.forEach(fund => {
+                        if (!permissionsMap[fund.id]) { // jen pokud ještě přidaný není
+                            newPermissions.push({
+                                id: fund.id,
+                                fund: fund,
+                            });
+                        }
+                    });
+
+                    this.setState({permissions: newPermissions});
+
+                    this.props.dispatch(modalDialogHide());
+                }}
+                fieldComponent={FundField}
+                renderItem={renderFundItem}
+            />
+        ));
+    };
+
+    renderItem = (item, isActive, index, onCheckItem) => {
+        if (item.id === FundsPermissionPanel.ALL_ID) {
+            return <div>{i18n("admin.user.tabs.funds.items.fundAll")}</div>;
+        } else {
+            return <div>
+                {item.fund.name}
+            </div>;
+        }
+    };
+
     render() {
         const {selectedPermissionIndex, permissions} = this.state;
         const {userPermissions} = this.props;
@@ -165,29 +272,32 @@ class FundsPermissionPanel extends AbstractReactComponent {
             if (permission.id !== FundsPermissionPanel.ALL_ID) {
                 permCodes.push(perms.FUND_VER_WR);
             }
-
         }
+        let permissionAll = permissions[permissions.findIndex(x => x.id === FundsPermissionPanel.ALL_ID)];
 
-        return <div>
-            {userPermissions.isFetching && <HorizontalLoader/>}
-            <ListBox
+        return <AdminRightsContainer
+            left={<AddRemoveListBox
                 items={permissions}
-                renderItemContent={(item, isActive, index, onCheckItem) => <div>{item.id === FundsPermissionPanel.ALL_ID ? i18n("admin.user.tabs.funds.items.fundAll") : item.fund.name}</div>}
                 activeIndex={selectedPermissionIndex}
+                renderItemContent={this.renderItem}
+                onAdd={this.handleAdd}
+                onRemove={this.handleRemove}
+                canDeleteItem={(item, index) => item.id !== FundsPermissionPanel.ALL_ID}
                 onFocus={(item, index) => {
                     this.setState({selectedPermissionIndex: index})
                 }}
-            />
-            <div>
-                {selectedPermissionIndex !== null && <PermissionCheckboxsForm
-                    permCodes={permCodes}
-                    onChangePermission={this.changePermission}
-                    labelPrefix="admin.user.tabs.funds.perm."
-                    permission={permission}
-                    groups={userPermissions.data.groups}
-                    />}
-            </div>
-        </div>
+            />}
+            >
+            {selectedPermissionIndex !== null && <PermissionCheckboxsForm
+                permCodes={permCodes}
+                onChangePermission={this.changePermission}
+                labelPrefix="admin.user.tabs.funds.perm."
+                permission={permission}
+                groups={userPermissions.data.groups}
+                permissionAll={permission.id !== FundsPermissionPanel.ALL_ID ? permissionAll : null}
+                permissionAllTitle="admin.user.tabs.funds.items.fundAll"
+            />}
+        </AdminRightsContainer>;
     }
 }
 

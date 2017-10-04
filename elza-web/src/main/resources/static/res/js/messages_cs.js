@@ -984,6 +984,7 @@ var messages = {
     "admin.user.title.groups": "Členství ve skupinách",
     "admin.user.title.permissions": "Oprávnění uživatele",
     "admin.user.tabs.funds": "Archivní soubory",
+    "admin.user.tabs.funds.add.title": "Přidání archivních souborů",
     "admin.user.tabs.funds.items.fundAll": "Všechny archivní soubory",
     "admin.user.tabs.funds.perm.FUND_RD": "Čtení",
     "admin.user.tabs.funds.perm.FUND_ARR": "Pořádání",
@@ -993,6 +994,7 @@ var messages = {
     "admin.user.tabs.funds.perm.FUND_CL_VER_WR": "Drobné úpravy uzavřeného AS",
     "admin.user.tabs.funds.perm.FUND_VER_WR": "Verzování a editace",
     "admin.user.tabs.scopes": "Třídy rejstříků",
+    "admin.user.tabs.scopes.add.title": "Přidání tříd rejstříku",
     "admin.user.tabs.scopes.items.scopeAll": "Všechny třídy rejstříku",
     "admin.user.tabs.scopes.perm.REG_SCOPE_RD": "Čtení",
     "admin.user.tabs.scopes.perm.REG_SCOPE_WR": "Zápis",
@@ -1064,6 +1066,10 @@ var messages = {
     "permission.FUND_CL_VER_WR": "Drobné úpravy vybraných uzavřených AS",
     "permission.FUND_CL_VER_WR_ALL": "Drobné úpravy všech uzavřených AS",
     "permission.INTERPI_MAPPING_WR": "Mapování INTERPI",
+
+    "permission.activePermission.title": "Aktivní oprávnění",
+    "permission.source.title": "Zdroj",
+    "permission.explicit.title": "Explicitní",
 
     "admin.group.title.users": "Členové skupiny",
     "admin.group.title.permissions": "Oprávnění skupiny",

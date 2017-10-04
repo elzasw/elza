@@ -412,6 +412,32 @@ public class UserController {
     }
 
     /**
+     * Odebrání oprávnění uživatele na AS.
+     *
+     * @param userId      identifikátor uživatele
+     * @param fundId      id AS
+     */
+    @Transactional
+    @RequestMapping(value = "/{userId}/permission/delete/fund/{fundId}", method = RequestMethod.POST)
+    public void deleteUserFundPermission(@PathVariable(value = "userId") final Integer userId, @PathVariable("fundId") final Integer fundId) {
+        UsrUser user = userService.getUser(userId);
+        userService.deleteUserFundPermissions(user, fundId);
+    }
+
+    /**
+     * Odebrání oprávnění uživatele na typ rejstříku.
+     *
+     * @param userId      identifikátor uživatele
+     * @param scopeId     id typu rejstříku
+     */
+    @Transactional
+    @RequestMapping(value = "/{userId}/permission/delete/scope/{scopeId}", method = RequestMethod.POST)
+    public void deleteUserScopePermission(@PathVariable(value = "userId") final Integer userId, @PathVariable("scopeId") final Integer scopeId) {
+        UsrUser user = userService.getUser(userId);
+        userService.deleteUserScopePermissions(user, scopeId);
+    }
+
+    /**
      * Nastavení oprávnění skupiny.
      *
      * @param groupId     identifikátor skupiny

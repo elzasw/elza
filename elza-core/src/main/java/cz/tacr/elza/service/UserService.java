@@ -288,6 +288,36 @@ public class UserService {
     }
 
     /**
+     * Smaže všechna oprávnení uživatele na daný AS.
+     * @param user uživatel
+     * @param fundId id AS
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
+    public void deleteUserFundPermissions(@NotNull final UsrUser user,
+                                          @NotNull final Integer fundId) {
+        List<UsrPermission> permissionsDB = permissionRepository.findByUserOrderByPermissionIdAsc(user);
+        List<UsrPermission> permissionsToDelete = permissionsDB.stream()
+                .filter(x -> fundId.equals(x.getFundId()))
+                .collect(Collectors.toList());
+        deleteUserPermission(user, permissionsToDelete);
+    }
+
+    /**
+     * Smaže všechna oprávnení uživatel na daný typ rejstříku.
+     * @param user uživatel
+     * @param scopeId id typu rejstříku
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
+    public void deleteUserScopePermissions(@NotNull final UsrUser user,
+                                           @NotNull final Integer scopeId) {
+        List<UsrPermission> permissionsDB = permissionRepository.findByUserOrderByPermissionIdAsc(user);
+        List<UsrPermission> permissionsToDelete = permissionsDB.stream()
+                .filter(x -> scopeId.equals(x.getScopeId()))
+                .collect(Collectors.toList());
+        deleteUserPermission(user, permissionsToDelete);
+    }
+
+    /**
      * Provede přenačtení oprávnění uživatele.
      *
      * @param user uživatel, kterému přepočítáváme práva
