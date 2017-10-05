@@ -1,1 +1,1 @@
-mvn clean install -Pskiptest,release,build-instalator -Djre.path="c:/Program Files/Java/jre1.8.0_141/"
+start mvn clean install -Pskiptest,release,build-instalator -e -Djre.path="c:/Program Files/Java/jre1.8.0_141/" -DtomcatInstall.version="8.5.23" -DtomcatInstall.url="http://mirror.dkm.cz/apache/tomcat/tomcat-8/v8.5.23/bin/apache-tomcat-8.5.23-windows-x64.zip" -DtomcatInstall.md5="65a15a86d19e1046c98b1ca95100779b"

@@ -25,10 +25,31 @@
     </pluginRepositories>
 
     <properties>
-        <tomcat.version>8.5.16</tomcat.version>
-        <tomcat.url>http://apache.miloslavbrada.cz/tomcat/tomcat-8/v8.5.16/bin/apache-tomcat-8.5.16-windows-x64.zip</tomcat.url>
-        <tomcat.md5>d8017cb472aaa18b93dd285be610e10a</tomcat.md5>
+        <tomcatInstall.version>8.5.16</tomcatInstall.version>
+        <tomcatInstall.url>http://apache.miloslavbrada.cz/tomcat/tomcat-8/v8.5.16/bin/apache-tomcat-8.5.16-windows-x64.zip</tomcatInstall.url>
+        <tomcatInstall.md5>d8017cb472aaa18b93dd285be610e10a</tomcatInstall.md5>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>cz.tacr.elza</groupId>
+            <artifactId>package-cz-base</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>cz.tacr.elza</groupId>
+            <artifactId>rules-cz-zp2015</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>cz.tacr.elza</groupId>
+            <artifactId>rules-simple</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+    </dependencies>
 
     <profiles>
         <profile>
@@ -47,8 +68,8 @@
                                     <goal>wget</goal>
                                 </goals>
                                 <configuration>
-                                    <url>${tomcat.url}</url>
-                                    <md5>${tomcat.md5}</md5>
+                                    <url>${tomcatInstall.url}</url>
+                                    <md5>${tomcatInstall.md5}</md5>
                                     <unpack>true</unpack>
                                     <outputDirectory>${project.build.directory}</outputDirectory>
                                 </configuration>
@@ -67,7 +88,7 @@
                                 </goals>
                                 <configuration>
                                     <tasks>
-                                        <delete dir="${project.build.directory}/apache-tomcat-${tomcat.version}/webapps">
+                                        <delete dir="${project.build.directory}/apache-tomcat-${tomcatInstall.version}/webapps">
                                         </delete>
                                     </tasks>
                                 </configuration>
@@ -241,7 +262,7 @@
                                 </goals>
                                 <configuration>
                                     <arguments>
-                                        <argument>"/DTomcatVersion=${tomcat.version}"</argument>
+                                        <argument>"/DTomcatVersion=${tomcatInstall.version}"</argument>
                                         <argument>"/DVerzeAplikace=${project.version}"</argument>
                                         <argument>"/DNazevInstalator=ELZA-${project.version}"</argument>
                                         <argument>${project.build.directory}/classes/elza-instalator.iss</argument>
