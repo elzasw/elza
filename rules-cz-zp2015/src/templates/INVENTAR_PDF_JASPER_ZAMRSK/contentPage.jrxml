@@ -732,8 +732,8 @@
 		<band height="30" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField evaluationTime="Master">
-				<reportElement x="-3" y="10" width="449" height="19" uuid="ee75b069-80cb-408d-98ad-5e56a0d82bdf">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				<reportElement x="0" y="10" width="455" height="19" uuid="ee75b069-80cb-408d-98ad-5e56a0d82bdf">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 				</reportElement>
 				<box>
 					<topPen lineWidth="1.0"/>
