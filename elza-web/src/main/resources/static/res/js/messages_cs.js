@@ -808,6 +808,7 @@ var messages = {
     "registry.deleteCoordinatesQuestion": "Opravdu chcete smazat tyto souřadnice?",
     "registry.moveRegistry": "Přesunout heslo",
     "registry.deleteRegistry": "Smazat heslo",
+    "registry.registryUsage": "Použití hesla",
     "registry.cancelMove": "Zrušit přesun",
     "registry.applyMove": "Přesunout sem",
     "registry.coordinates.addPoint": "Přidat bod",

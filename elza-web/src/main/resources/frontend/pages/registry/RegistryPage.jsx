@@ -193,6 +193,12 @@ class RegistryPage extends AbstractReactComponent {
        );
     };
 
+    handleRegistryShowUsage = () => {
+        this.dispatch(
+            modalDialogShow(this, i18n('registry.registryUsage'))
+        );
+    };
+
     handleExtImport = () => {
         this.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={false} onSubmitForm={(data) => {
             this.dispatch(registryDetailFetchIfNeeded(data.id));
@@ -241,6 +247,14 @@ class RegistryPage extends AbstractReactComponent {
                 );
             }
         }
+
+        itemActions.push(
+            <Button key='registryShow' onClick={this.handleRegistryShowUsage}>
+                <Icon glyph="fa-search"/>
+                <div><span className="btnText">{i18n('registry.registryUsage')}</span></div>
+            </Button>
+        );
+
         if (this.canMoveRegistry()) {
             if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: data ? data.scopeId : null})) {
                 itemActions.push(

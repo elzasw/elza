@@ -16,6 +16,7 @@ import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 
 import './RegistryList.less';
 import RegistryListItem from "./RegistryListItem";
+import ListPager from "../shared/listPager/ListPager";
 
 class RegistryList extends AbstractReactComponent {
 
@@ -77,6 +78,26 @@ class RegistryList extends AbstractReactComponent {
 
     handleFilterRegistryType = (item) => {
         this.dispatch(registryListFilter({...this.props.registryList.filter, registryTypeId: item ? item.id : null}));
+    };
+
+    handleFilterRegistryScope = (item) => {
+        this.dispatch(registryListFilter({...this.props.registryList.filter, scopeId: item ? item.id : null}));
+    };
+
+    handleFilterPrev = () => {
+        let from = this.props.registryList.filter.from;
+        if (this.props.registryList.filter.from >= DEFAULT_REGISTRY_LIST_MAX_SIZE) {
+            from = this.props.registryList.filter.from - DEFAULT_REGISTRY_LIST_MAX_SIZE;
+            this.dispatch(registryListFilter({...this.props.registryList.filter, from}));
+        }
+    };
+
+    handleFilterNext = () => {
+        let from = this.props.registryList.filter.from;
+        if (this.props.registryList.filter.from < this.props.registryList.count - DEFAULT_REGISTRY_LIST_MAX_SIZE) {
+            from = this.props.registryList.filter.from + DEFAULT_REGISTRY_LIST_MAX_SIZE;
+            this.dispatch(registryListFilter({...this.props.registryList.filter, from}));
+        }
     };
 
     filterRegistryTypeClear = () => {
@@ -157,13 +178,26 @@ class RegistryList extends AbstractReactComponent {
         }
         return actions;
     }
+
+    getScopesWithAll(scopes) {
+        const defaultValue = {name: i18n('registry.all')};
+        if (scopes && scopes.length > 0 && scopes[0] && scopes[0].scopes && scopes[0].scopes.length > 0) {
+            return [defaultValue, ...scopes[0].scopes]
+        }
+        return [defaultValue];
+    }
+
+    getScopeById(scopeId, scopes){
+        return scopeId && scopes && scopes.length > 0 && scopes[0].scopes.find(scope => (scope.id === scopeId)).name;
+    }
+
     /**
      * Výchozí hodnota/placeholder pro registry type filtr
      */
     registryTypeDefaultValue = i18n('registry.all');
 
     render() {
-        const {registryDetail, registryList, maxSize, registryTypes} = this.props;
+        const {registryDetail, registryList, maxSize, registryTypes, scopes} = this.props;
 
 
         let activeIndex = null;
@@ -233,9 +267,14 @@ class RegistryList extends AbstractReactComponent {
         let regTypesWithAll = [...registryTypes];
         regTypesWithAll.unshift({name:this.registryTypeDefaultValue});
 
-
         return <div className="registry-list">
             <div className="filter">
+                <Autocomplete
+                    inputProps={ {placeholder:i18n("party.recordScope")} }
+                    items={this.getScopesWithAll(scopes)}
+                    onChange={this.handleFilterRegistryScope}
+                    value={this.getScopeById(filter.scopeId, scopes)}
+                />
                 <Autocomplete
                         inputProps={ {placeholder: !filter.registryTypeId ? this.registryTypeDefaultValue : ""} }
                         items={regTypesWithAll}
@@ -262,16 +301,24 @@ class RegistryList extends AbstractReactComponent {
             <StoreHorizontalLoader store={registryList}/>
             {list}
             {isFetched && registryList.filteredRows.length > maxSize && <span className="items-count">{i18n('party.list.itemsVisibleCountFrom', registryList.filteredRows.length, registryList.count)}</span>}
+            {registryList.count > maxSize &&
+            <ListPager
+                prev={this.handleFilterPrev}
+                next={this.handleFilterNext}
+                from={this.props.registryList.filter.from}
+                maxSize={this.props.registryList.count}
+            />}
         </div>
     }
 }
 
 export default connect((state) => {
-    const {app:{registryList, registryDetail}, focus, refTables:{recordTypes}} = state;
+    const {app:{registryList, registryDetail}, focus, refTables:{recordTypes, scopesData}} = state;
     return {
         focus,
         registryDetail,
         registryList,
         registryTypes: recordTypes && recordTypes.items ? recordTypes.items : false,
+        scopes: scopesData.scopes
     }
 })(RegistryList);

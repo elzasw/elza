@@ -38,6 +38,7 @@ import {PARTY_TYPE_CODES} from 'constants.jsx'
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './PartyDetailKeymap.jsx';
 import './PartyDetail.less';
+import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
 
 
 const SETTINGS_PARTY_PIN = "PARTY_PIN";
@@ -181,6 +182,7 @@ class PartyDetail extends AbstractReactComponent {
         this.dispatch(refPartyTypesFetchIfNeeded());    // nacteni typu osob (osoba, rod, událost, ...)
         this.dispatch(calendarTypesFetchIfNeeded());    // načtení typů kalendářů (gregoriánský, juliánský, ...)
         this.dispatch(refRecordTypesFetchIfNeeded());
+        this.dispatch(requestScopesIfNeeded());
         if (id) {
             this.dispatch(partyDetailFetchIfNeeded(id));
         }
@@ -272,8 +274,12 @@ class PartyDetail extends AbstractReactComponent {
         }
     }
 
+    getScopeLabel = (scopeId, scopes) => {
+        return scopeId && scopes[0].scopes.find(scope => (scope.id === scopeId)).name.toUpperCase();
+    };
+
     render() {
-        const {userDetail, partyDetail, fields, recordTypes} = this.props;
+        const {userDetail, partyDetail, fields, recordTypes, scopes} = this.props;
         const {sourceInformation, creators} = fields;
         const party = partyDetail.data;
         const {activeIndexes, visibilitySettingsValue} = this.state;
@@ -319,6 +325,9 @@ class PartyDetail extends AbstractReactComponent {
                 </div>
                 <div className="party-type">
                     {party.partyType.description}
+                    <span className="scope-label">
+                        {this.getScopeLabel(partyDetail.data.record.scopeId, scopes)}
+                    </span>
                 </div>
                 <Form className="party-body">
                     {parts.map((i, index) => {
@@ -441,14 +450,15 @@ export default reduxForm({
         fields: PartyDetail.fields,
         validate: PartyDetail.validate
     },(state) => {
-        const {app: {partyDetail}, userDetail, refTables: {partyTypes, recordTypes}, focus} = state;
+        const {app: {partyDetail}, userDetail, refTables: {partyTypes, recordTypes}, focus, refTables} = state;
         return {
             partyDetail,
             userDetail,
             partyTypes,
             recordTypes,
             _focus: focus,
-            initialValues: partyDetail.fetched ? partyDetail.data : {}
+            initialValues: partyDetail.fetched ? partyDetail.data : {},
+            scopes: refTables.scopesData.scopes
         }
     },
     {initForm: (onSave) => (initForm('partyDetail', PartyDetail.validate, onSave))}

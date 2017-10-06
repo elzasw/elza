@@ -41,6 +41,7 @@ import './RegistryDetail.less';
 import EditRegistryForm from "./EditRegistryForm";
 import RegistryDetailVariantRecords from "./RegistryDetailVariantRecords";
 import RegistryDetailCoordinates from "./RegistryDetailCoordinates";
+import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
 
 
 class RegistryDetail extends AbstractReactComponent {
@@ -77,6 +78,7 @@ class RegistryDetail extends AbstractReactComponent {
         const {registryDetail: {id}} = props;
         this.dispatch(refPartyTypesFetchIfNeeded());    // nacteni typu osob (osoba, rod, událost, ...)
         this.dispatch(calendarTypesFetchIfNeeded());    // načtení typů kalendářů (gregoriánský, juliánský, ...)
+        this.dispatch(requestScopesIfNeeded());
         if (id) {
             this.dispatch(registryDetailFetchIfNeeded(id));
         }
@@ -213,8 +215,12 @@ class RegistryDetail extends AbstractReactComponent {
         return hierarchyElement;
     }
 
+    getScopeLabel = (scopeId, scopes) => {
+        return scopeId && scopes[0].scopes.find(scope => (scope.id === scopeId)).name.toUpperCase();
+    };
+
     render() {
-        const {registryDetail} = this.props;
+        const {registryDetail, scopes} = this.props;
         const {data, fetched, isFetching, id} = registryDetail;
 
         let icon = 'fa-folder';
@@ -270,6 +276,9 @@ class RegistryDetail extends AbstractReactComponent {
                     </div>
                     <div className="registry-type">
                         {hierarchyElement}
+                        <span className="scope-label">
+                            {scopes && this.getScopeLabel(data.scopeId, scopes)}
+                        </span>
                     </div>
                     <div ref='registryTitle' className="registry-title" tabIndex={"0"}>
                         <div className='registry-content'>
@@ -303,10 +312,11 @@ class RegistryDetail extends AbstractReactComponent {
 }
 
 export default connect((state) => {
-    const {app: {registryDetail}, userDetail, focus} = state;
+    const {app: {registryDetail}, userDetail, focus, refTables} = state;
     return {
         focus,
         registryDetail,
-        userDetail
+        userDetail,
+        scopes: refTables.scopesData.scopes
     }
 })(RegistryDetail);
