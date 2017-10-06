@@ -1,6 +1,7 @@
 package cz.tacr.elza.service.importnodes.vo;
 
 import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * Výsledek validace.
@@ -39,10 +40,6 @@ public class ValidateResult {
      */
     private Collection<String> packetConflicts;
 
-    public void setScopeError(final boolean scopeError) {
-        this.scopeError = scopeError;
-    }
-
     public boolean isScopeError() {
         return scopeError;
     }
@@ -67,10 +64,6 @@ public class ValidateResult {
         return scopeErrors;
     }
 
-    public void setScopeErrors(final Collection<String> scopeErrors) {
-        this.scopeErrors = scopeErrors;
-    }
-
     public Collection<String> getFileConflicts() {
         return fileConflicts;
     }
@@ -86,4 +79,12 @@ public class ValidateResult {
     public void setPacketConflicts(final Collection<String> packetConflicts) {
         this.packetConflicts = packetConflicts;
     }
+
+	public void addMissingScope(String code) {
+		scopeError = true;
+		if (scopeErrors == null) {
+			scopeErrors = new HashSet<>();
+		}
+		scopeErrors.add(code);
+	}
 }

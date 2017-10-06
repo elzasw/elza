@@ -1,10 +1,26 @@
 package cz.tacr.elza.service.importnodes;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import com.google.common.collect.Lists;
+
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.ScopeRepository;
@@ -14,21 +30,7 @@ import cz.tacr.elza.service.importnodes.vo.File;
 import cz.tacr.elza.service.importnodes.vo.ImportParams;
 import cz.tacr.elza.service.importnodes.vo.ImportSource;
 import cz.tacr.elza.service.importnodes.vo.Packet;
-import cz.tacr.elza.service.importnodes.vo.Scope;
 import cz.tacr.elza.service.importnodes.vo.ValidateResult;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 /**
  * Servisní třída pro importování uzlů do stromu z různých zdrojů.
@@ -68,12 +70,10 @@ public class ImportNodesFromSource {
         // zjištění podporovaných scope cílového archivního souboru
         Set<String> scopeCodesFund = scopeRepository.findCodesByFund(targetFundVersion.getFund());
         // zjištění používaných scope v podstromech vybraných JP
-        Set<String> scopeCodes = source.getScopes().stream().map(Scope::getCode).collect(Collectors.toSet());
-        result.setScopeError(scopeCodes.size() > 0 && !scopeCodesFund.containsAll(scopeCodes));
-        if (result.isScopeError()) {
-            Set<String> missedScopesCodes = new HashSet<>(scopeCodes);
-            missedScopesCodes.removeAll(scopeCodesFund);
-            result.setScopeErrors(missedScopesCodes);
+		for (RegScope scope : source.getScopes()) {
+			if (!scopeCodesFund.contains(scope.getCode())) {
+				result.addMissingScope(scope.getCode());
+			}
         }
 
         // zjištění existujících názvů souborů v cílovém archivním souboru

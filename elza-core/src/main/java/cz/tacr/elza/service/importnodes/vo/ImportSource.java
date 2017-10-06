@@ -1,6 +1,9 @@
 package cz.tacr.elza.service.importnodes.vo;
 
+import java.util.List;
 import java.util.Set;
+
+import cz.tacr.elza.domain.RegScope;
 
 /**
  * Rozhraní zdroje pro import.
@@ -14,7 +17,7 @@ public interface ImportSource {
     /**
      * @return seznam použitých scope
      */
-    Set<? extends Scope> getScopes();
+	List<RegScope> getScopes();
 
     /**
      * @return seznam použitých souborů

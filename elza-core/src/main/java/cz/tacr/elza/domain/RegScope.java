@@ -7,7 +7,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-import cz.tacr.elza.service.importnodes.vo.Scope;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.hibernate.annotations.Cache;
@@ -21,14 +20,12 @@ import cz.tacr.elza.api.interfaces.IRegScope;
 /**
  * Třída rejstříku.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 27.01.2016
  */
 @Entity(name = "reg_scope")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"code"}))
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RegScope implements IRegScope, Scope {
+public class RegScope implements IRegScope {
 
     public static final String SCOPE_ID = "scopeId";
 

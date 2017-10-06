@@ -1,6 +1,22 @@
 package cz.tacr.elza.service.importnodes;
 
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.google.common.base.Objects;
+
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -21,6 +37,7 @@ import cz.tacr.elza.domain.ArrItemUnitdate;
 import cz.tacr.elza.domain.ArrItemUnitid;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.repository.FundFileRepository;
@@ -37,7 +54,6 @@ import cz.tacr.elza.service.importnodes.vo.ImportSource;
 import cz.tacr.elza.service.importnodes.vo.Node;
 import cz.tacr.elza.service.importnodes.vo.NodeRegister;
 import cz.tacr.elza.service.importnodes.vo.Packet;
-import cz.tacr.elza.service.importnodes.vo.Scope;
 import cz.tacr.elza.service.importnodes.vo.descitems.Item;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemCoordinates;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemDecimal;
@@ -53,20 +69,6 @@ import cz.tacr.elza.service.importnodes.vo.descitems.ItemString;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemText;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemUnitdate;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemUnitid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 /**
  * Implementace importu z jiného archivního souboru.
@@ -119,11 +121,6 @@ public class ImportFromFund implements ImportSource {
         this.nodeIds = sourceNodes.stream().map(ArrNode::getNodeId).collect(Collectors.toCollection(TreeSet::new));
         this.nodeIdsIterator = this.nodeIds.iterator();
         this.ignoreRootNodes = ignoreRootNodes;
-    }
-
-    @Override
-    public Set<? extends Scope> getScopes() {
-        return scopeRepository.findScopesBySubtreeNodeIds(nodeIds, ignoreRootNodes);
     }
 
     @Override
@@ -607,4 +604,9 @@ public class ImportFromFund implements ImportSource {
             return geometry;
         }
     }
+
+	@Override
+	public List<RegScope> getScopes() {
+		return scopeRepository.findScopesBySubtreeNodeIds(nodeIds, ignoreRootNodes);
+	}
 }
