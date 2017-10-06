@@ -46,10 +46,11 @@ class ScopesPermissionPanel extends AbstractReactComponent {
     static ALL_ID = "ALL_ID";
 
     buildPermission = (currObj, permission) => {
+        const {userId} = this.props;
         let obj = currObj || {groupIds: {}};
 
-        if (permission.groupId) {   // je ze skupiny
-            obj.groupIds[permission.groupId] = true;
+        if (userId && permission.groupId) {   // je ze skupiny, jen pokud se jedná o práva na uživatele, pokud je právo na skupinu, nemůže být ze skupiny
+            obj.groupIds[permission.groupId] = permission.scope ? permission.scope.id : true;
             obj.checked = obj.checked || false;
         } else {    // je přímo přiřazen
             obj.id = permission.id;
@@ -60,7 +61,12 @@ class ScopesPermissionPanel extends AbstractReactComponent {
     };
 
     componentDidMount() {
-        this.props.dispatch(userPermissions.fetch(this.props.userId));
+        const {userId, groupId} = this.props;
+        if (userId) {
+            this.props.dispatch(userPermissions.fetchUser(userId));
+        } else {
+            this.props.dispatch(userPermissions.fetchGroup(groupId));
+        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -116,7 +122,7 @@ class ScopesPermissionPanel extends AbstractReactComponent {
     }
 
     changePermission = (e, permCode) => {
-        const {userId} = this.props;
+        const {onAddPermission, onDeletePermission} = this.props;
         const value = e.target.checked;
         const {selectedPermissionIndex, permissions} = this.state;
         const permission = permissions[selectedPermissionIndex];
@@ -146,14 +152,14 @@ class ScopesPermissionPanel extends AbstractReactComponent {
         };
 
         if (value) {
-            WebApi.addUserPermission(userId, usrPermission).then(data => {
+            onAddPermission(usrPermission).then(data => {
                 newObj.id = data.id;
                 this.setState({
                     permissions: newPermissions,
                 });
             });
         } else {
-            WebApi.deleteUserPermission(userId, usrPermission).then(data => {
+            onDeletePermission(usrPermission).then(data => {
                 newObj.id = null;
                 this.setState({
                     permissions: newPermissions,
@@ -164,7 +170,7 @@ class ScopesPermissionPanel extends AbstractReactComponent {
 
     renderItem = (item, isActive, index, onCheckItem) => {
         if (item.id === ScopesPermissionPanel.ALL_ID) {
-            return <div>{i18n("admin.user.tabs.scopes.items.scopeAll")}</div>;
+            return <div>{i18n("admin.perms.tabs.scopes.items.scopeAll")}</div>;
         } else {
             return <div>
                 {item.scope.name}
@@ -193,17 +199,21 @@ class ScopesPermissionPanel extends AbstractReactComponent {
     };
 
     handleRemove = (item, index) => {
-        const {userId} = this.props;
+        const {onDeleteScopePermission} = this.props;
         const {selectedPermissionIndex, permissions} = this.state;
 
-        // Pokud má nějaké právo zděděné, musí položka po smazání zůstat
+        // Pokud má nějaké právo zděděné, musí položka po smazání zůstat, ale jen pokud je právo zděděné ze skupina přímo na daný scope
         let newPermissions;
-        let permissionAll = permissions[permissions.findIndex(x => x.id === ScopesPermissionPanel.ALL_ID)];
         const permission = permissions[selectedPermissionIndex];
         let hasInheritRight = false;
         Object.values(ScopesPermissionPanel.permCodesMap).forEach(permCode => {
-            if (permissionAll[permCode] && Object.keys(permissionAll[permCode].groupIds).length > 0) {
-                hasInheritRight = true;
+            if (permission[permCode] && Object.keys(permission[permCode].groupIds).length > 0) {    // má nějaké zděděné právo
+                // Test, zda je na tento scope
+                Object.values(permission[permCode].groupIds).forEach(v => {
+                    if (v !== true && v === item.id) {
+                        hasInheritRight = true;
+                    }
+                });
             }
         });
         let newSelectedPermissionIndex;
@@ -234,7 +244,7 @@ class ScopesPermissionPanel extends AbstractReactComponent {
             ];
         }
 
-        WebApi.deleteUserScopePermission(userId, item.id).then(data => {
+        onDeleteScopePermission(item.id).then(data => {
             this.setState({
                 permissions: newPermissions,
                 selectedPermissionIndex: newSelectedPermissionIndex
@@ -245,7 +255,7 @@ class ScopesPermissionPanel extends AbstractReactComponent {
     handleAdd = () => {
         const {scopes} = this.state;
 
-        this.props.dispatch(modalDialogShow(this, i18n('admin.user.tabs.scopes.add.title'),
+        this.props.dispatch(modalDialogShow(this, i18n('admin.perms.tabs.scopes.add.title'),
             <SelectItemsForm
                 onSubmitForm={(scopes) => {
                     const {permissions} = this.state;
@@ -294,11 +304,11 @@ class ScopesPermissionPanel extends AbstractReactComponent {
             {selectedPermissionIndex !== null && <PermissionCheckboxsForm
                 permCodes={Object.values(ScopesPermissionPanel.permCodesMap)}
                 onChangePermission={this.changePermission}
-                labelPrefix="admin.user.tabs.scopes.perm."
+                labelPrefix="admin.perms.tabs.scopes.perm."
                 permission={permission}
                 groups={userPermissions.data.groups}
                 permissionAll={permission.id !== ScopesPermissionPanel.ALL_ID ? permissionAll : null}
-                permissionAllTitle="admin.user.tabs.scopes.items.scopeAll"
+                permissionAllTitle="admin.perms.tabs.scopes.items.scopeAll"
             />}
         </AdminRightsContainer>
     }

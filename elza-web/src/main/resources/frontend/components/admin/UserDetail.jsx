@@ -10,8 +10,7 @@ import {changeUserPermission} from 'actions/admin/permission.jsx'
 import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx'
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {routerNavigate} from 'actions/router.jsx'
-import {usersUserDetailFetchIfNeeded} from 'actions/admin/user.jsx'
-import {joinGroups, leaveGroup} from 'actions/admin/user.jsx'
+import {joinGroups, leaveGroup, usersUserDetailFetchIfNeeded} from 'actions/admin/user.jsx'
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {renderGroupItem} from "components/admin/adminRenderUtils.jsx"
 import './UserDetail.less';
@@ -21,6 +20,7 @@ import AdvancedPermissionPanel from "./AdvancedPermissionPanel";
 import SelectItemsForm from "./SelectItemsForm";
 import GroupField from "./GroupField";
 import AdminRightsContainer from "./AdminRightsContainer";
+import {WebApi} from "../../actions/WebApi";
 
 /**
  * Detail uživatele s nastavením oprávnění.
@@ -36,11 +36,10 @@ class UserDetail extends AbstractReactComponent {
     static TAB_ADVANCED = 2;
 
     static tabItems = [
-        {id: UserDetail.TAB_FUNDS, title: i18n("admin.user.tabs.funds")},
-        {id: UserDetail.TAB_SCOPES, title: i18n("admin.user.tabs.scopes")},
-        {id: UserDetail.TAB_ADVANCED, title: i18n("admin.user.tabs.advanced")}
+        {id: UserDetail.TAB_FUNDS, title: i18n("admin.perms.tabs.funds")},
+        {id: UserDetail.TAB_SCOPES, title: i18n("admin.perms.tabs.scopes")},
+        {id: UserDetail.TAB_ADVANCED, title: i18n("admin.perms.tabs.advanced")}
     ];
-
 
     constructor(props) {
         super(props);
@@ -51,11 +50,11 @@ class UserDetail extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        this.dispatch(usersUserDetailFetchIfNeeded())
+        this.dispatch(usersUserDetailFetchIfNeeded());
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(usersUserDetailFetchIfNeeded())
+        this.dispatch(usersUserDetailFetchIfNeeded());
     }
 
     handleRemoveGroup = (group, index) => {
@@ -88,17 +87,22 @@ class UserDetail extends AbstractReactComponent {
             case UserDetail.TAB_FUNDS:
                 return <FundsPermissionPanel
                     userId={userDetail.id}
-                    groups={userDetail.groups}
+                    onAddPermission={perm => WebApi.addUserPermission(userDetail.id, perm)}
+                    onDeletePermission={perm => WebApi.deleteUserPermission(userDetail.id, perm)}
+                    onDeleteFundPermission={fundId => WebApi.deleteUserFundPermission(userDetail.id, fundId)}
                 />;
             case UserDetail.TAB_SCOPES:
                 return <ScopesPermissionPanel
                     userId={userDetail.id}
-                    groups={userDetail.groups}
+                    onAddPermission={perm => WebApi.addUserPermission(userDetail.id, perm)}
+                    onDeletePermission={perm => WebApi.deleteUserPermission(userDetail.id, perm)}
+                    onDeleteScopePermission={scopeId => WebApi.deleteUserScopePermission(userDetail.id, scopeId)}
                 />;
             case UserDetail.TAB_ADVANCED:
                 return <AdvancedPermissionPanel
                     userId={userDetail.id}
-                    groups={userDetail.groups}
+                    onAddPermission={perm => WebApi.addUserPermission(userDetail.id, perm)}
+                    onDeletePermission={perm => WebApi.deleteUserPermission(userDetail.id, perm)}
                 />;
         }
     };
@@ -108,13 +112,12 @@ class UserDetail extends AbstractReactComponent {
         const {selectedTabItem} = this.state;
 
         if (userDetail.id === null) {
-            return(
-                <div className='user-detail-container'>
-                    <div className="unselected-msg">
-                        <div className="title">{userCount > 0 ? i18n('admin.user.noSelection.title') : i18n('admin.user.emptyList.title')}</div>
-                        <div className="message">{userCount > 0 ? i18n('admin.user.noSelection.message') : i18n('admin.user.emptyList.message')}</div>
-                    </div>
-                </div>);
+            return <div className='user-detail-container'>
+                <div className="unselected-msg">
+                    <div className="title">{userCount > 0 ? i18n('admin.user.noSelection.title') : i18n('admin.user.emptyList.title')}</div>
+                    <div className="message">{userCount > 0 ? i18n('admin.user.noSelection.message') : i18n('admin.user.emptyList.message')}</div>
+                </div>
+            </div>;
         }
 
         return <div className="user-detail-container-wrapper">

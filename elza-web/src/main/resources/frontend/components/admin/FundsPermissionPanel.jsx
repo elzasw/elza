@@ -2,16 +2,12 @@
 import React from 'react';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, fetching} from 'components/shared';
-import ListBox from "./../../components/shared/listbox/ListBox";
 import * as perms from './../../actions/user/Permission.jsx';
-import {HorizontalLoader} from "../shared/index";
 import storeFromArea from "../../shared/utils/storeFromArea";
 import * as userPermissions from "./../../actions/admin/userPermissions";
 import {WebApi} from "../../actions/WebApi";
 import PermissionCheckboxsForm from "./PermissionCheckboxsForm";
 import AdminRightsContainer from "./AdminRightsContainer";
-import NoFocusButton from "../shared/button/NoFocusButton";
-import Icon from "../shared/icon/Icon";
 import {modalDialogShow, modalDialogHide} from "../../actions/global/modalDialog";
 import SelectItemsForm from "./SelectItemsForm";
 import FundField from "./FundField";
@@ -53,10 +49,11 @@ class FundsPermissionPanel extends AbstractReactComponent {
     static ALL_ID = "ALL_ID";
 
     buildPermission = (currObj, permission) => {
+        const {userId} = this.props;
         let obj = currObj || {groupIds: {}};
 
-        if (permission.groupId) {   // je ze skupiny
-            obj.groupIds[permission.groupId] = true;
+        if (userId && permission.groupId) {   // je ze skupiny, jen pokud se jedná o práva na uživatele, pokud je právo na skupinu, nemůže být ze skupiny
+            obj.groupIds[permission.groupId] = permission.fund ? permission.fund.id : true;
             obj.checked = obj.checked || false;
         } else {    // je přímo přiřazen
             obj.id = permission.id;
@@ -67,7 +64,12 @@ class FundsPermissionPanel extends AbstractReactComponent {
     };
 
     componentDidMount() {
-        this.props.dispatch(userPermissions.fetch(this.props.userId));
+        const {userId, groupId} = this.props;
+        if (userId) {
+            this.props.dispatch(userPermissions.fetchUser(userId));
+        } else {
+            this.props.dispatch(userPermissions.fetchGroup(groupId));
+        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -127,7 +129,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
     }
 
     changePermission = (e, permCode) => {
-        const {userId} = this.props;
+        const {onAddPermission, onDeletePermission} = this.props;
         const value = e.target.checked;
         const {selectedPermissionIndex, permissions} = this.state;
         const permission = permissions[selectedPermissionIndex];
@@ -157,14 +159,14 @@ class FundsPermissionPanel extends AbstractReactComponent {
         };
 
         if (value) {
-            WebApi.addUserPermission(userId, usrPermission).then(data => {
+            onAddPermission(usrPermission).then(data => {
                 newObj.id = data.id;
                 this.setState({
                     permissions: newPermissions,
                 });
             });
         } else {
-            WebApi.deleteUserPermission(userId, usrPermission).then(data => {
+            onDeletePermission(usrPermission).then(data => {
                 newObj.id = null;
                 this.setState({
                     permissions: newPermissions,
@@ -174,17 +176,21 @@ class FundsPermissionPanel extends AbstractReactComponent {
     };
 
     handleRemove = (item, index) => {
-        const {userId} = this.props;
+        const {onDeleteFundPermission} = this.props;
         const {selectedPermissionIndex, permissions} = this.state;
 
-        // Pokud má nějaké právo zděděné, musí položka po smazání zůstat
+        // Pokud má nějaké právo zděděné, musí položka po smazání zůstat, ale jen pokud je právo zděděné ze skupina přímo na daný fund
         let newPermissions;
-        let permissionAll = permissions[permissions.findIndex(x => x.id === FundsPermissionPanel.ALL_ID)];
         const permission = permissions[selectedPermissionIndex];
         let hasInheritRight = false;
         Object.values(FundsPermissionPanel.permCodesMap).forEach(permCode => {
-            if (permissionAll[permCode] && Object.keys(permissionAll[permCode].groupIds).length > 0) {
-                hasInheritRight = true;
+            if (permission[permCode] && Object.keys(permission[permCode].groupIds).length > 0) {  // má nějaké zděděné právo
+                // Test, zda je na tento fund
+                Object.values(permission[permCode].groupIds).forEach(v => {
+                    if (v !== true && v === item.id) {
+                        hasInheritRight = true;
+                    }
+                });
             }
         });
         let newSelectedPermissionIndex;
@@ -215,7 +221,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
             ];
         }
 
-        WebApi.deleteUserFundPermission(userId, item.id).then(data => {
+        onDeleteFundPermission(item.id).then(data => {
             this.setState({
                 permissions: newPermissions,
                 selectedPermissionIndex: newSelectedPermissionIndex
@@ -224,7 +230,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
     };
 
     handleAdd = () => {
-        this.props.dispatch(modalDialogShow(this, i18n('admin.user.tabs.funds.add.title'),
+        this.props.dispatch(modalDialogShow(this, i18n('admin.perms.tabs.funds.add.title'),
             <SelectItemsForm
                 onSubmitForm={(funds) => {
                     const {permissions} = this.state;
@@ -252,7 +258,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
 
     renderItem = (item, isActive, index, onCheckItem) => {
         if (item.id === FundsPermissionPanel.ALL_ID) {
-            return <div>{i18n("admin.user.tabs.funds.items.fundAll")}</div>;
+            return <div>{i18n("admin.perms.tabs.funds.items.fundAll")}</div>;
         } else {
             return <div>
                 {item.fund.name}
@@ -291,11 +297,11 @@ class FundsPermissionPanel extends AbstractReactComponent {
             {selectedPermissionIndex !== null && <PermissionCheckboxsForm
                 permCodes={permCodes}
                 onChangePermission={this.changePermission}
-                labelPrefix="admin.user.tabs.funds.perm."
+                labelPrefix="admin.perms.tabs.funds.perm."
                 permission={permission}
                 groups={userPermissions.data.groups}
                 permissionAll={permission.id !== FundsPermissionPanel.ALL_ID ? permissionAll : null}
-                permissionAllTitle="admin.user.tabs.funds.items.fundAll"
+                permissionAllTitle="admin.perms.tabs.funds.items.fundAll"
             />}
         </AdminRightsContainer>;
     }

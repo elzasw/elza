@@ -47,6 +47,7 @@ export class WebApiCls {
     static changesUrl = WebApiCls.arrangementUrl + '/changes';
     static dmsUrl = WebApiCls.baseUrl + '/dms';
     static userUrl = WebApiCls.baseUrl + '/user';
+    static groupUrl = WebApiCls.baseUrl + '/group';
     static adminUrl = WebApiCls.baseUrl + '/admin';
     static validateUrl = WebApiCls.baseUrl + '/validate';
 
@@ -881,16 +882,32 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl + "/" + userId + '/permission/add', null, permissions);
     }
 
+    addGroupPermission(groupId, permissions) {
+        return AjaxUtils.ajaxPost(WebApiCls.groupUrl + "/" + groupId + '/permission/add', null, permissions);
+    }
+
     deleteUserPermission(userId, permissions) {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl + "/" + userId + '/permission/delete', null, permissions);
+    }
+
+    deleteGroupPermission(groupId, permissions) {
+        return AjaxUtils.ajaxPost(WebApiCls.groupUrl + "/" + groupId + '/permission/delete', null, permissions);
     }
 
     deleteUserFundPermission(userId, fundId) {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl + "/" + userId + '/permission/delete/fund/' + fundId);
     }
 
+    deleteGroupFundPermission(groupId, fundId) {
+        return AjaxUtils.ajaxPost(WebApiCls.groupUrl + "/" + groupId + '/permission/delete/fund/' + fundId);
+    }
+
     deleteUserScopePermission(userId, scopeId) {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl + "/" + userId + '/permission/delete/scope/' + scopeId);
+    }
+
+    deleteGroupScopePermission(groupId, scopeId) {
+        return AjaxUtils.ajaxPost(WebApiCls.groupUrl + "/" + groupId + '/permission/delete/scope/' + scopeId);
     }
 
     changeGroupPermission(groupId, permissions) {
@@ -898,7 +915,7 @@ export class WebApiCls {
     }
 
     findGroup(fulltext, max = DEFAULT_LIST_SIZE) {
-        return AjaxUtils.ajaxGet(WebApiCls.userUrl + '/group', {search: fulltext, from: 0, count: max})
+        return AjaxUtils.ajaxGet(WebApiCls.groupUrl, {search: fulltext, from: 0, count: max})
             .then(json => ({groups: json.rows, groupsCount: json.count}))
     }
 
@@ -916,15 +933,15 @@ export class WebApiCls {
             code: code,
             description
         };
-        return AjaxUtils.ajaxPost(WebApiCls.userUrl + '/group', null, params);
+        return AjaxUtils.ajaxPost(WebApiCls.groupUrl, null, params);
     }
 
     updateGroup(groupId, name, description) {
-        return AjaxUtils.ajaxPut(WebApiCls.userUrl + '/group/' + groupId, null, {name, description});
+        return AjaxUtils.ajaxPut(WebApiCls.groupUrl + '/' + groupId, null, {name, description});
     }
 
     deleteGroup(groupId) {
-        return AjaxUtils.ajaxDelete(WebApiCls.userUrl + '/group/' + groupId);
+        return AjaxUtils.ajaxDelete(WebApiCls.groupUrl + '/' + groupId);
     }
 
     joinGroup(groupIds, userIds) {
@@ -965,7 +982,7 @@ export class WebApiCls {
     }
 
     getGroup(groupId){
-        return AjaxUtils.ajaxGet(WebApiCls.userUrl + '/group/' + groupId);
+        return AjaxUtils.ajaxGet(WebApiCls.groupUrl + '/' + groupId);
     }
 
     getFundDetail(fundId) {

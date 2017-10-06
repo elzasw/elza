@@ -17,17 +17,20 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
         permission: React.PropTypes.object.isRequired,    // oprávnění, které se edituje
         permissionAll: React.PropTypes.object,    // oprávnění pro all položky, pokud exisutje (a needituje se právě ono, tedy je naplněno pouze pokud permission !== permissionAll a vůbec permissionAll může existovat)
         permissionAllTitle: React.PropTypes.string,    // odkaz do resource textů jak se jmenuje zdroj all persmission
-        groups: React.PropTypes.array.isRequired,    // seznam přiřazených skupin
+        groups: React.PropTypes.array,    // seznam přiřazených skupin
     };
 
     render() {
         const {permissionAllTitle, permissionAll, groups, permission, labelPrefix, onChangePermission, permCodes} = this.props;
-        const groupMap = getMapFromList(groups);
+        const groupMap = groups ? getMapFromList(groups) : {};
 
         return <div className="permission-checkbox-form">
             {permCodes.map(permCode => {
                 const obj = permission[permCode] || {groupIds: {}};
-                const checked = obj ? obj.checked : undefined;
+                let checked = false;
+                if (obj && obj.checked) {
+                    checked = true;
+                }
                 let allChecked = (permissionAll && permissionAll[permCode]) ? permissionAll[permCode].checked : false;
 
                 let infoIcon;

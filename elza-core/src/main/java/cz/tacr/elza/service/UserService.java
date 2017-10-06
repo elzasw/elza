@@ -122,8 +122,8 @@ public class UserService {
         DELETE
     }
 
-    private List<UsrPermission> changePermission(final @NotNull UsrUser user,
-                                  final @NotNull UsrGroup group,
+    private List<UsrPermission> changePermission(final UsrUser user,
+                                  final UsrGroup group,
                                   final @NotNull List<UsrPermission> permissions,
                                   final @NotNull List<UsrPermission> permissionsDB,
                                   final @NotNull ChangePermissionType changePermissionType
@@ -279,12 +279,31 @@ public class UserService {
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
+    public List<UsrPermission> addGroupPermission(@NotNull final UsrGroup group,
+                                     @NotNull final List<UsrPermission> permissions) {
+        List<UsrPermission> permissionsDB = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
+        List<UsrPermission> result = changePermission(null, group, permissions, permissionsDB, ChangePermissionType.ADD);
+        invalidateCache(group);
+        changeGroupEvent(group);
+        return result;
+    }
+
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public void deleteUserPermission(@NotNull final UsrUser user,
                                      @NotNull final List<UsrPermission> permissions) {
         List<UsrPermission> permissionsDB = permissionRepository.findByUserOrderByPermissionIdAsc(user);
         changePermission(user, null, permissions, permissionsDB, ChangePermissionType.DELETE);
         invalidateCache(user);
         changeUserEvent(user);
+    }
+
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
+    public void deleteGroupPermission(@NotNull final UsrGroup group,
+                                     @NotNull final List<UsrPermission> permissions) {
+        List<UsrPermission> permissionsDB = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
+        changePermission(null, group, permissions, permissionsDB, ChangePermissionType.DELETE);
+        invalidateCache(group);
+        changeGroupEvent(group);
     }
 
     /**
@@ -303,6 +322,21 @@ public class UserService {
     }
 
     /**
+     * Smaže všechna oprávnení skupiny na daný AS.
+     * @param group skupina
+     * @param fundId id AS
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
+    public void deleteGroupFundPermissions(@NotNull final UsrGroup group,
+                                          @NotNull final Integer fundId) {
+        List<UsrPermission> permissionsDB = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
+        List<UsrPermission> permissionsToDelete = permissionsDB.stream()
+                .filter(x -> fundId.equals(x.getFundId()))
+                .collect(Collectors.toList());
+        deleteGroupPermission(group, permissionsToDelete);
+    }
+
+    /**
      * Smaže všechna oprávnení uživatel na daný typ rejstříku.
      * @param user uživatel
      * @param scopeId id typu rejstříku
@@ -318,17 +352,51 @@ public class UserService {
     }
 
     /**
+     * Smaže všechna oprávnení skupiny na daný typ rejstříku.
+     * @param group skupina
+     * @param scopeId id typu rejstříku
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
+    public void deleteGroupScopePermissions(@NotNull final UsrGroup group,
+                                           @NotNull final Integer scopeId) {
+        List<UsrPermission> permissionsDB = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
+        List<UsrPermission> permissionsToDelete = permissionsDB.stream()
+                .filter(x -> scopeId.equals(x.getScopeId()))
+                .collect(Collectors.toList());
+        deleteGroupPermission(group, permissionsToDelete);
+    }
+
+    /**
      * Provede přenačtení oprávnění uživatele.
      *
      * @param user uživatel, kterému přepočítáváme práva
      */
     public void invalidateCache(@NotNull final UsrUser user) {
+        invalidateUserCache(user.getUserId());
+    }
+
+    /**
+     * Provede přenačtení oprávnění uživatele.
+     *
+     * @param userId id uživatele, kterému přepočítáváme práva
+     */
+    private void invalidateUserCache(@NotNull final Integer userId) {
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
             @Override
             public void afterCommit() {
-                userPermissionsCache.invalidate(user.getUserId());
+                userPermissionsCache.invalidate(userId);
             }
         });
+    }
+
+    /**
+     * Provede přenačtení oprávnění všech uživatelů skupiny.
+     *
+     * @param group skupina
+     */
+    public void invalidateCache(@NotNull final UsrGroup group) {
+        userRepository.findByGroup(group).stream()
+                .forEach(x -> invalidateUserCache(x.getUserId()));
     }
 
     /**

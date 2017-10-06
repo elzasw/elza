@@ -439,7 +439,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
             default:
                 throw new IllegalStateException("Nedefinovaný stav " + method + ".");
         }
-        
+
         logResponse(response);
         Assert.assertEquals(status.value(), response.statusCode());
 
@@ -452,13 +452,13 @@ public abstract class AbstractControllerTest extends AbstractTest {
         // print body in some cases
         if(contentType!=null) {
         	if(contentType.startsWith(JSON_CONTENT_TYPE)||contentType.startsWith("text/")) {
-        		
+
         		ResponseBody<?> responseBody = (ResponseBody<?>)response;
         		ResponseOptions<?> responseOptions = (ResponseOptions<?>)response;
         		String body = new Prettifier().getPrettifiedBodyIfPossible(responseOptions, responseBody);
         		logger.info("Response body:" + body);
         	}
-        }		
+        }
 	}
 
 	/**
@@ -479,7 +479,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
         Response response = requestSpecification.post(url);
         logResponse(response);
-        
+
         Assert.assertEquals(HttpStatus.OK.value(), response.statusCode());
 
         return response;
@@ -2486,7 +2486,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param params parametry pro vytvoření skupiny
      * @return vytvořená skupina
      */
-    protected UsrGroupVO createGroup(final UserController.CreateGroup params) {
+    protected UsrGroupVO createGroup(final GroupController.CreateGroup params) {
         return post(spec -> spec.body(params), CREATE_GROUP).as(UsrGroupVO.class);
     }
 
@@ -2522,7 +2522,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param params  parametry změny skupiny
      */
     protected UsrGroupVO changeGroup(final Integer groupId,
-                                  final UserController.ChangeGroup params) {
+                                  final GroupController.ChangeGroup params) {
         return put(spec -> spec.body(params).pathParameter("groupId", groupId), CHANGE_GROUP).as(UsrGroupVO.class);
     }
 

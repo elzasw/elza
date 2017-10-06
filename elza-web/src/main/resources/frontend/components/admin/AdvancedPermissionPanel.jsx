@@ -32,9 +32,10 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
     static ALL_ID = "ALL_ID";
 
     buildPermission = (currObj, permission) => {
+        const {userId} = this.props;
         let obj = currObj || {groupIds: {}};
 
-        if (permission.groupId) {   // je ze skupiny
+        if (userId && permission.groupId) {   // je ze skupiny, jen pokud se jedná o práva na uživatele, pokud je právo na skupinu, nemůže být ze skupiny
             obj.groupIds[permission.groupId] = true;
             obj.checked = obj.checked || false;
         } else {    // je přímo přiřazen
@@ -46,7 +47,12 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
     };
 
     componentDidMount() {
-        this.props.dispatch(userPermissions.fetch(this.props.userId));
+        const {userId, groupId} = this.props;
+        if (userId) {
+            this.props.dispatch(userPermissions.fetchUser(userId));
+        } else {
+            this.props.dispatch(userPermissions.fetchGroup(groupId));
+        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -71,7 +77,7 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
     }
 
     changePermission = (e, permCode) => {
-        const {userId} = this.props;
+        const {onAddPermission, onDeletePermission} = this.props;
         const value = e.target.checked;
         const {permission} = this.state;
 
@@ -94,12 +100,12 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
         };
 
         if (value) {
-            WebApi.addUserPermission(userId, usrPermission).then(data => {
+            onAddPermission(usrPermission).then(data => {
                 newObj.id = data.id;
                 this.setState({permission: newPermission});
             });
         } else {
-            WebApi.deleteUserPermission(userId, usrPermission).then(data => {
+            onDeletePermission(usrPermission).then(data => {
                 newObj.id = null;
                 this.setState({permission: newPermission});
             });
@@ -114,7 +120,7 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
                 {permission && <PermissionCheckboxsForm
                     permCodes={AdvancedPermissionPanel.permCodes}
                     onChangePermission={this.changePermission}
-                    labelPrefix="admin.user.tabs.advanced.perm."
+                    labelPrefix="admin.perms.tabs.advanced.perm."
                     permission={permission}
                     groups={userPermissions.data.groups}
                 />}
