@@ -12,6 +12,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -358,6 +359,9 @@ public class OutputFactoryService implements NodeLoader {
         final ArrItemData itemData = arrItem.getItem();
 
         AbstractItem item;
+		if (arrItem.getUndefined()) {
+			item = new ItemString("");
+		} else
         if (itemData instanceof ArrItemUnitid) {
             item = getItemUnitid((ArrItemUnitid) itemData);
         } else if (itemData instanceof ArrItemUnitdate) {
@@ -367,7 +371,7 @@ public class OutputFactoryService implements NodeLoader {
         } else if (itemData instanceof ArrItemString) {
             item = getItemUnitString((ArrItemString) itemData);
         } else if (itemData instanceof ArrItemRecordRef) {
-            item = getItemUnitRecordRef(output, (ArrItemRecordRef) itemData);
+			item = getItemUnitRecordRef(output, arrItem, (ArrItemRecordRef) itemData);
         } else if (itemData instanceof ArrItemPartyRef) {
             item = getItemUnitPartyRef(output, (ArrItemPartyRef) itemData);
         } else if (itemData instanceof ArrItemPacketRef) {
@@ -413,10 +417,16 @@ public class OutputFactoryService implements NodeLoader {
         return new ItemString(itemData.getValue());
     }
 
-    private AbstractItem getItemUnitRecordRef(final OutputImpl output, final ArrItemRecordRef itemData) {
+	private AbstractItem getItemUnitRecordRef(final OutputImpl output, ArrItem arrItem,
+	        final ArrItemRecordRef itemData) {
+		Integer recordId = itemData.getRecordId();
+		if (recordId == null) {
+			Validate.notNull(recordId, "Null record id, itemId: " + arrItem.getItemId());
+		}
+
         Record record = output.getRecordFromCache(itemData.getRecordId());
-        if(record == null) {
-            RegRecord regRecord = itemData.getRecord();
+		if (record == null) {
+			RegRecord regRecord = itemData.getRecord();
             record = output.getRecord(regRecord);
         }
         return new ItemRecordRef(record);
@@ -599,6 +609,8 @@ public class OutputFactoryService implements NodeLoader {
             items = Collections.<Item>emptyList();
         } else {
             items = descItems.stream()
+			        // docasne reseni pro nereportovani nedefinovanych poli
+			        .filter(arrDescItem -> !arrDescItem.getUndefined())
                     .map(arrDescItem -> {
                         Item item = createItem(output, arrDescItem);
 

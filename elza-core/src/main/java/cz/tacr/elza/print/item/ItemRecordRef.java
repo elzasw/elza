@@ -8,7 +8,7 @@ import cz.tacr.elza.print.Record;
  */
 public class ItemRecordRef extends AbstractItem {
 	
-	Record record;
+	final Record record;
 
     public ItemRecordRef(final Record record) {
         super();
