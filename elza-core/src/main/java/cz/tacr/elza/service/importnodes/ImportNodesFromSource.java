@@ -1,13 +1,12 @@
 package cz.tacr.elza.service.importnodes;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,10 +25,8 @@ import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.ArrMoveLevelService;
 import cz.tacr.elza.service.ArrangementService;
-import cz.tacr.elza.service.importnodes.vo.File;
 import cz.tacr.elza.service.importnodes.vo.ImportParams;
 import cz.tacr.elza.service.importnodes.vo.ImportSource;
-import cz.tacr.elza.service.importnodes.vo.Packet;
 import cz.tacr.elza.service.importnodes.vo.ValidateResult;
 
 /**
@@ -78,37 +75,34 @@ public class ImportNodesFromSource {
 
         // zjištění existujících názvů souborů v cílovém archivním souboru
         List<ArrFile> fundFiles = fundFileRepository.findByFund(targetFundVersion.getFund());
-        Set<String> fileNamesFund = fundFiles.stream().map(ArrFile::getName).collect(Collectors.toCollection(() -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER)));
+		Set<String> fundfileNames = fundFiles.stream().map(ArrFile::getName)
+		        .collect(Collectors.toCollection(() -> new HashSet<>()));
         // zjištění používaných souborů v podstromech vybraných JP
-        Set<String> fileNames = source.getFiles().stream().map(File::getName).collect(Collectors.toCollection(() -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER)));
-        result.setFileConflict(fileNames.size() > 0 && fileNamesFund.stream().anyMatch(fileNames::contains));
-        if (result.isFileConflict()) {
-            Set<String> conflictedFileNames = new HashSet<>(fileNamesFund);
-            conflictedFileNames.retainAll(fileNames);
-            result.setFileConflicts(conflictedFileNames);
-        }
+		List<ArrFile> srcFiles = source.getFiles();
+		for (ArrFile srcFile : srcFiles) {
+			// check if exists
+			if (fundfileNames.contains(srcFile.getName())) {
+				result.addFileConflict(srcFile.getName());
+			}
+		}
 
         // zjištění existujících obalů v cílovém archivním souboru
-        List<? extends Packet> packetsFund = packetRepository.findByFund(targetFundVersion.getFund(), Lists.newArrayList(ArrPacket.State.OPEN, ArrPacket.State.CLOSED));
+		List<ArrPacket> packetsFund = packetRepository.findByFund(targetFundVersion.getFund(),
+		        Lists.newArrayList(ArrPacket.State.OPEN, ArrPacket.State.CLOSED));
         // zjištění používaných obalů v podstromech vybraných JP
-        Set<? extends Packet> packets = source.getPackets();
-        result.setPacketConflict(packets.size() > 0 && packetsFund.stream().anyMatch(p -> {
-            for (Packet packet : packets) {
-                if ((packet.getStorageNumber() == null && p.getStorageNumber() == null) ||
-                        (packet.getStorageNumber() != null && packet.getStorageNumber().equalsIgnoreCase(p.getStorageNumber()))
-                        /*&& Objects.equal(packet.getPacketType(), p.getPacketType())*/) {
-                    Collection<String> packetConflicts = result.getPacketConflicts();
-                    if (packetConflicts == null) {
-                        packetConflicts = new ArrayList<>();
-                        result.setPacketConflicts(packetConflicts);
-                    }
-                    packetConflicts.add(packet.getStorageNumber());
-                    return true;
-                }
-            }
-            return false;
-        }));
+		List<ArrPacket> packets = source.getPackets();
+		for (ArrPacket srcPacket : packets) {
+			for (ArrPacket currPacket : packetsFund) {
 
+				//TODO: compare packet id instead of objects
+				if (StringUtils.equalsIgnoreCase(srcPacket.getStorageNumber(), currPacket.getStorageNumber()) &&
+				        Objects.equals(srcPacket.getPacketType(), currPacket.getPacketType())) {
+					// we found a conflict
+					result.addPacketConflicts(srcPacket);
+					break;
+				}
+			}
+		}
         return result;
     }
 

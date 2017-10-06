@@ -1,7 +1,10 @@
 package cz.tacr.elza.service.importnodes.vo;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+
+import cz.tacr.elza.domain.ArrPacket;
 
 /**
  * Výsledek validace.
@@ -10,10 +13,10 @@ import java.util.HashSet;
  */
 public class ValidateResult {
 
-    /**
-     * Chyba ve scopech - fatální.
-     */
-    private boolean scopeError;
+	/**
+	 * Chyba ve scopech - fatální.
+	 */
+	private boolean scopeError;
 
     /**
      * Seznam chyb ve scopech.
@@ -21,46 +24,38 @@ public class ValidateResult {
     private Collection<String> scopeErrors;
 
     /**
-     * Konflikt souborů.
-     */
-    private boolean fileConflict;
+	 * Konflikt souborů.
+	 */
+	private boolean fileConflict;
 
-    /**
-     * Seznam konfliktů v souborech.
-     */
+	/**
+	 * Seznam konfliktů v souborech.
+	 */
     private Collection<String> fileConflicts;
 
     /**
-     * Konflikt obalů.
-     */
-    private boolean packetConflict;
+	 * Konflikt obalů.
+	 */
+	private boolean packetConflict;
 
-    /**
-     * Seznam konfliktů v obalech.
-     */
+	/**
+	 * Seznam konfliktů v obalech.
+	 */
     private Collection<String> packetConflicts;
 
-    public boolean isScopeError() {
-        return scopeError;
-    }
+	public boolean isScopeError() {
+		return scopeError;
+	}
 
-    public void setFileConflict(final boolean fileConflict) {
-        this.fileConflict = fileConflict;
-    }
+	public boolean isFileConflict() {
+		return fileConflict;
+	}
 
-    public boolean isFileConflict() {
-        return fileConflict;
-    }
+	public boolean isPacketConflict() {
+		return packetConflict;
+	}
 
-    public void setPacketConflict(final boolean packetConflict) {
-        this.packetConflict = packetConflict;
-    }
-
-    public boolean isPacketConflict() {
-        return packetConflict;
-    }
-
-    public Collection<String> getScopeErrors() {
+	public Collection<String> getScopeErrors() {
         return scopeErrors;
     }
 
@@ -68,23 +63,32 @@ public class ValidateResult {
         return fileConflicts;
     }
 
-    public void setFileConflicts(final Collection<String> fileConflicts) {
-        this.fileConflicts = fileConflicts;
-    }
-
     public Collection<String> getPacketConflicts() {
         return packetConflicts;
     }
 
-    public void setPacketConflicts(final Collection<String> packetConflicts) {
-        this.packetConflicts = packetConflicts;
-    }
 
 	public void addMissingScope(String code) {
-		scopeError = true;
 		if (scopeErrors == null) {
+			scopeError = true;
 			scopeErrors = new HashSet<>();
 		}
 		scopeErrors.add(code);
+	}
+
+	public void addPacketConflicts(ArrPacket srcPacket) {
+		if (packetConflicts == null) {
+			packetConflict = true;
+			packetConflicts = new ArrayList<>();
+		}
+		packetConflicts.add(srcPacket.getStorageNumber());
+	}
+
+	public void addFileConflict(String name) {
+		if (fileConflicts == null) {
+			fileConflict = true;
+			fileConflicts = new ArrayList<>();
+		}
+		fileConflicts.add(name);
 	}
 }

@@ -1,8 +1,9 @@
 package cz.tacr.elza.service.importnodes.vo;
 
 import java.util.List;
-import java.util.Set;
 
+import cz.tacr.elza.domain.ArrFile;
+import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RegScope;
 
 /**
@@ -22,12 +23,12 @@ public interface ImportSource {
     /**
      * @return seznam použitých souborů
      */
-    Set<? extends File> getFiles();
+	List<ArrFile> getFiles();
 
     /**
      * @return seznam použitých obalů
      */
-    Set<? extends Packet> getPackets();
+	List<ArrPacket> getPackets();
 
     /**
      * @return má další uzel?

@@ -1,6 +1,5 @@
 package cz.tacr.elza.service.importnodes;
 
-import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,7 +18,6 @@ import com.google.common.base.Objects;
 
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
-import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItemCoordinates;
 import cz.tacr.elza.domain.ArrItemData;
 import cz.tacr.elza.domain.ArrItemDecimal;
@@ -37,6 +35,7 @@ import cz.tacr.elza.domain.ArrItemUnitdate;
 import cz.tacr.elza.domain.ArrItemUnitid;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -49,11 +48,9 @@ import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.importnodes.vo.ChangeDeep;
 import cz.tacr.elza.service.importnodes.vo.DeepCallback;
-import cz.tacr.elza.service.importnodes.vo.File;
 import cz.tacr.elza.service.importnodes.vo.ImportSource;
 import cz.tacr.elza.service.importnodes.vo.Node;
 import cz.tacr.elza.service.importnodes.vo.NodeRegister;
-import cz.tacr.elza.service.importnodes.vo.Packet;
 import cz.tacr.elza.service.importnodes.vo.descitems.Item;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemCoordinates;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemDecimal;
@@ -97,7 +94,6 @@ public class ImportFromFund implements ImportSource {
     @Autowired
     private DmsService dmsService;
 
-    private ArrFundVersion sourceFundVersion;
     private Set<Integer> nodeIds;
     private Iterator<Integer> nodeIdsIterator;
     private boolean ignoreRootNodes;
@@ -116,51 +112,20 @@ public class ImportFromFund implements ImportSource {
      * @param sourceNodes       uzly, které prohledáváme
      * @param ignoreRootNodes   ignorují je vrcholové uzly, které prohledáváme
      */
-    public void init(final ArrFundVersion sourceFundVersion, final Collection<ArrNode> sourceNodes, final boolean ignoreRootNodes) {
-        this.sourceFundVersion = sourceFundVersion;
+	public void init(final Collection<ArrNode> sourceNodes, final boolean ignoreRootNodes) {
         this.nodeIds = sourceNodes.stream().map(ArrNode::getNodeId).collect(Collectors.toCollection(TreeSet::new));
         this.nodeIdsIterator = this.nodeIds.iterator();
         this.ignoreRootNodes = ignoreRootNodes;
     }
 
     @Override
-    public Set<File> getFiles() {
+	public List<ArrFile> getFiles() {
         List<ArrFile> files = fundFileRepository.findFilesBySubtreeNodeIds(nodeIds, ignoreRootNodes);
-        return files.stream().<File>map(file -> new File() {
-            @Override
-            public String getName() {
-                return file.getName();
-            }
-
-            @Override
-            public InputStream getFileStream() {
-                return dmsService.downloadFile(file);
-            }
-
-            @Override
-            public String getFileName() {
-                return file.getFileName();
-            }
-
-            @Override
-            public Integer getFileSize() {
-                return file.getFileSize();
-            }
-
-            @Override
-            public String getMimeType() {
-                return file.getMimeType();
-            }
-
-            @Override
-            public Integer getPagesCount() {
-                return file.getPagesCount();
-            }
-        }).collect(Collectors.toSet());
+		return files;
     }
 
     @Override
-    public Set<? extends Packet> getPackets() {
+	public List<ArrPacket> getPackets() {
         return packetRepository.findPacketsBySubtreeNodeIds(nodeIds, ignoreRootNodes);
     }
 
