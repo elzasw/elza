@@ -1,4 +1,4 @@
-#define NazevApliakceInstalator "ELZA"
+﻿#define NazevApliakceInstalator "ELZA"
 #define KodAplikace  "ELZA"
 #define IdAplikace "{44F9EF89-0373-4BFD-8D36-C465DAB6E0A2}"
 #define VerzeAplikaceWinInfo "0.0.12.0"
