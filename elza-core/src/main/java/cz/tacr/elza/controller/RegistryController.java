@@ -562,15 +562,6 @@ public class RegistryController {
     }
 
     /**
-     * Vrací výchozí třídy rejstříků z databáze.
-     */
-    @RequestMapping(value = "/defaultScopes", method = RequestMethod.GET)
-    public List<RegScopeVO> getDefaultScopes() {
-        List<RegScope> scopes = registryService.findDefaultScopes();
-        return factoryVo.createScopes(scopes);
-    }
-
-    /**
      * Vytvoří nové souřadnice k rejsříkovému heslu
      */
     @Transactional

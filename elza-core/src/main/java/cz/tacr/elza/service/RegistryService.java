@@ -136,22 +136,6 @@ public class RegistryService {
     private List<String> scopeCodes;
 
     /**
-     * Id tříd rejstříků nastavené v konfiguraci elzy.
-     */
-    private Set<Integer> defaultScopeIds = null;
-
-    public Set<Integer> getDefaultScopeIds() {
-        if (defaultScopeIds == null) {
-            List<String> scopeCodes = getScopeCodes();
-            if (CollectionUtils.isNotEmpty(scopeCodes)) {
-                List<RegScope> foundCodes = scopeRepository.findByCodes(scopeCodes);
-                defaultScopeIds = foundCodes.stream().map(RegScope::getScopeId).collect(Collectors.toSet());
-            }
-        }
-        return defaultScopeIds;
-    }
-
-    /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (record, charateristics, comment),
      * nebo pole variantního záznamu obsahují hledaný řetězec. V případě, že hledaný řetězec je null, nevyhodnocuje se.
      *

@@ -429,10 +429,6 @@ export class WebApiCls {
     getRecordTypes() {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/recordTypes');
     }
-
-    getDefaultScopes() {
-        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/defaultScopes');
-    }
     // End registry
 
     getNodeForm(nodeId, versionId) {

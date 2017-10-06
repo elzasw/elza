@@ -1,11 +1,16 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.controller.vo.*;
+import java.util.Collections;
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Collections;
-import java.util.List;
+import cz.tacr.elza.controller.vo.RegCoordinatesVO;
+import cz.tacr.elza.controller.vo.RegRecordVO;
+import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.controller.vo.RegScopeVO;
+import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 
 
 /**
@@ -77,14 +82,6 @@ public class RegistryControllerTest extends AbstractControllerTest {
      */
     private void deleteScopeTest(final int id) {
         deleteScope(id);
-    }
-
-    /**
-     * Vrací výchozí třídy rejstříků z databáze.
-     */
-    @Test
-    public void getDefaultScopesTest() {
-        getDefaultScopes();
     }
 
     private static final String NON_HIERARCHIC_REGISTER_TYPE_CODE = "ARTWORK_CONSTR";

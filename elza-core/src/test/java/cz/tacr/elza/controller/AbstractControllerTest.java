@@ -20,11 +20,6 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.controller.vo.CopyNodesParams;
-import cz.tacr.elza.controller.vo.CopyNodesValidate;
-import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
-import cz.tacr.elza.controller.vo.PackageVO;
-import cz.tacr.elza.service.vo.ChangesResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
@@ -57,11 +52,15 @@ import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
 import cz.tacr.elza.controller.vo.ArrOutputExtVO;
 import cz.tacr.elza.controller.vo.ArrOutputVO;
 import cz.tacr.elza.controller.vo.ArrPacketVO;
+import cz.tacr.elza.controller.vo.CopyNodesParams;
+import cz.tacr.elza.controller.vo.CopyNodesValidate;
+import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.FundListCountResult;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.PackageVO;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyTypeVO;
@@ -107,9 +106,9 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.service.ArrMoveLevelService;
+import cz.tacr.elza.service.vo.ChangesResult;
 
 
 public abstract class AbstractControllerTest extends AbstractTest {
@@ -254,7 +253,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String INSTITUTIONS = PARTY_CONTROLLER_URL + "/institutions";
 
     // REGISTRY
-    protected static final String DEFAULT_SCOPES = REGISTRY_CONTROLLER_URL + "/defaultScopes";
     protected static final String CREATE_SCOPE = REGISTRY_CONTROLLER_URL + "/scopes";
     protected static final String UPDATE_SCOPE = REGISTRY_CONTROLLER_URL + "/scopes/{scopeId}";
     protected static final String DELETE_SCOPE = REGISTRY_CONTROLLER_URL + "/scopes/{scopeId}";
@@ -446,7 +444,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         return response;
     }
 
-    private static void logResponse(Response response) {
+    private static void logResponse(final Response response) {
         String contentType = response.contentType();
         logger.info("Response status: " + response.statusLine() + ", content-type: " + contentType);
         // print body in some cases
@@ -1835,13 +1833,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
             }
         }
         return null;
-    }
-
-    /**
-     * Vrací výchozí třídy rejstříků z databáze.
-     */
-    protected List<RegScopeVO> getDefaultScopes() {
-        return Arrays.asList(get(DEFAULT_SCOPES).getBody().as(RegScopeVO[].class));
     }
 
     /**
