@@ -2,9 +2,9 @@
 #define KodAplikace  "ELZA"
 #define IdAplikace "{44F9EF89-0373-4BFD-8D36-C465DAB6E0A2}"
 #define VerzeAplikaceWinInfo "0.0.12.0"
-#define NazevAplikace "Elektronická evidence archiválií"
-#define NazevFirmy "Technologická agentura ÈR"
-#define Copyright "Technologická agentura ÈR © 2017"
+#define NazevAplikace "ElektronickÃ¡ evidence archivÃ¡liÃ­"
+#define NazevFirmy "TechnologickÃ¡ agentura ÄŒR"
+#define Copyright "TechnologickÃ¡ agentura ÄŒR Â© 2017"
 ;#define TomcatVersion "8.5.15"
 ;#define NazevInstalator  "ELZA-0.12.0"
 ;#define VerzeAplikace "0.12.0-SNAPSHOT"
@@ -30,13 +30,13 @@ DefaultDirName={code:InstalacniAdresar}
 AppId={code:IdAplikace}
 AppName={#NazevApliakceInstalator}
 AppVersion={code:VerzeAplikace}
-OutputBaseFilename={#NazevInstalator}
+OutputBaseFilename={#InstallerName}
 DefaultGroupName={#KodAplikace}
 VersionInfoVersion={#VerzeAplikaceWinInfo}
-VersionInfoTextVersion={#VerzeAplikace}
+VersionInfoTextVersion={#ProjectVersion}
 VersionInfoProductName={#KodAplikace}
 VersionInfoProductVersion={#VerzeAplikaceWinInfo}
-VersionInfoProductTextVersion={#VerzeAplikace}
+VersionInfoProductTextVersion={#ProjectVersion}
 VersionInfoDescription={#NazevAplikace}
 AppPublisher={#NazevFirmy}
 VersionInfoCompany={#NazevFirmy}
@@ -48,7 +48,7 @@ PrivilegesRequired=admin
 
 [Files]
 Source: "compiler:\WizModernSmallImage.bmp"; Flags: dontcopy
-Source: "apache-tomcat-{#TomcatVersion}\*"; DestDir: "{app}\apache-tomcat"; Flags: recursesubdirs
+Source: "apache-tomcat\*"; DestDir: "{app}\apache-tomcat"; Flags: recursesubdirs
 Source: "jre\*"; DestDir: "{app}\apache-tomcat\jre"; Flags: recursesubdirs
 Source: "ROOT\*"; DestDir: "{app}\apache-tomcat\webapps\ROOT"; Flags: recursesubdirs
 Source: "classes\TestDb\*"; DestDir: "{app}\TestDb"; Flags: recursesubdirs
@@ -66,10 +66,10 @@ Source: "classes\Nastaveni\faviconplay.ico"; DestDir: "{app}"
 Source: "classes\Nastaveni\faviconstop.ico"; DestDir: "{app}"
 
 [Icons]
-Name: "{group}\{#KodAplikace} - Stránka aplikace"; Filename: "{app}\elza.url"; WorkingDir: "{app}"; IconFilename: "{app}\favicon.ico"
+Name: "{group}\{#KodAplikace} - StrÃ¡nka aplikace"; Filename: "{app}\elza.url"; WorkingDir: "{app}"; IconFilename: "{app}\favicon.ico"
 Name: "{group}\{#KodAplikace} - Odinstalovat aplikaci"; Filename: "{uninstallexe}"; IconFilename: "{app}\faviconuninstall.ico"
-;Name: "{group}\{#KodAplikace} - Spustit slubu"; Filename: "{app}\start.bat"; IconFilename: "{app}\faviconplay.ico"
-;Name: "{group}\{#KodAplikace} - Vypnout slubu"; Filename: "{app}\stop.bat"; IconFilename: "{app}\faviconstop.ico"
+;Name: "{group}\{#KodAplikace} - Spustit sluÅ¾bu"; Filename: "{app}\start.bat"; IconFilename: "{app}\faviconplay.ico"
+;Name: "{group}\{#KodAplikace} - Vypnout sluÅ¾bu"; Filename: "{app}\stop.bat"; IconFilename: "{app}\faviconstop.ico"
 
 [Languages] 
 Name: "Czech"; MessagesFile: "compiler:Languages\Czech.isl"
@@ -92,10 +92,10 @@ Type: filesandordirs; Name: "{code:InstalacniAdresar}\apache-tomcat"
 
 //seznam konstant
 const 
-  //ID uivatelskıch obrazovek
+  //ID uÅ¾ivatelskÃ½ch obrazovek
   wpNastaveniDB = 100;
 
-  //pouité texty
+  //pouÅ¾itÃ© texty
   _Enter = #13#10;
   _Mezera = #32;
   _JdbcUrl = 'jdbc.url=';
@@ -103,44 +103,44 @@ const
   _JdbcPass = 'jdbc.password=';
   _Mssql = 'jdbc:jtds:sqlserver://';
   _Postgresql = 'jdbc:postgresql://';
-  _TestDb = 'Otestovat pøipojení k databázi';
-  _TestDbVysledek = 'Test pøipojení aplikaèní databáze: ';
-  _TestJmeno = 'Uivatelské jméno: ';
-  _TestOdpoved = 'Text odpovìdi: ';
-  _TestOk = 'Pøipojení k databázi je v poøádku.';
-  _PreskocitKontroluDB = 'Pøeskoèit kontrolu databáze';
+  _TestDb = 'Otestovat pÅ™ipojenÃ­ k databÃ¡zi';
+  _TestDbVysledek = 'Test pÅ™ipojenÃ­ aplikaÄnÃ­ databÃ¡ze: ';
+  _TestJmeno = 'UÅ¾ivatelskÃ© jmÃ©no: ';
+  _TestOdpoved = 'Text odpovÄ›di: ';
+  _TestOk = 'PÅ™ipojenÃ­ k databÃ¡zi je v poÅ™Ã¡dku.';
+  _PreskocitKontroluDB = 'PÅ™eskoÄit kontrolu databÃ¡ze';
 
-  _NevyplnenoUrlServeru = 'Není vyplnìno povinné pole URL serveru!';
-  _NevyplnenoPort = 'Není vyplnìno povinné pole port!'; 
-  _NevyplnenoNazevDbApp = 'Není vyplnìno povinné pole název aplikaèní databáze!';
-  _NevyplnenoNazevDbHist = 'Není vyplnìno povinné pole název historizaèní databáze!';
-  _NevyplnenoJmeno = 'Není vyplnìno povinné pole jméno!';
-  _NevyplnenoHeslo = 'Není vyplnìno povinné pole heslo!';
-  _NevyplnenoSid = 'Není vyplnìno povinné pole SID!';
-  _NevyplnenoSchemaApp = 'Není vyplnìno povinné pole název uivatelského schématu aplikaèní databáze!';
-  _NevyplnenoSchemaHist = 'Není vyplnìno povinné pole název uivatelského schématu historizaèní databáze!';
-  _NevyplnenoHesloApp = 'Není vyplnìno heslo k aplikaèní databázi!';
-  _NevyplnenoHesloHist = 'Není vyplnìno heslo k historizaèní databázi!';
+  _NevyplnenoUrlServeru = 'NenÃ­ vyplnÄ›no povinnÃ© pole URL serveru!';
+  _NevyplnenoPort = 'NenÃ­ vyplnÄ›no povinnÃ© pole port!'; 
+  _NevyplnenoNazevDbApp = 'NenÃ­ vyplnÄ›no povinnÃ© pole nÃ¡zev aplikaÄnÃ­ databÃ¡ze!';
+  _NevyplnenoNazevDbHist = 'NenÃ­ vyplnÄ›no povinnÃ© pole nÃ¡zev historizaÄnÃ­ databÃ¡ze!';
+  _NevyplnenoJmeno = 'NenÃ­ vyplnÄ›no povinnÃ© pole jmÃ©no!';
+  _NevyplnenoHeslo = 'NenÃ­ vyplnÄ›no povinnÃ© pole heslo!';
+  _NevyplnenoSid = 'NenÃ­ vyplnÄ›no povinnÃ© pole SID!';
+  _NevyplnenoSchemaApp = 'NenÃ­ vyplnÄ›no povinnÃ© pole nÃ¡zev uÅ¾ivatelskÃ©ho schÃ©matu aplikaÄnÃ­ databÃ¡ze!';
+  _NevyplnenoSchemaHist = 'NenÃ­ vyplnÄ›no povinnÃ© pole nÃ¡zev uÅ¾ivatelskÃ©ho schÃ©matu historizaÄnÃ­ databÃ¡ze!';
+  _NevyplnenoHesloApp = 'NenÃ­ vyplnÄ›no heslo k aplikaÄnÃ­ databÃ¡zi!';
+  _NevyplnenoHesloHist = 'NenÃ­ vyplnÄ›no heslo k historizaÄnÃ­ databÃ¡zi!';
 
-  _ChybaOdpoved = 'Nepodaøilo se získat odpovìï!';
-  _ChybaTestu = 'Pøi testu pøipojení k databázi došlo k chybì: '; 
+  _ChybaOdpoved = 'NepodaÅ™ilo se zÃ­skat odpovÄ›Ä!';
+  _ChybaTestu = 'PÅ™i testu pÅ™ipojenÃ­ k databÃ¡zi doÅ¡lo k chybÄ›: '; 
   
   _AktualizaceApp = 'Aktualizace aplikace:';
-  _UlozeniNastaveniApp = 'Uloení nastavení aplikace';
-  _UlozeniNastaveniPripojeni = 'Uloení nastavení pøipojení k databázi';
-  _RegistaceSluzby = 'Registrace sluby {#KodAplikace}';
-  _OdstanovaniDocasnychSouboru = 'Odstraòování doèasnıch souborù';
+  _UlozeniNastaveniApp = 'UloÅ¾enÃ­ nastavenÃ­ aplikace';
+  _UlozeniNastaveniPripojeni = 'UloÅ¾enÃ­ nastavenÃ­ pÅ™ipojenÃ­ k databÃ¡zi';
+  _RegistaceSluzby = 'Registrace sluÅ¾by {#KodAplikace}';
+  _OdstanovaniDocasnychSouboru = 'OdstraÅˆovÃ¡nÃ­ doÄasnÃ½ch souborÅ¯';
   _Hotovo = 'Hotovo';
-  _InstalacniAdresarObsahujeMezery = 'Ceska k instalaènímu adresáøi nesmí obsahovat mezery!';   
+  _InstalacniAdresarObsahujeMezery = 'Ceska k instalaÄnÃ­mu adresÃ¡Å™i nesmÃ­ obsahovat mezery!';   
 
-//globální promìnné
+//globÃ¡lnÃ­ promÄ›nnÃ©
 var 
   ComboTypDatabaze: TNewComboBox;
 
   LabelInstance, LabelNazevDB, LabelJmeno, LabelHeslo, StavDotazu, LabelOdinstalace, LabelUrlServeru, LabelPort, LabelAppPort : TNewStaticText;
 
   EditInstance, EditPort, EditUrlServeru, EditJmeno, EditHeslo, EditNazevDB, EditAppPort: TNewEdit;
-  AdminJmeno, AdminHeslo, PortAplikace: String;
+  AdminJmeno, AdminHeslo, PortAplikace: String;
 
   ButtonTestPripojeniDB: TNewButton;
 
@@ -153,25 +153,25 @@ var
   SeznamUkolu: TNewCheckListBox;
 
 
-//vrací id aplikace - pro sekci [setup]
+//vracÃ­ id aplikace - pro sekci [setup]
 function IdAplikace(Param: String): String;
 begin
   result := '{#IdAplikace}';
 end;
 
-//vrací verzi aplikace - pro sekci [setup]
+//vracÃ­ verzi aplikace - pro sekci [setup]
 function VerzeAplikace(Param: String): String;
 begin
-  result := '{#VerzeAplikace}';
+  result := '{#ProjectVersion}';
 end;
 
-//vrací vıchozí adresáø instalace - pro sekci [setup]
+//vracÃ­ vÃ½chozÃ­ adresÃ¡Å™ instalace - pro sekci [setup]
 function InstalacniAdresar(Param: String): String;
 begin
   result := ExpandConstant('{sd}\{#KodAplikace}\');
 end;
 
-//funkce vrátí cestu k odinstalaènímu souboru podle jejího ID
+//funkce vrÃ¡tÃ­ cestu k odinstalaÄnÃ­mu souboru podle jejÃ­ho ID
 function GetUninstallString(): String;
 var
   sUnInstPath: String;
@@ -184,7 +184,7 @@ begin
   Result := sUnInstallString;
 end;
 
-//funkce vrátí verzi nainstalované aplikace podle jejího ID
+//funkce vrÃ¡tÃ­ verzi nainstalovanÃ© aplikace podle jejÃ­ho ID
 function GetAppVersionString(): String;
 var
   sUnInstPath: String;
@@ -202,24 +202,24 @@ begin
   Result := LowerCase ('{#KodAplikace}');
 end;
 
-//funkce nahradí hodnotu vıchozí hodnotu hodnotou z instalátoru ve vybraném souboru
+//funkce nahradÃ­ hodnotu vÃ½chozÃ­ hodnotu hodnotou z instalÃ¡toru ve vybranÃ©m souboru
 //parametry
-//CestaKSouboru - cesta k souboru, kde se má provést náhrada hodnoty
-//ZeStr - string, kterı se má nahradit
-//DoStr - string, kterı má bıt uloen
+//CestaKSouboru - cesta k souboru, kde se mÃ¡ provÃ©st nÃ¡hrada hodnoty
+//ZeStr - string, kterÃ½ se mÃ¡ nahradit
+//DoStr - string, kterÃ½ mÃ¡ bÃ½t uloÅ¾en
 function NahradHodnotuVSouboru(CestaKSouboru,ZeStr,DoStr:String):boolean;
 var S: AnsiString;
     US: string;
 begin
   result := false;
   
-  //naète celı soubor do stringu
+  //naÄte celÃ½ soubor do stringu
   if LoadStringFromFile(ExpandConstant(CestaKSouboru),S) then
   begin
-    //nahradí vıchozí hodnoty
+    //nahradÃ­ vÃ½chozÃ­ hodnoty
     US := String(S);
     StringChangeEx(US, ZeStr , DoStr, True);
-    //uloí zpìt do souboru
+    //uloÅ¾Ã­ zpÄ›t do souboru
     if SaveStringToFile (ExpandConstant(CestaKSouboru), AnsiString(US), false) then
     begin
       result := true;
@@ -227,11 +227,11 @@ begin
   end;
 end;
 
-//funkce spustí java aplikaci, která z pøedanıch parametrù otestuje pøipojení k databázi a vısledek kontroly uloí do souboru testLog.txt, vrací text ovìøení
-//vstupní parametry
-//Parametr: parametr spuštìní java aplikace ve kterém se volá .jar pro spuštìní ovìøení a parametry pøipojení k databázi
-//PracovniAdresar: pracovní adresáø do kterého se uloí vısledek ovìøení 
-//TextChyba: text, kterı se vrací v pøípadì chyby rozšíøenı o odpovìï serveru
+//funkce spustÃ­ java aplikaci, kterÃ¡ z pÅ™edanÃ½ch parametrÅ¯ otestuje pÅ™ipojenÃ­ k databÃ¡zi a vÃ½sledek kontroly uloÅ¾Ã­ do souboru testLog.txt, vracÃ­ text ovÄ›Å™enÃ­
+//vstupnÃ­ parametry
+//Parametr: parametr spuÅ¡tÄ›nÃ­ java aplikace ve kterÃ©m se volÃ¡ .jar pro spuÅ¡tÄ›nÃ­ ovÄ›Å™enÃ­ a parametry pÅ™ipojenÃ­ k databÃ¡zi
+//PracovniAdresar: pracovnÃ­ adresÃ¡Å™ do kterÃ©ho se uloÅ¾Ã­ vÃ½sledek ovÄ›Å™enÃ­ 
+//TextChyba: text, kterÃ½ se vracÃ­ v pÅ™Ã­padÄ› chyby rozÅ¡Ã­Å™enÃ½ o odpovÄ›Ä serveru
 function ProvedTestZalozeniDB(Parametr,PracovniAdresar,TextChyba: String): String;
 var
   Odpoved : AnsiString;
@@ -248,11 +248,11 @@ begin
 
     if Pos ('ok',Odpoved ) = 1  then
     begin
-      Odpoved := ''; //odpovìï je ok, vrací se prázdnı string
+      Odpoved := ''; //odpovÄ›Ä je ok, vracÃ­ se prÃ¡zdnÃ½ string
     end
     else
     begin
-      Odpoved := TextChyba + Odpoved + _Enter; //Chyba, vrací se text odpovìdi
+      Odpoved := TextChyba + Odpoved + _Enter; //Chyba, vracÃ­ se text odpovÄ›di
     end;
     
     result := Odpoved;
@@ -263,10 +263,10 @@ begin
   end; 
 end;
 
-//funkce kontroluje povinná a duplicitní pole pro test pøipojení db - v pøípadì chyby vrací text s popisem - pokud je vše ok, vrací prázdnı string
-//vstupní parametry
+//funkce kontroluje povinnÃ¡ a duplicitnÃ­ pole pro test pÅ™ipojenÃ­ db - v pÅ™Ã­padÄ› chyby vracÃ­ text s popisem - pokud je vÅ¡e ok, vracÃ­ prÃ¡zdnÃ½ string
+//vstupnÃ­ parametry
 //TypDB: 0 - H2, 1 - MSSQL, 2 - Postgresql
-//UrlSeveru,Port,Sid,NazevDBApp,NazevDBHist,Jmeno,Heslo: Vstupní parametry k porovnání
+//UrlSeveru,Port,Sid,NazevDBApp,NazevDBHist,Jmeno,Heslo: VstupnÃ­ parametry k porovnÃ¡nÃ­
 function KontrolaPovinnaPole (TypDB:Integer; UrlSeveru,Port,Sid,NazevDB,Jmeno,Heslo: String):String;
 var
   NevyplnenaPovinnaPole: String;
@@ -292,10 +292,10 @@ begin
   result := NevyplnenaPovinnaPole;
 end;
 
-//funkce vrátí jdbc dle typu db a ze zadanıch vstupních dat
-//vstupní parametry
+//funkce vrÃ¡tÃ­ jdbc dle typu db a ze zadanÃ½ch vstupnÃ­ch dat
+//vstupnÃ­ parametry
 //TypDB: 2 - Postgresql, 1 - MSSQL
-//UrlSeveru,Port,NazevDB,Sid: Vstupní parametry k vytvoøení jdbc
+//UrlSeveru,Port,NazevDB,Sid: VstupnÃ­ parametry k vytvoÅ™enÃ­ jdbc
 function VytvorJdbc(TypDB:Integer; UrlSeveru,Port,NazevDB,Instance: String):string;
 var Jdbc: String;
 begin
@@ -315,20 +315,20 @@ begin
   result := Jdbc; 
 end;
 
-//funkce provede test pøipojení k databázi a vrátí stringovı øetìzec
-//pokud je test ok, vrací se prázdnı øetìzec
-//pokud dojde k chybì, vrací se popis chyby
+//funkce provede test pÅ™ipojenÃ­ k databÃ¡zi a vrÃ¡tÃ­ stringovÃ½ Å™etÄ›zec
+//pokud je test ok, vracÃ­ se prÃ¡zdnÃ½ Å™etÄ›zec
+//pokud dojde k chybÄ›, vracÃ­ se popis chyby
 function TestPripojeniDB():String;
 var
   ResultCode: Integer;
   Jdbc, NeniVyplneno, OdpovedCela, Parametr, TextOdpoved, TestDbCesta, TestDbSoubor : String;
   
 begin
-  //cesta k adresáøi, kde se nachází jar pro testování db
+  //cesta k adresÃ¡Å™i, kde se nachÃ¡zÃ­ jar pro testovÃ¡nÃ­ db
   TestDbCesta := ExpandConstant ('{app}\TestDb\');
   TestDbSoubor := 'db.jar';
   
-  //kontrola vyplnìní povinnıch polí
+  //kontrola vyplnÄ›nÃ­ povinnÃ½ch polÃ­
   NeniVyplneno := KontrolaPovinnaPole (ComboTypDatabaze.ItemIndex, EditUrlServeru.Text,EditPort.Text,EditInstance.Text,EditNazevDB.Text,EditJmeno.Text,EditHeslo.Text);
   if NeniVyplneno <> '' then
   begin
@@ -336,11 +336,11 @@ begin
     exit;
   end;
   
-  //vıbìr databáze H2
+  //vÃ½bÄ›r databÃ¡ze H2
   if ComboTypDatabaze.ItemIndex = 0 then 
   begin
   end
-  //vıbìr databáze MSSQL
+  //vÃ½bÄ›r databÃ¡ze MSSQL
   else if ComboTypDatabaze.ItemIndex = 1 then 
   begin
     Jdbc := VytvorJdbc(ComboTypDatabaze.ItemIndex, EditUrlServeru.Text, EditPort.Text, EditNazevDB.Text, EditInstance.Text);
@@ -348,7 +348,7 @@ begin
     TextOdpoved := _TestDbVysledek + Jdbc + _Enter + _TestJmeno + EditJmeno.Text + _Enter + _TestOdpoved; 
     OdpovedCela := ProvedTestZalozeniDB(Parametr, TestDbCesta, TextOdpoved);
   end
-  //vıbìr databáze Postgresql
+  //vÃ½bÄ›r databÃ¡ze Postgresql
   else if ComboTypDatabaze.ItemIndex = 2 then 
   begin
     Jdbc := VytvorJdbc(ComboTypDatabaze.ItemIndex, EditUrlServeru.Text, EditPort.Text, EditNazevDB.Text, '');
@@ -360,19 +360,19 @@ begin
   result := OdpovedCela;
 end;
 
-//akce kontroly databáze spuštìná kliknutím na tlaèítko
+//akce kontroly databÃ¡ze spuÅ¡tÄ›nÃ¡ kliknutÃ­m na tlaÄÃ­tko
 procedure ButtonTestPripojeniDBOnClick(Sender: TObject);
 var VysledekTestu : String;
 
 begin
-  //nastavení zobrazení prvkù
+  //nastavenÃ­ zobrazenÃ­ prvkÅ¯
   CheckBOx.Checked := false;
   CheckBox.Visible := false;
   ProgressBar.Visible := true;
 
-  //provedení testu DB
+  //provedenÃ­ testu DB
   VysledekTestu := TestPripojeniDB();
-  //zobrazení zprávy s vısledkem
+  //zobrazenÃ­ zprÃ¡vy s vÃ½sledkem
   if VysledekTestu = '' then
   begin
     MsgBox(_TestOk, mbInformation, mb_Ok);
@@ -382,12 +382,12 @@ begin
     MsgBox(VysledekTestu, mbInformation, mb_Ok);
   end; 
   
-  //skrytí ukazatele prùbìhu
+  //skrytÃ­ ukazatele prÅ¯bÄ›hu
   ProgressBar.Visible := false;
 end;
 
-//procedura ze vstupních parametrù poskládá string pro jdbc.properties a uloí k AS
-//vstupní parametry
+//procedura ze vstupnÃ­ch parametrÅ¯ posklÃ¡dÃ¡ string pro jdbc.properties a uloÅ¾Ã­ k AS
+//vstupnÃ­ parametry
 //TypDB: 0 - H2, 1 - MSSQL, 2 - Postgresql
 procedure UlozJdbcDoSouboruProperties(TypDB:Integer; UrlSeveru,Port,Instance,NazevDB,Jmeno,Heslo: String);
 var JdbcProperties: String;
@@ -413,12 +413,13 @@ begin
     NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbUser>', Jmeno);
     NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbPass>', Heslo);
     NahradHodnotuVSouboru('{app}\apache-tomcat\config\elza.yaml','<dbDialect>', 'dialect: org.hibernate.spatial.dialect.postgis.PostgisDialect');
-  end;end;
+  end;
+end;
 
-//spuštìné akce pøi zmìnì vıbìru typu databáze v comboboxu
+//spuÅ¡tÄ›nÃ© akce pÅ™i zmÄ›nÄ› vÃ½bÄ›ru typu databÃ¡ze v comboboxu
 procedure ComboBoxOnChange(Sender: TObject);
 begin
-  //Vıbìr databáze H2 
+  //VÃ½bÄ›r databÃ¡ze H2 
   if ComboTypDatabaze.ItemIndex = 0 then 
   begin
     LabelUrlServeru.Visible := false;
@@ -435,7 +436,7 @@ begin
     EditHeslo.Visible := false;
     ButtonTestPripojeniDB.Visible := false;
   end
-  //Vıbìr databáze MSSQL - zobrazí Instanci 
+  //VÃ½bÄ›r databÃ¡ze MSSQL - zobrazÃ­ Instanci 
   else if ComboTypDatabaze.ItemIndex = 1 then 
   begin
     LabelUrlServeru.Visible := true;
@@ -454,7 +455,7 @@ begin
 
     EditPort.Text := '1433';
   end
-  //Vıbìr databáze Postgresql 
+  //VÃ½bÄ›r databÃ¡ze Postgresql 
   else if ComboTypDatabaze.ItemIndex = 2 then 
   begin 
     LabelUrlServeru.Visible := true;
@@ -475,15 +476,15 @@ begin
     EditJmeno.PasswordChar := #0;
   end;
 end;
-//funkce je volána pøed spuštìním instalátoru
+//funkce je volÃ¡na pÅ™ed spuÅ¡tÄ›nÃ­m instalÃ¡toru
 function InitializeSetup(): Boolean;
 var
   ResultCode: Integer;
 begin
   result := true;
   
-  //zjištìní, zda je ji aplikace nainstalována
-  //pokud ano, porovnává se verze aplikace a vrací se vısledek v promìnné IsUpgrade
+  //zjiÅ¡tÄ›nÃ­, zda je jiÅ¾ aplikace nainstalovÃ¡na
+  //pokud ano, porovnÃ¡vÃ¡ se verze aplikace a vracÃ­ se vÃ½sledek v promÄ›nnÃ© IsUpgrade
   if (GetAppVersionString() <> '') and (Trim (ExpandConstant('{#emit SetupSetting("AppVersion")}')) <> '') then
   begin
     IsUpgrade := (Trim (GetAppVersionString()) <> Trim (ExpandConstant('{#emit SetupSetting("AppVersion")}')));
@@ -493,34 +494,34 @@ begin
     IsUpgrade := false;
   end;
   
-  //pokud pøedchozí kontrola vrátila, e se nejdená o aktualizaci a aplikace je ji nainstalována
+  //pokud pÅ™edchozÃ­ kontrola vrÃ¡tila, Å¾e se nejdenÃ¡ o aktualizaci a aplikace je jiÅ¾ nainstalovÃ¡na
   if (IsUpgrade = false) and (Trim (GetUninstallString()) <> '') then
   begin 
-    //je nainstalovaná shodná verze aplikace, pøepne se na upgrade
+    //je nainstalovanÃ¡ shodnÃ¡ verze aplikace, pÅ™epne se na upgrade
     IsUpgrade := true;
     result := true; 
   end;
 end;
 
-//procedura je volána pøi zmìnì obrazovky
+//procedura je volÃ¡na pÅ™i zmÄ›nÄ› obrazovky
 procedure CurPageChanged(CurPageID: Integer);
 var ResultCode, i:integer;
     Text, TextService: String;
 begin
   
   i := 0;
-  //pokud se jedná o aktualizaci
+  //pokud se jednÃ¡ o aktualizaci
   if IsUpgrade then
   begin
-    //doplnìní textu do pøípravy instalace - aktualizace
+    //doplnÄ›nÃ­ textu do pÅ™Ã­pravy instalace - aktualizace
     if CurPageID=wpReady then
     begin
      Wizardform.ReadyMemo.Lines.Add('');
      Wizardform.ReadyMemo.Lines.Add(_AktualizaceApp);
      Wizardform.ReadyMemo.Lines.Add('      '+ GetAppVersionString()+' -> '+Trim (ExpandConstant('{#emit SetupSetting("AppVersion")}')));  
     end;
-    //akce provedené pøed spuštìním instalace - aktualizace 
-    //zastaví se sluba a smae adresáø lib  
+    //akce provedenÃ© pÅ™ed spuÅ¡tÄ›nÃ­m instalace - aktualizace 
+    //zastavÃ­ se sluÅ¾ba a smaÅ¾e adresÃ¡Å™ lib  
     if CurPageID = 11 then
     begin
       WizardForm.BackButton.Enabled := False;
@@ -532,8 +533,8 @@ begin
       LabelOdinstalace.Top := WizardForm.FinishedLabel.Top ;
       LabelOdinstalace.Left := ScaleX(40);
       LabelOdinstalace.Width := ScaleX(450);
-      LabelOdinstalace.Caption := 'Provádí se zastavení sluby aplikace..'+ #13#10 + #13#10 + 
-                                  'Po zastavení sluby dojde ke smazání souborù aplikace a nahrání novıch. Na závìr se provede spuštìní sluby.';
+      LabelOdinstalace.Caption := 'ProvÃ¡dÃ­ se zastavenÃ­ sluÅ¾by aplikace..'+ #13#10 + #13#10 + 
+                                  'Po zastavenÃ­ sluÅ¾by dojde ke smazÃ¡nÃ­ souborÅ¯ aplikace a nahrÃ¡nÃ­ novÃ½ch. Na zÃ¡vÄ›r se provede spuÅ¡tÄ›nÃ­ sluÅ¾by.';
       LabelOdinstalace.Parent := WizardForm;
       WizardForm.Refresh;
       
@@ -543,23 +544,23 @@ begin
 
       FileCopy(ExpandConstant('{app}\apache-tomcat\conf\server.xml'),ExpandConstant('{tmp}\server.xml'), false)
 
-      //smae adresáøe tomcat
+      //smaÅ¾e adresÃ¡Å™e tomcat
       DelTree(ExpandConstant('{app}\apache-tomcat\bin'), True, True, True);  
       DelTree(ExpandConstant('{app}\apache-tomcat\lib'), True, True, True);  
       DelTree(ExpandConstant('{app}\apache-tomcat\temp'), True, True, True);  
 
-      //smae adresáø s aplikací
+      //smaÅ¾e adresÃ¡Å™ s aplikacÃ­
       DelTree(ExpandConstant('{app}\apache-tomcat\webapps\'), True, True, True);
       LabelOdinstalace.Visible := false;
     end;
   end; 
   
-  //akce provedené na stránce dokonèit
+  //akce provedenÃ© na strÃ¡nce dokonÄit
   if CurPageID = wpFinished then
   begin
-    //zneplatní tlaèítko zpìt
+    //zneplatnÃ­ tlaÄÃ­tko zpÄ›t
     WizardForm.BackButton.Enabled := False;
-    //doèasnì zneplatní tlaèítko dokonèit, do doby ne se provedou všechny akce   
+    //doÄasnÄ› zneplatnÃ­ tlaÄÃ­tko dokonÄit, do doby neÅ¾ se provedou vÅ¡echny akce   
     Wizardform.NextButton.Enabled := false;
     
     WizardForm.FinishedLabel.Caption := '';
@@ -567,7 +568,7 @@ begin
 
     PortAplikace := EditAppPort.Text;
 
-    //vytvoøí objekt se seznamem úkolù
+    //vytvoÅ™Ã­ objekt se seznamem ÃºkolÅ¯
     SeznamUkolu := TNewCheckListBox.Create(WizardForm);
     SeznamUkolu.Top := WizardForm.FinishedLabel.Top ;
     SeznamUkolu.Left := WizardForm.FinishedLabel.Left;
@@ -578,7 +579,7 @@ begin
     SeznamUkolu.Parent := WizardForm;
 
 
-    //checkbox pro volbu zda se má zobrazit stránka aplikace
+    //checkbox pro volbu zda se mÃ¡ zobrazit strÃ¡nka aplikace
     CheckBoxZobrazStranku := TNewCheckBox.Create(WizardForm);
     CheckBoxZobrazStranku.Top := SeznamUkolu.Top + SeznamUkolu.Height + ScaleY(8);
     CheckBoxZobrazStranku.Left := WizardForm.FinishedLabel.Left;
@@ -586,7 +587,7 @@ begin
     CheckBoxZobrazStranku.ParentBackground := true;
     CheckBoxZobrazStranku.ParentColor := true;
     CheckBoxZobrazStranku.Color := clWhite;
-    CheckBoxZobrazStranku.Caption := 'Po dokonèení instalace zobrazit stránku aplikace.';
+    CheckBoxZobrazStranku.Caption := 'Po dokonÄenÃ­ instalace zobrazit strÃ¡nku aplikace.';
     CheckBoxZobrazStranku.Checked := True;
     CheckBoxZobrazStranku.Visible := False;
     CheckBoxZobrazStranku.Checked := false;
@@ -595,21 +596,21 @@ begin
     //Pokud nejde o aktualizaci
     if IsUpgrade = false then
     begin
-      //Nahradí pøeddefinované texty hodnotami z instalace
+      //NahradÃ­ pÅ™eddefinovanÃ© texty hodnotami z instalace
       SeznamUkolu.AddCheckBox(_UlozeniNastaveniApp, '', 0, false, false, false, false, nil);
-      NahradHodnotuVSouboru('{app}\elza.url','<urlAplikace>',ExpandConstant('http://' + '{computername}' + ':' + PortAplikace)); //vytvoøí odkaz do start menu
-      NahradHodnotuVSouboru('{app}\start.bat','<NazevSluzby>',NazevSluzby ('')); //nastaví název sluby do dávky pro start sluby
-      NahradHodnotuVSouboru('{app}\stop.bat','<NazevSluzby>',NazevSluzby ('')); //nastaví název sluby do dávky pro vypnutí sluby
+      NahradHodnotuVSouboru('{app}\elza.url','<urlAplikace>',ExpandConstant('http://' + '{computername}' + ':' + PortAplikace)); //vytvoÅ™Ã­ odkaz do start menu
+      NahradHodnotuVSouboru('{app}\start.bat','<NazevSluzby>',NazevSluzby ('')); //nastavÃ­ nÃ¡zev sluÅ¾by do dÃ¡vky pro start sluÅ¾by
+      NahradHodnotuVSouboru('{app}\stop.bat','<NazevSluzby>',NazevSluzby ('')); //nastavÃ­ nÃ¡zev sluÅ¾by do dÃ¡vky pro vypnutÃ­ sluÅ¾by
       
       TextService := 'set CATALINA_HOME=' + _Enter + 'set JAVA_HOME='  + _Enter + 'set JRE_HOME=%cd%\..\jre' + _Enter + 'setlocal'
-      NahradHodnotuVSouboru('{app}\apache-tomcat\bin\service.bat','setlocal',TextService); //nastaví lokální JRE
-      NahradHodnotuVSouboru('{app}\apache-tomcat\bin\service.bat','SERVICE_STARTUP_MODE=manual','SERVICE_STARTUP_MODE=auto'); //nastaví lokální JRE
-      NahradHodnotuVSouboru('{app}\apache-tomcat\conf\server.xml','8080',PortAplikace); //nastaví port aplikace
+      NahradHodnotuVSouboru('{app}\apache-tomcat\bin\service.bat','setlocal',TextService); //nastavÃ­ lokÃ¡lnÃ­ JRE
+      NahradHodnotuVSouboru('{app}\apache-tomcat\bin\service.bat','SERVICE_STARTUP_MODE=manual','SERVICE_STARTUP_MODE=auto'); //nastavÃ­ lokÃ¡lnÃ­ JRE
+      NahradHodnotuVSouboru('{app}\apache-tomcat\conf\server.xml','8080',PortAplikace); //nastavÃ­ port aplikace
                                      
       SeznamUkolu.Checked[i] := true;
       i := i + 1;
 
-      //pokud není nastaveno pøeskoèit kontrolu, uloí se jdbc do souboru
+      //pokud nenÃ­ nastaveno pÅ™eskoÄit kontrolu, uloÅ¾Ã­ se jdbc do souboru
       if CheckBOx.Checked = false then
       begin
         SeznamUkolu.AddCheckBox(_UlozeniNastaveniPripojeni, '', 0, false, false, false, false, nil);
@@ -618,7 +619,7 @@ begin
         i := i + 1;
       end;
       
-      //zaregistruje se sluba v systému
+      //zaregistruje se sluÅ¾ba v systÃ©mu
       SeznamUkolu.AddCheckBox(_RegistaceSluzby, '', 0, false, false, false, false, nil);
       Exec(ExpandConstant('{app}\apache-tomcat\bin\service.bat'), 'install ' + NazevSluzby (''), '',SW_HIDE, ewWaitUntilTerminated, ResultCode);
       SeznamUkolu.Checked[i] := true;
@@ -626,13 +627,13 @@ begin
       
     end; 
 
-    //Pokud jde o aktualizaci, vrátí se zálohovanı server.xml (záloha se provede na zaèátku instalace)
+    //Pokud jde o aktualizaci, vrÃ¡tÃ­ se zÃ¡lohovanÃ½ server.xml (zÃ¡loha se provede na zaÄÃ¡tku instalace)
     if IsUpgrade then
     begin
         FileCopy(ExpandConstant('{tmp}\server.xml'), ExpandConstant('{app}\apache-tomcat\conf\server.xml'), false);
     end;
     
-    //smae pomocné soubory
+    //smaÅ¾e pomocnÃ© soubory
     SeznamUkolu.AddCheckBox(_OdstanovaniDocasnychSouboru, '', 0, false, false, false, false, nil);
     DelTree(ExpandConstant('{app}\TestDb\'), True, True, True);
     SeznamUkolu.Checked[i] := true;
@@ -640,7 +641,7 @@ begin
     
     if CheckBOx.Checked = false then
     begin
-      SeznamUkolu.AddCheckBox('Start sluby (operace mùe trvat delší dobu)', '', 0, false, false, false, false, nil);
+      SeznamUkolu.AddCheckBox('Start sluÅ¾by (operace mÅ¯Å¾e trvat delÅ¡Ã­ dobu)', '', 0, false, false, false, false, nil);
       Exec('net', 'start ' + NazevSluzby (''), '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
       if IsUpgrade = false then
       begin
@@ -660,37 +661,37 @@ begin
       SeznamUkolu.Checked[i] := true;
       i := i + 1; 
       
-      //Informace o pøístupu do aplikace 
-      SeznamUkolu.AddCheckBox('Pro pøístup do aplikace je moné vyuít uivatelské jméno "admin" s heslem "admin".', '', 0, true, false, false, false, nil);
-      SeznamUkolu.AddCheckBox('Pro správnou funkci aplikace je potøeba provést import balíèkù pravidel a osob. Zdrojové soubory se nachází v adresáøi import.', '', 0, true, false, false, false, nil);
+      //Informace o pÅ™Ã­stupu do aplikace 
+      SeznamUkolu.AddCheckBox('Pro pÅ™Ã­stup do aplikace je moÅ¾nÃ© vyuÅ¾Ã­t uÅ¾ivatelskÃ© jmÃ©no "admin" s heslem "admin".', '', 0, true, false, false, false, nil);
+      SeznamUkolu.AddCheckBox('Pro sprÃ¡vnou funkci aplikace je potÅ™eba provÃ©st import balÃ­ÄkÅ¯ pravidel a osob. ZdrojovÃ© soubory se nachÃ¡zÃ­ v adresÃ¡Å™i import.', '', 0, true, false, false, false, nil);
     end
     else
     begin
-      SeznamUkolu.AddCheckBox('Pro spuštìní aplikace je potøeba ruènì nastavit pøipojení k databázi v souboru elza.yaml a spustit slubu.', '', 0, true, false, false, false, nil);
+      SeznamUkolu.AddCheckBox('Pro spuÅ¡tÄ›nÃ­ aplikace je potÅ™eba ruÄnÄ› nastavit pÅ™ipojenÃ­ k databÃ¡zi v souboru elza.yaml a spustit sluÅ¾bu.', '', 0, true, false, false, false, nil);
     end;
 
-    //dokonèení instalace
+    //dokonÄenÃ­ instalace
     SeznamUkolu.AddCheckBox(_Hotovo, '', 0, true, false, false, false, nil);
     
-    //zpøístupní se tlaèítko dokonèit
+    //zpÅ™Ã­stupnÃ­ se tlaÄÃ­tko dokonÄit
     Wizardform.NextButton.Enabled := true;
   end;
 end;
 
-//otevøe odkaz na nastavení aplikace ve vıchozím prohlíeèi
+//otevÅ™e odkaz na nastavenÃ­ aplikace ve vÃ½chozÃ­m prohlÃ­Å¾eÄi
 procedure OdkazNastaveni(); 
 var ErrorCode: Integer;
 begin
   ShellExec('', ExpandConstant('http://' + '{computername}:' + PortAplikace), '', '', SW_SHOW, ewNoWait, ErrorCode);
 end;
 
-//funkce na pøeskonèení obrazovek
+//funkce na pÅ™eskonÄenÃ­ obrazovek
 function ShouldSkipPage(PageID: Integer): Boolean;
 begin
   if IsUpgrade then
   begin
     case PageID of
-      //seznam stránek, které budou pøeskoèeny pokud se jedná o aktualizaci
+      //seznam strÃ¡nek, kterÃ© budou pÅ™eskoÄeny pokud se jednÃ¡ o aktualizaci
       wpLicense: Result := True;
       wpPreparing: Result := True;
       wpInstalling: Result := True;
@@ -701,13 +702,13 @@ begin
   end;
 end;
 
-//akce provedené po kliknutí na tlaèítko další
+//akce provedenÃ© po kliknutÃ­ na tlaÄÃ­tko dalÅ¡Ã­
 function NextButtonClick(CurPageID: Integer): Boolean;
 var ResultCode:integer;
     VysledekTestu:String;
     
 begin
-  //kontrola cesty instalace - nesmí obsahovat mezery
+  //kontrola cesty instalace - nesmÃ­ obsahovat mezery
   if CurPageID = wpSelectDir then
   begin
     if Pos (_Mezera,WizardDirValue ) > 0  then
@@ -719,15 +720,15 @@ begin
       result := true;
     end;
   end
-  //kliknutí na tlaèítko další na formuláøi s nastavením db
+  //kliknutÃ­ na tlaÄÃ­tko dalÅ¡Ã­ na formulÃ¡Å™i s nastavenÃ­m db
   else if CurPageID = wpNastaveniDB then
   begin
-    //pokud je zaškrtnut checkbox, pøeskoèí sekontrola db a pokraèuje se dál
+    //pokud je zaÅ¡krtnut checkbox, pÅ™eskoÄÃ­ sekontrola db a pokraÄuje se dÃ¡l
     if CheckBox.Checked then
     begin
       result := true;
     end
-    //provede se kontrola db, pokud dojde k chybì, nepokraèuje se
+    //provede se kontrola db, pokud dojde k chybÄ›, nepokraÄuje se
     else
     begin
       CheckBox.Visible := false;
@@ -754,10 +755,10 @@ begin
       CheckBox.Visible := true;
     end;
   end
-  //kliknutí na talèítko dokonèit
+  //kliknutÃ­ na talÄÃ­tko dokonÄit
   else if CurPageID = wpFinished then
   begin
-    //otevøe odkaz na aplikaci ve vıchozím prohlíeèi
+    //otevÅ™e odkaz na aplikaci ve vÃ½chozÃ­m prohlÃ­Å¾eÄi
     if CheckBoxZobrazStranku.Checked then 
     begin
       OdkazNastaveni();
@@ -768,9 +769,9 @@ begin
   begin
     result := true;  
   end;  
-end;
+end;
 
-//definice uivatelskıch obrazovek
+//definice uÅ¾ivatelskÃ½ch obrazovek
 procedure CreateTheWizardPages;
 var
   Page: TWizardPage;
@@ -787,7 +788,7 @@ begin
   Row1Left := 100;
   Row2Left := 205;
 
-  Page := CreateCustomPage(wpInfoAfter, 'Konfigurace aplikace', 'Je nutné nastavení portu aplikace pod kterım bude k dispozici. Dále je nutné vyplnit údaje pro pøipojení k databázi.');
+  Page := CreateCustomPage(wpInfoAfter, 'Konfigurace aplikace', 'Je nutnÃ© nastavenÃ­ portu aplikace pod kterÃ½m bude k dispozici. DÃ¡le je nutnÃ© vyplnit Ãºdaje pro pÅ™ipojenÃ­ k databÃ¡zi.');
   
   LabelAppPort := TNewStaticText.Create(Page);
   LabelAppPort.Top := ScaleX(13);
@@ -804,7 +805,7 @@ begin
 
   LabelTypDatabaze := TNewStaticText.Create(Page);
   LabelTypDatabaze.Top := EditAppPort.Top + EditAppPort.Height + ScaleX(43);
-  LabelTypDatabaze.Caption := 'Typ databáze:';
+  LabelTypDatabaze.Caption := 'Typ databÃ¡ze:';
   LabelTypDatabaze.AutoSize := True;
   LabelTypDatabaze.Parent := Page.Surface;
   
@@ -814,7 +815,7 @@ begin
   ComboTypDatabaze.Width := Page.SurfaceWidth div 2 - ScaleX(26);
   ComboTypDatabaze.Parent := Page.Surface;
   ComboTypDatabaze.Style := csDropDownList;
-  ComboTypDatabaze.Items.Add('Embedded databáze (H2)');
+  ComboTypDatabaze.Items.Add('Embedded databÃ¡ze (H2)');
   ComboTypDatabaze.Items.Add('MSSQL');
   ComboTypDatabaze.Items.Add('PostgreSQL');
   ComboTypDatabaze.ItemIndex := 0;
@@ -863,7 +864,7 @@ begin
   
   LabelNazevDB := TNewStaticText.Create(Page);
   LabelNazevDB.Top := EditUrlServeru.Top + EditUrlServeru.Height + ScaleY(11);
-  LabelNazevDB.Caption := 'Název databáze:';
+  LabelNazevDB.Caption := 'NÃ¡zev databÃ¡ze:';
   LabelNazevDB.AutoSize := True;
   LabelNazevDB.Parent := Page.Surface;
   
@@ -875,7 +876,7 @@ begin
   
   LabelJmeno := TNewStaticText.Create(Page);
   LabelJmeno.Top := EditNazevDB.Top + EditNazevDB.Height + ScaleY(11);
-  LabelJmeno.Caption := 'Jméno:';
+  LabelJmeno.Caption := 'JmÃ©no:';
   LabelJmeno.AutoSize := True;
   LabelJmeno.Parent := Page.Surface;
   
@@ -904,11 +905,11 @@ begin
   ButtonTestPripojeniDB.Height := ScaleY(23);
   ButtonTestPripojeniDB.Top := EditHeslo.Top + EditHeslo.Height + ScaleY(15);
   //ButtonTestPripojeniDB.Left :=  ButtonZalozeniDB.Left + ButtonZalozeniDB.Width + ScaleY(58); 
-  ButtonTestPripojeniDB.Caption := 'Otestovat pøipojení k databázi';
+  ButtonTestPripojeniDB.Caption := 'Otestovat pÅ™ipojenÃ­ k databÃ¡zi';
   ButtonTestPripojeniDB.OnClick := @ButtonTestPripojeniDBOnClick;
   ButtonTestPripojeniDB.Parent := Page.Surface;
 
-  // Skryje všechny prvky db pro vıchozí H2
+  // Skryje vÅ¡echny prvky db pro vÃ½chozÃ­ H2
   LabelUrlServeru.Visible := false;
   EditUrlServeru.Visible := false;
   LabelPort.Visible := false;
@@ -924,7 +925,7 @@ begin
   ButtonTestPripojeniDB.Visible := false;
 end;
 
-//prvky v lištì s tlaèítky
+//prvky v liÅ¡tÄ› s tlaÄÃ­tky
 procedure CreatePanelControl(ParentForm: TSetupForm; CancelButton: TNewButton);
 begin
   ProgressBar := TNewProgressBar.Create(ParentForm);
