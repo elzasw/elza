@@ -54,6 +54,7 @@
             <group code="01_BASE">
                 <name>Pořádání</name>
                 <type code="ZP2015_ARRANGEMENT_TYPE" width="2"/>
+                <type code="ZP2015_OUTPUT_TYPE" width="2"/>
             </group>
             <group code="02_GROUP1">
                 <name>Typ jednotky</name>

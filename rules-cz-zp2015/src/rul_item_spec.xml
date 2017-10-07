@@ -23,7 +23,7 @@
         <description>Starší pomůcka</description>
         <shortcut>Starší pomůcka</shortcut>
         <view-order>4</view-order>
-    </item-spec>    
+    </item-spec>
     <item-spec code="ZP2015_LEVEL_ROOT" item-type="ZP2015_LEVEL_TYPE">
         <name>Soubor</name>
         <description>Soubor</description>
@@ -2983,4 +2983,24 @@
         <shortcut></shortcut>
         <view-order>13</view-order>
     </item-spec>
+    
+    <!-- typ vystpupu -->
+    <item-spec code="ZP2015_OUTPUT_MAN" item-type="ZP2015_OUTPUT_TYPE">
+        <name>Manipulační seznam</name>
+        <description>Manipulační seznam</description>
+        <shortcut>Manipulační seznam</shortcut>
+        <view-order>1</view-order>
+    </item-spec>
+    <item-spec code="ZP2015_OUTPUT_INV" item-type="ZP2015_OUTPUT_TYPE">
+        <name>Inventář</name>
+        <description>Inventář</description>
+        <shortcut>Inventář</shortcut>
+        <view-order>2</view-order>
+    </item-spec>
+    <item-spec code="ZP2015_OUTPUT_KAT" item-type="ZP2015_OUTPUT_TYPE">
+        <name>Katalog</name>
+        <description>Katalog</description>
+        <shortcut>Katalog</shortcut>
+        <view-order>3</view-order>
+    </item-spec>        
 </item-specs>
