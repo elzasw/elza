@@ -10,9 +10,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.Stack;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -70,7 +71,6 @@ import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.PacketRepository;
-import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.service.ArrMoveLevelService;
@@ -84,12 +84,10 @@ import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.importnodes.vo.DeepCallback;
-import cz.tacr.elza.service.importnodes.vo.File;
 import cz.tacr.elza.service.importnodes.vo.ImportParams;
 import cz.tacr.elza.service.importnodes.vo.ImportSource;
 import cz.tacr.elza.service.importnodes.vo.Node;
 import cz.tacr.elza.service.importnodes.vo.NodeRegister;
-import cz.tacr.elza.service.importnodes.vo.Packet;
 import cz.tacr.elza.service.importnodes.vo.descitems.Item;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemCoordinates;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemDecimal;
@@ -105,7 +103,6 @@ import cz.tacr.elza.service.importnodes.vo.descitems.ItemString;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemText;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemUnitdate;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemUnitid;
-import cz.tacr.elza.utils.StringUtils;
 
 /**
  * Obsluha importního procesu zdroje do AS.
@@ -173,9 +170,6 @@ public class ImportProcess {
     private DmsService dmsService;
 
     @Autowired
-    private PacketTypeRepository packetTypeRepository;
-
-    @Autowired
     private ArrMoveLevelService arrMoveLevelService;
 
     /**
@@ -229,7 +223,6 @@ public class ImportProcess {
     private Map<String, RulItemType> itemTypeMap;
     private Map<String, RulItemSpec> itemSpecMap;
     private Map<String, ArrCalendarType> calendarTypeMap;
-    private Map<String, RulPacketType> packetTypeMap;
     private ArrChange change;
 
     public ImportProcess() {
@@ -262,7 +255,6 @@ public class ImportProcess {
         itemTypeMap = itemTypeRepository.findAll().stream().collect(Collectors.toMap(RulItemType::getCode, Function.identity()));
         itemSpecMap = itemSpecRepository.findAll().stream().collect(Collectors.toMap(RulItemSpec::getCode, Function.identity()));
         calendarTypeMap = calendarTypeRepository.findAll().stream().collect(Collectors.toMap(ArrCalendarType::getCode, Function.identity()));
-        packetTypeMap = packetTypeRepository.findAll().stream().collect(Collectors.toMap(RulPacketType::getCode, Function.identity()));
         change = arrangementService.createChange(ArrChange.Type.IMPORT);
     }
 
@@ -273,7 +265,7 @@ public class ImportProcess {
         logger.info("Zahájení importu do AS");
 
         Map<String, ArrFile> filesMapper = resolveFileConflict();
-        Map<Pair<String, String>, ArrPacket> packetsMapper = resolvePacketConflict();
+		Map<Integer, ArrPacket> packetsMapper = resolvePacketConflict();
 
         Stack<DeepData> stack = new Stack<>();
         while (source.hasNext()) {
@@ -357,7 +349,8 @@ public class ImportProcess {
      * @param item          zdrojový item
      * @param descItem      vazební item   @return vytvořená data
      */
-    private ArrData createArrData(final Map<String, ArrFile> filesMapper, final Map<Pair<String, String>, ArrPacket> packetsMapper, final Item item, final ArrDescItem descItem) {
+	private ArrData createArrData(final Map<String, ArrFile> filesMapper, final Map<Integer, ArrPacket> packetsMapper,
+	        final Item item, final ArrDescItem descItem) {
         ArrData data = null;
         if (item instanceof ItemInt) {
             data = new ArrDataInteger();
@@ -411,7 +404,7 @@ public class ImportProcess {
         } else if (item instanceof ItemPacketRef) {
             data = new ArrDataPacketRef();
             ArrPacket packet = packetRepository.findOne(((ItemPacketRef) item).getPacketId());
-            ArrPacket packetNew = packetsMapper.get(new Pair<>(packet.getTypeCode(), packet.getStorageNumber()));
+			ArrPacket packetNew = packetsMapper.get(packet.getPacketId());
             ((ArrDataPacketRef) data).setPacket(packetNew);
         } else if (item instanceof ItemPartyRef) {
             data = new ArrDataPartyRef();
@@ -526,108 +519,193 @@ public class ImportProcess {
      * @return výsledná mapa pro provazování
      */
     private Map<String, ArrFile> resolveFileConflict() {
-        Map<String, File> sourceFiles = source.getFiles().stream().collect(Collectors.toMap(File::getName, Function.identity()));
+		List<ArrFile> sourceFiles = source.getFiles();
         Map<String, ArrFile> fundFilesMapName = fundFileRepository.findByFund(targetFundVersion.getFund()).stream().collect(Collectors.toMap(ArrFile::getName, Function.identity()));
-        Map<String, ArrFile> filesMapper = new HashMap<>();
+		Map<String, ArrFile> result = new HashMap<>();
 
-        for (String fileNameSource : sourceFiles.keySet()) {
-            ArrFile arrFile = fundFilesMapName.get(fileNameSource);
-            if (arrFile != null) {
-                switch (params.getFileConflictResolve()) {
-                    case USE_TARGET:
-                        filesMapper.put(fileNameSource, arrFile);
-                        break;
-                    case COPY_AND_RENAME:
-                        copyFileFromSource(sourceFiles, filesMapper, fileNameSource, fundFilesMapName.keySet());
-                        break;
-                    default:
-                        throw new SystemException("Neplatné vyřešení konfliktu: " + params.getFileConflictResolve(), BaseCode.INVALID_STATE);
-                }
-            } else {
-                copyFileFromSource(sourceFiles, filesMapper, fileNameSource, fundFilesMapName.keySet());
+		for (ArrFile sourceFile : sourceFiles) {
+			String sourceFileName = sourceFile.getName();
+			ArrFile arrFile;
+            switch (params.getFileConflictResolve()) {
+            case USE_TARGET:
+            	arrFile = fundFilesMapName.get(sourceFileName);
+            	if(arrFile==null) {
+					// file not exists -> copy new
+					arrFile = copyFileFromSource(sourceFile, fundFilesMapName);
+            	}
+                break;
+            case COPY_AND_RENAME:
+            	arrFile = copyFileFromSource(sourceFile, fundFilesMapName);
+                break;
+			default:
+				throw new SystemException("Neplatné vyřešení konfliktu: " + params.getFileConflictResolve(),
+				        BaseCode.INVALID_STATE);
             }
+			// append new file to map
+			fundFilesMapName.put(arrFile.getName(), arrFile);
+			// append new file to result
+			result.put(sourceFileName, arrFile);
         }
-        return filesMapper;
+		return result;
     }
+
+	private Pair<Integer, String> createPacketKey(ArrPacket packet) {
+		RulPacketType packetType = packet.getPacketType();
+		Integer packetTypeId = (packetType != null) ? packetType.getPacketTypeId() : null;
+		return new Pair<Integer, String>(packetTypeId, packet.getStorageNumber());
+	}
 
     /**
      * Vyřešení konfliktů v obalech.
      *
      * @return výsledná mapa pro provazování
      */
-    private Map<Pair<String, String>, ArrPacket> resolvePacketConflict() {
-        Map<Pair<String, String>, Packet> sourcePackets = source.getPackets().stream().collect(Collectors.toMap(packet -> new Pair<>(packet.getTypeCode(), packet.getStorageNumber()), Function.identity()));
-        Map<Pair<String, String>, ArrPacket> fundPacketsMapName = packetRepository.findByFund(targetFundVersion.getFund(), Arrays.asList(ArrPacket.State.OPEN, ArrPacket.State.CLOSED))
-                .stream().collect(Collectors.toMap(packet -> new Pair<>(packet.getTypeCode(), packet.getStorageNumber()), Function.identity()));
-        Map<Pair<String, String>, ArrPacket> packetsMapper = new HashMap<>();
+	private Map<Integer, ArrPacket> resolvePacketConflict() {
+		// get current packets
+		Map<Pair<Integer, String>, ArrPacket> fundPacketsMapName = packetRepository
+		        .findByFund(targetFundVersion.getFund(), Arrays.asList(ArrPacket.State.OPEN, ArrPacket.State.CLOSED))
+		        .stream().collect(
+		                Collectors.toMap(packet -> createPacketKey(packet), Function.identity())
+		        );
 
-        for (Pair<String, String> packetSource : sourcePackets.keySet()) {
-            ArrPacket arrPacket = fundPacketsMapName.get(packetSource);
-            if (arrPacket != null) {
-                switch (params.getPacketConflictResolve()) {
-                    case USE_TARGET:
-                        packetsMapper.put(packetSource, arrPacket);
-                        break;
-                    case COPY_AND_RENAME:
-                        copyPacketFromSource(sourcePackets, packetsMapper, packetSource, fundPacketsMapName.keySet());
-                        break;
-                    default:
-                        throw new SystemException("Neplatné vyřešení konfliktu: " + params.getFileConflictResolve(), BaseCode.INVALID_STATE);
-                }
-            } else {
-                copyPacketFromSource(sourcePackets, packetsMapper, packetSource, fundPacketsMapName.keySet());
-            }
-        }
+		// Map PacketId to ArrPacket
+		Map<Integer, ArrPacket> result = new HashMap<>();
 
-        return packetsMapper;
+		List<ArrPacket> sourcePackets = source.getPackets();
+		for (ArrPacket sourcePacket : sourcePackets) {
+			ArrPacket packet = null;
+			// switch
+			switch (params.getPacketConflictResolve()) {
+			case USE_TARGET:
+				Pair<Integer, String> srcPacketKey = createPacketKey(sourcePacket);
+				packet = fundPacketsMapName.get(srcPacketKey);
+				if (packet == null) {
+					packet = copyPacketFromSource(sourcePacket, fundPacketsMapName);
+				}
+				break;
+			case COPY_AND_RENAME:
+				packet = copyPacketFromSource(sourcePacket, fundPacketsMapName);
+				break;
+			default:
+				throw new SystemException("Neplatné vyřešení konfliktu: " + params.getFileConflictResolve(),
+				        BaseCode.INVALID_STATE);
+			}
+			Pair<Integer, String> packetKey = createPacketKey(packet);
+			fundPacketsMapName.put(packetKey, packet);
+			result.put(sourcePacket.getPacketId(), packet);
+		}
+
+		return result;
     }
 
     /**
-     * Zkopírovat obaly ze zdroje do AS.
-     *
-     * @param sourcePackets zdorové obaly [typ/number -> zdrojový obal]
-     * @param packetsMapper převodní mapa [typ/number -> obal v AS]
-     * @param packetSource  typ/number obalu
-     * @param existsPackets existující typ/number obaly v AS
-     */
-    private void copyPacketFromSource(final Map<Pair<String, String>, Packet> sourcePackets,
-                                      final Map<Pair<String, String>, ArrPacket> packetsMapper,
-                                      final Pair<String, String> packetSource,
-                                      final Set<Pair<String, String>> existsPackets) {
-        Packet sourcePacket = sourcePackets.get(packetSource);
+	 * Zkopírovat obaly ze zdroje do AS.
+	 *
+	 * @param sourcePacket
+	 * @param fundPacketsMapName
+	 *            existující typ/number obaly v AS
+	 */
+	private ArrPacket copyPacketFromSource(ArrPacket sourcePacket,
+	        final Map<Pair<Integer, String>, ArrPacket> fundPacketsMapName) {
         ArrPacket packet = new ArrPacket();
         packet.setState(ArrPacket.State.OPEN);
-        packet.setStorageNumber(StringUtils.renameConflictName(sourcePacket.getStorageNumber(), existsPackets.stream().map(Pair::getValue).collect(Collectors.toSet())));
+		packet.setStorageNumber(preparePacketName(sourcePacket, fundPacketsMapName));
         packet.setFund(targetFundVersion.getFund());
-        packet.setPacketType(packetTypeMap.get(sourcePacket.getTypeCode()));
-        packetsMapper.put(packetSource, packetRepository.save(packet));
+		packet.setPacketType(sourcePacket.getPacketType());
+		packet = packetRepository.save(packet);
+		//TODO: remove from here
         eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.PACKETS_CHANGE, targetFundVersion.getFund().getFundId()));
+		return packet;
     }
 
-    /**
-     * Zkopírování souboru ze zdroje do AS.
-     *
-     * @param sourceFiles     zdrojové soubory [název -> zdrojovýSoubor]
-     * @param filesMapper     převodní mapa [název -> soubor v AS]
-     * @param fileNameSource  název kopírovaného souboru
-     * @param existsFileNames existující názvy souborů v AS
-     */
-    private void copyFileFromSource(final Map<String, File> sourceFiles, final Map<String, ArrFile> filesMapper, final String fileNameSource, final Set<String> existsFileNames) {
-        File sourceFile = sourceFiles.get(fileNameSource);
+	private String preparePacketName(ArrPacket sourcePacket, Map<Pair<Integer, String>, ArrPacket> packets) {
+		String tmpName = sourcePacket.getStorageNumber();
+		// prepare packet type id
+		Integer packetTypeId = null;
+		RulPacketType packetType = sourcePacket.getPacketType();
+		if (packetType != null) {
+			packetTypeId = packetType.getPacketTypeId();
+		}
+
+		boolean conflict = false;
+		int i = 0;
+		do {
+			if (conflict) {
+				i++;
+				conflict = false;
+				tmpName = includeNumber(tmpName, i);
+			}
+			Pair<Integer, String> packetKey = new Pair<>(packetTypeId, tmpName);
+			if (packets.containsKey(packetKey)) {
+				conflict = true;
+				break;
+			}
+		} while (conflict);
+		return tmpName;
+	}
+
+	/**
+	 * Zkopírování souboru ze zdroje do AS.
+	 *
+	 * @param sourceFiles
+	 *            zdrojové soubory [název -> zdrojovýSoubor]
+	 * @param filesMapper
+	 *            převodní mapa [název -> soubor v AS]
+	 * @param fileNameSource
+	 *            název kopírovaného souboru
+	 * @param existsFileNames
+	 *            existující názvy souborů v AS
+	 * @return
+	 */
+	private ArrFile copyFileFromSource(ArrFile sourceFile,
+	        Map<String, ArrFile> currentFiles) {
         ArrFile file = new ArrFile();
         file.setFileName(sourceFile.getFileName());
         file.setFileSize(sourceFile.getFileSize());
         file.setMimeType(sourceFile.getMimeType());
         file.setPagesCount(sourceFile.getPagesCount());
-        file.setName(StringUtils.renameConflictName(sourceFile.getName(), existsFileNames));
+		file.setName(renameConflictName(sourceFile.getName(), currentFiles));
         file.setFund(targetFundVersion.getFund());
         try {
-            dmsService.createFile(file, sourceFile.getFileStream());
-            filesMapper.put(fileNameSource, file);
+			dmsService.createFile(file, dmsService.downloadFile(sourceFile));
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
+		return file;
     }
+
+	public static final String REG_NAME = "(.*\\()([0-9]+)(\\))";
+
+	private static String includeNumber(final String name, final int i) {
+		if (name.matches(REG_NAME)) {
+			int tmpI = i;
+			Matcher m = Pattern.compile(REG_NAME).matcher(name);
+			if (m.find()) {
+				tmpI = Integer.valueOf(m.group(2)) + 1;
+			}
+			return name.replaceAll(REG_NAME, "$1" + tmpI + "$3");
+		}
+		return name + "(" + i + ")";
+	}
+
+	public static String renameConflictName(final String name, final Map<String, ArrFile> currentFiles) {
+		String tmpName = name;
+
+		boolean conflict = false;
+		int i = 0;
+		do {
+			if (conflict) {
+				i++;
+				conflict = false;
+				tmpName = includeNumber(tmpName, i);
+			}
+			if (currentFiles.containsKey(tmpName)) {
+				conflict = true;
+				break;
+			}
+		} while (conflict);
+		return tmpName;
+	}
 
     /**
      * Pokud je potřeba, provede uložení dat do DB.
@@ -739,14 +817,6 @@ public class ImportProcess {
             this.value = value;
         }
 
-        public K getKey() {
-            return key;
-        }
-
-        public V getValue() {
-            return value;
-        }
-
         @Override
         public boolean equals(final Object o) {
             if (this == o) {
@@ -755,7 +825,7 @@ public class ImportProcess {
             if (o == null || getClass() != o.getClass()) {
                 return false;
             }
-            Pair pair = (Pair) o;
+			Pair<?, ?> pair = (Pair<?, ?>) o;
             return Objects.equals(key, pair.key) &&
                     Objects.equals(value, pair.value);
         }

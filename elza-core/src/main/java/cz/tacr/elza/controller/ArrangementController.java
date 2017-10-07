@@ -20,20 +20,6 @@ import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.controller.vo.CopyNodesParams;
-import cz.tacr.elza.controller.vo.CopyNodesValidate;
-import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.repository.FundFileRepository;
-import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.PacketRepository;
-import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.service.ExternalSystemService;
-import cz.tacr.elza.service.importnodes.ImportFromFund;
-import cz.tacr.elza.service.importnodes.ImportNodesFromSource;
-import cz.tacr.elza.service.importnodes.vo.ConflictResolve;
-import cz.tacr.elza.service.importnodes.vo.ImportParams;
-import cz.tacr.elza.service.importnodes.vo.ValidateResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
@@ -65,6 +51,8 @@ import cz.tacr.elza.controller.vo.ArrOutputExtVO;
 import cz.tacr.elza.controller.vo.ArrPacketVO;
 import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
 import cz.tacr.elza.controller.vo.ArrRequestVO;
+import cz.tacr.elza.controller.vo.CopyNodesParams;
+import cz.tacr.elza.controller.vo.CopyNodesValidate;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.FundListCountResult;
@@ -88,6 +76,7 @@ import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrDaoRequest;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -113,6 +102,7 @@ import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.DirectionLevel;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ConcurrentUpdateException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
@@ -141,6 +131,7 @@ import cz.tacr.elza.service.ArrMoveLevelService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.DescriptionItemService;
+import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.FilterTreeService;
 import cz.tacr.elza.service.ItemService;
 import cz.tacr.elza.service.LevelTreeCacheService;
@@ -154,6 +145,11 @@ import cz.tacr.elza.service.RevertingChangesService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.exception.DeleteFailedException;
+import cz.tacr.elza.service.importnodes.ImportFromFund;
+import cz.tacr.elza.service.importnodes.ImportNodesFromSource;
+import cz.tacr.elza.service.importnodes.vo.ConflictResolve;
+import cz.tacr.elza.service.importnodes.vo.ImportParams;
+import cz.tacr.elza.service.importnodes.vo.ValidateResult;
 import cz.tacr.elza.service.output.OutputGeneratorService;
 import cz.tacr.elza.service.output.StatusGenerate;
 import cz.tacr.elza.service.vo.ChangesResult;
@@ -287,18 +283,6 @@ public class ArrangementController {
 
     @Autowired
     private ExternalSystemService externalSystemService;
-
-    @Autowired
-    private ScopeRepository scopeRepository;
-
-    @Autowired
-    private FundFileRepository fundFileRepository;
-
-    @Autowired
-    private PacketRepository packetRepository;
-
-    @Autowired
-    private LevelRepository levelRepository;
 
     @Autowired
     private ImportNodesFromSource importNodesFromSource;
@@ -1032,7 +1016,7 @@ public class ArrangementController {
         List<ArrNode> sourceNodes = factoryDO.createNodes(copyNodesValidate.getSourceNodes());
 
         ImportFromFund importFromFund = importNodesFromSource.createImportFromFund();
-        importFromFund.init(sourceFundVersion, sourceNodes, copyNodesValidate.isIgnoreRootNodes());
+		importFromFund.init(sourceNodes, copyNodesValidate.isIgnoreRootNodes());
 
         return importNodesFromSource.validateData(importFromFund, targetFundVersion);
     }
@@ -1049,7 +1033,6 @@ public class ArrangementController {
         Assert.notNull(copyNodesParams.getTargetStaticNode(), "Neplatná cílová JP");
         Assert.notNull(copyNodesParams.getSelectedDirection(), "Neplatný směr vložení");
 
-        ArrFundVersion sourceFundVersion = fundVersionRepository.findOne(copyNodesParams.getSourceFundVersionId());
         ArrFundVersion targetFundVersion = fundVersionRepository.findOne(copyNodesParams.getTargetFundVersionId());
 
         ArrNode targetStaticNode = factoryDO.createNode(copyNodesParams.getTargetStaticNode());
@@ -1060,17 +1043,30 @@ public class ArrangementController {
 
 
         ImportFromFund importFromFund = importNodesFromSource.createImportFromFund();
-        importFromFund.init(sourceFundVersion, sourceNodes, copyNodesParams.isIgnoreRootNodes());
+		importFromFund.init(sourceNodes, copyNodesParams.isIgnoreRootNodes());
 
         importNodesFromSource.importData(importFromFund, new ImportParams() {
             @Override
             public ConflictResolve getFileConflictResolve() {
-                return ConflictResolve.valueOf(copyNodesParams.getFilesConflictResolve().name());
+				cz.tacr.elza.controller.vo.ConflictResolve fileResolveType = copyNodesParams.getFilesConflictResolve();
+				if (fileResolveType != null) {
+					String name = fileResolveType.name();
+					return ConflictResolve.valueOf(name);
+				} else {
+					return ConflictResolve.USE_TARGET;
+				}
             }
 
             @Override
             public ConflictResolve getPacketConflictResolve() {
-                return ConflictResolve.valueOf(copyNodesParams.getPacketsConflictResolve().name());
+				cz.tacr.elza.controller.vo.ConflictResolve packetResolveType = copyNodesParams
+				        .getPacketsConflictResolve();
+				if (packetResolveType != null) {
+					String name = packetResolveType.name();
+					return ConflictResolve.valueOf(name);
+				} else {
+					return ConflictResolve.USE_TARGET;
+				}
             }
         }, targetFundVersion, targetStaticNode, targetStaticParentNode, copyNodesParams.getSelectedDirection());
     }

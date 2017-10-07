@@ -1,14 +1,15 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.RegScope;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
+import java.util.Collection;
+import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+
+import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import cz.tacr.elza.domain.RegScope;
 
 
 /**
@@ -23,47 +24,103 @@ public class ScopeRepositoryImpl implements ScopeRepositoryCustom {
 
     @Autowired
     private LevelRepository levelRepository;
+    
+    /*
+	  There are several options how the query should/could be constructed.
+	  
+	  Base idea: multiple queries 
+	    - for parties connected to data connected to nodes 
+	    - for registers connected to data connected to nodes
+	    - for registers connected to nodes
+	   
+	  Integrate all queries above into one larger query. This should be more
+	  efficient because CTE will be evaluated only once. Example of the final query:
+	  
+	SELECT distinct distinct r.* from (
+	WITH RECURSIVE treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position) AS 
+	(
+	
+	SELECT t.* FROM arr_level t WHERE t.node_id IN (5538) 
+	UNION ALL 
+	SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent AND t.delete_change_id IS NULL
+	) 
+	SELECT distinct r.scope_id FROM treeData t
+	JOIN arr_desc_item di ON di.node_id = t.node_id
+	JOIN arr_data d ON d.item_id = di.item_id
+	JOIN arr_data_party_ref dp ON d.data_id = dp.data_id
+	JOIN par_party p ON p.party_id = dp.party_id
+	JOIN reg_record r ON r.record_id = p.record_id
+	UNION ALL
+	SELECT distinct r.scope_id FROM treeData t
+	JOIN arr_desc_item di ON di.node_id = t.node_id
+	JOIN arr_data d ON d.item_id = di.item_id
+	JOIN arr_data_record_ref dr ON d.data_id = dr.data_id
+	JOIN reg_record r ON r.record_id = dr.record_id
+	UNION ALL
+	SELECT distinct r.scope_id FROM treeData t
+	JOIN arr_node_register nr ON nr.node_id = t.node_id
+	JOIN reg_record r ON r.record_id = nr.record_id
+	) as d
+	JOIN reg_scope r ON d.scope_id = r.scope_id;
+	  
+	 */
+    
+	static String FIND_SCOPE_PART1 = "SELECT distinct r.* from (\n" +
+    		"WITH ";
+	static String FIND_SCOPE_PART2 = " treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position) AS \n"
+	        + "(\n"
+	        + "  SELECT t.* FROM arr_level t WHERE t.node_id IN (:nodeIds) \n"
+	        + "  UNION ALL\n"
+	        + "  SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent AND t.delete_change_id IS NULL \n"
+	        + ")\n"
+	        + "SELECT distinct r.scope_id FROM treeData t \n"
+	        + "JOIN arr_desc_item di ON di.node_id = t.node_id \n"
+	        + "JOIN arr_data d ON d.item_id = di.item_id \n"
+	        + "JOIN arr_data_party_ref dp ON d.data_id = dp.data_id \n"
+	        + "JOIN par_party p ON p.party_id = dp.party_id \n"
+	        + "JOIN reg_record r ON r.record_id = p.record_id \n";
+	static String FIND_SCOPE_PART3 = "UNION ALL \n"
+	        + "SELECT distinct r.scope_id FROM treeData t \n"
+	        + "JOIN arr_desc_item di ON di.node_id = t.node_id \n"
+	        + "JOIN arr_data d ON d.item_id = di.item_id \n"
+	        + "JOIN arr_data_record_ref dr ON d.data_id = dr.data_id \n"
+	        + "JOIN reg_record r ON r.record_id = dr.record_id \n";
+	static String FIND_SCOPE_PART4 = "UNION ALL \n"
+	        + "SELECT distinct r.scope_id FROM treeData t \n"
+	        + "JOIN arr_node_register nr ON nr.node_id = t.node_id \n"
+	        + "JOIN reg_record r ON r.record_id = nr.record_id \n";
+	static String FIND_SCOPE_PART5 = ") as d \n"
+	        + "JOIN reg_scope r ON d.scope_id = r.scope_id";
 
-    @Override
-    public Set<RegScope> findScopesBySubtreeNodeIds(final Collection<Integer> nodeIds, final boolean ignoreRootNode) {
-        Assert.notEmpty(nodeIds, "Identifikátor JP musí být vyplněn");
-        Set<RegScope> result = new HashSet<>();
+	static String FIND_SCOPE_NOT_INCLUDE_ROOT = "WHERE t.node_id NOT IN (:nodeIds) \n";
 
-        String sql_nodes = "WITH " + levelRepository.getRecursivePart() + " treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position) AS (SELECT t.* FROM arr_level t WHERE t.node_id IN (:nodeIds) UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) " +
-                "SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id WHERE t.delete_change_id IS NULL";
+	@SuppressWarnings("unchecked")
+	@Override
+    public List<RegScope> findScopesBySubtreeNodeIds(final Collection<Integer> nodeIds, final boolean ignoreRootNode) {
+        Validate.isTrue(nodeIds.size()>0);
+        
+		StringBuilder sqlQueryBuilder = new StringBuilder(FIND_SCOPE_PART1)
+		        .append(levelRepository.getRecursivePart())
+		        .append(FIND_SCOPE_PART2);
+		if (ignoreRootNode) {
+			sqlQueryBuilder.append(FIND_SCOPE_NOT_INCLUDE_ROOT);
+		}
 
-        if (ignoreRootNode) {
-            sql_nodes += " AND n.node_id NOT IN (:nodeIds)";
-        }
+		sqlQueryBuilder.append(FIND_SCOPE_PART3);
+		if (ignoreRootNode) {
+			sqlQueryBuilder.append(FIND_SCOPE_NOT_INCLUDE_ROOT);
+		}
 
-        String sqlPartyRef = "SELECT rs.* FROM reg_record r JOIN reg_scope rs ON r.scope_id = rs.scope_id WHERE r.record_id IN" +
-                " (" +
-                "  SELECT p.record_id FROM arr_data_party_ref dpf JOIN par_party p ON p.party_id = dpf.party_id WHERE dpf.data_id IN (SELECT d.data_id FROM arr_data d JOIN arr_item i ON d.item_id = i.item_id JOIN arr_desc_item di ON di.item_id = i.item_id WHERE i.delete_change_id IS NULL AND d.data_type_id = 8 AND di.node_id IN (" + sql_nodes + "))" +
-                " )";
+		sqlQueryBuilder.append(FIND_SCOPE_PART4);
+		if (ignoreRootNode) {
+			sqlQueryBuilder.append(FIND_SCOPE_NOT_INCLUDE_ROOT);
+		}
 
-        Query queryPartyRef = entityManager.createNativeQuery(sqlPartyRef, RegScope.class);
-        queryPartyRef.setParameter("nodeIds", nodeIds);
-        result.addAll(queryPartyRef.getResultList());
+		sqlQueryBuilder.append(FIND_SCOPE_PART5);
 
-        String sqlRecordRef = "SELECT rs.* FROM reg_record r JOIN reg_scope rs ON r.scope_id = rs.scope_id WHERE r.record_id IN" +
-                " (" +
-                "  SELECT drf.record_id FROM arr_data_record_ref drf WHERE drf.data_id IN (SELECT d.data_id FROM arr_data d JOIN arr_item i ON d.item_id = i.item_id JOIN arr_desc_item di ON di.item_id = i.item_id WHERE i.delete_change_id IS NULL AND d.data_type_id = 9 AND di.node_id IN (" + sql_nodes + "))" +
-                " )";
-
-        Query queryRecordRef = entityManager.createNativeQuery(sqlRecordRef, RegScope.class);
-        queryRecordRef.setParameter("nodeIds", nodeIds);
-        result.addAll(queryRecordRef.getResultList());
-
-        String sqlRegister = "SELECT rs.* FROM reg_record r JOIN reg_scope rs ON r.scope_id = rs.scope_id WHERE r.record_id IN" +
-                " (" +
-                "  SELECT nr.record_id FROM arr_node_register nr WHERE nr.delete_change_id IS NULL AND nr.node_id IN (" + sql_nodes + ")" +
-                " )";
-
-        Query queryRegister = entityManager.createNativeQuery(sqlRegister, RegScope.class);
-        queryRegister.setParameter("nodeIds", nodeIds);
-        result.addAll(queryRegister.getResultList());
-
-        return result;
+		Query query = entityManager.createNativeQuery(sqlQueryBuilder.toString(), RegScope.class);
+		query.setParameter("nodeIds", nodeIds);
+		return query.getResultList();
     }
 
 }

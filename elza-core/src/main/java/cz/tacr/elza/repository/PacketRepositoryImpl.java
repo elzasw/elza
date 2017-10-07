@@ -1,9 +1,7 @@
 package cz.tacr.elza.repository;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -16,18 +14,17 @@ import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import cz.tacr.elza.domain.ArrFund;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulPacketType;
-import org.springframework.util.Assert;
 
 /**
  * Implementace repository pro obaly.
  *
- * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
 @Component
 public class PacketRepositoryImpl implements PacketRepositoryCustom {
@@ -91,8 +88,10 @@ public class PacketRepositoryImpl implements PacketRepositoryCustom {
         return query.getResultList();
     }
 
-    @Override
-    public Set<ArrPacket> findPacketsBySubtreeNodeIds(final Collection<Integer> nodeIds, final boolean ignoreRootNodes) {
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<ArrPacket> findPacketsBySubtreeNodeIds(final Collection<Integer> nodeIds,
+	        final boolean ignoreRootNodes) {
         Assert.notEmpty(nodeIds, "Identifikátor JP musí být vyplněn");
 
         String sql_nodes = "WITH " + levelRepository.getRecursivePart() + " treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position) AS (SELECT t.* FROM arr_level t WHERE t.node_id IN (:nodeIds) UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) " +
@@ -110,7 +109,7 @@ public class PacketRepositoryImpl implements PacketRepositoryCustom {
         Query query = entityManager.createNativeQuery(sql, ArrPacket.class);
         query.setParameter("nodeIds", nodeIds);
 
-        return new HashSet<>(query.getResultList());
+		return query.getResultList();
     }
 
     /**

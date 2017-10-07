@@ -1,16 +1,15 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.RegScope;
-
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
+
+import cz.tacr.elza.domain.RegScope;
 
 /**
  * @since 18.07.2017
  */
 public interface ScopeRepositoryCustom {
 
-    Set<RegScope> findScopesBySubtreeNodeIds(Collection<Integer> nodeIds, boolean ignoreRootNode);
+	List<RegScope> findScopesBySubtreeNodeIds(Collection<Integer> nodeIds, boolean ignoreRootNode);
 
 }

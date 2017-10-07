@@ -73,7 +73,28 @@
 			<rightPen lineWidth="0.5" lineColor="#000000"/>
 		</box>
 	</style>
+	<style name="Item" fontName="SansSerif" fontSize="10">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_SERIES").size() > 0 || $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_SECTION").size() > 0]]></conditionExpression>
+			<style fontSize="12"/>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]></conditionExpression>
+			<style fontSize="14"/>
+		</conditionalStyle>
+	</style>
+	<style name="ListItem" fontName="SansSerif" fontSize="10">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$P{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_SERIES").size() > 0 || $P{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_SECTION").size() > 0]]></conditionExpression>
+			<style fontSize="12"/>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$P{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]></conditionExpression>
+			<style fontSize="14"/>
+		</conditionalStyle>
+	</style>
 	<subDataset name="Packets" uuid="ee50314f-e295-4cb5-bf43-2621ef7f1818">
+		<parameter name="node" class="cz.tacr.elza.print.Node"/>
 		<queryString>
 			<![CDATA[]]>
 		</queryString>
@@ -82,6 +103,7 @@
 		</field>
 	</subDataset>
 	<subDataset name="Items" uuid="981513c8-027f-4b8b-a906-cdd467ac9b78">
+		<parameter name="node" class="cz.tacr.elza.print.Node"/>
 		<queryString>
 			<![CDATA[]]>
 		</queryString>
@@ -469,14 +491,11 @@
 		)
 	)]]></variableExpression>
 	</variable>
-	<variable name="fundReferenceMark" class="java.lang.String">
-		<variableExpression><![CDATA[$P{fund}.getInstitution().getCode()+"//"+$P{output}.getNodesDFS().next().getItemsValueByCode("ZP2015_NAD")]]></variableExpression>
-	</variable>
 	<columnHeader>
 		<band height="25" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<staticText>
-				<reportElement x="37" y="0" width="294" height="20" uuid="3f76dd88-10e4-4ecf-bedc-dd9b62aa3717">
+				<reportElement x="37" y="0" width="278" height="20" uuid="3f76dd88-10e4-4ecf-bedc-dd9b62aa3717">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -490,7 +509,7 @@
 				<text><![CDATA[Obsah / další informace]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="337" y="0" width="84" height="20" uuid="ac9a6763-2fb6-4c34-b7d7-e31f38bf25c1">
+				<reportElement x="320" y="0" width="94" height="20" uuid="ac9a6763-2fb6-4c34-b7d7-e31f38bf25c1">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -504,7 +523,7 @@
 				<text><![CDATA[Datace]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="426" y="0" width="28" height="20" uuid="2559ac97-563d-4a56-a543-0c50d9aeb663">
+				<reportElement x="420" y="0" width="34" height="20" uuid="2559ac97-563d-4a56-a543-0c50d9aeb663">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -530,11 +549,11 @@
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="168" splitType="Stretch">
+		<band height="36" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<printWhenExpression><![CDATA[$F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]></printWhenExpression>
 			<textField isStretchWithOverflow="true">
-				<reportElement x="0" y="7" width="32" height="18" uuid="f980e23b-f26b-472c-a762-6ecf0fd8c221">
+				<reportElement style="Item" x="0" y="0" width="32" height="18" uuid="f980e23b-f26b-472c-a762-6ecf0fd8c221">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -542,16 +561,16 @@
 				</reportElement>
 				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="3"/>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="14" pdfEncoding="Cp1250"/>
+					<font pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{node}.getItemsValueByCode( "ZP2015_SERIAL_NUMBER" )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="">
-				<reportElement x="337" y="7" width="84" height="18" uuid="1bef197d-ba70-4bdf-bbf4-7304a968186b">
+				<reportElement style="Item" x="320" y="0" width="94" height="18" uuid="1bef197d-ba70-4bdf-bbf4-7304a968186b">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement markup="html">
-					<font fontName="SansSerif" size="14" pdfEncoding="Cp1250"/>
+					<font pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[(StringUtils.isNotEmpty($F{node}.getItemsValueByCode( "ZP2015_UNIT_DATE_PRE" ))?("("+$F{node}.getItemsValueByCode( "ZP2015_UNIT_DATE_PRE" )+")<br>"):"")
 +$F{node}.getItemsValueByCode( "ZP2015_UNIT_DATE" )+"<br>"
@@ -559,67 +578,55 @@
 +(StringUtils.isNotEmpty($F{node}.getItemsValueByCode( "ZP2015_UNIT_DATE_POST" ))?("<br>("+$F{node}.getItemsValueByCode( "ZP2015_UNIT_DATE_POST" )+")"):"")]]></textFieldExpression>
 			</textField>
 			<componentElement>
-				<reportElement key="" positionType="Float" x="426" y="7" width="28" height="18" uuid="fdce67b7-6db3-4319-a65e-da940c7c2195">
+				<reportElement key="" positionType="Float" x="420" y="0" width="34" height="18" uuid="fdce67b7-6db3-4319-a65e-da940c7c2195">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.CONTENTS.height" value="pixel"/>
 				</reportElement>
 				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Horizontal">
 					<datasetRun subDataset="Packets" uuid="d96077e9-2af4-49cf-9c79-e0c9cb76a6ad">
+						<datasetParameter name="node">
+							<datasetParameterExpression><![CDATA[$F{node}]]></datasetParameterExpression>
+						</datasetParameter>
 						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{node}.getItems( Collections.singleton("ZP2015_STORAGE_ID") ) )]]></dataSourceExpression>
 					</datasetRun>
-					<jr:listContents height="18" width="28">
+					<jr:listContents height="18" width="34">
 						<textField isStretchWithOverflow="true">
-							<reportElement x="0" y="0" width="21" height="18" uuid="f7c83574-67f5-4fe3-af0a-16f5b14136a6">
+							<reportElement style="ListItem" x="0" y="0" width="34" height="18" uuid="f7c83574-67f5-4fe3-af0a-16f5b14136a6">
 								<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 							</reportElement>
-							<textElement>
-								<font size="12"/>
-							</textElement>
-							<textFieldExpression><![CDATA[$F{packet}.getStorageNumber() + (($F{packet}.getTypeShortcut()==null||$F{packet}.getStorageNumber().startsWith($F{packet}.getTypeShortcut()))?"":(" (" + $F{packet}.getTypeShortcut() + ")"))]]></textFieldExpression>
+							<textFieldExpression><![CDATA[$F{packet}.getStorageNumber()]]></textFieldExpression>
 						</textField>
 					</jr:listContents>
 				</jr:list>
 			</componentElement>
 			<textField isStretchWithOverflow="true" bookmarkLevel="1">
-				<reportElement x="37" y="26" width="294" height="18" uuid="67412211-0c06-4893-a264-07a30d4e83cc">
+				<reportElement style="Item" x="37" y="18" width="278" height="18" uuid="67412211-0c06-4893-a264-07a30d4e83cc">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement markup="none">
-					<font fontName="SansSerif" size="14" isBold="true" pdfEncoding="Cp1250"/>
+					<font isBold="true" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{fund}.getName()]]></textFieldExpression>
 				<anchorNameExpression><![CDATA["Jednotky popisu"]]></anchorNameExpression>
 			</textField>
 			<textField>
-				<reportElement x="37" y="7" width="294" height="18" uuid="b7381beb-8d35-4db8-9c44-f451c86f83ca">
+				<reportElement style="Item" x="37" y="0" width="278" height="18" uuid="b7381beb-8d35-4db8-9c44-f451c86f83ca">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement markup="none">
-					<font fontName="SansSerif" size="14" isBold="true" pdfEncoding="Cp1250"/>
+					<font isBold="true" pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Referenční označení: "+$V{fundReferenceMark}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Referenční označení: "+$P{fund}.getInstitution().getCode()+"//"+$F{node}.getItemsValueByCode("ZP2015_NAD")]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement x="37" y="57" width="294" height="106" uuid="44920850-7d28-40e7-b06c-5012df59743e"/>
-				<textElement>
-					<font size="12" pdfEncoding="Cp1250"/>
-				</textElement>
-				<text><![CDATA[I. Dějiny původce archivního souboru – viz úvod
-II. Dějiny archivního souboru – viz úvod
-III. Archivní charakteristika archivního souboru – viz úvod
-IV. Tematický popis archivního souboru – viz úvod
-V. Záznam o uspořádání archivního souboru a sestavení archivní pomůcky – viz úvod
-]]></text>
-			</staticText>
 		</band>
-		<band height="30">
+		<band height="16">
 			<printWhenExpression><![CDATA[$F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() <= 0]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="">
-				<reportElement x="334" y="7" width="86" height="16" uuid="ca85acbb-fff0-48a2-af71-d328e3507e75">
+				<reportElement style="Item" x="320" y="0" width="94" height="16" uuid="ca85acbb-fff0-48a2-af71-d328e3507e75">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement markup="html">
-					<font fontName="SansSerif" size="12" pdfEncoding="Cp1250"/>
+					<font pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[(StringUtils.isNotEmpty($F{node}.getItemsValueByCode( "ZP2015_UNIT_DATE_PRE" ))?("("+$F{node}.getItemsValueByCode( "ZP2015_UNIT_DATE_PRE" )+")<br>"):"")
 +$F{node}.getItemsValueByCode( "ZP2015_UNIT_DATE" )+"<br>"
@@ -627,7 +634,7 @@ V. Záznam o uspořádání archivního souboru a sestavení archivní pomůcky 
 +(StringUtils.isNotEmpty($F{node}.getItemsValueByCode( "ZP2015_UNIT_DATE_POST" ))?("<br>("+$F{node}.getItemsValueByCode( "ZP2015_UNIT_DATE_POST" )+")"):"")]]></textFieldExpression>
 			</textField>
 			<componentElement>
-				<reportElement key="" positionType="Float" x="426" y="7" width="28" height="16" uuid="4708b234-43fb-495e-98fa-eefcea1c41fb">
+				<reportElement key="" positionType="Float" x="420" y="0" width="34" height="16" uuid="4708b234-43fb-495e-98fa-eefcea1c41fb">
 					<property name="com.jaspersoft.studio.unit.CONTENTS.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
@@ -635,36 +642,38 @@ V. Záznam o uspořádání archivního souboru a sestavení archivní pomůcky 
 					<datasetRun subDataset="Packets" uuid="12cad3e6-7e14-465a-b463-35fa0708e0f7">
 						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{node}.getItems( Collections.singleton("ZP2015_STORAGE_ID") ) )]]></dataSourceExpression>
 					</datasetRun>
-					<jr:listContents height="16" width="28">
+					<jr:listContents height="16" width="34">
 						<textField isStretchWithOverflow="true">
-							<reportElement x="0" y="0" width="21" height="16" uuid="91ddf8fa-f426-4c00-b665-ef8e7d79c10c">
+							<reportElement style="ListItem" x="0" y="0" width="34" height="16" uuid="91ddf8fa-f426-4c00-b665-ef8e7d79c10c">
 								<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 							</reportElement>
-							<textElement>
-								<font size="9"/>
-							</textElement>
-							<textFieldExpression><![CDATA[$F{packet}.getStorageNumber() + (($F{packet}.getTypeShortcut()==null||$F{packet}.getStorageNumber().startsWith($F{packet}.getTypeShortcut()))?"":(" (" + $F{packet}.getTypeShortcut() + ")"))]]></textFieldExpression>
+							<textFieldExpression><![CDATA[$F{packet}.getStorageNumber()]]></textFieldExpression>
 						</textField>
 					</jr:listContents>
 				</jr:list>
 			</componentElement>
 			<textField isStretchWithOverflow="true" bookmarkLevel="2">
-				<reportElement x="0" y="7" width="32" height="22" uuid="dbcf6958-f228-4e8f-8b1d-355482134f3a">
+				<reportElement style="Item" x="0" y="0" width="32" height="16" uuid="dbcf6958-f228-4e8f-8b1d-355482134f3a">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 				</reportElement>
 				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="3"/>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="12" pdfEncoding="Cp1250"/>
+					<font pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{node}.getItemsValueByCode( "ZP2015_SERIAL_NUMBER" )]]></textFieldExpression>
 				<anchorNameExpression><![CDATA[$F{node}.getItemsValueByCode( "ZP2015_SERIAL_NUMBER" )]]></anchorNameExpression>
 			</textField>
 			<componentElement>
-				<reportElement isPrintRepeatedValues="false" x="37" y="7" width="294" height="16" uuid="e6ae090b-33a7-4f89-a249-79fea74c63d3"/>
+				<reportElement style="Item" isPrintRepeatedValues="false" x="37" y="0" width="278" height="16" uuid="e6ae090b-33a7-4f89-a249-79fea74c63d3">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
 				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
 					<datasetRun subDataset="Items" uuid="52fbf543-8d7c-428f-85dd-f5b2bc948d9d">
+						<datasetParameter name="node">
+							<datasetParameterExpression><![CDATA[$F{node}]]></datasetParameterExpression>
+						</datasetParameter>
 						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource(
 	$F{node}.getItems( 
 		Collections.unmodifiableList(
@@ -677,11 +686,11 @@ V. Záznam o uspořádání archivního souboru a sestavení archivní pomůcky 
 	)
 )]]></dataSourceExpression>
 					</datasetRun>
-					<jr:listContents height="16" width="294">
+					<jr:listContents height="16" width="278">
 						<textField isStretchWithOverflow="true">
-							<reportElement x="0" y="0" width="294" height="16" uuid="b961138a-d992-473b-84d0-11c0852da6b7"/>
+							<reportElement style="ListItem" x="0" y="0" width="278" height="16" uuid="b961138a-d992-473b-84d0-11c0852da6b7"/>
 							<textElement markup="html">
-								<font fontName="SansSerif" size="12" pdfEncoding="Cp1250"/>
+								<font pdfEncoding="Cp1250"/>
 							</textElement>
 							<textFieldExpression><![CDATA[$F{item}.getSerializedValue()]]></textFieldExpression>
 						</textField>
@@ -689,53 +698,39 @@ V. Záznam o uspořádání archivního souboru a sestavení archivní pomůcky 
 				</jr:list>
 			</componentElement>
 		</band>
-		<band height="23">
+		<band height="16">
 			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
-			<printWhenExpression><![CDATA[!$V{unitItems}.isEmpty()]]></printWhenExpression>
+			<printWhenExpression><![CDATA[!$V{unitItems}.isEmpty() && $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() <= 0]]></printWhenExpression>
 			<componentElement>
-				<reportElement x="37" y="7" width="294" height="16" uuid="02aaa3d9-17ed-4f0c-a7a9-8be4439ecdbb"/>
+				<reportElement key="" style="Item" x="37" y="0" width="278" height="16" uuid="02aaa3d9-17ed-4f0c-a7a9-8be4439ecdbb"/>
 				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
 					<datasetRun subDataset="Items" uuid="73d0a2f3-14a0-4eb6-b6b6-e7cfee485a4b">
 						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($V{unitItems})]]></dataSourceExpression>
 					</datasetRun>
-					<jr:listContents height="16" width="294">
+					<jr:listContents height="16" width="278">
 						<textField isStretchWithOverflow="true">
-							<reportElement key="" stretchType="ContainerBottom" x="0" y="0" width="90" height="16" uuid="3a3a75b0-e423-46a9-b237-3ead2e1ec72d">
+							<reportElement key="" style="ListItem" stretchType="ContainerBottom" x="0" y="0" width="278" height="16" uuid="3a3a75b0-e423-46a9-b237-3ead2e1ec72d">
 								<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 							</reportElement>
-							<textElement textAlignment="Right" markup="none">
-								<font fontName="SansSerif" size="12" isBold="true" pdfEncoding="Cp1250"/>
+							<textElement textAlignment="Left" markup="none">
+								<font pdfEncoding="Cp1250"/>
 							</textElement>
-							<textFieldExpression><![CDATA[$F{item}.getType().getShortcut()]]></textFieldExpression>
-						</textField>
-						<textField isStretchWithOverflow="true">
-							<reportElement x="97" y="0" width="196" height="16" uuid="04629875-99f8-4ab0-92b7-bd3500b84cdd"/>
-							<textElement markup="none">
-								<font fontName="SansSerif" size="12" isBold="false" pdfEncoding="Cp1250"/>
-							</textElement>
-							<textFieldExpression><![CDATA[$F{item}.getSpecification() != null ? $F{item}.getSpecification().getName() + ($F{item}.getSerializedValue() != "" ? ": "+$F{item}.getSerializedValue() : "") : $F{item}.getSerializedValue()]]></textFieldExpression>
-						</textField>
-						<textField isStretchWithOverflow="true">
-							<reportElement x="90" y="0" width="6" height="16" uuid="0823afab-8303-4d6f-9ba0-a2cb4a93c491"/>
-							<textElement markup="none">
-								<font fontName="SansSerif" size="12" isBold="false" pdfEncoding="Cp1250"/>
-							</textElement>
-							<textFieldExpression><![CDATA[":"]]></textFieldExpression>
+							<textFieldExpression><![CDATA[$F{item}.getType().getShortcut()+": "+($F{item}.getSpecification() != null ? $F{item}.getSpecification().getName() + ($F{item}.getSerializedValue() != "" ? ": "+$F{item}.getSerializedValue() : "") : $F{item}.getSerializedValue())]]></textFieldExpression>
 						</textField>
 					</jr:listContents>
 				</jr:list>
 			</componentElement>
 		</band>
 		<band height="11">
-			<printWhenExpression><![CDATA[!$V{unitItems}.isEmpty()]]></printWhenExpression>
+			<printWhenExpression><![CDATA[!$V{unitItems}.isEmpty() && $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() <= 0]]></printWhenExpression>
 		</band>
 	</detail>
 	<pageFooter>
 		<band height="30" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField evaluationTime="Master">
-				<reportElement x="-3" y="10" width="449" height="19" uuid="ee75b069-80cb-408d-98ad-5e56a0d82bdf">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				<reportElement x="0" y="10" width="455" height="19" uuid="ee75b069-80cb-408d-98ad-5e56a0d82bdf">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 				</reportElement>
 				<box>
 					<topPen lineWidth="1.0"/>

@@ -5,17 +5,17 @@
         <directory>MANIP_SEZNAM_TXT_FREEMARKER</directory>
     </template>
     <template code="ZP2015_MANIP_SEZNAM_PDF_JASPER" output-type="ZP2015_MANIP_SEZNAM" mime-type="application/pdf" extension="pdf">
-        <name>Manipulační seznam, PDF</name>
+        <name>Neplatné - Manipulační seznam, PDF</name>
         <engine>JASPER</engine>
         <directory>MANIP_SEZNAM_PDF_JASPER</directory>
     </template>
     <template code="ZP2015_INVENTAR_PDF_JASPER" output-type="ZP2015_INVENTAR" mime-type="application/pdf" extension="pdf">
-        <name>Inventář, PDF</name>
+        <name>PDF - kompaktní</name>
         <engine>JASPER</engine>
         <directory>INVENTAR_PDF_JASPER</directory>
     </template>
     <template code="ZP2015_INVENTAR_PDF_JASPER_ZAMRSK" output-type="ZP2015_INVENTAR" mime-type="application/pdf" extension="pdf">
-        <name>Inventář, PDF - SOA Zámrsk</name>
+        <name>PDF - podrobné</name>
         <engine>JASPER</engine>
         <directory>INVENTAR_PDF_JASPER_ZAMRSK</directory>
     </template>
