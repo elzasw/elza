@@ -18,16 +18,17 @@
 		<![CDATA[]]>
 	</queryString>
 	<detail>
-		<band height="758">
+		<band height="702">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField>
-				<reportElement x="0" y="370" width="455" height="50" uuid="6169d08a-6fdd-4b38-86fa-d19042c2b9d9"/>
+				<reportElement x="0" y="303" width="455" height="50" uuid="6169d08a-6fdd-4b38-86fa-d19042c2b9d9"/>
 				<textElement textAlignment="Center">
 					<font size="18" isBold="true" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{output}.getName()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="0" y="420" width="455" height="30" uuid="a5fb06e6-7955-4fdf-b60e-dfa9f3a72a8f"/>
+				<reportElement x="0" y="353" width="455" height="30" uuid="a5fb06e6-7955-4fdf-b60e-dfa9f3a72a8f"/>
 				<textElement textAlignment="Center">
 					<font size="16" isBold="true"/>
 				</textElement>
@@ -80,10 +81,10 @@
 				<textElement>
 					<font size="14" pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["inventář"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{output}.getSingleItem("ZP2015_OUTPUT_TYPE")!=null?$P{output}.getSingleItem("ZP2015_OUTPUT_TYPE").getSpecification().getName():""]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement x="0" y="720" width="455" height="14" uuid="e0778e82-e190-4d85-8ff8-3d44f5eaeea5">
+				<reportElement x="0" y="638" width="455" height="14" uuid="e0778e82-e190-4d85-8ff8-3d44f5eaeea5">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
@@ -92,7 +93,7 @@
 				<textFieldExpression><![CDATA["Zpracoval: "+$P{output}.getSingleItemValue( "ZP2015_ARRANGER_TEXT" )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement x="0" y="740" width="455" height="14" isRemoveLineWhenBlank="true" uuid="af89dff7-c912-4296-ae4b-aba8f44b7ffc">
+				<reportElement x="0" y="668" width="455" height="14" isRemoveLineWhenBlank="true" uuid="af89dff7-c912-4296-ae4b-aba8f44b7ffc">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>

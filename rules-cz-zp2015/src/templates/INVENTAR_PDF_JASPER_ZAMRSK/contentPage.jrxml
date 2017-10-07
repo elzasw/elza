@@ -491,9 +491,6 @@
 		)
 	)]]></variableExpression>
 	</variable>
-	<variable name="fundReferenceMark" class="java.lang.String">
-		<variableExpression><![CDATA[$P{fund}.getInstitution().getCode()+"//"+$P{output}.getNodesDFS().next().getItemsValueByCode("ZP2015_NAD")]]></variableExpression>
-	</variable>
 	<columnHeader>
 		<band height="25" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -619,7 +616,7 @@
 				<textElement markup="none">
 					<font isBold="true" pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Referenční označení: "+$V{fundReferenceMark}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Referenční označení: "+$P{fund}.getInstitution().getCode()+"//"+$F{node}.getItemsValueByCode("ZP2015_NAD")]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="16">
