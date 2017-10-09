@@ -12,7 +12,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -602,7 +601,7 @@ public class OutputFactoryService implements NodeLoader {
         } else {
             items = descItems.stream()
 			        // docasne reseni pro nereportovani nedefinovanych poli
-			        .filter(arrDescItem -> !arrDescItem.getUndefined())
+			        .filter(arrDescItem -> !arrDescItem.isUndefined())
                     .map(arrDescItem -> {
                         Item item = createItem(output, arrDescItem);
 

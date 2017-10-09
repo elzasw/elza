@@ -76,6 +76,7 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataPacketRefRepository;
 import cz.tacr.elza.repository.DataPartyRefRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
@@ -717,7 +718,7 @@ public class DescriptionItemService {
      */
     private void copyDescItemData(final ArrDescItem descItemFrom, final ArrDescItem descItemTo) {
 		if (!descItemFrom.isUndefined()) {
-            List<ArrData> dataList = dataRepository.findByItem(descItemFrom);
+            List<ArrData> dataList = dataRepository..findByItem(descItemFrom);
 
             if (dataList.size() != 1) {
                 throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
