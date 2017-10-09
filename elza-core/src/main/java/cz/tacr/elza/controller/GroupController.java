@@ -132,12 +132,12 @@ public class GroupController {
      */
     @Transactional
     @RequestMapping(value = "/{groupId}/permission/add", method = RequestMethod.POST)
-    public UsrPermissionVO addGroupPermission(@PathVariable(value = "groupId") final Integer groupId,
-                                              @RequestBody final UsrPermissionVO permissions) {
+    public List<UsrPermissionVO> addGroupPermission(@PathVariable(value = "groupId") final Integer groupId,
+                                              @RequestBody final List<UsrPermissionVO> permissions) {
         UsrGroup group = userService.getGroup(groupId);
-        List<UsrPermission> usrPermissions = factoryDO.createPermissionList(Collections.singletonList(permissions));
+        List<UsrPermission> usrPermissions = factoryDO.createPermissionList(permissions);
         List<UsrPermission> result = userService.addGroupPermission(group, usrPermissions);
-        return factoryVO.createPermission(result.get(0));
+        return factoryVO.createPermissionList(result, UsrGroup.class);
     }
 
     /**

@@ -143,6 +143,8 @@ public class UserService {
                 permission.setGroup(group);
                 setFundRelation(permission, permission.getFundId());
                 setScopeRelation(permission, permission.getScopeId());
+                setControlUserRelation(permission, permission.getUserControlId());
+                setControlGroupRelation(permission, permission.getGroupControlId());
                 permissionsAdd.add(permission);
             } else {
                 if (changePermissionType == ChangePermissionType.ADD) { // pro akci add nelze předat vyplněné id
@@ -155,6 +157,8 @@ public class UserService {
                     permissionDB.setPermission(permission.getPermission());
                     setFundRelation(permissionDB, permission.getFundId());
                     setScopeRelation(permissionDB, permission.getScopeId());
+                    setControlUserRelation(permissionDB, permission.getUserControlId());
+                    setControlGroupRelation(permissionDB, permission.getGroupControlId());
                     permissionsUpdate.add(permissionDB);
                 }
             }
@@ -183,23 +187,33 @@ public class UserService {
         for (UsrPermission permission : permissions) {
             switch (permission.getPermission().getType()) {
                 case ALL: {
-                    if (permission.getScopeId() != null || permission.getFundId() != null) {
+                    if (permission.getScopeId() != null || permission.getFundId() != null || permission.getUserControlId() != null || permission.getGroupControlId() != null) {
                         throw new SystemException("Neplatný vstup oprávnění: ALL", UserCode.PERM_ILLEGAL_INPUT).set("type", "ALL");
                     }
                     break;
                 }
                 case SCOPE: {
-                    if (permission.getScopeId() == null || permission.getFundId() != null) {
+                    if (permission.getScopeId() == null || permission.getFundId() != null || permission.getUserControlId() != null || permission.getGroupControlId() != null) {
                         throw new SystemException("Neplatný vstup oprávnění: SCOPE", UserCode.PERM_ILLEGAL_INPUT).set("type", "SCOPE");
                     }
                     break;
                 }
                 case FUND: {
-                    if (permission.getScopeId() != null || permission.getFundId() == null) {
+                    if (permission.getScopeId() != null || permission.getFundId() == null || permission.getUserControlId() != null || permission.getGroupControlId() != null) {
                         throw new SystemException("Neplatný vstup oprávnění: FUND", UserCode.PERM_ILLEGAL_INPUT).set("type", "FUND");
                     }
                     break;
                 }
+                case USER:
+                    if (permission.getScopeId() != null || permission.getFundId() != null || permission.getUserControlId() == null || permission.getGroupControlId() != null) {
+                        throw new SystemException("Neplatný vstup oprávnění: USER", UserCode.PERM_ILLEGAL_INPUT).set("type", "USER");
+                    }
+                    break;
+                case GROUP:
+                    if (permission.getScopeId() != null || permission.getFundId() != null || permission.getUserControlId() != null || permission.getGroupControlId() == null) {
+                        throw new SystemException("Neplatný vstup oprávnění: GROUP", UserCode.PERM_ILLEGAL_INPUT).set("type", "GROUP");
+                    }
+                    break;
                 default:
                     throw new IllegalStateException("Nedefinovaný typ oprávnění");
             }
@@ -248,6 +262,42 @@ public class UserService {
             permission.setScope(scope);
         } else {
             permission.setScope(null);
+        }
+    }
+
+    /**
+     * Nastaví vazbu na uživatele - spravovaná etita, pokud je předané id. Pokud předané není, je vazba odstraněna.
+     * Kontroluje existenci objektu s daným id.
+     * @param permission oprávnění
+     * @param userId id objektu, na který má být přidána vazba
+     */
+    private void setControlUserRelation(final UsrPermission permission, final Integer userId) {
+        if (userId != null) {
+            UsrUser user = userRepository.findOne(userId);
+            if (user == null) {
+                throw new SystemException("Neplatný uživatel", BaseCode.ID_NOT_EXIST);
+            }
+            permission.setUserControl(user);
+        } else {
+            permission.setUserControl(null);
+        }
+    }
+
+    /**
+     * Nastaví vazbu na skupinu - spravovaná etita, pokud je předané id. Pokud předané není, je vazba odstraněna.
+     * Kontroluje existenci objektu s daným id.
+     * @param permission oprávnění
+     * @param groupId id objektu, na který má být přidána vazba
+     */
+    private void setControlGroupRelation(final UsrPermission permission, final Integer groupId) {
+        if (groupId != null) {
+            UsrGroup group = groupRepository.findOne(groupId);
+            if (group == null) {
+                throw new SystemException("Neplatná skupina", BaseCode.ID_NOT_EXIST);
+            }
+            permission.setGroupControl(group);
+        } else {
+            permission.setGroupControl(null);
         }
     }
 
@@ -725,6 +775,14 @@ public class UserService {
             if (permission.getScope() != null) {
                 userPermission.addScopeId(permission.getScope().getScopeId());
             }
+
+            if (permission.getGroupControl() != null) {
+                userPermission.addControlGroupId(permission.getGroupControl().getGroupId());
+            }
+
+            if (permission.getUserControl() != null) {
+                userPermission.addControlUserId(permission.getUserControl().getUserId());
+            }
         }
 
         return new HashSet<>(userPermissions.values());
@@ -762,13 +820,21 @@ public class UserService {
                             return true;
                         }
                         break;
-
+                    case USER:
+                        if (userPermission.getControlUserIds().contains(entityId)) {
+                            return true;
+                        }
+                        break;
+                    case GROUP:
+                        if (userPermission.getControlGroupIds().contains(entityId)) {
+                            return true;
+                        }
+                        break;
                     case SCOPE:
                         if (userPermission.getScopeIds().contains(entityId)) {
                             return true;
                         }
                         break;
-
                     default:
                         throw new IllegalStateException(permission.getType().toString());
                 }

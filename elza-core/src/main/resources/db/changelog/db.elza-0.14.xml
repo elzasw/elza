@@ -119,4 +119,26 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="201710060957" author="stanekpa">
+        <!-- Přidání vazby na spravovane uzivatele a skupiny do permission -->
+        <addColumn tableName="usr_permission">
+            <column name="user_control_id" type="int" />
+            <column name="group_control_id" type="int" />
+        </addColumn>
+
+        <addForeignKeyConstraint constraintName="fk_permission_user_control"
+                                 baseTableName="usr_permission"
+                                 baseColumnNames="user_control_id"
+                                 referencedTableName="usr_user"
+                                 referencedColumnNames="user_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_permission_group_control"
+                                 baseTableName="usr_permission"
+                                 baseColumnNames="group_control_id"
+                                 referencedTableName="usr_group"
+                                 referencedColumnNames="group_id"
+                                 onDelete="NO ACTION"/>
+    </changeSet>
+
 </databaseChangeLog>

@@ -49,7 +49,7 @@ class ScopesPermissionPanel extends AbstractReactComponent {
         const {userId} = this.props;
         let obj = currObj || {groupIds: {}};
 
-        if (userId && permission.groupId) {   // je ze skupiny, jen pokud se jedná o práva na uživatele, pokud je právo na skupinu, nemůže být ze skupiny
+        if (permission.inhertited) {   // je zděděné ze skupiny
             obj.groupIds[permission.groupId] = permission.scope ? permission.scope.id : true;
             obj.checked = obj.checked || false;
         } else {    // je přímo přiřazen
@@ -152,8 +152,8 @@ class ScopesPermissionPanel extends AbstractReactComponent {
         };
 
         if (value) {
-            onAddPermission(usrPermission).then(data => {
-                newObj.id = data.id;
+            onAddPermission([usrPermission]).then(data => {
+                newObj.id = data[0].id;
                 this.setState({
                     permissions: newPermissions,
                 });

@@ -44,6 +44,14 @@ public class UsrPermission {
     @JoinColumn(name = "fundId")
     private ArrFund fund;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = UsrUser.class)
+    @JoinColumn(name = "userControlId")
+    private UsrUser userControl;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = UsrGroup.class)
+    @JoinColumn(name = "groupControlId")
+    private UsrGroup groupControl;
+
     /** Slouží jen pro čtení. */
     @Column(name = "fundId", updatable = false, insertable = false, nullable = false)
     private Integer fundId;
@@ -55,6 +63,14 @@ public class UsrPermission {
     /** Slouží jen pro čtení. */
     @Column(name = "scopeId", updatable = false, insertable = false, nullable = false)
     private Integer scopeId;
+
+    /** Slouží jen pro čtení. */
+    @Column(name = "userControlId", updatable = false, insertable = false, nullable = false)
+    private Integer userControlId;
+
+    /** Slouží jen pro čtení. */
+    @Column(name = "groupControlId", updatable = false, insertable = false, nullable = false)
+    private Integer groupControlId;
 
     /**
      * @return identifikátor entity
@@ -159,6 +175,32 @@ public class UsrPermission {
         this.scopeId = scopeId;
     }
 
+    public UsrUser getUserControl() {
+        return userControl;
+    }
+
+    public void setUserControl(UsrUser userControl) {
+        this.userControl = userControl;
+        this.userControlId = userControl == null ? null : userControl.getUserId();
+    }
+
+    public UsrGroup getGroupControl() {
+        return groupControl;
+    }
+
+    public void setGroupControl(UsrGroup groupControl) {
+        this.groupControl = groupControl;
+        this.groupControlId = groupControl == null ? null : groupControl.getGroupId();
+    }
+
+    public Integer getUserControlId() {
+        return userControlId;
+    }
+
+    public Integer getGroupControlId() {
+        return groupControlId;
+    }
+
     /**
      * Typ oprávnění. Řeší, zda-li oprávnění má ještě nějaké návaznosti.
      */
@@ -169,12 +211,22 @@ public class UsrPermission {
         ALL,
 
         /**
-         * Oprávnění se vztahuje na konkrétní fund
+         * Oprávnění se vztahuje na konkrétní fund.
          */
         FUND,
 
         /**
-         * Oprávnění se vztahuje na konkrétní scope
+         * Oprávnění se vztahuje na konkrétního uživatele - např. jako spravovanou entitu.
+         */
+        USER,
+
+        /**
+         * Oprávnění se vztahuje na konkrétní skupinu - např. jako spravovanou entitu.
+         */
+        GROUP,
+
+        /**
+         * Oprávnění se vztahuje na konkrétní scope.
          */
         SCOPE
     }
@@ -327,7 +379,17 @@ public class UsrPermission {
         /**
          * Ukládání mapování typů vztahů a entit mezi INTERPI a ELZA.
          */
-        INTERPI_MAPPING_WR;
+        INTERPI_MAPPING_WR,
+
+        /**
+         * Spravovaná entita - uživatel.
+         */
+        USER_CONTROL_ENTITITY(PermissionType.USER),
+
+        /**
+         * Spravovaná entita skupina.
+         */
+        GROUP_CONTROL_ENTITITY(PermissionType.GROUP);
 
         /**
          * Typ oprávnění

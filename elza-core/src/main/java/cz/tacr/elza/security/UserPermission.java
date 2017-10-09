@@ -25,6 +25,16 @@ public class UserPermission {
     private Set<Integer> fundIds = new HashSet<>();
 
     /**
+     * Seznam identifikátorů spravovaných uživatelů, ke kterým se vztahuje oprávnění.
+     */
+    private Set<Integer> controlUserIds = new HashSet<>();
+
+    /**
+     * Seznam identifikátorů spravovaných skupin, ke kterým se vztahuje oprávnění.
+     */
+    private Set<Integer> controlGroupIds = new HashSet<>();
+
+    /**
      * Seznam identifikátorů scopů, ke kterým se vztahuje oprávnění.
      */
     private Set<Integer> scopeIds = new HashSet<>();
@@ -74,7 +84,23 @@ public class UserPermission {
         fundIds.add(fundId);
     }
 
+    public void addControlGroupId(final Integer groupId) {
+        controlGroupIds.add(groupId);
+    }
+
+    public void addControlUserId(final Integer userId) {
+        controlUserIds.add(userId);
+    }
+
     public void addScopeId(final Integer scopeId) {
         scopeIds.add(scopeId);
+    }
+
+    public Set<Integer> getControlUserIds() {
+        return controlUserIds;
+    }
+
+    public Set<Integer> getControlGroupIds() {
+        return controlGroupIds;
     }
 }

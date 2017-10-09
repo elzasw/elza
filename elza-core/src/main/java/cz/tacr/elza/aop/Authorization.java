@@ -68,7 +68,6 @@ public class Authorization {
                         hasPermission = true;
                     }
                     break;
-
                 case SCOPE:
                 case FUND:
                     for (int i = 0; i < parameters.length; i++) {
@@ -83,7 +82,11 @@ public class Authorization {
                         }
                     }
                     break;
-
+                case USER:
+                case GROUP:
+                    // TODO [stanekpa] - zatím neřešíme, možná se bude řešit přímo v konkrétních metodách
+                    hasPermission = true;
+                    break;
                 default:
                     throw new IllegalStateException("Permission type not defined: " + permission.getType());
             }
@@ -144,7 +147,7 @@ public class Authorization {
                 throw new IllegalStateException(type + ":" + value.getClass().getName());
         }
     }
-    
+
 	public static AccessDeniedException createAccessDeniedException(Permission... deniedPermissions) {
 		return new AccessDeniedException("Chybějící oprávnění: " + Arrays.toString(deniedPermissions), deniedPermissions);
 	}

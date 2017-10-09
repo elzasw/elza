@@ -1012,7 +1012,17 @@ public class ConfigMapperConfiguration {
                 .customize(new CustomMapper<UsrPermission, UsrPermissionVO>() {
                     @Override
                     public void mapAtoB(final UsrPermission usrPermission, final UsrPermissionVO usrPermissionVO, final MappingContext context) {
-                        if (usrPermission.getGroup() != null) {
+                        Class targetEntity = (Class) context.getProperty("targetEntity");
+                        final boolean inherited;
+                        if (targetEntity == UsrUser.class) {
+                            inherited = usrPermission.getGroup() != null;
+                        } else if (targetEntity == UsrGroup.class) {
+                            inherited = false;
+                        } else {
+                            throw new IllegalStateException("Neznámý typ entity " + targetEntity);
+                        }
+                        usrPermissionVO.setInherited(inherited);
+                        if (inherited) {
                             usrPermissionVO.setGroupId(usrPermission.getGroup().getGroupId());
                         }
                     }

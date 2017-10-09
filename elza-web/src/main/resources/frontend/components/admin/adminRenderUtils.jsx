@@ -1,5 +1,13 @@
 import React from "react";
 
+export function renderUserOrGroupItem(item, isHighlighted = false, isSelected = false) {
+    if (item.user) {
+        return renderUserItem(item.user, isHighlighted, isSelected);
+    } else {
+        return renderGroupItem(item.group, isHighlighted, isSelected);
+    }
+}
+
 export function renderUserItem(user, isHighlighted = false, isSelected = false) {
     let cls = 'item';
     if (isHighlighted) {

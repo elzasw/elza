@@ -12,7 +12,12 @@ public class UsrPermissionVO {
     /** Identifikátor. */
     private Integer id;
 
-    /** Pokud je právo ze skupiny, je zde id skupiny. */
+    /**
+     * Je právo zděděné ze skupiny?
+     */
+    private Boolean inherited;
+
+    /** Pokud je právo zděděné, je zde id skupiny. */
     private Integer groupId;
 
     /** Typ oprávnění. */
@@ -20,6 +25,12 @@ public class UsrPermissionVO {
 
     /** AS, ke kterému se vztahuje oprávnění. */
     private ArrFundBaseVO fund;
+
+    /** Skupina, ke které se vztahuje oprávnění. */
+    private UsrGroupVO groupControl;
+
+    /** Uživatel, ke kterému se vztahuje oprávnění. */
+    private UsrUserVO userControl;
 
     /** Scope, ke kterému se vztahuje oprávnění. */
     private RegScopeVO scope;
@@ -63,5 +74,29 @@ public class UsrPermissionVO {
 
     public void setGroupId(Integer groupId) {
         this.groupId = groupId;
+    }
+
+    public Boolean getInherited() {
+        return inherited;
+    }
+
+    public void setInherited(Boolean inherited) {
+        this.inherited = inherited;
+    }
+
+    public UsrGroupVO getGroupControl() {
+        return groupControl;
+    }
+
+    public void setGroupControl(UsrGroupVO groupControl) {
+        this.groupControl = groupControl;
+    }
+
+    public UsrUserVO getUserControl() {
+        return userControl;
+    }
+
+    public void setUserControl(UsrUserVO userControl) {
+        this.userControl = userControl;
     }
 }

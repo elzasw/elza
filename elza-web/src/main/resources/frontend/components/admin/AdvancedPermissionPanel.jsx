@@ -9,6 +9,7 @@ import * as userPermissions from "./../../actions/admin/userPermissions";
 import {WebApi} from "../../actions/WebApi";
 import PermissionCheckboxsForm from "./PermissionCheckboxsForm";
 import AdminRightsContainer from "./AdminRightsContainer";
+import ControlledEntitiesPanel from "./ControlledEntitiesPanel";
 
 /**
  * Panel spravující pokročilá oprávnění.
@@ -35,7 +36,7 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
         const {userId} = this.props;
         let obj = currObj || {groupIds: {}};
 
-        if (userId && permission.groupId) {   // je ze skupiny, jen pokud se jedná o práva na uživatele, pokud je právo na skupinu, nemůže být ze skupiny
+        if (permission.inhertited) {   // je zděděné ze skupiny
             obj.groupIds[permission.groupId] = true;
             obj.checked = obj.checked || false;
         } else {    // je přímo přiřazen
@@ -100,8 +101,8 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
         };
 
         if (value) {
-            onAddPermission(usrPermission).then(data => {
-                newObj.id = data.id;
+            onAddPermission([usrPermission]).then(data => {
+                newObj.id = data[0].id;
                 this.setState({permission: newPermission});
             });
         } else {
@@ -114,7 +115,7 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
 
     render() {
         const {permission} = this.state;
-        const {userPermissions} = this.props;
+        const {onAddPermission, onDeletePermission, userPermissions} = this.props;
 
         return <AdminRightsContainer>
                 {permission && <PermissionCheckboxsForm
@@ -123,6 +124,11 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
                     labelPrefix="admin.perms.tabs.advanced.perm."
                     permission={permission}
                     groups={userPermissions.data.groups}
+                />}
+                {userPermissions.fetched && <ControlledEntitiesPanel
+                    permissions={userPermissions.data.permissions}
+                    onAddPermission={onAddPermission}
+                    onDeletePermission={onDeletePermission}
                 />}
         </AdminRightsContainer>;
     }

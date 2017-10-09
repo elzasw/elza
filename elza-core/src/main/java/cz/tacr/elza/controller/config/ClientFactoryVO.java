@@ -38,6 +38,7 @@ import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.domain.ParRegistryRole;
 import cz.tacr.elza.repository.RegistryRoleRepository;
+import ma.glasnost.orika.MappingContext;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -1840,9 +1841,12 @@ public class ClientFactoryVO {
      * @param permissions vstupní seznam oprávnění
      * @return seznam VO
      */
-    public List<UsrPermissionVO> createPermissionList(final List<UsrPermission> permissions) {
+    public List<UsrPermissionVO> createPermissionList(final List<UsrPermission> permissions, Class targetEntity) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.mapAsList(permissions, UsrPermissionVO.class);
+        Map<Object, Object> map = new HashMap<>();
+        map.put("targetEntity", targetEntity);
+        MappingContext context = new MappingContext(map);
+        return mapper.mapAsList(permissions, UsrPermissionVO.class, context);
     }
 
     /**
@@ -1850,9 +1854,12 @@ public class ClientFactoryVO {
      * @param permission vstupní oprávnění
      * @return VO
      */
-    public UsrPermissionVO createPermission(final UsrPermission permission) {
+    public UsrPermissionVO createPermission(final UsrPermission permission, Class targetEntity) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(permission, UsrPermissionVO.class);
+        Map<Object, Object> map = new HashMap<>();
+        map.put("targetEntity", targetEntity);
+        MappingContext context = new MappingContext(map);
+        return mapper.map(permission, UsrPermissionVO.class, context);
     }
 
     /**
@@ -1868,7 +1875,7 @@ public class ClientFactoryVO {
         // Načtení oprávnění
 //        List<UsrPermission> permissions = permissionRepository.findByUserOrderByPermissionIdAsc(user);
         List<UsrPermission> permissions = permissionRepository.getAllPermissionsWithGroups(user);
-        result.setPermissions(createPermissionList(permissions));
+        result.setPermissions(createPermissionList(permissions, UsrUser.class));
 
         // Načtení členství ve skupinách
         List<UsrGroup> groups = groupRepository.findByUser(user);
@@ -1891,7 +1898,7 @@ public class ClientFactoryVO {
         // Načtení oprávnění
         List<UsrPermission> permissions = permissionRepository.findByUserOrderByPermissionIdAsc(user);
 //        List<UsrPermission> permissions = permissionRepository.getAllPermissionsWithGroups(user);
-        result.setPermissions(createPermissionList(permissions));
+        result.setPermissions(createPermissionList(permissions, UsrUser.class));
 
         // Načtení členství ve skupinách
         List<UsrGroup> groups = groupRepository.findByUser(user);
@@ -1914,7 +1921,7 @@ public class ClientFactoryVO {
 
         // Načtení oprávnění
         List<UsrPermission> permissions = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
-        result.setPermissions(createPermissionList(permissions));
+        result.setPermissions(createPermissionList(permissions, UsrGroup.class));
 
         // Přiřazení uživatelé
         List<UsrUser> users = userRepository.findByGroup(group);

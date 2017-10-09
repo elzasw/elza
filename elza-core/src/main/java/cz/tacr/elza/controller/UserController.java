@@ -311,12 +311,12 @@ public class UserController {
      */
     @Transactional
     @RequestMapping(value = "/{userId}/permission/add", method = RequestMethod.POST)
-    public UsrPermissionVO addUserPermission(@PathVariable(value = "userId") final Integer userId,
-                                     @RequestBody final UsrPermissionVO permissions) {
+    public List<UsrPermissionVO> addUserPermission(@PathVariable(value = "userId") final Integer userId,
+                                     @RequestBody final List<UsrPermissionVO> permissions) {
         UsrUser user = userService.getUser(userId);
-        List<UsrPermission> usrPermissions = factoryDO.createPermissionList(Collections.singletonList(permissions));
+        List<UsrPermission> usrPermissions = factoryDO.createPermissionList(permissions);
         List<UsrPermission> result = userService.addUserPermission(user, usrPermissions);
-        return factoryVO.createPermission(result.get(0));
+        return factoryVO.createPermissionList(result, UsrUser.class);
     }
 
     /**

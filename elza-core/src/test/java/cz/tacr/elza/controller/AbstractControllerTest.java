@@ -136,6 +136,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String RULE_CONTROLLER_URL = "/api/rule";
     protected static final String XML_IMPORT_CONTROLLER_URL = "/api/import";
     protected static final String USER_CONTROLLER_URL = "/api/user";
+    protected static final String GROUP_CONTROLLER_URL = "/api/group";
 
     // ADMIN
     protected static final String REINDEX = ADMIN_CONTROLLER_URL + "/reindex";
@@ -304,12 +305,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected final static String GET_USER = USER_CONTROLLER_URL + "/{userId}";
     protected final static String ACTIVE_USER = USER_CONTROLLER_URL + "/{userId}/active/{active}";
     protected final static String CREATE_USER = USER_CONTROLLER_URL;
-    protected final static String FIND_GROUP = USER_CONTROLLER_URL + "/group";
-    protected final static String GET_GROUP = USER_CONTROLLER_URL + "/group/{groupId}";
-    protected final static String CREATE_GROUP = USER_CONTROLLER_URL + "/group";
-    protected final static String DELETE_GROUP = USER_CONTROLLER_URL + "/group/{groupId}";
-    protected final static String CHANGE_GROUP = USER_CONTROLLER_URL + "/group/{groupId}";
-    protected final static String CHANGE_GROUP_PERMISSION = USER_CONTROLLER_URL + "/group/{groupId}/permission";
+    protected final static String FIND_GROUP = GROUP_CONTROLLER_URL;
+    protected final static String GET_GROUP = GROUP_CONTROLLER_URL + "/{groupId}";
+    protected final static String CREATE_GROUP = GROUP_CONTROLLER_URL;
+    protected final static String DELETE_GROUP = GROUP_CONTROLLER_URL + "/{groupId}";
+    protected final static String CHANGE_GROUP = GROUP_CONTROLLER_URL + "/{groupId}";
     protected final static String JOIN_GROUP = USER_CONTROLLER_URL + "/group/join";
     protected final static String LEAVE_GROUP = USER_CONTROLLER_URL + "/group/{groupId}/leave/{userId}";
     protected final static String CHANGE_USER_PERMISSION = USER_CONTROLLER_URL + "/{userId}/permission";
@@ -2590,10 +2590,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param userId      identifikátor uživatele
      * @param permissions seznam oprávnění
      */
-    protected void changeUserPermission(final Integer userId,
-                                     final UserController.Permissions permissions) {
-        post(spec -> spec.pathParameter("userId", userId).body(permissions), CHANGE_USER_PERMISSION);
-    }
+//    protected void changeUserPermission(final Integer userId,
+//                                     final UserController.Permissions permissions) {
+//        post(spec -> spec.pathParameter("userId", userId).body(permissions), CHANGE_USER_PERMISSION);
+//    }
 
     /**
      * Nastavení oprávnění skupiny.
@@ -2601,10 +2601,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param groupId     identifikátor skupiny
      * @param permissions seznam oprávnění
      */
-    protected void changeGroupPermission(final Integer groupId,
-                                      final UserController.Permissions permissions) {
-        post(spec -> spec.pathParameter("groupId", groupId).body(permissions), CHANGE_GROUP_PERMISSION);
-    }
+//    protected void changeGroupPermission(final Integer groupId,
+//                                      final UserController.Permissions permissions) {
+//        post(spec -> spec.pathParameter("groupId", groupId).body(permissions), CHANGE_GROUP_PERMISSION);
+//    }
 
     /**
      * Získání unikátních hodnot atributů podle typu.
