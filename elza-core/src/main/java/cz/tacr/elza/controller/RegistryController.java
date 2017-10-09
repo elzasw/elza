@@ -41,6 +41,7 @@ import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.controller.vo.RelationSearchVO;
+import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ParParty;
@@ -707,5 +708,19 @@ public class RegistryController {
         Assert.notNull(relationSearchVO.getSystemId(), "Identifikátor systému musí být vyplněn");
 
         return interpiService.findInterpiRecordRelations(interpiRecordId, relationSearchVO.getSystemId(), relationSearchVO.getScopeId());
+    }
+
+    /**
+     * Najde použití rejstříku.
+     *
+     * @param recordId identifikátor rejstříku
+     *
+     * @return použití rejstříku
+     */
+    @RequestMapping(value = "/findUsage/{recordId}", method = RequestMethod.GET)
+    public RecordUsageVO findUsage(@PathVariable final Integer recordId) {
+    	RegRecord regRecord = regRecordRepository.getOneCheckExist(recordId);
+    	ParParty parParty = partyService.findParPartyByRecord(regRecord);
+    	return registryService.findRecordUsage(regRecord, parParty);
     }
 }

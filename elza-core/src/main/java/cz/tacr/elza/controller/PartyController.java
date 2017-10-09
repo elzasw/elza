@@ -34,6 +34,7 @@ import cz.tacr.elza.controller.vo.ParRelationTypeVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.controller.vo.UIPartyGroupVO;
+import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ParComplementType;
@@ -47,6 +48,7 @@ import cz.tacr.elza.domain.ParRelationEntity;
 import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.ParRelationTypeRoleType;
+import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.UIPartyGroup;
 import cz.tacr.elza.exception.DeleteException;
@@ -71,6 +73,7 @@ import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.UIPartyGroupRepository;
 import cz.tacr.elza.service.PartyService;
+import cz.tacr.elza.service.RegistryService;
 import cz.tacr.elza.service.UserService;
 
 
@@ -141,6 +144,9 @@ public class PartyController {
 
     @Autowired
     private UIPartyGroupRepository uiPartyGroupRepository;
+
+    @Autowired
+    private RegistryService registryService;
 
     /**
      * Uložení nové osoby
@@ -506,5 +512,19 @@ public class PartyController {
     @RequestMapping(value = "/institutions", method = RequestMethod.GET)
     public List<ParInstitutionVO> getInstitutions() {
         return factoryVo.createInstitutionList(institutionRepository.findAll());
+    }
+
+    /**
+     * Najde použití osoby.
+     *
+     * @param partyId identifikátor osoby
+     *
+     * @return použití osoby
+     */
+    @RequestMapping(value = "/findUsage/{partyId}", method = RequestMethod.GET)
+    public RecordUsageVO findUsage(@PathVariable final Integer partyId) {
+    	ParParty parParty = partyRepository.getOneCheckExist(partyId);
+    	RegRecord regRecord = parParty.getRecord();
+    	return registryService.findRecordUsage(regRecord, parParty);
     }
 }

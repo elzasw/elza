@@ -26,7 +26,7 @@ public class PartyUtils {
      */
     public static Map<Integer, ParParty> createRecordPartyMap(final Collection<ParParty> partyList) {
         if (CollectionUtils.isEmpty(partyList)) {
-            return Collections.EMPTY_MAP;
+            return Collections.emptyMap();
         }
 
         Map<Integer, ParParty> result = new HashMap<>();

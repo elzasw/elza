@@ -58,6 +58,9 @@ public class ArrFundVersion extends AbstractVersionableEntity implements Version
     @JoinColumn(name = "fundId", nullable = false)
     private ArrFund fund;
 
+    @Column(name = "fundId", insertable = false, updatable = false)
+    private Integer fundId;
+
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
     @JoinColumn(name = "ruleSetId", nullable = false)
@@ -126,6 +129,11 @@ public class ArrFundVersion extends AbstractVersionableEntity implements Version
      */
     public void setFund(final ArrFund fund) {
         this.fund = fund;
+        if (fund == null) {
+        	this.fundId = null;
+        } else {
+        	this.fundId = fund.getFundId();
+        }
     }
 
     /**
@@ -183,4 +191,8 @@ public class ArrFundVersion extends AbstractVersionableEntity implements Version
     public int hashCode() {
         return fundVersionId != null ? fundVersionId.hashCode() : 0;
     }
+
+	public Integer getFundId() {
+		return fundId;
+	}
 }

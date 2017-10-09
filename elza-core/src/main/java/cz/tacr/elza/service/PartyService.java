@@ -177,9 +177,6 @@ public class PartyService {
     @Autowired
     private ItemSpecRegisterRepository itemSpecRegisterRepository;
 
-    @Autowired
-    private UserService userService;
-
     /**
      * Najde osobu podle rejstříkového hesla.
      *

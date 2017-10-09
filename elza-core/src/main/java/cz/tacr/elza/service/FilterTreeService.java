@@ -14,8 +14,6 @@ import java.util.TreeSet;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +43,8 @@ import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.vo.DescItemValues;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
@@ -147,7 +147,7 @@ public class FilterTreeService {
         ArrayList<Integer> subIds = FilterTools.getSublist(page, pageSize, filteredIds);
 
 
-        Map<Integer, Map<String, TitleValues>> nodeValuesMap = Collections.EMPTY_MAP;
+        Map<Integer, Map<String, TitleValues>> nodeValuesMap = Collections.emptyMap();
         if (!subIds.isEmpty() && !descItemTypeIds.isEmpty()) {
             nodeValuesMap = descriptionItemService.createNodeValuesMap(new HashSet<>(subIds), null,
                     new HashSet<>(descItemTypeMap.values()), version);
