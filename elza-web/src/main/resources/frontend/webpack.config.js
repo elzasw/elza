@@ -2,7 +2,7 @@ const webpack = require('webpack');
 const path = require('path');
 const fs = require('fs');
 const HappyPack = require('happypack');
-// const CircularDependencyPlugin = require('circular-dependency-plugin');
+const CircularDependencyPlugin = require('circular-dependency-plugin');
 
 const PORT = 8090;
 
@@ -25,10 +25,10 @@ module.exports = {
         //'react-hot-loader/patch',
         `webpack-dev-server/client?http://localhost:${PORT}`,
         'webpack/hot/only-dev-server',
-        // 'babel-polyfill',
+        'babel-polyfill',
         './index.jsx',
     ],
-    devtool: 'cheap-source-map',
+    devtool: 'eval-source-map',
     output: {
         path: path.join(__dirname, 'assets'),
         filename: 'bundle.js',
@@ -46,19 +46,19 @@ module.exports = {
         headers: { 'Access-Control-Allow-Origin': '*' }
     },
     plugins: [
-        // new CircularDependencyPlugin({
-        //     // exclude detection of files based on a RegExp
-        //     exclude: /node_modules/,
-        //     // add errors to webpack instead of warnings
-        //     failOnError: true
-        // }),
-        new HappyPack({
+        new CircularDependencyPlugin({
+            // exclude detection of files based on a RegExp
+            exclude: /node_modules/,
+            // add errors to webpack instead of warnings
+            failOnError: true
+        }),
+        /*new HappyPack({
             id: 'jsx',
             threads: 6,
             loaders: ['babel-loader']
-        }),
+        }),*/
         new webpack.HotModuleReplacementPlugin(),
-        // new webpack.NamedModulesPlugin(),
+        new webpack.NamedModulesPlugin(),
         new webpack.NoEmitOnErrorsPlugin(),
         new webpack.DefinePlugin({
             __DEV__: true,
@@ -82,8 +82,7 @@ module.exports = {
     },
     watchOptions: {
         aggregateTimeout: 300,
-        poll: 1000,
-        ignored: /node_modules/
+        poll: 1000
     },
     module: {
         rules: [
@@ -107,14 +106,14 @@ module.exports = {
                     {
                         loader: "less-loader",
                         options: {
-                            // strictMath: true,
-                            // noIeCompat: true,
+                            strictMath: true,
+                            noIeCompat: true,
                             paths: [
                                 path.resolve(__dirname),
                                 path.resolve(__dirname, "node_modules")
                             ]
-                    }
-                }]
+                        }
+                    }]
             },
             {
                 test: /\.scss$/,
