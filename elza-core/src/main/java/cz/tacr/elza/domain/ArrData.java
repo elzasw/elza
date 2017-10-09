@@ -1,6 +1,16 @@
 package cz.tacr.elza.domain;
 
-import java.io.Serializable;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import cz.tacr.elza.filter.condition.LuceneDescItemCondition;
+import cz.tacr.elza.service.cache.NodeCacheSerializable;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.hibernate.search.annotations.Analyzer;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.NumericField;
+import org.hibernate.search.annotations.Store;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -12,21 +22,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.lucene.analysis.core.KeywordTokenizerFactory;
-import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
-import org.hibernate.search.annotations.Analyzer;
-import org.hibernate.search.annotations.AnalyzerDef;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.FieldBridge;
-import org.hibernate.search.annotations.Store;
-import org.hibernate.search.annotations.TokenFilterDef;
-import org.hibernate.search.annotations.TokenizerDef;
-import org.hibernate.search.bridge.builtin.IntegerBridge;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 
 /**
  * Tabulka pro evidenci hodnot atributů archivního popisu.
@@ -34,20 +29,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */
-@AnalyzerDef(name = "customanalyzer",
-tokenizer = @TokenizerDef(factory = KeywordTokenizerFactory.class),
-filters = {
-  @TokenFilterDef(factory = LowerCaseFilterFactory.class),
-})
 @Entity(name = "arr_data")
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public abstract class ArrData {
-
-    public static final String ITEM = "item";
-
-    public static final String LUCENE_DESC_ITEM_TYPE_ID = "descItemTypeId";
+@JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
+public abstract class ArrData implements NodeCacheSerializable {
 
     @Id
     @GeneratedValue
@@ -57,47 +44,40 @@ public abstract class ArrData {
     @JoinColumn(name = "dataTypeId", nullable = false)
     private RulDataType dataType;
 
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrItem.class)
-    @JoinColumn(name = "itemId", nullable = true)
-    private ArrItem item;
-
-    /** @return vrací hodnotu pro fulltextové hledání  */
+    /**
+     * @return vrací hodnotu pro fulltextové hledání
+     */
+    @JsonIgnore
     @Field
     @Analyzer(definition = "customanalyzer")
     public abstract String getFulltextValue();
 
-    @Field(store = Store.YES)
-    public String getItemId() {
-        return item.getItemId().toString();
+    @JsonIgnore
+    @Field(name = LuceneDescItemCondition.INTGER_ATT, store = Store.YES)
+    @NumericField
+    public Integer getValueInt() {
+        return null;
     }
 
-    @Field(store = Store.YES)
-    @FieldBridge(impl = IntegerBridge.class)
-    public Integer getNodeId() {
-        return item.getNode() != null ? item.getNode().getNodeId() : null;
+    @JsonIgnore
+    @Field(name = LuceneDescItemCondition.DECIMAL_ATT, store = Store.YES)
+    @NumericField
+    public Double getValueDouble() {
+        return null;
     }
 
-    @Field
-    @FieldBridge(impl = IntegerBridge.class)
-    public Integer getFundId() {
-        return item.getFundId();
+    @JsonIgnore
+    @Field(name = LuceneDescItemCondition.NORMALIZED_FROM_ATT, store = Store.YES)
+    @NumericField
+    public Long getNormalizedFrom() {
+        return null;
     }
 
-    @Field(store = Store.NO)
-    @FieldBridge(impl = IntegerBridge.class)
-    public Integer getDescItemTypeId() {
-        return item.getItemType().getItemTypeId();
-    }
-
-    @Field
-    @Analyzer(definition = "customanalyzer")
-    public Integer getSpecification() {
-        RulItemSpec descItemSpec = item.getItemSpec();
-        if (descItemSpec == null) {
-            return null;
-        }
-
-        return descItemSpec.getItemSpecId();
+    @JsonIgnore
+    @Field(name = LuceneDescItemCondition.NORMALIZED_TO_ATT, store = Store.YES)
+    @NumericField
+    public Long getNormalizedTo() {
+        return null;
     }
 
     public Integer getDataId() {
@@ -114,14 +94,6 @@ public abstract class ArrData {
 
     public void setDataType(final RulDataType dataType) {
         this.dataType = dataType;
-    }
-
-    public ArrItem getItem() {
-        return item;
-    }
-
-    public void setItem(final ArrItem item) {
-        this.item = item;
     }
 
     @Override

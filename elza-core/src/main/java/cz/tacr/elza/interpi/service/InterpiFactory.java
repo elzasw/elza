@@ -613,7 +613,7 @@ public class InterpiFactory {
 
     private MappingVO findRelationMapping(final List<MappingVO> mappings, final InterpiClass interpiClass,
             final String interpiRelationType, final String interpiRoleType, final String entityId) {
-        Assert.isTrue(interpiRelationType != null || interpiRoleType != null);
+        Assert.isTrue(interpiRelationType != null || interpiRoleType != null, "Podmínka musí platit");
 
         if (mappings == null) {
             return null;

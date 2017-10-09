@@ -5,19 +5,22 @@ import org.hibernate.Session;
 
 import cz.tacr.elza.deimport.context.EntityState;
 import cz.tacr.elza.deimport.context.IdHolder;
+import cz.tacr.elza.deimport.context.SimpleIdHolder;
 import cz.tacr.elza.deimport.storage.EntityWrapper;
 import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDescItem;
 
 public class ArrDataWrapper implements EntityWrapper {
 
+    private final SimpleIdHolder idHolder = new SimpleIdHolder(ArrData.class);
+
     private final ArrData entity;
 
-    private final IdHolder descItemIdHolder;
-
-    ArrDataWrapper(ArrData entity, IdHolder descItemIdHolder) {
+    ArrDataWrapper(ArrData entity) {
         this.entity = Validate.notNull(entity);
-        this.descItemIdHolder = Validate.notNull(descItemIdHolder);
+    }
+
+    public IdHolder getIdHolder() {
+        return idHolder;
     }
 
     @Override
@@ -32,7 +35,11 @@ public class ArrDataWrapper implements EntityWrapper {
 
     @Override
     public void beforeEntityPersist(Session session) {
-        Validate.isTrue(entity.getItem() == null);
-        entity.setItem(descItemIdHolder.getEntityRef(session, ArrDescItem.class));
+        // NOP
+    }
+
+    @Override
+    public void afterEntityPersist() {
+        idHolder.setId(entity.getDataId());
     }
 }

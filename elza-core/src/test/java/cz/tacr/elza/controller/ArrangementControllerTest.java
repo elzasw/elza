@@ -1038,42 +1038,44 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         List<ArrNodeVO> allNodes = clientFactoryVO.createArrNodes(nodeRepository.findAll(nodeIds));
         ArrangementController.ReplaceDataBody body = new ArrangementController.ReplaceDataBody();
         body.setNodes(new HashSet<>(allNodes));
+        body.setSelectionType(ArrangementController.SelectionType.NODES);
         replaceDataValues(fundVersion.getId(), typeVo.getId(), "value", "valXYZ", body);
 
 
         //nalezení hodnot podle změněné hodnoty
         RulItemType type = itemTypeRepository.findOneByCode("ZP2015_TITLE");
         type.setDataType(dataTypeRepository.findByCode("TEXT"));  //kvůli transakci (no session)
-        List<ArrData> nodesContainingText = dataRepository.findByNodesContainingText(nodeRepository.findAll(nodeIds),
+        List<ArrDescItem> nodesContainingText = descItemRepository.findByNodesContainingText(nodeRepository.findAll(nodeIds),
                 type, null, "valXYZ");
 
         assertTrue(nodesContainingText.size() == nodeIds.size());
-        for (ArrData arrData : nodesContainingText) {
-            ArrDataText data = (ArrDataText) arrData;
+        for (ArrDescItem descItem : nodesContainingText) {
+            ArrDataText data = (ArrDataText) descItem.getData();
             assertTrue(Pattern.compile("^(\\d+valXYZ\\d+)$").matcher(data.getValue()).matches());
-            assertTrue(nodeIds.contains(arrData.getItem().getNodeId()));
+            assertTrue(nodeIds.contains(descItem.getNodeId()));
         }
 
 
         //test nahrazení všech hodnot na konkrétní hodnotu
         allNodes = clientFactoryVO.createArrNodes(nodeRepository.findAll(nodeIds));
         body.setNodes(new HashSet<>(allNodes));
+        body.setSelectionType(ArrangementController.SelectionType.NODES);
         placeDataValues(fundVersion.getId(), typeVo.getId(), "nova_value", body);
 
-        List<ArrData> byNodesAndDeleteChangeIsNull = dataRepository
+        List<ArrDescItem> byNodesAndDeleteChangeIsNull = descItemRepository
                 .findByNodesAndDeleteChangeIsNull(nodeRepository.findAll(nodeIds));
         assertTrue(byNodesAndDeleteChangeIsNull.size() >= nodeIds.size());
-        for (ArrData arrData : byNodesAndDeleteChangeIsNull) {
-            if (arrData.getItem().getItemType().getItemTypeId().equals(typeVo.getId())) {
-                ArrDataText text = (ArrDataText) arrData;
+        for (ArrDescItem descItem : byNodesAndDeleteChangeIsNull) {
+            if (descItem.getItemType().getItemTypeId().equals(typeVo.getId())) {
+                ArrDataText text = (ArrDataText) descItem.getData();
                 assertTrue(text.getValue().equals("nova_value"));
             }
         }
 
-
         //smazání hodnot atributů
         allNodes = clientFactoryVO.createArrNodes(nodeRepository.findAll(nodeIds));
         body.setNodes(new HashSet<>(allNodes));
+        body.setSelectionType(ArrangementController.SelectionType.NODES);
         deleteDescItems(fundVersion.getId(), typeVo.getId(), body);
 
         List<ArrDescItem> nodeDescItems = descItemRepository
@@ -1122,8 +1124,15 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
     }
 
+    /**
+     * TODO:
+     * Tento test neprochází z neznámené důvodu. Protože je použito v SQL dotazu WITH recursive, hibernate z neznámého
+     * důvodu přidá za klauzuli WITH[*], což způsobí výjimku o chybné syntaxi. Vrcholem všeho je, že tento problém
+     * nastává pouze při TESTU, v případě běžného spuštění k chybě nedochází. Zkoušel jsem ostrou verzi na všech
+     * podporovaných DB a na všech v pořádku. Test jsem napojil i na souborovou verzi H2 a bez úspěchu.
+     */
     @Test
-    @Ignore // TODO po implementaci
+    @Ignore
     public void copyLevelsTest() {
 
         ArrFundVO fundSource = createdFund();

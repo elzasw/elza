@@ -13,6 +13,7 @@ import cz.tacr.elza.service.cache.NodeCacheSerializable;
  * @since 15.9.15
  */
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
+@Deprecated
 public abstract class ArrItemData implements NodeCacheSerializable {
 
     // atribut pouze pro pomocné uložení hodnoty v JSON

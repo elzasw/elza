@@ -1,5 +1,6 @@
 package cz.tacr.elza.domain;
 
+import javax.persistence.Column;  
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -11,15 +12,9 @@ import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 import org.springframework.data.rest.core.annotation.RestResource;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
-
-/**
- * @author Martin Šlapa
- * @since 1.9.2015
- */
-@Indexed(interceptor = IndexArrDataWhenHasDescItemInterceptor.class)
 @Entity(name = "arr_data_packet_ref")
 @Table
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
@@ -31,6 +26,9 @@ public class ArrDataPacketRef extends ArrData {
     @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrPacket.class)
     @JoinColumn(name = "packetId", nullable = false)
     private ArrPacket packet;
+
+    @Column(name = "packetId", updatable = false, insertable = false)
+    private Integer packetId;
 
     @Transient
     private final ArrDataPacketRefIndexProvider indexProvider;
@@ -59,16 +57,20 @@ public class ArrDataPacketRef extends ArrData {
 
     public void setPacket(final ArrPacket packet) {
         this.packet = packet;
+        this.packetId = packet == null ? null : packet.getPacketId();
     }
 
-    @Override
-    @Field
+    public Integer getPacketId() {
+        return packetId;
+    }
+
+    @JsonIgnore
+    @Field 
     public Integer getSpecification() {
         return indexProvider.getSpecification();
     }
 
     @Override
-    @Field
     public String getFulltextValue() {
         return indexProvider.getFulltextValue();
     }
@@ -97,3 +99,4 @@ public class ArrDataPacketRef extends ArrData {
         }
     }
 }
+

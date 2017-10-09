@@ -59,6 +59,7 @@ import {getMapFromList, getSetFromIdsList} from 'stores/app/utils.jsx'
 import {propsEquals} from 'components/Utils.jsx'
 import {COL_DEFAULT_WIDTH, COL_REFERENCE_MARK} from "./FundDataGridConst";
 import './FundDataGrid.less'
+import {getPagesCount} from "../shared/datagrid/DataGridPagination";
 
 class FundDataGrid extends AbstractReactComponent {
     constructor(props) {
@@ -464,47 +465,63 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     handleBulkModifications(refType, dataType) {
-        const {versionId, fundDataGrid} = this.props
+        const {versionId, fundDataGrid, calendarTypes} = this.props;
 
-        var submit = (data) => {
+        const submit = (data) => {
             // Sestavení seznamu node s id a verzí, pro které se má daná operace provést
-            var nodes;
+            let nodes;
+            let selectionType;
             switch (data.itemsArea) {
-                case 'all':
-                    nodes = fundDataGrid.items.map(i => ({id: i.node.id, version: i.node.version}))
-                    break
+                case 'page':
+                    nodes = fundDataGrid.items.map(i => ({id: i.node.id, version: i.node.version}));
+                    selectionType = 'NODES';
+                    break;
                 case 'selected': {
-                    const set = getSetFromIdsList(fundDataGrid.selectedIds)
-                    nodes = []
+                    const set = getSetFromIdsList(fundDataGrid.selectedIds);
+                    nodes = [];
+                    selectionType = 'NODES';
                     fundDataGrid.items.forEach(i => {
                         if (set[i.id]) {
                             nodes.push({id: i.node.id, version: i.node.version})
                         }
-                    })
+                    });
                     break
                 }
                 case 'unselected': {
-                    nodes = []
-                    const set = getSetFromIdsList(fundDataGrid.selectedIds)
+                    nodes = [];
+                    selectionType = 'NODES';
+                    const set = getSetFromIdsList(fundDataGrid.selectedIds);
                     fundDataGrid.items.forEach(i => {
                         if (!set[i.id]) {
                             nodes.push({id: i.node.id, version: i.node.version})
                         }
-                    })
+                    });
                     break
                 }
+                case 'all':
+                    nodes = [];
+                    selectionType = 'FUND';
+                    break
+            }
+
+            let replaceText = data.replaceText;
+            if (dataType.code === 'UNITDATE' && replaceText != null && typeof replaceText === 'object') {
+                replaceText = replaceText.calendarTypeId + '|' + replaceText.value;
             }
 
             // Získání seznam specifikací
-            const specsIds = getSpecsIds(refType, data.specs.type, data.specs.ids)
+            const specsIds = getSpecsIds(refType, data.specs.type, data.specs.ids);
 
-            return this.dispatch(fundBulkModifications(versionId, refType.id, specsIds, data.operationType, data.findText, data.replaceText, data.replaceSpec, nodes))
-        }
+            if (selectionType !== 'FUND' || confirm(i18n('arr.fund.bulkModifications.warn'))) {
+                return this.dispatch(fundBulkModifications(versionId, refType.id, specsIds, data.operationType, data.findText, replaceText, data.replaceSpec, nodes, selectionType))
+            }
+        };
 
         this.dispatch(modalDialogShow(this, i18n('arr.fund.bulkModifications.title'),
             <FundBulkModificationsForm
                 refType={refType}
                 dataType={dataType}
+                calendarTypes={calendarTypes}
                 onSubmitForm={submit}
                 allItemsCount={fundDataGrid.items.length}
                 checkedItemsCount={fundDataGrid.selectedIds.length}
@@ -765,6 +782,8 @@ class FundDataGrid extends AbstractReactComponent {
                             onContextMenu={this.handleContextMenu}
                             onEdit={this.handleEdit}
                             disabled={readMode}
+                            startRowIndex={fundDataGrid.pageSize * fundDataGrid.pageIndex}
+                            morePages={getPagesCount(fundDataGrid.itemsCount, fundDataGrid.pageSize) > 1}
                         />
                         <DataGridPagination
                             itemsCount={fundDataGrid.itemsCount}

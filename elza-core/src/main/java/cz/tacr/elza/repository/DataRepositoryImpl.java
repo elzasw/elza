@@ -20,7 +20,9 @@ import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Selection;
+import javax.persistence.criteria.Subquery;
 
+import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.exception.SystemException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -51,7 +53,7 @@ import cz.tacr.elza.utils.ObjectListIterator;
 
 /**
  * Implementation of DataRepositoryCustom
- * 
+ *
  * @since 03.02.2016
  */
 public class DataRepositoryImpl implements DataRepositoryCustom {
@@ -318,13 +320,12 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         Root<? extends ArrData> data = query.from(dataTypeClass);
         AbstractDescItemDataTypeHelper typeHelper = getDataTypeHelper(dataTypeClass, data);
 
+        Subquery<ArrDescItem> sq = query.subquery(ArrDescItem.class);
+        Root<ArrDescItem> descItem = query.from(ArrDescItem.class);
 
-        Join<? extends ArrData, ArrDescItem> item = data.join(ArrData.ITEM, JoinType.INNER);
-
-        Join<? extends ArrData, ArrDescItem> descItem = builder.treat(item, ArrDescItem.class);
-
-        //Join node = descItem.join(ArrDescItem.NODE, JoinType.INNER);
-
+        sq.select(descItem.get(ArrItem.DATA));
+        Join<? extends ArrData, ArrDescItem> dataJoin = descItem.join(ArrItem.DATA, JoinType.INNER);
+        query.where(builder.equal(data, sq));
 
         Predicate versionPredicate;
         if (version.getLockChange() == null) {
@@ -347,7 +348,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         andPredicates.add(versionPredicate);
         andPredicates.add(builder.equal(descItem.get(ArrDescItem.ITEM_TYPE), itemType));
         if (specificationDataTypeHelper.useSpec()) {
-            specificationDataTypeHelper.init(data, item);
+            specificationDataTypeHelper.init(data, dataJoin);
 
             andPredicates.add(specificationDataTypeHelper.getPredicate(builder));
         }

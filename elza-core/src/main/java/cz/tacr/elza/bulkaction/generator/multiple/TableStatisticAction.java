@@ -97,12 +97,12 @@ public class TableStatisticAction extends Action {
             if (inputItemTypes.contains(item.getItemType())) {
                 String text;
                 RulItemSpec itemSpec = item.getItemSpec();
-				if (item.getUndefined()) {
+				if (item.isUndefined()) {
                     text = ArrangementService.UNDEFINED;
                 } else {
-                    ArrItemData itemData = item.getItem();
-                    itemData.setSpec(itemSpec);
-                    text = itemData.toString();
+                    ArrData data = item.getData();
+                    //data.setSpec(itemSpec);
+                    text = data.toString();
                 }
                 if (itemSpec != null) {
                     text = itemSpec.getName() + ": " + text;

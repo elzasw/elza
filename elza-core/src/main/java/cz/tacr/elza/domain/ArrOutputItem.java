@@ -35,10 +35,6 @@ public class ArrOutputItem extends ArrItem {
     public ArrOutputItem() {
     }
 
-    public ArrOutputItem(ArrItemData item) {
-        super(item);
-    }
-
     @Override
     public ArrOutputDefinition getOutputDefinition() {
         return outputDefinition;

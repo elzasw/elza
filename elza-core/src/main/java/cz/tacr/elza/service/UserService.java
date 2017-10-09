@@ -679,7 +679,7 @@ public class UserService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public UsrUser getUser(final Integer userId) {
-        Assert.notNull(userId);
+        Assert.notNull(userId, "Identifikátor uživatele musí být vyplněno");
         return userRepository.getOneCheckExist(userId);
     }
 
@@ -691,7 +691,7 @@ public class UserService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public Set<UsrUser> getUsers(final Set<Integer> userIds) {
-        Assert.notNull(userIds);
+        Assert.notNull(userIds, "Identifikátory musí být vyplněny");
         List<UsrUser> users = userRepository.findAll(userIds);
         if (users.size() != userIds.size()) {
             throw new IllegalArgumentException("Některý uživatel neexistuje");
@@ -707,7 +707,7 @@ public class UserService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public Set<UsrGroup> getGroups(final Set<Integer> groupIds) {
-        Assert.notNull(groupIds);
+        Assert.notNull(groupIds, "Identifikátory musí být vyplněny");
         List<UsrGroup> groups = groupRepository.findAll(groupIds);
         if (groups.size() != groupIds.size()) {
             throw new IllegalArgumentException("Některá skupina neexistuje");
@@ -723,7 +723,7 @@ public class UserService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public UsrGroup getGroup(final Integer groupId) {
-        Assert.notNull(groupId);
+        Assert.notNull(groupId, "Identifikátor skupiny musí být vyplněn");
         return groupRepository.getOneCheckExist(groupId);
     }
 

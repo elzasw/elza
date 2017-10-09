@@ -55,8 +55,8 @@ public class ConfigView {
 
     public ViewTitles getViewTitles(final String code, final Integer fundId) {
         Map<String, Map<String, ViewTitles>> fundView = getFundView();
-        Assert.notNull(code);
-        Assert.notNull(fundId);
+        Assert.notNull(code, "Kód musí být vyplněn");
+        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
 
         if (fundView == null) {
             logger.warn("Nejsou definována pravidla pro zobrazení popisků v UI");

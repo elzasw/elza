@@ -19,11 +19,18 @@ import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrItemData;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Akce pro kopírování hodnot atributů.
@@ -46,7 +53,7 @@ public class CopyAction extends Action {
     /**
 	 * Zkopírované hodnoty, výsledek
 	 */
-    private List<ArrItemData> dataItems = new ArrayList<>();
+    private List<ArrDescItem> dataItems = new ArrayList<>();
 
     @Autowired
     private DescItemFactory descItemFactory;
@@ -104,7 +111,7 @@ public class CopyAction extends Action {
 	public void apply(LevelWithItems level, TypeLevel typeLevel) {
 		List<ArrDescItem> items = level.getDescItems();
 
-        for (ArrItem item : items) {
+        for (ArrDescItem item : items) {
 			// check if item is in inputItemTypes set
 			RuleSystemItemType itemType = inputItemTypes.get(item.getItemTypeId());
 			if (itemType == null) {
@@ -137,7 +144,7 @@ public class CopyAction extends Action {
     public ActionResult getResult() {
         CopyActionResult copyActionResult = new CopyActionResult();
         copyActionResult.setItemType(outputItemType.getCode());
-        copyActionResult.setDataItems(dataItems);
+        copyActionResult.setDataItems(new ArrayList<>(dataItems));
         return copyActionResult;
     }
 

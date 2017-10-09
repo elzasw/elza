@@ -1,17 +1,15 @@
 package cz.tacr.elza.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.hibernate.search.annotations.Indexed;
+import org.springframework.data.rest.core.annotation.RestResource;
+
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-
-import org.hibernate.search.annotations.Indexed;
-import org.springframework.data.rest.core.annotation.RestResource;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 
 
 /**
@@ -20,7 +18,6 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
  * @author Petr Compel <petr.compel@marbes.cz>
  * @since 17.6.2016
  */
-@Indexed(interceptor = IndexArrDataWhenHasDescItemInterceptor.class)
 @Entity(name = "arr_data_file_ref")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -33,12 +30,20 @@ public class ArrDataFileRef extends ArrData {
     @JoinColumn(name = "fileId", nullable = false)
     private ArrFile file;
 
+    @Column(name = "fileId", updatable = false, insertable = false)
+    private Integer fileId;
+
     public ArrFile getFile() {
         return file;
     }
 
     public void setFile(final ArrFile file) {
         this.file = file;
+        this.fileId = file == null ? null : file.getFileId();
+    }
+
+    public Integer getFileId() {
+        return fileId;
     }
 
     @Override

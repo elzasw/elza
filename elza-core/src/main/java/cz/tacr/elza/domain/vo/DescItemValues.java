@@ -25,7 +25,7 @@ public class DescItemValues {
     }
 
     public void addValue(final DescItemValue value) {
-        Assert.notNull(value);
+        Assert.notNull(value, "Hodnota musí být vyplněna");
 
         values.add(value);
     }

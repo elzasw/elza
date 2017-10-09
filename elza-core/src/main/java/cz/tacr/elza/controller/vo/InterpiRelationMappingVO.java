@@ -39,7 +39,7 @@ public class InterpiRelationMappingVO {
     private boolean save;
 
     public void addEntityMapping(final InterpiEntityMappingVO entityMappingVO) {
-        Assert.notNull(entityMappingVO);
+        Assert.notNull(entityMappingVO, "Mapovací entita musí být vyplněna");
 
         if (entities == null) {
             entities = new LinkedList<>();

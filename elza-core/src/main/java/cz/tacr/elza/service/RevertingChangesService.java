@@ -1,5 +1,49 @@
 package cz.tacr.elza.service;
 
+import com.google.common.collect.Sets;
+
+import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
+import cz.tacr.elza.config.ConfigView;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.vo.TitleValue;
+import cz.tacr.elza.domain.vo.TitleValues;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.service.cache.NodeCacheService;
+import cz.tacr.elza.service.eventnotification.events.EventFunds;
+import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
+import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.service.vo.Change;
+import cz.tacr.elza.service.vo.ChangesResult;
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.TemporalType;
+import javax.persistence.TypedQuery;
+import javax.validation.constraints.NotNull;
 import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -17,47 +61,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.TemporalType;
-import javax.validation.constraints.NotNull;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
-
-import com.google.common.collect.Sets;
-
-import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
-import cz.tacr.elza.config.ConfigView;
-import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.domain.vo.TitleValue;
-import cz.tacr.elza.domain.vo.TitleValues;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.service.cache.NodeCacheService;
-import cz.tacr.elza.service.eventnotification.events.EventFunds;
-import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
-import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.service.vo.Change;
-import cz.tacr.elza.service.vo.ChangesResult;
 
 /**
  * Servisní třída pro práci s obnovou změn v archivní souboru - "UNDO".
@@ -100,6 +103,9 @@ public class RevertingChangesService {
     @Autowired
     private NodeCacheService nodeCacheService;
 
+    @Autowired
+    private DataRepository dataRepository;
+
     /**
      * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.
      *
@@ -115,7 +121,7 @@ public class RevertingChangesService {
                                      final int maxSize,
                                      final int offset,
                                      @Nullable final ArrChange fromChange) {
-        Assert.notNull(fundVersion);
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
 
         Integer fundId = fundVersion.getFund().getFundId();
         Integer nodeId = node == null ? null : node.getNodeId();
@@ -192,9 +198,9 @@ public class RevertingChangesService {
                                            final int maxSize,
                                            @NotNull final LocalDateTime fromDate,
                                            @NotNull final ArrChange fromChange) {
-        Assert.notNull(fundVersion);
-        Assert.notNull(fromDate);
-        Assert.notNull(fromChange);
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Assert.notNull(fromDate, "Datum od musí být vyplněn");
+        Assert.notNull(fromChange, "Změna musí být vyplněna");
 
         Integer fundId = fundVersion.getFund().getFundId();
         Integer nodeId = node == null ? null : node.getNodeId();
@@ -229,9 +235,9 @@ public class RevertingChangesService {
                               @Nullable final ArrNode node,
                               @NotNull final ArrChange fromChange,
                               @NotNull final ArrChange toChange) {
-        Assert.notNull(fund);
-        Assert.notNull(fromChange);
-        Assert.notNull(toChange);
+        Assert.notNull(fund, "AS musí být vyplněn");
+        Assert.notNull(fromChange, "Změna od musí být vyplněna");
+        Assert.notNull(toChange, "Změna do musí být vyplněna");
 
         Integer fundId = fund.getFundId();
         Integer nodeId = node == null ? null : node.getNodeId();
@@ -283,11 +289,16 @@ public class RevertingChangesService {
         updateEntityQuery = createExtendUpdateEntityQuery(fund, node, "deleteChange", "arr_desc_item", "arr_item", toChange);
         updateEntityQuery.executeUpdate();
 
-        deleteEntityQuery = createDeleteForeignEntityQuery(fund, node, "createChange", "arr_desc_item", "item", "arr_data", toChange);
-        deleteEntityQuery.executeUpdate();
+        TypedQuery<ArrData> arrDataQuery = findChangeArrDataQuery(fund, node, toChange);
+        Set<ArrData> arrDataList = new HashSet<>(arrDataQuery.getResultList());
+
+        /*deleteEntityQuery = createDeleteForeignEntityQuery(fund, node, "createChange", "arr_desc_item", "item", "arr_data", toChange);
+        deleteEntityQuery.executeUpdate();*/
 
         deleteEntityQuery = createExtendDeleteEntityQuery(fund, node, "createChange", "arr_desc_item", /*"item",*/ "arr_item", toChange);
         deleteEntityQuery.executeUpdate();
+
+        dataRepository.delete(arrDataList);
 
         updateEntityQuery = createUpdateOutputQuery(fund, node, toChange);
         updateEntityQuery.executeUpdate();
@@ -335,6 +346,27 @@ public class RevertingChangesService {
 
         levelTreeCacheService.invalidateFundVersion(fund);
         startupService.startNodeValidation();
+    }
+
+    private TypedQuery<ArrData> findChangeArrDataQuery(final ArrFund fund, final ArrNode node, final ArrChange change) {
+
+        String changeNameColumn = "createChange";
+        String table = "arr_desc_item";
+        String subTable = "arr_item";
+
+        String nodesHql = createHQLFindChanges(changeNameColumn, table, createHqlSubNodeQuery(fund, node));
+
+        String hql = String.format("SELECT i.data FROM %1$s i WHERE i.%2$s IN (%3$s)", subTable, changeNameColumn, nodesHql);
+        TypedQuery<ArrData> query = entityManager.createQuery(hql, ArrData.class);
+
+        // nastavení parametrů dotazu
+        query.setParameter("fund", fund);
+        query.setParameter("change", change);
+        if (node != null) {
+            query.setParameter("node", node);
+        }
+
+        return query;
     }
 
     /**

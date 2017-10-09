@@ -100,7 +100,7 @@ public class UserController {
     @RequestMapping(method = RequestMethod.POST)
     @Transactional
     public UsrUserVO createUser(@RequestBody final CreateUser params) {
-        Assert.notNull(params);
+        Assert.notNull(params, "Parametry musí být vyplněny");
 
         UsrUser user = userService.createUser(params.getUsername(), params.getPassword(), params.getPartyId());
         return factoryVO.createUser(user);
@@ -116,7 +116,7 @@ public class UserController {
     @Transactional
     public UsrUserVO changeUser(@PathVariable("userId") final Integer userId,
                                 @RequestBody final CreateUser params) {
-        Assert.notNull(params);
+        Assert.notNull(params, "Parametry musí být vyplněny");
 
         UsrUser user = userService.getUser(userId);
 
@@ -139,7 +139,7 @@ public class UserController {
     @Transactional
     public UsrUserVO changePassword(@PathVariable("userId") final Integer userId,
                                     @RequestBody final ChangePassword params) {
-        Assert.notNull(params);
+        Assert.notNull(params, "Parametry musí být vyplněny");
 
         UsrUser user = userService.getUser(userId);
 
@@ -160,7 +160,7 @@ public class UserController {
     @RequestMapping(value = "/password", method = RequestMethod.PUT)
     @Transactional
     public UsrUserVO changePassword(@RequestBody final ChangePassword params) {
-        Assert.notNull(params);
+        Assert.notNull(params, "Parametry musí být vyplněny");
 
         UsrUser user = userService.getLoggedUser();
 
@@ -210,7 +210,7 @@ public class UserController {
      */
     @RequestMapping(value = "/{userId}", method = RequestMethod.GET)
     public UsrUserVO getUser(@PathVariable(value = "userId") final Integer userId) {
-        Assert.notNull(userId);
+        Assert.notNull(userId, "Identifikátor uživatele musí být vyplněno");
 
         UsrUser user = userService.getUser(userId);
         return factoryVO.createUser(user);
@@ -224,7 +224,7 @@ public class UserController {
      */
     @RequestMapping(value = "/group/{groupId}", method = RequestMethod.GET)
     public UsrGroupVO getGroup(@PathVariable(value = "groupId") final Integer groupId) {
-        Assert.notNull(groupId);
+        Assert.notNull(groupId, "Identifikátor skupiny musí být vyplněn");
 
         UsrGroup group = userService.getGroup(groupId);
         return factoryVO.createGroup(group, true, true);

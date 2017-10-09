@@ -14,10 +14,15 @@ import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrItemUnitdate;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import org.apache.commons.lang.BooleanUtils;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * Akce na zjištění rozsahu datací.
@@ -140,14 +145,14 @@ public class DateRangeAction extends Action {
 
         for (ArrItem item : items) {
 
-			if (item.getUndefined()) {
+			if (item.isUndefined()) {
                 continue;
             }
 
             // není použit záměrně if-else, protože teoreticky by šlo nakonfigurovat vše na stejnou položku
 			Integer itemTypeId = item.getItemTypeId();
 			if (inputItemType.getItemTypeId().equals(itemTypeId)) {
-                ArrItemUnitdate data = (ArrItemUnitdate) item.getItem();
+                ArrDataUnitdate data = (ArrDataUnitdate) item.getData();
                 Long dataNormalizedFrom = data.getNormalizedFrom();
                 if(dataNormalizedFrom==null) {
                 	dataNormalizedFrom = Long.MAX_VALUE;
@@ -167,7 +172,7 @@ public class DateRangeAction extends Action {
                 }
             }
 			if (inputItemTypePrior.getItemTypeId().equals(itemTypeId)) {
-                ArrItemUnitdate data = (ArrItemUnitdate) item.getItem();
+                ArrDataUnitdate data = (ArrDataUnitdate) item.getData();
                 Long dataNormalizedFrom = data.getNormalizedFrom();
                 if(dataNormalizedFrom==null) {
                 	dataNormalizedFrom = Long.MAX_VALUE;
@@ -178,7 +183,7 @@ public class DateRangeAction extends Action {
                 }
             }
 			if (inputItemTypePosterior.getItemTypeId().equals(itemTypeId)) {
-                ArrItemUnitdate data = (ArrItemUnitdate) item.getItem();
+                ArrDataUnitdate data = (ArrDataUnitdate) item.getData();
                 Long dataNormalizedTo = data.getNormalizedTo();
                 if(dataNormalizedTo==null) {
                 	dataNormalizedTo = Long.MIN_VALUE;

@@ -1,15 +1,12 @@
 package cz.tacr.elza.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import cz.tacr.elza.domain.enumeration.StringLength;
+import org.hibernate.search.annotations.Indexed;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
-
-import org.hibernate.search.annotations.Indexed;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import cz.tacr.elza.domain.enumeration.StringLength;
-import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 
 
 /**
@@ -18,7 +15,6 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
  * @author Martin Šlapa
  * @since 1.9.2015
  */
-@Indexed(interceptor = IndexArrDataWhenHasDescItemInterceptor.class)
 @Entity(name = "arr_data_unitid")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})

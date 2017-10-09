@@ -85,8 +85,8 @@ public class DmsService {
      * @throws IOException
      */
     public void createFile(final DmsFile dmsFile, final InputStream fileStream) throws IOException {
-        Assert.notNull(dmsFile);
-        Assert.notNull(fileStream);
+        Assert.notNull(dmsFile, "Soubor musí být vyplněn");
+        Assert.notNull(fileStream, "Stream souboru musí být vyplněn");
 
         fileRepository.save(dmsFile);
 
@@ -128,7 +128,7 @@ public class DmsService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_ALL})
     public void checkFundWritePermission(@AuthParam(type = AuthParam.Type.FUND) final Integer fundId) {
-        Assert.notNull(fundId);
+        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
     }
 
     /**
@@ -139,8 +139,8 @@ public class DmsService {
      * @throws IOException
      */
     public void updateFile(final DmsFile newFile, final InputStream fileStream) throws IOException {
-        Assert.notNull(newFile);
-        Assert.notNull(newFile.getFileId());
+        Assert.notNull(newFile, "Soubor musí být vyplněn");
+        Assert.notNull(newFile.getFileId(), "Identifikátor souboru musí být vyplněn");
 
         DmsFile dbFile = getFile(newFile.getFileId());
 
@@ -180,7 +180,7 @@ public class DmsService {
      * @return stream
      */
     public InputStream downloadFile(final DmsFile dmsFile) {
-        Assert.notNull(dmsFile);
+        Assert.notNull(dmsFile, "Soubor musí být vyplněn");
 
         File outputFile = new File(getFilePath(dmsFile));
         if (!outputFile.exists()) {
@@ -239,7 +239,7 @@ public class DmsService {
      * @throws IOException
      */
     public void deleteFile(final DmsFile dmsFile) throws IOException {
-        Assert.notNull(dmsFile);
+        Assert.notNull(dmsFile, "Soubor musí být vyplněn");
 
         fileRepository.delete(dmsFile);
 
@@ -299,7 +299,7 @@ public class DmsService {
      * @return soubor
      */
     public DmsFile getFile(final Integer fileId) {
-        Assert.notNull(fileId);
+        Assert.notNull(fileId, "Identifikátor souboru musí být vyplněn");
         return fileRepository.getOneCheckExist(fileId);
     }
 
@@ -328,7 +328,7 @@ public class DmsService {
                                                 @AuthParam(type = AuthParam.Type.FUND) final Integer fundId,
                                                 final Integer from,
                                                 final Integer count) {
-        Assert.notNull(fundId);
+        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
         return fundFileRepository.findByTextAndFund(search, fundRepository.getOneCheckExist(fundId), from, count);
     }
 
@@ -343,7 +343,7 @@ public class DmsService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL})
     public FilteredResult<ArrOutputFile> findOutputFiles(final String search, final Integer outputResultId, final Integer from, final Integer count) {
-        Assert.notNull(outputResultId);
+        Assert.notNull(outputResultId, "Identifikátor výstupu musí být vyplněn");
         return outputFileRepository.findByTextAndResult(search, outputResultRepository.getOneCheckExist(outputResultId), from, count);
     }
 

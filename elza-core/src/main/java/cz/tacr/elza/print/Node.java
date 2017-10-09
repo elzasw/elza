@@ -64,7 +64,7 @@ public class Node implements Comparable<Node> {
      * @return vrací se seznam hodnot těchto atributů, řazeno dle rul_desc_item.view_order + arr_item.position
      */
     public List<Item> getItems(@NotNull final Collection<String> codes) {
-        Assert.notNull(codes);
+        Assert.notNull(codes, "Kódy musí být vyplněny");
         return getItems().stream()
                 .filter(item -> {
                     final String code = item.getType().getCode();
@@ -72,18 +72,18 @@ public class Node implements Comparable<Node> {
                 })
                 .collect(Collectors.toList());
     }
-    
+
     /**
      * Return list of items with given specification
-     * 
+     *
      * @param code 		Code of the item
      * @param specCode	Code of specificaion
      * @return
      */
     public List<Item> getItemsWithSpec(@NotNull final String code, @NotNull final String specCode) {
-    	Assert.notNull(code);
-    	Assert.notNull(specCode);
-    	
+    	Assert.notNull(code, "Kód musí být vyplněn");
+    	Assert.notNull(specCode, "Kód specifikace musí být vyplněn");
+
     	List<Item> result = new ArrayList<>();
     	items.forEach(item -> {
     		if(code.equals(item.getType().getCode())) {
@@ -96,7 +96,7 @@ public class Node implements Comparable<Node> {
     			}
     		}
     	});
-    	
+
     	return result;
     }
 
@@ -131,7 +131,7 @@ public class Node implements Comparable<Node> {
      * @return   seznam všech hodnot atributů kromě hodnot typů uvedených ve vstupu metody
      */
     public List<Item> getAllItems(@NotNull final Collection<String> codes) {
-        Assert.notNull(codes);
+        Assert.notNull(codes, "Kódy musí být vyplněny");
         return getItems().stream()
                 .filter(item -> !codes.contains(item.getType().getCode()))
                 .collect(Collectors.toList());
@@ -178,7 +178,7 @@ public class Node implements Comparable<Node> {
      */
     public List<Record> getRecords() {
     	// interně navázané recordy jako první
-        final List<Record> recordList = new ArrayList<>(records); 
+        final List<Record> recordList = new ArrayList<>(records);
 
         // recordy z itemů
         for (Item item : getItems()) {

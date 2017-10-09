@@ -30,5 +30,5 @@ public interface LuceneDescItemCondition extends DescItemCondition {
      *
      * @return dotaz
      */
-    public Query createLuceneQuery(QueryBuilder queryBuilder);
+    Query createLuceneQuery(QueryBuilder queryBuilder);
 }

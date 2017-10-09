@@ -16,14 +16,17 @@ import cz.tacr.elza.domain.RulItemSpec;
  */
 public interface DataRepositoryCustom {
 
+    @Deprecated
     List<ArrData> findDescItemsByNodeIds(Set<Integer> nodeIds,
                                          Set<RulItemType> descItemTypes,
                                          ArrFundVersion version);
 
+    @Deprecated
     List<ArrData> findDescItemsByNodeIds(Set<Integer> nodeIds,
                                          Set<RulItemType> itemTypes,
                                          Integer changeId);
 
+    @Deprecated
     List<ArrData> findByDataIdsAndVersionFetchSpecification(Set<Integer> nodeIds,
             Set<RulItemType> descItemTypes,
             ArrFundVersion version);
@@ -40,6 +43,7 @@ public interface DataRepositoryCustom {
      * @param specifications seznam specifikací (pokud se jedná o typ atributu se specifikací)
      *@param text hledaný text  @return seznam hodnot atributů
      */
+    @Deprecated
     <T extends ArrData> List<T> findByNodesContainingText(Collection<ArrNode> nodes, RulItemType descItemType,
                                                           final Set<RulItemSpec> specifications, String text);
 

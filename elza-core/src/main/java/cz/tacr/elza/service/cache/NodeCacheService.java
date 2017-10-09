@@ -32,6 +32,11 @@ import cz.tacr.elza.domain.ArrCachedNode;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrDataFileRef;
+import cz.tacr.elza.domain.ArrDataPacketRef;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrItemFileRef;
@@ -417,7 +422,7 @@ public class NodeCacheService {
 
     private Map<Integer, List<ArrDescItem>> createNodeDescItemMap(final Collection<Integer> nodeIds) {
         List<ArrDescItem> descItems = descItemRepository.findByNodeIdsAndDeleteChangeIsNull(nodeIds);
-        itemService.loadData(descItems);
+        //itemService.loadData(descItems);
 
         Map<Integer, List<ArrDescItem>> nodeIdItems = new HashMap<>();
         for (ArrDescItem descItem : descItems) {
@@ -493,16 +498,16 @@ public class NodeCacheService {
                         itemSpecsMap.put(descItem, descItem.getItemSpecId());
                     }
 
-                    if (descItem.getItem() instanceof ArrItemPacketRef) {
-                        itemPacketsMap.put(descItem, ((ArrItemPacketRef) descItem.getItem()).getPacketId());
-                    } else if (descItem.getItem() instanceof ArrItemPartyRef) {
-                        itemPartiesMap.put(descItem, ((ArrItemPartyRef) descItem.getItem()).getPartyId());
-                    } else if (descItem.getItem() instanceof ArrItemRecordRef) {
-                        itemRecordsMap.put(descItem, ((ArrItemRecordRef) descItem.getItem()).getRecordId());
-                    } else if (descItem.getItem() instanceof ArrItemFileRef) {
-                        itemFilesMap.put(descItem, ((ArrItemFileRef) descItem.getItem()).getFileId());
-                    } else if (descItem.getItem() instanceof ArrItemUnitdate) {
-                        itemUnitdateMap.put(descItem, ((ArrItemUnitdate) descItem.getItem()).getCalendarTypeId());
+                    if (descItem.getData() instanceof ArrDataPacketRef) {
+                        itemPacketsMap.put(descItem, ((ArrDataPacketRef) descItem.getData()).getPacketId());
+                    } else if (descItem.getData() instanceof ArrDataPartyRef) {
+                        itemPartiesMap.put(descItem, ((ArrDataPartyRef) descItem.getData()).getPartyId());
+                    } else if (descItem.getData() instanceof ArrDataRecordRef) {
+                        itemRecordsMap.put(descItem, ((ArrDataRecordRef) descItem.getData()).getRecordId());
+                    } else if (descItem.getData() instanceof ArrDataFileRef) {
+                        itemFilesMap.put(descItem, ((ArrDataFileRef) descItem.getData()).getFileId());
+                    } else if (descItem.getData() instanceof ArrDataUnitdate) {
+                        itemUnitdateMap.put(descItem, ((ArrDataUnitdate) descItem.getData()).getCalendarTypeId());
                     }
                 }
             }
@@ -541,7 +546,7 @@ public class NodeCacheService {
 
         for (Map.Entry<ArrDescItem, Integer> entry : itemUnitdateMap.entrySet()) {
             ArrDescItem descItem = entry.getKey();
-            ((ArrItemUnitdate) descItem.getItem()).setCalendarType(calendarTypeMapFound.get(entry.getValue()));
+            ((ArrDataUnitdate) descItem.getData()).setCalendarType(calendarTypeMapFound.get(entry.getValue()));
         }
     }
 
@@ -604,7 +609,7 @@ public class NodeCacheService {
 
         for (Map.Entry<ArrDescItem, Integer> entry : itemFilesMap.entrySet()) {
             ArrDescItem descItem = entry.getKey();
-            ((ArrItemFileRef) descItem.getItem()).setFile(itemFilesMapFound.get(entry.getValue()));
+            ((ArrDataFileRef) descItem.getData()).setFile(itemFilesMapFound.get(entry.getValue()));
         }
     }
 
@@ -626,7 +631,7 @@ public class NodeCacheService {
 
         for (Map.Entry<ArrDescItem, Integer> entry : itemRecordsMap.entrySet()) {
             ArrDescItem descItem = entry.getKey();
-            ((ArrItemRecordRef) descItem.getItem()).setRecord(recordsMapFound.get(entry.getValue()));
+            ((ArrDataRecordRef) descItem.getData()).setRecord(recordsMapFound.get(entry.getValue()));
         }
     }
 
@@ -647,7 +652,7 @@ public class NodeCacheService {
 
         for (Map.Entry<ArrDescItem, Integer> entry : itemPartiesMap.entrySet()) {
             ArrDescItem descItem = entry.getKey();
-            ((ArrItemPartyRef) descItem.getItem()).setParty(partiesMapFound.get(entry.getValue()));
+            ((ArrDataPartyRef) descItem.getData()).setParty(partiesMapFound.get(entry.getValue()));
         }
     }
 
@@ -668,7 +673,7 @@ public class NodeCacheService {
 
         for (Map.Entry<ArrDescItem, Integer> entry : itemPacketsMap.entrySet()) {
             ArrDescItem descItem = entry.getKey();
-            ((ArrItemPacketRef) descItem.getItem()).setPacket(packetsMapFound.get(entry.getValue()));
+            ((ArrDataPacketRef) descItem.getData()).setPacket(packetsMapFound.get(entry.getValue()));
         }
     }
 

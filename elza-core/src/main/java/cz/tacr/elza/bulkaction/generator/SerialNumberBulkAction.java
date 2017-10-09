@@ -141,22 +141,24 @@ public class SerialNumberBulkAction extends BulkAction {
 
         // vytvoření nového atributu
         if (descItem == null) {
-            descItem = new ArrDescItem(new ArrItemInt());
+            descItem = new ArrDescItem();
             descItem.setItemType(descItemType);
             descItem.setNode(currNode);
+            descItem.setData(new ArrDataInteger());
         }
 
-        if (!(descItem.getItem() instanceof ArrItemInt)) {
+        if (!(descItem.getData() instanceof ArrDataInteger)) {
             throw new BusinessException(descItemType.getCode() + " není typu ArrDescItemInt", BaseCode.PROPERTY_HAS_INVALID_TYPE)
                     .set("property", descItemType.getCode())
                     .set("expected", "ArrItemInt")
-                    .set("actual", descItem.getItem().getClass().getSimpleName());
+                    .set("actual", descItem.getData().getClass().getSimpleName());
         }
 
-        ArrItemInt item = (ArrItemInt) descItem.getItem();
+        ArrDataInteger item = (ArrDataInteger) descItem.getData();
 
         // uložit pouze při rozdílu
 		if (item.getValue() == null || sn != item.getValue() || descItem.getUndefined()) {
+            //TODO: asi zde nema byt set..
             descItem.setUndefined(false);
             item.setValue(sn);
             ArrDescItem ret = saveDescItem(descItem, version, change);
@@ -182,7 +184,7 @@ public class SerialNumberBulkAction extends BulkAction {
                     descItemType.getCode() + " nemuže být více než jeden (" + descItems.size() + ")",
                     BaseCode.DB_INTEGRITY_PROBLEM);
         }
-        return descItemFactory.getDescItem(descItems.get(0));
+        return descItems.get(0);
     }
 
     @Override

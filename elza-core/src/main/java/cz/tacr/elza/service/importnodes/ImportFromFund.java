@@ -309,36 +309,36 @@ public class ImportFromFund implements ImportSource {
     private Item convertDescItem(final ArrDescItem item) {
         Item result;
 
-        ArrItemData itemData = item.getItem();
+        ArrData itemData = item.getData();
 
-        if (itemData instanceof ArrItemEnum) {
+        if (itemData instanceof ArrDataNull) {
             result = new ItemEnumImpl(item);
-        } else if (itemData instanceof ArrItemString) {
-            result = new ItemStringImpl(item, (ArrItemString) itemData);
-        } else if (itemData instanceof ArrItemText) {
-            result = new ItemTextImpl(item, (ArrItemText) itemData);
-        } else if (itemData instanceof ArrItemFormattedText) {
-            result = new ItemFormattedTextImpl(item, (ArrItemFormattedText) itemData);
-        } else if (itemData instanceof ArrItemInt) {
-            result = new ItemIntImpl(item, (ArrItemInt) itemData);
-        } else if (itemData instanceof ArrItemDecimal) {
-            result = new ItemDecimalImpl(item, (ArrItemDecimal) itemData);
-        } else if (itemData instanceof ArrItemUnitid) {
-            result = new ItemUnitidImpl(item, (ArrItemUnitid) itemData);
-        } else if (itemData instanceof ArrItemJsonTable) {
-            result = new ItemJsonTableImpl(item, (ArrItemJsonTable) itemData);
-        } else if (itemData instanceof ArrItemUnitdate) {
-            result = new ItemUnitdateImpl(item, (ArrItemUnitdate) itemData);
-        } else if (itemData instanceof ArrItemFileRef) {
-            result = new ItemFileRefImpl(item, (ArrItemFileRef) itemData);
-        } else if (itemData instanceof ArrItemPartyRef) {
-            result = new ItemPartyRefImpl(item, (ArrItemPartyRef) itemData);
-        } else if (itemData instanceof ArrItemRecordRef) {
-            result = new ItemRecordRefImpl(item, (ArrItemRecordRef) itemData);
-        } else if (itemData instanceof ArrItemPacketRef) {
-            result = new ItemPacketRefImpl(item, (ArrItemPacketRef) itemData);
-        } else if (itemData instanceof ArrItemCoordinates) {
-            result = new ItemCoordinatesRefImpl(item, (ArrItemCoordinates) itemData);
+        } else if (itemData instanceof ArrDataString) {
+            result = new ItemStringImpl(item, (ArrDataString) itemData);
+        } else if (itemData instanceof ArrDataText && item.getItemType().getDataType().getCode().equals("TEXT")) {
+            result = new ItemTextImpl(item, (ArrDataText) itemData);
+        } else if (itemData instanceof ArrDataText && item.getItemType().getDataType().getCode().equals("FORMATTED_TEXT")) {
+            result = new ItemFormattedTextImpl(item, (ArrDataText) itemData);
+        } else if (itemData instanceof ArrDataInteger) {
+            result = new ItemIntImpl(item, (ArrDataInteger) itemData);
+        } else if (itemData instanceof ArrDataDecimal) {
+            result = new ItemDecimalImpl(item, (ArrDataDecimal) itemData);
+        } else if (itemData instanceof ArrDataUnitid) {
+            result = new ItemUnitidImpl(item, (ArrDataUnitid) itemData);
+        } else if (itemData instanceof ArrDataJsonTable) {
+            result = new ItemJsonTableImpl(item, (ArrDataJsonTable) itemData);
+        } else if (itemData instanceof ArrDataUnitdate) {
+            result = new ItemUnitdateImpl(item, (ArrDataUnitdate) itemData);
+        } else if (itemData instanceof ArrDataFileRef) {
+            result = new ItemFileRefImpl(item, (ArrDataFileRef) itemData);
+        } else if (itemData instanceof ArrDataPartyRef) {
+            result = new ItemPartyRefImpl(item, (ArrDataPartyRef) itemData);
+        } else if (itemData instanceof ArrDataRecordRef) {
+            result = new ItemRecordRefImpl(item, (ArrDataRecordRef) itemData);
+        } else if (itemData instanceof ArrDataPacketRef) {
+            result = new ItemPacketRefImpl(item, (ArrDataPacketRef) itemData);
+        } else if (itemData instanceof ArrDataCoordinates) {
+            result = new ItemCoordinatesRefImpl(item, (ArrDataCoordinates) itemData);
         } else {
             result = new ItemImpl(item);
         }
@@ -378,7 +378,7 @@ public class ImportFromFund implements ImportSource {
 
         private final String value;
 
-        public ItemStringImpl(final ArrDescItem item, final ArrItemString itemData) {
+        public ItemStringImpl(final ArrDescItem item, final ArrDataString itemData) {
             super(item);
             value = itemData.getValue();
         }
@@ -392,7 +392,7 @@ public class ImportFromFund implements ImportSource {
     private class ItemTextImpl extends ItemImpl implements ItemText {
         private final String value;
 
-        public ItemTextImpl(final ArrDescItem item, final ArrItemText itemData) {
+        public ItemTextImpl(final ArrDescItem item, final ArrDataText itemData) {
             super(item);
             value = itemData.getValue();
         }
@@ -406,7 +406,7 @@ public class ImportFromFund implements ImportSource {
     private class ItemFormattedTextImpl extends ItemImpl implements ItemFormattedText {
         private final String value;
 
-        public ItemFormattedTextImpl(final ArrDescItem item, final ArrItemFormattedText itemData) {
+        public ItemFormattedTextImpl(final ArrDescItem item, final ArrDataText itemData) {
             super(item);
             value = itemData.getValue();
         }
@@ -420,7 +420,7 @@ public class ImportFromFund implements ImportSource {
     private class ItemIntImpl extends ItemImpl implements ItemInt {
         private final Integer value;
 
-        public ItemIntImpl(final ArrDescItem item, final ArrItemInt itemData) {
+        public ItemIntImpl(final ArrDescItem item, final ArrDataInteger itemData) {
             super(item);
             value = itemData.getValue();
         }
@@ -434,7 +434,7 @@ public class ImportFromFund implements ImportSource {
     private class ItemDecimalImpl extends ItemImpl implements ItemDecimal {
         private final BigDecimal value;
 
-        public ItemDecimalImpl(final ArrDescItem item, final ArrItemDecimal itemData) {
+        public ItemDecimalImpl(final ArrDescItem item, final ArrDataDecimal itemData) {
             super(item);
             value = itemData.getValue();
         }
@@ -448,7 +448,7 @@ public class ImportFromFund implements ImportSource {
     private class ItemUnitidImpl extends ItemImpl implements ItemUnitid {
         private final String value;
 
-        public ItemUnitidImpl(final ArrDescItem item, final ArrItemUnitid itemData) {
+        public ItemUnitidImpl(final ArrDescItem item, final ArrDataUnitid itemData) {
             super(item);
             value = itemData.getValue();
         }
@@ -463,7 +463,7 @@ public class ImportFromFund implements ImportSource {
 
         private final ElzaTable value;
 
-        public ItemJsonTableImpl(final ArrDescItem item, final ArrItemJsonTable itemData) {
+        public ItemJsonTableImpl(final ArrDescItem item, final ArrDataJsonTable itemData) {
             super(item);
             value = itemData.getValue();
         }
@@ -480,7 +480,7 @@ public class ImportFromFund implements ImportSource {
 
         private final String calendarTypeCode;
 
-        public ItemUnitdateImpl(final ArrDescItem item, final ArrItemUnitdate itemData) {
+        public ItemUnitdateImpl(final ArrDescItem item, final ArrDataUnitdate itemData) {
             super(item);
             calendarTypeCode = itemData.getCalendarType().getCode();
             value = UnitDateConvertor.convertToString(itemData);
@@ -501,7 +501,7 @@ public class ImportFromFund implements ImportSource {
 
         private final Integer fileId;
 
-        public ItemFileRefImpl(final ArrDescItem item, final ArrItemFileRef itemData) {
+        public ItemFileRefImpl(final ArrDescItem item, final ArrDataFileRef itemData) {
             super(item);
             fileId = itemData.getFileId();
         }
@@ -516,7 +516,7 @@ public class ImportFromFund implements ImportSource {
 
         private final Integer packetId;
 
-        public ItemPacketRefImpl(final ArrDescItem item, final ArrItemPacketRef itemData) {
+        public ItemPacketRefImpl(final ArrDescItem item, final ArrDataPacketRef itemData) {
             super(item);
             packetId = itemData.getPacketId();
         }
@@ -531,7 +531,7 @@ public class ImportFromFund implements ImportSource {
 
         private final Integer partyId;
 
-        public ItemPartyRefImpl(final ArrDescItem item, final ArrItemPartyRef itemData) {
+        public ItemPartyRefImpl(final ArrDescItem item, final ArrDataPartyRef itemData) {
             super(item);
             partyId = itemData.getPartyId();
         }
@@ -545,7 +545,7 @@ public class ImportFromFund implements ImportSource {
 
         private final Integer recordId;
 
-        public ItemRecordRefImpl(final ArrDescItem item, final ArrItemRecordRef itemData) {
+        public ItemRecordRefImpl(final ArrDescItem item, final ArrDataRecordRef itemData) {
             super(item);
             recordId = itemData.getRecordId();
         }
@@ -559,7 +559,7 @@ public class ImportFromFund implements ImportSource {
 
         private final String geometry;
 
-        public ItemCoordinatesRefImpl(final ArrDescItem item, final ArrItemCoordinates itemData) {
+        public ItemCoordinatesRefImpl(final ArrDescItem item, final ArrDataCoordinates itemData) {
             super(item);
             geometry = itemData.toString();
         }

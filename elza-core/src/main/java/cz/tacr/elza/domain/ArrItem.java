@@ -12,13 +12,13 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.NumericField;
 import org.springframework.data.rest.core.annotation.RestResource;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -38,22 +38,9 @@ import cz.tacr.elza.service.cache.NodeCacheSerializable;
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
 public abstract class ArrItem implements NodeCacheSerializable {
 
+    public static final String DATA = "data";
     public static final String ITEM_SPEC = "itemSpec";
     public static final String ITEM_TYPE = "itemType";
-
-    @Transient
-    protected ArrItemData item;
-    
-    public ArrItem() {
-    }
-    
-    public ArrItem(ArrItemData item) {
-        this.item = item;
-    }
-
-    public void setItem(ArrItemData item) {
-        this.item = item;
-    }
 
     @Id
     @GeneratedValue
@@ -98,15 +85,18 @@ public abstract class ArrItem implements NodeCacheSerializable {
     @Column(nullable = false)
     private Integer position;
 
-    @Column(nullable = false)
-    private Boolean undefined;
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrData.class)
+    @JoinColumn(name = "dataId")
+    private ArrData data;
 
+    @JsonIgnore
     @Field
     @NumericField
     public Integer getCreateChangeId() {
         return createChangeId;
     }
 
+    @JsonIgnore
     @Field
     @NumericField
     public Integer getDeleteChangeId() {
@@ -240,10 +230,6 @@ public abstract class ArrItem implements NodeCacheSerializable {
 
     public abstract ArrOutputDefinition getOutputDefinition();
 
-    public ArrItemData getItem() {
-        return item;
-    }
-
     public void setCreateChangeId(final Integer createChangeId) {
         this.createChangeId = createChangeId;
     }
@@ -268,21 +254,16 @@ public abstract class ArrItem implements NodeCacheSerializable {
         this.itemSpecId = itemSpecId;
     }
 
-	/**
-	 * Return if value is undefined
-	 * 
-	 * @return Return false if value is undefined or flag not set (default
-	 *         value)
-	 */
-	public boolean getUndefined() {
-		if (undefined == null) {
-			return false;
-		} else {
-			return undefined.booleanValue();
+    public ArrData getData() {
+        return data;
 		}
     }
 
-	public void setUndefined(final boolean undefined) {
-		this.undefined = Boolean.valueOf(undefined);
+    public void setData(final ArrData data) {
+        this.data = data;
+    }
+
+    public boolean isUndefined() {
+        return data == null;
     }
 }

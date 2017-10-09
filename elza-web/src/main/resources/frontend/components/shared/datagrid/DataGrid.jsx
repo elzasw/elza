@@ -7,6 +7,7 @@ import {connect} from 'react-redux'
 import AbstractReactComponent from "../../AbstractReactComponent";
 import * as Utils from "../../Utils";
 import Resizer from "../resizer/Resizer";
+import i18n from "../../i18n";
 const scrollIntoView = require('dom-scroll-into-view')
 import {propsEquals, getScrollbarWidth} from 'components/Utils.jsx'
 import {Shortcuts} from 'react-shortcuts';
@@ -49,7 +50,7 @@ class DataGrid extends AbstractReactComponent {
             "focus",
         );
 
-        let state = this.getStateFromProps(props, {});
+        let state = this.getStateFromProps(props, {fixedLeft: 0});
         state.columnSizeDragged = false;
         state.selectedRowIndexes = {[state.focus.row]: true} ;  // označené řádky v aktuálním zobrazení - pouze klientské označení
 
@@ -59,6 +60,8 @@ class DataGrid extends AbstractReactComponent {
     static defaultProps = {
         allowRowCheck: true,
         staticColumns: false,
+        startRowIndex: 0,
+        morePages: false,
     };
 
     // Definice sloupečku:
@@ -93,6 +96,8 @@ class DataGrid extends AbstractReactComponent {
         onDelete: React.PropTypes.func,
         onFocus: React.PropTypes.func,
         onBlur: React.PropTypes.func,
+        startRowIndex: React.PropTypes.number, // index prvního řádku
+        morePages: React.PropTypes.bool, // true pokud je více stránek
     };
 
     componentWillReceiveProps(nextProps) {
@@ -121,8 +126,8 @@ class DataGrid extends AbstractReactComponent {
         var cols = []
         var colWidths = {}
         if (props.allowRowCheck) {
-            cols.push({_rowCheck: true, width: 32, resizeable: false})
-            colWidths[0] = 32;
+            cols.push({_rowCheck: true, width: 45, resizeable: false})
+            colWidths[0] = 45;
         }
         var needComputeColumnsWidth = props.staticColumns;
         props.cols.forEach((col, colIndex) => {
@@ -192,6 +197,12 @@ class DataGrid extends AbstractReactComponent {
         document.addEventListener('mousemove', this.handleMouseMove);
         this.ensureFocusVisible(this.state.focus);
         this.computeColumnsWidth();
+        let bodyNode = ReactDOM.findDOMNode(this.refs.body)
+        bodyNode.addEventListener('scroll', (x) => {
+            if (this.state.scrollLeft !== x.target.scrollLeft) {
+                this.setState({fixedLeft: x.target.scrollLeft})
+            }
+        });
     }
 
     componentWillUnmount() {
@@ -382,16 +393,21 @@ class DataGrid extends AbstractReactComponent {
     }
 
     renderCell(row, rowIndex, col, colIndex, colFocus, cellFocus) {
-        const {colWidths, selectedIds} = this.state
+        const {colWidths, selectedIds, fixedLeft} = this.state
+        const {startRowIndex} = this.props;
 
         var content
         if (col._rowCheck) {    // speciální slupeček pro označování řádků
             const checked = selectedIds[row.id] === true
+            let style = {};
+            style.left = fixedLeft;
 
             /// TODO - asi použít Checkbox místo input
             content = (
-                <div key="content" className='cell-container'>
-                    <input type='checkbox' checked={checked} onChange={this.handleCheckboxChange.bind(this, row, rowIndex)} />
+                <div key="content" className='cell-container' style={style}>
+                    <div>
+                        <input type='checkbox' checked={checked} onChange={this.handleCheckboxChange.bind(this, row, rowIndex)} /> {rowIndex + 1 + startRowIndex}
+                    </div>
                 </div>
             )
         } else {
@@ -404,6 +420,7 @@ class DataGrid extends AbstractReactComponent {
 
         const colCls = colFocus ? 'focus' : '';
         const cellCls = cellFocus ? ' cell-focus' : '';
+        const colRowCheckCls = col._rowCheck && fixedLeft > 0 ? ' col-fixed' : '';
 
         var style = {}
         if (rowIndex === 0) {
@@ -414,7 +431,7 @@ class DataGrid extends AbstractReactComponent {
             <td
                 key={rowIndex + '-' + colIndex}
                 ref={rowIndex + '-' + colIndex}
-                className={colCls + cellCls}
+                className={colCls + cellCls + colRowCheckCls}
                 style={style}
                 onClick={this.handleCellClick.bind(this, rowIndex, colIndex)}
                 onDoubleClick={this.handleEdit.bind(this, rowIndex, colIndex)}
@@ -445,12 +462,15 @@ class DataGrid extends AbstractReactComponent {
 
     renderHeaderCol(col, colIndex, colFocus) {
         const {staticColumns} = this.props
-        const {colWidths} = this.state
+        const {colWidths, fixedLeft} = this.state
 
         var content
 
         if (col._rowCheck) {    // speciální slupeček pro označování řádků
-            content = <div key="content" className='cell-container'></div>
+            let style = {};
+            style.position = 'relative';
+            style.left = fixedLeft;
+            content = <div key="content" style={style} className='cell-container'></div>
         } else {
             if (col.headerColRenderer) {
                 content = <div key="content" className='cell-container'>{col.headerColRenderer(col)}</div>
@@ -464,6 +484,7 @@ class DataGrid extends AbstractReactComponent {
         }
 
         var colCls = colFocus ? 'focus' : ''
+        const colRowCheckCls = col._rowCheck && fixedLeft > 0 ? ' header-fixed' : '';
 
         var resizer;
         if (!staticColumns && (typeof col.resizeable === 'undefined' || col.resizeable !== false)) {
@@ -473,7 +494,7 @@ class DataGrid extends AbstractReactComponent {
         var style = { width: colWidths[colIndex], maxWidth: colWidths[colIndex] };
 
         return (
-            <th key={colIndex} ref={'col' + colIndex} className={colCls} style={style}>
+            <th key={colIndex} ref={'col' + colIndex} className={colCls + colRowCheckCls} style={style}>
                 {content}
                 {resizer}
             </th>
@@ -566,7 +587,7 @@ class DataGrid extends AbstractReactComponent {
     render() {
         var cls = this.props.className ? 'datagrid-container ' + this.props.className : 'datagrid-container'
 
-        const {rows, onFocus, onBlur, staticColumns, disabled} = this.props;
+        const {rows, onFocus, onBlur, staticColumns, disabled, startRowIndex, morePages} = this.props;
         const {focus, cols, colWidths, selectedRowIndexes, selectedIds} = this.state;
 
         let fullWidth = 0;
@@ -632,6 +653,9 @@ class DataGrid extends AbstractReactComponent {
                                 })}
                             </tbody>
                         </table>
+                        {morePages && rows.length > 0 && <div>
+                            {i18n('fund.grid.morePages', startRowIndex + 1, startRowIndex + rows.length)}
+                        </div>}
                     </div>
                 </div>
             </Shortcuts>

@@ -7,6 +7,7 @@ import cz.tacr.elza.deimport.context.EntityState;
 import cz.tacr.elza.deimport.context.IdHolder;
 import cz.tacr.elza.deimport.context.SimpleIdHolder;
 import cz.tacr.elza.deimport.storage.EntityWrapper;
+import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrNode;
 
@@ -18,13 +19,15 @@ public class ArrDescItemWrapper implements EntityWrapper {
 
     private final IdHolder nodeIdHolder;
 
+    private IdHolder dataIdHolder;
+
     ArrDescItemWrapper(ArrDescItem entity, IdHolder nodeIdHolder) {
         this.entity = Validate.notNull(entity);
         this.nodeIdHolder = Validate.notNull(nodeIdHolder);
     }
 
-    public IdHolder getIdHolder() {
-        return idHolder;
+    void setDataIdHolder(IdHolder dataIdHolder) {
+        this.dataIdHolder = dataIdHolder;
     }
 
     @Override
@@ -41,6 +44,11 @@ public class ArrDescItemWrapper implements EntityWrapper {
     public void beforeEntityPersist(Session session) {
         Validate.isTrue(entity.getNode() == null);
         entity.setNode(nodeIdHolder.getEntityRef(session, ArrNode.class));
+        // set data reference if exist
+        Validate.isTrue(entity.isUndefined());
+        if (dataIdHolder != null) {
+            entity.setData(dataIdHolder.getEntityRef(session, ArrData.class));
+        }
     }
 
     @Override
