@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -246,7 +245,7 @@ public class UnitIdBulkAction extends BulkAction {
 
                     }
 
-                    if (BooleanUtils.isNotFalse(descItem.getUndefined())) {
+					if (descItem.getUndefined()) {
                         descItem.setUndefined(false);
                     }
 
@@ -339,7 +338,7 @@ public class UnitIdBulkAction extends BulkAction {
 
             ArrDescItem descItem = loadDescItem(level);
             ArrDescItem descItemLevel = loadDescItemLevel(level);
-            if (descItem != null && BooleanUtils.isNotTrue(descItem.getUndefined())) {
+			if (descItem != null && !descItem.getUndefined()) {
                 ArrItemData item = descItem.getItem();
 
                 if (!(item instanceof ArrItemUnitid)) {

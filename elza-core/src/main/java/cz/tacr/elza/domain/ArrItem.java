@@ -14,7 +14,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import cz.tacr.elza.service.cache.NodeCacheSerializable;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.NumericField;
@@ -22,6 +21,8 @@ import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+import cz.tacr.elza.service.cache.NodeCacheSerializable;
 
 
 /**
@@ -267,11 +268,21 @@ public abstract class ArrItem implements NodeCacheSerializable {
         this.itemSpecId = itemSpecId;
     }
 
-    public Boolean getUndefined() {
-        return undefined;
+	/**
+	 * Return if value is undefined
+	 * 
+	 * @return Return false if value is undefined or flag not set (default
+	 *         value)
+	 */
+	public boolean getUndefined() {
+		if (undefined == null) {
+			return false;
+		} else {
+			return undefined.booleanValue();
+		}
     }
 
-    public void setUndefined(final Boolean undefined) {
-        this.undefined = undefined;
+	public void setUndefined(final boolean undefined) {
+		this.undefined = Boolean.valueOf(undefined);
     }
 }

@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.context.annotation.Scope;
@@ -91,7 +90,7 @@ public class TextAggregationAction extends Action {
 			if (itemType != null) {
                 ArrItemData itemData = item.getItem();
 
-                if (BooleanUtils.isTrue(item.getUndefined())) {
+				if (item.getUndefined()) {
 					// skip if not defined
 					continue;
                 }
@@ -101,11 +100,13 @@ public class TextAggregationAction extends Action {
                 {
 				case STRING:
 					value = ((ArrItemString) itemData).getValue();
+					break;
 				case TEXT:
 					value = (((ArrItemText) itemData).getValue());
                 	break;
 				case FORMATTED_TEXT:
 					value = (((ArrItemFormattedText) itemData).getValue());
+					break;
 				default:
 					throw new IllegalStateException(
 					        "Neplatný typ dat: " + itemType.getDataType() + ", itemId: " + item.getItemId());

@@ -14,7 +14,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-import cz.tacr.elza.service.importnodes.vo.Packet;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.hibernate.annotations.Cache;
@@ -39,7 +38,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
         @UniqueConstraint(columnNames = {"packetTypeId"})})
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrPacket implements IArrFund, Serializable, Packet {
+public class ArrPacket implements IArrFund, Serializable {
     public final static String PACKET_ID = "packetId";
     public final static String PACKET_TYPE = "packetType";
     public final static String STORAGE_NUMBER = "storageNumber";
@@ -97,11 +96,6 @@ public class ArrPacket implements IArrFund, Serializable, Packet {
 
     public String getStorageNumber() {
         return storageNumber;
-    }
-
-    @Override
-    public String getTypeCode() {
-        return packetType == null ? null : packetType.getCode();
     }
 
     public void setStorageNumber(final String storageNumber) {

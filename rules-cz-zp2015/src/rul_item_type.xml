@@ -590,4 +590,12 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
+    <item-type code="ZP2015_OUTPUT_TYPE" data-type="ENUM">
+        <name>Druh pomůcky</name>
+        <shortcut>Pomůcka</shortcut>
+        <description>Formální druh pomůcky</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>true</use-specification>
+    </item-type>
 </item-types>

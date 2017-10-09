@@ -178,7 +178,7 @@ actions:
                ZP2015_UNIT_TYPE_PEC: pec
                ZP2015_UNIT_TYPE_RAZ: raz
                ZP2015_UNIT_TYPE_OTD: otd
-               ZP2015_UNIT_TYPE_OTC: otc
+               ZP2015_UNIT_TYPE_OTC: otd
                ZP2015_UNIT_TYPE_MAP: map
                ZP2015_UNIT_TYPE_ATL: atl
                ZP2015_UNIT_TYPE_TVY: tvy

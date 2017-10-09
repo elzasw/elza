@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2017-06-28T00:47:46 -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="titlePage" pageWidth="595" pageHeight="842" columnWidth="468" leftMargin="85" rightMargin="42" topMargin="42" bottomMargin="42" uuid="dd0267be-517a-4d78-bc37-65bd954e2a10">
+<!-- Created with Jaspersoft Studio version 6.4.0.final using JasperReports Library version 6.4.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="titlePage" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="70" bottomMargin="70" uuid="dd0267be-517a-4d78-bc37-65bd954e2a10">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
@@ -22,9 +21,8 @@
 		<band height="664">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="0" y="470" width="468" height="14" isRemoveLineWhenBlank="true" uuid="e0778e82-e190-4d85-8ff8-3d44f5eaeea5">
+				<reportElement positionType="Float" x="0" y="450" width="455" height="14" isRemoveLineWhenBlank="true" uuid="e0778e82-e190-4d85-8ff8-3d44f5eaeea5">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement markup="html">
 					<font fontName="SansSerif" pdfEncoding="Cp1250"/>
@@ -32,7 +30,7 @@
 				<textFieldExpression><![CDATA["<b>Název archivní pomůcky:</b> "+$P{output}.getName()]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="0" y="530" width="468" height="14" isRemoveLineWhenBlank="true" uuid="af89dff7-c912-4296-ae4b-aba8f44b7ffc">
+				<reportElement positionType="Float" x="0" y="510" width="455" height="14" isRemoveLineWhenBlank="true" uuid="af89dff7-c912-4296-ae4b-aba8f44b7ffc">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement markup="html">
@@ -41,7 +39,7 @@
 				<textFieldExpression><![CDATA["<b>Počet jednotek popisu, které lze na základě archivní pomůcky zpřístupnit:</b> "+$P{output}.getSingleItemValue( "ZP2015_UNIT_COUNT_SUM" )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="0" y="490" width="468" height="14" isRemoveLineWhenBlank="true" uuid="b2e51607-cb8e-43f8-b8be-0256985b8d02">
+				<reportElement positionType="Float" x="0" y="470" width="455" height="14" isRemoveLineWhenBlank="true" uuid="b2e51607-cb8e-43f8-b8be-0256985b8d02">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement markup="html">
@@ -50,7 +48,7 @@
 				<textFieldExpression><![CDATA["<b>Časové rozmezí archivní pomůcky:</b> "+$P{output}.getSingleItemValue( "ZP2015_DATE_RANGE" )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="0" y="550" width="468" height="14" isRemoveLineWhenBlank="true" uuid="3da0abad-e329-43eb-abdc-900edcd27057">
+				<reportElement positionType="Float" x="0" y="530" width="455" height="14" isRemoveLineWhenBlank="true" uuid="3da0abad-e329-43eb-abdc-900edcd27057">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement markup="html">
@@ -59,7 +57,7 @@
 				<textFieldExpression><![CDATA["<b>Rozsah archivní pomůckou zpřístupněných archiválií:</b> "+$P{output}.getSingleItemValue( "ZP2015_UNITS_AMOUNT" )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="0" y="570" width="468" height="14" isRemoveLineWhenBlank="true" uuid="47fb2c4f-7acb-47ed-8459-90fa4ce2671c">
+				<reportElement positionType="Float" x="0" y="550" width="455" height="14" isRemoveLineWhenBlank="true" uuid="47fb2c4f-7acb-47ed-8459-90fa4ce2671c">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement markup="html">
@@ -68,7 +66,7 @@
 				<textFieldExpression><![CDATA["<b>Stav archivní pomůckou zpřístupněných archiválií ke dni:</b> "+$P{output}.getSingleItemValue( "ZP2015_FINDING_AID_DATE" )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="0" y="590" width="468" height="14" isRemoveLineWhenBlank="true" uuid="7094a51d-0bec-4c09-b219-0bec92c83f59">
+				<reportElement positionType="Float" x="0" y="570" width="455" height="14" isRemoveLineWhenBlank="true" uuid="7094a51d-0bec-4c09-b219-0bec92c83f59">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement markup="html">
@@ -77,7 +75,7 @@
 				<textFieldExpression><![CDATA["<b>Zpracovatel archivního souboru:</b> "+$P{output}.getSingleItemValue( "ZP2015_ARRANGER_TEXT" )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="0" y="610" width="468" height="14" isRemoveLineWhenBlank="true" uuid="c7827d78-5b32-4e7a-a4e8-b007fbf8314a">
+				<reportElement positionType="Float" x="0" y="590" width="455" height="14" isRemoveLineWhenBlank="true" uuid="c7827d78-5b32-4e7a-a4e8-b007fbf8314a">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement markup="html">
@@ -86,7 +84,7 @@
 				<textFieldExpression><![CDATA["<b>Archivní pomůcku sestavil:</b> "+$P{output}.getSingleItemValue( "ZP2015_FINDING_AID_EDITOR" )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" evaluationTime="Master" pattern="">
-				<reportElement positionType="Float" x="0" y="630" width="468" height="14" isRemoveLineWhenBlank="true" uuid="22ee513b-31b2-4768-9704-069c8ba84c41">
+				<reportElement positionType="Float" x="0" y="610" width="455" height="14" isRemoveLineWhenBlank="true" uuid="22ee513b-31b2-4768-9704-069c8ba84c41">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement markup="html">
@@ -95,7 +93,7 @@
 				<textFieldExpression><![CDATA["<b>Počet stran archivní pomůcky:</b> "+$V{MASTER_TOTAL_PAGES}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="0" y="650" width="468" height="14" isRemoveLineWhenBlank="true" uuid="eac977f4-404c-4464-bf25-44e691b20263">
+				<reportElement positionType="Float" x="0" y="630" width="455" height="14" isRemoveLineWhenBlank="true" uuid="eac977f4-404c-4464-bf25-44e691b20263">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement markup="html">
@@ -104,7 +102,7 @@
 				<textFieldExpression><![CDATA["<b>Archivní pomůcku schválil:</b> "+$P{output}.getSingleItemValue( "ZP2015_FINDING_AID_APPROVED_BY" )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="0" y="510" width="468" height="14" isRemoveLineWhenBlank="true" uuid="fe29dfcb-e997-4796-aaac-3b7686c771db">
+				<reportElement positionType="Float" x="0" y="490" width="455" height="14" isRemoveLineWhenBlank="true" uuid="fe29dfcb-e997-4796-aaac-3b7686c771db">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement markup="html">

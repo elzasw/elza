@@ -1,11 +1,10 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrPacket;
-
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
+
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrPacket;
 
 /**
  * Repository pro obaly.
@@ -38,5 +37,5 @@ public interface PacketRepositoryCustom {
 
     List<ArrPacket> findPackets(ArrFund fund, Integer limit, String text, ArrPacket.State state);
 
-    Set<ArrPacket> findPacketsBySubtreeNodeIds(Collection<Integer> nodeIds, boolean ignoreRootNodes);
+	List<ArrPacket> findPacketsBySubtreeNodeIds(Collection<Integer> nodeIds, boolean ignoreRootNodes);
 }
