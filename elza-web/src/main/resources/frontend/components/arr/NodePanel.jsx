@@ -74,20 +74,17 @@ class NodePanel extends AbstractReactComponent {
         }
     }
     selectorMoveUp = ()=>{
-
         const {node} = this.props;
-        if (node.selectedSubNodeId !== null) {
+        if (node.selectedSubNodeId === null) {
             const {focusItemIndex} = this.state
             if (focusItemIndex > node.viewStartIndex) {
-                console.log(focusItemIndex);
                 this.setState({focusItemIndex: focusItemIndex - 1}, () => {this.ensureItemVisibleNoForm(focusItemIndex - 1)})
             }
         }
     }
     selectorMoveDown = ()=>{
         const {node} = this.props
-
-        if (node.selectedSubNodeId !== null) {
+        if (node.selectedSubNodeId === null) {
             const {focusItemIndex} = this.state
             const max = Math.min(node.viewStartIndex + node.pageSize, node.childNodes.length)
             if (focusItemIndex + 1 < max) {
