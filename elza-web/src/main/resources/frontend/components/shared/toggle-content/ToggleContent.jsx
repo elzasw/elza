@@ -76,9 +76,7 @@ class ToggleContent extends React.Component {
 
         return (
             <div className={cls}>
-                <div className="content">
-                    {children}
-                </div>
+                {children}
                 <div className="toggle-container">
                     <NoFocusButton className="toggle" title={title} onClick={this.handleToggle}><Icon glyph={toggleGlyph} /></NoFocusButton>
                 </div>

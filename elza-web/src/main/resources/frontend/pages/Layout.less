@@ -1,5 +1,6 @@
 //@import "bootstrap/less/bootstrap.less";
 @import "/variables.less";
+@version-height: 15px;
 
 html, body {
     height:100%;
@@ -18,8 +19,11 @@ html, body {
     flex-direction: column;
     flex: 1;
 }
+.root-container.with-version{
+    height: calc(~"100% - "@version-height);
+}
 .version-container{
-    height:15px;
+    height:@version-height;
     text-align: right;
     line-height: 15px;
     padding-right:5px;
