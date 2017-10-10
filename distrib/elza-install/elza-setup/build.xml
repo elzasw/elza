@@ -1,0 +1,21 @@
+<project xmlns:if="ant:if">
+  <!-- Delete default web apps from tomcat -->
+  <delete dir="${project.build.directory}/apache-tomcat/webapps" />
+    
+  <!-- Execute InnoSetup compiler -->
+  <echo message="Running InnoSetup Compiler" />
+  <exec executable="${innosetup.path}\ISCC.exe">
+      <arg value="/DTomcatPath=${tomcat.path}" />
+      <arg value="/DProjectVersion=${project.version}" />
+      <arg value="/DInstallerName=ElzaSetup-${project.version}" />
+      <arg value="${project.build.directory}\classes\elza-instalator.iss" />    
+  </exec>
+
+  <!-- Sign final executable -->
+  <echo message="Singing ElzaSetup-${project.version}" if:true="${signtool.enabled}"/>  
+  <exec executable="${signtool.path}" failonerror="true" if:true="${signtool.enabled}" >
+      <arg value="sign" />
+      <arg line="${signtool.params}" />
+      <arg value="${project.build.directory}/ElzaSetup-${project.version}.exe" />        
+  </exec>
+</project>
