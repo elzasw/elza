@@ -100,14 +100,6 @@
                                             <overWrite>true</overWrite>
                                             <destFileName>package-zp2015.zip</destFileName>
                                         </artifactItem>
-                                        <artifactItem>
-                                            <groupId>cz.tacr.elza</groupId>
-                                            <artifactId>rules-simple</artifactId>
-                                            <version>${project.version}</version>
-                                            <type>zip</type>
-                                            <overWrite>true</overWrite>
-                                            <destFileName>package-rules-simple-dev.zip</destFileName>
-                                        </artifactItem>
                                     </artifactItems>
                                     <outputDirectory>${project.build.directory}</outputDirectory>
                                 </configuration>
@@ -215,6 +207,26 @@
                                             <filtering>false</filtering>
                                         </resource>
                                     </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <version>1.7</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <delete dir="${project.build.directory}/apache-tomcat/webapps">
+                                        </delete>
+                                    </tasks>
                                 </configuration>
                             </execution>
                         </executions>
