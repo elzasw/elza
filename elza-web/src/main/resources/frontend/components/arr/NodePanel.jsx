@@ -74,39 +74,43 @@ class NodePanel extends AbstractReactComponent {
         }
     }
     selectorMoveUp = ()=>{
-        const {node} = this.props;
-        if (node.selectedSubNodeId === null) {
-            const {focusItemIndex} = this.state
-            if (focusItemIndex > node.viewStartIndex) {
-                this.setState({focusItemIndex: focusItemIndex - 1}, () => {this.ensureItemVisibleNoForm(focusItemIndex - 1)})
-            }
-        }
+        this.selectorMoveRelative(-1);
     }
     selectorMoveDown = ()=>{
-        const {node} = this.props
-        if (node.selectedSubNodeId === null) {
-            const {focusItemIndex} = this.state
-            const max = Math.min(node.viewStartIndex + node.pageSize, node.childNodes.length)
-            if (focusItemIndex + 1 < max) {
-                this.setState({focusItemIndex: focusItemIndex + 1}, () => {this.ensureItemVisibleNoForm(focusItemIndex + 1)})
-            }
-        }
+        this.selectorMoveRelative(1);
     }
     selectorMoveEnd = ()=>{
         const {node} = this.props
-        if (node.selectedSubNodeId === null) {
-            const index = Math.min(node.viewStartIndex + node.pageSize - 1, node.childNodes.length - 1)
-            this.setState({focusItemIndex: index}, () => {this.ensureItemVisibleNoForm(index)})
-        }
+        const index = Math.min(node.viewStartIndex + node.pageSize - 1, node.childNodes.length - 1)
+        this.selectorMoveToIndex(index);
     }
     selectorMoveTop = ()=>{
-        const {node} = this.props
+        this.selectorMoveToIndex(0);
+    }
+    selectorMoveRelative = (step) => {
+        const {focusItemIndex} = this.state
+        this.selectorMoveToIndex(focusItemIndex + step);
+    }
+    selectorMoveToIndex = (index) => {
+        const {node, versionId} = this.props
         if (node.selectedSubNodeId === null) {
-            const index = node.viewStartIndex
+            const pageMax = node.viewStartIndex + node.pageSize - 1;
+            const pageMin = node.viewStartIndex;
+            const max = node.childNodes.length - 1;
+            const min = 0;
+            if (index < min) {
+                index = min;
+            } else if (index > max) {
+                index = max;
+            } else if (index < pageMin) {
+                this.dispatch(fundSubNodesPrev(versionId, node.id, node.routingKey))
+            } else if (index > pageMax) {
+                this.dispatch(fundSubNodesNext(versionId, node.id, node.routingKey))
+            }
+
             this.setState({focusItemIndex: index}, () => {this.ensureItemVisibleNoForm(index)})
         }
     }
-
     getFocusItemIndex(props, prevFocusItemIndex) {
         const {node} = props
 
