@@ -1,5 +1,5 @@
 ﻿#define NazevApliakceInstalator "ELZA"
-#define KodAplikace  "ELZA"
+#define KodAplikace "ELZA"
 #define IdAplikace "{44F9EF89-0373-4BFD-8D36-C465DAB6E0A2}"
 #define VerzeAplikaceWinInfo "0.0.12.0"
 #define NazevAplikace "Elektronická evidence archiválií"
@@ -53,7 +53,6 @@ Source: "jre\*"; DestDir: "{app}\apache-tomcat\jre"; Flags: recursesubdirs
 Source: "ROOT\*"; DestDir: "{app}\apache-tomcat\webapps\ROOT"; Flags: recursesubdirs
 Source: "classes\TestDb\*"; DestDir: "{app}\TestDb"; Flags: recursesubdirs
 Source: "package-cz-base.zip"; DestDir: "{app}\import"
-Source: "package-rules-simple-dev.zip"; DestDir: "{app}\import"
 Source: "package-zp2015.zip"; DestDir: "{app}\import"
 Source: "all-institutions-import.xml"; DestDir: "{app}\import"
 Source: "classes\Nastaveni\elza.url"; DestDir: "{app}"; Flags: onlyifdoesntexist

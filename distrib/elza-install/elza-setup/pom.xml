@@ -7,7 +7,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>elza-exe</artifactId>
+    <artifactId>elza-setup</artifactId>
+    <name>Elza Setup</name>
 
     <pluginRepositories>
         <pluginRepository>
@@ -45,7 +46,7 @@
 
     <profiles>
         <profile>
-            <id>build-instalator</id>
+            <id>build-setup</id>
             <build>
                 <plugins>
                     <plugin>
@@ -97,14 +98,6 @@
                                             <type>zip</type>
                                             <overWrite>true</overWrite>
                                             <destFileName>package-zp2015.zip</destFileName>
-                                        </artifactItem>
-                                        <artifactItem>
-                                            <groupId>cz.tacr.elza</groupId>
-                                            <artifactId>rules-simple</artifactId>
-                                            <version>${project.version}</version>
-                                            <type>zip</type>
-                                            <overWrite>true</overWrite>
-                                            <destFileName>package-rules-simple-dev.zip</destFileName>
                                         </artifactItem>
                                     </artifactItems>
                                     <outputDirectory>${project.build.directory}</outputDirectory>
@@ -219,30 +212,36 @@
                     </plugin>
 
                     <plugin>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <version>1.8</version>
                         <executions>
-                            <execution><!-- Run our version calculation script -->
-                                <id>run-inno-setup</id>
+                            <!-- Ant part to build setup -->
+                            <execution>
+                                <id>compile-iss</id>
                                 <phase>package</phase>
                                 <goals>
-                                    <goal>exec</goal>
+                                    <goal>run</goal>
                                 </goals>
                                 <configuration>
-                                    <arguments>
-                                        <argument>"/DTomcatPath=${tomcat.path}"</argument>
-                                        <argument>"/DProjectVersion=${project.version}"</argument>
-                                        <argument>"/DInstallerName=ELZA-${project.version}"</argument>
-                                        <argument>${project.build.directory}/classes/elza-instalator.iss</argument>
-                                    </arguments>
-                                    <executable>"c:\Program Files (x86)\Inno Setup 5\ISCC.exe"</executable>
+                                  <target>
+                                    <property name="project.build.directory" value="${project.build.directory}"/>
+                                    <property name="project.version" value="${project.version}"/>                                  
+                                    <property name="tomcat.path" value="${tomcat.path}"/>
+                                    <property name="signtool.params" value="${signtool.params}"/>
+                                    <property name="signtool.path" value="${signtool.path}"/>
+                                    <property name="signtool.enabled" value="${signtool.enabled}"/>
+                                    <property name="innosetup.path" value="${innosetup.path}"/>
+                                    <ant antfile="build.xml"/>
+                                  </target>
                                 </configuration>
                             </execution>
                         </executions>
                     </plugin>
+
                 </plugins>
             </build>
         </profile>
     </profiles>
-
+    
 </project>

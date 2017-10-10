@@ -11,7 +11,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>elza-testdb</module>
-        <module>elza-exe</module>
+        <module>elza-setup</module>
     </modules>
 
 </project>
