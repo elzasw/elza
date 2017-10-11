@@ -1183,6 +1183,10 @@ export default class Autocomplete extends AbstractReactComponent {
             clsMain += ' ' + this.props.className;
         }
 
+        if (hasError) {
+            clsMain += " has-error";
+        }
+
         var glyph = this.state.isOpen ? 'fa-angle-up' : 'fa-angle-down';
         _debugStates && console.log("RENDER", "props", this.props, "state", this.state);
 

@@ -59,6 +59,7 @@ const SelectItemsForm = class extends AbstractReactComponent {
         const {items} = this.state;
 
         const itemField = React.createElement(fieldComponent, {
+            tags: true,
             ...fieldComponentProps,
             onChange: this.handleChange
         });

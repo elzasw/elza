@@ -260,6 +260,33 @@ public class UserController {
     }
 
     /**
+     * Načte seznam uživatelů, kteří mají přiřazené nebo zděděné oprávnění na zakládání nových AS.
+     *
+     * @param search   hledaný řetězec
+     * @param from     počáteční záznam
+     * @param count    počet vrácených záznamů
+     * @param active   mají se vracet aktivní osoby?
+     * @param disabled mají se vracet zakázané osoby?
+     * @return seznam s celkovým počtem
+     */
+    @RequestMapping(value = "/withFundCreate", method = RequestMethod.GET)
+    public FilteredResultVO<UsrUserVO> findUserWithFundCreate(@Nullable @RequestParam(value = "search", required = false) final String search,
+                                                @RequestParam("active") final Boolean active,
+                                                @RequestParam("disabled") final Boolean disabled,
+                                                @RequestParam("from") final Integer from,
+                                                @RequestParam("count") final Integer count,
+                                                @RequestParam(value = "excludedGroupId", required = false) final Integer excludedGroupId
+    ) {
+        if (!active && !disabled) {
+            throw new IllegalArgumentException("Musí být uveden alespoň jeden z parametrů: active, disabled.");
+        }
+
+        FilteredResult<UsrUser> users = userService.findUserWithFundCreate(search, active, disabled, from, count, excludedGroupId);
+        List<UsrUserVO> resultVo = factoryVO.createUserList(users.getList());
+        return new FilteredResultVO<>(resultVo, users.getTotalCount());
+    }
+
+    /**
      * Přidání uživatelů do skupin.
      *
      * @param params identifikátory přidávaných uživatelů a skupin

@@ -777,11 +777,11 @@ public class UserService {
             }
 
             if (permission.getGroupControl() != null) {
-                userPermission.addControlGroupId(permission.getGroupControl().getGroupId());
+                userPermission.addControlGroupId(permission.getGroupControlId());
             }
 
             if (permission.getUserControl() != null) {
-                userPermission.addControlUserId(permission.getUserControl().getUserId());
+                userPermission.addControlUserId(permission.getUserControlId());
             }
         }
 
@@ -879,6 +879,25 @@ public class UserService {
     }
 
     /**
+     * Hledání uživatelů na základě podmínek, kteří mají přiřazené nebo zděděné oprávnění na zakládání nových AS.
+     *
+     * @param search      hledaný text
+     * @param active      aktivní uživatelé
+     * @param disabled    zakázaní uživatelé
+     * @param firstResult od jakého záznamu
+     * @param maxResults  maximální počet vrácených záznamů, pokud je -1 neomezuje se
+     * @return výsledky hledání
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
+    public FilteredResult<UsrUser> findUserWithFundCreate(final String search, final Boolean active, final Boolean disabled, final Integer firstResult, final Integer maxResults, final Integer excludedGroupId) {
+        if (!active && !disabled) {
+            throw new IllegalArgumentException("Musí být uveden alespoň jeden z parametrů: active, disabled.");
+        }
+
+        return userRepository.findUserWithFundCreateByTextAndStateCount(search, active, disabled, firstResult, maxResults, excludedGroupId);
+    }
+
+    /**
      * Hledání skupin na základě podmínek.
      *
      * @param search      hledaný text
@@ -889,6 +908,19 @@ public class UserService {
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public FilteredResult<UsrGroup> findGroup(final String search, final Integer firstResult, final Integer maxResults) {
         return groupRepository.findGroupByTextCount(search, firstResult, maxResults);
+    }
+
+    /**
+     * Hledání skupin na základě podmínek, které mají přiřazené oprávnění na zakládání nových AS.
+     *
+     * @param search      hledaný text
+     * @param firstResult od jakého záznamu
+     * @param maxResults  maximální počet vrácených záznamů, pokud je -1 neomezuje se
+     * @return výsledky hledání
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
+    public FilteredResult<UsrGroup> findGroupWithFundCreate(final String search, final Integer firstResult, final Integer maxResults) {
+        return groupRepository.findGroupWithFundCreateByTextCount(search, firstResult, maxResults);
     }
 
     /**

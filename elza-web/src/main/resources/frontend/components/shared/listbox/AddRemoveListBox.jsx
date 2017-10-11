@@ -92,10 +92,10 @@ class AddRemoveListBox extends AbstractReactComponent {
     };
 
     render() {
-        const {canSelectItem, renderItemContent, items, ...rest} = this.props;
+        const {className, canSelectItem, renderItemContent, items, ...rest} = this.props;
 
         return <ListBox
-            className="add-remove-listbox"
+            className={"add-remove-listbox" + (className ? " " + className : "")}
             {...rest}
             items={this.state.items}
             renderItemContent={this.renderItem}

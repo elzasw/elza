@@ -21,4 +21,17 @@ public interface UserRepositoryCustom {
      * @return výsledky hledání
      */
     FilteredResult<UsrUser> findUserByTextAndStateCount(String search, Boolean active, Boolean disabled, Integer firstResult, Integer maxResults, Integer excludedGroupId);
+
+    /**
+     * Hledání uživatelů na základě podmínek, kteří mají přiřazené nebo zděděné oprávnění na zakládání nových AS.
+     *
+     * @param search      hledaný text
+     * @param active      aktivní uživatelé
+     * @param disabled    zakázaní uživatelé
+     * @param firstResult od jakého záznamu
+     * @param maxResults  maximální počet vrácených záznamů, pokud je -1 neomezuje se
+     * @param excludedGroupId Id skupiny která bude vynechána z vyhledávání
+     * @return výsledky hledání
+     */
+    FilteredResult<UsrUser> findUserWithFundCreateByTextAndStateCount(String search, Boolean active, Boolean disabled, Integer firstResult, Integer maxResults, Integer excludedGroupId);
 }

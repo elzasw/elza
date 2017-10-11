@@ -11,10 +11,14 @@ import {renderUserOrGroupItem} from "./adminRenderUtils.jsx"
 class UserAndGroupField extends AbstractReactComponent {
     static defaultProps = {
         tags: false,
-        excludedGroupId: null
+        excludedGroupId: null,
+        findUserApi: WebApi.findUser,
+        findGroupApi: WebApi.findGroup,
     };
 
     static PropTypes = {
+        findUserApi: React.PropTypes.func,  // api meoda pro dohledání uživatele, standardně WebApi.findUser, předpis (fulltext, active, disabled, max = DEFAULT_LIST_SIZE, groupId = null)
+        findGroupApi: React.PropTypes.func,  // api meoda pro dohledání skupinz, standardně WebApi.findGroup, předpis: (fulltext, max = DEFAULT_LIST_SIZE)
         value: React.PropTypes.object,
         onChange: React.PropTypes.func.isRequired,
         inline: React.PropTypes.bool,
@@ -36,10 +40,12 @@ class UserAndGroupField extends AbstractReactComponent {
     };
 
     handleSearchChange = (text) => {
+        const {findUserApi, findGroupApi} = this.props;
+
         text = text == "" ? null : text;
 
-        const findUser = WebApi.findUser(text, true, false, 200, null);
-        const findGroup = WebApi.findGroup(text);
+        const findUser = findUserApi(text, true, false, 200, null);
+        const findGroup = findGroupApi(text);
 
         Utils.barrier(findUser, findGroup)
             .then(data => ({users: data[0].data.users, groups: data[1].data.groups}))

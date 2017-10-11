@@ -96,6 +96,8 @@ var messages = {
     "exception.arr.INVALID_DAO": "Nelze připojit digitální entitu k JP, protože je nevalidní",
     "exception.arr.NOT_REPEATABLE": "Neopakovatelná položka",
     "exception.arr.INVALID_REQUEST_DIGITAL_REPOSITORY_DAO": "Nelze připojit digitální entitu k JP, protože je požadavek pro jiné digitální uložiště",
+    "exception.arr.ADMIN_USER_MISSING_FUND_CREATE_PERM": "K AS nelze přiřadit spráce (uživatele), protože nemá oprávnění zakládat AS",
+    "exception.arr.ADMIN_GROUP_MISSING_FUND_CREATE_PERM": "K AS nelze přiřadit spráce (skupinu), protože nemá oprávnění zakládat AS",
 
 
     "exception.base.INSUFFICIENT_PERMISSIONS": "Nedostatečná oprávnění",
@@ -598,6 +600,7 @@ var messages = {
     "arr.fund.institution": "Instituce",
     "arr.fund.internalCode": "Interní kod",
     "arr.fund.dateRange": "Časový rozsah",
+    "arr.fund.fundAdmins": "Správci",
 
     "arr.fund.addNode": "Přidat jednotku popisu",
     "arr.fund.addNode.type.new": "Nová",
@@ -1002,8 +1005,10 @@ var messages = {
     "admin.perms.tabs.advanced": "Pokročilé",
     "admin.perms.tabs.advanced.perm.ADMIN": "Superuživatel",
     "admin.perms.tabs.advanced.perm.FUND_ADMIN": "Administrace všech AS",
+    "admin.perms.tabs.advanced.perm.FUND_CREATE": "Zakládání nových AS",
     "admin.perms.tabs.advanced.perm.USR_PERM": "Správa oprávnění a uživatelů",
     "admin.perms.tabs.advanced.perm.INTERPI_MAPPING_WR": "Mapování externích systémů",
+    "admin.perms.tabs.advanced.controller.entities.title": "Spravovaní uživatelé a skupiny",
     "admin.user.group.action.delete": "Odebrat členství ve skupině",
     "admin.user.group.action.add": "Přiřadit skupiny",
     "admin.user.permission.action.delete": "Odebrat oprávnění uživatele",

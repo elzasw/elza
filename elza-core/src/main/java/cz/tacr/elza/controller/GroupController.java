@@ -79,6 +79,24 @@ public class GroupController {
     }
 
     /**
+     * Načte seznam skupin, které mají nastavené oprávnění zakládat nový AS.
+     *
+     * @param search hledaný řetězec
+     * @param from   počáteční záznam
+     * @param count  počet vrácených záznamů
+     * @return seznam s celkovým počtem
+     */
+    @RequestMapping(value = "/withFundCreate", method = RequestMethod.GET)
+    public FilteredResultVO<UsrGroupVO> findGroupWithFundCreate(@Nullable @RequestParam(value = "search", required = false) final String search,
+                                                  @RequestParam("from") final Integer from,
+                                                  @RequestParam("count") final Integer count
+    ) {
+        FilteredResult<UsrGroup> groups = userService.findGroupWithFundCreate(search, from, count);
+        List<UsrGroupVO> resultVo = factoryVO.createGroupList(groups.getList(), false, false);
+        return new FilteredResultVO<>(resultVo, groups.getTotalCount());
+    }
+
+    /**
      * Vytvoření skupiny.
      *
      * @param params parametry pro vytvoření skupiny

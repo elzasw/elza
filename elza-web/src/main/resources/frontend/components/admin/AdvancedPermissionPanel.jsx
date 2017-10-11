@@ -10,6 +10,7 @@ import {WebApi} from "../../actions/WebApi";
 import PermissionCheckboxsForm from "./PermissionCheckboxsForm";
 import AdminRightsContainer from "./AdminRightsContainer";
 import ControlledEntitiesPanel from "./ControlledEntitiesPanel";
+import "./AdvancedPermissionPanel.less";
 
 /**
  * Panel spravující pokročilá oprávnění.
@@ -26,6 +27,7 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
     static permCodes = [
         perms.ADMIN,
         perms.FUND_ADMIN,
+        perms.FUND_CREATE,
         perms.USR_PERM,
         perms.INTERPI_MAPPING_WR,
     ];
@@ -68,6 +70,7 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
                     case perms.USR_PERM:
                     case perms.INTERPI_MAPPING_WR:
                     case perms.FUND_ADMIN:
+                    case perms.FUND_CREATE:
                         permission[p.permission] = this.buildPermission(permission[p.permission], p);
                         break;
                 }
@@ -117,7 +120,7 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
         const {permission} = this.state;
         const {onAddPermission, onDeletePermission, userPermissions} = this.props;
 
-        return <AdminRightsContainer>
+        return <AdminRightsContainer className="advanced-rights-container">
                 {permission && <PermissionCheckboxsForm
                     permCodes={AdvancedPermissionPanel.permCodes}
                     onChangePermission={this.changePermission}
@@ -125,11 +128,15 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
                     permission={permission}
                     groups={userPermissions.data.groups}
                 />}
-                {userPermissions.fetched && <ControlledEntitiesPanel
-                    permissions={userPermissions.data.permissions}
-                    onAddPermission={onAddPermission}
-                    onDeletePermission={onDeletePermission}
-                />}
+                {userPermissions.fetched && <div className="controlled-entities-container">
+                    <h4>{i18n("admin.perms.tabs.advanced.controller.entities.title")}</h4>
+                    <ControlledEntitiesPanel
+                        className="controlled-entities"
+                        permissions={userPermissions.data.permissions}
+                        onAddPermission={onAddPermission}
+                        onDeletePermission={onDeletePermission}
+                    />
+                </div>}
         </AdminRightsContainer>;
     }
 }

@@ -10,9 +10,9 @@ import AbstractReactComponent from "../AbstractReactComponent";
  */
 class AdminRightsContainer extends AbstractReactComponent {
     render() {
-        const {header, left, children} = this.props;
+        const {className, header, left, children} = this.props;
 
-        return <div className="admin-rights-container">
+        return <div className={"admin-rights-container " + (className ? " " + className : "")}>
             {header && <div className="admin-rights-header">
                 {header}
             </div>}

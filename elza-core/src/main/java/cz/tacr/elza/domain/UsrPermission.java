@@ -335,6 +335,11 @@ public class UsrPermission {
         FUND_ADMIN,
 
         /**
+         * Právo zakládání nového AS.
+         */
+        FUND_CREATE,
+
+        /**
          * export vybrané AS
          * - možnost exportu AS či OUTPUT přiřazeného AS
          */
@@ -368,7 +373,7 @@ public class UsrPermission {
          * drobné úpravy uzavřených vybraných AS
          * - zatím neřešíme
          */
-        FUND_CL_VER_WR(PermissionType.FUND),
+         FUND_CL_VER_WR(PermissionType.FUND),
 
         /**
          * drobné úpravy uzavřených všech AS

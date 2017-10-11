@@ -686,14 +686,8 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/getRuleSets');
     }
 
-    createFund(name, ruleSetId, institutionId, internalCode, dateRange) {
-        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/funds', {
-            name,
-            institutionId,
-            ruleSetId,
-            internalCode,
-            dateRange
-        });
+    createFund(createFund) {
+        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/funds', null, createFund);
     }
 
     updateFund(data) {
@@ -871,6 +865,11 @@ export class WebApiCls {
             .then(json => ({users: json.rows, usersCount: json.count}))
     }
 
+    findUserWithFundCreate(fulltext, active, disabled, max = DEFAULT_LIST_SIZE, groupId = null) {
+        return AjaxUtils.ajaxGet(WebApiCls.userUrl + "/withFundCreate", {search: fulltext, active, disabled, from: 0, count: max, excludedGroupId: groupId})
+            .then(json => ({users: json.rows, usersCount: json.count}))
+    }
+
     changeUserPermission(userId, permissions) {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl + "/" + userId + '/permission', null, permissions);
     }
@@ -913,6 +912,11 @@ export class WebApiCls {
 
     findGroup(fulltext, max = DEFAULT_LIST_SIZE) {
         return AjaxUtils.ajaxGet(WebApiCls.groupUrl, {search: fulltext, from: 0, count: max})
+            .then(json => ({groups: json.rows, groupsCount: json.count}))
+    }
+
+    findGroupWithFundCreate(fulltext, max = DEFAULT_LIST_SIZE) {
+        return AjaxUtils.ajaxGet(WebApiCls.groupUrl + "/withFundCreate", {search: fulltext, from: 0, count: max})
             .then(json => ({groups: json.rows, groupsCount: json.count}))
     }
 

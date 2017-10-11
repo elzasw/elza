@@ -1,10 +1,13 @@
 package cz.tacr.elza.repository;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Join;
@@ -14,6 +17,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Subquery;
 
+import cz.tacr.elza.domain.UsrPermission;
 import org.apache.commons.lang.StringUtils;
 
 import cz.tacr.elza.domain.ParParty;
@@ -108,5 +112,96 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         long count = entityManager.createQuery(queryCount).getSingleResult();
 
         return new FilteredResult<>(firstResult, maxResults, count, list);
+    }
+
+    /**
+     * Sestaví dotaz pro seznam uživatelů nebo jejich počet dle podmínek.
+     * @param dataQuery pokud je true, vrátí se query se seznamem uživatelů, pokud je false, vrátí se query, které vrací počet uživatelů
+     * @param search hledaný výraz
+     * @param active ve výstupu mají být aktivní uživatelé?
+     * @param disabled ve výstupu mají být neaktivní uživatelé?
+     * @param firstResult stránkování
+     * @param maxResults stránkování, pokud je -1 neomezuje se
+     * @param excludedGroupId z jaké skupiny uživatele nechceme
+     * @return query
+     */
+    private TypedQuery buildUserFindQuery(final boolean dataQuery, final String search, final Boolean active, final Boolean disabled, final Integer firstResult, final Integer maxResults, final Integer excludedGroupId) {
+        StringBuilder conds = new StringBuilder();
+
+        StringBuilder query = new StringBuilder();
+        query.append("from usr_user u" +
+                " left join usr_permission pu on pu.user = u" +
+                " left join usr_group_user gu on gu.user = u" +
+                " left join usr_permission pg on pg.group = gu.group"
+        );
+
+        // Pro datový dotaz potřebujeme fetch kvůli optimatlizaci a kvůli řazení dle record (musí být v selectu a to zajistí fetch)
+        if (dataQuery) {
+            query.append(" inner join fetch u.party party" +
+                    " inner join fetch party.record record");
+        } else {
+            query.append(" inner join u.party party" +
+                    " inner join party.record record");
+        }
+        query.append(" where (pu.permission = :permission or pg.permission = :permission)");
+
+        // Podmínky hledání
+        Map<String, Object> parameters = new HashMap<>();
+        if (!StringUtils.isEmpty(search)) {
+            conds.append(" and (lower(u.username) like :search or lower(u.description) like :search or lower(record.record) like :search)");
+            parameters.put("search", "%" + search.toLowerCase() + "%");
+        }
+        StringBuilder status = new StringBuilder();
+        if (active) {
+            status.append("u.active = :active");
+            parameters.put("active", true);
+        }
+        if (disabled) {
+            if (status.length() > 0) {
+                status.append(" or ");
+            }
+            status.append("u.active = :disabled");
+            parameters.put("disabled", false);
+        }
+        if (status.length() > 0) {
+            conds.append(" and ");
+            conds.append(status.toString());
+        }
+
+        // Exclude group id
+        if (excludedGroupId != null) {
+            conds.append(" and u.userId not in (select groupId.userId from usr_group_user rel where rel.groupId = :groupId)");
+            parameters.put("groupId", excludedGroupId);
+        }
+
+        // Připojení podmínek ke query
+        if (conds.length() > 0) {
+            query.append(conds.toString());
+        }
+
+        TypedQuery q;
+        if (dataQuery) {
+            String dataQueryStr = "select distinct u " + query.toString() + " order by u.username, record.record, u.userId";
+            q = entityManager.createQuery(dataQueryStr, UsrUser.class);
+        } else {
+            String countQueryStr = "select count(distinct u) " + query.toString();
+            q = entityManager.createQuery(countQueryStr, Number.class);
+        }
+
+        q.setParameter("permission", UsrPermission.Permission.FUND_CREATE);
+        parameters.entrySet().forEach(e -> q.setParameter(e.getKey(), e.getValue()));
+        q.setFirstResult(firstResult);
+        if (maxResults >= 0) {
+            q.setMaxResults(maxResults);
+        }
+
+        return q;
+    }
+
+    @Override
+    public FilteredResult<UsrUser> findUserWithFundCreateByTextAndStateCount(final String search, final Boolean active, final Boolean disabled, final Integer firstResult, final Integer maxResults, final Integer excludedGroupId) {
+        TypedQuery data = buildUserFindQuery(true, search, active, disabled, firstResult, maxResults, excludedGroupId);
+        TypedQuery count = buildUserFindQuery(false, search, active, disabled, firstResult, maxResults, excludedGroupId);
+        return new FilteredResult<>(firstResult, maxResults, ((Number)count.getSingleResult()).longValue(), data.getResultList());
     }
 }

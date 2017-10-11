@@ -20,6 +20,7 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.controller.vo.CreateFundVO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
@@ -517,23 +518,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Vytvoření archivní pomůcky.
      *
-     * @param name              název AP
-     * @param ruleSetId         identifikátor pravidel
-     * @param institutionId     identifikátor instituce
-     * @param dateRange         vysčítaná informace o časovém rozsahu fondu
+     * @param createFund             parametry pro založení
      * @return ap
      */
-    protected ArrFundVO createFund(final String name,
-                                   final Integer ruleSetId,
-                                   final Integer institutionId,
-                                   final String internalCode,
-                                   final String dateRange) {
+    protected ArrFundVO createFund(final CreateFundVO createFund) {
         Response response = post(spec -> spec
-                .queryParameter("name", name)
-                .queryParameter("ruleSetId", ruleSetId)
-                .queryParameter("institutionId", institutionId)
-                .queryParameter("internalCode", internalCode)
-                .queryParameter("dateRange", dateRange), CREATE_FUND);
+                .body(createFund), CREATE_FUND);
         return response.getBody().as(ArrFundVO.class);
     }
 
@@ -547,7 +537,15 @@ public abstract class AbstractControllerTest extends AbstractTest {
         List<RulRuleSetVO> ruleSets = getRuleSets();
         RulRuleSetVO ruleSet = ruleSets.get(0);
         ParInstitutionVO institution = getInstitutions().get(0);
-        return createFund(name, ruleSet.getId(), institution.getId(), internalCode, null);
+
+        CreateFundVO createFund = new CreateFundVO();
+        createFund.setName(name);
+        createFund.setRuleSetId(ruleSet.getId());
+        createFund.setInstitutionId(institution.getId());
+        createFund.setInternalCode(internalCode);
+        createFund.setDateRange(null);
+
+        return createFund(createFund);
     }
 
     /**

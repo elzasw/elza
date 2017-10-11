@@ -39,11 +39,9 @@ class ControlledEntitiesPanel extends AbstractReactComponent {
         const permissionsList = permissions
             .filter(p => !p.inherited && (p.permission === perms.USER_CONTROL_ENTITITY || p.permission === perms.GROUP_CONTROL_ENTITITY))
             .map(p => {
-            console.log(444, p)
                 return p;
         });
 
-        console.log(1111111111, permissionsList)
         return permissionsList;
     };
 
@@ -128,15 +126,15 @@ class ControlledEntitiesPanel extends AbstractReactComponent {
 
     render() {
         const {permissions} = this.state;
+        const {className} = this.props;
 
-        return <div>
-            <AddRemoveListBox
+        return <AddRemoveListBox
+                className={className}
                 items={permissions}
                 renderItemContent={this.renderItem}
                 onAdd={this.handleAdd}
                 onRemove={this.handleRemove}
-            />
-        </div>;
+            />;
     }
 }
 

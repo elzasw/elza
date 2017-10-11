@@ -8,6 +8,14 @@ export function renderUserOrGroupItem(item, isHighlighted = false, isSelected = 
     }
 }
 
+export function renderUserOrGroupLabel(item) {
+    if (item.user) {
+        return item.user.party.record.record + " (" + item.user.username + ")";
+    } else {
+        return item.group.name;
+    }
+}
+
 export function renderUserItem(user, isHighlighted = false, isSelected = false) {
     let cls = 'item';
     if (isHighlighted) {

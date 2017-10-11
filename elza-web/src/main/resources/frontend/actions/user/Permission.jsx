@@ -11,6 +11,7 @@ export const FUND_OUTPUT_WR = 'FUND_OUTPUT_WR';
 export const FUND_OUTPUT_WR_ALL = 'FUND_OUTPUT_WR_ALL';
 export const FUND_VER_WR = 'FUND_VER_WR';
 export const FUND_ADMIN = 'FUND_ADMIN';
+export const FUND_CREATE = 'FUND_CREATE';
 export const FUND_EXPORT = 'FUND_EXPORT';
 export const FUND_EXPORT_ALL = 'FUND_EXPORT_ALL';
 export const USR_PERM = 'USR_PERM';
@@ -36,6 +37,7 @@ export const all = {
     FUND_OUTPUT_WR_ALL: {  },
     FUND_VER_WR: { fund: true },
     FUND_ADMIN: {  },
+    FUND_CREATE: {  },
     FUND_EXPORT: { fund: true },
     FUND_EXPORT_ALL: {  },
     USR_PERM: {  },
