@@ -14,7 +14,7 @@ import {indexById} from 'stores/app/utils.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {renderGroupItem} from "components/admin/adminRenderUtils.jsx"
-import {fundsFilter, fundsFetchIfNeeded} from "./../../actions/admin/fund";
+import {fundsFilter, fundsFetchIfNeeded, selectFund} from "./../../actions/admin/fund";
 import {renderFundItem} from "../../components/admin/adminRenderUtils";
 
 class AdminFundPage extends AbstractReactComponent {
@@ -35,7 +35,7 @@ class AdminFundPage extends AbstractReactComponent {
     }
 
     handleSelect = (item) => {
-        // this.dispatch(groupsSelectGroup(item.id))
+        this.dispatch(selectFund(item.id))
     };
 
     handleSearch = (filterText) => {

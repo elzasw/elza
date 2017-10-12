@@ -318,6 +318,18 @@ public class UserController {
     }
 
     /**
+     * Načtení seznamu oprávnění seskupených dle uživatele, která jsou nastavena na daný AS.
+     * @param fundId id AS
+     * @return seznam
+     */
+    @RequestMapping(value = "/fund/{fundId}/permissions", method = RequestMethod.GET)
+    public List<UsrUserVO> getUsersPermissionsByFund(@RequestParam(value = "fundId") final Integer fundId) {
+        ArrFund fund = fundRepository.getOneCheckExist(fundId);
+        // TODO [slapa] - ELZA-1552 doimplementovat
+        return new ArrayList<>();
+    }
+
+    /**
      * Načte seznam uživatelů, kteří mají explicitně (přímo na nich) nastavené nějaké oprávnění pro daný AS.
      * @param fundId id AS
      * @return seznam

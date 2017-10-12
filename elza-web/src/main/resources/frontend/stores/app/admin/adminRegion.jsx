@@ -28,6 +28,7 @@ const initialState = {
     user: user(),
     group: group(),
     funds: SimpleListReducer(),
+    fund: DetailReducer(),
     userPermissions: DetailReducer(), // pro správu oprávnění uživatele
 };
 

@@ -5,10 +5,13 @@ import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
+import cz.tacr.elza.controller.vo.UsrUserVO;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.FilteredResult;
+import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -45,6 +49,9 @@ public class GroupController {
 
     @Autowired
     private SettingsService settingsService;
+
+    @Autowired
+    private FundRepository fundRepository;
 
     /**
      * Načtení skupiny s daty pro zobrazení na detailu s možností editace.
@@ -197,6 +204,18 @@ public class GroupController {
     public void deleteGroupScopePermission(@PathVariable(value = "groupId") final Integer groupId, @PathVariable("scopeId") final Integer scopeId) {
         UsrGroup group = userService.getGroup(groupId);
         userService.deleteGroupScopePermissions(group, scopeId);
+    }
+
+    /**
+     * Načtení seznamu oprávnění seskupených dle skupiny, která jsou nastavena na daný AS.
+     * @param fundId id AS
+     * @return seznam
+     */
+    @RequestMapping(value = "/fund/{fundId}/permissions", method = RequestMethod.GET)
+    public List<UsrGroupVO> getGroupsPermissionsByFund(@RequestParam(value = "fundId") final Integer fundId) {
+        ArrFund fund = fundRepository.getOneCheckExist(fundId);
+        // TODO [slapa] - ELZA-1552 doimplementovat
+        return new ArrayList<>();
     }
 
     /**
