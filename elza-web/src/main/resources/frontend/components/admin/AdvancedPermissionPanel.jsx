@@ -38,7 +38,7 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
         const {userId} = this.props;
         let obj = currObj || {groupIds: {}};
 
-        if (permission.inhertited) {   // je zděděné ze skupiny
+        if (permission.inherited) {   // je zděděné ze skupiny
             obj.groupIds[permission.groupId] = true;
             obj.checked = obj.checked || false;
         } else {    // je přímo přiřazen

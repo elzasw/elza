@@ -869,7 +869,6 @@ public class UserService {
      * @param maxResults  maximální počet vrácených záznamů
      * @return výsledky hledání
      */
-    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public FilteredResult<UsrUser> findUser(final String search, final Boolean active, final Boolean disabled, final Integer firstResult, final Integer maxResults, final Integer excludedGroupId) {
         if (!active && !disabled) {
             throw new IllegalArgumentException("Musí být uveden alespoň jeden z parametrů: active, disabled.");
@@ -888,7 +887,6 @@ public class UserService {
      * @param maxResults  maximální počet vrácených záznamů, pokud je -1 neomezuje se
      * @return výsledky hledání
      */
-    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public FilteredResult<UsrUser> findUserWithFundCreate(final String search, final Boolean active, final Boolean disabled, final Integer firstResult, final Integer maxResults, final Integer excludedGroupId) {
         if (!active && !disabled) {
             throw new IllegalArgumentException("Musí být uveden alespoň jeden z parametrů: active, disabled.");
@@ -905,7 +903,6 @@ public class UserService {
      * @param maxResults  maximální počet vrácených záznamů
      * @return výsledky hledání
      */
-    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public FilteredResult<UsrGroup> findGroup(final String search, final Integer firstResult, final Integer maxResults) {
         return groupRepository.findGroupByTextCount(search, firstResult, maxResults);
     }
@@ -918,7 +915,6 @@ public class UserService {
      * @param maxResults  maximální počet vrácených záznamů, pokud je -1 neomezuje se
      * @return výsledky hledání
      */
-    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public FilteredResult<UsrGroup> findGroupWithFundCreate(final String search, final Integer firstResult, final Integer maxResults) {
         return groupRepository.findGroupWithFundCreateByTextCount(search, firstResult, maxResults);
     }

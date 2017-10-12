@@ -31,7 +31,10 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
                 if (obj && obj.checked) {
                     checked = true;
                 }
-                let allChecked = (permissionAll && permissionAll[permCode]) ? permissionAll[permCode].checked : false;
+
+                // Odkomentovat jen pokud bychom chtěli zobrazovat "dědění" z položky "všechny ..."
+                // let allChecked = (permissionAll && permissionAll[permCode]) ? permissionAll[permCode].checked : false;
+                let allChecked = false;
 
                 let infoIcon;
                 let infoMessage;

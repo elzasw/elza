@@ -52,7 +52,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
         const {userId} = this.props;
         let obj = currObj || {groupIds: {}};
 
-        if (permission.inhertited) {   // je zděděné ze skupiny
+        if (permission.inherited) {   // je zděděné ze skupiny
             obj.groupIds[permission.groupId] = permission.fund ? permission.fund.id : true;
             obj.checked = obj.checked || false;
         } else {    // je přímo přiřazen
