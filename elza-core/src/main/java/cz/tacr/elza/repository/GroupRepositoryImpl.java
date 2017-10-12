@@ -1,6 +1,7 @@
 package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.UsrGroup;
+import cz.tacr.elza.domain.UsrGroupUser;
 import cz.tacr.elza.domain.UsrPermission;
 import org.apache.commons.lang.StringUtils;
 
@@ -12,6 +13,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Subquery;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,7 +27,11 @@ public class GroupRepositoryImpl implements GroupRepositoryCustom {
     @PersistenceContext
     private EntityManager entityManager;
 
-    private <T> Predicate prepareFindGroupByTextCount(final String search, final CriteriaBuilder builder, final Root<UsrGroup> group, final CriteriaQuery<T> query) {
+    private <T> Predicate prepareFindGroupByTextCount(final String search,
+                                                      final CriteriaBuilder builder,
+                                                      final Root<UsrGroup> group,
+                                                      final CriteriaQuery<T> query,
+                                                      final Integer userId) {
         List<Predicate> conditions = new ArrayList<>();
 
         // Search
@@ -38,11 +44,26 @@ public class GroupRepositoryImpl implements GroupRepositoryCustom {
             ));
         }
 
+        if (userId != null) {
+            final Subquery<UsrGroup> subquery = query.subquery(UsrGroup.class);
+            final Root<UsrPermission> permissionUserSubq = subquery.from(UsrPermission.class);
+            subquery.select(permissionUserSubq.get(UsrPermission.GROUP_CONTROL_ID));
+
+            final Subquery<UsrGroup> subsubquery = subquery.subquery(UsrGroup.class);
+            final Root<UsrGroupUser> groupUserSubq = subsubquery.from(UsrGroupUser.class);
+            subsubquery.select(groupUserSubq.get(UsrGroupUser.GROUP_ID));
+            subsubquery.where(builder.equal(groupUserSubq.get(UsrGroupUser.USER_ID), userId));
+
+            subquery.where(builder.or(builder.equal(permissionUserSubq.get(UsrPermission.USER_ID), userId), builder.in(permissionUserSubq.get(UsrPermission.GROUP_ID)).value(subsubquery)));
+
+            conditions.add(builder.and(builder.in(group.get(UsrGroup.GROUP_ID)).value(subquery)));
+        }
+
         return builder.and(conditions.toArray(new Predicate[conditions.size()]));
     }
 
     @Override
-    public FilteredResult<UsrGroup> findGroupByTextCount(final String search, final Integer firstResult, final Integer maxResults) {
+    public FilteredResult<UsrGroup> findGroupByTextCount(final String search, final Integer firstResult, final Integer maxResults, final Integer userId) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 
         CriteriaQuery<UsrGroup> query = builder.createQuery(UsrGroup.class);
@@ -51,8 +72,8 @@ public class GroupRepositoryImpl implements GroupRepositoryCustom {
         Root<UsrGroup> group = query.from(UsrGroup.class);
         Root<UsrGroup> groupCount = queryCount.from(UsrGroup.class);
 
-        Predicate condition = prepareFindGroupByTextCount(search, builder, group, query);
-        Predicate conditionCount = prepareFindGroupByTextCount(search, builder, groupCount, queryCount);
+        Predicate condition = prepareFindGroupByTextCount(search, builder, group, query, userId);
+        Predicate conditionCount = prepareFindGroupByTextCount(search, builder, groupCount, queryCount, userId);
 
         query.select(group);
         queryCount.select(builder.countDistinct(groupCount));
@@ -79,9 +100,11 @@ public class GroupRepositoryImpl implements GroupRepositoryCustom {
      * @param search hledaný výraz
      * @param firstResult stránkování
      * @param maxResults stránkování, pokud je -1 neomezuje se
+     * @param userId identifikátor uživatele, podle kterého filtrujeme (pokud je null, nefiltrujeme)
      * @return query
      */
-    private TypedQuery buildGroupFindQuery(final boolean dataQuery, final String search, final Integer firstResult, final Integer maxResults) {
+    private TypedQuery buildGroupFindQuery(final boolean dataQuery, final String search, final Integer firstResult,
+                                           final Integer maxResults, final Integer userId) {
         StringBuilder conds = new StringBuilder();
 
         StringBuilder query = new StringBuilder();
@@ -126,9 +149,9 @@ public class GroupRepositoryImpl implements GroupRepositoryCustom {
     }
 
     @Override
-    public FilteredResult<UsrGroup> findGroupWithFundCreateByTextCount(final String search, final Integer firstResult, final Integer maxResults) {
-        TypedQuery data = buildGroupFindQuery(true, search, firstResult, maxResults);
-        TypedQuery count = buildGroupFindQuery(false, search, firstResult, maxResults);
+    public FilteredResult<UsrGroup> findGroupWithFundCreateByTextCount(final String search, final Integer firstResult, final Integer maxResults, final Integer userId) {
+        TypedQuery data = buildGroupFindQuery(true, search, firstResult, maxResults, userId);
+        TypedQuery count = buildGroupFindQuery(false, search, firstResult, maxResults, userId);
         return new FilteredResult<>(firstResult, maxResults, ((Number) count.getSingleResult()).longValue(), data.getResultList());
     }
 }

@@ -74,7 +74,7 @@ public class UsrGroupUser {
      */
     public void setGroup(final UsrGroup group) {
         this.group = group;
-        this.groupId = group.getGroupId();
+        this.groupId = group == null ? null : group.getGroupId();
     }
 
     /**
@@ -89,6 +89,6 @@ public class UsrGroupUser {
      */
     public void setUser(final UsrUser user) {
         this.user = user;
-        this.userId = user.getUserId();
+        this.userId = user == null ? null : user.getUserId();
     }
 }

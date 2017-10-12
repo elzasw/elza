@@ -17,6 +17,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Subquery;
 
+import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import org.apache.commons.lang.StringUtils;
 
@@ -43,7 +44,8 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
             final CriteriaBuilder builder,
             final Root<UsrUser> user,
             final Integer excludedGroupId,
-            final CriteriaQuery<T> query) {
+            final CriteriaQuery<T> query,
+            final Integer userId) {
         Join<UsrUser, ParParty> party = user.join(UsrUser.PARTY, JoinType.INNER);
         Join<ParParty, RegRecord> record = party.join(ParParty.RECORD, JoinType.INNER);
         List<Predicate> conditions = new ArrayList<>();
@@ -66,6 +68,21 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
             conditions.add(builder.and(builder.not(builder.in(user.get(UsrUser.USER_ID)).value(subquery))));
         }
 
+        if (userId != null) {
+            final Subquery<UsrUser> subquery = query.subquery(UsrUser.class);
+            final Root<UsrPermission> permissionUserSubq = subquery.from(UsrPermission.class);
+            subquery.select(permissionUserSubq.get(UsrPermission.USER_CONTROL_ID));
+
+            final Subquery<UsrGroup> subsubquery = subquery.subquery(UsrGroup.class);
+            final Root<UsrGroupUser> groupUserSubq = subsubquery.from(UsrGroupUser.class);
+            subsubquery.select(groupUserSubq.get(UsrGroupUser.GROUP_ID));
+            subsubquery.where(builder.equal(groupUserSubq.get(UsrGroupUser.USER_ID), userId));
+
+            subquery.where(builder.or(builder.equal(permissionUserSubq.get(UsrPermission.USER_ID), userId), builder.in(permissionUserSubq.get(UsrPermission.GROUP_ID)).value(subsubquery)));
+
+            conditions.add(builder.and(builder.in(user.get(UsrUser.USER_ID)).value(subquery)));
+        }
+
         // Status
         List<Predicate> statusConditions = new ArrayList<>();
         if (active) {
@@ -80,7 +97,13 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
     }
 
     @Override
-    public FilteredResult<UsrUser> findUserByTextAndStateCount(final String search, final Boolean active, final Boolean disabled, final Integer firstResult, final Integer maxResults, final Integer excludedGroupId) {
+    public FilteredResult<UsrUser> findUserByTextAndStateCount(final String search,
+                                                               final Boolean active,
+                                                               final Boolean disabled,
+                                                               final Integer firstResult,
+                                                               final Integer maxResults,
+                                                               final Integer excludedGroupId,
+                                                               final Integer userId) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 
         CriteriaQuery<UsrUser> query = builder.createQuery(UsrUser.class);
@@ -89,8 +112,8 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         Root<UsrUser> user = query.from(UsrUser.class);
         Root<UsrUser> userCount = queryCount.from(UsrUser.class);
 
-        Predicate condition = prepareFindUserByTextAndStateCount(search, active, disabled, builder, user, excludedGroupId, query);
-        Predicate conditionCount = prepareFindUserByTextAndStateCount(search, active, disabled, builder, userCount, excludedGroupId, queryCount);
+        Predicate condition = prepareFindUserByTextAndStateCount(search, active, disabled, builder, user, excludedGroupId, query, userId);
+        Predicate conditionCount = prepareFindUserByTextAndStateCount(search, active, disabled, builder, userCount, excludedGroupId, queryCount, userId);
 
         query.select(user);
         queryCount.select(builder.countDistinct(userCount));
@@ -123,9 +146,10 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
      * @param firstResult stránkování
      * @param maxResults stránkování, pokud je -1 neomezuje se
      * @param excludedGroupId z jaké skupiny uživatele nechceme
+     * @param userId identifikátor uživatele, podle kterého filtrujeme (pokud je null, nefiltrujeme)
      * @return query
      */
-    private TypedQuery buildUserFindQuery(final boolean dataQuery, final String search, final Boolean active, final Boolean disabled, final Integer firstResult, final Integer maxResults, final Integer excludedGroupId) {
+    private TypedQuery buildUserFindQuery(final boolean dataQuery, final String search, final Boolean active, final Boolean disabled, final Integer firstResult, final Integer maxResults, final Integer excludedGroupId, final Integer userId) {
         StringBuilder conds = new StringBuilder();
 
         StringBuilder query = new StringBuilder();
@@ -202,9 +226,9 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
     }
 
     @Override
-    public FilteredResult<UsrUser> findUserWithFundCreateByTextAndStateCount(final String search, final Boolean active, final Boolean disabled, final Integer firstResult, final Integer maxResults, final Integer excludedGroupId) {
-        TypedQuery data = buildUserFindQuery(true, search, active, disabled, firstResult, maxResults, excludedGroupId);
-        TypedQuery count = buildUserFindQuery(false, search, active, disabled, firstResult, maxResults, excludedGroupId);
+    public FilteredResult<UsrUser> findUserWithFundCreateByTextAndStateCount(final String search, final Boolean active, final Boolean disabled, final Integer firstResult, final Integer maxResults, final Integer excludedGroupId, final Integer userId) {
+        TypedQuery data = buildUserFindQuery(true, search, active, disabled, firstResult, maxResults, excludedGroupId, userId);
+        TypedQuery count = buildUserFindQuery(false, search, active, disabled, firstResult, maxResults, excludedGroupId, userId);
         return new FilteredResult<>(firstResult, maxResults, ((Number)count.getSingleResult()).longValue(), data.getResultList());
     }
 }

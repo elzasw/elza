@@ -24,6 +24,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class UsrPermission {
 
+    public static final String USER_ID = "userId";
+    public static final String GROUP_ID = "groupId";
+    public static final String USER_CONTROL_ID = "userControlId";
+    public static final String GROUP_CONTROL_ID = "groupControlId";
+
     @Id
     @GeneratedValue
     private Integer permissionId;
@@ -39,6 +44,12 @@ public class UsrPermission {
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = UsrGroup.class)
     @JoinColumn(name = "groupId")
     private UsrGroup group;
+
+    @Column(name = "groupId", updatable = false, insertable = false)
+    private Integer groupId;
+
+    @Column(name = "userId", updatable = false, insertable = false)
+    private Integer userId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFund.class)
     @JoinColumn(name = "fundId")

@@ -13,16 +13,18 @@ public interface GroupRepositoryCustom {
      * @param search      hledaný text
      * @param firstResult od jakého záznamu
      * @param maxResults  maximální počet vrácených záznamů
+     * @param userId      identifikátor uživatele, podle kterého filtrujeme (pokud je null, nefiltrujeme)
      * @return výsledky hledání
      */
-    FilteredResult<UsrGroup> findGroupByTextCount(String search, Integer firstResult, Integer maxResults);
+    FilteredResult<UsrGroup> findGroupByTextCount(String search, Integer firstResult, Integer maxResults, Integer userId);
     /**
      * Hledání skupin na základě podmínek.
      *
      * @param search      hledaný text
      * @param firstResult od jakého záznamu
      * @param maxResults  maximální počet vrácených záznamů, pokud je -1 neomezuje se
+     * @param userId      identifikátor uživatele, podle kterého filtrujeme (pokud je null, nefiltrujeme)
      * @return výsledky hledání
      */
-    FilteredResult<UsrGroup> findGroupWithFundCreateByTextCount(String search, Integer firstResult, Integer maxResults);
+    FilteredResult<UsrGroup> findGroupWithFundCreateByTextCount(String search, Integer firstResult, Integer maxResults, final Integer userId);
 }

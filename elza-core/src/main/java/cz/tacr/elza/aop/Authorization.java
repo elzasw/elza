@@ -4,6 +4,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
 
+import cz.tacr.elza.domain.UsrGroup;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.SystemException;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -68,6 +70,8 @@ public class Authorization {
                         hasPermission = true;
                     }
                     break;
+                case USER:
+                case GROUP:
                 case SCOPE:
                 case FUND:
                     for (int i = 0; i < parameters.length; i++) {
@@ -81,11 +85,6 @@ public class Authorization {
                             }
                         }
                     }
-                    break;
-                case USER:
-                case GROUP:
-                    // TODO [stanekpa] - zatím neřešíme, možná se bude řešit přímo v konkrétních metodách
-                    hasPermission = true;
                     break;
                 default:
                     throw new IllegalStateException("Permission type not defined: " + permission.getType());
@@ -141,6 +140,20 @@ public class Authorization {
                     return recordRepository.getOneCheckExist((Integer) value).getRegScope().getScopeId();
                 } else if (value instanceof IRegScope) {
                     return ((IRegScope) value).getRegScope().getScopeId();
+                }
+            }
+            case USER: {
+                if (value instanceof Integer) {
+                    return (Integer) value;
+                } else if (value instanceof UsrUser) {
+                    return ((UsrUser) value).getUserId();
+                }
+            }
+            case GROUP: {
+                if (value instanceof Integer) {
+                    return (Integer) value;
+                } else if (value instanceof UsrGroup) {
+                    return ((UsrGroup) value).getGroupId();
                 }
             }
             default:
