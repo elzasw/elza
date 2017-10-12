@@ -280,6 +280,7 @@ var messages = {
     "ribbon.action.admin.user.deactivate": "Zneplatnit účet",
     "ribbon.action.admin.user.activate": "Aktivovat",
     "ribbon.action.admin.user.passwordChange": "Změnit heslo",
+    "ribbon.action.admin.fund": "Archivní soubory",
     "ribbon.action.admin.group": "Skupiny",
     "ribbon.action.admin.group.add": "Přidat skupinu",
     "ribbon.action.admin.group.edit": "Upravit skupinu",

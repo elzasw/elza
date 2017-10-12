@@ -2,12 +2,15 @@ package cz.tacr.elza.controller;
 
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.ArrFundBaseVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.FundListCountResult;
 import cz.tacr.elza.controller.vo.UISettingsVO;
 import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
@@ -18,7 +21,9 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.UserCode;
 import cz.tacr.elza.repository.FilteredResult;
+import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -58,6 +64,12 @@ public class UserController {
 
     @Autowired
     private SettingsService settingsService;
+
+    @Autowired
+    private ArrangementController arrangementController;
+
+    @Autowired
+    private FundRepository fundRepository;
 
     /**
      * Získání oprávnění uživatele.
@@ -225,6 +237,7 @@ public class UserController {
      */
     @RequestMapping(value = "/{userId}/old", method = RequestMethod.GET)
     @Deprecated
+    // TODO [stanekpa] - ELZA-1552
     public UsrUserVO getUserOld(@PathVariable(value = "userId") final Integer userId) {
         Assert.notNull(userId, "Identifikátor uživatele musí být vyplněno");
 
@@ -284,6 +297,48 @@ public class UserController {
         FilteredResult<UsrUser> users = userService.findUserWithFundCreate(search, active, disabled, from, count, excludedGroupId);
         List<UsrUserVO> resultVo = factoryVO.createUserList(users.getList());
         return new FilteredResultVO<>(resultVo, users.getTotalCount());
+    }
+
+    /**
+     * Načtení seznamu archivních souborů, pro které může aktuální uživatel nastavovat oprávnění.
+     * @param search hledací výraz
+     * @param from počáteční záznam
+     * @param count počet vrácených záznamů
+     * @return seznam s celkovým počtem
+     */
+    @RequestMapping(value = "/controlFunds", method = RequestMethod.GET)
+    public FilteredResultVO<ArrFundBaseVO> findControlFunds(@Nullable @RequestParam(value = "search", required = false) final String search,
+                                                                  @RequestParam("from") final Integer from,
+                                                                  @RequestParam("count") final Integer count
+    ) {
+        // TODO [slapa] - ELZA-1552 doimplementovat
+        // Zatím takto špatně:
+        FundListCountResult funds = arrangementController.getFunds(search, count);
+        return new FilteredResultVO<ArrFundBaseVO>((List<ArrFundBaseVO>)(List)funds.getList(), funds.getCount());
+    }
+
+    /**
+     * Načte seznam uživatelů, kteří mají explicitně (přímo na nich) nastavené nějaké oprávnění pro daný AS.
+     * @param fundId id AS
+     * @return seznam
+     */
+    @RequestMapping(value = "/fund/{fundId}/users", method = RequestMethod.GET)
+    public List<UsrUserVO> findUsersByFund(@RequestParam(value = "fundId") final Integer fundId) {
+        ArrFund fund = fundRepository.getOneCheckExist(fundId);
+        List<UsrUser> users = userService.findUsersByFund(fund);
+        return factoryVO.createUserList(users);
+    }
+
+    /**
+     * Načte seznam skupin, kteří mají explicitně (přímo na nich) nastavené nějaké oprávnění pro daný AS.
+     * @param fundId id AS
+     * @return seznam
+     */
+    @RequestMapping(value = "/fund/{fundId}/groups", method = RequestMethod.GET)
+    public List<UsrGroupVO> findGroupsByFund(@RequestParam(value = "fundId") final Integer fundId) {
+        ArrFund fund = fundRepository.getOneCheckExist(fundId);
+        List<UsrGroup> groups = userService.findGroupsByFund(fund);
+        return factoryVO.createGroupList(groups, false, false);
     }
 
     /**

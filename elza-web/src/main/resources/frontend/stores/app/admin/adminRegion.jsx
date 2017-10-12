@@ -15,6 +15,7 @@ import {isPermissionAction} from 'actions/admin/permission.jsx'
 import DetailReducer from "shared/detail/DetailReducer";
 import * as DetailActions from "shared/detail/DetailActions";
 import processAreaStores from "../../../shared/utils/processAreaStores";
+import SimpleListReducer from "../../../shared/list/simple/SimpleListReducer";
 
 /**
  * Výchozí stav store
@@ -26,6 +27,7 @@ const initialState = {
     fulltext: fulltext(),
     user: user(),
     group: group(),
+    funds: SimpleListReducer(),
     userPermissions: DetailReducer(), // pro správu oprávnění uživatele
 };
 

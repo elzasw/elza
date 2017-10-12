@@ -865,6 +865,10 @@ export class WebApiCls {
             .then(json => ({users: json.rows, usersCount: json.count}))
     }
 
+    findControlFunds(fulltext, max = DEFAULT_LIST_SIZE) {
+        return AjaxUtils.ajaxGet(WebApiCls.userUrl + '/controlFunds', {search: fulltext, from: 0, count: max});
+    }
+
     findUserWithFundCreate(fulltext, active, disabled, max = DEFAULT_LIST_SIZE, groupId = null) {
         return AjaxUtils.ajaxGet(WebApiCls.userUrl + "/withFundCreate", {search: fulltext, active, disabled, from: 0, count: max, excludedGroupId: groupId})
             .then(json => ({users: json.rows, usersCount: json.count}))

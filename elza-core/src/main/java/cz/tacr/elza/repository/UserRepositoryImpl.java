@@ -190,9 +190,12 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 
         q.setParameter("permission", UsrPermission.Permission.FUND_CREATE);
         parameters.entrySet().forEach(e -> q.setParameter(e.getKey(), e.getValue()));
-        q.setFirstResult(firstResult);
-        if (maxResults >= 0) {
-            q.setMaxResults(maxResults);
+
+        if (dataQuery) {
+            q.setFirstResult(firstResult);
+            if (maxResults >= 0) {
+                q.setMaxResults(maxResults);
+            }
         }
 
         return q;

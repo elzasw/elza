@@ -993,12 +993,30 @@ public class UserService {
     }
 
     /**
-     * Vyhledá list uživatelů podle osoby
+     * Vyhledá list uživatelů podle osoby.
      * @param party osoba
      * @return list uživatelů
      */
     public List<UsrUser> findUsersByParty(final ParParty party) {
         return userRepository.findByParty(party);
+    }
+
+    /**
+     * Vyhledá list uživatelů podle AS.
+     * @param fund AS
+     * @return list uživatelů
+     */
+    public List<UsrUser> findUsersByFund(final ArrFund fund) {
+        return userRepository.findByFund(fund);
+    }
+
+    /**
+     * Vyhledá list uživatelů podle AS.
+     * @param fund AS
+     * @return list uživatelů
+     */
+    public List<UsrGroup> findGroupsByFund(final ArrFund fund) {
+        return groupRepository.findByFund(fund);
     }
 
     /**

@@ -1522,17 +1522,17 @@ public class ArrangementController {
                             }
                         });
             }
-        }
-        if (createFund.getAdminGroups() != null && !createFund.getAdminGroups().isEmpty()) {
-            final Set<Integer> groupIds = userService.findGroupWithFundCreate(null, 0, -1).getList().stream()
-                    .map(x -> x.getGroupId())
-                    .collect(Collectors.toSet());
-            createFund.getAdminGroups()
-                    .forEach(g -> {
-                        if (!groupIds.contains(g.getId())) {
-                            throw new BusinessException("Předaný správce (skupina) nemá oprávnení zakládat AS", ArrangementCode.ADMIN_GROUP_MISSING_FUND_CREATE_PERM).set("id", g.getId());
-                        }
-                    });
+            if (createFund.getAdminGroups() != null && !createFund.getAdminGroups().isEmpty()) {
+                final Set<Integer> groupIds = userService.findGroupWithFundCreate(null, 0, -1).getList().stream()
+                        .map(x -> x.getGroupId())
+                        .collect(Collectors.toSet());
+                createFund.getAdminGroups()
+                        .forEach(g -> {
+                            if (!groupIds.contains(g.getId())) {
+                                throw new BusinessException("Předaný správce (skupina) nemá oprávnení zakládat AS", ArrangementCode.ADMIN_GROUP_MISSING_FUND_CREATE_PERM).set("id", g.getId());
+                            }
+                        });
+            }
         }
 
         // Oprávnění na uživatele a skupiny

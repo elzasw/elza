@@ -94,6 +94,12 @@ class Ribbon extends AbstractReactComponent {
                                 <span className="btnText">{i18n('ribbon.action.admin.group')}</span>
                             </Button>
                         </LinkContainer>
+                        <LinkContainer key="ribbon-btn-admin-funds" to="/admin/fund">
+                            <Button>
+                                <Icon glyph="fa-database"/>
+                                <span className="btnText">{i18n('ribbon.action.admin.fund')}</span>
+                            </Button>
+                        </LinkContainer>
                         <LinkContainer key="ribbon-btn-admin-packages" to="/admin/packages">
                             <Button>
                                 <Icon glyph="fa-archive"/>
