@@ -32,14 +32,6 @@ import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.DescItemRepository;
-import org.apache.commons.lang.BooleanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Hromadná akce prochází strom otevřené verze archivní pomůcky a doplňuje u položek požadované atributy.
@@ -213,23 +205,30 @@ public class UnitIdBulkAction extends BulkAction {
                     unitId.genNext();
                 }
 
+				ArrDataUnitid dataUnitId;
                 // vytvoření nového atributu
                 if (descItem == null) {
                     descItem = new ArrDescItem();
                     descItem.setItemType(descItemType);
                     descItem.setNode(level.getNode());
-                    descItem.setData(new ArrDataUnitid());
-                }
+					dataUnitId = new ArrDataUnitid();
+					descItem.setData(dataUnitId);
+				} else if (descItem.isUndefined()) {
+					// create new value if not exists
+					dataUnitId = new ArrDataUnitid();
+					descItem.setData(dataUnitId);
+				} else {
+					ArrData data = descItem.getData();
 
-                ArrData data = descItem.getData();
+					if (!(data instanceof ArrDataUnitid)) {
+						throw new IllegalStateException(descItemType.getCode() + " neni typu ArrDescItemUnitid");
+					}
 
-                if (!(data instanceof ArrDataUnitid)) {
-                    throw new IllegalStateException(descItemType.getCode() + " neni typu ArrDescItemUnitid");
+					dataUnitId = (ArrDataUnitid) data;
                 }
 
                 // uložit pouze při rozdílu
-                if (((ArrDataUnitid) data).getValue() == null || !unitId.getData()
-                        .equals(((ArrDataUnitid) data).getValue())) {
+				if (dataUnitId.getValue() == null || !unitId.getData().equals(dataUnitId.getValue())) {
 
                     ArrDescItem ret;
 
@@ -254,11 +253,8 @@ public class UnitIdBulkAction extends BulkAction {
 
                     }
 
-					if (descItem.getUndefined()) {
-                        descItem.setUndefined(false);
-                    } else {
-                        ((ArrDataUnitid) data).setValue(unitId.getData());
-                    }
+					dataUnitId.setValue(unitId.getData());
+
                     ret = saveDescItem(descItem, version, change);
                     level.setNode(ret.getNode());
                     countChanges++;

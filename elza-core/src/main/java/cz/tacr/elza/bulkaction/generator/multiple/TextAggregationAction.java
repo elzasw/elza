@@ -17,16 +17,11 @@ import cz.tacr.elza.bulkaction.generator.result.TextAggregationActionResult;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrItem;
-import org.apache.commons.lang.BooleanUtils;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Akce na agregaci textových hodnot.
@@ -94,7 +89,7 @@ public class TextAggregationAction extends Action {
 			if (itemType != null) {
                 ArrData data = item.getData();
 
-				if (item.getUndefined()) {
+				if (item.isUndefined()) {
 					// skip if not defined
 					continue;
                 }
@@ -103,13 +98,13 @@ public class TextAggregationAction extends Action {
                 switch(itemType.getDataType())
                 {
 				case STRING:
-					value = ((ArrDataString) itemData).getValue();
+					value = ((ArrDataString) data).getValue();
 					break;
 				case TEXT:
-					value = (((ArrDataText) itemData).getValue());
+					value = (((ArrDataText) data).getValue());
                 	break;
 				case FORMATTED_TEXT:
-					value = (((ArrItemFormattedText) itemData).getValue());
+					value = (((ArrDataText) data).getValue());
 					break;
 				default:
 					throw new IllegalStateException(

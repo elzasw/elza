@@ -256,7 +256,6 @@ public abstract class ArrItem implements NodeCacheSerializable {
 
     public ArrData getData() {
         return data;
-		}
     }
 
     public void setData(final ArrData data) {

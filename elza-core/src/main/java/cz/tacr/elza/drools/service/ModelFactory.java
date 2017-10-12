@@ -7,10 +7,10 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataPacketRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItemInt;
-import cz.tacr.elza.domain.ArrItemPacketRef;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulItemType;
@@ -39,7 +39,7 @@ public class ModelFactory {
         item.setType(descItem.getItemType().getCode());
         item.setSpecCode(descItem.getItemSpec() == null ? null : descItem.getItemSpec().getCode());
         item.setDataType(descItem.getItemType().getDataType().getCode());
-        item.setUndefined(BooleanUtils.isTrue(descItem.isUndefined()));
+		item.setUndefined(descItem.isUndefined());
         return item;
     }
 

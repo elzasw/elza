@@ -20,9 +20,10 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItemInt;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemType;
@@ -139,27 +140,32 @@ public class SerialNumberBulkAction extends BulkAction {
         ArrDescItem descItem = loadDescItem(currNode);
         int sn = serialNumber.getNext();
 
+		ArrDataInteger item;
+
         // vytvoření nového atributu
         if (descItem == null) {
             descItem = new ArrDescItem();
             descItem.setItemType(descItemType);
             descItem.setNode(currNode);
-            descItem.setData(new ArrDataInteger());
+			item = new ArrDataInteger();
+			descItem.setData(item);
+		} else if (descItem.isUndefined()) {
+			item = new ArrDataInteger();
+			descItem.setData(item);
+		} else {
+			ArrData data = descItem.getData();
+			if (!(data instanceof ArrDataInteger)) {
+				throw new BusinessException(descItemType.getCode() + " není typu ArrDescItemInt",
+				        BaseCode.PROPERTY_HAS_INVALID_TYPE)
+				                .set("property", descItemType.getCode())
+				                .set("expected", "ArrItemInt")
+				                .set("actual", descItem.getData().getClass().getSimpleName());
+			}
+			item = (ArrDataInteger) data;
         }
-
-        if (!(descItem.getData() instanceof ArrDataInteger)) {
-            throw new BusinessException(descItemType.getCode() + " není typu ArrDescItemInt", BaseCode.PROPERTY_HAS_INVALID_TYPE)
-                    .set("property", descItemType.getCode())
-                    .set("expected", "ArrItemInt")
-                    .set("actual", descItem.getData().getClass().getSimpleName());
-        }
-
-        ArrDataInteger item = (ArrDataInteger) descItem.getData();
 
         // uložit pouze při rozdílu
-		if (item.getValue() == null || sn != item.getValue() || descItem.getUndefined()) {
-            //TODO: asi zde nema byt set..
-            descItem.setUndefined(false);
+		if (item.getValue() == null || sn != item.getValue()) {
             item.setValue(sn);
             ArrDescItem ret = saveDescItem(descItem, version, change);
             level.setNode(ret.getNode());

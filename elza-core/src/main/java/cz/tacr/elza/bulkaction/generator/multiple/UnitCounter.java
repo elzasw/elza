@@ -11,9 +11,10 @@ import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataPacketRef;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrItemInt;
-import cz.tacr.elza.domain.ArrItemPacketRef;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulPacketType;
@@ -116,7 +117,8 @@ public class UnitCounter {
 				if (!itemCount.getItemTypeId().equals(item.getItemTypeId())) {
 					continue;
 				}
-				Integer vCnt = ((ArrItemInt) item.getItem()).getValue();
+				ArrData data = item.getData();
+				Integer vCnt = ((ArrDataInteger) data).getValue();
 				defaultCount = vCnt;
 			}
 		}
@@ -132,7 +134,7 @@ public class UnitCounter {
 				int count = defaultCount;
 				// read count from int value
 				if (itemType.getDataType() == DataType.INT) {
-					Integer vCnt = ((ArrItemInt) item.getItem()).getValue();
+					Integer vCnt = ((ArrDataInteger) item.getData()).getValue();
 					count = vCnt;
 				}
 				// get mapping
@@ -150,7 +152,7 @@ public class UnitCounter {
 					continue;
 				}
 
-				ArrPacket packet = ((ArrItemPacketRef) item.getItem()).getPacket();
+				ArrPacket packet = ((ArrDataPacketRef) item.getData()).getPacket();
 				Integer packetId = packet.getPacketId();
 				if (!countedObjects.contains(packetId)) {
 					//TODO: change to id getter - object not needed

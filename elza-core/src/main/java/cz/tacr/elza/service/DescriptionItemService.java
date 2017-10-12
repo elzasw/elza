@@ -718,15 +718,9 @@ public class DescriptionItemService {
      */
     private void copyDescItemData(final ArrDescItem descItemFrom, final ArrDescItem descItemTo) {
 		if (!descItemFrom.isUndefined()) {
-            List<ArrData> dataList = dataRepository..findByItem(descItemFrom);
-
-            if (dataList.size() != 1) {
-                throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
-            }
-
-            ArrData data = dataList.get(0);
-            ArrData dataNew = createCopyDescItemData(data, descItemTo);
-            dataRepository.save(dataNew);
+			ArrData data = descItemFrom.getData();
+			ArrData dataNew = createCopyDescItemData(data, descItemTo);
+			dataRepository.save(dataNew);
         }
     }
 

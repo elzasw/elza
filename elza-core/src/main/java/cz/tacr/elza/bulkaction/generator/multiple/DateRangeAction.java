@@ -12,17 +12,12 @@ import cz.tacr.elza.bulkaction.generator.result.DateRangeActionResult;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import org.apache.commons.lang.BooleanUtils;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.Set;
 
 /**
  * Akce na zjištění rozsahu datací.

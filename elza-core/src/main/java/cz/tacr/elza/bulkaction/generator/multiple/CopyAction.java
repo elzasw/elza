@@ -18,19 +18,10 @@ import cz.tacr.elza.bulkaction.generator.result.CopyActionResult;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Akce pro kopírování hodnot atributů.
@@ -94,8 +85,8 @@ public class CopyAction extends Action {
 	 * @return
 	 */
 	private boolean isSpecificationUsed(Integer itemSpecId) {
-		for (ArrItemData dataItem : dataItems) {
-			RulItemSpec spec = dataItem.getSpec();
+		for (ArrDescItem dataItem : dataItems) {
+			RulItemSpec spec = dataItem.getItemSpec();
 			Integer currSpecd = null;
 			if (spec != null) {
 				currSpecd = spec.getItemSpecId();
@@ -118,7 +109,7 @@ public class CopyAction extends Action {
 				continue;
 			}
 			// skip undefined items
-			if (item.getUndefined()) {
+			if (item.isUndefined()) {
 				continue;
 			}
 			// check if exists
@@ -130,13 +121,15 @@ public class CopyAction extends Action {
 			}
 
 			// Copy item
-			ArrItemData itemData = item.getItem();
+			// TODO: Ma zde byt?, nutno overit
+			/*
+			ArrData itemData = item.getData();
 			if (itemData == null) {
 				itemData = descItemFactory.createItemByType(item.getItemType().getDataType());
-            }
+			}
 			itemData.setSpec(item.getItemSpec());
-			itemData.setUndefined(item.getUndefined());
-			dataItems.add(itemData);
+			*/
+			dataItems.add(item);
         }
 	}
 
