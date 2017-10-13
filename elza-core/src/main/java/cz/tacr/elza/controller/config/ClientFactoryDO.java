@@ -13,7 +13,6 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.filter.condition.UndefinedDescItemCondition;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -105,6 +104,7 @@ import cz.tacr.elza.filter.condition.SelectedSpecificationsDescItemEnumCondition
 import cz.tacr.elza.filter.condition.SelectedValuesDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.SelectsNothingCondition;
 import cz.tacr.elza.filter.condition.SubsetDescItemCondition;
+import cz.tacr.elza.filter.condition.UndefinedDescItemCondition;
 import cz.tacr.elza.filter.condition.UnselectedSpecificationsDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.UnselectedValuesDescItemEnumCondition;
 import cz.tacr.elza.repository.CalendarTypeRepository;
@@ -305,8 +305,8 @@ public class ClientFactoryDO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrItemData item = mapper.map(descItemVO, ArrItemData.class);
         ArrDescItem descItem = new ArrDescItem(item);
-        BeanUtils.copyProperties(descItemVO, descItem);
-        descItem.setItemId(descItemVO.getId());
+		// Copy properties to application object
+		descItemVO.fill(descItem);
 
         if (descItemVO.getDescItemSpecId() != null) {
             RulItemSpec descItemSpec = itemSpecRepository.findOne(descItemVO.getDescItemSpecId());
