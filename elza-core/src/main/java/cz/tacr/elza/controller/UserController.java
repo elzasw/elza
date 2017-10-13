@@ -300,6 +300,7 @@ public class UserController {
 
     /**
      * Načtení seznamu archivních souborů, pro které může aktuální uživatel nastavovat oprávnění.
+     *
      * @param search hledací výraz
      * @param from počáteční záznam
      * @param count počet vrácených záznamů
@@ -307,13 +308,11 @@ public class UserController {
      */
     @RequestMapping(value = "/controlFunds", method = RequestMethod.GET)
     public FilteredResultVO<ArrFundBaseVO> findControlFunds(@Nullable @RequestParam(value = "search", required = false) final String search,
-                                                                  @RequestParam("from") final Integer from,
-                                                                  @RequestParam("count") final Integer count
+                                                            @RequestParam("from") final Integer from,
+                                                            @RequestParam("count") final Integer count
     ) {
-        // TODO [slapa] - ELZA-1552 doimplementovat
-        // Zatím takto špatně:
-        FundListCountResult funds = arrangementController.getFunds(search, count);
-        return new FilteredResultVO<ArrFundBaseVO>((List<ArrFundBaseVO>)(List)funds.getList(), funds.getCount());
+        FilteredResult<ArrFund> funds = userService.findFundsWithPermissions(search, from, count);
+        return new FilteredResultVO<>(factoryVO.createSimpleEntity(funds.getList(), ArrFundBaseVO.class), funds.getTotalCount());
     }
 
     /**

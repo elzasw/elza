@@ -119,6 +119,22 @@ public class UserService {
                 });
     }
 
+    /**
+     * Vyhledá AS na které jsou vázaná nějaká oprávnění.
+     *
+     * @param search      hledané řetězec
+     * @param firstResult od jakého záznamu
+     * @param maxResults  maximální počet vrácených záznamů
+     * @return výsledek
+     */
+    public FilteredResult<ArrFund> findFundsWithPermissions(final String search,
+                                                            final Integer firstResult,
+                                                            final Integer maxResults) {
+        boolean filterByUser = !hasPermission(UsrPermission.Permission.USR_PERM);
+        UsrUser user = getLoggedUser();
+        return fundRepository.findFundsWithPermissions(search, firstResult, maxResults, filterByUser && user != null ? user.getUserId() : null);
+    }
+
     private enum ChangePermissionType {
         SYNCHRONIZE,
         ADD,
