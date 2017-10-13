@@ -28,8 +28,11 @@ public interface PacketRepository extends JpaRepository<ArrPacket, Integer>, Pac
     @Query("SELECT p FROM arr_packet p WHERE p.fund = :fund AND p.state IN :states")
     List<ArrPacket> findByFund(@Param("fund") ArrFund fund, @Param("states") Collection<ArrPacket.State> states);
 
-    @Query("SELECT p FROM arr_packet p WHERE p.fund = :fund AND upper(p.storageNumber) LIKE CONCAT(upper(:prefix), '%') AND p.state = :state ORDER BY p.storageNumber ASC")
+	@Query("SELECT p FROM arr_packet p LEFT JOIN p.packetType pt WHERE p.fund = :fund AND upper(p.storageNumber) LIKE CONCAT(upper(:prefix), '%') AND p.state = :state ORDER BY p.storageNumber, pt.name, p.packetId")
     List<ArrPacket> findPackets(@Param("fund") ArrFund fund, @Param("prefix") String prefix, @Param("state") ArrPacket.State state);
+
+	@Query("SELECT p FROM arr_packet p LEFT JOIN p.packetType pt WHERE p.fund = :fund AND p.packetId IN :nodeIds ORDER BY p.storageNumber, pt.name, p.packetId")
+	List<ArrPacket> findPackets(@Param("fund") ArrFund fund, @Param("nodeIds") List<Integer> nodeIds);
 
     @Modifying
     @Query("DELETE FROM arr_packet p WHERE p.fund = :fund AND p.packetId IN :nodeIds")
@@ -40,8 +43,5 @@ public interface PacketRepository extends JpaRepository<ArrPacket, Integer>, Pac
 
     @Query("SELECT p.storageNumber FROM arr_packet p WHERE p.fund = :fund AND p.state IN :states")
     List<String> findStorageNumbers(@Param("fund") ArrFund fund, @Param("states") List<ArrPacket.State> states);
-
-    @Query("SELECT p FROM arr_packet p WHERE p.fund = :fund AND p.packetId IN :nodeIds")
-    List<ArrPacket> findPackets(@Param("fund") ArrFund fund, @Param("nodeIds") List<Integer> nodeIds);
 
 }

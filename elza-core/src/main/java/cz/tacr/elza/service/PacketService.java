@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -122,7 +123,7 @@ public class PacketService {
                                            final Integer lenNumber,
                                            final Integer count,
                                            final Integer[] packetIds) {
-        Assert.notNull(fund);
+		Validate.notNull(fund);
         String prefixFinal = StringUtils.isEmpty(prefix) ? "" : prefix;
 
         if (count <= 0
@@ -145,24 +146,30 @@ public class PacketService {
                 storageNumbers.add(storageNumber);
                 packet.setStorageNumber(storageNumber);
                 packets.add(packet);
-            }
-            packetRepository.save(packets);
+			}
         } else {
 
+			// load packets from DB
             ObjectListIterator<Integer> nodeIdsIterator = new ObjectListIterator<>(Arrays.asList(packetIds));
             while (nodeIdsIterator.hasNext()) {
-                packets.addAll(packetRepository.findPackets(fund, nodeIdsIterator.next()));
+				List<ArrPacket> partialResult = packetRepository.findPackets(fund, nodeIdsIterator.next());
+				packets.addAll(partialResult);
             }
 
-            for (int i = 0; i < packets.size(); i++) {
-                ArrPacket packet = packets.get(i);
+			// Validate size of the result
+			Validate.isTrue(packets.size() == packetIds.length);
+
+			// modify storage id
+			int i = 0;
+			for (ArrPacket packet : packets) {
                 packet.setPacketType(packetType);
                 String storageNumber = createAndCheckStorageNumber(prefixFinal, lenNumber, storageNumbers, fromNumber + i);
                 storageNumbers.add(storageNumber);
                 packet.setStorageNumber(storageNumber);
+				i++;
             }
-            packetRepository.save(packets);
         }
+		packetRepository.save(packets);
 
         EventId event = EventFactory
                 .createIdEvent(EventType.PACKETS_CHANGE, fund.getFundId());
