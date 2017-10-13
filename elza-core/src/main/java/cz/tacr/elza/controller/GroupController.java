@@ -5,11 +5,9 @@ import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
-import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.service.SettingsService;
@@ -161,7 +159,7 @@ public class GroupController {
                                               @RequestBody final List<UsrPermissionVO> permissions) {
         UsrGroup group = userService.getGroup(groupId);
         List<UsrPermission> usrPermissions = factoryDO.createPermissionList(permissions);
-        List<UsrPermission> result = userService.addGroupPermission(group, usrPermissions);
+        List<UsrPermission> result = userService.addGroupPermission(group, usrPermissions, true);
         return factoryVO.createPermissionList(result, UsrGroup.class);
     }
 

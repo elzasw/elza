@@ -121,6 +121,11 @@ public class GroupRepositoryImpl implements GroupRepositoryCustom {
             parameters.put("search", "%" + search.toLowerCase() + "%");
         }
 
+        if (userId != null) {
+            conds.append(" AND g.groupId IN (SELECT p.groupControlId FROM usr_permission p WHERE p.userId = :userId OR p.groupId IN (SELECT gu.groupId FROM usr_group_user gu WHERE gu.userId = :userId))");
+            parameters.put("userId", userId);
+        }
+
         // Připojení podmínek ke query
         if (conds.length() > 0) {
             query.append(conds.toString());

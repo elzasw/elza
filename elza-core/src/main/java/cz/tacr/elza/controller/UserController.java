@@ -23,7 +23,6 @@ import cz.tacr.elza.exception.codes.UserCode;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.security.UserDetail;
-import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -385,7 +384,7 @@ public class UserController {
                                      @RequestBody final List<UsrPermissionVO> permissions) {
         UsrUser user = userService.getUser(userId);
         List<UsrPermission> usrPermissions = factoryDO.createPermissionList(permissions);
-        List<UsrPermission> result = userService.addUserPermission(user, usrPermissions);
+        List<UsrPermission> result = userService.addUserPermission(user, usrPermissions, true);
         return factoryVO.createPermissionList(result, UsrUser.class);
     }
 

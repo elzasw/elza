@@ -58,7 +58,7 @@ class HomePage extends AbstractReactComponent {
         this.dispatch(modalDialogShow(
             this,
             i18n('arr.fund.title.add'),
-            <FundForm create onSubmitForm={(data) => {this.dispatch(createFund(data))}}/>
+            <FundForm create onSubmitForm={(data) => {return this.dispatch(createFund(data))}}/>
         ));
     };
 

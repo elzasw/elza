@@ -1548,7 +1548,7 @@ public class ArrangementController {
                             perm.setPermission(permission);
                             usrPermissions.add(perm);
                         }
-                        userService.addUserPermission(user, usrPermissions);
+                        userService.addUserPermission(user, usrPermissions, false);
                     });
         }
         if (createFund.getAdminGroups() != null && !createFund.getAdminGroups().isEmpty()) {
@@ -1563,7 +1563,7 @@ public class ArrangementController {
                             perm.setPermission(permission);
                             usrPermissions.add(perm);
                         }
-                        userService.addGroupPermission(group, usrPermissions);
+                        userService.addGroupPermission(group, usrPermissions, false);
                     });
         }
 

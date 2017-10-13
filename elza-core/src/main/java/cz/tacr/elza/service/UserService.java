@@ -129,15 +129,17 @@ public class UserService {
                                                  final UsrGroup group,
                                                  final @NotNull List<UsrPermission> permissions,
                                                  final @NotNull List<UsrPermission> permissionsDB,
-                                                 final @NotNull ChangePermissionType changePermissionType
-    ) {
+                                                 final @NotNull ChangePermissionType changePermissionType,
+                                                 final boolean checkPermission) {
         Map<Integer, UsrPermission> permissionMap = permissionsDB.stream()
                 .collect(Collectors.toMap(UsrPermission::getPermissionId, Function.identity()));
 
         List<UsrPermission> permissionsAdd = new ArrayList<>();
         List<UsrPermission> permissionsUpdate = new ArrayList<>();
 
-        checkPermission(permissions);
+        if (checkPermission) {
+            checkPermission(permissions);
+        }
 
         for (UsrPermission permission : permissions) {
             if (permission.getPermissionId() == null) {
@@ -372,7 +374,7 @@ public class UserService {
     public void changeGroupPermission(@AuthParam(type = AuthParam.Type.GROUP) @NotNull final UsrGroup group,
                                       @NotNull final List<UsrPermission> permissions) {
         List<UsrPermission> permissionsDB = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
-        changePermission(null, group, permissions, permissionsDB, ChangePermissionType.SYNCHRONIZE);
+        changePermission(null, group, permissions, permissionsDB, ChangePermissionType.SYNCHRONIZE, true);
         changeGroupEvent(group);
     }
 
@@ -380,16 +382,16 @@ public class UserService {
     public void changeUserPermission(@AuthParam(type = AuthParam.Type.USER) @NotNull final UsrUser user,
                                      @NotNull final List<UsrPermission> permissions) {
         List<UsrPermission> permissionsDB = permissionRepository.findByUserOrderByPermissionIdAsc(user);
-        changePermission(user, null, permissions, permissionsDB, ChangePermissionType.SYNCHRONIZE);
+        changePermission(user, null, permissions, permissionsDB, ChangePermissionType.SYNCHRONIZE, true);
         invalidateCache(user);
         changeUserEvent(user);
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITITY})
     public List<UsrPermission> addUserPermission(@AuthParam(type = AuthParam.Type.USER) @NotNull final UsrUser user,
-                                                 @NotNull final List<UsrPermission> permissions) {
+                                                 @NotNull final List<UsrPermission> permissions, final boolean checkPermission) {
         List<UsrPermission> permissionsDB = permissionRepository.findByUserOrderByPermissionIdAsc(user);
-        List<UsrPermission> result = changePermission(user, null, permissions, permissionsDB, ChangePermissionType.ADD);
+        List<UsrPermission> result = changePermission(user, null, permissions, permissionsDB, ChangePermissionType.ADD, checkPermission);
         invalidateCache(user);
         changeUserEvent(user);
         return result;
@@ -397,9 +399,9 @@ public class UserService {
 
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.GROUP_CONTROL_ENTITITY})
     public List<UsrPermission> addGroupPermission(@AuthParam(type = AuthParam.Type.GROUP) @NotNull final UsrGroup group,
-                                                  @NotNull final List<UsrPermission> permissions) {
+                                                  @NotNull final List<UsrPermission> permissions, final boolean checkPermission) {
         List<UsrPermission> permissionsDB = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
-        List<UsrPermission> result = changePermission(null, group, permissions, permissionsDB, ChangePermissionType.ADD);
+        List<UsrPermission> result = changePermission(null, group, permissions, permissionsDB, ChangePermissionType.ADD, checkPermission);
         invalidateCache(group);
         changeGroupEvent(group);
         return result;
@@ -409,7 +411,7 @@ public class UserService {
     public void deleteUserPermission(@AuthParam(type = AuthParam.Type.USER) @NotNull final UsrUser user,
                                      @NotNull final List<UsrPermission> permissions) {
         List<UsrPermission> permissionsDB = permissionRepository.findByUserOrderByPermissionIdAsc(user);
-        changePermission(user, null, permissions, permissionsDB, ChangePermissionType.DELETE);
+        changePermission(user, null, permissions, permissionsDB, ChangePermissionType.DELETE, true);
         invalidateCache(user);
         changeUserEvent(user);
     }
@@ -418,7 +420,7 @@ public class UserService {
     public void deleteGroupPermission(@AuthParam(type = AuthParam.Type.GROUP) @NotNull final UsrGroup group,
                                       @NotNull final List<UsrPermission> permissions) {
         List<UsrPermission> permissionsDB = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
-        changePermission(null, group, permissions, permissionsDB, ChangePermissionType.DELETE);
+        changePermission(null, group, permissions, permissionsDB, ChangePermissionType.DELETE, true);
         invalidateCache(group);
         changeGroupEvent(group);
     }
@@ -961,10 +963,6 @@ public class UserService {
      * @return výsledky hledání
      */
     public FilteredResult<UsrUser> findUserWithFundCreate(final String search, final Boolean active, final Boolean disabled, final Integer firstResult, final Integer maxResults, final Integer excludedGroupId) {
-        if (!active && !disabled) {
-            throw new IllegalArgumentException("Musí být uveden alespoň jeden z parametrů: active, disabled.");
-        }
-
         boolean filterByUser = !hasPermission(UsrPermission.Permission.USR_PERM);
         UsrUser user = getLoggedUser();
         return userRepository.findUserWithFundCreateByTextAndStateCount(search, active, disabled, firstResult, maxResults, excludedGroupId, filterByUser && user != null ? user.getUserId() : null);

@@ -175,6 +175,12 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
             conds.append(" and (lower(u.username) like :search or lower(u.description) like :search or lower(record.record) like :search)");
             parameters.put("search", "%" + search.toLowerCase() + "%");
         }
+
+        if (userId != null) {
+            conds.append(" AND u.userId IN (SELECT p.userControlId FROM usr_permission p WHERE p.userId = :userId OR p.groupId IN (SELECT gu.groupId FROM usr_group_user gu WHERE gu.userId = :userId))");
+            parameters.put("userId", userId);
+        }
+
         StringBuilder status = new StringBuilder();
         if (active) {
             status.append("u.active = :active");
