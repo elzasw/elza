@@ -207,15 +207,15 @@ public class GroupController {
     }
 
     /**
-     * Načtení seznamu oprávnění seskupených dle skupiny, která jsou nastavena na daný AS.
+     * Načte seznam skupin, kteří mají explicitně (přímo na nich) nastavené nějaké oprávnění pro daný AS.
      * @param fundId id AS
      * @return seznam
      */
-    @RequestMapping(value = "/fund/{fundId}/permissions", method = RequestMethod.GET)
-    public List<UsrGroupVO> getGroupsPermissionsByFund(@RequestParam(value = "fundId") final Integer fundId) {
+    @RequestMapping(value = "/fund/{fundId}/groups", method = RequestMethod.GET)
+    public List<UsrGroupVO> findGroupsPermissionsByFund(@PathVariable(value = "fundId") final Integer fundId) {
         ArrFund fund = fundRepository.getOneCheckExist(fundId);
-        // TODO [slapa] - ELZA-1552 doimplementovat
-        return new ArrayList<>();
+        List<UsrGroup> groups = userService.findGroupsByFund(fund);
+        return factoryVO.createGroupList(groups, true, false);
     }
 
     /**

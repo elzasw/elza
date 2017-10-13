@@ -13,6 +13,10 @@ export function fundsFetchIfNeeded() {
     return SimpleListActions.fetchIfNeeded(AREA_ADMIN_FUNDS, null, (parent, filter) => WebApi.findControlFunds(filter.text));
 }
 
+export function fundFetchIfNeeded(id) {
+    return DetailActions.fetchIfNeeded(AREA_ADMIN_FUND, id, id => WebApi.getFundDetail(id));
+}
+
 export function selectFund(id) {
     return DetailActions.select(AREA_ADMIN_FUND, id);
 }

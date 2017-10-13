@@ -16,6 +16,10 @@ import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {renderGroupItem} from "components/admin/adminRenderUtils.jsx"
 import {fundsFilter, fundsFetchIfNeeded, selectFund} from "./../../actions/admin/fund";
 import {renderFundItem} from "../../components/admin/adminRenderUtils";
+import storeFromArea from "../../shared/utils/storeFromArea";
+import * as fund from "../../actions/admin/fund";
+import AdminRightsContainer from "../../components/admin/AdminRightsContainer";
+import FundDetail from "../../components/admin/FundDetail";
 
 class AdminFundPage extends AbstractReactComponent {
     constructor(props) {
@@ -31,6 +35,7 @@ class AdminFundPage extends AbstractReactComponent {
 
     componentDidMount() {
         this.dispatch(fundsFetchIfNeeded())
+        this.dispatch(selectFund(null))
         // this.dispatch(groupsGroupDetailFetchIfNeeded())
     }
 
@@ -64,13 +69,17 @@ class AdminFundPage extends AbstractReactComponent {
         )
     }
 
-    render() {
-        const {splitter, funds} = this.props;
+    renderFundDetail = () => {
+        return <FundDetail />
+    };
 
-        let activeIndex
-        // if (group.groupDetail.id !== null) {
-        //     activeIndex = indexById(group.groups, group.groupDetail.id)
-        // }
+    render() {
+        const {splitter, funds, fund} = this.props;
+
+        let activeIndex;
+        if (fund.id !== null) {
+            activeIndex = indexById(funds.rows, fund.id);
+        }
 
         const leftPanel = (
             <div className="fund-list-container">
@@ -91,15 +100,12 @@ class AdminFundPage extends AbstractReactComponent {
                     onSelect={this.handleSelect}
                 />}
             </div>
-        )
+        );
 
-        // const centerPanel = (
-        //     <GroupDetail
-        //         groupDetail={group.groupDetail}
-        //         groupCount={group.groups ? group.groups.length : 0}
-        //     />
-        // )
         let centerPanel;
+        if (fund.id !== null) {
+            centerPanel = this.renderFundDetail();
+        }
 
         return (
             <PageLayout
@@ -117,11 +123,12 @@ class AdminFundPage extends AbstractReactComponent {
  * Namapování state do properties.
  */
 function mapStateToProps(state) {
-    const {splitter, adminRegion} = state;
+    const {splitter} = state;
 
     return {
         splitter,
-        funds: adminRegion.funds
+        funds: storeFromArea(state, fund.AREA_ADMIN_FUNDS),
+        fund: storeFromArea(state, fund.AREA_ADMIN_FUND),
     }
 }
 

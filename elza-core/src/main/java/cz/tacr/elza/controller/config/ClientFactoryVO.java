@@ -351,11 +351,17 @@ public class ClientFactoryVO {
     /**
      * Vytvoří seznam VO.
      * @param users vstupní seznam uživatelů
+     * @param initPermissions mají se plnit oprávnění?
      * @return seznam VO
      */
-    public List<UsrUserVO> createUserList(final List<UsrUser> users) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.mapAsList(users, UsrUserVO.class);
+    public List<UsrUserVO> createUserList(final List<UsrUser> users, final boolean initPermissions) {
+        if (users == null) {
+            return null;
+        }
+
+        return users.stream()
+                .map(x -> createUser(x, initPermissions, false))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -1865,21 +1871,27 @@ public class ClientFactoryVO {
     /**
      * Vytvoří VO uživatele s návaznými daty.
      * @param user uživatel
+     * @param initPermissions mají se plnit oprávnění?
+     * @param initGroups mají se plnit skuipny?
      * @return VO
      */
-    public UsrUserVO createUser(final UsrUser user) {
+    public UsrUserVO createUser(final UsrUser user, final boolean initPermissions, final boolean initGroups) {
         // Hlavní objekt
         MapperFacade mapper = mapperFactory.getMapperFacade();
         UsrUserVO result = mapper.map(user, UsrUserVO.class);
 
         // Načtení oprávnění
+        if (initPermissions) {
 //        List<UsrPermission> permissions = permissionRepository.findByUserOrderByPermissionIdAsc(user);
-        List<UsrPermission> permissions = permissionRepository.getAllPermissionsWithGroups(user);
-        result.setPermissions(createPermissionList(permissions, UsrUser.class));
+            List<UsrPermission> permissions = permissionRepository.getAllPermissionsWithGroups(user);
+            result.setPermissions(createPermissionList(permissions, UsrUser.class));
+        }
 
         // Načtení členství ve skupinách
-        List<UsrGroup> groups = groupRepository.findByUser(user);
-        result.setGroups(createGroupList(groups, false, false));
+        if (initGroups) {
+            List<UsrGroup> groups = groupRepository.findByUser(user);
+            result.setGroups(createGroupList(groups, false, false));
+        }
 
         return result;
     }
@@ -1920,12 +1932,16 @@ public class ClientFactoryVO {
         UsrGroupVO result = mapper.map(group, UsrGroupVO.class);
 
         // Načtení oprávnění
-        List<UsrPermission> permissions = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
-        result.setPermissions(createPermissionList(permissions, UsrGroup.class));
+        if (initPermissions) {
+            List<UsrPermission> permissions = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
+            result.setPermissions(createPermissionList(permissions, UsrGroup.class));
+        }
 
         // Přiřazení uživatelé
-        List<UsrUser> users = userRepository.findByGroup(group);
-        result.setUsers(createUserList(users));
+        if (initUsers) {
+            List<UsrUser> users = userRepository.findByGroup(group);
+            result.setUsers(createUserList(users, false));
+        }
 
         return result;
     }

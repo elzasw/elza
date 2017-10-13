@@ -29,7 +29,8 @@ const initialState = {
     group: group(),
     funds: SimpleListReducer(),
     fund: DetailReducer(),
-    userPermissions: DetailReducer(), // pro správu oprávnění uživatele
+    entityPermissions: DetailReducer(), // pro správu oprávnění uživatele a skupiny - detail oprávnění, např. UsrUserVO a UsrGroupVO
+    entitiesPermissionsByFund: SimpleListReducer(), // pro správu přiřazených k AS, seznam skupin bebo uživatelů
 };
 
 export default function adminRegion(state = initialState, action = {}) {

@@ -4,7 +4,7 @@ import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, fetching} from 'components/shared';
 import * as perms from './../../actions/user/Permission.jsx';
 import storeFromArea from "../../shared/utils/storeFromArea";
-import * as userPermissions from "./../../actions/admin/userPermissions";
+import * as adminPermissions from "./../../actions/admin/adminPermissions";
 import {WebApi} from "../../actions/WebApi";
 import PermissionCheckboxsForm from "./PermissionCheckboxsForm";
 import AdminRightsContainer from "./AdminRightsContainer";
@@ -66,19 +66,19 @@ class FundsPermissionPanel extends AbstractReactComponent {
     componentDidMount() {
         const {userId, groupId} = this.props;
         if (userId) {
-            this.props.dispatch(userPermissions.fetchUser(userId));
+            this.props.dispatch(adminPermissions.fetchUser(userId));
         } else {
-            this.props.dispatch(userPermissions.fetchGroup(groupId));
+            this.props.dispatch(adminPermissions.fetchGroup(groupId));
         }
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.userPermissions.isFetching && !nextProps.userPermissions.isFetching) {
+        if (this.props.entityPermissions.isFetching && !nextProps.entityPermissions.isFetching) {
             // Mapa fundId na mapu hodnot oprávnění pro danou položku AS, pokud se jedná o položku all, má id ALL_ID
             const permFundMap = {};
             permFundMap[FundsPermissionPanel.ALL_ID] = {id: FundsPermissionPanel.ALL_ID, groupIds: {}};
 
-            nextProps.userPermissions.data.permissions.forEach(p => {
+            nextProps.entityPermissions.data.permissions.forEach(p => {
                 let id = null;
                 let permissionCode;
                 switch (p.permission) {
@@ -268,7 +268,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
 
     render() {
         const {selectedPermissionIndex, permissions} = this.state;
-        const {userPermissions} = this.props;
+        const {entityPermissions} = this.props;
 
         let permission;
         let permCodes;
@@ -299,7 +299,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
                 onChangePermission={this.changePermission}
                 labelPrefix="admin.perms.tabs.funds.perm."
                 permission={permission}
-                groups={userPermissions.data.groups}
+                groups={entityPermissions.data.groups}
                 permissionAll={permission.id !== FundsPermissionPanel.ALL_ID ? permissionAll : null}
                 permissionAllTitle="admin.perms.tabs.funds.items.fundAll"
             />}
@@ -309,7 +309,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
 
 function mapStateToProps(state) {
     return {
-        userPermissions: storeFromArea(state, userPermissions.USER_PERMISSIONS)
+        entityPermissions: storeFromArea(state, adminPermissions.ENTITY_PERMISSIONS)
     }
 }
 

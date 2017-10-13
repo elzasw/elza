@@ -5,7 +5,7 @@ import {AbstractReactComponent, Icon, i18n, fetching} from 'components/shared';
 import * as perms from './../../actions/user/Permission.jsx';
 import {HorizontalLoader} from "../shared/index";
 import storeFromArea from "../../shared/utils/storeFromArea";
-import * as userPermissions from "./../../actions/admin/userPermissions";
+import * as adminPermissions from "./../../actions/admin/adminPermissions";
 import {WebApi} from "../../actions/WebApi";
 import PermissionCheckboxsForm from "./PermissionCheckboxsForm";
 import AdminRightsContainer from "./AdminRightsContainer";
@@ -52,19 +52,19 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
     componentDidMount() {
         const {userId, groupId} = this.props;
         if (userId) {
-            this.props.dispatch(userPermissions.fetchUser(userId));
+            this.props.dispatch(adminPermissions.fetchUser(userId));
         } else {
-            this.props.dispatch(userPermissions.fetchGroup(groupId));
+            this.props.dispatch(adminPermissions.fetchGroup(groupId));
         }
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.userPermissions.isFetching && !nextProps.userPermissions.isFetching) {
+        if (this.props.entityPermissions.isFetching && !nextProps.entityPermissions.isFetching) {
             const permission = {
                 id: AdvancedPermissionPanel.ALL_ID
             };
 
-            nextProps.userPermissions.data.permissions.forEach(p => {
+            nextProps.entityPermissions.data.permissions.forEach(p => {
                 switch (p.permission) {
                     case perms.ADMIN:
                     case perms.USR_PERM:
@@ -118,7 +118,7 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
 
     render() {
         const {permission} = this.state;
-        const {onAddPermission, onDeletePermission, userPermissions} = this.props;
+        const {onAddPermission, onDeletePermission, entityPermissions} = this.props;
 
         return <AdminRightsContainer className="advanced-rights-container">
                 {permission && <PermissionCheckboxsForm
@@ -126,13 +126,13 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
                     onChangePermission={this.changePermission}
                     labelPrefix="admin.perms.tabs.advanced.perm."
                     permission={permission}
-                    groups={userPermissions.data.groups}
+                    groups={entityPermissions.data.groups}
                 />}
-                {userPermissions.fetched && <div className="controlled-entities-container">
+                {entityPermissions.fetched && <div className="controlled-entities-container">
                     <h4>{i18n("admin.perms.tabs.advanced.controller.entities.title")}</h4>
                     <ControlledEntitiesPanel
                         className="controlled-entities"
-                        permissions={userPermissions.data.permissions}
+                        permissions={entityPermissions.data.permissions}
                         onAddPermission={onAddPermission}
                         onDeletePermission={onDeletePermission}
                     />
@@ -143,7 +143,7 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
 
 function mapStateToProps(state) {
     return {
-        userPermissions: storeFromArea(state, userPermissions.USER_PERMISSIONS)
+        entityPermissions: storeFromArea(state, adminPermissions.ENTITY_PERMISSIONS)
     }
 }
 

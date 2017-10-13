@@ -7,7 +7,7 @@ import * as perms from './../../actions/user/Permission.jsx';
 import {HorizontalLoader} from "../shared/index";
 import storeFromArea from "../../shared/utils/storeFromArea";
 import {modalDialogShow, modalDialogHide} from "../../actions/global/modalDialog";
-import * as userPermissions from "./../../actions/admin/userPermissions";
+import * as adminPermissions from "./../../actions/admin/adminPermissions";
 import {WebApi} from "../../actions/WebApi";
 import PermissionCheckboxsForm from "./PermissionCheckboxsForm";
 import AdminRightsContainer from "./AdminRightsContainer";
@@ -63,21 +63,21 @@ class ScopesPermissionPanel extends AbstractReactComponent {
     componentDidMount() {
         const {userId, groupId} = this.props;
         if (userId) {
-            this.props.dispatch(userPermissions.fetchUser(userId));
+            this.props.dispatch(adminPermissions.fetchUser(userId));
         } else {
-            this.props.dispatch(userPermissions.fetchGroup(groupId));
+            this.props.dispatch(adminPermissions.fetchGroup(groupId));
         }
     }
 
     componentWillReceiveProps(nextProps) {
         const scopes = this.getScopes(nextProps.scopesData);
 
-        if (this.props.userPermissions.isFetching && !nextProps.userPermissions.isFetching) {
+        if (this.props.entityPermissions.isFetching && !nextProps.entityPermissions.isFetching) {
             // Mapa scopeId na mapu hodnot oprávnění pro danou třídu rejstříků, pokud se jedná o položku all, má id ALL_ID
             const permScopeMap = {};
             permScopeMap[ScopesPermissionPanel.ALL_ID] = {id: ScopesPermissionPanel.ALL_ID, groupIds: {}};
 
-            nextProps.userPermissions.data.permissions.forEach(p => {
+            nextProps.entityPermissions.data.permissions.forEach(p => {
                 let id = null;
                 let permissionCode;
                 switch (p.permission) {
@@ -284,7 +284,7 @@ class ScopesPermissionPanel extends AbstractReactComponent {
 
     render() {
         const {selectedPermissionIndex, permissions} = this.state;
-        const {userPermissions} = this.props;
+        const {entityPermissions} = this.props;
 
         const permission = permissions[selectedPermissionIndex];
         let permissionAll = permissions[permissions.findIndex(x => x.id === ScopesPermissionPanel.ALL_ID)];
@@ -306,7 +306,7 @@ class ScopesPermissionPanel extends AbstractReactComponent {
                 onChangePermission={this.changePermission}
                 labelPrefix="admin.perms.tabs.scopes.perm."
                 permission={permission}
-                groups={userPermissions.data.groups}
+                groups={entityPermissions.data.groups}
                 permissionAll={permission.id !== ScopesPermissionPanel.ALL_ID ? permissionAll : null}
                 permissionAllTitle="admin.perms.tabs.scopes.items.scopeAll"
             />}
@@ -316,7 +316,7 @@ class ScopesPermissionPanel extends AbstractReactComponent {
 
 function mapStateToProps(state) {
     return {
-        userPermissions: storeFromArea(state, userPermissions.USER_PERMISSIONS),
+        entityPermissions: storeFromArea(state, adminPermissions.ENTITY_PERMISSIONS),
         scopesData: state.refTables.scopesData,
     }
 }

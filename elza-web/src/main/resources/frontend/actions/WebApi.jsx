@@ -874,6 +874,14 @@ export class WebApiCls {
             .then(json => ({users: json.rows, usersCount: json.count}))
     }
 
+    findUsersPermissionsByFund(fundId) {
+        return AjaxUtils.ajaxGet(WebApiCls.userUrl + `/fund/${fundId}/users`);
+    }
+
+    findGroupsPermissionsByFund(fundId) {
+        return AjaxUtils.ajaxGet(WebApiCls.groupUrl + `/fund/${fundId}/groups`);
+    }
+
     changeUserPermission(userId, permissions) {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl + "/" + userId + '/permission', null, permissions);
     }

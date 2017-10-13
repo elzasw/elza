@@ -116,7 +116,7 @@ public class UserController {
         Assert.notNull(params, "Parametry musí být vyplněny");
 
         UsrUser user = userService.createUser(params.getUsername(), params.getPassword(), params.getPartyId());
-        return factoryVO.createUser(user);
+        return factoryVO.createUser(user, true, true);
     }
 
     /**
@@ -138,7 +138,7 @@ public class UserController {
         }
 
         user = userService.changeUser(user, params.getUsername(), params.getPassword());
-        return factoryVO.createUser(user);
+        return factoryVO.createUser(user, true, true);
     }
 
     /**
@@ -161,7 +161,7 @@ public class UserController {
         }
 
         user = userService.changePassword(user, params.getNewPassword());
-        return factoryVO.createUser(user);
+        return factoryVO.createUser(user, true, true);
     }
 
     /**
@@ -190,7 +190,7 @@ public class UserController {
         }
 
         user = userService.changePassword(user, params.getOldPassword(), params.getNewPassword());
-        return factoryVO.createUser(user);
+        return factoryVO.createUser(user, true, true);
     }
 
     /**
@@ -212,7 +212,7 @@ public class UserController {
         }
 
         user = userService.changeActive(user, active);
-        return factoryVO.createUser(user);
+        return factoryVO.createUser(user, true, true);
     }
 
     /**
@@ -226,7 +226,7 @@ public class UserController {
         Assert.notNull(userId, "Identifikátor uživatele musí být vyplněno");
 
         UsrUser user = userService.getUser(userId);
-        return factoryVO.createUser(user);
+        return factoryVO.createUser(user, true, true);
     }
 
     /**
@@ -268,7 +268,7 @@ public class UserController {
         }
 
         FilteredResult<UsrUser> users = userService.findUser(search, active, disabled, from, count, excludedGroupId);
-        List<UsrUserVO> resultVo = factoryVO.createUserList(users.getList());
+        List<UsrUserVO> resultVo = factoryVO.createUserList(users.getList(), false);
         return new FilteredResultVO<>(resultVo, users.getTotalCount());
     }
 
@@ -295,7 +295,7 @@ public class UserController {
         }
 
         FilteredResult<UsrUser> users = userService.findUserWithFundCreate(search, active, disabled, from, count, excludedGroupId);
-        List<UsrUserVO> resultVo = factoryVO.createUserList(users.getList());
+        List<UsrUserVO> resultVo = factoryVO.createUserList(users.getList(), false);
         return new FilteredResultVO<>(resultVo, users.getTotalCount());
     }
 
@@ -318,39 +318,15 @@ public class UserController {
     }
 
     /**
-     * Načtení seznamu oprávnění seskupených dle uživatele, která jsou nastavena na daný AS.
-     * @param fundId id AS
-     * @return seznam
-     */
-    @RequestMapping(value = "/fund/{fundId}/permissions", method = RequestMethod.GET)
-    public List<UsrUserVO> getUsersPermissionsByFund(@RequestParam(value = "fundId") final Integer fundId) {
-        ArrFund fund = fundRepository.getOneCheckExist(fundId);
-        // TODO [slapa] - ELZA-1552 doimplementovat
-        return new ArrayList<>();
-    }
-
-    /**
      * Načte seznam uživatelů, kteří mají explicitně (přímo na nich) nastavené nějaké oprávnění pro daný AS.
      * @param fundId id AS
      * @return seznam
      */
     @RequestMapping(value = "/fund/{fundId}/users", method = RequestMethod.GET)
-    public List<UsrUserVO> findUsersByFund(@RequestParam(value = "fundId") final Integer fundId) {
+    public List<UsrUserVO> findUsersPermissionsByFund(@PathVariable(value = "fundId") final Integer fundId) {
         ArrFund fund = fundRepository.getOneCheckExist(fundId);
         List<UsrUser> users = userService.findUsersByFund(fund);
-        return factoryVO.createUserList(users);
-    }
-
-    /**
-     * Načte seznam skupin, kteří mají explicitně (přímo na nich) nastavené nějaké oprávnění pro daný AS.
-     * @param fundId id AS
-     * @return seznam
-     */
-    @RequestMapping(value = "/fund/{fundId}/groups", method = RequestMethod.GET)
-    public List<UsrGroupVO> findGroupsByFund(@RequestParam(value = "fundId") final Integer fundId) {
-        ArrFund fund = fundRepository.getOneCheckExist(fundId);
-        List<UsrGroup> groups = userService.findGroupsByFund(fund);
-        return factoryVO.createGroupList(groups, false, false);
+        return factoryVO.createUserList(users, true);
     }
 
     /**

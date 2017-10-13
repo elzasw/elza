@@ -1010,6 +1010,8 @@ var messages = {
     "admin.perms.tabs.advanced.perm.USR_PERM": "Správa oprávnění a uživatelů",
     "admin.perms.tabs.advanced.perm.INTERPI_MAPPING_WR": "Mapování externích systémů",
     "admin.perms.tabs.advanced.controller.entities.title": "Spravovaní uživatelé a skupiny",
+    "admin.perms.fund.tabs.users": "Uživatelé",
+    "admin.perms.fund.tabs.groups": "Skupiny",
     "admin.user.group.action.delete": "Odebrat členství ve skupině",
     "admin.user.group.action.add": "Přiřadit skupiny",
     "admin.user.permission.action.delete": "Odebrat oprávnění uživatele",
