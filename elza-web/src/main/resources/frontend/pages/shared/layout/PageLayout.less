@@ -1,6 +1,6 @@
 @import "/variables.less";
 
-@header-height: 64px;
+@header-height: 5em;
 @header-minimized-height: 12px;
 @header-status-height: 34px;
 @ribbon-show-hide-toggle-font-size: 11px;
@@ -18,18 +18,16 @@
     overflow: hidden;
 
     .app-header {
-        //height: @header-height;
+        height: @header-height;
         border-bottom: 1px solid @app-header-border;
         //overflow-x:auto;
-        background-color:transparent;
-
     }
     .app-content {
-        //height: calc(~"100% - "@header-height);
+        height: calc(~"100% - "@header-height);
         //background: @body-bg;
         //overflow: auto;
-        flex:1;
-        overflow:hidden;
+        //flex:1;
+        //overflow:hidden;
     }
 }
 
@@ -46,25 +44,25 @@
             }
         }
         .app-content {
-            //height: calc(~"100% - "@header-minimized-height);
+            height: calc(~"100% - "@header-minimized-height);
         }
     }
 
     &.app-exists-status {
         .app-content {
-            //height: calc(~"100% - "@header-height - @header-status-height);
+            height: calc(~"100% - "@header-height - @header-status-height);
         }
     }
 
     &.noRibbon.app-exists-status {
         .app-header {
-            //height: @header-minimized-height;
+            height: @header-minimized-height;
             .ribbon-toggle-container {
                 border-bottom: none;
             }
         }
         .app-content {
-            //height: calc(~"100% - "@header-minimized-height + @header-status-height);
+            height: calc(~"100% - "@header-minimized-height - @header-status-height);
         }
     }
 
@@ -72,7 +70,7 @@
         // Ribbon a u něj min max tlačítko
         .ribbon-toggle-container {
             position: relative;
-            //height: @header-height;
+            height: 100%;
             //border-bottom: 1px solid @app-header-border;
             .toggle.btn {
                 height: 10px;

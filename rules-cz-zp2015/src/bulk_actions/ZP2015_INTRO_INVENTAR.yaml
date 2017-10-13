@@ -113,6 +113,7 @@ actions:
                ZP2015_EXTRA_UNITS_IND: ind
                ZP2015_EXTRA_UNITS_ELE: ele
                ZP2015_EXTRA_UNITS_REP: rep
+               # KTT - zapocte se pocet kart. zasuvek
                ZP2015_EXTRA_UNITS_KTT: ktt
                ZP2015_EXTRA_UNITS_PEC: pec
                ZP2015_EXTRA_UNITS_RAZ: raz
@@ -163,7 +164,7 @@ actions:
                          itemSpec: ZP2015_FOLDER_LOGICAL
              stopProcessing: true
              itemCount: ZP2015_UNIT_COUNT
-             itemType: ZP2015_UNIT_TYPE             
+             itemType: ZP2015_UNIT_TYPE
              itemSpecMapping:
                ZP2015_UNIT_TYPE_LIO: lio
                ZP2015_UNIT_TYPE_LIP: lip

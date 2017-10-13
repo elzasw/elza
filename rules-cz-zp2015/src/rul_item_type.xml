@@ -31,6 +31,11 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
     </item-type>
+    <!-- Počet evidenčních jednotek
+         Používá se u složky s uvedením počtu EJ
+         
+         Zvláštní použití pro KTT: uvádí se u jednotlivosti a znamená počet zásuvek 
+      -->
     <item-type code="ZP2015_UNIT_COUNT" data-type="INT">
         <name>Počet evidenčních jednotek</name>
         <shortcut>Počet EJ</shortcut>
@@ -590,6 +595,10 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
+    <!-- Druh pomůcky
+         
+         Používá se v tisku pro určení textu na první list
+       -->
     <item-type code="ZP2015_OUTPUT_TYPE" data-type="ENUM">
         <name>Druh pomůcky</name>
         <shortcut>Pomůcka</shortcut>
