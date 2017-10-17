@@ -13,7 +13,6 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.filter.condition.UndefinedDescItemCondition;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -308,8 +307,8 @@ public class ClientFactoryDO {
         ArrData data = mapper.map(descItemVO, ArrData.class);
         ArrDescItem descItem = new ArrDescItem();
         descItem.setData(data);
-        BeanUtils.copyProperties(descItemVO, descItem);
-        descItem.setItemId(descItemVO.getId());
+		// Copy properties to application object
+		descItemVO.fill(descItem);
 
         if (descItemVO.getDescItemSpecId() != null) {
             RulItemSpec descItemSpec = itemSpecRepository.findOne(descItemVO.getDescItemSpecId());

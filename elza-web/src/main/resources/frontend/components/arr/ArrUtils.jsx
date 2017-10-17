@@ -344,13 +344,13 @@ export function createReferenceMarkFromArray(referenceMark, elProps) {
             if (index % 2 == 0) {
                 if (i < 1000) {
                     var cls = "level";
-                    if (i > 99) {
+                    if (i > 999) {
                         cls = "level small";
                     }
                     levels.push(<span {...elProps} key={'level' + index} className={cls}>{i}</span>)
                 } else {
                     var iStr = i + "";
-                    levels.push(<span {...elProps} key={'level' + index} title={i} className="level small">.{iStr.substr(-3)}</span>)
+                    levels.push(<span {...elProps} key={'level' + index} title={i} className="level">_{iStr.substr(-2)}</span>)
                 }
             } else {
                 if (index + 1 < referenceMark.length) {

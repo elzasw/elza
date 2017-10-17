@@ -8,6 +8,8 @@ import {dateToString} from 'components/Utils.jsx'
 import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
 import {selectFundTab} from 'actions/arr/fund.jsx'
 import {routerNavigate} from 'actions/router.jsx'
+import {downloadFile} from "actions/global/download";
+import {UrlFactory} from 'actions/index.jsx';
 
 require('./FundDetailExt.less');
 
@@ -38,6 +40,9 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
         this.dispatch(selectFundTab(fundObj));
     }
 
+    handleDownload = (id) => {
+        this.dispatch(downloadFile("arr-output-file-" + id, UrlFactory.downloadDmsFile(id)));
+    };
 
     render() {
         const {fundDetail, focus} = this.props
@@ -47,12 +52,19 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
         }
 
         const validOutputs = fundDetail.validNamedOutputs.map((outputDefinition, index) => {
-            return (
-                <div className="output" key={index}>
-                    <div className="output-label">{outputDefinition.name}</div>
-                    <Button bsStyle="link">{i18n('arr.fund.outputDefinition.action.showPDF')}</Button>
-                </div>
-            )
+            if(outputDefinition.state === "FINISHED"){
+                return (
+                    <div className="output" key={index}>
+                        <div className="output-label">{outputDefinition.name}</div>
+                        <Button 
+                            onClick={()=>{this.handleDownload(outputDefinition.outputResultId);}}
+                            bsStyle="link"
+                        >
+                            {i18n('global.action.download')}
+                        </Button>
+                    </div>
+                )
+            }
         })
 
         const histOutputs = fundDetail.historicalNamedOutputs.map((outputDefinition, index) => {
@@ -63,7 +75,12 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
                         {outputDefinition.outputs.map(output => (
                             <div className="version">
                                 <div className="version-label">{i18n('arr.fund.outputDefinition.version', dateToString(new Date(output.lockDate)))}</div>
-                                <Button bsStyle="link">{i18n('arr.fund.outputDefinition.action.showPDF')}</Button>
+                                <Button
+                                    onClick={()=>{this.handleDownload(outputDefinition.outputResultId);}}
+                                    bsStyle="link"
+                                >
+                                    {i18n('global.action.download')}
+                                </Button>
                             </div>
                         ))}
                     </div>

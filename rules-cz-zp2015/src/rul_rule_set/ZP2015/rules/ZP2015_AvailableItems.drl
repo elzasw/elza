@@ -572,9 +572,7 @@ when
         // Předměty faleristické povahy
         "ZP2015_UNIT_TYPE_PFP",
         // Jiné
-        "ZP2015_UNIT_TYPE_JIN",
-        // Neevidovaná jednotlivost
-        "ZP2015_UNIT_TYPE_OTHER"    
+        "ZP2015_UNIT_TYPE_JIN"
          ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
@@ -806,12 +804,13 @@ then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
 
-// Doporučení pro nastavení typu pomůcky MAN, INV, KAT - vyhodnoceno později
-rule "Doporučení pro nastavení typu pomůcky MAN, INV, KAT"
+rule "Doporučení pro první nastavení typu pomůcky"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
-    $descItem : DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $activeLevel.descItems
+    $descItem : DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in (
+        "ZP2015_ARRANGEMENT_OTHER", "ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT"
+        ) ) from $activeLevel.descItems
     // nesmi existovat rodic, ktery by mel jiz vyhodnoceni nastaveno
     not ( $level: Level( this!=$activeLevel && $parentItems: descItems ) and
          DescItem(type in ( "ZP2015_ARRANGEMENT_TYPE" ) )
@@ -1073,6 +1072,44 @@ when $activeLevel: ActiveLevel( )
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
+
+// Pokud je kartoteka a neni nad ni slozka s hromadinou nebo s poctem EJ,
+// tak se musi pocet EJ zobrazit primo u kartoteky
+rule "Počet zásuvek pro KTT"
+no-loop
+salience -100
+when $activeLevel: ActiveLevel( )
+    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_KTT") ) from $activeLevel.descItems
+    // Rodič není samostatná EJ
+    not (
+      DescItem(type=="ZP2015_FOLDER_TYPE" && specCode in ("ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_SINGLE_TYPE")) from $activeLevel.descItems
+    )
+    $itemType: RulItemTypeExt( code in ("ZP2015_UNIT_COUNT") )
+then
+    $itemType.setType(RulItemType.Type.REQUIRED);
+end
+
+// Povolení kartotéčních lístků a zásuvek
+// jen pokud je rodič KTT
+rule "Možné části pro KTT"
+no-loop
+when
+    $activeLevel: ActiveLevel( )
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_PART") ) from $activeLevel.descItems
+    // rodič je jednotlivost typu KTT
+    $level: Level(this!=$activeLevel)
+    DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_KTT") ) from $level.descItems
+    $itemType : RulItemTypeExt(code == "ZP2015_UNIT_TYPE")
+    $itemSpec : RulItemSpecExt(code in (
+        // Kartotéční zásuvka
+        "ZP2015_UNIT_TYPE_KTT_BOX",
+        // Kartotéční lístek
+        "ZP2015_UNIT_TYPE_KTT_ITEM"    
+         ) ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
 
 // Povinné prvky pro UKN, KTT, reg.pom. (KAT)
 rule "Povinné prvky pro UKN, KTT, reg.pom. (KAT)"

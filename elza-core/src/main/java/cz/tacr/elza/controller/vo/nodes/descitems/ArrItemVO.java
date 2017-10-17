@@ -2,12 +2,12 @@ package cz.tacr.elza.controller.vo.nodes.descitems;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import cz.tacr.elza.domain.ArrDescItem;
+
 
 /**
  * Abstraktní VO hodnoty atributu.
  *
- * @author Martin Šlapa
- * @since 8.1.2016
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public abstract class ArrItemVO {
@@ -76,4 +76,18 @@ public abstract class ArrItemVO {
     public void setUndefined(final Boolean undefined) {
         this.undefined = undefined;
     }
+
+	/**
+	 * Fill correspoding ArrDescItem with values from this object
+	 * 
+	 * @param descItem
+	 *            target item to be filled
+	 */
+	public void fill(ArrDescItem descItem) {
+		descItem.setItemId(id);
+		descItem.setDescItemObjectId(descItemObjectId);
+		descItem.setPosition(position);
+		//spec id cannot be set explicitly
+		//descItem.setItemSpecId(descItemSpecId);
+	}
 }
