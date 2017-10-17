@@ -31,7 +31,7 @@ class DescItemRecordRef extends AbstractReactComponent {
     static PropTypes = {
         descItem: React.PropTypes.object.isRequired,
         hasSpecification: React.PropTypes.bool,
-        itemName: React.PropTypes.string,
+        itemName: React.PropTypes.string.isRequired,
         specName: React.PropTypes.string
     };
 
@@ -69,7 +69,6 @@ class DescItemRecordRef extends AbstractReactComponent {
                     }
                     this.dispatch(registryListFilter({...oldFilter}));
                     this.dispatch(registryDetailClear());
-                    this.dispatch(modalDialogHide());
                 }}/>,
                 classNames(MODAL_DIALOG_VARIANT.FULLSCREEN, MODAL_DIALOG_VARIANT.NO_HEADER),
                 ()=>{this.dispatch(registryListFilter({...oldFilter}))}));

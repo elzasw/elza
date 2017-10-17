@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrUser;
 import org.springframework.data.jpa.repository.Query;
@@ -19,6 +20,9 @@ public interface GroupRepository extends ElzaJpaRepository<UsrGroup, Integer>, G
 
     @Query("select ugu.group from usr_group_user ugu where ugu.user = :user")
     List<UsrGroup> findByUser(@Param("user") UsrUser user);
+
+    @Query("select distinct p.group from usr_permission p where p.fund = :fund")
+    List<UsrGroup> findByFund(@Param("fund") ArrFund fund);
 
     UsrGroup findOneByCode(String code);
 }

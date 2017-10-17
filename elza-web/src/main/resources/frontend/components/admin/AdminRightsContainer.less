@@ -1,0 +1,37 @@
+.admin-rights-container {
+    display: flex;
+    flex-direction: column;
+
+    height: 100%;
+    //padding: 10px;
+    overflow: hidden;
+    height: 100%;
+
+    .admin-rights-header {
+        flex-shrink: 0;
+    }
+
+    .admin-rights-content {
+        flex-grow: 1;
+        height: 100%;
+        overflow: hidden;
+        display: flex;
+
+        .admin-rights-left {
+            flex-shrink: 0;
+            width: 220px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            .listbox-wrapper {
+                height: 100%;
+            }
+        }
+
+        .admin-rights-right {
+            padding-left: 5px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+    }
+}

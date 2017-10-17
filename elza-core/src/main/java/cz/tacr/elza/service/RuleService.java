@@ -518,7 +518,7 @@ public class RuleService {
         ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootNode(),
                 version.getLockChange());
 
-        List<RulItemTypeExt> rulDescItemTypeExtList = getAllDescriptionItemTypes(version.getRuleSet().getPackage());
+        List<RulItemTypeExt> rulDescItemTypeExtList = getAllDescriptionItemTypes(version.getRuleSet());
 
         return rulesExecutor.executeDescItemTypesRules(level, rulDescItemTypeExtList, version);
     }
@@ -533,13 +533,13 @@ public class RuleService {
     }
 
     /**
-     * Vrací typy atributů podle balíčku.
+     * Vrací typy atributů podle pravidla.
      *
-     * @param rulPackage balíček
+     * @param ruleSet pravidla
      * @return seznam typů
      */
-    public List<String> getItemTypeCodesByPackage(final RulPackage rulPackage) {
-        return itemTypeRepository.findByRulPackage(rulPackage).stream()
+    public List<String> getItemTypeCodesByRuleSet(final RulRuleSet ruleSet) {
+        return itemTypeRepository.findByRuleSet(ruleSet).stream()
                 .map(RulItemType::getCode)
                 .collect(Collectors.toList());
     }
@@ -547,17 +547,17 @@ public class RuleService {
     /**
      * Získání typů atributů se specifikacemi podle balíčku.
      *
-     * @param rulPackage balíček, podle kterého filtrujeme, pokud je null, vezmou se všechny
+     * @param ruleSet balíček, podle kterého filtrujeme, pokud je null, vezmou se všechny
      * @return typy hodnot atributů
      */
-    public List<RulItemTypeExt> getAllDescriptionItemTypes(@Nullable final RulPackage rulPackage) {
+    public List<RulItemTypeExt> getAllDescriptionItemTypes(@Nullable final RulRuleSet ruleSet) {
 
         List<RulItemType> itemTypeList;
 
-        if (rulPackage == null) {
+        if (ruleSet == null) {
             itemTypeList = itemTypeRepository.findAll();
         } else {
-            itemTypeList = itemTypeRepository.findByRulPackage(rulPackage);
+            itemTypeList = itemTypeRepository.findByRuleSet(ruleSet);
         }
 
         List<RulItemTypeExt> rulDescItemTypeExtList = createExt(itemTypeList);
@@ -627,7 +627,7 @@ public class RuleService {
 
         for (UISettings gridView : gridViews) {
             if (gridView.getRulPackage().getPackageId().equals(ruleSet.getPackage().getPackageId())) {
-                SettingGridView view = (SettingGridView) packageService.convertSetting(gridView);
+                SettingGridView view = (SettingGridView) packageService.convertSetting(gridView, ruleSet);
                 if (CollectionUtils.isNotEmpty(view.getItemTypes())) {
                     return view.getItemTypes();
                 }
@@ -698,7 +698,7 @@ public class RuleService {
      * @return seznam typů
      */
     public List<RulItemTypeExt> getOutputItemTypes(final ArrOutputDefinition outputDefinition) {
-        List<RulItemTypeExt> rulDescItemTypeExtList = getAllDescriptionItemTypes(outputDefinition.getOutputType().getPackage());
+        List<RulItemTypeExt> rulDescItemTypeExtList = getAllDescriptionItemTypes(outputDefinition.getOutputType().getRuleSet());
 
         List<RulItemTypeAction> itemTypeActions = itemTypeActionRepository.findAll();
         Map<Integer, RulItemType> itemTypeMap = new HashMap<>();

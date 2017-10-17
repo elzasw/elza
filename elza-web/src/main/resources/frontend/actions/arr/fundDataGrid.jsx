@@ -41,19 +41,24 @@ export function isFundDataGridAction(action) {
 }
 
 export function fundBulkModifications(versionId, descItemTypeId, specsIds, operationType, findText, replaceText, replaceSpecId, nodes, selectionType) {
-    console.log('#####findAndReplace', versionId, descItemTypeId, specsIds, operationType, findText, replaceText, replaceSpecId, nodes, selectionType)
+    console.log('#####fundBulkModifications', versionId, descItemTypeId, specsIds, operationType, findText, replaceText, replaceSpecId, nodes, selectionType);
 
     return (dispatch, getState) => {
         switch (operationType) {
             case 'findAndReplace':
-                    return WebApi.replaceDataValues(versionId, descItemTypeId, specsIds, findText, replaceText, nodes, selectionType);
-                break
+                return WebApi.replaceDataValues(versionId, descItemTypeId, specsIds, findText, replaceText, nodes, selectionType);
+                break;
             case 'replace':
-                    return WebApi.placeDataValues(versionId, descItemTypeId, specsIds, replaceText, replaceSpecId, nodes, selectionType);
-                break
+                return WebApi.placeDataValues(versionId, descItemTypeId, specsIds, replaceText, replaceSpecId, nodes, selectionType);
+                break;
             case 'delete':
-                    return WebApi.deleteDataValues(versionId, descItemTypeId, specsIds, nodes, selectionType);
-                break
+                return WebApi.deleteDataValues(versionId, descItemTypeId, specsIds, nodes, selectionType);
+                break;
+            case 'setSpecification':
+                return WebApi.setSpecification(versionId, descItemTypeId, specsIds, replaceSpecId, nodes, selectionType);
+                break;
+            default:
+                console.warn('#####fundBulkModifications - operation not implemented', operationType);
         }
     }
 }

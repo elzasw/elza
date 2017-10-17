@@ -22,6 +22,7 @@ public interface RuleRepository extends JpaRepository<RulRule, Integer> {
 
     List<RulRule> findByRulPackage(RulPackage rulPackage);
 
+    List<RulRule> findByRulPackageAndRuleSet(RulPackage rulPackage, RulRuleSet ruleSet);
 
     void deleteByRulPackage(RulPackage rulPackage);
 

@@ -20,6 +20,8 @@ export * as Tabs from 'components/shared/tabs/Tabs.jsx';
 export {default as Search} from 'components/shared/search/Search.jsx';
 export {default as SearchWithGoto} from 'components/shared/search/SearchWithGoto.jsx';
 export {default as Loading} from 'components/shared/loading/Loading.jsx';
+export {default as HorizontalLoader} from 'components/shared/loading/HorizontalLoader.jsx';
+export {default as StoreHorizontalLoader} from 'components/shared/loading/StoreHorizontalLoader.jsx';
 export {default as VirtualList} from 'components/shared/virtual-list/VirtualList.jsx';
 export {default as AddRemoveList} from 'components/shared/list/AddRemoveList.jsx';
 // export {default as Accordion} from 'components/shared/accordion/Accordion.jsx'; -- Nepoužívaná komponenta

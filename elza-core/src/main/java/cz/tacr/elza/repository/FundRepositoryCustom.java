@@ -2,6 +2,7 @@ package cz.tacr.elza.repository;
 
 import java.util.List;
 
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.ArrFundOpenVersion;
 
@@ -36,4 +37,14 @@ public interface FundRepositoryCustom {
      */
     Integer findCountByFulltext(String fulltext, final boolean readAllFunds, final UsrUser user);
 
+    /**
+     * Vyhledá AS na které jsou vázaná nějaká oprávnění.
+     *
+     * @param search      hledané řetězec
+     * @param firstResult od jakého záznamu
+     * @param maxResults  maximální počet vrácených záznamů
+     * @param userId      identifikátor uživatele, podle kterého filtrujeme (pokud je null, nefiltrujeme)
+     * @return výsledek
+     */
+    FilteredResult<ArrFund> findFundsWithPermissions(String search, Integer firstResult, Integer maxResults, final Integer userId);
 }

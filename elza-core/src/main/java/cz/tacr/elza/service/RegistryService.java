@@ -6,20 +6,17 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.ExceptionUtils;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.RegistryCode;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.springframework.beans.factory.BeanFactory;
@@ -29,7 +26,15 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.controller.vo.usage.FundVO;
+import cz.tacr.elza.controller.vo.usage.NodeVO;
+import cz.tacr.elza.controller.vo.usage.OccurrenceType;
+import cz.tacr.elza.controller.vo.usage.OccurrenceVO;
+import cz.tacr.elza.controller.vo.usage.PartyVO;
+import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -45,20 +50,29 @@ import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ExceptionUtils;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingRecord;
+import cz.tacr.elza.repository.DataPartyRefRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
+import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.PartyCreatorRepository;
 import cz.tacr.elza.repository.RegCoordinatesRepository;
 import cz.tacr.elza.repository.RegExternalSystemRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.RegVariantRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.RelationEntityRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.SettingsRepository;
-import cz.tacr.elza.repository.RegVariantRecordRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -130,26 +144,25 @@ public class RegistryService {
     @Autowired
     private ArrangementCacheService arrangementCacheService;
 
+    @Autowired
+    private DescItemRepository descItemRepository;
+
+    @Autowired
+    private LevelTreeCacheService levelTreeCacheService;
+
+    @Autowired
+    private DataPartyRefRepository dataPartyRefRepository;
+
+    @Autowired
+    private PartyCreatorRepository partyCreatorRepository;
+
+    @Autowired
+    private RelationEntityRepository relationEntityRepository;
+
     /**
      * Kody tříd rejstříků nastavené v konfiguraci elzy.
      */
     private List<String> scopeCodes;
-
-    /**
-     * Id tříd rejstříků nastavené v konfiguraci elzy.
-     */
-    private Set<Integer> defaultScopeIds = null;
-
-    public Set<Integer> getDefaultScopeIds() {
-        if (defaultScopeIds == null) {
-            List<String> scopeCodes = getScopeCodes();
-            if (CollectionUtils.isNotEmpty(scopeCodes)) {
-                List<RegScope> foundCodes = scopeRepository.findByCodes(scopeCodes);
-                defaultScopeIds = foundCodes.stream().map(RegScope::getScopeId).collect(Collectors.toSet());
-            }
-        }
-        return defaultScopeIds;
-    }
 
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (record, charateristics, comment),
@@ -160,7 +173,8 @@ public class RegistryService {
      * @param firstResult     index prvního záznamu, začíná od 0
      * @param maxResults      počet výsledků k vrácení
      * @param parentRecordId  id rodičovského rejstříku
-     * @param fund   AP, ze které se použijí třídy rejstříků
+     * @param fund            AP, ze které se použijí třídy rejstříků
+     * @param scopeId         id scope, pokud je vyplněno hledají se rejstříky pouze s tímto scope
      * @return vybrané záznamy dle popisu seřazené za record, nbeo prázdná množina
      */
     public List<RegRecord> findRegRecordByTextAndType(@Nullable final String searchRecord,
@@ -168,45 +182,45 @@ public class RegistryService {
                                                       final Integer firstResult,
                                                       final Integer maxResults,
                                                       final Integer parentRecordId,
-                                                      @Nullable final ArrFund fund) {
+                                                      @Nullable final ArrFund fund,
+                                                      @Nullable final Integer scopeId) {
 
-        Set<Integer> scopeIdsForRecord = getScopeIdsByFund(fund);
+        Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId);
 
         RegRecord parentRecord = null;
         if (parentRecordId != null) {
             parentRecord = regRecordRepository.getOneCheckExist(parentRecordId);
         }
 
-        UsrUser user = userService.getLoggedUser();
-        boolean readAllScopes = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_RD_ALL);
         return regRecordRepository.findRegRecordByTextAndType(searchRecord, registerTypeIds, firstResult,
-                maxResults, parentRecord, scopeIdsForRecord, readAllScopes, user);
+                maxResults, parentRecord, scopeIdsForSearch);
     }
 
 
     /**
-     * Celkový počet záznamů v DB pro funkci {@link #findRegRecordByTextAndType(String, Collection, Integer, Integer, Integer, ArrFund)}
+     * Celkový počet záznamů v DB pro funkci {@link #findRegRecordByTextAndType(String, Collection, Integer, Integer, Integer, ArrFund, Integer)}
      *
      * @param searchRecord    hledaný řetězec, může být null
      * @param registerTypeIds typ záznamu
      * @param parentRecordId  id rodičovského rejstříku
      * @param fund   AP, ze které se použijí třídy rejstříků
+     * @param id scope, pokud je vyplněno hledají se rejstříky pouze s tímto scope
      * @return celkový počet záznamů, který je v db za dané parametry
      */
     public long findRegRecordByTextAndTypeCount(@Nullable final String searchRecord,
-            @Nullable final Collection<Integer> registerTypeIds, final Integer parentRecordId, @Nullable final ArrFund fund) {
+                                                @Nullable final Collection<Integer> registerTypeIds,
+                                                final Integer parentRecordId, @Nullable final ArrFund fund,
+                                                final Integer scopeId) {
 
-        Set<Integer> scopeIdsForRecord = getScopeIdsByFund(fund);
+        Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId);
 
         RegRecord parentRecord = null;
         if (parentRecordId != null) {
             parentRecord = regRecordRepository.getOneCheckExist(parentRecordId);
         }
 
-        UsrUser user = userService.getLoggedUser();
-        boolean readAllScopes = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_RD_ALL);
-
-        return regRecordRepository.findRegRecordByTextAndTypeCount(searchRecord, registerTypeIds, parentRecord, scopeIdsForRecord, readAllScopes, user);
+        return regRecordRepository.findRegRecordByTextAndTypeCount(searchRecord, registerTypeIds, parentRecord,
+                scopeIdsForSearch);
     }
 
     /**
@@ -228,7 +242,7 @@ public class RegistryService {
 
         List<ArrNodeRegister> nodeRegisterList = nodeRegisterRepository.findByRecordId(record);
         if (CollectionUtils.isNotEmpty(nodeRegisterList)) {
-            throw new BusinessException("Nalezeno použití hesla v tabulce ArrDataRecordRef.", RegistryCode.EXIST_FOREIGN_DATA).set("table", "ArrDataRecordRef");
+            throw new BusinessException("Nalezeno použití hesla v tabulce ArrNodeRegister.", RegistryCode.EXIST_FOREIGN_DATA).set("table", "ArrNodeRegister");
         }
 
         List<RegRecord> childs = regRecordRepository.findByParentRecord(record);
@@ -238,7 +252,6 @@ public class RegistryService {
 
 
     }
-
 
     /**
      * Uložení či update záznamu.
@@ -475,7 +488,7 @@ public class RegistryService {
         Assert.notNull(records, "Musí být vyplněny hesla");
 
         if (CollectionUtils.isEmpty(records)) {
-            return Collections.EMPTY_MAP;
+            return Collections.emptyMap();
         }
 
         Map<RegRecord, List<RegRecord>> result = new HashMap<>();
@@ -556,17 +569,35 @@ public class RegistryService {
     }
 
     /**
-     * Načte seznam id tříd pro archivní pomůcku. Pokud není AP nastavena, vrací výchozí třídy.
+     * Načte seznam id tříd ve kterých se má vyhledávat. Výsledek je průnikem tříd požadovaných a těch na které ma uživatel právo.
      *
-     * @param fund AP, podle jejíž tříd se má hledat (pokud je null, hledá se podle výchozích)
+     * @param fund AP, podle jejíž tříd se má hledat
+     * @param scopeId id scope, pokud je vyplněno hledá se jen v tomto scope
      * @return množina id tříd, podle kterých se bude hledat
      */
-    public Set<Integer> getScopeIdsByFund(@Nullable final ArrFund fund){
-        if(fund == null){
-            return getDefaultScopeIds();
-        }else{
-            return scopeRepository.findIdsByFund(fund);
-        }
+    public Set<Integer> getScopeIdsForSearch(@Nullable final ArrFund fund, @Nullable final Integer scopeId) {
+    	boolean readAllScopes = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_RD_ALL);
+    	UsrUser user = userService.getLoggedUser();
+
+    	Set<Integer> scopeIdsToSearch;
+    	if (readAllScopes || user == null) {
+    		scopeIdsToSearch = scopeRepository.findAllIds();
+    	} else {
+    		scopeIdsToSearch = userService.getUserScopeIds();
+    	}
+
+		if (!scopeIdsToSearch.isEmpty()) {
+			if (fund != null) {
+				Set<Integer> fundScopeIds = scopeRepository.findIdsByFund(fund);
+				scopeIdsToSearch.retainAll(fundScopeIds);
+			}
+
+			if (scopeId != null) {
+    			scopeIdsToSearch.removeIf( id -> !id.equals(scopeId));
+			}
+		}
+
+        return scopeIdsToSearch;
     }
 
     /**
@@ -745,7 +776,7 @@ public class RegistryService {
             List<UISettings> uiSettingsList = settingsRepository.findByUserAndSettingsTypeAndEntityType(null, UISettings.SettingsType.RECORD, null);
             if (uiSettingsList.size() > 0) {
                 uiSettingsList.forEach(uiSettings -> {
-                    SettingRecord setting = (SettingRecord) packageService.convertSetting(uiSettings);
+                    SettingRecord setting = (SettingRecord) packageService.convertSetting(uiSettings, null);
                     List<SettingRecord.ScopeCode> scopeCodes = setting.getScopeCodes();
                     if (CollectionUtils.isEmpty(scopeCodes)) {
                         this.scopeCodes = new ArrayList<>();
@@ -884,4 +915,246 @@ public class RegistryService {
     public void deleteVariantRecord(final RegVariantRecord variantRecord, @AuthParam(type = AuthParam.Type.REGISTRY) final RegRecord record) {
         variantRecordRepository.delete(variantRecord);
     }
+
+    /**
+     * Najde použití rejstříku/osoby.
+     *
+     * @param record rejstřík
+     * @param party osoba, může být null
+     *
+     * @return použití rejstříku/osoby
+     */
+	public RecordUsageVO findRecordUsage(final RegRecord record, @Nullable final ParParty party) {
+		List<FundVO> usedFunds = findUsedFunds(record, party); // výskyt v archivních souborech
+		List<PartyVO> usedParties = findUsedParties(record, party); // výskyt v uzlech
+
+		return new RecordUsageVO(usedFunds, usedParties);
+	}
+
+	/**
+	 * Najde osoby se kterými je předaný resjtřík/osoba ve vztahu.
+	 *
+     * @param record rejstřík
+     * @param party osoba, může být null
+     *
+     * @return použití rejstříku/osoby
+	 */
+	private List<PartyVO> findUsedParties(final RegRecord record, final ParParty party) {
+		List<PartyVO> usedParties = new LinkedList<>();
+
+		// hledání podle vztahů
+		final Map<Integer, PartyVO> partyVOMap = relationEntityRepository.findByRecord(record).stream().map(rel -> {
+			ParParty partyRel = rel.getRelation().getParty();
+			PartyVO partyVO = new PartyVO();
+			partyVO.setId(partyRel.getPartyId());
+			partyVO.setName(record.getRecord());
+
+			OccurrenceVO occurrenceVO = new OccurrenceVO(rel.getRelationEntityId(), OccurrenceType.PAR_RELATION_ENTITY);
+			List<OccurrenceVO> occurrences = new LinkedList<>();
+			occurrences.add(occurrenceVO);
+			partyVO.setOccurrences(occurrences);
+
+			return partyVO;
+		}).collect(Collectors.toMap(PartyVO::getId, Function.identity()));
+
+		if (party != null) { // hledání podle tvůrců
+			partyCreatorRepository.findByCreatorParty(party).forEach(c -> {
+				PartyVO partyVO;
+				ParParty creator = c.getParty();
+				if (partyVOMap.containsKey(creator.getPartyId())) { // pro osobu již existuje vztah
+					partyVO = partyVOMap.get(creator.getPartyId());
+				} else {
+					partyVO = new PartyVO(); // nový výskyt
+					partyVO.setId(creator.getPartyId());
+					partyVO.setName(creator.getRecord().getRecord());
+
+					List<OccurrenceVO> occurrences = new LinkedList<>();
+					partyVO.setOccurrences(occurrences);
+				}
+
+				OccurrenceVO occurrenceVO = new OccurrenceVO(c.getCreatorId(), OccurrenceType.PAR_CREATOR);
+				partyVO.getOccurrences().add(occurrenceVO);
+			});
+
+			usedParties.addAll(partyVOMap.values());
+		}
+
+		return usedParties;
+	}
+
+	/**
+	 * Najde použité archivní soubory.
+	 *
+     * @param record rejstřík
+     * @param party osoba, může být null
+     *
+     * @return použití rejstříku/osoby
+	 */
+	private List<FundVO> findUsedFunds(final RegRecord record, final ParParty party) {
+		List<ArrData> dataList = new LinkedList<>(dataRecordRefRepository.findByRecord(record));
+		if (party != null) {
+			dataList.addAll(dataPartyRefRepository.findByParty(party));
+		}
+
+		List<ArrNodeRegister> nodeRegisters = nodeRegisterRepository.findByRecordAndDeleteChangeIsNull(record);
+		return createFundVOList(dataList, nodeRegisters);
+	}
+
+	/**
+	 * Z předaných výskytů v archivních souborech vytvoří seznam {@link FundVO}.
+	 *
+	 * @param arrDataList hodnoty uzlů
+	 * @param nodeRegisters vazba na uzly
+	 */
+	private List<FundVO> createFundVOList(final List<? extends ArrData> arrDataList, final List<ArrNodeRegister> nodeRegisters) {
+		if (arrDataList.isEmpty() && nodeRegisters.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		Map<Integer, List<ArrNodeRegister>> nodeIdToNodeRegisters = nodeRegisters.stream().collect(Collectors.groupingBy(ArrNodeRegister::getNodeId));
+		Map<Integer, Set<Integer>> fundIdToNodeIdsMap = nodeRegisters.stream()
+				.map(ArrNodeRegister::getNode)
+				.collect(Collectors.groupingBy(ArrNode::getFundId, Collectors.mapping(ArrNode::getNodeId, Collectors.toSet())));
+
+		Map<Integer, ? extends ArrData> dataIdToArrDataMap = arrDataList.stream().collect(Collectors.toMap(ArrData::getDataId, Function.identity()));
+
+		Map<Integer, Set<Integer>> nodeIdToDataIdsMap = new HashMap<>();
+		if (!arrDataList.isEmpty()) {
+			List<Object[]> fundIdNodeIdDataIdList = descItemRepository.findFundIdNodeIdDataIdByDataAndDeleteChangeIsNull(arrDataList);
+
+			fundIdNodeIdDataIdList.forEach(row -> {
+				Integer fundId = (Integer) row[0];
+				Integer nodeId = (Integer) row[1];
+				Integer dataId = (Integer) row[2];
+
+				Set<Integer> nodeIds;
+				if (fundIdToNodeIdsMap.containsKey(fundId)) {
+					nodeIds = fundIdToNodeIdsMap.get(fundId);
+				} else {
+					nodeIds = new HashSet<>();
+					fundIdToNodeIdsMap.put(fundId, nodeIds);
+				}
+				nodeIds.add(nodeId);
+
+				Set<Integer> dataIds;
+				if (nodeIdToDataIdsMap.containsKey(nodeId)) {
+					dataIds = nodeIdToDataIdsMap.get(fundId);
+				} else {
+					dataIds = new HashSet<>();
+					nodeIdToDataIdsMap.put(nodeId, dataIds);
+				}
+				dataIds.add(dataId);
+			});
+		}
+
+		List<ArrFundVersion> fundVersions = fundVersionRepository.findByFundIdsAndLockChangeIsNull(fundIdToNodeIdsMap.keySet());
+		return fundVersions.stream().map(v -> {
+			return createFundVO(nodeIdToNodeRegisters, fundIdToNodeIdsMap, dataIdToArrDataMap, nodeIdToDataIdsMap, v);
+
+		}).collect(Collectors.toList());
+	}
+
+	/**
+	 * Vytvoří {@link FundVO}.
+	 *
+	 * @param nodeIdToNodeRegisters mapa id node na seznam vazeb {@link ArrNodeRegister}
+	 * @param fundIdToNodeIdsMap id archivního souboru na množinu použitých uzlů
+	 * @param dataIdToArrDataMap mapa id {@link ArrData} na konkrétní instanci
+	 * @param nodeIdToDataIdsMap mapa id node na množinu {@link ArrData}
+	 * @param fundVersion verze archivního souboru
+	 *
+	 * @return {@link FundVO}
+	 */
+	private FundVO createFundVO(final Map<Integer, List<ArrNodeRegister>> nodeIdToNodeRegisters,
+			final Map<Integer, Set<Integer>> fundIdToNodeIdsMap, final Map<Integer, ? extends ArrData> dataIdToArrDataMap,
+			final Map<Integer, Set<Integer>> nodeIdToDataIdsMap, final ArrFundVersion fundVersion) {
+		Set<Integer> nodeIds = fundIdToNodeIdsMap.get(fundVersion.getFundId());
+		List<Integer> nodeIdsSubList = getNodeIdsSublist(nodeIds);
+
+		Collection<TreeNodeClient> treeNodes = levelTreeCacheService.getFaTreeNodes(fundVersion.getFundVersionId(), nodeIdsSubList);
+
+		List<NodeVO> nodes = treeNodes.stream()
+			.map(n ->  createNodeVO(nodeIdToNodeRegisters, dataIdToArrDataMap, nodeIdToDataIdsMap, n))
+			.collect(Collectors.toList());
+
+		ArrFund fund = fundVersion.getFund();
+		return new FundVO(fund.getFundId(), fund.getName(), nodeIds.size(), nodes);
+	}
+
+	/**
+	 * Vytvoří {@link NodeVO}.
+	 *
+	 * @param nodeIdToNodeRegisters mapa id node na seznam vazeb {@link ArrNodeRegister}
+	 * @param dataIdToArrDataMap mapa id {@link ArrData} na konkrétní instanci
+	 * @param nodeIdToDataIdsMap mapa id node na množinu {@link ArrData}
+	 * @param node node
+	 *
+	 * @return {@link NodeVO}
+	 */
+	private NodeVO createNodeVO(final Map<Integer, List<ArrNodeRegister>> nodeIdToNodeRegisters,
+			final Map<Integer, ? extends ArrData> dataIdToArrDataMap, final Map<Integer, Set<Integer>> nodeIdToDataIdsMap,
+			final TreeNodeClient node) {
+		List<OccurrenceVO> occurrences = new LinkedList<>();
+		if (nodeIdToNodeRegisters.containsKey(node.getId())) {
+			occurrences.addAll(createOccurrenceVOFromNodeRegisters(nodeIdToNodeRegisters.get(node.getId())));
+		}
+
+		if (nodeIdToDataIdsMap.containsKey(node.getId())) {
+			occurrences.addAll(createOccurrenceVOFromData(dataIdToArrDataMap, nodeIdToDataIdsMap.get(node.getId())));
+		}
+
+		return new NodeVO(node.getId(), node.getName(), occurrences);
+	}
+
+	/**
+	 * Získá podmnožinu id uzlů pokud jich je celkem více než počet který chceme vracet.
+	 *
+	 * @param nodeIds množina identifikátorů uzlů
+	 *
+	 * @return podmnožina identifikátorů uzlů
+	 */
+	private List<Integer> getNodeIdsSublist(final Set<Integer> nodeIds) {
+		List<Integer> sortedNodeIds = new LinkedList<>(nodeIds);
+		Collections.sort(sortedNodeIds);
+		return sortedNodeIds.subList(0, sortedNodeIds.size() > 200 ? 200 : sortedNodeIds.size());
+	}
+
+	/**
+	 * Vytvoří {@link OccurrenceVO} z předaných instancí {@link ArrData}.
+	 *
+	 * @param dataIdToArrDataMap mapa id {@link ArrData} na konkrétní instanci
+	 * @param dataIds množina identifikátorů {@link ArrData}
+	 *
+	 * @return seznam výskytů {@link OccurrenceVO}
+	 */
+	private List<OccurrenceVO> createOccurrenceVOFromData(final Map<Integer, ? extends ArrData> dataIdToArrDataMap,
+			final Set<Integer> dataIds) {
+		return dataIds.stream()
+				.map(dataId -> {
+					ArrData data = dataIdToArrDataMap.get(dataId);
+
+					OccurrenceType type;
+					if (data.getDataType().getCode().equals("PARTY_REF")) {
+						type = OccurrenceType.ARR_DATA_PARTY_REF;
+					} else {
+						type = OccurrenceType.ARR_DATA_RECORD_REF;
+					}
+
+					return new OccurrenceVO(dataId, type);
+		}).collect(Collectors.toList());
+	}
+
+
+	/**
+	 * Vytvoří {@link OccurrenceVO} z předaných instancí {@link ArrNodeRegister}.
+	 *
+	 * @param nodeRegisters seznam vazeb
+	 *
+	 * @return seznam výskytů {@link OccurrenceVO}
+	 */
+	private List<OccurrenceVO> createOccurrenceVOFromNodeRegisters(final List<ArrNodeRegister> nodeRegisters) {
+		return nodeRegisters.stream()
+				.map(nr -> new OccurrenceVO(nr.getNodeRegisterId(), OccurrenceType.ARR_NODE_REGISTER))
+				.collect(Collectors.toList());
+	}
 }

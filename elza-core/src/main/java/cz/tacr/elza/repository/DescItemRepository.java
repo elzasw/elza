@@ -1,5 +1,13 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -7,13 +15,6 @@ import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -33,7 +34,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     List<ArrDescItem> findOpenByNodesAndTypeAndSpec(Collection<ArrNode> nodes, RulItemType type, Collection<RulItemSpec> specs);
 
     @Query("SELECT di FROM arr_desc_item di JOIN FETCH di.node n WHERE n.fund = :fund AND di.deleteChange IS NULL AND di.itemType = :type")
-    List<ArrDescItem> findOpenByFundAndType(@Param("fund")ArrFund fund,
+    List<ArrDescItem> findOpenByFundAndType(@Param("fund") ArrFund fund,
                                             @Param("type") RulItemType type);
 
     @Query("SELECT di FROM arr_desc_item di JOIN FETCH di.node n WHERE n.fund = :fund AND di.deleteChange IS NULL AND di.itemType = :type AND di.itemSpec IN :specs")
@@ -198,5 +199,6 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
             + "WHERE i.node = ?1 and i.deleteChange is null")
     List<ArrDescItem> findByNodeAndDeleteChangeIsNullFetch(ArrNode node);
 
-
+    @Query("SELECT n.fundId, i.nodeId, d.dataId FROM arr_desc_item i JOIN i.data d JOIN i.node n WHERE i.deleteChange IS NULL and i.data in (?1)")
+    List<Object[]> findFundIdNodeIdDataIdByDataAndDeleteChangeIsNull(List<? extends ArrData> data);
 }

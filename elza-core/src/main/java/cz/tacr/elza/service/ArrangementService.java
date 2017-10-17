@@ -286,7 +286,7 @@ public class ArrangementService {
      * @param dateRange    časový rozsah
      * @return vytvořený arch. soubor
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_CREATE})
     public ArrFund createFund(final String name,
                               final RulRuleSet ruleSet,
                               final ArrChange change,
@@ -391,7 +391,7 @@ public class ArrangementService {
      * @param internalCode interní označení
      * @return nová archivní pomůcka
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_CREATE})
     public ArrFund createFundWithScenario(final String name,
                                           final RulRuleSet ruleSet,
                                           final String internalCode,
@@ -434,7 +434,7 @@ public class ArrangementService {
         return fund;
     }
 
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_CREATE})
     public ArrFund createFund(final String name,
 				              final String internalCode,
 				              final ParInstitution institution) {

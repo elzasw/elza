@@ -3,6 +3,7 @@ package cz.tacr.elza.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import cz.tacr.elza.repository.DataRepositoryImpl;
 import cz.tacr.elza.search.DescItemIndexingInterceptor;
 import org.apache.lucene.analysis.core.KeywordTokenizerFactory;
 import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
@@ -96,11 +97,11 @@ public class ArrDescItem extends ArrItem {
         if (data == null) {
             return null;
         } else {
+            RulItemSpec itemSpec = getItemSpec();
             if (data instanceof ArrDataNull) {
-                RulItemSpec itemSpec = getItemSpec();
                 return itemSpec == null ? null : itemSpec.getName();
             } else {
-                return data.getFulltextValue();
+                return itemSpec == null ? data.getFulltextValue() : itemSpec.getName() + DataRepositoryImpl.SPEC_SEPARATOR + data.getFulltextValue();
             }
         }
     }

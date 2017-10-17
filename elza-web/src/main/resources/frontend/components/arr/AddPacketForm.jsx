@@ -73,7 +73,7 @@ class AddPacketForm extends AbstractReactComponent {
             let activeVersion = activeFund.activeVersion;
             packetTypeItems = [];
             packetTypes.items.forEach(item => {
-                if (activeVersion.packageId === item.packageId) {
+                if (activeVersion.ruleSetId === item.ruleSetId) {
                     packetTypeItems.push(item);
                 }
             })

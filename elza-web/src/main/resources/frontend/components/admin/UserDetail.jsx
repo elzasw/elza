@@ -1,7 +1,7 @@
+// --
 import React from 'react';
-import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {Icon, AbstractReactComponent, NoFocusButton, AddRemoveList, i18n, Loading} from 'components/shared';
+import {Icon, AbstractReactComponent, Tabs, NoFocusButton, AddRemoveList, i18n, StoreHorizontalLoader} from 'components/shared';
 import {indexById, getIdsList} from 'stores/app/utils.jsx'
 import {dateToString} from 'components/Utils.jsx'
 import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
@@ -10,18 +10,20 @@ import {changeUserPermission} from 'actions/admin/permission.jsx'
 import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx'
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {routerNavigate} from 'actions/router.jsx'
-import {usersUserDetailFetchIfNeeded} from 'actions/admin/user.jsx'
-import Permissions from "./Permissions.jsx"
-import {joinGroups, leaveGroup} from 'actions/admin/user.jsx'
+import {joinGroups, leaveGroup, usersUserDetailFetchIfNeeded} from 'actions/admin/user.jsx'
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {renderGroupItem} from "components/admin/adminRenderUtils.jsx"
-import SelectGroupsForm from './SelectGroupsForm.jsx'
-import * as perms from 'actions/user/Permission.jsx';
-
 import './UserDetail.less';
+import FundsPermissionPanel from "./FundsPermissionPanel";
+import ScopesPermissionPanel from "./ScopesPermissionPanel";
+import AdvancedPermissionPanel from "./AdvancedPermissionPanel";
+import SelectItemsForm from "./SelectItemsForm";
+import GroupField from "./GroupField";
+import AdminRightsContainer from "./AdminRightsContainer";
+import {WebApi} from "../../actions/WebApi";
 
 /**
- * Detail u�ivatele s nastaven�m skupin a opr�vn�n�
+ * Detail uživatele s nastavením oprávnění.
  */
 class UserDetail extends AbstractReactComponent {
     static PropTypes = {
@@ -29,18 +31,31 @@ class UserDetail extends AbstractReactComponent {
         userCount: React.PropTypes.number.isRequired,
     };
 
+    static TAB_FUNDS = 0;
+    static TAB_SCOPES = 1;
+    static TAB_ADVANCED = 2;
+
+    static tabItems = [
+        {id: UserDetail.TAB_FUNDS, title: i18n("admin.perms.tabs.funds")},
+        {id: UserDetail.TAB_SCOPES, title: i18n("admin.perms.tabs.scopes")},
+        {id: UserDetail.TAB_ADVANCED, title: i18n("admin.perms.tabs.advanced")}
+    ];
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            selectedTabItem: UserDetail.tabItems[UserDetail.TAB_FUNDS]
+        }
+    }
+
     componentDidMount() {
-        this.dispatch(usersUserDetailFetchIfNeeded())
+        this.dispatch(usersUserDetailFetchIfNeeded());
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(usersUserDetailFetchIfNeeded())
+        this.dispatch(usersUserDetailFetchIfNeeded());
     }
-
-    handleSavePermissions = (data) => {
-        const {userDetail} = this.props;
-        this.dispatch(changeUserPermission(userDetail.id, data));
-    };
 
     handleRemoveGroup = (group, index) => {
         const {userDetail} = this.props;
@@ -50,50 +65,91 @@ class UserDetail extends AbstractReactComponent {
     handleAddGroups = () => {
         const {userDetail} = this.props;
         this.dispatch(modalDialogShow(this, i18n('admin.user.group.add.title'),
-            <SelectGroupsForm onSubmitForm={(groups) => {
-                this.dispatch(joinGroups(userDetail.id, getIdsList(groups)));
-            }} />
-        ))
+            <SelectItemsForm
+                onSubmitForm={(groups) => {
+                    this.dispatch(joinGroups(userDetail.id, getIdsList(groups)));
+                }}
+                fieldComponent={GroupField}
+                renderItem={renderGroupItem}
+            />
+        ));
+    };
+
+    handleTabSelect = (item) => {
+        this.setState({selectedTabItem: item});
+    };
+
+    renderTabContent = () => {
+        const {userDetail} = this.props;
+        const {selectedTabItem} = this.state;
+
+        switch (selectedTabItem.id) {
+            case UserDetail.TAB_FUNDS:
+                return <FundsPermissionPanel
+                    userId={userDetail.id}
+                    onAddPermission={perm => WebApi.addUserPermission(userDetail.id, perm)}
+                    onDeletePermission={perm => WebApi.deleteUserPermission(userDetail.id, perm)}
+                    onDeleteFundPermission={fundId => WebApi.deleteUserFundPermission(userDetail.id, fundId)}
+                />;
+            case UserDetail.TAB_SCOPES:
+                return <ScopesPermissionPanel
+                    userId={userDetail.id}
+                    onAddPermission={perm => WebApi.addUserPermission(userDetail.id, perm)}
+                    onDeletePermission={perm => WebApi.deleteUserPermission(userDetail.id, perm)}
+                    onDeleteScopePermission={scopeId => WebApi.deleteUserScopePermission(userDetail.id, scopeId)}
+                />;
+            case UserDetail.TAB_ADVANCED:
+                return <AdvancedPermissionPanel
+                    userId={userDetail.id}
+                    onAddPermission={perm => WebApi.addUserPermission(userDetail.id, perm)}
+                    onDeletePermission={perm => WebApi.deleteUserPermission(userDetail.id, perm)}
+                />;
+        }
     };
 
     render() {
-        const {userDetail, focus, userCount} = this.props;
+        const {userDetail, userCount} = this.props;
+        const {selectedTabItem} = this.state;
 
         if (userDetail.id === null) {
-            return(
-                <div className='user-detail-container'>
-                    <div className="unselected-msg">
-                        <div className="title">{userCount > 0 ? i18n('admin.user.noSelection.title') : i18n('admin.user.emptyList.title')}</div>
-                        <div className="message">{userCount > 0 ? i18n('admin.user.noSelection.message') : i18n('admin.user.emptyList.message')}</div>
-                    </div>
-                </div>);
+            return <div className='user-detail-container'>
+                <div className="unselected-msg">
+                    <div className="title">{userCount > 0 ? i18n('admin.user.noSelection.title') : i18n('admin.user.emptyList.title')}</div>
+                    <div className="message">{userCount > 0 ? i18n('admin.user.noSelection.message') : i18n('admin.user.emptyList.message')}</div>
+                </div>
+            </div>;
         }
 
-        if (!userDetail.fetched) {
-            return <div className='user-detail-container'><Loading/></div>
-        }
-
-        return <div className='user-detail-container'>
-            <h1>{userDetail.party.record.record}</h1>
-            <div>{i18n("admin.user.label.username")}</div>
-            <div>{userDetail.username}</div>
-            <h2>{i18n("admin.user.title.groups")}</h2>
-            <AddRemoveList
-                items={userDetail.groups}
-                onAdd={this.handleAddGroups}
-                onRemove={this.handleRemoveGroup}
-                addTitle="admin.user.group.action.add"
-                removeTitle="admin.user.group.action.delete"
-                renderItem={renderGroupItem}
-            />
-            <h2>{i18n("admin.user.title.permissions")}</h2>
-            <Permissions
-                area="USER"
-                initData={{permissions: userDetail.permissions}}
-                onSave={this.handleSavePermissions}
-                addTitle="admin.user.permission.action.add"
-                removeTitle="admin.user.permission.action.delete"
-            />
+        return <div className="user-detail-container-wrapper">
+            <StoreHorizontalLoader store={userDetail}/>
+            {userDetail.fetched && <AdminRightsContainer
+                header={<div>
+                    <h1>{userDetail.party.record.record}</h1>
+                    <div>{i18n("admin.user.label.username")}</div>
+                    <div>{userDetail.username}</div>
+                </div>}
+                left={<AddRemoveList
+                    label={<h3>{i18n("admin.user.title.groups")}</h3>}
+                    addInLabel
+                    items={userDetail.groups}
+                    onAdd={this.handleAddGroups}
+                    onRemove={this.handleRemoveGroup}
+                    addTitle="admin.user.group.action.add"
+                    removeTitle="admin.user.group.action.delete"
+                    renderItem={renderGroupItem}
+                />}
+            >
+                <h3>{i18n("admin.user.title.permissions")}</h3>
+                <Tabs.Container>
+                    <Tabs.Tabs items={UserDetail.tabItems}
+                               activeItem={selectedTabItem}
+                               onSelect={this.handleTabSelect}
+                    />
+                    <Tabs.Content>
+                        {this.renderTabContent()}
+                    </Tabs.Content>
+                </Tabs.Container>
+            </AdminRightsContainer>}
         </div>;
     }
 }

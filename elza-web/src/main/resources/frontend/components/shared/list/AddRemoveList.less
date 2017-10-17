@@ -1,6 +1,18 @@
 @import "/variables.less";
 
 .list-add-remove-container {
+    .top-label {
+        display: flex;
+        align-items: center;
+
+        .list-label {
+            //flex-grow: 1;
+        }
+        .list-action {
+            flex-shrink: 0;
+        }
+    }
+
     .btn {
         background: transparent;
         height: 2em;

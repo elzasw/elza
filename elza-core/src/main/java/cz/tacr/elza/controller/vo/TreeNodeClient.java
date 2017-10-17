@@ -1,8 +1,9 @@
 package cz.tacr.elza.controller.vo;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import java.util.List;
+import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 
 /**
@@ -157,7 +158,7 @@ public class TreeNodeClient {
         return accordionLeft;
     }
 
-    public void setAccordionLeft(String accordionLeft) {
+    public void setAccordionLeft(final String accordionLeft) {
         this.accordionLeft = accordionLeft;
     }
 
@@ -165,7 +166,7 @@ public class TreeNodeClient {
         return accordionRight;
     }
 
-    public void setAccordionRight(String accordionRight) {
+    public void setAccordionRight(final String accordionRight) {
         this.accordionRight = accordionRight;
     }
 
@@ -173,7 +174,23 @@ public class TreeNodeClient {
         return icon;
     }
 
-    public void setIcon(String icon) {
+    public void setIcon(final String icon) {
         this.icon = icon;
     }
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(id, version);
+	}
+
+	@Override
+	public boolean equals(final Object o) {
+        if (this == o) return true;
+
+        if (o == null || getClass() != o.getClass()) return false;
+
+        TreeNodeClient that = (TreeNodeClient) o;
+        return Objects.equals(id, that.id) &&
+                Objects.equals(version, that.version);
+	}
 }

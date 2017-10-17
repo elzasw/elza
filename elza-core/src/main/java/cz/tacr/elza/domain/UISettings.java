@@ -12,6 +12,9 @@ import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 /**
  * Uživatelské nastavení.
  *
@@ -189,6 +192,18 @@ public class UISettings {
 
         public EntityType getType() {
             return type;
+        }
+
+        public static Collection<SettingsType> findByType(final EntityType ...types) {
+            Collection<SettingsType> result = new ArrayList<>();
+            for (SettingsType settingsType : SettingsType.values()) {
+                for (EntityType type : types) {
+                    if (settingsType.type == type) {
+                        result.add(settingsType);
+                    }
+                }
+            }
+            return result;
         }
     }
 }

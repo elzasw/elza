@@ -854,6 +854,7 @@ public class ConfigMapperConfiguration {
                     public void mapAtoB(final RulPacketType rulPacketType, final RulPacketTypeVO rulPacketTypeVO, final MappingContext context) {
                         super.mapAtoB(rulPacketType, rulPacketTypeVO, context);
                         rulPacketTypeVO.setPackageId(rulPacketType.getPackage().getPackageId());
+                        rulPacketTypeVO.setRuleSetId(rulPacketType.getRuleSet().getRuleSetId());
                     }
                 })
                 .register();
@@ -878,7 +879,7 @@ public class ConfigMapperConfiguration {
                             }
                             rulRuleSetVO.setGridViews(gridViews);
                         }
-                        rulRuleSetVO.setItemTypeCodes(ruleService.getItemTypeCodesByPackage(rulRuleSet.getPackage()));
+                        rulRuleSetVO.setItemTypeCodes(ruleService.getItemTypeCodesByRuleSet(rulRuleSet));
                     }
                 })
                 .register();
@@ -1008,6 +1009,24 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(UsrPermission.class, UsrPermissionVO.class)
                 .byDefault()
                 .field("permissionId", "id")
+                .customize(new CustomMapper<UsrPermission, UsrPermissionVO>() {
+                    @Override
+                    public void mapAtoB(final UsrPermission usrPermission, final UsrPermissionVO usrPermissionVO, final MappingContext context) {
+                        Class targetEntity = (Class) context.getProperty("targetEntity");
+                        final boolean inherited;
+                        if (targetEntity == UsrUser.class) {
+                            inherited = usrPermission.getGroup() != null;
+                        } else if (targetEntity == UsrGroup.class) {
+                            inherited = false;
+                        } else {
+                            throw new IllegalStateException("Neznámý typ entity " + targetEntity);
+                        }
+                        usrPermissionVO.setInherited(inherited);
+                        if (inherited) {
+                            usrPermissionVO.setGroupId(usrPermission.getGroup().getGroupId());
+                        }
+                    }
+                })
                 .register();
 
         mapperFactory.classMap(RulTemplate.class, RulTemplateVO.class)

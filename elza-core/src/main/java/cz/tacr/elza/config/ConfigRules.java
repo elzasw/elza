@@ -5,11 +5,13 @@ import com.google.common.eventbus.Subscribe;
 import cz.tacr.elza.EventBusListener;
 import cz.tacr.elza.config.rules.ViewConfiguration;
 import cz.tacr.elza.config.rules.RuleConfiguration;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingTypeGroups;
+import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.SettingsRepository;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
 
@@ -28,7 +30,7 @@ import java.util.Map;
 @Component
 @EventBusListener
 public class ConfigRules {
-	
+
 	/**
 	 * Group code used when explicit configuration for given item is not available
 	 */
@@ -43,9 +45,12 @@ public class ConfigRules {
     @Autowired
     private PackageService packageService;
 
+    @Autowired
+    private RuleSetRepository ruleSetRepository;
+
     /**
      * Map of configurations for rules
-     */    
+     */
     private Map<String, RuleConfiguration> ruleConfigs;
 
     @Subscribe
@@ -54,22 +59,23 @@ public class ConfigRules {
         	ruleConfigs = null;
         }
     }
-    
+
     private void initRuleConfigs()
     {
     	ruleConfigs = new HashMap<>();
 
     	// read configuration from DB
         List<UISettings> uiSettingsList = settingsRepository.findByUserAndSettingsTypeAndEntityType(null, UISettings.SettingsType.TYPE_GROUPS, UISettings.EntityType.RULE);
-        
+
         // prepare objects
         if (uiSettingsList!=null) {
             uiSettingsList.forEach(uiSettings -> {
-                SettingTypeGroups ruleSettings = (SettingTypeGroups) packageService.convertSetting(uiSettings);
+                RulRuleSet ruleSet = ruleSetRepository.findOne(uiSettings.getEntityId());
+                SettingTypeGroups ruleSettings = (SettingTypeGroups) packageService.convertSetting(uiSettings, ruleSet);
                 RuleConfiguration ruleConfig = new RuleConfiguration(ruleSettings);
-                ruleConfigs.put(ruleSettings.getCode(), ruleConfig);
+                ruleConfigs.put(ruleSet.getCode(), ruleConfig);
             });
-        }    	
+        }
     }
 
 	private synchronized Map<String, RuleConfiguration> getTypeGroups() {
@@ -78,7 +84,7 @@ public class ConfigRules {
         }
         return ruleConfigs;
     }
-	
+
 	/**
 	 * Return configuration for rules
 	 * @param ruleCode
@@ -93,11 +99,11 @@ public class ConfigRules {
     /**
      * Return view configuration
      */
-    public ViewConfiguration getViewConfiguration(final String ruleCode, final Integer fundId) {        
-        
+    public ViewConfiguration getViewConfiguration(final String ruleCode, final Integer fundId) {
+
         RuleConfiguration ruleConfig = getRuleConfiguration(ruleCode);
         if(ruleConfig==null) {
-        	throw new ObjectNotFoundException("Rules not found, code: "+ruleCode, BaseCode.ID_NOT_EXIST);        	
+        	throw new ObjectNotFoundException("Rules not found, code: "+ruleCode, BaseCode.ID_NOT_EXIST);
         }
         return ruleConfig.getViewConfiguration(fundId);
     }

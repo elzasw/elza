@@ -2,12 +2,15 @@ package cz.tacr.elza.controller;
 
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.ArrFundBaseVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.FundListCountResult;
 import cz.tacr.elza.controller.vo.UISettingsVO;
 import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
@@ -18,6 +21,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.UserCode;
 import cz.tacr.elza.repository.FilteredResult;
+import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.UserService;
@@ -33,6 +37,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -57,6 +63,12 @@ public class UserController {
 
     @Autowired
     private SettingsService settingsService;
+
+    @Autowired
+    private ArrangementController arrangementController;
+
+    @Autowired
+    private FundRepository fundRepository;
 
     /**
      * Získání oprávnění uživatele.
@@ -103,7 +115,7 @@ public class UserController {
         Assert.notNull(params, "Parametry musí být vyplněny");
 
         UsrUser user = userService.createUser(params.getUsername(), params.getPassword(), params.getPartyId());
-        return factoryVO.createUser(user);
+        return factoryVO.createUser(user, true, true);
     }
 
     /**
@@ -125,7 +137,7 @@ public class UserController {
         }
 
         user = userService.changeUser(user, params.getUsername(), params.getPassword());
-        return factoryVO.createUser(user);
+        return factoryVO.createUser(user, true, true);
     }
 
     /**
@@ -148,7 +160,7 @@ public class UserController {
         }
 
         user = userService.changePassword(user, params.getNewPassword());
-        return factoryVO.createUser(user);
+        return factoryVO.createUser(user, true, true);
     }
 
     /**
@@ -177,7 +189,7 @@ public class UserController {
         }
 
         user = userService.changePassword(user, params.getOldPassword(), params.getNewPassword());
-        return factoryVO.createUser(user);
+        return factoryVO.createUser(user, true, true);
     }
 
     /**
@@ -199,7 +211,7 @@ public class UserController {
         }
 
         user = userService.changeActive(user, active);
-        return factoryVO.createUser(user);
+        return factoryVO.createUser(user, true, true);
     }
 
     /**
@@ -213,21 +225,23 @@ public class UserController {
         Assert.notNull(userId, "Identifikátor uživatele musí být vyplněno");
 
         UsrUser user = userService.getUser(userId);
-        return factoryVO.createUser(user);
+        return factoryVO.createUser(user, true, true);
     }
 
     /**
-     * Načtení skupiny s daty pro zobrazení na detailu s možností editace.
+     * Načtení uživatele s daty pro zobrazení na detailu s možností editace.
      *
-     * @param groupId id
+     * @param userId id
      * @return VO
      */
-    @RequestMapping(value = "/group/{groupId}", method = RequestMethod.GET)
-    public UsrGroupVO getGroup(@PathVariable(value = "groupId") final Integer groupId) {
-        Assert.notNull(groupId, "Identifikátor skupiny musí být vyplněn");
+    @RequestMapping(value = "/{userId}/old", method = RequestMethod.GET)
+    @Deprecated
+    // TODO [stanekpa] - ELZA-1552
+    public UsrUserVO getUserOld(@PathVariable(value = "userId") final Integer userId) {
+        Assert.notNull(userId, "Identifikátor uživatele musí být vyplněno");
 
-        UsrGroup group = userService.getGroup(groupId);
-        return factoryVO.createGroup(group, true, true);
+        UsrUser user = userService.getUser(userId);
+        return factoryVO.createUserOld(user);
     }
 
     /**
@@ -253,71 +267,64 @@ public class UserController {
         }
 
         FilteredResult<UsrUser> users = userService.findUser(search, active, disabled, from, count, excludedGroupId);
-        List<UsrUserVO> resultVo = factoryVO.createUserList(users.getList());
+        List<UsrUserVO> resultVo = factoryVO.createUserList(users.getList(), false);
         return new FilteredResultVO<>(resultVo, users.getTotalCount());
     }
 
     /**
-     * Načte seznam skupin.
+     * Načte seznam uživatelů, kteří mají přiřazené nebo zděděné oprávnění na zakládání nových AS.
      *
-     * @param search hledaný řetězec
-     * @param from   počáteční záznam
-     * @param count  počet vrácených záznamů
+     * @param search   hledaný řetězec
+     * @param from     počáteční záznam
+     * @param count    počet vrácených záznamů
+     * @param active   mají se vracet aktivní osoby?
+     * @param disabled mají se vracet zakázané osoby?
      * @return seznam s celkovým počtem
      */
-    @RequestMapping(value = "/group", method = RequestMethod.GET)
-    public FilteredResultVO<UsrGroupVO> findGroup(@Nullable @RequestParam(value = "search", required = false) final String search,
-                                                  @RequestParam("from") final Integer from,
-                                                  @RequestParam("count") final Integer count
+    @RequestMapping(value = "/withFundCreate", method = RequestMethod.GET)
+    public FilteredResultVO<UsrUserVO> findUserWithFundCreate(@Nullable @RequestParam(value = "search", required = false) final String search,
+                                                @RequestParam("active") final Boolean active,
+                                                @RequestParam("disabled") final Boolean disabled,
+                                                @RequestParam("from") final Integer from,
+                                                @RequestParam("count") final Integer count,
+                                                @RequestParam(value = "excludedGroupId", required = false) final Integer excludedGroupId
     ) {
-        FilteredResult<UsrGroup> groups = userService.findGroup(search, from, count);
-        List<UsrGroupVO> resultVo = factoryVO.createGroupList(groups.getList(), false, false);
-        return new FilteredResultVO<>(resultVo, groups.getTotalCount());
-    }
-
-    /**
-     * Vytvoření skupiny.
-     *
-     * @param params parametry pro vytvoření skupiny
-     * @return vytvořená skupina
-     */
-    @RequestMapping(value = "/group", method = RequestMethod.POST)
-    @Transactional
-    public UsrGroupVO createGroup(@RequestBody CreateGroup params) {
-        UsrGroup group = userService.createGroup(params.getName(), params.getCode(), params.getDescription());
-        return factoryVO.createGroup(group, true, true);
-    }
-
-    /**
-     * Smazání skupiny.
-     *
-     * @param groupId identifikátor skupiny
-     */
-    @RequestMapping(value = "/group/{groupId}", method = RequestMethod.DELETE)
-    @Transactional
-    public void deleteGroup(@PathVariable(value = "groupId") final Integer groupId) {
-        UsrGroup group = userService.getGroup(groupId);
-
-        if (group == null) {
-            throw new IllegalArgumentException("Skupina neexistuje");
+        if (!active && !disabled) {
+            throw new IllegalArgumentException("Musí být uveden alespoň jeden z parametrů: active, disabled.");
         }
 
-        userService.deleteGroup(group);
+        FilteredResult<UsrUser> users = userService.findUserWithFundCreate(search, active, disabled, from, count, excludedGroupId);
+        List<UsrUserVO> resultVo = factoryVO.createUserList(users.getList(), false);
+        return new FilteredResultVO<>(resultVo, users.getTotalCount());
     }
 
     /**
-     * Změna skupiny.
+     * Načtení seznamu archivních souborů, pro které může aktuální uživatel nastavovat oprávnění.
      *
-     * @param groupId identifikátor skupiny
-     * @param params  parametry změny skupiny
+     * @param search hledací výraz
+     * @param from počáteční záznam
+     * @param count počet vrácených záznamů
+     * @return seznam s celkovým počtem
      */
-    @RequestMapping(value = "/group/{groupId}", method = RequestMethod.PUT)
-    @Transactional
-    public UsrGroupVO changeGroup(@PathVariable(value = "groupId") final Integer groupId,
-                                  @RequestBody final ChangeGroup params) {
-        UsrGroup group = userService.getGroup(groupId);
-        group = userService.changeGroup(group, params.getName(), params.getDescription());
-        return factoryVO.createGroup(group, true, true);
+    @RequestMapping(value = "/controlFunds", method = RequestMethod.GET)
+    public FilteredResultVO<ArrFundBaseVO> findControlFunds(@Nullable @RequestParam(value = "search", required = false) final String search,
+                                                            @RequestParam("from") final Integer from,
+                                                            @RequestParam("count") final Integer count
+    ) {
+        FilteredResult<ArrFund> funds = userService.findFundsWithPermissions(search, from, count);
+        return new FilteredResultVO<>(factoryVO.createSimpleEntity(funds.getList(), ArrFundBaseVO.class), funds.getTotalCount());
+    }
+
+    /**
+     * Načte seznam uživatelů, kteří mají explicitně (přímo na nich) nastavené nějaké oprávnění pro daný AS.
+     * @param fundId id AS
+     * @return seznam
+     */
+    @RequestMapping(value = "/fund/{fundId}/users", method = RequestMethod.GET)
+    public List<UsrUserVO> findUsersPermissionsByFund(@PathVariable(value = "fundId") final Integer fundId) {
+        ArrFund fund = fundRepository.getOneCheckExist(fundId);
+        List<UsrUser> users = userService.findUsersByFund(fund);
+        return factoryVO.createUserList(users, true);
     }
 
     /**
@@ -355,29 +362,86 @@ public class UserController {
      * @param userId      identifikátor uživatele
      * @param permissions seznam oprávnění
      */
+//    @Transactional
+//    @RequestMapping(value = "/{userId}/permission", method = RequestMethod.POST)
+//    public void changeUserPermission(@PathVariable(value = "userId") final Integer userId,
+//                                     @RequestBody final Permissions permissions) {
+//        UsrUser user = userService.getUser(userId);
+//        List<UsrPermission> usrPermissions = factoryDO.createPermissionList(permissions.getPermissions());
+//        userService.changeUserPermission(user, usrPermissions);
+//    }
+
+    /**
+     * Přidání oprávnění uživatele.
+     *
+     * @param userId      identifikátor uživatele
+     * @param permissions seznam oprávnění pro přidání
+     */
     @Transactional
-    @RequestMapping(value = "/{userId}/permission", method = RequestMethod.POST)
-    public void changeUserPermission(@PathVariable(value = "userId") final Integer userId,
-                                     @RequestBody final Permissions permissions) {
+    @RequestMapping(value = "/{userId}/permission/add", method = RequestMethod.POST)
+    public List<UsrPermissionVO> addUserPermission(@PathVariable(value = "userId") final Integer userId,
+                                     @RequestBody final List<UsrPermissionVO> permissions) {
         UsrUser user = userService.getUser(userId);
-        List<UsrPermission> usrPermissions = factoryDO.createPermissionList(permissions.getPermissions());
-        userService.changeUserPermission(user, usrPermissions);
+        List<UsrPermission> usrPermissions = factoryDO.createPermissionList(permissions);
+        List<UsrPermission> result = userService.addUserPermission(user, usrPermissions, true);
+        return factoryVO.createPermissionList(result, UsrUser.class);
     }
 
     /**
-     * Nastavení oprávnění skupiny.
+     * Odebrání oprávnění uživatele.
      *
-     * @param groupId     identifikátor skupiny
-     * @param permissions seznam oprávnění
+     * @param userId      identifikátor uživatele
+     * @param permissions seznam oprávnění pro odebr8n9
      */
     @Transactional
-    @RequestMapping(value = "/group/{groupId}/permission", method = RequestMethod.POST)
-    public void changeGroupPermission(@PathVariable(value = "groupId") final Integer groupId,
-                                      @RequestBody final Permissions permissions) {
-        UsrGroup group = userService.getGroup(groupId);
-        List<UsrPermission> usrPermissions = factoryDO.createPermissionList(permissions.getPermissions());
-        userService.changeGroupPermission(group, usrPermissions);
+    @RequestMapping(value = "/{userId}/permission/delete", method = RequestMethod.POST)
+    public void deleteUserPermission(@PathVariable(value = "userId") final Integer userId,
+                                     @RequestBody final UsrPermissionVO permissions) {
+        UsrUser user = userService.getUser(userId);
+        List<UsrPermission> usrPermissions = factoryDO.createPermissionList(Collections.singletonList(permissions));
+        userService.deleteUserPermission(user, usrPermissions);
     }
+
+    /**
+     * Odebrání oprávnění uživatele na AS.
+     *
+     * @param userId      identifikátor uživatele
+     * @param fundId      id AS
+     */
+    @Transactional
+    @RequestMapping(value = "/{userId}/permission/delete/fund/{fundId}", method = RequestMethod.POST)
+    public void deleteUserFundPermission(@PathVariable(value = "userId") final Integer userId, @PathVariable("fundId") final Integer fundId) {
+        UsrUser user = userService.getUser(userId);
+        userService.deleteUserFundPermissions(user, fundId);
+    }
+
+    /**
+     * Odebrání oprávnění uživatele na typ rejstříku.
+     *
+     * @param userId      identifikátor uživatele
+     * @param scopeId     id typu rejstříku
+     */
+    @Transactional
+    @RequestMapping(value = "/{userId}/permission/delete/scope/{scopeId}", method = RequestMethod.POST)
+    public void deleteUserScopePermission(@PathVariable(value = "userId") final Integer userId, @PathVariable("scopeId") final Integer scopeId) {
+        UsrUser user = userService.getUser(userId);
+        userService.deleteUserScopePermissions(user, scopeId);
+    }
+
+//    /**
+//     * Nastavení oprávnění skupiny.
+//     *
+//     * @param groupId     identifikátor skupiny
+//     * @param permissions seznam oprávnění
+//     */
+//    @Transactional
+//    @RequestMapping(value = "/group/{groupId}/permission", method = RequestMethod.POST)
+//    public void changeGroupPermission(@PathVariable(value = "groupId") final Integer groupId,
+//                                      @RequestBody final Permissions permissions) {
+//        UsrGroup group = userService.getGroup(groupId);
+//        List<UsrPermission> usrPermissions = factoryDO.createPermissionList(permissions.getPermissions());
+//        userService.changeGroupPermission(group, usrPermissions);
+//    }
 
     /**
      * Pomocná struktura pro vytvoření uživatele.
@@ -421,97 +485,6 @@ public class UserController {
 
         public void setPassword(final String password) {
             this.password = password;
-        }
-    }
-
-    /**
-     * Pomocná struktura pro vytvoření skupiny.
-     */
-    public static class CreateGroup {
-
-        /**
-         * název skupiny
-         */
-        private String name;
-
-        /**
-         * kód skupiny
-         */
-        private String code;
-
-        /** Popis. */
-        private String description;
-
-        public CreateGroup() {
-        }
-
-        public CreateGroup(final String name, final String code) {
-            this.name = name;
-            this.code = code;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(final String name) {
-            this.name = name;
-        }
-
-        public String getCode() {
-            return code;
-        }
-
-        public void setCode(final String code) {
-            this.code = code;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public void setDescription(String description) {
-            this.description = description;
-        }
-    }
-
-    /**
-     * Pomocná struktura pro vytvoření skupiny.
-     */
-    public static class ChangeGroup {
-
-        /**
-         * název skupiny
-         */
-        private String name;
-
-        /**
-         * popis skupiny
-         */
-        private String description;
-
-        public ChangeGroup() {
-        }
-
-        public ChangeGroup(final String name, final String description) {
-            this.name = name;
-            this.description = description;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(final String name) {
-            this.name = name;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public void setDescription(final String description) {
-            this.description = description;
         }
     }
 

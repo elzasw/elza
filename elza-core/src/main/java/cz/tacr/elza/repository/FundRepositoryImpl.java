@@ -10,8 +10,11 @@ import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -76,10 +79,70 @@ public class FundRepositoryImpl implements FundRepositoryCustom {
 
     }
 
+    @Override
+    public FilteredResult<ArrFund> findFundsWithPermissions(final String search, final Integer firstResult, final Integer maxResults, final Integer userId) {
+        TypedQuery<ArrFund> data = buildFundFindQuery(true, search, firstResult, maxResults, userId);
+        TypedQuery<Number> count = buildFundFindQuery(false, search, firstResult, maxResults, userId);
+        return new FilteredResult<>(firstResult, maxResults, count.getSingleResult().longValue(), data.getResultList());
+    }
+
+    private <T> TypedQuery<T> buildFundFindQuery(final boolean dataQuery,
+                                                 final String search,
+                                                 final Integer firstResult,
+                                                 final Integer maxResults,
+                                                 final Integer userId) {
+        StringBuilder conds = new StringBuilder();
+
+        StringBuilder query = new StringBuilder();
+        query.append("FROM usr_permission fu" +
+                " JOIN arr_fund f on fu.fund = f"
+        );
+
+        // Podmínky hledání
+        Map<String, Object> parameters = new HashMap<>();
+        if (!StringUtils.isEmpty(search)) {
+            conds.append(" LOWER(f.name) LIKE :search OR LOWER(f.internalCode) LIKE :search");
+            parameters.put("search", "%" + search.toLowerCase() + "%");
+        }
+
+        if (userId != null) {
+            if (conds.length() != 0) {
+                conds.append(" AND ");
+            }
+            conds.append(" fu.userId IN (SELECT p.userControlId FROM usr_permission p WHERE p.userId = :userId OR p.groupId IN (SELECT gu.groupId FROM usr_group_user gu WHERE gu.userId = :userId))");
+            parameters.put("userId", userId);
+        }
+
+        // Připojení podmínek ke query
+        if (conds.length() > 0) {
+            query.append(" WHERE " + conds.toString());
+        }
+
+        TypedQuery q;
+        if (dataQuery) {
+            String dataQueryStr = "select distinct f " + query.toString() + " order by f.name";
+            q = entityManager.createQuery(dataQueryStr, ArrFund.class);
+        } else {
+            String countQueryStr = "select count(distinct f) " + query.toString();
+            q = entityManager.createQuery(countQueryStr, Number.class);
+        }
+
+        parameters.forEach(q::setParameter);
+
+        if (dataQuery) {
+            q.setFirstResult(firstResult);
+            if (maxResults >= 0) {
+                q.setMaxResults(maxResults);
+            }
+        }
+
+        return q;
+    }
+
     /**
      * Vytvoří WHERE podmínky pro dotazy vyhledávání podle fulltextu.
      *
-     * @param fulltext fulltext
+     * @param fulltext     fulltext
      * @param readAllFunds
      * @param user
      * @return WHERE podmínka (pouze pokud je nastaven fulltext)

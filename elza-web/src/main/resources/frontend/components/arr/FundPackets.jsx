@@ -7,7 +7,7 @@ import './FundPackets.less'
 import React from 'react';
 import {connect} from 'react-redux'
 import AddPacketForm from './AddPacketForm';
-import {AbstractReactComponent, Icon, i18n, FilterableListBox, Loading, FixedDropDownButton, FormInput} from 'components/shared';
+import {AbstractReactComponent, Icon, i18n, FilterableListBox, HorizontalLoader, FixedDropDownButton, FormInput} from 'components/shared';
 import {DropdownButton, MenuItem} from 'react-bootstrap'
 import {fetchFundPacketsIfNeeded, fundPacketsFilterByText, fundPacketsChangeSelection, fundPacketsFilterByState, fundPacketsChangeState, fundPacketsCreate, fundPacketsChangeNumbers, fundPacketsDelete} from 'actions/arr/fundPackets.jsx'
 import {getMapFromList, getSetFromIdsList} from 'stores/app/utils.jsx'
@@ -55,20 +55,21 @@ class FundPackets extends AbstractReactComponent {
     handleSelectionChange(selectionType, ids, unselectedIds, type) {
         const {versionId, packets, selectedIds} = this.props;
 
-        var newSelectedIds
+        let newSelectedIds;
         switch (type) {
             case "TOGGLE_ITEM":
-                var s = getSetFromIdsList([...selectedIds, ...ids])
+                let s = getSetFromIdsList([...selectedIds, ...ids]);
                 unselectedIds.forEach(id => {
                     delete s[id]
-                })
-                newSelectedIds = Object.keys(s)
-                break
+                });
+                newSelectedIds = Object.keys(s);
+                break;
             case "SELECT_ALL":
-                newSelectedIds = Object.keys(getSetFromIdsList([...selectedIds, ...ids]))
-                break
+                newSelectedIds = Object.keys(getSetFromIdsList([...selectedIds, ...ids]));
+                break;
             case "UNSELECT_ALL":
-                newSelectedIds = []
+                newSelectedIds = Object.keys(getSetFromIdsList([...selectedIds]));
+                newSelectedIds = newSelectedIds.filter(id => unselectedIds.indexOf(parseInt(id)) === -1);
                 break
         }
         this.dispatch(fundPacketsChangeSelection(versionId, newSelectedIds))
@@ -165,29 +166,36 @@ class FundPackets extends AbstractReactComponent {
         }
     }
 
-    render() {
-        const {versionId, filterState, filterText, fetched, packets, selectedIds, packetTypes} = this.props;
-        if (!fetched || !packetTypes.fetched || !this.pf) {
-            return <Loading/>
-        }
-
-        const items = packets.map(packet => {
-            var name = this.pf.format(packet);
+    createItems = (packets) => {
+        return packets.map(packet => {
+            const name = this.pf.format(packet);
             return {id: packet.id, name: name}
-        })
+        });
+    };
 
-        const altSearch = (
-            <div className="state-filter">
+    render() {
+        const {filterState, isFetching, filterText, fetched, packets, selectedIds, packetTypes} = this.props;
+
+        const allFetched = (fetched && packetTypes.fetched && this.pf) ? true : false;
+        const someFetching = isFetching || packetTypes.isFetching;
+
+        let altSearch;
+        if (allFetched) {
+            altSearch = <div className="state-filter">
                 <FormInput componentClass="select" _label={i18n('arr.fund.packets.state')} value={filterState} onChange={this.handleFilterStateChange}>
                     <option value="OPEN">{i18n('arr.fund.packets.state.open')}</option>
                     <option value="CLOSED">{i18n('arr.fund.packets.state.closed')}</option>
                     <option value="CANCELED">{i18n('arr.fund.packets.state.canceled')}</option>
                 </FormInput>
-            </div>
-        )
+            </div>;
+        }
+
         return (
             <div className='fund-packets'>
-                <div className="actions-container">
+                {allFetched && someFetching && <HorizontalLoader hover showText={false} />}
+                {!allFetched && <HorizontalLoader/>}
+
+                {allFetched && <div className="actions-container">
                     <div className="actions">
                         <DropdownButton id='dropdown-packet' noCaret title={<div><Icon glyph='fa-plus' /> {i18n('arr.fund.packets.action.add')}</div>}>
                             <MenuItem onClick={this.handleAddOne} eventKey='changeNumbers'>{i18n('arr.fund.packets.action.add.single')}</MenuItem>
@@ -203,11 +211,11 @@ class FundPackets extends AbstractReactComponent {
                             <MenuItem onClick={this.handleDelete} eventKey='delete'>{i18n('arr.fund.packets.action.delete')}</MenuItem>
                         </FixedDropDownButton>
                     </div>
-                </div>
+                </div>}
 
-                <FilterableListBox
+                {allFetched && <FilterableListBox
                     ref="listBox"
-                    items={items}
+                    items={this.createItems(packets)}
                     searchable
                     filterText={filterText}
                     supportInverseSelection={false}
@@ -215,7 +223,7 @@ class FundPackets extends AbstractReactComponent {
                     altSearch={altSearch}
                     onChange={this.handleSelectionChange}
                     onSearch={this.handleTextSearch}
-                />
+                />}
             </div>
         )
     }

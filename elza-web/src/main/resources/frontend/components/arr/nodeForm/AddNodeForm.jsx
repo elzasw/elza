@@ -26,7 +26,7 @@ import {
     AbstractReactComponent,
     i18n,
     FormInput,
-    Loading,
+    HorizontalLoader,
     Autocomplete
 } from 'components/shared';
 import { isFundRootId, getOneSettings } from 'components/arr/ArrUtils.jsx';
@@ -491,7 +491,7 @@ class AddNodeForm extends AbstractReactComponent {
                         {i18n('arr.fund.addNode.scenario')}
                     </ControlLabel>
                     {loading
-                        ? <Loading />
+                        ? <HorizontalLoader />
                         : <FormGroup key="Scenarios">
                               {scnRadios}
                           </FormGroup>}

@@ -1,6 +1,6 @@
 import React from 'react';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, Icon, i18n, FileListBox, Loading} from 'components/shared';
+import {AbstractReactComponent, Icon, i18n, FileListBox, StoreHorizontalLoader} from 'components/shared';
 import {Button} from 'react-bootstrap'
 import {fetchFundOutputFilesIfNeeded, fundOutputFilesFilterByText} from 'actions/arr/fundOutputFiles.jsx'
 import {UrlFactory} from 'actions/index.jsx';
@@ -16,9 +16,7 @@ class FundOutputFiles extends AbstractReactComponent {
     static PropTypes = {
         outputResultId: React.PropTypes.number.isRequired,
         versionId: React.PropTypes.number.isRequired,
-        files: React.PropTypes.array,
-        filterText: React.PropTypes.string.isRequired,
-        fetched: React.PropTypes.bool.isRequired
+        fundOutputFiles: React.PropTypes.object.isRequired
     };
 
     state = {
@@ -57,22 +55,21 @@ class FundOutputFiles extends AbstractReactComponent {
     };
 
     render() {
-        const {filterText, isFetching, data} = this.props;
-
-        if (isFetching || !data) {
-            return <Loading/>
-        }
+        const {fundOutputFiles} = this.props;
 
         return <div className='fund-packets'>
             <Button onClick={this.handleDownloadAll}>{i18n('global.action.downloadAll')}</Button>
-            <FileListBox
+
+            <StoreHorizontalLoader store={fundOutputFiles} />
+
+            {fundOutputFiles.fetched && <FileListBox
                 ref="listBox"
-                items={data.rows}
+                items={fundOutputFiles.data.rows}
                 searchable
-                filterText={filterText}
+                filterText={fundOutputFiles.filterText}
                 onSearch={this.handleTextSearch}
                 onDownload={this.handleDownload}
-            />
+            />}
         </div>
     }
 }

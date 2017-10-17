@@ -109,15 +109,19 @@ export function stateEquals(x, y) {
     if ( ! x.hasOwnProperty( p ) ) continue;
       // other properties were tested using x.constructor === y.constructor
 
-    if ( ! y.hasOwnProperty( p ) ) return false;
+    if ( ! y.hasOwnProperty( p ) ) {
+        return false;
+    }
       // allows to compare x[ p ] and y[ p ] when set to undefined
 
     if ( x[ p ] === y[ p ] ) continue;
       // if they have the same strict value or identity then they are equal
 
-    if ( typeof( x[ p ] ) !== "object" ) return false;
-      // Numbers, Strings, Functions, Booleans must be strictly equal
+    if ( typeof( x[ p ] ) !== "object" && typeof( x[ p ] ) !== "boolean") {
+        return false;
+    }
 
+    // Numbers, Strings, Functions, Booleans must be strictly equal
     if (x[ p ] !==  y[ p ] ) {
 //console.log(p)
         return false;

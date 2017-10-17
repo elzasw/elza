@@ -38,6 +38,7 @@ import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.domain.ParRegistryRole;
 import cz.tacr.elza.repository.RegistryRoleRepository;
+import ma.glasnost.orika.MappingContext;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -350,11 +351,17 @@ public class ClientFactoryVO {
     /**
      * Vytvoří seznam VO.
      * @param users vstupní seznam uživatelů
+     * @param initPermissions mají se plnit oprávnění?
      * @return seznam VO
      */
-    public List<UsrUserVO> createUserList(final List<UsrUser> users) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.mapAsList(users, UsrUserVO.class);
+    public List<UsrUserVO> createUserList(final List<UsrUser> users, final boolean initPermissions) {
+        if (users == null) {
+            return null;
+        }
+
+        return users.stream()
+                .map(x -> createUser(x, initPermissions, false))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -1324,7 +1331,7 @@ public class ClientFactoryVO {
         // naplnění mapy podle oblíbených z nastavení
         Map<Integer, List<Integer>> typeSpecsMap = new HashMap<>();
         for (UISettings favoritesItemType : favoritesItemTypes) {
-            SettingFavoriteItemSpecs setting = (SettingFavoriteItemSpecs) packageServise.convertSetting(favoritesItemType);
+            SettingFavoriteItemSpecs setting = (SettingFavoriteItemSpecs) packageServise.convertSetting(favoritesItemType, null);
             if (CollectionUtils.isNotEmpty(setting.getFavoriteItems())) {
                 List<RulItemSpec> itemSpecs = itemSpecRepository.findOneByCodes(setting.getFavoriteItems().stream()
                         .map(SettingFavoriteItemSpecs.FavoriteItem::getValue).collect(Collectors.toList()));
@@ -1840,9 +1847,53 @@ public class ClientFactoryVO {
      * @param permissions vstupní seznam oprávnění
      * @return seznam VO
      */
-    public List<UsrPermissionVO> createPermissionList(final List<UsrPermission> permissions) {
+    public List<UsrPermissionVO> createPermissionList(final List<UsrPermission> permissions, Class targetEntity) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.mapAsList(permissions, UsrPermissionVO.class);
+        Map<Object, Object> map = new HashMap<>();
+        map.put("targetEntity", targetEntity);
+        MappingContext context = new MappingContext(map);
+        return mapper.mapAsList(permissions, UsrPermissionVO.class, context);
+    }
+
+    /**
+     * Vytvoří VO.
+     * @param permission vstupní oprávnění
+     * @return VO
+     */
+    public UsrPermissionVO createPermission(final UsrPermission permission, Class targetEntity) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        Map<Object, Object> map = new HashMap<>();
+        map.put("targetEntity", targetEntity);
+        MappingContext context = new MappingContext(map);
+        return mapper.map(permission, UsrPermissionVO.class, context);
+    }
+
+    /**
+     * Vytvoří VO uživatele s návaznými daty.
+     * @param user uživatel
+     * @param initPermissions mají se plnit oprávnění?
+     * @param initGroups mají se plnit skuipny?
+     * @return VO
+     */
+    public UsrUserVO createUser(final UsrUser user, final boolean initPermissions, final boolean initGroups) {
+        // Hlavní objekt
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        UsrUserVO result = mapper.map(user, UsrUserVO.class);
+
+        // Načtení oprávnění
+        if (initPermissions) {
+//        List<UsrPermission> permissions = permissionRepository.findByUserOrderByPermissionIdAsc(user);
+            List<UsrPermission> permissions = permissionRepository.getAllPermissionsWithGroups(user);
+            result.setPermissions(createPermissionList(permissions, UsrUser.class));
+        }
+
+        // Načtení členství ve skupinách
+        if (initGroups) {
+            List<UsrGroup> groups = groupRepository.findByUser(user);
+            result.setGroups(createGroupList(groups, false, false));
+        }
+
+        return result;
     }
 
     /**
@@ -1850,14 +1901,16 @@ public class ClientFactoryVO {
      * @param user uživatel
      * @return VO
      */
-    public UsrUserVO createUser(final UsrUser user) {
+    @Deprecated
+    public UsrUserVO createUserOld(final UsrUser user) {
         // Hlavní objekt
         MapperFacade mapper = mapperFactory.getMapperFacade();
         UsrUserVO result = mapper.map(user, UsrUserVO.class);
 
         // Načtení oprávnění
         List<UsrPermission> permissions = permissionRepository.findByUserOrderByPermissionIdAsc(user);
-        result.setPermissions(createPermissionList(permissions));
+//        List<UsrPermission> permissions = permissionRepository.getAllPermissionsWithGroups(user);
+        result.setPermissions(createPermissionList(permissions, UsrUser.class));
 
         // Načtení členství ve skupinách
         List<UsrGroup> groups = groupRepository.findByUser(user);
@@ -1879,12 +1932,16 @@ public class ClientFactoryVO {
         UsrGroupVO result = mapper.map(group, UsrGroupVO.class);
 
         // Načtení oprávnění
-        List<UsrPermission> permissions = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
-        result.setPermissions(createPermissionList(permissions));
+        if (initPermissions) {
+            List<UsrPermission> permissions = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
+            result.setPermissions(createPermissionList(permissions, UsrGroup.class));
+        }
 
         // Přiřazení uživatelé
-        List<UsrUser> users = userRepository.findByGroup(group);
-        result.setUsers(createUserList(users));
+        if (initUsers) {
+            List<UsrUser> users = userRepository.findByGroup(group);
+            result.setUsers(createUserList(users, false));
+        }
 
         return result;
     }

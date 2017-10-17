@@ -11,11 +11,26 @@ import cz.tacr.elza.domain.UsrPermission;
 public class UsrPermissionVO {
     /** Identifikátor. */
     private Integer id;
+
+    /**
+     * Je právo zděděné ze skupiny?
+     */
+    private Boolean inherited;
+
+    /** Pokud je právo zděděné, je zde id skupiny. */
+    private Integer groupId;
+
     /** Typ oprávnění. */
     private UsrPermission.Permission permission;
 
     /** AS, ke kterému se vztahuje oprávnění. */
     private ArrFundBaseVO fund;
+
+    /** Skupina, ke které se vztahuje oprávnění. */
+    private UsrGroupVO groupControl;
+
+    /** Uživatel, ke kterému se vztahuje oprávnění. */
+    private UsrUserVO userControl;
 
     /** Scope, ke kterému se vztahuje oprávnění. */
     private RegScopeVO scope;
@@ -51,5 +66,37 @@ public class UsrPermissionVO {
 
     public void setId(final Integer id) {
         this.id = id;
+    }
+
+    public Integer getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(Integer groupId) {
+        this.groupId = groupId;
+    }
+
+    public Boolean getInherited() {
+        return inherited;
+    }
+
+    public void setInherited(Boolean inherited) {
+        this.inherited = inherited;
+    }
+
+    public UsrGroupVO getGroupControl() {
+        return groupControl;
+    }
+
+    public void setGroupControl(UsrGroupVO groupControl) {
+        this.groupControl = groupControl;
+    }
+
+    public UsrUserVO getUserControl() {
+        return userControl;
+    }
+
+    public void setUserControl(UsrUserVO userControl) {
+        this.userControl = userControl;
     }
 }

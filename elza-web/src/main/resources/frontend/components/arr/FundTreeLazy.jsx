@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {VirtualList, NoFocusButton, AbstractReactComponent, i18n, Loading, Icon, SearchWithGoto, Utils} from 'components/shared';
+import {VirtualList, NoFocusButton, AbstractReactComponent, i18n, HorizontalLoader, StoreHorizontalLoader, Icon, SearchWithGoto, Utils} from 'components/shared';
 import {Nav, Input, NavItem, Button, DropdownButton} from 'react-bootstrap';
 const classNames = require('classnames');
 import {propsEquals} from 'components/Utils.jsx'
@@ -190,7 +190,7 @@ class FundTreeLazy extends AbstractReactComponent {
             closed: !expanded,
             active: active,
             focus: this.props.focusId === node.id,
-            "node-color": this.props.colorCoded 
+            "node-color": this.props.colorCoded
         });
         const iconClass = classNames({
             "node-icon": true,
@@ -232,7 +232,7 @@ class FundTreeLazy extends AbstractReactComponent {
         };
         if(iconRemap[icon] && this.props.colorCoded){
             icon = iconRemap[icon];
-        } 
+        }
         return <div key={node.id} className={cls}>
             {levels}
             {expCol}
@@ -248,7 +248,7 @@ class FundTreeLazy extends AbstractReactComponent {
     };
 
     render() {
-        const {className, actionAddons, multipleSelection, onFulltextNextItem, onFulltextPrevItem, onFulltextSearch,
+        const {fetched, isFetching, className, actionAddons, multipleSelection, onFulltextNextItem, onFulltextPrevItem, onFulltextSearch,
             onFulltextChange, filterText, searchedIds, filterCurrentIndex, filterResult,
             extendedSearch, onClickExtendedSearch, extendedReadOnly} = this.props;
 
@@ -290,6 +290,7 @@ class FundTreeLazy extends AbstractReactComponent {
                     {actionAddons}
                 </div>
                 <div className='fa-tree-lazy-container' ref="treeContainer">
+                    <StoreHorizontalLoader store={{fetched, isFetching}} />
                     {this.state.treeContainer && <VirtualList
                         scrollTopPadding={TREE_TOP_PADDING}
                         tagName='div'

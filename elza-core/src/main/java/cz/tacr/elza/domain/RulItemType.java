@@ -110,6 +110,10 @@ public class RulItemType {
     @Transient
     private Boolean indefinable;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
+    @JoinColumn(name = "ruleSetId", nullable = false)
+    private RulRuleSet ruleSet;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
@@ -331,6 +335,20 @@ public class RulItemType {
      */
     public void setPackage(final RulPackage rulPackage) {
         this.rulPackage = rulPackage;
+    }
+
+    /**
+     * @return pravidla
+     */
+    public RulRuleSet getRuleSet() {
+        return ruleSet;
+    }
+
+    /**
+     * @param ruleSet pravidla
+     */
+    public void setRuleSet(final RulRuleSet ruleSet) {
+        this.ruleSet = ruleSet;
     }
 
     /**

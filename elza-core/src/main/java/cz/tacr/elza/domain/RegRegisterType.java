@@ -126,7 +126,7 @@ public class RegRegisterType {
      * @return Příznak, zda rejstříková hesla tohoto typu rejstříku tvoří hierarchii.
      */
     public void setHierarchical(final Boolean hierarchical) {
-        this.hierarchical = hierarchical;
+            this.hierarchical = hierarchical;
     }
 
     /**

@@ -8,7 +8,7 @@ import {dateTimeToString} from "components/Utils.jsx";
 import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {
-    Loading,
+    StoreHorizontalLoader,
     i18n,
     FormInput,
     AbstractReactComponent,
@@ -182,20 +182,19 @@ class ArrRequestDetail extends AbstractReactComponent {
                 <div className="title">{i18n('arr.request.noSelection.title')}</div>
                 <div className="msg-text">{i18n('arr.request.noSelection.message')}</div>
             </div>;
-        } else if (requestDetail.fetched && externalSystems.fetched) {
-
-            let externalSystemsMap = {};
-
-            externalSystems.items.forEach((item) => externalSystemsMap[item.id] = item);
-
+        } else if (requestDetail.fetched) {
             const req = requestDetail.data;
             const reqType = getRequestType(req);
 
             let extSystem = {};
-            if (reqType === DIGITIZATION) {
-                extSystem = externalSystemsMap[req.digitizationFrontdeskId];
-            } else {
-                extSystem = externalSystemsMap[req.digitalRepositoryId]
+            if (externalSystems.fetched) {
+                let externalSystemsMap = {};
+                externalSystems.items.forEach((item) => externalSystemsMap[item.id] = item);
+                if (reqType === DIGITIZATION) {
+                    extSystem = externalSystemsMap[req.digitizationFrontdeskId];
+                } else {
+                    extSystem = externalSystemsMap[req.digitalRepositoryId]
+                }
             }
 
             form = (
@@ -215,7 +214,7 @@ class ArrRequestDetail extends AbstractReactComponent {
                     </div>
 
                     <div className="form-group">
-                        <label>{i18n("arr.request.title.daoRequest.system")}</label> {extSystem.name}
+                        <label>{i18n("arr.request.title.daoRequest.system")}</label> {extSystem ? extSystem.name : "-"}
                     </div>
 
                     {reqType === DAO && <div className="form-group">
@@ -259,11 +258,10 @@ class ArrRequestDetail extends AbstractReactComponent {
                     </div>}
                 </div>
             )
-        } else {
-            form = <Loading value={i18n('global.data.loading')}/>;
         }
 
         return <Shortcuts name='ArrRequestDetail' handler={this.handleShortcuts}>
+            {requestDetail.id !== null && <StoreHorizontalLoader store={requestDetail} />}
             <div className='arr-request-detail-container'>
                 {form}
             </div>

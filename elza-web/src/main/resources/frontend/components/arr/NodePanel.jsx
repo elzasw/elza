@@ -10,7 +10,7 @@ const PARENT_CHILD_MAX_LENGTH = 250
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {TooltipTrigger, Icon, ListBox, AbstractReactComponent, i18n, Loading,  Accordion} from 'components/shared';
+import {TooltipTrigger, Icon, ListBox, AbstractReactComponent, i18n, HorizontalLoader, Loading,  Accordion} from 'components/shared';
 import VisiblePolicyForm from './VisiblePolicyForm'
 import SubNodeDao from './SubNodeDao'
 import SubNodeRegister from './SubNodeRegister'
@@ -638,7 +638,7 @@ return true
         var rows = [];
 
         if (!node.nodeInfoFetched) {
-            rows.push(<Loading key="loading" value={i18n('global.data.loading.node')}/>);
+            rows.push(<HorizontalLoader key="loading" text={i18n('global.data.loading.node')}/>);
         } else{
             if (node.viewStartIndex > 0) {
                 rows.push(
@@ -756,7 +756,7 @@ return true
             if (node.subNodeInfo.fetched || node.selectedSubNodeId == null) {
                 children = this.renderChildren(this.getChildNodes());
             } else {
-                children = <div key='children' className='children'><Loading value={i18n('global.data.loading.node.children')} /></div>
+                children = <div key='children' className='children'><HorizontalLoader text={i18n('global.data.loading.node.children')} /></div>
             }
         }
 
@@ -804,7 +804,7 @@ return true
                 readMode={readMode}
             />
         } else {
-            form = <Loading value={i18n('global.data.loading.form')}/>
+            form = <HorizontalLoader text={i18n('global.data.loading.form')}/>
         }
 
         let record;

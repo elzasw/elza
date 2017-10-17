@@ -14,6 +14,8 @@ class AddRemoveList extends AbstractReactComponent {
 
     static propTypes = {
         items: React.PropTypes.array.isRequired,
+        label: React.PropTypes.string,  // pokud je uvedeno, zobrazí se jako nadpis celé sekce
+        addInLabel: React.PropTypes.bool,   // pokud je true, je akce přidání zobrazena u labelu - tedy nahoře
         onAdd: React.PropTypes.func.isRequired,
         onRemove: React.PropTypes.func.isRequired,
         renderItem: React.PropTypes.func.isRequired,
@@ -35,7 +37,7 @@ class AddRemoveList extends AbstractReactComponent {
     };
 
     render() {
-        const {items, readOnly, className, onAdd, renderItem, addTitle, removeTitle} = this.props;
+        const {addInLabel, label, items, readOnly, className, onAdd, renderItem, addTitle, removeTitle} = this.props;
 
         const groups = items == null ? [] : items.map((item, index) => {
             return (
@@ -50,16 +52,25 @@ class AddRemoveList extends AbstractReactComponent {
             )
         });
 
+        let addAction;
+        if (!readOnly) {
+            addAction = <div className="actions-container">
+                <NoFocusButton onClick={onAdd} title={i18n(addTitle)}>
+                    <Icon glyph="fa-plus"/>
+                </NoFocusButton>
+            </div>
+        }
+
         return (
             <div className={className ? "list-add-remove-container " + className : "list-add-remove-container"}>
+                {(label || addInLabel) && <div className="top-label">
+                    <div className="list-label">{label}</div>
+                    <div className="list-action">{addInLabel && addAction}</div>
+                </div>}
                 <div className="item-list-container">
                     {groups}
                 </div>
-                {!readOnly && <div className="actions-container">
-                    <NoFocusButton onClick={onAdd} title={i18n(addTitle)}>
-                        <Icon glyph="fa-plus"/>
-                    </NoFocusButton>
-                </div>}
+                {!addInLabel && addAction}
             </div>
         )
     }

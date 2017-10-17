@@ -8,7 +8,7 @@ import registryList from "stores/app/registry/registryList"
 import registryDetail from "stores/app/registry/registryDetail"
 
 const initialState = {
-    partyList: SimpleListReducer(undefined, undefined, {filter:{text:null, type:null, itemSpecId: null}}),
+    partyList: SimpleListReducer(undefined, undefined, {filter:{text:null, type:null, itemSpecId: null, scopeId: null, from: 0}}),
     partyDetail: DetailReducer(),
     registryDetail: registryDetail(),
     preparedRequestList: SimpleListReducer(),   // seznam neodeslaných požadavků - sdíleno pro celou aplikaci
@@ -16,7 +16,7 @@ const initialState = {
     regExtSystemList: SimpleListReducer(),   // seznam externích systémů
     extSystemDetail: DetailReducer(),
     extSystemList: SimpleListReducer(),   // seznam externích systémů
-    registryList: registryList(undefined, undefined, {filter:{text: null, registryParentId: null, registryTypeId: null, versionId: null, itemSpecId: null, parents: [], typesToRoot: null}}),
+    registryList: registryList(undefined, undefined, {filter:{text: null, registryParentId: null, registryTypeId: null, versionId: null, itemSpecId: null, parents: [], typesToRoot: null, scopeId: null, from: 0}}),
 };
 
 export default function app(state = initialState, action) {

@@ -1,16 +1,9 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RegVariantRecord;
-import cz.tacr.elza.domain.UsrPermissionView;
-import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.domain.enumeration.StringLength;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.stereotype.Component;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -21,12 +14,18 @@ import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import javax.persistence.criteria.Subquery;
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.stereotype.Component;
+
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.enumeration.StringLength;
 
 /**
  * Implementace repository osob.
@@ -45,19 +44,18 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
                                                  final Set<Integer> registerTypeIds,
                                                  final Integer firstResult,
                                                  final Integer maxResults,
-                                                 final Set<Integer> scopeIds,
-                                                 final boolean readAllScopes,
-                                                 final UsrUser user) {
+                                                 final Set<Integer> scopeIds) {
 
-        if(CollectionUtils.isEmpty(scopeIds)) {
-            return Collections.EMPTY_LIST;
+        if (CollectionUtils.isEmpty(scopeIds)) {
+            return Collections.emptyList();
         }
 
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<ParParty> query = builder.createQuery(ParParty.class);
         Root<ParParty> party = query.from(ParParty.class);
 
-        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, partyTypeId, registerTypeIds, party, builder, scopeIds, readAllScopes, user, query);
+        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, partyTypeId, registerTypeIds, party,
+                builder, scopeIds, query);
 
         query.select(party);
         if (condition != null) {
@@ -79,9 +77,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
     public long findPartyByTextAndTypeCount(final String searchRecord,
                                             final Integer partyTypeId,
                                             final Set<Integer> registerTypeIds,
-                                            final Set<Integer> scopeIds,
-                                            final boolean readAllScopes,
-                                            final UsrUser user) {
+                                            final Set<Integer> scopeIds) {
 
         if(CollectionUtils.isEmpty(scopeIds)){
             return 0;
@@ -91,7 +87,8 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
         CriteriaQuery<Long> query = builder.createQuery(Long.class);
         Root<ParParty> party = query.from(ParParty.class);
 
-        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, partyTypeId, registerTypeIds, party, builder, scopeIds, readAllScopes, user, query);
+        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, partyTypeId, registerTypeIds, party,
+                builder, scopeIds, query);
 
         query.select(builder.countDistinct(party));
         if (condition != null) {
@@ -104,23 +101,20 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 
     /**
      * Připraví dotaz pro nalezení rejstříkových záznamů.
-     *  @param searchRecord      hledaný řetězec, může být null
+     * @param searchRecord      hledaný řetězec, může být null
      * @param partyTypeId       typ záznamu
      * @param builder           buider pro vytváření podmínek
      * @param scopeIds seznam tříd rejstříků, ve kterých se vyhledává
-     * @param readAllScopes
-     * @param user @return výsledné podmínky pro dotaz, nebo null pokud není za co filtrovat
      * @param query
+     * @return výsledné podmínky pro dotaz, nebo null pokud není za co filtrovat
      */
     private <T> Predicate preparefindRegRecordByTextAndType(final String searchRecord,
-                                                        final Integer partyTypeId,
-                                                        final Set<Integer> registerTypeIds,
-                                                        final Root<ParParty> party,
-                                                        final CriteriaBuilder builder,
-                                                        final Set<Integer> scopeIds,
-                                                        final boolean readAllScopes,
-                                                        final UsrUser user,
-                                                        final CriteriaQuery<T> query) {
+                                                            final Integer partyTypeId,
+                                                            final Set<Integer> registerTypeIds,
+                                                            final Root<ParParty> party,
+                                                            final CriteriaBuilder builder,
+                                                            final Set<Integer> scopeIds,
+                                                            final CriteriaQuery<T> query) {
 
         final String searchString = (searchRecord != null ? searchRecord.toLowerCase() : null);
 
@@ -147,17 +141,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
             condition.add(builder.equal(partyType.get(ParPartyType.PARTY_TYPE_ID), partyTypeId));
         }
 
-        if (!readAllScopes && user != null) {
-
-            Subquery<UsrPermissionView> subquery = query.subquery(UsrPermissionView.class);
-            Root<UsrPermissionView> rootSubquery = subquery.from(UsrPermissionView.class);
-            subquery.select(rootSubquery.get(UsrPermissionView.SCOPE));
-            subquery.where(builder.equal(rootSubquery.get(UsrPermissionView.USER), user));
-
-            condition.add(scope.get(RegScope.SCOPE_ID).in(subquery));
-        } else {
-            condition.add(scope.get(RegScope.SCOPE_ID).in(scopeIds));
-        }
+        condition.add(scope.get(RegScope.SCOPE_ID).in(scopeIds));
 
         if (CollectionUtils.isNotEmpty(registerTypeIds)) {
             condition.add(record.get(RegRecord.REGISTER_TYPE).in(registerTypeIds));

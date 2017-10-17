@@ -1,6 +1,8 @@
 package cz.tacr.elza.controller;
 
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.PackageDependencyVO;
+import cz.tacr.elza.controller.vo.PackageVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
@@ -11,6 +13,7 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulPackageDependency;
 import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.exception.SystemException;
@@ -40,8 +43,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 /**
@@ -108,8 +114,29 @@ public class RuleController {
     }
 
     @RequestMapping(value = "/getPackages", method = RequestMethod.GET)
-    public List<RulPackage> getPackages() {
-        return packageService.getPackages();
+    public List<PackageVO> getPackages() {
+        List<RulPackage> packages = packageService.getPackages();
+        List<PackageVO> packageVO = factoryVo.createSimpleEntity(packages, PackageVO.class);
+        Map<Integer, PackageVO> packageVOMap = packageVO.stream().collect(Collectors.toMap(PackageVO::getPackageId, Function.identity()));
+        List<RulPackageDependency> packagesDependencies = packageService.getPackagesDependencies();
+        for (RulPackageDependency dependency : packagesDependencies) {
+            PackageVO pSource = packageVOMap.get(dependency.getSourcePackageId());
+            PackageVO pTarget = packageVOMap.get(dependency.getTargetPackageId());
+            List<PackageDependencyVO> dependencies = pSource.getDependencies();
+            if (dependencies == null) {
+                dependencies = new ArrayList<>();
+                pSource.setDependencies(dependencies);
+            }
+            dependencies.add(new PackageDependencyVO(pTarget.getCode(), dependency.getMinVersion()));
+
+            List<PackageDependencyVO> dependenciesBy = pTarget.getDependenciesBy();
+            if (dependenciesBy == null) {
+                dependenciesBy = new ArrayList<>();
+                pTarget.setDependenciesBy(dependenciesBy);
+            }
+            dependenciesBy.add(new PackageDependencyVO(pSource.getCode(), pSource.getVersion()));
+        }
+        return packageVO;
     }
 
     @RequestMapping(value = "/deletePackage/{code}", method = RequestMethod.GET)

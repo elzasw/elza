@@ -39,8 +39,12 @@ public class RulOutputType {
     private RulPackage rulPackage;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRule.class)
-    @JoinColumn(name = "ruleId", nullable = true)
+    @JoinColumn(name = "ruleId")
     private RulRule rule;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
+    @JoinColumn(name = "ruleSetId", nullable = false)
+    private RulRuleSet ruleSet;
 
     public Integer getOutputTypeId() {
         return outputTypeId;
@@ -80,6 +84,14 @@ public class RulOutputType {
 
     public void setRule(final RulRule rule) {
         this.rule = rule;
+    }
+
+    public RulRuleSet getRuleSet() {
+        return ruleSet;
+    }
+
+    public void setRuleSet(final RulRuleSet ruleSet) {
+        this.ruleSet = ruleSet;
     }
 
     @Override

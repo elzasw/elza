@@ -8,7 +8,7 @@ import FilterMonitor from 'redux-devtools-filter-actions';
 import Dispatcher from 'redux-devtools-dispatch';
 
 export default createDevTools(
-    <DockMonitor toggleVisibilityKey="ctrl-h" changePositionKey="ctrl-q" defaultIsVisible={false} changeMonitorKey="ctrl-e">
+    <DockMonitor toggleVisibilityKey="ctrl-x" changePositionKey="ctrl-q" defaultIsVisible={false} changeMonitorKey="ctrl-e">
         <FilterMonitor blacklist={['STORE_STATE_DATA']}>
             <FilterableLogMonitor />
         </FilterMonitor>

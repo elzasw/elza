@@ -1,6 +1,9 @@
 <package>
   <code>SIMPLE-DEV</code>
   <name>Simple Rules for Developers</name>
-  <version>12</version>
+  <version>13</version>
   <description>Simplified rules for ELZA developers</description>
+  <dependencies>
+    <dependency code="CZ_BASE" min-version="15" />
+  </dependencies>
 </package>

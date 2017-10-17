@@ -313,7 +313,7 @@ export default function fundTree(state = initialState, action = {}) {
                     ensureItemVisible: false,
                     nodes: [
                         ...state.nodes.slice(0, index + 1),
-                        {id: '___' + Math.random(), name: i18n('global.data.loading'), depth: action.node.depth + 1},
+                        {id: '___' + Math.random(), name: i18n('global.data.loading'), depth: action.node.depth + 1, isFetching: true},
                         ...state.nodes.slice(index + 1)
                     ],
                 });

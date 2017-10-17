@@ -2,14 +2,17 @@ package cz.tacr.elza.repository;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.Tuple;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
@@ -57,6 +60,8 @@ import cz.tacr.elza.utils.ObjectListIterator;
  * @since 03.02.2016
  */
 public class DataRepositoryImpl implements DataRepositoryCustom {
+
+    public static final String SPEC_SEPARATOR = ": ";
 
     @Autowired
     private EntityManager entityManager;
@@ -203,11 +208,13 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         SpecificationDataTypeHelper specHelper = new SpecificationDataTypeHelper() {
 
             private Join<ArrPacket, RulPacketType> packetTypeJoin;
+            private Join<ArrDataPacketRef, ArrPacket> packetJoin;
 
             @Override
-            public void init(final Root<? extends ArrData> root, final Join<? extends ArrData, ArrDescItem> descItemJoin) {
-                packetTypeJoin = root.join(ArrDataPacketRef.PACKET, JoinType.INNER)
-                        .join(ArrPacket.PACKET_TYPE, JoinType.LEFT);
+            public void init(final Root<ArrDescItem> descItemJoin, final Join<ArrDescItem, ArrData> dataJoin) {
+                Join<ArrDescItem, ArrDataPacketRef> treat = entityManager.getCriteriaBuilder().treat(dataJoin, ArrDataPacketRef.class);
+                packetJoin = treat.join(ArrDataPacketRef.PACKET, JoinType.INNER);
+                packetTypeJoin = packetJoin.join(ArrPacket.PACKET_TYPE, JoinType.LEFT);
             }
 
             @Override
@@ -239,6 +246,11 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             public Path<String> getSpecSelection() {
                 return packetTypeJoin.get(RulPacketType.NAME);
             }
+
+            @Override
+            public Join<ArrDataPacketRef, ArrPacket> getPacketJoin() {
+                return packetJoin;
+            }
         };
 
         return findUniqueValuesInVersion(version, itemType, dataTypeClass, specHelper, fulltext, max, withoutType);
@@ -259,7 +271,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             private Join<ArrDescItem, RulItemSpec> specJoin;
 
             @Override
-            public void init(final Root<? extends ArrData> root, final Join<? extends ArrData, ArrDescItem> descItemJoin) {
+            public void init(final Root<ArrDescItem> descItemJoin, final Join<ArrDescItem, ArrData> dataJoin) {
                 specJoin = descItemJoin.join(ArrDescItem.ITEM_SPEC, JoinType.LEFT);
             }
 
@@ -289,9 +301,119 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             public Path<String> getSpecSelection() {
                 return specJoin.get("name");
             }
+
+            @Override
+            public Join<ArrDataPacketRef, ArrPacket> getPacketJoin() {
+                return null;
+            }
         };
 
         return findUniqueValuesInVersion(version, itemType, dataTypeClass, specHelper, fulltext, max, withoutSpec);
+    }
+
+    @Override
+    public List<Integer> findUniqueSpecIdsInVersion(final ArrFundVersion version,
+                                                    final RulItemType itemType) {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<RulItemSpec> query = builder.createQuery(RulItemSpec.class);
+
+        Root<ArrDescItem> descItem = query.from(ArrDescItem.class);
+
+        Predicate versionPredicate;
+        if (version.getLockChange() == null) {
+            versionPredicate = builder.isNull(descItem.get(ArrDescItem.DELETE_CHANGE_ID));
+        } else {
+            Integer lockChangeId = version.getLockChange().getChangeId();
+
+            Predicate createPred = builder.lt(descItem.get(ArrDescItem.CREATE_CHANGE_ID), lockChangeId);
+            Predicate deletePred = builder.or(
+                    builder.isNull(descItem.get(ArrDescItem.DELETE_CHANGE_ID)),
+                    builder.gt(descItem.get(ArrDescItem.DELETE_CHANGE_ID), lockChangeId)
+            );
+
+            versionPredicate = builder.and(createPred, deletePred);
+        }
+
+        //seznam AND podmínek
+        List<Predicate> andPredicates = new LinkedList<>();
+        andPredicates.add(builder.equal(descItem.get(ArrDescItem.NODE).get(ArrNode.FUND), version.getFund()));
+        andPredicates.add(versionPredicate);
+        andPredicates.add(builder.equal(descItem.get(ArrDescItem.ITEM_TYPE), itemType));
+
+        query.select(descItem.get(ArrItem.ITEM_SPEC));
+        query.where(andPredicates.toArray(new Predicate[andPredicates.size()]));
+
+        //query.orderBy(builder.asc(substringValue));
+        query.distinct(true);
+
+        List<RulItemSpec> resultList = entityManager.createQuery(query).getResultList();
+
+        return resultList.stream().map(RulItemSpec::getItemSpecId).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Integer> findUniquePacketTypeIdsInVersion(final ArrFundVersion version, final RulItemType itemType) {
+
+        // TODO slapa: optimalizovat, načítat pouze typy bez dat
+
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<ArrDescItem> c = cb.createQuery(ArrDescItem.class);
+        Root<ArrDescItem> descItem = c.from(ArrDescItem.class);
+        Join<ArrData, ArrDescItem> data = descItem.join(ArrItem.DATA);
+
+        Subquery<Integer> sq = c.subquery(Integer.class);
+        Root<ArrDataPacketRef> dataPacketRef = sq.from(ArrDataPacketRef.class);
+        Join<ArrPacket, ArrDataPacketRef> sqDataRef = dataPacketRef.join(ArrDataPacketRef.PACKET);
+
+        sq.select(dataPacketRef.get(ArrData.ID));
+
+        Predicate versionPredicate;
+        if (version.getLockChange() == null) {
+            versionPredicate = cb.isNull(descItem.get(ArrDescItem.DELETE_CHANGE_ID));
+        } else {
+            Integer lockChangeId = version.getLockChange().getChangeId();
+
+            Predicate createPred = cb.lt(descItem.get(ArrDescItem.CREATE_CHANGE_ID), lockChangeId);
+            Predicate deletePred = cb.or(
+                    cb.isNull(descItem.get(ArrDescItem.DELETE_CHANGE_ID)),
+                    cb.gt(descItem.get(ArrDescItem.DELETE_CHANGE_ID), lockChangeId)
+            );
+
+            versionPredicate = cb.and(createPred, deletePred);
+        }
+
+        //seznam AND podmínek
+        List<Predicate> andPredicates = new LinkedList<>();
+        andPredicates.add(cb.equal(descItem.get(ArrDescItem.NODE).get(ArrNode.FUND), version.getFund()));
+        andPredicates.add(versionPredicate);
+        andPredicates.add(cb.equal(descItem.get(ArrDescItem.ITEM_TYPE), itemType));
+        andPredicates.add(cb.in(descItem.get(ArrItem.DATA)).value(data));
+
+        sq.where(andPredicates.toArray(new Predicate[andPredicates.size()]));
+
+        c.select(descItem).where(andPredicates.toArray(new Predicate[andPredicates.size()]));
+
+        TypedQuery<ArrDescItem> q = entityManager.createQuery(c);
+
+        List<ArrDescItem> descItems = q.getResultList();
+
+        Set<Integer> result = new HashSet<>();
+        boolean addNull = false;
+        for (ArrDescItem di : descItems) {
+            ArrDataPacketRef d = (ArrDataPacketRef) di.getData();
+            RulPacketType packetType = d.getPacket().getPacketType();
+            if (packetType != null) {
+                result.add(packetType.getPacketTypeId());
+            } else {
+                addNull = true;
+            }
+        }
+
+        ArrayList<Integer> integers = new ArrayList<>(result);
+        if (addNull) {
+            integers.add(null);
+        }
+        return integers;
     }
 
     /**
@@ -318,14 +440,13 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         CriteriaQuery<Tuple> query = builder.createTupleQuery();
 
         Root<? extends ArrData> data = query.from(dataTypeClass);
-        AbstractDescItemDataTypeHelper typeHelper = getDataTypeHelper(dataTypeClass, data);
 
-        Subquery<ArrDescItem> sq = query.subquery(ArrDescItem.class);
         Root<ArrDescItem> descItem = query.from(ArrDescItem.class);
 
-        sq.select(descItem.get(ArrItem.DATA));
-        Join<? extends ArrData, ArrDescItem> dataJoin = descItem.join(ArrItem.DATA, JoinType.INNER);
-        query.where(builder.equal(data, sq));
+        Join<ArrDescItem, ArrData> dataJoin = null;
+        if (dataTypeClass.equals(ArrDataPacketRef.class)) {
+            dataJoin = descItem.join(ArrItem.DATA, JoinType.INNER);
+        }
 
         Predicate versionPredicate;
         if (version.getLockChange() == null) {
@@ -344,20 +465,22 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
         //seznam AND podmínek
         List<Predicate> andPredicates = new LinkedList<>();
+        andPredicates.add(builder.equal(descItem.get(ArrItem.DATA), data));
         andPredicates.add(builder.equal(descItem.get(ArrDescItem.NODE).get(ArrNode.FUND), version.getFund()));
         andPredicates.add(versionPredicate);
         andPredicates.add(builder.equal(descItem.get(ArrDescItem.ITEM_TYPE), itemType));
         if (specificationDataTypeHelper.useSpec()) {
-            specificationDataTypeHelper.init(data, dataJoin);
+            specificationDataTypeHelper.init(descItem, dataJoin);
 
             andPredicates.add(specificationDataTypeHelper.getPredicate(builder));
         }
 
+        AbstractDescItemDataTypeHelper typeHelper = getDataTypeHelper(dataTypeClass, data, specificationDataTypeHelper);
 
         //seznam vracených sloupců
         List<Selection<?>> selections = new LinkedList<>();
         Expression<String> valueSelection = typeHelper.getValueStringSelection(builder).as(String.class);    //hodnota pro select
-        Expression valueExpression = createUniqueValueExpression(valueSelection, specificationDataTypeHelper, builder);
+        Expression<String> valueExpression = createUniqueValueExpression(valueSelection, specificationDataTypeHelper, builder);
         selections.add(valueExpression);
 
         //oříznutá hodnota převedená na string, kvůli řazení
@@ -410,13 +533,13 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
      * @return výraz pro výběr hodnoty atributu. Pokud se jedná o specifikaci, je výraz spojen do název specifikace:
      * hodnota.
      */
-    private Expression createUniqueValueExpression(final Expression valuePath,
+    private Expression<String> createUniqueValueExpression(final Expression<String> valuePath,
                                                    final SpecificationDataTypeHelper specHelper,
                                                    final CriteriaBuilder builder) {
-        Expression result;
+        Expression<String> result;
         if (specHelper.useSpec()) {
             Path<String> specSelection = specHelper.getSpecSelection();
-            Expression<String> concat = builder.concat(specSelection, ": ");
+            Expression<String> concat = builder.concat(specSelection, SPEC_SEPARATOR);
             result = builder.concat(concat, valuePath);
         } else {
             result = valuePath;
@@ -429,10 +552,12 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
      * Podle typu atributu vrací informace pro načtení a filtrování konkrétních dat.
      * @param dataClassType typ třídy ukládající hodnotu atributu
      * @param dataRoot kořen vehledání (dataClassType)
+     * @param specificationDataTypeHelper
      * @return služba pro načtení hodnot konkrétního typu atributu
      */
     private AbstractDescItemDataTypeHelper getDataTypeHelper(final Class<? extends ArrData> dataClassType,
-                                                             final Root dataRoot) {
+                                                             final Root dataRoot,
+                                                             final SpecificationDataTypeHelper specificationDataTypeHelper) {
         if (dataClassType.equals(ArrDataString.class) ||
                 dataClassType.equals(ArrDataText.class) ||
                 dataClassType.equals(ArrDataCoordinates.class) ||
@@ -481,7 +606,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             return new AbstractDescItemDataTypeHelper() {
                 @Override
                 protected void init() {
-                    targetJoin = dataRoot.join(ArrDataPacketRef.PACKET, JoinType.INNER);
+                    targetJoin = specificationDataTypeHelper.getPacketJoin() == null ? dataRoot.join(ArrDataPacketRef.PACKET, JoinType.INNER) : specificationDataTypeHelper.getPacketJoin();
                 }
 
                 @Override
@@ -517,10 +642,12 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
     private interface SpecificationDataTypeHelper {
         boolean useSpec();
 
-        void init(Root<? extends ArrData> root, Join<? extends ArrData, ArrDescItem> descItemJoin);
+        void init(Root<ArrDescItem> descItemJoin, Join<ArrDescItem, ArrData> dataJoin);
 
         Predicate getPredicate(CriteriaBuilder builder);
 
         Path<String> getSpecSelection();
+
+        Join<ArrDataPacketRef, ArrPacket> getPacketJoin();
     }
 }

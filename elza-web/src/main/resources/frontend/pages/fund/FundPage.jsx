@@ -305,20 +305,19 @@ class FundPage extends AbstractReactComponent {
             </div>
         )
 
-        const centerPanel = (
-            <FundDetail
-                fundDetail={fundRegion.fundDetail}
-                focus={focus}
-                fundCount={fundRegion.funds.length}
-            />
-        )
+        const centerPanel = <FundDetail
+            fundDetail={fundRegion.fundDetail}
+            focus={focus}
+            fundCount={fundRegion.funds.length}
+        />;
 
-        const rightPanel = (
-            <FundDetailExt
+        let rightPanel;
+        if (fundRegion.fundDetail.fetched) {
+            rightPanel = <FundDetailExt
                 fundDetail={fundRegion.fundDetail}
                 focus={focus}
-            />
-        )
+            />;
+        }
 
         return (
             <PageLayout

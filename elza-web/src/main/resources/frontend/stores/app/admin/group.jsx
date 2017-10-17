@@ -5,7 +5,7 @@ import {isPermissionAction} from 'actions/admin/permission.jsx'
 
 const initialState = {
     fetched: false,
-    fetching: false,
+    isFetching: false,
     filterText: '',
     currentDataKey: '',
     groups: [],
@@ -20,7 +20,7 @@ export default function group(state = initialState, action = {}) {
             groupDetail: groupDetail(state.groupDetail, action)
         }
     }
-    
+
     switch (action.type) {
         case types.STORE_SAVE:
             const {filterText} = state
@@ -33,7 +33,7 @@ export default function group(state = initialState, action = {}) {
                 return {
                     ...state,
                     fetched: false,
-                    fetching: false,
+                    isFetching: false,
                     filterText: '',
                     currentDataKey: '',
                     groups: [],
@@ -54,13 +54,13 @@ export default function group(state = initialState, action = {}) {
         case types.GROUPS_REQUEST:
             return {
                 ...state,
-                fetching: true,
+                isFetching: true,
                 currentDataKey: action.dataKey,
             }
         case types.GROUPS_RECEIVE:
             return {
                 ...state,
-                fetching: false,
+                isFetching: false,
                 fetched: true,
                 groups: action.data.groups,
                 groupsCount: action.data.groupsCount,

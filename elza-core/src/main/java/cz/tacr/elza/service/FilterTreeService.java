@@ -14,8 +14,6 @@ import java.util.TreeSet;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +43,8 @@ import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.vo.DescItemValues;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
@@ -147,7 +147,7 @@ public class FilterTreeService {
         ArrayList<Integer> subIds = FilterTools.getSublist(page, pageSize, filteredIds);
 
 
-        Map<Integer, Map<String, TitleValues>> nodeValuesMap = Collections.EMPTY_MAP;
+        Map<Integer, Map<String, TitleValues>> nodeValuesMap = Collections.emptyMap();
         if (!subIds.isEmpty() && !descItemTypeIds.isEmpty()) {
             nodeValuesMap = descriptionItemService.createNodeValuesMap(new HashSet<>(subIds), null,
                     new HashSet<>(descItemTypeMap.values()), version);
@@ -243,6 +243,27 @@ public class FilterTreeService {
         }
     }
 
+    /**
+     * Získání unikátních specifikací atributů podle typu.
+     *
+     * Pokud typ je PACKET_REF, výsledek je seznamem typů obalů.
+     *
+     * @param fundVersion verze stromu
+     * @param itemType    typ atributu
+     * @return seznam hodnot
+     */
+    public List<Integer> findUniqueSpecIds(final ArrFundVersion fundVersion,
+                                          final RulItemType itemType) {
+
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Assert.notNull(itemType, "Typ atributu musí být vyplněn");
+
+        if (itemType.getDataType().getCode().equals("PACKET_REF")) {
+            return dataRepository.findUniquePacketTypeIdsInVersion(fundVersion, itemType);
+        } else {
+            return dataRepository.findUniqueSpecIdsInVersion(fundVersion, itemType);
+        }
+    }
 
     /**
      * Vytvoří výslednou mapu.

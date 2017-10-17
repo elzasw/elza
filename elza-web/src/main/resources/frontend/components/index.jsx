@@ -70,8 +70,6 @@ export {default as ArrPanel} from 'components/arr/ArrPanel.jsx';
 export {default as ArrDaos} from 'components/arr/ArrDaos.jsx';
 export {default as ArrDao} from 'components/arr/ArrDao.jsx';
 export {default as ArrFundPanel} from 'components/arr/ArrFundPanel.jsx';
-export {default as BulkActionsDialog} from 'components/arr/BulkActionsDialog.jsx';
-export {default as BulkActionsTable} from 'components/arr/BulkActionsTable.jsx';
 export {default as FundTreeMain} from 'components/arr/FundTreeMain.jsx';
 export {default as FundTreeMovementsLeft} from 'components/arr/FundTreeMovementsLeft.jsx';
 export {default as FundTreeMovementsRight} from 'components/arr/FundTreeMovementsRight.jsx';

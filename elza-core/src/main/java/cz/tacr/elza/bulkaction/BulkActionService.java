@@ -224,10 +224,10 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(fundVersionId);
 
         RulRuleSet ruleSet = version.getRuleSet();
-        List<RulAction> byRulPackage = actionRepository.findByRulPackage(ruleSet.getPackage());
+        List<RulAction> byRulPackage = actionRepository.findByRuleSet(ruleSet);
         String actionFileName = bulkActionCode + bulkActionConfigManager.getExtension();
         if (byRulPackage.stream().noneMatch(i -> i.getFilename().equals(actionFileName))) {
-            throw new BusinessException("Hromadná akce nepatří do stejného balíčku pravidel jako pravidla verze AP.", PackageCode.OTHER_PACKAGE)
+            throw new BusinessException("Hromadná akce nepatří do stejných pravidel jako pravidla verze AP.", PackageCode.OTHER_PACKAGE)
                     .set("code", bulkActionCode)
                     .set("ruleSet", ruleSet.getCode());
         }
@@ -537,7 +537,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
             throw new IllegalArgumentException("Verze archivní pomůcky neexistuje!");
         }
 
-        Map<String, RulAction> byRulPackage = actionRepository.findByRulPackage(version.getRuleSet().getPackage())
+        Map<String, RulAction> byRulPackage = actionRepository.findByRuleSet(version.getRuleSet())
                 .stream()
                 .collect(Collectors.toMap(RulAction::getFilename, p -> p));
 
@@ -570,14 +570,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
             }
 
             bulkActionRun.setFundVersion(version);
-
-			String ruleCode = bulkActionConfigOrig.getRules();
-            if (ruleCode == null || !version.getRuleSet().getCode().equals(ruleCode)) {
-                throw new IllegalArgumentException("Nastavení kódu pravidel (rule_code: " + ruleCode
-                        + ") hromadné akce neodpovídá verzi archivní pomůcky (rule_code: " + version.getRuleSet().getCode()
-                        + ")!");
             }
-        }
 
         bulkActionRepository.save(bulkActionRun);
     }

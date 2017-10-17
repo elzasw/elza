@@ -20,6 +20,22 @@ import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.controller.vo.CopyNodesParams;
+import cz.tacr.elza.controller.vo.CopyNodesValidate;
+import cz.tacr.elza.controller.vo.CreateFundVO;
+import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
+import cz.tacr.elza.domain.UsrGroup;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.repository.FundFileRepository;
+import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.PacketRepository;
+import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.importnodes.ImportFromFund;
+import cz.tacr.elza.service.importnodes.ImportNodesFromSource;
+import cz.tacr.elza.service.importnodes.vo.ConflictResolve;
+import cz.tacr.elza.service.importnodes.vo.ImportParams;
+import cz.tacr.elza.service.importnodes.vo.ValidateResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
@@ -28,6 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -1464,36 +1481,102 @@ public class ArrangementController {
     }
 
     /**
-     * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas.
-     *
-     * @param name              název archivní pomůcky
-     * @param ruleSetId         id pravidel podle kterých se vytváří popis
-     * @param dateRange         vysčítaná informace o časovém rozsahu fondu
-     * @param internalCode      interní kód
-     * @param institutionId     id instituce
-     * @return nová archivní pomůcka
+     * Seznam oprávnění, které se mají nastavit při vytváření AS a přiřazení uživatele nebo skupiny jako správce.
      */
+    private static final UsrPermission.Permission FUND_ADMIN_PERMISSIONS[] = {
+            UsrPermission.Permission.FUND_RD,
+            UsrPermission.Permission.FUND_ARR,
+            UsrPermission.Permission.FUND_OUTPUT_WR,
+            UsrPermission.Permission.FUND_CL_VER_WR,
+            UsrPermission.Permission.FUND_EXPORT,
+            UsrPermission.Permission.FUND_BA,
+            UsrPermission.Permission.FUND_VER_WR,
+    };
+
     @Transactional
     @RequestMapping(value = "/funds", method = RequestMethod.POST,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ArrFundVO createFund(@RequestParam(value = "name") final String name,
-                                @RequestParam(value = "ruleSetId") final Integer ruleSetId,
-                                @RequestParam(value = "internalCode", required = false) final String internalCode,
-                                @RequestParam(value = "institutionId") final Integer institutionId,
-                                @RequestParam(value = "dateRange", required = false) final String dateRange) {
+    public ArrFundVO createFund(@RequestBody CreateFundVO createFund) {
 
-        Assert.hasText(name, "Musí být vyplněn název");
-        Assert.notNull(institutionId, "Identifikátor instituce musí být vyplněn");
-        Assert.notNull(ruleSetId, "Identifikátor pravidel musí být vyplněn");
+        // Kontrola a vytvoření AS
+        Assert.hasText(createFund.getName(), "Musí být vyplněn název");
+        Assert.notNull(createFund.getInstitutionId(), "Identifikátor instituce musí být vyplněn");
+        Assert.notNull(createFund.getRuleSetId(), "Identifikátor pravidel musí být vyplněn");
 
-        RulRuleSet ruleSet = ruleSetRepository.findOne(ruleSetId);
-        Assert.notNull(ruleSet, "Nebyla nalezena pravidla tvorby s id " + ruleSetId);
+        RulRuleSet ruleSet = ruleSetRepository.findOne(createFund.getRuleSetId());
+        Assert.notNull(ruleSet, "Nebyla nalezena pravidla tvorby s id " + createFund.getRuleSetId());
 
-        ParInstitution institution = institutionRepository.findOne(institutionId);
-        Assert.notNull(institution, "Nebyla nalezena instituce s id " + institutionId);
+        ParInstitution institution = institutionRepository.findOne(createFund.getInstitutionId());
+        Assert.notNull(institution, "Nebyla nalezena instituce s id " + createFund.getInstitutionId());
 
         ArrFund newFund = arrangementService
-                .createFundWithScenario(name, ruleSet, internalCode, institution, dateRange);
+                .createFundWithScenario(createFund.getName(), ruleSet, createFund.getInternalCode(), institution, createFund.getDateRange());
+
+        // Kontrola na vyplněnost uživatele nebo skupiny jako správce, pokud není admin
+        if (!userService.hasPermission(UsrPermission.Permission.ADMIN)) {
+            if (ObjectUtils.isEmpty(createFund.getAdminUsers()) && ObjectUtils.isEmpty(createFund.getAdminGroups())) {
+                Assert.isTrue(false, "Nebyl vybrán správce");
+            }
+        }
+
+        // Kontrola, zda daní uživatelé a skupiny mají oprávnění zakládat AS
+        if (!userService.hasPermission(UsrPermission.Permission.ADMIN)) {   // pokud není admin, musí zadat je uživatele, kteří mají oprávnění (i zděděné) na zakládání nových AS
+            if (createFund.getAdminUsers() != null && !createFund.getAdminUsers().isEmpty()) {
+                final Set<Integer> userIds = userService.findUserWithFundCreate(null, false, false, 0, -1, null).getList().stream()
+                        .map(x -> x.getUserId())
+                        .collect(Collectors.toSet());
+                createFund.getAdminUsers()
+                        .forEach(u -> {
+                            if (!userIds.contains(u.getId())) {
+                                throw new BusinessException("Předaný správce (uživatel) nemá oprávnení zakládat AS", ArrangementCode.ADMIN_USER_MISSING_FUND_CREATE_PERM).set("id", u.getId());
+                            }
+                        });
+            }
+            if (createFund.getAdminGroups() != null && !createFund.getAdminGroups().isEmpty()) {
+                final Set<Integer> groupIds = userService.findGroupWithFundCreate(null, 0, -1).getList().stream()
+                        .map(x -> x.getGroupId())
+                        .collect(Collectors.toSet());
+                createFund.getAdminGroups()
+                        .forEach(g -> {
+                            if (!groupIds.contains(g.getId())) {
+                                throw new BusinessException("Předaný správce (skupina) nemá oprávnení zakládat AS", ArrangementCode.ADMIN_GROUP_MISSING_FUND_CREATE_PERM).set("id", g.getId());
+                            }
+                        });
+            }
+        }
+
+        // Oprávnění na uživatele a skupiny
+        if (createFund.getAdminUsers() != null && !createFund.getAdminUsers().isEmpty()) {
+            final List<UsrPermission> usrPermissions = new ArrayList<>();
+            createFund.getAdminUsers().stream()
+                    .forEach(u -> {
+                        UsrUser user = userService.getUser(u.getId());
+                        for (UsrPermission.Permission permission : FUND_ADMIN_PERMISSIONS) {
+                            UsrPermission perm = new UsrPermission();
+                            perm.setFund(newFund);
+                            perm.setUser(user);
+                            perm.setPermission(permission);
+                            usrPermissions.add(perm);
+                        }
+                        userService.addUserPermission(user, usrPermissions, false);
+                    });
+        }
+        if (createFund.getAdminGroups() != null && !createFund.getAdminGroups().isEmpty()) {
+            final List<UsrPermission> usrPermissions = new ArrayList<>();
+            createFund.getAdminGroups().stream()
+                    .forEach(g -> {
+                        UsrGroup group = userService.getGroup(g.getId());
+                        for (UsrPermission.Permission permission : FUND_ADMIN_PERMISSIONS) {
+                            UsrPermission perm = new UsrPermission();
+                            perm.setFund(newFund);
+                            perm.setGroup(group);
+                            perm.setPermission(permission);
+                            usrPermissions.add(perm);
+                        }
+                        userService.addGroupPermission(group, usrPermissions, false);
+                    });
+        }
+
 
         return factoryVo.createFundVO(newFund, true);
     }
@@ -1974,6 +2057,23 @@ public class ArrangementController {
         return filterTreeService.filterUniqueValues(version, descItemType, specIds, fulltext, max);
     }
 
+    /**
+     * Získání unikátních specifikací atributů podle typu.
+     *
+     * @param fundVersionId verze stromu
+     * @param itemTypeId    id typu atributu
+     *
+     * @return seznam unikátních hodnot
+     */
+    @RequestMapping(value = "/findUniqueSpecIds/{fundVersionId}", method = RequestMethod.GET)
+    public List<Integer> findUniqueSpecIds(@PathVariable("fundVersionId") final Integer fundVersionId,
+                                           @RequestParam("itemTypeId") final Integer itemTypeId) {
+
+        ArrFundVersion version = fundVersionRepository.getOneCheckExist(fundVersionId);
+        RulItemType descItemType = itemTypeRepository.findOne(itemTypeId);
+
+        return filterTreeService.findUniqueSpecIds(version, descItemType);
+    }
 
     /**
      * Nahrazení textu v hodnotách textových atributů.
@@ -2034,6 +2134,32 @@ public class ArrangementController {
                 .placeDescItemValues(version, descItemType, nodesDO, newDescItemSpec, specifications, text, replaceDataBody.getSelectionType() == SelectionType.FUND);
     }
 
+    /**
+     * Nastavit specifikaci hodnotám atributu.
+     *
+     * @param fundVersionId   id verze stromu
+     * @param itemTypeId      typ atributu
+     * @param replaceSpecId   id specifikace, která bude nastavena
+     * @param replaceDataBody seznam uzlů, ve kterých hledáme a seznam specifikací
+     */
+    @Transactional
+    @RequestMapping(value = "/setSpecification/{fundVersionId}", method = RequestMethod.PUT)
+    public void setSpecification(@PathVariable("fundVersionId") final Integer fundVersionId,
+                                 @RequestParam("itemTypeId") final Integer itemTypeId,
+                                 @RequestParam("replaceSpecId") final Integer replaceSpecId,
+                                 @RequestBody final ReplaceDataBody replaceDataBody) {
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        RulItemType itemType = itemTypeRepository.findOne(itemTypeId);
+
+        Set<ArrNode> nodesDO = new HashSet<>(factoryDO.createNodes(replaceDataBody.getNodes()));
+
+        RulItemSpec setSpecification = replaceSpecId == null ? null : itemSpecRepository.findOne(replaceSpecId);
+        Set<RulItemSpec> specifications = CollectionUtils.isEmpty(replaceDataBody.getSpecIds()) ? null :
+                new HashSet<>(itemSpecRepository.findAll(replaceDataBody.getSpecIds()));
+
+        descriptionItemService.setSpecification(fundVersion, itemType, nodesDO,
+                setSpecification, specifications, replaceDataBody.getSpecIds().contains(null), replaceDataBody.getSelectionType() == SelectionType.FUND);
+    }
 
     /**
      * Smazání hodnot atributů daného typu pro vybrané uzly.

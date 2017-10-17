@@ -25,7 +25,7 @@ module.exports = {
         //'react-hot-loader/patch',
         `webpack-dev-server/client?http://localhost:${PORT}`,
         'webpack/hot/only-dev-server',
-        //'babel-polyfill',
+        'babel-polyfill',
         './index.jsx',
     ],
     devtool: 'eval-source-map',
@@ -112,8 +112,8 @@ module.exports = {
                                 path.resolve(__dirname),
                                 path.resolve(__dirname, "node_modules")
                             ]
-                    }
-                }]
+                        }
+                    }]
             },
             {
                 test: /\.scss$/,

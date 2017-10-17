@@ -31,6 +31,8 @@ import cz.tacr.elza.domain.interfaces.Versionable;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class ArrFund extends AbstractVersionableEntity implements Versionable, Serializable, IArrFund {
 
+	public static final String NAME = "name";
+
 	@Id
 	@GeneratedValue
 	private Integer fundId;

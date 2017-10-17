@@ -82,7 +82,7 @@ public class ValidationRules extends Rules {
 				.findByRuleSetAndRuleTypeOrderByPriorityAsc(version.getRuleSet(), RulRule.RuleType.CONFORMITY_INFO);
 
 		for (RulRule rulPackageRule : rulPackageRules) {
-			path = Paths.get(rulesExecutor.getDroolsDir(rulPackageRule.getPackage().getCode()) + File.separator + rulPackageRule.getFilename());
+			path = Paths.get(rulesExecutor.getDroolsDir(rulPackageRule.getRuleSet().getCode()) + File.separator + rulPackageRule.getFilename());
 			StatelessKieSession session = createNewStatelessKieSession(path);
 			session.setGlobal("results", validationResults);
 			execute(session, facts);

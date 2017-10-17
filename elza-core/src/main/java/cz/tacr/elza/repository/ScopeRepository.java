@@ -4,9 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import cz.tacr.elza.domain.ArrFundVersion;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrFund;
@@ -65,4 +63,12 @@ public interface ScopeRepository extends ElzaJpaRepository<RegScope, Integer>, S
      * @return třída
      */
     RegScope findByCode(String string);
+
+    /**
+     * Najde id všech tříd.
+     *
+     * @return id tříd
+     */
+    @Query("SELECT s.scopeId FROM reg_scope s")
+    Set<Integer> findAllIds();
 }
