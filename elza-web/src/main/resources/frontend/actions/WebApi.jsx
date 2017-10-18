@@ -875,11 +875,13 @@ export class WebApiCls {
     }
 
     findUsersPermissionsByFund(fundId) {
-        return AjaxUtils.ajaxGet(WebApiCls.userUrl + `/fund/${fundId}/users`);
+        return AjaxUtils.ajaxGet(WebApiCls.userUrl + `/fund/${fundId}/users`)
+            .then(data => ({rows: data, count: data.length}));
     }
 
     findGroupsPermissionsByFund(fundId) {
-        return AjaxUtils.ajaxGet(WebApiCls.groupUrl + `/fund/${fundId}/groups`);
+        return AjaxUtils.ajaxGet(WebApiCls.groupUrl + `/fund/${fundId}/groups`)
+            .then(data => ({rows: data, count: data.length}));
     }
 
     changeUserPermission(userId, permissions) {

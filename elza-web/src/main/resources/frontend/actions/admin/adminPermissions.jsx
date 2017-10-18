@@ -1,8 +1,10 @@
 import {WebApi} from 'actions/index.jsx';
 import {DetailActions} from 'shared/detail'
+import * as SimpleListActions from "../../shared/list/simple/SimpleListActions";
 
 export const ENTITY_PERMISSIONS = 'adminRegion.entityPermissions';
-export const ENTITIES_PERMISSIONS_BY_FUND = 'adminRegion.entitiesPermissionsByFund';
+export const USERS_PERMISSIONS_BY_FUND = 'adminRegion.usersPermissionsByFund';
+export const GROUPS_PERMISSIONS_BY_FUND = 'adminRegion.groupsPermissionsByFund';
 
 export function fetchUser(userId) {
     return DetailActions.fetchIfNeeded(ENTITY_PERMISSIONS, "U" + userId, id => WebApi.getUser(id.slice(1)), true);
@@ -13,9 +15,17 @@ export function fetchGroup(groupId) {
 }
 
 export function fetchUsersByFund(fundId) {
-    return DetailActions.fetchIfNeeded(ENTITIES_PERMISSIONS_BY_FUND, "U" + fundId, id => WebApi.findUsersPermissionsByFund(id.slice(1)), true);
+    return SimpleListActions.fetchIfNeeded(USERS_PERMISSIONS_BY_FUND, fundId, (id, filter) => WebApi.findUsersPermissionsByFund(id), true);
+}
+
+export function changeUsersForFund(fundId, users) {
+    return SimpleListActions.setData(USERS_PERMISSIONS_BY_FUND, fundId, users);
 }
 
 export function fetchGroupsByFund(fundId) {
-    return DetailActions.fetchIfNeeded(ENTITIES_PERMISSIONS_BY_FUND, "G" + fundId, id => WebApi.findGroupsPermissionsByFund(id.slice(1)), true);
+    return SimpleListActions.fetchIfNeeded(GROUPS_PERMISSIONS_BY_FUND, fundId, (id, filter) => WebApi.findGroupsPermissionsByFund(id), true);
+}
+
+export function changeGroupsForFund(fundId, groups) {
+    return SimpleListActions.setData(GROUPS_PERMISSIONS_BY_FUND, fundId, groups);
 }

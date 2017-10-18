@@ -51,6 +51,12 @@ export default function list(state = initialState, action = {}, config = null) {
             return {
                 ...state,
                 parent: action.parent,
+                fetched: false,
+                isFetching: false,
+                sourceRows: [],
+                filteredRows: [],
+                rows: [],
+                count: 0
             };
         case INVALIDATE: {
             return {

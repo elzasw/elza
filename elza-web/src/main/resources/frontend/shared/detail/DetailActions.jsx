@@ -38,7 +38,7 @@ export function fetchIfNeeded(area, id, getData, force = false) {
         }
 
         const dataKey = store.getDataKey.bind(store)();
-        if (force || store.currentDataKey !== dataKey) { // pokus se data key neschoduje, provedeme fetch
+        if (force || store.currentDataKey !== dataKey || (!store.isFetching && !store.fetched)) { // pokus se data key neschoduje, provedeme fetch
             dispatch(request(area, dataKey))
 
             if (id !== null) {  // pokud chceme reálně načíst objekt, provedeme fetch přes getData
