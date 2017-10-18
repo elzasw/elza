@@ -55,6 +55,7 @@ class ToggleContent extends React.Component {
     }
 
     render() {
+        const {withText, text} = this.props;
         const toggleGlyph = this.state.opened ? this.state.openedIcon : this.state.closedIcon;
 
         const cls = classNames({
@@ -72,6 +73,20 @@ class ToggleContent extends React.Component {
             children = React.Children.map(this.props.children, child => {
                 return React.cloneElement(child, {opened: this.state.opened});
             })
+        }
+
+        if (withText){
+            return (
+                <div className={cls}>
+                    <div className="toggle-container">
+                        <NoFocusButton className="toggle" title={title} onClick={this.handleToggle}><Icon glyph={toggleGlyph} /></NoFocusButton>
+                        <label>{text}</label>
+                    </div>
+                    <div className="content">
+                        {children}
+                    </div>
+                </div>
+            )
         }
 
         return (

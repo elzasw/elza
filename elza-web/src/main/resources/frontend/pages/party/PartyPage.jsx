@@ -155,6 +155,13 @@ class PartyPage extends AbstractReactComponent {
             }
         }
 
+        itemActions.push(
+            <Button key='partyShow' onClick={() => this.props.onShowUsage(partyDetail)}>
+                <Icon glyph="fa-search"/>
+                <div><span className="btnText">{i18n("party.usage.button")}</span></div>
+            </Button>
+        );
+
         let altSection;
         if (altActions.length > 0) {
             altSection = <RibbonGroup key='alt-actions' className="small">{altActions}</RibbonGroup>

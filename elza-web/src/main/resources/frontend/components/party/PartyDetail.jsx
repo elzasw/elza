@@ -292,8 +292,8 @@ class PartyDetail extends AbstractReactComponent {
         }
 
         let content;
-        if (partyDetail.fetched) {
-            var type = party.partyType.code;
+        if (partyDetail.fetched && partyDetail.data) {
+            var type = partyDetail.data.partyType.code;
             var icon = PartyListItem.partyIconByPartyTypeCode(type);
 
             let canEdit = userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: party.record.scopeId});

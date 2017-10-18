@@ -99,6 +99,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.partyUrl + '/', {search, from, count, partyTypeId, versionId, itemSpecId, scopeId});
     }
 
+    findPartyUsage(recordId){
+        return AjaxUtils.ajaxGet(WebApiCls.partyUrl + "/findUsage/" + recordId);
+    }
+
     findPartyForParty(partyId, search = null, from = 0, count = DEFAULT_LIST_SIZE) {
         return AjaxUtils.ajaxGet(WebApiCls.partyUrl + '/findPartyForParty', {search, from, count, partyId});
     }
@@ -367,6 +371,10 @@ export class WebApiCls {
             versionId,
             scopeId
         });
+    }
+
+    findRegistryUsage(recordId){
+        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + "/findUsage/" + recordId);
     }
 
     findRecordForRelation(search = null, roleTypeId = null, partyId = null, from = 0, count = DEFAULT_LIST_SIZE) {

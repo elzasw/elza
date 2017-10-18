@@ -209,8 +209,8 @@ class RegistryDetail extends AbstractReactComponent {
     createHierarchyElement = (hierarchy,delimiter = ">") => {
         var hierarchyElement = [];
         for(var i = 0; i < hierarchy.length; i++){
-            if(i > 0){hierarchyElement.push(<span className="hierarchy-delimiter">{delimiter}</span>);}
-            hierarchyElement.push(<span className="hierarchy-level">{hierarchy[i].toUpperCase()}</span>);
+            if(i > 0){hierarchyElement.push(<span key="hierarchy-delimiter" className="hierarchy-delimiter">{delimiter}</span>);}
+            hierarchyElement.push(<span key="hierarchy-level" className="hierarchy-level">{hierarchy[i].toUpperCase()}</span>);
         }
         return hierarchyElement;
     }
