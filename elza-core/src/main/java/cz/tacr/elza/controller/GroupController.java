@@ -169,14 +169,14 @@ public class GroupController {
      * Odebrání oprávnění skupiny.
      *
      * @param groupId     identifikátor skupiny
-     * @param permissions seznam oprávnění pro odebr8n9
+     * @param permission seznam oprávnění pro odebr8n9
      */
     @Transactional
     @RequestMapping(value = "/{groupId}/permission/delete", method = RequestMethod.POST)
     public void deleteGroupPermission(@PathVariable(value = "groupId") final Integer groupId,
-                                      @RequestBody final UsrPermissionVO permissions) {
+                                      @RequestBody final UsrPermissionVO permission) {
         UsrGroup group = userService.getGroup(groupId);
-        List<UsrPermission> usrPermissions = factoryDO.createPermissionList(Collections.singletonList(permissions));
+        List<UsrPermission> usrPermissions = factoryDO.createPermissionList(Collections.singletonList(permission));
         userService.deleteGroupPermission(group, usrPermissions);
     }
 

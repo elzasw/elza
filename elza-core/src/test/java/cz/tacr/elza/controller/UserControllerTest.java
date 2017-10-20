@@ -114,7 +114,9 @@ public class UserControllerTest extends AbstractControllerTest {
         Assert.notNull(groupReturn);
         Assert.isTrue(groupReturn.getId().equals(group.getId()));
 
-        UserController.Permissions permissions = new UserController.Permissions();
+        // ##
+        // # Oprávnění
+        // ##
         List<UsrPermissionVO> permissionVOs = new ArrayList<>();
 
         UsrPermissionVO permissionVO = new UsrPermissionVO();
@@ -133,22 +135,65 @@ public class UserControllerTest extends AbstractControllerTest {
         permissionVO.setPermission(UsrPermission.Permission.REG_SCOPE_RD);
         permissionVOs.add(permissionVO);
 
-        permissions.setPermissions(permissionVOs);
+        // Přidání a odebrání oprávnění na uživatele
+        addUserPermission(user.getId(), permissionVOs);
+        user = getUser(user.getId());
+        Assert.notNull(user.getPermissions());
+        Assert.isTrue(user.getPermissions().size() == 3);
 
-//        changeUserPermission(user.getId(), permissions);
-//        changeGroupPermission(group.getId(), permissions);
+        for (UsrPermissionVO usrPermissionVO : user.getPermissions()) {
+            deleteUserPermission(user.getId(), usrPermissionVO);
+        }
+        user = getUser(user.getId());
+        Assert.notNull(user.getPermissions());
+        Assert.isTrue(user.getPermissions().size() == 0);
 
-//        user = getUser(user.getId());
-//        Assert.notNull(user.getPermissions());
-//        Assert.isTrue(user.getPermissions().size() == 3);
-//        user.getPermissions().remove(0);
-//        permissions.setPermissions(user.getPermissions());
+        // Přidání a odebrání oprávnění na skupinu
+        addGroupPermission(group.getId(), permissionVOs);
+        group = getGroup(user.getId());
+        Assert.notNull(group.getPermissions());
+        Assert.isTrue(group.getPermissions().size() == 3);
 
-//        changeUserPermission(user.getId(), permissions);
-//        user = getUser(user.getId());
-//        Assert.notNull(user.getPermissions());
-//        Assert.isTrue(user.getPermissions().size() == 2);
+        for (UsrPermissionVO x : group.getPermissions()) {
+            deleteGroupPermission(group.getId(), x);
+        }
+        group = getGroup(user.getId());
+        Assert.notNull(group.getPermissions());
+        Assert.isTrue(group.getPermissions().size() == 0);
 
+        // ##
+        // # Oprávnění na AS all a na fund
+        // ##
+
+        permissionVOs.clear();
+
+        permissionVO = new UsrPermissionVO();
+        permissionVO.setFund(fund);
+        permissionVO.setPermission(UsrPermission.Permission.FUND_RD);
+        permissionVOs.add(permissionVO);
+
+        permissionVO = new UsrPermissionVO();
+        permissionVO.setPermission(UsrPermission.Permission.FUND_RD_ALL);
+        permissionVOs.add(permissionVO);
+
+        // Uživatel
+        addUserPermission(user.getId(), permissionVOs);
+        Assert.isTrue(getUser(user.getId()).getPermissions().size() == 2);
+        deleteUserFundPermission(user.getId(), fund.getId());
+        Assert.isTrue(getUser(user.getId()).getPermissions().size() == 1);
+        deleteUserFundAllPermission(user.getId());
+        Assert.isTrue(getUser(user.getId()).getPermissions().size() == 0);
+
+        // Skupina
+        addGroupPermission(group.getId(), permissionVOs);
+        Assert.isTrue(getGroup(group.getId()).getPermissions().size() == 2);
+        deleteGroupFundPermission(group.getId(), fund.getId());
+        Assert.isTrue(getGroup(group.getId()).getPermissions().size() == 1);
+        deleteGroupFundAllPermission(group.getId());
+        Assert.isTrue(getGroup(group.getId()).getPermissions().size() == 0);
+
+        // ##
+        // ---
         leaveGroup(group.getId(), user.getId());
 
         deleteGroup(group.getId());
