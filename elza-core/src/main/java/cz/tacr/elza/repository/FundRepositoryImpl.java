@@ -101,7 +101,7 @@ public class FundRepositoryImpl implements FundRepositoryCustom {
         // Podmínky hledání
         Map<String, Object> parameters = new HashMap<>();
         if (!StringUtils.isEmpty(search)) {
-            conds.append(" LOWER(f.name) LIKE :search OR LOWER(f.internalCode) LIKE :search");
+            conds.append(" (LOWER(f.name) LIKE :search OR LOWER(f.internalCode) LIKE :search)");
             parameters.put("search", "%" + search.toLowerCase() + "%");
         }
 

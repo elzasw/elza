@@ -90,7 +90,7 @@ export function usersUserDetailFetchIfNeeded(force=false) {
 
         if (force || userDetail.currentDataKey !== dataKey) {
             dispatch(usersUserDetailRequest(dataKey));
-            WebApi.getUserOld(userDetail.id)
+            WebApi.getUser(userDetail.id)
                 .then(json => {
                     var newState = getState();
                     const newUserDetail = newState.adminRegion.user.userDetail;

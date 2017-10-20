@@ -13,6 +13,7 @@ import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrGroupUser;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.vo.ArrFundOpenVersion;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.SystemException;
@@ -130,9 +131,14 @@ public class UserService {
     public FilteredResult<ArrFund> findFundsWithPermissions(final String search,
                                                             final Integer firstResult,
                                                             final Integer maxResults) {
-        boolean filterByUser = !hasPermission(UsrPermission.Permission.USR_PERM);
-        UsrUser user = getLoggedUser();
-        return fundRepository.findFundsWithPermissions(search, firstResult, maxResults, filterByUser && user != null ? user.getUserId() : null);
+        if (hasPermission(UsrPermission.Permission.USR_PERM)) { // nefiltruje se dle přiřazených oprávnění
+            List<ArrFundOpenVersion> funds = fundRepository.findByFulltext(search, maxResults, false, null);
+            Integer fundsCount = fundRepository.findCountByFulltext(search, false, null);
+            return new FilteredResult<>(firstResult, maxResults, fundsCount, funds.stream().map(x -> x.getFund()).collect(Collectors.toList()));
+        } else {    // filtruje se dle přiřazeníé oprávnění na AS pro daného uživatele
+            UsrUser user = getLoggedUser();
+            return fundRepository.findFundsWithPermissions(search, firstResult, maxResults, user.getUserId());
+        }
     }
 
     private enum ChangePermissionType {

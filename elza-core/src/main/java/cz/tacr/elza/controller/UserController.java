@@ -229,22 +229,6 @@ public class UserController {
     }
 
     /**
-     * Načtení uživatele s daty pro zobrazení na detailu s možností editace.
-     *
-     * @param userId id
-     * @return VO
-     */
-    @RequestMapping(value = "/{userId}/old", method = RequestMethod.GET)
-    @Deprecated
-    // TODO [stanekpa] - ELZA-1552
-    public UsrUserVO getUserOld(@PathVariable(value = "userId") final Integer userId) {
-        Assert.notNull(userId, "Identifikátor uživatele musí být vyplněno");
-
-        UsrUser user = userService.getUser(userId);
-        return factoryVO.createUserOld(user);
-    }
-
-    /**
      * Načte seznam uživatelů.
      *
      * @param search   hledaný řetězec
