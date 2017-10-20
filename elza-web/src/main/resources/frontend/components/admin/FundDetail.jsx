@@ -9,6 +9,7 @@ import AddRemoveList from "../shared/list/AddRemoveList";
 import {HorizontalLoader} from "../shared/index";
 import FundUsersPanel from "./FundUsersPanel";
 import FundGroupsPanel from "./FundGroupsPanel";
+import FundsPermissionPanel from "./FundsPermissionPanel";
 
 class FundDetail extends AbstractReactComponent {
     static TAB_USERS = 0;
@@ -28,14 +29,23 @@ class FundDetail extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        const {fund} = this.props;
-        this.props.dispatch(fundActions.fundFetchIfNeeded(fund.id));
+        this.fetchData(this.props);
     }
 
     componentWillReceiveProps(nextProps) {
-        const {fund} = nextProps;
-        this.props.dispatch(fundActions.fundFetchIfNeeded(fund.id));
+        this.fetchData(nextProps);
     }
+
+    fetchData = (props) => {
+        const {fund} = props;
+        if (fund.id !== FundsPermissionPanel.ALL_ID) {
+            props.dispatch(fundActions.fundFetchIfNeeded(fund.id));
+        } else {
+            if (!fund.data || fund.data.id !== FundsPermissionPanel.ALL_ID) {
+                props.dispatch(fundActions.setFund({id: FundsPermissionPanel.ALL_ID, name: i18n("admin.perms.tabs.funds.items.fundAll")}))
+            }
+        }
+    };
 
     handleTabSelect = (item) => {
         this.setState({selectedTabItem: item});

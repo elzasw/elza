@@ -312,6 +312,16 @@ public class UserController {
     }
 
     /**
+     * Načte seznam uživatelů, kteří mají explicitně (přímo na nich) nastavené nějaké oprávnění typu všechny AS.
+     * @return seznam
+     */
+    @RequestMapping(value = "/fund/all/users", method = RequestMethod.GET)
+    public List<UsrUserVO> findUsersPermissionsByFundAll() {
+        List<UsrUser> users = userService.findUsersByFundAll();
+        return factoryVO.createUserList(users, true);
+    }
+
+    /**
      * Přidání uživatelů do skupin.
      *
      * @param params identifikátory přidávaných uživatelů a skupin
@@ -397,6 +407,18 @@ public class UserController {
     public void deleteUserFundPermission(@PathVariable(value = "userId") final Integer userId, @PathVariable("fundId") final Integer fundId) {
         UsrUser user = userService.getUser(userId);
         userService.deleteUserFundPermissions(user, fundId);
+    }
+
+    /**
+     * Odebrání oprávnění uživatele typu AS all.
+     *
+     * @param userId      identifikátor uživatele
+     */
+    @Transactional
+    @RequestMapping(value = "/{userId}/permission/delete/fund/all", method = RequestMethod.POST)
+    public void deleteUserFundAllPermission(@PathVariable(value = "userId") final Integer userId) {
+        UsrUser user = userService.getUser(userId);
+        userService.deleteUserFundAllPermissions(user);
     }
 
     /**

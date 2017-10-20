@@ -59,7 +59,10 @@ export default function detail(state = initialState, action = {}, config = null)
         case UPDATE_VALUE: {
             return {
                 ...state,
-                data: action.data
+                id: action.id,
+                data: action.data,
+                fetched: true,
+                isFetching: false
             }
         }
         case types.STORE_SAVE: {

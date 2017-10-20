@@ -1013,6 +1013,7 @@ var messages = {
     "admin.perms.fund.tabs.users": "Uživatelé",
     "admin.perms.fund.tabs.users.add.title": "Přidat uživatele",
     "admin.perms.fund.tabs.groups": "Skupiny",
+    "admin.perms.fund.tabs.groups.add.title": "Přidat skupiny",
     "admin.user.group.action.delete": "Odebrat členství ve skupině",
     "admin.user.group.action.add": "Přiřadit skupiny",
     "admin.user.permission.action.delete": "Odebrat oprávnění uživatele",

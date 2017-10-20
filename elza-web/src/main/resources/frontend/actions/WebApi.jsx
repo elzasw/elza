@@ -879,8 +879,18 @@ export class WebApiCls {
             .then(data => ({rows: data, count: data.length}));
     }
 
+    findUsersPermissionsByFundAll() {
+        return AjaxUtils.ajaxGet(WebApiCls.userUrl + `/fund/all/users`)
+            .then(data => ({rows: data, count: data.length}));
+    }
+
     findGroupsPermissionsByFund(fundId) {
         return AjaxUtils.ajaxGet(WebApiCls.groupUrl + `/fund/${fundId}/groups`)
+            .then(data => ({rows: data, count: data.length}));
+    }
+
+    findGroupsPermissionsByFundAll(fundId) {
+        return AjaxUtils.ajaxGet(WebApiCls.groupUrl + `/fund/all/groups`)
             .then(data => ({rows: data, count: data.length}));
     }
 
@@ -908,8 +918,16 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl + "/" + userId + '/permission/delete/fund/' + fundId);
     }
 
+    deleteUserFundAllPermission(userId) {
+        return AjaxUtils.ajaxPost(WebApiCls.userUrl + "/" + userId + '/permission/delete/fund/all');
+    }
+
     deleteGroupFundPermission(groupId, fundId) {
         return AjaxUtils.ajaxPost(WebApiCls.groupUrl + "/" + groupId + '/permission/delete/fund/' + fundId);
+    }
+
+    deleteGroupFundAllPermission(groupId) {
+        return AjaxUtils.ajaxPost(WebApiCls.groupUrl + "/" + groupId + '/permission/delete/fund/all');
     }
 
     deleteUserScopePermission(userId, scopeId) {

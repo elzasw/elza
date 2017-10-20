@@ -1,6 +1,7 @@
 import {WebApi} from 'actions/index.jsx';
 import {DetailActions} from 'shared/detail'
 import * as SimpleListActions from "../../shared/list/simple/SimpleListActions";
+import FundsPermissionPanel from "../../components/admin/FundsPermissionPanel";
 
 export const ENTITY_PERMISSIONS = 'adminRegion.entityPermissions';
 export const USERS_PERMISSIONS_BY_FUND = 'adminRegion.usersPermissionsByFund';
@@ -15,7 +16,11 @@ export function fetchGroup(groupId) {
 }
 
 export function fetchUsersByFund(fundId) {
-    return SimpleListActions.fetchIfNeeded(USERS_PERMISSIONS_BY_FUND, fundId, (id, filter) => WebApi.findUsersPermissionsByFund(id), true);
+    if (fundId === FundsPermissionPanel.ALL_ID) {
+        return SimpleListActions.fetchIfNeeded(USERS_PERMISSIONS_BY_FUND, fundId, (id, filter) => WebApi.findUsersPermissionsByFundAll(), true);
+    } else {
+        return SimpleListActions.fetchIfNeeded(USERS_PERMISSIONS_BY_FUND, fundId, (id, filter) => WebApi.findUsersPermissionsByFund(id), true);
+    }
 }
 
 export function changeUsersForFund(fundId, users) {
@@ -23,7 +28,11 @@ export function changeUsersForFund(fundId, users) {
 }
 
 export function fetchGroupsByFund(fundId) {
-    return SimpleListActions.fetchIfNeeded(GROUPS_PERMISSIONS_BY_FUND, fundId, (id, filter) => WebApi.findGroupsPermissionsByFund(id), true);
+    if (fundId === FundsPermissionPanel.ALL_ID) {
+        return SimpleListActions.fetchIfNeeded(GROUPS_PERMISSIONS_BY_FUND, fundId, (id, filter) => WebApi.findGroupsPermissionsByFundAll(), true);
+    } else {
+        return SimpleListActions.fetchIfNeeded(GROUPS_PERMISSIONS_BY_FUND, fundId, (id, filter) => WebApi.findGroupsPermissionsByFund(id), true);
+    }
 }
 
 export function changeGroupsForFund(fundId, groups) {

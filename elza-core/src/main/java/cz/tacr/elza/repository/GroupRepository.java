@@ -2,12 +2,14 @@ package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.UsrGroup;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Respozitory pro {@link UsrGroup}.
@@ -25,4 +27,7 @@ public interface GroupRepository extends ElzaJpaRepository<UsrGroup, Integer>, G
     List<UsrGroup> findByFund(@Param("fund") ArrFund fund);
 
     UsrGroup findOneByCode(String code);
+
+    @Query("select distinct p.group from usr_permission p where p.permission in :permissions")
+    List<UsrGroup> findByPermissions(@Param("permissions") Set<UsrPermission.Permission> permissions);
 }

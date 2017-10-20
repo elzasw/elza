@@ -65,8 +65,9 @@ class FundGroupsPanel extends AbstractReactComponent {
 
     handleRemove = (item, index) => {
         const {groups, fundId} = this.props;
-        WebApi.deleteGroupFundPermission(item.id, fundId)
-            .then(data => {
+
+        const api = fundId === FundsPermissionPanel.ALL_ID ? WebApi.deleteGroupFundAllPermission(item.id) : WebApi.deleteGroupFundPermission(item.id, fundId);
+        api.then(data => {
                 const newRows = [
                     ...groups.rows.slice(0, index),
                     ...groups.rows.slice(index + 1)
