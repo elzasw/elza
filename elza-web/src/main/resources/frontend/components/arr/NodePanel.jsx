@@ -715,7 +715,7 @@ return true
             }
         }
         return (
-            <Shortcuts name='Accordion' key='content' className='content' ref='content' handler={(action,e)=>this.handleAccordionShortcuts(action,e)} tabIndex={"0"} global stopPropagation={false}>
+            <Shortcuts name='Accordion' key='content' className='content' ref='content' handler={(action,e)=>this.handleAccordionShortcuts(action,e)} tabIndex={0} global stopPropagation={false}>
                 <div  className='inner-wrapper' ref="innerAccordionWrapper">
                     <div className="menu-wrapper">
                         <NodeActionsBar node={node} selectedSubNodeIndex={focusItemIndex} versionId={versionId} userDetail={userDetail} fundId={fundId} closed={closed}/>
@@ -835,7 +835,7 @@ return true
         })
 
         return (
-            <Shortcuts name='NodePanel' key={'node-panel'} className={cls} handler={this.handleShortcuts} tabIndex={"0"} global stopPropagation={false}>
+            <Shortcuts name='NodePanel' key={'node-panel'} className={cls} handler={this.handleShortcuts} tabIndex={0} global stopPropagation={false}>
                 <div key='main' className='main'>
                     {parents}
                     {this.renderAccordion(form, record, daos, readMode)}

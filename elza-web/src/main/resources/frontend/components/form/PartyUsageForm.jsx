@@ -4,6 +4,7 @@ import * as types from 'actions/constants/ActionTypes.js';
 import { i18n } from 'components/shared';
 import {WebApi} from "../../actions/WebApi";
 import HorizontalLoader from "../shared/loading/HorizontalLoader";
+import * as perms from "../../actions/user/Permission";
 
 class PartyUsageForm extends React.Component {
 
@@ -22,7 +23,7 @@ class PartyUsageForm extends React.Component {
             alert(
                 'ID from tree' +
                 selectedNode.propertyId +
-                'ID from RegField ' +
+                'ID from PartyField ' +
                 selectedReplacementNode.id
             );
         }

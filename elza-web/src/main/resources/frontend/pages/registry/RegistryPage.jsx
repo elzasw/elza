@@ -193,7 +193,6 @@ class RegistryPage extends AbstractReactComponent {
        );
     };
 
-
     handleExtImport = () => {
         this.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={false} onSubmitForm={(data) => {
             this.dispatch(registryDetailFetchIfNeeded(data.id));
@@ -202,7 +201,7 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     buildRibbon = () => {
-        const {registryDetail:{data}, userDetail, extSystems, module, customRibbon} = this.props;
+        const {registryDetail:{data}, userDetail, extSystems, module, customRibbon, registryDetail } = this.props;
 
         const parts = module && customRibbon ? customRibbon : {altActions: [], itemActions: [], primarySection: null};
 
@@ -240,16 +239,13 @@ class RegistryPage extends AbstractReactComponent {
                         <div><span className="btnText">{i18n('registry.deleteRegistry')}</span></div>
                     </Button>
                 );
+                itemActions.push(
+                    <Button key='registryShow' onClick={() => this.props.onShowUsage(registryDetail)}>
+                        <Icon glyph="fa-search"/>
+                        <div><span className="btnText">{i18n('registry.registryUsage')}</span></div>
+                    </Button>
+                );
             }
-        }
-
-        if (this.canDeleteRegistry()) {
-        itemActions.push(
-            <Button key='registryShow' onClick={() => this.props.onShowUsage(this.props.registryDetail)}>
-                <Icon glyph="fa-search"/>
-                <div><span className="btnText">{i18n('registry.registryUsage')}</span></div>
-            </Button>
-        );
         }
 
         if (this.canMoveRegistry()) {

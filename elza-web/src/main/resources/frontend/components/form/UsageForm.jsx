@@ -24,6 +24,8 @@ import objectById from '../../shared/utils/objectById';
 import i18n from '../i18n';
 import PartyField from "../party/PartyField";
 import PartySelectPage from "../../pages/select/PartySelectPage";
+import * as perms from "../../actions/user/Permission";
+import {decorateAutocompleteValue} from "../arr/nodeForm/DescItemUtils";
 
 class RegistryUsageForm extends React.Component {
     static propTypes = {
@@ -39,7 +41,7 @@ class RegistryUsageForm extends React.Component {
         selectedNode: null,
         selectedReplacementNode: null,
         usageCount: 0,
-        data: {}
+        data: {},
     };
 
     componentDidMount() {
@@ -87,7 +89,6 @@ class RegistryUsageForm extends React.Component {
     formatDataForTree(items, type) {
         const processedFunds = [];
         items.forEach(item => {
-            console.log(item)
             processedFunds.push({
                 id: item.id + (type === 'fund' ? this.rootFundIdfOffset : this.rootPartyIdOffset), //proti překrytí id, míchání dvou druhů dat do jedné komponenty
                 propertyId: item.id, //původní id
@@ -185,10 +186,6 @@ class RegistryUsageForm extends React.Component {
             descItem,
             registryList,
             partyList,
-            fundName,
-            nodeName,
-            itemName,
-            specName
         } = this.props;
         const open = (hasParty = false) => {
             if (hasParty) {
@@ -214,7 +211,6 @@ class RegistryUsageForm extends React.Component {
                     this,
                     null,
                     <RegistrySelectPage
-                        titles={[fundName, nodeName, itemName + (hasSpecification ? ': ' + specName : '')]}
                         hasParty={hasParty}
                         onSelect={data => {
                             onSelect(data);
@@ -249,11 +245,11 @@ class RegistryUsageForm extends React.Component {
     };
 
     handleSelectModuleParty = ({onSelect, filterText, value}) => {
-        const {partyList:{filter},  fundName, nodeName, itemName, specName, hasSpecification} = this.props;
+        console.log(value)
+        const {partyList:{filter}} = this.props;
         this.props.dispatch(partyListFilter({...filter, text:filterText}));
         this.props.dispatch(partyDetailFetchIfNeeded(value ? value.id : null));
         this.props.dispatch(modalDialogShow(this, null, <PartySelectPage
-            titles={[fundName, nodeName, itemName + (hasSpecification ? ': ' + specName : '')]}
             onSelect={(data) => {
                 onSelect(data);
                 this.props.dispatch(partyListFilter({text:null, type:null, itemSpecId: null}));
@@ -262,6 +258,19 @@ class RegistryUsageForm extends React.Component {
         />, classNames(MODAL_DIALOG_VARIANT.FULLSCREEN, MODAL_DIALOG_VARIANT.NO_HEADER)));
     };
 
+    canReplace() {
+        const {userDetail} = this.props;
+        const {selectedReplacementNode} = this.state;
+        console.log(selectedReplacementNode);
+
+        if (selectedReplacementNode) {
+            return userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {
+                    type: perms.REG_SCOPE_WR,
+                    scopeId: selectedReplacementNode.scopeId
+                });
+            }
+        return false;
+    }
 
     render() {
         const {detail, fundTreeUsage, onReplace} = this.props;
@@ -302,11 +311,13 @@ class RegistryUsageForm extends React.Component {
                                 }}
                                 onSelectModule={this.handleSelectModuleParty}
                                 onChange={this.handleChoose}
+
                             />}
                         </Col>
                         <Col xs={2}>
                             <Button
                                 onClick={() => onReplace(selectedReplacementNode, selectedNode)}
+                                disabled={!this.canReplace()}
                             >
                                 {i18n('registry.replace')}
                             </Button>
@@ -326,19 +337,6 @@ class RegistryUsageForm extends React.Component {
 }
 
 export default connect((state, props) => {
-    let fundName = null,
-        nodeName = null;
-    //if (props.typePrefix != 'output') {
-    const {arrRegion: {activeIndex, funds}} = state;
-    const fund = funds[activeIndex];
-    const {nodes} = fund;
-    fundName = fund.name;
-    const node = nodes.nodes[nodes.activeIndex];
-    const {selectedSubNodeId} = node;
-    const subNode = objectById(node.childNodes, selectedSubNodeId);
-    subNode && subNode.name && (nodeName = subNode.name);
-    //}
-
     const registryList = storeFromArea(state, AREA_REGISTRY_LIST);
     const partyList = storeFromArea(state, AREA_PARTY_LIST);
 
@@ -346,7 +344,6 @@ export default connect((state, props) => {
         fundTreeUsage: state.arrRegion.globalFundTree.fundTreeUsage,
         registryList,
         partyList,
-        fundName,
-        nodeName
+        userDetail: state.userDetail
     };
 })(RegistryUsageForm);

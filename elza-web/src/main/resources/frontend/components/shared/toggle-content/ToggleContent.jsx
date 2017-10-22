@@ -71,7 +71,7 @@ class ToggleContent extends React.Component {
         let children = null;
         if (render) {
             children = React.Children.map(this.props.children, child => {
-                return React.cloneElement(child, {opened: this.state.opened});
+                return React.cloneElement(child);
             })
         }
 

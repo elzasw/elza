@@ -152,15 +152,15 @@ class PartyPage extends AbstractReactComponent {
                         <div><span className="btnText">{i18n('party.delete.button')}</span></div>
                     </Button>
                 );
+
+                partyDetail && itemActions.push(
+                    <Button key='partyShow' onClick={() => this.props.onShowUsage(partyDetail)}>
+                        <Icon glyph="fa-search"/>
+                        <div><span className="btnText">{i18n("party.usage.button")}</span></div>
+                    </Button>
+                );
             }
         }
-
-        itemActions.push(
-            <Button key='partyShow' onClick={() => this.props.onShowUsage(partyDetail)}>
-                <Icon glyph="fa-search"/>
-                <div><span className="btnText">{i18n("party.usage.button")}</span></div>
-            </Button>
-        );
 
         let altSection;
         if (altActions.length > 0) {

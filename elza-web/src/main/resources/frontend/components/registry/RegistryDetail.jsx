@@ -210,7 +210,7 @@ class RegistryDetail extends AbstractReactComponent {
         var hierarchyElement = [];
         for(var i = 0; i < hierarchy.length; i++){
             if(i > 0){hierarchyElement.push(<span key="hierarchy-delimiter" className="hierarchy-delimiter">{delimiter}</span>);}
-            hierarchyElement.push(<span key="hierarchy-level" className="hierarchy-level">{hierarchy[i].toUpperCase()}</span>);
+            hierarchyElement.push(<span key={i + "hierarchy-level"} className="hierarchy-level">{hierarchy[i].toUpperCase()}</span>);
         }
         return hierarchyElement;
     }
@@ -276,11 +276,11 @@ class RegistryDetail extends AbstractReactComponent {
                     </div>
                     <div className="registry-type">
                         {hierarchyElement}
-                        <span className="scope-label">
+                        {data.scopeId && <span className="scope-label">
                             {scopes && this.getScopeLabel(data.scopeId, scopes)}
-                        </span>
+                        </span>}
                     </div>
-                    <div ref='registryTitle' className="registry-title" tabIndex={"0"}>
+                    <div ref='registryTitle' className="registry-title" tabIndex={0}>
                         <div className='registry-content'>
 
                             <div className='line charakteristik'>

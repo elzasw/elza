@@ -88,7 +88,7 @@ class RegistryListItem extends AbstractReactComponent {
                 });
             }
 
-            return <div className={classNames('registry-list-item', className)} key={'record-id-' + id} title={path} className={cls} onDoubleClick={doubleClick} {...otherProps}>
+            return <div key={'record-id-' + id} title={path} className={cls} onDoubleClick={doubleClick}>
                 <div>
                     <Icon glyph={iconName} />
                     <span className="name">{record}</span>

@@ -156,7 +156,7 @@ class RegistryList extends AbstractReactComponent {
         }));
     };
 
-    renderListItem = (item) => <RegistryListItem {...item}
+    renderListItem = (item) =>  <RegistryListItem {...item}
                                                  onClick={this.handleRegistryDetail.bind(this, item)}
                                                  onDoubleClick={this.handleRegistrySetParent.bind(this,item)} />
 
