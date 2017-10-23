@@ -886,7 +886,6 @@ class ArrPage extends ArrParentPage {
     renderFundPackets() {
         const {arrRegion, packetTypes} = this.props;
         const activeFund = arrRegion.activeIndex !== null ? arrRegion.funds[arrRegion.activeIndex] : null;
-
         return (
             <FundPackets
                 ref="fundPackets"

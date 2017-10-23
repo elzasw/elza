@@ -87,7 +87,6 @@ FixedDropDownButton.defaultProps = {
     disabled: false,
     pullRight: false,
     dropup: false,
-    navItem: false,
     noCaret: false
 };
 

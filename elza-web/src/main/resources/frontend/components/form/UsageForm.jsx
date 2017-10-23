@@ -30,6 +30,8 @@ import {createFundRoot, getFundFromFundAndVersion, getParentNode} from "../arr/A
 import {fundSelectSubNode} from "../../actions/arr/node";
 import {withRouter} from 'react-router';
 import {selectFundTab} from "../../actions/arr/fund";
+import {deletePackage} from "../../actions/admin/packages";
+import {fundsSelectFund} from "../../actions/fund/fund";
 
 class RegistryUsageForm extends React.Component {
     static propTypes = {
@@ -39,6 +41,8 @@ class RegistryUsageForm extends React.Component {
     rootFundIdfOffset = 0.1;
     rootPartyIdOffset = 0.2;
     nodePartyIdOffset = 0.3;
+    manyItemsIdOffset = 0.4;
+    manyItemsLabel = i18n("registry.usage.tooMany");
     expandFundThreshold = 500;
 
     state = {
@@ -107,18 +111,27 @@ class RegistryUsageForm extends React.Component {
                 count: type === 'fund' ? item.nodes && this.countOccurencesInAS(item.nodes) : this.countOccurencesForNode(item)
             });
             if (item.nodes) {
-                processedFunds.push(
-                    ...item.nodes.map(node => ({
-                        name: node.title,
-                        type,
+                if (item.nodes.length < this.expandFundThreshold) {
+                    processedFunds.push(
+                        ...item.nodes.map(node => ({
+                            name: node.title,
+                            type,
+                            depth: 2,
+                            icon: 'fa-fw',
+                            id: item.type === 'party' ? node.id + this.nodePartyIdOffset : node.id, //proti překrytí id, míchání dvou druhů dat do jedné komponenty
+                            propertyId: node.id, //původní id
+                            parent: item.id + this.rootFundIdfOffset,
+                            origParent: item.id,
+                            link: true
+                        }))
+                    );
+                } else {
+                    processedFunds.push({
+                        id: item.id + this.manyItemsIdOffset,
                         depth: 2,
-                        icon: 'fa-fw',
-                        id: item.type === 'party' ? node.id + this.nodePartyIdOffset : node.id, //proti překrytí id, míchání dvou druhů dat do jedné komponenty
-                        propertyId: node.id, //původní id
-                        parent: item.id + this.rootFundIdfOffset,
-                        link: true
-                    }))
-                );
+                        name: this.manyItemsLabel
+                    })
+                }
             }
         });
 
@@ -262,7 +275,6 @@ class RegistryUsageForm extends React.Component {
     canReplace() {
         const {userDetail} = this.props;
         const {selectedReplacementNode} = this.state;
-        console.log(selectedReplacementNode);
 
         if (selectedReplacementNode) {
             return userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {
@@ -275,29 +287,24 @@ class RegistryUsageForm extends React.Component {
 
     handleLinkClick = (node) => {
         console.log(node);
+        this.props.dispatch(modalDialogHide());
         if (node.type === "fund") {
-            this.props.dispatch(modalDialogHide());
             this.props.history.push("/arr");
             this.handleShowInArr(node);
             //this.callFundSelectSubNode(node)
         }
     };
 
-    /**
-     * Otevření uzlu v záložce.
-     * @param node {Object} uzel
-     * @param openNewTab {Boolean} true, pokud se má otevřít v nové záložce
-     */
-    callFundSelectSubNode(node, openNewTab, ensureItemVisible) {
+    handleShowInArr(node) {
+        const {data} = this.state;
+        const fundId = data.funds.find((n) => n.id === node.origParent).id;
 
-        //this.props.dispatch(fundSelectSubNode(1, node.propertyId, null, false, null, true));
-    }
-
-    handleShowInArr(version) {
-        // Otevření archivního souboru
-        /*const fund = this.props.fundDetail
-        var fundObj = getFundFromFundAndVersion(fund, version);
-        this.props.dispatch(selectFundTab(fundObj));*/
+        WebApi.getFundDetail(fundId).then((fund) => {
+            this.props.dispatch(fundsSelectFund(fund.id));
+            this.props.dispatch(selectFundTab(fund));
+            //TODO Otevírání As
+            //this.props.dispatch(fundSelectSubNode(node.versionId, node.propertyId, {}, false, null, true));
+        });
     }
 
     render() {

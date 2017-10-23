@@ -814,6 +814,7 @@ var messages = {
     "registry.deleteRegistry": "Smazat heslo",
     "registry.registryUsage": "Použití hesla",
     "registry.registryUsageCount": "Počet nalezených výskytů",
+    "registry.usage.tooMany": "Počet nalezených výskytů je příliš velký",
     "registry.replaceText": "Nahrazení hesla ve výskytech za heslo",
     "registry.replace": "Nahradit",
     "registry.cancelMove": "Zrušit přesun",
