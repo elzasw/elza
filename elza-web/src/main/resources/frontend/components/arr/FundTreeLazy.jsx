@@ -37,7 +37,8 @@ class FundTreeLazy extends AbstractReactComponent {
     static defaultProps = {
         showSearch: true,
         showCountStats: false,
-        showCollapseAll: true
+        showCollapseAll: true,
+        onLinkClick:null
     };
 
     componentWillMount(){
@@ -69,7 +70,8 @@ class FundTreeLazy extends AbstractReactComponent {
         actionAddons: React.PropTypes.object,
         showSearch: React.PropTypes.bool,
         showCountStats: React.PropTypes.bool,
-        showCollapseAll: React.PropTypes.bool
+        showCollapseAll: React.PropTypes.bool,
+        onLinkClick: React.PropTypes.func
     };
     selectorMoveUp = ()=>{
         const {nodes, selectedId, multipleSelection} = this.props;
@@ -248,14 +250,15 @@ class FundTreeLazy extends AbstractReactComponent {
             {levels}
             {expCol}
             <Icon {...clickProps} className={iconClass} style={style} fill={backgroundColor} stroke="none" glyph={icon}/>
-            <span
+            <div
                 title={title}
                 className='node-label'
                 {...clickProps}
                 onContextMenu={onContextMenu ? onContextMenu.bind(this, node) : null}>
                 {name}
                 {this.props.showCountStats && node.count && <span className="count-label">({node.count})</span>}
-            </span>
+                {this.props.onLinkClick && node.link && <Icon glyph="fa-sign-out fa-lg" onClick={() => this.props.onLinkClick(node)}/>}
+            </div>
         </div>;
     };
 

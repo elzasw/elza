@@ -239,7 +239,7 @@ class RegistryPage extends AbstractReactComponent {
                         <div><span className="btnText">{i18n('registry.deleteRegistry')}</span></div>
                     </Button>
                 );
-                itemActions.push(
+                this.props.onShowUsage && itemActions.push(
                     <Button key='registryShow' onClick={() => this.props.onShowUsage(registryDetail)}>
                         <Icon glyph="fa-search"/>
                         <div><span className="btnText">{i18n('registry.registryUsage')}</span></div>

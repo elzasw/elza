@@ -15,7 +15,7 @@ import {
     registryDetailFetchIfNeeded,
     registryListFilter
 } from '../../actions/registry/registry';
-import {modalDialogShow} from '../../actions/global/modalDialog';
+import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog';
 import RegistrySelectPage from 'pages/select/RegistrySelectPage.jsx'
 import classNames from 'classnames';
 import {MODAL_DIALOG_VARIANT} from 'constants.jsx';
@@ -26,6 +26,10 @@ import PartyField from "../party/PartyField";
 import PartySelectPage from "../../pages/select/PartySelectPage";
 import * as perms from "../../actions/user/Permission";
 import {decorateAutocompleteValue} from "../arr/nodeForm/DescItemUtils";
+import {createFundRoot, getFundFromFundAndVersion, getParentNode} from "../arr/ArrUtils";
+import {fundSelectSubNode} from "../../actions/arr/node";
+import {withRouter} from 'react-router';
+import {selectFundTab} from "../../actions/arr/fund";
 
 class RegistryUsageForm extends React.Component {
     static propTypes = {
@@ -38,7 +42,6 @@ class RegistryUsageForm extends React.Component {
     expandFundThreshold = 500;
 
     state = {
-        selectedNode: null,
         selectedReplacementNode: null,
         usageCount: 0,
         data: {},
@@ -47,7 +50,6 @@ class RegistryUsageForm extends React.Component {
     componentDidMount() {
         const {detail, data} = this.props;
         if (detail.id) {
-            //WebApi.findRegistryUsage(detail.id).then(data => {
                 if (data) {
                     this.setState({
                         usageCount: this.countOccurences(data),
@@ -64,7 +66,6 @@ class RegistryUsageForm extends React.Component {
                         )
                     );
                 }
-            //});
         }
     }
 
@@ -84,6 +85,12 @@ class RegistryUsageForm extends React.Component {
         return data.funds.reduce((sum, fund) => sum + fund.nodes.length, 0) + data.parties.length;
     };
 
+    countOccurencesInAS = as => {
+        return as.reduce((sum, jp) => {
+            return sum + this.countOccurencesForNode(jp);
+        },0)
+    };
+
     countOccurencesForNode = node => node.occurrences && node.occurrences.length;
 
     formatDataForTree(items, type) {
@@ -97,20 +104,19 @@ class RegistryUsageForm extends React.Component {
                 name: item.name,
                 depth: 1,
                 hasChildren: type === 'fund',
-                count: type === 'fund' ? item.nodes && item.nodes.length : this.countOccurencesForNode(item)
+                count: type === 'fund' ? item.nodes && this.countOccurencesInAS(item.nodes) : this.countOccurencesForNode(item)
             });
             if (item.nodes) {
                 processedFunds.push(
                     ...item.nodes.map(node => ({
-                        ...node,
                         name: node.title,
                         type,
                         depth: 2,
                         icon: 'fa-fw',
                         id: item.type === 'party' ? node.id + this.nodePartyIdOffset : node.id, //proti překrytí id, míchání dvou druhů dat do jedné komponenty
                         propertyId: node.id, //původní id
-                        parent: item.id + this.rootFundIdfOffset
-                        //count: this.countOccurencesForNode(node)
+                        parent: item.id + this.rootFundIdfOffset,
+                        link: true
                     }))
                 );
             }
@@ -118,10 +124,6 @@ class RegistryUsageForm extends React.Component {
 
         return processedFunds;
     }
-
-    handleNodeClick = selectedNode => {
-        this.setState({selectedNode});
-    };
 
     expandNode(node) {
         const {fundTreeUsage} = this.props;
@@ -245,7 +247,6 @@ class RegistryUsageForm extends React.Component {
     };
 
     handleSelectModuleParty = ({onSelect, filterText, value}) => {
-        console.log(value)
         const {partyList:{filter}} = this.props;
         this.props.dispatch(partyListFilter({...filter, text:filterText}));
         this.props.dispatch(partyDetailFetchIfNeeded(value ? value.id : null));
@@ -272,9 +273,36 @@ class RegistryUsageForm extends React.Component {
         return false;
     }
 
+    handleLinkClick = (node) => {
+        console.log(node);
+        if (node.type === "fund") {
+            this.props.dispatch(modalDialogHide());
+            this.props.history.push("/arr");
+            this.handleShowInArr(node);
+            //this.callFundSelectSubNode(node)
+        }
+    };
+
+    /**
+     * Otevření uzlu v záložce.
+     * @param node {Object} uzel
+     * @param openNewTab {Boolean} true, pokud se má otevřít v nové záložce
+     */
+    callFundSelectSubNode(node, openNewTab, ensureItemVisible) {
+
+        //this.props.dispatch(fundSelectSubNode(1, node.propertyId, null, false, null, true));
+    }
+
+    handleShowInArr(version) {
+        // Otevření archivního souboru
+        /*const fund = this.props.fundDetail
+        var fundObj = getFundFromFundAndVersion(fund, version);
+        this.props.dispatch(selectFundTab(fundObj));*/
+    }
+
     render() {
         const {detail, fundTreeUsage, onReplace} = this.props;
-        const {selectedReplacementNode, selectedNode} = this.state;
+        const {selectedReplacementNode} = this.state;
         return (
             <Modal.Body className="reg-usage-form">
                 <h4>
@@ -286,14 +314,14 @@ class RegistryUsageForm extends React.Component {
                 {fundTreeUsage &&
                 <FundTreeUsage
                     handleOpenCloseNode={this.handleOpenCloseNode}
-                    onNodeClick={this.handleNodeClick}
                     className="fund-tree-container-fixed"
                     cutLongLabels={true}
                     ref="treeUsage"
                     showCountStats={true}
+                    onLinkClick={this.handleLinkClick}
                     {...fundTreeUsage}
                 />}
-                <ToggleContent withText text={this.props.replaceText}>
+                {this.state.usageCount > 0 && <ToggleContent withText text={this.props.replaceText}>
                     <Row>
                         <Col xs={10}>
                             {this.props.type === "registry" ? <RegistryField
@@ -316,14 +344,14 @@ class RegistryUsageForm extends React.Component {
                         </Col>
                         <Col xs={2}>
                             <Button
-                                onClick={() => onReplace(selectedReplacementNode, selectedNode)}
+                                onClick={() => onReplace(selectedReplacementNode)}
                                 disabled={!this.canReplace()}
                             >
                                 {i18n('registry.replace')}
                             </Button>
                         </Col>
                     </Row>
-                </ToggleContent>
+                </ToggleContent>}
             </Modal.Body>
         );
     }
@@ -336,7 +364,7 @@ class RegistryUsageForm extends React.Component {
     }
 }
 
-export default connect((state, props) => {
+export default withRouter(connect((state, props) => {
     const registryList = storeFromArea(state, AREA_REGISTRY_LIST);
     const partyList = storeFromArea(state, AREA_PARTY_LIST);
 
@@ -346,4 +374,4 @@ export default connect((state, props) => {
         partyList,
         userDetail: state.userDetail
     };
-})(RegistryUsageForm);
+})(RegistryUsageForm));

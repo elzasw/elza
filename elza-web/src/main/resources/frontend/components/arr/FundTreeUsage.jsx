@@ -90,30 +90,6 @@ class FundTreeUsage extends AbstractReactComponent {
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
-    /**
-     * Klik na uzel.
-     * @param node {Object} uzel
-     * @param e {Object} event
-     */
-    handleNodeClick(node, ensureItemVisible, e) {
-        e.shiftKey && this.unFocus();
-        this.props.onNodeClick(node);
-        console.log(node)
-        if (!node.hasChildren) {
-            this.dispatch(
-                fundTreeSelectNode(
-                    types.FUND_TREE_AREA_USAGE,
-                    this.props.versionId,
-                    node.id,
-                    e.ctrlKey,
-                    e.shiftKey,
-                    null,
-                    ensureItemVisible
-                )
-            );
-        }
-    }
-
     unFocus() {
         if (document.selection) {
             document.selection.empty();
@@ -141,8 +117,8 @@ class FundTreeUsage extends AbstractReactComponent {
                 cutLongLabels={cutLongLabels}
                 onOpenCloseNode={this.props.handleOpenCloseNode}
                 onContextMenu={this.handleContextMenu}
-                onNodeClick={this.handleNodeClick}
                 showCountStats={true}
+                onLinkClick={this.props.onLinkClick}
             />
         );
     }
