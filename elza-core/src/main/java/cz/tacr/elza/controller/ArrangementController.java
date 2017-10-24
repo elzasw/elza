@@ -2185,6 +2185,7 @@ public class ArrangementController {
      * @return output
      */
     @RequestMapping(value = "/output/{fundVersionId}/{outputId}", method = RequestMethod.GET)
+	@Transactional
     public ArrOutputExtVO getOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                     @PathVariable(value = "outputId") final Integer outputId) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
@@ -2194,6 +2195,7 @@ public class ArrangementController {
     }
 
     @RequestMapping(value = "/output/generate/{outputId}", method = RequestMethod.GET)
+	@Transactional
     public GenerateOutputResult generateOutput(@PathVariable(value = "outputId") final Integer outputId,
                                                @RequestParam(value = "forced", required = false, defaultValue = "false") final Boolean forced) {
         ArrOutput output = outputService.getOutput(outputId);
