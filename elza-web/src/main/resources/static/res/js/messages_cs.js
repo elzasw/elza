@@ -1067,7 +1067,7 @@ var messages = {
     "permission.REG_SCOPE_WR_ALL": "Zápis/úprava všech scope rejstříku",
     "permission.FUND_OUTPUT_WR": "Tvorba výstupů vybraného AS",
     "permission.FUND_OUTPUT_WR_ALL": "Tvorba výstupů všech AS",
-    "permission.FUND_VER_WR": "Verzování a editace vybrané AS",
+    "permission.FUND_VER_WR": "Konfigurace AS",
     "permission.FUND_ADMIN": "Administrace všech AS",
     "permission.FUND_EXPORT": "Export vybrané AS",
     "permission.FUND_EXPORT_ALL": "Export všech AS",

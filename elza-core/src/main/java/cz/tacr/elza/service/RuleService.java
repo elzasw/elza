@@ -1,40 +1,11 @@
 package cz.tacr.elza.service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-
-import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.OutputCode;
-import cz.tacr.elza.packageimport.PackageService;
-import cz.tacr.elza.packageimport.xml.SettingGridView;
-import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
 import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
+import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItemSettings;
@@ -44,22 +15,34 @@ import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.ArrNodeConformityError;
 import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
+import cz.tacr.elza.domain.ArrNodeExtension;
 import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.RulArrangementExtension;
+import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemSpecExt;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeAction;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulTemplate;
+import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.LockVersionChangeException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.OutputCode;
+import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.packageimport.xml.SettingGridView;
+import cz.tacr.elza.repository.ArrangementExtensionRepository;
+import cz.tacr.elza.repository.ExtensionRuleRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemSettingsRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
@@ -69,11 +52,39 @@ import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeConformityErrorRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeConformityRepository;
+import cz.tacr.elza.repository.NodeExtensionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputTypeRepository;
 import cz.tacr.elza.repository.TemplateRepository;
+import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.utils.ObjectListIterator;
 import cz.tacr.elza.validation.ArrDescItemsPostValidator;
+import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 /**
@@ -134,6 +145,21 @@ public class RuleService {
     private ItemSettingsRepository itemSettingsRepository;
     @Autowired
     private OutputTypeRepository outputTypeRepository;
+
+    @Autowired
+    private NodeExtensionRepository nodeExtensionRepository;
+
+    @Autowired
+    private IEventNotificationService eventNotificationService;
+
+    @Autowired
+    private ArrangementCacheService arrangementCacheService;
+
+    @Autowired
+    private ArrangementExtensionRepository arrangementExtensionRepository;
+
+    @Autowired
+    private ExtensionRuleRepository extensionRuleRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(RuleService.class);
 
@@ -725,4 +751,176 @@ public class RuleService {
 
         return rulesExecutor.executeOutputItemTypesRules(outputDefinition, rulDescItemTypeExtList);
     }
+
+    /**
+     * Vytvoření vazby mezi JP a definicí řídících pravidel.
+     *
+     * @param versionId     identifikátor verze AP
+     * @param nodeId        identifikátor JP
+     * @param nodeExtension  vazba
+     * @return  vazba
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
+    public ArrNodeExtension createNodeExtension(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer versionId,
+                                                final Integer nodeId,
+                                                final ArrNodeExtension nodeExtension) {
+        Assert.notNull(nodeExtension, "Přirazení musí být vyplněno");
+        Assert.isNull(nodeExtension.getNodeExtensionId(), "Identifikátor přiřazení nesmí být vyplěn");
+
+        ArrNode node = nodeRepository.findOne(nodeId);
+
+        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_NODE_EXTENSION, node);
+
+        node.setVersion(nodeExtension.getNode().getVersion());
+        saveNode(node, change);
+
+        validateNodeExtension(nodeExtension, versionId);
+
+        nodeExtension.setNode(node);
+        nodeExtension.setCreateChange(change);
+        eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FUND_EXTENSION_CHANGE, versionId, nodeExtension.getNode().getNodeId(), nodeExtension.getNode().getVersion()));
+
+        nodeExtensionRepository.saveAndFlush(nodeExtension);
+        arrangementCacheService.createNodeExtension(nodeId, nodeExtension);
+
+        deleteConformityInfo(versionId, Collections.singleton(nodeId), Collections.singleton(RelatedNodeDirection.DESCENDANTS));
+
+        return nodeExtension;
+    }
+
+    /**
+     * Odstranění vazby mezi nodem a definicí řídících pravidel.
+     *
+     * @param versionId     identifikátor verze AP
+     * @param nodeId        identifikátor JP
+     * @param nodeExtension  vazba
+     * @return vazba
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
+    public ArrNodeExtension deleteNodeExtension(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer versionId,
+                                                final Integer nodeId,
+                                                final ArrNodeExtension nodeExtension) {
+        Assert.notNull(nodeExtension, "Rejstříkové heslo musí být vyplněno");
+        Assert.notNull(nodeExtension.getNodeExtensionId(), "Identifikátor musí být vyplněn");
+
+        ArrNodeExtension nodeExtensionDB = nodeExtensionRepository.findOne(nodeExtension.getNodeExtensionId());
+
+        ArrNode node = nodeRepository.findOne(nodeId);
+
+        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_NODE_EXTENSION, node);
+
+        node.setVersion(nodeExtension.getNode().getVersion());
+        saveNode(node, change);
+
+        validateNodeExtension(nodeExtensionDB, versionId);
+
+        nodeExtensionDB.setDeleteChange(change);
+
+        eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FUND_EXTENSION_CHANGE, versionId, node.getNodeId(), node.getVersion()));
+
+        nodeExtensionRepository.save(nodeExtensionDB);
+        arrangementCacheService.deleteNodeExtension(nodeId, nodeExtensionDB.getNodeExtensionId());
+
+        deleteConformityInfo(versionId, Collections.singleton(nodeId), Collections.singleton(RelatedNodeDirection.DESCENDANTS));
+
+        return nodeExtensionDB;
+    }
+
+    /**
+     * Uložení uzlu - optimistické zámky
+     *
+     * @param node   uzel
+     * @param change
+     * @return uložený uzel
+     */
+    private ArrNode saveNode(final ArrNode node, final ArrChange change) {
+        node.setLastUpdate(change.getChangeDate());
+        nodeRepository.save(node);
+        nodeRepository.flush();
+        return node;
+    }
+
+    /**
+     * Validuje entitu před uložením.
+     *
+     * @param nodeExtension entita
+     * @param fundVersionId
+     */
+    private void validateNodeExtension(final ArrNodeExtension nodeExtension, final Integer fundVersionId) {
+        if (nodeExtension.getDeleteChange() != null) {
+            throw new IllegalStateException("Nelze vytvářet či modifikovat změnu," +
+                    " která již byla smazána (má delete change).");
+        }
+
+        if (nodeExtension.getNode() == null) {
+            throw new IllegalArgumentException("Není vyplněna JP");
+        }
+        if (nodeExtension.getArrangementExtension() == null) {
+            throw new IllegalArgumentException("Nejsou definovány rozšířené pravidla");
+        }
+        List<RulArrangementExtension> arrangementExtensions = findArrangementExtensionsByFundVersionId(fundVersionId);
+        if (!arrangementExtensions.contains(nodeExtension.getArrangementExtension())) {
+            throw new IllegalArgumentException("Řídící pravidla nejsou pro pravidla AS");
+        }
+    }
+
+    /**
+     * Vyhledá možné definice rozšíření pro řídící pravidla podle verze AS.
+     *
+     * @param fundVersionId identifikátor verze archivní pomůcky
+     * @return nalezené definice
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
+    public List<RulArrangementExtension> findArrangementExtensionsByFundVersionId(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
+        Assert.notNull(fundVersionId, "Identifikátor verze AS musí být vyplněn");
+        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
+        RulRuleSet ruleSet = version.getRuleSet();
+        return arrangementExtensionRepository.findByRuleSet(ruleSet);
+    }
+
+    /**
+     * Vyhledá nastavené definice rozšíření pro řídící pravidla pro JP z verze AS.
+     *
+     * @param fundVersionId  identifikátor verze archivní pomůcky
+     * @param nodeId identifikátor JP
+     * @return nalezené definice
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
+    public List<RulArrangementExtension> findArrangementExtensionsByNodeId(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
+                                                                           final Integer nodeId) {
+        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
+        Assert.notNull(fundVersionId, "Identifikátor verze AS musí být vyplněn");
+        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
+        ArrNode node = nodeRepository.getOneCheckExist(nodeId);
+        if (!node.getFundId().equals(version.getFundId())) {
+            throw new IllegalArgumentException("JP nespadá pod verzi AS");
+        }
+        return arrangementExtensionRepository.findByNode(node);
+    }
+
+    /**
+     * Vyhledá všechny použité/zděděné definice rozšíření pro řídící pravidla pro JP. Seřazené podle názvu.
+     *
+     * @param nodeId identifikátor JP
+     * @return nalezené definice
+     */
+    public List<RulArrangementExtension> findAllArrangementExtensionsByNodeId(final Integer nodeId) {
+        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
+        return arrangementExtensionRepository.findByNodeIdToRoot(nodeId);
+    }
+
+    public List<RulExtensionRule> findExtensionRuleByNode(final ArrNode node, final RulExtensionRule.RuleType attributeTypes) {
+        Assert.notNull(node, "JP musí být vyplněna");
+
+        List<ArrNodeExtension> nodeExtensions = nodeExtensionRepository.findAllByNodeIdFromRoot(node.getNodeId());
+
+        LinkedHashSet<RulArrangementExtension> arrangementExtensions = new LinkedHashSet<>();
+        for (ArrNodeExtension nodeExtension : nodeExtensions) {
+            arrangementExtensions.add(nodeExtension.getArrangementExtension());
+        }
+        List<RulArrangementExtension> arrangementExtensionsFinal = new ArrayList<>(arrangementExtensions);
+
+        return extensionRuleRepository.findExtensionRules(arrangementExtensionsFinal, attributeTypes);
+    }
+
 }

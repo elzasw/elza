@@ -11,6 +11,7 @@ import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.PolicyTypeRepository;
+import cz.tacr.elza.service.RuleService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.kie.api.runtime.StatelessKieSession;
@@ -55,6 +56,9 @@ public class ValidationRules extends Rules {
 	@Autowired
 	private PolicyTypeRepository policyTypeRepository;
 
+	@Autowired
+	private RuleService ruleService;
+
 	private Log logger = LogFactory.getLog(this.getClass());
 
 	/**
@@ -78,13 +82,20 @@ public class ValidationRules extends Rules {
 		DataValidationResults validationResults = new DataValidationResults();
 
 		Path path;
-		List<RulRule> rulPackageRules = packageRulesRepository
-				.findByRuleSetAndRuleTypeOrderByPriorityAsc(version.getRuleSet(), RulRule.RuleType.CONFORMITY_INFO);
+		List<RulArrangementRule> rulPackageRules = arrangementRuleRepository
+				.findByRuleSetAndRuleTypeOrderByPriorityAsc(version.getRuleSet(), RulArrangementRule.RuleType.CONFORMITY_INFO);
 
-		for (RulRule rulPackageRule : rulPackageRules) {
-			path = Paths.get(rulesExecutor.getDroolsDir(rulPackageRule.getRuleSet().getCode()) + File.separator + rulPackageRule.getFilename());
+		for (RulArrangementRule rulPackageRule : rulPackageRules) {
+			path = Paths.get(rulesExecutor.getDroolsDir(rulPackageRule.getPackage().getCode(), rulPackageRule.getRuleSet().getCode()) + File.separator + rulPackageRule.getComponent().getFilename());
 			StatelessKieSession session = createNewStatelessKieSession(path);
 			session.setGlobal("results", validationResults);
+			execute(session, facts);
+		}
+
+		List<RulExtensionRule> rulExtensionRules = ruleService.findExtensionRuleByNode(level.getNode(), RulExtensionRule.RuleType.CONFORMITY_INFO);
+		for (RulExtensionRule rulExtensionRule : rulExtensionRules) {
+			path = Paths.get(rulesExecutor.getDroolsDir(rulExtensionRule.getPackage().getCode(), rulExtensionRule.getArrangementExtension().getRuleSet().getCode()) + File.separator + rulExtensionRule.getComponent().getFilename());
+			StatelessKieSession session = createNewStatelessKieSession(path);
 			execute(session, facts);
 		}
 

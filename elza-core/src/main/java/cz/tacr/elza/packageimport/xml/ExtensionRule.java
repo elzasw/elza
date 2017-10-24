@@ -1,30 +1,44 @@
 package cz.tacr.elza.packageimport.xml;
 
+import cz.tacr.elza.domain.RulExtensionRule;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-import cz.tacr.elza.domain.RulRule;
-
 
 /**
- * VO PackageRule.
+ * VO ExtensionRule {@link RulExtensionRule}.
  *
- * @author Martin Šlapa
- * @since 14.12.2015
+ * @since 17.10.2017
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "package-rule")
-public class PackageRule {
+@XmlType(name = "extension-rule")
+public class ExtensionRule {
 
+    /**
+     * Název souboru.
+     */
     @XmlAttribute(name = "filename", required = true)
     private String filename;
 
-    @XmlElement(name = "rule-type", required = true)
-    private RulRule.RuleType ruleType;
+    /**
+     * Kód definice rozšíření.
+     */
+    @XmlAttribute(name = "arrangement-extension", required = true)
+    private String arrangementExtension;
 
+    /**
+     * Typ pravidla.
+     */
+    @XmlElement(name = "rule-type", required = true)
+    private RulExtensionRule.RuleType ruleType;
+
+    /**
+     * Priorita.
+     */
     @XmlElement(name = "priority", required = true)
     private Integer priority;
 
@@ -36,11 +50,19 @@ public class PackageRule {
         this.filename = filename;
     }
 
-    public RulRule.RuleType getRuleType() {
+    public String getArrangementExtension() {
+        return arrangementExtension;
+    }
+
+    public void setArrangementExtension(final String arrangementExtension) {
+        this.arrangementExtension = arrangementExtension;
+    }
+
+    public RulExtensionRule.RuleType getRuleType() {
         return ruleType;
     }
 
-    public void setRuleType(final RulRule.RuleType ruleType) {
+    public void setRuleType(final RulExtensionRule.RuleType ruleType) {
         this.ruleType = ruleType;
     }
 

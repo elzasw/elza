@@ -114,8 +114,8 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
     /**
      * Cesta adresáře pro konfiguraci pravidel.
      */
-    @Value("${elza.rulesDir}")
-    private String rulesDir;
+    @Value("${elza.packagesDir}")
+    private String packagesDir;
 
     @Autowired
     @Qualifier("transactionManager")
@@ -126,8 +126,8 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
      *
      * @return cesta ke složce šablon
      */
-    public String getTemplatesDir(final String code) {
-        return rulesDir + File.separator + code + File.separator + FOLDER;
+    public String getTemplatesDir(final String packageCode, final String code) {
+        return packagesDir + File.separator + packageCode + File.separator + code + File.separator + FOLDER;
     }
 
     /**
@@ -329,12 +329,12 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
         });
     }
 
-    public String getRulesDir() {
-        return rulesDir;
+    public String getPackagesDir() {
+        return packagesDir;
     }
 
-    public void setRulesDir(final String rulesDir) {
-        this.rulesDir = rulesDir;
+    public void setPackagesDir(final String packagesDir) {
+        this.packagesDir = packagesDir;
     }
 
     @Override

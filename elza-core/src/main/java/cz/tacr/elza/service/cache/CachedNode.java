@@ -2,6 +2,7 @@ package cz.tacr.elza.service.cache;
 
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrNodeExtension;
 import cz.tacr.elza.domain.ArrNodeRegister;
 
 import java.util.List;
@@ -37,6 +38,11 @@ public class CachedNode implements NodeCacheSerializable {
     private List<ArrNodeRegister> nodeRegisters;
 
     /**
+     * Seznam návazných entity z definic řídících pravidel.
+     */
+    private List<ArrNodeExtension> nodeExtensions;
+
+    /**
      * Seznam navázaných entity z digitalizátů.
      */
     private List<ArrDaoLink> daoLinks;
@@ -63,6 +69,14 @@ public class CachedNode implements NodeCacheSerializable {
 
     public void setNodeRegisters(final List<ArrNodeRegister> nodeRegisters) {
         this.nodeRegisters = nodeRegisters;
+    }
+
+    public List<ArrNodeExtension> getNodeExtensions() {
+        return nodeExtensions;
+    }
+
+    public void setNodeExtensions(final List<ArrNodeExtension> nodeExtensions) {
+        this.nodeExtensions = nodeExtensions;
     }
 
     public List<ArrDaoLink> getDaoLinks() {

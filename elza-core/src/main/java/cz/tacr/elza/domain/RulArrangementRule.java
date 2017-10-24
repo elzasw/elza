@@ -1,5 +1,8 @@
 package cz.tacr.elza.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import cz.tacr.elza.domain.enumeration.StringLength;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -11,37 +14,36 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 
 /**
- * Implementace RulRule.
+ * Implementace RulArrangementRule. Základní pravidla pro archivní popis.
  *
  * @author Martin Šlapa
  * @since 14.12.2015
  */
-@Entity(name = "rul_rule")
+@Entity(name = "rul_arrangement_rule")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulRule {
+public class RulArrangementRule {
 
     @Id
     @GeneratedValue
-    private Integer ruleId;
+    private Integer arrangementRuleId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
-    @JoinColumn(name = "ruleSetId", nullable = true)
+    @JoinColumn(name = "ruleSetId", nullable = false)
     private RulRuleSet ruleSet;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
-    @Column(length = 250, nullable = false)
-    private String filename;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulComponent.class)
+    @JoinColumn(name = "componentId", nullable = false)
+    private RulComponent component;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 50, nullable = false)
+    @Column(length = StringLength.LENGTH_ENUM, nullable = false)
     private RuleType ruleType;
 
     @Column(nullable = false)
@@ -50,15 +52,15 @@ public class RulRule {
     /**
      * @return identifikátor entity
      */
-    public Integer getRuleId() {
-        return ruleId;
+    public Integer getArrangementRuleId() {
+        return arrangementRuleId;
     }
 
     /**
-     * @param ruleId identifikátor entity
+     * @param arrangementRuleId identifikátor entity
      */
-    public void setRuleId(final Integer ruleId) {
-        this.ruleId = ruleId;
+    public void setArrangementRuleId(final Integer arrangementRuleId) {
+        this.arrangementRuleId = arrangementRuleId;
     }
 
     /**
@@ -89,18 +91,12 @@ public class RulRule {
         this.rulPackage = rulPackage;
     }
 
-    /**
-     * @return název souboru
-     */
-    public String getFilename() {
-        return filename;
+    public RulComponent getComponent() {
+        return component;
     }
 
-    /**
-     * @param filename název souboru
-     */
-    public void setFilename(final String filename) {
-        this.filename = filename;
+    public void setComponent(final RulComponent component) {
+        this.component = component;
     }
 
     /**
@@ -138,7 +134,6 @@ public class RulRule {
         CONFORMITY_INFO,
         CONFORMITY_IMPACT,
         ATTRIBUTE_TYPES,
-        OUTPUT_ATTRIBUTE_TYPES,
         NEW_LEVEL
     }
 }

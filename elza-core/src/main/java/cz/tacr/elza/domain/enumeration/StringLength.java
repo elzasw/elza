@@ -14,4 +14,5 @@ public interface StringLength {
     public static final int LENGTH_50 = 50;
     public static final int LENGTH_250 = 250;
     public static final int LENGTH_1000 = 1000;
+    public static final int LENGTH_ENUM = 50;
 }
