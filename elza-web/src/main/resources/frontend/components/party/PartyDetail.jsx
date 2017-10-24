@@ -448,12 +448,12 @@ class PartyDetail extends AbstractReactComponent {
 }
 
 export default reduxForm({
-        form: 'partyDetail',
         fields: PartyDetail.fields,
         validate: PartyDetail.validate
     },(state) => {
         const {app: {partyDetail}, userDetail, refTables: {partyTypes, recordTypes}, focus, refTables} = state;
         return {
+            form: 'partyDetail',
             partyDetail,
             userDetail,
             partyTypes,

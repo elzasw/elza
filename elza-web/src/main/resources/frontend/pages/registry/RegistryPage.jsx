@@ -234,13 +234,21 @@ class RegistryPage extends AbstractReactComponent {
         if (this.canDeleteRegistry()) {
             if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: data ? data.scopeId : null})) {
                 itemActions.push(
-                    <Button key='registryRemove' onClick={this.handleDeleteRegistry}>
+                    <Button disabled={!data.invalid && !data.partyId} key='registryRemove' onClick={this.handleDeleteRegistry}>
                         <Icon glyph="fa-trash"/>
                         <div><span className="btnText">{i18n('registry.deleteRegistry')}</span></div>
                     </Button>
                 );
+
                 this.props.onShowUsage && itemActions.push(
                     <Button key='registryShow' onClick={() => this.props.onShowUsage(registryDetail)}>
+                        <Icon glyph="fa-search"/>
+                        <div><span className="btnText">{i18n('registry.registryUsage')}</span></div>
+                    </Button>
+                );
+
+                itemActions.push(
+                    <Button disabled={!data.partyId} key='registryShow' onClick={() => this.props.onShowUsage(registryDetail)}>
                         <Icon glyph="fa-search"/>
                         <div><span className="btnText">{i18n('registry.registryUsage')}</span></div>
                     </Button>

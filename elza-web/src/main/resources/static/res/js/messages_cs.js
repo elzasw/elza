@@ -913,6 +913,7 @@ var messages = {
     "party.delete.confirm": "Opravdu chcete smazat tuto osobu?",
     "party.delete.button": "Smazat osobu",
     "party.usage.button": "Použití osoby",
+    "party.usage.setValid": "Zplatnění osoby",
     "party.replaceText": "Nahrazení osoby ve výskytech za osoby",
 
 

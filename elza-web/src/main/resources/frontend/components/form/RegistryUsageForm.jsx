@@ -17,14 +17,11 @@ class RegistryUsageForm extends React.Component {
         })
     }
 
-    handleReplace = (selectedReplacementNode, selectedNode) => {
-        if (selectedNode && selectedReplacementNode) {
-            alert(
-                'ID from tree' +
-                selectedNode.propertyId +
-                'ID from RegField ' +
-                selectedReplacementNode.id
-            );
+    handleReplace = (selectedReplacementNode) => {
+        if (selectedReplacementNode) {
+            alert('Not implemented | ID from RegField ' + selectedReplacementNode.id);
+            //TODO volat
+            false && WebApi.replaceRegistry(this.props.detail, selectedReplacementNode);
         }
     };
 

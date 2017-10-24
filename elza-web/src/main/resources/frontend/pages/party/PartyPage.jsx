@@ -22,6 +22,7 @@ import './PartyPage.less';
 import {regExtSystemListFetchIfNeeded} from 'actions/registry/regExtSystemList';
 import PageLayout from "../shared/layout/PageLayout";
 import {PropTypes} from 'prop-types';
+import {WebApi} from "../../actions/WebApi";
 
 /**
  * PARTY PAGE
@@ -114,6 +115,10 @@ class PartyPage extends AbstractReactComponent {
         confirm(i18n('party.delete.confirm')) && this.dispatch(partyDelete(this.props.partyDetail.data.id));
     };
 
+    handleSetValidParty = () => {
+        confirm(i18n('party.delete.confirm')) && this.dispatch(partyDelete(this.props.partyDetail.data.id));
+    }
+
     /**
      * BUILD RIBBON
      * *********************************************
@@ -159,7 +164,15 @@ class PartyPage extends AbstractReactComponent {
                         <div><span className="btnText">{i18n("party.usage.button")}</span></div>
                     </Button>
                 );
+
+                partyDetail && itemActions.push(
+                    <Button key='partyShow' onClick={() => }>
+                        <Icon glyph="fa-check"/>
+                        <div><span className="btnText">{i18n("party.setValid.button")}</span></div>
+                    </Button>
+                );
             }
+
         }
 
         let altSection;
