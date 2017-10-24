@@ -32,15 +32,10 @@ import javax.validation.constraints.NotNull;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
-import cz.tacr.elza.domain.RulPackageDependency;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.packageimport.xml.PackageDependency;
-import cz.tacr.elza.packageimport.xml.SettingGridView;
-import cz.tacr.elza.repository.PackageDependencyRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -75,6 +70,7 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeAction;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulPackageDependency;
 import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulRule;
@@ -87,7 +83,9 @@ import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.PackageCode;
 import cz.tacr.elza.interpi.service.InterpiService;
 import cz.tacr.elza.packageimport.xml.ActionItemType;
@@ -105,6 +103,7 @@ import cz.tacr.elza.packageimport.xml.OutputType;
 import cz.tacr.elza.packageimport.xml.OutputTypes;
 import cz.tacr.elza.packageimport.xml.PackageAction;
 import cz.tacr.elza.packageimport.xml.PackageActions;
+import cz.tacr.elza.packageimport.xml.PackageDependency;
 import cz.tacr.elza.packageimport.xml.PackageInfo;
 import cz.tacr.elza.packageimport.xml.PackageRule;
 import cz.tacr.elza.packageimport.xml.PackageRules;
@@ -138,6 +137,7 @@ import cz.tacr.elza.packageimport.xml.Setting;
 import cz.tacr.elza.packageimport.xml.SettingBase;
 import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
 import cz.tacr.elza.packageimport.xml.SettingFundViews;
+import cz.tacr.elza.packageimport.xml.SettingGridView;
 import cz.tacr.elza.packageimport.xml.SettingRecord;
 import cz.tacr.elza.packageimport.xml.SettingTypeGroups;
 import cz.tacr.elza.packageimport.xml.Settings;
@@ -153,6 +153,7 @@ import cz.tacr.elza.repository.ItemTypeActionRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.repository.OutputTypeRepository;
+import cz.tacr.elza.repository.PackageDependencyRepository;
 import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.repository.Packaging;
 import cz.tacr.elza.repository.PacketTypeRepository;
@@ -174,7 +175,6 @@ import cz.tacr.elza.repository.TemplateRepository;
 import cz.tacr.elza.repository.UIPartyGroupRepository;
 import cz.tacr.elza.service.CacheService;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
-import org.apache.commons.lang3.tuple.Pair;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.ActionEvent;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -646,7 +646,8 @@ public class PackageService {
                                  final RulRuleSet ruleSet,
                                  final List<RulItemType> rulItemTypes) {
         List<UISettings> uiSettings = settingsRepository.findByRulPackage(rulPackage).stream()
-                .filter(s -> (ruleSet == null) == (ruleSet != null && s.getEntityType() == UISettings.EntityType.RULE && s.getEntityId().equals(ruleSet.getRuleSetId())))
+		        .filter(s -> (ruleSet == null) == (ruleSet != null && s.getEntityType() == UISettings.EntityType.RULE
+		                && ruleSet.getRuleSetId().equals(s.getEntityId())))
                 .collect(Collectors.toList());
         List<UISettings> uiSettingsAll = settingsRepository.findAll();
         List<UISettings> uiSettingsNew = new ArrayList<>();

@@ -70,12 +70,10 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UIVisiblePolicy;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
-import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ConcurrentUpdateException;
 import cz.tacr.elza.exception.InvalidQueryException;
@@ -99,7 +97,6 @@ import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
 import cz.tacr.elza.repository.DigitizationRequestRepository;
-import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -128,8 +125,10 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.utils.ObjectListIterator;
 
 /**
- * @author Jiří Vaněk [jiri.vanek@marbes.cz]
- * @since 20. 12. 2015
+ * Main arrangement service.
+ * 
+ * This service can be used by controller. All operations are checking
+ * permissions.
  */
 @Service
 public class ArrangementService {
@@ -150,8 +149,6 @@ public class ArrangementService {
     private BulkActionService bulkActionService;
     @Autowired
     private RuleService ruleService;
-    @Autowired
-    private RulesExecutor rulesExecutor;
     @Autowired
     private ItemRepository itemRepository;
     @Autowired
@@ -187,8 +184,6 @@ public class ArrangementService {
     @Autowired
     private PacketRepository packetRepository;
     @Autowired
-    private DescItemFactory descItemFactory;
-    @Autowired
     private FundRegisterScopeRepository faRegisterRepository;
     @Autowired
     private ScopeRepository scopeRepository;
@@ -197,6 +192,8 @@ public class ArrangementService {
     @Autowired
     private RegistryService registryService;
 
+	@Autowired
+	ArrangementServiceInternal arrangementInternal;
     @Autowired
     private PolicyService policyService;
 
@@ -263,14 +260,12 @@ public class ArrangementService {
     @Autowired
     private DaoPackageRepository daoPackageRepository;
 
+	//TODO: Should not be used here, method accessing this repository have to be refactorized
     @Autowired
     private CachedNodeRepository cachedNodeRepository;
 
     @Autowired
     private EntityManager em;
-
-    @Autowired
-    private FundFileRepository fundFileRepository;
 
     public static final String UNDEFINED = "Nezjištěno";
 
@@ -959,49 +954,8 @@ public class ArrangementService {
     public List<ArrDescItem> getDescItems(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                           final ArrNode node) {
 
-        return getArrDescItemsInternal(version, node);
+		return arrangementInternal.getDescItems(version, node);
     }
-
-    /**
-     * Získání hodnot atributů podle verze AP a uzlu.
-     * <b> Metoda nekontroluje oprávnění. </b>
-     *
-     * @param version verze AP
-     * @param node    uzel
-     * @return seznam hodnot atributů
-     */
-    public List<ArrDescItem> getArrDescItemsInternal(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version, final ArrNode node) {
-        List<ArrDescItem> itemList;
-
-        if (version.getLockChange() == null) {
-            itemList = descItemRepository.findByNodeAndDeleteChangeIsNull(node);
-        } else {
-            itemList = descItemRepository.findByNodeAndChange(node, version.getLockChange());
-        }
-
-        return itemList;
-    }
-
-    /**
-     * Získání hodnot atributů podle verze AP a uzlu.
-     * <b> Metoda nekontroluje oprávnění. </b>
-     *
-     * @param version verze AP
-     * @param node    uzel
-     * @return seznam hodnot atributů
-     */
-    public List<ArrDescItem> getArrDescItems(final ArrFundVersion version, final ArrNode node) {
-        List<ArrDescItem> itemList;
-
-        if (version.getLockChange() == null) {
-            itemList = descItemRepository.findByNodeAndDeleteChangeIsNull(node);
-        } else {
-            itemList = descItemRepository.findByNodeAndChange(node, version.getLockChange());
-        }
-
-        return itemList;
-    }
-
 
     /**
      * Provede zkopírování atributu daného typu ze staršího bratra uzlu.

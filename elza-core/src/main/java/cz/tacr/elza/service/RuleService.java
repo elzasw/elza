@@ -16,14 +16,8 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
-import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.OutputCode;
-import cz.tacr.elza.packageimport.PackageService;
-import cz.tacr.elza.packageimport.xml.SettingGridView;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -51,15 +45,21 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeAction;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulTemplate;
+import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.LockVersionChangeException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.OutputCode;
+import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.packageimport.xml.SettingGridView;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemSettingsRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
@@ -485,16 +485,9 @@ public class RuleService {
      * @param nodeId              identifikátor uzlu
      * @return seznam typů hodnot atributů se specifikacemi
      */
-    public List<RulItemTypeExt> getDescriptionItemTypes(final Integer fundVersionId,
+	public List<RulItemTypeExt> getDescriptionItemTypes(final ArrFundVersion fundVersion,
                                                         final Integer nodeId) {
-        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
-        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
-
-        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
-
-        if (version == null) {
-            throw new ObjectNotFoundException("Nebyla nalezena verze AS s ID=" + fundVersionId, ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", fundVersionId);
-        }
+		Validate.notNull(fundVersion, "Nebyla vyplněn identifikátor verze AS");
 
         ArrNode node = nodeRepository.findOne(nodeId);
 
@@ -502,7 +495,7 @@ public class RuleService {
             throw new ObjectNotFoundException("Nebyla nalezena JP s ID=" + nodeId, ArrangementCode.NODE_NOT_FOUND).set("id", nodeId);
         }
 
-        return getDescriptionItemTypes(version, node);
+		return getDescriptionItemTypes(fundVersion, node);
     }
 
     /**

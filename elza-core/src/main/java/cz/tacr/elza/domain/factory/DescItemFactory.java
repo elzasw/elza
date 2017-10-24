@@ -46,6 +46,7 @@ import cz.tacr.elza.domain.ArrItemString;
 import cz.tacr.elza.domain.ArrItemText;
 import cz.tacr.elza.domain.ArrItemUnitdate;
 import cz.tacr.elza.domain.ArrItemUnitid;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -58,7 +59,6 @@ import cz.tacr.elza.repository.DataNullRepository;
 import cz.tacr.elza.repository.DataPacketRefRepository;
 import cz.tacr.elza.repository.DataPartyRefRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
-import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataStringRepository;
 import cz.tacr.elza.repository.DataTextRepository;
 import cz.tacr.elza.repository.DataUnitdateRepository;
@@ -74,8 +74,6 @@ import ma.glasnost.orika.impl.DefaultMapperFactory;
 /**
  * Factory pro vytváření a manipulaci s atributama a jejich hodnotama.
  *
- * @author Martin Šlapa
- * @since 16.9.2015
  */
 @Component
 public class DescItemFactory implements InitializingBean {
@@ -125,9 +123,6 @@ public class DescItemFactory implements InitializingBean {
 
     @Autowired
     private DataDecimalRepository dataDecimalRepository;
-
-    @Autowired
-    private DataRepository dataRepository;
 
     @Autowired
     private DataPacketRefRepository dataPacketRefRepository;
@@ -821,15 +816,84 @@ public class DescItemFactory implements InitializingBean {
         return result;
     }
 
-    /**
-     * Uloží hodnotu atributu bez dat.
-     *
-     * @param descItem hodnota atributu
-     * @return nova hodnota atributu
-     */
-    public ArrDescItem saveDescItem(final ArrDescItem descItem) {
-        return descItemRepository.save(descItem);
-    }
+	/**
+	 * Save data
+	 * 
+	 * @param data
+	 *            Data to be saved. Data can be null
+	 * @return
+	 */
+	public ArrData saveData(RulItemType itemType, ArrData data) {
+		if (data == null) {
+			return null;
+		}
+		// Check data
+		if (data instanceof ArrDataJsonTable) {
+			itemService.checkJsonTableData(((ArrDataJsonTable) data).getValue(), itemType.getColumnsDefinition());
+		}
+		// Set data type
+		// dataType is not set when object is received as JSON from client
+		if (data.getDataType() == null) {
+			data.setDataType(itemType.getDataType());
+		}
+
+		// Get repository
+		JpaRepository dataRepos = mapRepository.get(data.getClass());
+		if (dataRepos == null) {
+			throw new NotImplementedException("Nebyla namapována repozitory pro datový typ: " + data.getClass());
+		}
+		return (ArrData) dataRepos.save(data);
+	}
+
+	/**
+	 * Save data as new
+	 * 
+	 * @param itemType
+	 * @param srcData
+	 *            source data object. Can be null
+	 * @return
+	 */
+	// TODO: copy data types based on itemTypem such code already somewhere exists
+	public ArrData saveDataAsNew(RulItemType itemType, ArrData srcData) {
+		if (srcData == null) {
+			return null;
+		}
+		// create new instance
+		ArrData dataNew;
+		if (srcData instanceof ArrDataCoordinates) {
+			dataNew = facade.map(srcData, ArrDataCoordinates.class);
+		} else if (srcData instanceof ArrDataInteger) {
+			dataNew = facade.map(srcData, ArrDataInteger.class);
+		} else if (srcData instanceof ArrDataPartyRef) {
+			dataNew = facade.map(srcData, ArrDataPartyRef.class);
+		} else if (srcData instanceof ArrDataRecordRef) {
+			dataNew = facade.map(srcData, ArrDataRecordRef.class);
+		} else if (srcData instanceof ArrDataString) {
+			dataNew = facade.map(srcData, ArrDataString.class);
+		} else if (srcData instanceof ArrDataText) {
+			dataNew = facade.map(srcData, ArrDataText.class);
+		} else if (srcData instanceof ArrDataUnitdate) {
+			dataNew = facade.map(srcData, ArrDataUnitdate.class);
+		} else if (srcData instanceof ArrDataUnitid) {
+			dataNew = facade.map(srcData, ArrDataUnitid.class);
+		} else if (srcData instanceof ArrDataDecimal) {
+			dataNew = facade.map(srcData, ArrDataDecimal.class);
+		} else if (srcData instanceof ArrDataFileRef) {
+			dataNew = facade.map(srcData, ArrDataFileRef.class);
+		} else if (srcData instanceof ArrDataPacketRef) {
+			dataNew = facade.map(srcData, ArrDataPacketRef.class);
+		} else if (srcData instanceof ArrDataNull) {
+			dataNew = facade.map(srcData, ArrDataNull.class);
+		} else if (srcData instanceof ArrDataJsonTable) {
+			dataNew = facade.map(srcData, ArrDataJsonTable.class);
+		} else {
+			throw new NotImplementedException(
+			        "Nebyl namapován datový typ: " + srcData.getClass().getName());
+		}
+		//?? Have to be same as type in srcData - have to be refactorized
+		dataNew.setDataType(itemType.getDataType());
+		return saveData(itemType, dataNew);
+	}
 
     /**
      * Uloží hodnotu atributu i s daty.
@@ -840,7 +904,7 @@ public class DescItemFactory implements InitializingBean {
      *                         false - načte původní hodnotu a upraví jí podle nové
      * @return uložená hodnota atributu
      */
-    public ArrDescItem saveDescItemWithData(final ArrDescItem descItem, final Boolean createNewVersion) {
+	public ArrDescItem saveItemVersionWithData(final ArrDescItem descItem, final Boolean createNewVersion) {
         ArrData data = descItem.getData();
 
         if (data != null) {
@@ -850,46 +914,13 @@ public class DescItemFactory implements InitializingBean {
 
             ArrData dataNew;
         if (createNewVersion) {
-                if (data instanceof ArrDataCoordinates) {
-                    dataNew = facade.map(data, ArrDataCoordinates.class);
-                } else if (data instanceof ArrDataInteger) {
-                    dataNew = facade.map(data, ArrDataInteger.class);
-                } else if (data instanceof ArrDataPartyRef) {
-                    dataNew = facade.map(data, ArrDataPartyRef.class);
-                } else if (data instanceof ArrDataRecordRef) {
-                    dataNew = facade.map(data, ArrDataRecordRef.class);
-                } else if (data instanceof ArrDataString) {
-                    dataNew = facade.map(data, ArrDataString.class);
-                } else if (data instanceof ArrDataText) {
-                    dataNew = facade.map(data, ArrDataText.class);
-                } else if (data instanceof ArrDataUnitdate) {
-                    dataNew = facade.map(data, ArrDataUnitdate.class);
-                } else if (data instanceof ArrDataUnitid) {
-                    dataNew = facade.map(data, ArrDataUnitid.class);
-                } else if (data instanceof ArrDataDecimal) {
-                    dataNew = facade.map(data, ArrDataDecimal.class);
-                } else if (data instanceof ArrDataFileRef) {
-                    dataNew = facade.map(data, ArrDataFileRef.class);
-                } else if (data instanceof ArrDataPacketRef) {
-                    dataNew = facade.map(data, ArrDataPacketRef.class);
-                } else if (data instanceof ArrDataNull) {
-                    dataNew = facade.map(data, ArrDataNull.class);
-                } else if (data instanceof ArrDataJsonTable) {
-                    dataNew = facade.map(data, ArrDataJsonTable.class);
-            } else {
-                    throw new NotImplementedException("Nebyl namapován datový typ: " + descItem.getClass().getName() + ", data: " + data);
-            }
-                dataNew.setDataType(descItem.getItemType().getDataType());
+				dataNew = saveDataAsNew(descItem.getItemType(), data);
                 descItem.setData(dataNew);
         } else {
                 dataNew = descItem.getData();
         }
 
-        try {
-                mapRepository.get(dataNew.getClass()).save(dataNew);
-        } catch (NullPointerException e) {
-            throw new NotImplementedException("Nebyla namapována repozitory pro datový typ");
-        }
+			saveData(descItem.getItemType(), dataNew);
     }
 
         return descItemRepository.save(descItem);

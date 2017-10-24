@@ -5,7 +5,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -16,7 +15,6 @@ import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.BeanUtils;
@@ -28,7 +26,6 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.core.data.CalendarType;
-import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
@@ -48,7 +45,6 @@ import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrItemCoordinates;
-import cz.tacr.elza.domain.ArrItemData;
 import cz.tacr.elza.domain.ArrItemDecimal;
 import cz.tacr.elza.domain.ArrItemEnum;
 import cz.tacr.elza.domain.ArrItemFileRef;
@@ -96,7 +92,6 @@ import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.utils.HibernateUtils;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MappingContext;
@@ -105,8 +100,6 @@ import ma.glasnost.orika.impl.DefaultMapperFactory;
 /**
  * Serviska pro správu hodnot atributů.
  *
- * @author Martin Šlapa
- * @since 24.06.2016
  */
 @Service
 public class ItemService implements InitializingBean {
@@ -1045,14 +1038,22 @@ public class ItemService implements InitializingBean {
     }
 
     /**
-     * Kopíruje všechny property krom propert, které má zadaná třída.
-     *
-     * @param from   z objektu
-     * @param to     do objektu
-     * @param aClass ignorovaná třída (subclass)
-     * @param <T>    ignorovaná třída (subclass)
-     * @param <TYPE> kopírovaná třída
-     */
+	 * Kopíruje všechny property krom propert, které má zadaná třída.
+	 *
+	 * PPyt: tuto metodu mohla napsat a navrhnout k pouziti jen lama, nutno
+	 * odstranit, je to velmi nebezpecne a popira typovou kontrolu
+	 * 
+	 * @param from
+	 *            z objektu
+	 * @param to
+	 *            do objektu
+	 * @param aClass
+	 *            ignorovaná třída (subclass)
+	 * @param <T>
+	 *            ignorovaná třída (subclass)
+	 * @param <TYPE>
+	 *            kopírovaná třída
+	 */
     public <T, TYPE extends T> void copyPropertiesSubclass(final TYPE from, final TYPE to, final Class<T> aClass) {
         String[] ignoreProperties;
         PropertyDescriptor[] descriptors = BeanUtils.getPropertyDescriptors(aClass);

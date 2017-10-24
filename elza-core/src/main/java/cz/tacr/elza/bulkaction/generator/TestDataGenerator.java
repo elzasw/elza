@@ -30,6 +30,7 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.ArrangementServiceInternal;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
@@ -60,6 +61,9 @@ public class TestDataGenerator extends BulkAction {
     private ArrChange change;
 
 	private ArrFundVersion version;
+
+	@Autowired
+	ArrangementServiceInternal arrangementInternal;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -202,7 +206,7 @@ public class TestDataGenerator extends BulkAction {
 	 * @param trgLevel
 	 */
 	private void copyDescrItems(ArrLevel srcLevel, ArrLevel trgLevel) {
-		List<ArrDescItem> sourceDescItems = arrangementService.getArrDescItems(version, srcLevel.getNode());
+		List<ArrDescItem> sourceDescItems = arrangementInternal.getDescItems(version, srcLevel.getNode());
 		descriptionItemService.copyDescItemWithDataToNode(trgLevel.getNode(), sourceDescItems, this.change, version);
 	}
 

@@ -17,19 +17,9 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.ParserConfigurationException;
 
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataCoordinates;
-import cz.tacr.elza.domain.ArrDataJsonTable;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.ExternalCode;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
-import org.apache.cxf.BusException;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -52,12 +42,12 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataJsonTable;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrItemCoordinates;
-import cz.tacr.elza.domain.ArrItemData;
-import cz.tacr.elza.domain.ArrItemJsonTable;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
@@ -65,6 +55,12 @@ import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -349,30 +345,6 @@ public class ArrIOService {
             });
 
         } else if (clazz.isAssignableFrom(ArrDescItem.class)) {
-
-            List<RulItemTypeExt> descriptionItemTypes = ruleService.getDescriptionItemTypes(fundVersionId, parentId);
-
-            RulItemTypeExt rule = null;
-
-            for (RulItemTypeExt desc : descriptionItemTypes) {
-                if (descItemType.getItemTypeId().equals(desc.getItemTypeId())) {
-                    rule = desc;
-                    break;
-                }
-            }
-
-            if (rule == null) {
-                throw new ObjectNotFoundException("Pravidlo s ID=" + descItemTypeId + " neexistuje", ArrangementCode.ITEM_TYPE_NOT_FOUND).setId(descItemTypeId);
-            }
-
-            if (!rule.getRepeatable()) {
-                if (toCreate.size() > 1) {
-                    throw new BusinessException("Do neopakovatelného prvku lze importovat pouze jeden geoobjekt.", ArrangementCode.NOT_REPEATABLE);
-                }
-
-                descriptionItemService.deleteDescriptionItemsByTypeWithoutVersion(fundVersionId, parentId, parentVersion, descItemTypeId);
-            }
-
             descriptionItemService.createDescriptionItems((List<ArrDescItem>) toCreate, parentId, parentVersion, fundVersionId).forEach(arrDescItem -> {
                 ids.add(arrDescItem.getDescItemObjectId());
             });

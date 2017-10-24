@@ -9,6 +9,8 @@ import java.util.Set;
 import javax.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -19,8 +21,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.controller.config.ClientFactoryDO;
@@ -35,6 +35,7 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.service.ArrMoveLevelService;
+import cz.tacr.elza.service.ArrangementFormService;
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.websocket.WebSocketAwareController;
@@ -44,12 +45,13 @@ import cz.tacr.elza.websocket.WebsocketCallback;
  * Kontroler pro zpracování websocket požadavků pro některé kritické modifikace v pořádíní.
  * Jedná se o modifikace, které vyžadují seriové zpracování.
  *
- * @author Pavel Stánek [pavel.stanek@marbes.cz]
- * @since 24.10.2016
  */
 @Controller
 @WebSocketAwareController
 public class ArrangementWebsocketController {
+	@Autowired
+	ArrangementFormService arrangementFormService;
+
     @Autowired
     private ClientFactoryDO factoryDO;
     @Autowired
@@ -67,6 +69,28 @@ public class ArrangementWebsocketController {
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
 
+	@MessageMapping("/arrangement/descItems/{fundVersionId}/{nodeVersion}/update2/{createNewVersion}")
+	public void updateDescItem(
+	        @Payload final ArrItemVO descItemVO,
+	        @DestinationVariable(value = "fundVersionId") final Integer fundVersionId,
+	        @DestinationVariable(value = "nodeVersion") final Integer nodeVersion,
+	        @DestinationVariable(value = "createNewVersion") final Boolean createNewVersion,
+	        final SimpMessageHeaderAccessor headerAccessor) {
+
+		Validate.notNull(fundVersionId);
+		Validate.notNull(nodeVersion);
+		Validate.notNull(descItemVO);
+
+		UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken) headerAccessor
+		        .getHeader("simpUser");
+		SecurityContext sc = new SecurityContextImpl();
+		sc.setAuthentication(token);
+		SecurityContextHolder.setContext(sc);
+
+		arrangementFormService.updateDescItem(fundVersionId, nodeVersion, descItemVO,
+		        BooleanUtils.isNotFalse(createNewVersion),
+		        headerAccessor);
+	}
 
     /**
      * Aktualizace hodnoty atributu.
@@ -77,8 +101,8 @@ public class ArrangementWebsocketController {
      * @param createNewVersion vytvořit novou verzi?
      */
     @Transactional
-    @MessageMapping("/arrangement/descItems/{fundVersionId}/{nodeVersion}/update/{createNewVersion}")
-    public void updateDescItem(
+	@MessageMapping("/arrangement/descItems/{fundVersionId}/{nodeVersion}/update/{createNewVersion}")
+	public void updateDescItemOld(
             @Payload final ArrItemVO descItemVO,
             @DestinationVariable(value = "fundVersionId") final Integer fundVersionId,
             @DestinationVariable(value = "nodeVersion") final Integer nodeVersion,
@@ -91,10 +115,10 @@ public class ArrangementWebsocketController {
         sc.setAuthentication(token);
         SecurityContextHolder.setContext(sc);
 
-        Assert.notNull(descItemVO, "Hodnota atributu musí být vyplněna");
-        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
-        Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
-        Assert.notNull(createNewVersion, "Vytvořit novou verzi musí být vyplněno");
+		Validate.notNull(descItemVO, "Hodnota atributu musí být vyplněna");
+		Validate.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+		Validate.notNull(nodeVersion, "Nebyla vyplněna verze JP");
+		Validate.notNull(createNewVersion, "Vytvořit novou verzi musí být vyplněno");
 
         ArrDescItem descItem = factoryDO.createDescItem(descItemVO);
 
@@ -106,7 +130,7 @@ public class ArrangementWebsocketController {
         descItemResult.setParent(factoryVo.createArrNode(descItemUpdated.getNode()));
 
         // Odeslání dat zpět
-        sendAfterCommit(descItemResult, headerAccessor);
+		websocketCallback.sendAfterCommit(descItemResult, headerAccessor);
     }
 
     /**
@@ -148,22 +172,7 @@ public class ArrangementWebsocketController {
         final ArrangementController.NodeWithParent result = new ArrangementController.NodeWithParent(factoryVo.createArrNode(newLevel.getNode()), nodeClients.iterator().next());
 
         // Odeslání dat zpět
-        sendAfterCommit(result, headerAccessor);
-    }
-
-    /**
-     * Poslání dat zpět až po provedení commitu transakce.
-     * @param resultData data pro poslání
-     * @param headerAccessor geader sccessor
-     */
-    private void sendAfterCommit(final Object resultData, final SimpMessageHeaderAccessor headerAccessor) {
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-            @Override
-            public void afterCommit() {
-                // Odeslání dat zpět
-                websocketCallback.send(resultData, headerAccessor);
-            }
-        });
+		websocketCallback.sendAfterCommit(result, headerAccessor);
     }
 
     /**
@@ -196,7 +205,7 @@ public class ArrangementWebsocketController {
         final ArrangementController.NodeWithParent result = new ArrangementController.NodeWithParent(factoryVo.createArrNode(deleteLevel.getNode()), nodeClients.iterator().next());
 
         // Odeslání dat zpět
-        sendAfterCommit(result, headerAccessor);
+		websocketCallback.sendAfterCommit(result, headerAccessor);
     }
 
     // Pokus o jiný způsob vracení dat - problém s podíláním receipt id - necháno z důvodu připadného budoucího rozchození

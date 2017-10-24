@@ -1,14 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import cz.tacr.elza.service.cache.NodeCacheSerializable;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.NumericField;
-import org.springframework.data.rest.core.annotation.RestResource;
-
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
@@ -21,6 +12,17 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.NumericField;
+import org.springframework.data.rest.core.annotation.RestResource;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+import cz.tacr.elza.service.cache.NodeCacheSerializable;
 
 /**
  * Nadřízená položka.
@@ -86,7 +88,35 @@ public abstract class ArrItem implements NodeCacheSerializable {
     @JoinColumn(name = "dataId")
     private ArrData data;
 
-    @JsonIgnore
+	/**
+	 * Default constructor
+	 */
+	protected ArrItem() {
+
+	}
+
+	/**
+	 * Copy constructor for ArrItem
+	 * 
+	 * @param src
+	 *            Source item
+	 */
+	public ArrItem(ArrItem src) {
+		this.createChange = src.createChange;
+		this.createChangeId = src.createChangeId;
+		this.data = src.data;
+		this.deleteChange = src.deleteChange;
+		this.deleteChangeId = src.deleteChangeId;
+		this.descItemObjectId = src.descItemObjectId;
+		this.itemId = src.itemId;
+		this.itemSpec = src.itemSpec;
+		this.itemSpecId = src.itemSpecId;
+		this.itemType = src.itemType;
+		this.itemTypeId = src.itemTypeId;
+		this.position = src.position;
+	}
+
+	@JsonIgnore
     @Field
     @NumericField
     public Integer getCreateChangeId() {

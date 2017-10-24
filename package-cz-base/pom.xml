@@ -10,6 +10,10 @@
     <name>Package Base CZ</name>
     <packaging>pom</packaging>
 
+    <properties>
+       <package.version>15</package.version>
+    </properties>
+
     <dependencies>
     </dependencies>
 

@@ -46,6 +46,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     List<ArrDescItem> findByNodesAndDeleteChange(Collection<ArrNode> nodes, ArrChange deleteChange);
 
 
+	//TODO: Consider to remove this method
     @Query("SELECT i FROM arr_desc_item i WHERE i.node = ?1 AND i.deleteChange IS NULL")
     List<ArrDescItem> findByNodeAndDeleteChangeIsNull(ArrNode node);
 
@@ -58,6 +59,10 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     @Query("SELECT i FROM arr_desc_item i JOIN i.itemType t WHERE i.node = ?1 AND i.deleteChange IS NULL AND t.itemTypeId = ?2")
     List<ArrDescItem> findByNodeAndDeleteChangeIsNullAndItemTypeId(ArrNode node, Integer descItemTypeId);
 
+	@Query("SELECT i FROM arr_desc_item i WHERE i.nodeId = ?1 AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
+	List<ArrDescItem> findByNodeIdAndChange(int nodeId, ArrChange change);
+
+	//TODO: Consider to remove this method and replace it with findByNodeIdAndChange 
     @Query("SELECT i FROM arr_desc_item i WHERE i.node = ?1 AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
     List<ArrDescItem> findByNodeAndChange(ArrNode node, ArrChange change);
 

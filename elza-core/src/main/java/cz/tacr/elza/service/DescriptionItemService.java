@@ -15,27 +15,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import com.google.common.collect.Lists;
-import cz.tacr.elza.controller.ArrangementController;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.convertor.CalendarConverter;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.Level;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.RegistryCode;
-import cz.tacr.elza.repository.CalendarTypeRepository;
-import cz.tacr.elza.repository.ItemSpecRegisterRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
-import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
-import cz.tacr.elza.service.importnodes.ImportProcess;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemPacketRef;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemRecordRef;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -45,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 import cz.tacr.elza.ElzaTools;
@@ -74,6 +54,7 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParUnitdate;
+import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
@@ -97,20 +78,22 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.CalendarTypeRepository;
-import cz.tacr.elza.repository.DataPacketRefRepository;
-import cz.tacr.elza.repository.DataPartyRefRepository;
-import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.ItemSpecRegisterRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
+import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 
 
@@ -557,7 +540,7 @@ public class DescriptionItemService {
         }
 
         descItem.setCreateChange(change);
-        descItemFactory.saveDescItemWithData(descItem, true);
+        descItemFactory.saveItemVersionWithData(descItem, true);
 
         arrangementCacheService.createDescItem(descItem.getNodeId(), descItem);
         return descItem;
@@ -801,7 +784,6 @@ public class DescriptionItemService {
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
         Assert.notNull(createNewVersion, "Vytvořit novou verzi musí být vyplněno");
 
-        ArrChange change = null;
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
 
         List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItem.getDescItemObjectId());
@@ -816,6 +798,8 @@ public class DescriptionItemService {
         ArrNode node = descItemDB.getNode();
         Assert.notNull(node, "JP musí být vyplněna");
 
+		ArrChange change = null;
+		ArrDescItem descItemUpdated;
         if (createNewVersion) {
             node.setVersion(nodeVersion);
 
@@ -824,9 +808,12 @@ public class DescriptionItemService {
 
             // uložení uzlu (kontrola optimistických zámků)
             saveNode(node, change);
-        }
 
-        ArrDescItem descItemUpdated = updateDescriptionItemWithData(descItem, descItemDB, fundVersion, change, createNewVersion);
+			descItemUpdated = updateItemValueAsNewVersion(fundVersion, change, descItemDB, descItem.getItemSpec(),
+			        descItem.getData());
+		} else {
+			descItemUpdated = updateValue(fundVersion, descItem);
+        }
 
         // validace uzlu
         ruleService.conformityInfo(fundVersionId, Arrays.asList(descItemUpdated.getNode().getNodeId()),
@@ -921,16 +908,7 @@ public class DescriptionItemService {
         Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
         Assert.notNull(change, "Změna musí být vyplněna");
 
-        List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItem.getDescItemObjectId());
-
-        if (descItems.size() > 1) {
-            throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
-        } else if (descItems.size() == 0) {
-            throw new SystemException("Hodnota neexistuje, pravděpodobně byla již smazána");
-        }
-        ArrDescItem descItemDB = descItems.get(0);
-
-        ArrDescItem descItemUpdated = updateDescriptionItemWithData(descItem, descItemDB, fundVersion, change, createNewVersion);
+		ArrDescItem descItemUpdated = updateValueAsNewVersion(fundVersion, change, descItem);
 
         // validace uzlu
         ruleService.conformityInfo(fundVersion.getFundVersionId(), Arrays.asList(descItemUpdated.getNode().getNodeId()),
@@ -938,110 +916,134 @@ public class DescriptionItemService {
 
         return descItemUpdated;
     }
-
+    
     /**
-     * Upravení hodnoty atributu s daty.
-     *
-     * @param descItem         hodnota atributu (změny)
-     * @param descItemDB       hodnota atributu - původní (pokud je null, donačte se)
-     * @param version          verze archivní pomůcky
-     * @param change           změna operace
-     * @param createNewVersion vytvořit novou verzi?
-     * @return upravená výsledná hodnota atributu
-     */
-    public ArrDescItem updateDescriptionItemWithData(final ArrDescItem descItem,
-                                                     final ArrDescItem descItemDB,
-                                                     final ArrFundVersion version,
-                                                     final ArrChange change,
-                                                     final Boolean createNewVersion) {
+	 * Fetch open item with given ID from DB
+	 * 
+	 * @param descItemObjectId
+	 * @return
+	 */
+	protected ArrDescItem fetchOpenItemFromDB(int descItemObjectId) {
+		// fetch item from DB
+		List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItemObjectId);
 
-        if (createNewVersion ^ change != null) {
-            throw new SystemException("Pokud vytvářím novou verzi, musí být předaná reference změny. Pokud verzi nevytvářím, musí být reference změny null.");
-        }
+		if (descItems.size() > 1) {
+			throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
+		} else if (descItems.size() == 0) {
+			throw new SystemException("Hodnota neexistuje, pravděpodobně byla již smazána");
+		}
+		ArrDescItem descItem = descItems.get(0);
+		return descItem;
+	}
 
-        if (createNewVersion && version.getLockChange() != null) {
-            throw new SystemException("Nelze provést verzovanou změnu v uzavřené verzi.");
-        }
+	/**
+	 * Update value without creating new version
+	 * 
+	 * Method will update specification and value
+	 * 
+	 * @param descItem
+	 *            detached item with new value
+	 */
+	public ArrDescItem updateValue(final ArrFundVersion version, final ArrDescItem descItem)
+    {
+		// fetch item from DB
+		ArrDescItem descItemCurr = fetchOpenItemFromDB(descItem.getDescItemObjectId());
+		
+		// item type have to be same
+		if (!Objects.equal(descItemCurr.getItemTypeId(), descItem.getItemTypeId())) {
+			throw new SystemException("Different item types, cannot update value");
+		}
+		// position have to be same
+		if (!Objects.equal(descItemCurr.getPosition(), descItem.getPosition())) {
+			throw new SystemException("Different item positions, cannot update value");
+		}
 
-        ArrDescItem descItemOrig;
-        if (descItemDB == null) {
-            List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItem.getDescItemObjectId());
+		ArrData data = descItem.getData();
+		// save new data
+		data = descItemFactory.saveData(descItem.getItemType(), data);
+		// update item
+		return updateValue(version, descItemCurr, descItem.getItemSpec(), data);
+	}
 
-            if (descItems.size() > 1) {
-                throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
-            } else if (descItems.size() == 0) {
-                throw new SystemException("Hodnota neexistuje, pravděpodobně byla již smazána");
-            }
+	/**
+	 * Internal method to update item and data
+	 * 
+	 * Input is attached entity.
+	 * 
+	 * @param descItemDB
+	 * @param data
+	 * @return
+	 */
+	private ArrDescItem updateValue(final ArrFundVersion version, ArrDescItem descItemDB, RulItemSpec itemSpec,
+	        ArrData data) {
 
-            descItemOrig = descItems.get(0);
-        } else {
-            descItemOrig = descItemDB;
-        }
+		// set data and specification
+		descItemDB.setData(data);
+		descItemDB.setItemSpec(itemSpec);
+		ArrDescItem result = descItemRepository.save(descItemDB);
+		
+		checkValidTypeAndSpec(result);
+		
+		// update value in node cache
+		arrangementCacheService.changeDescItem(result.getNodeId(), result, false);
+		
+		// sockety
+		publishChangeDescItem(version, result);
+		
+		return result;
+	}
 
-        ArrDescItem descItemUpdated;
+	/**
+	 * Versionable update
+	 *
+	 * This method will create new item version. Item type and position of the
+	 * item cannot be changed.
+	 * 
+	 * @param descItem
+	 *            detached item with new value
+	 * 
+	 */
+	public ArrDescItem updateValueAsNewVersion(final ArrFundVersion version, final ArrChange change,
+	        final ArrDescItem descItem) {
+		// fetch item from DB
+		ArrDescItem descItemCurr = fetchOpenItemFromDB(descItem.getDescItemObjectId());
 
-        if (createNewVersion) {
+		// item type have to be same
+		if (!Objects.equal(descItemCurr.getItemTypeId(), descItem.getItemTypeId())) {
+			throw new SystemException("Different item types, cannot update value");
+		}
+		// position have to be same
+		if (!Objects.equal(descItemCurr.getPosition(), descItem.getPosition())) {
+			throw new SystemException("Different item positions, cannot update value");
+		}
 
-            Integer positionOrig = descItemOrig.getPosition();
-            Integer positionNew = descItem.getPosition();
+		// save new data
+		ArrData dataCurr = descItem.getData();
 
-            // změnila pozice, budou se provádět posuny
-            if (positionOrig != positionNew) {
+		return updateItemValueAsNewVersion(version, change, descItemCurr, descItem.getItemSpec(), dataCurr);
+	}
 
-                int maxPosition = getMaxPosition(descItemOrig);
+	private ArrDescItem updateItemValueAsNewVersion(final ArrFundVersion version, final ArrChange change,
+	        final ArrDescItem descItemDB, RulItemSpec itemSpec,
+	        ArrData srcData) {
 
-                if (descItem.getPosition() == null || (descItem.getPosition() > maxPosition)) {
-                    descItem.setPosition(maxPosition + 1);
-                }
+		ArrData dataNew = descItemFactory.saveData(descItemDB.getItemType(), srcData);
 
-                List<ArrDescItem> descItemsMove;
-                Integer diff;
+		// create new item based on source
+		ArrDescItem descItemNew = new ArrDescItem(descItemDB);
+		descItemNew.setItemId(null);
+		descItemNew.setCreateChange(change);
 
-                if (positionNew < positionOrig) {
-                    diff = 1;
-                    descItemsMove = findDescItemsBetweenPosition(descItemOrig, positionNew, positionOrig - 1);
-                } else {
-                    diff = -1;
-                    descItemsMove = findDescItemsBetweenPosition(descItemOrig, positionOrig + 1, positionNew);
-                }
+		// mark current item as deleted and save
+		descItemDB.setDeleteChange(change);
+		descItemRepository.save(descItemDB);
 
-                copyDescItemsWithData(change, descItemsMove, diff, version);
+		// save new item
+		ArrDescItem descItemUpdated = updateValue(version, descItemNew, itemSpec, dataNew);
 
-            }
+		return descItemUpdated;
 
-            try {
-                ArrDescItem descItemNew = new ArrDescItem();
-                BeanUtils.copyProperties(descItemOrig, descItemNew);
-                itemService.copyPropertiesSubclass(descItem, descItemNew, ArrDescItem.class);
-                descItemNew.setItemSpec(descItem.getItemSpec());
-
-                descItemOrig.setDeleteChange(change);
-                descItemNew.setItemId(null);
-                descItemNew.setCreateChange(change);
-                descItemNew.setPosition(positionNew);
-                descItemNew.setData(descItem.getData());
-
-                descItemFactory.saveDescItem(descItemOrig);
-                descItemUpdated = descItemFactory.saveDescItemWithData(descItemNew, true);
-            } catch (Exception e) {
-                throw new SystemException(e);
-            }
-        } else {
-            itemService.copyPropertiesSubclass(descItem, descItemOrig, ArrDescItem.class);
-            descItemOrig.setItemSpec(descItem.getItemSpec());
-            descItemUpdated = descItemFactory.saveDescItemWithData(descItemOrig, false);
-        }
-
-        checkValidTypeAndSpec(descItemUpdated);
-
-        arrangementCacheService.changeDescItem(descItemUpdated.getNodeId(), descItemUpdated, false);
-
-        // sockety
-        publishChangeDescItem(version, descItemUpdated);
-
-        return descItemUpdated;
-    }
-
+	}
 
     public Map<Integer, Map<String, TitleValues>> createNodeValuesMap(final Set<Integer> subtreeNodeIds,
                                                                       @Nullable final TreeNode subtreeRoot,
@@ -1546,7 +1548,7 @@ public class DescriptionItemService {
             newDescItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
             newDescItem.setPosition(1);
 
-            descItemFactory.saveDescItemWithData(newDescItem, true);
+            descItemFactory.saveItemVersionWithData(newDescItem, true);
             arrangementCacheService.createDescItem(newDescItem.getNodeId(), newDescItem);
             publishChangeDescItem(version, newDescItem);
         }
@@ -1607,8 +1609,8 @@ public class DescriptionItemService {
         List<Integer> nodeIds = new ArrayList<>();
         List<ArrDescItem> updatedDescItems = new ArrayList<>(descItems.size());
         for (ArrDescItem descItem : descItems) {
-            descItem.setItemSpec(setSpecification);
-            ArrDescItem updatedDescItem = updateDescriptionItemWithData(descItem, descItem, fundVersion, change, true);
+			ArrDescItem updatedDescItem = updateItemValueAsNewVersion(fundVersion, change, descItem, setSpecification,
+			        descItem.getData());
             nodeIds.add(updatedDescItem.getNodeId());
             nodeIdsToAdd.remove(updatedDescItem.getNodeId());
             updatedDescItems.add(updatedDescItem);

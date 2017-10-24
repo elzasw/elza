@@ -20,24 +20,9 @@ import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.controller.vo.CopyNodesParams;
-import cz.tacr.elza.controller.vo.CopyNodesValidate;
-import cz.tacr.elza.controller.vo.CreateFundVO;
-import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
-import cz.tacr.elza.domain.UsrGroup;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.repository.FundFileRepository;
-import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.PacketRepository;
-import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.service.ExternalSystemService;
-import cz.tacr.elza.service.importnodes.ImportFromFund;
-import cz.tacr.elza.service.importnodes.ImportNodesFromSource;
-import cz.tacr.elza.service.importnodes.vo.ConflictResolve;
-import cz.tacr.elza.service.importnodes.vo.ImportParams;
-import cz.tacr.elza.service.importnodes.vo.ValidateResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,6 +55,7 @@ import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
 import cz.tacr.elza.controller.vo.ArrRequestVO;
 import cz.tacr.elza.controller.vo.CopyNodesParams;
 import cz.tacr.elza.controller.vo.CopyNodesValidate;
+import cz.tacr.elza.controller.vo.CreateFundVO;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.FundListCountResult;
@@ -115,9 +101,9 @@ import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ConcurrentUpdateException;
@@ -131,7 +117,6 @@ import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoPackageRepository;
 import cz.tacr.elza.repository.DaoRepository;
-import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -145,12 +130,12 @@ import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.ArrIOService;
 import cz.tacr.elza.service.ArrMoveLevelService;
+import cz.tacr.elza.service.ArrangementFormService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.FilterTreeService;
-import cz.tacr.elza.service.ItemService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.PacketService;
@@ -203,9 +188,6 @@ public class ArrangementController {
     private DaoLinkRepository daoLinkRepository;
 
     @Autowired
-    private DataTypeRepository dataTypeRepository;
-
-    @Autowired
     private ArrangementService arrangementService;
 
     @Autowired
@@ -251,9 +233,6 @@ public class ArrangementController {
     private RegistryService registryService;
 
     @Autowired
-    private DescItemFactory descItemFactory;
-
-    @Autowired
     private FilterTreeService filterTreeService;
 
     @Autowired
@@ -281,9 +260,6 @@ public class ArrangementController {
     private ArrIOService arrIOService;
 
     @Autowired
-    private ItemService itemService;
-
-    @Autowired
     private OutputGeneratorService outputGeneratorService;
 
     @Autowired
@@ -303,6 +279,9 @@ public class ArrangementController {
 
     @Autowired
     private ImportNodesFromSource importNodesFromSource;
+
+	@Autowired
+	ArrangementFormService formService;
 
     /**
      * Seznam typů obalů.
@@ -838,21 +817,12 @@ public class ArrangementController {
                                          @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                          @PathVariable(value = "nodeVersion") final Integer nodeVersion,
                                          @PathVariable(value = "createNewVersion") final Boolean createNewVersion) {
-        Assert.notNull(descItemVO, "Hodnota atributu musí být vyplněna");
-        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
-        Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
-        Assert.notNull(createNewVersion, "Vytvořit novou verzi musí být vyplněno");
+		Validate.notNull(descItemVO, "Hodnota atributu musí být vyplněna");
+		Validate.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+		Validate.notNull(nodeVersion, "Nebyla vyplněna verze JP");
+		Validate.notNull(createNewVersion, "Vytvořit novou verzi musí být vyplněno");
 
-        ArrDescItem descItem = factoryDO.createDescItem(descItemVO);
-
-        ArrDescItem descItemUpdated = descriptionItemService
-                .updateDescriptionItem(descItem, nodeVersion, fundVersionId, createNewVersion);
-
-        DescItemResult descItemResult = new DescItemResult();
-        descItemResult.setItem(factoryVo.createDescItem(descItemUpdated));
-        descItemResult.setParent(factoryVo.createArrNode(descItemUpdated.getNode()));
-
-        return descItemResult;
+		return formService.updateDescItem(fundVersionId, nodeVersion, descItemVO, createNewVersion.booleanValue());
     }
 
     /**
@@ -1383,37 +1353,10 @@ public class ArrangementController {
     @RequestMapping(value = "/nodes/{nodeId}/{versionId}/form", method = RequestMethod.GET)
     public DescFormDataNewVO getNodeFormData(@PathVariable(value = "nodeId") final Integer nodeId,
                                              @PathVariable(value = "versionId") final Integer versionId) {
-        Assert.notNull(versionId, "Identifikátor verze musí být vyplněn");
-        Assert.notNull(nodeId, "Identifikátor uzlu musí být vyplněn");
+		Validate.notNull(versionId, "Identifikátor verze musí být vyplněn");
+		Validate.notNull(nodeId, "Identifikátor uzlu musí být vyplněn");
 
-        ArrFundVersion version = fundVersionRepository.findOne(versionId);
-        ArrNode node = nodeRepository.findOne(nodeId);
-
-        if (version == null) {
-            throw new ObjectNotFoundException("Nebyla nalezena verze AS s ID=" + versionId, ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", versionId);
-        }
-
-        if (node == null) {
-            throw new ObjectNotFoundException("Nebyla nalezena JP s ID=" + nodeId, ArrangementCode.NODE_NOT_FOUND).set("id", nodeId);
-        }
-
-        List<ArrDescItem> descItems = arrangementService.getDescItems(version, node);
-        List<RulItemTypeExt> itemTypes;
-        try {
-            itemTypes = ruleService.getDescriptionItemTypes(versionId, nodeId);
-        } catch (Exception e) {
-            logger.error("Chyba v pravidlech", e);
-            throw new BusinessException("Chyba v pravidlech",e,BaseCode.SYSTEM_ERROR);
-        }
-
-        Integer fundId = version.getFund().getFundId();
-        String ruleCode = version.getRuleSet().getCode();
-
-        ArrNodeVO nodeVO = factoryVo.createArrNode(node);
-        List<ItemGroupVO> descItemGroupsVO = factoryVo.createItemGroupsNew(ruleCode, fundId, descItems);
-        List<ItemTypeGroupVO> descItemTypeGroupsVO = factoryVo
-                .createItemTypeGroupsNew(ruleCode, fundId, itemTypes);
-        return new DescFormDataNewVO(nodeVO, descItemGroupsVO, descItemTypeGroupsVO);
+		return formService.getNodeFormData(versionId, nodeId);
     }
 
     /**
@@ -2158,7 +2101,8 @@ public class ArrangementController {
                 new HashSet<>(itemSpecRepository.findAll(replaceDataBody.getSpecIds()));
 
         descriptionItemService.setSpecification(fundVersion, itemType, nodesDO,
-                setSpecification, specifications, replaceDataBody.getSpecIds().contains(null), replaceDataBody.getSelectionType() == SelectionType.FUND);
+		        setSpecification, specifications, replaceDataBody.getSpecIds().contains(null),
+		        replaceDataBody.getSelectionType() == SelectionType.FUND);
     }
 
     /**

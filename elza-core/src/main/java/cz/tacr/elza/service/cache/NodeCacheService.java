@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.castor.core.util.Assert;
@@ -39,11 +40,6 @@ import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
-import cz.tacr.elza.domain.ArrItemFileRef;
-import cz.tacr.elza.domain.ArrItemPacketRef;
-import cz.tacr.elza.domain.ArrItemPartyRef;
-import cz.tacr.elza.domain.ArrItemRecordRef;
-import cz.tacr.elza.domain.ArrItemUnitdate;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrPacket;
@@ -177,7 +173,7 @@ public class NodeCacheService {
      * @param nodeId identifikátor JP
      * @return JP
      */
-    @Transactional
+	@Transactional(value = TxType.MANDATORY)
     public CachedNode getNode(final Integer nodeId) {
         readLock.lock();
         try {
@@ -196,7 +192,7 @@ public class NodeCacheService {
      * @param nodeIds identifikátory JP
      * @return seznam JP
      */
-    @Transactional
+	@Transactional(value = TxType.MANDATORY)
     public Map<Integer, CachedNode> getNodes(final Collection<Integer> nodeIds) {
         readLock.lock();
         try {
