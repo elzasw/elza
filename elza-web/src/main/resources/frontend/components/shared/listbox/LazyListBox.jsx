@@ -466,7 +466,7 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
         }
 
         return (
-            <Shortcuts name="LazyListBox" className="lazy-listbox-wrapper" handler={this.handleShortcuts} tabIndex={"0"}>
+            <Shortcuts name="LazyListBox" className="lazy-listbox-wrapper" handler={this.handleShortcuts} tabIndex={0}>
                 <div className={cls} ref="mainContainer">
                     <VirtualList
                         ref="virtualList"

@@ -116,6 +116,6 @@ function resolveDefault(data) {
  */
 function createToaster(title, data, textRenderer, size = "lg", time = null) {
     const type = data.level ? data.level : 'danger';
-    return addToastr(title, [<Exception title={title} data={data} textRenderer={textRenderer} />], type, size, time);
+    return addToastr(title, [<Exception key="exception-key" title={title} data={data} textRenderer={textRenderer} />], type, size, time);
 }
 

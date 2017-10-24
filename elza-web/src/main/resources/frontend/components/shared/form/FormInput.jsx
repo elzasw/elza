@@ -18,8 +18,7 @@ class FormInput extends AbstractReactComponent {
     };
 
     render() {
-        const {children, type, label, error, touched, value, inline, ...otherProps} = this.props;
-
+        const {children, type, label, error, touched, value, inline, feedback, ...otherProps} = this.props;
         const hasError = touched && error;
         let inlineProps = {};
         if (inline) {
@@ -42,7 +41,7 @@ class FormInput extends AbstractReactComponent {
                 return <div>
                     <Radio
                         ref='input'
-                        value={value}
+                        value={value && value}
                         {...otherProps}
                         {...inlineProps}
                     >
@@ -55,7 +54,7 @@ class FormInput extends AbstractReactComponent {
                     {label && <ControlLabel>{label}</ControlLabel>}
                     <FormControl
                         ref='input'
-                        value={value}
+                        value={value ? value : ""}
                         children={children}
                         type={type}
                         {...otherProps}

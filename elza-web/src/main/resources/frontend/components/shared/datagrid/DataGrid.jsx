@@ -610,7 +610,7 @@ class DataGrid extends AbstractReactComponent {
         }
 
         var ret = (
-            <Shortcuts name="DataGrid" handler={this.handleShortcuts} tabIndex={"0"} className={cls}>
+            <Shortcuts name="DataGrid" handler={this.handleShortcuts} tabIndex={0} className={cls}>
                 <div ref="dataGrid" className={cls} onFocus={(e)=>this.handleFocus(e)} onBlur={onBlur}>
                     <div ref='header' key="header" className='header-container'>
                         <table className="header-table" style={headerStyle}>

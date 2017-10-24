@@ -71,13 +71,13 @@ class RegistrySelectPage extends SelectPage {
         const parts = super.buildRibbonParts();
         parts.primarySection.push(<RibbonSplit key={"ribbon-spliter-pages"} />);
         const items = [];
-        items.push(<Button className={classNames({active: openPage == OPEN_PAGE.REGISTRY})}
+        items.push(<Button key="registry-btn-key-reg" className={classNames({active: openPage == OPEN_PAGE.REGISTRY})}
                 onClick={this.handlePageChange.bind(this, OPEN_PAGE.REGISTRY)}>
             <Icon glyph="fa-th-list" /><div><span className="btnText">{i18n('ribbon.action.registry')}</span></div>
         </Button>);
 
         if (hasParty) {
-            items.push(<Button className={classNames({active: openPage == OPEN_PAGE.PARTY})} onClick={this.handlePageChange.bind(this, OPEN_PAGE.PARTY)}>
+            items.push(<Button key={"registry-btn-key-party"} className={classNames({active: openPage == OPEN_PAGE.PARTY})} onClick={this.handlePageChange.bind(this, OPEN_PAGE.PARTY)}>
                 <Icon glyph="fa-users" /><div><span className="btnText">{i18n('ribbon.action.party')}</span></div>
             </Button>);
         }

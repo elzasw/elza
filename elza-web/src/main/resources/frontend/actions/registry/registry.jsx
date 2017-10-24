@@ -177,6 +177,23 @@ export function registryDelete(id) {
     }
 }
 
+export function setValidRegistry(id) {
+    return (dispatch, getState) => {
+        WebApi.setValidRegistry(id).then(() => {
+            const store = getState();
+            const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
+            const list = storeFromArea(store, AREA_REGISTRY_LIST);
+            if (detail.id == id) {
+                dispatch(registryDetailClear());
+            }
+
+            if (list.filteredRows && indexById(list.filteredRows, id) !== null) {
+                dispatch(registryListInvalidate())
+            }
+        });
+    }
+}
+
 export function registrySetFolder(recordId) {
     return (dispatch, getState) => {
         return WebApi.getRegistry(recordId).then(item => {
