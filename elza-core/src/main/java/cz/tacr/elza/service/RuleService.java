@@ -488,6 +488,7 @@ public class RuleService {
 	public List<RulItemTypeExt> getDescriptionItemTypes(final ArrFundVersion fundVersion,
                                                         final Integer nodeId) {
 		Validate.notNull(fundVersion, "Nebyla vyplněn identifikátor verze AS");
+		Validate.notNull(nodeId, "nodeId has to be set");
 
         ArrNode node = nodeRepository.findOne(nodeId);
 
