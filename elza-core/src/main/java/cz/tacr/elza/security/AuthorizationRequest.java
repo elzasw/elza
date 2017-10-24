@@ -22,6 +22,15 @@ public class AuthorizationRequest {
 		UsrPermission.Permission getPermission() {
 			return perm;
 		}
+
+		public boolean matches(Collection<UserPermission> perms) {
+			for (UserPermission up : perms) {
+				if (up.getPermission() == perm) {
+					return true;
+				}
+			}
+			return false;
+		}
 	}
 
 	static class AuthCheckFundVersion extends AuthCheck {
@@ -33,6 +42,14 @@ public class AuthorizationRequest {
 			this.fundVersion = fundVersion;
 		}
 
+		public boolean matches(Collection<UserPermission> perms) {
+			for (UserPermission up : perms) {
+				if (up.hasPermission(perm, fundVersion)) {
+					return true;
+				}
+			}
+			return false;
+		}
 	}
 
 	List<AuthCheck> checkList = new ArrayList<>();
@@ -78,7 +95,11 @@ public class AuthorizationRequest {
 	}
 
 	public boolean matches(Collection<UserPermission> perms) {
-		// TODO Auto-generated method stub
+		for (AuthCheck authCheck : checkList) {
+			if (authCheck.matches(perms)) {
+				return true;
+			}
+		}
 		return false;
 	}
 
