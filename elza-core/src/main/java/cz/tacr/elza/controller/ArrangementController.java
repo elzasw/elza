@@ -492,6 +492,7 @@ public class ArrangementController {
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
     public List<ArrPacketVO> findPackets(@PathVariable(value = "fundId") final Integer fundId,
                                          @RequestBody final PacketFindParam input) {
         Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
