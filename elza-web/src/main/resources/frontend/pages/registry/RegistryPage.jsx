@@ -25,6 +25,7 @@ import {PropTypes} from 'prop-types';
 import './RegistryPage.less';
 import PageLayout from "../shared/layout/PageLayout";
 import defaultKeymap from './RegistryPageKeymap.jsx';
+import {setValidRegistry} from "../../actions/registry/registry";
 /**
  * Stránka rejstříků.
  * Zobrazuje stranku s vyberem rejstriku a jeho detailem/editaci
@@ -169,6 +170,11 @@ class RegistryPage extends AbstractReactComponent {
         }
     };
 
+    handleSetValidParty = () => {
+        confirm(i18n('party.setValid.confirm')) && this.dispatch(setValidRegistry(this.props.partyDetail.data.id));
+    }
+
+
     handleRegistryMoveStart = () => {
         const {registryDetail:{data}} = this.props;
         this.dispatch(registryMoveStart(data));
@@ -234,7 +240,7 @@ class RegistryPage extends AbstractReactComponent {
         if (this.canDeleteRegistry()) {
             if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: data ? data.scopeId : null})) {
                 itemActions.push(
-                    <Button disabled={!data.invalid && !data.partyId} key='registryRemove' onClick={this.handleDeleteRegistry}>
+                    <Button disabled={!data.invalid || !data.partyId} key='registryRemove' onClick={this.handleDeleteRegistry}>
                         <Icon glyph="fa-trash"/>
                         <div><span className="btnText">{i18n('registry.deleteRegistry')}</span></div>
                     </Button>
@@ -248,9 +254,9 @@ class RegistryPage extends AbstractReactComponent {
                 );
 
                 itemActions.push(
-                    <Button disabled={!data.partyId} key='registryShow' onClick={() => this.props.onShowUsage(registryDetail)}>
-                        <Icon glyph="fa-search"/>
-                        <div><span className="btnText">{i18n('registry.registryUsage')}</span></div>
+                    <Button disabled={!data.partyId} key='registrySetValid' onClick={() => this.props.onShowUsage(registryDetail)}>
+                        <Icon glyph="fa-check"/>
+                        <div><span className="btnText">{i18n('registry.setValid')}</span></div>
                     </Button>
                 );
             }

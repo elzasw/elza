@@ -817,6 +817,8 @@ var messages = {
     "registry.usage.tooMany": "Počet nalezených výskytů je příliš velký",
     "registry.replaceText": "Nahrazení hesla ve výskytech za heslo",
     "registry.replace": "Nahradit",
+    "registry.setValid.confirm": "Opravdu chcete zplatnit toto rejstříkové heslo?",
+    "party.setValid": "Zplatnit heslo",
     "registry.cancelMove": "Zrušit přesun",
     "registry.applyMove": "Přesunout sem",
     "registry.coordinates.addPoint": "Přidat bod",
@@ -911,6 +913,7 @@ var messages = {
 
     "party.delete.error": "Odstranění osoby se nezdařilo",
     "party.delete.confirm": "Opravdu chcete smazat tuto osobu?",
+    "party.setValid.confirm": "Opravdu chcete zplatnit tuto osobu?",
     "party.delete.button": "Smazat osobu",
     "party.usage.button": "Použití osoby",
     "party.usage.setValid": "Zplatnění osoby",

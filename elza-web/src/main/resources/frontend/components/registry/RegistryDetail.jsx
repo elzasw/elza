@@ -247,17 +247,22 @@ class RegistryDetail extends AbstractReactComponent {
         var delimiter = <Icon glyph="fa-angle-right"/>;
         var hierarchyElement = this.createHierarchyElement(hierarchy,delimiter);
 
+        let headerCls = "registry-header";
+        if (data.invalid) {
+            headerCls += " invalid";
+        }
+
         return <div className='registry'>
             <Shortcuts name='RegistryDetail' handler={this.handleShortcuts} global>
                 <div className="registry-detail">
-                    <div className="registry-header">
+                    <div className={headerCls}>
                         <div className="header-icon">
                             <Icon glyph={icon}/>
                         </div>
-                        <div className="header-content">
+                        <div className={"header-content"}>
                             <div>
                                 <div>
-                                    <div className="title">{data.record}</div>
+                                    <div className="title">{data.record} {data.invalid && "(Neplatné)"}</div>
                                 </div>
                                 <div>
                                     <NoFocusButton disabled={disableEdit} className="registry-record-edit btn-action" onClick={this.handleRecordUpdate}>

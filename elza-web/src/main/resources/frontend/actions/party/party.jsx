@@ -124,6 +124,23 @@ export function partyDelete(id) {
     }
 }
 
+export function setValidParty(id) {
+    return (dispatch, getState) => {
+        WebApi.setValidParty(id).then(() => {
+            const store = getState();
+            const detail = storeFromArea(store, AREA_PARTY_DETAIL);
+            const list = storeFromArea(store, AREA_PARTY_LIST);
+            if (detail.id == id) {
+                dispatch(partyDetailClear());
+            }
+
+            if (list.filteredRows && indexById(list.filteredRows, id) !== null) {
+                dispatch(partyListInvalidate())
+            }
+        })
+    }
+}
+
 
 export function relationCreate(relation) {
     return (dispatch, getState) => {

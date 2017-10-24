@@ -208,6 +208,10 @@ class RegistryUsageForm extends React.Component {
         const { userDetail, detail } = this.props;
         const { selectedReplacementNode } = this.state;
 
+        if (detail.type === 'party' && detail.partyId) {
+            return false;
+        }
+
         if (selectedReplacementNode && detail.id !== selectedReplacementNode.id) {
             return userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {
                 type: perms.REG_SCOPE_WR,
