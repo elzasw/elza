@@ -4,9 +4,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
 
-import cz.tacr.elza.domain.UsrGroup;
-import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.exception.SystemException;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -18,8 +15,10 @@ import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.interfaces.IArrFund;
 import cz.tacr.elza.api.interfaces.IRegScope;
+import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.PartyRepository;
@@ -58,8 +57,9 @@ public class Authorization {
             return pjp.proceed();
         }
 
-        boolean hasPermission = false;
         for (UsrPermission.Permission permission : declaredAnnotation.permission()) {
+
+			boolean hasPermission = false;
 
             Parameter[] parameters = method.getParameters();
             Object[] pjpArgs = pjp.getArgs();

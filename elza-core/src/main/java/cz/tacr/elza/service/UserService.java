@@ -1,36 +1,22 @@
 package cz.tacr.elza.service;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import cz.tacr.elza.annotation.AuthMethod;
-import cz.tacr.elza.annotation.AuthParam;
-import cz.tacr.elza.aop.Authorization;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.UsrGroup;
-import cz.tacr.elza.domain.UsrGroupUser;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.Level;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.RegistryCode;
-import cz.tacr.elza.exception.codes.UserCode;
-import cz.tacr.elza.repository.FilteredResult;
-import cz.tacr.elza.repository.FundRepository;
-import cz.tacr.elza.repository.GroupRepository;
-import cz.tacr.elza.repository.GroupUserRepository;
-import cz.tacr.elza.repository.PermissionRepository;
-import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.UserRepository;
-import cz.tacr.elza.security.UserDetail;
-import cz.tacr.elza.security.UserPermission;
-import cz.tacr.elza.service.eventnotification.events.EventId;
-import cz.tacr.elza.service.eventnotification.events.EventType;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+import javax.validation.constraints.NotNull;
+
 import org.apache.commons.lang.NotImplementedException;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,24 +31,44 @@ import org.springframework.transaction.support.TransactionSynchronizationAdapter
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
-import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+
+import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.aop.Authorization;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.UsrGroup;
+import cz.tacr.elza.domain.UsrGroupUser;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.exception.AccessDeniedException;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.Level;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.RegistryCode;
+import cz.tacr.elza.exception.codes.UserCode;
+import cz.tacr.elza.repository.FilteredResult;
+import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.GroupRepository;
+import cz.tacr.elza.repository.GroupUserRepository;
+import cz.tacr.elza.repository.PermissionRepository;
+import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.UserRepository;
+import cz.tacr.elza.security.AuthorizationRequest;
+import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.security.UserPermission;
+import cz.tacr.elza.service.eventnotification.events.EventId;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 
 /**
- * Serviska pro uživatele.
+ * Service to check and manage user permissions
  *
- * @author Martin Šlapa
- * @since 11.04.2016
  */
 @Service
 public class UserService {
@@ -883,7 +889,7 @@ public class UserService {
      *
      * @return seznam oprávnění
      */
-    public Collection<UserPermission> getUserPermission() {
+	private Collection<UserPermission> getUserPermission() {
         UserDetail userDetail = getLoggedUserDetail();
         if (userDetail == null) {
             return new ArrayList<>();
@@ -893,12 +899,17 @@ public class UserService {
 
 
     /**
-     * Kontroluje oprávnění přihlášeného uživatele.
-     *
-     * @param permission typ oprávnění
-     * @param entityId   identifikátor entity, ke které se ověřuje oprávnění
-     * @return má oprávnění?
-     */
+	 * Kontroluje oprávnění přihlášeného uživatele.
+	 *
+	 * Check have to be called inside existing transaction
+	 * 
+	 * @param permission
+	 *            typ oprávnění
+	 * @param entityId
+	 *            identifikátor entity, ke které se ověřuje oprávnění
+	 * @return má oprávnění?
+	 */
+	@Transactional(value = TxType.MANDATORY)
     public boolean hasPermission(final UsrPermission.Permission permission,
                                  final Integer entityId) {
         for (UserPermission userPermission : getUserPermission()) {
@@ -934,11 +945,15 @@ public class UserService {
     }
 
     /**
-     * Kontroluje oprávnění přihlášeného uživatele.
-     *
-     * @param permission typ oprávnění
-     * @return má oprávnění?
-     */
+	 * Kontroluje oprávnění přihlášeného uživatele.
+	 * 
+	 * Check have to be called inside existing transaction
+	 *
+	 * @param permission
+	 *            typ oprávnění
+	 * @return má oprávnění?
+	 */
+	@Transactional(value = TxType.MANDATORY)
     public boolean hasPermission(final UsrPermission.Permission permission) {
         for (UserPermission userPermission : getUserPermission()) {
             if (userPermission.getPermission().equals(permission) || userPermission.getPermission().equals(UsrPermission.Permission.ADMIN)) {
@@ -1203,6 +1218,7 @@ public class UserService {
      *
      * @return množina id scope na které ma uživatel právo
      */
+	@Transactional(value = TxType.MANDATORY)
     public Set<Integer> getUserScopeIds() {
         return getUserPermission()
                 .stream()
@@ -1211,4 +1227,23 @@ public class UserService {
                 .map(p -> new HashSet<>(p.getScopeIds()))
                 .orElse(new HashSet<>());
     }
+
+	/**
+	 * Authorize request or throw exception
+	 * 
+	 * @param or
+	 */
+	@Transactional(value = TxType.MANDATORY)
+	public void authorizeRequest(AuthorizationRequest authRequest) {
+		Collection<UserPermission> perms = getUserPermission();
+		if (authRequest.matches(perms)) {
+			// request match permissions
+			return;
+		}
+
+		UsrPermission.Permission deniedPermissions[] = authRequest.getPermissions();
+		// throw exception - authorization not granted
+		throw new AccessDeniedException("Missing permissions: " + Arrays.toString(deniedPermissions),
+		        deniedPermissions);
+	}
 }

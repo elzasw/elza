@@ -69,7 +69,7 @@ public class ArrangementWebsocketController {
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
 
-	@MessageMapping("/arrangement/descItems/{fundVersionId}/{nodeVersion}/update2/{createNewVersion}")
+	@MessageMapping("/arrangement/descItems/{fundVersionId}/{nodeVersion}/update/{createNewVersion}")
 	public void updateDescItem(
 	        @Payload final ArrItemVO descItemVO,
 	        @DestinationVariable(value = "fundVersionId") final Integer fundVersionId,
@@ -101,7 +101,7 @@ public class ArrangementWebsocketController {
      * @param createNewVersion vytvořit novou verzi?
      */
     @Transactional
-	@MessageMapping("/arrangement/descItems/{fundVersionId}/{nodeVersion}/update/{createNewVersion}")
+	@MessageMapping("/arrangement/descItems/{fundVersionId}/{nodeVersion}/updateOld/{createNewVersion}")
 	public void updateDescItemOld(
             @Payload final ArrItemVO descItemVO,
             @DestinationVariable(value = "fundVersionId") final Integer fundVersionId,

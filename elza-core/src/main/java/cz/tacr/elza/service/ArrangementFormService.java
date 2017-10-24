@@ -68,10 +68,13 @@ public class ArrangementFormService {
 
 	private final WebsocketCallback websocketCallback;
 
+	private final UserService userService;
+
 	public ArrangementFormService(StaticDataService staticData,
 	        ArrangementServiceInternal arrangementInternal,
 	        DescriptionItemService descriptionItemService,
 	        LevelTreeCacheService levelTreeCache,
+	        UserService userService,
 	        RuleService ruleService,
 	        WebsocketCallback websocketCallback,
 	        ClientFactoryVO factoryVo,
@@ -87,10 +90,13 @@ public class ArrangementFormService {
 		this.factoryDo = factoryDo;
 		this.factoryVo = factoryVo;
 		this.websocketCallback = websocketCallback;
+		this.userService = userService;
 	}
 
 	@Transactional
-	public DescFormDataNewVO getNodeFormData(Integer versionId, Integer nodeId) {
+	@AuthMethod(permission = { UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD })
+	public DescFormDataNewVO getNodeFormData(@AuthParam(type = AuthParam.Type.FUND_VERSION) Integer versionId,
+	        Integer nodeId) {
 
 		ArrFundVersion version = fundVersionRepository.findOne(versionId);
 		if (version == null) {
@@ -132,7 +138,9 @@ public class ArrangementFormService {
 	}
 
 	@Transactional
-	public void updateDescItem(int fundVersionId, int nodeVersion, ArrItemVO descItemVO, boolean createVersion,
+	@AuthMethod(permission = { UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR })
+	public void updateDescItem(@AuthParam(type = AuthParam.Type.FUND_VERSION) int fundVersionId,
+	        int nodeVersion, ArrItemVO descItemVO, boolean createVersion,
 	        SimpMessageHeaderAccessor headerAccessor) {
 		ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 		if (version == null) {
@@ -157,6 +165,16 @@ public class ArrangementFormService {
 	        int nodeVersion, ArrItemVO descItemVO, boolean createVersion,
 	        SimpMessageHeaderAccessor headerAccessor) {
 
+		// alternative way of authorization - not finished
+		/*		
+		userService.authorizeRequest(
+		        AuthorizationRequest
+		                .hasPermission(UsrPermission.Permission.ADMIN)
+		                .or(UsrPermission.Permission.FUND_ARR_ALL)
+		                .or(UsrPermission.Permission.FUND_ARR, fundVersion)
+				);
+				*/
+
 		ArrDescItem descItem = factoryDo.createDescItem(descItemVO);
 
 		// store updated value
@@ -164,7 +182,7 @@ public class ArrangementFormService {
 		        .updateDescriptionItem(descItem, nodeVersion, fundVersion.getFundVersionId(), createVersion);
 
 		// prepare form data
-		List<RulItemTypeExt> itemTypes = ruleService.getDescriptionItemTypes(fundVersion, descItem.getNodeId());
+		List<RulItemTypeExt> itemTypes = ruleService.getDescriptionItemTypes(fundVersion, descItemUpdated.getNodeId());
 
 		StaticDataProvider dataProvider = this.staticData.getData();
 		RuleSystem rs = dataProvider.getRuleSystems().getByRuleSetId(fundVersion.getRuleSet().getRuleSetId());
@@ -175,11 +193,11 @@ public class ArrangementFormService {
 		ArrItemVO descItemVo = factoryVo.createDescItem(descItemUpdated);
 
 		// TODO: use better functions, we just need a descriptions
-		List<TreeNodeClient> tncList = levelTreeCache.getNodesByIds(Collections.singleton(descItem.getNodeId()),
+		List<TreeNodeClient> tncList = levelTreeCache.getNodesByIds(Collections.singleton(descItemUpdated.getNodeId()),
 		        fundVersion.getFundId());
 		TreeNodeClient tnc = tncList.get(0);
 
-		UpdateItemResult updateResult = new UpdateItemResult(descItem, descItemVo, descItemTypeGroupsVO, tnc);
+		UpdateItemResult updateResult = new UpdateItemResult(descItemUpdated, descItemVo, descItemTypeGroupsVO, tnc);
 
 		// Odeslání dat zpět
 		websocketCallback.sendAfterCommit(updateResult, headerAccessor);
