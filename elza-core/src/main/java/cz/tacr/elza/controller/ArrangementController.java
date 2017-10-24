@@ -2131,6 +2131,7 @@ public class ArrangementController {
     }
 
     @RequestMapping(value = "/validation/{fundVersionId}/{fromIndex}/{toIndex}", method = RequestMethod.GET)
+	@Transactional
     public ValidationItems getValidation(@PathVariable("fundVersionId") final Integer fundVersionId,
                                                  @PathVariable(value = "fromIndex") final Integer fromIndex,
                                                  @PathVariable(value = "toIndex") final Integer toIndex) {
@@ -2139,6 +2140,7 @@ public class ArrangementController {
     }
 
     @RequestMapping(value = "/validation/{fundVersionId}/find/{nodeId}/{direction}", method = RequestMethod.GET)
+	@Transactional
     public ValidationItems findValidationError(@PathVariable("fundVersionId") final Integer fundVersionId,
                                                @PathVariable(value = "nodeId") final Integer nodeId,
                                                @PathVariable(value = "direction") final Integer direction) {
@@ -2171,6 +2173,7 @@ public class ArrangementController {
      * @return  seznam outputů
      */
     @RequestMapping(value = "/output/{fundVersionId}", method = RequestMethod.GET)
+	@Transactional
     public List<ArrOutputExtVO> getOutputs(@PathVariable(value = "fundVersionId") final Integer fundVersionId, @RequestParam(value = "state", required = false) final OutputState state) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         List<ArrOutput> outputs = state == null ? outputService.getSortedOutputs(fundVersion) : outputService.getSortedOutputsByState(fundVersion, state);
@@ -2185,6 +2188,7 @@ public class ArrangementController {
      * @return output
      */
     @RequestMapping(value = "/output/{fundVersionId}/{outputId}", method = RequestMethod.GET)
+	@Transactional
     public ArrOutputExtVO getOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                     @PathVariable(value = "outputId") final Integer outputId) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
@@ -2194,6 +2198,7 @@ public class ArrangementController {
     }
 
     @RequestMapping(value = "/output/generate/{outputId}", method = RequestMethod.GET)
+	@Transactional
     public GenerateOutputResult generateOutput(@PathVariable(value = "outputId") final Integer outputId,
                                                @RequestParam(value = "forced", required = false, defaultValue = "false") final Boolean forced) {
         ArrOutput output = outputService.getOutput(outputId);

@@ -1,26 +1,39 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.domain.ArrBulkActionRun.State;
-import cz.tacr.elza.bulkaction.BulkActionService;
-import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.BulkActionRunVO;
-import cz.tacr.elza.controller.vo.BulkActionVO;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.security.UserDetail;
-import cz.tacr.elza.service.ArrangementService;
-import cz.tacr.elza.service.OutputService;
-import cz.tacr.elza.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
-
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import cz.tacr.elza.bulkaction.BulkActionService;
+import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.BulkActionRunVO;
+import cz.tacr.elza.controller.vo.BulkActionVO;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrBulkActionRun.State;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeOutput;
+import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.RulAction;
+import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.OutputService;
+import cz.tacr.elza.service.UserService;
 
 
 /**
@@ -54,6 +67,7 @@ public class BulkActionController {
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
     List<BulkActionVO> getBulkActions(final @PathVariable(value = "versionId") Integer fundVersionId) {
         return factoryVo.createBulkActionList(bulkActionService.getBulkActions(fundVersionId));
     }
@@ -62,6 +76,7 @@ public class BulkActionController {
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
     List<BulkActionRunVO> getBulkActionsList(final @PathVariable("versionId") Integer fundVersionId) {
         return factoryVo.createBulkActionsList(bulkActionService.getAllArrBulkActionRun(fundVersionId));
     }
@@ -70,6 +85,7 @@ public class BulkActionController {
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
     BulkActionRunVO getBulkAction(final @PathVariable("bulkActionRunId") Integer bulkActionRunId) {
         Assert.notNull(bulkActionRunId, "Identifikátor běhu hromadné akce musí být vyplněn");
         return factoryVo.createBulkActionRunWithNodes(bulkActionService.getArrBulkActionRun(bulkActionRunId));
@@ -79,6 +95,7 @@ public class BulkActionController {
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
     void interruptBulkAction(final @PathVariable("bulkActionRunId") Integer bulkActionRunId) {
         Assert.notNull(bulkActionRunId, "Identifikátor běhu hromadné akce musí být vyplněn");
         bulkActionService.interruptBulkAction(bulkActionRunId);
@@ -89,6 +106,7 @@ public class BulkActionController {
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
     BulkActionRunVO queueByFa(final @PathVariable("versionId") Integer fundVersionId, final @PathVariable("code") String code) {
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
         Assert.notNull(code, "Kód musí být vyplněn");
@@ -101,6 +119,7 @@ public class BulkActionController {
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
     BulkActionRunVO queueByIds(final @PathVariable("versionId") Integer fundVersionId, final @PathVariable("code") String code,
                     final @RequestBody List<Integer> nodeIds) {
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
@@ -119,6 +138,7 @@ public class BulkActionController {
      * @return list
      */
     @RequestMapping(value = "/output/{outputId}", method = RequestMethod.GET)
+	@Transactional
     public List<BulkActionRunVO> getOutputBulkActions(@PathVariable final Integer outputId,
                                                  @RequestParam(required = false, defaultValue = "false") @Nullable final Boolean recommended) {
         Assert.notNull(outputId, "Identifikátor výstupu musí být vyplněn");
