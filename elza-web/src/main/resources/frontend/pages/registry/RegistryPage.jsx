@@ -25,6 +25,7 @@ import {PropTypes} from 'prop-types';
 import './RegistryPage.less';
 import PageLayout from "../shared/layout/PageLayout";
 import defaultKeymap from './RegistryPageKeymap.jsx';
+import {setValidRegistry} from "../../actions/registry/registry";
 /**
  * Stránka rejstříků.
  * Zobrazuje stranku s vyberem rejstriku a jeho detailem/editaci
@@ -169,6 +170,11 @@ class RegistryPage extends AbstractReactComponent {
         }
     };
 
+    handleSetValidParty = () => {
+        confirm(i18n('party.setValid.confirm')) && this.dispatch(setValidRegistry(this.props.partyDetail.data.id));
+    }
+
+
     handleRegistryMoveStart = () => {
         const {registryDetail:{data}} = this.props;
         this.dispatch(registryMoveStart(data));
@@ -193,12 +199,6 @@ class RegistryPage extends AbstractReactComponent {
        );
     };
 
-    handleRegistryShowUsage = () => {
-        this.dispatch(
-            modalDialogShow(this, i18n('registry.registryUsage'))
-        );
-    };
-
     handleExtImport = () => {
         this.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={false} onSubmitForm={(data) => {
             this.dispatch(registryDetailFetchIfNeeded(data.id));
@@ -207,7 +207,7 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     buildRibbon = () => {
-        const {registryDetail:{data}, userDetail, extSystems, module, customRibbon} = this.props;
+        const {registryDetail:{data}, userDetail, extSystems, module, customRibbon, registryDetail } = this.props;
 
         const parts = module && customRibbon ? customRibbon : {altActions: [], itemActions: [], primarySection: null};
 
@@ -240,20 +240,27 @@ class RegistryPage extends AbstractReactComponent {
         if (this.canDeleteRegistry()) {
             if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: data ? data.scopeId : null})) {
                 itemActions.push(
-                    <Button key='registryRemove' onClick={this.handleDeleteRegistry}>
+                    <Button disabled={!data.invalid || !data.partyId} key='registryRemove' onClick={this.handleDeleteRegistry}>
                         <Icon glyph="fa-trash"/>
                         <div><span className="btnText">{i18n('registry.deleteRegistry')}</span></div>
                     </Button>
                 );
+
+                this.props.onShowUsage && itemActions.push(
+                    <Button key='registryShow' onClick={() => this.props.onShowUsage(registryDetail)}>
+                        <Icon glyph="fa-search"/>
+                        <div><span className="btnText">{i18n('registry.registryUsage')}</span></div>
+                    </Button>
+                );
+
+                itemActions.push(
+                    <Button disabled={!data.partyId} key='registrySetValid' onClick={() => this.props.onShowUsage(registryDetail)}>
+                        <Icon glyph="fa-check"/>
+                        <div><span className="btnText">{i18n('registry.setValid')}</span></div>
+                    </Button>
+                );
             }
         }
-
-        itemActions.push(
-            <Button key='registryShow' onClick={this.handleRegistryShowUsage}>
-                <Icon glyph="fa-search"/>
-                <div><span className="btnText">{i18n('registry.registryUsage')}</span></div>
-            </Button>
-        );
 
         if (this.canMoveRegistry()) {
             if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: data ? data.scopeId : null})) {

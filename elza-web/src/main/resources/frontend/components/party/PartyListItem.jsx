@@ -78,7 +78,7 @@ class PartyListItem extends AbstractReactComponent {
             datation = extinction;
         }
 
-        return <div className={classNames('party-list-item', className)} {...otherProps}>
+        return <div className={classNames('party-list-item', className)}>
             <div>
                 <Icon glyph={icon} />
                 <span className="name">{record.record}</span>

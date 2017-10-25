@@ -167,6 +167,16 @@ public class ArrChange {
         UPDATE_RECORD_NODE,
 
         /**
+         * Přidání rozšíření k JP.
+         */
+        ADD_NODE_EXTENSION,
+
+        /**
+         * Zrušení rozšíření k JP.
+         */
+        DELETE_NODE_EXTENSION,
+
+        /**
          * Změna atributu včetně změny pořadí.
          */
         UPDATE_DESC_ITEM,

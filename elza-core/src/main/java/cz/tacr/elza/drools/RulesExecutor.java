@@ -1,20 +1,5 @@
 package cz.tacr.elza.drools;
 
-import java.io.File;
-import java.nio.file.NoSuchFileException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import cz.tacr.elza.exception.SystemException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
@@ -24,6 +9,20 @@ import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
+import cz.tacr.elza.exception.SystemException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.io.File;
+import java.nio.file.NoSuchFileException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -60,8 +59,8 @@ public class RulesExecutor implements InitializingBean {
     /**
      * Cesta adresáře pro konfiguraci pravidel.
      */
-    @Value("${elza.rulesDir}")
-    private String rulesDir;
+    @Value("${elza.packagesDir}")
+    private String packagesDir;
 
     /**
      * Přípona souborů pravidel
@@ -172,7 +171,7 @@ public class RulesExecutor implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        File dir = new File(rulesDir);
+        File dir = new File(packagesDir);
 
         if (!dir.exists()) {
             dir.mkdirs();
@@ -181,17 +180,19 @@ public class RulesExecutor implements InitializingBean {
         //copyDefaultFromResources(dir);
     }
 
-    public String getRulesDir() {
-        return rulesDir;
+    public String getPackagesDir() {
+        return packagesDir;
     }
 
     /**
      * Vrací úplnou cestu k adresáři drools podle balíčku.
      *
-     * @param code kód pravidel
+     *
+     * @param packageCode
+     * @param ruleCode kód pravidel
      * @return cesta k adresáři drools
      */
-    public String getDroolsDir(final String code) {
-        return rulesDir + File.separator + code + File.separator + FOLDER;
+    public String getDroolsDir(final String packageCode, final String ruleCode) {
+        return packagesDir + File.separator + packageCode + File.separator + ruleCode + File.separator + FOLDER;
     }
 }

@@ -22,6 +22,7 @@ import FundsPermissionPanel from "./FundsPermissionPanel";
 import ScopesPermissionPanel from "./ScopesPermissionPanel";
 import AdvancedPermissionPanel from "./AdvancedPermissionPanel";
 import {WebApi} from "../../actions/WebApi";
+import DetailHeader from "../shared/detail/DetailHeader";
 
 require('./GroupDetail.less');
 
@@ -119,11 +120,16 @@ class GroupDetail extends AbstractReactComponent {
         return <div className="group-detail-container-wrapper">
             <StoreHorizontalLoader store={groupDetail}/>
             {groupDetail.fetched && <AdminRightsContainer
-                header={<div>
-                    <h1>{groupDetail.name}</h1>
-                </div>}
+                header={<DetailHeader
+                    icon={<Icon glyph="fa-group"/>}
+                    title={groupDetail.name}
+                    rowFlagColor="info"
+                    rowFlag={i18n("admin.group.title")}
+                    >
+                    {groupDetail.code}
+                </DetailHeader>}
                 left={<AddRemoveList
-                    label={<h3>{i18n("admin.group.title.users")}</h3>}
+                    label={<h4>{i18n("admin.group.title.users")}</h4>}
                     addInLabel
                     items={groupDetail.users}
                     onAdd={this.handleAddUsers}
@@ -133,7 +139,7 @@ class GroupDetail extends AbstractReactComponent {
                     renderItem={renderUserItem}
                 />}
             >
-                <h3>{i18n("admin.group.title.permissions")}</h3>
+                <h4>{i18n("admin.group.title.permissions")}</h4>
                 <Tabs.Container>
                     <Tabs.Tabs items={GroupDetail.tabItems}
                                activeItem={selectedTabItem}

@@ -281,6 +281,11 @@ public class RevertingChangesService {
         updateEntityQuery.executeUpdate();
         deleteEntityQuery.executeUpdate();
 
+        updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_node_extension", toChange);
+        deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_node_extension", toChange);
+        updateEntityQuery.executeUpdate();
+        deleteEntityQuery.executeUpdate();
+
         updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_dao_link", toChange);
         deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_dao_link", toChange);
         updateEntityQuery.executeUpdate();
@@ -600,6 +605,7 @@ public class RevertingChangesService {
             {"arr_level", "node"},
             {"arr_level", "nodeParent"},
             {"arr_node_register", "node"},
+            {"arr_node_extension", "node"},
             {"arr_node_conformity", "node"},
             {"arr_fund_version", "rootNode"},
             {"ui_visible_policy", "node"},
@@ -623,6 +629,8 @@ public class RevertingChangesService {
             {"arr_item", "deleteChange"},
             {"arr_node_register", "createChange"},
             {"arr_node_register", "deleteChange"},
+            {"arr_node_extension", "createChange"},
+            {"arr_node_extension", "deleteChange"},
 
             {"arr_fund_version", "createChange"},
             {"arr_fund_version", "lockChange"},
@@ -704,6 +712,7 @@ public class RevertingChangesService {
         String[][] tables = new String[][]{
             {"arr_level", "node"},
             {"arr_node_register", "node"},
+            {"arr_node_extension", "node"},
             {"arr_dao_link", "node"},
             {"arr_desc_item", "node"},
         };
@@ -1048,6 +1057,10 @@ public class RevertingChangesService {
                 "      SELECT create_change_id, node_id, 1 AS weight FROM arr_node_register WHERE node_id IN (%2$s)\n" +
                 "      UNION ALL\n" +
                 "      SELECT delete_change_id, node_id, 1 AS weight FROM arr_node_register WHERE node_id IN (%2$s)\n" +
+                "      UNION ALL\n" +
+                "      SELECT delete_change_id, node_id, 1 AS weight FROM arr_node_extension WHERE node_id IN (%2$s)\n" +
+                "      UNION ALL\n" +
+                "      SELECT create_change_id, node_id, 1 AS weight FROM arr_node_extension WHERE node_id IN (%2$s)\n" +
                 "      UNION ALL\n" +
                 "      SELECT create_change_id, node_id, 1 AS weight FROM arr_node_output WHERE node_id IN (%2$s)\n" +
                 "      UNION ALL\n" +

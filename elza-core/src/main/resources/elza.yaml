@@ -7,7 +7,7 @@ elza:
     transformationDir: ${elza.workingDir}/transformations/
   xmlExport:
     transformationDir: ${elza.workingDir}/xmlExportTransformations/
-  rulesDir: ${elza.workingDir}/rules
+  packagesDir: ${elza.workingDir}/packages
   groovy:
     groovyDir: ${elza.workingDir}/groovy
   dmsDir: ${elza.workingDir}/dms/

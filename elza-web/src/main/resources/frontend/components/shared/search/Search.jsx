@@ -123,7 +123,6 @@ class Search extends React.Component {
                         tabIndex={tabIndex}
                         value={this.state.filterText}
                         ref="input"
-                        labelClassName="label-class"
                         placeholder={this.props.placeholder}
                         onChange={this.handleChange}
                         onKeyUp={this.handleKeyUp}
@@ -132,7 +131,6 @@ class Search extends React.Component {
                         tabIndex={tabIndex}
                         value={this.state.filterText}
                         ref="input"
-                        labelClassName="label-class"
                         placeholder={this.props.placeholder}
                         readOnly={readOnly}
                         onChange={this.handleChange}

@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <changeSet id="201710180850" author="slapa">
+
+        <createTable tableName="rul_component">
+            <column name="component_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="filename" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="rul_arrangement_rule">
+            <column name="arrangement_rule_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="rule_set_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_rul_arrangement_rule_rule_set"
+                             referencedTableName="rul_rule_set"
+                             referencedColumnNames="rule_set_id"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_rul_arrangement_rule_package"
+                             referencedTableName="rul_package"
+                             referencedColumnNames="package_id"/>
+            </column>
+            <column name="component_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_rul_arrangement_rule_component"
+                             referencedTableName="rul_component"
+                             referencedColumnNames="component_id"/>
+            </column>
+            <column name="rule_type" type="nvarchar(50)"/>
+            <column name="priority" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="rul_arrangement_extension">
+            <column name="arrangement_extension_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_rul_arrangement_extension_package"
+                             referencedTableName="rul_package"
+                             referencedColumnNames="package_id"/>
+            </column>
+            <column name="rule_set_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_rul_arrangement_extension_rule_set"
+                             referencedTableName="rul_rule_set"
+                             referencedColumnNames="rule_set_id"/>
+            </column>
+            <column name="name" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="nvarchar(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="rul_extension_rule">
+            <column name="extension_rule_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="rule_type" type="nvarchar(50)"/>
+            <column name="priority" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="component_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_rul_extension_rule_component"
+                             referencedTableName="rul_component"
+                             referencedColumnNames="component_id"/>
+            </column>
+            <column name="arrangement_extension_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_rul_extension_rule_arrangement_extension"
+                             referencedTableName="rul_arrangement_extension"
+                             referencedColumnNames="arrangement_extension_id"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_rul_extension_rule_package"
+                             referencedTableName="rul_package"
+                             referencedColumnNames="package_id"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="arr_node_extension">
+            <column name="node_extension_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="create_change_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_arr_node_extension_create_change"
+                             referencedTableName="arr_change"
+                             referencedColumnNames="change_id"/>
+            </column>
+            <column name="delete_change_id" type="int">
+                <constraints foreignKeyName="fk_arr_node_extension_delete_change"
+                             referencedTableName="arr_change"
+                             referencedColumnNames="change_id"/>
+            </column>
+            <column name="node_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_arr_node_extension_node"
+                             referencedTableName="arr_node"
+                             referencedColumnNames="node_id"/>
+            </column>
+            <column name="arrangement_extension_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_arr_node_extension_arrangement_extension"
+                             referencedTableName="rul_arrangement_extension"
+                             referencedColumnNames="arrangement_extension_id"/>
+            </column>
+        </createTable>
+
+        <addColumn tableName="rul_output_type">
+            <column name="component_id" type="int">
+                <constraints foreignKeyName="fk_rul_output_type_component"
+                             referencedTableName="rul_component"
+                             referencedColumnNames="component_id"/>
+            </column>
+        </addColumn>
+
+        <!-- migrace dat -->
+        <sql>INSERT INTO rul_component (component_id, filename) SELECT rule_id, filename FROM rul_rule</sql>
+        <sql><![CDATA[
+            INSERT INTO rul_arrangement_rule (arrangement_rule_id, rule_set_id, package_id, component_id, rule_type, priority)
+            SELECT rule_id, rule_set_id, package_id, rule_id, rule_type, priority FROM rul_rule WHERE rule_type <> 'OUTPUT_ATTRIBUTE_TYPES'
+        ]]></sql>
+        <sql>UPDATE rul_output_type SET component_id = rule_id</sql>
+
+        <dropColumn tableName="rul_output_type" columnName="rule_id"/>
+        <dropTable tableName="rul_rule"/>
+
+        <update tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="rul_arrangement_extension|arrangement_extension_id" />
+            <where>sequence_name = 'rul_rule|rule_id'</where>
+        </update>
+
+        <sql>
+            INSERT INTO db_hibernate_sequences (sequence_name, next_val)
+            SELECT 'rul_component|component_id', next_val FROM db_hibernate_sequences WHERE sequence_name = 'rul_arrangement_extension|arrangement_extension_id'
+        </sql>
+
+    </changeSet>
+
+    <changeSet id="201710201440" author="slapa">
+        <addNotNullConstraint tableName="rul_arrangement_rule" columnDataType="nvarchar(50)" columnName="rule_type"/>
+        <addNotNullConstraint tableName="rul_extension_rule" columnDataType="nvarchar(50)" columnName="rule_type"/>
+    </changeSet>
+
+</databaseChangeLog>

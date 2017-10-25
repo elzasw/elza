@@ -1,5 +1,16 @@
 package cz.tacr.elza.bulkaction;
 
+import cz.tacr.elza.domain.RulAction;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.ActionRepository;
+import cz.tacr.elza.utils.Yaml;
+import liquibase.util.file.FilenameUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import javax.transaction.Transactional;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -10,19 +21,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import cz.tacr.elza.domain.RulAction;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.ActionRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
-import cz.tacr.elza.utils.Yaml;
-import liquibase.util.file.FilenameUtils;
-
-import javax.transaction.Transactional;
 
 
 /**
@@ -43,8 +41,8 @@ public class BulkActionConfigManager {
     /**
      * Cesta adresáře pro konfiguraci pravidel.
      */
-    @Value("${elza.rulesDir}")
-    private String rulesDir;
+    @Value("${elza.packagesDir}")
+    private String packagesDir;
 
     @Autowired
     private ActionRepository actionRepository;
@@ -62,8 +60,8 @@ public class BulkActionConfigManager {
     /**
      * @return cesta k pravidlům
      */
-    public String getRulesDir() {
-        return rulesDir;
+    public String getPackagesDir() {
+        return packagesDir;
     }
 
     /**
@@ -81,7 +79,7 @@ public class BulkActionConfigManager {
 
         bulkActionConfigMap = new HashMap<>();
 
-        File dir = new File(rulesDir);
+        File dir = new File(packagesDir);
 
         if (!dir.exists()) {
             dir.mkdirs();
@@ -94,7 +92,7 @@ public class BulkActionConfigManager {
 
         for (int i = 0; i < actions.size(); i++) {
             RulAction action = actions.get(i);
-            String filePath = getFunctionsDir(action.getRuleSet().getCode()) + File.separator + action.getFilename();
+            String filePath = getFunctionsDir(action.getPackage().getCode(), action.getRuleSet().getCode()) + File.separator + action.getFilename();
             files[i] = new File(filePath);
             if (!files[i].exists()) {
                 throw new SystemException("Soubor neexistuje: " + filePath);
@@ -247,16 +245,18 @@ public class BulkActionConfigManager {
      * @return cesta k souboru
      */
     private String getFileName(final BulkActionConfig bulkActionConfig) {
-        return rulesDir + File.separator + bulkActionConfig.getCode() + extension;
+        return packagesDir + File.separator + bulkActionConfig.getCode() + extension;
     }
 
     /**
-     * Vrací úplnou cestu k adresáři funkcí podle balíčku.
+     * Vrací úplnou cestu k adresáři funkcí podle balíčku a pravidel.
      *
-     * @param code kód balíčku (pravidel)
+     *
+     * @param packageCode kód balíčku
+     * @param code kód pravidel
      * @return cesta k adresáři funkcí
      */
-    public String getFunctionsDir(final String code) {
-        return rulesDir + File.separator + code + File.separator + FOLDER;
+    public String getFunctionsDir(final String packageCode, final String code) {
+        return packagesDir + File.separator + packageCode + File.separator + code + File.separator + FOLDER;
     }
 }

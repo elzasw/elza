@@ -27,7 +27,7 @@ export default class HorizontalLoader extends React.Component {
     }
 
     render() {
-        const {rerenderProgress, showText, hover, text, className, ...other} = this.props;
+        const {rerenderProgress, showText, hover, text, className, fetched, ...other} = this.props;
 
         let useText = text || i18n('global.data.loading');
 

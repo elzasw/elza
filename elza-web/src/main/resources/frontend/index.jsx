@@ -94,7 +94,7 @@ window.onerror = function(message, url, line, column, error) {
         }
     } catch (e) {}
 
-    store.dispatch(addToastr(i18n('exception.client'), [<Exception title={i18n('exception.client')} data={{
+    store.dispatch(addToastr(i18n('exception.client'), [<Exception key="exception-key-onerror" title={i18n('exception.client')} data={{
         message,
         devMessage: devMessage,
         properties: {

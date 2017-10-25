@@ -16,6 +16,7 @@ class RegistryListItem extends AbstractReactComponent {
         relationTypesForClass: React.PropTypes.object,
         record: React.PropTypes.object.isRequired,
         relations: React.PropTypes.array,
+        invalid: React.PropTypes.bool
     };
 
     getRecordId = (data) => {
@@ -31,7 +32,7 @@ class RegistryListItem extends AbstractReactComponent {
     }
 
     render() {
-        const {className, parents, typesToRoot, isActive, hierarchical, id, record, registryParentId, registryTypesId, externalId, externalSystem, ...otherProps} = this.props;
+        const {className, parents, typesToRoot, isActive, hierarchical, id, record, registryParentId, registryTypesId, externalId, externalSystem, invalid, ...otherProps} = this.props;
 
         const parentsShown = [];
         const parentsTypeShown = [];
@@ -62,10 +63,12 @@ class RegistryListItem extends AbstractReactComponent {
             clsItem = 'registry-list-icon-list';
             //doubleClick = false;
         }
+
         const doubleClick = false;
 
         const cls = classNames(className, 'registry-list-item', {
             active: isActive,
+            invalid: invalid
         });
 
 
@@ -88,7 +91,7 @@ class RegistryListItem extends AbstractReactComponent {
                 });
             }
 
-            return <div className={classNames('registry-list-item', className)} key={'record-id-' + id} title={path} className={cls} onDoubleClick={doubleClick} {...otherProps}>
+            return <div key={'record-id-' + id} title={path} className={cls} onDoubleClick={doubleClick}>
                 <div>
                     <Icon glyph={iconName} />
                     <span className="name">{record}</span>
