@@ -69,6 +69,7 @@ export function is(action) {
         case RESPONSE:
         case SELECT:
         case INVALIDATE:
+        case UPDATE_VALUE:
             return true;
         default:
             return false;
@@ -79,13 +80,15 @@ export function is(action) {
 /**
  * Úprava hodnoty ve store - vykonána uživatelem/programem
  * @param area oblast
+ * @param id dat
  * @param data nová data
  * @returns {{type: string, area: *, data: *}}
  */
-export function updateValue(area, data) {
+export function updateValue(area, id, data) {
     return {
         type: UPDATE_VALUE,
         area,
+        id,
         data,
     }
 }

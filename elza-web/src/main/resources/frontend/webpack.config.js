@@ -28,7 +28,7 @@ module.exports = {
         'babel-polyfill',
         './index.jsx',
     ],
-    devtool: 'eval-source-map',
+    devtool: 'inline-source-map',
     output: {
         path: path.join(__dirname, 'assets'),
         filename: 'bundle.js',

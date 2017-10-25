@@ -464,6 +464,20 @@ public class UserService {
     }
 
     /**
+     * Smaže všechna oprávnení uživatele typu AS all.
+     *
+     * @param user   uživatel
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITITY})
+    public void deleteUserFundAllPermissions(@AuthParam(type = AuthParam.Type.USER) @NotNull final UsrUser user) {
+        List<UsrPermission> permissionsDB = permissionRepository.findByUserOrderByPermissionIdAsc(user);
+        List<UsrPermission> permissionsToDelete = permissionsDB.stream()
+                .filter(x -> UsrPermission.Permission.getFundAllPerms().contains(x.getPermission()))
+                .collect(Collectors.toList());
+        deleteUserPermission(user, permissionsToDelete);
+    }
+
+    /**
      * Smaže všechna oprávnení skupiny na daný AS.
      *
      * @param group  skupina
@@ -475,6 +489,20 @@ public class UserService {
         List<UsrPermission> permissionsDB = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
         List<UsrPermission> permissionsToDelete = permissionsDB.stream()
                 .filter(x -> fundId.equals(x.getFundId()))
+                .collect(Collectors.toList());
+        deleteGroupPermission(group, permissionsToDelete);
+    }
+
+    /**
+     * Smaže všechna oprávnení skupiny typu AS all.
+     *
+     * @param group  skupina
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.GROUP_CONTROL_ENTITITY})
+    public void deleteGroupFundAllPermissions(@AuthParam(type = AuthParam.Type.GROUP) @NotNull final UsrGroup group) {
+        List<UsrPermission> permissionsDB = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
+        List<UsrPermission> permissionsToDelete = permissionsDB.stream()
+                .filter(x -> UsrPermission.Permission.getFundAllPerms().contains(x.getPermission()))
                 .collect(Collectors.toList());
         deleteGroupPermission(group, permissionsToDelete);
     }
@@ -1108,6 +1136,22 @@ public class UserService {
      */
     public List<UsrUser> findUsersByFund(final ArrFund fund) {
         return userRepository.findByFund(fund);
+    }
+
+    /**
+     * Vyhledá list uživatelů podle oprávnění typu všechny AS.
+     * @return list uživatelů
+     */
+    public List<UsrUser> findUsersByFundAll() {
+        return userRepository.findByPermissions(UsrPermission.Permission.getFundAllPerms());
+    }
+
+    /**
+     * Vyhledá list skupin podle oprávnění typu všechny AS.
+     * @return list skupin
+     */
+    public List<UsrGroup> findGroupsByFundAll() {
+        return groupRepository.findByPermissions(UsrPermission.Permission.getFundAllPerms());
     }
 
     /**

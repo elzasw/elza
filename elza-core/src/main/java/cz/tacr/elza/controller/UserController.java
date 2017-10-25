@@ -312,6 +312,16 @@ public class UserController {
     }
 
     /**
+     * Načte seznam uživatelů, kteří mají explicitně (přímo na nich) nastavené nějaké oprávnění typu všechny AS.
+     * @return seznam
+     */
+    @RequestMapping(value = "/fund/all/users", method = RequestMethod.GET)
+    public List<UsrUserVO> findUsersPermissionsByFundAll() {
+        List<UsrUser> users = userService.findUsersByFundAll();
+        return factoryVO.createUserList(users, true);
+    }
+
+    /**
      * Přidání uživatelů do skupin.
      *
      * @param params identifikátory přidávaných uživatelů a skupin
@@ -341,21 +351,6 @@ public class UserController {
     }
 
     /**
-     * Nastavení oprávnění uživatele.
-     *
-     * @param userId      identifikátor uživatele
-     * @param permissions seznam oprávnění
-     */
-//    @Transactional
-//    @RequestMapping(value = "/{userId}/permission", method = RequestMethod.POST)
-//    public void changeUserPermission(@PathVariable(value = "userId") final Integer userId,
-//                                     @RequestBody final Permissions permissions) {
-//        UsrUser user = userService.getUser(userId);
-//        List<UsrPermission> usrPermissions = factoryDO.createPermissionList(permissions.getPermissions());
-//        userService.changeUserPermission(user, usrPermissions);
-//    }
-
-    /**
      * Přidání oprávnění uživatele.
      *
      * @param userId      identifikátor uživatele
@@ -375,14 +370,14 @@ public class UserController {
      * Odebrání oprávnění uživatele.
      *
      * @param userId      identifikátor uživatele
-     * @param permissions seznam oprávnění pro odebr8n9
+     * @param permission seznam oprávnění pro odebr8n9
      */
     @Transactional
     @RequestMapping(value = "/{userId}/permission/delete", method = RequestMethod.POST)
     public void deleteUserPermission(@PathVariable(value = "userId") final Integer userId,
-                                     @RequestBody final UsrPermissionVO permissions) {
+                                     @RequestBody final UsrPermissionVO permission) {
         UsrUser user = userService.getUser(userId);
-        List<UsrPermission> usrPermissions = factoryDO.createPermissionList(Collections.singletonList(permissions));
+        List<UsrPermission> usrPermissions = factoryDO.createPermissionList(Collections.singletonList(permission));
         userService.deleteUserPermission(user, usrPermissions);
     }
 
@@ -400,6 +395,18 @@ public class UserController {
     }
 
     /**
+     * Odebrání oprávnění uživatele typu AS all.
+     *
+     * @param userId      identifikátor uživatele
+     */
+    @Transactional
+    @RequestMapping(value = "/{userId}/permission/delete/fund/all", method = RequestMethod.POST)
+    public void deleteUserFundAllPermission(@PathVariable(value = "userId") final Integer userId) {
+        UsrUser user = userService.getUser(userId);
+        userService.deleteUserFundAllPermissions(user);
+    }
+
+    /**
      * Odebrání oprávnění uživatele na typ rejstříku.
      *
      * @param userId      identifikátor uživatele
@@ -411,21 +418,6 @@ public class UserController {
         UsrUser user = userService.getUser(userId);
         userService.deleteUserScopePermissions(user, scopeId);
     }
-
-//    /**
-//     * Nastavení oprávnění skupiny.
-//     *
-//     * @param groupId     identifikátor skupiny
-//     * @param permissions seznam oprávnění
-//     */
-//    @Transactional
-//    @RequestMapping(value = "/group/{groupId}/permission", method = RequestMethod.POST)
-//    public void changeGroupPermission(@PathVariable(value = "groupId") final Integer groupId,
-//                                      @RequestBody final Permissions permissions) {
-//        UsrGroup group = userService.getGroup(groupId);
-//        List<UsrPermission> usrPermissions = factoryDO.createPermissionList(permissions.getPermissions());
-//        userService.changeGroupPermission(group, usrPermissions);
-//    }
 
     /**
      * Pomocná struktura pro vytvoření uživatele.
@@ -541,25 +533,6 @@ public class UserController {
 
         public void setUserIds(final Set<Integer> userIds) {
             this.userIds = userIds;
-        }
-    }
-
-    /**
-     * Seznam oprávnění.
-     */
-    public static class Permissions {
-
-        /**
-         * Seznam oprávnění.
-         */
-        private List<UsrPermissionVO> permissions;
-
-        public List<UsrPermissionVO> getPermissions() {
-            return permissions;
-        }
-
-        public void setPermissions(final List<UsrPermissionVO> permissions) {
-            this.permissions = permissions;
         }
     }
 }

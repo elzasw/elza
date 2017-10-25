@@ -5,9 +5,11 @@ import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
+import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.service.SettingsService;
@@ -167,14 +169,14 @@ public class GroupController {
      * Odebrání oprávnění skupiny.
      *
      * @param groupId     identifikátor skupiny
-     * @param permissions seznam oprávnění pro odebr8n9
+     * @param permission seznam oprávnění pro odebr8n9
      */
     @Transactional
     @RequestMapping(value = "/{groupId}/permission/delete", method = RequestMethod.POST)
     public void deleteGroupPermission(@PathVariable(value = "groupId") final Integer groupId,
-                                      @RequestBody final UsrPermissionVO permissions) {
+                                      @RequestBody final UsrPermissionVO permission) {
         UsrGroup group = userService.getGroup(groupId);
-        List<UsrPermission> usrPermissions = factoryDO.createPermissionList(Collections.singletonList(permissions));
+        List<UsrPermission> usrPermissions = factoryDO.createPermissionList(Collections.singletonList(permission));
         userService.deleteGroupPermission(group, usrPermissions);
     }
 
@@ -189,6 +191,18 @@ public class GroupController {
     public void deleteGroupFundPermission(@PathVariable(value = "groupId") final Integer groupId, @PathVariable("fundId") final Integer fundId) {
         UsrGroup group = userService.getGroup(groupId);
         userService.deleteGroupFundPermissions(group, fundId);
+    }
+
+    /**
+     * Odebrání oprávnění uživatele typu AS all.
+     *
+     * @param groupId identifikátor skupiny
+     */
+    @Transactional
+    @RequestMapping(value = "/{groupId}/permission/delete/fund/all", method = RequestMethod.POST)
+    public void deleteGroupFundAllPermission(@PathVariable(value = "groupId") final Integer groupId) {
+        UsrGroup group = userService.getGroup(groupId);
+        userService.deleteGroupFundAllPermissions(group);
     }
 
     /**
@@ -213,6 +227,16 @@ public class GroupController {
     public List<UsrGroupVO> findGroupsPermissionsByFund(@PathVariable(value = "fundId") final Integer fundId) {
         ArrFund fund = fundRepository.getOneCheckExist(fundId);
         List<UsrGroup> groups = userService.findGroupsByFund(fund);
+        return factoryVO.createGroupList(groups, true, false);
+    }
+
+    /**
+     * Načte seznam skupin, kteří mají explicitně (přímo na nich) nastavené nějaké oprávnění typu všechny AS.
+     * @return seznam
+     */
+    @RequestMapping(value = "/fund/all/groups", method = RequestMethod.GET)
+    public List<UsrGroupVO> findGroupssPermissionsByFundAll() {
+        List<UsrGroup> groups = userService.findGroupsByFundAll();
         return factoryVO.createGroupList(groups, true, false);
     }
 

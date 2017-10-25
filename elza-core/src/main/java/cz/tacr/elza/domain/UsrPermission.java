@@ -1,6 +1,8 @@
 package cz.tacr.elza.domain;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -422,6 +424,26 @@ public class UsrPermission {
 
         public PermissionType getType() {
             return type;
+        }
+
+        /**
+         * Oprávnění typu fund ALL.
+         */
+        static Set<Permission> fundAllPerms = new HashSet<>();
+        static {
+            fundAllPerms.add(UsrPermission.Permission.FUND_ARR_ALL);
+            fundAllPerms.add(UsrPermission.Permission.FUND_OUTPUT_WR_ALL);
+            fundAllPerms.add(UsrPermission.Permission.FUND_RD_ALL);
+            fundAllPerms.add(UsrPermission.Permission.FUND_BA_ALL);
+            fundAllPerms.add(UsrPermission.Permission.FUND_EXPORT_ALL);
+            fundAllPerms.add(UsrPermission.Permission.FUND_CL_VER_WR_ALL);
+        }
+
+        /**
+         * @return oprávnění typu fund ALL
+         */
+        public static Set<Permission> getFundAllPerms() {
+            return fundAllPerms;
         }
     }
 }

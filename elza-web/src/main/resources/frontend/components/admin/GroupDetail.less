@@ -1,6 +1,29 @@
+@import "/variables.less";
+
 .group-detail-container-wrapper {
     height: 100%;
-    padding: 10px;
+
+    > .admin-rights-container {
+        > .admin-rights-content {
+            padding: 0 10px;
+            margin-bottom: 5px;
+
+            > .admin-rights-left {
+                .list-add-remove-container {
+                    display: flex;
+                    height: 100%;
+                    flex-direction: column;
+
+                    .item-list-container {
+                        flex-grow: 1;
+                        margin-top: 5px;
+                        border: 1px solid #DDDDDD;
+                        background-color: white;
+                    }
+                }
+            }
+        }
+    }
 
     .tabs-container {
         display: flex;

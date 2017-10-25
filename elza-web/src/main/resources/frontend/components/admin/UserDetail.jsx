@@ -21,6 +21,7 @@ import SelectItemsForm from "./SelectItemsForm";
 import GroupField from "./GroupField";
 import AdminRightsContainer from "./AdminRightsContainer";
 import {WebApi} from "../../actions/WebApi";
+import DetailHeader from "../shared/detail/DetailHeader";
 
 /**
  * Detail uživatele s nastavením oprávnění.
@@ -124,12 +125,17 @@ class UserDetail extends AbstractReactComponent {
             <StoreHorizontalLoader store={userDetail}/>
             {userDetail.fetched && <AdminRightsContainer
                 header={<div>
-                    <h1>{userDetail.party.record.record}</h1>
-                    <div>{i18n("admin.user.label.username")}</div>
-                    <div>{userDetail.username}</div>
+                    <DetailHeader
+                        icon={<Icon glyph="fa-user"/>}
+                        title={userDetail.party.record.record}
+                        rowFlagColor={userDetail.active ? "success" : "warning"}
+                        rowFlag={userDetail.active ? i18n("admin.user.title.active") : i18n("admin.user.title.nonactive")}
+                    >
+                        {userDetail.username}
+                    </DetailHeader>
                 </div>}
                 left={<AddRemoveList
-                    label={<h3>{i18n("admin.user.title.groups")}</h3>}
+                    label={<h4>{i18n("admin.user.title.groups")}</h4>}
                     addInLabel
                     items={userDetail.groups}
                     onAdd={this.handleAddGroups}
@@ -139,7 +145,7 @@ class UserDetail extends AbstractReactComponent {
                     renderItem={renderGroupItem}
                 />}
             >
-                <h3>{i18n("admin.user.title.permissions")}</h3>
+                <h4>{i18n("admin.user.title.permissions")}</h4>
                 <Tabs.Container>
                     <Tabs.Tabs items={UserDetail.tabItems}
                                activeItem={selectedTabItem}

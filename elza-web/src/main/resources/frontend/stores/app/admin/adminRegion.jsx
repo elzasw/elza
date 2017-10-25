@@ -35,7 +35,7 @@ const initialState = {
 };
 
 export default function adminRegion(state = initialState, action = {}) {
-    if (action.area && action.area.startsWith("adminRegion.")) { // area pro zpracování na předaný fund, ten zde můžeme zpracovat
+    if (action.area && typeof action.area === "string" && action.area.startsWith("adminRegion.")) { // area pro zpracování na předaný fund, ten zde můžeme zpracovat
         let newArea = action.area.split(".");
         return processAreaStores(state, {
             ...action,
