@@ -10,6 +10,7 @@ import {HorizontalLoader} from "../shared/index";
 import FundUsersPanel from "./FundUsersPanel";
 import FundGroupsPanel from "./FundGroupsPanel";
 import FundsPermissionPanel from "./FundsPermissionPanel";
+import DetailHeader from "../shared/detail/DetailHeader";
 
 class FundDetail extends AbstractReactComponent {
     static TAB_USERS = 0;
@@ -72,9 +73,14 @@ class FundDetail extends AbstractReactComponent {
         }
 
         return <AdminRightsContainer
-            header={<div>
-                <h1>{fund.data.name}</h1>
-            </div>}
+            header={<DetailHeader
+                icon={<Icon glyph="fa-group"/>}
+                title={fund.data.name}
+                rowFlagColor="info"
+                rowFlag={i18n("admin.fund.title")}
+            >
+                {fund.data.internalCode}
+            </DetailHeader>}
         >
             <Tabs.Container>
                 <Tabs.Tabs items={FundDetail.tabItems}

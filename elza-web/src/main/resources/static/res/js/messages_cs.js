@@ -997,6 +997,8 @@ var messages = {
     "admin.user.filter.all": "Všichni uživatelé",
     "admin.user.filter.onlyActive": "Aktivní uživatelé",
     "admin.user.label.username": "Uživatelské jméno",
+    "admin.user.title.active": "Aktivní uživatel",
+    "admin.user.title.nonactive": "Neaktivní uživatel",
     "admin.user.title.groups": "Členství ve skupinách",
     "admin.user.title.permissions": "Oprávnění uživatele",
     "admin.perms.tabs.funds": "Archivní soubory",
@@ -1049,8 +1051,11 @@ var messages = {
     "admin.user.changeActive.confirm" : "Jste si jisti že chcete změnit stav uživatele?",
     "admin.user.validation.passNotEqual": "Zadaná hesla nejsou stejná",
 
+    "admin.fund.title": "Archivní soubor",
+
     "admin.group.add.title": "Vytvořit skupinu",
     "admin.group.edit.title": "Upravení skupiny",
+    "admin.group.title": "Skupina",
     "admin.group.title.name": "Název",
     "admin.group.title.code": "Kód",
     "admin.group.title.description": "Popis",
