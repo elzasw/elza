@@ -1,19 +1,11 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.controller.config.ClientFactoryDO;
-import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.FilteredResultVO;
-import cz.tacr.elza.controller.vo.UsrGroupVO;
-import cz.tacr.elza.controller.vo.UsrPermissionVO;
-import cz.tacr.elza.controller.vo.UsrUserVO;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.UsrGroup;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.repository.FilteredResult;
-import cz.tacr.elza.repository.FundRepository;
-import cz.tacr.elza.service.SettingsService;
-import cz.tacr.elza.service.UserService;
+import java.util.Collections;
+import java.util.List;
+
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,11 +15,18 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import cz.tacr.elza.controller.config.ClientFactoryDO;
+import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.UsrGroupVO;
+import cz.tacr.elza.controller.vo.UsrPermissionVO;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.UsrGroup;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.repository.FilteredResult;
+import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.service.SettingsService;
+import cz.tacr.elza.service.UserService;
 
 /**
  * Kontroler pro skupiny.
@@ -60,6 +59,7 @@ public class GroupController {
      * @return VO
      */
     @RequestMapping(value = "/{groupId}", method = RequestMethod.GET)
+	@Transactional
     public UsrGroupVO getGroup(@PathVariable(value = "groupId") final Integer groupId) {
         Assert.notNull(groupId, "Identifikátor skupiny musí být vyplněn");
 
@@ -76,6 +76,7 @@ public class GroupController {
      * @return seznam s celkovým počtem
      */
     @RequestMapping(value = "", method = RequestMethod.GET)
+	@Transactional
     public FilteredResultVO<UsrGroupVO> findGroup(@Nullable @RequestParam(value = "search", required = false) final String search,
                                                   @RequestParam("from") final Integer from,
                                                   @RequestParam("count") final Integer count
@@ -94,6 +95,7 @@ public class GroupController {
      * @return seznam s celkovým počtem
      */
     @RequestMapping(value = "/withFundCreate", method = RequestMethod.GET)
+	@Transactional
     public FilteredResultVO<UsrGroupVO> findGroupWithFundCreate(@Nullable @RequestParam(value = "search", required = false) final String search,
                                                   @RequestParam("from") final Integer from,
                                                   @RequestParam("count") final Integer count
