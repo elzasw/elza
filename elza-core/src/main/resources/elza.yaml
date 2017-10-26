@@ -25,6 +25,9 @@ spring:
   app:
       buildType: REL
   jpa:
+    #pametova databaze automaticky zapina hibernate.ddl-auto: create
+    hibernate.ddl-auto: none
+    generate-ddl: false
     # Logovani SQL dotazu
     #show-sql: true
     properties:

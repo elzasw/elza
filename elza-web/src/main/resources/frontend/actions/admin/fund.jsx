@@ -20,3 +20,7 @@ export function fundFetchIfNeeded(id) {
 export function selectFund(id) {
     return DetailActions.select(AREA_ADMIN_FUND, id);
 }
+
+export function setFund(fund) {
+    return DetailActions.updateValue(AREA_ADMIN_FUND, fund.id, fund);
+}

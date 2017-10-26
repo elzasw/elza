@@ -1,0 +1,59 @@
+@import "/variables.less";
+
+.detail-header-container {
+    display: flex;
+    flex-direction: column;
+
+    .detail-header-main {
+        display: flex;
+
+        .detail-header-icon {
+            padding: 0 10px;
+            flex-shrink: 0;
+            font-size: 18px;
+            border-right: 1px solid silver;
+            margin-right: 5px;
+            display: flex;
+            align-items: center;
+        }
+        .detail-header-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+
+            .detail-header-title {
+                font-size: 18px;
+            }
+            .detail-header-desc {
+
+            }
+        }
+        .detail-header-rowFlag {
+            flex-grow: 1;
+        }
+    }
+
+    .detail-header-bottom {
+        display: flex;
+        padding: 0 10px;
+
+        text-transform: uppercase;
+
+        &.dh-color-success {
+            color: @state-success-text;
+            background-color: @state-success-bg;
+        }
+        &.dh-color-info {
+            color: @state-info-text;
+            background-color: @state-info-bg;
+        }
+        &.dh-color-warning {
+            color: @state-warning-text;
+            background-color: @state-warning-bg;
+        }
+        &.dh-color-warning {
+            color: @state-danger-text;
+            background-color: @state-danger-bg;
+        }
+    }
+}

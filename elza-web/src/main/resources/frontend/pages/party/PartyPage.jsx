@@ -22,6 +22,8 @@ import './PartyPage.less';
 import {regExtSystemListFetchIfNeeded} from 'actions/registry/regExtSystemList';
 import PageLayout from "../shared/layout/PageLayout";
 import {PropTypes} from 'prop-types';
+import {WebApi} from "../../actions/WebApi";
+import {setValidParty} from "../../actions/party/party";
 
 /**
  * PARTY PAGE
@@ -114,6 +116,10 @@ class PartyPage extends AbstractReactComponent {
         confirm(i18n('party.delete.confirm')) && this.dispatch(partyDelete(this.props.partyDetail.data.id));
     };
 
+    handleSetValidParty = () => {
+        confirm(i18n('party.setValid.confirm')) && this.dispatch(setValidParty(this.props.partyDetail.data.id));
+    }
+
     /**
      * BUILD RIBBON
      * *********************************************
@@ -148,11 +154,26 @@ class PartyPage extends AbstractReactComponent {
         if (isSelected && partyDetail.fetched && !partyDetail.isFetching) {
             if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: partyDetail.data.record.scopeId})) {
                 itemActions.push(
-                    <Button key='delete-party' onClick={this.handleDeleteParty}><Icon glyph="fa-trash"/>
+                    <Button disabled={ !partyDetail.data.invalid } key='delete-party' onClick={this.handleDeleteParty}><Icon glyph="fa-trash"/>
                         <div><span className="btnText">{i18n('party.delete.button')}</span></div>
                     </Button>
                 );
+
+                this.props.onShowUsage && partyDetail && itemActions.push(
+                    <Button key='partyShow' onClick={() => this.props.onShowUsage(partyDetail)}>
+                        <Icon glyph="fa-search"/>
+                        <div><span className="btnText">{i18n("party.usage.button")}</span></div>
+                    </Button>
+                );
+
+                partyDetail && itemActions.push(
+                    <Button key='partySetValid' onClick={() => this.handleSetValidParty()}>
+                        <Icon glyph="fa-check"/>
+                        <div><span className="btnText">{i18n("party.setValid.button")}</span></div>
+                    </Button>
+                );
             }
+
         }
 
         let altSection;

@@ -182,7 +182,7 @@ class FundPackets extends AbstractReactComponent {
         let altSearch;
         if (allFetched) {
             altSearch = <div className="state-filter">
-                <FormInput componentClass="select" _label={i18n('arr.fund.packets.state')} value={filterState} onChange={this.handleFilterStateChange}>
+                <FormInput componentClass="select" value={filterState} onChange={this.handleFilterStateChange}>
                     <option value="OPEN">{i18n('arr.fund.packets.state.open')}</option>
                     <option value="CLOSED">{i18n('arr.fund.packets.state.closed')}</option>
                     <option value="CANCELED">{i18n('arr.fund.packets.state.canceled')}</option>

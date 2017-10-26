@@ -79,7 +79,12 @@ class Ribbon extends AbstractReactComponent {
         let section = null;
         // Aktomatické sekce podle vybrané oblasti
         if (this.props.admin) {
-            if (userDetail.hasOne(perms.FUND_ADMIN)) {
+            if (userDetail.hasOne(
+                perms.FUND_ADMIN,
+                perms.USR_PERM,
+                perms.USER_CONTROL_ENTITITY,
+                perms.GROUP_CONTROL_ENTITITY
+            )) {
                 section = (
                     <RibbonGroup key="ribbon-group-admin" className="large">
                         <LinkContainer key="ribbon-btn-admin-user" to="/admin/user">
@@ -232,8 +237,12 @@ class Ribbon extends AbstractReactComponent {
                             <span className="btnText">{i18n('ribbon.action.party')}</span>
                         </Button>
                     </LinkContainer>
-                    {userDetail.hasOne(perms.ADMIN) &&
-                    <LinkContainer key="ribbon-btn-admin" to="/admin">
+                    {userDetail.hasOne(
+                        perms.ADMIN,
+                        perms.USR_PERM,
+                        perms.USER_CONTROL_ENTITITY,
+                        perms.GROUP_CONTROL_ENTITITY
+                    ) && <LinkContainer key="ribbon-btn-admin" to="/admin">
                         <Button>
                             <Icon glyph="fa-cog" />
                             <span className="btnText">{i18n('ribbon.action.admin')}</span>

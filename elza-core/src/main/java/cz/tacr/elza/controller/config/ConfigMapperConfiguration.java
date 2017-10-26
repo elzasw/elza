@@ -737,6 +737,7 @@ public class ConfigMapperConfiguration {
                         regRecordVO.setAddRecord(regRecord.getRegisterType().getAddRecord());
                         regRecordVO.setHierarchical(regRecord.getRegisterType().getHierarchical());
                         regRecordVO.setScopeId(regRecord.getScope().getScopeId());
+                        regRecordVO.setInvalid(regRecord.isInvalid());
                     }
 
                     @Override

@@ -100,7 +100,10 @@ const mergeStateForField = (field, localState, serverState) => {
         // }
         // getValue(rest, state && state[key] || {}, dest[key], exportInitialValues);
     } else {
-        if (localState[field].touched) {    // hodnota byla lokálně upravena, pokud initial je stejná jako server initial, vezmeme naší lokální aktuálně upravovanou
+        if (!localState[field]) {
+            console.log(localState, field)
+        }
+        if (localState[field] && localState[field].touched) {    // hodnota byla lokálně upravena, pokud initial je stejná jako server initial, vezmeme naší lokální aktuálně upravovanou
             if (valuesEquals(localState[field].initial, serverState[field].initial)) {
                 serverState[field].value = localState[field].value;
             }

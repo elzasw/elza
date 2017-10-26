@@ -292,8 +292,8 @@ class PartyDetail extends AbstractReactComponent {
         }
 
         let content;
-        if (partyDetail.fetched) {
-            var type = party.partyType.code;
+        if (partyDetail.fetched && partyDetail.data) {
+            var type = partyDetail.data.partyType.code;
             var icon = PartyListItem.partyIconByPartyTypeCode(type);
 
             let canEdit = userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: party.record.scopeId});
@@ -306,7 +306,7 @@ class PartyDetail extends AbstractReactComponent {
 
             const events = {onPin:this.handlePinToggle, onSelect: this.handleToggleActive};
 
-            content = <div tabIndex={"0"} ref='partyDetail' className="party-detail">
+            content = <div tabIndex={0} ref='partyDetail' className="party-detail">
                 <div className="party-header">
                     <div className="header-icon">
                         <Icon glyph={icon}/>
@@ -325,9 +325,9 @@ class PartyDetail extends AbstractReactComponent {
                 </div>
                 <div className="party-type">
                     {party.partyType.description}
-                    <span className="scope-label">
+                    {party.scopeId && <span className="scope-label">
                         {this.getScopeLabel(partyDetail.data.record.scopeId, scopes)}
-                    </span>
+                    </span>}
                 </div>
                 <Form className="party-body">
                     {parts.map((i, index) => {
@@ -335,16 +335,17 @@ class PartyDetail extends AbstractReactComponent {
                         if (TYPE == UI_PARTY_GROUP_TYPE.IDENT) {
                             const key = UI_PARTY_GROUP_TYPE.IDENT;
                             return <div key={index}>
-                                <CollapsablePanel tabIndex={"0"} isOpen={activeIndexes && activeIndexes[key] === true} pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true} header={i.name} eventKey={key} {...events}>
+                                <CollapsablePanel tabIndex={0} isOpen={activeIndexes && activeIndexes[key] === true} pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true} header={i.name} eventKey={key} {...events}>
                                     <PartyDetailNames party={party} partyType={partyType} onPartyUpdate={this.handlePartyUpdate} canEdit={canEdit} />
                                     {party.partyType.code == PARTY_TYPE_CODES.GROUP_PARTY && <PartyDetailIdentifiers party={party} onPartyUpdate={this.handlePartyUpdate} canEdit={canEdit} />}
                                 </CollapsablePanel>
                             </div>;
                         } else if (TYPE == UI_PARTY_GROUP_TYPE.CONCLUSION) {
                             const key = UI_PARTY_GROUP_TYPE.CONCLUSION;
+                            const {initialValue, autofill, onUpdate, valid, invalid, dirty, pristine, active, visited, autofilled, ...textAreaProps} = sourceInformation;
                             return <div key={index}>
-                                <CollapsablePanel tabIndex={"0"} isOpen={activeIndexes && activeIndexes[key] === true} pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true} header={i.name} eventKey={key} {...events}>
-                                    <FormInput componentClass="textarea" {...sourceInformation} label={i18n("party.detail.sources")} />
+                                <CollapsablePanel tabIndex={0} isOpen={activeIndexes && activeIndexes[key] === true} pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true} header={i.name} eventKey={key} {...events}>
+                                    <FormInput componentClass="textarea" {...textAreaProps} label={i18n("party.detail.sources")} />
                                     <label className="group-label">{i18n("party.detail.creators")}{canEdit && <Button bsStyle="action" onClick={() => creators.addField({})}><Icon glyph="fa-plus" /></Button>}</label>
                                     {creators.map((creator, index) => <div key={index + "-" + creator.id} className="value-group">
                                         <div className='desc-item-value desc-item-value-parts'>
@@ -394,7 +395,8 @@ class PartyDetail extends AbstractReactComponent {
                                                 if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.TEXT) {
                                                     element = <FormInput {...inputProps} type="text" disabled={!canEdit} />
                                                 } else if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.TEXTAREA) {
-                                                    element = <FormInput {...inputProps} componentClass="textarea" disabled={!canEdit} />
+                                                    const {initialValue, autofill, onUpdate, valid, invalid, dirty, pristine, active, visited, autofilled, ...textAreaProps} = inputProps;
+                                                    element = <FormInput {...textAreaProps} componentClass="textarea" disabled={!canEdit} />
                                                 } else if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.RELATION) {
                                                     const type = objectById(partyType.relationTypes, item.definition, 'code');
                                                     if (type) {
@@ -423,7 +425,7 @@ class PartyDetail extends AbstractReactComponent {
 
                             const key = i.code;
 
-                            return <CollapsablePanel tabIndex={"0"} key={key} isOpen={activeIndexes && activeIndexes[key] === true}
+                            return <CollapsablePanel tabIndex={0} key={key} isOpen={activeIndexes && activeIndexes[key] === true}
                                                      pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true} header={i.name}
                                                      eventKey={key} {...events}>
                                 <div className="elements-container">
@@ -446,12 +448,12 @@ class PartyDetail extends AbstractReactComponent {
 }
 
 export default reduxForm({
-        form: 'partyDetail',
         fields: PartyDetail.fields,
         validate: PartyDetail.validate
     },(state) => {
         const {app: {partyDetail}, userDetail, refTables: {partyTypes, recordTypes}, focus, refTables} = state;
         return {
+            form: 'partyDetail',
             partyDetail,
             userDetail,
             partyTypes,

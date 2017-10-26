@@ -21,6 +21,7 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 
 import cz.tacr.elza.controller.vo.CreateFundVO;
+import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
@@ -313,7 +314,16 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected final static String CHANGE_GROUP = GROUP_CONTROLLER_URL + "/{groupId}";
     protected final static String JOIN_GROUP = USER_CONTROLLER_URL + "/group/join";
     protected final static String LEAVE_GROUP = USER_CONTROLLER_URL + "/group/{groupId}/leave/{userId}";
-    protected final static String CHANGE_USER_PERMISSION = USER_CONTROLLER_URL + "/{userId}/permission";
+
+    protected final static String ADD_USER_PERMISSION = USER_CONTROLLER_URL + "/{userId}/permission/add";
+    protected final static String DELETE_USER_PERMISSION = USER_CONTROLLER_URL + "/{userId}/permission/delete";
+    protected final static String DELETE_USER_FUND_PERMISSION = USER_CONTROLLER_URL + "/{userId}/permission/delete/fund/{fundId}";
+    protected final static String DELETE_USER_FUND_ALL_PERMISSION = USER_CONTROLLER_URL + "/{userId}/permission/delete/fund/all";
+
+    protected final static String ADD_GROUP_PERMISSION = GROUP_CONTROLLER_URL + "/{groupId}/permission/add";
+    protected final static String DELETE_GROUP_PERMISSION = GROUP_CONTROLLER_URL + "/{groupId}/permission/delete";
+    protected final static String DELETE_GROUP_FUND_PERMISSION = GROUP_CONTROLLER_URL + "/{groupId}/permission/delete/fund/{fundId}";
+    protected final static String DELETE_GROUP_FUND_ALL_PERMISSION = GROUP_CONTROLLER_URL + "/{groupId}/permission/delete/fund/all";
 
     protected final static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.00");
 
@@ -2583,26 +2593,82 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     /**
-     * Nastavení oprávnění uživatele.
+     * Přidání oprávnění uživatele.
      *
      * @param userId      identifikátor uživatele
      * @param permissions seznam oprávnění
      */
-//    protected void changeUserPermission(final Integer userId,
-//                                     final UserController.Permissions permissions) {
-//        post(spec -> spec.pathParameter("userId", userId).body(permissions), CHANGE_USER_PERMISSION);
-//    }
+    protected void addUserPermission(final Integer userId, final List<UsrPermissionVO> permissions) {
+        post(spec -> spec.pathParameter("userId", userId).body(permissions), ADD_USER_PERMISSION);
+    }
 
     /**
-     * Nastavení oprávnění skupiny.
+     * Odebrání oprávnění uživatele.
      *
-     * @param groupId     identifikátor skupiny
+     * @param userId      identifikátor uživatele
+     * @param permission seznam oprávnění
+     */
+    protected void deleteUserPermission(final Integer userId, final UsrPermissionVO permission) {
+        post(spec -> spec.pathParameter("userId", userId).body(permission), DELETE_USER_PERMISSION);
+    }
+
+    /**
+     * Odebrání oprávnění uživatele typu AS all.
+     *
+     * @param userId      identifikátor uživatele
+     */
+    protected void deleteUserFundAllPermission(final Integer userId) {
+        post(spec -> spec.pathParameter("userId", userId), DELETE_USER_FUND_ALL_PERMISSION);
+    }
+
+    /**
+     * Odebrání oprávnění uživatele na daný AS.
+     *
+     * @param userId      identifikátor uživatele
+     * @param fundId      identifikátor AS
+     */
+    protected void deleteUserFundPermission(final Integer userId, final Integer fundId) {
+        post(spec -> spec.pathParameter("userId", userId).pathParameter("fundId", fundId), DELETE_USER_FUND_PERMISSION);
+    }
+
+    /**
+     * Přidání oprávnění skupiny.
+     *
+     * @param groupId      identifikátor skupiny
      * @param permissions seznam oprávnění
      */
-//    protected void changeGroupPermission(final Integer groupId,
-//                                      final UserController.Permissions permissions) {
-//        post(spec -> spec.pathParameter("groupId", groupId).body(permissions), CHANGE_GROUP_PERMISSION);
-//    }
+    protected void addGroupPermission(final Integer groupId, final List<UsrPermissionVO> permissions) {
+        post(spec -> spec.pathParameter("groupId", groupId).body(permissions), ADD_GROUP_PERMISSION);
+    }
+
+    /**
+     * Odebrání oprávnění skupiny.
+     *
+     * @param groupId      identifikátor skupiny
+     * @param permission seznam oprávnění
+     */
+    protected void deleteGroupPermission(final Integer groupId, final UsrPermissionVO permission) {
+        post(spec -> spec.pathParameter("groupId", groupId).body(permission), DELETE_GROUP_PERMISSION);
+    }
+
+    /**
+     * Odebrání oprávnění skupiny typu AS all.
+     *
+     * @param groupId      identifikátor skupiny
+     */
+    protected void deleteGroupFundAllPermission(final Integer groupId) {
+        post(spec -> spec.pathParameter("groupId", groupId), DELETE_GROUP_FUND_ALL_PERMISSION);
+    }
+
+    /**
+     * Odebrání oprávnění skupiny na daný AS.
+     *
+     * @param groupId      identifikátor skupiny
+     * @param fundId      identifikátor AS
+     */
+    protected void deleteGroupFundPermission(final Integer groupId, final Integer fundId) {
+        post(spec -> spec.pathParameter("groupId", groupId).pathParameter("fundId", fundId), DELETE_GROUP_FUND_PERMISSION);
+    }
 
     /**
      * Získání unikátních hodnot atributů podle typu.

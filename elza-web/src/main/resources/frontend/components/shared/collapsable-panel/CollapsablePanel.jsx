@@ -48,7 +48,7 @@ class CollapsablePanel extends AbstractReactComponent {
         const {children, header, isOpen, onSelect, onPin, eventKey, pinned, tabIndex, ...otherProps} = this.props;
         return <PanelGroup activeKey={isOpen} onSelect={() => this.panelToggle()} accordion {...otherProps} className={isOpen ? 'open' : null}>
             <Panel eventKey={true}
-                header={<Shortcuts name="CollapsablePanel" handler={(action,e)=>this.handleShortcuts(action,e)} tabIndex={"0"}>
+                header={<Shortcuts name="CollapsablePanel" handler={(action,e)=>this.handleShortcuts(action,e)} tabIndex={0}>
                     {header}
                     <NoFocusButton className={"btn-action pull-right" + (pinned ? " pinned" : " hover-button")} onClick={() => this.panelPin()}>
                         <Icon glyph="fa-thumb-tack" />

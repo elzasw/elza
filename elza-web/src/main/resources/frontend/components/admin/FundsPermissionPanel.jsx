@@ -1,7 +1,7 @@
 // --
 import React from 'react';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, fetching} from 'components/shared';
+import {HorizontalLoader, AbstractReactComponent, i18n, fetching} from 'components/shared';
 import * as perms from './../../actions/user/Permission.jsx';
 import storeFromArea from "../../shared/utils/storeFromArea";
 import * as adminPermissions from "./../../actions/admin/adminPermissions";
@@ -65,6 +65,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
 
     componentDidMount() {
         const {userId, groupId} = this.props;
+
         if (userId) {
             this.props.dispatch(adminPermissions.fetchUser(userId));
         } else {
@@ -73,6 +74,14 @@ class FundsPermissionPanel extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
+        if (this.props.userId !== nextProps.userId || this.props.groupId !== nextProps.groupId) {
+            if (nextProps.userId) {
+                this.props.dispatch(adminPermissions.fetchUser(nextProps.userId));
+            } else {
+                this.props.dispatch(adminPermissions.fetchGroup(nextProps.groupId));
+            }
+        }
+
         if (this.props.entityPermissions.isFetching && !nextProps.entityPermissions.isFetching) {
             // Mapa fundId na mapu hodnot oprávnění pro danou položku AS, pokud se jedná o položku all, má id ALL_ID
             const permFundMap = {};
@@ -132,7 +141,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
         const {onAddPermission, onDeletePermission} = this.props;
         const value = e.target.checked;
         const {selectedPermissionIndex, permissions} = this.state;
-        const permission = permissions[selectedPermissionIndex];
+        const permission = this.getPermission();
 
         const newPermission = {
             ...permission
@@ -181,7 +190,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
 
         // Pokud má nějaké právo zděděné, musí položka po smazání zůstat, ale jen pokud je právo zděděné ze skupina přímo na daný fund
         let newPermissions;
-        const permission = permissions[selectedPermissionIndex];
+        const permission = this.getPermission();
         let hasInheritRight = false;
         Object.values(FundsPermissionPanel.permCodesMap).forEach(permCode => {
             if (permission[permCode] && Object.keys(permission[permCode].groupIds).length > 0) {  // má nějaké zděděné právo
@@ -266,14 +275,42 @@ class FundsPermissionPanel extends AbstractReactComponent {
         }
     };
 
-    render() {
+    getPermission = () => {
         const {selectedPermissionIndex, permissions} = this.state;
-        const {entityPermissions} = this.props;
+        const {fundId} = this.props;
 
         let permission;
+        if (fundId) {
+            const i = permissions.findIndex(x => x.id === fundId)
+            if (i !== -1) {
+                permission = permissions[i];
+            } else {
+                permission = {
+                    id: fundId,
+                    fund: {
+                        id: fundId
+                    }
+                }
+            }
+        } else {
+            if (selectedPermissionIndex !== null) {
+                permission = permissions[selectedPermissionIndex];
+            }
+        }
+        return permission;
+    };
+
+    render() {
+        const {selectedPermissionIndex, permissions} = this.state;
+        const {fundId, entityPermissions} = this.props;
+        console.log(this.props, this.state);
+        if (!entityPermissions.fetched) {
+            return <HorizontalLoader/>
+        }
+
+        let permission = this.getPermission();
         let permCodes;
-        if (selectedPermissionIndex !== null) {
-            permission = permissions[selectedPermissionIndex];
+        if (permission) {
             permCodes = [...Object.values(FundsPermissionPanel.permCodesMap)];
             if (permission.id !== FundsPermissionPanel.ALL_ID) {
                 permCodes.push(perms.FUND_VER_WR);
@@ -281,8 +318,9 @@ class FundsPermissionPanel extends AbstractReactComponent {
         }
         let permissionAll = permissions[permissions.findIndex(x => x.id === FundsPermissionPanel.ALL_ID)];
 
-        return <AdminRightsContainer
-            left={<AddRemoveListBox
+        let left;
+        if (!fundId) {
+            left = <AddRemoveListBox
                 items={permissions}
                 activeIndex={selectedPermissionIndex}
                 renderItemContent={this.renderItem}
@@ -292,9 +330,11 @@ class FundsPermissionPanel extends AbstractReactComponent {
                 onFocus={(item, index) => {
                     this.setState({selectedPermissionIndex: index})
                 }}
-            />}
-            >
-            {selectedPermissionIndex !== null && <PermissionCheckboxsForm
+            />;
+        }
+
+        return <AdminRightsContainer left={left}>
+            {permission && <PermissionCheckboxsForm
                 permCodes={permCodes}
                 onChangePermission={this.changePermission}
                 labelPrefix="admin.perms.tabs.funds.perm."

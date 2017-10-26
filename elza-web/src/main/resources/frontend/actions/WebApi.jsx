@@ -99,12 +99,25 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.partyUrl + '/', {search, from, count, partyTypeId, versionId, itemSpecId, scopeId});
     }
 
+    findPartyUsage(recordId){
+        return AjaxUtils.ajaxGet(WebApiCls.partyUrl + "/findUsage/" + recordId);
+    }
+
     findPartyForParty(partyId, search = null, from = 0, count = DEFAULT_LIST_SIZE) {
         return AjaxUtils.ajaxGet(WebApiCls.partyUrl + '/findPartyForParty', {search, from, count, partyId});
     }
 
     updateParty(party) {
         return AjaxUtils.ajaxPut(WebApiCls.partyUrl + '/' + party.id, null, party);
+    }
+
+    //TODO Název
+    replaceParty(prevRegistry, newRegistry) {
+        return AjaxUtils.ajaxPut(WebApiCls.partyUrl + '/replace' + prevRegistry.id + '/' + newRegistry.id);
+    }
+    //TODO Název
+    setValidParty(record) {
+        return AjaxUtils.ajaxPut(WebApiCls.partyUrl + '/setValid' + record.id);
     }
 
     deleteParty(partyId) {
@@ -369,6 +382,10 @@ export class WebApiCls {
         });
     }
 
+    findRegistryUsage(recordId){
+        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + "/findUsage/" + recordId);
+    }
+
     findRecordForRelation(search = null, roleTypeId = null, partyId = null, from = 0, count = DEFAULT_LIST_SIZE) {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/findRecordForRelation',{
             search,
@@ -385,6 +402,15 @@ export class WebApiCls {
 
     updateRegistry(record) {
         return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/' + record.id, null, record);
+    }
+
+    //TODO Název
+    replaceRegistry(prevRegistry, newRegistry) {
+        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/replace' + prevRegistry.id + '/' + newRegistry.id, null, record);
+    }
+    //TODO Název
+    setValidRegistry(record) {
+        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/setValid' + record.id, null, record);
     }
 
     deleteRegistry(recordId) {
@@ -875,11 +901,23 @@ export class WebApiCls {
     }
 
     findUsersPermissionsByFund(fundId) {
-        return AjaxUtils.ajaxGet(WebApiCls.userUrl + `/fund/${fundId}/users`);
+        return AjaxUtils.ajaxGet(WebApiCls.userUrl + `/fund/${fundId}/users`)
+            .then(data => ({rows: data, count: data.length}));
+    }
+
+    findUsersPermissionsByFundAll() {
+        return AjaxUtils.ajaxGet(WebApiCls.userUrl + `/fund/all/users`)
+            .then(data => ({rows: data, count: data.length}));
     }
 
     findGroupsPermissionsByFund(fundId) {
-        return AjaxUtils.ajaxGet(WebApiCls.groupUrl + `/fund/${fundId}/groups`);
+        return AjaxUtils.ajaxGet(WebApiCls.groupUrl + `/fund/${fundId}/groups`)
+            .then(data => ({rows: data, count: data.length}));
+    }
+
+    findGroupsPermissionsByFundAll(fundId) {
+        return AjaxUtils.ajaxGet(WebApiCls.groupUrl + `/fund/all/groups`)
+            .then(data => ({rows: data, count: data.length}));
     }
 
     changeUserPermission(userId, permissions) {
@@ -906,8 +944,16 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl + "/" + userId + '/permission/delete/fund/' + fundId);
     }
 
+    deleteUserFundAllPermission(userId) {
+        return AjaxUtils.ajaxPost(WebApiCls.userUrl + "/" + userId + '/permission/delete/fund/all');
+    }
+
     deleteGroupFundPermission(groupId, fundId) {
         return AjaxUtils.ajaxPost(WebApiCls.groupUrl + "/" + groupId + '/permission/delete/fund/' + fundId);
+    }
+
+    deleteGroupFundAllPermission(groupId) {
+        return AjaxUtils.ajaxPost(WebApiCls.groupUrl + "/" + groupId + '/permission/delete/fund/all');
     }
 
     deleteUserScopePermission(userId, scopeId) {

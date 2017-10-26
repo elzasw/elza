@@ -4,9 +4,7 @@
 import './AdminFundPage.less';
 
 import React from 'react';
-import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {Button} from 'react-bootstrap';
 import {GroupDetail, AddGroupForm, Ribbon} from 'components/index.jsx';
 import PageLayout from "../shared/layout/PageLayout";
 import {i18n, Search, ListBox, AbstractReactComponent, Icon, RibbonGroup, StoreHorizontalLoader} from 'components/shared';
@@ -18,33 +16,51 @@ import {fundsFilter, fundsFetchIfNeeded, selectFund} from "./../../actions/admin
 import {renderFundItem} from "../../components/admin/adminRenderUtils";
 import storeFromArea from "../../shared/utils/storeFromArea";
 import * as fund from "../../actions/admin/fund";
-import AdminRightsContainer from "../../components/admin/AdminRightsContainer";
 import FundDetail from "../../components/admin/FundDetail";
+import FundsPermissionPanel from "../../components/admin/FundsPermissionPanel";
 
 class AdminFundPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
         this.buildRibbon = this.buildRibbon.bind(this);
+
+        this.state = {
+            fundRows: this.getFundRows(props)
+        }
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(fundsFetchIfNeeded())
-        // this.dispatch(groupsGroupDetailFetchIfNeeded())
+        this.dispatch(fundsFetchIfNeeded());
+        if (nextProps.funds.rows !== this.props.funds.rows) {
+            this.setState({fundRows: this.getFundRows(nextProps)});
+        }
     }
 
+    getFundRows = (props) => {
+        const {funds} = props;
+        if (!funds.fetched) {
+            return [];
+        }
+
+        const rows = [
+            {id: FundsPermissionPanel.ALL_ID, name: i18n("admin.perms.tabs.funds.items.fundAll")},
+            ...funds.rows
+        ];
+
+        return rows;
+    };
+
     componentDidMount() {
-        this.dispatch(fundsFetchIfNeeded())
-        this.dispatch(selectFund(null))
-        // this.dispatch(groupsGroupDetailFetchIfNeeded())
+        this.dispatch(fundsFetchIfNeeded());
     }
 
     handleSelect = (item) => {
-        this.dispatch(selectFund(item.id))
+        this.dispatch(selectFund(item.id));
     };
 
     handleSearch = (filterText) => {
-        this.dispatch(fundsFilter(filterText))
+        this.dispatch(fundsFilter(filterText));
     };
 
     handleSearchClear = () => {
@@ -75,10 +91,11 @@ class AdminFundPage extends AbstractReactComponent {
 
     render() {
         const {splitter, funds, fund} = this.props;
+        const {fundRows} = this.state;
 
         let activeIndex;
         if (fund.id !== null) {
-            activeIndex = indexById(funds.rows, fund.id);
+            activeIndex = indexById(fundRows, fund.id);
         }
 
         const leftPanel = (
@@ -91,9 +108,10 @@ class AdminFundPage extends AbstractReactComponent {
                 />
                 <StoreHorizontalLoader store={funds}/>
                 {funds.fetched && <ListBox
+                    key="funds"
                     className='fund-listbox'
                     ref='fundList'
-                    items={funds.rows}
+                    items={fundRows}
                     activeIndex={activeIndex}
                     renderItemContent={renderFundItem}
                     onFocus={this.handleSelect}

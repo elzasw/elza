@@ -46,6 +46,7 @@ import cz.tacr.elza.domain.UsrGroupUser;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.AccessDeniedException;
+import cz.tacr.elza.domain.vo.ArrFundOpenVersion;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.SystemException;
@@ -136,9 +137,14 @@ public class UserService {
     public FilteredResult<ArrFund> findFundsWithPermissions(final String search,
                                                             final Integer firstResult,
                                                             final Integer maxResults) {
-        boolean filterByUser = !hasPermission(UsrPermission.Permission.USR_PERM);
+        if (hasPermission(UsrPermission.Permission.USR_PERM)) { // nefiltruje se dle přiřazených oprávnění
+            List<ArrFundOpenVersion> funds = fundRepository.findByFulltext(search, maxResults, false, null);
+            Integer fundsCount = fundRepository.findCountByFulltext(search, false, null);
+            return new FilteredResult<>(firstResult, maxResults, fundsCount, funds.stream().map(x -> x.getFund()).collect(Collectors.toList()));
+        } else {    // filtruje se dle přiřazeníé oprávnění na AS pro daného uživatele
         UsrUser user = getLoggedUser();
-        return fundRepository.findFundsWithPermissions(search, firstResult, maxResults, filterByUser && user != null ? user.getUserId() : null);
+            return fundRepository.findFundsWithPermissions(search, firstResult, maxResults, user.getUserId());
+    }
     }
 
     private enum ChangePermissionType {
@@ -464,6 +470,20 @@ public class UserService {
     }
 
     /**
+     * Smaže všechna oprávnení uživatele typu AS all.
+     *
+     * @param user   uživatel
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITITY})
+    public void deleteUserFundAllPermissions(@AuthParam(type = AuthParam.Type.USER) @NotNull final UsrUser user) {
+        List<UsrPermission> permissionsDB = permissionRepository.findByUserOrderByPermissionIdAsc(user);
+        List<UsrPermission> permissionsToDelete = permissionsDB.stream()
+                .filter(x -> UsrPermission.Permission.getFundAllPerms().contains(x.getPermission()))
+                .collect(Collectors.toList());
+        deleteUserPermission(user, permissionsToDelete);
+    }
+
+    /**
      * Smaže všechna oprávnení skupiny na daný AS.
      *
      * @param group  skupina
@@ -475,6 +495,20 @@ public class UserService {
         List<UsrPermission> permissionsDB = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
         List<UsrPermission> permissionsToDelete = permissionsDB.stream()
                 .filter(x -> fundId.equals(x.getFundId()))
+                .collect(Collectors.toList());
+        deleteGroupPermission(group, permissionsToDelete);
+    }
+
+    /**
+     * Smaže všechna oprávnení skupiny typu AS all.
+     *
+     * @param group  skupina
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.GROUP_CONTROL_ENTITITY})
+    public void deleteGroupFundAllPermissions(@AuthParam(type = AuthParam.Type.GROUP) @NotNull final UsrGroup group) {
+        List<UsrPermission> permissionsDB = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
+        List<UsrPermission> permissionsToDelete = permissionsDB.stream()
+                .filter(x -> UsrPermission.Permission.getFundAllPerms().contains(x.getPermission()))
                 .collect(Collectors.toList());
         deleteGroupPermission(group, permissionsToDelete);
     }
@@ -1117,6 +1151,22 @@ public class UserService {
      */
     public List<UsrUser> findUsersByFund(final ArrFund fund) {
         return userRepository.findByFund(fund);
+    }
+
+    /**
+     * Vyhledá list uživatelů podle oprávnění typu všechny AS.
+     * @return list uživatelů
+     */
+    public List<UsrUser> findUsersByFundAll() {
+        return userRepository.findByPermissions(UsrPermission.Permission.getFundAllPerms());
+    }
+
+    /**
+     * Vyhledá list skupin podle oprávnění typu všechny AS.
+     * @return list skupin
+     */
+    public List<UsrGroup> findGroupsByFundAll() {
+        return groupRepository.findByPermissions(UsrPermission.Permission.getFundAllPerms());
     }
 
     /**

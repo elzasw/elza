@@ -38,7 +38,7 @@ class SelectPage extends AbstractReactComponent {
     static renderTitles = (titles) => {
         const itemss = [];
         titles.map((i,index, self) => {
-            itemss.push(<div>{i}</div>);
+            itemss.push(<div key={index}>{i}</div>);
             (index+1) < self.length && itemss.push(<span>&nbsp;>&nbsp;</span>)
         });
         return <div className="titles-header">{itemss}</div>

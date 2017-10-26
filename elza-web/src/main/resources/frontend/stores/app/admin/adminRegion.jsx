@@ -30,11 +30,12 @@ const initialState = {
     funds: SimpleListReducer(),
     fund: DetailReducer(),
     entityPermissions: DetailReducer(), // pro správu oprávnění uživatele a skupiny - detail oprávnění, např. UsrUserVO a UsrGroupVO
-    entitiesPermissionsByFund: SimpleListReducer(), // pro správu přiřazených k AS, seznam skupin bebo uživatelů
+    usersPermissionsByFund: SimpleListReducer(), // pro správu přiřazených k AS, seznam uživatelů
+    groupsPermissionsByFund: SimpleListReducer(), // pro správu přiřazených k AS, seznam skupin
 };
 
 export default function adminRegion(state = initialState, action = {}) {
-    if (action.area && action.area.startsWith("adminRegion.")) { // area pro zpracování na předaný fund, ten zde můžeme zpracovat
+    if (action.area && typeof action.area === "string" && action.area.startsWith("adminRegion.")) { // area pro zpracování na předaný fund, ten zde můžeme zpracovat
         let newArea = action.area.split(".");
         return processAreaStores(state, {
             ...action,
