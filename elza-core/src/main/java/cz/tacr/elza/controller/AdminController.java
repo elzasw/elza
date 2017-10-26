@@ -72,6 +72,7 @@ public class AdminController {
      * @return seznam externích systémů
      */
     @RequestMapping(value = "/externalSystems", method = RequestMethod.GET)
+	@Transactional
     public List<SysExternalSystemVO> findAllExternalSystems() {
         return factoryVo.createSimpleEntity(externalSystemService.findAll(), SysExternalSystemVO.class);
     }
