@@ -1,5 +1,16 @@
 package cz.tacr.elza.controller;
 
+import java.util.List;
+
+import javax.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemSimpleVO;
@@ -8,15 +19,6 @@ import cz.tacr.elza.domain.SysExternalSystem;
 import cz.tacr.elza.service.AdminService;
 import cz.tacr.elza.service.CacheService;
 import cz.tacr.elza.service.ExternalSystemService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
-import javax.transaction.Transactional;
-import java.util.List;
 
 /**
  * Kontroler pro administraci.
@@ -44,11 +46,13 @@ public class AdminController {
     private ClientFactoryVO factoryVo;
 
     @RequestMapping(value = "/reindex", method = RequestMethod.GET)
+	@Transactional
     public void reindex() {
         adminService.reindex();
     }
 
     @RequestMapping(value = "/reindexStatus", method = RequestMethod.GET)
+	@Transactional
     public boolean reindexStatus() {
         return adminService.isIndexingRunning();
     }
@@ -57,6 +61,7 @@ public class AdminController {
      * Provede resetování všech cache na serveru.
      */
     @RequestMapping(value = "/cache/reset", method = RequestMethod.GET)
+	@Transactional
     public void resetAllCache() {
         cacheService.resetAllCache();
     }
@@ -125,6 +130,7 @@ public class AdminController {
      * @return seznam externích systémů
      */
     @RequestMapping(value = "/externalSystems/simple", method = RequestMethod.GET)
+	@Transactional
     public List<SysExternalSystemSimpleVO> findAllExternalSystemsSimple() {
         return factoryVo.createSimpleEntity(externalSystemService.findAllWithoutPermission(), SysExternalSystemSimpleVO.class);
     }
