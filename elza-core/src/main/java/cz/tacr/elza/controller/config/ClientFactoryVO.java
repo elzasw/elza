@@ -940,7 +940,7 @@ public class ClientFactoryVO {
 
 
         if (item == null) {
-            item = (VO) mapperFactory.getMapperFacade().map(source, classType);
+            item = mapperFactory.getMapperFacade().map(source, classType);
             processedItemsMap.put(id, item);
         }
         return item;
@@ -1549,7 +1549,7 @@ public class ClientFactoryVO {
     public List<ArrNodeVO> createArrNodes(final Collection<ArrNode> nodes) {
         List<ArrNodeVO> result = new LinkedList<>();
         for (ArrNode node : nodes) {
-            result.add(createArrNode(node));
+            result.add(ArrNodeVO.valueOf(node));
         }
         return result;
     }

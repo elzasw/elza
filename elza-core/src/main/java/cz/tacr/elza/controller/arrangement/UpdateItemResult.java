@@ -40,7 +40,7 @@ public class UpdateItemResult {
 	public UpdateItemResult(ArrDescItem descItem, ArrItemVO descItemVo,
 	        List<ItemTypeGroupVO> descItemTypeGroupsVO, TreeNodeClient tnc) {
 		this.changeId = descItem.getCreateChangeId();
-		this.node = new ArrNodeVO(descItem.getNode());
+		this.node = ArrNodeVO.valueOf(descItem.getNode());
 		this.item = descItemVo;
 		this.groups = descItemTypeGroupsVO;
 		this.treeInfo = new NodeTreeInfo(tnc.getIcon(), tnc.getName());

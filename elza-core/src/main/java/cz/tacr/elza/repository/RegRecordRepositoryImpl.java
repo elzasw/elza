@@ -157,7 +157,7 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
 
         String sql = dbType.getRecursiveQueryPrefix() +
                 " apTree(record_id, register_type_id, record, characteristics, note, external_id, " +
-                "version, parent_record_id, scope_id, uuid, last_update, external_system_id, source_id, path) AS " +
+                "version, parent_record_id, scope_id, uuid, last_update, external_system_id, invalid, source_id, path) AS " +
                 "(" +
                      "SELECT r.*, r.record_id, 0 " +
                      "FROM reg_record r " +

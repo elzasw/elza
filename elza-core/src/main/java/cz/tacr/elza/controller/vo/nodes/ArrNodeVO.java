@@ -4,7 +4,7 @@ import cz.tacr.elza.domain.ArrNode;
 
 /**
  * Node id and version
- * 
+ *
  * Object is used to transfer nodeId and its version
  */
 public class ArrNodeVO {
@@ -22,12 +22,7 @@ public class ArrNodeVO {
     public ArrNodeVO() {
     }
 
-    public ArrNodeVO(final Integer id, final Integer version) {
-        this.id = id;
-        this.version = version;
-    }
-
-	public ArrNodeVO(ArrNode node) {
+	protected ArrNodeVO(ArrNode node) {
 		this.id = node.getNodeId();
 		this.version = node.getVersion();
 	}
@@ -53,5 +48,9 @@ public class ArrNodeVO {
         node.setNodeId(id);
         node.setVersion(version);
         return node;
+    }
+
+    public static ArrNodeVO valueOf(ArrNode node) {
+        return new ArrNodeVO(node);
     }
 }

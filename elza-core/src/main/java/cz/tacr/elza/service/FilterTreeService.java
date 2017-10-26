@@ -332,7 +332,7 @@ public class FilterTreeService {
             TreeNodeClient treeNodeClient = idsMap.get(filteredId);
 
             ArrNode arrNode = filterIdsMap.get(treeNode.getId());
-            ArrNodeVO arrNodeVo = new ArrNodeVO(arrNode.getNodeId(), arrNode.getVersion());
+            ArrNodeVO arrNodeVo = ArrNodeVO.valueOf(arrNode);
             TreeNodeClient arrParentNodeVo = null;
             if(treeParentNode != null)  {
                 arrParentNodeVo = parentIdsMap.get(treeParentNode.getId());

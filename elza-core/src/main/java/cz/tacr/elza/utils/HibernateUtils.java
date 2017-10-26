@@ -25,7 +25,7 @@ public class HibernateUtils {
      * @return initialized entity
      */
     @SuppressWarnings("unchecked")
-    public static <T> T unproxy(Object object) {
+    public static <T> T unproxy(T object) {
         if (object == null) {
             return null;
         }
@@ -33,7 +33,7 @@ public class HibernateUtils {
         if (initializer != null) {
             return (T) initializer.getImplementation();
         }
-        return (T) object;
+        return object;
     }
 
     /**

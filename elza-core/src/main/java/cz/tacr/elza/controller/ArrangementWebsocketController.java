@@ -26,6 +26,7 @@ import org.springframework.util.Assert;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -127,7 +128,7 @@ public class ArrangementWebsocketController {
 
         ArrangementController.DescItemResult descItemResult = new ArrangementController.DescItemResult();
         descItemResult.setItem(factoryVo.createDescItem(descItemUpdated));
-        descItemResult.setParent(factoryVo.createArrNode(descItemUpdated.getNode()));
+        descItemResult.setParent(ArrNodeVO.valueOf(descItemUpdated.getNode()));
 
         // Odeslání dat zpět
 		websocketCallback.sendAfterCommit(descItemResult, headerAccessor);
@@ -169,7 +170,7 @@ public class ArrangementWebsocketController {
         Collection<TreeNodeClient> nodeClients = levelTreeCacheService
                 .getNodesByIds(Collections.singletonList(newLevel.getNodeParent().getNodeId()), version.getFundVersionId());
         Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
-        final ArrangementController.NodeWithParent result = new ArrangementController.NodeWithParent(factoryVo.createArrNode(newLevel.getNode()), nodeClients.iterator().next());
+        final ArrangementController.NodeWithParent result = new ArrangementController.NodeWithParent(ArrNodeVO.valueOf(newLevel.getNode()), nodeClients.iterator().next());
 
         // Odeslání dat zpět
 		websocketCallback.sendAfterCommit(result, headerAccessor);
@@ -202,7 +203,7 @@ public class ArrangementWebsocketController {
                 .getNodesByIds(Arrays.asList(deleteLevel.getNodeParent().getNodeId()),
                         version.getFundVersionId());
         Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
-        final ArrangementController.NodeWithParent result = new ArrangementController.NodeWithParent(factoryVo.createArrNode(deleteLevel.getNode()), nodeClients.iterator().next());
+        final ArrangementController.NodeWithParent result = new ArrangementController.NodeWithParent(ArrNodeVO.valueOf(deleteLevel.getNode()), nodeClients.iterator().next());
 
         // Odeslání dat zpět
 		websocketCallback.sendAfterCommit(result, headerAccessor);

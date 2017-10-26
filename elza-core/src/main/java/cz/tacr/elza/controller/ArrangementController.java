@@ -608,7 +608,7 @@ public class ArrangementController {
 
         DescItemResult descItemResult = new DescItemResult();
         descItemResult.setItem(null);
-        descItemResult.setParent(factoryVo.createArrNode(node));
+        descItemResult.setParent(ArrNodeVO.valueOf(node));
 
         return descItemResult;
     }
@@ -670,7 +670,7 @@ public class ArrangementController {
 
         DescItemResult descItemResult = new DescItemResult();
         descItemResult.setItem(null);
-        descItemResult.setParent(factoryVo.createArrNode(descItemDeleted.getNode()));
+        descItemResult.setParent(ArrNodeVO.valueOf(descItemDeleted.getNode()));
 
         return descItemResult;
     }
@@ -769,7 +769,7 @@ public class ArrangementController {
 
         DescItemResult descItemResult = new DescItemResult();
         descItemResult.setItem(factoryVo.createDescItem(descItemCreated));
-        descItemResult.setParent(factoryVo.createArrNode(descItemCreated.getNode()));
+        descItemResult.setParent(ArrNodeVO.valueOf(descItemCreated.getNode()));
         return descItemResult;
     }
 
@@ -858,7 +858,7 @@ public class ArrangementController {
 
         DescItemResult descItemResult = new DescItemResult();
         descItemResult.setItem(factoryVo.createDescItem(descItemUpdated));
-        descItemResult.setParent(factoryVo.createArrNode(descItemUpdated.getNode()));
+        descItemResult.setParent(ArrNodeVO.valueOf(descItemUpdated.getNode()));
 
         return descItemResult;
     }
@@ -889,7 +889,7 @@ public class ArrangementController {
                 .deleteDescriptionItem(descItemObjectId, nodeVersion, fundVersionId);
         DescItemResult descItemResult = new DescItemResult();
         descItemResult.setItem(null);
-        descItemResult.setParent(factoryVo.createArrNode(descItemDeleted.getNode()));
+        descItemResult.setParent(ArrNodeVO.valueOf(descItemDeleted.getNode()));
         return descItemResult;
     }
 
@@ -987,7 +987,7 @@ public class ArrangementController {
 
         DescItemResult descItemResult = new DescItemResult();
         descItemResult.setItem(factoryVo.createDescItem(descItemCreated));
-        descItemResult.setParent(factoryVo.createArrNode(descItemCreated.getNode()));
+        descItemResult.setParent(ArrNodeVO.valueOf(descItemCreated.getNode()));
 
         return descItemResult;
     }
@@ -1704,7 +1704,7 @@ public class ArrangementController {
         Collection<TreeNodeClient> nodeClients = levelTreeCacheService
                 .getNodesByIds(Arrays.asList(newLevel.getNodeParent().getNodeId()), version.getFundVersionId());
         Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
-        return new NodeWithParent(factoryVo.createArrNode(newLevel.getNode()), nodeClients.iterator().next());
+        return new NodeWithParent(ArrNodeVO.valueOf(newLevel.getNode()), nodeClients.iterator().next());
     }
 
     /**
@@ -1730,7 +1730,7 @@ public class ArrangementController {
                 .getNodesByIds(Arrays.asList(deleteLevel.getNodeParent().getNodeId()),
                         version.getFundVersionId());
         Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
-        return new NodeWithParent(factoryVo.createArrNode(deleteLevel.getNode()), nodeClients.iterator().next());
+        return new NodeWithParent(ArrNodeVO.valueOf(deleteLevel.getNode()), nodeClients.iterator().next());
     }
 
     /**
@@ -1760,7 +1760,7 @@ public class ArrangementController {
         RulDescItemTypeDescItemsVO descItemTypeVO = factoryVo.createDescItemTypeVO(descItemType);
         descItemTypeVO.setDescItems(factoryVo.createDescItems(newDescItems));
 
-        ArrNodeVO resultNode = factoryVo.createArrNode(level.getNode());
+        ArrNodeVO resultNode = ArrNodeVO.valueOf(level.getNode());
 
         return new CopySiblingResult(resultNode, descItemTypeVO);
     }
@@ -1828,7 +1828,7 @@ public class ArrangementController {
                                                     final @PathVariable(value = "nodeId") Integer nodeId) {
         List<ArrNodeRegisterVO> nodeRegistersVO = findRegisterLinks(versionId, nodeId);
         ArrNode node = nodeRepository.findOne(nodeId);
-        return new NodeRegisterDataVO(factoryVo.createArrNode(node), nodeRegistersVO);
+        return new NodeRegisterDataVO(ArrNodeVO.valueOf(node), nodeRegistersVO);
     }
 
     /**

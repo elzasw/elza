@@ -130,7 +130,7 @@ public class ArrangementFormService {
 		Integer fundId = version.getFund().getFundId();
 		String ruleCode = version.getRuleSet().getCode();
 
-		ArrNodeVO nodeVO = factoryVo.createArrNode(node);
+		ArrNodeVO nodeVO = ArrNodeVO.valueOf(node);
 		List<ItemGroupVO> descItemGroupsVO = factoryVo.createItemGroupsNew(ruleCode, fundId, descItems);
 		List<ItemTypeGroupVO> descItemTypeGroupsVO = factoryVo
 		        .createItemTypeGroupsNew(ruleCode, fundId, itemTypes);
@@ -152,7 +152,7 @@ public class ArrangementFormService {
 
 	/**
 	 * Update description item and return form data
-	 * 
+	 *
 	 * @param fundVersion
 	 * @param nodeVersion
 	 * @param descItemVO
@@ -166,7 +166,7 @@ public class ArrangementFormService {
 	        SimpMessageHeaderAccessor headerAccessor) {
 
 		// alternative way of authorization - not finished
-		/*		
+		/*
 		userService.authorizeRequest(
 		        AuthorizationRequest
 		                .hasPermission(UsrPermission.Permission.ADMIN)
@@ -186,7 +186,7 @@ public class ArrangementFormService {
 
 		StaticDataProvider dataProvider = this.staticData.getData();
 		RuleSystem rs = dataProvider.getRuleSystems().getByRuleSetId(fundVersion.getRuleSet().getRuleSetId());
-		// 
+		//
 		List<ItemTypeGroupVO> descItemTypeGroupsVO = factoryVo
 		        .createItemTypeGroupsNew(rs.getRuleSet().getCode(), fundVersion.getFundId(), itemTypes);
 
@@ -214,7 +214,7 @@ public class ArrangementFormService {
 
 		DescItemResult descItemResult = new DescItemResult();
 		descItemResult.setItem(factoryVo.createDescItem(descItemUpdated));
-		descItemResult.setParent(factoryVo.createArrNode(descItemUpdated.getNode()));
+		descItemResult.setParent(ArrNodeVO.valueOf(descItemUpdated.getNode()));
 
 		return descItemResult;
 	}
