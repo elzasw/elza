@@ -37,10 +37,11 @@ public class RegCoordinates implements IRegScope {
     @JoinColumn(name = "recordId", nullable = false)
     private RegRecord regRecord;
 
+    @Column(name = "recordId", nullable = false, updatable = false, insertable = false)
+    private Integer regRecordId;
 
     @Column(nullable = false, columnDefinition = "geometry")
     private Geometry value;
-
 
     @Column
     private String description;
@@ -95,6 +96,11 @@ public class RegCoordinates implements IRegScope {
      */
     public void setRegRecord(final RegRecord regRecord) {
         this.regRecord = regRecord;
+        this.regRecordId = regRecord != null ? regRecord.getRecordId() : null;
+    }
+
+    public Object getRegRecordId() {
+        return regRecordId;
     }
 
     @Override

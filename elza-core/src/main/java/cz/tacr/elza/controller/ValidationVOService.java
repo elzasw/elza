@@ -3,10 +3,6 @@ package cz.tacr.elza.controller;
 import java.util.HashMap;
 import java.util.List;
 
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,11 +17,15 @@ import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.ParPersonVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.ParUnitdateVO;
+import cz.tacr.elza.core.data.PartyType;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.ParPartyType.PartyTypeEnum;
 import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
@@ -53,15 +53,15 @@ public class ValidationVOService {
     /**
      * Mapa Typů osob na třídy
      */
-    private final static HashMap<PartyTypeEnum, Class<? extends ParPartyVO>> partyTypeToClass = new HashMap<>(4);
+    private final static HashMap<PartyType, Class<? extends ParPartyVO>> partyTypeToClass = new HashMap<>(4);
 
 
     static {
         // Plnění statických map
-        partyTypeToClass.put(PartyTypeEnum.DYNASTY, ParDynastyVO.class);
-        partyTypeToClass.put(PartyTypeEnum.PERSON, ParPersonVO.class);
-        partyTypeToClass.put(PartyTypeEnum.EVENT, ParEventVO.class);
-        partyTypeToClass.put(PartyTypeEnum.GROUP_PARTY, ParPartyGroupVO.class);
+        partyTypeToClass.put(PartyType.DYNASTY, ParDynastyVO.class);
+        partyTypeToClass.put(PartyType.PERSON, ParPersonVO.class);
+        partyTypeToClass.put(PartyType.EVENT, ParEventVO.class);
+        partyTypeToClass.put(PartyType.GROUP_PARTY, ParPartyGroupVO.class);
     }
 
     /**
@@ -71,8 +71,8 @@ public class ValidationVOService {
      * @param checkedClass třída
      * @param checkedEnum typ enum.3
      */
-    private void partyCheckerHelper(final ParPartyVO party, final ParPartyType partyType, final Class<? extends ParPartyVO> checkedClass, final PartyTypeEnum checkedEnum) {
-        if (checkedClass.isInstance(party) && !checkedEnum.equals(partyType.getPartyTypeEnum())) {
+    private void partyCheckerHelper(final ParPartyVO party, final ParPartyType partyType, final Class<? extends ParPartyVO> checkedClass, final PartyType checkedEnum) {
+        if (checkedClass.isInstance(party) && !checkedEnum.equals(partyType.toEnum())) {
             throw new ObjectNotFoundException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode(), BaseCode.ID_NOT_EXIST);
         }
     }

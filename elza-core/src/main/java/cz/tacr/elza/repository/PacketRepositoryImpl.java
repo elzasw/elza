@@ -14,26 +14,22 @@ import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.core.DatabaseType;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulPacketType;
 
 /**
  * Implementace repository pro obaly.
- *
  */
 @Component
 public class PacketRepositoryImpl implements PacketRepositoryCustom {
 
     @PersistenceContext
     private EntityManager entityManager;
-
-    @Autowired
-    private LevelRepository levelRepository;
 
     @Override
     public List<ArrPacket> findPacketByTextAndType(final String searchRecord, final Integer registerTypeId,
@@ -93,8 +89,9 @@ public class PacketRepositoryImpl implements PacketRepositoryCustom {
 	public List<ArrPacket> findPacketsBySubtreeNodeIds(final Collection<Integer> nodeIds,
 	        final boolean ignoreRootNodes) {
         Assert.notEmpty(nodeIds, "Identifikátor JP musí být vyplněn");
+        DatabaseType dbType = DatabaseType.getCurrent();
 
-        String sql_nodes = "WITH " + levelRepository.getRecursivePart() + " treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position) AS (SELECT t.* FROM arr_level t WHERE t.node_id IN (:nodeIds) UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) " +
+        String sql_nodes = dbType.getRecursiveQueryPrefix() + " treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position) AS (SELECT t.* FROM arr_level t WHERE t.node_id IN (:nodeIds) UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) " +
                 "SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id WHERE t.delete_change_id IS NULL";
 
         if (ignoreRootNodes) {

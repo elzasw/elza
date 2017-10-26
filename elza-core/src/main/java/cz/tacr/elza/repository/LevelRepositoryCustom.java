@@ -1,13 +1,15 @@
 package cz.tacr.elza.repository;
 
+import java.util.List;
+import java.util.function.Consumer;
+
+import javax.annotation.Nullable;
+
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 
 /**
@@ -93,9 +95,6 @@ public interface LevelRepositoryCustom {
      */
     boolean isLevelInRootTree(ArrLevel level, ArrNode rootNode, @Nullable ArrChange lockChange);
 
-
-
-
     /**
      * Zjistí, jestli je daný node ve stejném stromu, jako je daný kořen. Pokud máme dva nody se stejným nodeId v
      * různých stromech, je potřeba najít tu entitu pro konkrétní strom.
@@ -129,6 +128,15 @@ public interface LevelRepositoryCustom {
     List<ArrLevel> findLevelsSubtree(Integer nodeId, final int skip, final int max, final boolean ignoreRootNode);
 
     /**
+     * Iterate subtree BFS from specified node.
+     *
+     * @param nodeId root node id
+     * @param change when null current version is used
+     * @param levelAction action for each returned level
+     */
+    long iterateSubtree(int nodeId, ArrChange change, Consumer<ArrLevel> levelAction);
+
+    /**
      * Vyhledá rodiče, které mají vyšší datum poslední změny, než je v ArrChange.
      *
      * @param node   uzel od kterého prohledáváme
@@ -144,11 +152,6 @@ public interface LevelRepositoryCustom {
      * @return seznam všech uzlů ve stromu
      */
     List<LevelInfo> readTree(ArrFundVersion version);
-
-    /**
-     * @return vrací dodatečný text při použití rekurzivního dotazu SQL podle typu DB
-     */
-    String getRecursivePart();
 
     /**
      * Uzel stromu, obsahuje pouze základní informace.

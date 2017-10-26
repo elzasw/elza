@@ -1,7 +1,5 @@
 package cz.tacr.elza.domain;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -26,7 +24,7 @@ import cz.tacr.elza.api.UseUnitdateEnum;
  * Seznam typů vztahů.
  */
 @Entity(name = "par_relation_type")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class ParRelationType {
 

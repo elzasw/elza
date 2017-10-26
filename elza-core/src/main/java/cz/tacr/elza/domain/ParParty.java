@@ -42,6 +42,7 @@ public class ParParty extends AbstractVersionableEntity implements IRegScope {
     /* Konstanty pro vazby a fieldy. */
     public static final String ABSTRACT_PARTY_ID = "partyId";
     public static final String RECORD = "record";
+    public static final String RECORD_FK = RECORD + ".recordId";
     public static final String PARTY_TYPE = "partyType";
     public static final String PARTY_PREFERRED_NAME = "preferredName";
     public static final String HISTORY = "history";
@@ -64,11 +65,19 @@ public class ParParty extends AbstractVersionableEntity implements IRegScope {
     @JsonIgnore
     private ParPartyType partyType;
 
+    @Column(nullable = false, insertable = false, updatable = false)
+    @JsonIgnore
+    private Integer partyTypeId;
+
     @RestResource(exported = false)
     @OneToOne(fetch = FetchType.EAGER, targetEntity = ParPartyName.class)
     @JoinColumn(name = "preferredNameId")
     @JsonIgnore
     private ParPartyName preferredName;
+
+    @Column(insertable = false, updatable = false)
+    @JsonIgnore
+    private Integer preferredNameId;
 
     @RestResource(exported = false)
     @OneToMany(mappedBy = "party", fetch = FetchType.LAZY)
@@ -146,6 +155,11 @@ public class ParParty extends AbstractVersionableEntity implements IRegScope {
      */
     public void setPartyType(final ParPartyType partyType) {
         this.partyType = partyType;
+        this.partyTypeId = partyType != null ? partyType.getPartyTypeId() : null;
+    }
+
+    public Integer getPartyTypeId() {
+        return partyTypeId;
     }
 
     public ParPartyName getPreferredName() {
@@ -154,6 +168,11 @@ public class ParParty extends AbstractVersionableEntity implements IRegScope {
 
     public void setPreferredName(final ParPartyName preferredName) {
         this.preferredName = preferredName;
+        this.preferredNameId = preferredName != null ? preferredName.getPartyNameId() : null;
+    }
+
+    public Integer getPreferredNameId() {
+        return preferredNameId;
     }
 
     public List<ParPartyName> getPartyNames() {

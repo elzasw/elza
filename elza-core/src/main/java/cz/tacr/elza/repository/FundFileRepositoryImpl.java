@@ -1,10 +1,7 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ArrFile;
-import cz.tacr.elza.domain.ArrFund;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
+import java.util.Collection;
+import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -13,8 +10,13 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.util.Collection;
-import java.util.List;
+
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
+
+import cz.tacr.elza.core.DatabaseType;
+import cz.tacr.elza.domain.ArrFile;
+import cz.tacr.elza.domain.ArrFund;
 
 /**
  * Implementace repository pro ArrFile - Custom
@@ -27,9 +29,6 @@ public class FundFileRepositoryImpl extends AbstractFileRepository<ArrFile> impl
 
     @PersistenceContext
     private EntityManager entityManager;
-
-    @Autowired
-    private LevelRepository levelRepository;
 
     @Override
     public FilteredResult<ArrFile> findByTextAndFund(String search, ArrFund fund, Integer firstResult, Integer maxResults) {
@@ -55,8 +54,9 @@ public class FundFileRepositoryImpl extends AbstractFileRepository<ArrFile> impl
     @Override
     public List<ArrFile> findFilesBySubtreeNodeIds(final Collection<Integer> nodeIds, final boolean ignoreRootNode) {
         Assert.notEmpty(nodeIds, "Identifikátor JP musí být vyplněn");
+        DatabaseType dbType = DatabaseType.getCurrent();
 
-        String sql_nodes = "WITH " + levelRepository.getRecursivePart() + " treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position) AS (SELECT t.* FROM arr_level t WHERE t.node_id IN (:nodeIds) UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) " +
+        String sql_nodes = dbType.getRecursiveQueryPrefix() + " treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position) AS (SELECT t.* FROM arr_level t WHERE t.node_id IN (:nodeIds) UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) " +
                 "SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id WHERE t.delete_change_id IS NULL";
 
         if (ignoreRootNode) {

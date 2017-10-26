@@ -22,6 +22,8 @@ public class RuleSystem {
 
     private List<RuleSystemItemType> itemTypes;
 
+    private Map<Integer, RulPacketType> packetTypeIdMap;
+
     private Map<String, RulPacketType> packetTypeCodeMap;
 
     private Map<Integer, RuleSystemItemType> itemTypeIdMap;
@@ -38,6 +40,11 @@ public class RuleSystem {
 
     public List<RulPacketType> getPacketTypes() {
         return packetTypes;
+    }
+
+    public RulPacketType getPacketTypeById(Integer id) {
+        Validate.notNull(id);
+        return packetTypeIdMap.get(id);
     }
 
     public RulPacketType getPacketTypeByCode(String code) {
@@ -85,6 +92,7 @@ public class RuleSystem {
         }
         // update fields
         this.packetTypes = Collections.unmodifiableList(packetTypes);
+        this.packetTypeIdMap = StaticDataProvider.createLookup(packetTypes, RulPacketType::getPacketTypeId);
         this.packetTypeCodeMap = StaticDataProvider.createLookup(packetTypes, RulPacketType::getCode);
     }
 

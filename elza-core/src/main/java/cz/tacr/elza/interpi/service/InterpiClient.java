@@ -2,14 +2,13 @@ package cz.tacr.elza.interpi.service;
 
 import java.util.List;
 
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.ExternalCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.domain.RegExternalSystem;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.interpi.ws.WssoapSoap;
 import cz.tacr.elza.interpi.ws.wo.EntitaTyp;
 import cz.tacr.elza.interpi.ws.wo.SetTyp;
@@ -79,6 +78,6 @@ public class InterpiClient {
     }
 
     private SetTyp unmarshall(final String oneRecord) {
-        return XmlUtils.unmarshallDataWithIntrospector(oneRecord, SetTyp.class);
+        return XmlUtils.unmarshall(oneRecord, SetTyp.class);
     }
 }

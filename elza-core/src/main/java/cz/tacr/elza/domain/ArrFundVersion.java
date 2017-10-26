@@ -30,7 +30,7 @@ import cz.tacr.elza.domain.interfaces.Versionable;
  * @since 22.7.15
  */
 @Entity(name = "arr_fund_version")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(region = "fund", usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrFundVersion extends AbstractVersionableEntity implements Versionable, Serializable, IArrFund {
 
@@ -54,6 +54,10 @@ public class ArrFundVersion extends AbstractVersionableEntity implements Version
     private ArrNode rootNode;
 
     @RestResource(exported = false)
+    @Column(nullable = false, insertable = false, updatable = false)
+    private Integer rootNodeId;
+
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFund.class)
     @JoinColumn(name = "fundId", nullable = false)
     private ArrFund fund;
@@ -65,6 +69,9 @@ public class ArrFundVersion extends AbstractVersionableEntity implements Version
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
     @JoinColumn(name = "ruleSetId", nullable = false)
     private RulRuleSet ruleSet;
+
+    @Column(nullable = true, updatable = false, insertable = false)
+    private Integer ruleSetId;
 
     @Column(nullable = true)
     private String dateRange;
@@ -117,6 +124,11 @@ public class ArrFundVersion extends AbstractVersionableEntity implements Version
      */
     public void setRootNode(final ArrNode rootNode) {
         this.rootNode = rootNode;
+        this.rootNodeId = rootNode != null ? rootNode.getNodeId() : null;
+    }
+
+    public Integer getRootNodeId() {
+        return rootNodeId;
     }
 
     @Override
@@ -148,6 +160,11 @@ public class ArrFundVersion extends AbstractVersionableEntity implements Version
      */
     public void setRuleSet(final RulRuleSet ruleSet) {
         this.ruleSet = ruleSet;
+        this.ruleSetId = ruleSet != null ? ruleSet.getRuleSetId() : null;
+    }
+
+    public Integer getRuleSetId() {
+        return ruleSetId;
     }
 
     /**

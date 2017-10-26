@@ -1,7 +1,5 @@
 package cz.tacr.elza.domain;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -28,7 +26,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
  * @since 30. 11. 2016
  */
 @Entity(name = "par_interpi_mapping")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table
 public class ParInterpiMapping {
 

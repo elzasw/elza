@@ -28,10 +28,7 @@ public enum PartyType {
     }
 
     public ParPartyType getEntity() {
-        if (entity == null) {
-            throw new IllegalStateException("Cache not initialized");
-        }
-        return entity;
+        return Validate.notNull(entity, "Cache not initialized");
     }
 
     /**

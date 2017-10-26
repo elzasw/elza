@@ -42,7 +42,7 @@ import cz.tacr.elza.domain.table.ElzaColumn;
 @Table(uniqueConstraints = {
         @UniqueConstraint(columnNames = {"code"}),
         @UniqueConstraint(columnNames = {"viewOrder"})})
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class RulItemType {
 

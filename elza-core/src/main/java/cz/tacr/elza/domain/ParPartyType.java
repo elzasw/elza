@@ -15,6 +15,8 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import cz.tacr.elza.core.data.PartyType;
+
 
 /**
  * Číselník typů osob.
@@ -25,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity(name = "par_party_type")
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "partyTypeEnum"})
 public class ParPartyType {
 
@@ -134,14 +136,7 @@ public class ParPartyType {
         return "ParPartyType pk=" + partyTypeId;
     }
 
-    public PartyTypeEnum getPartyTypeEnum() {
-        return PartyTypeEnum.valueOf(code);
-    }
-
-    public enum PartyTypeEnum {
-        PERSON,
-        DYNASTY,
-        GROUP_PARTY,
-        EVENT
+    public PartyType toEnum() {
+        return PartyType.fromId(partyTypeId);
     }
 }

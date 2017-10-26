@@ -407,7 +407,7 @@
 									<artifactId>jaxb2-basics</artifactId>
 									<version>1.11.1</version>
 								</plugin>
-							</plugins>
+							</plugins> 
 						</configuration>
 					</execution>
 				</executions>
@@ -464,47 +464,6 @@
                </execution>
 			 </executions>
 			</plugin>-->
-           <!--<plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>jaxb2-maven-plugin</artifactId>
-                <version>2.3.1</version>
-                <executions>
-                    <execution>
-                        <id>edx</id>
-                        <goals>
-                            <goal>xjc</goal>
-                        </goals>
-                        <phase>generate-sources</phase>
-                        <configuration>
-                            <extension>true</extension>
-                            <sources>
-                                <source>${project.basedir}/src/main/resources/schema/elza-schema-v2.xsd</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>hierarchical-structure</id>
-                        <phase>compile</phase>
-                        <configuration>
-                            <outputDirectory>${project.basedir}/src/main/resources/xsd/</outputDirectory>
-                            <sources>
-                                <source>src/main/java/cz/tacr/elza/xmlimport/v1/vo/XmlImport.java</source>
-                            </sources>
-                            <createJavaDocAnnotations>true</createJavaDocAnnotations>
-                            <xsdPathWithinArtifact>src/main/resources/xsd/suzap</xsdPathWithinArtifact>
-                            <transformSchemas>
-                                <transformSchema>
-                                    <uri>http://v1_0_0.import.elza.tacr.cz</uri>
-                                    <toFile>xml-import.xsd</toFile>
-                                </transformSchema>
-                            </transformSchemas>
-                        </configuration>
-                        <goals>
-                            <goal>schemagen</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>-->
 <!--             <plugin> -->
 <!--                 <groupId>org.codehaus.mojo</groupId> -->
 <!--                 <artifactId>jaxb2-maven-plugin</artifactId> -->

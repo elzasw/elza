@@ -1,7 +1,5 @@
 package cz.tacr.elza.domain;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -34,6 +32,8 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ParPartyGroupIdentifier {
 
+    public static final String PARTY_GROUP_FK = "partyGroup.partyId";
+
     @Id
     @GeneratedValue
     private Integer partyGroupIdentifierId;
@@ -44,9 +44,17 @@ public class ParPartyGroupIdentifier {
     private ParUnitdate to;
 
     @RestResource(exported = false)
+    @Column(insertable = false, updatable = false)
+    private Integer toUnitdateId;
+
+    @RestResource(exported = false)
     @OneToOne(fetch = FetchType.EAGER, targetEntity = ParUnitdate.class)
     @JoinColumn(name = "fromUnitdateId")
     private ParUnitdate from;
+
+    @RestResource(exported = false)
+    @Column(insertable = false, updatable = false)
+    private Integer fromUnitdateId;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParPartyGroup.class)
@@ -77,6 +85,11 @@ public class ParPartyGroupIdentifier {
 
     public void setTo(final ParUnitdate to) {
         this.to = to;
+        this.toUnitdateId = to != null ? to.getUnitdateId() : null;
+    }
+
+    public Integer getToUnitdateId() {
+        return toUnitdateId;
     }
 
     public ParUnitdate getFrom() {
@@ -85,6 +98,11 @@ public class ParPartyGroupIdentifier {
 
     public void setFrom(final ParUnitdate from) {
         this.from = from;
+        this.fromUnitdateId = from != null ? from.getUnitdateId() : null;
+    }
+
+    public Integer getFromUnitdateId() {
+        return fromUnitdateId;
     }
 
     public ParPartyGroup getPartyGroup() {

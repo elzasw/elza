@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
@@ -23,12 +24,17 @@ import javax.persistence.criteria.Root;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang3.Validate;
+import org.hibernate.CacheMode;
+import org.hibernate.ScrollMode;
+import org.hibernate.ScrollableResults;
+import org.hibernate.Session;
+import org.hibernate.query.NativeQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.core.DatabaseType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
@@ -38,7 +44,6 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.utils.DBUtils;
 import cz.tacr.elza.utils.ObjectListIterator;
 
 
@@ -49,16 +54,11 @@ import cz.tacr.elza.utils.ObjectListIterator;
 @Component
 public class LevelRepositoryImpl implements LevelRepositoryCustom {
 
-    private final Log logger = LogFactory.getLog(this.getClass());
-
     @Autowired
     private EntityManager entityManager;
 
     @Autowired
     private LevelRepository levelRepository;
-
-    @Autowired
-    private DBUtils dbUtils;
 
     @Override
     public List<ArrLevel> findByParentNode(final ArrNode nodeParent, @Nullable final ArrChange change) {
@@ -420,8 +420,9 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
 
     @Override
     public List<Integer> findNodeIdsSubtree(final ArrNode node, final ArrChange change) {
+        DatabaseType dbType = DatabaseType.getCurrent();
 
-        String sql = "WITH " + getRecursivePart() + " treeData AS (SELECT t.* FROM arr_level t WHERE t.node_id = :nodeId UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) " +
+        String sql = dbType.getRecursiveQueryPrefix() + " treeData AS (SELECT t.* FROM arr_level t WHERE t.node_id = :nodeId UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) " +
                 "SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id WHERE t.delete_change_id IS NULL AND n.last_update > :date";
 
         Query query = entityManager.createNativeQuery(sql);
@@ -433,7 +434,9 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
 
     @Override
     public List<ArrLevel> findLevelsSubtree(final Integer nodeId, final int skip, final int max, final boolean ignoreRootNodes) {
-        String sql = "WITH " + getRecursivePart() + " treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, path) AS" +
+        DatabaseType dbType = DatabaseType.getCurrent();
+
+        String sql = dbType.getRecursiveQueryPrefix() + " treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, path) AS" +
                 " (" +
                 "  (" +
                 "   SELECT t.*, '000001' AS path" +
@@ -457,21 +460,55 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         return query.getResultList();
     }
 
-    public String getRecursivePart() {
+    @Override
+    public long iterateSubtree(int nodeId, ArrChange change, Consumer<ArrLevel> levelAction) {
+        // TODO: implement condition for not null change
+        Validate.isTrue(change == null, "Not implemented");
+        DatabaseType dbType = DatabaseType.getCurrent();
 
-        final String recursive;
-        if (DBUtils.DatabaseType.MSSQL.equals(dbUtils.getDbType())) {
-            recursive = "";
-        } else {
-            recursive = "RECURSIVE";
+        String sql = dbType.getRecursiveQueryPrefix() + " fundTree(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, parentPosition, depth) AS " +
+        "(" +
+            "SELECT l.*, l.position, 1 " +
+            "FROM arr_level l " +
+            "WHERE l.node_id = ?1 AND l.delete_change_id IS NULL " +
+        "UNION ALL " +
+            "SELECT l.*, ft.position, ft.depth + 1 " +
+            "FROM arr_level l " +
+            "JOIN fundTree ft ON ft.node_id=l.node_id_parent " +
+            "WHERE l.delete_change_id IS NULL " +
+        ") " +
+        "SELECT ft.*, n.* FROM fundTree ft " +
+        "JOIN arr_node n ON n.node_id=ft.node_id " +
+        "ORDER BY ft.depth, ft.parentPosition, ft.position";
+
+        Session session = entityManager.unwrap(Session.class);
+        NativeQuery<?> query = session.createNativeQuery(sql);
+        query.setParameter(1, nodeId);
+
+        // probably false positive due to SQLQuery -> NativeQuery migration (should be fixed in HB 6.0)
+        query.addRoot("ft", ArrLevel.class);
+        query.addFetch("n", "ft", "node");
+        query.setCacheMode(CacheMode.IGNORE);
+
+        long count = 0;
+        try (ScrollableResults scrollableResults = query.scroll(ScrollMode.FORWARD_ONLY)) {
+            while (scrollableResults.next()) {
+                ArrLevel level = (ArrLevel) scrollableResults.get(0);
+                levelAction.accept(level);
+                count++;
+            }
         }
-        return recursive;
+        if (count == 0) {
+            throw new IllegalArgumentException("Root node not found, nodeId:" + nodeId);
+        }
+        return count;
     }
 
     @Override
     public List<Integer> findNodeIdsParent(final ArrNode node, final ArrChange change) {
+        DatabaseType dbType = DatabaseType.getCurrent();
 
-        String sql = "WITH " + getRecursivePart() + " treeData AS (SELECT t.* FROM arr_level t WHERE t.node_id = :nodeId UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id_parent = t.node_id) " +
+        String sql = dbType.getRecursiveQueryPrefix() + " treeData AS (SELECT t.* FROM arr_level t WHERE t.node_id = :nodeId UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id_parent = t.node_id) " +
                 "SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id WHERE t.delete_change_id IS NULL AND n.last_update > :date";
 
         Query query = entityManager.createNativeQuery(sql);

@@ -203,13 +203,13 @@ class FundPage extends AbstractReactComponent {
                     </Button>,
                 )
             }
-            /*if (userDetail.hasOne(perms.FUND_EXPORT_ALL, {type: perms.FUND_EXPORT, fundId: fundRegion.fundDetail.id})) {
+            if (userDetail.hasOne(perms.FUND_EXPORT_ALL, {type: perms.FUND_EXPORT, fundId: fundRegion.fundDetail.id})) {
                 itemActions.push(
                     <Button key="fa-export" onClick={this.handleExportDialog}><Icon glyph='fa-download'/>
                         <div><span className="btnText">{i18n('ribbon.action.arr.fund.export')}</span></div>
                     </Button>
                 )
-            }*/
+            }
         }
 
         let altSection;

@@ -18,6 +18,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.core.data.PartyType;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ParDynasty;
@@ -53,7 +54,6 @@ import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.output.OutputFactoryService;
 import cz.tacr.elza.utils.AppContext;
 import cz.tacr.elza.utils.HibernateUtils;
-import cz.tacr.elza.utils.PartyType;
 
 /**
  * Základní objekt pro generování výstupu, při tisku se vytváří 1 instance.
@@ -527,7 +527,7 @@ public class OutputImpl implements Output
     private Party createParty(final ParParty parParty)
     {
         String partyTypeCode = parParty.getPartyType().getCode();
-        PartyType partyType = PartyType.getByCode(partyTypeCode);
+        PartyType partyType = PartyType.fromCode(partyTypeCode);
 
         // Prepare corresponding record
         Record record = this.recordCache.get(parParty.getRecord());
@@ -559,7 +559,7 @@ public class OutputImpl implements Output
                 ParEvent parEvent = HibernateUtils.unproxy(parParty);
                 party = Event.newInstance(parEvent, initHelper);
                 break;
-            case PARTY_GROUP:
+            case GROUP_PARTY:
                 ParPartyGroup parPartyGroup = HibernateUtils.unproxy(parParty);
                 party = PartyGroup.newInstance(parPartyGroup, initHelper);
                 break;

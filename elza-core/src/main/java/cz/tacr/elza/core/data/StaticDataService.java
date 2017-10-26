@@ -33,7 +33,7 @@ import cz.tacr.elza.utils.HibernateUtils;
 
 /**
  * Service for static data
- * 
+ *
  * Service returns StaticDataProvider with valid data for given transaction
  */
 @Service
@@ -46,10 +46,10 @@ public class StaticDataService {
 
     /**
      * Set of transactions which should refresh StaticDataProvider after commit
-     * 
+     *
      */
-    private final Set<Transaction> modificationTransactions = new HashSet<Transaction>();
-    
+    private final Set<Transaction> modificationTransactions = new HashSet<>();
+
     private StaticDataProvider activeProvider;
 
     /* managed components */
@@ -123,11 +123,10 @@ public class StaticDataService {
         // init interceptor
         StaticDataTransactionInterceptor.INSTANCE.begin(this);
     }
-    
+
     /**
      * Switch data provider for current transaction
      */
-    @Transactional(value = TxType.MANDATORY)
     public StaticDataProvider reloadForCurrentTransaction() {
     	Transaction tx = getCurrentActiveTransaction();
     	StaticDataProvider provider = initializeProvider();
@@ -143,7 +142,7 @@ public class StaticDataService {
 
     public void reloadOnCommit(Transaction tx) {
         checkActiveTransaction(tx);
-        
+
         synchronized(modificationTransactions)
         {
         	modificationTransactions.add(tx);
@@ -170,9 +169,9 @@ public class StaticDataService {
      */
     void registerTransaction(Transaction tx) {
         checkActiveTransaction(tx);
-        
+
         StaticDataProvider provider = activeProvider;
-        // some provider have to exists       
+        // some provider have to exists
         Validate.notNull(provider);
 
         if (registeredTxMap.putIfAbsent(tx, provider) != null) {
@@ -183,7 +182,7 @@ public class StaticDataService {
 
     void beforeTransactionCommit(Transaction tx) {
         checkActiveTransaction(tx);
-        
+
         synchronized(modificationTransactions)
         {
         	// check for modified transaction
@@ -192,15 +191,15 @@ public class StaticDataService {
         	}
         	modificationTransactions.remove(tx);
         }
-        
+
         // prepare modified provider in current transaction
         try {
         	StaticDataProvider modifiedProvider = initializeProvider();
-        		
+
         	tx.registerSynchronization(new Synchronization(){
 					@Override
 					public void beforeCompletion() {
-						// nop						
+						// nop
 					}
 
 					@Override
@@ -208,8 +207,8 @@ public class StaticDataService {
 						// set new provider if committed
 						if(status==javax.transaction.Status.STATUS_COMMITTED) {
 							activeProvider = modifiedProvider;
-						}						
-					}        			
+						}
+					}
         		});
         } catch (Throwable t) {
         	tx.markRollbackOnly();

@@ -45,38 +45,10 @@ public interface RegRecordRepositoryCustom {
     long findRegRecordByTextAndTypeCount(String searchRecord, Collection<Integer> registerTypeIds,
                                          @Nullable RegRecord parentRecord, Set<Integer> scopeIds);
 
-
     /**
-     * Celkový počet záznamů v DB pro funkci {@link #findRootRecords(Collection, Integer, Integer, Set)}
+     * Searches access points and all their parents. Parents are always returned before children.
      *
-     * @param registerTypeIds   typ záznamu
-     * @param scopeIdsForRecord id tříd, do který spadají rejstříky
-     * @return celkový počet záznamů, který je v db za dané parametry
+     * @param apIds collection of AP ids
      */
-    /*long findRootRecordsByTypeCount(Collection<Integer> registerTypeIds,
-                                    final Set<Integer> scopeIdsForRecord);*/
-
-
-    /**
-     * Nalezne kořenové záznamy rejstříku, které mají daný typ.
-     *
-     * @param registerTypeIds   typ záznamu
-     * @param firstResult       index prvního záznamu, začíná od 0
-     * @param maxResults        počet výsledků k vrácení
-     * @param scopeIdsForRecord id tříd, do který spadají rejstříky
-     * @return vybrané záznamy dle popisu seřazené za record, nebo prázdná množina
-     */
-    /*List<RegRecord> findRootRecords(@Nullable Collection<Integer> registerTypeIds,
-                                    Integer firstResult,
-                                    Integer maxResults,
-                                    final Set<Integer> scopeIdsForRecord);*/
-
-    /**
-     * Najde id rodičů od předaného rejstříku až kje kořeni.
-     *
-     * @param recordId id rejstříku
-     *
-     * @return id rejstříku až ke kořeni
-     */
-    List<Integer> findRecordParents(Integer recordId);
+    List<RegRecord> findAccessPointsWithParents(Collection<Integer> apIds);
 }

@@ -21,7 +21,6 @@ import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.domain.vo.XmlImportType;
 
 /**
  * Test exportu archivního souboru.
@@ -34,7 +33,7 @@ public class XmlExportControllerTest extends AbstractControllerTest {
     protected final static String ALL_IN_ONE_XML = "all-in-one-import.xml";
 
     @Autowired
-    private XmlExportController xmlExportController;
+    private DEExportController xmlExportController;
 
     @Test
     @Ignore
@@ -92,7 +91,8 @@ public class XmlExportControllerTest extends AbstractControllerTest {
 
         try (ServletOutputStream servletOutputStream = createOutputStream(file)) {
             MockHttpServletResponse response = createHttpResponse(servletOutputStream);
-            xmlExportController.exportFund(response, version.getId(), null);
+            //xmlExportController.exportFund(response, version.getId(), null);
+            // TODO: OPRAVIT !!!
         }
 
         return file;

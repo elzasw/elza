@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,14 +14,14 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import cz.tacr.elza.deimport.DEImportParams;
-import cz.tacr.elza.deimport.DEImportParams.ImportPositionParams;
-import cz.tacr.elza.deimport.DEImportService;
-import cz.tacr.elza.deimport.context.ImportContext;
-import cz.tacr.elza.deimport.context.ImportPhase;
-import cz.tacr.elza.deimport.context.ImportPhaseChangeListener;
-import cz.tacr.elza.deimport.sections.context.SectionsContext;
-import cz.tacr.elza.deimport.sections.context.SectionsContext.ImportPosition;
+import cz.tacr.elza.dataexchange.input.DEImportParams;
+import cz.tacr.elza.dataexchange.input.DEImportParams.ImportPositionParams;
+import cz.tacr.elza.dataexchange.input.DEImportService;
+import cz.tacr.elza.dataexchange.input.context.ImportContext;
+import cz.tacr.elza.dataexchange.input.context.ImportPhase;
+import cz.tacr.elza.dataexchange.input.context.ImportPhaseChangeListener;
+import cz.tacr.elza.dataexchange.input.sections.context.SectionsContext;
+import cz.tacr.elza.dataexchange.input.sections.context.SectionsContext.ImportPosition;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
@@ -56,6 +57,9 @@ public class DEImportController {
                            @RequestParam("xmlFile") final MultipartFile xmlFile) {
 
         // TODO: XML transformation
+        if (StringUtils.isNotEmpty(transformationName)) {
+            throw new UnsupportedOperationException("Import transformation not implemented");
+        }
 
         // prepare import parameters
         DEImportParams params = new DEImportParams(scopeId, 1000, 10000, importPositionParams);

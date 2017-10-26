@@ -23,7 +23,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
  * @since 24. 10. 2016
  */
 @Entity(name = "par_relation_class_type")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ParRelationClassType {
 
     public enum ClassType{

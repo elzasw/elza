@@ -11,6 +11,7 @@ elza:
   groovy:
     groovyDir: ${elza.workingDir}/groovy
   dmsDir: ${elza.workingDir}/dms/
+
 spring:
   application:
      name: elza
@@ -31,21 +32,32 @@ spring:
     # Logovani SQL dotazu
     #show-sql: true
     properties:
-          hibernate:
-              search:
-                  lucene_version: LUCENE_CURRENT
-                  default:
-                      indexBase: ${elza.workingDir}/lucene/indexes/
-                      directory_provider: filesystem
+        net.sf.ehcache.configurationResourceName: /ehcache.xml
+        hibernate:
+            #zmena defaultniho generovani PK (pokud anotace @GeneratedValue neuvede jinak pouzije se tento generator)
+            #viz org.hibernate.jpa.AvailableSettings.IDENTIFIER_GENERATOR_STRATEGY_PROVIDER
+            ejb.identifier_generator_strategy_provider: cz.tacr.elza.hibernate.IdentifierGeneratorStrategyProvider
+        
+            #viz org.hibernate.cfg.AnnotationBinder.generatorType
+            id.new_generator_mappings: true
+        
+            cache:
+              use_second_level_cache: true
+              region.factory_class: org.hibernate.cache.ehcache.EhCacheRegionFactory
+                   
+            search:
+                lucene_version: LUCENE_CURRENT
+                default:
+                    indexBase: ${elza.workingDir}/lucene/indexes/
+                    directory_provider: filesystem
 
-              # PostgreSQL
-              dialect: org.hibernate.spatial.dialect.postgis.PostgisDialect
-              # H2
-              #dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect
-              # MySQL
-              #dialect: org.hibernate.spatial.dialect.mysql.MySQLSpatialDialect
-              # Oracle
-              #dialect: org.hibernate.spatial.dialect.oracle.OracleSpatial10gDialect
-              # MSSQL
-              #dialect: org.hibernate.dialect.SQLServer2008Dialect
-
+            # PostgreSQL
+            dialect: org.hibernate.spatial.dialect.postgis.PostgisDialect
+            # H2
+            #dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect
+            # MySQL
+            #dialect: org.hibernate.spatial.dialect.mysql.MySQLSpatialDialect
+            # Oracle
+            #dialect: org.hibernate.spatial.dialect.oracle.OracleSpatial10gDialect
+            # MSSQL
+            #dialect: org.hibernate.dialect.SQLServer2008Dialect

@@ -20,6 +20,8 @@ public class RuleSystemItemType {
 
     private List<RulItemSpec> itemSpecs;
 
+    private Map<Integer, RulItemSpec> itemSpecIdMap;
+
     private Map<String, RulItemSpec> itemSpecCodeMap;
 
     RuleSystemItemType(RuleSystem ruleSystem, RulItemType itemType, DataType dataType) {
@@ -64,6 +66,10 @@ public class RuleSystemItemType {
         return itemSpecs;
     }
 
+    public RulItemSpec getItemSpecById(int id) {
+        return itemSpecIdMap.get(id);
+    }
+
     public RulItemSpec getItemSpecByCode(String code) {
         Validate.notEmpty(code);
         return itemSpecCodeMap.get(code);
@@ -74,11 +80,13 @@ public class RuleSystemItemType {
      */
     void init(ItemSpecRepository itemSpecRepository) {
         List<RulItemSpec> itemSpecs = Collections.emptyList();
+        Map<Integer, RulItemSpec> idMap = Collections.emptyMap();
         Map<String, RulItemSpec> codeMap = Collections.emptyMap();
 
         if (hasSpecifications()) {
             itemSpecs = itemSpecRepository.findByItemType(itemType);
             itemSpecs = Collections.unmodifiableList(itemSpecs);
+            idMap = StaticDataProvider.createLookup(itemSpecs, RulItemSpec::getItemSpecId);
             codeMap = StaticDataProvider.createLookup(itemSpecs, RulItemSpec::getCode);
 
             // ensure reference equality
@@ -89,6 +97,7 @@ public class RuleSystemItemType {
         }
         // update fields
         this.itemSpecs = itemSpecs;
+        this.itemSpecIdMap = idMap;
         this.itemSpecCodeMap = codeMap;
     }
 }
