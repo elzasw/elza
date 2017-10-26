@@ -151,6 +151,7 @@ public class RegistryController {
      * @param scopeId           id scope, pokud je vyplněn vrací se jen rejstříky s tímto scope
      * @return                  vybrané záznamy dle popisu seřazené za text hesla, nebo prázdná množina
      */
+	@Transactional
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public FilteredResultVO<RegRecord> findRecord(@RequestParam(required = false) @Nullable final String search,
                                        @RequestParam final Integer from,
@@ -249,6 +250,7 @@ public class RegistryController {
      * @param partyId    id osoby, ze které je načtena hledaná třída rejstříku
      * @return seznam rejstříkových hesel s počtem všech nalezených
      */
+	@Transactional
     @RequestMapping(value = "/findRecordForRelation", method = RequestMethod.GET)
     public FilteredResultVO<RegRecord> findRecordForRelation(@RequestParam(required = false) @Nullable final String search,
                                                     @RequestParam final Integer from,
@@ -296,6 +298,7 @@ public class RegistryController {
         return factoryVo.createRegRecord(newRecordDO, recordParty == null ? null : recordParty.getPartyId(), false);
     }
 
+	@Transactional
     @RequestMapping(value = "/specificationHasParty/{itemSpecId}", method = RequestMethod.GET)
     public boolean canParty(@PathVariable final Integer itemSpecId) {
         Assert.notNull(itemSpecId, "Identifikátor specifikace musí být vyplněn");
@@ -314,6 +317,7 @@ public class RegistryController {
      * @param recordId      id požadovaného hesla
      * @return              heslo s vazbou na var. hesla
      */
+	@Transactional
     @RequestMapping(value = "/{recordId}", method = RequestMethod.GET)
     public RegRecordVO getRecord(@PathVariable final Integer recordId) {
         Assert.notNull(recordId, "Identifikátor rejstříkového hesla musí být vyplněn");
@@ -388,6 +392,7 @@ public class RegistryController {
      * @return  seznam typů rejstříku (typů hesel)
      */
     @RequestMapping(value = "/recordTypes", method = RequestMethod.GET)
+	@Transactional
     public List<RegRegisterTypeVO> getRecordTypes() {
         List<RegRegisterType> allTypes = registerTypeRepository.findAllOrderByNameAsc();
 
@@ -400,6 +405,7 @@ public class RegistryController {
      *
      * @return seznam kořenů typů rejstříku (typů hesel)
      */
+	@Transactional
     @RequestMapping(value = "/recordTypesForPartyType", method = RequestMethod.GET)
     public List<RegRegisterTypeVO> getRecordTypesForPartyType(
             @RequestParam(value = "partyTypeId", required = false) @Nullable final Integer partyTypeId) {
@@ -479,6 +485,7 @@ public class RegistryController {
      * Vrací všechny třídy rejstříků z databáze.
      */
     @RequestMapping(value = "/scopes", method = RequestMethod.GET)
+	@Transactional
     public List<RegScopeVO> getAllScopes(){
         List<RegScope> scopes = scopeRepository.findAllOrderByCode();
         return factoryVo.createScopes(scopes);
@@ -490,6 +497,7 @@ public class RegistryController {
      * @return seznam tříd
      */
     @RequestMapping(value = "/fundScopes", method = RequestMethod.GET)
+	@Transactional
     public List<RegScopeVO> getScopeIdsByVersion(@RequestParam(required = false) @Nullable final Integer versionId) {
 
         ArrFund fund;
@@ -628,6 +636,7 @@ public class RegistryController {
      * @return seznam externích systémů
      */
     @RequestMapping(value = "/externalSystems", method = RequestMethod.GET)
+	@Transactional
     public List<RegExternalSystemSimpleVO> findAllExternalSystems() {
         return factoryVo.createSimpleEntity(externalSystemService.findAllRegSystem(), RegExternalSystemSimpleVO.class);
     }
@@ -700,6 +709,7 @@ public class RegistryController {
      *
      * @return vztahy a jejich mapování
      */
+	@Transactional
     @RequestMapping(value = "/interpi/{interpiRecordId}/relations", method = RequestMethod.POST)
     public InterpiMappingVO findInterpiRecordRelations(@PathVariable final String interpiRecordId, @RequestBody final RelationSearchVO relationSearchVO) {
         Assert.notNull(interpiRecordId, "Identifikátor systému interpi musí být vyplněn");
@@ -717,6 +727,7 @@ public class RegistryController {
      *
      * @return použití rejstříku
      */
+	@Transactional
     @RequestMapping(value = "/findUsage/{recordId}", method = RequestMethod.GET)
     public RecordUsageVO findUsage(@PathVariable final Integer recordId) {
     	RegRecord regRecord = regRecordRepository.getOneCheckExist(recordId);

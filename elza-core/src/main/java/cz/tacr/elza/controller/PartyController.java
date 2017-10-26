@@ -177,6 +177,7 @@ public class PartyController {
      * @param partyId id osoby
      * @return data osoby
      */
+	@Transactional
     @RequestMapping(value = "/{partyId}", method = RequestMethod.GET)
     public ParPartyVO getParty(@PathVariable final Integer partyId) {
         Assert.notNull(partyId, "Identifikátor osoby musí být vyplněna");
@@ -242,6 +243,7 @@ public class PartyController {
      * @return seznam osob s počtem všech osob
      */
     @RequestMapping(value = "/", method = RequestMethod.GET)
+	@Transactional
     public FilteredResultVO<ParPartyVO> findParty(@Nullable @RequestParam(required = false) final String search,
                                        @RequestParam final Integer from,
                                        @RequestParam final Integer count,
@@ -277,6 +279,7 @@ public class PartyController {
      * @return seznam osob s počtem všech osob
      */
     @RequestMapping(value = "/findPartyForParty", method = RequestMethod.GET)
+	@Transactional
     public FilteredResultVO<ParPartyVO> findPartyForParty(
             @Nullable @RequestParam(required = false) final String search,
             @RequestParam final Integer from,
@@ -367,6 +370,7 @@ public class PartyController {
      * @return typy osob včetně navázaných podtypů
      */
     @RequestMapping(value = "/partyTypes", method = RequestMethod.GET)
+	@Transactional
     public List<ParPartyTypeVO> getPartyTypes() {
         //načteme všechny záznamy, aby nedocházelo k samostatným dotazům v cyklech
         //noinspection unused
@@ -499,6 +503,7 @@ public class PartyController {
      * @return seznam typů formy jména
      */
     @RequestMapping(value = "/partyNameFormTypes", method = RequestMethod.GET)
+	@Transactional
     public List<ParPartyNameFormTypeVO> getPartyNameFormType() {
         List<ParPartyNameFormType> types = partyNameFormTypeRepository.findAll();
 
@@ -510,6 +515,7 @@ public class PartyController {
      * @return seznam institucí
      */
     @RequestMapping(value = "/institutions", method = RequestMethod.GET)
+	@Transactional
     public List<ParInstitutionVO> getInstitutions() {
         return factoryVo.createInstitutionList(institutionRepository.findAll());
     }
@@ -522,6 +528,7 @@ public class PartyController {
      * @return použití osoby
      */
     @RequestMapping(value = "/findUsage/{partyId}", method = RequestMethod.GET)
+	@Transactional
     public RecordUsageVO findUsage(@PathVariable final Integer partyId) {
     	ParParty parParty = partyRepository.getOneCheckExist(partyId);
     	RegRecord regRecord = parParty.getRecord();
