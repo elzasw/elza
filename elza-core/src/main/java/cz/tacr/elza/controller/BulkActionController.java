@@ -68,7 +68,7 @@ public class BulkActionController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
-    List<BulkActionVO> getBulkActions(final @PathVariable(value = "versionId") Integer fundVersionId) {
+	public List<BulkActionVO> getBulkActions(final @PathVariable(value = "versionId") Integer fundVersionId) {
         return factoryVo.createBulkActionList(bulkActionService.getBulkActions(fundVersionId));
     }
 
@@ -77,7 +77,7 @@ public class BulkActionController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
-    List<BulkActionRunVO> getBulkActionsList(final @PathVariable("versionId") Integer fundVersionId) {
+	public List<BulkActionRunVO> getBulkActionsList(final @PathVariable("versionId") Integer fundVersionId) {
         return factoryVo.createBulkActionsList(bulkActionService.getAllArrBulkActionRun(fundVersionId));
     }
 
@@ -86,7 +86,7 @@ public class BulkActionController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
-    BulkActionRunVO getBulkAction(final @PathVariable("bulkActionRunId") Integer bulkActionRunId) {
+	public BulkActionRunVO getBulkAction(final @PathVariable("bulkActionRunId") Integer bulkActionRunId) {
         Assert.notNull(bulkActionRunId, "Identifikátor běhu hromadné akce musí být vyplněn");
         return factoryVo.createBulkActionRunWithNodes(bulkActionService.getArrBulkActionRun(bulkActionRunId));
     }
@@ -96,7 +96,7 @@ public class BulkActionController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
-    void interruptBulkAction(final @PathVariable("bulkActionRunId") Integer bulkActionRunId) {
+	public void interruptBulkAction(final @PathVariable("bulkActionRunId") Integer bulkActionRunId) {
         Assert.notNull(bulkActionRunId, "Identifikátor běhu hromadné akce musí být vyplněn");
         bulkActionService.interruptBulkAction(bulkActionRunId);
     }
@@ -107,7 +107,8 @@ public class BulkActionController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
-    BulkActionRunVO queueByFa(final @PathVariable("versionId") Integer fundVersionId, final @PathVariable("code") String code) {
+	public BulkActionRunVO queueByFa(final @PathVariable("versionId") Integer fundVersionId,
+	        final @PathVariable("code") String code) {
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
         Assert.notNull(code, "Kód musí být vyplněn");
         UserDetail userDetail = userService.getLoggedUserDetail();
@@ -120,7 +121,8 @@ public class BulkActionController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
-    BulkActionRunVO queueByIds(final @PathVariable("versionId") Integer fundVersionId, final @PathVariable("code") String code,
+	public BulkActionRunVO queueByIds(final @PathVariable("versionId") Integer fundVersionId,
+	        final @PathVariable("code") String code,
                     final @RequestBody List<Integer> nodeIds) {
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
         Assert.notNull(code, "Kód musí být vyplněn");

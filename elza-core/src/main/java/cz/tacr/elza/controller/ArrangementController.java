@@ -352,7 +352,8 @@ public class ArrangementController {
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    List<ArrDaoPackageVO> findDaoPackages(
+	@Transactional
+	public List<ArrDaoPackageVO> findDaoPackages(
             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
             @RequestParam(value = "search", required = false) final String search,
             @RequestParam(value = "unassigned", required = false, defaultValue = "false") final Boolean unassigned,
@@ -379,7 +380,8 @@ public class ArrangementController {
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    List<ArrDaoVO> findDaos(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+	@Transactional
+	public List<ArrDaoVO> findDaos(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                             @RequestParam(value = "nodeId", required = false) final Integer nodeId,
                             @RequestParam(value = "detail", required = false, defaultValue = "false") final Boolean detail,
                             @RequestParam(value = "index", required = false, defaultValue = "0") final Integer index,
@@ -411,7 +413,8 @@ public class ArrangementController {
                 method = RequestMethod.GET,
                 consumes = MediaType.APPLICATION_JSON_VALUE,
                 produces = MediaType.APPLICATION_JSON_VALUE)
-        List<ArrDaoVO> findDaosByPackage(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+	@Transactional
+	public List<ArrDaoVO> findDaosByPackage(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                          @PathVariable(value = "daoPackageId") final Integer daoPackageId,
                                          @RequestParam(value = "detail", required = false, defaultValue = "false") final Boolean detail,
                                          @RequestParam(value = "unassigned", required = false, defaultValue = "false") final Boolean unassigned,
@@ -682,6 +685,7 @@ public class ArrangementController {
     @RequestMapping(value = "/descItems/{fundVersionId}/csv/export",
             method = RequestMethod.GET,
             produces = "text/csv")
+	@Transactional
     public void descItemCsvExport(
             final HttpServletResponse response,
             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
@@ -713,6 +717,7 @@ public class ArrangementController {
     @RequestMapping(value = "/outputItems/{fundVersionId}/csv/export",
             method = RequestMethod.GET,
             produces = "text/csv")
+	@Transactional
     public void outputItemCsvExport(
             final HttpServletResponse response,
             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
@@ -1161,6 +1166,7 @@ public class ArrangementController {
      * @param fundVersionId id verze stromu
      * @return formulář
      */
+	@Transactional
     @RequestMapping(value = "/output/{outputDefinitionId}/{fundVersionId}/form", method = RequestMethod.GET)
     public OutputFormDataNewVO getOutputFormData(@PathVariable(value = "outputDefinitionId") final Integer outputDefinitionId,
                                                  @PathVariable(value = "fundVersionId") final Integer fundVersionId) {
@@ -1203,6 +1209,7 @@ public class ArrangementController {
      * @return seznam AP
      */
     @RequestMapping(value = "/getFunds", method = RequestMethod.GET)
+	@Transactional
     public FundListCountResult getFunds(@RequestParam(value = "fulltext", required = false) final String fulltext,
                                         @RequestParam(value = "max") final Integer max) {
         List<ArrFundVO> fundList = new LinkedList<>();
@@ -1223,6 +1230,7 @@ public class ArrangementController {
      * @return konkrétní AP
      */
     @RequestMapping(value = "/getFund/{fundId}", method = RequestMethod.GET)
+	@Transactional
     public ArrFundVO getFund(@PathVariable("fundId") final Integer fundId) {
         ArrFund fund = fundRepository.findOne(fundId);
         if (fund == null) {
@@ -1252,6 +1260,7 @@ public class ArrangementController {
      * @return seznam AS, každá obsahuje pouze jednu verzi, jinak je vrácená víckrát
      */
     @RequestMapping(value = "/getVersions", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
     public List<ArrFundVO> getFundsByVersionIds(@RequestBody final IdsParam idsParam) {
 
         if (CollectionUtils.isEmpty(idsParam.getIds())) {
@@ -1281,6 +1290,7 @@ public class ArrangementController {
      */
     @RequestMapping(value = "/fundTree", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
     public TreeData getFundTree(final @RequestBody FaTreeParam input) {
         Assert.notNull(input, "Vstupní data musí být vyplněny");
         Assert.notNull(input.getVersionId(), "Nebyla vyplněn identifikátor verze AS");
@@ -1352,6 +1362,7 @@ public class ArrangementController {
      * @return formulář
      */
     @RequestMapping(value = "/nodes/{nodeId}/{versionId}/form", method = RequestMethod.GET)
+	@Transactional
     public DescFormDataNewVO getNodeFormData(@PathVariable(value = "nodeId") final Integer nodeId,
                                              @PathVariable(value = "versionId") final Integer versionId) {
 		Validate.notNull(versionId, "Identifikátor verze musí být vyplněn");
@@ -1367,6 +1378,7 @@ public class ArrangementController {
      * @return formuláře
      */
     @RequestMapping(value = "/nodes/{versionId}/forms", method = RequestMethod.GET)
+	@Transactional
     public NodeFormsDataVO getNodeFormsData(@RequestParam(value = "nodeIds") final Integer[] nodeIds,
                                             @PathVariable(value = "versionId") final Integer versionId) {
         Assert.notNull(versionId, "Identifikátor verze musí být vyplněn");
@@ -1390,6 +1402,7 @@ public class ArrangementController {
      * @return formuláře
      */
     @RequestMapping(value = "/nodes/{versionId}/{nodeId}/{around}/forms", method = RequestMethod.GET)
+	@Transactional
     public NodeFormsDataVO getNodeWithAroundFormsData(@PathVariable(value = "versionId") final Integer versionId,
                                                       @PathVariable(value = "nodeId") final Integer nodeId,
                                                       @PathVariable(value = "around") final Integer around) {
@@ -1970,6 +1983,7 @@ public class ArrangementController {
      * @return seznam uzlů a jejich indexu v seznamu filtrovaných uzlů, seřazené podle indexu
      */
     @RequestMapping(value = "/getFilteredFulltext/{versionId}", method = RequestMethod.POST)
+	@Transactional
     public List<FilterNodePosition> getFilteredFulltextNodes(@PathVariable("versionId") final Integer versionId,
                                                              @RequestBody final FaFilteredFulltextParam param) {
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
@@ -1988,6 +2002,7 @@ public class ArrangementController {
      * @return seznam unikátních hodnot
      */
     @RequestMapping(value = "/filterUniqueValues/{versionId}", method = RequestMethod.PUT)
+	@Transactional
     public List<String> filterUniqueValues(@PathVariable("versionId") final Integer versionId,
                                            @RequestParam("descItemTypeId") final Integer descItemTypeId,
                                            @RequestParam(value = "fulltext", required = false) final String fulltext,
@@ -2352,6 +2367,7 @@ public class ArrangementController {
      * @return výsledek hledání
      */
     @RequestMapping(value = "/changes/{fundVersionId}", method = RequestMethod.GET)
+	@Transactional
     public ChangesResult findChanges(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                      @RequestParam(value = "maxSize", required = false, defaultValue = "20") final Integer maxSize,
                                      @RequestParam(value = "offset", required = false, defaultValue = "0") final Integer offset,
@@ -2383,6 +2399,7 @@ public class ArrangementController {
      * @return výsledek hledání
      */
     @RequestMapping(value = "/changes/{fundVersionId}/date", method = RequestMethod.GET)
+	@Transactional
     public ChangesResult findChangesByDate(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                            @RequestParam(value = "maxSize", required = false, defaultValue = "20") final Integer maxSize,
                                            @RequestParam(value = "fromDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final LocalDateTime fromDate,
@@ -2571,6 +2588,7 @@ public class ArrangementController {
      * @return seznam odpovídajících požadavků
      */
     @RequestMapping(value = "/requests/{fundVersionId}", method = RequestMethod.GET)
+	@Transactional
     public List<ArrRequestVO> findRequests(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                            @RequestParam(value = "state", required = false) final ArrRequest.State state,
                                            @RequestParam(value = "type", required = false) final ArrRequest.ClassType type,
@@ -2586,6 +2604,7 @@ public class ArrangementController {
 
 
     @RequestMapping(value = "/requests/queued", method = RequestMethod.GET)
+	@Transactional
     public List<ArrRequestQueueItemVO> findQueuedRequests() {
         List<ArrRequestQueueItem> requestQueueItems = requestQueueService.findQueued();
         return factoryVo.createRequestQueueItem(requestQueueItems);
@@ -2601,6 +2620,7 @@ public class ArrangementController {
      * @return nalezený požadavek
      */
     @RequestMapping(value = "/requests/{fundVersionId}/{requestId}", method = RequestMethod.GET)
+	@Transactional
     public ArrRequestVO getRequest(
             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
             @PathVariable(value = "requestId") final Integer requestId,
