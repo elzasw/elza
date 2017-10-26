@@ -1,13 +1,28 @@
 package cz.tacr.elza.controller;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ArrFundBaseVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
-import cz.tacr.elza.controller.vo.FundListCountResult;
 import cz.tacr.elza.controller.vo.UISettingsVO;
 import cz.tacr.elza.controller.vo.UserInfoVO;
-import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.domain.ArrFund;
@@ -25,22 +40,6 @@ import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Kontroler pro uživatele.
@@ -76,6 +75,7 @@ public class UserController {
      * @return výčet oprávnění uživatele.
      */
     @RequestMapping(value = "/detail", method = RequestMethod.GET)
+	@Transactional
     public UserInfoVO getUserDetail() {
         final UserDetail userDetail = userService.getLoggedUserDetail();
         return factoryVO.createUserInfo(userDetail);
@@ -87,6 +87,7 @@ public class UserController {
      * @param settings Seznam nastavení uživatele.
      */
     @RequestMapping(value = "/detail/settings", method = RequestMethod.PUT)
+	@Transactional
     public List<UISettingsVO> setUserSettings(@RequestBody final List<UISettingsVO> settings) {
         List<UISettings> settingsList = factoryDO.createSettingsList(settings);
 
@@ -221,6 +222,7 @@ public class UserController {
      * @return VO
      */
     @RequestMapping(value = "/{userId}", method = RequestMethod.GET)
+	@Transactional
     public UsrUserVO getUser(@PathVariable(value = "userId") final Integer userId) {
         Assert.notNull(userId, "Identifikátor uživatele musí být vyplněno");
 
@@ -239,6 +241,7 @@ public class UserController {
      * @return seznam s celkovým počtem
      */
     @RequestMapping(method = RequestMethod.GET)
+	@Transactional
     public FilteredResultVO<UsrUserVO> findUser(@Nullable @RequestParam(value = "search", required = false) final String search,
                                                 @RequestParam("active") final Boolean active,
                                                 @RequestParam("disabled") final Boolean disabled,
@@ -266,6 +269,7 @@ public class UserController {
      * @return seznam s celkovým počtem
      */
     @RequestMapping(value = "/withFundCreate", method = RequestMethod.GET)
+	@Transactional
     public FilteredResultVO<UsrUserVO> findUserWithFundCreate(@Nullable @RequestParam(value = "search", required = false) final String search,
                                                 @RequestParam("active") final Boolean active,
                                                 @RequestParam("disabled") final Boolean disabled,
@@ -291,6 +295,7 @@ public class UserController {
      * @return seznam s celkovým počtem
      */
     @RequestMapping(value = "/controlFunds", method = RequestMethod.GET)
+	@Transactional
     public FilteredResultVO<ArrFundBaseVO> findControlFunds(@Nullable @RequestParam(value = "search", required = false) final String search,
                                                             @RequestParam("from") final Integer from,
                                                             @RequestParam("count") final Integer count
@@ -305,6 +310,7 @@ public class UserController {
      * @return seznam
      */
     @RequestMapping(value = "/fund/{fundId}/users", method = RequestMethod.GET)
+	@Transactional
     public List<UsrUserVO> findUsersPermissionsByFund(@PathVariable(value = "fundId") final Integer fundId) {
         ArrFund fund = fundRepository.getOneCheckExist(fundId);
         List<UsrUser> users = userService.findUsersByFund(fund);
@@ -316,6 +322,7 @@ public class UserController {
      * @return seznam
      */
     @RequestMapping(value = "/fund/all/users", method = RequestMethod.GET)
+	@Transactional
     public List<UsrUserVO> findUsersPermissionsByFundAll() {
         List<UsrUser> users = userService.findUsersByFundAll();
         return factoryVO.createUserList(users, true);
