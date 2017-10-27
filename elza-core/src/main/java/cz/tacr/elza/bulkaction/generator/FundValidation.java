@@ -63,7 +63,8 @@ public class FundValidation extends BulkAction {
     private void generate(final ArrLevel level) {
         if (bulkActionRun.isInterrupted()) {
             bulkActionRun.setState(State.INTERRUPTED);
-            throw new BusinessException("Hromadná akce " + toString() + " byla přerušena.", ArrangementCode.BULK_ACTION_INTERRUPTED).set("code", bulkActionRun.getBulkActionCode());
+			throw new BusinessException("Hromadná akce " + getName() + " byla přerušena.",
+			        ArrangementCode.BULK_ACTION_INTERRUPTED).set("code", bulkActionRun.getBulkActionCode());
         }
 
         List<ArrLevel> childLevels = getChildren(level);
@@ -102,9 +103,7 @@ public class FundValidation extends BulkAction {
     }
 
     @Override
-    public String toString() {
-        return "FundValidationBulkAction{" +
-                "change=" + change +
-                '}';
+	public String getName() {
+		return "FundValidationBulkAction";
     }
 }

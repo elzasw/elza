@@ -46,9 +46,14 @@ public abstract class BulkAction {
      */
 	abstract public void run(ActionRunContext runContext);
 
-
-    @Override
-    abstract public String toString();
+	/**
+	 * Return name of bulkaction
+	 * 
+	 * Value is used to log result, etc.
+	 * 
+	 * @return
+	 */
+	abstract public String getName();
 
     /**
      * Uložení nového/existující atributu.

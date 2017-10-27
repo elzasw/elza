@@ -424,9 +424,7 @@ public class UnitIdBulkAction extends BulkAction {
     }
 
     @Override
-    public String toString() {
-        return "UnitIdBulkAction{" +
-                "version=" + version +
-                '}';
+	public String getName() {
+		return "UnitIdBulkAction";
     }
 }

@@ -1635,6 +1635,7 @@ public class ArrangementController {
      * @return List scénářů
      */
     @RequestMapping(value = "/scenarios", method = RequestMethod.POST)
+	@Transactional
     public List<ScenarioOfNewLevelVO> getDescriptionItemTypesForNewLevel(
             @RequestParam(required = false, value = "withGroups") final Boolean withGroups,
             @RequestBody final DescriptionItemParam param) {
@@ -1659,6 +1660,7 @@ public class ArrangementController {
      */
     @RequestMapping(value = "/nodes", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
     public List<TreeNodeClient> getNodes(@RequestBody final IdsParam idsParam) {
         Assert.notNull(idsParam.getVersionId(), "Nebyla zadána verze stromu.");
 

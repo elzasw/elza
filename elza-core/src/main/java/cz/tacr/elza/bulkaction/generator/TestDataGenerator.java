@@ -211,7 +211,7 @@ public class TestDataGenerator extends BulkAction {
 	}
 
 	@Override
-	public String toString() {
+	public String getName() {
 		return "TestDataGenerator";
 	}
 

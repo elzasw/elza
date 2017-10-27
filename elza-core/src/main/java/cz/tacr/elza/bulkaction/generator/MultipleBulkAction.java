@@ -257,9 +257,7 @@ public class MultipleBulkAction extends BulkAction {
     }
 
     @Override
-    public String toString() {
-        return "MultipleBulkAction{" +
-                "version=" + fundVersion +
-                '}';
+	public String getName() {
+		return "MultipleBulkAction";
     }
 }
