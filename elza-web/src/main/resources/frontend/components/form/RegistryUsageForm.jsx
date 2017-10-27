@@ -19,9 +19,7 @@ class RegistryUsageForm extends React.Component {
 
     handleReplace = (selectedReplacementNode) => {
         if (selectedReplacementNode) {
-            alert('Not implemented | ID from RegField ' + selectedReplacementNode.id);
-            //TODO volat
-            false && WebApi.replaceRegistry(this.props.detail, selectedReplacementNode);
+            WebApi.replaceRegistry(this.props.detail.id, selectedReplacementNode.id);
         }
     };
 

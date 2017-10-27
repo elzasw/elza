@@ -20,11 +20,10 @@ class PartyUsageForm extends React.Component {
 
     handleReplace = (selectedReplacementNode) => {
         if (selectedReplacementNode) {
-            alert('Not implemented | ID from PartyField ' + selectedReplacementNode.id);
-            //TODO volat
-            false && WebApi.replaceParty(this.props.detail, selectedReplacementNode);
+            WebApi.replaceParty(this.props.detail.id, selectedReplacementNode.id);
         }
     };
+
     render(){
         const {data} = this.state;
         if (data) return <UsageForm
