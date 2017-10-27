@@ -15,9 +15,15 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.repository.DescItemRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -177,6 +183,18 @@ public class PartyService {
     @Autowired
     private ItemSpecRegisterRepository itemSpecRegisterRepository;
 
+    @Autowired
+    private DescriptionItemService descriptionItemService;
+
+    @Autowired
+    private ArrangementService arrangementService;
+
+    @Autowired
+    private DescItemRepository descItemRepository;
+
+    @Autowired
+    private ApplicationContext applicationContext;
+
     /**
      * Najde osobu podle rejstříkového hesla.
      *
@@ -222,7 +240,7 @@ public class PartyService {
      * @param firstResult  první vrácená osoba
      * @param maxResults   max počet vrácených osob
      * @param fund   AP, ze které se použijí třídy rejstříků
-     * @param id scope, pokud je vyplněno hledají se osoby pouze s tímto scope
+     * @param scopeId scope, pokud je vyplněno hledají se osoby pouze s tímto scope
      */
     public List<ParParty> findPartyByTextAndType(final String searchRecord,
                                                  final Integer partyTypeId,
@@ -259,7 +277,7 @@ public class PartyService {
      * @param partyTypeId typ osoby
      * @param itemSpecId specifikace
      * @param fund   AP, ze které se použijí třídy rejstříků
-     * @param id scope, pokud je vyplněno hledají se osoby pouze s tímto scope
+     * @param scopeId scope, pokud je vyplněno hledají se osoby pouze s tímto scope
      *
      * @return
      */
@@ -970,5 +988,62 @@ public class PartyService {
     public ParParty getParty(@AuthParam(type = AuthParam.Type.PARTY) final Integer partyId) {
         Assert.notNull(partyId, "Identifikátor osoby musí být vyplněna");
         return partyRepository.findOne(partyId);
+    }
+
+    /**
+     * Replace party replaced by party replacement in all usages in JP, Party creators and ParRelation
+     * @param replaced
+     * @param replacement
+     */
+    public void replace(final ParParty replaced, final ParParty replacement) {
+
+        // Arr
+        final List<ArrDescItem> arrItems = descItemRepository.findArrItemByParty(replaced);
+
+        final Collection<Integer> fundsArr = arrItems.stream().map(ArrDescItem::getFundId).collect(Collectors.toSet());
+        final Map<Integer, ArrFundVersion> fundVersions = arrangementService.getOpenVersionsByFundIds(fundsArr).stream().collect(Collectors.toMap(ArrFundVersion::getFundId, Function.identity()));
+
+        final ArrChange change = arrangementService.createChange(ArrChange.Type.REPLACE_PARTY);
+        arrItems.forEach(i -> {
+            final ArrDataPartyRef data = new ArrDataPartyRef();
+            data.setParty(replacement);
+            ArrDescItem im = new ArrDescItem();
+            im.setData(data);
+            im.setNode(i.getNode());
+            im.setCreateChange(i.getCreateChange());
+            im.setDeleteChange(i.getDeleteChange());
+            im.setDescItemObjectId(i.getDescItemObjectId());
+            im.setItemId(i.getDescItemObjectId());
+            im.setItemSpec(i.getItemSpec());
+            im.setItemType(i.getItemType());
+            im.setPosition(i.getPosition());
+            descriptionItemService.updateDescriptionItem(im, fundVersions.get(i.getFundId()), change, true);
+        });
+
+
+        // creators
+        final List<ParCreator> creatorsUsages = partyCreatorRepository.findByCreatorParty(replaced);
+
+        creatorsUsages.forEach(i -> i.setCreatorParty(replacement));
+        partyCreatorRepository.save(creatorsUsages);
+        final List<ParRelationEntity> byRecord = relationEntityRepository.findByRecord(replacement.getRecord());
+        final RegRecord replacementRecord = replacement.getRecord();
+        byRecord.forEach(i -> {
+            i.setRecord(replacementRecord);
+        });
+
+        // relations
+        final List<ParRelationEntity> byRecord1 = relationEntityRepository.findByRecord(replaced.getRecord());
+
+        final Map<ParRelation, Map<Integer, ParRelationEntity>> relationWithEntities = new HashMap<>();
+        byRecord1.forEach(i -> {
+            relationWithEntities.computeIfAbsent(i.getRelation(), n -> relationEntityRepository.findByRelation(n).stream()
+                    .collect(Collectors.toMap(ParRelationEntity::getRelationEntityId, Function.identity()))
+            ).get(i.getRelationEntityId()).setRecord(replacementRecord);
+        });
+
+        PartyService self = applicationContext.getBean(PartyService.class);
+
+        relationWithEntities.forEach((rel, relEnt) -> self.saveRelation(rel, relEnt.values()));
     }
 }

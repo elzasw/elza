@@ -2,6 +2,7 @@ package cz.tacr.elza.repository;
 
 import java.util.List;
 
+import cz.tacr.elza.domain.ArrItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -16,7 +17,7 @@ public interface DataRecordRefRepository extends JpaRepository<ArrDataRecordRef,
 
     /**
      * Vazby dat na rejstříkové heslo.
-     * @param recordId  id hesla
+     * @param record rejstřík
      * @return  množina odkazujících dat, může být prázdná
      */
     List<ArrDataRecordRef> findByRecord(RegRecord record);

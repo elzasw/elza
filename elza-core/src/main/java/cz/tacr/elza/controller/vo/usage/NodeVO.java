@@ -8,27 +8,17 @@ import java.util.List;
  */
 public class NodeVO {
 
-	private Integer id;
+	public Integer id;
 
-	private String title;
+	public String title;
 
-	private List<OccurrenceVO> occurrences;
+	public List<OccurrenceVO> occurrences;
+
+	public NodeVO() {}
 
 	public NodeVO(final Integer id, final String title, final List<OccurrenceVO> occurrences) {
 		this.id = id;
 		this.title = title;
 		this.occurrences = occurrences;
-	}
-
-	public Integer getId() {
-		return id;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public List<OccurrenceVO> getOccurrences() {
-		return occurrences;
 	}
 }

@@ -521,10 +521,18 @@ public class PartyController {
      *
      * @return použití osoby
      */
-    @RequestMapping(value = "/findUsage/{partyId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/{partyId}/usage", method = RequestMethod.GET)
     public RecordUsageVO findUsage(@PathVariable final Integer partyId) {
     	ParParty parParty = partyRepository.getOneCheckExist(partyId);
     	RegRecord regRecord = parParty.getRecord();
     	return registryService.findRecordUsage(regRecord, parParty);
+    }
+
+    @Transactional
+    @RequestMapping(value = "/{partyId}/replace", method = RequestMethod.POST)
+    public void replace(@PathVariable final Integer partyId, @RequestBody final Integer replacedId) {
+        final ParParty replaced = partyService.getParty(partyId);
+        final ParParty replacement = partyService.getParty(replacedId);
+        partyService.replace(replaced, replacement);
     }
 }

@@ -3,6 +3,12 @@ package cz.tacr.elza.controller;
 import java.util.Collections;
 import java.util.List;
 
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -11,6 +17,9 @@ import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.RegVariantRecordVO;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -84,8 +93,6 @@ public class RegistryControllerTest extends AbstractControllerTest {
         deleteScope(id);
     }
 
-    private static final String NON_HIERARCHIC_REGISTER_TYPE_CODE = "ARTWORK_CONSTR";
-    private static final String HIERARCHIC_REGISTER_TYPE_CODE = "GEO_SPACE";
 
     /**
      * Scénář
@@ -108,7 +115,7 @@ public class RegistryControllerTest extends AbstractControllerTest {
     @Test
     public void scenarioTest() {
 
-        /** Smazání tabulek (kvůli XML importu pro zakládání archivních fondů) **/
+        /* Smazání tabulek (kvůli XML importu pro zakládání archivních fondů) **/
     	helperTestService.deleteTables();
 
         RegRecordVO recordA = new RegRecordVO();
@@ -214,7 +221,7 @@ public class RegistryControllerTest extends AbstractControllerTest {
         recordA = getRecord(recordA.getId());
         Assert.assertTrue("Ocekavame 2 potomky recordu A", recordA.getChilds().size() == 2);
 
-        /** změna parent record type id */
+        /* změna parent record type id */
         RegRegisterTypeVO newHierarchicalType = getHierarchicalRegRegisterType(types, Collections.singletonList(hierarchal), false);
         recordA.setRegisterTypeId(newHierarchicalType.getId());
         recordA = updateRecord(recordA);
@@ -230,6 +237,94 @@ public class RegistryControllerTest extends AbstractControllerTest {
         list = findRecord("RegRecordB", 0, 10, null, null, null);
         Assert.assertTrue(list.size() == 1);
 
+    }
+
+    @Test
+    public void registerReplaceTest() {
+        // Vytvoření fund
+        ArrFundVO fund = createFund("RegisterLinks Test AP", "IC3");
+
+        ArrFundVersionVO fundVersion = getOpenVersion(fund);
+
+        ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
+        input.setVersionId(fundVersion.getId());
+        TreeData treeData = getFundTree(input);
+
+        List<ArrNodeVO> nodes = convertTreeNodes(treeData.getNodes());
+        ArrNodeVO rootNode = nodes.get(0);
+
+        List<RegRegisterTypeVO> types = getRecordTypes();
+        List<RegScopeVO> scopes = getAllScopes();
+        Integer scopeId = scopes.iterator().next().getId();
+
+        // Vytvoření replace
+        RegRecordVO replacedRecord = new RegRecordVO();
+
+        replacedRecord.setRegisterTypeId(getHierarchicalRegRegisterType(types, null, false).getId());
+
+        replacedRecord.setCharacteristics("Ja jsem regRecordA");
+
+        replacedRecord.setRecord("RegRecordA");
+
+        replacedRecord.setScopeId(scopeId);
+
+        replacedRecord.setHierarchical(true);
+        replacedRecord.setAddRecord(true);
+
+        replacedRecord = createRecord(replacedRecord);
+        Assert.assertNotNull(replacedRecord.getId());
+
+
+        // Vytvoření node register
+        ArrNodeRegisterVO nodeRegister = new ArrNodeRegisterVO();
+
+        nodeRegister.setValue(replacedRecord.getId());
+        nodeRegister.setNodeId(rootNode.getId());
+        nodeRegister.setNode(rootNode);
+
+        ArrNodeRegisterVO createdLink = createRegisterLinks(fundVersion.getId(), rootNode.getId(), nodeRegister);
+
+        assertNotNull(createdLink);
+
+        List<ArrNodeRegisterVO> registerLinks = findRegisterLinks(fundVersion.getId(), rootNode.getId());
+        assertTrue(registerLinks.size()>0);
+
+        ArrangementController.NodeRegisterDataVO registerLinksForm = findRegisterLinksForm(fundVersion.getId(),
+                rootNode.getId());
+
+        assertNotNull(registerLinksForm.getNode());
+        assertTrue(registerLinksForm.getNodeRegisters().size()>0);
+
+        ArrNodeRegisterVO updatedLink = updateRegisterLinks(fundVersion.getId(), rootNode.getId(), createdLink);
+
+        assertTrue(!createdLink.getId().equals(updatedLink.getId()));
+
+
+        // Vytvoření replacement
+        RegRecordVO replacementRecord = new RegRecordVO();
+
+        replacementRecord.setRegisterTypeId(getHierarchicalRegRegisterType(types, null, false).getId());
+
+        replacementRecord.setCharacteristics("Ja jsem regRecordB");
+
+        replacementRecord.setRecord("RegRecordB");
+
+        replacementRecord.setScopeId(scopeId);
+
+        replacementRecord.setHierarchical(true);
+        replacementRecord.setAddRecord(true);
+
+        replacementRecord = createRecord(replacementRecord);
+        Assert.assertNotNull(replacementRecord.getId());
+
+        // Dohledání usages
+        RecordUsageVO usage = usagesRecord(replacedRecord.getId());
+        Assert.assertNotNull(usage.funds);
+
+        // Replace
+        replaceRecord(replacedRecord.getId(), replacementRecord.getId());
+        RecordUsageVO usageAfterReplace = usagesRecord(replacedRecord.getId());
+        Assert.assertTrue(usageAfterReplace.funds == null || usageAfterReplace.funds.isEmpty());
     }
 
     private RegRegisterTypeVO getNonHierarchicalRegRegisterType(final List<RegRegisterTypeVO> list, final boolean hasPartyType) {

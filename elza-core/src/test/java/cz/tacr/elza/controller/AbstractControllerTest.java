@@ -22,6 +22,7 @@ import javax.annotation.Nullable;
 
 import cz.tacr.elza.controller.vo.CreateFundVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
+import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
@@ -252,6 +253,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String INSERT_PARTY = PARTY_CONTROLLER_URL + "/";
     protected static final String UPDATE_PARTY = PARTY_CONTROLLER_URL + "/{partyId}";
     protected static final String DELETE_PARTY = PARTY_CONTROLLER_URL + "/{partyId}";
+    protected static final String USAGE_PARTY = PARTY_CONTROLLER_URL + "/{partyId}/usage";
+    protected static final String REPLACE_PARTY = PARTY_CONTROLLER_URL + "/{partyId}/replace";
 
     protected static final String INSTITUTIONS = PARTY_CONTROLLER_URL + "/institutions";
 
@@ -269,6 +272,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String CREATE_RECORD = REGISTRY_CONTROLLER_URL + "/";
     protected static final String UPDATE_RECORD = REGISTRY_CONTROLLER_URL + "/{recordId}";
     protected static final String DELETE_RECORD = REGISTRY_CONTROLLER_URL + "/{recordId}";
+    protected static final String USAGES_RECORD = REGISTRY_CONTROLLER_URL + "/{recordId}/usage";
+    protected static final String REPLACE_RECORD = REGISTRY_CONTROLLER_URL + "/{recordId}/replace";
 
 
     protected static final String CREATE_REG_COORDINATES = REGISTRY_CONTROLLER_URL + "/regCoordinates/";
@@ -1936,6 +1941,25 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     /**
+     * Nahrazení rejstříkového hesla.
+     *
+     * @param recordId id rejstříkového hesla
+     */
+    protected RecordUsageVO usagesRecord(final Integer recordId) {
+        return get(spec -> spec.pathParam("recordId", recordId), USAGES_RECORD).getBody().as(RecordUsageVO.class);
+    }
+
+    /**
+     * Nahrazení rejstříkového hesla.
+     *
+     * @param replacedId id rejstříkového hesla které nahrazujeme
+     * @param replacementId id rejstříkového hesla kterým nahrazujeme
+     */
+    protected Response replaceRecord(final Integer replacedId, final Integer replacementId) {
+        return post(spec -> spec.pathParam("recordId", replacedId).body(replacementId), REPLACE_RECORD);
+    }
+
+    /**
      * Vyhledávání v RegRecord
      *
      * @param search
@@ -2065,6 +2089,26 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected Response deleteParty(final int partyId) {
         return delete(spec -> spec.pathParam("partyId", partyId), DELETE_PARTY);
+    }
+
+    /**
+     * Použití osoby
+     *
+     * @param partyId id osoby
+     * @return response
+     */
+    protected RecordUsageVO usageParty(final int partyId) {
+        return get(spec -> spec.pathParam("partyId", partyId), USAGE_PARTY).getBody().as(RecordUsageVO.class);
+    }
+
+    /**
+     * Nahrazení osoby
+     *
+     * @param partyId id osoby
+     * @return response
+     */
+    protected Response replaceParty(final int partyId, final int replacementId) {
+        return post(spec -> spec.pathParam("partyId", partyId).body(replacementId), REPLACE_PARTY);
     }
 
     /**

@@ -17,10 +17,12 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.domain.ArrDescItem;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -145,9 +147,6 @@ public class RegistryService {
     private ArrangementCacheService arrangementCacheService;
 
     @Autowired
-    private DescItemRepository descItemRepository;
-
-    @Autowired
     private LevelTreeCacheService levelTreeCacheService;
 
     @Autowired
@@ -158,6 +157,15 @@ public class RegistryService {
 
     @Autowired
     private RelationEntityRepository relationEntityRepository;
+
+    @Autowired
+    private DescriptionItemService descriptionItemService;
+
+    @Autowired
+    private ApplicationContext applicationContext;
+
+    @Autowired
+    private DescItemRepository descItemRepository;
 
     /**
      * Kody tříd rejstříků nastavené v konfiguraci elzy.
@@ -204,7 +212,7 @@ public class RegistryService {
      * @param registerTypeIds typ záznamu
      * @param parentRecordId  id rodičovského rejstříku
      * @param fund   AP, ze které se použijí třídy rejstříků
-     * @param id scope, pokud je vyplněno hledají se rejstříky pouze s tímto scope
+     * @param scopeId scope, pokud je vyplněno hledají se rejstříky pouze s tímto scope
      * @return celkový počet záznamů, který je v db za dané parametry
      */
     public long findRegRecordByTextAndTypeCount(@Nullable final String searchRecord,
@@ -947,6 +955,7 @@ public class RegistryService {
 			ParParty partyRel = rel.getRelation().getParty();
 			PartyVO partyVO = new PartyVO();
 			partyVO.setId(partyRel.getPartyId());
+            // TODO je tohle dobře? dle mého by zde mělo být jméno osoby přes kterou se váže
 			partyVO.setName(record.getRecord());
 
 			OccurrenceVO occurrenceVO = new OccurrenceVO(rel.getRelationEntityId(), OccurrenceType.PAR_RELATION_ENTITY);
@@ -1157,4 +1166,57 @@ public class RegistryService {
 				.map(nr -> new OccurrenceVO(nr.getNodeRegisterId(), OccurrenceType.ARR_NODE_REGISTER))
 				.collect(Collectors.toList());
 	}
+
+    /**
+     * Replace record replaced by record replacement in all usages in JP, NodeRegisters
+     * @param replaced
+     * @param replacement
+     */
+    public void replace(final RegRecord replaced, final RegRecord replacement) {
+
+        final List<ArrDescItem> arrItems = descItemRepository.findArrItemByRecord(replaced);
+        List<ArrNodeRegister> nodeRegisters = nodeRegisterRepository.findByRecordAndDeleteChangeIsNull(replaced);
+        final Set<Integer> funds = nodeRegisters.stream().map(arrNodeRegister -> arrNodeRegister.getNode().getFundId()).collect(Collectors.toSet());
+
+        final Collection<Integer> fundsArr = arrItems.stream().map(ArrDescItem::getFundId).collect(Collectors.toSet());
+        fundsArr.addAll(funds);
+
+
+        final Map<Integer, ArrFundVersion> fundVersions = arrangementService.getOpenVersionsByFundIds(fundsArr).stream().collect(Collectors.toMap(ArrFundVersion::getFundId, Function.identity()));
+
+        final ArrChange change = arrangementService.createChange(ArrChange.Type.REPLACE_REGISTER);
+        arrItems.forEach(i -> {
+            final ArrDataRecordRef data = new ArrDataRecordRef();
+            data.setRecord(replacement);
+            ArrDescItem im = new ArrDescItem();
+            im.setData(data);
+            im.setNode(i.getNode());
+            im.setCreateChange(i.getCreateChange());
+            im.setDeleteChange(i.getDeleteChange());
+            im.setDescItemObjectId(i.getDescItemObjectId());
+            im.setItemId(i.getDescItemObjectId());
+            im.setItemSpec(i.getItemSpec());
+            im.setItemType(i.getItemType());
+            im.setPosition(i.getPosition());
+            descriptionItemService.updateDescriptionItem(im, fundVersions.get(i.getFundId()), change, true);
+        });
+
+        final ParParty party = partyService.findParPartyByRecord(replaced);
+
+        if (party != null) {
+            party.setRecord(replacement);
+            partyService.saveParty(party);
+        }
+
+        final RegistryService self = applicationContext.getBean(RegistryService.class);
+        nodeRegisters.forEach(i -> {
+            final ArrNodeRegister arrNodeRegister = new ArrNodeRegister();
+            arrNodeRegister.setRecord(replacement);
+            arrNodeRegister.setNode(i.getNode());
+            arrNodeRegister.setCreateChange(i.getCreateChange());
+            arrNodeRegister.setDeleteChange(i.getDeleteChange());
+            arrNodeRegister.setNodeRegisterId(i.getNodeRegisterId());
+            self.updateRegisterLink(fundVersions.get(i.getNode().getFundId()).getFundVersionId(), i.getNodeId(), arrNodeRegister);
+        });
+    }
 }

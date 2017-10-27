@@ -32,7 +32,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import com.google.common.collect.Iterables;
 
@@ -871,12 +870,25 @@ public class ArrangementService {
      * @param fundId id archivní pomůcky
      * @return verze
      */
-    public ArrFundVersion getOpenVersionByFundId(@RequestParam(value = "fundId") final Integer fundId) {
+    public ArrFundVersion getOpenVersionByFundId(final Integer fundId) {
         Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
         ArrFundVersion fundVersion = fundVersionRepository
                 .findByFundIdAndLockChangeIsNull(fundId);
 
         return fundVersion;
+    }
+
+    /**
+     * Načte neuzavřené verze archivních pomůcek.
+     *
+     * @param fundIds ids archivních pomůcek
+     * @return verze
+     */
+    public List<ArrFundVersion> getOpenVersionsByFundIds(final Collection<Integer> fundIds) {
+        Assert.notNull(fundIds, "Nebyl vyplněn identifikátor AS");
+        List<ArrFundVersion> fundVersions = fundVersionRepository.findByFundIdsAndLockChangeIsNull(fundIds);
+
+        return fundVersions;
     }
 
     public ArrLevel deleteLevelCascade(final ArrLevel level, final ArrChange deleteChange) {
