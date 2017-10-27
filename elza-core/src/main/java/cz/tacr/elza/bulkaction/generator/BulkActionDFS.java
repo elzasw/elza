@@ -2,19 +2,14 @@ package cz.tacr.elza.bulkaction.generator;
 
 import java.util.List;
 
-import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.bulkaction.ActionRunContext;
 import cz.tacr.elza.bulkaction.BulkAction;
 import cz.tacr.elza.bulkaction.generator.result.Result;
-import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
-import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemType;
@@ -31,35 +26,13 @@ import cz.tacr.elza.repository.DescItemRepository;
  */
 public abstract class BulkActionDFS extends BulkAction {
 
-	protected ArrBulkActionRun bulkActionRun;
-
-	/**
-	 * Verze archivní pomůcky
-	 */
-	protected ArrFundVersion version;
 	protected Result result;
-
-	/**
-	 * Změna
-	 */
-	protected ArrChange change;
 
 	@Autowired
 	protected DescItemRepository descItemRepository;
 
 	@Override
-	@Transactional
 	public void run(ActionRunContext runContext) {
-		this.bulkActionRun = runContext.getBulkActionRun();
-		change = bulkActionRun.getChange();
-
-		init();
-
-		ArrFundVersion version = bulkActionRun.getFundVersion();
-
-		Validate.notNull(version);
-		checkVersion(version);
-		this.version = version;
 
 		ArrNode rootNode = version.getRootNode();
 
@@ -125,11 +98,6 @@ public abstract class BulkActionDFS extends BulkAction {
 		}
 		return descItems.get(0);
 	}
-
-	/**
-	 * Initialize bulk action
-	 */
-	protected abstract void init();
 
 	protected abstract void update(ArrLevel level);
 

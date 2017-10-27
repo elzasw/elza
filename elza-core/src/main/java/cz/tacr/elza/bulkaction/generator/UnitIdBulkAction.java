@@ -6,16 +6,12 @@ import java.util.List;
 
 import org.apache.commons.lang.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 import cz.tacr.elza.bulkaction.ActionRunContext;
 import cz.tacr.elza.bulkaction.BulkAction;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.bulkaction.generator.result.UnitIdResult;
-import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
-import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.domain.ArrChange;
@@ -23,7 +19,6 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -45,11 +40,6 @@ public class UnitIdBulkAction extends BulkAction {
      * Identifikátor hromadné akce
      */
     public static final String TYPE = "GENERATOR_UNIT_ID";
-
-    /**
-     * Verze archivní pomůcky
-     */
-    private ArrFundVersion version;
 
     /**
      * Změna
@@ -92,11 +82,6 @@ public class UnitIdBulkAction extends BulkAction {
     private List<String> delimiterMajorLevelTypeNotUseList;
 
     /**
-     * Stav hromadné akce
-     */
-    private ArrBulkActionRun bulkActionRun;
-
-    /**
      * Počet změněných položek.
      */
     private Integer countChanges = 0;
@@ -106,9 +91,6 @@ public class UnitIdBulkAction extends BulkAction {
 
     @Autowired
     private DescItemFactory descItemFactory;
-
-	@Autowired
-	private StaticDataService staticDataService;
 
 	protected final UnitIdConfig config;
 
@@ -121,10 +103,9 @@ public class UnitIdBulkAction extends BulkAction {
 	 * Inicializace hromadné akce.
 	 *
 	 */
-	private void init() {
-		StaticDataProvider sdp = staticDataService.getData();
-		RuleSystem ruleSystem = sdp.getRuleSystems().getByRuleSetCode(config.getRules());
-		Validate.notNull(ruleSystem, "Rule system not available, code:" + config.getRules());
+	@Override
+	protected void init(ArrBulkActionRun bulkActionRun) {
+		super.init(bulkActionRun);
 
 		// read item type for UnitId
 		String unitIdCode = config.getItemType();
@@ -320,18 +301,8 @@ public class UnitIdBulkAction extends BulkAction {
     }
 
 
-    @Override
-    @Transactional
+	@Override
 	public void run(ActionRunContext runContext) {
-		this.bulkActionRun = runContext.getBulkActionRun();
-		init();
-
-        ArrFundVersion version = fundVersionRepository.findOne(bulkActionRun.getFundVersionId());
-
-		Validate.notNull(version);
-        checkVersion(version);
-        this.version = version;
-
         ArrNode rootNode = version.getRootNode();
 
 		for (Integer nodeId : runContext.getInputNodeIds()) {

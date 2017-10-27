@@ -120,7 +120,7 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
 			// prepare context object
 			ActionRunContext runContext = new ActionRunContext(inputNodeIds, bulkActionRun);
 
-			bulkAction.run(runContext);
+			bulkAction.execute(runContext);
 
             //Thread.sleep(30000); // PRO TESTOVÁNÍ A DALŠÍ VÝVOJ
 

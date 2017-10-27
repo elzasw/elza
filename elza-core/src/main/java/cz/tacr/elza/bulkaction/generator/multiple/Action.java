@@ -6,7 +6,6 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import cz.tacr.elza.bulkaction.ActionRunContext;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.core.data.DataType;
@@ -14,9 +13,10 @@ import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ItemSpecRepository;
@@ -42,7 +42,7 @@ public abstract class Action {
 	 * 
 	 * @param runContext
 	 */
-	abstract public void init(ActionRunContext runContext);
+	abstract public void init(ArrBulkActionRun bulkActionRun);
 
     /**
      * Aplikování akce na uzel.
@@ -65,10 +65,10 @@ public abstract class Action {
 	 * 
 	 * @return
 	 */
-	RuleSystem getRuleSystem(ActionRunContext runContext) {
-		RulRuleSet rrs = runContext.getFundVersion().getRuleSet();
+	RuleSystem getRuleSystem(ArrBulkActionRun bulkActionRun) {
+		ArrFundVersion version = bulkActionRun.getFundVersion();
 		StaticDataProvider sdp = staticDataService.getData();
-		return sdp.getRuleSystems().getByRuleSetId(rrs.getRuleSetId());
+		return sdp.getRuleSystems().getByRuleSetId(version.getRuleSetId());
 	}
 
     /**

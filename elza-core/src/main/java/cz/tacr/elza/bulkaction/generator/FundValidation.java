@@ -6,16 +6,12 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.bulkaction.ActionRunContext;
 import cz.tacr.elza.bulkaction.BulkAction;
 import cz.tacr.elza.bulkaction.BulkActionService;
-import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.exception.BusinessException;
@@ -31,21 +27,6 @@ public class FundValidation extends BulkAction {
      * Identifikátor hromadné akce
      */
     public static final String TYPE = "FUND_VALIDATION";
-
-    /**
-     * Verze archivní pomůcky
-     */
-    private ArrFundVersion version;
-
-    /**
-     * Změna
-     */
-    private ArrChange change;
-
-    /**
-     * Stav hromadné akce
-     */
-    private ArrBulkActionRun bulkActionRun;
 
     @Autowired
     private UpdateConformityInfoService updateConformityInfoService;
@@ -77,15 +58,7 @@ public class FundValidation extends BulkAction {
     }
 
     @Override
-    @Transactional
 	public void run(ActionRunContext runContext) {
-		this.bulkActionRun = runContext.getBulkActionRun();
-
-        ArrFundVersion version = bulkActionRun.getFundVersion();
-
-		Validate.notNull(version);
-        checkVersion(version);
-        this.version = version;
 
         // v případě, že existuje nějaké přepočítávání uzlů, je nutné to ukončit
         updateConformityInfoService.terminateWorkerInVersion(version);

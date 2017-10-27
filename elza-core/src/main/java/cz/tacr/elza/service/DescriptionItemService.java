@@ -19,6 +19,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.Validate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -422,16 +423,16 @@ public class DescriptionItemService {
     public ArrDescItem createDescriptionItem(final ArrDescItem descItem,
                                              final ArrNode node,
                                              final ArrFundVersion version,
-                                             @Nullable final ArrChange createChange) {
+	        final ArrChange createChange) {
 
-        ArrChange change = createChange == null ? arrangementService.createChange(ArrChange.Type.ADD_DESC_ITEM, node) : createChange;
+		Validate.notNull(createChange);
 
         descItem.setNode(node);
-        descItem.setCreateChange(change);
+		descItem.setCreateChange(createChange);
         descItem.setDeleteChange(null);
         descItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
 
-        ArrDescItem descItemCreated = createDescriptionItemWithData(descItem, version, change);
+		ArrDescItem descItemCreated = createDescriptionItemWithData(descItem, version, createChange);
 
         // validace uzlu
         ruleService.conformityInfo(version.getFundVersionId(), Collections.singletonList(descItem.getNode().getNodeId()),

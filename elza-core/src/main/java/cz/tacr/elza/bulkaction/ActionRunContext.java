@@ -30,18 +30,6 @@ public class ActionRunContext {
 		return bulkActionRun;
 	}
 
-	/**
-	 * Return ID of the required rule system
-	 * 
-	 * @return
-	 */
-	Integer getRulSystemId() {
-		ArrFundVersion fundVersion = bulkActionRun.getFundVersion();
-		Validate.notNull(fundVersion);
-		//TODO: Return ruleset id without fetching rule set
-		return fundVersion.getRuleSet().getRuleSetId();
-	}
-
 	public ArrFundVersion getFundVersion() {
 		ArrFundVersion fundVersion = bulkActionRun.getFundVersion();
 		Validate.notNull(fundVersion);

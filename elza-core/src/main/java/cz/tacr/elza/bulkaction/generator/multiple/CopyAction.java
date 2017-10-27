@@ -7,19 +7,17 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.apache.commons.lang3.Validate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.bulkaction.ActionRunContext;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.CopyActionResult;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 
@@ -46,9 +44,6 @@ public class CopyAction extends Action {
 	 */
     private List<ArrDescItem> dataItems = new ArrayList<>();
 
-    @Autowired
-    private DescItemFactory descItemFactory;
-
 	final CopyConfig config;
 
 	CopyAction(final CopyConfig config) {
@@ -57,8 +52,8 @@ public class CopyAction extends Action {
     }
 
     @Override
-	public void init(ActionRunContext runContext) {
-		RuleSystem ruleSystem = getRuleSystem(runContext);
+	public void init(ArrBulkActionRun bulkActionRun) {
+		RuleSystem ruleSystem = getRuleSystem(bulkActionRun);
 
 		String outputType = config.getOutputType();
 		outputItemType = ruleSystem.getItemTypeByCode(outputType);

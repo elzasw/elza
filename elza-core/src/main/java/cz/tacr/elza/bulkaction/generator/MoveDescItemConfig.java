@@ -5,7 +5,7 @@ import cz.tacr.elza.bulkaction.BulkAction;
 
 public class MoveDescItemConfig extends BaseActionConfig {
 
-	static class ItemSource {
+	public static class ItemSource {
 		String itemType;
 
 		public String getItemType() {
@@ -17,7 +17,7 @@ public class MoveDescItemConfig extends BaseActionConfig {
 		}
 	}
 
-	static class ItemTarget {
+	public static class ItemTarget {
 		String itemType;
 		String itemSpec;
 

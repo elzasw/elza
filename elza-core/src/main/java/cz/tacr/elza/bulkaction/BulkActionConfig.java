@@ -17,8 +17,6 @@ public abstract interface BulkActionConfig {
 
 	public void setCode(String code);
 
-	public String getRules();
-
 	public String getDescription();
 
 	abstract public BulkAction createBulkAction();

@@ -2,9 +2,15 @@ package cz.tacr.elza.bulkaction;
 
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import cz.tacr.elza.core.data.RuleSystem;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -20,8 +26,6 @@ import cz.tacr.elza.service.DescriptionItemService;
 /**
  * Abstraktní třída pro tvorbu hromadných akcí.
  *
- * @author Martin Šlapa
- * @since 21.10.2015
  */
 public abstract class BulkAction {
 
@@ -36,6 +40,50 @@ public abstract class BulkAction {
 
     @Autowired
     protected DescriptionItemService descriptionItemService;
+    
+	@Autowired
+	protected StaticDataService staticDataService;
+
+	/**
+	 * Static data provider is set in init method
+	 */
+	protected StaticDataProvider staticDataProvider;
+
+	/**
+	 * Verze archivní pomůcky
+	 */
+	protected ArrFundVersion version;
+
+	/**
+	 * Stav hromadné akce
+	 */
+	protected ArrBulkActionRun bulkActionRun;
+
+	protected RuleSystem ruleSystem;
+
+	/**
+	 * Změna
+	 */
+	protected ArrChange getChange() {
+		return bulkActionRun.getChange();
+	}
+
+	/**
+	 * Init method, this method prepare ruleSystem and other fields.
+	 * 
+	 * Method can be specialized in each implementation.
+	 */
+	protected void init(ArrBulkActionRun bulkActionRun) {
+		this.bulkActionRun = bulkActionRun;
+
+		this.version = fundVersionRepository.findOne(bulkActionRun.getFundVersionId());
+		Validate.notNull(version);
+		checkVersion(version);
+
+		staticDataProvider = staticDataService.getData();
+		ruleSystem = staticDataProvider.getRuleSystems().getByRuleSetId(version.getRuleSetId());
+		Validate.notNull(ruleSystem, "Rule system not available, id: {}", version.getRuleSetId());
+	}
 
     /**
      * Abstrakní metoda pro spuštění hromadné akce.
@@ -109,4 +157,15 @@ public abstract class BulkAction {
             throw new BusinessException("Nelze aplikovat na uzavřenou verzi archivní pomůcky", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
     }
+
+	@Transactional
+	public void execute(ActionRunContext runContext) {
+
+		// Initialize bulk action
+		init(runContext.getBulkActionRun());
+
+		// Run action
+		run(runContext);
+
+	}
 }

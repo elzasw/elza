@@ -5,13 +5,13 @@ import java.util.List;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.bulkaction.ActionRunContext;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.DateRangeActionResult;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrItem;
@@ -93,8 +93,8 @@ public class DateRangeAction extends Action {
 	}
 
     @Override
-	public void init(ActionRunContext runContext) {
-		RuleSystem ruleSystem = this.getRuleSystem(runContext);
+	public void init(ArrBulkActionRun bulkActionRun) {
+		RuleSystem ruleSystem = this.getRuleSystem(bulkActionRun);
 
 		// prepare output type
 		String outputType = config.getOutputType();

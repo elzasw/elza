@@ -1,15 +1,12 @@
 package cz.tacr.elza.bulkaction.generator;
 
 import org.apache.commons.lang3.Validate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.bulkaction.generator.result.SerialNumberResult;
-import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
-import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -43,9 +40,6 @@ public class SerialNumberBulkAction extends BulkActionDFS {
      */
     private Integer countChanges = 0;
 
-	@Autowired
-	private StaticDataService staticDataService;
-
 	protected final SerialNumberConfig config;
 
 	SerialNumberBulkAction(SerialNumberConfig config) {
@@ -59,10 +53,8 @@ public class SerialNumberBulkAction extends BulkActionDFS {
      * @param bulkActionConfig nastavení hromadné akce
      */
 	@Override
-	protected void init() {
-		StaticDataProvider sdp = staticDataService.getData();
-		RuleSystem ruleSystem = sdp.getRuleSystems().getByRuleSetCode(config.getRules());
-		Validate.notNull(ruleSystem, "Rule system not available, code:" + config.getRules());
+	protected void init(ArrBulkActionRun bulkActionRun) {
+		super.init(bulkActionRun);
 
 		// prepare item type
 		RuleSystemItemType itemType = ruleSystem.getItemTypeByCode(config.getItemType());
@@ -109,7 +101,7 @@ public class SerialNumberBulkAction extends BulkActionDFS {
         // uložit pouze při rozdílu
 		if (item.getValue() == null || sn != item.getValue()) {
             item.setValue(sn);
-            ArrDescItem ret = saveDescItem(descItem, version, change);
+			ArrDescItem ret = saveDescItem(descItem, version, getChange());
             level.setNode(ret.getNode());
             countChanges++;
         }
