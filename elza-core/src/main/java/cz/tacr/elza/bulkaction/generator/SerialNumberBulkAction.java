@@ -1,5 +1,6 @@
 package cz.tacr.elza.bulkaction.generator;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -9,11 +10,13 @@ import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 
 
@@ -26,9 +29,9 @@ import cz.tacr.elza.exception.codes.BaseCode;
 public class SerialNumberBulkAction extends BulkActionDFS {
 
     /**
-     * Pomocná třída pro generování pořadových čísel
-     */
-	final private SerialNumber serialNumber = new SerialNumber();
+	 * Number generator
+	 */
+	private Generator generator;
 
     /**
      * Typ atributu
@@ -60,6 +63,23 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 		RuleSystemItemType itemType = ruleSystem.getItemTypeByCode(config.getItemType());
 		Validate.notNull(itemType);
 
+		// check if supported type
+		switch (itemType.getDataType()) {
+		case INT:
+			if (config.getUseCurrentNumbering()) {
+				throw new SystemException("Unsupported item type: " + itemType.getDataType().getCode(),
+				        BaseCode.SYSTEM_ERROR);
+			}
+			generator = new IntegerGenerator();
+			break;
+		case STRING:
+			generator = new StringGenerator(config.getUseCurrentNumbering());
+			break;
+		default:
+			throw new SystemException("Unsupported item type: " + itemType.getDataType().getCode(),
+			        BaseCode.SYSTEM_ERROR);
+		}
+
 		descItemType = itemType.getEntity();
     }
 
@@ -72,39 +92,13 @@ public class SerialNumberBulkAction extends BulkActionDFS {
         ArrNode currNode = level.getNode();
 
 		ArrDescItem descItem = loadSingleDescItem(currNode, descItemType);
-        int sn = serialNumber.getNext();
-
-		ArrDataInteger item;
-
-        // vytvoření nového atributu
         if (descItem == null) {
             descItem = new ArrDescItem();
             descItem.setItemType(descItemType);
             descItem.setNode(currNode);
-			item = new ArrDataInteger();
-			descItem.setData(item);
-		} else if (descItem.isUndefined()) {
-			item = new ArrDataInteger();
-			descItem.setData(item);
-		} else {
-			ArrData data = descItem.getData();
-			if (!(data instanceof ArrDataInteger)) {
-				throw new BusinessException(descItemType.getCode() + " není typu ArrDescItemInt",
-				        BaseCode.PROPERTY_HAS_INVALID_TYPE)
-				                .set("property", descItemType.getCode())
-				                .set("expected", "ArrItemInt")
-				                .set("actual", descItem.getData().getClass().getSimpleName());
-			}
-			item = (ArrDataInteger) data;
         }
 
-        // uložit pouze při rozdílu
-		if (item.getValue() == null || sn != item.getValue()) {
-            item.setValue(sn);
-			ArrDescItem ret = saveDescItem(descItem, version, getChange());
-            level.setNode(ret.getNode());
-            countChanges++;
-        }
+		this.generator.generate(descItem);
     }
 
 	protected void done() {
@@ -114,21 +108,142 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 		this.result.getResults().add(snr);
 	}
 
+	private interface Generator {
+		void generate(ArrDescItem descItem);
+	}
+
     /**
      * Generátor pořadových čísel.
      */
-    private class SerialNumber {
+	private class IntegerGenerator
+	        implements Generator {
 
-        private int i;
+        private int counter;
 
-        public SerialNumber() {
-            this.i = 0;
+		public IntegerGenerator() {
+            this.counter = 0;
         }
 
-        public int getNext() {
-            return ++i;
-        }
+		@Override
+		public void generate(ArrDescItem descItem) {
+
+			ArrDataInteger item;
+			ArrData data = descItem.getData();
+			// vytvoření nového atributu
+			if (data == null) {
+				item = new ArrDataInteger();
+				descItem.setData(item);
+			} else {
+				if (!(data instanceof ArrDataInteger)) {
+					throw new BusinessException(descItemType.getCode() + " není typu ArrDescItemInt",
+					        BaseCode.PROPERTY_HAS_INVALID_TYPE)
+					                .set("property", descItemType.getCode())
+					                .set("expected", "ArrItemInt")
+					                .set("actual", descItem.getData().getClass().getSimpleName());
+				}
+				item = (ArrDataInteger) data;
+			}
+
+			Integer currValue = item.getValue();
+
+			counter++;
+			// uložit pouze při rozdílu
+			if (currValue == null || counter != currValue) {
+				item.setValue(counter);
+				ArrDescItem ret = saveDescItem(descItem, version, getChange());
+				//level.setNode(ret.getNode());
+				countChanges++;
+			}
+		}
+
     }
+
+	private class StringGenerator
+	        implements Generator {
+		private int counter = 0;
+
+		private String prefix = "";
+
+		private int minLength;
+
+		private boolean useCurrentNumbering;
+		public StringGenerator(boolean useCurrentNumbering) {
+			this.useCurrentNumbering = useCurrentNumbering;
+		}
+
+		protected void setLastNumber(String lastNumber) {
+			minLength = lastNumber.length();
+
+			int pos = minLength;
+
+			// 
+			while (pos > 0) {
+				char c = lastNumber.charAt(pos - 1);
+				if (c < '0' || c > '9') {
+					break;
+				}
+				pos--;
+			}
+			if (pos > 0) {
+				prefix = lastNumber.substring(0, pos);
+				counter = Integer.parseInt(lastNumber.substring(pos));
+			} else {
+				prefix = "";
+				counter = Integer.parseInt(lastNumber);
+			}
+		}
+
+		private String prepareValue() {
+			String numberPart;
+			if (minLength < 1) {
+				numberPart = Integer.valueOf(counter).toString();
+			} else {
+				String format = String.format("%%0%dd", minLength - prefix.length());
+				numberPart = String.format(format, counter);
+			}
+
+			return prefix + numberPart;
+		}
+
+		@Override
+		public void generate(ArrDescItem descItem) {
+			ArrDataString item;
+			ArrData data = descItem.getData();
+			// vytvoření nového atributu
+			if (data == null) {
+				item = new ArrDataString();
+				descItem.setData(item);
+			} else {
+				if (!(data instanceof ArrDataString)) {
+					throw new BusinessException(descItemType.getCode() + " není typu ArrDataString",
+					        BaseCode.PROPERTY_HAS_INVALID_TYPE)
+					                .set("property", descItemType.getCode())
+					                .set("expected", "ArrDataString")
+					                .set("actual", descItem.getData().getClass().getSimpleName());
+				}
+				item = (ArrDataString) data;
+			}
+
+			String currValue = item.getValue();
+
+			counter++;
+
+			if (useCurrentNumbering && StringUtils.isNotBlank(currValue)) {
+				// read current value
+				setLastNumber(currValue);
+			} else {
+				String nextValue = prepareValue();
+
+				// uložit pouze při rozdílu
+				if (currValue == null || !nextValue.equals(currValue)) {
+					item.setValue(nextValue);
+					ArrDescItem ret = saveDescItem(descItem, version, getChange());
+					//level.setNode(ret.getNode());
+					countChanges++;
+				}
+			}
+		}
+	}
 
     @Override
 	public String getName() {

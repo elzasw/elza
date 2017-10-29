@@ -11,12 +11,22 @@ public class SerialNumberConfig extends BaseActionConfig {
 
 	String itemType;
 
+	boolean useCurrentNumbering = false;
+
 	public String getItemType() {
 		return itemType;
 	}
 
 	public void setItemType(String itemType) {
 		this.itemType = itemType;
+	}
+
+	public boolean getUseCurrentNumbering() {
+		return useCurrentNumbering;
+	}
+
+	public void setUseCurrentNumbering(boolean useCurrentNumbering) {
+		this.useCurrentNumbering = useCurrentNumbering;
 	}
 
 	@Override
