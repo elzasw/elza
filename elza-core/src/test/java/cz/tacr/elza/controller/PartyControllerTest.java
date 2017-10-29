@@ -4,35 +4,24 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
+import cz.tacr.elza.repository.PartyRepository;
 import org.junit.Assert;
 import org.junit.Test;
-
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ParComplementTypeVO;
-import cz.tacr.elza.controller.vo.ParDynastyVO;
-import cz.tacr.elza.controller.vo.ParEventVO;
-import cz.tacr.elza.controller.vo.ParPartyGroupIdentifierVO;
-import cz.tacr.elza.controller.vo.ParPartyGroupVO;
-import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
-import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyNameVO;
-import cz.tacr.elza.controller.vo.ParPartyTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParPersonVO;
-import cz.tacr.elza.controller.vo.ParRelationEntityVO;
-import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.ParUnitdateVO;
-import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
  * Test party creation and some updates
  */
 public class PartyControllerTest extends AbstractControllerTest {
+
+    @Autowired
+    PartyRepository partyRepository;
 
     private static final String PERSON_TYPE_CODE = "PERSON";
     private static final String GROUP_PARTY_TYPE_CODE = "GROUP_PARTY";
@@ -220,23 +209,23 @@ public class PartyControllerTest extends AbstractControllerTest {
         newPersonName.setNote("Poznámka jména");
         newPersonName.setValidFrom(testFromDate);
         newPersonName.setValidTo(testToDate);
-        
+
         // complement
-        ParPartyNameComplementVO complement1 = new ParPartyNameComplementVO();        
-        complement1.setComplement("IV");        
+        ParPartyNameComplementVO complement1 = new ParPartyNameComplementVO();
+        complement1.setComplement("IV");
         ParComplementTypeVO complType = findComplementTypeByCode(typeO1.getComplementTypes(), "GENERAL");
         Assert.assertNotNull(complType);
         complement1.setComplementTypeId(complType.getComplementTypeId());
-        
+
         // complement 2
         ParPartyNameComplementVO complement2 = new ParPartyNameComplementVO();
         complement2.setComplement("rozpis");
         complType = findComplementTypeByCode(typeO1.getComplementTypes(), "INITIALS");
         Assert.assertNotNull(complType);
         complement2.setComplementTypeId(complType.getComplementTypeId());
-        
+
         newPersonName.setPartyNameComplements(Arrays.asList(complement1, complement2));
-        
+
         personO1.setPartyNames(Arrays.asList(partyNameO1, newPersonName));
         personO1 = (ParPersonVO) updateParty(personO1);
 
@@ -416,6 +405,126 @@ public class PartyControllerTest extends AbstractControllerTest {
         Assert.assertTrue("Očekáváme 3 záznamy", parties.size() == 3);
         partyList = findPartyForParty(personO1.getId(), null, null, null, null, null);
         Assert.assertTrue("Očekáváme 3 záznamy", partyList.size() == 3);
+    }
+
+
+
+    private ParPersonVO givePerson(String baseName) {
+        return givePerson(faScopes().iterator().next(), baseName);
+    }
+
+    private ParPersonVO givePerson(RegScopeVO scope, String baseName) {
+        List<ParPartyTypeVO> partyTypes = getPartyTypes();
+
+        ParPartyTypeVO typeO1 = findPartyTypeByCode(partyTypes, PERSON_TYPE_CODE);
+        Assert.assertNotNull("Očekáváme základní typy osob", typeO1);
+
+        List<ParPartyNameFormTypeVO> nameTypes = getPartyNameFormTypes();
+
+        ParPartyNameFormTypeVO typePrimaryName = findPartyNameFormByCode(nameTypes, PRIMARY_NAME_TYPE_CODE);
+
+        /* Vytvoření osoby **/
+        ParPersonVO personO1 = new ParPersonVO();
+        RegRecordVO recordO1 = new RegRecordVO();
+
+        recordO1.setRegisterTypeId(findRegisterTypeAddable(recordTypesForPartyType(typeO1.getId())).getId());
+        recordO1.setScopeId(scope.getId());
+        personO1.setRecord(recordO1);
+        personO1.setPartyType(typeO1);
+
+        ParPartyNameVO partyNameO1 = new ParPartyNameVO();
+        partyNameO1.setDegreeAfter(baseName + " After");
+        partyNameO1.setDegreeBefore(baseName + " Before");
+        partyNameO1.setOtherPart(baseName + " Other");
+        partyNameO1.setNote(baseName + " Note");
+        partyNameO1.setDisplayName(baseName);
+        partyNameO1.setMainPart(baseName);
+        partyNameO1.setPrefferedName(true);
+
+        partyNameO1.setNameFormType(typePrimaryName);
+        personO1.setPartyNames(Collections.singletonList(partyNameO1));
+
+        return (ParPersonVO) createParty(personO1);
+
+    }
+
+    @Test
+    public void replacePartyTest() {
+        // Vytvoření fund
+        ArrFundVO fund = createFund("RegisterLinks Test AP", "IC3");
+
+        ArrFundVersionVO fundVersion = getOpenVersion(fund);
+
+        ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
+        input.setVersionId(fundVersion.getId());
+        TreeData treeData = getFundTree(input);
+
+        List<ArrNodeVO> nodes = convertTreeNodes(treeData.getNodes());
+        ArrNodeVO rootNode = nodes.get(0);
+
+        List<RegRegisterTypeVO> types = getRecordTypes();
+        List<RegScopeVO> scopes = getAllScopes();
+        Integer scopeId = scopes.iterator().next().getId();
+
+        final ParPersonVO personO1 = givePerson("O1");
+
+        //Arr connection
+        final RulDescItemTypeExtVO type = findDescItemTypeByCode("ZP2015_ORIGINATOR");
+        final ArrItemVO descItem = buildDescItem(type.getCode(), null, personO1, null, null);
+        createDescItem(descItem, fundVersion, rootNode, type);
+
+        /* Testovací datumy **/
+        ArrCalendarTypeVO gregorian = findCalendarByCode(getCalendarTypes(), "GREGORIAN");
+        Assert.assertNotNull(gregorian);
+        Assert.assertNotNull(gregorian.getId());
+
+        List<ParPartyTypeVO> partyTypes = getPartyTypes();
+
+        ParPartyTypeVO typeO1 = findPartyTypeByCode(partyTypes, personO1.getPartyType().getCode());
+        Assert.assertNotNull(typeO1);
+
+        /* Test zda neexistuje nějaké heslo s tímto typem pro přidání (test metody findRecordForRelation) **/
+        ParRelationTypeVO spawnRelationType = findRelationTypeByCode(typeO1.getRelationTypes(), "ACTIVE_FROM");
+        Assert.assertNotNull(spawnRelationType);
+        ParRelationRoleTypeVO spawnRelationRoleType = findRelationRoleTypeByCode(spawnRelationType.getRelationRoleTypes(), "RELATED");
+        Assert.assertNotNull(spawnRelationRoleType);
+
+        ParUnitdateVO testFromDate = new ParUnitdateVO();
+        testFromDate.setCalendarTypeId(gregorian.getId());
+        testFromDate.setTextDate("2.2.2012");
+        ParUnitdateVO testToDate = new ParUnitdateVO();
+        testToDate.setCalendarTypeId(gregorian.getId());
+        testToDate.setTextDate("2.3.2012");
+
+        final ParPersonVO relationPerson = givePerson("relation");
+
+        /* Vznik **/
+        ParRelationVO relation = new ParRelationVO();
+        ParRelationEntityVO spawnRelationEntity = new ParRelationEntityVO();
+        spawnRelationEntity.setRecord(personO1.getRecord());
+
+        spawnRelationEntity.setRoleType(spawnRelationRoleType);
+        relation.setRelationEntities(Collections.singletonList(spawnRelationEntity));
+        relation.setRelationTypeId(spawnRelationType.getId());
+        relation.setFrom(testFromDate);
+        relation.setTo(testToDate);
+        relation.setPartyId(relationPerson.getId());
+        relation = insertRelation(relation);
+
+
+        RecordUsageVO response = usageParty(personO1.getId());
+
+        Assert.assertFalse(response.funds == null || response.funds.isEmpty());
+        Assert.assertFalse(response.parties == null || response.parties.isEmpty());
+
+        /* Vytvoření osoby replacement **/
+        ParPersonVO personO2 = givePerson("replacement");
+
+        replaceParty(personO1.getId(), personO2.getId());
+
+        response = usageParty(personO1.getId());
+        Assert.assertTrue(response.funds == null || response.funds.isEmpty());
+        Assert.assertTrue(response.parties == null || response.parties.isEmpty());
     }
 
 

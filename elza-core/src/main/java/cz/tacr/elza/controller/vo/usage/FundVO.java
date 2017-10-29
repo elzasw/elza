@@ -9,13 +9,16 @@ import java.util.Objects;
  */
 public class FundVO {
 
-	private Integer id;
+	public Integer id;
 
-	private String name;
+	public String name;
 
-	private Integer nodeCount;
+	public Integer nodeCount;
 
-	private List<NodeVO> nodes;
+	public List<NodeVO> nodes;
+
+	public FundVO() {
+	}
 
 	public FundVO(final Integer id, final String name, final Integer nodeCount,
 			final List<NodeVO> nodes) {
@@ -23,22 +26,6 @@ public class FundVO {
 		this.name = name;
 		this.nodeCount = nodeCount;
 		this.nodes = nodes;
-	}
-
-	public Integer getId() {
-		return id;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public Integer getNodeCount() {
-		return nodeCount;
-	}
-
-	public List<NodeVO> getNodes() {
-		return nodes;
 	}
 
 	@Override

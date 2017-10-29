@@ -239,6 +239,16 @@ public class ArrChange {
         /**
          * Úprava dat výstupu.
          */
-        UPDATE_OUTPUT
+        UPDATE_OUTPUT,
+
+        /**
+         * Register replace
+         */
+        REPLACE_REGISTER,
+
+        /**
+         * Party replace
+         */
+        REPLACE_PARTY
     }
 }

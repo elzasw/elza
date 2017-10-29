@@ -99,8 +99,8 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.partyUrl + '/', {search, from, count, partyTypeId, versionId, itemSpecId, scopeId});
     }
 
-    findPartyUsage(recordId){
-        return AjaxUtils.ajaxGet(WebApiCls.partyUrl + "/findUsage/" + recordId);
+    findPartyUsage(partyId) {
+        return AjaxUtils.ajaxGet(WebApiCls.partyUrl + '/' + partyId + '/usage');
     }
 
     findPartyForParty(partyId, search = null, from = 0, count = DEFAULT_LIST_SIZE) {
@@ -111,13 +111,13 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.partyUrl + '/' + party.id, null, party);
     }
 
-    //TODO Název
-    replaceParty(prevRegistry, newRegistry) {
-        return AjaxUtils.ajaxPut(WebApiCls.partyUrl + '/replace' + prevRegistry.id + '/' + newRegistry.id);
+    replaceParty(partyReplaceId, partyReplacementId) {
+        return AjaxUtils.ajaxPost(WebApiCls.partyUrl + '/' + partyReplaceId + '/replace', null, partyReplacementId);
     }
+
     //TODO Název
-    setValidParty(record) {
-        return AjaxUtils.ajaxPut(WebApiCls.partyUrl + '/setValid' + record.id);
+    setValidParty(partyId) {
+        return AjaxUtils.ajaxPost(WebApiCls.partyUrl + '/' + partyId + '/valid');
     }
 
     deleteParty(partyId) {
@@ -382,8 +382,8 @@ export class WebApiCls {
         });
     }
 
-    findRegistryUsage(recordId){
-        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + "/findUsage/" + recordId);
+    findRegistryUsage(recordId) {
+        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + recordId + '/usage');
     }
 
     findRecordForRelation(search = null, roleTypeId = null, partyId = null, from = 0, count = DEFAULT_LIST_SIZE) {
@@ -405,8 +405,8 @@ export class WebApiCls {
     }
 
     //TODO Název
-    replaceRegistry(prevRegistry, newRegistry) {
-        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/replace' + prevRegistry.id + '/' + newRegistry.id, null, record);
+    replaceRegistry(recordReplaceId, recordReplacementId) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + recordReplaceId + '/replace', null, recordReplacementId);
     }
     //TODO Název
     setValidRegistry(record) {

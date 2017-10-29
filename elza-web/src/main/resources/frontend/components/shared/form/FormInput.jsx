@@ -54,7 +54,7 @@ class FormInput extends AbstractReactComponent {
                     {label && <ControlLabel>{label}</ControlLabel>}
                     <FormControl
                         ref='input'
-                        value={value ? value : ""}
+                        value={value}
                         children={children}
                         type={type}
                         {...otherProps}
