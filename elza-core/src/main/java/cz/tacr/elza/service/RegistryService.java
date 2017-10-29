@@ -258,7 +258,6 @@ public class RegistryService {
             throw new BusinessException("Nelze smazat rejstříkové heslo, které má potomky.", RegistryCode.EXISTS_CHILD);
         }
 
-
     }
 
     /**
@@ -352,15 +351,20 @@ public class RegistryService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL, UsrPermission.Permission.REG_SCOPE_WR})
     public void deleteRecord(@AuthParam(type = AuthParam.Type.SCOPE) final RegRecord record, final boolean checkUsage) {
-        if(checkUsage){
+        if (checkUsage) {
             checkRecordUsage(record);
         }
 
-        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.RECORD_CREATE, record.getRecordId()));
+        if (canBeDeleted(record)) {
+            eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.RECORD_DELETE, record.getRecordId()));
 
-        variantRecordRepository.delete(variantRecordRepository.findByRegRecordId(record.getRecordId()));
-        regCoordinatesRepository.delete(regCoordinatesRepository.findByRegRecordId(record.getRecordId()));
-        regRecordRepository.delete(record);
+            variantRecordRepository.delete(variantRecordRepository.findByRegRecordId(record.getRecordId()));
+            regCoordinatesRepository.delete(regCoordinatesRepository.findByRegRecordId(record.getRecordId()));
+            regRecordRepository.delete(record);
+        } else {
+            record.setInvalid(true);
+            saveRecord(record, false);
+        }
     }
 
 
@@ -1218,5 +1222,11 @@ public class RegistryService {
             arrNodeRegister.setNodeRegisterId(i.getNodeRegisterId());
             self.updateRegisterLink(fundVersions.get(i.getNode().getFundId()).getFundVersionId(), i.getNodeId(), arrNodeRegister);
         });
+    }
+
+    public boolean canBeDeleted(RegRecord record) {
+        return CollectionUtils.isEmpty(dataRecordRefRepository.findByRecord(record)) &&
+                CollectionUtils.isEmpty(nodeRegisterRepository.findByRecordId(record)) &&
+                CollectionUtils.isEmpty(relationEntityRepository.findByRecord(record));
     }
 }

@@ -116,8 +116,8 @@ export class WebApiCls {
     }
 
     //TODO Název
-    setValidParty(record) {
-        return AjaxUtils.ajaxPut(WebApiCls.partyUrl + '/setValid' + record.id);
+    setValidParty(partyId) {
+        return AjaxUtils.ajaxPost(WebApiCls.partyUrl + '/' + partyId + '/valid');
     }
 
     deleteParty(partyId) {
