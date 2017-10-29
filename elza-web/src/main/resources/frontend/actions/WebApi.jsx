@@ -115,7 +115,6 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.partyUrl + '/' + partyReplaceId + '/replace', null, partyReplacementId);
     }
 
-    //TODO Název
     setValidParty(partyId) {
         return AjaxUtils.ajaxPost(WebApiCls.partyUrl + '/' + partyId + '/valid');
     }
@@ -404,13 +403,12 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/' + record.id, null, record);
     }
 
-    //TODO Název
     replaceRegistry(recordReplaceId, recordReplacementId) {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + recordReplaceId + '/replace', null, recordReplacementId);
     }
-    //TODO Název
-    setValidRegistry(record) {
-        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/setValid' + record.id, null, record);
+
+    setValidRegistry(registryId) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + registryId +'/valid', null);
     }
 
     deleteRegistry(recordId) {

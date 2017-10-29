@@ -10,24 +10,17 @@ import * as types from 'actions/constants/ActionTypes.js';
 import ToggleContent from '../shared/toggle-content/ToggleContent';
 import {
     AREA_PARTY_LIST,
-    partyDetailClear,
     partyDetailFetchIfNeeded,
-    partyListFilter
 } from '../../actions/party/party';
 import {
     AREA_REGISTRY_LIST,
-    registryDetailClear,
-    registryDetailFetchIfNeeded,
-    registryListFilter
 } from '../../actions/registry/registry';
-import { modalDialogHide, modalDialogShow } from '../../actions/global/modalDialog';
-import RegistrySelectPage from 'pages/select/RegistrySelectPage.jsx';
-import classNames from 'classnames';
+import { modalDialogHide } from '../../actions/global/modalDialog';
+
 import { MODAL_DIALOG_VARIANT } from 'constants.jsx';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import i18n from '../i18n';
 import PartyField from '../party/PartyField';
-import PartySelectPage from '../../pages/select/PartySelectPage';
 import * as perms from '../../actions/user/Permission';
 import { createFundRoot, getParentNode } from '../arr/ArrUtils';
 import { fundSelectSubNode } from '../../actions/arr/node';
@@ -222,7 +215,6 @@ class RegistryUsageForm extends React.Component {
     }
 
     handleLinkClick = node => {
-        console.log(node);
         this.props.dispatch(modalDialogHide());
         if (node.type === 'fund') {
             this.props.history.push('/arr');
@@ -327,7 +319,7 @@ class RegistryUsageForm extends React.Component {
 }
 
 export default withRouter(
-    connect((state, props) => {
+    connect((state) => {
         const registryList = storeFromArea(state, AREA_REGISTRY_LIST);
         const partyList = storeFromArea(state, AREA_PARTY_LIST);
 
