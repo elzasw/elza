@@ -4,71 +4,103 @@ const fs = require('fs');
 const HappyPack = require('happypack');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 
-const PORT = 8090;
-
 process.env.BABEL_ENV = 'development';
 process.env.NODE_ENV = 'development';
 
-function fileExist(filePath){
-    try {
-        fs.statSync(filePath);
-    } catch(err) {
-        if(err.code == 'ENOENT') return false;
-    }
-    return true;
-}
+// Default config
+const defaultConfig = {
+    hot: false,
+    circularDependencyCheck: true,
+    sourceMap: 'eval-source-map',
+    happyPack: false,
+    devTools: false,
+    port: 8090
+};
 
-console.log(path.resolve(__dirname));
+// File config
+let fileConfig = {};
+const fileConfigPath = path.resolve(__dirname, '.dev');
+if (fs.existsSync(fileConfigPath)) {
+    const fileConfigContent = fs.readFileSync(fileConfigPath, 'utf8');
+    if (fileConfigContent) {
+        try {
+            fileConfig = JSON.parse(fileConfigContent);
+        } catch (e) {
+            console.error("Error in parsing file config");
+            fileConfig = {};
+        }
+    }
+}
+// Merged - Config
+const config = Object.assign(defaultConfig, fileConfig);
+
+// Entry points
+const webpackAndPolyfillEntries = [
+    `webpack-dev-server/client?http://localhost:${config.port}`,
+    'webpack/hot/only-dev-server',
+    'babel-polyfill',
+];
+const reactHotEntry = ['react-hot-loader/patch'];
+const appEntry = ['./index.jsx'];
+
+// Plugins
+const defaultPlugins = [
+    new webpack.HotModuleReplacementPlugin(),
+    new webpack.NamedModulesPlugin(),
+    new webpack.NoEmitOnErrorsPlugin(),
+    new webpack.DefinePlugin({
+        __DEV__: true,
+        __DEVTOOLS__: config.devTools,
+    }),
+    new webpack.ProvidePlugin({
+        $: "jquery",
+        jQuery: "jquery"
+    })
+];
+const circularDependencyPlugin = [
+    new CircularDependencyPlugin({
+        // exclude detection of files based on a RegExp
+        exclude: /node_modules/,
+        // add errors to webpack instead of warnings
+        failOnError: true
+    })
+];
+const happyPackPlugin = [
+    new HappyPack({
+        id: 'jsx',
+        threads: 6,
+        loaders: ['babel-loader']
+    }),
+];
 
 module.exports = {
-    entry: [
-        //'react-hot-loader/patch',
-        `webpack-dev-server/client?http://localhost:${PORT}`,
-        'webpack/hot/only-dev-server',
-        'babel-polyfill',
-        './index.jsx',
-    ],
-    devtool: 'inline-source-map',
+    entry: [].concat(
+        webpackAndPolyfillEntries,
+        config.hot ? reactHotEntry : [],
+        appEntry
+    ),
+    devtool: config.sourceMap,
     output: {
         path: path.join(__dirname, 'assets'),
         filename: 'bundle.js',
-        publicPath: `http://localhost:${PORT}/assets/`
+        publicPath: `http://localhost:${config.port}/assets/`
     },
     devServer: {
         host: 'localhost',
-        port: PORT,
+        port: config.port,
 
         historyApiFallback: true,
         // respond to 404s with index.html
 
-        hot: true,
+        hot: config.hot,
         // enable HMR on the server
         headers: { 'Access-Control-Allow-Origin': '*' }
     },
-    plugins: [
-        new CircularDependencyPlugin({
-            // exclude detection of files based on a RegExp
-            exclude: /node_modules/,
-            // add errors to webpack instead of warnings
-            failOnError: true
-        }),
-        /*new HappyPack({
-            id: 'jsx',
-            threads: 6,
-            loaders: ['babel-loader']
-        }),*/
-        new webpack.HotModuleReplacementPlugin(),
-        new webpack.NamedModulesPlugin(),
-        new webpack.NoEmitOnErrorsPlugin(),
-        new webpack.DefinePlugin({
-            __DEV__: true,
-            __DEVTOOLS__: fileExist('.dev'),
-        }),
-        new webpack.ProvidePlugin({
-            $: "jquery",
-            jQuery: "jquery"
-        }),
-    ],
+    plugins: [].concat(
+        config.circularDependencyCheck ? circularDependencyPlugin : [],
+        config.happyPack ? happyPackPlugin : [],
+        defaultPlugins
+    ),
     resolve: {
         extensions: ['.js', '.jsx'],
         modules: [
@@ -90,8 +122,7 @@ module.exports = {
                 test: /\.jsx?$/,
                 exclude: /node_modules/,
                 use: [
-                    {loader: 'babel-loader'}
-                    //{loader: 'happypack/loader?id=jsx'}
+                    {loader: config.happyPack ? 'happypack/loader?id=jsx' : 'babel-loader'}
                 ]
             },
             {
