@@ -270,6 +270,10 @@ public class RegRecordVO extends AbstractRegRecord {
         this.lastUpdate = lastUpdate;
     }
 
+    public boolean getInvalid() {
+        return invalid;
+    }
+
 	public boolean isInvalid() {
 		return invalid;
 	}

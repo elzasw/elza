@@ -527,11 +527,41 @@ public class PartyController {
      *
      * @return použití osoby
      */
-    @RequestMapping(value = "/findUsage/{partyId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/{partyId}/usage", method = RequestMethod.GET)
 	@Transactional
     public RecordUsageVO findUsage(@PathVariable final Integer partyId) {
     	ParParty parParty = partyRepository.getOneCheckExist(partyId);
     	RegRecord regRecord = parParty.getRecord();
     	return registryService.findRecordUsage(regRecord, parParty);
+    }
+
+
+    /**
+     * Nahrazení osoby
+     *
+     * @param partyId ID nahrazované osoby
+     * @param replacedId ID osoby pomocí které budeme nahrazovat
+     */
+    @Transactional
+    @RequestMapping(value = "/{partyId}/replace", method = RequestMethod.POST)
+    public void replace(@PathVariable final Integer partyId, @RequestBody final Integer replacedId) {
+        final ParParty replaced = partyService.getParty(partyId);
+        final ParParty replacement = partyService.getParty(replacedId);
+        partyService.replace(replaced, replacement);
+    }
+
+
+    /**
+     * Zplatnění osoby
+     * @param partyId ID osoby
+     */
+    @Transactional
+    @RequestMapping(value = "/{partyId}/valid", method = RequestMethod.POST)
+    public void valid(@PathVariable final Integer partyId) {
+        final ParParty party = partyService.getParty(partyId);
+        RegRecord record = party.getRecord();
+        record.setInvalid(false);
+        registryService.saveRecord(record, false);
+
     }
 }

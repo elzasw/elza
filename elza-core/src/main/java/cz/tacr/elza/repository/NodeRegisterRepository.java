@@ -54,6 +54,11 @@ public interface NodeRegisterRepository extends JpaRepository<ArrNodeRegister, I
 
     List<ArrNodeRegister> findByNodeIdInAndDeleteChangeIsNull(Collection<Integer> nodeIds);
 
+    /**
+     * Hledá v otevřené verzi pomocí rejstříku
+     * @param record rejstřík
+     * @return seznam Node registrů v otevřené verzi
+     */
     @Query("SELECT nr FROM arr_node_register nr JOIN FETCH nr.record WHERE nr.deleteChange IS NULL AND nr.record = ?1")
     List<ArrNodeRegister> findByRecordAndDeleteChangeIsNull(RegRecord record);
 }

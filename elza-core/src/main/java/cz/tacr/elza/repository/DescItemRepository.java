@@ -4,6 +4,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.RegRecord;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -206,4 +209,10 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 
     @Query("SELECT n.fundId, i.nodeId, d.dataId FROM arr_desc_item i JOIN i.data d JOIN i.node n WHERE i.deleteChange IS NULL and i.data in (?1)")
     List<Object[]> findFundIdNodeIdDataIdByDataAndDeleteChangeIsNull(List<? extends ArrData> data);
+
+    @Query("Select i from arr_desc_item i join arr_data_record_ref d on i.data = d WHERE d.record = :record AND i.deleteChange IS NULL")
+    List<ArrDescItem> findArrItemByRecord(@Param("record") final RegRecord record);
+
+    @Query("Select i from arr_desc_item i join arr_data_party_ref d on i.data = d WHERE d.party = :party AND i.deleteChange IS NULL")
+    List<ArrDescItem> findArrItemByParty(@Param("party") final ParParty party);
 }

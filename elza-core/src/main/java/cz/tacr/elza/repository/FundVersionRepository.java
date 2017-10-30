@@ -35,6 +35,6 @@ public interface FundVersionRepository extends ElzaJpaRepository<ArrFundVersion,
     @Query(value = "SELECT v FROM arr_fund_version v JOIN FETCH v.fund f WHERE v.lockChange IS NULL")
     List<ArrFundVersion> findAllOpenVersion();
 
-    @Query(value = "select v from arr_fund_version v JOIN FETCH v.fund fa where fa.fundId in (:fundIds) and v.lockChange is null")
+    @Query(value = "select v from arr_fund_version v JOIN FETCH v.fund fa where fa.fundId in :fundIds and v.lockChange is null")
     List<ArrFundVersion> findByFundIdsAndLockChangeIsNull(@Param(value = "fundIds") Collection<Integer> fundIds);
 }

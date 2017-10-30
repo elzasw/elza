@@ -381,7 +381,7 @@ public class RegistryController {
     @RequestMapping(value = "/{recordId}", method = RequestMethod.DELETE)
     public void deleteRecord(@PathVariable final Integer recordId) {
         Assert.notNull(recordId, "Identifikátor rejstříkového hesla musí být vyplněn");
-        RegRecord record = regRecordRepository.getOneCheckExist(recordId);
+        RegRecord record = registryService.getRecord(recordId);
 
         registryService.deleteRecord(record, true);
     }
@@ -727,11 +727,37 @@ public class RegistryController {
      *
      * @return použití rejstříku
      */
-	@Transactional
-    @RequestMapping(value = "/findUsage/{recordId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/{recordId}/usage", method = RequestMethod.GET)
+    @Transactional
     public RecordUsageVO findUsage(@PathVariable final Integer recordId) {
     	RegRecord regRecord = regRecordRepository.getOneCheckExist(recordId);
     	ParParty parParty = partyService.findParPartyByRecord(regRecord);
     	return registryService.findRecordUsage(regRecord, parParty);
+    }
+
+    /**
+     * Nahrazení rejstříku
+     *
+     * @param recordId ID nahrazovaného rejstříku
+     * @param replacedId ID rejstříku kterým budeme nahrazovat
+     */
+    @Transactional
+    @RequestMapping(value = "/{recordId}/replace", method = RequestMethod.POST)
+    public void replace(@PathVariable final Integer recordId, @RequestBody final Integer replacedId) {
+        final RegRecord replaced = registryService.getRecord(recordId);
+        final RegRecord replacement = registryService.getRecord(replacedId);
+        registryService.replace(replaced, replacement);
+    }
+
+    /**
+     * Zplatnění rejstříkového hesla
+     * @param recordId rejstřík id
+     */
+    @Transactional
+    @RequestMapping(value = "/{recordId}/valid", method = RequestMethod.POST)
+    public void valid(@PathVariable final Integer recordId) {
+        final RegRecord record = registryService.getRecord(recordId);
+        record.setInvalid(false);
+        registryService.saveRecord(record, false);
     }
 }
