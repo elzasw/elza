@@ -307,7 +307,7 @@ class PartyDetail extends AbstractReactComponent {
             const events = {onPin:this.handlePinToggle, onSelect: this.handleToggleActive};
 
             let headerCls = "party-header";
-            if (partyDetail.data.invalid) {
+            if (partyDetail.data.record.invalid) {
                 headerCls += " invalid";
             }
 
@@ -319,7 +319,7 @@ class PartyDetail extends AbstractReactComponent {
                     <div className="header-content">
                         <div>
                             <div>
-                                <div className="title">{party.name}  {partyDetail.data.invalid && "(Neplatné)"}</div>
+                                <div className="title">{party.name}  {partyDetail.data.record.invalid && "(Neplatné)"}</div>
                             </div>
                         </div>
                         <div>
