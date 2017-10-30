@@ -818,7 +818,7 @@ var messages = {
     "registry.replaceText": "Nahrazení hesla ve výskytech za heslo",
     "registry.replace": "Nahradit",
     "registry.setValid.confirm": "Opravdu chcete zplatnit toto rejstříkové heslo?",
-    "party.setValid": "Zplatnit heslo",
+    "registry.setValid": "Zplatnit heslo",
     "registry.cancelMove": "Zrušit přesun",
     "registry.applyMove": "Přesunout sem",
     "registry.coordinates.addPoint": "Přidat bod",
@@ -830,6 +830,7 @@ var messages = {
     "registry.detail.type": "Typ rejstříku - hierarchie",
     "registry.detail.coordinates": "Souřadnice",
     "registry.detail.variantRegistry": "Variantní rejstříková hesla",
+    "registry.replaceSuccess": "Rejstříkové heslo bylo úspěšně nahrazeno",
 
     "registry.list.itemsVisibleCountFrom": "Zobrazeno {0} z {1}, zpřesněte vyhledávací filtr",
     "registry.list.noRecord": "Zadanému filtru neodpovídají žádná data",
@@ -914,10 +915,12 @@ var messages = {
     "party.delete.error": "Odstranění osoby se nezdařilo",
     "party.delete.confirm": "Opravdu chcete smazat tuto osobu?",
     "party.setValid.confirm": "Opravdu chcete zplatnit tuto osobu?",
+    "party.setValid.button": "Zplatnit osobu",
     "party.delete.button": "Smazat osobu",
     "party.usage.button": "Použití osoby",
     "party.usage.setValid": "Zplatnění osoby",
     "party.replaceText": "Nahrazení osoby ve výskytech za osoby",
+    "party.replaceSuccess": "Osoba byla úspěšně nahrazena",
 
 
     "party.relation.class": "Třída vztahu",

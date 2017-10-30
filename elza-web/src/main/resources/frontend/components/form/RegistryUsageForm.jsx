@@ -4,6 +4,9 @@ import * as types from 'actions/constants/ActionTypes.js';
 import { i18n } from 'components/shared';
 import {WebApi} from "../../actions/WebApi";
 import HorizontalLoader from "../shared/loading/HorizontalLoader";
+import {addToastrSuccess} from "../shared/toastr/ToastrActions";
+import {connect} from "react-redux";
+import {modalDialogHide} from "../../actions/global/modalDialog";
 
 class RegistryUsageForm extends React.Component {
 
@@ -12,14 +15,22 @@ class RegistryUsageForm extends React.Component {
     };
 
     componentDidMount(){
+        this.fetchData();
+    }
+
+    fetchData = () => {
         WebApi.findRegistryUsage(this.props.detail.id).then(data => {
             this.setState({data})
+
         })
-    }
+    };
 
     handleReplace = (selectedReplacementNode) => {
         if (selectedReplacementNode) {
-            WebApi.replaceRegistry(this.props.detail.id, selectedReplacementNode.id);
+            WebApi.replaceRegistry(this.props.detail.id, selectedReplacementNode.id).then(() => {
+                this.props.dispatch(addToastrSuccess(i18n("registry.replaceSuccess")));
+                this.props.dispatch(modalDialogHide());
+            });
         }
     };
 
@@ -38,4 +49,4 @@ class RegistryUsageForm extends React.Component {
     }
 }
 
-export default RegistryUsageForm;
+export default connect(null)(RegistryUsageForm);

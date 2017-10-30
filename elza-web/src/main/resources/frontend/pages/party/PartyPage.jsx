@@ -118,7 +118,7 @@ class PartyPage extends AbstractReactComponent {
 
     handleSetValidParty = () => {
         confirm(i18n('party.setValid.confirm')) && this.dispatch(setValidParty(this.props.partyDetail.data.id));
-    }
+    };
 
     /**
      * BUILD RIBBON
@@ -154,7 +154,7 @@ class PartyPage extends AbstractReactComponent {
         if (isSelected && partyDetail.fetched && !partyDetail.isFetching) {
             if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: partyDetail.data.record.scopeId})) {
                 itemActions.push(
-                    <Button disabled={ !partyDetail.data.invalid } key='delete-party' onClick={this.handleDeleteParty}><Icon glyph="fa-trash"/>
+                    <Button disabled={ partyDetail.data.invalid } key='delete-party' onClick={this.handleDeleteParty}><Icon glyph="fa-trash"/>
                         <div><span className="btnText">{i18n('party.delete.button')}</span></div>
                     </Button>
                 );
@@ -167,7 +167,7 @@ class PartyPage extends AbstractReactComponent {
                 );
 
                 partyDetail && itemActions.push(
-                    <Button key='partySetValid' onClick={() => this.handleSetValidParty()}>
+                    <Button disabled={ !partyDetail.data.invalid} key='partySetValid' onClick={ this.handleSetValidParty }>
                         <Icon glyph="fa-check"/>
                         <div><span className="btnText">{i18n("party.setValid.button")}</span></div>
                     </Button>

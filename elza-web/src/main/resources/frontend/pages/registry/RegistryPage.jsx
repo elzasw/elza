@@ -13,7 +13,7 @@ import RegistryList from 'components/registry/RegistryList'
 import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 import {Button} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
-import {registryMoveStart, registryMove, registryMoveCancel, registryDelete, registryDetailFetchIfNeeded, registryAdd, registryListInvalidate} from 'actions/registry/registry.jsx'
+import {registryMoveStart, registryMove, registryMoveCancel, registryDelete, registryDetailFetchIfNeeded, registryAdd, registryListInvalidate, setValidRegistry} from 'actions/registry/registry.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
 import {Shortcuts} from 'react-shortcuts';
@@ -25,7 +25,6 @@ import {PropTypes} from 'prop-types';
 import './RegistryPage.less';
 import PageLayout from "../shared/layout/PageLayout";
 import defaultKeymap from './RegistryPageKeymap.jsx';
-import {setValidRegistry} from "../../actions/registry/registry";
 /**
  * Stránka rejstříků.
  * Zobrazuje stranku s vyberem rejstriku a jeho detailem/editaci
@@ -68,7 +67,6 @@ class RegistryPage extends AbstractReactComponent {
             data.hierarchical &&
             id != registryParentId
     };
-
 
     canDeleteRegistry = () => {
         const {registryDetail: {id, data}, registryList:{filter:{registryParentId}}} = this.props;
@@ -171,9 +169,8 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     handleSetValidParty = () => {
-        confirm(i18n('party.setValid.confirm')) && this.dispatch(setValidRegistry(this.props.partyDetail.data.id));
-    }
-
+        confirm(i18n('party.setValid.confirm')) && this.dispatch(setValidRegistry(this.props.registryDetail.data.id));
+    };
 
     handleRegistryMoveStart = () => {
         const {registryDetail:{data}} = this.props;
@@ -240,21 +237,24 @@ class RegistryPage extends AbstractReactComponent {
         if (this.canDeleteRegistry()) {
             if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: data ? data.scopeId : null})) {
                 itemActions.push(
-                    <Button disabled={!data.invalid || !data.partyId} key='registryRemove' onClick={this.handleDeleteRegistry}>
+                    <Button disabled={data.invalid && data.partyId} key='registryRemove' onClick={this.handleDeleteRegistry}>
                         <Icon glyph="fa-trash"/>
                         <div><span className="btnText">{i18n('registry.deleteRegistry')}</span></div>
                     </Button>
                 );
+            }
 
-                this.props.onShowUsage && itemActions.push(
-                    <Button key='registryShow' onClick={() => this.props.onShowUsage(registryDetail)}>
-                        <Icon glyph="fa-search"/>
-                        <div><span className="btnText">{i18n('registry.registryUsage')}</span></div>
-                    </Button>
-                );
+            this.props.onShowUsage && itemActions.push(
+                <Button key='registryShow' onClick={() => this.props.onShowUsage(registryDetail)}>
+                    <Icon glyph="fa-search"/>
+                    <div><span className="btnText">{i18n('registry.registryUsage')}</span></div>
+                </Button>
+            );
 
+            if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: data ? data.scopeId : null})) {
                 itemActions.push(
-                    <Button disabled={!data.partyId} key='registrySetValid' onClick={() => this.props.onShowUsage(registryDetail)}>
+                    <Button disabled={!data.invalid && data.partyId} key='registrySetValid'
+                            onClick={() => this.handleSetValidParty()}>
                         <Icon glyph="fa-check"/>
                         <div><span className="btnText">{i18n('registry.setValid')}</span></div>
                     </Button>
