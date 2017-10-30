@@ -46,7 +46,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
         [perms.FUND_CL_VER_WR]: perms.FUND_CL_VER_WR_ALL,
     };
 
-    static ALL_ID = "ALL_ID";
+    static ALL_ID = adminPermissions.ALL_ID;
 
     buildPermission = (currObj, permission) => {
         const {userId} = this.props;
