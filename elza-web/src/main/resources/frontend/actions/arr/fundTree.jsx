@@ -309,9 +309,9 @@ function fundTreeFulltextResult(area, versionId, filterText, searchedData, clear
 export function fundTreeNodeExpand(area, node) {
     return (dispatch, getState) => {
         var state = getState();
-
         var fundTree
         var versionId
+        let activeFund;
         if (area === types.FUND_TREE_AREA_FUNDS_FUND_DETAIL) {  // fundRegion
             versionId = state.fundRegion.fundDetail.versionId
             fundTree = state.fundRegion.fundDetail.fundTree
@@ -319,15 +319,24 @@ export function fundTreeNodeExpand(area, node) {
             versionId = state.arrRegion.globalFundTree.versionId;
             fundTree = state.arrRegion.globalFundTree.fundTreeCopy
         } else {    // arrRegion
-            var activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
-            versionId = activeFund.versionId
+            activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
+            versionId = activeFund.versionId;
             fundTree = getFundTree(activeFund, area);
+            console.log(activeFund.nodes.nodes[activeFund.nodes.activeIndex].selectedSubNodeId,node.id);
         }
-
         dispatch(_fundTreeNodeExpand(area, versionId, node, true))
 
+        let activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
         var nodeId = node.id;
         var expandedIds = {...fundTree.expandedIds, [nodeId]: true}
+        if(activeNode.selectedSubNodeId === nodeId){
+            let json = {
+                nodes:[...activeNode.subNodeInfo.childNodes],
+                expandedIdsExtension:[]
+            };
+            console.log("skip fundTree", activeNode, json)
+            //return dispatch(fundTreeReceive(area, versionId, nodeId, expandedIds, [], json));
+        }
         return WebApi.getFundTree(versionId, nodeId, expandedIds)
             .then(json => dispatch(fundTreeReceive(area, versionId, nodeId, expandedIds, [], json)));
     }

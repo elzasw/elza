@@ -479,7 +479,18 @@ export default function fundTree(state = initialState, action = {}) {
             }
 
             return state;
-
+        case types.FUND_SUBNODE_UPDATE:
+            let data = action.data;
+            let nodes = state.nodes;
+            let index = indexById(nodes, action.data.node.id);
+            let updatedNode = nodes[index];
+            for(let i in updatedNode){
+                if(typeof data[i] !== "undefined"){
+                    updatedNode[i] = data[i];
+                }
+            }
+            state.nodes[index] = updatedNode;
+            return {...state};
         case types.NODES_DELETE: {
             var result = {
                 ...state

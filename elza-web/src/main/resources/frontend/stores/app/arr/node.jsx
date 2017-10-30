@@ -257,6 +257,30 @@ export function node(state = nodeInitialState, action) {
                 subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action),
             }
             return consolidateState(state, result);
+        case types.FUND_SUBNODE_UPDATE:
+            console.log("UPDATE_CHILD",state,action);
+            const data = action.data;
+            const node = data.node;
+
+            let childNodes = state.childNodes;
+            let index = indexById(childNodes, node && node.id);
+            console.log("update index", index);
+            let updatedNode = childNodes[index];
+            for(let i in updatedNode){
+                if(typeof data[i] !== "undefined"){
+                    updatedNode[i] = data[i];
+                }
+            }
+            state.childNodes[index] = updatedNode;
+            console.log("update node", updatedNode);
+            var result = {
+                ...state,
+                subNodeForm: subNodeForm(state.subNodeForm, action),
+                subNodeRegister: subNodeRegister(state.subNodeRegister, action),
+                subNodeDaos: subNodeDaos(state.subNodeDaos, action),
+                subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action),
+            }
+            return consolidateState(state, result);
         case types.FUND_FUND_CHANGE_READ_MODE:
             var result = {
                 ...state,
@@ -393,6 +417,7 @@ export function node(state = nodeInitialState, action) {
         case types.CHANGE_VISIBLE_POLICY:
         case types.CHANGE_CONFORMITY_INFO:
         case types.CHANGE_NODE_REQUESTS:
+            console.log("change node requests",state,action);
             return Object.assign({}, state, { nodeInfoDirty: true });
 
         case types.CHANGE_ADD_LEVEL:

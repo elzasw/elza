@@ -52,7 +52,8 @@ import {
 import Stomp from 'stompjs';
 import URLParse from "url-parse";
 
-import {reloadUserDetail} from 'actions/user/userDetail'
+import {reloadUserDetail} from 'actions/user/userDetail';
+import {shouldSkipNodeEvent} from "websocketController.jsx";
 
 const url = new URLParse(serverContextPath + '/stomp');
 
@@ -75,13 +76,12 @@ export function stompDisconnect() {
 /** Připojení websocketů. */
 export function stompConnect() {
     stompClient = Stomp.client(wsUrl);
-    stompClient = stompClient;
     stompClient.debug = null
     stompClient.heartbeat.outgoing = 20000;
     stompClient.heartbeat.incoming = 20000;
     stompClient.onreceipt = receiptCallback;
     console.info("Websocket connecting to " + wsUrl);
-    stompClient.connect({}, stompSuccessCallback, stompFailureCallback);
+    stompClient.connect({}, stompOnConnect, stompOnError);
 }
 stompConnect();
 
@@ -90,6 +90,7 @@ class ws {
         this.nextReceiptId = 0;
         this.receiptSuccessCallbacks = {}; // mapa id receipt na callback funkci
         this.receiptErrorCallbacks = {}; // mapa id receipt na error callback funkci
+        this.pendingRequests = {};
     }
 
     static stompDisconnect = stompDisconnect;
@@ -99,14 +100,23 @@ class ws {
     stompConnect = () => {
         ws.stompConnect();
     };
-
-    send = (url, headers, data, successCallback, errorCallback) => {
-        const useHeaders = headers ? headers : {};
+    
+    // Funkce
+    send = (url, data, successCallback, errorCallback) => {
+        const headers = {};
+        let nextRequest = {
+            url: url,
+            headers: headers,
+            data: data,
+            onSuccess: successCallback,
+            onError: errorCallback
+        }
         if (successCallback || errorCallback) {
-            useHeaders.receipt = this.nextReceiptId;
+            headers.receipt = this.nextReceiptId;
             this.receiptSuccessCallbacks[this.nextReceiptId] = successCallback;
             this.receiptErrorCallbacks[this.nextReceiptId] = errorCallback;
             this.nextReceiptId++;
+            this.pendingRequests[this.nextReceiptId] = nextRequest;
         }
         stompClient.send(url, headers, data);
     };
@@ -122,7 +132,7 @@ class ws {
             const receiptId = typeof receiptIdStr === "number" ? receiptIdStr : parseInt(receiptIdStr);
 
             const bodyObj = JSON.parse(body);
-            console.log("__WESOCKET", bodyObj)
+            console.log("__WESOCKET", bodyObj, this.receiptSuccessCallbacks);
             if (bodyObj && bodyObj.errorMessage) {  // error
                 if (this.receiptErrorCallbacks[receiptId]) {
                     this.receiptErrorCallbacks[receiptId](bodyObj);
@@ -147,45 +157,17 @@ if (!window.ws) {
     window.ws = new ws();
 }
 
-//
-//
-//
-//
-//
-//
-//
-// var SockJS = require('sockjs-client');
-// var Stomp = require('stompjs');
-// var socket = new SockJS(serverContextPath + '/config/websock');
-// var client = Stomp.over(socket);
-// var refresh = false;
-// /**
-//  * Připojení websocketů.
-//  */
-// function stompConnect() {
-//     console.info('WebSocket: Pokus o připojení...');
-//
-//     socket = new SockJS(serverContextPath + '/web/websock');
-//     client = Stomp.over(socket);
-//     client.debug = null;
-//
-//     client.heartbeat.outgoing = 5000;
-//     client.heartbeat.incoming = 0;
-//     client.connect('guest', 'guest', stompSuccessCallback, stompFailureCallback);
-// }
-//
-
 function receiptCallback(frame) {
-    // console.log("@@@@@@@@@@@@@@@@@@receiptCallback", frame)
+    console.log("@@@@@@@@@@@@@@@@@@receiptCallback", frame)
 }
 
 /**
  * Callback příchozích dat z websocketů.
  * @param frame {object}
  */
-function stompSuccessCallback(frame) {
-    // console.log("############################## stompSuccessCallback");
-    // console.log("::::stompSuccessCallback", frame);
+function stompOnConnect(frame) {
+    // console.log("############################## stompOnConnect");
+    // console.log(":::: stompOnConnect", frame);
     store.dispatch(webSocketConnect());
     if (!refresh) {
         refresh = true;
@@ -214,12 +196,40 @@ function stompSuccessCallback(frame) {
     });
 }
 
+function deferEvent(data){
+    return new Promise((resolve,reject)=>{
+        const event = deferredEvents[data.eventType];
+        console.log("deferred event", event, data, deferredEvents);
+        if(event){
+            console.log("event exists");
+            event(data).then((data) => resolve(data))
+        }
+        resolve(data)
+    })
+}
+
+const deferredEvents = {
+    "NODES_CHANGE": deferNodesChange
+}
+
+function deferNodesChange(data){
+    return new Promise((resolve, reject) => {
+        let pendingRequests = window.ws.pendingRequests;
+        console.log("nodes change",pendingRequests);
+        for(let r in pendingRequests){
+            if(pendingRequests[r].data.changeId){
+            
+            }
+        }
+        resolve(data);
+    })
+}
 /**
  * Callback při ztráně spojení.
  *
  * @param error {string} text chyby
  */
-function stompFailureCallback(error) {
+function stompOnError(error) {
     console.error("Websocket - failure", error);
 
     const {body, headers} = error;
@@ -243,7 +253,9 @@ function stompFailureCallback(error) {
  * @param values {array} seznam příchozí eventů
  */
 function processEvents(values) {
-    values.forEach(value => {
+    values.forEach(data => {
+        deferEvent(data).then((value) => {
+            console.log("deffered event resolve",value);
 
         switch (value.eventType) {
 
@@ -297,7 +309,9 @@ function processEvents(values) {
                 break;
 
             case 'NODES_CHANGE':
-                nodesChange(value);
+                shouldSkipNodeEvent(value.entityIds,()=>{
+                    nodesChange(value);
+                })
                 break;
             case 'OUTPUT_ITEM_CHANGE':
                 outputItemChange(value);
@@ -423,6 +437,7 @@ function processEvents(values) {
                 break;
         }
 
+        })
     });
 }
 

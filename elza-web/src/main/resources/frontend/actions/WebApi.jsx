@@ -18,13 +18,13 @@ function getData(data, timeout = 1000) {
 function callWS(url, data, needResponse = true) {
     return new Promise((resolve, reject) => {
         if (needResponse) { // chceme skoro vždy
-            window.ws.send('/app' + url, {}, JSON.stringify(data), (successResponse) => {
+            window.ws.send('/app' + url, JSON.stringify(data), (successResponse) => {
                 resolve(successResponse);
             }, (errorResponse) => { // příprava pro budoucí možnost odchytávání klientských výjimek - zavolá se error calbback
                 reject(errorResponse);
             });
         } else {
-            window.ws.send('/app' + url, {}, JSON.stringify(data));
+            window.ws.send('/app' + url, JSON.stringify(data));
             resolve();
         }
     });

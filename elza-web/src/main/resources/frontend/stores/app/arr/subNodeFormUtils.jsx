@@ -203,6 +203,8 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
     var refType = state.refTypesMap[resultDescItemType.id]
     var forceVisibility = infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED'
 
+    console.log("mergeDescItems", prevType, newType);
+
     if (!prevType) {    // ještě ji na formuláři nemáme
         if (!newType) { // není ani v DB, přidáme ji pouze pokud je nastaveno forceVisibility
             if (forceVisibility) {  // přidáme ji pouze pokud je nastaveno forceVisibility
@@ -259,13 +261,19 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
             // Nakopírování nově přijatých hodnot, případně ponechání stejných (na základě descItemObjectId a prev value == value ze serveru, které již uživatel upravil a nejsou odeslané)
             newType.descItems.forEach(descItem => {
                 var prevDescItem = prevDescItemMap[descItem.descItemObjectId];
-
-                if (prevDescItem && prevDescItemHasSamePrevValue(prevDescItem, descItem) && prevDescItem.touched) {   // původní hodnota přijatá ze serveru má stejné hodnoty jako jsou nyní v nově přijatých datech na serveru a uživatel nám aktuální data upravil
+                console.log("value",descItem ? descItem.value : "no desc item","prevValue",prevDescItem ? prevDescItem.value : "no prev desc item");
+                if (prevDescItem && (prevDescItemHasSamePrevValue(prevDescItem, descItem) && prevDescItem.touched || !descItem.value)) {   // původní hodnota přijatá ze serveru má stejné hodnoty jako jsou nyní v nově přijatých datech na serveru a uživatel nám aktuální data upravil
                     var item = prevDescItem;
+                    console.log(state.updatedItem);
+                    if(state.updatedItem && (state.updatedItem.descItemObjectId === descItem.descItemObjectId)){
+                        item.value = state.updatedItem.value;
+                    }
+                    console.log("merge with prev");
                     addUid(item, null);
                     item.formKey = prevDescItem.formKey
                     resultDescItemType.descItems.push(item)
                 } else {
+                    console.log("no merge");
                     var item = createDescItemFromDb(resultDescItemType, descItem);
                     addUid(item, null);
                     if (prevDescItem) {
@@ -363,6 +371,7 @@ function merge(state) {
             // - původní verze descItem - data, která jsou aktuálně ve store
             var prevDescItemType = dataMap.typeMap.get(descItemType.id);    // verze na klientovi, pokud existuje
             var newDescItemType = dbItemTypesMap[descItemType.id];          // verze z db, pokud existuje
+            console.log("merge types map", dbItemTypesMap, descItemType)
 
             if (mergeDescItems(state, resultDescItemType, prevDescItemType, newDescItemType)) {
                 resultGroup.descItemTypes.push(resultDescItemType);
@@ -388,11 +397,11 @@ typesNumToStrMap[1] = 'POSSIBLE'
 typesNumToStrMap[0] = 'IMPOSSIBLE'
 
 // refTypesMap - mapa id info typu na typ, je doplněné o dataType objekt - obecný číselník
-export function updateFormData(state, data, refTypesMap) {
+export function updateFormData(state, data, refTypesMap, updatedItem) {
     // Přechozí a nová verze node
     var currentNodeVersionId = state.data ? state.data.parent.version : -1;
     var newNodeVersionId = data.parent.version;
-
+    console.log("updated item",updatedItem);
     // ##
     // # Vytvoření formuláře se všemi povinnými a doporučenými položkami, které jsou doplněné reálnými daty ze serveru
     // # Případně promítnutí merge.
@@ -400,6 +409,10 @@ export function updateFormData(state, data, refTypesMap) {
     if (currentNodeVersionId <= newNodeVersionId) { // rovno musí být, protože i když mám danou verzi, nemusím mít nově přidané povinné položky (nastává i v případě umělého klientského zvednutí nodeVersionId po zápisové operaci) na základě aktuálně upravené mnou
         // Data přijatá ze serveru
         state.data = data
+
+        if(updatedItem){
+            state.updatedItem = updatedItem;
+        }
 
         // Překopírování seznam id nepoužitých PP pro výstupy
         state.unusedItemTypeIds = data.unusedItemTypeIds;

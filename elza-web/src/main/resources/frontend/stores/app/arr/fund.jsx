@@ -345,6 +345,7 @@ export function fund(state, action) {
         case types.FUND_NODE_INCREASE_VERSION:
         case types.CHANGE_FUND_RECORD:
         case types.CHANGE_NODES:
+        case types.FUND_SUBNODE_UPDATE:
         case types.CHANGE_ADD_LEVEL:
         case types.CHANGE_DELETE_LEVEL:
         case types.CHANGE_MOVE_LEVEL: {

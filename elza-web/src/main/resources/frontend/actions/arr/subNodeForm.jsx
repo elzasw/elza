@@ -16,7 +16,9 @@ import {getRoutingKeyType} from 'stores/app/utils.jsx'
 import * as types from 'actions/constants/ActionTypes.js';
 import {addToastrSuccess,addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
 import {i18n} from 'components/shared';
-import {statusSaving, statusSaved} from 'actions/global/status.jsx'
+import {statusSaving, statusSaved} from 'actions/global/status.jsx';
+import {debounce} from "shared/utils";
+import NodeRequestController from "websocketController.jsx";
 
 class ItemFormActions {
     constructor(area) {
@@ -244,30 +246,57 @@ class ItemFormActions {
         const loc = subNodeForm.getLoc(subNodeForm, valueLocation);
 
         const refType = subNodeForm.refTypesMap[loc.descItemType.id]
+        const refTables = state.refTables;
 
         if (this.descItemNeedStore(loc.descItem, refType)) {
             dispatch(statusSaving());
 
             // Umělé navýšení verze o 1 - aby mohla pozitivně projít případná další update operace
             dispatch(increaseNodeVersion(versionId, subNodeForm.data.parent.id, subNodeForm.data.parent.version));
-
+            let requestStart = Date.now();
             // Reálné provedení operace
             if (typeof loc.descItem.id !== 'undefined') {
-                this._callUpdateDescItem(versionId, subNodeForm.data.parent.version, loc.descItem)
-                    .then(json => {
+                NodeRequestController.updateRequest(versionId,subNodeForm.data.parent.version,subNodeForm.data.parent.id,loc.descItem,
+                    json => {
+                        console.log("formValueStore",json, routingKey, valueLocation);
+                        let timeStart = Date.now();
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'UPDATE'));
+                        dispatch(this._fundSubNodeUpdate(versionId, refTables.rulDataTypes, refTables.descItemTypes, json));
                         dispatch(statusSaved());
-                    })
+                        let timeEnd = Date.now();
+                        console.log("form value store","response time", timeEnd - timeStart, "request + response time", timeEnd - requestStart);
+
+                    });
+                /*this._callUpdateDescItem(versionId, subNodeForm.data.parent.version, loc.descItem)
+                    .then(json => {
+                        console.log("formValueStore",json, this.testData, routingKey, valueLocation);
+                        let timeStart = Date.now();
+                        dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'UPDATE'));
+                        //dispatch(this._fundSubNodeUpdate(versionId, refTables.rulDataTypes, refTables.descItemTypes, this.testData(json)));
+                        dispatch(statusSaved());
+                        let timeEnd = Date.now();
+                        console.log("form value store","response time", timeEnd - timeStart, "request + response time", timeEnd - requestStart);
+                    })*/
             } else {
                 if (!loc.descItem.saving) {
                     dispatch(this._fundSubNodeFormDescItemCreate(versionId, routingKey, valueLocation));
                     this._callCreateDescItem(versionId, subNodeForm.data.parent.id, subNodeForm.data.parent.version, loc.descItemType.id, loc.descItem)
                         .then(json => {
+                            console.log("formValueStore - id undefined",json);
                             dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'CREATE'));
                             dispatch(statusSaved());
                         })
                 }
             }
+        }
+    }
+    _fundSubNodeUpdate(versionId, rulDataTypes, refDescItemTypes, data){
+        return {
+            type: types.FUND_SUBNODE_UPDATE,
+            data: data,
+            versionId: versionId,
+            rulDataTypes: rulDataTypes,
+            refDescItemTypes: refDescItemTypes
         }
     }
 
@@ -821,7 +850,7 @@ class ItemFormActions {
         }
     }
 }
-
+var debouncedGetFundNodeForm = debounce(WebApi.getFundNodeForm,200);
 class NodeFormActions extends ItemFormActions {
     constructor() {
         super("NODE");
@@ -866,7 +895,7 @@ class NodeFormActions extends ItemFormActions {
                     // ##
                     // # Data pro cache, jen pokud již cache nenačítá
                     // ##
-                    if (!subNodeFormCache.isFetching) {
+                    if (false) {
                         if (node.isNodeInfoFetching || !node.nodeInfoFetched || node.nodeInfoDirty) {   // nemáme platné okolí (okolní NODE) pro daný NODE, raději je načteme ze serveru; nemáme vlastně okolní NODE pro získání seznamu ID pro načtení formulářů pro cache
                             //console.log('### READ_CACHE', 'around')
 

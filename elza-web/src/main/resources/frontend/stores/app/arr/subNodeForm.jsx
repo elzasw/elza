@@ -312,11 +312,13 @@ export default function subNodeForm(state = initialState, action = {}) {
                 }
             }
         case types.FUND_SUB_NODE_FORM_VALUE_RESPONSE:
-            if (state.data.parent.id !== action.descItemResult.parent.id) {
+            console.log("sub node response", state.data, action)
+            let node = action.descItemResult.node || action.descItemResult.parent;
+            if (state.data.parent.id !== node.id) {
                 return state;
             }
             const newState = {...state};
-            newState.data.parent = action.descItemResult.parent;
+            newState.data.parent = node;
 
             switch (action.operationType) {
                 case 'DELETE':
@@ -469,7 +471,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             // ##
             // # Result a merge formuláře.
             // ##
-            const result = {
+            var result = {
                 ...state,
                 isFetching: false,
                 fetched: true,
@@ -484,10 +486,50 @@ export default function subNodeForm(state = initialState, action = {}) {
                 result.data = null;
                 result.formData = null;
             }
-
+            console.log(action.data);
             updateFormData(result, action.data, refTypesMap);
 
             return result;
+        case types.FUND_SUBNODE_UPDATE:
+            let dateStart = Date.now();
+            console.log("subnode update start", dateStart)
+            var dataTypeMap = getMapFromList(action.rulDataTypes.items)
+            var descItemTypes = action.refDescItemTypes.items.map(type => {
+                console.log("desc item types");
+                return {
+                    ...type,
+                    dataType: dataTypeMap[type.dataTypeId],
+                    descItemSpecsMap: getMapFromList(type.descItemSpecs),
+                    columnsDefinitionMap: type.columnsDefinition ? getMapFromList(type.columnsDefinition, "code") : null,
+                }
+            })
+            var refTypesMap = getMapFromList(descItemTypes)
+            var result = {
+                ...state,
+                isFetching: false,
+                fetched: true,
+                dirty: false,
+                versionId: action.versionId,
+                nodeId: action.nodeId,
+                needClean: false,
+            };
+            if (action.needClean) {
+                result.data = null;
+                result.formData = null;
+            }
+            let data = {
+                "typeGroups": state.data.typeGroups,
+                "groups": action.data.groups,
+                "parent": action.data.node
+            }
+
+            console.log("result: ",result,"action: ",action,"state: ",state,"data: ",data);
+            updateFormData(result, data, refTypesMap, action.data.item);
+            let dateEnd = Date.now();
+            let dateDiff = dateEnd - dateStart;
+            console.log("subnode update end", dateEnd, "diff from start", dateDiff);
+            return result;
+
         case types.CHANGE_FUND_RECORD:
             return {
                 ...state,
