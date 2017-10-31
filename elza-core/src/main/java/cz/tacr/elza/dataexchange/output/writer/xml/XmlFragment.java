@@ -14,7 +14,6 @@ import org.apache.commons.lang3.Validate;
 
 /**
  * Simple representation of file as xml fragment. Implementation is not thread-safe.
- *
  */
 public class XmlFragment implements AutoCloseable {
 

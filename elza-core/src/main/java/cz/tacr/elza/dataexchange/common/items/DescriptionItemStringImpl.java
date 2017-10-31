@@ -6,7 +6,6 @@ import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.dataexchange.common.GeometryConvertor;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
-import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataText;
@@ -29,17 +28,17 @@ public class DescriptionItemStringImpl extends DescriptionItemString {
     }
 
     @Override
-    public ArrData createData(ImportContext context, DataType dataType) {
+    public ImportableItemData createData(ImportContext context, DataType dataType) {
         switch (dataType) {
             case STRING:
                 ArrDataString str = new ArrDataString();
                 str.setValue(getV(dataType));
-                return str;
+                return new ImportableItemData(str);
             case TEXT:
             case FORMATTED_TEXT:
                 ArrDataText txt = new ArrDataText();
                 txt.setValue(getV(dataType));
-                return txt;
+                return new ImportableItemData(txt);
             case COORDINATES:
                 ArrDataCoordinates geo = new ArrDataCoordinates();
                 try {
@@ -47,11 +46,11 @@ public class DescriptionItemStringImpl extends DescriptionItemString {
                 } catch (ParseException e) {
                     throw new DEImportException("Failed to convert geo location", e);
                 }
-                return geo;
+                return new ImportableItemData(geo);
             case UNITID:
-                ArrDataUnitid unitid = new ArrDataUnitid();
-                unitid.setValue(getV(dataType));
-                return unitid;
+                ArrDataUnitid id = new ArrDataUnitid();
+                id.setValue(getV(dataType));
+                return new ImportableItemData(id);
             default:
                 throw new DEImportException("Unsupported data type:" + dataType);
         }

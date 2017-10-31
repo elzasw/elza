@@ -8,7 +8,10 @@ import cz.tacr.elza.schema.v2.Party;
 import cz.tacr.elza.schema.v2.PartyGroup;
 import cz.tacr.elza.schema.v2.Person;
 
-public class ElementNames {
+/**
+ * Constants for XML element names specified by http://elza.tacr.cz/schema/v2
+ */
+public class XmlElementName {
 
     public static final QName ROOT = new QName("http://elza.tacr.cz/schema/v2", "edx", "ns2");
 

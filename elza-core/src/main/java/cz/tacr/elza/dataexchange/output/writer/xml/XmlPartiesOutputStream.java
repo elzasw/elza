@@ -41,6 +41,9 @@ import cz.tacr.elza.schema.v2.Person;
 import cz.tacr.elza.schema.v2.TimeIntervalExt;
 import cz.tacr.elza.utils.XmlUtils;
 
+/**
+ * XML output stream for parties export.
+ */
 public class XmlPartiesOutputStream implements PartiesOutputStream {
 
     private final JAXBContext jaxbContext = XmlUtils.createJAXBContext(Person.class, PartyGroup.class, Family.class, Event.class);
@@ -107,11 +110,11 @@ public class XmlPartiesOutputStream implements PartiesOutputStream {
         if (!fragment.isOpen()) {
             XMLStreamWriter sw = fragment.openStreamWriter();
             sw.writeStartDocument();
-            sw.writeStartElement(ElementNames.PARTIES);
+            sw.writeStartElement(XmlElementName.PARTIES);
         }
 
         XMLStreamWriter sw = fragment.getStreamWriter();
-        String partyName = ElementNames.getPartyName(party);
+        String partyName = XmlElementName.getPartyName(party);
         JAXBElement<?> jaxbElement = XmlUtils.wrapElement(partyName, party);
         Marshaller marshaller = jaxbContext.createMarshaller();
         marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);

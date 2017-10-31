@@ -51,7 +51,6 @@ import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutputFile;
@@ -492,8 +491,8 @@ public class ClientFactoryDO {
                     if (descItemType.getDataType().getCode().equals("UNITDATE")) {
                         Interval<Long> conditionValue = getConditionValueIntervalLong(filter.getCondition());
                         condition = new EqIntervalDesCitemCondition<>(conditionValue,
-                                ArrDescItem.concatDataAttribute(LuceneDescItemCondition.NORMALIZED_FROM_ATT),
-                                ArrDescItem.concatDataAttribute(LuceneDescItemCondition.NORMALIZED_TO_ATT));
+                                LuceneDescItemCondition.NORMALIZED_FROM_ATT,
+                                LuceneDescItemCondition.NORMALIZED_TO_ATT);
                     } else {
                         String conditionValue = getConditionValueString(filter.getCondition());
                         condition = new EqDescItemCondition<>(conditionValue, LuceneDescItemCondition.FULLTEXT_ATT);
@@ -504,11 +503,11 @@ public class ClientFactoryDO {
                 case GE: {
                      if (descItemType.getDataType().getCode().equals("INT")) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
-                        String attributeName = ArrDescItem.concatDataAttribute(LuceneDescItemCondition.INTGER_ATT);
+                        String attributeName = LuceneDescItemCondition.INTGER_ATT;
                         condition = new GeDescItemCondition<>(conditionValue, attributeName);
                     } else {
                         Double conditionValue = getConditionValueDouble(filter.getCondition());
-                        String attributeName = ArrDescItem.concatDataAttribute(LuceneDescItemCondition.DECIMAL_ATT);
+                        String attributeName = LuceneDescItemCondition.DECIMAL_ATT;
                         condition = new GeDescItemCondition<>(conditionValue, attributeName);
                     }
                     break;
@@ -516,15 +515,15 @@ public class ClientFactoryDO {
                 case GT: {
                     if (descItemType.getDataType().getCode().equals("UNITDATE")) {
                         ArrDataUnitdate unitDate = getConditionValueUnitdate(filter.getCondition());
-                        String attributeName = ArrDescItem.concatDataAttribute(LuceneDescItemCondition.NORMALIZED_FROM_ATT);
+                        String attributeName = LuceneDescItemCondition.NORMALIZED_FROM_ATT;
                         condition = new GtDescItemCondition<>(unitDate.getNormalizedTo(), attributeName);
                     } else if (descItemType.getDataType().getCode().equals("INT")) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
-                        String attributeName = ArrDescItem.concatDataAttribute(LuceneDescItemCondition.INTGER_ATT);
+                        String attributeName = LuceneDescItemCondition.INTGER_ATT;
                         condition = new GtDescItemCondition<>(conditionValue, attributeName);
                     } else {
                         Double conditionValue = getConditionValueDouble(filter.getCondition());
-                        String attributeName = ArrDescItem.concatDataAttribute(LuceneDescItemCondition.DECIMAL_ATT);
+                        String attributeName = LuceneDescItemCondition.DECIMAL_ATT;
                         condition = new GtDescItemCondition<>(conditionValue, attributeName);
                     }
                     break;
@@ -532,18 +531,18 @@ public class ClientFactoryDO {
                 case INTERSECT: {
                     Interval<Long> conditionValue = getConditionValueIntervalLong(filter.getCondition());
                     condition = new IntersectDescItemCondition<>(conditionValue,
-                            ArrDescItem.concatDataAttribute(LuceneDescItemCondition.NORMALIZED_FROM_ATT),
-                            ArrDescItem.concatDataAttribute(LuceneDescItemCondition.NORMALIZED_TO_ATT));
+                            LuceneDescItemCondition.NORMALIZED_FROM_ATT,
+                            LuceneDescItemCondition.NORMALIZED_TO_ATT);
                     break;
                 }
                 case INTERVAL: {
                     if (descItemType.getDataType().getCode().equals("INT")) {
                         Interval<Integer> conditionValue = getConditionValueIntervalInteger(filter.getCondition());
-                        String attributeName = ArrDescItem.concatDataAttribute(LuceneDescItemCondition.INTGER_ATT);
+                        String attributeName = LuceneDescItemCondition.INTGER_ATT;
                         condition = new IntervalDescItemCondition<>(conditionValue, attributeName);
                     } else {
                         Interval<Double> conditionValue = getConditionValueIntervalDouble(filter.getCondition());
-                        String attributeName = ArrDescItem.concatDataAttribute(LuceneDescItemCondition.DECIMAL_ATT);
+                        String attributeName = LuceneDescItemCondition.DECIMAL_ATT;
                         condition = new IntervalDescItemCondition<>(conditionValue, attributeName);
                     }
                     break;
@@ -551,11 +550,11 @@ public class ClientFactoryDO {
                 case LE: {
                     if (descItemType.getDataType().getCode().equals("INT")) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
-                        String attributeName = ArrDescItem.concatDataAttribute(LuceneDescItemCondition.INTGER_ATT);
+                        String attributeName = LuceneDescItemCondition.INTGER_ATT;
                         condition = new LeDescItemCondition<>(conditionValue, attributeName);
                     } else {
                         Double conditionValue = getConditionValueDouble(filter.getCondition());
-                        String attributeName = ArrDescItem.concatDataAttribute(LuceneDescItemCondition.DECIMAL_ATT);
+                        String attributeName = LuceneDescItemCondition.DECIMAL_ATT;
                         condition = new LeDescItemCondition<>(conditionValue, attributeName);
                     }
                     break;
@@ -563,15 +562,15 @@ public class ClientFactoryDO {
                 case LT: {
                     if (descItemType.getDataType().getCode().equals("UNITDATE")) {
                         ArrDataUnitdate unitDate = getConditionValueUnitdate(filter.getCondition());
-                        String attributeName = ArrDescItem.concatDataAttribute(LuceneDescItemCondition.NORMALIZED_TO_ATT);
+                        String attributeName = LuceneDescItemCondition.NORMALIZED_TO_ATT;
                         condition = new LtDescItemCondition<>(unitDate.getNormalizedFrom(), attributeName);
                     } else if (descItemType.getDataType().getCode().equals("INT")) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
-                        String attributeName = ArrDescItem.concatDataAttribute(LuceneDescItemCondition.INTGER_ATT);
+                        String attributeName = LuceneDescItemCondition.INTGER_ATT;
                         condition = new LtDescItemCondition<>(conditionValue, attributeName);
                     } else {
                         Double conditionValue = getConditionValueDouble(filter.getCondition());
-                        String attributeName = ArrDescItem.concatDataAttribute(LuceneDescItemCondition.DECIMAL_ATT);
+                        String attributeName = LuceneDescItemCondition.DECIMAL_ATT;
                         condition = new LtDescItemCondition<>(conditionValue, attributeName);
                     }
                     break;
@@ -579,11 +578,11 @@ public class ClientFactoryDO {
                 case NE: {
                     if (descItemType.getDataType().getCode().equals("INT")) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
-                        String attributeName = ArrDescItem.concatDataAttribute(LuceneDescItemCondition.INTGER_ATT);
+                        String attributeName = LuceneDescItemCondition.INTGER_ATT;
                         condition = new NeDescItemCondition<>(conditionValue, attributeName);
                     } else {
                         Double conditionValue = getConditionValueDouble(filter.getCondition());
-                        String attributeName = ArrDescItem.concatDataAttribute(LuceneDescItemCondition.DECIMAL_ATT);
+                        String attributeName = LuceneDescItemCondition.DECIMAL_ATT;
                         condition = new NeDescItemCondition<>(conditionValue, attributeName);
                     }
                     break;
@@ -602,11 +601,11 @@ public class ClientFactoryDO {
                 case NOT_INTERVAL: {
                     if (descItemType.getDataType().getCode().equals("INT")) {
                         Interval<Integer> conditionValue = getConditionValueIntervalInteger(filter.getCondition());
-                        String attributeName = ArrDescItem.concatDataAttribute(LuceneDescItemCondition.INTGER_ATT);
+                        String attributeName = LuceneDescItemCondition.INTGER_ATT;
                         condition = new NotIntervalDescItemCondition<>(conditionValue, attributeName);
                     } else {
                         Interval<Double> conditionValue = getConditionValueIntervalDouble(filter.getCondition());
-                        String attributeName = ArrDescItem.concatDataAttribute(LuceneDescItemCondition.DECIMAL_ATT);
+                        String attributeName = LuceneDescItemCondition.DECIMAL_ATT;
                         condition = new NotIntervalDescItemCondition<>(conditionValue, attributeName);
                     }
                     break;
@@ -614,8 +613,8 @@ public class ClientFactoryDO {
                 case SUBSET: {
                     Interval<Long> conditionValue = getConditionValueIntervalLong(filter.getCondition());
                     condition = new SubsetDescItemCondition<>(conditionValue,
-                            ArrDescItem.concatDataAttribute(LuceneDescItemCondition.NORMALIZED_FROM_ATT),
-                            ArrDescItem.concatDataAttribute(LuceneDescItemCondition.NORMALIZED_TO_ATT));
+                            LuceneDescItemCondition.NORMALIZED_FROM_ATT,
+                            LuceneDescItemCondition.NORMALIZED_TO_ATT);
                     break;
                 }
                 default:

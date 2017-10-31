@@ -1,9 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.hibernate.search.annotations.Indexed;
-import org.springframework.data.rest.core.annotation.RestResource;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -11,12 +7,13 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.springframework.data.rest.core.annotation.RestResource;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 
 /**
  * Hodnota atributu archivního popisu typu ArrFile.
- *
- * @author Petr Compel <petr.compel@marbes.cz>
- * @since 17.6.2016
  */
 @Entity(name = "arr_data_file_ref")
 @Table
@@ -48,6 +45,6 @@ public class ArrDataFileRef extends ArrData {
 
     @Override
     public String getFulltextValue() {
-        return file.getName() + file.getFileName();
+        return file.getName();
     }
 }

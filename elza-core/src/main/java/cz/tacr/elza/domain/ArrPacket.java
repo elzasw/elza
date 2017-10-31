@@ -153,4 +153,11 @@ public class ArrPacket implements IArrFund, Serializable {
         CLOSED,
         CANCELED;
     }
+
+    public static String createFulltext(String number, RulPacketType type) {
+        if (type != null) {
+            return type.getName() + ": " + number;
+        }
+        return number;
+    }
 }

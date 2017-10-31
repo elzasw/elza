@@ -39,12 +39,12 @@ public class PartyInfo extends EntityIdHolder<ParParty> {
         return partyType;
     }
 
-    public String getFulltext() {
-        return apInfo.getFulltext();
+    public String getAPName() {
+        return apInfo.getName();
     }
 
-    public void setFulltext(String fulltext) {
-        apInfo.setFulltext(fulltext);
+    public void setAPName(String apName) {
+        apInfo.setName(apName);
     }
 
     public boolean isIgnored() {

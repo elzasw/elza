@@ -3,14 +3,13 @@ package cz.tacr.elza.dataexchange.common.items;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
-import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataDecimal;
 import cz.tacr.elza.schema.v2.DescriptionItemDecimal;
 
 public class DescriptionItemDecimalImpl extends DescriptionItemDecimal {
 
     @Override
-    public ArrData createData(ImportContext context, DataType dataType) {
+    public ImportableItemData createData(ImportContext context, DataType dataType) {
         if (dataType != DataType.DECIMAL) {
             throw new DEImportException("Unsupported data type:" + dataType);
         }
@@ -20,6 +19,7 @@ public class DescriptionItemDecimalImpl extends DescriptionItemDecimal {
         }
         ArrDataDecimal data = new ArrDataDecimal();
         data.setValue(getV());
-        return data;
+
+        return new ImportableItemData(data);
     }
 }

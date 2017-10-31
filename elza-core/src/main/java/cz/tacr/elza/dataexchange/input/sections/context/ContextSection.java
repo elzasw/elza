@@ -58,10 +58,6 @@ public class ContextSection {
         return rootAdapter.getFund();
     }
 
-    public boolean isRootSet() {
-        return contextNodeImportIdMap.size() > 0;
-    }
-
     public String generateNodeUuid() {
         return arrangementService.generateUuid();
     }
@@ -89,10 +85,12 @@ public class ContextSection {
     /**
      * Create root node for section and stores all remaining packets.
      */
-    public ContextNode addRootNode(ArrNode rootNode, String importId) {
+    public ContextNode setRootNode(ArrNode rootNode, String importId) {
         Validate.notNull(rootAdapter);
-        Validate.isTrue(!isRootSet());
-
+        // check root
+        if (contextNodeImportIdMap.size() > 0) {
+            throw new DEImportException("Section must have only one root, levelId:" + importId);
+        }
         // save processed packets
         context.storePackets();
         // create root context node

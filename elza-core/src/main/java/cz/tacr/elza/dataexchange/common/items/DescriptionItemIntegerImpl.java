@@ -3,7 +3,6 @@ package cz.tacr.elza.dataexchange.common.items;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
-import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.schema.v2.DescriptionItemInteger;
 
@@ -21,7 +20,7 @@ public class DescriptionItemIntegerImpl extends DescriptionItemInteger {
     }
 
     @Override
-    public ArrData createData(ImportContext context, DataType dataType) {
+    public ImportableItemData createData(ImportContext context, DataType dataType) {
         if (dataType != DataType.INT) {
             throw new DEImportException("Unsupported data type:" + dataType);
         }
@@ -32,6 +31,7 @@ public class DescriptionItemIntegerImpl extends DescriptionItemInteger {
         }
         ArrDataInteger data = new ArrDataInteger();
         data.setValue(value);
-        return data;
+
+        return new ImportableItemData(data);
     }
 }

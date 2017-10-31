@@ -1,23 +1,19 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.hibernate.search.annotations.Indexed;
-import org.springframework.data.rest.core.annotation.RestResource;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Transient;
+
+import org.springframework.data.rest.core.annotation.RestResource;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
  * Hodnota atributu archivního popisu typu ParParty.
- *
- * @author Martin Šlapa
- * @since 1.9.2015
  */
 @Entity(name = "arr_data_party_ref")
 @Table
@@ -36,20 +32,6 @@ public class ArrDataPartyRef extends ArrData {
 
     @Column
     private Integer position;
-
-    @Transient
-    private final String fulltextValue;
-
-    /**
-     * Sets fulltext value index when party is only reference (detached hibernate proxy).
-     */
-    public ArrDataPartyRef(String fulltextValue) {
-        this.fulltextValue = fulltextValue;
-    }
-
-    public ArrDataPartyRef() {
-        this(null);
-    }
 
     public Integer getPosition() {
         return position;
@@ -74,9 +56,6 @@ public class ArrDataPartyRef extends ArrData {
 
     @Override
     public String getFulltextValue() {
-        if (fulltextValue != null) {
-            return fulltextValue;
-        }
         return party.getRecord().getRecord();
     }
 }

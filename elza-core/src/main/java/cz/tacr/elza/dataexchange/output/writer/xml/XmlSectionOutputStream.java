@@ -44,6 +44,9 @@ import cz.tacr.elza.schema.v2.Level;
 import cz.tacr.elza.schema.v2.Packet;
 import cz.tacr.elza.utils.XmlUtils;
 
+/**
+ * XML output stream for section export.
+ */
 class XmlSectionOutputStream implements SectionOutputStream {
 
     private final JAXBContext jaxbContext = XmlUtils.createJAXBContext(Level.class, Packet.class);
@@ -157,16 +160,16 @@ class XmlSectionOutputStream implements SectionOutputStream {
     }
 
     private InternalNode getSectionNode() {
-        InternalNode sectionNode = new InternalNode(ElementNames.SECTIONS);
+        InternalNode sectionNode = new InternalNode(XmlElementName.SECTIONS);
         RulRuleSet ruleSet = sectionContext.getRuleSystem().getRuleSet();
-        sectionNode.addAttribute(ElementNames.RULE_SET_CODE, ruleSet.getCode());
+        sectionNode.addAttribute(XmlElementName.RULE_SET_CODE, ruleSet.getCode());
 
         FundInfo fundInfo = new FundInfo();
         fundInfo.setIc(sectionContext.getInstitutionCode());
         fundInfo.setN(sectionContext.getFundName());
         fundInfo.setC(sectionContext.getFundInternalCode());
         fundInfo.setTr(sectionContext.getTimeRange());
-        JAXBElement<?> fiElement = XmlUtils.wrapElement(ElementNames.FUND_INFO, fundInfo);
+        JAXBElement<?> fiElement = XmlUtils.wrapElement(XmlElementName.FUND_INFO, fundInfo);
         sectionNode.addNode(new JaxbNode(fiElement));
 
         if (packetsFragment.isExist()) {
@@ -184,20 +187,20 @@ class XmlSectionOutputStream implements SectionOutputStream {
         if (!levelsFragment.isOpen()) {
             XMLStreamWriter sw = levelsFragment.openStreamWriter();
             sw.writeStartDocument();
-            sw.writeStartElement(ElementNames.LEVELS);
+            sw.writeStartElement(XmlElementName.LEVELS);
         }
         XMLStreamWriter sw = levelsFragment.getStreamWriter();
-        serializeJaxbType(sw, ElementNames.LEVEL, level);
+        serializeJaxbType(sw, XmlElementName.LEVEL, level);
     }
 
     private void writePacket(Packet packet) throws Exception {
         if (!packetsFragment.isOpen()) {
             XMLStreamWriter sw = packetsFragment.openStreamWriter();
             sw.writeStartDocument();
-            sw.writeStartElement(ElementNames.PACKETS);
+            sw.writeStartElement(XmlElementName.PACKETS);
         }
         XMLStreamWriter sw = packetsFragment.getStreamWriter();
-        serializeJaxbType(sw, ElementNames.PACKET, packet);
+        serializeJaxbType(sw, XmlElementName.PACKET, packet);
     }
 
     private void serializeJaxbType(XMLStreamWriter streamWriter, String localName, Object value) throws JAXBException {

@@ -54,7 +54,7 @@ public class AccessPointProcessor extends AccessPointEntryProcessor {
     @Override
     protected AccessPointInfo addAccessPoint(RegRecord ap, String entryId) {
         AccessPointInfo info = super.addAccessPoint(ap, entryId);
-        info.setFulltext(accessPoint.getN());
+        info.setName(accessPoint.getN());
         return info;
     }
 

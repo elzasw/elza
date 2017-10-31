@@ -60,6 +60,12 @@ public class DEExportService {
         return XmlUtils.getXsltFileNames(transformationsDir);
     }
 
+    /**
+     * Exports data as XML to specified output stream.
+     *
+     * @param os generated XML
+     * @param params export configuration
+     */
     @Transactional(isolation = Isolation.SERIALIZABLE, readOnly = true)
     @AuthMethod(permission = { UsrPermission.Permission.FUND_ADMIN })
     public void exportXmlData(OutputStream os, DEExportParams params) {

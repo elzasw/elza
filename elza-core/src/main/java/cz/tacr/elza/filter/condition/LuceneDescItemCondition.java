@@ -11,17 +11,17 @@ import org.hibernate.search.query.dsl.QueryBuilder;
  */
 public interface LuceneDescItemCondition extends DescItemCondition {
 
+    String FULLTEXT_ATT = "fulltextValue";
+
+    String SPECIFICATION_ATT = "specification";
+
     String INTGER_ATT = "valueInt";
 
     String DECIMAL_ATT = "valueDecimal";
 
-    String FULLTEXT_ATT = "fulltextValue";
-
     String NORMALIZED_FROM_ATT = "normalizedFrom";
 
     String NORMALIZED_TO_ATT = "normalizedTo";
-
-    String SPECIFICATION_ATT = "specification";
 
     /**
      * Vytvoří dotaz.

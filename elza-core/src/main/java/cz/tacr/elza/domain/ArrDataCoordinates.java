@@ -1,20 +1,16 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.WKTWriter;
-import org.hibernate.search.annotations.Indexed;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.WKTWriter;
+
 
 /**
  * Hodnota atributu archivního popisu typu Coordinates.
- *
- * @author Martin Šlapa
- * @since 1.9.2015
  */
 @Entity(name = "arr_data_coordinates")
 @Table
@@ -33,12 +29,7 @@ public class ArrDataCoordinates extends ArrData {
     }
 
     @Override
-    public String toString() {
-        return value == null ? null : new WKTWriter().writeFormatted(value);
-    }
-
-    @Override
     public String getFulltextValue() {
-        return toString();
+        return new WKTWriter().writeFormatted(value);
     }
 }

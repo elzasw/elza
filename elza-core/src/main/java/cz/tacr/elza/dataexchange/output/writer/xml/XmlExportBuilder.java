@@ -25,6 +25,9 @@ import cz.tacr.elza.dataexchange.output.writer.xml.nodes.RootNode;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.RootNode.ChildNodeType;
 import cz.tacr.elza.exception.SystemException;
 
+/**
+ * XML export builder.
+ */
 public class XmlExportBuilder implements ExportBuilder {
 
     private final Path tempDirectory = createTempDirectory();
@@ -35,7 +38,7 @@ public class XmlExportBuilder implements ExportBuilder {
     public SectionOutputStream openSectionOutputStream(SectionContext sectionContext) {
         InternalNode fsNode = (InternalNode) rootNode.getNode(ChildNodeType.SECTIONS);
         if (fsNode == null) {
-            fsNode = new InternalNode(ElementNames.SECTION);
+            fsNode = new InternalNode(XmlElementName.SECTION);
             rootNode.setNode(ChildNodeType.SECTIONS, fsNode);
         }
         return new XmlSectionOutputStream(fsNode, tempDirectory, sectionContext);
