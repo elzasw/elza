@@ -25,6 +25,9 @@ import cz.tacr.elza.schema.v2.AccessPointVariantNames;
 import cz.tacr.elza.schema.v2.ExternalId;
 import cz.tacr.elza.utils.XmlUtils;
 
+/**
+ * XML output stream for access points export.
+ */
 public class XmlAccessPointOutputStream implements AccessPointsOutputStream {
 
     private final JAXBContext jaxbContext = XmlUtils.createJAXBContext(AccessPoint.class);
@@ -89,10 +92,10 @@ public class XmlAccessPointOutputStream implements AccessPointsOutputStream {
         if (!fragment.isOpen()) {
             XMLStreamWriter sw = fragment.openStreamWriter();
             sw.writeStartDocument();
-            sw.writeStartElement(ElementNames.ACCESS_POINTS);
+            sw.writeStartElement(XmlElementName.ACCESS_POINTS);
         }
         XMLStreamWriter sw = fragment.getStreamWriter();
-        JAXBElement<?> jaxbElement = XmlUtils.wrapElement(ElementNames.PARTY, ap);
+        JAXBElement<?> jaxbElement = XmlUtils.wrapElement(XmlElementName.PARTY, ap);
         Marshaller marshaller = jaxbContext.createMarshaller();
         marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
         marshaller.marshal(jaxbElement, sw);

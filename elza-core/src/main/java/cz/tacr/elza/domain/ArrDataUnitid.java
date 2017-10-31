@@ -1,19 +1,16 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import cz.tacr.elza.domain.enumeration.StringLength;
-import org.hibernate.search.annotations.Indexed;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import cz.tacr.elza.domain.enumeration.StringLength;
+
 
 /**
  * Hodnota atributu archivního popisu typu referenční označení.
- *
- * @author Martin Šlapa
- * @since 1.9.2015
  */
 @Entity(name = "arr_data_unitid")
 @Table

@@ -17,7 +17,7 @@ import org.hibernate.search.annotations.AnalyzerDef;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.IndexedEmbedded;
+import org.hibernate.search.annotations.NumericField;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.annotations.TokenFilterDef;
 import org.hibernate.search.annotations.TokenizerDef;
@@ -28,6 +28,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import cz.tacr.elza.filter.condition.DescItemCondition;
+import cz.tacr.elza.filter.condition.LuceneDescItemCondition;
 import cz.tacr.elza.repository.DataRepositoryImpl;
 import cz.tacr.elza.search.DescItemIndexingInterceptor;
 
@@ -67,28 +69,27 @@ public class ArrDescItem extends ArrItem {
     private Integer nodeId;
 
     @Transient
-    private final Integer fundId;
-    
+    private final ArrDescItemIndexData indexData;
+
     /**
-     * Sets fund id for index when node is only reference (detached hibernate proxy).
+     * Externalized Lucene index data.
      */
-    public ArrDescItem(Integer fundId) {
-        this.fundId = fundId;
+    public ArrDescItem(ArrDescItemIndexData indexData) {
+        this.indexData = indexData;
     }
-    
+
     public ArrDescItem() {
-        this((Integer) null);
+        this.indexData = new SimpleIndexData();
     }
 
 	/**
 	 * Copy constructor
-	 * 
-	 * @param src
-	 *            Source object
+	 *
+	 * @param src Source object
 	 */
 	public ArrDescItem(ArrDescItem src) {
 		super(src);
-		this.fundId = src.getFundId();
+		this.indexData = src.indexData;
 		this.node = src.node;
 		this.nodeId = src.nodeId;
 	}
@@ -105,29 +106,58 @@ public class ArrDescItem extends ArrItem {
         return nodeId;
     }
 
-    @Field
-    @Analyzer(definition = "customanalyzer")
-    public String getFulltextValue() {
-        ArrData data = getData();
-        if (data == null) {
-            return null;
-        } else {
-            RulItemSpec itemSpec = getItemSpec();
-            if (data instanceof ArrDataNull) {
-                return itemSpec == null ? null : itemSpec.getName();
-            } else {
-                return itemSpec == null ? data.getFulltextValue() : itemSpec.getName() + DataRepositoryImpl.SPEC_SEPARATOR + data.getFulltextValue();
-            }
-        }
+    @Override
+    @Field(name = DescItemCondition.FUND_ID)
+    @FieldBridge(impl = IntegerBridge.class)
+    public Integer getFundId() {
+        return indexData.getFundId();
     }
 
-    @Field(store = Store.NO)
+    @Field(name = LuceneDescItemCondition.FULLTEXT_ATT)
+    @Analyzer(definition = "customanalyzer")
+    public String getFulltextValue() {
+        if (isUndefined()) {
+            return null;
+        }
+        RulItemSpec itemSpec = getItemSpec();
+        if (getData() instanceof ArrDataNull) {
+            return itemSpec == null ? null : itemSpec.getName();
+        }
+        String fulltext = indexData.getFulltextValue();
+        return itemSpec == null ? fulltext : itemSpec.getName() + DataRepositoryImpl.SPEC_SEPARATOR + fulltext;
+    }
+
+    @Field(name = LuceneDescItemCondition.INTGER_ATT, store = Store.YES)
+    @NumericField
+    public Integer getValueInt() {
+        return indexData.getValueInt();
+    }
+
+    @Field(name = LuceneDescItemCondition.DECIMAL_ATT, store = Store.YES)
+    @NumericField
+    public Double getValueDouble() {
+        return indexData.getValueDouble();
+    }
+
+    @Field(name = LuceneDescItemCondition.NORMALIZED_FROM_ATT, store = Store.YES)
+    @NumericField
+    public Long getNormalizedFrom() {
+        return indexData.getNormalizedFrom();
+    }
+
+    @Field(name = LuceneDescItemCondition.NORMALIZED_TO_ATT, store = Store.YES)
+    @NumericField
+    public Long getNormalizedTo() {
+        return indexData.getNormalizedTo();
+    }
+
+    @Field
     @FieldBridge(impl = IntegerBridge.class)
     public Integer getDescItemTypeId() {
         return getItemType().getItemTypeId();
     }
 
-    @Field
+    @Field(name = LuceneDescItemCondition.SPECIFICATION_ATT)
     @Analyzer(definition = "customanalyzer")
     public Integer getSpecification() {
         RulItemSpec itemSpec = getItemSpec();
@@ -137,34 +167,9 @@ public class ArrDescItem extends ArrItem {
         return itemSpec.getItemSpecId();
     }
 
-    public void setNodeId(final Integer nodeId) {
-        this.nodeId = nodeId;
-    }
-
-    @Override
-    @Field
-    @FieldBridge(impl = IntegerBridge.class)
-    public Integer getFundId() {
-        if (fundId != null) {
-            return fundId;
-        }
-        return node.getFundId();
-    }
-
     @Override
     public ArrNode getNode() {
         return node;
-    }
-
-    @IndexedEmbedded
-    @Override
-    public ArrData getData() {
-        return super.getData();
-    }
-
-    @Override
-    public ArrOutputDefinition getOutputDefinition() {
-        return null; //throw new NotImplementedException();
     }
 
     public void setNode(final ArrNode node) {
@@ -173,11 +178,45 @@ public class ArrDescItem extends ArrItem {
     }
 
     @Override
+    public ArrOutputDefinition getOutputDefinition() {
+        return null; //throw new NotImplementedException();
+    }
+
+    @Override
     public String toString() {
         return "ArrDescItem pk=" + getItemId();
     }
 
-    public static String concatDataAttribute(final String attribute) {
-        return ArrItem.DATA + "." + attribute;
-    }
+    private class SimpleIndexData implements ArrDescItemIndexData {
+
+        @Override
+        public Integer getFundId() {
+            return node.getFundId();
+        }
+
+        @Override
+        public String getFulltextValue() {
+            return getData().getFulltextValue();
+        }
+
+        @Override
+        public Integer getValueInt() {
+            return getData().getValueInt();
+        }
+
+        @Override
+        public Double getValueDouble() {
+            return getData().getValueDouble();
+        }
+
+        @Override
+        public Long getNormalizedFrom() {
+            return getData().getNormalizedFrom();
+        }
+
+        @Override
+        public Long getNormalizedTo() {
+            return getData().getNormalizedTo();
+        }
+    };
 }

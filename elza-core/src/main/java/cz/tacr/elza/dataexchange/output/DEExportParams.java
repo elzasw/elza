@@ -37,6 +37,9 @@ public class DEExportParams {
         this.fundsParams = fundsParams;
     }
 
+    /**
+     * Specifies multiple sections for single fund version. Overlap is allowed.
+     */
     public static class FundParams {
 
         private int fundVersionId;

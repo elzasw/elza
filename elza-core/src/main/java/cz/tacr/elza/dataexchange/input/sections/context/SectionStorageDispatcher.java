@@ -1,31 +1,27 @@
 package cz.tacr.elza.dataexchange.input.sections.context;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
+import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.dataexchange.input.storage.StorageManager;
 
 /**
- * Stores imported node objects by tree depth.
+ * Stores import objects as batch per level depth.
  */
 public class SectionStorageDispatcher {
 
-    private final static int GROW_SIZE = 16;
+    private List<SectionBatch> batchDepthStack = new ArrayList<>();
 
     private final StorageManager storageManager;
 
     private final int batchSize;
-
-    private int maxDepth = -1;
-
-    private SectionBatch[] batchStack = new SectionBatch[GROW_SIZE];
 
     public SectionStorageDispatcher(StorageManager storageManager, int batchSize) {
         this.storageManager = storageManager;
@@ -40,11 +36,15 @@ public class SectionStorageDispatcher {
         return batchSize;
     }
 
+    public int getDepth() {
+        return batchDepthStack.size() - 1;
+    }
+
     /**
      * Dispatch all entity types.
      */
     public void dispatchAll() {
-        dispatch(maxDepth, SectionBatch::storeAll);
+        dispatch(getDepth(), SectionBatch::storeAll);
     }
 
     public void addNode(ArrNodeWrapper node, int depth) {
@@ -78,37 +78,27 @@ public class SectionStorageDispatcher {
 
     public void addData(ArrDataWrapper data, int depth) {
         SectionBatch batch = getBatch(depth);
-        DataType dt = batch.addData(data);
-        if (dt != null) {
-            batch.storeData(dt);
+        if (batch.addData(data)) {
+            batch.storeData(data.getEntity().getType());
         }
     }
 
     private void dispatch(int depthLimit, Consumer<SectionBatch> storeAction) {
         for (int i = 0; i <= depthLimit; i++) {
-            SectionBatch level = batchStack[i];
-            storeAction.accept(level);
+            SectionBatch batch = batchDepthStack.get(i);
+            storeAction.accept(batch);
         }
     }
 
     private SectionBatch getBatch(int depth) {
-        ensureCapacity(depth);
-        SectionBatch level = batchStack[depth];
-        if (level == null) {
-            if (maxDepth + 1 != depth) {
-                throw new IllegalStateException("Depth must increased by one");
-            }
-            batchStack[depth] = level = new SectionBatch(storageManager, batchSize);
-            maxDepth = depth;
+        int currDepth = getDepth();
+        if (currDepth < depth) {
+            Validate.isTrue(currDepth + 1 == depth);
+            SectionBatch batch = new SectionBatch(storageManager, batchSize);
+            batchDepthStack.add(batch);
+            return batch;
         }
-        return level;
-    }
-
-    private void ensureCapacity(int depth) {
-        int requiredLength = depth + 1;
-        if (requiredLength > batchStack.length) {
-            batchStack = Arrays.copyOf(batchStack, requiredLength + GROW_SIZE);
-        }
+        return batchDepthStack.get(depth);
     }
 
     private static class SectionBatch {
@@ -125,7 +115,7 @@ public class SectionStorageDispatcher {
 
         private final List<ArrDescItemWrapper> descItems;
 
-        private final MultiValuedMap<DataType, ArrDataWrapper> data;
+        private final MultiValuedMap<DataType, ArrDataWrapper> dataTypeMap;
 
         public SectionBatch(StorageManager storageManager, int batchSize) {
             this.storageManager = storageManager;
@@ -134,38 +124,53 @@ public class SectionStorageDispatcher {
             this.nodes = new ArrayList<>(batchSize);
             this.levels = new ArrayList<>(batchSize);
             this.descItems = new ArrayList<>(batchSize);
-            this.data = new ArrayListValuedHashMap<>(batchSize);
+            this.dataTypeMap = new ArrayListValuedHashMap<>(batchSize);
             this.nodeRegistery = new ArrayList<>(batchSize);
         }
 
+        /**
+         * @return True when node batch is full.
+         */
         public boolean addNode(ArrNodeWrapper node) {
             nodes.add(node);
             return nodes.size() >= batchSize;
         }
 
+        /**
+         * @return True when node register batch is full.
+         */
         public boolean addNodeRegister(ArrNodeRegisterWrapper nodeRegister) {
             nodeRegistery.add(nodeRegister);
             return nodeRegistery.size() >= batchSize;
         }
 
+        /**
+         * @return True when level batch is full.
+         */
         public boolean addLevel(ArrLevelWrapper level) {
             levels.add(level);
             return levels.size() >= batchSize;
         }
 
+        /**
+         * @return True when desc. item batch is full.
+         */
         public boolean addDescItem(ArrDescItemWrapper descItem) {
             descItems.add(descItem);
             return descItems.size() >= batchSize;
         }
 
-        public DataType addData(ArrDataWrapper data) {
+        /**
+         * @return True data batch is full.
+         */
+        public boolean addData(ArrDataWrapper data) {
             DataType dt = data.getEntity().getType();
-            Collection<ArrDataWrapper> group = this.data.get(dt);
+            Collection<ArrDataWrapper> group = this.dataTypeMap.get(dt);
             group.add(data);
             if (group.size() >= batchSize) {
-                return dt;
+                return true;
             }
-            return null;
+            return false;
         }
 
         public void storeAll() {
@@ -213,7 +218,7 @@ public class SectionStorageDispatcher {
         }
 
         public void storeData(DataType dataType) {
-            Collection<ArrDataWrapper> group = data.get(dataType);
+            Collection<ArrDataWrapper> group = dataTypeMap.get(dataType);
             if (group.size() > 0) {
                 storageManager.saveSectionData(group);
                 group.clear();

@@ -14,10 +14,11 @@ public class AccessPointInfo extends EntityIdHolder<RegRecord> {
 
     private final String entryId;
 
-    private final RegRegisterType registerType;;
+    private final RegRegisterType registerType;
+
     private PersistMethod persistMethod;
 
-    private String fulltext;
+    private String name;
 
     AccessPointInfo(String entryId, RegRegisterType registerType) {
         super(RegRecord.class);
@@ -38,12 +39,12 @@ public class AccessPointInfo extends EntityIdHolder<RegRecord> {
         return registerType;
     }
 
-    public String getFulltext() {
-        return Validate.notNull(fulltext);
+    public String getName() {
+        return name;
     }
 
-    public void setFulltext(String fulltext) {
-        this.fulltext = fulltext;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public boolean isIgnored() {

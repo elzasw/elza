@@ -4,7 +4,6 @@ import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.dataexchange.common.timeinterval.TimeInterval;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
-import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.schema.v2.DescriptionItemUnitDate;
@@ -12,7 +11,7 @@ import cz.tacr.elza.schema.v2.DescriptionItemUnitDate;
 public class DescriptionItemUnitDateImpl extends DescriptionItemUnitDate {
 
     @Override
-    public ArrData createData(ImportContext context, DataType dataType) {
+    public ImportableItemData createData(ImportContext context, DataType dataType) {
         if (dataType != DataType.UNITDATE) {
             throw new DEImportException("Unsupported data type:" + dataType);
         }
@@ -34,6 +33,6 @@ public class DescriptionItemUnitDateImpl extends DescriptionItemUnitDate {
         data.setNormalizedFrom(normFromSec);
         data.setNormalizedTo(normToSec);
 
-        return data;
+        return new ImportableItemData(data);
     }
 }

@@ -1,5 +1,39 @@
 package cz.tacr.elza.repository;
 
+import java.text.NumberFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.lucene.document.FieldType;
+import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
+import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
+import org.apache.lucene.queryparser.flexible.standard.config.NumericConfig;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Query;
+import org.hibernate.search.jpa.FullTextEntityManager;
+import org.hibernate.search.jpa.FullTextQuery;
+import org.hibernate.search.jpa.Search;
+import org.hibernate.search.query.dsl.BooleanJunction;
+import org.hibernate.search.query.dsl.QueryBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
+
 import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.filter.SearchParamType;
@@ -21,38 +55,6 @@ import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.filter.condition.LuceneDescItemCondition;
 import cz.tacr.elza.utils.NodeUtils;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.lucene.document.FieldType;
-import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
-import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
-import org.apache.lucene.queryparser.flexible.standard.config.NumericConfig;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Query;
-import org.hibernate.search.jpa.FullTextEntityManager;
-import org.hibernate.search.jpa.FullTextQuery;
-import org.hibernate.search.jpa.Search;
-import org.hibernate.search.query.dsl.BooleanJunction;
-import org.hibernate.search.query.dsl.QueryBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-
-import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import java.text.NumberFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 
 /**
@@ -173,7 +175,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         javax.persistence.Query query = entityManager.createQuery(hql);
 
 
-        List<Object[]> resultList = (List<Object[]>) query.getResultList();
+        List<Object[]> resultList = query.getResultList();
 
         Map<Integer, List<Integer>> result = new HashMap<>();
         for (Object[] o : resultList) {
@@ -310,15 +312,15 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         Query query;
         switch (condition) {
             case CONTAINS:
-                Query fromQuery = queryBuilder.range().onField(ArrDescItem.concatDataAttribute(LuceneDescItemCondition.NORMALIZED_FROM_ATT)).above(secondsFrom).createQuery();
-                Query toQuery = queryBuilder.range().onField(ArrDescItem.concatDataAttribute(LuceneDescItemCondition.NORMALIZED_TO_ATT)).below(secondsTo).createQuery();
+                Query fromQuery = queryBuilder.range().onField(LuceneDescItemCondition.NORMALIZED_FROM_ATT).above(secondsFrom).createQuery();
+                Query toQuery = queryBuilder.range().onField(LuceneDescItemCondition.NORMALIZED_TO_ATT).below(secondsTo).createQuery();
                 query = queryBuilder.bool().must(fromQuery).must(toQuery).createQuery();
                 break;
             case GE:
-                query = queryBuilder.range().onField(ArrDescItem.concatDataAttribute(LuceneDescItemCondition.NORMALIZED_FROM_ATT)).above(secondsFrom).createQuery();
+                query = queryBuilder.range().onField(LuceneDescItemCondition.NORMALIZED_FROM_ATT).above(secondsFrom).createQuery();
                 break;
             case LE:
-                query = queryBuilder.range().onField(ArrDescItem.concatDataAttribute(LuceneDescItemCondition.NORMALIZED_TO_ATT)).below(secondsTo).createQuery();
+                query = queryBuilder.range().onField(LuceneDescItemCondition.NORMALIZED_TO_ATT).below(secondsTo).createQuery();
                 break;
             default:
                 throw new IllegalStateException("Neznámý typ podmínky " + condition);
@@ -436,8 +438,8 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 //        parser.setPointsConfigMap(stringNumericConfigHashMap);
         HashMap<String, NumericConfig> stringNumericConfigHashMap = new HashMap<>();
         stringNumericConfigHashMap.put(LuceneDescItemCondition.SPECIFICATION_ATT, new NumericConfig(1, NumberFormat.getIntegerInstance(), FieldType.NumericType.INT));
-        stringNumericConfigHashMap.put(ArrDescItem.concatDataAttribute(LuceneDescItemCondition.NORMALIZED_FROM_ATT), new NumericConfig(16, NumberFormat.getNumberInstance(), FieldType.NumericType.LONG));
-        stringNumericConfigHashMap.put(ArrDescItem.concatDataAttribute(LuceneDescItemCondition.NORMALIZED_TO_ATT), new NumericConfig(16, NumberFormat.getNumberInstance(), FieldType.NumericType.LONG));
+        stringNumericConfigHashMap.put(LuceneDescItemCondition.NORMALIZED_FROM_ATT, new NumericConfig(16, NumberFormat.getNumberInstance(), FieldType.NumericType.LONG));
+        stringNumericConfigHashMap.put(LuceneDescItemCondition.NORMALIZED_TO_ATT, new NumericConfig(16, NumberFormat.getNumberInstance(), FieldType.NumericType.LONG));
         parser.setNumericConfigMap(stringNumericConfigHashMap);
 
         Query query;

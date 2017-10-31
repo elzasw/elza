@@ -1,12 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import cz.tacr.elza.api.IUnitdate;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.Indexed;
-import org.springframework.data.rest.core.annotation.RestResource;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -14,12 +7,16 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.springframework.data.rest.core.annotation.RestResource;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import cz.tacr.elza.api.IUnitdate;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+
 
 /**
  * Hodnota atributu archivního popisu typu strojově zpracovatelná datace.
- *
- * @author Martin Šlapa
- * @since 1.9.2015
  */
 @Entity(name = "arr_data_unitdate")
 @Table
@@ -124,6 +121,7 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
     /**
      * @return počet sekund v normalizačním kalendáři - od
      */
+    @Override
     public Long getNormalizedFrom() {
         return normalizedFrom;
     }
@@ -138,6 +136,7 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
     /**
      * @return počet sekund v normalizačním kalendáři - do
      */
+    @Override
     public Long getNormalizedTo() {
         return normalizedTo;
     }
@@ -151,24 +150,8 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
 
     @Override
     public String getFulltextValue() {
-        String ret = calendarType == null ? "?" : calendarType.getName() + " ";
-
-        String from = valueFromEstimated == true ? valueFrom + "*" : valueFrom;
-        String to = valueToEstimated == true ? valueTo + "*" : valueTo;
-
-        if (valueFrom != null && valueTo != null) {
-            ret += from + " - " + to;
-        } else if (valueTo != null) {
-            ret += " do " + to;
-        } else if (valueFrom != null) {
-            ret += " od " + from;
-        } else {
-            ret += " ?";
-        }
-
         String unitdateString = UnitDateConvertor.convertToString(this);
-
-        return ret + " " + unitdateString;
+        return unitdateString;
     }
 
     @Override

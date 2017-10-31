@@ -64,7 +64,7 @@ public class PartiesAccessPointsBuilder {
     private PartyAccessPointWrapper createPartyAccessPoint(PartyInfo partyInfo, RegRecord ap) {
         String name = Validate.notEmpty(ap.getRecord());
         // update fulltext index
-        partyInfo.setFulltext(name);
+        partyInfo.setAPName(name);
         // create party access point
         return new PartyAccessPointWrapper(partyInfo, name, ap.getCharacteristics(), ap.getNote());
     }

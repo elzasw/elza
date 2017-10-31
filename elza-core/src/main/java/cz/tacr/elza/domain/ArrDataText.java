@@ -1,20 +1,17 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.hibernate.annotations.Type;
-import org.hibernate.search.annotations.Indexed;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Lob;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Type;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 
 /**
  * Hodnota atributu archivního popisu typu "neomezený" textový řetězec.
- *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 20.8.2015
  */
 @Entity(name = "arr_data_text")
 @Table

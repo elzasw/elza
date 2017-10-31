@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.dataexchange.common.items.ImportableItem.ImportableItemData;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
@@ -15,6 +16,7 @@ import cz.tacr.elza.dataexchange.input.sections.context.ContextNode;
 import cz.tacr.elza.dataexchange.input.sections.context.ContextSection;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDescItemIndexData;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -64,10 +66,7 @@ public class SectionLevelProcessor implements ItemProcessor {
         String parentImportId = item.getPid();
 
         if (StringUtils.isEmpty(parentImportId)) {
-            if (section.isRootSet()) {
-                throw new DEImportException("Level parent id is not set, levelId:" + importId);
-            }
-            return section.addRootNode(node, importId);
+            return section.setRootNode(node, importId);
         }
         ContextNode parentNode = section.getContextNode(parentImportId);
         if (parentNode == null) {
@@ -103,27 +102,37 @@ public class SectionLevelProcessor implements ItemProcessor {
 
     private void processDescItems(Collection<DescriptionItem> items, ContextNode node) {
         RuleSystem ruleSystem = section.getRuleSystem();
+
         for (DescriptionItem item : items) {
             // resolve item type
             RuleSystemItemType itemType = ruleSystem.getItemTypeByCode(item.getT());
             if (itemType == null) {
                 throw new DEImportException("Description item type not found, code:" + item.getT());
             }
-            // create item
-            ArrDescItem descItem = createDescItem(section, itemType, item.getS());
             // create data
             DataType dataType = itemType.getDataType();
-            ArrData data = item.createData(context, dataType);
+            ImportableItemData itemData = item.createData(context, dataType);
+
+            // update data type reference
+            ArrData data = itemData.getData();
             if (data != null) {
                 data.setDataType(dataType.getEntity());
             }
-            // add item
+
+            ImportIndexData indexData = new ImportIndexData(section.getFund().getFundId(), itemData.getFulltext(), data);
+            ArrDescItem descItem = createDescItem(section, itemType, item.getS(), indexData);
+
             node.addDescItem(descItem, data);
         }
     }
 
-    private ArrDescItem createDescItem(ContextSection section, RuleSystemItemType itemType, String specCode) {
-        ArrDescItem descItem = new ArrDescItem(section.getFund().getFundId());
+    private ArrDescItem createDescItem(ContextSection section,
+                                       RuleSystemItemType itemType,
+                                       String specCode,
+                                       ArrDescItemIndexData indexData) {
+        ArrDescItem descItem = new ArrDescItem(indexData);
+
+        // set common properties
         descItem.setCreateChange(section.getCreateChange());
         descItem.setDescItemObjectId(section.generateDescItemObjectId());
         descItem.setItemType(itemType.getEntity());
@@ -147,6 +156,61 @@ public class SectionLevelProcessor implements ItemProcessor {
             throw new DEImportException(
                     "Specification for description item not expected, typeCode:" + typeCode + ", specCode:" + specCode);
         }
+
         return descItem;
+    }
+
+    private static class ImportIndexData implements ArrDescItemIndexData {
+
+        private final Integer fundId;
+
+        private final String fulltext;
+
+        private final Integer valueInt;
+
+        private final Double valueDouble;
+
+        private final Long normalizedFrom;
+
+        private final Long normalizedTo;
+
+        public ImportIndexData(Integer fundId, String fulltext, ArrData data) {
+            this.fundId = fundId;
+            this.fulltext = fulltext;
+            this.valueInt = data.getValueInt();
+            this.valueDouble = data.getValueDouble();
+            this.normalizedFrom = data.getNormalizedFrom();
+            this.normalizedTo = data.getNormalizedTo();
+        }
+
+        @Override
+        public Integer getFundId() {
+            return fundId;
+        }
+
+        @Override
+        public String getFulltextValue() {
+            return fulltext;
+        }
+
+        @Override
+        public Integer getValueInt() {
+            return valueInt;
+        }
+
+        @Override
+        public Double getValueDouble() {
+            return valueDouble;
+        }
+
+        @Override
+        public Long getNormalizedFrom() {
+            return normalizedFrom;
+        }
+
+        @Override
+        public Long getNormalizedTo() {
+            return normalizedTo;
+        }
     }
 }

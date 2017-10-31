@@ -9,7 +9,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.lang3.Validate;
 
-import cz.tacr.elza.dataexchange.output.writer.xml.ElementNames;
+import cz.tacr.elza.dataexchange.output.writer.xml.XmlElementName;
 
 public class RootNode extends AbstractInternalNode {
 
@@ -21,7 +21,7 @@ public class RootNode extends AbstractInternalNode {
     private final XmlNode[] childNodes = new XmlNode[ChildNodeType.values().length];
 
     public RootNode() {
-        super(ElementNames.ROOT);
+        super(XmlElementName.ROOT);
     }
 
     public XmlNode getNode(ChildNodeType type) {
