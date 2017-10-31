@@ -61,7 +61,6 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.service.ItemService;
 import cz.tacr.elza.utils.HibernateUtils;
 
 /**
@@ -125,9 +124,6 @@ public class NodeCacheService {
 
     @Autowired
     private CalendarTypeRepository calendarTypeRepository;
-
-    @Autowired
-    private ItemService itemService;
 
     public NodeCacheService() {
         mapper = new ObjectMapper();
