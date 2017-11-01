@@ -23,9 +23,6 @@ import cz.tacr.elza.domain.RulItemType;
  */
 public interface DescItemRepositoryCustom {
 
-    List<ArrDescItem> findByNodes(Collection<ArrNode> nodes, @Nullable ArrChange lockChange);
-
-
     /**
      * Provede načtení popisků uzlu pro seznam id uzlů.
      *

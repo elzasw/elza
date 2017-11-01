@@ -81,7 +81,7 @@ public class DescItemReader {
             }
             cachedNodes = nodeCacheService.getNodes(nodeIds);
         } else {
-            List<ArrDescItem> descItems = descItemRepository.findByNodes(nodes, version.getLockChange());
+			List<ArrDescItem> descItems = descItemRepository.findByNodesAndDeleteChange(nodes, version.getLockChange());
             descItemsMap = ElzaTools.createGroupMap(descItems, p -> p.getNode().getNodeId());
         }
 

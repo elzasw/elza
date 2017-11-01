@@ -2,7 +2,6 @@ package cz.tacr.elza.repository;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -52,22 +51,6 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
 
     @Autowired
     private EntityManager entityManager;
-
-    @Override
-    public List<ArrDescItem> findByNodes(final Collection<ArrNode> nodes, @Nullable final ArrChange lockChange) {
-        Assert.notNull(nodes, "JP musí být vyplněny");
-
-        if (nodes.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        if (lockChange == null) {
-            return descItemRepository.findByNodesAndDeleteChangeIsNull(nodes);
-        } else {
-            return descItemRepository.findByNodesAndDeleteChange(nodes, lockChange);
-        }
-    }
-
 
 
     @Override

@@ -4,9 +4,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RegRecord;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -16,19 +13,20 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 
 
 /**
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 20.8.2015
+ * Repository for Description items
+ * 
+ * Some methods are also fetching related entities like node and data. Please
+ * consider which method is suitable for each use.
  */
 @Repository
 public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integer>, DescItemRepositoryCustom {
-
-    @Query("SELECT i FROM arr_desc_item i WHERE i.node in (?1) AND i.deleteChange IS NULL")
-    List<ArrDescItem> findByNodesAndDeleteChangeIsNull(Collection<ArrNode> nodes);
 
     @Query("SELECT di FROM arr_desc_item di JOIN FETCH di.node WHERE di.node in (?1) AND di.deleteChange IS NULL AND di.itemType = ?2")
     List<ArrDescItem> findOpenByNodesAndType(Collection<ArrNode> nodes, RulItemType type);
@@ -53,7 +51,13 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     @Query("SELECT i FROM arr_desc_item i WHERE i.node = ?1 AND i.deleteChange IS NULL")
     List<ArrDescItem> findByNodeAndDeleteChangeIsNull(ArrNode node);
 
-    @Query("SELECT i FROM arr_desc_item i WHERE i.nodeId IN (?1) AND i.deleteChange IS NULL")
+	/**
+	 * Read node and connected data
+	 * 
+	 * @param nodeIds
+	 * @return
+	 */
+	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data d WHERE i.nodeId IN (?1) AND i.deleteChange IS NULL")
     List<ArrDescItem> findByNodeIdsAndDeleteChangeIsNull(Collection<Integer> nodeIds);
 
     @Query("SELECT i FROM arr_desc_item i JOIN i.itemType t JOIN i.itemSpec s WHERE i.node = ?1 AND i.deleteChange IS NULL AND t.itemTypeId = ?2 AND s.itemSpecId = ?3")
