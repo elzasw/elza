@@ -28,7 +28,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -899,7 +898,8 @@ public class ArrangementService {
         }
 
         for (ArrDescItem descItem : descItemRepository.findByNodeAndDeleteChangeIsNull(level.getNode())) {
-            deleteDescItemInner(descItem, deleteChange);
+			descItem.setDeleteChange(deleteChange);
+			descItemRepository.save(descItem);
         }
 
         return deleteLevelInner(level, deleteChange);
@@ -921,21 +921,6 @@ public class ArrangementService {
         level.setDeleteChange(deleteChange);
         return levelRepository.saveAndFlush(level);
     }
-
-    private void deleteDescItemInner(final ArrDescItem descItem, final ArrChange deleteChange) {
-        Assert.notNull(descItem, "Hodnota atributu musí být vyplněna");
-
-        descItem.setDeleteChange(deleteChange);
-        ArrDescItem descItemTmp;
-        //try {
-        descItemTmp = new ArrDescItem();
-        /*} catch (InstantiationException | IllegalAccessException e) {
-            throw new IllegalStateException(e);
-        }*/
-        BeanUtils.copyProperties(descItem, descItemTmp);
-        descItemRepository.save(descItemTmp);
-    }
-
     /**
      * Vrací další identifikátor objektu pro atribut (oproti PK se zachovává při nové verzi)
      * <p>
