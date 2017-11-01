@@ -44,49 +44,51 @@ public abstract class ArrItem implements NodeCacheSerializable {
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY) // required to read id without fetch from db
-    private Integer itemId;
+	protected Integer itemId;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = "createChangeId", nullable = false)
-    private ArrChange createChange;
+	protected ArrChange createChange;
 
     @Column(name = "createChangeId", nullable = false, updatable = false, insertable = false)
-    private Integer createChangeId;
+	protected Integer createChangeId;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = "deleteChangeId", nullable = true)
-    private ArrChange deleteChange;
+	protected ArrChange deleteChange;
 
     @Column(name = "deleteChangeId", nullable = true, updatable = false, insertable = false)
-    private Integer deleteChangeId;
+	protected Integer deleteChangeId;
 
     @Column(nullable = false)
-    private Integer descItemObjectId;
+	protected Integer descItemObjectId;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.EAGER, targetEntity = RulItemType.class)
     @JoinColumn(name = "itemTypeId", nullable = false)
-    private RulItemType itemType;
+	protected RulItemType itemType;
 
     @Column(name = "itemTypeId", nullable = false, updatable = false, insertable = false)
-    private Integer itemTypeId;
+	protected Integer itemTypeId;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.EAGER, targetEntity = RulItemSpec.class)
     @JoinColumn(name = "itemSpecId")
-    private RulItemSpec itemSpec;
+	protected RulItemSpec itemSpec;
 
     @Column(name = "itemSpecId", updatable = false, insertable = false)
-    private Integer itemSpecId;
+	protected Integer itemSpecId;
 
     @Column(nullable = false)
-    private Integer position;
+	protected Integer position;
 
+	// This EAGER fetching should be removed
+	// Type of fetching is up to caller and its need
     @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrData.class)
     @JoinColumn(name = "dataId")
-    private ArrData data;
+	protected ArrData data;
 
 	/**
 	 * Default constructor

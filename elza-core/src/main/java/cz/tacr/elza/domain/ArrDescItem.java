@@ -59,10 +59,10 @@ public class ArrDescItem extends ArrItem {
     public static final String DELETE_CHANGE_ID = "deleteChangeId";
     public static final String LUCENE_DESC_ITEM_TYPE_ID = "descItemTypeId";
 
+	@JsonIgnore
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrNode.class)
-    @JoinColumn(name = "nodeId", nullable = false)
-    @JsonIgnore
+	@JoinColumn(name = "nodeId", nullable = false)
     private ArrNode node;
 
     @Column(name = "nodeId", updatable = false, insertable = false)
@@ -106,6 +106,7 @@ public class ArrDescItem extends ArrItem {
         return nodeId;
     }
 
+	@JsonIgnore
     @Override
     @Field(name = DescItemCondition.FUND_ID)
     @FieldBridge(impl = IntegerBridge.class)
@@ -113,59 +114,65 @@ public class ArrDescItem extends ArrItem {
         return indexData.getFundId();
     }
 
+	@JsonIgnore
     @Field(name = LuceneDescItemCondition.FULLTEXT_ATT)
     @Analyzer(definition = "customanalyzer")
     public String getFulltextValue() {
-        if (isUndefined()) {
+		if (data == null) {
             return null;
-        }
-        RulItemSpec itemSpec = getItemSpec();
-        if (getData() instanceof ArrDataNull) {
+		}
+		if (data instanceof ArrDataNull) {
             return itemSpec == null ? null : itemSpec.getName();
         }
         String fulltext = indexData.getFulltextValue();
         return itemSpec == null ? fulltext : itemSpec.getName() + DataRepositoryImpl.SPEC_SEPARATOR + fulltext;
     }
 
+	@JsonIgnore
     @Field(name = LuceneDescItemCondition.INTGER_ATT, store = Store.YES)
     @NumericField
     public Integer getValueInt() {
         return indexData.getValueInt();
     }
 
+	@JsonIgnore
     @Field(name = LuceneDescItemCondition.DECIMAL_ATT, store = Store.YES)
     @NumericField
     public Double getValueDouble() {
         return indexData.getValueDouble();
     }
 
+	@JsonIgnore
     @Field(name = LuceneDescItemCondition.NORMALIZED_FROM_ATT, store = Store.YES)
     @NumericField
     public Long getNormalizedFrom() {
         return indexData.getNormalizedFrom();
     }
 
+	@JsonIgnore
     @Field(name = LuceneDescItemCondition.NORMALIZED_TO_ATT, store = Store.YES)
     @NumericField
     public Long getNormalizedTo() {
         return indexData.getNormalizedTo();
     }
 
-    @Field
-    @FieldBridge(impl = IntegerBridge.class)
-    public Integer getDescItemTypeId() {
-        return getItemType().getItemTypeId();
-    }
+	// Probably not used
+	// If will be needed proper constant should be created in LuceneDescItemCondition
+	// See implementation bellow
+	/*
+	@JsonIgnore
+	@Field
+	@FieldBridge(impl = IntegerBridge.class)
+	public Integer getDescItemTypeId() {
+	    return getItemType().getItemTypeId();
+	}*/
 
-    @Field(name = LuceneDescItemCondition.SPECIFICATION_ATT)
-    @Analyzer(definition = "customanalyzer")
-    public Integer getSpecification() {
-        RulItemSpec itemSpec = getItemSpec();
-        if (itemSpec == null) {
-            return null;
-        }
-        return itemSpec.getItemSpecId();
-    }
+	@JsonIgnore
+	@Field(name = LuceneDescItemCondition.SPECIFICATION_ATT)
+	@Analyzer(definition = "customanalyzer")
+	public Integer getSpecification() {
+		return itemSpecId;
+	}
 
     @Override
     public ArrNode getNode() {
@@ -196,27 +203,27 @@ public class ArrDescItem extends ArrItem {
 
         @Override
         public String getFulltextValue() {
-            return getData().getFulltextValue();
+			return (data == null) ? null : data.getFulltextValue();
         }
 
         @Override
         public Integer getValueInt() {
-            return getData().getValueInt();
+			return (data == null) ? null : data.getValueInt();
         }
 
         @Override
         public Double getValueDouble() {
-            return getData().getValueDouble();
+			return (data == null) ? null : data.getValueDouble();
         }
 
         @Override
         public Long getNormalizedFrom() {
-            return getData().getNormalizedFrom();
+			return (data == null) ? null : data.getNormalizedFrom();
         }
 
         @Override
-        public Long getNormalizedTo() {
-            return getData().getNormalizedTo();
+		public Long getNormalizedTo() {
+			return (data == null) ? null : data.getNormalizedTo();
         }
     };
 }
