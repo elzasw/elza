@@ -48,6 +48,7 @@ import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.RegCoordinates;
+import cz.tacr.elza.domain.RegExternalSystem;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegScope;
@@ -638,7 +639,8 @@ public class RegistryController {
     @RequestMapping(value = "/externalSystems", method = RequestMethod.GET)
 	@Transactional
     public List<RegExternalSystemSimpleVO> findAllExternalSystems() {
-        return factoryVo.createSimpleEntity(externalSystemService.findAllRegSystem(), RegExternalSystemSimpleVO.class);
+		List<RegExternalSystem> extSystems = externalSystemService.findAllRegSystem();
+		return factoryVo.createSimpleEntity(extSystems, RegExternalSystemSimpleVO.class);
     }
 
     /**
