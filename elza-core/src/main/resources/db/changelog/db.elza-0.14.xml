@@ -141,4 +141,17 @@
                                  onDelete="NO ACTION"/>
     </changeSet>
 
+    <!-- Pridani indexu na arr_desc_item a arr_item -->
+    <changeSet id="201710310000" author="ppyt">
+      <createIndex tableName="arr_desc_item" indexName="arr_desc_item_node_idx">
+        <column name="node_id" />
+      </createIndex>
+      <createIndex tableName="arr_item" indexName="arr_item_create_change_idx">
+        <column name="create_change_id" />
+      </createIndex>
+      <createIndex tableName="arr_item" indexName="arr_item_delete_change_idx">
+        <column name="delete_change_id" />
+      </createIndex>
+    </changeSet>
+
 </databaseChangeLog>
