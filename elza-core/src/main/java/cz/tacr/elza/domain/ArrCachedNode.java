@@ -1,6 +1,6 @@
 package cz.tacr.elza.domain;
 
-import org.hibernate.annotations.Type;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,15 +11,13 @@ import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.io.Serializable;
-import java.util.Objects;
+
+import org.hibernate.annotations.Type;
 
 
 /**
  * Data jednotky popisu serializované pro rychlejší sestavení.
  *
- * @author Martin Šlapa
- * @since 06.12.2016
  */
 @Table
 @Entity(name = "arr_cached_node")
@@ -29,11 +27,11 @@ public class ArrCachedNode {
     @GeneratedValue
     private Integer cachedNodeId;
 
-    /*@ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrNode.class)
-    @JoinColumn(name = "nodeId", nullable = false)
-    private ArrNode node;*/
+	@ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNode.class)
+	@JoinColumn(name = "nodeId", nullable = false)
+	private ArrNode node;
 
-    @Column(updatable = false)
+	@Column(insertable = false, updatable = false)
     private Integer nodeId;
 
     @Lob
@@ -49,24 +47,26 @@ public class ArrCachedNode {
         this.cachedNodeId = cachedNodeId;
     }
 
-    /*public ArrNode getNode() {
+	public ArrNode getNode() {
         return node;
-    }*/
+	}
 
-    /*public void setNode(final ArrNode node) {
+	public void setNode(final ArrNode node) {
         this.node = node;
         if (node != null) {
             nodeId = node.getNodeId();
         }
-    }*/
+	}
 
     public Integer getNodeId() {
         return nodeId;
     }
 
-    public void setNodeId(final Integer nodeId) {
-        this.nodeId = nodeId;
-    }
+	/*
+	protected void setNodeId(final Integer nodeId) {
+	    this.nodeId = nodeId;
+	}
+	*/
 
     public String getData() {
         return data;

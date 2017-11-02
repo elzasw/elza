@@ -23,7 +23,7 @@ public class ArrDataFileRef extends ArrData {
     public static final String FILE = "file";
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrFile.class)
+	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ArrFile.class)
     @JoinColumn(name = "fileId", nullable = false)
     private ArrFile file;
 

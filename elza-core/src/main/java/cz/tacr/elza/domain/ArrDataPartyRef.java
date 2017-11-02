@@ -23,7 +23,7 @@ public class ArrDataPartyRef extends ArrData {
     public static final String PARTY = "party";
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ParParty.class)
+	@ManyToOne(fetch = FetchType.LAZY, targetEntity = ParParty.class)
     @JoinColumn(name = "partyId", nullable = false)
     private ParParty party;
 

@@ -23,14 +23,14 @@ public class ArrDigitizationRequestNode {
     @GeneratedValue
     private Integer digitizationRequestNodeId;
 
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrDigitizationRequest.class)
+	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ArrDigitizationRequest.class)
     @JoinColumn(name = "digitizationRequestId", nullable = false)
     private ArrDigitizationRequest digitizationRequest;
 
     @Column(name = "digitizationRequestId", insertable = false, updatable = false)
     private Integer digitizationRequestId;
 
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrNode.class)
+	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ArrNode.class)
     @JoinColumn(name = "nodeId", nullable = false)
     private ArrNode node;
 

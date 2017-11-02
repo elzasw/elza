@@ -51,13 +51,23 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     @Query("SELECT i FROM arr_desc_item i WHERE i.node = ?1 AND i.deleteChange IS NULL")
     List<ArrDescItem> findByNodeAndDeleteChangeIsNull(ArrNode node);
 
+	/*static final String FETCH_NODES_WITH_DATA = "SELECT i, d, dp, par FROM arr_desc_item i"
+	        + " LEFT JOIN FETCH i.data d"
+	        + " LEFT JOIN arr_data_party_ref dp ON dp.dataId = d.dataId"
+	        + " LEFT JOIN FETCH dp.party par"
+	        + " WHERE i.nodeId IN (?1) AND i.deleteChange IS NULL";*/
+
+	static final String FETCH_NODES_WITH_DATA = "SELECT i FROM arr_desc_item i"
+	        + " LEFT JOIN FETCH i.data d"
+	        + " WHERE i.nodeId IN (?1) AND i.deleteChange IS NULL";
 	/**
 	 * Read node and connected data
 	 * 
 	 * @param nodeIds
 	 * @return
 	 */
-	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data d WHERE i.nodeId IN (?1) AND i.deleteChange IS NULL")
+	//@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data d WHERE i.nodeId IN (?1) AND i.deleteChange IS NULL")
+	@Query(FETCH_NODES_WITH_DATA)
     List<ArrDescItem> findByNodeIdsAndDeleteChangeIsNull(Collection<Integer> nodeIds);
 
     @Query("SELECT i FROM arr_desc_item i JOIN i.itemType t JOIN i.itemSpec s WHERE i.node = ?1 AND i.deleteChange IS NULL AND t.itemTypeId = ?2 AND s.itemSpecId = ?3")

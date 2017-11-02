@@ -61,7 +61,7 @@ public class ArrDescItem extends ArrItem {
 
 	@JsonIgnore
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrNode.class)
+	@ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNode.class)
 	@JoinColumn(name = "nodeId", nullable = false)
     private ArrNode node;
 

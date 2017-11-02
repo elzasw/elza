@@ -35,8 +35,6 @@ import cz.tacr.elza.domain.table.ElzaColumn;
  *
  * Evidence typů atributů archivního popisu. evidence je společná pro všechny archivní pomůcky.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 20.8.2015
  */
 @Entity(name = "rul_item_type")
 @Table(uniqueConstraints = {
@@ -92,6 +90,9 @@ public class RulItemType {
     @Column
     private String columnsDefinition;
 
+	// Note: Consider to remove all transient fields from this
+	// class. Should be probably placed in RulItemTypeExt
+
     @Transient
     private Type type;
 
@@ -118,7 +119,42 @@ public class RulItemType {
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
-    public Integer getItemTypeId() {
+	/**
+	 * Default constructor
+	 */
+	public RulItemType() {
+
+	}
+
+	/**
+	 * Copy constructor for derived types
+	 * 
+	 * @param src
+	 */
+	protected RulItemType(RulItemType src) {
+		itemTypeId = src.itemTypeId;
+		dataTypeId = src.dataTypeId;
+		dataType = src.dataType;
+		code = src.code;
+		name = src.name;
+		shortcut = src.shortcut;
+		description = src.description;
+		isValueUnique = src.isValueUnique;
+		canBeOrdered = src.canBeOrdered;
+		useSpecification = src.useSpecification;
+		viewOrder = src.viewOrder;
+		columnsDefinition = src.columnsDefinition;
+		type = src.type;
+		repeatable = src.repeatable;
+		calculable = src.calculable;
+		calculableState = src.calculableState;
+		policyTypeCode = src.policyTypeCode;
+		indefinable = src.indefinable;
+		ruleSet = src.ruleSet;
+		rulPackage = src.rulPackage;
+	}
+
+	public Integer getItemTypeId() {
         return itemTypeId;
     }
 

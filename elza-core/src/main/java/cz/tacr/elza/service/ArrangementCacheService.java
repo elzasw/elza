@@ -1,5 +1,14 @@
 package cz.tacr.elza.service;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrNodeRegister;
@@ -7,14 +16,6 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * Serviska pro operace nad JP, která současně propisuje změny do cache.
@@ -27,31 +28,6 @@ public class ArrangementCacheService {
 
     @Autowired
     private NodeCacheService nodeCacheService;
-
-    /**
-     * Hromadné vytvoření JP.
-     *
-     * @param nodeIds identifikátory JP
-     * @return seznam vytvořených cache záznamů
-     */
-    public void createNodes(final Collection<Integer> nodeIds) {
-        List<CachedNode> cachedNode = new ArrayList<>();
-        for (Integer nodeId : nodeIds) {
-            cachedNode.add(new CachedNode(nodeId));
-        }
-        nodeCacheService.createNodes(cachedNode);
-    }
-
-    /**
-     * Vytvoření JP.
-     *
-     * @param nodeId identifikátor JP
-     * @return vytvořený cache záznam
-     */
-    public void createNode(final Integer nodeId) {
-        CachedNode cachedNode = new CachedNode(nodeId);
-        nodeCacheService.createNodes(Collections.singletonList(cachedNode));
-    }
 
     /**
      * Smazání JP.

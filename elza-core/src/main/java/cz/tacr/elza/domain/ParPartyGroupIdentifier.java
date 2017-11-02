@@ -24,7 +24,6 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 /**
  * Identifikace o přiřazených kódech původce, například IČO.
  *
- * @author Martin Kužel [<a href="mailto:martin.kuzel@marbes.cz">martin.kuzel@marbes.cz</a>]
  */
 @Entity(name = "par_party_group_identifier")
 @Table
@@ -39,7 +38,7 @@ public class ParPartyGroupIdentifier {
     private Integer partyGroupIdentifierId;
 
     @RestResource(exported = false)
-    @OneToOne(fetch = FetchType.EAGER, targetEntity = ParUnitdate.class)
+    @OneToOne(fetch = FetchType.LAZY, targetEntity = ParUnitdate.class)
     @JoinColumn(name = "toUnitdateId")
     private ParUnitdate to;
 
@@ -48,7 +47,7 @@ public class ParPartyGroupIdentifier {
     private Integer toUnitdateId;
 
     @RestResource(exported = false)
-    @OneToOne(fetch = FetchType.EAGER, targetEntity = ParUnitdate.class)
+    @OneToOne(fetch = FetchType.LAZY, targetEntity = ParUnitdate.class)
     @JoinColumn(name = "fromUnitdateId")
     private ParUnitdate from;
 

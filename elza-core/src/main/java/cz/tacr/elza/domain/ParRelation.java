@@ -51,11 +51,11 @@ public class ParRelation extends AbstractVersionableEntity implements Versionabl
     @JoinColumn(name = "relationTypeId", nullable = false)
     private ParRelationType relationType;
 
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ParUnitdate.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParUnitdate.class)
     @JoinColumn(name = "fromUnitdateId")
     private ParUnitdate from;
 
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ParUnitdate.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParUnitdate.class)
     @JoinColumn(name = "toUnitdateId")
     private ParUnitdate to;
 

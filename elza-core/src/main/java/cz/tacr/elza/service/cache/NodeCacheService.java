@@ -12,11 +12,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.Validate;
 import org.castor.core.util.Assert;
+import org.hibernate.ScrollableResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,10 +33,15 @@ import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
 import com.google.common.collect.Lists;
 
+import cz.tacr.elza.core.data.CalendarType;
+import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.RuleSystemProvider;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrCachedNode;
-import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataFileRef;
 import cz.tacr.elza.domain.ArrDataPacketRef;
 import cz.tacr.elza.domain.ArrDataPartyRef;
@@ -46,16 +55,12 @@ import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.CachedNodeRepository;
-import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundFileRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PacketRepository;
@@ -64,16 +69,17 @@ import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.utils.HibernateUtils;
 
 /**
- * Serviska pro cachování dat jednotky popisu.
+ * Service for caching node related entities.
  *
- * * sestavuje jednotný objekt {@link CachedNode}, který se při ukládání do DB serializuje do JSON
- * * pro určení, co se má serializovat se využívá interface {@link NodeCacheSerializable} + základní primitivní typy
- * * při spuštění synchronizace {@link #syncCache()} je zamknuta cache pro čtení
+ * sestavuje jednotný objekt {@link CachedNode}, který se při ukládání do DB
+ * serializuje do JSON pro určení, co se má serializovat se využívá interface
+ * {@link NodeCacheSerializable} + základní primitivní typy při spuštění
+ * synchronizace {@link #syncCache()} je zamknuta cache pro čtení
  */
 @Service
 public class NodeCacheService {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+	private static final Logger logger = LoggerFactory.getLogger(NodeCacheService.class);
 
     private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
     private final ReentrantReadWriteLock.ReadLock readLock = rwl.readLock();
@@ -81,16 +87,13 @@ public class NodeCacheService {
 
     private final ObjectMapper mapper;
 
+	@PersistenceContext
+	private EntityManager entityManager;
+
     /**
      * Maximální počet JP, které se mají dávkově zpracovávat pro synchronizaci.
      */
     private static final int SYNC_BATCH_NODE_SIZE = 800;
-
-    @Autowired
-    private ItemTypeRepository itemTypeRepository;
-
-    @Autowired
-    private ItemSpecRepository itemSpecRepository;
 
     @Autowired
     private NodeRegisterRepository nodeRegisterRepository;
@@ -123,7 +126,7 @@ public class NodeCacheService {
     private DescItemRepository descItemRepository;
 
     @Autowired
-    private CalendarTypeRepository calendarTypeRepository;
+	private StaticDataService staticDataService;
 
     public NodeCacheService() {
         mapper = new ObjectMapper();
@@ -170,11 +173,11 @@ public class NodeCacheService {
      * @return JP
      */
 	@Transactional(value = TxType.MANDATORY)
-    public CachedNode getNode(final Integer nodeId) {
+	public RestoredNode getNode(final Integer nodeId) {
         readLock.lock();
         try {
             logger.debug(">getNode(nodeId:" + nodeId + ")");
-            CachedNode nodeInternal = getNodeInternal(nodeId);
+			RestoredNode nodeInternal = getNodeInternal(nodeId);
             logger.debug("<getNode(nodeId:" + nodeId + ")");
             return nodeInternal;
         } finally {
@@ -189,30 +192,13 @@ public class NodeCacheService {
      * @return seznam JP
      */
 	@Transactional(value = TxType.MANDATORY)
-    public Map<Integer, CachedNode> getNodes(final Collection<Integer> nodeIds) {
+	public Map<Integer, RestoredNode> getNodes(final Collection<Integer> nodeIds) {
         readLock.lock();
         try {
             logger.debug(">getNodes(nodeIds:" + nodeIds + ")");
-            Map<Integer, CachedNode> nodesInternal = getNodesInternal(nodeIds);
+			Map<Integer, RestoredNode> nodesInternal = getNodesInternal(nodeIds);
             logger.debug("<getNodes(nodeIds:" + nodeIds + ")");
             return nodesInternal;
-        } finally {
-            readLock.unlock();
-        }
-    }
-
-    /**
-     * Založení nových záznamů v cache pro JP.
-     *
-     * @param cachedNodes seznam zakládaných objektů
-     */
-    @Transactional
-    public void createNodes(final Collection<CachedNode> cachedNodes) {
-        readLock.lock();
-        try {
-            logger.debug(">createNodes(" + cachedNodes + ")");
-            createNodesInternal(cachedNodes);
-            logger.debug("<createNodes(" + cachedNodes + ")");
         } finally {
             readLock.unlock();
         }
@@ -246,7 +232,7 @@ public class NodeCacheService {
         readLock.lock();
         try {
             logger.debug(">saveNode(" + cachedNode + ")");
-            saveNodeInternal(cachedNode);
+			saveNodesInternal(Collections.singletonList(cachedNode));
             logger.debug("<saveNode(" + cachedNode + ")");
         } finally {
             readLock.unlock();
@@ -283,7 +269,8 @@ public class NodeCacheService {
         for (List<ArrCachedNode> partCachedNodes : Lists.partition(cachedNodes, SYNC_BATCH_NODE_SIZE)) {
             i++;
             logger.debug("Sestavuji JP " + ((i - 1) * SYNC_BATCH_NODE_SIZE + 1) + "-" + ((i * SYNC_BATCH_NODE_SIZE) < nodeIds.size() ? (i * SYNC_BATCH_NODE_SIZE) : nodeIds.size()));
-            cachedNodeRepository.save(updateCachedNodes(partCachedNodes));
+			List<ArrCachedNode> updatedNodes = updateCachedNodes(partCachedNodes);
+			cachedNodeRepository.save(updatedNodes);
         }
     }
 
@@ -301,28 +288,39 @@ public class NodeCacheService {
      * Synchronizace záznamů v databázi.
      */
     private void syncCacheInternal() {
-        Map<Integer, List<Integer>> uncachedNodes = nodeRepository.findUncachedNodes();
+		ScrollableResults uncachedNodes = nodeRepository.findUncachedNodes();
 
-        if (uncachedNodes.size() == 0) {
-            logger.info("Všechny JP jsou synchronizovány");
-            return;
-        }
+		List<Integer> partNodeIds = new ArrayList<>(SYNC_BATCH_NODE_SIZE);
+		int count = 0;
+		while (uncachedNodes.next()) {
+			Object obj = uncachedNodes.get(0);
 
-        for (Map.Entry<Integer, List<Integer>> entry : uncachedNodes.entrySet()) {
-            Integer fundId = entry.getKey();
-            List<Integer> nodeIds = entry.getValue();
+			partNodeIds.add((Integer) obj);
+			count++;
+			if (count % SYNC_BATCH_NODE_SIZE == 0) {
+				logger.info("Sestavuji JP " + (count - SYNC_BATCH_NODE_SIZE + 1) + "-" + count);
 
-            logger.info("Synchronizace AS(id=" + fundId + "), počet JP: " + nodeIds.size());
-            int i = 0;
-            for (List<Integer> partNodeIds : Lists.partition(nodeIds, SYNC_BATCH_NODE_SIZE)) {
-                i++;
-                logger.info("Sestavuji JP " + ((i - 1) * SYNC_BATCH_NODE_SIZE + 1) + "-" + ((i * SYNC_BATCH_NODE_SIZE) < nodeIds.size() ? (i * SYNC_BATCH_NODE_SIZE) : nodeIds.size()));
+				processNewNodes(partNodeIds);
+				partNodeIds.clear();
 
-                List<ArrCachedNode> cachedNodes = createCachedNodes(partNodeIds);
-                cachedNodeRepository.save(cachedNodes);
-            }
-        }
+			}
+		}
+		// process remaining nodes
+		if (partNodeIds.size() > 0) {
+			logger.info("Sestavuji JP " + ((count / SYNC_BATCH_NODE_SIZE) * SYNC_BATCH_NODE_SIZE + 1) + "-" + count);
+			processNewNodes(partNodeIds);
+		}
+
+		logger.info("Všechny JP jsou synchronizovány");
     }
+
+	private void processNewNodes(List<Integer> nodeIds) {
+		List<ArrCachedNode> cachedNodes = createCachedNodes(nodeIds);
+		cachedNodeRepository.save(cachedNodes);
+		//flush a batch of updates and release memory:
+		entityManager.flush();
+		entityManager.clear();
+	}
 
     /**
      * Vytvoření nových záznamů podle identifikátorů JP v aktuální podobně.
@@ -338,14 +336,20 @@ public class NodeCacheService {
         Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = createNodeDaoLinkMap(nodeIds);
 
         for (Integer nodeId : nodeIds) {
-            ArrCachedNode cachedNode = new ArrCachedNode();
-            //ArrNode node = nodeRepository.getOne(nodeId);
-            cachedNode.setNodeId(nodeId);
+			// serialize node data
             CachedNode cn = new CachedNode(nodeId);
             cn.setDescItems(nodeIdItems.get(nodeId));
             cn.setNodeRegisters(nodeIdNodeRegisters.get(nodeId));
             cn.setDaoLinks(nodeIdDaoLinks.get(nodeId));
-            cachedNode.setData(serialize(cn));
+			String nodeData = serialize(cn);
+
+			// prepare node reference
+			ArrNode node = entityManager.getReference(ArrNode.class, nodeId);
+
+			// prepare final object
+			ArrCachedNode cachedNode = new ArrCachedNode();
+			cachedNode.setNode(node);
+			cachedNode.setData(nodeData);
             result.add(cachedNode);
         }
 
@@ -414,7 +418,6 @@ public class NodeCacheService {
 
     private Map<Integer, List<ArrDescItem>> createNodeDescItemMap(final Collection<Integer> nodeIds) {
         List<ArrDescItem> descItems = descItemRepository.findByNodeIdsAndDeleteChangeIsNull(nodeIds);
-        //itemService.loadData(descItems);
 
         Map<Integer, List<ArrDescItem>> nodeIdItems = new HashMap<>();
         for (ArrDescItem descItem : descItems) {
@@ -435,10 +438,10 @@ public class NodeCacheService {
      * @param nodeId identifikátor JP
      * @return JP
      */
-    private CachedNode getNodeInternal(final Integer nodeId) {
+	private RestoredNode getNodeInternal(final Integer nodeId) {
         Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
-        ArrCachedNode cachedNode = cachedNodeRepository.findOneByNodeId(nodeId);
-        CachedNode result = deserialize(cachedNode.getData());
+		ArrCachedNode cachedNode = cachedNodeRepository.findByNodeId(nodeId);
+		RestoredNode result = deserialize(cachedNode);
         reloadCachedNodes(Collections.singletonList(result));
         return result;
     }
@@ -449,98 +452,111 @@ public class NodeCacheService {
      * @param nodeIds identifikátory JP
      * @return seznam JP
      */
-    private Map<Integer, CachedNode> getNodesInternal(final Collection<Integer> nodeIds) {
+	private Map<Integer, RestoredNode> getNodesInternal(final Collection<Integer> nodeIds) {
         List<ArrCachedNode> cachedNodes = cachedNodeRepository.findByNodeIdIn(nodeIds);
-        Map<Integer, CachedNode> result = new HashMap<>(cachedNodes.size());
+		Map<Integer, RestoredNode> result = new HashMap<>(cachedNodes.size());
         for (ArrCachedNode cachedNode : cachedNodes) {
-            result.put(cachedNode.getNodeId(), deserialize(cachedNode.getData()));
+			RestoredNode restoredNode = deserialize(cachedNode);
+			result.put(cachedNode.getNodeId(), restoredNode);
         }
         reloadCachedNodes(result.values());
         return result;
     }
-
+    
     /**
      * Metoda projde předané JP a provede donačtené návazných entit.
      *
      * @param cachedNodes seznam JP, kterým se doplňují návazné entity
      */
-    private void reloadCachedNodes(final Collection<CachedNode> cachedNodes) {
+	private void reloadCachedNodes(final Collection<RestoredNode> cachedNodes) {
 
-        Map<ArrDescItem, Integer> itemTypesMap = new HashMap<>();
-        Map<ArrDescItem, Integer> itemSpecsMap = new HashMap<>();
+		StaticDataProvider sdp = staticDataService.getData();
+		RuleSystemProvider rsp = sdp.getRuleSystems();
+
         Map<ArrDescItem, Integer> itemPacketsMap = new HashMap<>();
         Map<ArrDescItem, Integer> itemPartiesMap = new HashMap<>();
         Map<ArrDescItem, Integer> itemRecordsMap = new HashMap<>();
         Map<ArrDescItem, Integer> itemFilesMap = new HashMap<>();
-        Map<ArrDescItem, Integer> itemUnitdateMap = new HashMap<>();
         Map<ArrDaoLink, Integer> daoLinksMap = new HashMap<>();
         Map<ArrNodeRegister, Integer> nodeRegistersMap = new HashMap<>();
 
-        for (CachedNode cachedNode : cachedNodes) {
-            ArrNode node = nodeRepository.getOne(cachedNode.getNodeId());
-            if (CollectionUtils.isNotEmpty(cachedNode.getDescItems())) {
-                for (ArrDescItem descItem : cachedNode.getDescItems()) {
-                    descItem.setNode(node);
+		for (RestoredNode restoredNode : cachedNodes) {
+			ArrNode node = restoredNode.getNode();
+			if (CollectionUtils.isNotEmpty(restoredNode.getDescItems())) {
+				for (ArrDescItem descItem : restoredNode.getDescItems()) {
+					// set node
+					descItem.setNode(node);
 
-                    if (descItem.getItemTypeId() != null) {
-                        itemTypesMap.put(descItem, descItem.getItemTypeId());
-                    }
+					loadDescItemType(descItem, rsp);
 
-                    if (descItem.getItemSpecId() != null) {
-                        itemSpecsMap.put(descItem, descItem.getItemSpecId());
-                    }
-
-                    if (descItem.getData() instanceof ArrDataPacketRef) {
-                        itemPacketsMap.put(descItem, ((ArrDataPacketRef) descItem.getData()).getPacketId());
-                    } else if (descItem.getData() instanceof ArrDataPartyRef) {
-                        itemPartiesMap.put(descItem, ((ArrDataPartyRef) descItem.getData()).getPartyId());
-                    } else if (descItem.getData() instanceof ArrDataRecordRef) {
-                        itemRecordsMap.put(descItem, ((ArrDataRecordRef) descItem.getData()).getRecordId());
-                    } else if (descItem.getData() instanceof ArrDataFileRef) {
-                        itemFilesMap.put(descItem, ((ArrDataFileRef) descItem.getData()).getFileId());
-                    } else if (descItem.getData() instanceof ArrDataUnitdate) {
-                        itemUnitdateMap.put(descItem, ((ArrDataUnitdate) descItem.getData()).getCalendarTypeId());
+					ArrData data = descItem.getData();
+					if (data instanceof ArrDataPacketRef) {
+						itemPacketsMap.put(descItem, ((ArrDataPacketRef) data).getPacketId());
+					} else if (data instanceof ArrDataPartyRef) {
+						itemPartiesMap.put(descItem, ((ArrDataPartyRef) data).getPartyId());
+					} else if (data instanceof ArrDataRecordRef) {
+						itemRecordsMap.put(descItem, ((ArrDataRecordRef) data).getRecordId());
+					} else if (data instanceof ArrDataFileRef) {
+						itemFilesMap.put(descItem, ((ArrDataFileRef) data).getFileId());
+					} else if (data instanceof ArrDataUnitdate) {
+						loadUnitdate((ArrDataUnitdate) data);
                     }
                 }
             }
-            if (CollectionUtils.isNotEmpty(cachedNode.getDaoLinks())) {
-                for (ArrDaoLink daoLink : cachedNode.getDaoLinks()) {
+			if (CollectionUtils.isNotEmpty(restoredNode.getDaoLinks())) {
+				for (ArrDaoLink daoLink : restoredNode.getDaoLinks()) {
                     daoLinksMap.put(daoLink, daoLink.getDaoId());
                 }
             }
-            if (CollectionUtils.isNotEmpty(cachedNode.getNodeRegisters())) {
-                for (ArrNodeRegister nodeRegister : cachedNode.getNodeRegisters()) {
+			if (CollectionUtils.isNotEmpty(restoredNode.getNodeRegisters())) {
+				for (ArrNodeRegister nodeRegister : restoredNode.getNodeRegisters()) {
                     nodeRegistersMap.put(nodeRegister, nodeRegister.getRecordId());
                 }
             }
         }
 
-        fillRulItemTypes(itemTypesMap);
-        fillRulItemSpecs(itemSpecsMap);
-        fillArrPackets(itemPacketsMap);
+		fillArrPackets(itemPacketsMap);
         fillParParties(itemPartiesMap);
         fillRegRecords(itemRecordsMap);
         fillArrFiles(itemFilesMap);
-        fillUnitdate(itemUnitdateMap);
         fillArrDaoLinks(daoLinksMap);
         fillArrNodeRegisters(nodeRegistersMap);
     }
 
-    private void fillUnitdate(final Map<ArrDescItem, Integer> itemUnitdateMap) {
-        if (itemUnitdateMap.size() == 0) {
-            return;
-        }
-        List<ArrCalendarType> calendarTypes = calendarTypeRepository.findAll(itemUnitdateMap.values());
-        Map<Integer, ArrCalendarType> calendarTypeMapFound = new HashMap<>();
-        for (ArrCalendarType calendarType : calendarTypes) {
-            calendarTypeMapFound.put(calendarType.getCalendarTypeId(), calendarType);
-        }
+	/**
+	 * Load description item type from rule system provider
+	 * 
+	 * @param descItem
+	 * @param rsp
+	 */
+	private void loadDescItemType(ArrDescItem descItem, RuleSystemProvider rsp) {
+		Validate.notNull(descItem.getItemTypeId());
+		RuleSystemItemType itemType = rsp.getItemType(descItem.getItemTypeId());
+		Validate.notNull(itemType);
 
-        for (Map.Entry<ArrDescItem, Integer> entry : itemUnitdateMap.entrySet()) {
-            ArrDescItem descItem = entry.getKey();
-            ((ArrDataUnitdate) descItem.getData()).setCalendarType(calendarTypeMapFound.get(entry.getValue()));
-        }
-    }
+		descItem.setItemType(itemType.getEntity());
+
+		Integer itemSpecId = descItem.getItemSpecId();
+		if (itemSpecId != null) {
+			RulItemSpec itemSpec = itemType.getItemSpecById(itemSpecId);
+			Validate.notNull(itemSpec);
+			descItem.setItemSpec(itemSpec);
+		}
+
+	}
+
+	/**
+	 * Load unit date fields
+	 * 
+	 * Method sets proper calendar type.
+	 * 
+	 * @param data
+	 */
+	private void loadUnitdate(ArrDataUnitdate data) {
+		CalendarType calendarType = CalendarType.fromId(data.getCalendarTypeId());
+		Validate.notNull(calendarType);
+		data.setCalendarType(calendarType.getEntity());
+	}
 
     /**
      * Vyplnění návazných entity {@link RegRecord}.
@@ -670,48 +686,6 @@ public class NodeCacheService {
     }
 
     /**
-     * Vyplnění návazných entity {@link RulItemSpec}.
-     *
-     * @param itemSpecsMap mapa entit k vyplnění
-     */
-    private void fillRulItemSpecs(final Map<ArrDescItem, Integer> itemSpecsMap) {
-        if (itemSpecsMap.size() == 0) {
-            return;
-        }
-        List<RulItemSpec> itemSpecs = itemSpecRepository.findAll(itemSpecsMap.values());
-        Map<Integer, RulItemSpec> itemSpecsMapFound = new HashMap<>();
-        for (RulItemSpec itemSpec : itemSpecs) {
-            itemSpecsMapFound.put(itemSpec.getItemSpecId(), itemSpec);
-        }
-
-        for (Map.Entry<ArrDescItem, Integer> entry : itemSpecsMap.entrySet()) {
-            ArrDescItem descItem = entry.getKey();
-            descItem.setItemSpec(itemSpecsMapFound.get(entry.getValue()));
-        }
-    }
-
-    /**
-     * Vyplnění návazných entity {@link RulItemType}.
-     *
-     * @param itemTypesMap mapa entit k vyplnění
-     */
-    private void fillRulItemTypes(final Map<ArrDescItem, Integer> itemTypesMap) {
-        if (itemTypesMap.size() == 0) {
-            return;
-        }
-        List<RulItemType> itemTypes = itemTypeRepository.findAll(itemTypesMap.values());
-        Map<Integer, RulItemType> itemTypesMapFound = new HashMap<>();
-        for (RulItemType itemType : itemTypes) {
-            itemTypesMapFound.put(itemType.getItemTypeId(), itemType);
-        }
-
-        for (Map.Entry<ArrDescItem, Integer> entry : itemTypesMap.entrySet()) {
-            ArrDescItem descItem = entry.getKey();
-            descItem.setItemType(itemTypesMapFound.get(entry.getValue()));
-        }
-    }
-
-    /**
      * Uložení záznamů.
      *
      * @param cachedNodes seznam ukládaných objektů
@@ -731,35 +705,11 @@ public class NodeCacheService {
         }
 
         for (ArrCachedNode record : records) {
-            record.setData(serialize(cachedNodeMap.get(record.getNodeId())));
-            cachedNodeRepository.saveAndFlush(record);
+			String data = serialize(cachedNodeMap.get(record.getNodeId()));
+			record.setData(data);
+			cachedNodeRepository.save(record);
         }
-    }
-
-
-    /**
-     * Uložení záznamu.
-     *
-     * @param cachedNode ukládaný objekt
-     */
-    private void saveNodeInternal(final CachedNode cachedNode) {
-        saveNodesInternal(Collections.singletonList(cachedNode));
-    }
-
-    /**
-     * Založení nových záznamů v cache pro JP.
-     *
-     * @param cachedNodes seznam zakládaných objektů
-     */
-    private void createNodesInternal(final Collection<CachedNode> cachedNodes) {
-        List<ArrCachedNode> records = new ArrayList<>(cachedNodes.size());
-        for (CachedNode cachedNode : cachedNodes) {
-            ArrCachedNode record = new ArrCachedNode();
-            record.setNodeId(cachedNode.getNodeId());
-            record.setData(serialize(cachedNode));
-            records.add(record);
-        }
-        cachedNodeRepository.save(records);
+		cachedNodeRepository.flush();
     }
 
     /**
@@ -777,14 +727,17 @@ public class NodeCacheService {
     }
 
     /**
-     * Deserializace objektu.
-     *
-     * @param data serializovaný objekt
-     * @return sestavený objekt
-     */
-    private CachedNode deserialize(final String data) {
+	 * Deserializace objektu.
+	 *
+	 * @param cachedNode.getData()
+	 *            serializovaný objekt
+	 * @return sestavený objekt
+	 */
+	private RestoredNode deserialize(final ArrCachedNode cachedNode) {
         try {
-            return mapper.readValue(data, CachedNode.class);
+			RestoredNode restoredNode = mapper.readValue(cachedNode.getData(), RestoredNode.class);
+			restoredNode.setNode(cachedNode.getNode());
+			return restoredNode;
         } catch (IOException e) {
             throw new SystemException("Nastal problém při deserializaci objektu", e);
         }
@@ -823,4 +776,43 @@ public class NodeCacheService {
 
     }
 
+	/**
+	 * Create empty node in cache
+	 * 
+	 * Node is created without any data
+	 * 
+	 * @param node
+	 */
+	@Transactional(value = TxType.MANDATORY)
+	public void createEmptyNode(ArrNode node) {
+		readLock.lock();
+		try {
+			logger.debug(">createNodes({})", node.getNodeId());
+			createEmptyNodes(Collections.singletonList(node));
+			logger.debug("<createNodes({})", node.getNodeId());
+		} finally {
+			readLock.unlock();
+		}
+	}
+
+	/**
+	 * Založení nových záznamů v cache pro JP.
+	 *
+	 * @param cachedNodes
+	 *            seznam zakládaných objektů
+	 */
+	private void createEmptyNodes(final Collection<ArrNode> nodes) {
+		List<ArrCachedNode> records = new ArrayList<>(nodes.size());
+
+		for (ArrNode node : nodes) {
+			CachedNode cachedNode = new CachedNode();
+			String data = serialize(cachedNode);
+
+			ArrCachedNode record = new ArrCachedNode();
+			record.setNode(node);
+			record.setData(data);
+			records.add(record);
+		}
+		cachedNodeRepository.save(records);
+	}
 }

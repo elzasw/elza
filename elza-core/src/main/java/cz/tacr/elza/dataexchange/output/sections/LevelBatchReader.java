@@ -12,6 +12,7 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
+import cz.tacr.elza.service.cache.RestoredNode;
 
 class LevelBatchReader {
 
@@ -63,11 +64,11 @@ class LevelBatchReader {
     }
 
     private void readLevelBatch() {
-        Map<Integer, CachedNode> cachedNodes = nodeCacheService.getNodes(getNodeIds());
+		Map<Integer, RestoredNode> cachedNodes = nodeCacheService.getNodes(getNodeIds());
 
         for (int i = 0; i <= index; i++) {
             ArrLevel level = levels[i];
-            CachedNode cachedNode = cachedNodes.get(level.getNodeId());
+			RestoredNode cachedNode = cachedNodes.get(level.getNodeId());
             readLevel(level, cachedNode);
         }
     }

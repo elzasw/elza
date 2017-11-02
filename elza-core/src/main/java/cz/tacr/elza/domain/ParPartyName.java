@@ -41,14 +41,14 @@ public class ParPartyName {
     @GeneratedValue
     private Integer partyNameId;
 
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ParUnitdate.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParUnitdate.class)
     @JoinColumn(name = "validFromUnitdateId")
     private ParUnitdate validFrom;
 
     @Column(insertable = false, updatable = false)
     private Integer validFromUnitdateId;
 
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ParUnitdate.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParUnitdate.class)
     @JoinColumn(name = "validToUnitdateId")
     private ParUnitdate validTo;
 
@@ -79,7 +79,7 @@ public class ParPartyName {
     private String degreeAfter;
 
 
-    @OneToMany(mappedBy = "partyName", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "partyName", fetch = FetchType.LAZY)
     private List<ParPartyNameComplement> partyNameComplements;
 
     /**

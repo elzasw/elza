@@ -87,6 +87,7 @@ import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.RegistryService;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
+import cz.tacr.elza.service.cache.RestoredNode;
 
 /**
  * Factory pro vytvoření struktury pro výstupy
@@ -544,10 +545,10 @@ public class OutputFactoryService implements NodeLoader {
     private void fillItems(final OutputImpl output, final Collection<NodeId> nodeIds, final Map<Integer, Node> mapNodes) {
         Set<Integer> requestNodeIds = mapNodes.keySet();
         // request from cache
-        Map<Integer, CachedNode> nodeData = nodeCacheService.getNodes(requestNodeIds);
+		Map<Integer, RestoredNode> nodeData = nodeCacheService.getNodes(requestNodeIds);
         mapNodes.forEach((nodeId, node) -> {
             // find node in nodeData
-            CachedNode cachedNode = nodeData.get(nodeId);
+			RestoredNode cachedNode = nodeData.get(nodeId);
             fillNode(output, cachedNode, node);
         });
         // TODO: use old code to request nodes directly for non active version

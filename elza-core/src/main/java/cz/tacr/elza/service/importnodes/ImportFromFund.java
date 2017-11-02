@@ -45,6 +45,7 @@ import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
+import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.service.importnodes.vo.ChangeDeep;
 import cz.tacr.elza.service.importnodes.vo.DeepCallback;
 import cz.tacr.elza.service.importnodes.vo.ImportSource;
@@ -183,7 +184,7 @@ public class ImportFromFund implements ImportSource {
         /**
          * Naštené uzly iterátoru.
          */
-        private Map<Integer, CachedNode> cachedNodes = null;
+		private Map<Integer, RestoredNode> cachedNodes = null;
 
         private final LevelRepository levelRepository;
 

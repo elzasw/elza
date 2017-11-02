@@ -12,8 +12,9 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import cz.tacr.elza.domain.enumeration.StringLength;
 import org.hibernate.annotations.Type;
+
+import cz.tacr.elza.domain.enumeration.StringLength;
 
 /**
  * Položka ve frontě pro odeslání do externích systémů.
@@ -29,7 +30,7 @@ public class ArrRequestQueueItem {
     @GeneratedValue
     private Integer requestQueueItemId;
 
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrRequest.class)
+	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ArrRequest.class)
     @JoinColumn(name = "requestId", nullable = false)
     private ArrRequest request;
 

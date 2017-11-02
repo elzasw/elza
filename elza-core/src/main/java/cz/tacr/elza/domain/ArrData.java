@@ -39,7 +39,7 @@ public abstract class ArrData implements NodeCacheSerializable {
     @GeneratedValue
     private Integer dataId;
 
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = RulDataType.class)
+	@ManyToOne(fetch=FetchType.LAZY, targetEntity = RulDataType.class)
     @JoinColumn(name = "dataTypeId", nullable = false)
     private RulDataType dataType;
 

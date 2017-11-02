@@ -23,7 +23,7 @@ public class ArrDataRecordRef extends ArrData {
     public static final String RECORD = "record";
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = RegRecord.class)
+	@ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRecord.class)
     @JoinColumn(name = "recordId", nullable = false)
     private RegRecord record;
 

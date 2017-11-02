@@ -66,7 +66,7 @@ public abstract class ArrItem implements NodeCacheSerializable {
 	protected Integer descItemObjectId;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = RulItemType.class)
+	@ManyToOne(fetch=FetchType.LAZY, targetEntity = RulItemType.class)
     @JoinColumn(name = "itemTypeId", nullable = false)
 	protected RulItemType itemType;
 
@@ -74,7 +74,7 @@ public abstract class ArrItem implements NodeCacheSerializable {
 	protected Integer itemTypeId;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = RulItemSpec.class)
+	@ManyToOne(fetch=FetchType.LAZY, targetEntity = RulItemSpec.class)
     @JoinColumn(name = "itemSpecId")
 	protected RulItemSpec itemSpec;
 
@@ -84,9 +84,7 @@ public abstract class ArrItem implements NodeCacheSerializable {
     @Column(nullable = false)
 	protected Integer position;
 
-	// This EAGER fetching should be removed
-	// Type of fetching is up to caller and its need
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrData.class)
+	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ArrData.class)
     @JoinColumn(name = "dataId")
 	protected ArrData data;
 

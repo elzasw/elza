@@ -19,7 +19,7 @@ public class ArrDataPacketRef extends ArrData {
     public static final String PACKET = "packet";
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrPacket.class)
+	@ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrPacket.class)
     @JoinColumn(name = "packetId", nullable = false)
     private ArrPacket packet;
 

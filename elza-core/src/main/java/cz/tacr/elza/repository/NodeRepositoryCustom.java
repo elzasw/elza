@@ -1,8 +1,9 @@
 package cz.tacr.elza.repository;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+
+import org.hibernate.ScrollableResults;
 
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -15,8 +16,6 @@ import cz.tacr.elza.filter.DescItemTypeFilter;
 /**
  * Rozšíření repozitáře {@link NodeRepository}.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 23.11.2015
  */
 public interface NodeRepositoryCustom {
 
@@ -81,5 +80,10 @@ public interface NodeRepositoryCustom {
     Set<Integer> findBySearchParamsAndVersionLockChangeId(List<SearchParam> searchParams, Integer fundId,
             Integer lockChangeId);
 
-    Map<Integer, List<Integer>> findUncachedNodes();
+	/**
+	 * Return list of uncached nodes
+	 * 
+	 * @return
+	 */
+	ScrollableResults findUncachedNodes();
 }

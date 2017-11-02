@@ -17,8 +17,8 @@ import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
+import cz.tacr.elza.service.cache.RestoredNode;
 
 /**
  * Class to read description items for the given levels
@@ -72,7 +72,7 @@ public class DescItemReader {
 		Set<Level> levels = items.keySet();
 
         Map<Integer, List<ArrDescItem>> descItemsMap = null;
-        Map<Integer, CachedNode> cachedNodes = null;
+		Map<Integer, RestoredNode> cachedNodes = null;
 
         if (version.getLockChange() == null) {
             Collection<Integer> nodeIds = new ArrayList<>(nodes.size());

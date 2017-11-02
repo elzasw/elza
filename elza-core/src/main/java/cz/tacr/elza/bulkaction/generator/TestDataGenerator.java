@@ -30,6 +30,8 @@ import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.ArrangementServiceInternal;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.service.cache.NodeCacheService;
+import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 
@@ -63,6 +65,8 @@ public class TestDataGenerator extends BulkAction {
     private IEventNotificationService eventNotificationService;
     @Autowired
     private RuleService ruleService;
+	@Autowired
+	private NodeCacheService nodeCacheService;
 
 	TestDataConfig config;
 
@@ -191,7 +195,9 @@ public class TestDataGenerator extends BulkAction {
 	 * @param trgLevel
 	 */
 	private void copyDescrItems(ArrLevel srcLevel, ArrLevel trgLevel) {
-		List<ArrDescItem> sourceDescItems = arrangementInternal.getDescItems(version, srcLevel.getNode());
+		ArrNode node = srcLevel.getNode();
+		RestoredNode restoredNode = nodeCacheService.getNode(node.getNodeId());
+		List<ArrDescItem> sourceDescItems = restoredNode.getDescItems();
 		descriptionItemService.copyDescItemWithDataToNode(trgLevel.getNode(), sourceDescItems, this.getChange(),
 		        version);
 	}

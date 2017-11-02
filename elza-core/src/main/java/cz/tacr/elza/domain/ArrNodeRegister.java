@@ -1,7 +1,5 @@
 package cz.tacr.elza.domain;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -10,11 +8,11 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
-import cz.tacr.elza.service.importnodes.vo.NodeRegister;
-import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import cz.tacr.elza.service.importnodes.vo.NodeRegister;
 
 /**
  * Přiřazení rejstříkových hesel k jednotce archivního popisu.
@@ -33,7 +31,7 @@ public class ArrNodeRegister implements NodeRegister {
     private Integer nodeRegisterId;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrNode.class)
+	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ArrNode.class)
     @JoinColumn(name = "nodeId", nullable = false)
     private ArrNode node;
 
@@ -41,7 +39,7 @@ public class ArrNodeRegister implements NodeRegister {
     private Integer nodeId;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = RegRecord.class)
+	@ManyToOne(fetch=FetchType.LAZY, targetEntity = RegRecord.class)
     @JoinColumn(name = "recordId", nullable = false)
     private RegRecord record;
 
@@ -49,7 +47,7 @@ public class ArrNodeRegister implements NodeRegister {
     private Integer recordId;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrChange.class)
+	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = "createChangeId", nullable = false)
     private ArrChange createChange;
 
@@ -57,7 +55,7 @@ public class ArrNodeRegister implements NodeRegister {
     private Integer createChangeId;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrChange.class)
+	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = "deleteChangeId", nullable = true)
     private ArrChange deleteChange;
 

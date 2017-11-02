@@ -25,6 +25,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
@@ -36,6 +37,8 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.service.cache.NodeCacheService;
+import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.websocket.WebsocketCallback;
 
 /**
@@ -70,6 +73,8 @@ public class ArrangementFormService {
 
 	private final UserService userService;
 
+	private final NodeCacheService nodeCache;
+
 	public ArrangementFormService(StaticDataService staticData,
 	        ArrangementServiceInternal arrangementInternal,
 	        DescriptionItemService descriptionItemService,
@@ -79,6 +84,7 @@ public class ArrangementFormService {
 	        WebsocketCallback websocketCallback,
 	        ClientFactoryVO factoryVo,
 	        ClientFactoryDO factoryDo,
+	        NodeCacheService nodeCache,
 	        FundVersionRepository fundVersionRepository, NodeRepository nodeRepository) {
 		this.staticData = staticData;
 		this.arrangementInternal = arrangementInternal;
@@ -89,6 +95,7 @@ public class ArrangementFormService {
 		this.nodeRepository = nodeRepository;
 		this.factoryDo = factoryDo;
 		this.factoryVo = factoryVo;
+		this.nodeCache = nodeCache;
 		this.websocketCallback = websocketCallback;
 		this.userService = userService;
 	}
@@ -112,13 +119,27 @@ public class ArrangementFormService {
 	public DescFormDataNewVO getNodeFormData(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion version,
 	        Integer nodeId) {
 
-		ArrNode node = nodeRepository.findOne(nodeId);
-		if (node == null) {
-			throw new ObjectNotFoundException("Nebyla nalezena JP s ID=" + nodeId, ArrangementCode.NODE_NOT_FOUND)
-			        .set("id", nodeId);
+		ArrChange lockChange = version.getLockChange();
+		ArrNode node;
+		List<ArrDescItem> descItems;
+		if (lockChange == null) {
+			// read node from cache
+			RestoredNode restoredNode = nodeCache.getNode(nodeId);
+			if (restoredNode == null) {
+				throw new ObjectNotFoundException("Nebyla nalezena JP s ID=" + nodeId, ArrangementCode.NODE_NOT_FOUND)
+				        .set("id", nodeId);
+			}
+			node = restoredNode.getNode();
+			descItems = arrangementInternal.getDescItems(version.getLockChange(), nodeId);
+		} else {
+			node = nodeRepository.findOne(nodeId);
+			if (node == null) {
+				throw new ObjectNotFoundException("Nebyla nalezena JP s ID=" + nodeId, ArrangementCode.NODE_NOT_FOUND)
+				        .set("id", nodeId);
+			}
+			descItems = arrangementInternal.getDescItems(lockChange, nodeId);
 		}
 
-		List<ArrDescItem> descItems = arrangementInternal.getDescItems(version.getLockChange(), nodeId);
 		List<RulItemTypeExt> itemTypes;
 		try {
 			itemTypes = ruleService.getDescriptionItemTypes(version, nodeId);

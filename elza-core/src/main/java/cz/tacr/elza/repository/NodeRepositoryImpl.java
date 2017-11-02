@@ -3,7 +3,6 @@ package cz.tacr.elza.repository;
 import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,6 +24,10 @@ import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
 import org.apache.lucene.queryparser.flexible.standard.config.NumericConfig;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
+import org.hibernate.CacheMode;
+import org.hibernate.ScrollMode;
+import org.hibernate.ScrollableResults;
+import org.hibernate.Session;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
@@ -58,8 +61,7 @@ import cz.tacr.elza.utils.NodeUtils;
 
 
 /**
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 23.11.2015
+ * Custom node repository implementation
  */
 @Component
 public class NodeRepositoryImpl implements NodeRepositoryCustom {
@@ -168,30 +170,34 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     }
 
     @Override
-    public Map<Integer, List<Integer>> findUncachedNodes() {
+	public ScrollableResults findUncachedNodes() {
 
-        String hql = "SELECT n.fundId, n.nodeId FROM arr_node n WHERE n.nodeId NOT IN (SELECT cn.nodeId FROM arr_cached_node cn)";
+		String hql = "SELECT n.nodeId FROM arr_node n WHERE n.nodeId NOT IN (SELECT cn.nodeId FROM arr_cached_node cn)";
 
-        javax.persistence.Query query = entityManager.createQuery(hql);
+		// get Hibernate session
+		Session session = entityManager.unwrap(Session.class);
+		ScrollableResults scrollableResults = session.createQuery(hql).setCacheMode(CacheMode.IGNORE)
+		        .scroll(ScrollMode.FORWARD_ONLY);
 
-
-        List<Object[]> resultList = query.getResultList();
-
-        Map<Integer, List<Integer>> result = new HashMap<>();
-        for (Object[] o : resultList) {
-            Integer fundId = ((Number)o[0]).intValue();
-            Integer nodeId = ((Number)o[1]).intValue();
-
-            List<Integer> nodeIds = result.get(fundId);
-            if (nodeIds == null) {
-                nodeIds = new ArrayList<>();
-                result.put(fundId, nodeIds);
-            }
-
-            nodeIds.add(nodeId);
-        }
-
-        return result;
+		return scrollableResults;
+		/*
+		List<Object[]> resultList = query.getResultList();
+		
+		Map<Integer, List<Integer>> result = new HashMap<>();
+		for (Object[] o : resultList) {
+		    Integer fundId = ((Number)o[0]).intValue();
+		    Integer nodeId = ((Number)o[1]).intValue();
+		
+		    List<Integer> nodeIds = result.get(fundId);
+		    if (nodeIds == null) {
+		        nodeIds = new ArrayList<>();
+		        result.put(fundId, nodeIds);
+		    }
+		
+		    nodeIds.add(nodeId);
+		}
+		
+		return result;*/
     }
 
     /**

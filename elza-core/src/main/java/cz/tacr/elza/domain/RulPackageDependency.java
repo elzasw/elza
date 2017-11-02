@@ -26,7 +26,7 @@ public class RulPackageDependency {
     /**
      * Balíček který vyžaduje závislost na jiný.
      */
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = RulPackage.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
     @JoinColumn(name = "sourcePackageId", nullable = false)
     private RulPackage sourcePackage;
 
@@ -36,7 +36,7 @@ public class RulPackageDependency {
     /**
      * Balíček na který je tvořena závislost.
      */
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = RulPackage.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
     @JoinColumn(name = "targetPackageId", nullable = false)
     private RulPackage targetPackage;
 

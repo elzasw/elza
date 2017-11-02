@@ -117,6 +117,7 @@ import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventFund;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -261,6 +262,9 @@ public class ArrangementService {
 	//TODO: Should not be used here, method accessing this repository have to be refactorized
     @Autowired
     private CachedNodeRepository cachedNodeRepository;
+
+	@Autowired
+	private NodeCacheService nodeCacheService;
 
     @Autowired
     private EntityManager em;
@@ -522,7 +526,7 @@ public class ArrangementService {
         node.setUuid(generateUuid());
         node.setFund(fund);
         nodeRepository.save(node);
-        arrangementCacheService.createNode(node.getNodeId());
+		nodeCacheService.createEmptyNode(node);
         return node;
     }
 
@@ -546,7 +550,7 @@ public class ArrangementService {
         node.setUuid(uuid);
         node.setFund(fund);
         nodeRepository.save(node);
-        arrangementCacheService.createNode(node.getNodeId());
+		nodeCacheService.createEmptyNode(node);
         return node;
     }
 
@@ -938,20 +942,6 @@ public class ArrangementService {
     		}
     		return id + 1;
     	});
-    }
-
-    /**
-     * Získání hodnot atributů podle verze AP a uzlu.
-     *
-     * @param version verze AP
-     * @param node    uzel
-     * @return seznam hodnot atributů
-     */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
-    public List<ArrDescItem> getDescItems(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
-                                          final ArrNode node) {
-
-		return arrangementInternal.getDescItems(version, node);
     }
 
     /**

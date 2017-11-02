@@ -15,9 +15,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
- * Implementace třídy {@link cz.tacr.elza.api.RulOutputType}
- * @author Petr Compel <petr.compel@marbes.cz>
- * @since 16.6.2016
+ * Domain object for output type
  */
 @Entity(name = "rul_output_type")
 @Table
@@ -45,6 +43,9 @@ public class RulOutputType {
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
     @JoinColumn(name = "ruleSetId", nullable = false)
     private RulRuleSet ruleSet;
+
+	@Column(nullable = true, updatable = false, insertable = false)
+	private Integer ruleSetId;
 
     public Integer getOutputTypeId() {
         return outputTypeId;
@@ -90,8 +91,13 @@ public class RulOutputType {
         return ruleSet;
     }
 
+	public Integer getRuleSetId() {
+		return ruleSetId;
+	}
+
     public void setRuleSet(final RulRuleSet ruleSet) {
         this.ruleSet = ruleSet;
+		this.ruleSetId = ruleSet != null ? ruleSet.getRuleSetId() : null;
     }
 
     @Override

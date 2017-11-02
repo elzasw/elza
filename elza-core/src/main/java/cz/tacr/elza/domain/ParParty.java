@@ -54,13 +54,13 @@ public class ParParty extends AbstractVersionableEntity implements IRegScope {
     private Integer partyId;
 
     @RestResource(exported = false)
-    @OneToOne(fetch = FetchType.EAGER, targetEntity = RegRecord.class)
+	@OneToOne(fetch=FetchType.LAZY, targetEntity = RegRecord.class)
     @JoinColumn(name = "recordId", nullable = false)
     @JsonIgnore
     private RegRecord record;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ParPartyType.class)
+	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ParPartyType.class)
     @JoinColumn(name = "partyTypeId", nullable = false)
     @JsonIgnore
     private ParPartyType partyType;
@@ -70,7 +70,7 @@ public class ParParty extends AbstractVersionableEntity implements IRegScope {
     private Integer partyTypeId;
 
     @RestResource(exported = false)
-    @OneToOne(fetch = FetchType.EAGER, targetEntity = ParPartyName.class)
+	@OneToOne(fetch = FetchType.LAZY, targetEntity = ParPartyName.class)
     @JoinColumn(name = "preferredNameId")
     @JsonIgnore
     private ParPartyName preferredName;

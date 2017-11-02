@@ -1,16 +1,14 @@
 package cz.tacr.elza.service.cache;
 
+import java.util.List;
+
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrNodeRegister;
 
-import java.util.List;
-
 /**
  * Objekt pro serializaci dat s informacemi o JP - pro NodeCacheService.
  *
- * @author Martin Šlapa
- * @since 26.01.2017
  */
 public class CachedNode implements NodeCacheSerializable {
 
