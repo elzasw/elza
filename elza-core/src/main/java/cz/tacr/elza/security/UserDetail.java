@@ -43,6 +43,11 @@ public class UserDetail {
         this.userPermission = new ArrayList<>(userPermission);
     }
 
+	/**
+	 * Constructor for ADMIN
+	 * 
+	 * @param systemUser
+	 */
     public UserDetail(final String systemUser) {
         this.username = systemUser;
         this.active = true;
@@ -65,4 +70,9 @@ public class UserDetail {
     public Collection<UserPermission> getUserPermission() {
         return userPermission;
     }
+
+	public void setUserPermission(Collection<UserPermission> perms) {
+		userPermission.clear();
+		userPermission.addAll(perms);
+	}
 }

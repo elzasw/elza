@@ -45,8 +45,8 @@ import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrGroupUser;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.domain.vo.ArrFundOpenVersion;
+import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.SystemException;
@@ -851,7 +851,9 @@ public class UserService {
         if (auth == null) {
             return null;
         }
-        return userRepository.findByUsername(auth.getName());
+		UserDetail details = (UserDetail) auth.getDetails();
+		UsrUser user = userRepository.findOne(details.getId());
+		return user;
     }
 
     /**
@@ -866,11 +868,15 @@ public class UserService {
                 return null;
             }
             UserDetail details = (UserDetail) auth.getDetails();
-            UsrUser user = userRepository.findByUsername(details.getUsername());
-            if (user != null) { // pokud je null, jedná se o virtuální admin účet, který má nastaveno oprávnění ADMIN
+
+			Integer userId = details.getId();
+			// admin has no userId but has detail
+			// pokud je null, jedná se o virtuální admin účet, který má nastaveno oprávnění ADMIN
+			if (userId != null) {
+				UsrUser user = userRepository.findOne(userId);
                 try {
-                    details.getUserPermission().clear();
-                    details.getUserPermission().addAll(userPermissionsCache.get(user.getUserId()));
+					Collection<UserPermission> perms = userPermissionsCache.get(userId);
+					details.setUserPermission(perms);
                 } catch (ExecutionException e) {
                     throw new SystemException(e);
                 }

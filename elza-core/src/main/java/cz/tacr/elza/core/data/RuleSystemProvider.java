@@ -32,6 +32,8 @@ public class RuleSystemProvider {
 
 	/**
 	 * Map of all item types
+	 * 
+	 * Key is ID of the Item type
 	 */
 	private Map<Integer, RuleSystemItemType> itemTypes;
 
