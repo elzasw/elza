@@ -130,7 +130,7 @@ public class ArrangementFormService {
 				        .set("id", nodeId);
 			}
 			node = restoredNode.getNode();
-			descItems = arrangementInternal.getDescItems(version.getLockChange(), nodeId);
+			descItems = restoredNode.getDescItems();
 		} else {
 			node = nodeRepository.findOne(nodeId);
 			if (node == null) {
