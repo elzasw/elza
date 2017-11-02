@@ -61,7 +61,7 @@ public class FundValidation extends BulkAction {
 	public void run(ActionRunContext runContext) {
 
         // v případě, že existuje nějaké přepočítávání uzlů, je nutné to ukončit
-        updateConformityInfoService.terminateWorkerInVersion(version);
+        updateConformityInfoService.terminateWorkerInVersion(version.getFundVersionId());
 
         ArrNode rootNode = version.getRootNode();
 		for (Integer nodeId : runContext.getInputNodeIds()) {

@@ -125,7 +125,7 @@ import cz.tacr.elza.utils.ObjectListIterator;
 
 /**
  * Main arrangement service.
- * 
+ *
  * This service can be used by controller. All operations are checking
  * permissions.
  */
@@ -748,7 +748,7 @@ public class ArrangementService {
             throw new BusinessException("Nelze uzavřít verzi AS s ID=" + fund.getFundId() + ", protože běží hromadná akce", ArrangementCode.VERSION_CANNOT_CLOSE_ACTION);
         }
 
-        if (updateConformityInfoService.isRunning(version)) {
+        if (updateConformityInfoService.isRunning(version.getFundVersionId())) {
             throw new BusinessException("Nelze uzavřít verzi AS s ID=" + fund.getFundId() + ", protože běží validace", ArrangementCode.VERSION_CANNOT_CLOSE_VALIDATION);
         }
 
@@ -768,7 +768,7 @@ public class ArrangementService {
     private void deleteVersion(final ArrFundVersion version) {
         Assert.notNull(version, "Verze AS musí být vyplněna");
 
-        updateConformityInfoService.terminateWorkerInVersionAndWait(version);
+        updateConformityInfoService.terminateWorkerInVersionAndWait(version.getFundVersionId());
 
         bulkActionService.terminateBulkActions(version.getFundVersionId());
 

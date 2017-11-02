@@ -74,8 +74,8 @@ public class HibernateUtils {
     /**
      * Returns currently running transaction for specified session.
      */
-    public static Transaction getCurrentTransaction(Session session) {
-        SharedSessionContractImplementor ssci = session.unwrap(SharedSessionContractImplementor.class);
+    public static Transaction getCurrentTransaction(EntityManager em) {
+        SharedSessionContractImplementor ssci = em.unwrap(SharedSessionContractImplementor.class);
         Validate.isTrue(ssci.isTransactionInProgress());
         Transaction tx = ssci.accessTransaction();
         Validate.isTrue(tx.isActive());

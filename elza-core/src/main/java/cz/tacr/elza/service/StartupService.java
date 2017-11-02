@@ -205,7 +205,7 @@ public class StartupService implements SmartLifecycle {
 
             // přidávání nodů je nutné dělat ve vlastní transakci (podle updateInfoForNodesAfterCommit)
             LOG.info("Přidání " + entry.getValue().size() + " uzlů do fronty pro zvalidování");
-            updateConformityInfoService.updateInfoForNodesAfterCommit(entry.getValue(), version);
+            updateConformityInfoService.updateInfoForNodesAfterCommit(version.getFundVersionId(), entry.getValue());
         }
     }
 }

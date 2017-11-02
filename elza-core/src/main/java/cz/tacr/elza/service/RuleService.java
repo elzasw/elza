@@ -380,7 +380,7 @@ public class RuleService {
         nodes.add(rootNode);
 
         if (!nodes.isEmpty()) {
-            updateConformityInfoService.updateInfoForNodesAfterCommit(nodes, fundVersion);
+            updateConformityInfoService.updateInfoForNodesAfterCommit(fundVersion.getFundVersionId(), nodes);
         }
     }
 
@@ -446,7 +446,7 @@ public class RuleService {
                     .findByNodesAndFundVersion(deleteNodes, version);
 
             deleteConformityInfo(deleteInfos);
-            updateConformityInfoService.updateInfoForNodesAfterCommit(deleteNodes, version);
+            updateConformityInfoService.updateInfoForNodesAfterCommit(version.getFundVersionId(), deleteNodes);
         }
     }
 
