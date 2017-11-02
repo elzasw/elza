@@ -2,11 +2,7 @@ package cz.tacr.elza;
 
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.other.HelperTestService;
-import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.DataTypeRepository;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.*;
 
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -42,6 +38,8 @@ public abstract class AbstractTest {
     protected ItemTypeRepository itemTypeRepository;
     @Autowired
     protected NodeRepository nodeRepository;
+    @Autowired
+    protected OutputDefinitionRepository outputDefinitionRepository;
     /*
     @Autowired
     protected PackageRepository packageRepository;

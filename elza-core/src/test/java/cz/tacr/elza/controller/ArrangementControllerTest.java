@@ -17,14 +17,16 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.controller.vo.CopyNodesParams;
-import cz.tacr.elza.controller.vo.CopyNodesValidate;
-import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.service.vo.ChangesResult;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.csv.CSVRecord;
 import org.junit.Assert;
+
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Ignore;
@@ -40,23 +42,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import cz.tacr.elza.ElzaCoreTest;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
-import cz.tacr.elza.controller.vo.ArrOutputExtVO;
-import cz.tacr.elza.controller.vo.ArrPacketVO;
-import cz.tacr.elza.controller.vo.FilterNode;
-import cz.tacr.elza.controller.vo.FilterNodePosition;
-import cz.tacr.elza.controller.vo.NodeItemWithParent;
-import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
-import cz.tacr.elza.controller.vo.RulOutputTypeVO;
-import cz.tacr.elza.controller.vo.RulPacketTypeVO;
-import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
@@ -64,11 +49,6 @@ import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.drools.DirectionLevel;
@@ -103,7 +83,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
     // maximální počet položek pro načtení
     public static final int MAX_SIZE = 999;
-    
+
     @Test
     public void arrangementTest() throws IOException {
 
@@ -336,7 +316,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         parent = outputItemResult.getParent();
 
         // docasne zakazano - bude vraceno zpet pri prechodu na vyvojarska pravidla
-        /*outputItemResult = setNotIdentifiedOutputItem(fundVersion.getId(), parent.getId(), parent.getVersion(), typeVo.getId(), null, null);        
+        /*outputItemResult = setNotIdentifiedOutputItem(fundVersion.getId(), parent.getId(), parent.getVersion(), typeVo.getId(), null, null);
         parent = outputItemResult.getParent();
         // Návratová struktura nesmí být prázdná
         assertNotNull(outputItemResult);
@@ -356,7 +336,31 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertNotNull(outputItemResult);
         // Hodnota atributu musí být prázdná
         Assert.assertNull(outputItemResult.getItem());*/
-        
+
+
+        OutputSettingsVO outputSettings = new OutputSettingsVO();
+        outputSettings.setEvenPageOffsetX(42);
+        outputSettings.setEvenPageOffsetY(42);
+        outputSettings.setOddPageOffsetX(42);
+        outputSettings.setOddPageOffsetY(42);
+
+
+        super.setOutputSettings(outputDetail.getOutputDefinition().getId(), outputSettings);
+        ArrOutputDefinition one = outputDefinitionRepository.findOne(outputDetail.getOutputDefinition().getId());
+
+        String outputSettings1 = one.getOutputSettings();
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            OutputSettingsVO settingsVO = mapper.readValue(outputSettings1, OutputSettingsVO.class);
+            assertEquals("42", String.valueOf(settingsVO.getEvenPageOffsetX()));
+            assertEquals("42", String.valueOf(settingsVO.getEvenPageOffsetY()));
+            assertEquals("42", String.valueOf(settingsVO.getOddPageOffsetX()));
+            assertEquals("42", String.valueOf(settingsVO.getOddPageOffsetY()));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         deleteNamedOutput(fundVersion.getId(), output.getId());
 
         outputs = getOutputs(fundVersion.getId());
@@ -555,7 +559,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         node = descItemResult.getParent();
 
         type = findDescItemTypeByCode("ZP2015_UNIT_COUNT_TABLE");
-        assertNotNull(type);        
+        assertNotNull(type);
         ElzaTable table = new ElzaTable();
         table.addRow(new ElzaRow(new AbstractMap.SimpleEntry<>("NAME", "Test 1"), new AbstractMap.SimpleEntry<>("COUNT", "195")));
         table.addRow(new ElzaRow(new AbstractMap.SimpleEntry<>("NAME", "Test 2"), new AbstractMap.SimpleEntry<>("COUNT", "200")));

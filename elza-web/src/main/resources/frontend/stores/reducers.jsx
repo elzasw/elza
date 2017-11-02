@@ -93,6 +93,11 @@ const rootReducer = combineReducers({
             'start': normalizeInt,
             'size': normalizePacketSize,
             'count': normalizeInt,
+        }, templateSettingsForm: {
+            'evenPageOffsetX': normalizeInt,
+            'evenPageOffsetY': normalizeInt,
+            'oddPageOffsetX': normalizeInt,
+            'oddPageOffsetY': normalizeInt,
         }
     })
 });

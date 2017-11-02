@@ -20,16 +20,12 @@ import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.controller.vo.CopyNodesParams;
-import cz.tacr.elza.controller.vo.CopyNodesValidate;
-import cz.tacr.elza.controller.vo.CreateFundVO;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.repository.FundFileRepository;
-import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.PacketRepository;
-import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.importnodes.ImportFromFund;
 import cz.tacr.elza.service.importnodes.ImportNodesFromSource;
@@ -57,26 +53,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
-import cz.tacr.elza.controller.vo.ArrDaoVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
-import cz.tacr.elza.controller.vo.ArrOutputExtVO;
-import cz.tacr.elza.controller.vo.ArrPacketVO;
-import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
-import cz.tacr.elza.controller.vo.ArrRequestVO;
-import cz.tacr.elza.controller.vo.FilterNode;
-import cz.tacr.elza.controller.vo.FilterNodePosition;
-import cz.tacr.elza.controller.vo.FundListCountResult;
-import cz.tacr.elza.controller.vo.NodeItemWithParent;
-import cz.tacr.elza.controller.vo.RulOutputTypeVO;
-import cz.tacr.elza.controller.vo.RulPacketTypeVO;
-import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
-import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
@@ -122,22 +98,6 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.filter.DescItemTypeFilter;
-import cz.tacr.elza.repository.CalendarTypeRepository;
-import cz.tacr.elza.repository.ChangeRepository;
-import cz.tacr.elza.repository.DaoLinkRepository;
-import cz.tacr.elza.repository.DaoPackageRepository;
-import cz.tacr.elza.repository.DaoRepository;
-import cz.tacr.elza.repository.DataTypeRepository;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.FundRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.InstitutionRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.OutputItemRepository;
-import cz.tacr.elza.repository.PacketTypeRepository;
-import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.ArrIOService;
 import cz.tacr.elza.service.ArrMoveLevelService;
@@ -2237,6 +2197,20 @@ public class ArrangementController {
         outputService.getNamedOutput(fundVersion, output);
         return factoryVo.createOutputExt(output, fundVersion);
     }
+
+    /**
+     * Konfigurace generovaných výstupů
+     *
+     * @param outputId      identifikátor výstupů
+     */
+    @RequestMapping(value = "/output/{outputId}/settings", method = RequestMethod.PUT)
+    public void updateOutputSettings(@PathVariable(value = "outputId") final Integer outputId,
+                                     @RequestBody final OutputSettingsVO outputSettings) throws JsonProcessingException {
+
+        outputService.setOutputSettings(outputSettings, outputId);
+    }
+
+
 
     @RequestMapping(value = "/output/generate/{outputId}", method = RequestMethod.GET)
     public GenerateOutputResult generateOutput(@PathVariable(value = "outputId") final Integer outputId,

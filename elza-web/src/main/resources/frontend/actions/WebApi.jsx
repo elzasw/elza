@@ -243,6 +243,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/output/' + outputDefinitionId + '/' + fundVersionId + '/' + itemTypeId + '/switch', {strict}, null);
     }
 
+    updateOutputSettings(outputId, outputSettings) {
+        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/output/' + outputId + "/settings", null, {...outputSettings});
+    }
+
     addNode(node, parentNode, versionId, direction, descItemCopyTypes, scenarioName) {
         const data = {
             versionId,

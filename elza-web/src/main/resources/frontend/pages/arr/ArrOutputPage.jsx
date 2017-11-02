@@ -69,6 +69,7 @@ import {PropTypes} from 'prop-types';
 import defaultKeymap from './ArrOutputPageKeymap.jsx';
 
 import {Shortcuts} from 'react-shortcuts';
+import TemplateSettingsForm from "../../components/arr/TemplateSettingsForm";
 
 let _selectedTab = 0
 
@@ -442,7 +443,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         tabIndex++;
 
         items.push({id: tabIndex, title: i18n('arr.output.panel.title.template')});
-        if (_selectedTab === tabIndex) tabContent = this.renderTemplatesPanel();
+        if (_selectedTab === tabIndex) tabContent = this.renderTemplatesPanel(readMode);
         tabIndex++;
 
         items.push({id: tabIndex, title: i18n('arr.output.panel.title.output')});
@@ -559,10 +560,23 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         />
     }
 
-    renderTemplatesPanel() {
-        return <div>{i18n('arr.output.panel.template.noSettings')}</div>
-    }
+    renderTemplatesPanel(readMode) {
+        const {arrRegion, arrRegion:{activeIndex}, templates} = this.props;
+        const templateId = arrRegion.funds[activeIndex].fundOutput.fundOutputDetail.outputDefinition.templateId;
+        const outputId = arrRegion.funds[activeIndex].fundOutput.fundOutputDetail.outputDefinition.id;
+        const outputSettings = JSON.parse(arrRegion.funds[activeIndex].fundOutput.fundOutputDetail.outputDefinition.outputSettings);
 
+        const template = templates.items.null.items.find((templateItem) => {
+            return templateItem.id === templateId;
+        });
+
+        return outputId && <TemplateSettingsForm
+            readMode={readMode}
+            outputId={outputId}
+            engine={template.engine}
+            outputSettings={outputSettings}
+        />
+    }
     renderOutputPanel() {
         const activeFund = this.getActiveFund(this.props);
         const {fundOutput : {fundOutputDetail, fundOutputFiles}} = activeFund;

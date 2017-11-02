@@ -160,4 +160,10 @@
         <addNotNullConstraint tableName="rul_extension_rule" columnDataType="nvarchar(50)" columnName="rule_type"/>
     </changeSet>
 
+    <changeSet id="201710312000" author="soupa">
+        <addColumn tableName="arr_output_definition">
+            <column name="output_settings" type="text"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

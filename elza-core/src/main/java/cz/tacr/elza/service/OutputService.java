@@ -10,9 +10,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -20,7 +18,9 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
 
-import com.fasterxml.jackson.databind.deser.Deserializers;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataJsonTable;
@@ -33,13 +33,16 @@ import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 
 import cz.tacr.elza.repository.ItemSpecRepository;
-import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
+import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration;
+import org.springframework.boot.json.GsonJsonParser;
+import org.springframework.boot.json.JsonJsonParser;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -61,12 +64,7 @@ import cz.tacr.elza.bulkaction.generator.result.UnitIdResult;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItemData;
-import cz.tacr.elza.domain.ArrItemInt;
-import cz.tacr.elza.domain.ArrItemJsonTable;
 import cz.tacr.elza.domain.ArrItemSettings;
-import cz.tacr.elza.domain.ArrItemString;
-import cz.tacr.elza.domain.ArrItemText;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrNodeRegister;
@@ -2072,5 +2070,13 @@ public class OutputService {
         // sockety
         publishChangeOutputItem(fundVersion, outputItemCreated);
         return outputItemCreated;
+    }
+
+    public void setOutputSettings(OutputSettingsVO outputConfig, Integer outputId) throws JsonProcessingException {
+        ArrOutputDefinition outputDefinition = outputDefinitionRepository.findByOutputId(outputId);
+        ObjectMapper mapper = new ObjectMapper();
+        String s = mapper.writeValueAsString(outputConfig);
+        outputDefinition.setOutputSettings(s);
+        outputDefinitionRepository.save(outputDefinition);
     }
 }

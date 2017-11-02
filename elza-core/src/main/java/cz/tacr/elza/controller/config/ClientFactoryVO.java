@@ -1824,6 +1824,7 @@ public class ClientFactoryVO {
         List<ArrNode> nodes = outputService.getNodesForOutput(output);
         List<Integer> nodeIds = nodes.stream().map(ArrNode::getNodeId).collect(Collectors.toList());
         outputExt.getOutputDefinition().setNodes(levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()));
+
         return outputExt;
     }
 

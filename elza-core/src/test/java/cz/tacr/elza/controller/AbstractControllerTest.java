@@ -20,8 +20,7 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.controller.vo.CreateFundVO;
-import cz.tacr.elza.controller.vo.UsrPermissionVO;
+import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -47,49 +46,6 @@ import com.jayway.restassured.specification.RequestSpecification;
 
 import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.controller.ArrangementController.FaFilteredFulltextParam;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
-import cz.tacr.elza.controller.vo.ArrOutputExtVO;
-import cz.tacr.elza.controller.vo.ArrOutputVO;
-import cz.tacr.elza.controller.vo.ArrPacketVO;
-import cz.tacr.elza.controller.vo.CopyNodesParams;
-import cz.tacr.elza.controller.vo.CopyNodesValidate;
-import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
-import cz.tacr.elza.controller.vo.FilterNode;
-import cz.tacr.elza.controller.vo.FilterNodePosition;
-import cz.tacr.elza.controller.vo.FilteredResultVO;
-import cz.tacr.elza.controller.vo.FundListCountResult;
-import cz.tacr.elza.controller.vo.NodeItemWithParent;
-import cz.tacr.elza.controller.vo.PackageVO;
-import cz.tacr.elza.controller.vo.ParInstitutionVO;
-import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.RegCoordinatesVO;
-import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
-import cz.tacr.elza.controller.vo.RegVariantRecordVO;
-import cz.tacr.elza.controller.vo.RulDataTypeVO;
-import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
-import cz.tacr.elza.controller.vo.RulDescItemTypeVO;
-import cz.tacr.elza.controller.vo.RulOutputTypeVO;
-import cz.tacr.elza.controller.vo.RulPacketTypeVO;
-import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
-import cz.tacr.elza.controller.vo.RulRuleSetVO;
-import cz.tacr.elza.controller.vo.RulTemplateVO;
-import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
-import cz.tacr.elza.controller.vo.SysExternalSystemVO;
-import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
-import cz.tacr.elza.controller.vo.UserInfoVO;
-import cz.tacr.elza.controller.vo.UsrGroupVO;
-import cz.tacr.elza.controller.vo.UsrUserVO;
-import cz.tacr.elza.controller.vo.ValidationResult;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
@@ -225,6 +181,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String REMOVE_NODES_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}/remove";
     protected static final String DELETE_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}";
     protected static final String UPDATE_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}/update";
+    protected static final String UPDATE_OUTPUT_SETTINGS = OUTPUTS + "/{outputId}/settings";
     protected static final String FILTER_NODES = ARRANGEMENT_CONTROLLER_URL + "/filterNodes/{versionId}";
     protected static final String FILTERED_NODES = ARRANGEMENT_CONTROLLER_URL + "/getFilterNodes/{versionId}";
     protected static final String FILTERED_FULLTEXT_NODES = ARRANGEMENT_CONTROLLER_URL + "/getFilteredFulltext/{versionId}";
@@ -3170,5 +3127,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     protected void copyLevels(final CopyNodesParams copyNodesParams) {
         post(spec -> spec.body(copyNodesParams), COPY_LEVELS);
+    }
+
+    protected void setOutputSettings(Integer outputId, OutputSettingsVO settings) {
+        put(spec -> spec.pathParameter("outputId", outputId)
+                .body(settings),
+                UPDATE_OUTPUT_SETTINGS);
     }
 }

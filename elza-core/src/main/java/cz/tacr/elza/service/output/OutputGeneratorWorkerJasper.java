@@ -1,18 +1,18 @@
 package cz.tacr.elza.service.output;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
+import java.io.*;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.exception.SystemException;
 import net.sf.jasperreports.engine.JRRuntimeException;
+import net.sf.jasperreports.engine.export.JRPdfExporter;
+import net.sf.jasperreports.export.SimpleExporterInput;
+import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
@@ -28,10 +28,10 @@ import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JREmptyDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
-import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.export.SimplePdfReportConfiguration;
 
 /**
  * Zajišťuje generování výstupu a jeho uložení do dms na základě vstupní definice - část generování specifická pro jasper.
@@ -78,7 +78,13 @@ class OutputGeneratorWorkerJasper extends OutputGeneratorWorkerAbstract {
             PipedOutputStream outm = new PipedOutputStream(inm);
 
             generatorThread = new Thread(() -> {
-                new Thread(() -> renderJasperPdf(mainJasperTemplate, jasperPrint, out)).start();
+                new Thread(() -> {
+                    try {
+                        renderJasperPdf(mainJasperTemplate, jasperPrint, out, getReportConfig(arrOutputDefinition.getOutputSettings()));
+                    } catch (IOException e) {
+                        setException(new IllegalStateException("Nepodařilo se vyrenderovat výstup ze šablony"));
+                    }
+                }).start();
                 mergePdfJasperAndAttachements(output, in, outm);
             });
             generatorThread.start();
@@ -89,6 +95,20 @@ class OutputGeneratorWorkerJasper extends OutputGeneratorWorkerAbstract {
         } catch (IOException e) {
             throw new SystemException("Nepodařilo se uložit výstup.", e);
         }
+    }
+
+    private SimplePdfReportConfiguration getReportConfig(String outputSettings) throws IOException {
+        SimplePdfReportConfiguration reportConfig = new SimplePdfReportConfiguration();
+        if (outputSettings == null) {
+            return reportConfig;
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        OutputSettingsVO settingsVO = mapper.readValue(outputSettings, OutputSettingsVO.class);
+        reportConfig.setEvenPageOffsetX(settingsVO.getEvenPageOffsetX());
+        reportConfig.setEvenPageOffsetY(settingsVO.getEvenPageOffsetY());
+        reportConfig.setOddPageOffsetX(settingsVO.getOddPageOffsetX());
+        reportConfig.setOddPageOffsetY(settingsVO.getOddPageOffsetY());
+        return reportConfig;
     }
 
     private void addSubreports(final RulTemplate rulTemplate, final Map<String, Object> parameters) {
@@ -132,12 +152,25 @@ class OutputGeneratorWorkerJasper extends OutputGeneratorWorkerAbstract {
         }
     }
 
-    private void renderJasperPdf(final File mainJasperTemplate, final JasperPrint jasperPrint, final PipedOutputStream out) {
+    private void renderJasperPdf(final File mainJasperTemplate, final JasperPrint jasperPrint, final PipedOutputStream out, SimplePdfReportConfiguration reportConfig) {
         try {
-            JasperExportManager.exportReportToPdfStream(jasperPrint, out);
+            exportToPdfStream(jasperPrint, out, reportConfig);
             out.close();
         } catch (JRRuntimeException | JRException | IOException e) {
             setException(new SystemException("Nepodařilo se vyrenderovat PDF ze šablony " + mainJasperTemplate.getAbsolutePath() + ".", e));
         }
+    }
+
+    private void exportToPdfStream(
+            JasperPrint jasperPrint,
+            OutputStream outputStream,
+            SimplePdfReportConfiguration reportConfig) throws JRException
+    {
+        JRPdfExporter exporter = new JRPdfExporter();
+        exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
+        exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(outputStream));
+        exporter.setConfiguration(reportConfig);
+
+        exporter.exportReport();
     }
 }
