@@ -5,24 +5,34 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import javax.persistence.EntityManager;
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
+
+import com.google.common.eventbus.EventBus;
 
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.events.ConformityInfoUpdatedEvent;
 import cz.tacr.elza.exception.LockVersionChangeException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -34,7 +44,7 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 @Scope("prototype")
 public class UpdateConformityInfoWorker implements Runnable {
 
-    private static final Logger LOG = LoggerFactory.getLogger(UpdateConformityInfoWorker.class);
+    private static final Logger logger = LoggerFactory.getLogger(UpdateConformityInfoWorker.class);
 
     @Autowired
     private LevelRepository levelRepository;
@@ -43,31 +53,31 @@ public class UpdateConformityInfoWorker implements Runnable {
     private FundVersionRepository fundVersionRepository;
 
     @Autowired
-    private UpdateConformityInfoService updateConformityInfoService;
+    private EventBus eventBus;
+
+    @Autowired
+    private RuleService ruleService;
 
     @Autowired
     private EventNotificationService eventNotificationService;
 
     @Autowired
-    private EntityManager em;
+    private PlatformTransactionManager transactionManager;
 
-    /**
-     * Fronta nodů k aktualizaci stavu.
-     */
-    private final Set<ArrNode> updateNodeQueue = new LinkedHashSet<>();
+    private final Set<ArrNode> nodeQueue = new LinkedHashSet<>();
 
-    private final int versionId;
+    private final Integer fundVersionId;
 
     private WorkerStatus status = WorkerStatus.RUNNABLE;
 
-    public UpdateConformityInfoWorker(int versionId) {
-        this.versionId = versionId;
+    public UpdateConformityInfoWorker(Integer fundVersionId) {
+        this.fundVersionId = Validate.notNull(fundVersionId);
     }
 
     @Override
     @Transactional
     public void run() {
-        LOG.debug("Spusteno nove vlakno pro aktualizaci stavu, fundVersionId: " + versionId);
+        logger.debug("Spusteno nove vlakno pro aktualizaci stavu, fundVersionId: " + fundVersionId);
 
         Set<Integer> processedNodeIds = new LinkedHashSet<>();
         status = WorkerStatus.RUNNING;
@@ -83,31 +93,59 @@ public class UpdateConformityInfoWorker implements Runnable {
                 processNode(node, version);
                 processedNodeIds.add(node.getNodeId());
             }
-            LOG.debug("Konec vlakna pro aktualizaci stavu, fundVersionId:" + versionId);
+            logger.debug("Konec vlakna pro aktualizaci stavu, fundVersionId:" + fundVersionId);
         } catch (Exception e) {
-            LOG.error("Unexpected error during conformity update", e);
+            logger.error("Unexpected error during conformity update", e);
         } finally {
             terminate();
         }
     }
 
     private ArrFundVersion getFundVersion() {
-        ArrFundVersion version = fundVersionRepository.findOne(versionId);
+        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
         if (version == null) {
-            throw new EntityNotFoundException("ArrFundVersion for conformity update not found, versionId:" + versionId);
+            throw new EntityNotFoundException("ArrFundVersion for conformity update not found, versionId:" + fundVersionId);
         }
         return version;
     }
 
     private void processNode(ArrNode node, ArrFundVersion version) {
-        // bylo by lepší přepsat metodu setConformityInfo, aby brala node
         ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootNode(), version.getLockChange());
+
+        Integer nodeId = node.getNodeId();
+        logger.debug("Aktualizace stavu " + nodeId + " ve verzi " + fundVersionId);
+
         try {
-            updateConformityInfoService.updateConformityInfo(node.getNodeId(), level.getLevelId(), versionId);
+            updateConformityInfo(nodeId, level.getLevelId());
+
         } catch (LockVersionChangeException e) {
-            LOG.info("Node " + node.getNodeId() + " nema aktualizovany stav. Behem validace ke zmene uzlu.");
+            logger.info("Node " + node.getNodeId() + " nema aktualizovany stav. Behem validace ke zmene uzlu.");
         } catch (Exception e) {
-            LOG.error("Node " + node.getNodeId() + " nema aktualizovany stav. Behem validace došlo k chybě.", e);
+            logger.error("Node " + node.getNodeId() + " nema aktualizovany stav. Behem validace došlo k chybě.", e);
+        }
+    }
+
+    private void updateConformityInfo(Integer nodeId, Integer levelId) {
+        DefaultTransactionDefinition def = new DefaultTransactionDefinition();
+        def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        TransactionStatus transactionStatus = null;
+        try {
+            transactionStatus = transactionManager.getTransaction(def);
+
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                @Override
+                public void afterCommit() {
+                    eventBus.post(new ConformityInfoUpdatedEvent(nodeId));
+                }
+            });
+            ruleService.setConformityInfo(levelId, fundVersionId);
+
+            transactionManager.commit(transactionStatus);
+        } catch (Exception e) {
+            if (transactionStatus != null) {
+                transactionManager.rollback(transactionStatus);
+            }
+            throw new RuntimeException(e);
         }
     }
 
@@ -122,7 +160,7 @@ public class UpdateConformityInfoWorker implements Runnable {
         if (!WorkerStatus.isRunning(status)) {
             return false;
         }
-        updateNodeQueue.addAll(nodes);
+        nodeQueue.addAll(nodes);
         return true;
     }
 
@@ -141,7 +179,7 @@ public class UpdateConformityInfoWorker implements Runnable {
      * @return nod z fronty
      */
     private synchronized ArrNode getNextNode() {
-        Iterator<ArrNode> it = updateNodeQueue.iterator();
+        Iterator<ArrNode> it = nodeQueue.iterator();
         if (!it.hasNext()) {
             terminate();
             return null;
@@ -155,7 +193,7 @@ public class UpdateConformityInfoWorker implements Runnable {
      * Provede ukončení běhu. Nechá dopočítat poslední uzel.
      */
     public synchronized void terminate() {
-        updateNodeQueue.clear();
+        nodeQueue.clear();
         status = WorkerStatus.TERMINATED;
     }
 
@@ -164,7 +202,7 @@ public class UpdateConformityInfoWorker implements Runnable {
      */
     public void terminateAndWait() {
         synchronized (this) {
-            updateNodeQueue.clear();
+            nodeQueue.clear();
             status = WorkerStatus.TERMINATING;
         }
         while (status != WorkerStatus.TERMINATED) {

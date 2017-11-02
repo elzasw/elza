@@ -1,5 +1,39 @@
 package cz.tacr.elza.service;
 
+import java.math.BigInteger;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.TemporalType;
+import javax.persistence.TypedQuery;
+import javax.validation.constraints.NotNull;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+
 import com.google.common.collect.Sets;
 
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
@@ -27,40 +61,6 @@ import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.Change;
 import cz.tacr.elza.service.vo.ChangesResult;
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.TemporalType;
-import javax.persistence.TypedQuery;
-import javax.validation.constraints.NotNull;
-import java.math.BigInteger;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Servisní třída pro práci s obnovou změn v archivní souboru - "UNDO".
@@ -536,7 +536,7 @@ public class RevertingChangesService {
      */
     private void stopConformityInfFundVersions(final @NotNull ArrFund fund) {
         for (ArrFundVersion fundVersion : fund.getVersions()) {
-            updateConformityInfoService.terminateWorkerInVersionAndWait(fundVersion);
+            updateConformityInfoService.terminateWorkerInVersionAndWait(fundVersion.getFundVersionId());
         }
     }
 
