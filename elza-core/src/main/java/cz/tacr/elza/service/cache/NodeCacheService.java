@@ -736,6 +736,8 @@ public class NodeCacheService {
 	private RestoredNode deserialize(final ArrCachedNode cachedNode) {
         try {
 			RestoredNode restoredNode = mapper.readValue(cachedNode.getData(), RestoredNode.class);
+			// restore node ref
+			restoredNode.setNodeId(cachedNode.getNodeId());
 			restoredNode.setNode(cachedNode.getNode());
 			return restoredNode;
         } catch (IOException e) {

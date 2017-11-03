@@ -852,7 +852,12 @@ public class UserService {
             return null;
         }
 		UserDetail details = (UserDetail) auth.getDetails();
-		UsrUser user = userRepository.findOne(details.getId());
+		UsrUser user = null;
+		Integer userId = details.getId();
+		if (userId != null) {
+			// userId is set -> user have to be in the repository
+			user = userRepository.findOne(userId);
+		}
 		return user;
     }
 
