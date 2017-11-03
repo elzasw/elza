@@ -16,16 +16,28 @@ spring:
     hibernate.ddl-auto: none
 
     properties:
-          hibernate:
-              format_sql: true
-              search:
-                  lucene_version: LUCENE_CURRENT
-                  default:
-                      indexBase: ${elza.workingDir}/lucene/indexes/
-                      directory_provider: filesystem
-              dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect
-#              dialect: org.hibernate.spatial.dialect.sqlserver.SqlServer2008SpatialDialect
-#              dialect: org.hibernate.spatial.dialect.postgis.PostgisDialect
+        net.sf.ehcache.configurationResourceName: /ehcache.xml
+        hibernate:
+            format_sql: true
+            
+            #zmena defaultniho generovani PK (pokud anotace @GeneratedValue neuvede jinak pouzije se tento generator)
+            #viz org.hibernate.jpa.AvailableSettings.IDENTIFIER_GENERATOR_STRATEGY_PROVIDER
+            ejb.identifier_generator_strategy_provider: cz.tacr.elza.hibernate.IdentifierGeneratorStrategyProvider
+        
+            #viz org.hibernate.cfg.AnnotationBinder.generatorType
+            id.new_generator_mappings: true
+        
+            cache:
+                use_second_level_cache: true
+                region.factory_class: org.hibernate.cache.ehcache.EhCacheRegionFactory
+
+            search:
+                lucene_version: LUCENE_CURRENT
+                default:
+                    indexBase: ${elza.workingDir}/lucene/indexes/
+                    directory_provider: filesystem
+
+            dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect
 
 elza:
   data:
