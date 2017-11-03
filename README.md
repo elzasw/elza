@@ -59,7 +59,7 @@ Výchozí konfig
   "hot": false,
   "circularDependencyCheck": true,
   "sourceMap": "eval-source-map",
-  "happyPack": true,
+  "happyPack": false,
   "devTools": false,
   "port": 8090
 }

@@ -296,7 +296,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String POLICY_TYPES = POLICY + "/types/{fundVersionId}";
     protected static final String POLICY_ALL_TYPES = POLICY + "/types";
     protected static final String POLICY_SET = POLICY + "/{nodeId}/{fundVersionId}";
-    protected static final String POLICY_GET = POLICY + "/{nodeId}/{fundVersionId}/{includeParents}";
+    protected static final String POLICY_GET = POLICY + "/{nodeId}/{fundVersionId}";
 
     // Validation
     protected static final String VALIDATE_UNIT_DATE = VALIDATION_CONTROLLER_URL + "/unitDate";
@@ -2940,15 +2940,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
      *
      * @param nodeId         identifikátor node ke kterému hledám oprávnění
      * @param fundVersionId  identifikátor verze AS
-     * @param includeParents zohlednit zděděné oprávnění od rodičů?
      * @return mapa uzlů map typů a jejich zobrazení
      */
     protected RuleController.VisiblePolicyTypes getVisiblePolicy(final Integer nodeId,
-                                                                 final Integer fundVersionId,
-                                                                 final Boolean includeParents) {
+                                                                 final Integer fundVersionId) {
         return get(spec -> spec.pathParameter("nodeId", nodeId)
-                .pathParameter("fundVersionId", fundVersionId)
-                .pathParameter("includeParents", includeParents), POLICY_GET).as(RuleController.VisiblePolicyTypes.class);
+                .pathParameter("fundVersionId", fundVersionId), POLICY_GET).as(RuleController.VisiblePolicyTypes.class);
     }
 
     /**

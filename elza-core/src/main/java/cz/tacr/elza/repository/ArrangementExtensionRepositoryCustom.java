@@ -12,7 +12,7 @@ import java.util.List;
 public interface ArrangementExtensionRepositoryCustom {
 
     /**
-     * Vyhledání definicí řídících pravidel od JP k root JP, seřazený podle názvu.
+     * Vyhledání nadřízených definicí řídících pravidel od JP k root JP, seřazený podle názvu. (tzn. bez pravidel JP)
      *
      * @param nodeId JP ke které hledáme
      * @return nalezené definice

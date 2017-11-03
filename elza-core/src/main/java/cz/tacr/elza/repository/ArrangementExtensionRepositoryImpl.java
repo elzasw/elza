@@ -32,7 +32,7 @@ public class ArrangementExtensionRepositoryImpl implements ArrangementExtensionR
                 "SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id WHERE t.delete_change_id IS NULL";
 
         String sql = "SELECT DISTINCT ae.* FROM arr_node_extension ne JOIN rul_arrangement_extension ae ON ae.arrangement_extension_id = ne.arrangement_extension_id WHERE ne.node_id IN" +
-                " (" + sql_nodes + " ) ORDER BY ae.name";
+                " (" + sql_nodes + " ) AND ne.node_id <> :nodeId ORDER BY ae.name";
 
         Query query = entityManager.createNativeQuery(sql, RulArrangementExtension.class);
         query.setParameter("nodeId", nodeId);

@@ -185,7 +185,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
                             <Icon glyph="fa-unlock"/>
                         </NoFocusButton>
                         <NoFocusButton onClick={this.props.onVisiblePolicy}>
-                            <Icon glyph="fa-eye"/>
+                            <Icon glyph="fa-cogs"/>
                         </NoFocusButton>
                         {historyAllowed &&
                         <NoFocusButton onClick={this.handleShowHistory}>

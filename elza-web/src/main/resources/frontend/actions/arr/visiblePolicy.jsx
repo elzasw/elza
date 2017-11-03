@@ -5,8 +5,7 @@ import * as types from 'actions/constants/ActionTypes.js';
 
 export function visiblePolicyFetchIfNeeded(nodeId, fundVersionId) {
     return (dispatch, getState) => {
-        var state = getState();
-        var visiblePolicy = state.arrRegion.visiblePolicy;
+        const {arrRegion: {visiblePolicy}} = getState();
         if (visiblePolicy == null || visiblePolicy.nodeId != nodeId || visiblePolicy.fundVersionId != fundVersionId ||
             ((!visiblePolicy.fetched || visiblePolicy.dirty) && !visiblePolicy.isFetching)) {
             return dispatch(visiblePolicyFetch(nodeId, fundVersionId));
@@ -23,11 +22,13 @@ export function visiblePolicyFetch(nodeId, fundVersionId) {
 }
 
 export function visiblePolicyReceive(nodeId, fundVersionId, data) {
+    const {policyTypeIdsMap, ...otherData} = data;
     return {
         type: types.VISIBLE_POLICY_RECEIVE,
         nodeId,
         fundVersionId,
-        policyTypeIds: data.policyTypeIdsMap,
+        policyTypeIds: policyTypeIdsMap,
+        otherData,
         receivedAt: Date.now()
     }
 }

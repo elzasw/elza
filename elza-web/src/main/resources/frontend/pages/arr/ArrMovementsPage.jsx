@@ -33,7 +33,6 @@ import {
     Ribbon,
     FundSettingsForm,
     NodeTabs,
-    VisiblePolicyForm,
     FundPackets,
     FundFiles,
     FundTreeMain,

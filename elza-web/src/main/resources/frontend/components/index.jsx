@@ -61,7 +61,7 @@ export {default as SubNodeRegister} from 'components/arr/SubNodeRegister.jsx';
 export {default as SubNodeDao} from 'components/arr/SubNodeDao.jsx';
 export {default as FundForm} from 'components/arr/FundForm.jsx';
 export {default as FundSettingsForm} from 'components/arr/FundSettingsForm.jsx';
-export {default as VisiblePolicyForm} from 'components/arr/VisiblePolicyForm.jsx';
+export {default as NodeSettingsForm} from 'components/arr/NodeSettingsForm.jsx';
 export {default as AddPacketForm} from 'components/arr/AddPacketForm.jsx';
 export {default as GoToPositionForm} from 'components/arr/GoToPositionForm.jsx';
 export {default as AddNodeForm} from 'components/arr/nodeForm/AddNodeForm.jsx';

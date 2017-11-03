@@ -923,4 +923,88 @@ public class RuleService {
         return extensionRuleRepository.findExtensionRules(arrangementExtensionsFinal, attributeTypes);
     }
 
+    /**
+     * Nastaví nodu konkrétní extensions. Synchronizuje dodaný set. Dovytvoří potřebné, smaže nepotřebné.
+     *
+     * @param versionId Fund version Id
+     * @param nodeId Node Id
+     * @param arrExtensionIds Set Id nastavovaných ArrExtensions
+     */
+    public void syncNodeExtensions(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer versionId,
+                                   final Integer nodeId,
+                                   final Set<Integer> arrExtensionIds) {
+
+        Assert.notNull(arrExtensionIds, "Musí být předán seznam rozšíření");
+
+        ArrNode node = nodeRepository.getOneCheckExist(nodeId);
+
+        final Set<Integer> toDeleteIds = arrangementExtensionRepository.findByNode(node).stream().map(RulArrangementExtension::getArrangementExtensionId).collect(Collectors.toSet());
+        final Set<Integer> toAddIds = new HashSet<>();
+        arrExtensionIds.forEach(i -> {
+            if (toDeleteIds.contains(i)) {
+                toDeleteIds.remove(i);
+            } else {
+                toAddIds.add(i);
+            }
+        });
+
+        if (toDeleteIds.isEmpty() && toAddIds.isEmpty()) {
+            // Vše je v konzistentním stavu
+            return;
+        }
+
+        // Změna pod kterou uvidíme nastavení
+        final ArrChange change = arrangementService.createChange(ArrChange.Type.SET_NODE_EXTENSION, node);
+
+        // Uložení node pro zaznamenání change
+        saveNode(node, change);
+
+        List<ArrNodeExtension> toDelete = null;
+        if (!toDeleteIds.isEmpty()) {
+            // Seznam ke smazání
+            toDelete = nodeExtensionRepository.findByArrExtensionIdsAndNodeNotDeleted(toDeleteIds, node);
+
+            // Nastavení smazání
+            toDelete.forEach(i -> i.setDeleteChange(change));
+
+            toDelete = nodeExtensionRepository.save(toDelete);
+        }
+
+        List<ArrNodeExtension> toAdd = null;
+        if (!toAddIds.isEmpty()) {
+            // Seznam ArrExts k přidání
+            final List<RulArrangementExtension> toAddExts = arrangementExtensionRepository.findAll(toAddIds);
+
+            // Seznam platných rozšíření pro verzi fund
+            final List<RulArrangementExtension> validArrExts = findArrangementExtensionsByFundVersionId(versionId);
+
+            // Validace + příprava listu k uložení
+            toAdd = toAddExts.stream().map(i -> {
+                if (!validArrExts.contains(i)) {
+                    throw new IllegalArgumentException("Řídící pravidla nejsou pro pravidla AS");
+                }
+                final ArrNodeExtension ext = new ArrNodeExtension();
+                ext.setCreateChange(change);
+                ext.setNode(node);
+                ext.setArrangementExtension(i);
+                return ext;
+            }).collect(Collectors.toList());
+
+            toAdd = nodeExtensionRepository.save(toAdd);
+        }
+
+        nodeExtensionRepository.flush();
+
+        eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FUND_EXTENSION_CHANGE, versionId, node.getNodeId(), node.getVersion()));
+
+        if (toDelete != null) {
+            toDelete.forEach(i -> arrangementCacheService.deleteNodeExtension(nodeId, i.getNodeExtensionId()));
+        }
+
+        if (toAdd != null) {
+            toAdd.forEach(i -> arrangementCacheService.createNodeExtension(nodeId, i));
+        }
+
+        deleteConformityInfo(versionId, Collections.singleton(nodeId), Collections.singleton(RelatedNodeDirection.DESCENDANTS));
+    }
 }

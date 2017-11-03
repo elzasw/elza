@@ -851,16 +851,16 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/findUniqueSpecIds/' + fundVersionId, {itemTypeId})
     }
 
-    getVisiblePolicy(nodeId, fundVersionId, includeParents = true) {
-        return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/policy/' + nodeId + '/' + fundVersionId + '/' + includeParents);
+    getVisiblePolicy(nodeId, fundVersionId) {
+        return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/policy/' + nodeId + '/' + fundVersionId);
     }
 
     getVisiblePolicyTypes() {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/policy/types');
     }
 
-    setVisiblePolicy(nodeId, fundVersionId, policyTypeIdsMap, includeSubtree = false) {
-        return AjaxUtils.ajaxPut(WebApiCls.ruleUrl + '/policy/' + nodeId + '/' + fundVersionId, null, {includeSubtree, policyTypeIdsMap});
+    setVisiblePolicy(nodeId, fundVersionId, policyTypeIdsMap, includeSubtree = false, nodeExtensions) {
+        return AjaxUtils.ajaxPut(WebApiCls.ruleUrl + '/policy/' + nodeId + '/' + fundVersionId, null, {policyTypeIdsMap, includeSubtree, nodeExtensions});
     }
 
     getUserDetail() {

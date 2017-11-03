@@ -12,6 +12,7 @@ import java.util.zip.ZipOutputStream;
 
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.repository.NodeExtensionRepository;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -178,6 +179,8 @@ public class HelperTestService {
     protected ExternalSystemRepository externalSystemRepository;
     @Autowired
     private NodeOutputRepository nodeOutputRepository;
+    @Autowired
+    private NodeExtensionRepository nodeExtensionRepository;
 
     @Autowired
     private PackageService packageService;
@@ -243,6 +246,7 @@ public class HelperTestService {
         outputRepository.deleteAll();
         outputDefinitionRepository.deleteAll();
         itemSpecRegisterRepository.deleteAll();
+        nodeExtensionRepository.deleteAll();
         changeRepository.deleteAll();
         nodeRepository.deleteAll();
         fundRepository.deleteAll();

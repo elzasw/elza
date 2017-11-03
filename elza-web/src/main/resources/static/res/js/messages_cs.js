@@ -1187,6 +1187,10 @@ var messages = {
     "login.defaultUserEnabled": "Je povolen výchozí uživatel. Vytvořte si vlastního uživatele s oprávněním administrátora a výchozího uživatele vypněte.",
 
     "visiblePolicy.form.title": "Nastavení zobrazení pravidel kontroly JP",
+    "visiblePolicy.rules.parent": "Nastavení z vyšších úrovní",
+    "visiblePolicy.rules.node": "Nastavení pro JP",
+    "visiblePolicy.extensions": "Rozšíření",
+    "visiblePolicy.rules": "Pravidla kontroly",
     "visiblePolicy.action.save": "Upravit",
     "visiblePolicy.action.reset": "Vymazat",
     "visiblePolicy.action.reset.confirm": "Opravdu vymazat? Po vymazání definice budou přebírána pravidla kontroly z nadřízené jednotky popisu.",

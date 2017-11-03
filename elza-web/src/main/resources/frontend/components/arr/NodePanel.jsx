@@ -11,7 +11,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {TooltipTrigger, Icon, ListBox, AbstractReactComponent, i18n, HorizontalLoader, Loading,  Accordion} from 'components/shared';
-import VisiblePolicyForm from './VisiblePolicyForm'
 import SubNodeDao from './SubNodeDao'
 import SubNodeRegister from './SubNodeRegister'
 import NodeActionsBar from './NodeActionsBar'
@@ -40,13 +39,14 @@ import {WebApi} from 'actions/index.jsx';
 import {Shortcuts} from 'react-shortcuts';
 import {setFocus, canSetFocus, focusWasSet, isFocusFor, isFocusExactFor} from 'actions/global/focus.jsx'
 import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm.jsx'
-import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
+import {setVisiblePolicyRequest, setVisiblePolicyReceive} from 'actions/arr/visiblePolicy.jsx'
 import {visiblePolicyTypesFetchIfNeeded} from 'actions/refTables/visiblePolicyTypes.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './NodePanelKeymap.jsx'
 
 import './NodePanel.less';
+import NodeSettingsForm from "./NodeSettingsForm";
 
 class NodePanel extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };
@@ -290,17 +290,26 @@ class NodePanel extends AbstractReactComponent {
 
     handleVisiblePolicy() {
         const {node, versionId} = this.props;
-        var form = <VisiblePolicyForm nodeId={node.selectedSubNodeId} fundVersionId={versionId} onSubmitForm={this.handleSetVisiblePolicy} />;
+        const form = <NodeSettingsForm nodeId={node.selectedSubNodeId} fundVersionId={versionId} onSubmit={this.handleSetVisiblePolicy} />;
         this.dispatch(modalDialogShow(this, i18n('visiblePolicy.form.title'), form));
     }
 
     handleSetVisiblePolicy(data) {
-        const {node, versionId} = this.props;
-        var mapIds = {};
-        data.records.forEach((val, index) => {
-            mapIds[parseInt(val.id)] = val.checked;
+        const {node, versionId, dispatch} = this.props;
+        const mapIds = {};
+        const {records, rules, nodeExtensions, ...others} = data;
+        if (rules !== "PARENT") {
+            records.forEach((val, index) => {
+                mapIds[parseInt(val.id)] = val.checked;
+            });
+        }
+
+        const nodeExtensionsIds = Object.values(nodeExtensions).filter(i => i.checked).map(i => i.id);
+
+
+        return WebApi.setVisiblePolicy(node.selectedSubNodeId, versionId, mapIds, false, nodeExtensionsIds).then(() => {
+            dispatch(setVisiblePolicyReceive(node.selectedSubNodeId, versionId));
         });
-        return this.dispatch(setVisiblePolicyRequest(node.selectedSubNodeId, versionId, mapIds));
     }
 
     /**

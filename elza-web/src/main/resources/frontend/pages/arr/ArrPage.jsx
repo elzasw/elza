@@ -2,6 +2,8 @@
  * Stránka archivních pomůcek.
  */
 
+import {setVisiblePolicyReceive} from "../../actions/arr/visiblePolicy";
+
 require('./ArrPage.less');
 
 import React from 'react';
@@ -66,6 +68,7 @@ import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 import {getMapFromList} from 'stores/app/utils.jsx'
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './ArrPageKeymap.jsx';
+import NodeSettingsForm from "../../components/arr/NodeSettingsForm";
 
 var keyModifier = Utils.getKeyModifier()
 
@@ -544,16 +547,26 @@ class ArrPage extends ArrParentPage {
         if (!node) {
             return;
         }
-        var form = <VisiblePolicyForm nodeId={node.selectedSubNodeId} fundVersionId={activeFund.versionId} onSubmitForm={this.handleSetVisiblePolicy.bind(this, node, activeFund.versionId)} />;
+        var form = <NodeSettingsForm nodeId={node.selectedSubNodeId} fundVersionId={activeFund.versionId} onSubmitForm={this.handleSetVisiblePolicy} />;
         this.dispatch(modalDialogShow(this, i18n('visiblePolicy.form.title'), form));
     }
 
     handleSetVisiblePolicy(node, versionId, data) {
-        var mapIds = {};
-        data.records.forEach((val, index) => {
-            mapIds[parseInt(val.id)] = val.checked;
+        const {node, versionId, dispatch} = this.props;
+        const mapIds = {};
+        const {records, rules, nodeExtensions, ...others} = data;
+        if (rules !== "PARENT") {
+            records.forEach((val, index) => {
+                mapIds[parseInt(val.id)] = val.checked;
+            });
+        }
+
+        const nodeExtensionsIds = Object.values(nodeExtensions).filter(i => i.checked).map(i => i.id);
+
+
+        return WebApi.setVisiblePolicy(node.selectedSubNodeId, versionId, mapIds, false, nodeExtensionsIds).then(() => {
+            dispatch(setVisiblePolicyReceive(node.selectedSubNodeId, versionId));
         });
-        return this.dispatch(setVisiblePolicyRequest(node.selectedSubNodeId, versionId, mapIds));
     }
 
     renderFundVisiblePolicies(activeFund) {

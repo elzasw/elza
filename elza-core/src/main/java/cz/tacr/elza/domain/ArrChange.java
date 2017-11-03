@@ -177,6 +177,11 @@ public class ArrChange {
         DELETE_NODE_EXTENSION,
 
         /**
+         * Nastaví rozšíření k JP.
+         */
+        SET_NODE_EXTENSION,
+
+        /**
          * Změna atributu včetně změny pořadí.
          */
         UPDATE_DESC_ITEM,

@@ -325,9 +325,9 @@ public class ArrangementCacheService {
      * Odstranění vazby mezi JP a definicí řídících pravidel.
      *
      * @param nodeId         identifikátor JP
-     * @param nodeRegisterId identifikátor mazaného záznamu
+     * @param nodeExtensionId identifikátor mazaného záznamu
      */
-    public void deleteNodeExtension(final Integer nodeId, final Integer nodeRegisterId) {
+    public void deleteNodeExtension(final Integer nodeId, final Integer nodeExtensionId) {
         CachedNode cachedNode = nodeCacheService.getNode(nodeId);
         List<ArrNodeExtension> nodeExtensions = cachedNode.getNodeExtensions();
         if (nodeExtensions == null) {
@@ -336,7 +336,7 @@ public class ArrangementCacheService {
         Iterator<ArrNodeExtension> iterator = nodeExtensions.iterator();
         while (iterator.hasNext()) {
             ArrNodeExtension item = iterator.next();
-            if (nodeRegisterId.equals(item.getNodeExtensionId())) {
+            if (nodeExtensionId.equals(item.getNodeExtensionId())) {
                 iterator.remove();
                 nodeCacheService.saveNode(cachedNode);
                 return;

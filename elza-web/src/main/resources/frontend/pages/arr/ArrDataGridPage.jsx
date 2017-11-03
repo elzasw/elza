@@ -22,7 +22,6 @@ import {
     FundSettingsForm,
     ArrFundPanel,
     NodeTabs,
-    VisiblePolicyForm,
     FundPackets,
     FundFiles,
     FundTreeMain
