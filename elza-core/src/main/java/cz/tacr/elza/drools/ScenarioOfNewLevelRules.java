@@ -56,7 +56,8 @@ public class ScenarioOfNewLevelRules extends Rules {
 
         List<ScenarioOfNewLevel> scenarioOfNewLevelList = new LinkedList<>();
         for (NewLevelApproach newLevelApproach : newLevelApproaches.getNewLevelApproaches()) {
-            scenarioOfNewLevelList.add(scriptModelFactory.createScenarioOfNewLevel(newLevelApproach));
+			scenarioOfNewLevelList
+			        .add(scriptModelFactory.createScenarioOfNewLevel(newLevelApproach, version.getRuleSetId()));
         }
 
         return scenarioOfNewLevelList;

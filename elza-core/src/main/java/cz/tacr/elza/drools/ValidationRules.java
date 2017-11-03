@@ -3,38 +3,41 @@ package cz.tacr.elza.drools;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.PolicyTypeRepository;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.kie.api.runtime.StatelessKieSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import cz.tacr.elza.core.data.RuleSystem;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.RulPolicyType;
+import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.DataValidationResults;
 import cz.tacr.elza.drools.model.ActiveLevel;
 import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.service.ModelFactory;
 import cz.tacr.elza.drools.service.ScriptModelFactory;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.PolicyTypeRepository;
 
 /**
  * Zpracování pravidel pro validaci parametrů uzlu.
  *
- * @author Tomáš Kubový [
- *         <a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @author Petr Pytelka [
- *         <a href="mailto:petr.pytelka@lightcomp.cz">petr.pytelka@lightcomp.cz
- *         </a>]
- * @since 1.12.2015
  */
 
 @Component
@@ -55,7 +58,10 @@ public class ValidationRules extends Rules {
 	@Autowired
 	private PolicyTypeRepository policyTypeRepository;
 
-	private Log logger = LogFactory.getLog(this.getClass());
+	@Autowired
+	private StaticDataService staticDataService;
+
+	private static final Logger logger = LoggerFactory.getLogger(ValidationRules.class);
 
 	/**
 	 * Spustí validaci atributů.
@@ -90,7 +96,7 @@ public class ValidationRules extends Rules {
 
 		List<DataValidationResult> results = validationResults.getResults();
 
-		finalizeValidationResults(results);
+		finalizeValidationResults(results, version.getRuleSetId());
 
 		return results;
 	}
@@ -100,8 +106,12 @@ public class ValidationRules extends Rules {
 	 *
 	 * @param validationResults
 	 *            seznam validačních chyb
+	 * @param ruleSetId
 	 */
-	public void finalizeValidationResults(final List<DataValidationResult> validationResults) {
+	public void finalizeValidationResults(final List<DataValidationResult> validationResults, Integer ruleSetId) {
+
+		StaticDataProvider sdp = staticDataService.getData();
+		RuleSystem ruleSystem = sdp.getRuleSystems().getByRuleSetId(ruleSetId);
 
 		Map<String, RulPolicyType> policyTypesMap = getPolicyTypesMap();
 
@@ -113,7 +123,8 @@ public class ValidationRules extends Rules {
 			RulPolicyType rulPolicyType = policyTypesMap.get(validationResult.getPolicyTypeCode());
 
 			if (rulPolicyType == null) {
-				logger.warn("Kód '" + validationResult.getPolicyTypeCode() + "' neexistuje. Je nutné upravit drools pravidla");
+				logger.warn("Kód '" + validationResult.getPolicyTypeCode()
+				        + "' neexistuje. Je nutné upravit drools pravidla");
 				iterator.remove();
 				continue;
 			}
@@ -122,23 +133,25 @@ public class ValidationRules extends Rules {
 
 			switch (validationResult.getResultType()) {
 
-				case MISSING:
-					String missingTypeCode = validationResult.getTypeCode();
-					if (missingTypeCode == null) {
-						throw new SystemException("Neni vyplnen kod chybejiciho typu.", BaseCode.PROPERTY_NOT_EXIST).set("property", "typeCode");
-					}
-					validationResult.setType(itemTypeRepository.getOneByCode(missingTypeCode));
-					break;
-				case ERROR:
-					Integer descItemId = validationResult.getDescItemId();
-					if (descItemId == null) {
-						throw new SystemException("Neni vyplneno id chybneho atributu.", BaseCode.PROPERTY_NOT_EXIST).set("property", "descItemId");
-					}
-					validationResult.setDescItem(descItemRepository.findOne(descItemId));
-					break;
-				default:
-					throw new IllegalArgumentException(
-							"Neznamy typ vysledku validace " + validationResult.getResultType().name());
+			case MISSING:
+				String missingTypeCode = validationResult.getTypeCode();
+				if (missingTypeCode == null) {
+					throw new SystemException("Neni vyplnen kod chybejiciho typu.", BaseCode.PROPERTY_NOT_EXIST)
+					        .set("property", "typeCode");
+				}
+				validationResult.setType(ruleSystem.getItemTypeByCode(missingTypeCode).getEntity());
+				break;
+			case ERROR:
+				Integer descItemId = validationResult.getDescItemId();
+				if (descItemId == null) {
+					throw new SystemException("Neni vyplneno id chybneho atributu.", BaseCode.PROPERTY_NOT_EXIST)
+					        .set("property", "descItemId");
+				}
+				validationResult.setDescItem(descItemRepository.findOne(descItemId));
+				break;
+			default:
+				throw new IllegalArgumentException(
+				        "Neznamy typ vysledku validace " + validationResult.getResultType().name());
 			}
 		}
 	}

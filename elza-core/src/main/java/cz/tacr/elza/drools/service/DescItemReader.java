@@ -11,19 +11,16 @@ import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 
 /**
  * Class to read description items for the given levels
  *
- * @author Petr Pytelka
  *
  */
 public class DescItemReader {
@@ -32,21 +29,20 @@ public class DescItemReader {
 	 */
 	Map<Level, ArrNode> items = new HashMap<>();
 
-	private DescItemRepository descItemRepository;
+	private final DescItemRepository descItemRepository;
 
-	private ItemTypeRepository itemTypeRepository;
+	private final DescItemFactory descItemFactory;
 
-	private DescItemFactory descItemFactory;
+	private final NodeCacheService nodeCacheService;
 
-	private NodeCacheService nodeCacheService;
+	private final ArrFundVersion version;
 
-	public DescItemReader(DescItemRepository descItemRepository,
-						  ItemTypeRepository itemTypeRepository,
+	public DescItemReader(ArrFundVersion version, DescItemRepository descItemRepository,
 						  DescItemFactory descItemFactory,
 						  NodeCacheService nodeCacheService)
 	{
+		this.version = version;
 		this.descItemRepository = descItemRepository;
-		this.itemTypeRepository = itemTypeRepository;
 		this.descItemFactory = descItemFactory;
 		this.nodeCacheService = nodeCacheService;
 	}
@@ -64,9 +60,7 @@ public class DescItemReader {
 	 * Read description items for all levels in the reader
 	 * @param version Version of the fund
 	 */
-	public void read(ArrFundVersion version) {
-        Set<RulItemType> descItemTypesForPackets = itemTypeRepository.findDescItemTypesForPackets();
-        Set<RulItemType> descItemTypesForIntegers = itemTypeRepository.findDescItemTypesForIntegers();
+	public void read() {
 
 		Collection<ArrNode> nodes = items.values();
 		Set<Level> levels = items.keySet();
@@ -92,8 +86,7 @@ public class DescItemReader {
             } else {
                 levelDescItems = descItemsMap.get(level.getNodeId());
             }
-            List<DescItem> items = ModelFactory.createDescItems(levelDescItems,
-            		descItemTypesForPackets, descItemTypesForIntegers, descItemFactory, version.getLockChange() == null);
+			List<DescItem> items = ModelFactory.createDescItems(levelDescItems, descItemFactory);
             level.setDescItems(items);
         }
 

@@ -3,17 +3,17 @@ package cz.tacr.elza.drools.service;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataPacketRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.model.DescItem;
@@ -66,10 +66,7 @@ public class ModelFactory {
      * @return seznam vo hodnot atributu
      */
     static public List<DescItem> createDescItems(@Nullable final List<ArrDescItem> descItems,
-                                                 Set<RulItemType> descItemTypesForPackets,
-                                                 Set<RulItemType> descItemTypesForIntegers,
-                                                 DescItemFactory descItemFactory,
-                                                 final boolean lastVersion)
+	        DescItemFactory descItemFactory)
     {
     	if(descItems==null) {
     		return new ArrayList<>();
@@ -80,12 +77,13 @@ public class ModelFactory {
             result.add(voDescItem);
 
             if (!voDescItem.isUndefined()) {
-                if (descItemTypesForPackets.contains(descItem.getItemType())) {
-                    ArrDataPacketRef packetRef = lastVersion ? (ArrDataPacketRef) descItem.getData() : (ArrDataPacketRef) descItem.getData();
+				ArrData data = descItem.getData();
+				if (data.getType() == DataType.PACKET_REF) {
+					ArrDataPacketRef packetRef = (ArrDataPacketRef) descItem.getData();
                     ArrPacket packet = packetRef.getPacket();
                     voDescItem.setPacket(createPacket(packet));
-                } else if (descItemTypesForIntegers.contains(descItem.getItemType())) {
-                    ArrDataInteger integer = lastVersion ? (ArrDataInteger) descItem.getData() : (ArrDataInteger) descItem.getData();
+				} else if (data.getType() == DataType.INT) {
+					ArrDataInteger integer = (ArrDataInteger) descItem.getData();
                     voDescItem.setInteger(integer.getValue());
                 }
             }

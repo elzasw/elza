@@ -1,7 +1,6 @@
 package cz.tacr.elza.drools.service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -9,24 +8,23 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import javax.annotation.Nullable;
-
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataNull;
-import cz.tacr.elza.service.cache.NodeCacheService;
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.RuleSystem;
+import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.RuleSystemProvider;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataNull;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItemData;
-import cz.tacr.elza.domain.ArrItemInt;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
@@ -37,17 +35,13 @@ import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.model.NewLevel;
 import cz.tacr.elza.drools.model.NewLevelApproach;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.service.cache.NodeCacheService;
 
 
 /**
  * Tovární třída pro objekty validačních skriptů.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @author Petr Pytelka [<a href="mailto:petr.pytelka@lightcomp.cz">petr.pytelka@lightcomp.cz</a>]
- * @since 1.12.2015
  */
 @Component
 public class ScriptModelFactory {
@@ -55,25 +49,17 @@ public class ScriptModelFactory {
     @Autowired
     private LevelRepository levelRepository;
 
-    /*
-    @Autowired
-    private DataRepository arrDataRepository;
-     */
-
     @Autowired
     private DescItemFactory descItemFactory;
-
-    @Autowired
-    private ItemTypeRepository itemTypeRepository;
-
-    @Autowired
-    private ItemSpecRepository itemSpecRepository;
 
     @Autowired
     private DescItemRepository descItemRepository;
 
     @Autowired
     private NodeCacheService nodeCacheService;
+
+	@Autowired
+	private StaticDataService staticDataService;
 
     /**
      * Převede stromovou strukturu na seznam.
@@ -101,24 +87,6 @@ public class ScriptModelFactory {
         return list;
     }
 
-
-    /**
-     * Vytvoří hodnoty atributu.
-     *
-     * @param descItems hodnoty atributu
-     * @return seznam vo hodnot atributu
-     */
-    public List<DescItem> createDescItems(@Nullable final List<ArrDescItem> descItems, final boolean lastVersion) {
-        if (descItems == null) {
-            return Collections.emptyList();
-        }
-
-        Set<RulItemType> descItemTypesForPackets = itemTypeRepository.findDescItemTypesForPackets();
-        Set<RulItemType> descItemTypesForIntegers = itemTypeRepository.findDescItemTypesForIntegers();
-
-        return ModelFactory.createDescItems(descItems, descItemTypesForPackets, descItemTypesForIntegers, descItemFactory, lastVersion);
-    }
-
     /**
      * Vytvoří strukturu od výchozího levelu. Načte všechny jeho rodiče a prvky popisu.
      */
@@ -131,7 +99,7 @@ public class ScriptModelFactory {
         Set<ArrNode> nodes = new HashSet<>();
         nodes.add(level.getNode());
 
-        DescItemReader descItemReader = new DescItemReader(descItemRepository, itemTypeRepository, descItemFactory, nodeCacheService);
+		DescItemReader descItemReader = createDescItemReader(version);
 
         Level mainLevel = ModelFactory.createLevel(level, version);
         descItemReader.add(mainLevel, level.getNode());
@@ -146,10 +114,24 @@ public class ScriptModelFactory {
             descItemReader.add(newParent, parent.getNode());
         }
 
-        descItemReader.read(version);
+		descItemReader.read();
 
         return mainLevel;
     }
+
+	/**
+	 * Create description item reader
+	 * 
+	 * @param version
+	 * @return
+	 */
+	protected DescItemReader createDescItemReader(ArrFundVersion version) {
+
+		DescItemReader descItemReader = new DescItemReader(version, descItemRepository,
+		        descItemFactory,
+		        nodeCacheService);
+		return descItemReader;
+	}
 
     /**
      * Vytvoří hodnoty atributu, pro každý atribut je zavolána extension.
@@ -172,17 +154,25 @@ public class ScriptModelFactory {
     }
 
     /**
-     * Vytvoření scénáře pro level z value objektu.
-     * @param newLevelApproach  scénář VO
-     * @return
-     */
-    public ScenarioOfNewLevel createScenarioOfNewLevel(final NewLevelApproach newLevelApproach) {
+	 * Vytvoření scénáře pro level z value objektu.
+	 * 
+	 * @param newLevelApproach
+	 *            scénář VO
+	 * @param ruleSetId
+	 *            ID of the ruleset
+	 * @return
+	 */
+	public ScenarioOfNewLevel createScenarioOfNewLevel(final NewLevelApproach newLevelApproach, int ruleSetId) {
+		RuleSystemProvider rsp = staticDataService.getData().getRuleSystems();
+		RuleSystem ruleSystem = rsp.getByRuleSetId(ruleSetId);
+
         ScenarioOfNewLevel scenarioOfNewLevel = new ScenarioOfNewLevel();
         scenarioOfNewLevel.setName(newLevelApproach.getName());
 
         List<ArrDescItem> descItems = new ArrayList<>();
-        for (DescItem descItemVO : newLevelApproach.getDescItems()) {
-            descItems.add(createDescItem(descItemVO));
+		for (DescItem descItemRules : newLevelApproach.getDescItems()) {
+			ArrDescItem descItem = createDescItem(descItemRules, ruleSystem);
+			descItems.add(descItem);
         }
 
         scenarioOfNewLevel.setDescItems(descItems);
@@ -191,30 +181,35 @@ public class ScriptModelFactory {
     }
 
     /**
-     * Create new description item from value object
-     * @param descItemVO Source description item
-     * @return
-     */
-    private ArrDescItem createDescItem(final DescItem descItemVO) {
-        RulItemType rulDescItemType = itemTypeRepository.getOneByCode(descItemVO.getType());
-        Assert.notNull(rulDescItemType, "Item does not exists: " + descItemVO.getType());
+	 * Create new description item from value object
+	 * 
+	 * @param descItemRule
+	 *            Source description item
+	 * @param ruleSystem
+	 * @return
+	 */
+	private ArrDescItem createDescItem(final DescItem descItemRule, RuleSystem ruleSystem) {
+		RuleSystemItemType itemType = ruleSystem.getItemTypeByCode(descItemRule.getType());
+		Validate.notNull(itemType, "Item type: %d", descItemRule.getType());
 
         ArrDescItem descItem = new ArrDescItem();
-        descItem.setItemType(rulDescItemType);
+		descItem.setItemType(itemType.getEntity());
 
-        if (descItemVO.getSpecCode() != null) {
-            RulItemSpec rulDescItemSpec = itemSpecRepository.getOneByCode(descItemVO.getSpecCode());
-            Assert.notNull(rulDescItemSpec, "Item specification does not exists: " + descItemVO.getSpecCode());
+		if (descItemRule.getSpecCode() != null) {
+			RulItemSpec rulDescItemSpec = itemType.getItemSpecByCode(descItemRule.getSpecCode());
+			Validate.notNull(rulDescItemSpec, "Item specification does not exists: %s", descItemRule.getSpecCode());
             descItem.setItemSpec(rulDescItemSpec);
         }
 
-        if (!descItemVO.isUndefined()) {
+        if (!descItemRule.isUndefined()) {
             // set initial value
-            if (descItemVO.getInteger() != null && rulDescItemType.getCode().equals("INT")) {
+			if (descItemRule.getInteger() != null && itemType.getDataType() == DataType.INT) {
                 ArrDataInteger data = new ArrDataInteger();
-                data.setValue(descItemVO.getInteger());
+                data.setValue(descItemRule.getInteger());
                 descItem.setData(data);
             } else {
+				// This is strange?
+				// Probably there should be data according item type
                 ArrDataNull data = new ArrDataNull();
                 descItem.setData(data);
             }
@@ -238,7 +233,7 @@ public class ScriptModelFactory {
     {
         Level srcModelLevel = createLevelModel(level, version);
 
-        DescItemReader descItemReader = new DescItemReader(descItemRepository, itemTypeRepository, descItemFactory, nodeCacheService);
+		DescItemReader descItemReader = createDescItemReader(version);
 
         // Parent level
         Level parentLevel = null;
@@ -325,7 +320,7 @@ public class ScriptModelFactory {
         ModelFactory.addAll(newLevel, (List) levels);
 
         // Read description items
-        descItemReader.read(version);
+		descItemReader.read();
 
         return levels;
     }
@@ -338,7 +333,7 @@ public class ScriptModelFactory {
     public ActiveLevel createActiveLevel(final Level modelLevel,
                                          final ArrLevel level,
                                          final ArrFundVersion version) {
-        DescItemReader descItemReader = new DescItemReader(descItemRepository, itemTypeRepository, descItemFactory, nodeCacheService);
+		DescItemReader descItemReader = createDescItemReader(version);
 
         ActiveLevel activeLevel = new ActiveLevel(modelLevel);
 
@@ -377,7 +372,7 @@ public class ScriptModelFactory {
         activeLevel.setSiblingBefore(modelSiblingBefore);
 
         // Read description items
-        descItemReader.read(version);
+		descItemReader.read();
 
         // Add effective attributes
         addEffectiveDescItems(activeLevel);

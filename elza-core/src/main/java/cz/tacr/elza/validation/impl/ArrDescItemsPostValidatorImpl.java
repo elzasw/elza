@@ -1,6 +1,10 @@
 package cz.tacr.elza.validation.impl;
 
-import cz.tacr.elza.domain.ArrData;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
@@ -8,14 +12,9 @@ import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.drools.ValidationRules;
-import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.validation.ArrDescItemsPostValidator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 
 /**
@@ -58,7 +57,7 @@ public class ArrDescItemsPostValidatorImpl implements ArrDescItemsPostValidator 
         validator.validate();
 
         List<DataValidationResult> validationResultList = validator.getValidationResultList();
-        validationRules.finalizeValidationResults(validationResultList);
+		validationRules.finalizeValidationResults(validationResultList, version.getRuleSetId());
         return validationResultList;
     }
 
