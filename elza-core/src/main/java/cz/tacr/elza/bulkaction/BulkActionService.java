@@ -30,6 +30,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -160,7 +162,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     @Override
     public void onFailure(final Throwable ex) {
         // nenastane, protože ve workeru je catch na Exception
-        logger.error("Worker nedoběhl správně", ex);
+        logger.error("Worker nedoběhl správně: ", ex);
         runNextWorker();
     }
 
@@ -262,8 +264,8 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * @return objekt hromadné akce
      */
     private ArrBulkActionRun run(final ArrBulkActionRun bulkActionRun) {
-		BulkActionWorker bulkActionWorker = new BulkActionWorker(this, bulkActionRepository);
-        bulkActionWorker.init(bulkActionRun.getBulkActionRunId());
+		BulkActionWorker bulkActionWorker = new BulkActionWorker(this, bulkActionRun);
+		bulkActionWorker.init();
         runningWorkers.put(bulkActionRun.getFundVersionId(), bulkActionWorker);
 
         // změna stavu výstupů na počítání
@@ -275,7 +277,21 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
                 OutputState.COMPUTING,
                 OutputState.OPEN);
 
-        runWorker(bulkActionWorker);
+		bulkActionWorker.setStateAndPublish(State.PLANNED);
+		logger.info("Hromadná akce naplánována ke spuštění: " + bulkActionWorker);
+		BulkActionService actionService = this;
+
+		// worker can be starter only after commit
+		// TODO: handle correctly when commit fails -> bulkActionWorker should be removed from runningWorkers
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+			@Override
+			public void afterCommit() {
+				ListenableFuture<BulkActionWorker> future = taskExecutor.submitListenable(bulkActionWorker);
+				future.addCallback(actionService);
+			}
+		});
+		eventPublishBulkAction(bulkActionWorker.getBulkActionRun());
+
         return bulkActionWorker.getBulkActionRun();
     }
 
@@ -308,7 +324,8 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     private void runNextWorker() {
         (new TransactionTemplate(txManager)).execute(new TransactionCallbackWithoutResult() {
             @Override
-            protected void doInTransactionWithoutResult(final TransactionStatus status) {List<Integer> waitingActionsId = bulkActionRepository.findIdByStateGroupByFundOrderById(State.WAITING);
+			protected void doInTransactionWithoutResult(final TransactionStatus status) {
+				List<Integer> waitingActionsId = bulkActionRepository.findIdByStateGroupByFundOrderById(State.WAITING);
                 List<ArrBulkActionRun> waitingActions = bulkActionRepository.findAll(waitingActionsId);
                 waitingActions.forEach(bulkActionRun -> {
                     if (canRun(bulkActionRun)) {
@@ -317,19 +334,6 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
                 });
             }
         });
-    }
-
-    /**
-     * Spuštění (předání k naplánování) hromadné akce.
-     *
-     * @param bulkActionWorker úloha, která se předá k naplánování
-     */
-    private void runWorker(final BulkActionWorker bulkActionWorker) {
-        bulkActionWorker.setStateAndPublish(State.PLANNED);
-        logger.info("Hromadná akce naplánována ke spuštění: " + bulkActionWorker);
-        ListenableFuture<BulkActionWorker> future = taskExecutor.submitListenable(bulkActionWorker);
-        future.addCallback(this);
-        eventPublishBulkAction(bulkActionWorker.getBulkActionRun());
     }
 
     /**
