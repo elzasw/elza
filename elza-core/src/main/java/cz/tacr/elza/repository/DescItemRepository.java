@@ -95,16 +95,16 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 
 
     /**
-     * Najde otevřené atributy s daným nodem a type.
-     * @param node nod uzlu
-     * @param descItemTypes možné typy atributu
-     * @return seznam atributů daného typu
-     */
-    @Query("SELECT i FROM arr_desc_item i WHERE i.node = ?1 AND i.deleteChange IS NULL AND i.itemType IN (?2)")
+	 * Najde otevřené atributy s daným nodem a type a načte je včetně hodnot
+	 * 
+	 * @param node
+	 *            nod uzlu
+	 * @param descItemTypes
+	 *            možné typy atributu
+	 * @return seznam atributů daného typu
+	 */
+	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data WHERE i.node = ?1 AND i.deleteChange IS NULL AND i.itemType IN (?2)")
     List<ArrDescItem> findOpenByNodeAndTypes(ArrNode node, Set<RulItemType> descItemTypes);
-
-    @Query("SELECT i FROM arr_desc_item i WHERE i.data IS NULL AND i.nodeId IN (?1) AND i.deleteChange IS NULL AND i.itemType IN (?2) AND (i.createChange < ?3 OR ?3 IS NULL) AND (i.deleteChange > ?3 OR i.deleteChange IS NULL)")
-    List<ArrDescItem> findUndefinedByNodeAndTypesAndChange(Collection<Integer> nodeIds, Collection<RulItemType> descItemTypes, ArrChange change);
 
     /**
      * Vyhledá všechny otevřené (nesmazené) hodnoty atributů podle objectId.
@@ -112,7 +112,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
      * @param descItemObjectId identifikátor hodnoty atributu
      * @return
      */
-    @Query("SELECT i FROM arr_desc_item i WHERE i.deleteChange IS NULL AND i.descItemObjectId = ?1")
+	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.descItemObjectId = ?1")
     List<ArrDescItem> findOpenDescItems(Integer descItemObjectId);
 
     /**
@@ -121,7 +121,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
      * @param descItemObjectId identifikátor hodnoty atributu
      * @return desc item
      */
-    @Query("SELECT i FROM arr_desc_item i WHERE i.deleteChange IS NULL AND i.descItemObjectId = ?1")
+	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.descItemObjectId = ?1")
     ArrDescItem findOpenDescItem(Integer descItemObjectId);
 
 
@@ -132,7 +132,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
      * @param node
      * @return
      */
-    @Query("SELECT i FROM arr_desc_item i WHERE i.deleteChange IS NULL AND i.itemType = ?1 AND i.node = ?2 AND i.position > ?3")
+	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.itemType = ?1 AND i.node = ?2 AND i.position > ?3")
     List<ArrDescItem> findOpenDescItemsAfterPosition(RulItemType itemType, ArrNode node, Integer position);
 
     /**
@@ -142,7 +142,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
      * @param node
      * @return
      */
-    @Query("SELECT i FROM arr_desc_item i WHERE i.deleteChange IS NULL AND i.itemType = ?1 AND i.node = ?2")
+	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.itemType = ?1 AND i.node = ?2")
     List<ArrDescItem> findOpenDescItems(RulItemType itemType, ArrNode node);
 
     /**
@@ -152,7 +152,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
      * @param node
      * @return
      */
-    @Query("SELECT i FROM arr_desc_item i WHERE i.deleteChange IS NULL AND i.itemType = ?1 AND i.node = ?2 AND i.position >= ?3 AND i.position <= ?4")
+	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.itemType = ?1 AND i.node = ?2 AND i.position >= ?3 AND i.position <= ?4")
     List<ArrDescItem> findOpenDescItemsBetweenPositions(RulItemType itemType, ArrNode node, Integer positionFrom, Integer positionTo);
 
     @Query("SELECT i FROM arr_desc_item i WHERE i.descItemObjectId = ?1 AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")

@@ -1421,7 +1421,8 @@ public class ArrangementController {
         Map<Integer, DescFormDataNewVO> forms = new HashMap<>();
 
         for (ArrNode arrNode : nodes) {
-            forms.put(arrNode.getNodeId(), getNodeFormData(arrNode.getNodeId(), versionId));
+			DescFormDataNewVO formData = formService.getNodeFormData(version, arrNode.getNodeId());
+			forms.put(arrNode.getNodeId(), formData);
         }
 
         return new NodeFormsDataVO(forms);

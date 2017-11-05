@@ -1,6 +1,5 @@
 package cz.tacr.elza.service;
 
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -1035,34 +1034,6 @@ public class ItemService implements InitializingBean {
         itemNew.setPosition(position);
 
         return itemNew;
-    }
-
-    /**
-	 * Kopíruje všechny property krom propert, které má zadaná třída.
-	 *
-	 * PPyt: tuto metodu mohla napsat a navrhnout k pouziti jen lama, nutno
-	 * odstranit, je to velmi nebezpecne a popira typovou kontrolu
-	 * 
-	 * @param from
-	 *            z objektu
-	 * @param to
-	 *            do objektu
-	 * @param aClass
-	 *            ignorovaná třída (subclass)
-	 * @param <T>
-	 *            ignorovaná třída (subclass)
-	 * @param <TYPE>
-	 *            kopírovaná třída
-	 */
-    public <T, TYPE extends T> void copyPropertiesSubclass(final TYPE from, final TYPE to, final Class<T> aClass) {
-        String[] ignoreProperties;
-        PropertyDescriptor[] descriptors = BeanUtils.getPropertyDescriptors(aClass);
-        ignoreProperties = new String[descriptors.length];
-        for (int i = 0; i < descriptors.length; i++) {
-            ignoreProperties[i] = descriptors[i].getName();
-        }
-
-        BeanUtils.copyProperties(from, to, ignoreProperties);
     }
 
     /**

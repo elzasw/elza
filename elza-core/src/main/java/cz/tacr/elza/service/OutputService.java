@@ -10,35 +10,17 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
-
-import com.fasterxml.jackson.databind.deser.Deserializers;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataJsonTable;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.factory.DescItemFactory;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-
-import cz.tacr.elza.repository.ItemSpecRepository;
-import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
@@ -60,13 +42,15 @@ import cz.tacr.elza.bulkaction.generator.result.UnitCountActionResult;
 import cz.tacr.elza.bulkaction.generator.result.UnitIdResult;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataJsonTable;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItemData;
-import cz.tacr.elza.domain.ArrItemInt;
-import cz.tacr.elza.domain.ArrItemJsonTable;
+import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrItemSettings;
-import cz.tacr.elza.domain.ArrItemString;
-import cz.tacr.elza.domain.ArrItemText;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrNodeRegister;
@@ -79,14 +63,17 @@ import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulActionRecommended;
+import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeAction;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.interfaces.IArrItemStringValue;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
+import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -94,6 +81,7 @@ import cz.tacr.elza.exception.codes.OutputCode;
 import cz.tacr.elza.repository.ActionRecommendedRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemSettingsRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeActionRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.NodeOutputRepository;
@@ -1185,33 +1173,18 @@ public class OutputService {
             throw new SystemException("Nelze provést verzovanou změnu v uzavřené verzi.");
         }
 
-        ArrOutputItem outputItemOrig;
-        if (outputItemDB == null) {
-            List<ArrOutputItem> descItems = outputItemRepository.findOpenOutputItems(outputItem.getDescItemObjectId());
-
-            if (descItems.size() > 1) {
-                throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
-            } else if (descItems.size() == 0) {
-                throw new SystemException("Hodnota neexistuje, pravděpodobně byla již smazána");
-            }
-
-            outputItemOrig = descItems.get(0);
-        } else {
-            outputItemOrig = outputItemDB;
-        }
-
         //itemService.loadData(outputItemOrig);
         ArrOutputItem outputItemUpdated;
 
         if (createNewVersion) {
 
-            Integer positionOrig = outputItemOrig.getPosition();
+			Integer positionOrig = outputItemDB.getPosition();
             Integer positionNew = outputItem.getPosition();
 
             // změnila pozice, budou se provádět posuny
             if (positionOrig != positionNew) {
 
-                int maxPosition = getMaxPosition(outputItemOrig);
+				int maxPosition = getMaxPosition(outputItemDB);
 
                 if (outputItem.getPosition() == null || (outputItem.getPosition() > maxPosition)) {
                     outputItem.setPosition(maxPosition + 1);
@@ -1222,36 +1195,33 @@ public class OutputService {
 
                 if (positionNew < positionOrig) {
                     diff = 1;
-                    outputItemsMove = findOutputItemsBetweenPosition(outputItemOrig, positionNew, positionOrig - 1);
+					outputItemsMove = findOutputItemsBetweenPosition(outputItemDB, positionNew, positionOrig - 1);
                 } else {
                     diff = -1;
-                    outputItemsMove = findOutputItemsBetweenPosition(outputItemOrig, positionOrig + 1, positionNew);
+					outputItemsMove = findOutputItemsBetweenPosition(outputItemDB, positionOrig + 1, positionNew);
                 }
 
                 itemService.copyItems(change, outputItemsMove, diff, version);
             }
 
             try {
-                ArrOutputItem descItemNew = new ArrOutputItem();
-                BeanUtils.copyProperties(outputItemOrig, descItemNew);
-                itemService.copyPropertiesSubclass(outputItem, descItemNew, ArrOutputItem.class);
-                descItemNew.setItemSpec(outputItem.getItemSpec());
+				ArrOutputItem descItemNew = new ArrOutputItem(outputItemDB);
 
-                outputItemOrig.setDeleteChange(change);
+				outputItemDB.setDeleteChange(change);
+				itemService.save(outputItemDB, true);
+
                 descItemNew.setItemId(null);
                 descItemNew.setCreateChange(change);
                 descItemNew.setPosition(positionNew);
                 descItemNew.setData(outputItem.getData());
-
-                itemService.save(outputItemOrig, true);
                 outputItemUpdated = itemService.save(descItemNew, true);
             } catch (Exception e) {
                 throw new SystemException(e);
             }
         } else {
-            itemService.copyPropertiesSubclass(outputItem, outputItemOrig, ArrOutputItem.class);
-            outputItemOrig.setItemSpec(outputItem.getItemSpec());
-            outputItemUpdated = itemService.save(outputItemOrig, false);
+			outputItemDB.setData(outputItem.getData());
+			outputItemDB.setItemSpec(outputItem.getItemSpec());
+			outputItemUpdated = itemService.save(outputItemDB, false);
         }
 
         // sockety

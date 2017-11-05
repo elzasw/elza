@@ -35,6 +35,11 @@ public class ArrOutputItem extends ArrItem {
     public ArrOutputItem() {
     }
 
+	public ArrOutputItem(ArrOutputItem srcItem) {
+		super(srcItem);
+		this.outputDefinition = srcItem.outputDefinition;
+	}
+
     @Override
     public ArrOutputDefinition getOutputDefinition() {
         return outputDefinition;

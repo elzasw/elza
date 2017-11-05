@@ -1195,16 +1195,18 @@ public class ClientFactoryVO {
      */
     public <T extends ArrItem> List<ItemGroupVO> createItemGroupsNew(final String ruleCode, final Integer fundId, final List<T> items) {
         Map<RulItemType, List<ArrItemVO>> itemByType = new HashMap<>();
+		if (items != null) {
         // vytvoření VO hodnot atributů
-        for (T item : items) {
-            List<ArrItemVO> itemList = itemByType.get(item.getItemType());
+			for (T item : items) {
+				List<ArrItemVO> itemList = itemByType.get(item.getItemType());
 
-            if (itemList == null) {
-                itemList = new ArrayList<>();
+				if (itemList == null) {
+					itemList = new ArrayList<>();
                 itemByType.put(item.getItemType(), itemList);
-            }
+				}
 
-            itemList.add(createDescItem(item));
+				itemList.add(createDescItem(item));
+			}
         }
 
         List<ItemTypeDescItemsLiteVO> itemTypeVOList = new ArrayList<>();
