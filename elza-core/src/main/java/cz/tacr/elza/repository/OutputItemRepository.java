@@ -37,7 +37,13 @@ public interface OutputItemRepository extends JpaRepository<ArrOutputItem, Integ
     @Query("SELECT i FROM arr_output_item i WHERE i.deleteChange IS NULL AND i.descItemObjectId = ?1")
     ArrOutputItem findOpenOutputItem(Integer descItemObjectId);
 
-    @Query("SELECT i FROM arr_output_item i WHERE i.deleteChange IS NULL AND i.descItemObjectId = :itemObjectId")
+	/**
+	 * Return list of output items with fetched data
+	 * 
+	 * @param descItemObjectId
+	 * @return
+	 */
+	@Query("SELECT i FROM arr_output_item i LEFT JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.descItemObjectId = :itemObjectId")
     List<ArrOutputItem> findOpenOutputItems(@Param("itemObjectId") Integer descItemObjectId);
 
     @Query("SELECT i FROM arr_output_item i WHERE i.deleteChange IS NULL AND i.itemType = :itemType AND i.outputDefinition = :outputDefinition")
@@ -66,10 +72,10 @@ public interface OutputItemRepository extends JpaRepository<ArrOutputItem, Integ
     @Modifying
     void deleteByOutputDefinition(ArrOutputDefinition outputDefinition);
 
-    @Query("SELECT i FROM arr_output_item i WHERE i.outputDefinition = :outputDefinition AND i.deleteChange IS NULL")
+	@Query("SELECT i FROM arr_output_item i LEFT JOIN FETCH i.data WHERE i.outputDefinition = :outputDefinition AND i.deleteChange IS NULL")
     List<ArrOutputItem> findByOutputAndDeleteChangeIsNull(@Param("outputDefinition") ArrOutputDefinition outputDefinition);
 
-    @Query("SELECT i FROM arr_output_item i WHERE i.outputDefinition = :outputDefinition AND i.createChange < :lockChange AND (i.deleteChange > :lockChange OR i.deleteChange IS NULL)")
+	@Query("SELECT i FROM arr_output_item i LEFT JOIN FETCH i.data WHERE i.outputDefinition = :outputDefinition AND i.createChange < :lockChange AND (i.deleteChange > :lockChange OR i.deleteChange IS NULL)")
     List<ArrOutputItem> findByOutputAndChange(@Param("outputDefinition") ArrOutputDefinition outputDefinition,
                                               @Param("lockChange") ArrChange lockChange);
 }

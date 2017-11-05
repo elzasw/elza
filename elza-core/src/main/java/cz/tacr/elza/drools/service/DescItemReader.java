@@ -65,6 +65,11 @@ public class DescItemReader {
 		Collection<ArrNode> nodes = items.values();
 		Set<Level> levels = items.keySet();
 
+		// handle empty key set
+		if (levels.size() == 0) {
+			return;
+		}
+
         Map<Integer, List<ArrDescItem>> descItemsMap = null;
 		Map<Integer, RestoredNode> cachedNodes = null;
 

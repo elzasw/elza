@@ -1054,7 +1054,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 		        .findByNodeIdsAndDeleteChangeIsNull(nodeIds);
         assertTrue(byNodesAndDeleteChangeIsNull.size() >= nodeIds.size());
         for (ArrDescItem descItem : byNodesAndDeleteChangeIsNull) {
-            if (descItem.getItemType().getItemTypeId().equals(typeVo.getId())) {
+			if (descItem.getItemTypeId().equals(typeVo.getId())) {
                 ArrDataText text = (ArrDataText) descItem.getData();
                 assertTrue(text.getValue().equals("nova_value"));
             }
