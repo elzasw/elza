@@ -17,7 +17,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.exception.SystemException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.springframework.beans.factory.BeanFactory;
@@ -35,23 +36,6 @@ import cz.tacr.elza.controller.vo.usage.OccurrenceType;
 import cz.tacr.elza.controller.vo.usage.OccurrenceVO;
 import cz.tacr.elza.controller.vo.usage.PartyVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RegCoordinates;
-import cz.tacr.elza.domain.RegExternalSystem;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RegVariantRecord;
-import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ExceptionUtils;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -959,8 +943,7 @@ public class RegistryService {
 			ParParty partyRel = rel.getRelation().getParty();
 			PartyVO partyVO = new PartyVO();
 			partyVO.setId(partyRel.getPartyId());
-            // TODO je tohle dobře? dle mého by zde mělo být jméno osoby přes kterou se váže
-			partyVO.setName(record.getRecord());
+			partyVO.setName(partyRel.getRecord().getRecord());
 
 			OccurrenceVO occurrenceVO = new OccurrenceVO(rel.getRelationEntityId(), OccurrenceType.PAR_RELATION_ENTITY);
 			List<OccurrenceVO> occurrences = new LinkedList<>();
@@ -1180,13 +1163,29 @@ public class RegistryService {
 
         final List<ArrDescItem> arrItems = descItemRepository.findArrItemByRecord(replaced);
         List<ArrNodeRegister> nodeRegisters = nodeRegisterRepository.findByRecordAndDeleteChangeIsNull(replaced);
-        final Set<Integer> funds = nodeRegisters.stream().map(arrNodeRegister -> arrNodeRegister.getNode().getFundId()).collect(Collectors.toSet());
 
-        final Collection<Integer> fundsArr = arrItems.stream().map(ArrDescItem::getFundId).collect(Collectors.toSet());
-        fundsArr.addAll(funds);
+        final Set<ArrFund> arrFunds = nodeRegisters.stream().map(arrNodeRegister -> arrNodeRegister.getNode().getFund()).collect(Collectors.toSet());
+        final Set<Integer> funds = arrFunds.stream().map(ArrFund::getFundId).collect(Collectors.toSet());
+
+        // ArrItems + nodeRegisters
+        final Collection<Integer> fundsAll = arrItems.stream().map(ArrDescItem::getFundId).collect(Collectors.toSet());
+        fundsAll.addAll(funds);
+
+        // fund to scopes
+        Map<Integer, Set<Integer>> fundIdsToScopes = fundsAll.stream().collect(Collectors.toMap(Function.identity(), scopeRepository::findIdsByFundId));
+
+        // Oprávnění
+        boolean isFundAdmin = userService.hasPermission(UsrPermission.Permission.FUND_ARR_ALL);
+        if (!isFundAdmin) {
+            fundsAll.forEach(i -> {
+                if (!userService.hasPermission(UsrPermission.Permission.FUND_ARR, i)) {
+                    throw new SystemException("Uživatel nemá oprávnění na AS.", BaseCode.INSUFFICIENT_PERMISSIONS).set("fundId", i);
+                }
+            });
+        }
 
 
-        final Map<Integer, ArrFundVersion> fundVersions = arrangementService.getOpenVersionsByFundIds(fundsArr).stream().collect(Collectors.toMap(ArrFundVersion::getFundId, Function.identity()));
+        final Map<Integer, ArrFundVersion> fundVersions = arrangementService.getOpenVersionsByFundIds(fundsAll).stream().collect(Collectors.toMap(ArrFundVersion::getFundId, Function.identity()));
 
         final ArrChange change = arrangementService.createChange(ArrChange.Type.REPLACE_REGISTER);
         arrItems.forEach(i -> {
@@ -1202,15 +1201,22 @@ public class RegistryService {
             im.setItemSpec(i.getItemSpec());
             im.setItemType(i.getItemType());
             im.setPosition(i.getPosition());
-            descriptionItemService.updateDescriptionItem(im, fundVersions.get(i.getFundId()), change, true);
+
+            Integer fundId = i.getFundId();
+            Set<Integer> fundScopes = fundIdsToScopes.get(fundId);
+            if (fundScopes == null) {
+                throw new SystemException("Pro AS neexistují žádné scope.", BaseCode.INVALID_STATE)
+                        .set("fundId", fundId);
+            } else {
+                if (!fundScopes.contains(replacement.getRegScope().getScopeId())) {
+                    throw new BusinessException("Nelze nahradit rejsříkové heslo v AS jelikož AS nemá scope rejstříku pomocí kterého nahrazujeme.", BaseCode.INVALID_STATE)
+                            .set("fundId", fundId)
+                            .set("scopeId", replacement.getRegScope().getScopeId());
+                }
+            }
+            descriptionItemService.updateDescriptionItem(im, fundVersions.get(fundId), change, true);
         });
 
-        final ParParty party = partyService.findParPartyByRecord(replaced);
-
-        if (party != null) {
-            party.setRecord(replacement);
-            partyService.saveParty(party);
-        }
 
         final RegistryService self = applicationContext.getBean(RegistryService.class);
         nodeRegisters.forEach(i -> {
@@ -1220,7 +1226,48 @@ public class RegistryService {
             arrNodeRegister.setCreateChange(i.getCreateChange());
             arrNodeRegister.setDeleteChange(i.getDeleteChange());
             arrNodeRegister.setNodeRegisterId(i.getNodeRegisterId());
-            self.updateRegisterLink(fundVersions.get(i.getNode().getFundId()).getFundVersionId(), i.getNodeId(), arrNodeRegister);
+
+            Integer fundId = i.getNode().getFundId();
+            Set<Integer> fundScopes = fundIdsToScopes.get(fundId);
+            if (fundScopes == null) {
+                throw new SystemException("Pro AS neexistují žádné scope.", BaseCode.INVALID_STATE)
+                        .set("fundId", fundId);
+            } else {
+                if (!fundScopes.contains(replacement.getRegScope().getScopeId())) {
+                    throw new BusinessException("Nelze nahradit rejsříkové heslo v AS jelikož AS nemá scope rejstříku pomocí kterého nahrazujeme.", BaseCode.INVALID_STATE)
+                            .set("fundId", fundId)
+                            .set("scopeId", replacement.getRegScope().getScopeId());
+                }
+            }
+            self.updateRegisterLink(fundVersions.get(fundId).getFundVersionId(), i.getNodeId(), arrNodeRegister);
+        });
+
+        // relace
+        final List<ParRelationEntity> byRecord = relationEntityRepository.findByRecord(replaced);
+
+        final Map<ParRelation, Map<Integer, ParRelationEntity>> relationWithEntities = new HashMap<>();
+        byRecord.forEach(i -> {
+            ParRelationEntity relationEntity = relationWithEntities.computeIfAbsent(i.getRelation(), n -> relationEntityRepository.findByRelation(n).stream()
+                    .collect(Collectors.toMap(ParRelationEntity::getRelationEntityId, Function.identity()))
+            ).get(i.getRelationEntityId());
+
+            relationEntity.setRecord(replacement);
+        });
+
+        // oprávnění relací
+        Set<ParParty> hasPermForParty = new HashSet<>();
+        boolean isScopeAdmin = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_WR_ALL);
+        relationWithEntities.forEach((rel, relEnt) -> {
+            if (!hasPermForParty.contains(rel.getParty())) {
+                Integer scopeId = rel.getParty().getRegScope().getScopeId();
+                if (!isScopeAdmin &&
+                        !userService.hasPermission(UsrPermission.Permission.REG_SCOPE_WR, scopeId)) {
+                    throw new SystemException("Uživatel nemá oprávnění na scope.", BaseCode.INSUFFICIENT_PERMISSIONS).set("scopeId", scopeId);
+
+                }
+                hasPermForParty.add(rel.getParty());
+            }
+            partyService.saveRelation(rel, relEnt.values());
         });
     }
 

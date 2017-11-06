@@ -16,6 +16,7 @@ import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -140,8 +141,15 @@ public class PartyService {
 
     @Autowired
     private ApplicationContext applicationContext;
+
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private ScopeRepository scopeRepository;
 
     /**
      * Najde osobu podle rejstříkového hesla.
@@ -1021,8 +1029,20 @@ public class PartyService {
         // Arr
         final List<ArrDescItem> arrItems = descItemRepository.findArrItemByParty(replaced);
 
-        final Collection<Integer> fundsArr = arrItems.stream().map(ArrDescItem::getFundId).collect(Collectors.toSet());
-        final Map<Integer, ArrFundVersion> fundVersions = arrangementService.getOpenVersionsByFundIds(fundsArr).stream().collect(Collectors.toMap(ArrFundVersion::getFundId, Function.identity()));
+        final Collection<Integer> funds = arrItems.stream().map(ArrDescItem::getFundId).collect(Collectors.toSet());
+        // Oprávnění
+        if (!userService.hasPermission(UsrPermission.Permission.FUND_ARR_ALL)) {
+            funds.forEach(i -> {
+                if (!userService.hasPermission(UsrPermission.Permission.FUND_ARR, i)) {
+                    throw new SystemException("Uživatel nemá oprávnění na AS.", BaseCode.INSUFFICIENT_PERMISSIONS).set("fundId", i);
+                }
+            });
+        }
+
+        // fund to scopes
+        Map<Integer, Set<Integer>> fundIdsToScopes = funds.stream().collect(Collectors.toMap(Function.identity(), scopeRepository::findIdsByFundId));
+
+        final Map<Integer, ArrFundVersion> fundVersions = arrangementService.getOpenVersionsByFundIds(funds).stream().collect(Collectors.toMap(ArrFundVersion::getFundId, Function.identity()));
 
         final ArrChange change = arrangementService.createChange(ArrChange.Type.REPLACE_PARTY);
         arrItems.forEach(i -> {
@@ -1038,33 +1058,38 @@ public class PartyService {
             im.setItemSpec(i.getItemSpec());
             im.setItemType(i.getItemType());
             im.setPosition(i.getPosition());
+
+
+            Integer fundId = i.getNode().getFundId();
+            Set<Integer> fundScopes = fundIdsToScopes.get(fundId);
+            if (fundScopes == null) {
+                throw new SystemException("Pro AS neexistují žádné scope.", BaseCode.INVALID_STATE)
+                        .set("fundId", fundId);
+            } else {
+                if (!fundScopes.contains(replacement.getRegScope().getScopeId())) {
+                    throw new BusinessException("Nelze nahradit osobu v AS jelikož AS nemá scope osoby pomcí které nahrazujeme.", BaseCode.INVALID_STATE)
+                            .set("fundId", fundId)
+                            .set("scopeId", replacement.getRegScope().getScopeId());
+                }
+            }
             descriptionItemService.updateDescriptionItem(im, fundVersions.get(i.getFundId()), change, true);
         });
-
 
         // creators
         final List<ParCreator> creatorsUsages = partyCreatorRepository.findByCreatorParty(replaced);
 
-        creatorsUsages.forEach(i -> i.setCreatorParty(replacement));
+
+        boolean isScopeAdmin = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_WR_ALL);
+        creatorsUsages.forEach(i -> {
+            // TODO Je tohle OK ?
+            if (!isScopeAdmin && !userService.hasPermission(UsrPermission.Permission.REG_SCOPE_WR, i.getParty().getRegScope().getScopeId())) {
+                throw new SystemException("Uživatel nemá oprávnění na scope.", BaseCode.INSUFFICIENT_PERMISSIONS).set("scopeId", i.getParty().getRegScope().getScopeId());
+            }
+            i.setCreatorParty(replacement);
+        });
         partyCreatorRepository.save(creatorsUsages);
-        final List<ParRelationEntity> byRecord = relationEntityRepository.findByRecord(replacement.getRecord());
-        final RegRecord replacementRecord = replacement.getRecord();
-        byRecord.forEach(i -> {
-            i.setRecord(replacementRecord);
-        });
 
-        // relations
-        final List<ParRelationEntity> byRecord1 = relationEntityRepository.findByRecord(replaced.getRecord());
-
-        final Map<ParRelation, Map<Integer, ParRelationEntity>> relationWithEntities = new HashMap<>();
-        byRecord1.forEach(i -> {
-            relationWithEntities.computeIfAbsent(i.getRelation(), n -> relationEntityRepository.findByRelation(n).stream()
-                    .collect(Collectors.toMap(ParRelationEntity::getRelationEntityId, Function.identity()))
-            ).get(i.getRelationEntityId()).setRecord(replacementRecord);
-        });
-
-        PartyService self = applicationContext.getBean(PartyService.class);
-
-        relationWithEntities.forEach((rel, relEnt) -> self.saveRelation(rel, relEnt.values()));
+        // Registry replace
+        registryService.replace(replaced.getRecord(), replacement.getRecord());
     }
 }

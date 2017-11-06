@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.exception.BusinessException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -735,7 +736,18 @@ public class RegistryController {
     public void replace(@PathVariable final Integer recordId, @RequestBody final Integer replacedId) {
         final RegRecord replaced = registryService.getRecord(recordId);
         final RegRecord replacement = registryService.getRecord(replacedId);
-        registryService.replace(replaced, replacement);
+
+        final ParParty replacedParty = partyService.findParPartyByRecord(replaced);
+
+        if (replacedParty != null) {
+            final ParParty replacementParty = partyService.findParPartyByRecord(replacement);
+            if (replacementParty == null) {
+                throw new BusinessException("Osobu lze nahradit pouze osobou.", BaseCode.INVALID_STATE);
+            }
+            partyService.replace(replacedParty, replacementParty);
+        } else {
+            registryService.replace(replaced, replacement);
+        }
     }
 
     /**
