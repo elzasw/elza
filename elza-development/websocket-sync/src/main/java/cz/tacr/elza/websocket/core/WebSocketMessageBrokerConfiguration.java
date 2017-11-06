@@ -1,10 +1,8 @@
 package cz.tacr.elza.websocket.core;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketSession;
@@ -15,9 +13,6 @@ import org.springframework.web.socket.handler.WebSocketHandlerDecorator;
 /**
  * Custom configuration is used to modify {@link #clientInboundChannelExecutor()}
  * and register StompExtensionMessageHandler after SimpleBrokerMessageHandler.
- *
- * @author Jaroslav Todt [jaroslav.todt@lightcomp.cz]
- * @since 25.8.2016
  */
 @Configuration
 public class WebSocketMessageBrokerConfiguration extends DelegatingWebSocketMessageBrokerConfiguration {
@@ -33,7 +28,7 @@ public class WebSocketMessageBrokerConfiguration extends DelegatingWebSocketMess
     public StompExtensionMessageHandler stompExtensionMessageHandler() {
         return new StompExtensionMessageHandler(clientInboundChannel(), clientOutboundChannel(), brokerChannel());
     }
-
+    
     @Override
     protected void configureWebSocketTransport(WebSocketTransportRegistration registration) {
         registration.addDecoratorFactory(

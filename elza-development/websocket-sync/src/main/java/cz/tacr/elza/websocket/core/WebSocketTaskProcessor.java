@@ -10,9 +10,6 @@ import org.springframework.messaging.support.MessageHandlingRunnable;
 /**
  * Task processor for one WebSocket. Thread of processor will wait for new tasks.
  * Incoming tasks are stored in queue. Add and block methods are thread-safe.
- *
- * @author Jaroslav Todt [jaroslav.todt@lightcomp.cz]
- * @since 25.8.2016
  */
 public class WebSocketTaskProcessor implements Runnable {
 

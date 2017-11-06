@@ -1,21 +1,16 @@
 package cz.tacr.elza.websocket.core;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.SubscribableChannel;
 import org.springframework.messaging.simp.broker.AbstractBrokerMessageHandler;
-import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
-import org.springframework.messaging.support.GenericMessage;
-import org.springframework.util.StringUtils;
 
-/**
- * @author Jaroslav Todt [jaroslav.todt@lightcomp.cz]
- * @since 31.8.2016
- */
 public class StompExtensionMessageHandler extends AbstractBrokerMessageHandler {
 
-	private static final byte[] EMPTY_PAYLOAD = new byte[0];
+	private static final Logger logger = LoggerFactory.getLogger(StompExtensionMessageHandler.class);
 
 	public StompExtensionMessageHandler(SubscribableChannel inboundChannel, MessageChannel outboundChannel,
 			SubscribableChannel brokerChannel) {
@@ -24,7 +19,6 @@ public class StompExtensionMessageHandler extends AbstractBrokerMessageHandler {
 
 	@Override
 	protected void handleMessageInternal(Message<?> message) {
-		System.out.println("$$$$$$$$$ handleMessageInternal");
 		StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 		if (accessor.getCommand() != null) {
 			handleStompMessage(accessor);
@@ -32,22 +26,6 @@ public class StompExtensionMessageHandler extends AbstractBrokerMessageHandler {
 	}
 
 	private void handleStompMessage(StompHeaderAccessor clientAccessor) {
-		if (StompCommand.SEND.equals(clientAccessor.getCommand())) {
-			if (StringUtils.hasLength(clientAccessor.getReceipt())) {
-				sendReceipt(clientAccessor);
-			}
-		}
-	}
-
-	private void sendReceipt(StompHeaderAccessor clientAccessor) {
-		StompHeaderAccessor accessor = StompHeaderAccessor.create(StompCommand.RECEIPT);
-		accessor.setSessionId(clientAccessor.getSessionId());
-		accessor.setUser(clientAccessor.getUser());
-		accessor.setReceiptId(clientAccessor.getReceipt());
-
-		// Send message
-//		getClientOutboundChannel().send(new GenericMessage<>(EMPTY_PAYLOAD, accessor.getMessageHeaders()));
-		getClientOutboundChannel().send(new GenericMessage<>("ahoj".getBytes(), accessor.getMessageHeaders()));
-		System.out.println("----------------------------------");
+		logger.info("incoming/outgoing stomp message, command:" + clientAccessor.getCommand());
 	}
 }

@@ -39,7 +39,7 @@
 			}
 
 			var receiptCallback = function (frame) {
-//				alert("Woohoo new receipt id: " + frame.headers["receipt-id"]);
+				alert("Woohoo new receipt id: " + frame.headers["receipt-id"] + ", body:" + frame.body);
 			}
 
 			var errorCallback = function (frame) {

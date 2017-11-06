@@ -12,14 +12,10 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.AbstractSubscribableChannel;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 
-/**
- * @author Jaroslav Todt [jaroslav.todt@lightcomp.cz]
- * @since 27.8.2016
- */
 @ControllerAdvice(annotations = WebSocketAwareController.class)
 public class MessageProcessingExceptionHandler {
 
-	private static final Logger LOG = LoggerFactory.getLogger(MessageProcessingExceptionHandler.class);
+	private static final Logger logger = LoggerFactory.getLogger(MessageProcessingExceptionHandler.class);
 
 	@Autowired
 	private transient WebSocketThreadPoolTaskExecutor executor;
@@ -44,7 +40,7 @@ public class MessageProcessingExceptionHandler {
 				.append(clientAccessor.getSessionId())
 				.append(". Sending STOMP ERROR to client.")
 				.toString();
-		LOG.error(message, e);
+		logger.error(message, e);
 	}
 
 	protected void handleException(Exception e, StompHeaderAccessor clientAccessor) {

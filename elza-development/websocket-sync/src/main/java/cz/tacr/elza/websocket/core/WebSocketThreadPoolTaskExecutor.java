@@ -11,10 +11,8 @@ import org.springframework.util.Assert;
 /**
  * Ensures order of incoming or outgoing messages (depends on applied channel) by creating one
  * thread per WebSocket connection. This algorithm is based on serial nature of WebSocket.
- *
- * @author Jaroslav Todt [jaroslav.todt@lightcomp.cz]
- * @since 24.8.2016
  */
+@SuppressWarnings("serial")
 public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
 
 	private final Map<String, WebSocketTaskProcessor> webSocketTaskProcessors = new HashMap<>();
