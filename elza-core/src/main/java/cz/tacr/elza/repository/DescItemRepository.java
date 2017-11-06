@@ -31,19 +31,19 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     @Query("SELECT di FROM arr_desc_item di JOIN FETCH di.node WHERE di.node in (?1) AND di.deleteChange IS NULL AND di.itemType = ?2")
     List<ArrDescItem> findOpenByNodesAndType(Collection<ArrNode> nodes, RulItemType type);
 
-    @Query("SELECT di FROM arr_desc_item di JOIN FETCH di.node WHERE di.node in (?1) AND di.deleteChange IS NULL AND di.itemType = ?2 AND di.itemSpec IN (?3)")
+	@Query("SELECT di FROM arr_desc_item di LEFT JOIN FETCH di.node WHERE di.node in (?1) AND di.deleteChange IS NULL AND di.itemType = ?2 AND di.itemSpec IN (?3)")
     List<ArrDescItem> findOpenByNodesAndTypeAndSpec(Collection<ArrNode> nodes, RulItemType type, Collection<RulItemSpec> specs);
 
-    @Query("SELECT di FROM arr_desc_item di JOIN FETCH di.node n WHERE n.fund = :fund AND di.deleteChange IS NULL AND di.itemType = :type")
+	@Query("SELECT di FROM arr_desc_item di LEFT JOIN FETCH di.node n WHERE n.fund = :fund AND di.deleteChange IS NULL AND di.itemType = :type")
     List<ArrDescItem> findOpenByFundAndType(@Param("fund") ArrFund fund,
                                             @Param("type") RulItemType type);
 
-    @Query("SELECT di FROM arr_desc_item di JOIN FETCH di.node n WHERE n.fund = :fund AND di.deleteChange IS NULL AND di.itemType = :type AND di.itemSpec IN :specs")
+	@Query("SELECT di FROM arr_desc_item di LEFT JOIN FETCH di.node n WHERE n.fund = :fund AND di.deleteChange IS NULL AND di.itemType = :type AND di.itemSpec IN :specs")
     List<ArrDescItem> findOpenByFundAndTypeAndSpec(@Param("fund") ArrFund fund,
                                                    @Param("type") RulItemType type,
                                                    @Param("specs") Collection<RulItemSpec> specs);
 
-    @Query("SELECT i FROM arr_desc_item i WHERE i.node in (?1) AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
+	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.node n WHERE i.node in (?1) AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
     List<ArrDescItem> findByNodesAndDeleteChange(Collection<ArrNode> nodes, ArrChange deleteChange);
 
 
