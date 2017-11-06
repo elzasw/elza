@@ -551,7 +551,7 @@ class ArrPage extends ArrParentPage {
         this.dispatch(modalDialogShow(this, i18n('visiblePolicy.form.title'), form));
     }
 
-    handleSetVisiblePolicy(node, versionId, data) {
+    handleSetVisiblePolicy(data) {
         const {node, versionId, dispatch} = this.props;
         const mapIds = {};
         const {records, rules, nodeExtensions, ...others} = data;
