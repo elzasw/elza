@@ -1081,7 +1081,6 @@ public class PartyService {
 
         boolean isScopeAdmin = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_WR_ALL);
         creatorsUsages.forEach(i -> {
-            // TODO Je tohle OK ?
             if (!isScopeAdmin && !userService.hasPermission(UsrPermission.Permission.REG_SCOPE_WR, i.getParty().getRegScope().getScopeId())) {
                 throw new SystemException("Uživatel nemá oprávnění na scope.", BaseCode.INSUFFICIENT_PERMISSIONS).set("scopeId", i.getParty().getRegScope().getScopeId());
             }
