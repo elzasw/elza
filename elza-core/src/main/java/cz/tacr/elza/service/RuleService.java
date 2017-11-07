@@ -1,5 +1,6 @@
 package cz.tacr.elza.service;
 
+import com.google.common.collect.Lists;
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
@@ -1005,6 +1006,6 @@ public class RuleService {
             toAdd.forEach(i -> arrangementCacheService.createNodeExtension(nodeId, i));
         }
 
-        deleteConformityInfo(versionId, Collections.singleton(nodeId), Collections.singleton(RelatedNodeDirection.DESCENDANTS));
+        deleteConformityInfo(versionId, Collections.singleton(nodeId), Lists.newArrayList(RelatedNodeDirection.NODE, RelatedNodeDirection.DESCENDANTS));
     }
 }
