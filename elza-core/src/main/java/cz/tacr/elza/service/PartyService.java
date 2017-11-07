@@ -1028,52 +1028,55 @@ public class PartyService {
 
         // Arr
         final List<ArrDescItem> arrItems = descItemRepository.findArrItemByParty(replaced);
+        if (!arrItems.isEmpty()) {
 
-        final Collection<Integer> funds = arrItems.stream().map(ArrDescItem::getFundId).collect(Collectors.toSet());
-        // Oprávnění
-        if (!userService.hasPermission(UsrPermission.Permission.FUND_ARR_ALL)) {
-            funds.forEach(i -> {
-                if (!userService.hasPermission(UsrPermission.Permission.FUND_ARR, i)) {
-                    throw new SystemException("Uživatel nemá oprávnění na AS.", BaseCode.INSUFFICIENT_PERMISSIONS).set("fundId", i);
+            final Collection<Integer> funds = arrItems.stream().map(ArrDescItem::getFundId).collect(Collectors.toSet());
+            // Oprávnění
+            if (!userService.hasPermission(UsrPermission.Permission.FUND_ARR_ALL)) {
+                funds.forEach(i -> {
+                    if (!userService.hasPermission(UsrPermission.Permission.FUND_ARR, i)) {
+                        throw new SystemException("Uživatel nemá oprávnění na AS.", BaseCode.INSUFFICIENT_PERMISSIONS).set("fundId", i);
+                    }
+                });
+            }
+
+            final Map<Integer, ArrFundVersion> fundVersions = arrangementService.getOpenVersionsByFundIds(funds).stream()
+                    .collect(Collectors.toMap(ArrFundVersion::getFundId, Function.identity()));
+            // fund to scopes
+            final Map<Integer, Set<Integer>> fundIdsToScopes = funds.stream()
+                    .collect(Collectors.toMap(Function.identity(), scopeRepository::findIdsByFundId));
+
+            final ArrChange change = arrangementService.createChange(ArrChange.Type.REPLACE_PARTY);
+            arrItems.forEach(i -> {
+                final ArrDataPartyRef data = new ArrDataPartyRef();
+                data.setParty(replacement);
+                ArrDescItem im = new ArrDescItem();
+                im.setData(data);
+                im.setNode(i.getNode());
+                im.setCreateChange(i.getCreateChange());
+                im.setDeleteChange(i.getDeleteChange());
+                im.setDescItemObjectId(i.getDescItemObjectId());
+                im.setItemId(i.getDescItemObjectId());
+                im.setItemSpec(i.getItemSpec());
+                im.setItemType(i.getItemType());
+                im.setPosition(i.getPosition());
+
+
+                Integer fundId = i.getNode().getFundId();
+                Set<Integer> fundScopes = fundIdsToScopes.get(fundId);
+                if (fundScopes == null) {
+                    throw new SystemException("Pro AS neexistují žádné scope.", BaseCode.INVALID_STATE)
+                            .set("fundId", fundId);
+                } else {
+                    if (!fundScopes.contains(replacement.getRegScope().getScopeId())) {
+                        throw new BusinessException("Nelze nahradit osobu v AS jelikož AS nemá scope osoby pomcí které nahrazujeme.", BaseCode.INVALID_STATE)
+                                .set("fundId", fundId)
+                                .set("scopeId", replacement.getRegScope().getScopeId());
+                    }
                 }
+                descriptionItemService.updateDescriptionItem(im, fundVersions.get(i.getFundId()), change, true);
             });
         }
-
-        // fund to scopes
-        Map<Integer, Set<Integer>> fundIdsToScopes = funds.stream().collect(Collectors.toMap(Function.identity(), scopeRepository::findIdsByFundId));
-
-        final Map<Integer, ArrFundVersion> fundVersions = arrangementService.getOpenVersionsByFundIds(funds).stream().collect(Collectors.toMap(ArrFundVersion::getFundId, Function.identity()));
-
-        final ArrChange change = arrangementService.createChange(ArrChange.Type.REPLACE_PARTY);
-        arrItems.forEach(i -> {
-            final ArrDataPartyRef data = new ArrDataPartyRef();
-            data.setParty(replacement);
-            ArrDescItem im = new ArrDescItem();
-            im.setData(data);
-            im.setNode(i.getNode());
-            im.setCreateChange(i.getCreateChange());
-            im.setDeleteChange(i.getDeleteChange());
-            im.setDescItemObjectId(i.getDescItemObjectId());
-            im.setItemId(i.getDescItemObjectId());
-            im.setItemSpec(i.getItemSpec());
-            im.setItemType(i.getItemType());
-            im.setPosition(i.getPosition());
-
-
-            Integer fundId = i.getNode().getFundId();
-            Set<Integer> fundScopes = fundIdsToScopes.get(fundId);
-            if (fundScopes == null) {
-                throw new SystemException("Pro AS neexistují žádné scope.", BaseCode.INVALID_STATE)
-                        .set("fundId", fundId);
-            } else {
-                if (!fundScopes.contains(replacement.getRegScope().getScopeId())) {
-                    throw new BusinessException("Nelze nahradit osobu v AS jelikož AS nemá scope osoby pomcí které nahrazujeme.", BaseCode.INVALID_STATE)
-                            .set("fundId", fundId)
-                            .set("scopeId", replacement.getRegScope().getScopeId());
-                }
-            }
-            descriptionItemService.updateDescriptionItem(im, fundVersions.get(i.getFundId()), change, true);
-        });
 
         // creators
         final List<ParCreator> creatorsUsages = partyCreatorRepository.findByCreatorParty(replaced);
@@ -1081,7 +1084,6 @@ public class PartyService {
 
         boolean isScopeAdmin = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_WR_ALL);
         creatorsUsages.forEach(i -> {
-            // TODO Je tohle OK ?
             if (!isScopeAdmin && !userService.hasPermission(UsrPermission.Permission.REG_SCOPE_WR, i.getParty().getRegScope().getScopeId())) {
                 throw new SystemException("Uživatel nemá oprávnění na scope.", BaseCode.INSUFFICIENT_PERMISSIONS).set("scopeId", i.getParty().getRegScope().getScopeId());
             }

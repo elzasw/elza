@@ -1043,11 +1043,14 @@ public class RegistryService {
 			});
 		}
 
-		List<ArrFundVersion> fundVersions = fundVersionRepository.findByFundIdsAndLockChangeIsNull(fundIdToNodeIdsMap.keySet());
-		return fundVersions.stream().map(v -> {
-			return createFundVO(nodeIdToNodeRegisters, fundIdToNodeIdsMap, dataIdToArrDataMap, nodeIdToDataIdsMap, v);
+		if (fundIdToNodeIdsMap.keySet().isEmpty()) {
+		    return Collections.emptyList();
+        }
 
-		}).collect(Collectors.toList());
+		List<ArrFundVersion> fundVersions = fundVersionRepository.findByFundIdsAndLockChangeIsNull(fundIdToNodeIdsMap.keySet());
+		return fundVersions.stream()
+                .map(v -> createFundVO(nodeIdToNodeRegisters, fundIdToNodeIdsMap, dataIdToArrDataMap, nodeIdToDataIdsMap, v))
+                .collect(Collectors.toList());
 	}
 
 	/**
@@ -1185,7 +1188,13 @@ public class RegistryService {
         }
 
 
-        final Map<Integer, ArrFundVersion> fundVersions = arrangementService.getOpenVersionsByFundIds(fundsAll).stream().collect(Collectors.toMap(ArrFundVersion::getFundId, Function.identity()));
+        final Map<Integer, ArrFundVersion> fundVersions;
+        if (fundsAll.isEmpty()) {
+            fundVersions = Collections.emptyMap();
+        } else {
+            fundVersions = arrangementService.getOpenVersionsByFundIds(fundsAll).stream()
+                    .collect(Collectors.toMap(ArrFundVersion::getFundId, Function.identity()));
+        }
 
         final ArrChange change = arrangementService.createChange(ArrChange.Type.REPLACE_REGISTER);
         arrItems.forEach(i -> {
