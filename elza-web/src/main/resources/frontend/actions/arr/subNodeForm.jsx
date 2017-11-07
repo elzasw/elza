@@ -261,7 +261,7 @@ class ItemFormActions {
                         console.log("formValueStore",json, routingKey, valueLocation);
                         let timeStart = Date.now();
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'UPDATE'));
-                        dispatch(this._fundSubNodeUpdate(versionId, refTables.rulDataTypes, refTables.descItemTypes, json));
+                        dispatch(this._fundSubNodeUpdate(versionId, refTables, json));
                         dispatch(statusSaved());
                         let timeEnd = Date.now();
                         console.log("form value store","response time", timeEnd - timeStart, "request + response time", timeEnd - requestStart);
@@ -290,13 +290,12 @@ class ItemFormActions {
             }
         }
     }
-    _fundSubNodeUpdate(versionId, rulDataTypes, refDescItemTypes, data){
+    _fundSubNodeUpdate(versionId, refTables, data){
         return {
             type: types.FUND_SUBNODE_UPDATE,
-            data: data,
-            versionId: versionId,
-            rulDataTypes: rulDataTypes,
-            refDescItemTypes: refDescItemTypes
+            data,
+            versionId,
+            refTables
         }
     }
 
