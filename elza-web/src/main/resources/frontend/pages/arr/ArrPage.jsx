@@ -547,7 +547,10 @@ class ArrPage extends ArrParentPage {
         if (!node) {
             return;
         }
-        var form = <NodeSettingsForm nodeId={node.selectedSubNodeId} fundVersionId={activeFund.versionId} onSubmitForm={this.handleSetVisiblePolicy} />;
+        var form = <NodeSettingsForm nodeId={node.selectedSubNodeId} fundVersionId={activeFund.versionId}
+                                 onSubmitForm={this.handleSetVisiblePolicy}
+                                 onSubmitSuccess={() => this.props.dispatch(modalDialogHide())}
+        />;
         this.dispatch(modalDialogShow(this, i18n('visiblePolicy.form.title'), form));
     }
 
@@ -566,7 +569,6 @@ class ArrPage extends ArrParentPage {
 
         return WebApi.setVisiblePolicy(node.selectedSubNodeId, versionId, mapIds, false, nodeExtensionsIds).then(() => {
             dispatch(setVisiblePolicyReceive(node.selectedSubNodeId, versionId));
-            dispatch(modalDialogHide());
         });
     }
 

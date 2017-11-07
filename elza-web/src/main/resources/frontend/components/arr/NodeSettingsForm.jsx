@@ -134,7 +134,7 @@ class NodeSettingsForm extends AbstractReactComponent {
                     </Row>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit">{i18n('visiblePolicy.action.save')}</Button>
+                    <Button type="submit" disabled={submitting}>{i18n('visiblePolicy.action.save')}</Button>
                     <Button bsStyle="link" disabled={submitting} onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </Form>

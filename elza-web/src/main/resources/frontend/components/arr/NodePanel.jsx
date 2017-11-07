@@ -290,7 +290,9 @@ class NodePanel extends AbstractReactComponent {
 
     handleVisiblePolicy() {
         const {node, versionId} = this.props;
-        const form = <NodeSettingsForm nodeId={node.selectedSubNodeId} fundVersionId={versionId} onSubmit={this.handleSetVisiblePolicy} />;
+        const form = <NodeSettingsForm nodeId={node.selectedSubNodeId} fundVersionId={versionId} onSubmit={this.handleSetVisiblePolicy}
+                                       onSubmitSuccess={() => this.props.dispatch(modalDialogHide())}
+        />;
         this.dispatch(modalDialogShow(this, i18n('visiblePolicy.form.title'), form));
     }
 
