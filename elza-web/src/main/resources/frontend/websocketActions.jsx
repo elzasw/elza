@@ -418,6 +418,10 @@ function processEvents(values) {
                 deleteNodes(value);
                 break;
 
+            case 'FUND_EXTENSION_CHANGE':
+                fundExtensionChange(value);
+                break;
+
             default:
                 console.warn("Nedefinovaný typ eventu: " + value.eventType, value);
                 break;
@@ -463,6 +467,10 @@ function changeRequestItemQueueChange(value) {
 
 function deleteNodes(value) {
     store.dispatch(nodesDelete(value.versionId, value.entityIds))
+}
+
+function fundExtensionChange(value) {
+    store.dispatch(changeNodes(value.versionId, [value.nodeId]))
 }
 
 function approveVersionChange(value) {
