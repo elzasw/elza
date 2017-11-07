@@ -46,7 +46,7 @@ class NodeSettingsForm extends AbstractReactComponent {
     render() {
         const {activeView} = this.state;
 
-        const {fields: {records, rules, nodeExtensions}, handleSubmit, onClose, nodeId, fundVersionId, visiblePolicy, visiblePolicyTypes, arrRegion} = this.props;
+        const {fields: {records, rules, nodeExtensions}, handleSubmit, onClose, nodeId, fundVersionId, submitting, visiblePolicy, visiblePolicyTypes, arrRegion} = this.props;
         if (!visiblePolicy.fetched) {
             return <Modal.Body>
                 <Loading />
@@ -135,7 +135,7 @@ class NodeSettingsForm extends AbstractReactComponent {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit">{i18n('visiblePolicy.action.save')}</Button>
-                    <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                    <Button bsStyle="link" disabled={submitting} onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </Form>
         )

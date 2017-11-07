@@ -566,6 +566,7 @@ class ArrPage extends ArrParentPage {
 
         return WebApi.setVisiblePolicy(node.selectedSubNodeId, versionId, mapIds, false, nodeExtensionsIds).then(() => {
             dispatch(setVisiblePolicyReceive(node.selectedSubNodeId, versionId));
+            dispatch(modalDialogHide());
         });
     }
 
