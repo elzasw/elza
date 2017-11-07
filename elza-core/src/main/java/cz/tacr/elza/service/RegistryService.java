@@ -1188,7 +1188,13 @@ public class RegistryService {
         }
 
 
-        final Map<Integer, ArrFundVersion> fundVersions = arrangementService.getOpenVersionsByFundIds(fundsAll).stream().collect(Collectors.toMap(ArrFundVersion::getFundId, Function.identity()));
+        final Map<Integer, ArrFundVersion> fundVersions;
+        if (fundsAll.isEmpty()) {
+            fundVersions = Collections.emptyMap();
+        } else {
+            fundVersions = arrangementService.getOpenVersionsByFundIds(fundsAll).stream()
+                    .collect(Collectors.toMap(ArrFundVersion::getFundId, Function.identity()));
+        }
 
         final ArrChange change = arrangementService.createChange(ArrChange.Type.REPLACE_REGISTER);
         arrItems.forEach(i -> {
