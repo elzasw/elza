@@ -1043,11 +1043,14 @@ public class RegistryService {
 			});
 		}
 
-		List<ArrFundVersion> fundVersions = fundVersionRepository.findByFundIdsAndLockChangeIsNull(fundIdToNodeIdsMap.keySet());
-		return fundVersions.stream().map(v -> {
-			return createFundVO(nodeIdToNodeRegisters, fundIdToNodeIdsMap, dataIdToArrDataMap, nodeIdToDataIdsMap, v);
+		if (fundIdToNodeIdsMap.keySet().isEmpty()) {
+		    return Collections.emptyList();
+        }
 
-		}).collect(Collectors.toList());
+		List<ArrFundVersion> fundVersions = fundVersionRepository.findByFundIdsAndLockChangeIsNull(fundIdToNodeIdsMap.keySet());
+		return fundVersions.stream()
+                .map(v -> createFundVO(nodeIdToNodeRegisters, fundIdToNodeIdsMap, dataIdToArrDataMap, nodeIdToDataIdsMap, v))
+                .collect(Collectors.toList());
 	}
 
 	/**
