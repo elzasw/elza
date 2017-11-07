@@ -496,7 +496,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                 fetched: true,
                 dirty: false,
                 versionId: action.versionId,
-                nodeId: action.nodeId,
+                nodeId: action.data.node.id,
                 needClean: false,
             };
 
