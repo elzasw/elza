@@ -181,12 +181,15 @@ class AdminUserPage extends AbstractReactComponent{
             </div>
         )
 
-        const centerPanel = (
-            <UserDetail
-                userDetail={user.userDetail}
-                userCount={user.users.length}
-            />
-        )
+        let centerPanel;
+        if (user.userDetail.id) {
+            centerPanel = (
+                <UserDetail
+                    userDetail={user.userDetail}
+                    userCount={user.users.length}
+                />
+            )
+        }
 
         return (
             <PageLayout
