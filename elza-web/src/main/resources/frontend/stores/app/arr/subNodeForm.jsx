@@ -1,7 +1,7 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import {i18n} from 'components/shared';
 import {indexById} from 'stores/app/utils.jsx'
-import {createDescItemFromDb, getItemType, updateFormData, createDescItem, consolidateDescItems} from './subNodeFormUtils.jsx'
+import {createDescItemFromDb, getItemType, updateFormData, createDescItem, consolidateDescItems, mergeAfterUpdate} from './subNodeFormUtils.jsx'
 import {validateInt, validateDouble, validateCoordinatePoint} from 'components/validate.jsx'
 import {getMapFromList} from 'stores/app/utils.jsx'
 import {valuesEquals} from 'components/Utils.jsx'
@@ -486,48 +486,22 @@ export default function subNodeForm(state = initialState, action = {}) {
                 result.data = null;
                 result.formData = null;
             }
-            console.log(action.data);
             updateFormData(result, action.data, refTypesMap);
-
             return result;
         case types.FUND_SUBNODE_UPDATE:
-            let dateStart = Date.now();
-            console.log("subnode update start", dateStart)
-            var dataTypeMap = getMapFromList(action.rulDataTypes.items)
-            var descItemTypes = action.refDescItemTypes.items.map(type => {
-                console.log("desc item types");
-                return {
-                    ...type,
-                    dataType: dataTypeMap[type.dataTypeId],
-                    descItemSpecsMap: getMapFromList(type.descItemSpecs),
-                    columnsDefinitionMap: type.columnsDefinition ? getMapFromList(type.columnsDefinition, "code") : null,
-                }
-            })
-            var refTypesMap = getMapFromList(descItemTypes)
+            
             var result = {
                 ...state,
                 isFetching: false,
                 fetched: true,
                 dirty: false,
                 versionId: action.versionId,
-                nodeId: action.nodeId,
+                nodeId: action.data.node.id,
                 needClean: false,
             };
-            if (action.needClean) {
-                result.data = null;
-                result.formData = null;
-            }
-            let data = {
-                "typeGroups": state.data.typeGroups,
-                "groups": action.data.groups,
-                "parent": action.data.node
-            }
 
-            console.log("result: ",result,"action: ",action,"state: ",state,"data: ",data);
-            updateFormData(result, data, refTypesMap, action.data.item);
-            let dateEnd = Date.now();
-            let dateDiff = dateEnd - dateStart;
-            console.log("subnode update end", dateEnd, "diff from start", dateDiff);
+            mergeAfterUpdate(result, action.data, action.refTables); // merges result with data from action
+
             return result;
 
         case types.CHANGE_FUND_RECORD:
