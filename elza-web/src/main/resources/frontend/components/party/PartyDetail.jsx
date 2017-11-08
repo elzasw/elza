@@ -330,7 +330,7 @@ class PartyDetail extends AbstractReactComponent {
                 </div>
                 <div className="party-type">
                     {party.partyType.description}
-                    {party.scopeId && <span className="scope-label">
+                    {party.record.scopeId && <span className="scope-label">
                         {this.getScopeLabel(partyDetail.data.record.scopeId, scopes)}
                     </span>}
                 </div>
