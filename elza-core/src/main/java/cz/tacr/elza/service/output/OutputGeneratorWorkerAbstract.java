@@ -267,7 +267,7 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
 
     protected File getTemplatesDir(final RulTemplate rulTemplate) {
         final String rulTemplateDirectory = rulTemplate.getDirectory();
-        final File templateDir = Paths.get(outputGeneratorService.getTemplatesDir(rulTemplate.getPackage().getCode(), rulTemplate.getPackage().getCode()), rulTemplateDirectory).toFile();
+        final File templateDir = Paths.get(outputGeneratorService.getTemplatesDir(rulTemplate.getPackage().getCode(), rulTemplate.getOutputType().getRuleSet().getCode()), rulTemplateDirectory).toFile();
         Assert.isTrue(templateDir.exists() && templateDir.isDirectory(), "Nepodařilo se najít adresář s definicí šablony: " + templateDir.getAbsolutePath());
         return templateDir;
     }
