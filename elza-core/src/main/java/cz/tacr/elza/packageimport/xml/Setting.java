@@ -61,7 +61,7 @@ public abstract class Setting {
     }
 
     public boolean isSettingsFor(UISettings uiSetting) {
-        return settingsType == uiSetting.getSettingsType()
+        return settingsType.equals(uiSetting.getSettingsType())
                 && entityType == uiSetting.getEntityType()
                 && Objects.equals(entityId, uiSetting.getEntityId());
     }

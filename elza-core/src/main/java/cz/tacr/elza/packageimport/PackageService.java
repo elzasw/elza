@@ -42,6 +42,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
@@ -536,8 +537,9 @@ public class PackageService {
             // NASTAVENÍ -----------------------------------------------------------------------------------------------
 
             Settings settings = PackageUtils.convertXmlStreamToObject(Settings.class, mapEntry.get(SETTING_XML));
-
-            processSettings(settings, rulPackage, null, null);
+            if (settings != null) {
+                processSettings(settings, rulPackage, null, null);
+            }
 
             // END NASTAVENÍ -------------------------------------------------------------------------------------------
 
@@ -646,11 +648,18 @@ public class PackageService {
 
     /**
      * Zpracování nastavení.
+     *
+     * @param newSettings not-null
+     * @param rulPackage not-null
+     * @param ruleSet required for settings of type RULE
+     * @param rulItemTypes required for settings of type ITEM_TYPE
      */
     private void processSettings(final Settings newSettings,
                                  final RulPackage rulPackage,
                                  final RulRuleSet ruleSet,
                                  final List<RulItemType> rulItemTypes) {
+        Validate.notNull(newSettings);
+        Validate.notNull(rulPackage);
 
         List<UISettings> allUiSettings = settingsRepository.findAll();
 
@@ -696,7 +705,7 @@ public class PackageService {
                     uiSett = new UISettings();
                 }
 
-                convertUISettings(rulPackage, sett, uiSett, ruleSet, rulItemTypes);
+                copySettings(sett, uiSett, rulPackage, ruleSet, rulItemTypes);
 
                 settingsRepository.save(uiSett);
             }
@@ -705,36 +714,43 @@ public class PackageService {
         settingsRepository.delete(currUiSettings);
     }
 
-    /**
-     * Konverze VO -> DO.
-     */
-    private void convertUISettings(final RulPackage rulPackage, final Setting setting,
-                                   final UISettings uiSetting,
-                                   final RulRuleSet ruleSet,
-                                   final List<RulItemType> rulItemTypes) {
-        uiSetting.setRulPackage(rulPackage);
-        uiSetting.setSettingsType(setting.getSettingsType());
-        uiSetting.setEntityType(setting.getEntityType());
-        uiSetting.setValue(setting.getValue());
+    private void copySettings(final Setting source,
+                              final UISettings target,
+                              final RulPackage rulPackage,
+                              final RulRuleSet ruleSet,
+                              final List<RulItemType> rulItemTypes) {
 
-        EntityType entityType = setting.getEntityType();
+        Validate.notNull(source);
+        Validate.notNull(target);
+        Validate.notNull(rulPackage);
+
+        EntityType entityType = source.getEntityType();
+
+        // common properties
+        target.setRulPackage(rulPackage);
+        target.setSettingsType(source.getSettingsType());
+        target.setEntityType(entityType);
+        target.setValue(source.getValue());
+
+        // rule
         if (entityType == EntityType.RULE) {
-            uiSetting.setEntityId(ruleSet.getRuleSetId());
-
-        } else if (entityType == EntityType.ITEM_TYPE) {
-            Validate.isTrue(setting.getClass() == SettingFavoriteItemSpecs.class);
-
-            String code = ((SettingFavoriteItemSpecs) setting).getCode();
-            setItemTypeToSetting(rulItemTypes, code, uiSetting);
+            target.setEntityId(ruleSet.getRuleSetId());
+            return;
         }
-    }
 
-    private void setItemTypeToSetting(final List<RulItemType> rulItemTypes, final String code, final UISettings uiSetting) {
-        RulItemType entity = findEntity(rulItemTypes, code, RulItemType::getCode);
-        if (entity == null) {
-            throw new BusinessException("RulItemType s code=" + code + " nenalezen", PackageCode.CODE_NOT_FOUND).set("code", code).set("file", SETTING_XML);
+        // item type
+        if (entityType == EntityType.ITEM_TYPE) {
+            SettingFavoriteItemSpecs sfiSpecs = (SettingFavoriteItemSpecs) source;
+            String sfiSpecsCode = sfiSpecs.getCode();
+            for (RulItemType type : rulItemTypes) {
+                if (type.getCode().equals(sfiSpecsCode)) {
+                    target.setEntityId(type.getItemTypeId());
+                    return;
+                }
+            }
+            throw new BusinessException("RulItemType s code=" + sfiSpecsCode + " nenalezen", PackageCode.CODE_NOT_FOUND)
+                    .set("code", sfiSpecsCode).set("file", SETTING_XML);
         }
-        uiSetting.setEntityId(entity.getItemTypeId());
     }
 
     /**
@@ -2420,6 +2436,7 @@ public class PackageService {
      * @param code kód balíčku
      * @return výsledný soubor
      */
+    @Transactional(readOnly = true)
     public File exportPackage(final String code) {
         RulPackage rulPackage = packageRepository.findTopByCode(code);
 
