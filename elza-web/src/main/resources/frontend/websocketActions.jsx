@@ -88,8 +88,6 @@ stompConnect();
 class ws {
     constructor() {
         this.nextReceiptId = 0;
-        this.receiptSuccessCallbacks = {}; // mapa id receipt na callback funkci
-        this.receiptErrorCallbacks = {}; // mapa id receipt na error callback funkci
         this.pendingRequests = {};
     }
 
@@ -104,20 +102,22 @@ class ws {
     // Funkce
     send = (url, data, successCallback, errorCallback) => {
         const headers = {};
-        let nextRequest = {
-            url: url,
-            headers: headers,
-            data: data,
-            onSuccess: successCallback,
-            onError: errorCallback
-        }
+
         if (successCallback || errorCallback) {
             headers.receipt = this.nextReceiptId;
-            this.receiptSuccessCallbacks[this.nextReceiptId] = successCallback;
-            this.receiptErrorCallbacks[this.nextReceiptId] = errorCallback;
-            this.nextReceiptId++;
+
+            let nextRequest = {
+                url: url,
+                headers: headers,
+                data: data,
+                onSuccess: successCallback,
+                onError: errorCallback
+            }
+
             this.pendingRequests[this.nextReceiptId] = nextRequest;
+            this.nextReceiptId++;
         }
+
         stompClient.send(url, headers, data);
     };
 
@@ -132,20 +132,17 @@ class ws {
             const receiptId = typeof receiptIdStr === "number" ? receiptIdStr : parseInt(receiptIdStr);
 
             const bodyObj = JSON.parse(body);
-            console.log("__WESOCKET", bodyObj, this.receiptSuccessCallbacks);
-            if (bodyObj && bodyObj.errorMessage) {  // error
-                if (this.receiptErrorCallbacks[receiptId]) {
-                    this.receiptErrorCallbacks[receiptId](bodyObj);
-                }
-            } else {    // succes
-                if (this.receiptSuccessCallbacks[receiptId]) {
-                    this.receiptSuccessCallbacks[receiptId](bodyObj);
-                }
-            }
+            console.info("WEBSOCKET MESSAGE:", bodyObj, "| Remaining requests:", this.pendingRequests);
 
-            // Smazání callback z pole
-            this.receiptSuccessCallbacks[receiptId] && delete this.receiptSuccessCallbacks[receiptId];
-            this.receiptErrorCallbacks[receiptId] && delete this.receiptErrorCallbacks[receiptId];
+            let request = this.pendingRequests[receiptId];
+            if(request){
+                if(bodyObj && !bodyObj.errorMessage){
+                    request.onSuccess(bodyObj);
+                } else {
+                    request.onError(bodyObj);
+                }
+                delete this.pendingRequests[receiptId];
+            }
 
             return true;
         }
@@ -158,7 +155,10 @@ if (!window.ws) {
 }
 
 function receiptCallback(frame) {
-    console.log("@@@@@@@@@@@@@@@@@@receiptCallback", frame)
+    let body = frame.body;
+    let headers = frame.headers;
+    console.info("WEBSOCKET RECEIPT:", frame);
+    window.ws.processCallback(body, headers);
 }
 
 /**
@@ -166,64 +166,20 @@ function receiptCallback(frame) {
  * @param frame {object}
  */
 function stompOnConnect(frame) {
-    // console.log("############################## stompOnConnect");
-    // console.log(":::: stompOnConnect", frame);
     store.dispatch(webSocketConnect());
+
     if (!refresh) {
         refresh = true;
     } else {
         location.reload(true);
     }
-    stompClient.subscribe('/topic/api/changes', function({body, headers}) {
-        // console.log("############### stompClient.subscribe('/topic/api/changes'", "body: ", body, "headers: ", headers)
-        if (window.ws.processCallback(body, headers)) { // zpracováno jako callback
-            // již zpracováno a není třeba nic dělat
-        } else {    // standardní informace o změnách
-            var change = JSON.parse(body);
-            console.info("WebSocket", change);
-            switch (change.area) {
-                case 'EVENT':
-                    processEvents(change.value);
-                    break;
-                case 'VALIDATION':
-                    processValidations(change.value);
-                    break;
-                default:
-                    console.warn("Nedefinovaný datový typ ze serveru: " + change.area);
-                    break;
-            }
-        }
+    stompClient.subscribe('/topic/api/changes', function(frame) {
+        var body = JSON.parse(frame.body);
+        processEvents(body);
     });
 }
 
-function deferEvent(data){
-    return new Promise((resolve,reject)=>{
-        const event = deferredEvents[data.eventType];
-        console.log("deferred event", event, data, deferredEvents);
-        if(event){
-            console.log("event exists");
-            event(data).then((data) => resolve(data))
-        }
-        resolve(data)
-    })
-}
 
-const deferredEvents = {
-    "NODES_CHANGE": deferNodesChange
-}
-
-function deferNodesChange(data){
-    return new Promise((resolve, reject) => {
-        let pendingRequests = window.ws.pendingRequests;
-        console.log("nodes change",pendingRequests);
-        for(let r in pendingRequests){
-            if(pendingRequests[r].data.changeId){
-            
-            }
-        }
-        resolve(data);
-    })
-}
 /**
  * Callback při ztráně spojení.
  *
@@ -252,13 +208,8 @@ function stompOnError(error) {
  *
  * @param values {array} seznam příchozí eventů
  */
-function processEvents(values) {
-    values.forEach(data => {
-        deferEvent(data).then((value) => {
-            console.log("deffered event resolve",value);
-
+function processEvents(value) {
         switch (value.eventType) {
-
             case 'DAO_LINK_CREATE':
             case 'DAO_LINK_DELETE':
                 daoLink(value);
@@ -436,9 +387,6 @@ function processEvents(values) {
                 console.warn("Nedefinovaný typ eventu: " + value.eventType, value);
                 break;
         }
-
-        })
-    });
 }
 
 /**
