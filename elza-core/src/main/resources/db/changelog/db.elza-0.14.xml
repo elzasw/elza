@@ -45,9 +45,7 @@
                 <not>
                     <changeSetExecuted id="20170918095801" author="slapa" changeLogFile="db/changelog/db.elza-0.14.xml"/>
                 </not>
-                <not>
-                    <dbms type="mssql" />
-                </not>
+                <dbms type="postgresql" />
             </and>
         </preConditions>
 
@@ -71,6 +69,22 @@
         <sql>UPDATE rot SET rule_set_id = rs.rule_set_id FROM rul_output_type rot, rul_rule_set rs WHERE rs.package_id = rul_output_type.package_id</sql>
         <sql>UPDATE ra SET rule_set_id = rs.rule_set_id FROM rul_action ra, rul_rule_set rs WHERE rs.package_id = rul_action.package_id</sql>
         <sql>UPDATE rpt SET rule_set_id = rs.rule_set_id FROM rul_packet_type rpt, rul_rule_set rs WHERE rs.package_id = rul_packet_type.package_id</sql>
+    </changeSet>
+
+    <changeSet id="20171109074903" author="slapa">
+        <preConditions onFail="CONTINUE">
+            <and>
+                <not>
+                    <changeSetExecuted id="20170918095801" author="slapa" changeLogFile="db/changelog/db.elza-0.14.xml"/>
+                </not>
+                <dbms type="h2" />
+            </and>
+        </preConditions>
+
+        <sql>UPDATE rul_item_type SET rule_set_id = (SELECT rs.rule_set_id FROM rul_rule_set rs WHERE rs.package_id = rul_item_type.package_id)</sql>
+        <sql>UPDATE rul_output_type SET rule_set_id = (SELECT rs.rule_set_id FROM rul_rule_set rs WHERE rs.package_id = rul_output_type.package_id)</sql>
+        <sql>UPDATE rul_action SET rule_set_id = (SELECT rs.rule_set_id FROM rul_rule_set rs WHERE rs.package_id = rul_action.package_id)</sql>
+        <sql>UPDATE rul_packet_type SET rule_set_id = (SELECT rs.rule_set_id FROM rul_rule_set rs WHERE rs.package_id = rul_packet_type.package_id)</sql>
     </changeSet>
 
     <changeSet id="201709181003" author="slapa">
@@ -153,9 +167,7 @@
 
     <changeSet id="20171109080301" author="slapa">
         <preConditions onFail="CONTINUE">
-            <not>
-                <dbms type="mssql" />
-            </not>
+            <dbms type="postgresql" />
         </preConditions>
 
         <sql>UPDATE ui_settings SET entity_id = rs.rule_set_id FROM rul_rule_set rs WHERE rs.package_id = ui_settings.package_id AND ui_settings.entity_type = 'RULE' AND ui_settings.entity_id IS NULL</sql>
@@ -167,6 +179,14 @@
         </preConditions>
 
         <sql>UPDATE us SET entity_id = rs.rule_set_id FROM ui_settings us, rul_rule_set rs WHERE rs.package_id = ui_settings.package_id AND ui_settings.entity_type = 'RULE' AND ui_settings.entity_id IS NULL</sql>
+    </changeSet>
+
+    <changeSet id="20171109080303" author="slapa">
+        <preConditions onFail="CONTINUE">
+            <dbms type="h2" />
+        </preConditions>
+
+        <sql>UPDATE ui_settings SET entity_id = (SELECT rs.rule_set_id FROM rul_rule_set rs WHERE rs.package_id = ui_settings.package_id) WHERE ui_settings.entity_type = 'RULE' AND ui_settings.entity_id IS NULL</sql>
     </changeSet>
 
 </databaseChangeLog>
