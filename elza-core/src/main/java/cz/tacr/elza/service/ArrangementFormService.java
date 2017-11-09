@@ -132,17 +132,18 @@ public class ArrangementFormService {
 			node = restoredNode.getNode();
 			descItems = restoredNode.getDescItems();
 		} else {
+			// check if node exists
 			node = nodeRepository.findOne(nodeId);
 			if (node == null) {
 				throw new ObjectNotFoundException("Nebyla nalezena JP s ID=" + nodeId, ArrangementCode.NODE_NOT_FOUND)
 				        .set("id", nodeId);
 			}
-			descItems = arrangementInternal.getDescItems(lockChange, nodeId);
+			descItems = arrangementInternal.getDescItems(lockChange, node);
 		}
 
 		List<RulItemTypeExt> itemTypes;
 		try {
-			itemTypes = ruleService.getDescriptionItemTypes(version, nodeId);
+			itemTypes = ruleService.getDescriptionItemTypes(version, node);
 		} catch (Exception e) {
 			logger.error("Chyba v pravidlech", e);
 			throw new BusinessException("Chyba v pravidlech", e, BaseCode.SYSTEM_ERROR);
@@ -203,7 +204,7 @@ public class ArrangementFormService {
 		        .updateDescriptionItem(descItem, nodeVersion, fundVersion.getFundVersionId(), createVersion);
 
 		// prepare form data
-		List<RulItemTypeExt> itemTypes = ruleService.getDescriptionItemTypes(fundVersion, descItemUpdated.getNodeId());
+		List<RulItemTypeExt> itemTypes = ruleService.getDescriptionItemTypes(fundVersion, descItemUpdated.getNode());
 
 		StaticDataProvider dataProvider = this.staticData.getData();
 		RuleSystem rs = dataProvider.getRuleSystems().getByRuleSetId(fundVersion.getRuleSet().getRuleSetId());

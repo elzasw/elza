@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.repository.DescItemRepository;
 
 /**
@@ -28,19 +29,21 @@ public class ArrangementServiceInternal {
 	}
 
 	/**
-	 * Return list of description items for the node
+	 * Return list of description items for the node.
+	 * 
+	 * Description items are returned including data.
 	 * 
 	 * Method is using NodeChage to read current values.
 	 * 
 	 * @param lockChange
 	 *            Change for which items are returned. lockChange cannot be null
-	 * @param nodeId
+	 * @param node
 	 * @return
 	 */
-	public List<ArrDescItem> getDescItems(final ArrChange lockChange, final int nodeId) {
+	public List<ArrDescItem> getDescItems(final ArrChange lockChange, final ArrNode node) {
 		Validate.notNull(lockChange);
 		List<ArrDescItem> itemList;
-		itemList = descItemRepository.findByNodeIdAndChange(nodeId, lockChange);
+		itemList = descItemRepository.findByNodeAndChange(node, lockChange);
 		return itemList;
 	}
 }

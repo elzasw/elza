@@ -26,7 +26,6 @@ import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.DataValidationResults;
 import cz.tacr.elza.drools.model.ActiveLevel;
-import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.service.ModelFactory;
 import cz.tacr.elza.drools.service.ScriptModelFactory;
 import cz.tacr.elza.exception.SystemException;
@@ -76,10 +75,9 @@ public class ValidationRules extends Rules {
 
 		LinkedList<Object> facts = new LinkedList<>();
 
-		// prepare list of levels
-		Level modelLevel = scriptModelFactory.createLevelModel(level, version);
-		ActiveLevel activeLevel = scriptModelFactory.createActiveLevel(modelLevel, level, version);
-		ModelFactory.addAll(activeLevel, facts);
+		ActiveLevel activeLevel = scriptModelFactory.createActiveLevel(level, version);
+
+		ModelFactory.addLevelWithParents(activeLevel, facts);
 
 		DataValidationResults validationResults = new DataValidationResults();
 

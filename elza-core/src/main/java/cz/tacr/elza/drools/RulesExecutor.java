@@ -2,12 +2,9 @@ package cz.tacr.elza.drools;
 
 import java.io.File;
 import java.nio.file.NoSuchFileException;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import cz.tacr.elza.exception.SystemException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -24,6 +21,7 @@ import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
+import cz.tacr.elza.exception.SystemException;
 
 
 /**
@@ -86,7 +84,7 @@ public class RulesExecutor implements InitializingBean {
                     .execute(level, version, rulDescItemTypeExtList);
         } catch (NoSuchFileException e) {
             logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
-            return rulDescItemTypeExtList;
+			throw new SystemException(e);
         } catch (Exception e) {
             throw new SystemException(e);
         }
@@ -105,7 +103,7 @@ public class RulesExecutor implements InitializingBean {
             return outputItemTypesRules.execute(outputDefinition, rulDescItemTypeExtList);
         } catch (NoSuchFileException e) {
             logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
-            return rulDescItemTypeExtList;
+			throw new SystemException(e);
         } catch (Exception e) {
             throw new SystemException(e);
         }
@@ -131,7 +129,7 @@ public class RulesExecutor implements InitializingBean {
                     .execute(createDescItem, updateDescItem, deleteDescItem, nodeTypeOperation, version.getRuleSet());
         } catch (NoSuchFileException e) {
             logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
-            return new HashSet<>();
+			throw new SystemException(e);
         } catch (Exception e) {
             throw new SystemException(e);
         }
@@ -150,7 +148,7 @@ public class RulesExecutor implements InitializingBean {
             return descItemValidationRules.execute(level, version);
         } catch (NoSuchFileException e) {
             logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
-            return Collections.emptyList();
+			throw new SystemException(e);
         } catch (Exception e) {
             throw new SystemException(e);
         }
@@ -163,7 +161,7 @@ public class RulesExecutor implements InitializingBean {
             return scenarioOfNewLevelRules.execute(level, directionLevel, version);
         } catch (NoSuchFileException e) {
             logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
-            return Collections.emptyList();
+			throw new SystemException(e);
         } catch (Exception e) {
             throw new SystemException(e);
         }

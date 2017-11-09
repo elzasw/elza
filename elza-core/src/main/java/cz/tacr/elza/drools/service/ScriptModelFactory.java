@@ -62,44 +62,21 @@ public class ScriptModelFactory {
 	private StaticDataService staticDataService;
 
     /**
-     * Převede stromovou strukturu na seznam.
-     *
-     * @param level  level, pro který je struktura sestavena
-     * @return resultList seznam
-     */
-    public List<Level> convertLevelTreeToList(final Level level) {
-        List<Level> list = new ArrayList<>();
-        Level tmp = level;
-        while (tmp != null) {
-            list.add(tmp);
-            /*
-            if (tmp instanceof NewLevel) {
-                NewLevel newLevel = (NewLevel) tmp;
-                if (newLevel.getSiblingAfter() != null) {
-                    list.add(newLevel.getSiblingAfter());
-                }
-                if (newLevel.getSiblingBefore() != null) {
-                    list.add(newLevel.getSiblingBefore());
-                }
-            }*/
-            tmp = tmp.getParent();
-        }
-        return list;
-    }
-
-    /**
-     * Vytvoří strukturu od výchozího levelu. Načte všechny jeho rodiče a prvky popisu.
-     */
-    public Level createLevelModel(final ArrLevel level,
-                                        final ArrFundVersion version) {
+	 * Vytvoří strukturu od výchozího levelu. Načte všechny jeho rodiče a prvky
+	 * popisu.
+	 * 
+	 * @param descItemReader
+	 *            Reader which will fetch description items from DB
+	 */
+	private Level createLevelModel(final ArrLevel level,
+	        final ArrFundVersion version,
+	        final DescItemReader descItemReader) {
         Assert.notNull(level, "Level musí být vyplněn");
         Assert.notNull(version, "Verze AS musí být vyplněna");
 
         List<ArrLevel> parents = levelRepository.findAllParentsByNodeAndVersion(level.getNode(), version);
         Set<ArrNode> nodes = new HashSet<>();
-        nodes.add(level.getNode());
-
-		DescItemReader descItemReader = createDescItemReader(version);
+		nodes.add(level.getNode());
 
         Level mainLevel = ModelFactory.createLevel(level, version);
         descItemReader.add(mainLevel, level.getNode());
@@ -114,8 +91,6 @@ public class ScriptModelFactory {
             descItemReader.add(newParent, parent.getNode());
         }
 
-		descItemReader.read();
-
         return mainLevel;
     }
 
@@ -125,7 +100,7 @@ public class ScriptModelFactory {
 	 * @param version
 	 * @return
 	 */
-	protected DescItemReader createDescItemReader(ArrFundVersion version) {
+	private DescItemReader createDescItemReader(ArrFundVersion version) {
 
 		DescItemReader descItemReader = new DescItemReader(version, descItemRepository,
 		        descItemFactory,
@@ -231,9 +206,9 @@ public class ScriptModelFactory {
                                    final ArrLevel level,
                                    final DirectionLevel directionLevel, final ArrFundVersion version)
     {
-        Level srcModelLevel = createLevelModel(level, version);
-
 		DescItemReader descItemReader = createDescItemReader(version);
+
+		Level srcModelLevel = createLevelModel(level, version, descItemReader);
 
         // Parent level
         Level parentLevel = null;
@@ -317,7 +292,7 @@ public class ScriptModelFactory {
 
         // Add to the output
         List<Level> levels = new LinkedList<>();
-        ModelFactory.addAll(newLevel, (List) levels);
+		ModelFactory.addLevelWithParents(newLevel, (List) levels);
 
         // Read description items
 		descItemReader.read();
@@ -326,16 +301,25 @@ public class ScriptModelFactory {
     }
 
     /**
-     * Create active level for given level
-     * @param modelLevel prepared model level
-     * @return
-     */
-    public ActiveLevel createActiveLevel(final Level modelLevel,
+	 * Create active level model for given level
+	 * 
+	 * @param descItemReader
+	 *            reader for description items
+	 * @return
+	 */
+	public ActiveLevel createActiveLevel(
                                          final ArrLevel level,
-                                         final ArrFundVersion version) {
+	        final ArrFundVersion version) {
+
 		DescItemReader descItemReader = createDescItemReader(version);
 
+		// prepare list of levels
+		Level modelLevel = createLevelModel(level, version, descItemReader);
+
         ActiveLevel activeLevel = new ActiveLevel(modelLevel);
+
+		// read descitems for thic activelevel instead of original level
+		descItemReader.add(activeLevel, level.getNode());
 
         // Prepare children info
         Integer childsCount = levelRepository.countChildsByParent(level.getNode(), version.getLockChange());
@@ -371,11 +355,10 @@ public class ScriptModelFactory {
         activeLevel.setSiblingAfter(modelSiblingAfter);
         activeLevel.setSiblingBefore(modelSiblingBefore);
 
-        // Read description items
 		descItemReader.read();
 
-        // Add effective attributes
-        addEffectiveDescItems(activeLevel);
+		// Add effective attributes
+		addEffectiveDescItems(activeLevel);
 
         return activeLevel;
     }
@@ -385,9 +368,10 @@ public class ScriptModelFactory {
      *
      * @param level požadovaný level, ke kterému se budou efektivní atributu vytvářet
      */
-    private void addEffectiveDescItems(final Level level) {
+	private void addEffectiveDescItems(final Level level) {
         Level tmpLevel = level.getParent();
         List<DescItem> descItemLevel = level.getDescItems();
+		Validate.notNull(descItemLevel);
         while (tmpLevel != null) {
             // atributy procházeného rodiče
             List<DescItem> descItems = tmpLevel.getDescItems();
@@ -396,7 +380,7 @@ public class ScriptModelFactory {
             List<DescItem> effectiveDescItemsAdd = new ArrayList<>();
 
             // existuje nějaký atribut?
-            if (descItemLevel.size() > 0) {
+			if (descItemLevel != null && descItemLevel.size() > 0) {
                 for (DescItem descItem : descItems) {
                     String dataType = descItem.getDataType();
                     Boolean addAsEffective = true;
