@@ -17,6 +17,7 @@ import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 import './RegistryList.less';
 import RegistryListItem from "./RegistryListItem";
 import ListPager from "../shared/listPager/ListPager";
+import * as perms from "../../actions/user/Permission";
 
 class RegistryList extends AbstractReactComponent {
 
@@ -179,10 +180,15 @@ class RegistryList extends AbstractReactComponent {
         return actions;
     }
 
+    filterScopes(scopes) {
+        const { userDetail } = this.props;
+        return scopes.filter((scope) => userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR,scopeId: scope.id}));
+    }
+
     getScopesWithAll(scopes) {
         const defaultValue = {name: i18n('registry.all')};
         if (scopes && scopes.length > 0 && scopes[0] && scopes[0].scopes && scopes[0].scopes.length > 0) {
-            return [defaultValue, ...scopes[0].scopes]
+            return this.filterScopes([defaultValue, ...scopes[0].scopes])
         }
         return [defaultValue];
     }
@@ -313,12 +319,13 @@ class RegistryList extends AbstractReactComponent {
 }
 
 export default connect((state) => {
-    const {app:{registryList, registryDetail}, focus, refTables:{recordTypes, scopesData}} = state;
+    const {app:{registryList, registryDetail}, userDetail,  focus, refTables:{recordTypes, scopesData}} = state;
     return {
         focus,
         registryDetail,
         registryList,
         registryTypes: recordTypes && recordTypes.items ? recordTypes.items : false,
-        scopes: scopesData.scopes
+        scopes: scopesData.scopes,
+        userDetail
     }
 })(RegistryList);
