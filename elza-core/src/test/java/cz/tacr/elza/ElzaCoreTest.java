@@ -17,18 +17,13 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.google.common.eventbus.EventBus;
 
-import cz.tacr.elza.other.ClientDataChangesServiceTest;
-import cz.tacr.elza.service.IClientDataChangesService;
+import cz.tacr.elza.other.ClientEventDispatcherTest;
+import cz.tacr.elza.service.ClientEventDispatcher;
 
-
-/**
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 3.12.2015
- */
 @Configuration
-@EntityScan(basePackageClasses = {ElzaCore.class})
-@ComponentScan(basePackageClasses = {ElzaCore.class})
-@EnableJpaRepositories(basePackageClasses = {ElzaCore.class})
+@EntityScan(basePackageClasses = { ElzaCore.class })
+@ComponentScan(basePackageClasses = { ElzaCore.class })
+@EnableJpaRepositories(basePackageClasses = { ElzaCore.class })
 @EnableAutoConfiguration
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 @EnableTransactionManagement
@@ -40,9 +35,7 @@ public class ElzaCoreTest {
         SpringApplication.run(ElzaCore.class, args);
     }
 
-
     public static void configure() {
-        System.setProperty("spring.config.name", "elza");
         System.setProperty("liquibase.databaseChangeLogTableName", "db_databasechangelog");
         System.setProperty("liquibase.databaseChangeLogLockTableName", "db_databasechangeloglock");
     }
@@ -55,6 +48,11 @@ public class ElzaCoreTest {
     }
 
     @Bean
+    public ClientEventDispatcher clientEventDispatcher(){
+        return new ClientEventDispatcherTest();
+    }
+
+    @Bean
     public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         threadPoolTaskExecutor.setCorePoolSize(10);
@@ -64,24 +62,14 @@ public class ElzaCoreTest {
         return threadPoolTaskExecutor;
     }
 
-
-
     @Bean
     public Executor conformityUpdateTaskExecutor() {
         return new Executor() {
             @Override
             public void execute(final Runnable command) {
-                //metodu spustíme v běžícím vlákně
+                // metodu spustíme v běžícím vlákně
                 command.run();
             }
         };
     }
-
-
-    @Bean
-    public IClientDataChangesService clientDataChangesService(){
-        return new ClientDataChangesServiceTest();
-    }
-
-
 }

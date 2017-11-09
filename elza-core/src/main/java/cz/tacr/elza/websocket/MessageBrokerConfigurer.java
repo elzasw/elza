@@ -20,24 +20,30 @@ import org.springframework.web.socket.server.support.HttpSessionHandshakeInterce
 
 /**
  * Konfigurace message brokera.
- *
- * @since 02.12.2015
- * @author Pavel Stánek [pavel.stanek@marbes.cz]
  */
 @Configuration
 @EnableWebSocketMessageBroker
 public class MessageBrokerConfigurer extends AbstractSecurityWebSocketMessageBrokerConfigurer {
+
+    @Autowired
+    private WebSocketThreadPoolTaskExecutor clientInboundChannelExecutor;
+
     @Bean
     public TaskScheduler heartbeatTaskScheduler() {
         return new ThreadPoolTaskScheduler();
     }
 
     @Override
+    public void configureWebSocketTransport(final WebSocketTransportRegistration registration) {
+        registration.addDecoratorFactory(delegate -> new ExecutorWebSocketHandlerDecorator(delegate, clientInboundChannelExecutor));
+        super.configureWebSocketTransport(registration);
+    }
+
+    @Override
     public void configureMessageBroker(final MessageBrokerRegistry registry) {
         registry.setApplicationDestinationPrefixes("/app");
-        registry.setUserDestinationPrefix("/user"); // direct message for current user (@SentToUser) or session (broadcast=false)
-        registry
-                .enableSimpleBroker("/topic")
+        registry.setUserDestinationPrefix("/user"); // direct message for subscribed user
+        registry.enableSimpleBroker("/topic")
                 .setHeartbeatValue(new long[] { 10000, 10000 })
                 .setTaskScheduler(heartbeatTaskScheduler());
     }
@@ -50,30 +56,14 @@ public class MessageBrokerConfigurer extends AbstractSecurityWebSocketMessageBro
                 .addInterceptors(new HttpSessionHandshakeInterceptor());
     }
 
-//    @Autowired
-//    private WebSocketHandler subProtocolWebSocketHandler;
-
     @Override
     protected void configureInbound(final MessageSecurityMetadataSourceRegistry messages) {
-        messages
-//                .nullDestMatcher().authenticated()
-                .simpDestMatchers("/app/**").authenticated();
+        messages.simpDestMatchers("/app/**").authenticated();
     }
 
     @Override
     protected boolean sameOriginDisabled() {
         return true;
-    }
-
-
-    @Autowired
-    private WebSocketThreadPoolTaskExecutor clientInboundChannelExecutor;
-
-    @Override
-    public void configureWebSocketTransport(final WebSocketTransportRegistration registration) {
-        registration.addDecoratorFactory(
-                delegate -> new ExecutorWebSocketHandlerDecorator(delegate, clientInboundChannelExecutor));
-        super.configureWebSocketTransport(registration);
     }
 
     /**

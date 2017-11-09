@@ -20,9 +20,6 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.controller.vo.CreateFundVO;
-import cz.tacr.elza.controller.vo.UsrPermissionVO;
-import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
@@ -58,6 +55,7 @@ import cz.tacr.elza.controller.vo.ArrPacketVO;
 import cz.tacr.elza.controller.vo.CopyNodesParams;
 import cz.tacr.elza.controller.vo.CopyNodesValidate;
 import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
+import cz.tacr.elza.controller.vo.CreateFundVO;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
@@ -88,6 +86,7 @@ import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
+import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.controller.vo.ValidationResult;
 import cz.tacr.elza.controller.vo.filter.Filters;
@@ -108,6 +107,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.service.ArrMoveLevelService;
@@ -137,7 +137,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String KML_CONTROLLER_URL = "/api/kml";
     protected static final String VALIDATION_CONTROLLER_URL = "/api/validate";
     protected static final String RULE_CONTROLLER_URL = "/api/rule";
-    protected static final String XML_IMPORT_CONTROLLER_URL = "/api/import";
+    protected static final String DE_IMPORT_CONTROLLER_URL = "/api/import";
+    protected static final String DE_EXPORT_CONTROLLER_URL = "/api/export";
     protected static final String USER_CONTROLLER_URL = "/api/user";
     protected static final String GROUP_CONTROLLER_URL = "/api/group";
 
@@ -301,8 +302,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
     // Validation
     protected static final String VALIDATE_UNIT_DATE = VALIDATION_CONTROLLER_URL + "/unitDate";
 
-    // XmlImport
-    protected final static String XML_IMPORT = XML_IMPORT_CONTROLLER_URL + "/import";
+    // Import/Export
+    protected final static String DE_IMPORT = DE_IMPORT_CONTROLLER_URL + "/import";
+    protected final static String DE_EXPORT = DE_EXPORT_CONTROLLER_URL + "/create";
 
     // Uživatelé a skupiny
     protected final static String USER_DETAIL = USER_CONTROLLER_URL + "/detail";
@@ -354,7 +356,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         RestAssured.baseURI = RestAssured.DEFAULT_URI;  // nastavi default URI pro REST-assured. Nejcasteni localhost
         login();
         if (loadInstitutions) {
-            importXmlFile(null, 1, XmlImportControllerTest.getResourceFile(XML_INSTITUTION));
+            importXmlFile(null, 1, DEImportControllerTest.getResourceFile(XML_INSTITUTION));
         }
     }
 
@@ -467,8 +469,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
         if(contentType!=null) {
         	if(contentType.startsWith(JSON_CONTENT_TYPE)||contentType.startsWith("text/")) {
 
-        		ResponseBody<?> responseBody = (ResponseBody<?>)response;
-        		ResponseOptions<?> responseOptions = (ResponseOptions<?>)response;
+        		ResponseBody<?> responseBody = response;
+        		ResponseOptions<?> responseOptions = response;
         		String body = new Prettifier().getPrettifiedBodyIfPossible(responseOptions, responseBody);
         		logger.info("Response body:" + body);
         	}
@@ -2283,7 +2285,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         if (scopeId != null) {
             params.put("scopeId", scopeId);
         }
-        return multipart(spec -> spec.multiPart("xmlFile", xmlFile).params(params), XML_IMPORT);
+        return multipart(spec -> spec.multiPart("xmlFile", xmlFile).params(params), DE_IMPORT);
     }
 
 

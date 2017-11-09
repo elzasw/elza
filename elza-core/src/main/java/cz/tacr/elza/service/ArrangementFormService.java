@@ -7,7 +7,7 @@ import javax.transaction.Transactional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.annotation.AuthMethod;
@@ -39,7 +39,7 @@ import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
-import cz.tacr.elza.websocket.WebsocketCallback;
+import cz.tacr.elza.websocket.service.WebScoketStompService;
 
 /**
  * Service to handle form related requests
@@ -69,9 +69,7 @@ public class ArrangementFormService {
 
 	private final ClientFactoryVO factoryVo;
 
-	private final WebsocketCallback websocketCallback;
-
-	private final UserService userService;
+	private final WebScoketStompService wsStompService;
 
 	private final NodeCacheService nodeCache;
 
@@ -81,11 +79,12 @@ public class ArrangementFormService {
 	        LevelTreeCacheService levelTreeCache,
 	        UserService userService,
 	        RuleService ruleService,
-	        WebsocketCallback websocketCallback,
+	        WebScoketStompService wsStompService,
 	        ClientFactoryVO factoryVo,
 	        ClientFactoryDO factoryDo,
 	        NodeCacheService nodeCache,
-	        FundVersionRepository fundVersionRepository, NodeRepository nodeRepository) {
+	        FundVersionRepository fundVersionRepository,
+	        NodeRepository nodeRepository) {
 		this.staticData = staticData;
 		this.arrangementInternal = arrangementInternal;
 		this.descriptionItemService = descriptionItemService;
@@ -96,8 +95,7 @@ public class ArrangementFormService {
 		this.factoryDo = factoryDo;
 		this.factoryVo = factoryVo;
 		this.nodeCache = nodeCache;
-		this.websocketCallback = websocketCallback;
-		this.userService = userService;
+		this.wsStompService = wsStompService;
 	}
 
 	@Transactional
@@ -162,13 +160,13 @@ public class ArrangementFormService {
 	@AuthMethod(permission = { UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR })
 	public void updateDescItem(@AuthParam(type = AuthParam.Type.FUND_VERSION) int fundVersionId,
 	        int nodeVersion, ArrItemVO descItemVO, boolean createVersion,
-	        SimpMessageHeaderAccessor headerAccessor) {
+	        StompHeaderAccessor requestHeaders) {
 		ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 		if (version == null) {
 			throw new ObjectNotFoundException("Nebyla nalezena verze AS s ID=" + fundVersionId,
 			        ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", fundVersionId);
 		}
-		updateDescItem(version, nodeVersion, descItemVO, createVersion, headerAccessor);
+		updateDescItem(version, nodeVersion, descItemVO, createVersion, requestHeaders);
 	}
 
 	/**
@@ -184,7 +182,7 @@ public class ArrangementFormService {
 	@AuthMethod(permission = { UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR })
 	public void updateDescItem(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion,
 	        int nodeVersion, ArrItemVO descItemVO, boolean createVersion,
-	        SimpMessageHeaderAccessor headerAccessor) {
+	        StompHeaderAccessor requestHeaders) {
 
 		// alternative way of authorization - not finished
 		/*
@@ -221,7 +219,7 @@ public class ArrangementFormService {
 		UpdateItemResult updateResult = new UpdateItemResult(descItemUpdated, descItemVo, descItemTypeGroupsVO, tnc);
 
 		// Odeslání dat zpět
-		websocketCallback.sendAfterCommit(updateResult, headerAccessor);
+		wsStompService.sendReceiptAfterCommit(updateResult, requestHeaders);
 	}
 
 	// TODO: Refactorize return value to contain nodeId instead of parent

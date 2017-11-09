@@ -1,5 +1,7 @@
 package cz.tacr.elza.packageimport.xml;
 
+import java.util.Objects;
+
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -56,5 +58,11 @@ public abstract class Setting {
 
     public void setEntityId(final Integer entityId) {
         this.entityId = entityId;
+    }
+
+    public boolean isSettingsFor(UISettings uiSetting) {
+        return settingsType == uiSetting.getSettingsType()
+                && entityType == uiSetting.getEntityType()
+                && Objects.equals(entityId, uiSetting.getEntityId());
     }
 }

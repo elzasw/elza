@@ -1,5 +1,8 @@
 package cz.tacr.elza.domain;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -11,9 +14,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import java.util.ArrayList;
-import java.util.Collection;
 
 /**
  * Uživatelské nastavení.
@@ -50,6 +50,9 @@ public class UISettings {
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
     @JoinColumn(name = "packageId")
     private RulPackage rulPackage;
+
+    @Column(insertable = false, updatable = false, nullable = true)
+    private Integer packageId;
 
     public Integer getSettingsId() {
         return settingsId;
@@ -105,18 +108,17 @@ public class UISettings {
 
     public void setRulPackage(final RulPackage rulPackage) {
         this.rulPackage = rulPackage;
+        this.packageId = rulPackage != null ? rulPackage.getPackageId() : null;
+    }
+
+    public Integer getPackageId() {
+        return packageId;
     }
 
     /**
      * Typ entity.
      */
     public enum EntityType {
-
-        /**
-         * Bez vazby na entitu.
-         */
-        NONE,
-
         /**
          * Vazba na archivní fond.
          */
@@ -138,34 +140,34 @@ public class UISettings {
      */
     public enum SettingsType {
 
-        FUND_READ_MODE(EntityType.FUND),
-        FUND_RIGHT_PANEL(EntityType.FUND),
-        FUND_CENTER_PANEL(EntityType.FUND),
+        FUND_READ_MODE(true, EntityType.FUND),
+        FUND_RIGHT_PANEL(true, EntityType.FUND),
+        FUND_CENTER_PANEL(true, EntityType.FUND),
 
         /**
          * nastavení strictního módu pro uživatele (přepíše nastavení pravidel)
          */
-        FUND_STRICT_MODE(EntityType.FUND),
+        FUND_STRICT_MODE(true, EntityType.FUND),
 
         /**
          * oblíbené specifikace u typu atributu
          */
-        FAVORITE_ITEM_SPECS(EntityType.ITEM_TYPE),
+        FAVORITE_ITEM_SPECS(false, EntityType.ITEM_TYPE),
 
         /**
          * Připnutí sekcí osob
          */
-        PARTY_PIN(EntityType.NONE),
+        PARTY_PIN,
 
         /**
          * Zobrazení popisků archivních souborů.
          */
-        FUND_VIEW(EntityType.RULE),
+        FUND_VIEW(false, EntityType.RULE),
 
         /**
          * Zobrazení skupin typů atributů v archivním souboru.
          */
-        TYPE_GROUPS(EntityType.RULE),
+        TYPE_GROUPS(false, EntityType.RULE),
 
         /**
          * Výchozí nastavení pro rejstříky.
@@ -175,35 +177,51 @@ public class UISettings {
         /**
          * Nastavení sloupců / atributů pro zobrazení v gridu
          */
-        GRID_VIEW(EntityType.RULE);
+        GRID_VIEW(false, EntityType.RULE);
+
+        /**
+         * If settings can be global or has to be defined on some entity.
+         */
+        private final boolean global;
 
         /**
          * Typ oprávnění
          */
-        private EntityType type;
+        private final EntityType entityType;
 
         SettingsType() {
-            this.type = EntityType.NONE;
+            this(true, null);
         }
 
-        SettingsType(final EntityType type) {
-            this.type = type;
+        SettingsType(boolean global, EntityType entityType) {
+            this.global = global;
+            this.entityType = entityType;
         }
 
-        public EntityType getType() {
-            return type;
+        public boolean isSupportedEntityType(EntityType entityType) {
+            if (entityType == null) {
+                return global;
+            }
+            return entityType.equals(this.entityType);
         }
 
-        public static Collection<SettingsType> findByType(final EntityType ...types) {
-            Collection<SettingsType> result = new ArrayList<>();
-            for (SettingsType settingsType : SettingsType.values()) {
-                for (EntityType type : types) {
-                    if (settingsType.type == type) {
-                        result.add(settingsType);
+        public static List<SettingsType> findByType(final EntityType ...types) {
+            List<SettingsType> results = new ArrayList<>();
+            for (SettingsType value : SettingsType.values()) {
+                if (types == null) {
+                    if (value.isSupportedEntityType(null)) {
+                        results.add(value);
+                    }
+                } else {
+                    for (EntityType t : types) {
+                        if (value.isSupportedEntityType(t)) {
+                            results.add(value);
+                            break;
+                        }
                     }
                 }
             }
-            return result;
+            return results;
         }
     }
 }

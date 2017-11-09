@@ -1,6 +1,10 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.controller.vo.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Collections;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -10,21 +14,21 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.FileCopyUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Collections;
-import java.util.List;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.RegScopeVO;
+import cz.tacr.elza.controller.vo.RulRuleSetVO;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNodeClient;
 
 /**
  * @author Petr Compel
  * @since 23.2.2016
  */
-public class XmlImportControllerTest extends AbstractControllerTest {
+public class DEImportControllerTest extends AbstractControllerTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(XmlImportControllerTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(DEImportControllerTest.class);
 
-    protected final static String TRANSFORMATIONS = XML_IMPORT_CONTROLLER_URL + "/transformations";
+    protected final static String TRANSFORMATIONS = DE_IMPORT_CONTROLLER_URL + "/transformations";
 
     protected final static String IMPORT_SCOPE_FA = "IMPORT_SCOPE_FA";
     protected final static String IMPORT_SCOPE_PARTY = "IMPORT_SCOPE_PARTY";
@@ -38,7 +42,7 @@ public class XmlImportControllerTest extends AbstractControllerTest {
     @Value("${elza.xmlImport.transformationDir}")
     private String transformationsDirectory;
 
-    
+
     /**
      * Scénář
      * ----
@@ -84,7 +88,7 @@ public class XmlImportControllerTest extends AbstractControllerTest {
         Assert.assertNotNull(url);
         return new File(url.getPath());
     }
-    
+
     @Test
     @Ignore
     public void importWithTransformation() throws IOException {

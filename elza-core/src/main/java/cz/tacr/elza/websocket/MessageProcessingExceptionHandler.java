@@ -7,20 +7,20 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.converter.SmartMessageConverter;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.AbstractSubscribableChannel;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 
 /**
- * @author Jaroslav Todt [jaroslav.todt@lightcomp.cz]
- * @since 27.8.2016
+ * Exception handler for WebSocket controllers.
+ *
+ * Catches fatal exceptions which will send to client and disconnect WS connection.
  */
 @ControllerAdvice(annotations = WebSocketAwareController.class)
 public class MessageProcessingExceptionHandler {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MessageProcessingExceptionHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(MessageProcessingExceptionHandler.class);
 
     @Autowired
     private transient WebSocketThreadPoolTaskExecutor executor;
@@ -45,16 +45,13 @@ public class MessageProcessingExceptionHandler {
                 .append(clientAccessor.getSessionId())
                 .append(". Sending STOMP ERROR to client.")
                 .toString();
-        LOG.error(message, e);
+        logger.error(message, e);
     }
 
     protected void handleException(final Exception e, final StompHeaderAccessor clientAccessor) {
         executor.stopSessionExecution(clientAccessor.getSessionId());
         sendError(clientAccessor, new ErrorDescription(e.getMessage(), e.getStackTrace()));
     }
-
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
 
     private void sendError(final StompHeaderAccessor clientAccessor, final ErrorDescription description) {
         StompHeaderAccessor accessor = StompHeaderAccessor.create(StompCommand.ERROR);
@@ -64,13 +61,8 @@ public class MessageProcessingExceptionHandler {
         accessor.setReceiptId(clientAccessor.getReceipt());
         accessor.setLeaveMutable(true);
 
-        // Convert message and send
+        // convert message and send
         Message<?> errorMessage = messageConverter.toMessage(description, accessor.getMessageHeaders());
         clientOutboundChannel.send(errorMessage);
-
-        // Odeslání dat zpět - návrh poslání odchytitelné chybové hlášky ze serveru, která neschodí websocket spojení - není poslána jako stmp command error
-//		Map sendHeader = new HashMap();
-//		sendHeader.put("receipt-id", clientAccessor.getReceipt());
-//		messagingTemplate.convertAndSend("/topic/api/changes", description, sendHeader);
     }
 }

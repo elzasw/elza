@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -40,7 +40,8 @@ import cz.tacr.elza.service.ArrangementFormService;
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.websocket.WebSocketAwareController;
-import cz.tacr.elza.websocket.WebsocketCallback;
+import cz.tacr.elza.websocket.service.WebScoketClientEventService;
+import cz.tacr.elza.websocket.service.WebScoketStompService;
 
 /**
  * Kontroler pro zpracování websocket požadavků pro některé kritické modifikace v pořádíní.
@@ -56,7 +57,7 @@ public class ArrangementWebsocketController {
     @Autowired
     private ClientFactoryDO factoryDO;
     @Autowired
-    private WebsocketCallback websocketCallback;
+    private WebScoketStompService webScoketStompService;
     @Autowired
     private DescriptionItemService descriptionItemService;
     @Autowired
@@ -76,13 +77,13 @@ public class ArrangementWebsocketController {
 	        @DestinationVariable(value = "fundVersionId") final Integer fundVersionId,
 	        @DestinationVariable(value = "nodeVersion") final Integer nodeVersion,
 	        @DestinationVariable(value = "createNewVersion") final Boolean createNewVersion,
-	        final SimpMessageHeaderAccessor headerAccessor) {
+	        final StompHeaderAccessor requestHeaders) {
 
 		Validate.notNull(fundVersionId);
 		Validate.notNull(nodeVersion);
 		Validate.notNull(descItemVO);
 
-		UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken) headerAccessor
+		UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken) requestHeaders
 		        .getHeader("simpUser");
 		SecurityContext sc = new SecurityContextImpl();
 		sc.setAuthentication(token);
@@ -90,28 +91,26 @@ public class ArrangementWebsocketController {
 
 		arrangementFormService.updateDescItem(fundVersionId, nodeVersion, descItemVO,
 		        BooleanUtils.isNotFalse(createNewVersion),
-		        headerAccessor);
+		        requestHeaders);
 	}
 
     /**
      * Aktualizace hodnoty atributu.
      *
-     * @param descItemVO       hodnota atributu
-     * @param fundVersionId    identfikátor verze AP
-     * @param nodeVersion      verze JP
+     * @param descItemVO hodnota atributu
+     * @param fundVersionId identfikátor verze AP
+     * @param nodeVersion verze JP
      * @param createNewVersion vytvořit novou verzi?
      */
     @Transactional
-	@MessageMapping("/arrangement/descItems/{fundVersionId}/{nodeVersion}/updateOld/{createNewVersion}")
-	public void updateDescItemOld(
-            @Payload final ArrItemVO descItemVO,
-            @DestinationVariable(value = "fundVersionId") final Integer fundVersionId,
-            @DestinationVariable(value = "nodeVersion") final Integer nodeVersion,
-            @DestinationVariable(value = "createNewVersion") final Boolean createNewVersion,
-            final SimpMessageHeaderAccessor headerAccessor
-    ) {
+    @MessageMapping("/arrangement/descItems/{fundVersionId}/{nodeVersion}/updateOld/{createNewVersion}")
+    public void updateDescItemOld(@Payload final ArrItemVO descItemVO,
+                                  @DestinationVariable(value = "fundVersionId") final Integer fundVersionId,
+                                  @DestinationVariable(value = "nodeVersion") final Integer nodeVersion,
+                                  @DestinationVariable(value = "createNewVersion") final Boolean createNewVersion,
+                                  final StompHeaderAccessor requestHeaders) {
 
-        UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken) headerAccessor.getHeader("simpUser");
+        UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken) requestHeaders.getHeader("simpUser");
         SecurityContext sc = new SecurityContextImpl();
         sc.setAuthentication(token);
         SecurityContextHolder.setContext(sc);
@@ -131,7 +130,8 @@ public class ArrangementWebsocketController {
         descItemResult.setParent(ArrNodeVO.valueOf(descItemUpdated.getNode()));
 
         // Odeslání dat zpět
-		websocketCallback.sendAfterCommit(descItemResult, headerAccessor);
+        webScoketStompService.sendMessageWithReceiptAfterCommit(WebScoketClientEventService.API_CHANGES_DESTINATION, descItemResult,
+                requestHeaders);
     }
 
     /**
@@ -142,13 +142,11 @@ public class ArrangementWebsocketController {
      */
     @Transactional
     @MessageMapping("/arrangement/levels/add")
-    public void addLevel(
-            @Payload final ArrangementController.AddLevelParam addLevelParam,
-            final SimpMessageHeaderAccessor headerAccessor
-    ) {
+    public void addLevel(@Payload final ArrangementController.AddLevelParam addLevelParam,
+                         final StompHeaderAccessor requestHeaders) {
+
         Assert.notNull(addLevelParam, "Parametry musí být vyplněny");
         Assert.notNull(addLevelParam.getVersionId(), "Nebyla vyplněn identifikátor verze AS");
-
         Assert.notNull(addLevelParam.getDirection(), "Směr musí být vyplněn");
 
         ArrFundVersion version = fundVersionRepository.findOne(addLevelParam.getVersionId());
@@ -173,7 +171,8 @@ public class ArrangementWebsocketController {
         final ArrangementController.NodeWithParent result = new ArrangementController.NodeWithParent(ArrNodeVO.valueOf(newLevel.getNode()), nodeClients.iterator().next());
 
         // Odeslání dat zpět
-		websocketCallback.sendAfterCommit(result, headerAccessor);
+        webScoketStompService.sendMessageWithReceiptAfterCommit(WebScoketClientEventService.API_CHANGES_DESTINATION, result,
+                requestHeaders);
     }
 
     /**
@@ -183,10 +182,7 @@ public class ArrangementWebsocketController {
      */
     @Transactional
     @MessageMapping("/arrangement/levels/delete")
-    public void deleteLevel(
-            @Payload final ArrangementController.NodeParam nodeParam,
-            final SimpMessageHeaderAccessor headerAccessor
-    ) {
+    public void deleteLevel(@Payload final ArrangementController.NodeParam nodeParam, final StompHeaderAccessor requestHeaders) {
         Assert.notNull(nodeParam, "Parametry JP musí být vyplněny");
         Assert.notNull(nodeParam.getVersionId(), "Nebyl vyplněn identifikátor verze AS");
         Assert.notNull(nodeParam.getStaticNode(), "Nebyla zvolena referenční JP");
@@ -206,50 +202,7 @@ public class ArrangementWebsocketController {
         final ArrangementController.NodeWithParent result = new ArrangementController.NodeWithParent(ArrNodeVO.valueOf(deleteLevel.getNode()), nodeClients.iterator().next());
 
         // Odeslání dat zpět
-		websocketCallback.sendAfterCommit(result, headerAccessor);
+        webScoketStompService.sendMessageWithReceiptAfterCommit(WebScoketClientEventService.API_CHANGES_DESTINATION, result,
+                requestHeaders);
     }
-
-    // Pokus o jiný způsob vracení dat - problém s podíláním receipt id - necháno z důvodu připadného budoucího rozchození
-//    @Publisher(channel="clientOutboundChannel")
-//    @Transactional
-//    @MessageMapping("/arrangement/descItems/{fundVersionId}/{nodeVersion}/update2/{createNewVersion}")
-//    public ArrangementController.DescItemResult updateDescItem2(
-//            @Payload final ArrItemVO descItemVO,
-//            @DestinationVariable(value = "fundVersionId") final Integer fundVersionId,
-//            @DestinationVariable(value = "nodeVersion") final Integer nodeVersion,
-//            @DestinationVariable(value = "createNewVersion") final Boolean createNewVersion,
-//            SimpMessageHeaderAccessor headerAccessor) {
-//
-//        SecurityContext sc = new SecurityContextImpl();
-//        sc.setAuthentication(token);
-//        SecurityContextHolder.setContext(sc);
-//
-//        final List<String> receipt = headerAccessor.getNativeHeader("receipt");
-//        final String receiptId = receipt == null || receipt.isEmpty() ? null : receipt.get(0);
-//
-//        Assert.notNull(descItemVO, "Hodnota atributu musí být vyplněna");
-//        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
-//        Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
-//        Assert.notNull(createNewVersion, "Vytvořit novou verzi musí být vyplněno");
-//
-//        ArrDescItem descItem = factoryDO.createDescItem(descItemVO);
-//
-//        ArrDescItem descItemUpdated = descriptionItemService
-//                .updateDescriptionItem(descItem, nodeVersion, fundVersionId, createNewVersion);
-//
-//        ArrangementController.DescItemResult descItemResult = new ArrangementController.DescItemResult();
-//        descItemResult.setItem(factoryVo.createDescItem(descItemUpdated));
-//        descItemResult.setParent(factoryVo.createArrNode(descItemUpdated.getNode()));
-//
-//        if (false) {
-//            throw new RuntimeException("xxxxx");
-//        }
-//
-//        // Odeslání dat zpět
-////        Map sendHeader = new HashMap();
-////        sendHeader.put("receipt-id", receiptId);
-////        messagingTemplate.convertAndSend("/topic/api/changes", descItemResult, sendHeader);
-//
-//        return descItemResult;
-//    }
 }

@@ -7,9 +7,6 @@ import java.lang.annotation.Target;
 
 /**
  * Informační rozhraní pro kontrolery, které zpracovávají websocket - slouží jen jako informativní.
- *
- * @author Jaroslav Todt [jaroslav.todt@lightcomp.cz]
- * @since 28.8.2016
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

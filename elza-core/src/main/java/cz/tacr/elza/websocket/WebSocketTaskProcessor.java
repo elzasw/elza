@@ -1,20 +1,17 @@
 package cz.tacr.elza.websocket;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.messaging.support.MessageHandlingRunnable;
-
-import java.util.LinkedList;
-import java.util.Queue;
 
 /**
  * Třída umožňuje přidání požadavků pro zpracování pro jednu konkrétní klient session.
  *
  * Task processor for one WebSocket. Thread of processor will wait for new tasks.
  * Incoming tasks are stored in queue. Add and block methods are thread-safe.
- *
- * @author Jaroslav Todt [jaroslav.todt@lightcomp.cz]
- * @since 25.8.2016
  */
 public class WebSocketTaskProcessor implements Runnable {
 

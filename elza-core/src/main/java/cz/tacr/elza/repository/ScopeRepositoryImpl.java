@@ -4,12 +4,12 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.persistence.EntityManager;
-import javax.persistence.Query;
 
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.core.DatabaseType;
+import cz.tacr.elza.core.RecursiveQueryBuilder;
 import cz.tacr.elza.domain.RegScope;
 
 
@@ -64,7 +64,7 @@ public class ScopeRepositoryImpl implements ScopeRepositoryCustom {
 	 */
 
 	static String FIND_SCOPE_PART1 = "SELECT distinct r.* from (\n" +
-    		"WITH ";
+    		"WITH RECURSIVE";
 	static String FIND_SCOPE_PART2 = " treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position) AS \n"
 	        + "(\n"
 	        + "  SELECT t.* FROM arr_level t WHERE t.node_id IN (:nodeIds) \n"
@@ -92,33 +92,33 @@ public class ScopeRepositoryImpl implements ScopeRepositoryCustom {
 
 	static String FIND_SCOPE_NOT_INCLUDE_ROOT = "WHERE t.node_id NOT IN (:nodeIds) \n";
 
-	@SuppressWarnings("unchecked")
 	@Override
     public List<RegScope> findScopesBySubtreeNodeIds(final Collection<Integer> nodeIds, final boolean ignoreRootNode) {
-        Validate.isTrue(nodeIds.size()>0);
+        Validate.isTrue(nodeIds.size() > 0);
 
-		StringBuilder sqlQueryBuilder = new StringBuilder(FIND_SCOPE_PART1)
-		        .append(DatabaseType.getCurrent().getRecursiveQueryPrefix())
-		        .append(FIND_SCOPE_PART2);
-		if (ignoreRootNode) {
-			sqlQueryBuilder.append(FIND_SCOPE_NOT_INCLUDE_ROOT);
-		}
+        RecursiveQueryBuilder<RegScope> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(RegScope.class);
 
-		sqlQueryBuilder.append(FIND_SCOPE_PART3);
-		if (ignoreRootNode) {
-			sqlQueryBuilder.append(FIND_SCOPE_NOT_INCLUDE_ROOT);
-		}
+        rqBuilder.addSqlPart(FIND_SCOPE_PART1).addSqlPart(FIND_SCOPE_PART2);
 
-		sqlQueryBuilder.append(FIND_SCOPE_PART4);
-		if (ignoreRootNode) {
-			sqlQueryBuilder.append(FIND_SCOPE_NOT_INCLUDE_ROOT);
-		}
+        if (ignoreRootNode) {
+            rqBuilder.addSqlPart(FIND_SCOPE_NOT_INCLUDE_ROOT);
+        }
 
-		sqlQueryBuilder.append(FIND_SCOPE_PART5);
+        rqBuilder.addSqlPart(FIND_SCOPE_PART3);
+        if (ignoreRootNode) {
+            rqBuilder.addSqlPart(FIND_SCOPE_NOT_INCLUDE_ROOT);
+        }
 
-		Query query = entityManager.createNativeQuery(sqlQueryBuilder.toString(), RegScope.class);
-		query.setParameter("nodeIds", nodeIds);
-		return query.getResultList();
+        rqBuilder.addSqlPart(FIND_SCOPE_PART4);
+        if (ignoreRootNode) {
+            rqBuilder.addSqlPart(FIND_SCOPE_NOT_INCLUDE_ROOT);
+        }
+
+        rqBuilder.addSqlPart(FIND_SCOPE_PART5);
+
+        rqBuilder.prepareQuery(entityManager);
+        rqBuilder.setParameter("nodeIds", nodeIds);
+        return rqBuilder.getQuery().getResultList();
     }
 
 }

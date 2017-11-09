@@ -2,25 +2,25 @@ package cz.tacr.elza.controller;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.Collections;
 import java.util.List;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.WriteListener;
-
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mock.web.MockHttpServletResponse;
 
 import cz.tacr.elza.controller.ArrangementController.FaTreeParam;
+import cz.tacr.elza.controller.DEExportController.DEExportParamsVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.dataexchange.output.DEExportParams.FundParams;
 
 /**
  * Test exportu archivního souboru.
@@ -28,19 +28,15 @@ import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 16. 5. 2016
  */
-public class XmlExportControllerTest extends AbstractControllerTest {
+public class DElExportControllerTest extends AbstractControllerTest {
 
     protected final static String ALL_IN_ONE_XML = "all-in-one-import.xml";
 
-    @Autowired
-    private DEExportController xmlExportController;
-
     @Test
-    @Ignore
     public void exportTest() throws IOException {
         // import počátečních dat
         RegScopeVO scope = getScope();
-        importData(XmlImportControllerTest.getResourceFile(ALL_IN_ONE_XML), scope);
+        importData(DEImportControllerTest.getResourceFile(ALL_IN_ONE_XML), scope);
 
         check();
 
@@ -87,15 +83,18 @@ public class XmlExportControllerTest extends AbstractControllerTest {
     private File exportData(final ArrFundVO fund) throws IOException, FileNotFoundException {
         ArrFundVersionVO version = getOpenVersion(fund);
 
-        File file = File.createTempFile("elza-export", ".xml");
+        Path path = Files.createTempFile("elza-export", ".xml");
 
-        try (ServletOutputStream servletOutputStream = createOutputStream(file)) {
-            MockHttpServletResponse response = createHttpResponse(servletOutputStream);
-            //xmlExportController.exportFund(response, version.getId(), null);
-            // TODO: OPRAVIT !!!
+        FundParams fundParams = new FundParams();
+        fundParams.setFundVersionId(version.getId());
+        DEExportParamsVO params = new DEExportParamsVO();
+        params.setFundsParams(Collections.singleton(fundParams));
+
+        try (InputStream is = post(spec -> spec.body(params), DE_EXPORT).asInputStream()) {
+            Files.copy(is, path, StandardCopyOption.REPLACE_EXISTING);
         }
 
-        return file;
+        return path.toFile();
     }
 
     /** Kontrola odstranění archivního souboru. */
@@ -103,46 +102,6 @@ public class XmlExportControllerTest extends AbstractControllerTest {
         List<ArrFundVO> funds = getFunds();
 
         Assert.assertTrue(funds.size() == 0);
-    }
-
-    private MockHttpServletResponse createHttpResponse(final ServletOutputStream servletOutputStream) {
-        MockHttpServletResponse response = new MockHttpServletResponse() {
-
-            @Override
-            public ServletOutputStream getOutputStream() {
-                return servletOutputStream;
-            }
-        };
-        return response;
-    }
-
-    private ServletOutputStream createOutputStream(final File file) throws FileNotFoundException {
-        FileOutputStream os = new FileOutputStream(file);
-        ServletOutputStream servletOutputStream = new ServletOutputStream() {
-
-            @Override
-            public void write(final int b) throws IOException {
-                os.write(b);
-
-            }
-
-            @Override
-            public void setWriteListener(final WriteListener listener) {
-
-            }
-
-            @Override
-            public boolean isReady() {
-                return true;
-            }
-
-            @Override
-            public void close() throws IOException {
-                super.close();
-                os.close();
-            }
-        };
-        return servletOutputStream;
     }
 
     private RegScopeVO getScope() {

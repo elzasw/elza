@@ -14,6 +14,8 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -35,6 +37,7 @@ import javax.xml.bind.Marshaller;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,6 +49,8 @@ import cz.tacr.elza.api.UseUnitdateEnum;
 import cz.tacr.elza.api.enums.ParRelationClassTypeRepeatabilityEnum;
 import cz.tacr.elza.api.enums.UIPartyGroupTypeEnum;
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
+import cz.tacr.elza.core.data.RuleSystem;
+import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrOutputDefinition;
@@ -79,6 +84,7 @@ import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.RulTemplate.Engine;
 import cz.tacr.elza.domain.UIPartyGroup;
 import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.UISettings.EntityType;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.AbstractException;
@@ -386,7 +392,7 @@ public class PackageService {
     private InterpiService interpiService;
 
     @Autowired
-    StaticDataService staticDataService;
+    private StaticDataService staticDataService;
 
     @Autowired
     private PackageDependencyRepository packageDependencyRepository;
@@ -641,39 +647,62 @@ public class PackageService {
     /**
      * Zpracování nastavení.
      */
-    private void processSettings(final Settings settings,
+    private void processSettings(final Settings newSettings,
                                  final RulPackage rulPackage,
                                  final RulRuleSet ruleSet,
                                  final List<RulItemType> rulItemTypes) {
-        List<UISettings> uiSettings = settingsRepository.findByRulPackage(rulPackage).stream()
-		        .filter(s -> (ruleSet == null) == (ruleSet != null && s.getEntityType() == UISettings.EntityType.RULE
-		                && ruleSet.getRuleSetId().equals(s.getEntityId())))
-                .collect(Collectors.toList());
-        List<UISettings> uiSettingsAll = settingsRepository.findAll();
-        List<UISettings> uiSettingsNew = new ArrayList<>();
-        List<RulPackage> rulPackages = packageRepository.findAll();
-        rulPackages.add(rulPackage);
 
-        if (settings != null && !CollectionUtils.isEmpty(settings.getSettings())) {
-            for (Setting setting : settings.getSettings()) {
-                UISettings uiSetting = findEntity(uiSettingsAll,
-                        setting.getSettingsType(), setting.getEntityType(), setting.getEntityId(),
-                        UISettings::getSettingsType, UISettings::getEntityType, UISettings::getEntityId);
-                if (uiSetting == null) {
-                    uiSetting = new UISettings();
-                } else if(!uiSetting.getRulPackage().equals(rulPackage)) {
-                    throw new SystemException("Entita existuje již v jiném balíčku (" + uiSetting.getRulPackage().getCode() + ", " + rulPackage.getCode() + ")", PackageCode.OTHER_PACKAGE).set("code", uiSetting.getRulPackage().getCode());
-                }
-                convertUISettings(rulPackage, setting, uiSetting, ruleSet, rulItemTypes);
-                uiSettingsNew.add(uiSetting);
+        List<UISettings> allUiSettings = settingsRepository.findAll();
+
+        List<UISettings> currUiSettings = new LinkedList<>();
+        List<UISettings> otherUiSettings = new ArrayList<>();
+
+        for (UISettings uiSett : allUiSettings) {
+            if (rulPackage.getPackageId().equals(uiSett.getPackageId())) {
+                currUiSettings.add(uiSett);
+            } else {
+                otherUiSettings.add(uiSett);
             }
         }
 
-        uiSettingsNew = settingsRepository.save(uiSettingsNew);
+        if (newSettings != null) {
+            for (Setting sett : newSettings.getSettings()) {
+                // find same settings in other packages (throws exception when found)
+                UISettings otherUiSett = otherUiSettings.stream().filter(sett::isSettingsFor).findFirst().orElse(null);
+                if (otherUiSett != null) {
+                    throw new SystemException("Settings already exists", PackageCode.OTHER_PACKAGE)
+                        .set("UISettingsId", otherUiSett.getSettingsId())
+                        .set("settingsType", otherUiSett.getSettingsType());
+                }
 
-        List<UISettings> uiSettingsDelete = new ArrayList<>(uiSettings);
-        uiSettingsDelete.removeAll(uiSettingsNew);
-        settingsRepository.delete(uiSettingsDelete);
+                // find same settings in this package (update current when found)
+                UISettings uiSett = null;
+                for (Iterator<UISettings> it = currUiSettings.iterator(); it.hasNext();) {
+                    UISettings currUiSett = it.next();
+                    if (sett.isSettingsFor(currUiSett)) {
+                        if (uiSett != null) {
+                            throw new SystemException("Duplicate settings in same package", BaseCode.DB_INTEGRITY_PROBLEM)
+                            .set("packageId", uiSett.getPackageId())
+                            .set("firstUISettingsId", uiSett.getSettingsId())
+                            .set("secondUISettingsId", currUiSett.getSettingsId());
+                        }
+                        uiSett = currUiSett;
+                        it.remove();
+                    }
+                }
+
+                // create new settings for this package
+                if (uiSett == null) {
+                    uiSett = new UISettings();
+                }
+
+                convertUISettings(rulPackage, sett, uiSett, ruleSet, rulItemTypes);
+
+                settingsRepository.save(uiSett);
+            }
+        }
+
+        settingsRepository.delete(currUiSettings);
     }
 
     /**
@@ -687,17 +716,16 @@ public class PackageService {
         uiSetting.setSettingsType(setting.getSettingsType());
         uiSetting.setEntityType(setting.getEntityType());
         uiSetting.setValue(setting.getValue());
-        if (ruleSet != null && rulItemTypes != null) {
-            if (setting instanceof SettingFundViews) {
-                uiSetting.setEntityId(ruleSet.getRuleSetId());
-            } else if (setting instanceof SettingTypeGroups) {
-                uiSetting.setEntityId(ruleSet.getRuleSetId());
-            } else if (setting instanceof SettingGridView) {
-                uiSetting.setEntityId(ruleSet.getRuleSetId());
-            } else if (setting instanceof SettingFavoriteItemSpecs) {
-                String code = ((SettingFavoriteItemSpecs) setting).getCode();
-                setItemTypeToSetting(rulItemTypes, code, uiSetting);
-            }
+
+        EntityType entityType = setting.getEntityType();
+        if (entityType == EntityType.RULE) {
+            uiSetting.setEntityId(ruleSet.getRuleSetId());
+
+        } else if (entityType == EntityType.ITEM_TYPE) {
+            Validate.isTrue(setting.getClass() == SettingFavoriteItemSpecs.class);
+
+            String code = ((SettingFavoriteItemSpecs) setting).getCode();
+            setItemTypeToSetting(rulItemTypes, code, uiSetting);
         }
     }
 
@@ -1331,35 +1359,6 @@ public class PackageService {
         for (T item : list) {
             if (Objects.equals(functionA.apply(item), findA)
                     && Objects.equals(functionB.apply(item), findB)) {
-                return item;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Generická metoda pro vyhledání v seznamu entit podle definované metody.
-     *
-     * @param list      seznam prohledávaných entit
-     * @param findA     co hledán v entitě - první podmínka
-     * @param findB     co hledán v entitě - druhá podmínka
-     * @param findC     co hledán v entitě - třetí podmínka
-     * @param functionA metoda, jakou hledám v entitě - první
-     * @param functionB metoda, jakou hledám v entitě - druhá
-     * @param functionC metoda, jakou hledám v entitě - třetí
-     * @return nalezená entita
-     */
-    private <T, S1, S2, S3> T findEntity(@NotNull final Collection<T> list,
-                                     @NotNull final S1 findA,
-                                     @NotNull final S2 findB,
-                                     @NotNull final S3 findC,
-                                     @NotNull final Function<T, S1> functionA,
-                                     @NotNull final Function<T, S2> functionB,
-                                     @NotNull final Function<T, S3> functionC) {
-        for (T item : list) {
-            if (Objects.equals(functionA.apply(item), findA)
-                    && Objects.equals(functionB.apply(item), findB)
-                    && Objects.equals(functionC.apply(item), findC)) {
                 return item;
             }
         }
@@ -2544,13 +2543,32 @@ public class PackageService {
     }
 
     private boolean filterSettingByType(final UISettings setting, final RulRuleSet ruleSet) {
-        if (ruleSet == null) {
-            Collection<UISettings.SettingsType> allowSetttingsType = UISettings.SettingsType.findByType(UISettings.EntityType.NONE);
-            return allowSetttingsType.contains(setting.getSettingsType());
-        } else {
-            Collection<UISettings.SettingsType> allowSetttingsType = UISettings.SettingsType.findByType(UISettings.EntityType.RULE, UISettings.EntityType.ITEM_TYPE);
-            return allowSetttingsType.contains(setting.getSettingsType());
+        EntityType entityType = setting.getEntityType();
+        if (entityType == EntityType.RULE) {
+            if (ruleSet == null) {
+                return false;
+            }
+            Integer ruleSetId = Validate.notNull(setting.getEntityId());
+            if (ruleSet.getRuleSetId().equals(ruleSetId)) {
+                return true;
+            }
+            return false;
         }
+
+        if (entityType == EntityType.ITEM_TYPE) {
+            if (ruleSet == null) {
+                return false;
+            }
+            RuleSystem ruleSystem = staticDataService.getData().getRuleSystems().getByRuleSetId(ruleSet.getRuleSetId());
+            RuleSystemItemType itemType = ruleSystem.getItemTypeById(setting.getEntityId());
+            return itemType != null;
+        }
+
+        if (ruleSet != null) {
+            return false;
+        }
+
+        return true;
     }
 
     public Setting convertSetting(final UISettings uiSettings, final RulRuleSet ruleSet) {

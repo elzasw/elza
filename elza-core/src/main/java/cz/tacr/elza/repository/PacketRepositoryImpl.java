@@ -14,10 +14,11 @@ import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+import org.apache.commons.lang3.Validate;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 
 import cz.tacr.elza.core.DatabaseType;
+import cz.tacr.elza.core.RecursiveQueryBuilder;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulPacketType;
@@ -86,27 +87,37 @@ public class PacketRepositoryImpl implements PacketRepositoryCustom {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<ArrPacket> findPacketsBySubtreeNodeIds(final Collection<Integer> nodeIds,
-	        final boolean ignoreRootNodes) {
-        Assert.notEmpty(nodeIds, "Identifikátor JP musí být vyplněn");
-        DatabaseType dbType = DatabaseType.getCurrent();
+    public List<ArrPacket> findPacketsBySubtreeNodeIds(final Collection<Integer> nodeIds, final boolean ignoreRootNodes) {
+        Validate.notEmpty(nodeIds);
 
-        String sql_nodes = dbType.getRecursiveQueryPrefix() + " treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position) AS (SELECT t.* FROM arr_level t WHERE t.node_id IN (:nodeIds) UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) " +
-                "SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id WHERE t.delete_change_id IS NULL";
+        RecursiveQueryBuilder<ArrPacket> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(ArrPacket.class);
 
+        rqBuilder.addSqlPart("SELECT p.* FROM arr_packet p WHERE p.packet_id IN (")
+
+        .addSqlPart("SELECT dpr.packet_id FROM arr_data_packet_ref dpr ")
+        .addSqlPart("JOIN arr_packet ap ON ap.packet_id = dpr.packet_id WHERE dpr.data_id IN (")
+
+        .addSqlPart("SELECT d.data_id FROM arr_item i JOIN arr_data d ON d.data_id = i.data_id ")
+        .addSqlPart("JOIN arr_desc_item di ON di.item_id = i.item_id ")
+        .addSqlPart("WHERE i.delete_change_id IS NULL AND d.data_type_id = 11 AND di.node_id IN (")
+
+        .addSqlPart("WITH RECURSIVE treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position) AS ")
+        .addSqlPart("(SELECT t.* FROM arr_level t WHERE t.node_id IN (:nodeIds) ")
+        .addSqlPart("UNION ALL ")
+        .addSqlPart("SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) ")
+
+        .addSqlPart("SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id ")
+        .addSqlPart("WHERE t.delete_change_id IS NULL");
         if (ignoreRootNodes) {
-            sql_nodes += " AND n.node_id NOT IN (:nodeIds)";
+            rqBuilder.addSqlPart(" AND n.node_id NOT IN (:nodeIds)");
         }
 
-        String sql = "SELECT p.* FROM arr_packet p WHERE p.packet_id IN" +
-                " (" +
-                "  SELECT dpr.packet_id FROM arr_data_packet_ref dpr JOIN arr_packet ap ON ap.packet_id = dpr.packet_id WHERE dpr.data_id IN (SELECT d.data_id FROM arr_item i JOIN arr_data d ON d.data_id = i.data_id JOIN arr_desc_item di ON di.item_id = i.item_id WHERE i.delete_change_id IS NULL AND d.data_type_id = 11 AND di.node_id IN (" + sql_nodes + "))" +
-                " )";
+        rqBuilder.addSqlPart(")))");
 
-        Query query = entityManager.createNativeQuery(sql, ArrPacket.class);
-        query.setParameter("nodeIds", nodeIds);
+        rqBuilder.prepareQuery(entityManager);
+        rqBuilder.setParameter("nodeIds", nodeIds);
 
-		return query.getResultList();
+		return rqBuilder.getQuery().getResultList();
     }
 
     /**

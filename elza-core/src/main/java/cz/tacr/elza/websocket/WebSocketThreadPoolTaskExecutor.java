@@ -1,12 +1,12 @@
 package cz.tacr.elza.websocket;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.support.MessageHandlingRunnable;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.util.Assert;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Třída umožňuje rozřazovat požadavky na základě klient session do konkrétních {@link WebSocketTaskProcessor},
@@ -14,13 +14,12 @@ import java.util.Map;
  *
  * Ensures order of incoming or outgoing messages (depends on applied channel) by creating one
  * thread per WebSocket connection. This algorithm is based on serial nature of WebSocket.
- *
- * @author Jaroslav Todt [jaroslav.todt@lightcomp.cz]
- * @since 24.8.2016
  */
 public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
 
-	private final Map<String, WebSocketTaskProcessor> webSocketTaskProcessors = new HashMap<>();
+    private static final long serialVersionUID = 1L;
+
+    private final Map<String, WebSocketTaskProcessor> webSocketTaskProcessors = new HashMap<>();
 
 	public WebSocketThreadPoolTaskExecutor() {
 		setMaxPoolSize(Integer.MAX_VALUE); // maximum possible threads

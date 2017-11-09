@@ -1,7 +1,19 @@
 package cz.tacr.elza.service.eventnotification;
 
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import com.google.common.eventbus.EventBus;
-import cz.tacr.elza.service.IClientDataChangesService;
+
+import cz.tacr.elza.service.ClientEventDispatcher;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
 import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
@@ -10,44 +22,28 @@ import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.eventnotification.events.EventVersion;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.springframework.util.Assert;
-
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-
 
 /**
  * Servisní třída pro registraci události, která bude odeslána klientům.
- *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 14.01.2016
  */
 @Service
 public class EventNotificationService implements IEventNotificationService {
 
-
     @Autowired
-    private IClientDataChangesService clientDataChangesService;
+    private ClientEventDispatcher eventDispatcher;
 
     @Autowired
     private EventBus eventBus;
 
-
     private List<AbstractEventSimple> committedEvents = new LinkedList<>();
 
     public void forcePublish(final AbstractEventSimple event) {
-        this.clientDataChangesService.fireEvents(Arrays.asList(event));
+        eventDispatcher.dispatchEvent(event);
     }
 
     @Override
     public void publishEvent(final AbstractEventSimple event) {
-        Assert.notNull(event);
+        Validate.notNull(event);
 
         AfterTransactionListener listener = null;
         for (TransactionSynchronization synchronization : TransactionSynchronizationManager.getSynchronizations()) {
@@ -76,7 +72,7 @@ public class EventNotificationService implements IEventNotificationService {
 
         //prozatím nejpreve odešleme událost do kontextu aplikace a poté až klientovi
         eventBus.post(new EventChangeMessage(valuesCopy));
-        clientDataChangesService.fireEvents(valuesCopy);
+        valuesCopy.forEach(eventDispatcher::dispatchEvent);
     }
 
 

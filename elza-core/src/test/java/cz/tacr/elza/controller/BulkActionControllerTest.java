@@ -42,7 +42,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
     private static final String BULK_ACTION_SERIAL_NUMBER_GENERATOR = "ZP2015_GENERATOR_SERIAL_NUMBER";
 
     private int importAndGetVersionId() {
-        importXmlFile(null, 1, XmlImportControllerTest.getResourceFile(XML_FILE));
+        importXmlFile(null, 1, DEImportControllerTest.getResourceFile(XML_FILE));
         List<ArrFundVO> funds = getFunds();
         Assert.assertEquals(1, funds.size());
         Assert.assertEquals(1, funds.get(0).getVersions().size());

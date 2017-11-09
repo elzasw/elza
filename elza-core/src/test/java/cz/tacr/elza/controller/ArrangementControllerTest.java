@@ -68,12 +68,6 @@ import cz.tacr.elza.service.ArrIOService;
 import cz.tacr.elza.service.ArrMoveLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
 
-
-/**
- * Test ArrangementController
- */
-//@RunWith(SpringRunner.class)
-//@ContextConfiguration(classes=ElzaCoreTest.class)
 public class ArrangementControllerTest extends AbstractControllerTest {
 
     public static final Logger logger = LoggerFactory.getLogger(ArrangementControllerTest.class);
@@ -91,7 +85,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
     // maximální počet položek pro načtení
     public static final int MAX_SIZE = 999;
-    
+
     @Test
     public void arrangementTest() throws IOException {
 
@@ -324,7 +318,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         parent = outputItemResult.getParent();
 
         // docasne zakazano - bude vraceno zpet pri prechodu na vyvojarska pravidla
-        /*outputItemResult = setNotIdentifiedOutputItem(fundVersion.getId(), parent.getId(), parent.getVersion(), typeVo.getId(), null, null);        
+        /*outputItemResult = setNotIdentifiedOutputItem(fundVersion.getId(), parent.getId(), parent.getVersion(), typeVo.getId(), null, null);
         parent = outputItemResult.getParent();
         // Návratová struktura nesmí být prázdná
         assertNotNull(outputItemResult);
@@ -344,7 +338,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertNotNull(outputItemResult);
         // Hodnota atributu musí být prázdná
         Assert.assertNull(outputItemResult.getItem());*/
-        
+
         deleteNamedOutput(fundVersion.getId(), output.getId());
 
         outputs = getOutputs(fundVersion.getId());
@@ -543,7 +537,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         node = descItemResult.getParent();
 
         type = findDescItemTypeByCode("ZP2015_UNIT_COUNT_TABLE");
-        assertNotNull(type);        
+        assertNotNull(type);
         ElzaTable table = new ElzaTable();
         table.addRow(new ElzaRow(new AbstractMap.SimpleEntry<>("NAME", "Test 1"), new AbstractMap.SimpleEntry<>("COUNT", "195")));
         table.addRow(new ElzaRow(new AbstractMap.SimpleEntry<>("NAME", "Test 2"), new AbstractMap.SimpleEntry<>("COUNT", "200")));

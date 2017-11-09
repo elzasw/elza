@@ -28,13 +28,13 @@ import org.apache.commons.lang3.Validate;
 import org.hibernate.CacheMode;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
-import org.hibernate.Session;
 import org.hibernate.query.NativeQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.core.DatabaseType;
+import cz.tacr.elza.core.RecursiveQueryBuilder;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
@@ -420,40 +420,45 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
 
     @Override
     public List<Integer> findNodeIdsSubtree(final ArrNode node, final ArrChange change) {
-        DatabaseType dbType = DatabaseType.getCurrent();
+        RecursiveQueryBuilder<Integer> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(Integer.class);
 
-        String sql = dbType.getRecursiveQueryPrefix() + " treeData AS (SELECT t.* FROM arr_level t WHERE t.node_id = :nodeId UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) " +
-                "SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id WHERE t.delete_change_id IS NULL AND n.last_update > :date";
+        rqBuilder.addSqlPart("WITH RECURSIVE treeData AS (")
 
-        Query query = entityManager.createNativeQuery(sql);
-        query.setParameter("nodeId", node.getNodeId());
-        query.setParameter("date", Timestamp.valueOf(change.getChangeDate()));
+        .addSqlPart("SELECT t.* FROM arr_level t WHERE t.node_id = :nodeId ")
+        .addSqlPart("UNION ALL ")
+        .addSqlPart(" SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) ")
 
-        return query.getResultList();
+        .addSqlPart("SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id ")
+        .addSqlPart("WHERE t.delete_change_id IS NULL AND n.last_update > :date");
+
+        rqBuilder.prepareQuery(entityManager);
+        rqBuilder.setParameter("nodeId", node.getNodeId());
+        rqBuilder.setParameter("date", Timestamp.valueOf(change.getChangeDate()));
+        return rqBuilder.getQuery().getResultList();
     }
 
     @Override
     public List<ArrLevel> findLevelsSubtree(final Integer nodeId, final int skip, final int max, final boolean ignoreRootNodes) {
-        DatabaseType dbType = DatabaseType.getCurrent();
+        RecursiveQueryBuilder<ArrLevel> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(ArrLevel.class);
 
-        String sql = dbType.getRecursiveQueryPrefix() + " treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, path) AS" +
-                " (" +
-                "  (" +
-                "   SELECT t.*, '000001' AS path" +
-                "   FROM arr_level t" +
-                "   WHERE t.node_id = :nodeId AND t.delete_change_id IS NULL" +
-                "  )" +
-                "  UNION ALL" +
-                "  (" +
-                "   SELECT t.*, CONCAT(td.path, '.', RIGHT(CONCAT('000000', t.position), 6)) AS deep" +
-                "   FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent" +
-                "   WHERE t.delete_change_id IS NULL" +
-                "  )" +
-                " )" +
-                " SELECT t.* FROM treeData t JOIN arr_node n ON n.node_id = t.node_id WHERE t.delete_change_id IS NULL " + (ignoreRootNodes ? "AND n.node_id <> :nodeId" : "") + " ORDER BY t.path";
+        rqBuilder.addSqlPart("WITH RECURSIVE treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, path) AS (")
+        .addSqlPart("SELECT t.*, '000001' AS path FROM arr_level t WHERE t.node_id = :nodeId AND t.delete_change_id IS NULL ")
+        .addSqlPart("UNION ALL ")
+        .addSqlPart("SELECT t.*, CONCAT(td.path, '.', RIGHT(CONCAT('000000', t.position), 6)) AS deep ")
+        .addSqlPart("FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent ")
+        .addSqlPart("WHERE t.delete_change_id IS NULL) ")
 
-        Query query = entityManager.createNativeQuery(sql, ArrLevel.class);
-        query.setParameter("nodeId", nodeId);
+        .addSqlPart("SELECT t.* FROM treeData t JOIN arr_node n ON n.node_id = t.node_id ")
+        .addSqlPart("WHERE t.delete_change_id IS NULL ");
+        if (ignoreRootNodes) {
+            rqBuilder.addSqlPart("AND n.node_id <> :nodeId ");
+        }
+
+        rqBuilder.addSqlPart("ORDER BY t.path");
+
+        rqBuilder.prepareQuery(entityManager);
+        rqBuilder.setParameter("nodeId", nodeId);
+        NativeQuery<ArrLevel> query = rqBuilder.getQuery();
         query.setFirstResult(skip);
         query.setMaxResults(max);
 
@@ -464,26 +469,19 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     public long iterateSubtree(int nodeId, ArrChange change, Consumer<ArrLevel> levelAction) {
         // TODO: implement condition for not null change
         Validate.isTrue(change == null, "Not implemented");
-        DatabaseType dbType = DatabaseType.getCurrent();
 
-        String sql = dbType.getRecursiveQueryPrefix() + " fundTree(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, parentPosition, depth) AS " +
-        "(" +
-            "SELECT l.*, l.position, 1 " +
-            "FROM arr_level l " +
-            "WHERE l.node_id = ?1 AND l.delete_change_id IS NULL " +
-        "UNION ALL " +
-            "SELECT l.*, ft.position, ft.depth + 1 " +
-            "FROM arr_level l " +
-            "JOIN fundTree ft ON ft.node_id=l.node_id_parent " +
-            "WHERE l.delete_change_id IS NULL " +
-        ") " +
-        "SELECT ft.*, n.* FROM fundTree ft " +
-        "JOIN arr_node n ON n.node_id=ft.node_id " +
-        "ORDER BY ft.depth, ft.parentPosition, ft.position";
+        RecursiveQueryBuilder<ArrLevel> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(ArrLevel.class);
 
-        Session session = entityManager.unwrap(Session.class);
-        NativeQuery<?> query = session.createNativeQuery(sql);
-        query.setParameter(1, nodeId);
+        rqBuilder.addSqlPart("WITH RECURSIVE fundTree(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, parentPosition, depth) AS (")
+        .addSqlPart("SELECT l.*, l.position, 1 FROM arr_level l WHERE l.node_id = :nodeId AND l.delete_change_id IS NULL ")
+        .addSqlPart("UNION ALL ")
+        .addSqlPart("SELECT l.*, ft.position, ft.depth + 1 FROM arr_level l JOIN fundTree ft ON ft.node_id=l.node_id_parent WHERE l.delete_change_id IS NULL) ")
+
+        .addSqlPart("SELECT ft.*, n.* FROM fundTree ft JOIN arr_node n ON n.node_id=ft.node_id ORDER BY ft.depth, ft.parentPosition, ft.position");
+
+        rqBuilder.prepareQuery(entityManager);
+        rqBuilder.setParameter("nodeId", nodeId);
+        NativeQuery<ArrLevel> query = rqBuilder.getQuery();
 
         // probably false positive due to SQLQuery -> NativeQuery migration (should be fixed in HB 6.0)
         query.addRoot("ft", ArrLevel.class);
@@ -506,16 +504,19 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
 
     @Override
     public List<Integer> findNodeIdsParent(final ArrNode node, final ArrChange change) {
-        DatabaseType dbType = DatabaseType.getCurrent();
+        RecursiveQueryBuilder<Integer> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(Integer.class);
 
-        String sql = dbType.getRecursiveQueryPrefix() + " treeData AS (SELECT t.* FROM arr_level t WHERE t.node_id = :nodeId UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id_parent = t.node_id) " +
-                "SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id WHERE t.delete_change_id IS NULL AND n.last_update > :date";
+        rqBuilder.addSqlPart("WITH RECURSIVE treeData AS (SELECT t.* FROM arr_level t WHERE t.node_id = :nodeId ")
+        .addSqlPart("UNION ALL ")
+        .addSqlPart("SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id_parent = t.node_id) ")
 
-        Query query = entityManager.createNativeQuery(sql);
-        query.setParameter("nodeId", node.getNodeId());
-        query.setParameter("date", Timestamp.valueOf(change.getChangeDate()));
+        .addSqlPart("SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id ")
+        .addSqlPart("WHERE t.delete_change_id IS NULL AND n.last_update > :date");
 
-        return query.getResultList();
+        rqBuilder.prepareQuery(entityManager);
+        rqBuilder.setParameter("nodeId", node.getNodeId());
+        rqBuilder.setParameter("date", Timestamp.valueOf(change.getChangeDate()));
+        return rqBuilder.getQuery().getResultList();
     }
 
 }
