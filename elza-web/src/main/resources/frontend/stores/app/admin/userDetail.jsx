@@ -17,12 +17,11 @@ export default function userDetail(state = initialState, action = {}) {
             permission: permission(state.permission, action)
         }
     }
-    
+
     switch (action.type) {
         case types.STORE_SAVE:
             const {id} = state
             return {
-                id,
             }
         case types.STORE_LOAD:
             return {

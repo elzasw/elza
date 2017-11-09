@@ -306,15 +306,20 @@ class PartyDetail extends AbstractReactComponent {
 
             const events = {onPin:this.handlePinToggle, onSelect: this.handleToggleActive};
 
+            let headerCls = "party-header";
+            if (partyDetail.data.record.invalid) {
+                headerCls += " invalid";
+            }
+
             content = <div tabIndex={0} ref='partyDetail' className="party-detail">
-                <div className="party-header">
+                <div className={headerCls}>
                     <div className="header-icon">
                         <Icon glyph={icon}/>
                     </div>
                     <div className="header-content">
                         <div>
                             <div>
-                                <div className="title">{party.name}</div>
+                                <div className="title">{party.name}  {partyDetail.data.record.invalid && "(Neplatné)"}</div>
                             </div>
                         </div>
                         <div>
@@ -325,7 +330,7 @@ class PartyDetail extends AbstractReactComponent {
                 </div>
                 <div className="party-type">
                     {party.partyType.description}
-                    {party.scopeId && <span className="scope-label">
+                    {party.record.scopeId && <span className="scope-label">
                         {this.getScopeLabel(partyDetail.data.record.scopeId, scopes)}
                     </span>}
                 </div>
@@ -342,10 +347,9 @@ class PartyDetail extends AbstractReactComponent {
                             </div>;
                         } else if (TYPE == UI_PARTY_GROUP_TYPE.CONCLUSION) {
                             const key = UI_PARTY_GROUP_TYPE.CONCLUSION;
-                            const {initialValue, autofill, onUpdate, valid, invalid, dirty, pristine, active, visited, autofilled, ...textAreaProps} = sourceInformation;
                             return <div key={index}>
                                 <CollapsablePanel tabIndex={0} isOpen={activeIndexes && activeIndexes[key] === true} pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true} header={i.name} eventKey={key} {...events}>
-                                    <FormInput componentClass="textarea" {...textAreaProps} label={i18n("party.detail.sources")} />
+                                    <FormInput componentClass="textarea" {...sourceInformation} label={i18n("party.detail.sources")} />
                                     <label className="group-label">{i18n("party.detail.creators")}{canEdit && <Button bsStyle="action" onClick={() => creators.addField({})}><Icon glyph="fa-plus" /></Button>}</label>
                                     {creators.map((creator, index) => <div key={index + "-" + creator.id} className="value-group">
                                         <div className='desc-item-value desc-item-value-parts'>
