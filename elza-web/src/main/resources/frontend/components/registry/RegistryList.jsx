@@ -73,7 +73,7 @@ class RegistryList extends AbstractReactComponent {
     };
 
     handleFilterText = (filterText) => {
-        this.dispatch(registryListFilter({...this.props.registryList.filter, text: filterText.length === 0 ? null : filterText}));
+        this.dispatch(registryListFilter({...this.props.registryList.filter, text: filterText && filterText.length === 0 ? null : filterText}));
     };
 
     handleFilterRegistryType = (item) => {
@@ -270,7 +270,7 @@ class RegistryList extends AbstractReactComponent {
         return <div className="registry-list">
             <div className="filter">
                 <Autocomplete
-                    inputProps={ {placeholder:i18n("party.recordScope")} }
+                    inputProps={ {placeholder: this.getScopeById(filter.scopeId, scopes) || i18n("party.recordScope")} }
                     items={this.getScopesWithAll(scopes)}
                     onChange={this.handleFilterRegistryScope}
                     value={this.getScopeById(filter.scopeId, scopes)}

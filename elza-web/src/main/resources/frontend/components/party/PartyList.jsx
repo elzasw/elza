@@ -145,7 +145,7 @@ class PartyList extends AbstractReactComponent {
         return <div className="party-list">
             <div className="filter">
                 <Autocomplete
-                    inputProps={ {placeholder:i18n("party.recordScope")} }
+                    inputProps={ {placeholder: this.getScopeById(partyList.filter.scopeId, scopes) || i18n("party.recordScope")} }
                     items={this.getScopesWithAll(scopes)}
                     onChange={this.handleFilterPartyScope}
                     value={scopes && partyList.filter.scopeId ? this.getScopeById(partyList.filter.scopeId, scopes) : 'registry.all'}
