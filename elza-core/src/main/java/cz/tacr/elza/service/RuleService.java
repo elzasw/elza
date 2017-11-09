@@ -16,7 +16,6 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -471,28 +470,6 @@ public class RuleService {
 
             nodeConformityInfoRepository.delete(infos);
         }
-    }
-
-    /**
-     * Získání rozšířených typů hodnot atributů se specifikacemi.
-     * Používá výchozí strategie
-     *
-     * @param fundVersionId identifikátor verze archivní pomůcky
-     * @param nodeId              identifikátor uzlu
-     * @return seznam typů hodnot atributů se specifikacemi
-     */
-	public List<RulItemTypeExt> getDescriptionItemTypes(final ArrFundVersion fundVersion,
-                                                        final Integer nodeId) {
-		Validate.notNull(fundVersion, "Nebyla vyplněn identifikátor verze AS");
-		Validate.notNull(nodeId, "nodeId has to be set");
-
-        ArrNode node = nodeRepository.findOne(nodeId);
-
-        if (node == null) {
-            throw new ObjectNotFoundException("Nebyla nalezena JP s ID=" + nodeId, ArrangementCode.NODE_NOT_FOUND).set("id", nodeId);
-        }
-
-		return getDescriptionItemTypes(fundVersion, node);
     }
 
     /**

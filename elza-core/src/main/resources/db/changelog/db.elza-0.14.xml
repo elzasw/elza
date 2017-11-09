@@ -154,4 +154,11 @@
       </createIndex>
     </changeSet>
 
+    <!-- Pridani indexu na arr_cached_node -->
+    <changeSet id="201711060000" author="ppyt">
+      <createIndex tableName="arr_cached_node" indexName="arr_cached_node_node_idx">
+        <column name="node_id" />
+      </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

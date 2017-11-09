@@ -28,22 +28,22 @@ import cz.tacr.elza.domain.RulItemType;
 @Repository
 public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integer>, DescItemRepositoryCustom {
 
-    @Query("SELECT di FROM arr_desc_item di JOIN FETCH di.node WHERE di.node in (?1) AND di.deleteChange IS NULL AND di.itemType = ?2")
+	@Query("SELECT di FROM arr_desc_item di LEFT JOIN FETCH di.data JOIN FETCH di.node WHERE di.node in (?1) AND di.deleteChange IS NULL AND di.itemType = ?2")
     List<ArrDescItem> findOpenByNodesAndType(Collection<ArrNode> nodes, RulItemType type);
 
-    @Query("SELECT di FROM arr_desc_item di JOIN FETCH di.node WHERE di.node in (?1) AND di.deleteChange IS NULL AND di.itemType = ?2 AND di.itemSpec IN (?3)")
+	@Query("SELECT di FROM arr_desc_item di LEFT JOIN FETCH di.data JOIN FETCH di.node WHERE di.node in (?1) AND di.deleteChange IS NULL AND di.itemType = ?2 AND di.itemSpec IN (?3)")
     List<ArrDescItem> findOpenByNodesAndTypeAndSpec(Collection<ArrNode> nodes, RulItemType type, Collection<RulItemSpec> specs);
 
-    @Query("SELECT di FROM arr_desc_item di JOIN FETCH di.node n WHERE n.fund = :fund AND di.deleteChange IS NULL AND di.itemType = :type")
+	@Query("SELECT di FROM arr_desc_item di LEFT JOIN FETCH di.data JOIN FETCH di.node n WHERE n.fund = :fund AND di.deleteChange IS NULL AND di.itemType = :type")
     List<ArrDescItem> findOpenByFundAndType(@Param("fund") ArrFund fund,
                                             @Param("type") RulItemType type);
 
-    @Query("SELECT di FROM arr_desc_item di JOIN FETCH di.node n WHERE n.fund = :fund AND di.deleteChange IS NULL AND di.itemType = :type AND di.itemSpec IN :specs")
+	@Query("SELECT di FROM arr_desc_item di LEFT JOIN FETCH di.data JOIN FETCH di.node n WHERE n.fund = :fund AND di.deleteChange IS NULL AND di.itemType = :type AND di.itemSpec IN :specs")
     List<ArrDescItem> findOpenByFundAndTypeAndSpec(@Param("fund") ArrFund fund,
                                                    @Param("type") RulItemType type,
                                                    @Param("specs") Collection<RulItemSpec> specs);
 
-    @Query("SELECT i FROM arr_desc_item i WHERE i.node in (?1) AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
+	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data JOIN FETCH i.node n WHERE i.node in (?1) AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
     List<ArrDescItem> findByNodesAndDeleteChange(Collection<ArrNode> nodes, ArrChange deleteChange);
 
 
@@ -83,12 +83,19 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 	@Query("SELECT i FROM arr_desc_item i JOIN i.itemType t LEFT JOIN FETCH i.data WHERE i.node = ?1 AND i.deleteChange IS NULL AND t.itemTypeId = ?2")
     List<ArrDescItem> findByNodeAndDeleteChangeIsNullAndItemTypeId(ArrNode node, Integer descItemTypeId);
 
-	@Query("SELECT i FROM arr_desc_item i WHERE i.nodeId = ?1 AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
-	List<ArrDescItem> findByNodeIdAndChange(int nodeId, ArrChange change);
-
-	//TODO: Consider to remove this method and replace it with findByNodeIdAndChange 
-    @Query("SELECT i FROM arr_desc_item i WHERE i.node = ?1 AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
-    List<ArrDescItem> findByNodeAndChange(ArrNode node, ArrChange change);
+	/**
+	 * Return list of description items for node.
+	 * 
+	 * Function fetch description items and data
+	 * 
+	 * @param node
+	 *            Node for which data are fetched. Cannot be null.
+	 * @param change
+	 *            Change to use for fetching data. Cannot be null.
+	 * @return
+	 */
+	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data WHERE i.node = ?1 AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
+	List<ArrDescItem> findByNodeAndChange(ArrNode node, ArrChange change);
 
     @Query("SELECT i FROM arr_desc_item i JOIN i.itemType t WHERE i.node = ?1 AND t.itemTypeId = ?2 AND i.createChange < ?3 AND (i.deleteChange > ?3 OR i.deleteChange IS NULL)")
     List<ArrDescItem> findByNodeItemTypeIdAndLockChangeId(ArrNode node, Integer itemTypeId, ArrChange change);
@@ -218,15 +225,6 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 
     @Query("SELECT COUNT(i) FROM arr_desc_item i JOIN i.itemType t WHERE i.itemType = ?1")
     Long getCountByType(RulItemType itemType);
-
-
-    @Query(value = "SELECT i FROM arr_desc_item i "
-            + "left join fetch i.createChange cc "
-            + "left join fetch i.deleteChange dc "
-            + "left join fetch i.itemType it "
-            + "left join fetch i.itemSpec dis "
-            + "WHERE i.node = ?1 and i.deleteChange is null")
-    List<ArrDescItem> findByNodeAndDeleteChangeIsNullFetch(ArrNode node);
 
     @Query("SELECT n.fundId, i.nodeId, d.dataId FROM arr_desc_item i JOIN i.data d JOIN i.node n WHERE i.deleteChange IS NULL and i.data in (?1)")
     List<Object[]> findFundIdNodeIdDataIdByDataAndDeleteChangeIsNull(List<? extends ArrData> data);

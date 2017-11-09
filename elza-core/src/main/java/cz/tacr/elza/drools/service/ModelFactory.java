@@ -119,7 +119,7 @@ public class ModelFactory {
      * @param level Level to be added
      * @param facts Collection where are nodes added
      */
-	public static void addAll(Level level, Collection<Object> facts) {
+	public static void addLevelWithParents(Level level, Collection<Object> facts) {
 		while(level!=null) {
 			facts.add(level);
 			level = level.getParent();
