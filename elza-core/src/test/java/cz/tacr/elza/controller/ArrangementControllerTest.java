@@ -103,7 +103,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
     // maximální počet položek pro načtení
     public static final int MAX_SIZE = 999;
-    
+
     @Test
     public void arrangementTest() throws IOException {
 
@@ -336,7 +336,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         parent = outputItemResult.getParent();
 
         // docasne zakazano - bude vraceno zpet pri prechodu na vyvojarska pravidla
-        /*outputItemResult = setNotIdentifiedOutputItem(fundVersion.getId(), parent.getId(), parent.getVersion(), typeVo.getId(), null, null);        
+        /*outputItemResult = setNotIdentifiedOutputItem(fundVersion.getId(), parent.getId(), parent.getVersion(), typeVo.getId(), null, null);
         parent = outputItemResult.getParent();
         // Návratová struktura nesmí být prázdná
         assertNotNull(outputItemResult);
@@ -356,7 +356,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertNotNull(outputItemResult);
         // Hodnota atributu musí být prázdná
         Assert.assertNull(outputItemResult.getItem());*/
-        
+
         deleteNamedOutput(fundVersion.getId(), output.getId());
 
         outputs = getOutputs(fundVersion.getId());
@@ -555,7 +555,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         node = descItemResult.getParent();
 
         type = findDescItemTypeByCode("ZP2015_UNIT_COUNT_TABLE");
-        assertNotNull(type);        
+        assertNotNull(type);
         ElzaTable table = new ElzaTable();
         table.addRow(new ElzaRow(new AbstractMap.SimpleEntry<>("NAME", "Test 1"), new AbstractMap.SimpleEntry<>("COUNT", "195")));
         table.addRow(new ElzaRow(new AbstractMap.SimpleEntry<>("NAME", "Test 2"), new AbstractMap.SimpleEntry<>("COUNT", "200")));
@@ -1124,15 +1124,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
     }
 
-    /**
-     * TODO:
-     * Tento test neprochází z neznámené důvodu. Protože je použito v SQL dotazu WITH recursive, hibernate z neznámého
-     * důvodu přidá za klauzuli WITH[*], což způsobí výjimku o chybné syntaxi. Vrcholem všeho je, že tento problém
-     * nastává pouze při TESTU, v případě běžného spuštění k chybě nedochází. Zkoušel jsem ostrou verzi na všech
-     * podporovaných DB a na všech v pořádku. Test jsem napojil i na souborovou verzi H2 a bez úspěchu.
-     */
     @Test
-    @Ignore
     public void copyLevelsTest() {
 
         ArrFundVO fundSource = createdFund();
@@ -1167,6 +1159,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         copyNodesParams.setIgnoreRootNodes(true);
         copyNodesParams.setFilesConflictResolve(null);
         copyNodesParams.setPacketsConflictResolve(null);
+        copyNodesParams.setSelectedDirection(ArrMoveLevelService.AddLevelDirection.CHILD);
 
         copyLevels(copyNodesParams);
     }
