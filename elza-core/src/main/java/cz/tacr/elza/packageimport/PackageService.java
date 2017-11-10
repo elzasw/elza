@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -438,6 +439,8 @@ public class PackageService {
             RuleSets ruleSets = PackageUtils.convertXmlStreamToObject(RuleSets.class, mapEntry.get(RULE_SET_XML));
 
             List<RulRuleSet> rulRuleSetsDelete = new ArrayList<>();
+            List<UISettings> uiSettings = new ArrayList<>();
+
             List<RulRuleSet> rulRuleSets = processRuleSets(ruleSets, rulPackage, rulRuleSetsDelete);
 
             for (Map.Entry<String, String> ruleEntry : rulePaths.entrySet()) {
@@ -490,7 +493,9 @@ public class PackageService {
                 rulPackageActions.addAll(rulActions);
 
                 rulDescItemTypes.addAll(itemTypeRepository.findByRuleSet(rulRuleSet));
-                processSettings(settings, rulPackage, rulRuleSet, rulDescItemTypes);
+
+                List<UISettings> ruleSettings = createUISettings(settings, rulPackage, rulRuleSet, rulDescItemTypes);
+                uiSettings.addAll(ruleSettings);
             }
 
             deleteRuleSets(rulRuleSetsDelete);
@@ -537,9 +542,10 @@ public class PackageService {
             // NASTAVENÍ -----------------------------------------------------------------------------------------------
 
             Settings settings = PackageUtils.convertXmlStreamToObject(Settings.class, mapEntry.get(SETTING_XML));
-            if (settings != null) {
-                processSettings(settings, rulPackage, null, null);
-            }
+            List<UISettings> globalSettings = createUISettings(settings, rulPackage, null, null);
+            uiSettings.addAll(globalSettings);
+
+            processSettings(uiSettings, rulPackage);
 
             // END NASTAVENÍ -------------------------------------------------------------------------------------------
 
@@ -651,106 +657,86 @@ public class PackageService {
      *
      * @param newSettings not-null
      * @param rulPackage not-null
-     * @param ruleSet required for settings of type RULE
-     * @param rulItemTypes required for settings of type ITEM_TYPE
      */
-    private void processSettings(final Settings newSettings,
-                                 final RulPackage rulPackage,
-                                 final RulRuleSet ruleSet,
-                                 final List<RulItemType> rulItemTypes) {
+    private void processSettings(final List<UISettings> newSettings, final RulPackage rulPackage) {
         Validate.notNull(newSettings);
         Validate.notNull(rulPackage);
 
-        List<UISettings> allUiSettings = settingsRepository.findAll();
+        List<UISettings> allSettings = settingsRepository.findAll();
 
-        List<UISettings> currUiSettings = new LinkedList<>();
-        List<UISettings> otherUiSettings = new ArrayList<>();
+        List<UISettings> currSettings = new LinkedList<>();
+        List<UISettings> otherSettings = new ArrayList<>();
 
-        for (UISettings uiSett : allUiSettings) {
-            if (rulPackage.getPackageId().equals(uiSett.getPackageId())) {
-                currUiSettings.add(uiSett);
+        for (UISettings sett : allSettings) {
+            if (rulPackage.getPackageId().equals(sett.getPackageId())) {
+                currSettings.add(sett);
             } else {
-                otherUiSettings.add(uiSett);
+                otherSettings.add(sett);
             }
         }
 
-        if (newSettings != null) {
-            for (Setting sett : newSettings.getSettings()) {
-                // find same settings in other packages (throws exception when found)
-                UISettings otherUiSett = otherUiSettings.stream().filter(sett::isSettingsFor).findFirst().orElse(null);
-                if (otherUiSett != null) {
+        for (UISettings sett : newSettings) {
+            // find same settings in other packages (throws exception when found)
+            for (UISettings otherSett : otherSettings) {
+                if (sett.isSameSettings(otherSett)) {
                     throw new SystemException("Settings already exists", PackageCode.OTHER_PACKAGE)
-                        .set("UISettingsId", otherUiSett.getSettingsId())
-                        .set("settingsType", otherUiSett.getSettingsType());
+                        .set("UISettingsId", otherSett.getSettingsId())
+                        .set("settingsType", otherSett.getSettingsType());
                 }
-
-                // find same settings in this package (update current when found)
-                UISettings uiSett = null;
-                for (Iterator<UISettings> it = currUiSettings.iterator(); it.hasNext();) {
-                    UISettings currUiSett = it.next();
-                    if (sett.isSettingsFor(currUiSett)) {
-                        if (uiSett != null) {
-                            throw new SystemException("Duplicate settings in same package", BaseCode.DB_INTEGRITY_PROBLEM)
-                            .set("packageId", uiSett.getPackageId())
-                            .set("firstUISettingsId", uiSett.getSettingsId())
-                            .set("secondUISettingsId", currUiSett.getSettingsId());
-                        }
-                        uiSett = currUiSett;
-                        it.remove();
-                    }
-                }
-
-                // create new settings for this package
-                if (uiSett == null) {
-                    uiSett = new UISettings();
-                }
-
-                copySettings(sett, uiSett, rulPackage, ruleSet, rulItemTypes);
-
-                settingsRepository.save(uiSett);
             }
+
+            // find same settings in this package (update current when found)
+            for (Iterator<UISettings> it = currSettings.iterator(); it.hasNext();) {
+                UISettings currSett = it.next();
+                if (sett.isSameSettings(currSett)) {
+
+                    // update current settings
+                    sett.setSettingsId(currSett.getSettingsId());
+
+                    it.remove();
+                    break;
+                }
+            }
+
+            settingsRepository.save(sett);
         }
 
-        settingsRepository.delete(currUiSettings);
+        settingsRepository.delete(currSettings);
     }
 
-    private void copySettings(final Setting source,
-                              final UISettings target,
-                              final RulPackage rulPackage,
-                              final RulRuleSet ruleSet,
-                              final List<RulItemType> rulItemTypes) {
-
-        Validate.notNull(source);
-        Validate.notNull(target);
-        Validate.notNull(rulPackage);
-
-        EntityType entityType = source.getEntityType();
-
-        // common properties
-        target.setRulPackage(rulPackage);
-        target.setSettingsType(source.getSettingsType());
-        target.setEntityType(entityType);
-        target.setValue(source.getValue());
-
-        // rule
-        if (entityType == EntityType.RULE) {
-            target.setEntityId(ruleSet.getRuleSetId());
-            return;
+    private List<UISettings> createUISettings(final Settings settings,
+                                              final RulPackage rulPackage,
+                                              final RulRuleSet ruleSet,
+                                              final List<RulItemType> rulItemTypes) {
+        if (settings == null) {
+            return Collections.emptyList();
         }
 
-        // item type
-        if (entityType == EntityType.ITEM_TYPE) {
-            SettingFavoriteItemSpecs sfiSpecs = (SettingFavoriteItemSpecs) source;
-            String sfiSpecsCode = sfiSpecs.getCode();
-            for (RulItemType type : rulItemTypes) {
-                if (type.getCode().equals(sfiSpecsCode)) {
-                    target.setEntityId(type.getItemTypeId());
-                    return;
-                }
+        List<UISettings> result = new ArrayList<>(settings.getSettings().size());
+
+        for (Setting sett : settings.getSettings()) {
+            UISettings uiSett = sett.createUISettings(rulPackage);
+
+            if (uiSett.getEntityType() == EntityType.RULE) {
+                uiSett.setEntityId(ruleSet.getRuleSetId());
+
+            } else if (uiSett.getEntityType() == EntityType.ITEM_TYPE) {
+                SettingFavoriteItemSpecs specs = (SettingFavoriteItemSpecs) sett;
+                String specsCode = specs.getCode();
+
+                RulItemType itemType = rulItemTypes.stream()
+                        .filter(t -> t.getCode().equals(specsCode))
+                        .findFirst()
+                        .orElseThrow(() -> new BusinessException("RulItemType s code=" + specsCode + " nenalezen", PackageCode.CODE_NOT_FOUND)
+                                .set("code", specsCode).set("file", SETTING_XML));
+
+                uiSett.setEntityId(itemType.getItemTypeId());
             }
-            throw new BusinessException("RulItemType s code=" + sfiSpecsCode + " nenalezen", PackageCode.CODE_NOT_FOUND)
-                    .set("code", sfiSpecsCode).set("file", SETTING_XML);
+
+            result.add(uiSett);
         }
+
+        return result;
     }
 
     /**
@@ -2616,7 +2602,6 @@ public class PackageService {
         }
         entity.setSettingsType(uiSettings.getSettingsType());
         entity.setEntityType(uiSettings.getEntityType());
-        entity.setEntityId(uiSettings.getEntityId());
         entity.setValue(uiSettings.getValue());
         return entity;
     }

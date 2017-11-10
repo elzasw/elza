@@ -7,7 +7,6 @@ import java.util.Map;
 
 import javax.persistence.EntityManager;
 
-import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 import org.hibernate.TransientObjectException;
@@ -131,16 +130,16 @@ public class H2RecursiveQueryBuilder<T> implements RecursiveQueryBuilder<T> {
         }
 
         @Override
-        public Object next() {
-            Object value;
+        public String next() {
+            Object paramValue;
 
             if (hasParamIteratorNext()) {
-                value = paramIterator.next();
+                paramValue = paramIterator.next();
             } else {
-                value = getNextParamValue();
+                paramValue = getNextParamValue();
             }
 
-            return resolveSqlValue(value);
+            return resolveSqlValue(paramValue);
         }
 
         private boolean hasParamIteratorNext() {
@@ -152,24 +151,42 @@ public class H2RecursiveQueryBuilder<T> implements RecursiveQueryBuilder<T> {
 
             if (value instanceof Collection) {
                 paramIterator = ((Collection<?>) value).iterator();
-                return next();
+                value = paramIterator.next(); // empty collection must be exception
             }
 
             return value;
         }
 
-        private Object resolveSqlValue(Object value) {
+        private String resolveSqlValue(Object value) {
             Validate.notNull(value);
 
-            Class<?> valueType = value.getClass();
-            if (ClassUtils.isPrimitiveOrWrapper(valueType) || valueType == String.class) {
-                return value;
+            Class<?> javaType = value.getClass();
+
+            if (javaType == boolean.class || javaType == Boolean.class) {
+                return value.toString();
             }
+            if (javaType == byte.class || javaType == Byte.class) {
+                return value.toString();
+            }
+            if (javaType == int.class || javaType == Integer.class) {
+                return value.toString();
+            }
+            if (javaType == double.class || javaType == Double.class) {
+                return value.toString();
+            }
+            if (javaType == String.class) {
+                return '\'' + value.toString() + '\'';
+            }
+            if (javaType.isEnum()) {
+                return '\'' + ((Enum<?>) value).name() + '\'';
+            }
+
             try {
-                return session.getIdentifier(value);
+                return session.getIdentifier(value).toString();
             } catch (TransientObjectException e) {
                 // not entity
             }
+
             throw new IllegalArgumentException("Uknown SQL parameter value:" + value);
         }
     }

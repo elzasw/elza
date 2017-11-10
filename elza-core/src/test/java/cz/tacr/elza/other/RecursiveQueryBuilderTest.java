@@ -22,7 +22,7 @@ public class RecursiveQueryBuilderTest extends AbstractTest {
 
     private static final String RECURSIVE_QUERY_P1 = "SELECT DISTINCT col1 FROM ";
     private static final String RECURSIVE_QUERY_P2 = "(WITH RECURSIVE recTable(col1, col2) AS (";
-    private static final String RECURSIVE_QUERY_P3 = "SELECT * FROM table1 WHERE id IN (:ids) AND active=:active OR entity= :entity ";
+    private static final String RECURSIVE_QUERY_P3 = "SELECT * FROM table1 WHERE id IN (:ids) AND url = :url AND active=:active OR entity= :entity ";
     private static final String RECURSIVE_QUERY_P4 = "UNION ALL";
     private static final String RECURSIVE_QUERY_P5 = "SELECT * FROM table2)";
     private static final String RECURSIVE_QUERY_P6 = "SELECT * FROM recTable)";
@@ -47,7 +47,7 @@ public class RecursiveQueryBuilderTest extends AbstractTest {
     public void testH2RecursiveQuery() {
         Object entity = createEntity();
         Object entityId = em.unwrap(Session.class).getIdentifier(entity);
-        String p3 = "SELECT * FROM table1 WHERE id IN (1, 2, 3, 4) AND active=true OR entity= " + entityId + " ";
+        String p3 = "SELECT * FROM table1 WHERE id IN (1, 2, 3, 4) AND url = 'localhost' AND active=true OR entity= " + entityId + " ";
 
         String expected = RECURSIVE_QUERY_P1 + RECURSIVE_QUERY_P2 + p3 + RECURSIVE_QUERY_P4 + RECURSIVE_QUERY_P5
                 + RECURSIVE_QUERY_P6;
@@ -89,6 +89,7 @@ public class RecursiveQueryBuilderTest extends AbstractTest {
         builder.setParameter("ids", Arrays.asList(1, 2, 3, 4));
         builder.setParameter("active", true);
         builder.setParameter("entity", entity);
+        builder.setParameter("url", "localhost");
         NativeQuery<Object> query = builder.getQuery();
         return query.getQueryString();
     }

@@ -2533,7 +2533,7 @@ public class ArrangementController {
                             @PathVariable(value = "requestId") final Integer requestId) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrRequest request = requestService.getRequest(requestId);
-        if (!fundVersion.getFund().equals(request.getFund())) {
+        if (!fundVersion.getFundId().equals(request.getFund().getFundId())) {
             throw new SystemException("Neplatná verze AS (" + fundVersion.getFundVersionId() + ")", ArrangementCode.INVALID_VERSION);
         }
         requestService.sendRequest(request, fundVersion);

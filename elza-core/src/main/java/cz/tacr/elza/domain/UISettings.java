@@ -2,6 +2,7 @@ package cz.tacr.elza.domain;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -113,6 +114,13 @@ public class UISettings {
 
     public Integer getPackageId() {
         return packageId;
+    }
+
+    /**
+     * Check if other settings is same.
+     */
+    public boolean isSameSettings(UISettings other) {
+        return settingsType == other.settingsType && entityType == other.entityType && Objects.equals(entityId, other.entityId);
     }
 
     /**

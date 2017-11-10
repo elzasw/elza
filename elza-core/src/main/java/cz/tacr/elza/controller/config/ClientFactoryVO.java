@@ -991,7 +991,7 @@ public class ClientFactoryVO {
         Date createDate = Date.from(
                 fundVersion.getCreateChange().getChangeDate().atZone(ZoneId.systemDefault()).toInstant());
         fundVersionVO.setCreateDate(createDate);
-        ConfigView.ViewTitles viewTitles = configView.getViewTitles(fundVersion.getRuleSet().getCode(), fundVersion.getFund().getFundId());
+        ConfigView.ViewTitles viewTitles = configView.getViewTitles(fundVersion.getRuleSet().getCode(), fundVersion.getFundId());
         fundVersionVO.setStrictMode(viewTitles.getStrictMode());
 
         ArrChange lockChange = fundVersion.getLockChange();

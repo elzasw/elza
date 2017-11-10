@@ -1,7 +1,21 @@
 package cz.tacr.elza.config;
 
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+
 import com.google.common.eventbus.Subscribe;
+
 import cz.tacr.elza.EventBusListener;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UISettings;
@@ -10,18 +24,6 @@ import cz.tacr.elza.packageimport.xml.SettingFundViews;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.SettingsRepository;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 
 /**
@@ -98,7 +100,7 @@ public class ConfigView {
             if (uiSettingsList.size() > 0) {
                 uiSettingsList.forEach(uiSettings -> {
                     SettingFundViews setting = (SettingFundViews) packageService.convertSetting(uiSettings, null);
-                    RulRuleSet rulRuleSet = ruleSetMap.get(setting.getEntityId());
+                    RulRuleSet rulRuleSet = ruleSetMap.get(uiSettings.getEntityId());
                     Map<String, ViewTitles> viewByCode = fundView.computeIfAbsent(rulRuleSet.getCode(), k -> new HashMap<>());
                     List<SettingFundViews.Item> items = setting.getItems();
                     for (SettingFundViews.Item item : items) {
