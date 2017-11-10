@@ -1,5 +1,54 @@
 package cz.tacr.elza.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
+import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
+import cz.tacr.elza.controller.vo.ArrOutputExtVO;
+import cz.tacr.elza.controller.vo.ArrPacketVO;
+import cz.tacr.elza.controller.vo.CopyNodesParams;
+import cz.tacr.elza.controller.vo.CopyNodesValidate;
+import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
+import cz.tacr.elza.controller.vo.FilterNode;
+import cz.tacr.elza.controller.vo.FilterNodePosition;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.OutputSettingsVO;
+import cz.tacr.elza.controller.vo.RegRecordVO;
+import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.controller.vo.RegScopeVO;
+import cz.tacr.elza.controller.vo.RulOutputTypeVO;
+import cz.tacr.elza.controller.vo.RulPacketTypeVO;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.controller.vo.filter.Filters;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.table.ElzaRow;
+import cz.tacr.elza.domain.table.ElzaTable;
+import cz.tacr.elza.drools.DirectionLevel;
+import cz.tacr.elza.service.ArrIOService;
+import cz.tacr.elza.service.ArrMoveLevelService;
+import cz.tacr.elza.service.vo.ChangesResult;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.csv.CSVRecord;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -17,48 +66,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.service.vo.ChangesResult;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.csv.CSVRecord;
-import org.junit.Assert;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import cz.tacr.elza.ElzaCoreTest;
-import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.filter.Filters;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.domain.table.ElzaRow;
-import cz.tacr.elza.domain.table.ElzaTable;
-import cz.tacr.elza.drools.DirectionLevel;
-import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.DataTypeRepository;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.service.ArrIOService;
-import cz.tacr.elza.service.ArrMoveLevelService;
+import static org.junit.Assert.*;
 
 
 /**
@@ -336,8 +344,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertNotNull(outputItemResult);
         // Hodnota atributu musí být prázdná
         Assert.assertNull(outputItemResult.getItem());*/
-
-
         OutputSettingsVO outputSettings = new OutputSettingsVO();
         outputSettings.setEvenPageOffsetX(42);
         outputSettings.setEvenPageOffsetY(42);
@@ -360,7 +366,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         deleteNamedOutput(fundVersion.getId(), output.getId());
 
         outputs = getOutputs(fundVersion.getId());
@@ -1128,15 +1133,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
     }
 
-    /**
-     * TODO:
-     * Tento test neprochází z neznámené důvodu. Protože je použito v SQL dotazu WITH recursive, hibernate z neznámého
-     * důvodu přidá za klauzuli WITH[*], což způsobí výjimku o chybné syntaxi. Vrcholem všeho je, že tento problém
-     * nastává pouze při TESTU, v případě běžného spuštění k chybě nedochází. Zkoušel jsem ostrou verzi na všech
-     * podporovaných DB a na všech v pořádku. Test jsem napojil i na souborovou verzi H2 a bez úspěchu.
-     */
     @Test
-    @Ignore
     public void copyLevelsTest() {
 
         ArrFundVO fundSource = createdFund();
@@ -1171,6 +1168,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         copyNodesParams.setIgnoreRootNodes(true);
         copyNodesParams.setFilesConflictResolve(null);
         copyNodesParams.setPacketsConflictResolve(null);
+        copyNodesParams.setSelectedDirection(ArrMoveLevelService.AddLevelDirection.CHILD);
 
         copyLevels(copyNodesParams);
     }
