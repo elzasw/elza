@@ -9,7 +9,9 @@ import java.util.Date;
 import java.util.List;
 
 import cz.tacr.elza.controller.vo.RulArrangementExtensionVO;
+import cz.tacr.elza.controller.vo.RulStructureTypeVO;
 import cz.tacr.elza.domain.RulArrangementExtension;
+import cz.tacr.elza.domain.RulStructureType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1051,6 +1053,11 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(UIPartyGroup.class, UIPartyGroupVO.class)
                 .byDefault()
                 .field("partyGroupId", "id")
+                .register();
+
+        mapperFactory.classMap(RulStructureType.class, RulStructureTypeVO.class)
+                .byDefault()
+                .field("structureTypeId", "id")
                 .register();
 
         mapperFactory.classMap(ArrDao.class, ArrDaoVO.class)

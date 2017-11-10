@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrStructureData;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -10,6 +11,6 @@ import org.springframework.stereotype.Repository;
  * @since 27.10.2017
  */
 @Repository
-public interface StructureDataRepository extends JpaRepository<ArrStructureData, Integer> {
+public interface StructureDataRepository extends JpaRepository<ArrStructureData, Integer>, StructureDataRepositoryCustom {
 
 }

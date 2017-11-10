@@ -34,7 +34,7 @@ public class RulStructureExtensionDefinition {
     private RulPackage rulPackage;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulStructureExtension.class)
-    @JoinColumn(name = "structureTypeId", nullable = false)
+    @JoinColumn(name = "structureExtensionId", nullable = false)
     private RulStructureExtension structureExtension;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulComponent.class)

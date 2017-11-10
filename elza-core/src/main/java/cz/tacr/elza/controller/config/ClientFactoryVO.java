@@ -2567,4 +2567,11 @@ public class ClientFactoryVO {
         structureDataVO.state = structureData.getState();
         return structureDataVO;
     }
+
+    public List<ArrStructureDataVO> createStructureDataList(final List<ArrStructureData> structureDataList) {
+        if (structureDataList == null) {
+            return null;
+        }
+        return structureDataList.stream().map(this::createStructureData).collect(Collectors.toList());
+    }
 }

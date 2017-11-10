@@ -11,6 +11,7 @@ import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructureDefinition;
 import cz.tacr.elza.domain.RulStructureExtensionDefinition;
 import cz.tacr.elza.domain.RulStructureType;
@@ -20,6 +21,7 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.StructureDataRepository;
 import cz.tacr.elza.repository.StructureDefinitionRepository;
@@ -32,6 +34,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -428,4 +431,22 @@ public class StructureService {
         return rulesExecutor.executeStructureItemTypesRules(structureType, rulDescItemTypeExtList);
     }
 
+    public List<RulStructureType> findStructureTypes(final RulRuleSet ruleSet) {
+        return structureTypeRepository.findByRuleSet(ruleSet);
+    }
+
+    public FilteredResult<ArrStructureData> findStructureData(final RulStructureType structureType,
+                                                              final ArrFund fund,
+                                                              @Nullable final String search,
+                                                              final boolean assignable,
+                                                              final int from,
+                                                              final int count) {
+        if (from < 0) {
+            throw new SystemException("Hodnota nesmí být záporná", BaseCode.PROPERTY_IS_INVALID).set("property", "from");
+        }
+        if (count > 0) {
+            throw new SystemException("Hodnota musí být kladná", BaseCode.PROPERTY_IS_INVALID).set("property", "count");
+        }
+        return structureDataRepository.findStructureData(structureType.getStructureTypeId(), fund.getFundId(), search, assignable, from, count);
+    }
 }

@@ -14,7 +14,7 @@ import java.util.List;
  * @since 27.10.2017
  */
 @Repository
-public interface StructureDefinitionRepository extends JpaRepository<RulStructureDefinition, Integer>, Packaging<RulStructureType> {
+public interface StructureDefinitionRepository extends JpaRepository<RulStructureDefinition, Integer>, Packaging<RulStructureDefinition> {
 
     List<RulStructureDefinition> findByRulPackageAndStructureTypeIn(RulPackage rulPackage, List<RulStructureType> rulStructureTypes);
 

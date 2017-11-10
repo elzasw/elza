@@ -43,6 +43,7 @@ import cz.tacr.elza.service.vo.ChangesResult;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.csv.CSVRecord;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -844,7 +845,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         return fund;
     }
 
-
+    @Ignore // TODO slapa - odebrat celý obaly
     @Test
     public void packetsTest() {
 

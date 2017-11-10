@@ -3,14 +3,22 @@ package cz.tacr.elza.controller;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ArrStructureDataVO;
+import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.RulStructureTypeVO;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrStructureData;
 import cz.tacr.elza.domain.ArrStructureItem;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulStructureType;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.StructureService;
 import org.slf4j.Logger;
@@ -21,6 +29,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.transaction.Transactional;
@@ -28,13 +37,15 @@ import java.util.List;
 
 
 /**
- * TODO
+ * Controller pro správu strukturovaných datových typů a jejich hodnot.
+ *
+ * @since 10.11.2017
  */
 @RestController
-@RequestMapping("/api/structure")
+@RequestMapping(value = "/api/structure",
+        consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
 public class StructureController {
-
-    private static final Logger logger = LoggerFactory.getLogger(StructureController.class);
 
     private final StructureService structureService;
     private final ArrangementService arrangementService;
@@ -52,67 +63,97 @@ public class StructureController {
         this.factoryVO = factoryVO;
     }
 
+    /**
+     * Vytvoření hodnoty strukturovaného datového typu.
+     *
+     * @param structureTypeCode kód strukturovaného datového typu
+     * @param fundVersionId     identifikátor verze AS
+     * @return vytvořená dočasná entita
+     */
     @Transactional
-    @RequestMapping(value = "/data/{structureTypeCode}/{fundVersionId}/create",
-            method = RequestMethod.PUT,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/data/{structureTypeCode}/{fundVersionId}/create", method = RequestMethod.PUT)
     public ArrStructureDataVO createStructureData(@PathVariable(value = "structureTypeCode") final String structureTypeCode,
                                                   @PathVariable(value = "fundVersionId") final Integer fundVersionId) {
 
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         RulStructureType structureType = structureService.getStructureTypeByCode(structureTypeCode);
-
-        if (!structureType.getRuleSet().equals(fundVersion.getRuleSet())) {
-            throw new BusinessException("Pravidla z AS se neshodují s pravidly ze strukturovaného typu", ArrangementCode.INVALID_RULE);
-        }
-
+        validateRuleSet(fundVersion, structureType);
         ArrStructureData createStructureData = structureService.createStructureData(fundVersion.getFund(), structureType, ArrStructureData.State.TEMP);
         return factoryVO.createStructureData(createStructureData);
     }
 
+    /**
+     * Potvrzení hodnoty strukturovaného datového typu. Provede nastavení hodnoty.
+     *
+     * @param fundVersionId   identifikátor verze AS
+     * @param structureDataId identifikátor hodnoty strukturovaného datového typu
+     * @return potvrzená entita
+     */
     @Transactional
-    @RequestMapping(value = "/data/{structureTypeCode}/{fundVersionId}/confirm",
-            method = RequestMethod.PUT,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/data/{structureTypeCode}/{fundVersionId}/confirm", method = RequestMethod.PUT)
     public ArrStructureDataVO confirmStructureData(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                                    @PathVariable(value = "structureDataId") final Integer structureDataId) {
-
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         ArrStructureData structureData = structureService.getStructureDataById(structureDataId);
-
-        if (!structureData.getStructureType().getRuleSet().equals(fundVersion.getRuleSet())) {
-            throw new BusinessException("Pravidla z AS se neshodují s pravidly ze strukturovaného typu", ArrangementCode.INVALID_RULE);
-        }
-
+        validateRuleSet(fundVersion, structureData.getStructureType());
         ArrStructureData createStructureData = structureService.confirmStructureData(structureData);
         return factoryVO.createStructureData(createStructureData);
     }
 
+    /**
+     * Smazání hodnoty strukturovaného datového typu.
+     *
+     * @param fundVersionId   identifikátor verze AS
+     * @param structureDataId identifikátor hodnoty strukturovaného datového typu
+     * @return smazaná entita
+     */
     @Transactional
-    @RequestMapping(value = "/data/{fundVersionId}/{structureDataId}//delete",
-            method = RequestMethod.DELETE,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/data/{fundVersionId}/{structureDataId}//delete", method = RequestMethod.DELETE)
     public ArrStructureDataVO deleteStructureData(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                                   @PathVariable(value = "structureDataId") final Integer structureDataId) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         ArrStructureData structureData = structureService.getStructureDataById(structureDataId);
-
-        if (!structureData.getStructureType().getRuleSet().equals(fundVersion.getRuleSet())) {
-            throw new BusinessException("Pravidla z AS se neshodují s pravidly ze strukturovaného typu", ArrangementCode.INVALID_RULE);
-        }
-
+        validateRuleSet(fundVersion, structureData.getStructureType());
         ArrStructureData deleteStructureData = structureService.deleteStructureData(structureData);
         return factoryVO.createStructureData(deleteStructureData);
     }
 
+    /**
+     * Vyhledání hodnot strukturovaného datového typu.
+     *
+     * @param structureTypeCode kód typu strukturovaného datového
+     * @param fundVersionId     identifikátor verze AS
+     * @param search            text pro filtrování (nepovinné)
+     * @param assignable        přiřaditelnost
+     * @param from              od položky
+     * @param count             maximální počet položek
+     * @return nalezené položky
+     */
     @Transactional
-    @RequestMapping(value = "/item/{fundVersionId}/{structureDataId}/{itemTypeId}/create",
-            method = RequestMethod.PUT,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/data/{structureTypeCode}/{fundVersionId}", method = RequestMethod.GET)
+    public FilteredResultVO<ArrStructureDataVO> findStructureData(@PathVariable("structureTypeCode") final String structureTypeCode,
+                                                                  @PathVariable("fundVersionId") final Integer fundVersionId,
+                                                                  @RequestParam(value = "search", required = false) final String search,
+                                                                  @RequestParam("assignable") final Boolean assignable,
+                                                                  @RequestParam(value = "from", required = false, defaultValue = "0") final Integer from,
+                                                                  @RequestParam(value = "count", required = false, defaultValue = "200") final Integer count) {
+        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
+        RulStructureType structureType = structureService.getStructureTypeByCode(structureTypeCode);
+        FilteredResult<ArrStructureData> filteredResult = structureService.findStructureData(structureType, fundVersion.getFund(), search, assignable, from, count);
+        return new FilteredResultVO<>(factoryVO.createStructureDataList(filteredResult.getList()), filteredResult.getTotalCount());
+    }
+
+    /**
+     * Vytvoření položky k hodnotě strukt. datového typu.
+     *
+     * @param itemVO          položka
+     * @param fundVersionId   identifikátor verze AS
+     * @param itemTypeId      identifikátor typu atributu
+     * @param structureDataId identifikátor hodnoty strukturovaného datového typu
+     * @return vytvořená entita
+     */
+    @Transactional
+    @RequestMapping(value = "/item/{fundVersionId}/{structureDataId}/{itemTypeId}/create", method = RequestMethod.PUT)
     public StructureItemResult createStructureItem(@RequestBody final ArrItemVO itemVO,
                                                    @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                                    @PathVariable(value = "itemTypeId") final Integer itemTypeId,
@@ -125,14 +166,19 @@ public class StructureController {
         return result;
     }
 
+    /**
+     * Upravení položky k hodnotě strukt. datového typu.
+     *
+     * @param itemVO            položka
+     * @param fundVersionId     identifikátor verze AS
+     * @param createNewVersion  provést verzovanou změnu
+     * @return upravená entita
+     */
     @Transactional
-    @RequestMapping(value = "/item/{fundVersionId}/update/{createNewVersion}",
-            method = RequestMethod.PUT,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public StructureItemResult updateDescItem(@RequestBody final ArrItemVO itemVO,
-                                              @PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                              @PathVariable(value = "createNewVersion") final Boolean createNewVersion) {
+    @RequestMapping(value = "/item/{fundVersionId}/update/{createNewVersion}", method = RequestMethod.PUT)
+    public StructureItemResult updateStructureItem(@RequestBody final ArrItemVO itemVO,
+                                                   @PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                                   @PathVariable(value = "createNewVersion") final Boolean createNewVersion) {
         ArrStructureItem structureItem = factoryDO.createStructureItem(itemVO);
         ArrStructureItem updateStructureItem = structureService.updateStructureItem(structureItem, fundVersionId, createNewVersion);
         StructureItemResult result = new StructureItemResult();
@@ -141,13 +187,17 @@ public class StructureController {
         return result;
     }
 
+    /**
+     * Odstranení položky k hodnotě strukt. datového typu.
+     *
+     * @param itemVO        položka
+     * @param fundVersionId identifikátor verze AS
+     * @return smazaná entita
+     */
     @Transactional
-    @RequestMapping(value = "/item/{fundVersionId}/delete",
-            method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public StructureItemResult deleteDescItem(@RequestBody final ArrItemVO itemVO,
-                                              @PathVariable(value = "fundVersionId") final Integer fundVersionId) {
+    @RequestMapping(value = "/item/{fundVersionId}/delete", method = RequestMethod.POST)
+    public StructureItemResult deleteStructureItem(@RequestBody final ArrItemVO itemVO,
+                                                   @PathVariable(value = "fundVersionId") final Integer fundVersionId) {
         ArrStructureItem structureItem = factoryDO.createStructureItem(itemVO);
         ArrStructureItem deleteStructureItem = structureService.deleteStructureItem(structureItem, fundVersionId);
         StructureItemResult result = new StructureItemResult();
@@ -156,40 +206,96 @@ public class StructureController {
         return result;
     }
 
+    /**
+     * Odstranení položek k hodnotě strukt. datového typu podle typu atributu.
+     *
+     * @param fundVersionId   identifikátor verze AS
+     * @param structureDataId identifikátor hodnoty strukturovaného datového typu
+     * @param itemTypeId      identifikátor typu atributu
+     */
     @Transactional
-    @RequestMapping(value = "/item/{fundVersionId}/{structureDataId}/{itemTypeId}",
-            method = RequestMethod.DELETE,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public void deleteItemsByType(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                  @PathVariable(value = "structureDataId") final Integer structureDataId,
-                                  @PathVariable(value = "itemTypeId") final Integer itemTypeId) {
+    @RequestMapping(value = "/item/{fundVersionId}/{structureDataId}/{itemTypeId}", method = RequestMethod.DELETE)
+    public void deleteStructureItemsByType(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                           @PathVariable(value = "structureDataId") final Integer structureDataId,
+                                           @PathVariable(value = "itemTypeId") final Integer itemTypeId) {
         structureService.deleteStructureItemsByType(fundVersionId, structureDataId, itemTypeId);
     }
 
+    /**
+     * Vyhledá možné typy strukt. datových typů, které lze v AS používat.
+     *
+     * @param fundVersionId identifikátor verze AS
+     * @return nalezené entity
+     */
     @Transactional
-    @RequestMapping(value = "/item/form/{fundVersionId}/{structureDataId}",
-            method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public void getFormStructureItems(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                      @PathVariable(value = "structureDataId") final Integer structureDataId) {
+    @RequestMapping(value = "/type/{fundVersionId}", method = RequestMethod.GET)
+    public List<RulStructureTypeVO> findRulStructureTypes(@PathVariable(value = "fundVersionId") final Integer fundVersionId) {
+        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
+        List<RulStructureType> structureTypes = structureService.findStructureTypes(fundVersion.getRuleSet());
+        return factoryVO.createSimpleEntity(structureTypes, RulStructureTypeVO.class);
+    }
+
+    /**
+     * Získání dat pro formulář strukt. datového typu.
+     *
+     * @param fundVersionId   identifikátor verze AS
+     * @param structureDataId identifikátor hodnoty strukturovaného datového typu
+     * @return data formuláře
+     */
+    @Transactional
+    @RequestMapping(value = "/item/form/{fundVersionId}/{structureDataId}", method = RequestMethod.GET)
+    public StructureDataFormDataVO getFormStructureItems(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                                         @PathVariable(value = "structureDataId") final Integer structureDataId) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         ArrStructureData structureData = structureService.getStructureDataById(structureDataId);
 
-        if (!structureData.getStructureType().getRuleSet().equals(fundVersion.getRuleSet())) {
-            throw new BusinessException("Pravidla z AS se neshodují s pravidly ze strukturovaného typu", ArrangementCode.INVALID_RULE);
-        }
+        validateRuleSet(fundVersion, structureData.getStructureType());
 
         List<RulItemTypeExt> structureItemTypes = structureService.getStructureItemTypes(structureData.getStructureType());
         List<ArrStructureItem> structureItems = structureService.findStructureItems(structureData);
+
+        Integer fundId = fundVersion.getFund().getFundId();
+        String ruleCode = fundVersion.getRuleSet().getCode();
+
+        ArrStructureDataVO structureDataVO = factoryVO.createStructureData(structureData);
+        List<ItemGroupVO> itemGroupsVO = factoryVO.createItemGroupsNew(ruleCode, fundId, structureItems);
+        List<ItemTypeGroupVO> itemTypeGroupsVO = factoryVO.createItemTypeGroupsNew(ruleCode, fundId, structureItemTypes);
+        return new StructureDataFormDataVO(structureDataVO, itemGroupsVO, itemTypeGroupsVO);
     }
 
+    /**
+     * Validace pravidel.
+     *
+     * @param fundVersion   verze AS
+     * @param structureType strukturovaný typ
+     */
+    private void validateRuleSet(final ArrFundVersion fundVersion, final RulStructureType structureType) {
+        if (!structureType.getRuleSet().equals(fundVersion.getRuleSet())) {
+            throw new BusinessException("Pravidla z AS se neshodují s pravidly ze strukturovaného typu", ArrangementCode.INVALID_RULE);
+        }
+    }
 
+    public static class StructureDataFormDataVO extends ArrangementController.FormDataNewVO<ArrStructureDataVO> {
+        private ArrStructureDataVO parent;
 
+        public StructureDataFormDataVO() {
+        }
 
+        public StructureDataFormDataVO(final ArrStructureDataVO parent, final List<ItemGroupVO> groups, final List<ItemTypeGroupVO> typeGroups) {
+            super(parent, groups, typeGroups);
+            this.parent = parent;
+        }
 
+        @Override
+        public ArrStructureDataVO getParent() {
+            return parent;
+        }
 
+        @Override
+        public void setParent(final ArrStructureDataVO parent) {
+            this.parent = parent;
+        }
+    }
 
     public static class StructureItemResult extends ArrangementController.ItemResult<ArrStructureDataVO> {
         private ArrStructureDataVO parent;

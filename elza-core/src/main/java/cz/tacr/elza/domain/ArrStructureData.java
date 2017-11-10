@@ -37,17 +37,29 @@ public class ArrStructureData {
     @JoinColumn(name = "createChangeId", nullable = false)
     private ArrChange createChange;
 
+    @Column(name = "createChangeId", updatable = false, insertable = false)
+    private Integer createChangeId;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = "deleteChangeId")
     private ArrChange deleteChange;
+
+    @Column(name = "deleteChangeId", updatable = false, insertable = false)
+    private Integer deleteChangeId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulStructureType.class)
     @JoinColumn(name = "structureTypeId", nullable = false)
     private RulStructureType structureType;
 
+    @Column(name = "structureTypeId", updatable = false, insertable = false)
+    private Integer structureTypeId;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFund.class)
     @JoinColumn(name = "fundId", nullable = false)
     private ArrFund fund;
+
+    @Column(name = "fundId", updatable = false, insertable = false)
+    private Integer fundId;
 
     @Column(length = StringLength.LENGTH_1000)
     private String value;
@@ -90,6 +102,7 @@ public class ArrStructureData {
      */
     public void setStructureType(final RulStructureType structureType) {
         this.structureType = structureType;
+        this.structureTypeId = structureType == null ? null : structureType.getStructureTypeId();
     }
 
     /**
@@ -118,6 +131,7 @@ public class ArrStructureData {
      */
     public void setCreateChange(final ArrChange createChange) {
         this.createChange = createChange;
+        this.createChangeId = createChange == null ? null : createChange.getChangeId();
     }
 
     /**
@@ -132,6 +146,7 @@ public class ArrStructureData {
      */
     public void setDeleteChange(final ArrChange deleteChange) {
         this.deleteChange = deleteChange;
+        this.deleteChangeId = deleteChange == null ? null : deleteChange.getChangeId();
     }
 
     /**
@@ -146,6 +161,7 @@ public class ArrStructureData {
      */
     public void setFund(final ArrFund fund) {
         this.fund = fund;
+        this.fundId = fund == null ? null : fund.getFundId();
     }
 
     /**
@@ -188,6 +204,22 @@ public class ArrStructureData {
      */
     public void setState(final State state) {
         this.state = state;
+    }
+
+    public Integer getCreateChangeId() {
+        return createChangeId;
+    }
+
+    public Integer getDeleteChangeId() {
+        return deleteChangeId;
+    }
+
+    public Integer getStructureTypeId() {
+        return structureTypeId;
+    }
+
+    public Integer getFundId() {
+        return fundId;
     }
 
     /**

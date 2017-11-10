@@ -2936,10 +2936,16 @@ public class PackageService {
 
         List<RulRuleSet> ruleSets = ruleSetRepository.findByRulPackage(rulPackage);
         List<RulArrangementRule> arrangementRules = arrangementRuleRepository.findByRulPackage(rulPackage);
+        List<RulStructureExtensionDefinition> structureExtensionDefinitions = structureExtensionDefinitionRepository.findByRulPackage(rulPackage);
+        List<RulStructureDefinition> structureDefinitions = structureDefinitionRepository.findByRulPackage(rulPackage);
         List<RulAction> actions = packageActionsRepository.findByRulPackage(rulPackage);
 
         packageActionsRepository.findByRulPackage(rulPackage).forEach(this::deleteActionLink);
         itemTypeRepository.deleteByRulPackage(rulPackage);
+        structureExtensionDefinitionRepository.deleteByRulPackage(rulPackage);
+        structureExtensionRepository.deleteByRulPackage(rulPackage);
+        structureDefinitionRepository.deleteByRulPackage(rulPackage);
+        structureTypeRepository.deleteByRulPackage(rulPackage);
         packageActionsRepository.deleteByRulPackage(rulPackage);
         arrangementRuleRepository.deleteByRulPackage(rulPackage);
         policyTypeRepository.deleteByRulPackage(rulPackage);
@@ -2967,11 +2973,45 @@ public class PackageService {
         for (RulRuleSet ruleSet : ruleSets) {
             File dirActions = new File(bulkActionConfigManager.getFunctionsDir(rulPackage.getCode(), ruleSet.getCode()));
             File dirRules = new File(rulesExecutor.getDroolsDir(rulPackage.getCode(), ruleSet.getCode()));
+            File dirGroovies = new File(rulesExecutor.getGroovyDir(rulPackage.getCode(), ruleSet.getCode()));
 
             try {
 
                 for (RulArrangementRule rulArrangementRule : arrangementRules) {
                     deleteFile(dirRules, rulArrangementRule.getComponent().getFilename());
+                    componentRepository.delete(rulArrangementRule.getComponent());
+                }
+
+                for (RulStructureExtensionDefinition structureExtensionDefinition : structureExtensionDefinitions) {
+                    File dir;
+                    switch (structureExtensionDefinition.getDefType()) {
+                        case ATTRIBUTE_TYPES:
+                            dir = dirRules;
+                            break;
+                        case SERIALIZED_VALUE:
+                            dir = dirGroovies;
+                            break;
+                        default:
+                            throw new NotImplementedException("Neimplementovaný typ: " + structureExtensionDefinition.getDefType());
+                    }
+                    deleteFile(dir, structureExtensionDefinition.getComponent().getFilename());
+                    componentRepository.delete(structureExtensionDefinition.getComponent());
+                }
+
+                for (RulStructureDefinition structureExtensionDefinition : structureDefinitions) {
+                    File dir;
+                    switch (structureExtensionDefinition.getDefType()) {
+                        case ATTRIBUTE_TYPES:
+                            dir = dirRules;
+                            break;
+                        case SERIALIZED_VALUE:
+                            dir = dirGroovies;
+                            break;
+                        default:
+                            throw new NotImplementedException("Neimplementovaný typ: " + structureExtensionDefinition.getDefType());
+                    }
+                    deleteFile(dir, structureExtensionDefinition.getComponent().getFilename());
+                    componentRepository.delete(structureExtensionDefinition.getComponent());
                 }
 
                 for (RulAction rulPackageAction : actions) {
