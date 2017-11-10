@@ -26,6 +26,12 @@ public class H2RecursiveQueryBuilder<T> implements RecursiveQueryBuilder<T> {
 
     private NativeQuery<T> nativeQuery;
 
+	/**
+	 * Raw native query
+	 */
+	@SuppressWarnings("rawtypes")
+	private NativeQuery rawNativeQuery;
+
     private Session session;
 
     H2RecursiveQueryBuilder(Class<T> entityClass) {
@@ -34,7 +40,7 @@ public class H2RecursiveQueryBuilder<T> implements RecursiveQueryBuilder<T> {
 
     @Override
     public H2RecursiveQueryBuilder<T> addSqlPart(String sqlPart) {
-        Validate.isTrue(nativeQuery == null);
+		Validate.isTrue(rawNativeQuery == null);
 
         sb.append(sqlPart);
         return this;
@@ -55,23 +61,47 @@ public class H2RecursiveQueryBuilder<T> implements RecursiveQueryBuilder<T> {
 
     @Override
     public void setParameter(String name, Object value) {
-        Validate.isTrue(nativeQuery == null);
+		Validate.isTrue(rawNativeQuery == null);
 
         if (parameterMap.putIfAbsent(name, value) != null) {
             throw new IllegalStateException("Parameter already defined, name:" + name);
         }
     }
 
-    @Override
+	@SuppressWarnings("unchecked")
+	@Override
     public NativeQuery<T> getQuery() {
-        if (nativeQuery == null) {
-            nativeQuery = buildQuery();
-        }
-        return nativeQuery;
+		Validate.notNull(session, "prepareQuery must be called first");
+
+		if (rawNativeQuery == null) {
+			buildQuery();
+		}
+		Validate.notNull(rawNativeQuery);
+		if (nativeQuery != null) {
+			return nativeQuery;
+		} else {
+			return rawNativeQuery;
+		}
     }
 
-    private NativeQuery<T> buildQuery() {
-        Validate.notNull(session, "prepareQuery must be called first");
+	@SuppressWarnings("rawtypes")
+	@Override
+	public NativeQuery getNativeQuery() {
+		Validate.notNull(session, "prepareQuery must be called first");
+
+		if (rawNativeQuery == null) {
+			buildQuery();
+		}
+		Validate.notNull(rawNativeQuery);
+		return rawNativeQuery;
+	}
+
+	/**
+	 * Prepare pure JPA/HQL query and substitue all parameters
+	 * 
+	 * @return Return pure JPA/HQL query
+	 */
+	private String prepareSqlQuery() {
 
         // locate named parameters in query
         ParsedSql parsedSql = NamedParameterUtils.parseSqlStatement(sb.toString());
@@ -106,7 +136,20 @@ public class H2RecursiveQueryBuilder<T> implements RecursiveQueryBuilder<T> {
 
         sb.append(jdbcQuery, offset, jdbcQuery.length());
 
-        return session.createNativeQuery(sb.toString(), entityClass);
+		return sb.toString();
+	}
+
+	private void buildQuery() {
+		String sqlString = prepareSqlQuery();
+
+		// check if entity type is not defined
+		// or if it is primitive type
+		if (StandardRecursiveQueryBuilder.isEntityClass(session, entityClass)) {
+			nativeQuery = session.createNativeQuery(sqlString, entityClass);
+			rawNativeQuery = nativeQuery;
+		} else {
+			rawNativeQuery = session.createNativeQuery(sqlString);
+		}
     }
 
     private static class SqlParamValuesIterator implements Iterator<Object> {

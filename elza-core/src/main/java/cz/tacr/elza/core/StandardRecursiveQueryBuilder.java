@@ -1,6 +1,8 @@
 package cz.tacr.elza.core;
 
 import javax.persistence.EntityManager;
+import javax.persistence.metamodel.EntityType;
+import javax.persistence.metamodel.Metamodel;
 
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
@@ -12,6 +14,12 @@ public class StandardRecursiveQueryBuilder<T> implements RecursiveQueryBuilder<T
 
     protected final Class<T> entityClass;
 
+	/**
+	 * Raw native query
+	 */
+	@SuppressWarnings("rawtypes")
+	private NativeQuery rawNativeQuery;
+
     private NativeQuery<T> nativeQuery;
 
     StandardRecursiveQueryBuilder(Class<T> entityClass) {
@@ -20,7 +28,7 @@ public class StandardRecursiveQueryBuilder<T> implements RecursiveQueryBuilder<T
 
     @Override
     public RecursiveQueryBuilder<T> addSqlPart(String sqlPart) {
-        Validate.isTrue(nativeQuery == null);
+		Validate.isTrue(rawNativeQuery == null);
 
         sb.append(sqlPart);
         return this;
@@ -32,23 +40,68 @@ public class StandardRecursiveQueryBuilder<T> implements RecursiveQueryBuilder<T
         prepareQuery(session);
     }
 
+	/**
+	 * Helper method to check if entityClass is real entity class
+	 * 
+	 * @param session
+	 * @param entityClass
+	 * @return
+	 */
+	static public boolean isEntityClass(Session session, @SuppressWarnings("rawtypes") Class entityClass) {
+		if (entityClass == null) {
+			return false;
+		}
+		// use session to check entityClass
+		Metamodel metaModel = session.getMetamodel();
+		try {
+			EntityType<Object> type = metaModel.entity(entityClass);
+			if (type == null) {
+				return false;
+			}
+		} catch (IllegalArgumentException e) {
+			// if not found metamodel throws this exception
+			return false;
+		}
+		return true;
+	}
+
     @Override
     public void prepareQuery(Session session) {
-        Validate.isTrue(nativeQuery == null);
+		Validate.isTrue(rawNativeQuery == null);
 
         String sqlString = sb.toString();
-        nativeQuery = session.createNativeQuery(sqlString, entityClass);
+
+		// check if entity type is not defined
+		// or if it is primitive type
+		if (isEntityClass(session, entityClass)) {
+			nativeQuery = session.createNativeQuery(sqlString, entityClass);
+			rawNativeQuery = nativeQuery;
+		} else {
+			rawNativeQuery = session.createNativeQuery(sqlString);
+		}
     }
 
     @Override
     public void setParameter(String name, Object value) {
-        nativeQuery.setParameter(name, value);
+		rawNativeQuery.setParameter(name, value);
     }
 
-    @Override
+	@SuppressWarnings("unchecked")
+	@Override
     public NativeQuery<T> getQuery() {
-        Validate.notNull(nativeQuery, "prepareQuery must be called first");
-
-        return nativeQuery;
+		Validate.notNull(rawNativeQuery, "prepareQuery must be called first");
+		if (nativeQuery != null) {
+			return nativeQuery;
+		} else {
+			return rawNativeQuery;
+		}
     }
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	public NativeQuery getNativeQuery() {
+		Validate.notNull(rawNativeQuery, "prepareQuery must be called first");
+
+		return rawNativeQuery;
+	}
 }
