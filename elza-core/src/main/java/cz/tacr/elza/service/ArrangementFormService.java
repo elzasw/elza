@@ -214,7 +214,7 @@ public class ArrangementFormService {
 
 		// TODO: use better functions, we just need a descriptions
 		List<TreeNodeClient> tncList = levelTreeCache.getNodesByIds(Collections.singleton(descItemUpdated.getNodeId()),
-		        fundVersion.getFundId());
+		        fundVersion.getFundVersionId());
 		TreeNodeClient tnc = tncList.get(0);
 
 		UpdateItemResult updateResult = new UpdateItemResult(descItemUpdated, descItemVo, descItemTypeGroupsVO, tnc);
