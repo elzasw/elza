@@ -12,9 +12,8 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.service.exception.DeleteFailedException;
+import javax.transaction.Transactional;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -25,12 +24,14 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
-import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.DmsFile;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.FileRepository;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundFileRepository;
@@ -41,6 +42,7 @@ import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventStringInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.service.exception.DeleteFailedException;
 
 /**
  * Dms Service
@@ -341,6 +343,7 @@ public class DmsService {
      * @param count  počet
      * @return filtrovaný list
      */
+	@Transactional
     @AuthMethod(permission = {UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL})
     public FilteredResult<ArrOutputFile> findOutputFiles(final String search, final Integer outputResultId, final Integer from, final Integer count) {
         Assert.notNull(outputResultId, "Identifikátor výstupu musí být vyplněn");

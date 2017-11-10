@@ -552,19 +552,19 @@ public class OutputImpl implements Output
         Party party;
         switch (partyType) {
             case DYNASTY:
-                ParDynasty parDynasty = HibernateUtils.unproxy((ParDynasty) parParty);
+			ParDynasty parDynasty = HibernateUtils.unproxy(parParty);
                 party = Dynasty.newInstance(parDynasty, initHelper);
                 break;
             case EVENT:
-                ParEvent parEvent = HibernateUtils.unproxy((ParEvent) parParty);
+			ParEvent parEvent = HibernateUtils.unproxy(parParty);
                 party = Event.newInstance(parEvent, initHelper);
                 break;
             case GROUP_PARTY:
-                ParPartyGroup parPartyGroup = HibernateUtils.unproxy((ParPartyGroup) parParty);
+			ParPartyGroup parPartyGroup = HibernateUtils.unproxy(parParty);
                 party = PartyGroup.newInstance(parPartyGroup, initHelper);
                 break;
             case PERSON:
-                ParPerson parPerson = HibernateUtils.unproxy((ParPerson) parParty);
+			ParPerson parPerson = HibernateUtils.unproxy(parParty);
                 party = Person.newInstance(parPerson, initHelper);
                 break;
             default :
