@@ -246,7 +246,7 @@ public class RuleController {
         final List<RulArrangementExtension> availableExtensions = ruleService.findArrangementExtensionsByFundVersionId(fundVersion.getFundVersionId());
         result.setAvailableExtensions(factoryVo.createSimpleEntity(availableExtensions, RulArrangementExtensionVO.class));
 
-        final List<RulArrangementExtension> nodeExtensions = ruleService.findArrangementExtensionsByNodeId(node.getFundId(), node.getNodeId());
+        final List<RulArrangementExtension> nodeExtensions = ruleService.findArrangementExtensionsByNodeId(fundVersion.getFundVersionId(), node.getNodeId());
         result.setNodeExtensions(factoryVo.createSimpleEntity(nodeExtensions, RulArrangementExtensionVO.class));
 
         final List<RulArrangementExtension> parentExtensions = ruleService.findAllArrangementExtensionsByNodeId(node.getNodeId());
