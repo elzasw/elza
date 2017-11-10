@@ -66,14 +66,14 @@ public class ArrDescItem extends ArrItem {
 
     @Transient
     private final Integer fundId;
-    
+
     /**
      * Sets fund id for index when node is only reference (detached hibernate proxy).
      */
     public ArrDescItem(Integer fundId) {
         this.fundId = fundId;
     }
-    
+
     public ArrDescItem() {
         this((Integer) null);
     }
@@ -149,6 +149,16 @@ public class ArrDescItem extends ArrItem {
 
     @Override
     public ArrOutputDefinition getOutputDefinition() {
+        return null; //throw new NotImplementedException();
+    }
+
+    @Override
+    public ArrStructureData getStructureData() {
+        return null; //throw new NotImplementedException();
+    }
+
+    @Override
+    public Integer getStructureDataId() {
         return null; //throw new NotImplementedException();
     }
 

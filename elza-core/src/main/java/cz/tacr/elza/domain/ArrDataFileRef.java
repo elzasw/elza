@@ -50,4 +50,17 @@ public class ArrDataFileRef extends ArrData {
     public String getFulltextValue() {
         return file.getName() + file.getFileName();
     }
+
+    @Override
+    public ArrData copy() {
+        ArrDataFileRef data = new ArrDataFileRef();
+        data.setDataType(this.getDataType());
+        data.setFile(this.getFile());
+        return data;
+    }
+
+    @Override
+    public void merge(final ArrData data) {
+        this.setFile(((ArrDataFileRef) data).getFile());
+    }
 }

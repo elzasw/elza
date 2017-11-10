@@ -11,7 +11,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.DataTypeRepository;
 
 public enum DataType {
-    INT, STRING, TEXT, UNITDATE, UNITID, FORMATTED_TEXT, COORDINATES, PARTY_REF, RECORD_REF, DECIMAL, PACKET_REF, ENUM, FILE_REF, JSON_TABLE;
+    INT, STRING, TEXT, UNITDATE, UNITID, FORMATTED_TEXT, COORDINATES, PARTY_REF, RECORD_REF, DECIMAL, PACKET_REF, ENUM, FILE_REF, JSON_TABLE, STRUCTURED;
 
     private static Map<Integer, DataType> ENTITY_ID_LOOKUP;
 

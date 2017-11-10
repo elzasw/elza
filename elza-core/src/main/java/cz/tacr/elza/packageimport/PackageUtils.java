@@ -114,7 +114,7 @@ public class PackageUtils {
         private Map<Integer, T> reverseMap = new HashMap<>(); // reverse map
 
         //Constructor
-        Graph(int v)
+        public Graph(int v)
         {
             V = v;
             adj = new LinkedList[v];
@@ -123,7 +123,7 @@ public class PackageUtils {
             }
         }
 
-        void addEdge(T vv, T ww) {
+        public void addEdge(T vv, T ww) {
             Integer v = map.computeIfAbsent(vv, k -> map.size());
             Integer w = map.computeIfAbsent(ww, k -> map.size());
             if (map.size() > V) {
@@ -156,7 +156,7 @@ public class PackageUtils {
 
         // The function to do Topological Sort. It uses
         // recursive topologicalSortUtil()
-        List<T> topologicalSort()
+        public List<T> topologicalSort()
         {
             Stack<T> stack = new Stack<>();
 

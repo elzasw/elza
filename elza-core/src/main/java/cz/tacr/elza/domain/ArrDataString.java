@@ -38,4 +38,17 @@ public class ArrDataString extends ArrData {
     public String getFulltextValue() {
         return value;
     }
+
+    @Override
+    public ArrData copy() {
+        ArrDataString data = new ArrDataString();
+        data.setDataType(this.getDataType());
+        data.setValue(this.getValue());
+        return data;
+    }
+
+    @Override
+    public void merge(final ArrData data) {
+        this.setValue(((ArrDataString) data).getValue());
+    }
 }

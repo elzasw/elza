@@ -1,6 +1,6 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Column;  
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -65,7 +65,7 @@ public class ArrDataPacketRef extends ArrData {
     }
 
     @JsonIgnore
-    @Field 
+    @Field
     public Integer getSpecification() {
         return indexProvider.getSpecification();
     }
@@ -97,6 +97,19 @@ public class ArrDataPacketRef extends ArrData {
             }
             return fulltext;
         }
+    }
+
+    @Override
+    public ArrData copy() {
+        ArrDataPacketRef data = new ArrDataPacketRef();
+        data.setDataType(this.getDataType());
+        data.setPacket(this.getPacket());
+        return data;
+    }
+
+    @Override
+    public void merge(final ArrData data) {
+        this.setPacket(((ArrDataPacketRef) data).getPacket());
     }
 }
 

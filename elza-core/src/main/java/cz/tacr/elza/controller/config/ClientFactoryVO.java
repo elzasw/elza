@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemCoordinatesVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemDecimalVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemEnumVO;
@@ -33,6 +34,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrStructureData;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
 import cz.tacr.elza.repository.ItemSpecRepository;
@@ -2553,5 +2555,16 @@ public class ClientFactoryVO {
 
         vo.setDaoCount(daoCount);
         return vo;
+    }
+
+    public ArrStructureDataVO createStructureData(final ArrStructureData structureData) {
+        ArrStructureDataVO structureDataVO = new ArrStructureDataVO();
+        structureDataVO.id = structureData.getStructureDataId();
+        structureDataVO.typeCode = structureData.getStructureType().getCode();
+        structureDataVO.value = structureData.getValue();
+        structureDataVO.errorDescription = structureData.getErrorDescription();
+        structureDataVO.assignable = structureData.getAssignable();
+        structureDataVO.state = structureData.getState();
+        return structureDataVO;
     }
 }

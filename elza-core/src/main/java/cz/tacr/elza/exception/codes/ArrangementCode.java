@@ -168,4 +168,9 @@ public enum ArrangementCode implements ErrorCode {
      */
     ADMIN_GROUP_MISSING_FUND_CREATE_PERM,
 
+    /**
+     * Neplatné pravidla.
+     */
+    INVALID_RULE,
+
 }

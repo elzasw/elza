@@ -7,23 +7,19 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 /**
- * VO PacketType.
+ * VO StructuredType.
  *
- * @author Martin Šlapa
- * @since 14.12.2015
+ * @since 01.11.2017
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "packet-type")
-public class PacketType {
+@XmlType(name = "structure-type")
+public class StructureType {
 
     @XmlAttribute(name = "code", required = true)
     private String code;
 
     @XmlElement(name = "name", required = true)
     private String name;
-
-    @XmlElement(name = "shortcut", required = true)
-    private String shortcut;
 
     public String getCode() {
         return code;
@@ -39,13 +35,5 @@ public class PacketType {
 
     public void setName(final String name) {
         this.name = name;
-    }
-
-    public String getShortcut() {
-        return shortcut;
-    }
-
-    public void setShortcut(final String shortcut) {
-        this.shortcut = shortcut;
     }
 }

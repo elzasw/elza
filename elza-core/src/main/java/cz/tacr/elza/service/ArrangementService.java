@@ -1154,6 +1154,10 @@ public class ArrangementService {
         return versionNodeIds;
     }
 
+    public ArrFundVersion getFundVersionById(final Integer fundVersionId) {
+        return fundVersionRepository.getOneCheckExist(fundVersionId);
+    }
+
     /**
      * Vyhledání id nodů podle parametrů.
      *

@@ -27,6 +27,9 @@ public class ItemType {
     @XmlAttribute(name = "data-type", required = true)
     private String dataType;
 
+    @XmlAttribute(name = "structure-type")
+    private String structureType;
+
     @XmlElement(name = "name", required = true)
     private String name;
 
@@ -63,6 +66,14 @@ public class ItemType {
 
     public void setDataType(final String dataType) {
         this.dataType = dataType;
+    }
+
+    public String getStructureType() {
+        return structureType;
+    }
+
+    public void setStructureType(final String structureType) {
+        this.structureType = structureType;
     }
 
     public String getName() {

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import cz.tacr.elza.service.cache.NodeCacheSerializable;
 import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang3.RandomUtils;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.NumericField;
 import org.springframework.data.rest.core.annotation.RestResource;
@@ -38,6 +39,7 @@ public abstract class ArrItem implements NodeCacheSerializable {
     public static final String DATA = "data";
     public static final String ITEM_SPEC = "itemSpec";
     public static final String ITEM_TYPE = "itemType";
+    public static final String POSITION = "position";
 
     @Id
     @GeneratedValue
@@ -226,6 +228,10 @@ public abstract class ArrItem implements NodeCacheSerializable {
     public abstract ArrNode getNode();
 
     public abstract ArrOutputDefinition getOutputDefinition();
+
+    public abstract ArrStructureData getStructureData();
+
+    public abstract Integer getStructureDataId();
 
     public void setCreateChangeId(final Integer createChangeId) {
         this.createChangeId = createChangeId;

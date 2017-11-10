@@ -41,4 +41,17 @@ public class ArrDataCoordinates extends ArrData {
     public String getFulltextValue() {
         return toString();
     }
+
+    @Override
+    public ArrData copy() {
+        ArrDataCoordinates data = new ArrDataCoordinates();
+        data.setDataType(this.getDataType());
+        data.setValue(this.getValue());
+        return data;
+    }
+
+    @Override
+    public void merge(final ArrData data) {
+        this.setValue(((ArrDataCoordinates) data).getValue());
+    }
 }

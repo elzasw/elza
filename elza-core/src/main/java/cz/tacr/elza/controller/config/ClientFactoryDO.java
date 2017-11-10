@@ -13,6 +13,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.domain.ArrStructureItem;
 import cz.tacr.elza.filter.condition.UndefinedDescItemCondition;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -266,6 +267,51 @@ public class ClientFactoryDO {
         }
 
         return descItem;
+    }
+
+    // TODO
+    public ArrStructureItem createStructureItem(final ArrItemVO itemVO, final Integer itemTypeId) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+
+        ArrData data = mapper.map(itemVO, ArrData.class);
+        ArrStructureItem structureItem = new ArrStructureItem();
+        structureItem.setData(data);
+
+        RulItemType descItemType = itemTypeRepository.findOne(itemTypeId);
+        if (descItemType == null) {
+            throw new SystemException("Typ s ID=" + itemVO.getDescItemSpecId() + " neexistuje", BaseCode.ID_NOT_EXIST);
+        }
+        structureItem.setItemType(descItemType);
+
+        if (itemVO.getDescItemSpecId() != null) {
+            RulItemSpec descItemSpec = itemSpecRepository.findOne(itemVO.getDescItemSpecId());
+            if (descItemSpec == null) {
+                throw new SystemException("Specifikace s ID=" + itemVO.getDescItemSpecId() + " neexistuje", BaseCode.ID_NOT_EXIST);
+            }
+            structureItem.setItemSpec(descItemSpec);
+        }
+
+        return structureItem;
+    }
+
+    // TODO
+    public ArrStructureItem createStructureItem(final ArrItemVO descItemVO) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        ArrData data = mapper.map(descItemVO, ArrData.class);
+        ArrStructureItem structureItem = new ArrStructureItem();
+        structureItem.setData(data);
+        BeanUtils.copyProperties(descItemVO, structureItem);
+        structureItem.setItemId(descItemVO.getId());
+
+        if (descItemVO.getDescItemSpecId() != null) {
+            RulItemSpec descItemSpec = itemSpecRepository.findOne(descItemVO.getDescItemSpecId());
+            if (descItemSpec == null) {
+                throw new SystemException("Specifikace s ID=" + descItemVO.getDescItemSpecId() + " neexistuje", BaseCode.ID_NOT_EXIST);
+            }
+            structureItem.setItemSpec(descItemSpec);
+        }
+
+        return structureItem;
     }
 
     /**

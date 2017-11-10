@@ -197,6 +197,31 @@ public class ArrChange {
         DELETE_DESC_ITEM,
 
         /**
+         * Změna hodnoty strukturovaného atributu.
+         */
+        UPDATE_STRUCTURE_ITEM,
+
+        /**
+         * Založení hodnoty strukturovaného atributu.
+         */
+        ADD_STRUCTURE_ITEM,
+
+        /**
+         * Zrušení hodnoty strukturovaného atributu.
+         */
+        DELETE_STRUCTURE_ITEM,
+
+        /**
+         * Založení strukturovaného typu.
+         */
+        ADD_STRUCTURE_DATA,
+
+        /**
+         * Smazání strukturovaného typu.
+         */
+        DELETE_STRUCTURE_DATA,
+
+        /**
          * Hromadná změna atributů - změny z tabulkového zobrazení, pokud se týká jen jedné JP, tak jde o typ Změna atributu.
          */
         BATCH_CHANGE_DESC_ITEM,

@@ -175,4 +175,32 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
     public void formatAppend(final String format) {
         this.format += format;
     }
+
+    @Override
+    public ArrData copy() {
+        ArrDataUnitdate data = new ArrDataUnitdate();
+        data.setDataType(this.getDataType());
+        data.setCalendarType(this.getCalendarType());
+        data.setValueFrom(this.getValueFrom());
+        data.setValueTo(this.getValueTo());
+        data.setValueFromEstimated(this.getValueFromEstimated());
+        data.setValueToEstimated(this.getValueToEstimated());
+        data.setNormalizedFrom(this.getNormalizedFrom());
+        data.setNormalizedTo(this.getNormalizedTo());
+        data.setFormat(this.getFormat());
+        return data;
+    }
+
+    @Override
+    public void merge(final ArrData data) {
+        ArrDataUnitdate dataUnitdate = (ArrDataUnitdate) data;
+        this.setCalendarType(dataUnitdate.getCalendarType());
+        this.setValueFrom(dataUnitdate.getValueFrom());
+        this.setValueTo(dataUnitdate.getValueTo());
+        this.setValueFromEstimated(dataUnitdate.getValueFromEstimated());
+        this.setValueToEstimated(dataUnitdate.getValueToEstimated());
+        this.setNormalizedFrom(dataUnitdate.getNormalizedFrom());
+        this.setNormalizedTo(dataUnitdate.getNormalizedTo());
+        this.setFormat(dataUnitdate.getFormat());
+    }
 }

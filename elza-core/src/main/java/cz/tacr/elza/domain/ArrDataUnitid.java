@@ -35,4 +35,17 @@ public class ArrDataUnitid extends ArrData {
     public String getFulltextValue() {
         return value;
     }
+
+    @Override
+    public ArrData copy() {
+        ArrDataUnitid data = new ArrDataUnitid();
+        data.setDataType(this.getDataType());
+        data.setValue(this.getValue());
+        return data;
+    }
+
+    @Override
+    public void merge(final ArrData data) {
+        this.setValue(((ArrDataUnitid) data).getValue());
+    }
 }
