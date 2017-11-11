@@ -122,9 +122,10 @@ public class RulesExecutor implements InitializingBean {
 
 
     public List<RulItemTypeExt> executeStructureItemTypesRules(final RulStructureType structureType,
-                                                               final List<RulItemTypeExt> rulDescItemTypeExtList) {
+                                                               final List<RulItemTypeExt> rulDescItemTypeExtList,
+                                                               final ArrFundVersion fundVersion) {
         try {
-            return structureItemTypesRules.execute(structureType, rulDescItemTypeExtList);
+            return structureItemTypesRules.execute(structureType, rulDescItemTypeExtList, fundVersion.getFund());
         } catch (NoSuchFileException e) {
             logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
             return rulDescItemTypeExtList;

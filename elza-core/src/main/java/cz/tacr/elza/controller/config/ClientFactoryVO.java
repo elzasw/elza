@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.controller.StructureExtensionFundVO;
 import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemCoordinatesVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemDecimalVO;
@@ -35,6 +36,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.RulStructureExtension;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
 import cz.tacr.elza.repository.ItemSpecRepository;
@@ -2573,5 +2575,25 @@ public class ClientFactoryVO {
             return null;
         }
         return structureDataList.stream().map(this::createStructureData).collect(Collectors.toList());
+    }
+
+    public List<StructureExtensionFundVO> createStructureExtensionFund(final List<RulStructureExtension> allStructureExtensions,
+                                                                       final List<RulStructureExtension> structureExtensions) {
+        List<StructureExtensionFundVO> result = new ArrayList<>(allStructureExtensions.size());
+        allStructureExtensions.forEach(se -> {
+            StructureExtensionFundVO structureExtensionFund = createStructureExtensionFund(se);
+            structureExtensionFund.active = structureExtensions.contains(se);
+            result.add(structureExtensionFund);
+        });
+        return result;
+    }
+
+    private StructureExtensionFundVO createStructureExtensionFund(final RulStructureExtension structureExtension) {
+        StructureExtensionFundVO structureExtensionFundVO = new StructureExtensionFundVO();
+        structureExtensionFundVO.id = structureExtension.getStructureExtensionId();
+        structureExtensionFundVO.code = structureExtension.getCode();
+        structureExtensionFundVO.name = structureExtension.getName();
+        structureExtensionFundVO.active = false;
+        return structureExtensionFundVO;
     }
 }

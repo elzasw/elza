@@ -33,7 +33,7 @@ public class ArrFundStructureExtension {
     @JoinColumn(name = "deleteChangeId")
     private ArrChange deleteChange;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulStructureType.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulStructureExtension.class)
     @JoinColumn(name = "structureTypeId", nullable = false)
     private RulStructureExtension structureExtension;
 

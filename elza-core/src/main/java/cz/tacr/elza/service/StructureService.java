@@ -3,6 +3,7 @@ package cz.tacr.elza.service;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundStructureExtension;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrStructureData;
@@ -13,6 +14,7 @@ import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructureDefinition;
+import cz.tacr.elza.domain.RulStructureExtension;
 import cz.tacr.elza.domain.RulStructureExtensionDefinition;
 import cz.tacr.elza.domain.RulStructureType;
 import cz.tacr.elza.drools.RulesExecutor;
@@ -22,10 +24,11 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.FilteredResult;
-import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.FundStructureExtensionRepository;
 import cz.tacr.elza.repository.StructureDataRepository;
 import cz.tacr.elza.repository.StructureDefinitionRepository;
 import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
+import cz.tacr.elza.repository.StructureExtensionRepository;
 import cz.tacr.elza.repository.StructureItemRepository;
 import cz.tacr.elza.repository.StructureTypeRepository;
 import org.castor.core.util.Assert;
@@ -44,17 +47,16 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * TODO: vyplnit popis třídy
+ * Servisní třída pro práci se strukturovanými datovými typy.
  *
  * @since 06.11.2017
  */
 @Service
 public class StructureService {
 
-    private final GroovyScriptService groovyScriptService;
     private final StructureItemRepository structureItemRepository;
-    private final RuleSetRepository ruleSetRepository;
     private final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository;
+    private final StructureExtensionRepository structureExtensionRepository;
     private final StructureDefinitionRepository structureDefinitionRepository;
     private final StructureDataRepository structureDataRepository;
     private final StructureTypeRepository structureTypeRepository;
@@ -62,23 +64,21 @@ public class StructureService {
     private final ArrangementService arrangementService;
     private final DataRepository dataRepository;
     private final RuleService ruleService;
+    private final FundStructureExtensionRepository fundStructureExtensionRepository;
 
     @Autowired
-    public StructureService(final GroovyScriptService groovyScriptService,
-                            final StructureItemRepository structureItemRepository,
-                            final RuleSetRepository ruleSetRepository,
+    public StructureService(final StructureItemRepository structureItemRepository,
                             final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository,
-                            final StructureDefinitionRepository structureDefinitionRepository,
+                            final StructureExtensionRepository structureExtensionRepository, final StructureDefinitionRepository structureDefinitionRepository,
                             final StructureDataRepository structureDataRepository,
                             final StructureTypeRepository structureTypeRepository,
                             final RulesExecutor rulesExecutor,
                             final ArrangementService arrangementService,
                             final DataRepository dataRepository,
-                            final RuleService ruleService) {
-        this.groovyScriptService = groovyScriptService;
+                            final RuleService ruleService, final FundStructureExtensionRepository fundStructureExtensionRepository) {
         this.structureItemRepository = structureItemRepository;
-        this.ruleSetRepository = ruleSetRepository;
         this.structureExtensionDefinitionRepository = structureExtensionDefinitionRepository;
+        this.structureExtensionRepository = structureExtensionRepository;
         this.structureDefinitionRepository = structureDefinitionRepository;
         this.structureDataRepository = structureDataRepository;
         this.structureTypeRepository = structureTypeRepository;
@@ -86,8 +86,15 @@ public class StructureService {
         this.arrangementService = arrangementService;
         this.dataRepository = dataRepository;
         this.ruleService = ruleService;
+        this.fundStructureExtensionRepository = fundStructureExtensionRepository;
     }
 
+    /**
+     * Vyhledá platné položky k hodnotě strukt. datového typu.
+     *
+     * @param structureData hodnota struktovaného datového typu
+     * @return nalezené položky
+     */
     public List<ArrStructureItem> findStructureItems(final ArrStructureData structureData) {
         return structureItemRepository.findByStructureDataAndDeleteChangeIsNull(structureData);
     }
@@ -112,11 +119,12 @@ public class StructureService {
         return structureDataRepository.save(structureData);
     }
 
-    public ArrStructureData updateStructureData(final ArrStructureData structureData) {
-        // TODO slapa: přegenerování value?
-        return structureDataRepository.save(structureData);
-    }
-
+    /**
+     * Smazání hodnoty strukturovaného datového typu.
+     *
+     * @param structureData hodnota struktovaného datového typu
+     * @return smazaná entita
+     */
     public ArrStructureData deleteStructureData(final ArrStructureData structureData) {
         if (structureData.getDeleteChange() != null) {
             throw new BusinessException("Nelze odstranit již smazaná strukturovaná data", BaseCode.INVALID_STATE);
@@ -126,6 +134,14 @@ public class StructureService {
         return structureDataRepository.save(structureData);
     }
 
+    /**
+     * Vytvoření položky k hodnotě strukt. datového typu.
+     *
+     * @param structureItem   položka
+     * @param structureDataId identifikátor hodnoty strukt. datového typu
+     * @param fundVersionId   identifikátor verze AS
+     * @return vytvořená entita
+     */
     public ArrStructureItem createStructureItem(final ArrStructureItem structureItem,
                                                 final Integer structureDataId,
                                                 final Integer fundVersionId) {
@@ -179,11 +195,18 @@ public class StructureService {
         createStructureItem.setItemType(structureItem.getItemType());
         createStructureItem.setItemSpec(structureItem.getItemSpec());
 
-        structureItemRepository.save(createStructureItem);
-
-        return createStructureItem;
+        return structureItemRepository.save(createStructureItem);
     }
 
+    /**
+     * Odverzování položek.
+     *
+     * @param moveDiff             pokud je různé od 0, provede změnu pozic
+     * @param structureItems       položky, které odverzováváme
+     * @param change               změna, pod kterou se odverzovává
+     * @param createNewDataVersion true - provede se odverzování i návazných dat
+     * @return nově odverzované položky
+     */
     private List<ArrStructureItem> nextVersionStructureItems(final int moveDiff,
                                                              final List<ArrStructureItem> structureItems,
                                                              final ArrChange change,
@@ -221,6 +244,13 @@ public class StructureService {
         return structureItemRepository.save(resultStructureItems);
     }
 
+    /**
+     * Vyhledá volnou pozici pro typ atributu.
+     *
+     * @param structureData hodnota struktovaného datového typu
+     * @param itemType      typ atributu
+     * @return pozice pro další položku
+     */
     private int findNextPosition(final ArrStructureData structureData, final RulItemType itemType) {
         List<ArrStructureItem> structureItems = structureItemRepository.findOpenItemsAfterPosition(itemType,
                 structureData, 0, new PageRequest(0, 1, Sort.Direction.DESC, ArrItem.POSITION));
@@ -231,6 +261,14 @@ public class StructureService {
         }
     }
 
+    /**
+     * Úprava položky k hodnotě strukt. datového typu.
+     *
+     * @param structureItem    položka
+     * @param fundVersionId    identifikátor verze AS
+     * @param createNewVersion true - verzovaná změna
+     * @return upravená entita
+     */
     public ArrStructureItem updateStructureItem(final ArrStructureItem structureItem,
                                                 final Integer fundVersionId,
                                                 final boolean createNewVersion) {
@@ -280,8 +318,8 @@ public class StructureService {
                 position = positionChange;
             }
 
-            ArrData updateData = structureItem.getData().copy();
-            dataRepository.save(updateData);
+
+            ArrData updateData = updateData(structureItem.getData(), true);
 
             updateStructureItem = new ArrStructureItem();
             updateStructureItem.setData(updateData);
@@ -296,12 +334,18 @@ public class StructureService {
             updateStructureItem.setItemSpec(structureItem.getItemSpec());
             ArrData updateData = updateStructureItem.getData();
             updateData.merge(structureItem.getData());
-            dataRepository.save(updateData);
+            updateData(updateData, false);
         }
 
         return structureItemRepository.save(updateStructureItem);
     }
 
+    /**
+     * Provede kontrolu zda-li verze AS má stejná pravidla jako strukt. typ.
+     *
+     * @param fundVersion   verze AS
+     * @param structureType strukturovaný typ
+     */
     private void validateRuleSet(final ArrFundVersion fundVersion, final RulStructureType structureType) {
         if (!fundVersion.getRuleSet().equals(structureType.getRuleSet())) {
             throw new BusinessException("Fund a strukturovaný typ nemají stejná pravidla", BaseCode.INVALID_STATE)
@@ -310,6 +354,13 @@ public class StructureService {
         }
     }
 
+    /**
+     * Smazání položky k hodnotě strukt. datového typu.
+     *
+     * @param structureItem položka
+     * @param fundVersionId identifikátor verze AS
+     * @return smazaná položka
+     */
     public ArrStructureItem deleteStructureItem(final ArrStructureItem structureItem, final Integer fundVersionId) {
         ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_STRUCTURE_ITEM);
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
@@ -325,10 +376,23 @@ public class StructureService {
         return structureItemRepository.save(structureItemDB);
     }
 
+    /**
+     * Vytvoření dat. Provede kopii z předlohy a založení v DB.
+     *
+     * @param data předloha dat
+     * @return vytvořená data
+     */
     private ArrData createData(final ArrData data) {
         return dataRepository.save(data.copy());
     }
 
+    /**
+     * Úprava dat. Provede uložení změněných dat, popřípadně založení kopie.
+     *
+     * @param data             ukládaná data
+     * @param createNewVersion vytvořit nová data
+     * @return uložená / nová data
+     */
     private ArrData updateData(final ArrData data, final boolean createNewVersion) {
         if (createNewVersion) {
             return dataRepository.save(data.copy());
@@ -338,12 +402,23 @@ public class StructureService {
         }
     }
 
-    public String generateValue(final ArrStructureData structureData) throws IOException {
+    /**
+     * Vygenerování hodnoty pro hodnotu strukt. datového typu.
+     *
+     * @param structureData hodnota struktovaného datového typu
+     * @return hodnota
+     */
+    public String generateValue(final ArrStructureData structureData) {
 
         // TODO slapa: do cache?
         RulStructureType structureType = structureData.getStructureType();
-        File groovyFile = findGroovyFile(structureType);
-        GroovyScriptService.GroovyScriptFile groovyScriptFile = GroovyScriptService.GroovyScriptFile.createFromFile(groovyFile);
+        File groovyFile = findGroovyFile(structureType, structureData.getFund());
+        GroovyScriptService.GroovyScriptFile groovyScriptFile;
+        try {
+            groovyScriptFile = GroovyScriptService.GroovyScriptFile.createFromFile(groovyFile);
+        } catch (IOException e) {
+            throw new SystemException("Problém při zpracování groovy scriptu", e);
+        }
 
         List<ArrStructureItem> structureItems = structureItemRepository.findByStructureDataAndDeleteChangeIsNull(structureData);
 
@@ -352,9 +427,16 @@ public class StructureService {
         return (String) groovyScriptFile.evaluate(input);
     }
 
-    private File findGroovyFile(final RulStructureType structureType) {
+    /**
+     * Vyhledání groovy scriptu podle strukturovaného typu k AS.
+     *
+     * @param structureType strukturovaný typ
+     * @param fund          archivní soubor
+     * @return nalezený groovy soubor
+     */
+    private File findGroovyFile(final RulStructureType structureType, final ArrFund fund) {
         List<RulStructureExtensionDefinition> structureExtensionDefinitions = structureExtensionDefinitionRepository
-                .findByStructureTypeAndDefTypeOrderByPriority(structureType, RulStructureExtensionDefinition.DefType.SERIALIZED_VALUE);
+                .findByStructureTypeAndDefTypeAndFundOrderByPriority(structureType, RulStructureExtensionDefinition.DefType.SERIALIZED_VALUE, fund);
         RulComponent component;
         RulPackage rulPackage;
         if (structureExtensionDefinitions.size() > 0) {
@@ -376,6 +458,12 @@ public class StructureService {
                 + File.separator + component.getFilename());
     }
 
+    /**
+     * Vrátí strukt. typ podle kódu.
+     *
+     * @param structureTypeCode kód strukt. typu
+     * @return entita
+     */
     public RulStructureType getStructureTypeByCode(final String structureTypeCode) {
         RulStructureType structureType = structureTypeRepository.findByCode(structureTypeCode);
         if (structureType == null) {
@@ -384,6 +472,12 @@ public class StructureService {
         return structureType;
     }
 
+    /**
+     * Vrátí strukt. data podle identifikátoru.
+     *
+     * @param structureDataId identifikátor hodnoty strukt. datového typu
+     * @return entita
+     */
     public ArrStructureData getStructureDataById(final Integer structureDataId) {
         ArrStructureData structureData = structureDataRepository.findOne(structureDataId);
         if (structureData == null) {
@@ -392,6 +486,13 @@ public class StructureService {
         return structureData;
     }
 
+    /**
+     * Odstranění položek u strukt. dato podle typu atributu.
+     *
+     * @param fundVersionId   identifikátor verze AS
+     * @param structureDataId identifikátor hodnoty strukt. datového typu
+     * @param itemTypeId      identifikátor typu atributu
+     */
     public void deleteStructureItemsByType(final Integer fundVersionId,
                                            final Integer structureDataId,
                                            final Integer itemTypeId) {
@@ -409,44 +510,159 @@ public class StructureService {
         structureItemRepository.save(structureItems);
     }
 
+    /**
+     * Potvrzení hodnoty strukt. datového typu.
+     *
+     * @param structureData hodnota struktovaného datového typu
+     * @return entita
+     */
     public ArrStructureData confirmStructureData(final ArrStructureData structureData) {
         if (structureData.getDeleteChange() != null) {
             throw new BusinessException("Nelze potvrdit smazaná strukturovaná data", BaseCode.INVALID_STATE);
         }
+        if (!structureData.getState().equals(ArrStructureData.State.TEMP)) {
+            throw new BusinessException("Strukturovaná data nemají dočasný stav", BaseCode.INVALID_STATE);
+        }
         structureData.setState(ArrStructureData.State.OK);
-        revalidateStructureData(structureData);
+        structureData.setValue(generateValue(structureData));
         return structureDataRepository.save(structureData);
     }
 
-    private void revalidateStructureData(final ArrStructureData structureData) {
-        if (ArrStructureData.State.TEMP.equals(structureData.getState())) {
-            return;
-        }
-
-        structureData.setValue(null);
-    }
-
-    public List<RulItemTypeExt> getStructureItemTypes(final RulStructureType structureType) {
+    /**
+     * Získání seznamu typů atributů podle strukt. typu a verze AS.
+     *
+     * @param structureType strukturovaný typ
+     * @param fundVersion   verze AS
+     * @return seznam typu atributů
+     */
+    public List<RulItemTypeExt> getStructureItemTypes(final RulStructureType structureType, final ArrFundVersion fundVersion) {
         List<RulItemTypeExt> rulDescItemTypeExtList = ruleService.getAllItemTypes(structureType.getRuleSet());
-        return rulesExecutor.executeStructureItemTypesRules(structureType, rulDescItemTypeExtList);
+        return rulesExecutor.executeStructureItemTypesRules(structureType, rulDescItemTypeExtList, fundVersion);
     }
 
+    /**
+     * Vyhledání strukturovaných typů podle pravidel.
+     *
+     * @param ruleSet pravidla
+     * @return nalezené entity
+     */
     public List<RulStructureType> findStructureTypes(final RulRuleSet ruleSet) {
         return structureTypeRepository.findByRuleSet(ruleSet);
     }
 
+    /**
+     * Vyhledání hodnot struktovaného datového typu.
+     *
+     * @param structureType strukturovaný typ
+     * @param fund          archivní soubor
+     * @param search        fulltext (může být prázdná)
+     * @param assignable    hodnota je přiřaditelná (pokud je null, není bráno v potaz)
+     * @param from          od položky
+     * @param count         maximální počet položek
+     * @return nalezené položky
+     */
     public FilteredResult<ArrStructureData> findStructureData(final RulStructureType structureType,
                                                               final ArrFund fund,
                                                               @Nullable final String search,
-                                                              final boolean assignable,
+                                                              @Nullable final Boolean assignable,
                                                               final int from,
                                                               final int count) {
-        if (from < 0) {
-            throw new SystemException("Hodnota nesmí být záporná", BaseCode.PROPERTY_IS_INVALID).set("property", "from");
-        }
-        if (count > 0) {
-            throw new SystemException("Hodnota musí být kladná", BaseCode.PROPERTY_IS_INVALID).set("property", "count");
-        }
         return structureDataRepository.findStructureData(structureType.getStructureTypeId(), fund.getFundId(), search, assignable, from, count);
+    }
+
+    /**
+     * Aktivuje rozšíření u archivního souboru.
+     *
+     * @param fundVersion        verze AS
+     * @param structureExtension rozšížení strukt. typu
+     * @return vytvořená entita
+     */
+    public ArrFundStructureExtension addFundStructureExtension(final ArrFundVersion fundVersion,
+                                                               final RulStructureExtension structureExtension) {
+        validateFundStrucutureExtension(fundVersion, structureExtension);
+
+        ArrFundStructureExtension fundStructureExtension = fundStructureExtensionRepository
+                .findByFundAndStructureExtensionAndDeleteChangeIsNull(fundVersion.getFund(), structureExtension);
+        if (fundStructureExtension != null) {
+            throw new BusinessException("U AS je již rozšíření aktivováno", BaseCode.INVALID_STATE);
+        }
+
+        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_FUND_STRUCTURE_EXTENSION);
+        ArrFundStructureExtension newFundStructureExtension = new ArrFundStructureExtension();
+        newFundStructureExtension.setCreateChange(change);
+        newFundStructureExtension.setFund(fundVersion.getFund());
+        newFundStructureExtension.setStructureExtension(structureExtension);
+
+        // TODO slapa: revalidace dotčených entit
+        return fundStructureExtensionRepository.save(newFundStructureExtension);
+    }
+
+    /**
+     * Deaktivuje rozšíření u archivního souboru.
+     *
+     * @param fundVersion        verze AS
+     * @param structureExtension rozšížení strukt. typu
+     * @return smazaná entita
+     */
+    public ArrFundStructureExtension deleteFundStructureExtension(final ArrFundVersion fundVersion, final RulStructureExtension structureExtension) {
+        validateFundStrucutureExtension(fundVersion, structureExtension);
+
+        ArrFundStructureExtension fundStructureExtension = fundStructureExtensionRepository
+                .findByFundAndStructureExtensionAndDeleteChangeIsNull(fundVersion.getFund(), structureExtension);
+        if (fundStructureExtension == null) {
+            throw new BusinessException("U AS rozšíření není aktivováno", BaseCode.INVALID_STATE);
+        }
+
+        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_FUND_STRUCTURE_EXTENSION);
+        fundStructureExtension.setDeleteChange(change);
+
+        // TODO slapa: revalidace dotčených entit
+        return fundStructureExtensionRepository.save(fundStructureExtension);
+    }
+
+    /**
+     * Validace AS a rozšíření strukt. typu.
+     *
+     * @param fundVersion        verze AS
+     * @param structureExtension rozšížení strukt. typu
+     */
+    private void validateFundStrucutureExtension(final ArrFundVersion fundVersion, final RulStructureExtension structureExtension) {
+        if (!fundVersion.getRuleSet().equals(structureExtension.getStructureType().getRuleSet())) {
+            throw new BusinessException("AS a rozšíření mají rozdílná pravidla", BaseCode.INVALID_STATE);
+        }
+    }
+
+    /**
+     * Vrací rozšíření strukt. typu podle kódu.
+     *
+     * @param structureExtensionCode kód rozšíření strukt. typu
+     * @return entita
+     */
+    public RulStructureExtension getStructureExtensionByCode(final String structureExtensionCode) {
+        RulStructureExtension structureExtension = structureExtensionRepository.findByCode(structureExtensionCode);
+        if (structureExtension == null) {
+            throw new ObjectNotFoundException("Rozšíření neexistuje: " + structureExtensionCode, BaseCode.ID_NOT_EXIST).setId(structureExtensionCode);
+        }
+        return structureExtension;
+    }
+
+    /**
+     * Nalezne všechny dostupné rozšížení pro strukturovaný typ.
+     *
+     * @param fundVersion verze AS
+     * @return nalezené entity
+     */
+    public List<RulStructureExtension> findAllStructureExtensions(final ArrFundVersion fundVersion) {
+        return structureExtensionRepository.findByRuleSet(fundVersion.getRuleSet());
+    }
+
+    /**
+     * Nalezne aktivní rozšíření pro strukturovaný typ.
+     *
+     * @param fundVersion verze AS
+     * @return nalezené entity
+     */
+    public List<RulStructureExtension> findStructureExtensions(final ArrFundVersion fundVersion) {
+        return structureExtensionRepository.findActiveByFundAndRuleSet(fundVersion.getFund(), fundVersion.getRuleSet());
     }
 }

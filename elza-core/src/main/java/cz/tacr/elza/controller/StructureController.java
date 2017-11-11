@@ -5,7 +5,6 @@ import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.RulStructureTypeVO;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
@@ -13,6 +12,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrStructureData;
 import cz.tacr.elza.domain.ArrStructureItem;
 import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulStructureExtension;
 import cz.tacr.elza.domain.RulStructureType;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
@@ -21,8 +21,6 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.StructureService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -134,9 +132,15 @@ public class StructureController {
     public FilteredResultVO<ArrStructureDataVO> findStructureData(@PathVariable("structureTypeCode") final String structureTypeCode,
                                                                   @PathVariable("fundVersionId") final Integer fundVersionId,
                                                                   @RequestParam(value = "search", required = false) final String search,
-                                                                  @RequestParam("assignable") final Boolean assignable,
+                                                                  @RequestParam(value = "assignable", required = false) final Boolean assignable,
                                                                   @RequestParam(value = "from", required = false, defaultValue = "0") final Integer from,
                                                                   @RequestParam(value = "count", required = false, defaultValue = "200") final Integer count) {
+        if (from < 0) {
+            throw new SystemException("Hodnota nesmí být záporná", BaseCode.PROPERTY_IS_INVALID).set("property", "from");
+        }
+        if (count > 0) {
+            throw new SystemException("Hodnota musí být kladná", BaseCode.PROPERTY_IS_INVALID).set("property", "count");
+        }
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         RulStructureType structureType = structureService.getStructureTypeByCode(structureTypeCode);
         FilteredResult<ArrStructureData> filteredResult = structureService.findStructureData(structureType, fundVersion.getFund(), search, assignable, from, count);
@@ -169,9 +173,9 @@ public class StructureController {
     /**
      * Upravení položky k hodnotě strukt. datového typu.
      *
-     * @param itemVO            položka
-     * @param fundVersionId     identifikátor verze AS
-     * @param createNewVersion  provést verzovanou změnu
+     * @param itemVO           položka
+     * @param fundVersionId    identifikátor verze AS
+     * @param createNewVersion provést verzovanou změnu
      * @return upravená entita
      */
     @Transactional
@@ -251,7 +255,7 @@ public class StructureController {
 
         validateRuleSet(fundVersion, structureData.getStructureType());
 
-        List<RulItemTypeExt> structureItemTypes = structureService.getStructureItemTypes(structureData.getStructureType());
+        List<RulItemTypeExt> structureItemTypes = structureService.getStructureItemTypes(structureData.getStructureType(), fundVersion);
         List<ArrStructureItem> structureItems = structureService.findStructureItems(structureData);
 
         Integer fundId = fundVersion.getFund().getFundId();
@@ -261,6 +265,51 @@ public class StructureController {
         List<ItemGroupVO> itemGroupsVO = factoryVO.createItemGroupsNew(ruleCode, fundId, structureItems);
         List<ItemTypeGroupVO> itemTypeGroupsVO = factoryVO.createItemTypeGroupsNew(ruleCode, fundId, structureItemTypes);
         return new StructureDataFormDataVO(structureDataVO, itemGroupsVO, itemTypeGroupsVO);
+    }
+
+    /**
+     * Vyhledá dostupná a aktivovaná rozšíření k AS.
+     *
+     * @param fundVersionId identifikátor verze AS
+     * @return nalezené entity
+     */
+    @Transactional
+    @RequestMapping(value = "/extension/{fundVersionId}", method = RequestMethod.GET)
+    public List<StructureExtensionFundVO> findFundStructureExtension(@PathVariable(value = "fundVersionId") final Integer fundVersionId) {
+        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
+        List<RulStructureExtension> allStructureExtensions = structureService.findAllStructureExtensions(fundVersion);
+        List<RulStructureExtension> structureExtensions = structureService.findStructureExtensions(fundVersion);
+        return factoryVO.createStructureExtensionFund(allStructureExtensions, structureExtensions);
+    }
+
+    /**
+     * Aktivuje rozšíření u archivního souboru.
+     *
+     * @param fundVersionId          identifikátor verze AS
+     * @param structureExtensionCode kód rozšíření strukturovaného typu
+     */
+    @Transactional
+    @RequestMapping(value = "/extension/{structureExtensionCode}/{fundVersionId}/add", method = RequestMethod.POST)
+    public void addFundStructureExtension(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                          @PathVariable(value = "structureExtensionCode") final String structureExtensionCode) {
+        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
+        RulStructureExtension structureExtension = structureService.getStructureExtensionByCode(structureExtensionCode);
+        structureService.addFundStructureExtension(fundVersion, structureExtension);
+    }
+
+    /**
+     * Deaktivuje rozšíření u archivního souboru.
+     *
+     * @param fundVersionId          identifikátor verze AS
+     * @param structureExtensionCode kód rozšíření strukturovaného typu
+     */
+    @Transactional
+    @RequestMapping(value = "/extension/{structureExtensionCode}/{fundVersionId}/delete", method = RequestMethod.POST)
+    public void deleteFundStructureExtension(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                             @PathVariable(value = "structureExtensionCode") final String structureExtensionCode) {
+        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
+        RulStructureExtension structureExtension = structureService.getStructureExtensionByCode(structureExtensionCode);
+        structureService.deleteFundStructureExtension(fundVersion, structureExtension);
     }
 
     /**

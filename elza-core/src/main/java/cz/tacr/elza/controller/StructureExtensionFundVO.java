@@ -1,16 +1,18 @@
-package cz.tacr.elza.controller.vo;
+package cz.tacr.elza.controller;
 
 /**
  * TODO slapa: vyplnit popis třídy
  *
- * @since 10.11.2017
+ * @since 11.11.2017
  */
-public class RulStructureTypeVO {
+public class StructureExtensionFundVO {
 
     public Integer id;
 
     public String code;
 
     public String name;
+
+    public Boolean active;
 
 }

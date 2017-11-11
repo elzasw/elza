@@ -11,5 +11,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface StructureDataRepositoryCustom {
 
-    FilteredResult<ArrStructureData> findStructureData(final Integer structureTypeId, int fundId, String search, boolean assignable, int firstResult, int maxResults);
+    FilteredResult<ArrStructureData> findStructureData(final Integer structureTypeId, int fundId, String search, Boolean assignable, int firstResult, int maxResults);
 }

@@ -1,5 +1,6 @@
 package cz.tacr.elza.drools;
 
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPackageDependency;
@@ -53,8 +54,8 @@ public class StructureItemTypesRules extends Rules {
      * @param rulDescItemTypeExtList seznam všech atributů
      */
     public synchronized List<RulItemTypeExt> execute(final RulStructureType structureType,
-                                                     final List<RulItemTypeExt> rulDescItemTypeExtList)
-            throws Exception {
+                                                     final List<RulItemTypeExt> rulDescItemTypeExtList,
+                                                     final ArrFund fund) throws Exception {
 
         LinkedList<Object> facts = new LinkedList<>();
         facts.addAll(rulDescItemTypeExtList);
@@ -70,7 +71,7 @@ public class StructureItemTypesRules extends Rules {
         }
 
         List<RulStructureExtensionDefinition> rulStructureExtensionDefinitions = structureExtensionDefinitionRepository
-                .findByStructureTypeAndDefTypeOrderByPriority(structureType, RulStructureExtensionDefinition.DefType.ATTRIBUTE_TYPES);
+                .findByStructureTypeAndDefTypeAndFundOrderByPriority(structureType, RulStructureExtensionDefinition.DefType.ATTRIBUTE_TYPES, fund);
 
         List<RulPackage> rulPackages = rulStructureExtensionDefinitions.stream()
                 .map(RulStructureExtensionDefinition::getRulPackage).collect(Collectors.toList());
