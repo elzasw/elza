@@ -88,7 +88,7 @@ public class StructureController {
      * @return potvrzená entita
      */
     @Transactional
-    @RequestMapping(value = "/data/{structureTypeCode}/{fundVersionId}/confirm", method = RequestMethod.PUT)
+    @RequestMapping(value = "/data/{structureDataId}/{fundVersionId}/confirm", method = RequestMethod.PUT)
     public ArrStructureDataVO confirmStructureData(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                                    @PathVariable(value = "structureDataId") final Integer structureDataId) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
@@ -106,7 +106,7 @@ public class StructureController {
      * @return smazaná entita
      */
     @Transactional
-    @RequestMapping(value = "/data/{fundVersionId}/{structureDataId}//delete", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/data/{structureDataId}/{fundVersionId}/delete", method = RequestMethod.DELETE)
     public ArrStructureDataVO deleteStructureData(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                                   @PathVariable(value = "structureDataId") final Integer structureDataId) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
@@ -138,7 +138,7 @@ public class StructureController {
         if (from < 0) {
             throw new SystemException("Hodnota nesmí být záporná", BaseCode.PROPERTY_IS_INVALID).set("property", "from");
         }
-        if (count > 0) {
+        if (count <= 0) {
             throw new SystemException("Hodnota musí být kladná", BaseCode.PROPERTY_IS_INVALID).set("property", "count");
         }
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);

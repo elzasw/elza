@@ -1,39 +1,5 @@
 package cz.tacr.elza.controller;
 
-import static com.jayway.restassured.RestAssured.given;
-
-import java.io.File;
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.net.URL;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
-import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.EncoderConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
@@ -43,9 +9,55 @@ import com.jayway.restassured.response.Response;
 import com.jayway.restassured.response.ResponseBody;
 import com.jayway.restassured.response.ResponseOptions;
 import com.jayway.restassured.specification.RequestSpecification;
-
 import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.controller.ArrangementController.FaFilteredFulltextParam;
+import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
+import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
+import cz.tacr.elza.controller.vo.ArrOutputExtVO;
+import cz.tacr.elza.controller.vo.ArrOutputVO;
+import cz.tacr.elza.controller.vo.ArrPacketVO;
+import cz.tacr.elza.controller.vo.ArrStructureDataVO;
+import cz.tacr.elza.controller.vo.CopyNodesParams;
+import cz.tacr.elza.controller.vo.CopyNodesValidate;
+import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
+import cz.tacr.elza.controller.vo.CreateFundVO;
+import cz.tacr.elza.controller.vo.FilterNode;
+import cz.tacr.elza.controller.vo.FilterNodePosition;
+import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.FundListCountResult;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.OutputSettingsVO;
+import cz.tacr.elza.controller.vo.PackageVO;
+import cz.tacr.elza.controller.vo.ParInstitutionVO;
+import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParRelationVO;
+import cz.tacr.elza.controller.vo.RegCoordinatesVO;
+import cz.tacr.elza.controller.vo.RegRecordVO;
+import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.controller.vo.RegScopeVO;
+import cz.tacr.elza.controller.vo.RegVariantRecordVO;
+import cz.tacr.elza.controller.vo.RulDataTypeVO;
+import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
+import cz.tacr.elza.controller.vo.RulDescItemTypeVO;
+import cz.tacr.elza.controller.vo.RulOutputTypeVO;
+import cz.tacr.elza.controller.vo.RulPacketTypeVO;
+import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
+import cz.tacr.elza.controller.vo.RulRuleSetVO;
+import cz.tacr.elza.controller.vo.RulTemplateVO;
+import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
+import cz.tacr.elza.controller.vo.SysExternalSystemVO;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.controller.vo.UserInfoVO;
+import cz.tacr.elza.controller.vo.UsrGroupVO;
+import cz.tacr.elza.controller.vo.UsrPermissionVO;
+import cz.tacr.elza.controller.vo.UsrUserVO;
+import cz.tacr.elza.controller.vo.ValidationResult;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
@@ -64,10 +76,41 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.service.ArrMoveLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
+import org.junit.Assert;
+import org.junit.Before;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+
+import static com.jayway.restassured.RestAssured.given;
 
 
 public abstract class AbstractControllerTest extends AbstractTest {
@@ -87,6 +130,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     protected static final String ADMIN_CONTROLLER_URL = "/api/admin";
     protected static final String ARRANGEMENT_CONTROLLER_URL = "/api/arrangement";
+    protected static final String STRUCTURE_CONTROLLER_URL = "/api/structure";
     protected static final String BULK_ACTION_CONTROLLER_URL = "/api/action";
     protected static final String PARTY_CONTROLLER_URL = "/api/party";
     protected static final String REGISTRY_CONTROLLER_URL = "/api/registry";
@@ -106,6 +150,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String CREATE_EXTERNAL_SYSTEM = EXTERNAL_SYSTEMS;
     protected static final String UPDATE_EXTERNAL_SYSTEM = EXTERNAL_SYSTEMS + "/{externalSystemId}";
     protected static final String DELETE_EXTERNAL_SYSTEM = EXTERNAL_SYSTEMS + "/{externalSystemId}";
+
+    // STRUCTURE
+    protected static final String CREATE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{structureTypeCode}/{fundVersionId}/create";
+    protected static final String CONFIRM_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{structureDataId}/{fundVersionId}/confirm";
+    protected static final String DELETE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{structureDataId}/{fundVersionId}/delete";
+    protected static final String FIND_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{structureTypeCode}/{fundVersionId}";
 
     // ARRANGEMENT
     protected static final String CREATE_FUND = ARRANGEMENT_CONTROLLER_URL + "/funds";
@@ -3133,5 +3183,73 @@ public abstract class AbstractControllerTest extends AbstractTest {
         put(spec -> spec.pathParameter("outputId", outputId)
                 .body(settings),
                 UPDATE_OUTPUT_SETTINGS);
+    }
+
+    /**
+     * Vytvoření hodnoty strukturovaného datového typu.
+     *
+     * @param structureTypeCode kód strukturovaného datového typu
+     * @param fundVersionId     identifikátor verze AS
+     * @return vytvořená dočasná entita
+     */
+    protected ArrStructureDataVO createStructureData(final String structureTypeCode, final Integer fundVersionId) {
+        return put(spec -> spec.pathParameter("structureTypeCode", structureTypeCode)
+                .pathParameter("fundVersionId", fundVersionId), CREATE_STRUCTURE_DATA)
+                .as(ArrStructureDataVO.class);
+    }
+
+    /**
+     * Potvrzení hodnoty strukturovaného datového typu. Provede nastavení hodnoty.
+     *
+     * @param fundVersionId   identifikátor verze AS
+     * @param structureDataId identifikátor hodnoty strukturovaného datového typu
+     * @return potvrzená entita
+     */
+    protected ArrStructureDataVO confirmStructureData(final Integer fundVersionId,
+                                                      final Integer structureDataId) {
+        return put(spec -> spec.pathParameter("structureDataId", structureDataId)
+                .pathParameter("fundVersionId", fundVersionId), CONFIRM_STRUCTURE_DATA)
+                .as(ArrStructureDataVO.class);
+    }
+
+    /**
+     * Smazání hodnoty strukturovaného datového typu.
+     *
+     * @param fundVersionId   identifikátor verze AS
+     * @param structureDataId identifikátor hodnoty strukturovaného datového typu
+     * @return smazaná entita
+     */
+    protected ArrStructureDataVO deleteStructureData(final Integer fundVersionId,
+                                                     final Integer structureDataId) {
+        return delete(spec -> spec.pathParameter("structureDataId", structureDataId)
+                .pathParameter("fundVersionId", fundVersionId), DELETE_STRUCTURE_DATA)
+                .as(ArrStructureDataVO.class);
+    }
+
+    /**
+     * Vyhledání hodnot strukturovaného datového typu.
+     *
+     * @param structureTypeCode kód typu strukturovaného datového
+     * @param fundVersionId     identifikátor verze AS
+     * @param search            text pro filtrování (nepovinné)
+     * @param assignable        přiřaditelnost
+     * @param from              od položky
+     * @param count             maximální počet položek
+     * @return nalezené položky
+     */
+    protected FilteredResultVO<ArrStructureDataVO> findStructureData(final String structureTypeCode,
+                                                                     final Integer fundVersionId,
+                                                                     final String search,
+                                                                     final Boolean assignable,
+                                                                     final Integer from,
+                                                                     final Integer count) {
+        return get(spec -> spec
+                        .pathParameter("structureTypeCode", structureTypeCode)
+                        .pathParameter("fundVersionId", fundVersionId)
+                        .queryParameter("search", search)
+                        .queryParameter("assignable", assignable)
+                        .queryParameter("from", from)
+                        .queryParameter("count", count)
+                , FIND_STRUCTURE_DATA).as(FilteredResultVO.class);
     }
 }

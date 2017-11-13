@@ -454,7 +454,7 @@ public class StructureService {
                 throw new SystemException("Strukturovaný typ '" + structureType.getCode() + "' nemá žádný script pro výpočet hodnoty", BaseCode.INVALID_STATE);
             }
         }
-        return new File(rulesExecutor.getDroolsDir(rulPackage.getCode(), structureType.getRuleSet().getCode())
+        return new File(rulesExecutor.getGroovyDir(rulPackage.getCode(), structureType.getRuleSet().getCode())
                 + File.separator + component.getFilename());
     }
 

@@ -58,7 +58,7 @@ public class StructureDataRepositoryImpl implements StructureDataRepositoryCusto
         TypedQuery q;
         if (dataQuery) {
             String dataQueryStr = "SELECT sd " + query.toString() + " ORDER BY sd.value";
-            q = entityManager.createQuery(dataQueryStr, UsrUser.class);
+            q = entityManager.createQuery(dataQueryStr, ArrStructureData.class);
         } else {
             String countQueryStr = "SELECT COUNT(sd) " + query.toString();
             q = entityManager.createQuery(countQueryStr, Number.class);
