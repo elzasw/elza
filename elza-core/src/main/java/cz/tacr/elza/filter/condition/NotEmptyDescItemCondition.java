@@ -4,6 +4,8 @@ import org.apache.lucene.search.Query;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.domain.ArrDescItem;
+
 /**
  * Má vyplněnu nějakou hodnotu.
  *
@@ -16,6 +18,6 @@ public class NotEmptyDescItemCondition implements LuceneDescItemCondition {
     public Query createLuceneQuery(final QueryBuilder queryBuilder) {
         Assert.notNull(queryBuilder);
 
-        return queryBuilder.keyword().wildcard().onField(LuceneDescItemCondition.FULLTEXT_ATT).matching("?*").createQuery();
+		return queryBuilder.keyword().wildcard().onField(ArrDescItem.FULLTEXT_ATT).matching("?*").createQuery();
     }
 }

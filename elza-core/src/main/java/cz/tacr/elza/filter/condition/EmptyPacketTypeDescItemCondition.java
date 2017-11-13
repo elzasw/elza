@@ -4,6 +4,8 @@ import org.apache.lucene.search.Query;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.domain.ArrDescItem;
+
 /**
  * Má hodnotu bez typu.
  *
@@ -16,7 +18,8 @@ public class EmptyPacketTypeDescItemCondition implements LuceneDescItemCondition
     public Query createLuceneQuery(final QueryBuilder queryBuilder) {
         Assert.notNull(queryBuilder);
 
-        Query noTypesQuery = queryBuilder.range().onField(LuceneDescItemCondition.SPECIFICATION_ATT).from(Integer.MIN_VALUE).to(Integer.MAX_VALUE).createQuery();
+		Query noTypesQuery = queryBuilder.range().onField(ArrDescItem.SPECIFICATION_ATT).from(Integer.MIN_VALUE)
+		        .to(Integer.MAX_VALUE).createQuery();
 
         return queryBuilder.
                 bool().

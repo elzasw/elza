@@ -56,7 +56,6 @@ import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
-import cz.tacr.elza.filter.condition.LuceneDescItemCondition;
 import cz.tacr.elza.utils.NodeUtils;
 
 
@@ -318,15 +317,16 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         Query query;
         switch (condition) {
             case CONTAINS:
-                Query fromQuery = queryBuilder.range().onField(LuceneDescItemCondition.NORMALIZED_FROM_ATT).above(secondsFrom).createQuery();
-                Query toQuery = queryBuilder.range().onField(LuceneDescItemCondition.NORMALIZED_TO_ATT).below(secondsTo).createQuery();
+			Query fromQuery = queryBuilder.range().onField(ArrDescItem.NORMALIZED_FROM_ATT).above(secondsFrom)
+			        .createQuery();
+			Query toQuery = queryBuilder.range().onField(ArrDescItem.NORMALIZED_TO_ATT).below(secondsTo).createQuery();
                 query = queryBuilder.bool().must(fromQuery).must(toQuery).createQuery();
                 break;
             case GE:
-                query = queryBuilder.range().onField(LuceneDescItemCondition.NORMALIZED_FROM_ATT).above(secondsFrom).createQuery();
+			query = queryBuilder.range().onField(ArrDescItem.NORMALIZED_FROM_ATT).above(secondsFrom).createQuery();
                 break;
             case LE:
-                query = queryBuilder.range().onField(LuceneDescItemCondition.NORMALIZED_TO_ATT).below(secondsTo).createQuery();
+			query = queryBuilder.range().onField(ArrDescItem.NORMALIZED_TO_ATT).below(secondsTo).createQuery();
                 break;
             default:
                 throw new IllegalStateException("Neznámý typ podmínky " + condition);
@@ -443,15 +443,18 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 //        stringNumericConfigHashMap.put("normalizedTo", longConfig);
 //        parser.setPointsConfigMap(stringNumericConfigHashMap);
         HashMap<String, NumericConfig> stringNumericConfigHashMap = new HashMap<>();
-        stringNumericConfigHashMap.put(LuceneDescItemCondition.SPECIFICATION_ATT, new NumericConfig(1, NumberFormat.getIntegerInstance(), FieldType.NumericType.INT));
-        stringNumericConfigHashMap.put(LuceneDescItemCondition.NORMALIZED_FROM_ATT, new NumericConfig(16, NumberFormat.getNumberInstance(), FieldType.NumericType.LONG));
-        stringNumericConfigHashMap.put(LuceneDescItemCondition.NORMALIZED_TO_ATT, new NumericConfig(16, NumberFormat.getNumberInstance(), FieldType.NumericType.LONG));
+		stringNumericConfigHashMap.put(ArrDescItem.SPECIFICATION_ATT,
+		        new NumericConfig(1, NumberFormat.getIntegerInstance(), FieldType.NumericType.INT));
+		stringNumericConfigHashMap.put(ArrDescItem.NORMALIZED_FROM_ATT,
+		        new NumericConfig(16, NumberFormat.getNumberInstance(), FieldType.NumericType.LONG));
+		stringNumericConfigHashMap.put(ArrDescItem.NORMALIZED_TO_ATT,
+		        new NumericConfig(16, NumberFormat.getNumberInstance(), FieldType.NumericType.LONG));
         parser.setNumericConfigMap(stringNumericConfigHashMap);
 
         Query query;
         try {
-            Query textQuery = parser.parse(queryText, LuceneDescItemCondition.FULLTEXT_ATT);
-            Query fundIdQuery = queryBuilder.keyword().onField("fundId").matching(fundId).createQuery();
+			Query textQuery = parser.parse(queryText, ArrDescItem.FULLTEXT_ATT);
+			Query fundIdQuery = queryBuilder.keyword().onField(ArrDescItem.FUND_ID).matching(fundId).createQuery();
             query = queryBuilder.bool().must(textQuery).must(fundIdQuery).createQuery();
 
         } catch (QueryNodeException e) {
@@ -482,7 +485,8 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         BooleanJunction<BooleanJunction> textConditions = queryBuilder.bool();
         for (String token : tokens) {
             String searchValue = "*" + token + "*";
-            Query createQuery = queryBuilder.keyword().wildcard().onField(LuceneDescItemCondition.FULLTEXT_ATT).matching(searchValue).createQuery();
+			Query createQuery = queryBuilder.keyword().wildcard().onField(ArrDescItem.FULLTEXT_ATT)
+			        .matching(searchValue).createQuery();
             textConditions.must(createQuery);
         }
 

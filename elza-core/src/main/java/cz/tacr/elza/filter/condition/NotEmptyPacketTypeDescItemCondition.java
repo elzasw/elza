@@ -3,6 +3,8 @@ package cz.tacr.elza.filter.condition;
 import org.apache.lucene.search.Query;
 import org.hibernate.search.query.dsl.QueryBuilder;
 
+import cz.tacr.elza.domain.ArrDescItem;
+
 /**
  * Má hodnotu s typem.
  *
@@ -15,7 +17,7 @@ public class NotEmptyPacketTypeDescItemCondition implements LuceneDescItemCondit
     public Query createLuceneQuery(final QueryBuilder queryBuilder) {
         return queryBuilder.
                 range().
-                onField(LuceneDescItemCondition.SPECIFICATION_ATT).
+		        onField(ArrDescItem.SPECIFICATION_ATT).
                 from(Integer.MIN_VALUE).
                 to(Integer.MAX_VALUE).
                 createQuery();

@@ -28,8 +28,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import cz.tacr.elza.filter.condition.DescItemCondition;
-import cz.tacr.elza.filter.condition.LuceneDescItemCondition;
 import cz.tacr.elza.repository.DataRepositoryImpl;
 import cz.tacr.elza.search.DescItemIndexingInterceptor;
 
@@ -38,8 +36,6 @@ import cz.tacr.elza.search.DescItemIndexingInterceptor;
  * Atribut archivního popisu evidovaný k jednotce archivního popisu. Odkaz na uzel stromu AP je
  * řešen pomocí node_id.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 20.8.2015
  */
 @AnalyzerDef(name = "customanalyzer",
         tokenizer = @TokenizerDef(factory = KeywordTokenizerFactory.class),
@@ -54,10 +50,18 @@ import cz.tacr.elza.search.DescItemIndexingInterceptor;
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
 public class ArrDescItem extends ArrItem {
 
+	// Constants for fulltext indexing
+	public static final String FUND_ID = "fundId";
     public static final String NODE = "node";
     public static final String CREATE_CHANGE_ID = "createChangeId";
     public static final String DELETE_CHANGE_ID = "deleteChangeId";
-    public static final String LUCENE_DESC_ITEM_TYPE_ID = "descItemTypeId";
+	public static final String DESC_ITEM_TYPE_ID = "descItemTypeId";
+	public static final String FULLTEXT_ATT = "fulltextValue";
+	public static final String SPECIFICATION_ATT = "specification";
+	public static final String INTGER_ATT = "valueInt";
+	public static final String DECIMAL_ATT = "valueDecimal";
+	public static final String NORMALIZED_FROM_ATT = "normalizedFrom";
+	public static final String NORMALIZED_TO_ATT = "normalizedTo";
 
 	@JsonIgnore
     @RestResource(exported = false)
@@ -108,14 +112,14 @@ public class ArrDescItem extends ArrItem {
 
 	@JsonIgnore
     @Override
-    @Field(name = DescItemCondition.FUND_ID)
+	@Field(name = FUND_ID)
     @FieldBridge(impl = IntegerBridge.class)
     public Integer getFundId() {
         return indexData.getFundId();
     }
 
 	@JsonIgnore
-    @Field(name = LuceneDescItemCondition.FULLTEXT_ATT)
+	@Field(name = FULLTEXT_ATT)
     @Analyzer(definition = "customanalyzer")
     public String getFulltextValue() {
 		if (data == null) {
@@ -129,46 +133,47 @@ public class ArrDescItem extends ArrItem {
     }
 
 	@JsonIgnore
-    @Field(name = LuceneDescItemCondition.INTGER_ATT, store = Store.YES)
+	@Field(name = INTGER_ATT, store = Store.YES)
     @NumericField
     public Integer getValueInt() {
         return indexData.getValueInt();
     }
 
 	@JsonIgnore
-    @Field(name = LuceneDescItemCondition.DECIMAL_ATT, store = Store.YES)
+	@Field(name = DECIMAL_ATT, store = Store.YES)
     @NumericField
     public Double getValueDouble() {
         return indexData.getValueDouble();
     }
 
 	@JsonIgnore
-    @Field(name = LuceneDescItemCondition.NORMALIZED_FROM_ATT, store = Store.YES)
+	@Field(name = NORMALIZED_FROM_ATT, store = Store.YES)
     @NumericField
     public Long getNormalizedFrom() {
         return indexData.getNormalizedFrom();
     }
 
 	@JsonIgnore
-    @Field(name = LuceneDescItemCondition.NORMALIZED_TO_ATT, store = Store.YES)
+	@Field(name = NORMALIZED_TO_ATT, store = Store.YES)
     @NumericField
     public Long getNormalizedTo() {
         return indexData.getNormalizedTo();
     }
 
-	// Probably not used
-	// If will be needed proper constant should be created in LuceneDescItemCondition
-	// See implementation bellow
-	/*
+	/**
+	 * Description item for fulltext indexing
+	 * 
+	 * @return
+	 */
 	@JsonIgnore
-	@Field
-	@FieldBridge(impl = IntegerBridge.class)
+	@Field(name = DESC_ITEM_TYPE_ID)
+	//@FieldBridge(impl = IntegerBridge.class)
 	public Integer getDescItemTypeId() {
-	    return getItemType().getItemTypeId();
-	}*/
+		return itemTypeId;
+	}
 
 	@JsonIgnore
-	@Field(name = LuceneDescItemCondition.SPECIFICATION_ATT)
+	@Field(name = SPECIFICATION_ATT)
 	@Analyzer(definition = "customanalyzer")
 	public Integer getSpecification() {
 		return itemSpecId;

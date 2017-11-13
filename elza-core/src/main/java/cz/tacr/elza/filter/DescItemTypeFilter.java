@@ -1,11 +1,15 @@
 package cz.tacr.elza.filter;
 
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.filter.condition.DescItemCondition;
-import cz.tacr.elza.filter.condition.HibernateDescItemCondition;
-import cz.tacr.elza.filter.condition.LuceneDescItemCondition;
-import cz.tacr.elza.filter.condition.SelectsNothingCondition;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.persistence.EntityManager;
+
 import org.apache.lucene.search.Query;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
@@ -14,14 +18,12 @@ import org.hibernate.search.query.dsl.QueryBuilder;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
-import javax.persistence.EntityManager;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.filter.condition.DescItemCondition;
+import cz.tacr.elza.filter.condition.HibernateDescItemCondition;
+import cz.tacr.elza.filter.condition.LuceneDescItemCondition;
+import cz.tacr.elza.filter.condition.SelectsNothingCondition;
 
 /**
  * Skupina filtrů pro typ atributu.
@@ -285,12 +287,12 @@ public class DescItemTypeFilter {
 
     private Query createDescItemTypeQuery(final QueryBuilder queryBuilder) {
         Integer descItemTypeId = descItemType.getItemTypeId();
-        return queryBuilder.range().onField(ArrDescItem.LUCENE_DESC_ITEM_TYPE_ID).from(descItemTypeId).to(descItemTypeId).
+		return queryBuilder.range().onField(ArrDescItem.DESC_ITEM_TYPE_ID).from(descItemTypeId).to(descItemTypeId).
                 createQuery();
     }
 
     private Query createFundIdQuery(final QueryBuilder queryBuilder, final Integer fundId) {
-        return queryBuilder.keyword().onField("fundId").matching(fundId).createQuery();
+		return queryBuilder.keyword().onField(ArrDescItem.FUND_ID).matching(fundId).createQuery();
     }
 
     public RulItemType getDescItemType() {
