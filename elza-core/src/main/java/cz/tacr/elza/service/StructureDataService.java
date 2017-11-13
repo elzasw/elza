@@ -333,20 +333,20 @@ public class StructureDataService {
 
         private static final ObjectMapper objectMapper = Jackson2ObjectMapperBuilder.json().build();
 
-        private Boolean nullValue;
+        private Boolean emptyValue;
         private Boolean duplicateValue;
         private List<Integer> requiredItemTypeIds;
         private List<Integer> impossibleItemTypeIds;
 
         public ValidationErrorDescription() {
-            nullValue = false;
+            emptyValue = false;
             duplicateValue = false;
             requiredItemTypeIds = new ArrayList<>();
             impossibleItemTypeIds = new ArrayList<>();
         }
 
         public String asJsonString() {
-            if (BooleanUtils.isTrue(nullValue)
+            if (BooleanUtils.isTrue(emptyValue)
                     || BooleanUtils.isTrue(duplicateValue)
                     || CollectionUtils.isNotEmpty(requiredItemTypeIds)
                     || CollectionUtils.isNotEmpty(impossibleItemTypeIds)) {
@@ -359,12 +359,12 @@ public class StructureDataService {
             return null;
         }
 
-        public Boolean getNullValue() {
-            return nullValue;
+        public Boolean getEmptyValue() {
+            return emptyValue;
         }
 
-        public void setEmptyValue(final Boolean nullValue) {
-            this.nullValue = nullValue;
+        public void setEmptyValue(final Boolean emptyValue) {
+            this.emptyValue = emptyValue;
         }
 
         public Boolean getDuplicateValue() {
