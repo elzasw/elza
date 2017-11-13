@@ -1018,4 +1018,16 @@ public class RuleService {
 
         deleteConformityInfo(versionId, Collections.singleton(nodeId), Lists.newArrayList(RelatedNodeDirection.NODE, RelatedNodeDirection.DESCENDANTS));
     }
+
+    /**
+     * Získání seznamu typů atributů podle strukt. typu a verze AS.
+     *
+     * @param structureType strukturovaný typ
+     * @param fundVersion   verze AS
+     * @return seznam typu atributů
+     */
+    public List<RulItemTypeExt> getStructureItemTypes(final RulStructureType structureType, final ArrFundVersion fundVersion) {
+        List<RulItemTypeExt> rulDescItemTypeExtList = getAllItemTypes(structureType.getRuleSet());
+        return rulesExecutor.executeStructureItemTypesRules(structureType, rulDescItemTypeExtList, fundVersion);
+    }
 }

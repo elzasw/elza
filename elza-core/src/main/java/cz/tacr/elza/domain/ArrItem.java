@@ -3,9 +3,9 @@ package cz.tacr.elza.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import cz.tacr.elza.repository.DataRepositoryImpl;
 import cz.tacr.elza.service.cache.NodeCacheSerializable;
 import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang3.RandomUtils;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.NumericField;
 import org.springframework.data.rest.core.annotation.RestResource;
@@ -100,6 +100,20 @@ public abstract class ArrItem implements NodeCacheSerializable {
     @NumericField
     public Integer getDeleteChangeId() {
         return deleteChangeId == null ? Integer.MAX_VALUE : deleteChangeId;
+    }
+
+    public String getFulltextValue() {
+        ArrData data = getData();
+        if (data == null) {
+            return null;
+        } else {
+            RulItemSpec itemSpec = getItemSpec();
+            if (data instanceof ArrDataNull) {
+                return itemSpec == null ? null : itemSpec.getName();
+            } else {
+                return itemSpec == null ? data.getFulltextValue() : itemSpec.getName() + DataRepositoryImpl.SPEC_SEPARATOR + data.getFulltextValue();
+            }
+        }
     }
 
     public Integer getItemId() {

@@ -66,6 +66,7 @@ public class StructureService {
     private final DataRepository dataRepository;
     private final RuleService ruleService;
     private final FundStructureExtensionRepository fundStructureExtensionRepository;
+    private final StructureDataService structureDataService;
 
     @Autowired
     public StructureService(final StructureItemRepository structureItemRepository,
@@ -76,7 +77,7 @@ public class StructureService {
                             final RulesExecutor rulesExecutor,
                             final ArrangementService arrangementService,
                             final DataRepository dataRepository,
-                            final RuleService ruleService, final FundStructureExtensionRepository fundStructureExtensionRepository) {
+                            final RuleService ruleService, final FundStructureExtensionRepository fundStructureExtensionRepository, final StructureDataService structureDataService) {
         this.structureItemRepository = structureItemRepository;
         this.structureExtensionDefinitionRepository = structureExtensionDefinitionRepository;
         this.structureExtensionRepository = structureExtensionRepository;
@@ -88,6 +89,7 @@ public class StructureService {
         this.dataRepository = dataRepository;
         this.ruleService = ruleService;
         this.fundStructureExtensionRepository = fundStructureExtensionRepository;
+        this.structureDataService = structureDataService;
     }
 
     /**
@@ -198,6 +200,7 @@ public class StructureService {
         createStructureItem.setItemType(structureItem.getItemType());
         createStructureItem.setItemSpec(structureItem.getItemSpec());
 
+        structureDataService.addToValidate(structureData);
         return structureItemRepository.save(createStructureItem);
     }
 
@@ -340,6 +343,7 @@ public class StructureService {
             updateData(updateData, false, structureItemDB.getItemType().getDataType());
         }
 
+        structureDataService.addToValidate(structureItemDB.getStructureData());
         return structureItemRepository.save(updateStructureItem);
     }
 
@@ -376,6 +380,7 @@ public class StructureService {
         validateRuleSet(fundVersion, structureItemDB.getItemType());
 
         structureItemDB.setDeleteChange(change);
+        structureDataService.addToValidate(structureItemDB.getStructureData());
         return structureItemRepository.save(structureItemDB);
     }
 
@@ -412,60 +417,24 @@ public class StructureService {
     }
 
     /**
-     * Vygenerování hodnoty pro hodnotu strukt. datového typu.
+     * Provede revalidaci hodnot strukturovaného typu pro AS.
      *
-     * @param structureData hodnota struktovaného datového typu
-     * @return hodnota
-     */
-    public String generateValue(final ArrStructureData structureData) {
-
-        // TODO slapa: do cache?
-        RulStructureType structureType = structureData.getStructureType();
-        File groovyFile = findGroovyFile(structureType, structureData.getFund());
-        GroovyScriptService.GroovyScriptFile groovyScriptFile;
-        try {
-            groovyScriptFile = GroovyScriptService.GroovyScriptFile.createFromFile(groovyFile);
-        } catch (IOException e) {
-            throw new SystemException("Problém při zpracování groovy scriptu", e);
-        }
-
-        List<ArrStructureItem> structureItems = structureItemRepository.findByStructureDataAndDeleteChangeIsNull(structureData);
-
-        Map<String, Object> input = new HashMap<>();
-        input.put("ITEMS", structureItems);
-        return (String) groovyScriptFile.evaluate(input);
-    }
-
-    /**
-     * Vyhledání groovy scriptu podle strukturovaného typu k AS.
-     *
+     * @param fundVersion   verze AS
      * @param structureType strukturovaný typ
-     * @param fund          archivní soubor
-     * @return nalezený groovy soubor
      */
-    private File findGroovyFile(final RulStructureType structureType, final ArrFund fund) {
-        List<RulStructureExtensionDefinition> structureExtensionDefinitions = structureExtensionDefinitionRepository
-                .findByStructureTypeAndDefTypeAndFundOrderByPriority(structureType, RulStructureExtensionDefinition.DefType.SERIALIZED_VALUE, fund);
-        RulComponent component;
-        RulPackage rulPackage;
-        if (structureExtensionDefinitions.size() > 0) {
-            RulStructureExtensionDefinition structureExtensionDefinition = structureExtensionDefinitions.get(structureExtensionDefinitions.size() - 1);
-            component = structureExtensionDefinition.getComponent();
-            rulPackage = structureExtensionDefinition.getRulPackage();
-        } else {
-            List<RulStructureDefinition> structureDefinitions = structureDefinitionRepository
-                    .findByStructureTypeAndDefTypeOrderByPriority(structureType, RulStructureDefinition.DefType.SERIALIZED_VALUE);
-            if (structureDefinitions.size() > 0) {
-                RulStructureDefinition structureDefinition = structureDefinitions.get(structureDefinitions.size() - 1);
-                component = structureDefinition.getComponent();
-                rulPackage = structureDefinition.getRulPackage();
-            } else {
-                throw new SystemException("Strukturovaný typ '" + structureType.getCode() + "' nemá žádný script pro výpočet hodnoty", BaseCode.INVALID_STATE);
-            }
+    public void revalidateStructureData(final ArrFundVersion fundVersion, final RulStructureType structureType) {
+        Assert.notNull(fundVersion, "Musí být vybrána verze AS");
+        Assert.notNull(structureType, "Musí být vybrán strukturovaný typ");
+
+        List<ArrStructureData> structureDataList = structureDataRepository.findByStructureTypeAndFundAndDeleteChangeIsNull(structureType, fundVersion.getFund());
+        for (ArrStructureData structureData : structureDataList) {
+            structureData.setValue(null);
+            structureData.setErrorDescription(null);
         }
-        return new File(rulesExecutor.getGroovyDir(rulPackage.getCode(), structureType.getRuleSet().getCode())
-                + File.separator + component.getFilename());
+        structureDataRepository.save(structureDataList);
+        structureDataService.addToValidate(structureDataList);
     }
+
 
     /**
      * Vrátí strukt. typ podle kódu.
@@ -517,6 +486,7 @@ public class StructureService {
         }
 
         structureItemRepository.save(structureItems);
+        structureDataService.addToValidate(structureData);
     }
 
     /**
@@ -533,20 +503,7 @@ public class StructureService {
             throw new BusinessException("Strukturovaná data nemají dočasný stav", BaseCode.INVALID_STATE);
         }
         structureData.setState(ArrStructureData.State.OK);
-        structureData.setValue(generateValue(structureData));
-        return structureDataRepository.save(structureData);
-    }
-
-    /**
-     * Získání seznamu typů atributů podle strukt. typu a verze AS.
-     *
-     * @param structureType strukturovaný typ
-     * @param fundVersion   verze AS
-     * @return seznam typu atributů
-     */
-    public List<RulItemTypeExt> getStructureItemTypes(final RulStructureType structureType, final ArrFundVersion fundVersion) {
-        List<RulItemTypeExt> rulDescItemTypeExtList = ruleService.getAllItemTypes(structureType.getRuleSet());
-        return rulesExecutor.executeStructureItemTypesRules(structureType, rulDescItemTypeExtList, fundVersion);
+        return structureDataService.validate(structureData);
     }
 
     /**
@@ -602,7 +559,7 @@ public class StructureService {
         newFundStructureExtension.setFund(fundVersion.getFund());
         newFundStructureExtension.setStructureExtension(structureExtension);
 
-        // TODO slapa: revalidace dotčených entit
+        revalidateStructureData(fundVersion, structureExtension.getStructureType());
         return fundStructureExtensionRepository.save(newFundStructureExtension);
     }
 
@@ -625,7 +582,7 @@ public class StructureService {
         ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_FUND_STRUCTURE_EXT);
         fundStructureExtension.setDeleteChange(change);
 
-        // TODO slapa: revalidace dotčených entit
+        revalidateStructureData(fundVersion, structureExtension.getStructureType());
         return fundStructureExtensionRepository.save(fundStructureExtension);
     }
 

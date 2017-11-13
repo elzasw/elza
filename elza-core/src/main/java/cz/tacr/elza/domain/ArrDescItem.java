@@ -92,18 +92,9 @@ public class ArrDescItem extends ArrItem {
 
     @Field
     @Analyzer(definition = "customanalyzer")
+    @Override
     public String getFulltextValue() {
-        ArrData data = getData();
-        if (data == null) {
-            return null;
-        } else {
-            RulItemSpec itemSpec = getItemSpec();
-            if (data instanceof ArrDataNull) {
-                return itemSpec == null ? null : itemSpec.getName();
-            } else {
-                return itemSpec == null ? data.getFulltextValue() : itemSpec.getName() + DataRepositoryImpl.SPEC_SEPARATOR + data.getFulltextValue();
-            }
-        }
+        return super.getFulltextValue();
     }
 
     @Field(store = Store.NO)

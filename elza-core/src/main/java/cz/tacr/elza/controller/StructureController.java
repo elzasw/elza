@@ -20,6 +20,7 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.StructureService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -47,16 +48,19 @@ public class StructureController {
 
     private final StructureService structureService;
     private final ArrangementService arrangementService;
+    private final RuleService ruleService;
     private final ClientFactoryDO factoryDO;
     private final ClientFactoryVO factoryVO;
 
     @Autowired
     public StructureController(final StructureService structureService,
                                final ArrangementService arrangementService,
+                               final RuleService ruleService,
                                final ClientFactoryDO factoryDO,
                                final ClientFactoryVO factoryVO) {
         this.structureService = structureService;
         this.arrangementService = arrangementService;
+        this.ruleService = ruleService;
         this.factoryDO = factoryDO;
         this.factoryVO = factoryVO;
     }
@@ -255,7 +259,7 @@ public class StructureController {
 
         validateRuleSet(fundVersion, structureData.getStructureType());
 
-        List<RulItemTypeExt> structureItemTypes = structureService.getStructureItemTypes(structureData.getStructureType(), fundVersion);
+        List<RulItemTypeExt> structureItemTypes = ruleService.getStructureItemTypes(structureData.getStructureType(), fundVersion);
         List<ArrStructureItem> structureItems = structureService.findStructureItems(structureData);
 
         Integer fundId = fundVersion.getFund().getFundId();

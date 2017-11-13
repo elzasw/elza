@@ -34,7 +34,7 @@ public class StructureDataRepositoryImpl implements StructureDataRepositoryCusto
         parameters.put("fundId", fundId);
 
         if (!StringUtils.isEmpty(search)) {
-            conds.append(" AND (LOWER(sd.value) LIKE :search");
+            conds.append(" AND LOWER(sd.value) LIKE :search");
             parameters.put("search", "%" + search.toLowerCase() + "%");
         }
 
