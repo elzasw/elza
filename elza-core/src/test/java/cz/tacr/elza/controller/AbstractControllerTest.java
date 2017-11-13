@@ -48,6 +48,7 @@ import cz.tacr.elza.controller.vo.RulOutputTypeVO;
 import cz.tacr.elza.controller.vo.RulPacketTypeVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
+import cz.tacr.elza.controller.vo.RulStructureTypeVO;
 import cz.tacr.elza.controller.vo.RulTemplateVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
@@ -156,6 +157,15 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String CONFIRM_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{structureDataId}/{fundVersionId}/confirm";
     protected static final String DELETE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{structureDataId}/{fundVersionId}/delete";
     protected static final String FIND_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{structureTypeCode}/{fundVersionId}";
+    protected static final String FIND_STRUCTURE_TYPES = STRUCTURE_CONTROLLER_URL + "/type/{fundVersionId}";
+    protected static final String FIND_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{fundVersionId}";
+    protected static final String ADD_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{structureExtensionCode}/{fundVersionId}/add";
+    protected static final String DELETE_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{structureExtensionCode}/{fundVersionId}/delete";
+    protected static final String CREATE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/{structureDataId}/{itemTypeId}/create";
+    protected static final String UPDATE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/update/{createNewVersion}";
+    protected static final String DELETE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/delete";
+    protected static final String DELETE_STRUCTURE_ITEMS_BY_TYPE = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/{structureDataId}/{itemTypeId}";
+    protected static final String GET_FORM_STRUCTURE_ITEMS = STRUCTURE_CONTROLLER_URL + "/item/form/{fundVersionId}/{structureDataId}";
 
     // ARRANGEMENT
     protected static final String CREATE_FUND = ARRANGEMENT_CONTROLLER_URL + "/funds";
@@ -3251,5 +3261,130 @@ public abstract class AbstractControllerTest extends AbstractTest {
                         .queryParameter("from", from)
                         .queryParameter("count", count)
                 , FIND_STRUCTURE_DATA).as(FilteredResultVO.class);
+    }
+
+    /**
+     * Vyhledá možné typy strukt. datových typů, které lze v AS používat.
+     *
+     * @param fundVersionId identifikátor verze AS
+     * @return nalezené entity
+     */
+    protected List<RulStructureTypeVO> findStructureTypes(final Integer fundVersionId) {
+        return Arrays.asList(get(spec -> spec
+                .pathParameter("fundVersionId", fundVersionId), FIND_STRUCTURE_TYPES)
+                .as(RulStructureTypeVO[].class));
+    }
+
+    /**
+     * Vyhledá dostupná a aktivovaná rozšíření k AS.
+     *
+     * @param fundVersionId identifikátor verze AS
+     * @return nalezené entity
+     */
+    protected List<StructureExtensionFundVO> findFundStructureExtension(final Integer fundVersionId) {
+        return Arrays.asList(get(spec -> spec
+                .pathParameter("fundVersionId", fundVersionId), FIND_FUND_STRUCTURE_EXTENSION)
+                .as(StructureExtensionFundVO[].class));
+    }
+
+    /**
+     * Aktivuje rozšíření u archivního souboru.
+     *
+     * @param fundVersionId          identifikátor verze AS
+     * @param structureExtensionCode kód rozšíření strukturovaného typu
+     */
+    protected void addFundStructureExtension(final Integer fundVersionId,
+                                             final String structureExtensionCode) {
+        post(spec -> spec.pathParameter("fundVersionId", fundVersionId)
+                .pathParameter("structureExtensionCode", structureExtensionCode), ADD_FUND_STRUCTURE_EXTENSION);
+    }
+
+    /**
+     * Deaktivuje rozšíření u archivního souboru.
+     *
+     * @param fundVersionId          identifikátor verze AS
+     * @param structureExtensionCode kód rozšíření strukturovaného typu
+     */
+    protected void deleteFundStructureExtension(final Integer fundVersionId,
+                                                final String structureExtensionCode) {
+        post(spec -> spec.pathParameter("fundVersionId", fundVersionId)
+                .pathParameter("structureExtensionCode", structureExtensionCode), DELETE_FUND_STRUCTURE_EXTENSION);
+    }
+
+    /**
+     * Vytvoření položky k hodnotě strukt. datového typu.
+     *
+     * @param itemVO          položka
+     * @param fundVersionId   identifikátor verze AS
+     * @param itemTypeId      identifikátor typu atributu
+     * @param structureDataId identifikátor hodnoty strukturovaného datového typu
+     * @return vytvořená entita
+     */
+    protected StructureController.StructureItemResult createStructureItem(final ArrItemVO itemVO,
+                                                                          final Integer fundVersionId,
+                                                                          final Integer itemTypeId,
+                                                                          final Integer structureDataId) {
+        return put(spec -> spec.pathParameter("fundVersionId", fundVersionId)
+                .pathParameter("itemTypeId", itemTypeId)
+                .pathParameter("structureDataId", structureDataId)
+                .body(itemVO), CREATE_STRUCTURE_ITEM).as(StructureController.StructureItemResult.class);
+    }
+
+    /**
+     * Upravení položky k hodnotě strukt. datového typu.
+     *
+     * @param itemVO           položka
+     * @param fundVersionId    identifikátor verze AS
+     * @param createNewVersion provést verzovanou změnu
+     * @return upravená entita
+     */
+    protected StructureController.StructureItemResult updateStructureItem(final ArrItemVO itemVO,
+                                                                          final Integer fundVersionId,
+                                                                          final Boolean createNewVersion) {
+        return put(spec -> spec.pathParameter("fundVersionId", fundVersionId)
+                .pathParameter("createNewVersion", createNewVersion)
+                .body(itemVO), UPDATE_STRUCTURE_ITEM).as(StructureController.StructureItemResult.class);
+    }
+
+    /**
+     * Odstranení položky k hodnotě strukt. datového typu.
+     *
+     * @param itemVO        položka
+     * @param fundVersionId identifikátor verze AS
+     * @return smazaná entita
+     */
+    protected StructureController.StructureItemResult deleteStructureItem(final ArrItemVO itemVO,
+                                                                          final Integer fundVersionId) {
+        return post(spec -> spec.pathParameter("fundVersionId", fundVersionId)
+                .body(itemVO), DELETE_STRUCTURE_ITEM).as(StructureController.StructureItemResult.class);
+    }
+
+    /**
+     * Odstranení položek k hodnotě strukt. datového typu podle typu atributu.
+     *
+     * @param fundVersionId   identifikátor verze AS
+     * @param structureDataId identifikátor hodnoty strukturovaného datového typu
+     * @param itemTypeId      identifikátor typu atributu
+     */
+    protected void deleteStructureItemsByType(final Integer fundVersionId,
+                                              final Integer structureDataId,
+                                              final Integer itemTypeId) {
+        delete(spec -> spec.pathParameter("fundVersionId", fundVersionId)
+                .pathParameter("structureDataId", structureDataId)
+                .pathParameter("itemTypeId", itemTypeId), DELETE_STRUCTURE_ITEMS_BY_TYPE);
+    }
+
+    /**
+     * Získání dat pro formulář strukt. datového typu.
+     *
+     * @param fundVersionId   identifikátor verze AS
+     * @param structureDataId identifikátor hodnoty strukturovaného datového typu
+     * @return data formuláře
+     */
+    protected StructureController.StructureDataFormDataVO getFormStructureItems(final Integer fundVersionId,
+                                                                                final Integer structureDataId) {
+        return get(spec -> spec.pathParameter("fundVersionId", fundVersionId)
+                .pathParameter("structureDataId", structureDataId), GET_FORM_STRUCTURE_ITEMS)
+                .as(StructureController.StructureDataFormDataVO.class);
     }
 }

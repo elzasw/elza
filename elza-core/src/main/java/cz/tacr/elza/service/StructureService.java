@@ -9,6 +9,7 @@ import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrStructureData;
 import cz.tacr.elza.domain.ArrStructureItem;
 import cz.tacr.elza.domain.RulComponent;
+import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulPackage;
@@ -184,7 +185,9 @@ public class StructureService {
 
         }
 
-        ArrData data = createData(structureItem.getData());
+        validateRuleSet(fundVersion, structureItem.getItemType());
+
+        ArrData data = createData(structureItem.getData(), structureItem.getItemType().getDataType());
 
         ArrStructureItem createStructureItem = new ArrStructureItem();
         createStructureItem.setData(data);
@@ -280,7 +283,7 @@ public class StructureService {
             throw new ObjectNotFoundException("Neexistuje položka s OID: " + structureItem.getDescItemObjectId(), BaseCode.ID_NOT_EXIST).setId(structureItem.getDescItemObjectId());
         }
 
-        validateRuleSet(fundVersion, structureItemDB.getItemType().getStructureType());
+        validateRuleSet(fundVersion, structureItemDB.getItemType());
 
         ArrStructureItem updateStructureItem;
 
@@ -319,7 +322,7 @@ public class StructureService {
             }
 
 
-            ArrData updateData = updateData(structureItem.getData(), true);
+            ArrData updateData = updateData(structureItem.getData(), true, structureItemDB.getItemType().getDataType());
 
             updateStructureItem = new ArrStructureItem();
             updateStructureItem.setData(updateData);
@@ -334,7 +337,7 @@ public class StructureService {
             updateStructureItem.setItemSpec(structureItem.getItemSpec());
             ArrData updateData = updateStructureItem.getData();
             updateData.merge(structureItem.getData());
-            updateData(updateData, false);
+            updateData(updateData, false, structureItemDB.getItemType().getDataType());
         }
 
         return structureItemRepository.save(updateStructureItem);
@@ -343,14 +346,14 @@ public class StructureService {
     /**
      * Provede kontrolu zda-li verze AS má stejná pravidla jako strukt. typ.
      *
-     * @param fundVersion   verze AS
-     * @param structureType strukturovaný typ
+     * @param fundVersion verze AS
+     * @param itemType    typ atributu
      */
-    private void validateRuleSet(final ArrFundVersion fundVersion, final RulStructureType structureType) {
-        if (!fundVersion.getRuleSet().equals(structureType.getRuleSet())) {
+    private void validateRuleSet(final ArrFundVersion fundVersion, final RulItemType itemType) {
+        if (itemType.getStructureType() != null && !fundVersion.getRuleSet().equals(itemType.getStructureType().getRuleSet())) {
             throw new BusinessException("Fund a strukturovaný typ nemají stejná pravidla", BaseCode.INVALID_STATE)
                     .set("fund_rul_set", fundVersion.getRuleSet().getCode())
-                    .set("structure_type_rul_set", structureType.getRuleSet().getCode());
+                    .set("structure_type_rul_set", itemType.getRuleSet().getCode());
         }
     }
 
@@ -370,7 +373,7 @@ public class StructureService {
             throw new ObjectNotFoundException("Neexistuje položka s OID: " + structureItem.getDescItemObjectId(), BaseCode.ID_NOT_EXIST).setId(structureItem.getDescItemObjectId());
         }
 
-        validateRuleSet(fundVersion, structureItemDB.getStructureData().getStructureType());
+        validateRuleSet(fundVersion, structureItemDB.getItemType());
 
         structureItemDB.setDeleteChange(change);
         return structureItemRepository.save(structureItemDB);
@@ -379,11 +382,14 @@ public class StructureService {
     /**
      * Vytvoření dat. Provede kopii z předlohy a založení v DB.
      *
-     * @param data předloha dat
+     * @param data     předloha dat
+     * @param dataType datový typ dat
      * @return vytvořená data
      */
-    private ArrData createData(final ArrData data) {
-        return dataRepository.save(data.copy());
+    private ArrData createData(final ArrData data, final RulDataType dataType) {
+        ArrData copy = data.copy();
+        copy.setDataType(dataType);
+        return dataRepository.save(copy);
     }
 
     /**
@@ -391,11 +397,14 @@ public class StructureService {
      *
      * @param data             ukládaná data
      * @param createNewVersion vytvořit nová data
+     * @param dataType         datový typ dat
      * @return uložená / nová data
      */
-    private ArrData updateData(final ArrData data, final boolean createNewVersion) {
+    private ArrData updateData(final ArrData data, final boolean createNewVersion, final RulDataType dataType) {
         if (createNewVersion) {
-            return dataRepository.save(data.copy());
+            ArrData copy = data.copy();
+            copy.setDataType(dataType);
+            return dataRepository.save(copy);
         } else {
             Assert.notNull(data.getDataId(), "Identifikátor musí být vyplněn");
             return dataRepository.save(data);
@@ -498,8 +507,8 @@ public class StructureService {
                                            final Integer itemTypeId) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         ArrStructureData structureData = getStructureDataById(structureDataId);
-        validateRuleSet(fundVersion, structureData.getStructureType());
         RulItemType type = ruleService.getItemTypeById(itemTypeId);
+        validateRuleSet(fundVersion, type);
         List<ArrStructureItem> structureItems = structureItemRepository.findOpenItems(type, structureData);
 
         ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_STRUCTURE_ITEM);
@@ -587,7 +596,7 @@ public class StructureService {
             throw new BusinessException("U AS je již rozšíření aktivováno", BaseCode.INVALID_STATE);
         }
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_FUND_STRUCTURE_EXTENSION);
+        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_FUND_STRUCTURE_EXT);
         ArrFundStructureExtension newFundStructureExtension = new ArrFundStructureExtension();
         newFundStructureExtension.setCreateChange(change);
         newFundStructureExtension.setFund(fundVersion.getFund());
@@ -613,7 +622,7 @@ public class StructureService {
             throw new BusinessException("U AS rozšíření není aktivováno", BaseCode.INVALID_STATE);
         }
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_FUND_STRUCTURE_EXTENSION);
+        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_FUND_STRUCTURE_EXT);
         fundStructureExtension.setDeleteChange(change);
 
         // TODO slapa: revalidace dotčených entit

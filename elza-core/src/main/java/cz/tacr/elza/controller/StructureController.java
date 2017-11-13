@@ -233,7 +233,7 @@ public class StructureController {
      */
     @Transactional
     @RequestMapping(value = "/type/{fundVersionId}", method = RequestMethod.GET)
-    public List<RulStructureTypeVO> findRulStructureTypes(@PathVariable(value = "fundVersionId") final Integer fundVersionId) {
+    public List<RulStructureTypeVO> findStructureTypes(@PathVariable(value = "fundVersionId") final Integer fundVersionId) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         List<RulStructureType> structureTypes = structureService.findStructureTypes(fundVersion.getRuleSet());
         return factoryVO.createSimpleEntity(structureTypes, RulStructureTypeVO.class);

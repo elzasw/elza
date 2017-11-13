@@ -221,9 +221,15 @@ public class ArrChange {
          */
         DELETE_STRUCTURE_DATA,
 
-        ADD_FUND_STRUCTURE_EXTENSION,
+        /**
+         * Přiřazení rozšíření k AS.
+         */
+        ADD_FUND_STRUCTURE_EXT,
 
-        DELETE_FUND_STRUCTURE_EXTENSION,
+        /**
+         * Odebrání rozšíření u AS.
+         */
+        DELETE_FUND_STRUCTURE_EXT,
 
         /**
          * Hromadná změna atributů - změny z tabulkového zobrazení, pokud se týká jen jedné JP, tak jde o typ Změna atributu.

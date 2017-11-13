@@ -839,7 +839,7 @@ public class PackageService {
             }
 
             for (RulStructureExtensionDefinition definition : rulStructureExtensionDefinitionsNew) {
-                saveFile(mapEntry, getDir(dirRules, dirGroovies, definition), ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + ZIP_DIR_RULES, definition.getComponent().getFilename());
+                saveFile(mapEntry, getDir(dirRules, dirGroovies, definition), ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + getZipDir(definition), definition.getComponent().getFilename());
             }
             bulkActionConfigManager.load();
         } catch (IOException e) {
