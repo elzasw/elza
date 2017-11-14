@@ -73,8 +73,8 @@ public class StructureController {
      * @return vytvořená dočasná entita
      */
     @Transactional
-    @RequestMapping(value = "/data/{structureTypeCode}/{fundVersionId}/create", method = RequestMethod.PUT)
-    public ArrStructureDataVO createStructureData(@PathVariable(value = "structureTypeCode") final String structureTypeCode,
+    @RequestMapping(value = "/data/{fundVersionId}", method = RequestMethod.POST)
+    public ArrStructureDataVO createStructureData(@RequestBody final String structureTypeCode,
                                                   @PathVariable(value = "fundVersionId") final Integer fundVersionId) {
 
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
@@ -92,7 +92,7 @@ public class StructureController {
      * @return potvrzená entita
      */
     @Transactional
-    @RequestMapping(value = "/data/{structureDataId}/{fundVersionId}/confirm", method = RequestMethod.PUT)
+    @RequestMapping(value = "/data/{fundVersionId}/{structureDataId}/confirm", method = RequestMethod.POST)
     public ArrStructureDataVO confirmStructureData(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                                    @PathVariable(value = "structureDataId") final Integer structureDataId) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
@@ -110,7 +110,7 @@ public class StructureController {
      * @return smazaná entita
      */
     @Transactional
-    @RequestMapping(value = "/data/{structureDataId}/{fundVersionId}/delete", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/data/{fundVersionId}/{structureDataId}", method = RequestMethod.DELETE)
     public ArrStructureDataVO deleteStructureData(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                                   @PathVariable(value = "structureDataId") final Integer structureDataId) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
@@ -132,9 +132,9 @@ public class StructureController {
      * @return nalezené položky
      */
     @Transactional
-    @RequestMapping(value = "/data/{structureTypeCode}/{fundVersionId}", method = RequestMethod.GET)
-    public FilteredResultVO<ArrStructureDataVO> findStructureData(@PathVariable("structureTypeCode") final String structureTypeCode,
-                                                                  @PathVariable("fundVersionId") final Integer fundVersionId,
+    @RequestMapping(value = "/data/{fundVersionId}/{structureTypeCode}", method = RequestMethod.GET)
+    public FilteredResultVO<ArrStructureDataVO> findStructureData(@PathVariable("fundVersionId") final Integer fundVersionId,
+                                                                  @PathVariable("structureTypeCode") final String structureTypeCode,
                                                                   @RequestParam(value = "search", required = false) final String search,
                                                                   @RequestParam(value = "assignable", required = false) final Boolean assignable,
                                                                   @RequestParam(value = "from", required = false, defaultValue = "0") final Integer from,
@@ -161,7 +161,7 @@ public class StructureController {
      * @return vytvořená entita
      */
     @Transactional
-    @RequestMapping(value = "/item/{fundVersionId}/{structureDataId}/{itemTypeId}/create", method = RequestMethod.PUT)
+    @RequestMapping(value = "/item/{fundVersionId}/{structureDataId}/{itemTypeId}/create", method = RequestMethod.POST)
     public StructureItemResult createStructureItem(@RequestBody final ArrItemVO itemVO,
                                                    @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                                    @PathVariable(value = "itemTypeId") final Integer itemTypeId,

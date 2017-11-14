@@ -153,10 +153,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String DELETE_EXTERNAL_SYSTEM = EXTERNAL_SYSTEMS + "/{externalSystemId}";
 
     // STRUCTURE
-    protected static final String CREATE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{structureTypeCode}/{fundVersionId}/create";
-    protected static final String CONFIRM_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{structureDataId}/{fundVersionId}/confirm";
-    protected static final String DELETE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{structureDataId}/{fundVersionId}/delete";
-    protected static final String FIND_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{structureTypeCode}/{fundVersionId}";
+    protected static final String CREATE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}";
+    protected static final String CONFIRM_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}/confirm";
+    protected static final String DELETE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}";
+    protected static final String FIND_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureTypeCode}";
     protected static final String FIND_STRUCTURE_TYPES = STRUCTURE_CONTROLLER_URL + "/type/{fundVersionId}";
     protected static final String FIND_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{fundVersionId}";
     protected static final String ADD_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{structureExtensionCode}/{fundVersionId}/add";
@@ -3203,7 +3203,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return vytvořená dočasná entita
      */
     protected ArrStructureDataVO createStructureData(final String structureTypeCode, final Integer fundVersionId) {
-        return put(spec -> spec.pathParameter("structureTypeCode", structureTypeCode)
+        return post(spec -> spec.body(structureTypeCode)
                 .pathParameter("fundVersionId", fundVersionId), CREATE_STRUCTURE_DATA)
                 .as(ArrStructureDataVO.class);
     }
@@ -3217,7 +3217,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected ArrStructureDataVO confirmStructureData(final Integer fundVersionId,
                                                       final Integer structureDataId) {
-        return put(spec -> spec.pathParameter("structureDataId", structureDataId)
+        return post(spec -> spec.pathParameter("structureDataId", structureDataId)
                 .pathParameter("fundVersionId", fundVersionId), CONFIRM_STRUCTURE_DATA)
                 .as(ArrStructureDataVO.class);
     }
