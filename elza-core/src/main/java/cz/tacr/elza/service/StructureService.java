@@ -1,5 +1,6 @@
 package cz.tacr.elza.service;
 
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrFund;
@@ -8,15 +9,10 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrStructureData;
 import cz.tacr.elza.domain.ArrStructureItem;
-import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.RulStructureDefinition;
 import cz.tacr.elza.domain.RulStructureExtension;
-import cz.tacr.elza.domain.RulStructureExtensionDefinition;
 import cz.tacr.elza.domain.RulStructureType;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.BusinessException;
@@ -26,12 +22,14 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundStructureExtensionRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.StructureDataRepository;
 import cz.tacr.elza.repository.StructureDefinitionRepository;
 import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
 import cz.tacr.elza.repository.StructureExtensionRepository;
 import cz.tacr.elza.repository.StructureItemRepository;
 import cz.tacr.elza.repository.StructureTypeRepository;
+import org.apache.commons.collections4.CollectionUtils;
 import org.castor.core.util.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -39,13 +37,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Servisní třída pro práci se strukturovanými datovými typy.
@@ -67,17 +62,21 @@ public class StructureService {
     private final RuleService ruleService;
     private final FundStructureExtensionRepository fundStructureExtensionRepository;
     private final StructureDataService structureDataService;
+    private final ItemTypeRepository itemTypeRepository;
 
     @Autowired
     public StructureService(final StructureItemRepository structureItemRepository,
                             final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository,
-                            final StructureExtensionRepository structureExtensionRepository, final StructureDefinitionRepository structureDefinitionRepository,
+                            final StructureExtensionRepository structureExtensionRepository,
+                            final StructureDefinitionRepository structureDefinitionRepository,
                             final StructureDataRepository structureDataRepository,
                             final StructureTypeRepository structureTypeRepository,
                             final RulesExecutor rulesExecutor,
                             final ArrangementService arrangementService,
                             final DataRepository dataRepository,
-                            final RuleService ruleService, final FundStructureExtensionRepository fundStructureExtensionRepository, final StructureDataService structureDataService) {
+                            final RuleService ruleService, final FundStructureExtensionRepository fundStructureExtensionRepository,
+                            final StructureDataService structureDataService,
+                            final ItemTypeRepository itemTypeRepository) {
         this.structureItemRepository = structureItemRepository;
         this.structureExtensionDefinitionRepository = structureExtensionDefinitionRepository;
         this.structureExtensionRepository = structureExtensionRepository;
@@ -90,6 +89,7 @@ public class StructureService {
         this.ruleService = ruleService;
         this.fundStructureExtensionRepository = fundStructureExtensionRepository;
         this.structureDataService = structureDataService;
+        this.itemTypeRepository = itemTypeRepository;
     }
 
     /**
@@ -451,15 +451,30 @@ public class StructureService {
     }
 
     /**
-     * Vrátí strukt. data podle identifikátoru.
+     * Vrátí strukt. data podle identifikátoru včetně načtených návazných entit.
      *
      * @param structureDataId identifikátor hodnoty strukt. datového typu
      * @return entita
      */
     public ArrStructureData getStructureDataById(final Integer structureDataId) {
-        ArrStructureData structureData = structureDataRepository.findOne(structureDataId);
+        ArrStructureData structureData = structureDataRepository.findOneFetch(structureDataId);
         if (structureData == null) {
             throw new ObjectNotFoundException("Strukturovaná data neexistují: " + structureDataId, BaseCode.ID_NOT_EXIST).setId(structureDataId);
+        }
+        return structureData;
+    }
+
+    /**
+     * Vrátí strukt. data podle identifikátoru včetně načtených návazných entit.
+     *
+     * @param structureDataId identifikátor hodnoty strukt. datového typu
+     * @param fundVersion     verze AS
+     * @return entita
+     */
+    public ArrStructureData getStructureDataById(final Integer structureDataId, final ArrFundVersion fundVersion) {
+        ArrStructureData structureData = getStructureDataById(structureDataId);
+        if (!structureData.getStructureType().getRuleSet().equals(fundVersion.getRuleSet())) {
+            throw new BusinessException("Pravidla AS nesouhlasí s pravidly hodnoty strukt. typu", BaseCode.INVALID_STATE);
         }
         return structureData;
     }
@@ -631,4 +646,81 @@ public class StructureService {
     public List<RulStructureExtension> findStructureExtensions(final ArrFundVersion fundVersion) {
         return structureExtensionRepository.findActiveByFundAndRuleSet(fundVersion.getFund(), fundVersion.getRuleSet());
     }
+
+    /**
+     * Založení duplikátů strukturovaného datového typu a autoinkrementační.
+     * Předloha musí být ve stavu {@link ArrStructureData.State#TEMP}.
+     *
+     * @param fundVersion   verze AS
+     * @param structureData hodnota struktovaného datového typu, ze které se vychází
+     * @param count         počet položek, které se budou budou vytvářet (včetně zdrojové hodnoty strukt. typu)
+     * @param itemTypeIds   identifikátory typů, které se mají autoincrementovat
+     */
+    public void duplicateStructureDataBatch(final ArrFundVersion fundVersion,
+                                            final ArrStructureData structureData,
+                                            final int count,
+                                            final List<Integer> itemTypeIds) {
+        if (count <= 0) {
+            throw new BusinessException("Počet vytvářených položek musí být kladný", BaseCode.INVALID_STATE);
+        }
+        if (structureData.getState() != ArrStructureData.State.TEMP) {
+            throw new BusinessException("Neplatný stav hodnoty strukt. typu: " + structureData.getState(), BaseCode.INVALID_STATE);
+        }
+        if (!fundVersion.getRuleSet().equals(structureData.getStructureType().getRuleSet())) {
+            throw new BusinessException("Pravidla AS nesouhlasí s pravidly hodnoty strukt. typu", BaseCode.INVALID_STATE);
+        }
+
+        List<RulItemType> itemTypes = findAndValidateIntItemTypes(fundVersion, itemTypeIds);
+        List<ArrStructureItem> structureItems = findStructureItems(structureData);
+
+        validateStructureItems(itemTypes, structureItems);
+
+        // TODO slapa: dopsat duplikování
+    }
+
+    /**
+     * Provede validaci položek předlohy strukt. typu.
+     *
+     * @param itemTypes      typy atributů, které vyžadujeme mezi hodnotami
+     * @param structureItems položky hodnoty strukt. typu
+     */
+    private void validateStructureItems(final List<RulItemType> itemTypes, final List<ArrStructureItem> structureItems) {
+        List<RulItemType> itemTypesRequired = new ArrayList<>(itemTypes);
+        for (ArrStructureItem structureItem : structureItems) {
+            itemTypesRequired.remove(structureItem.getItemType());
+        }
+        if (!itemTypesRequired.isEmpty()) {
+            throw new BusinessException("Hodnota strukt. typu předlohy neobsahuje položky pro autoincrement", BaseCode.INVALID_STATE)
+                    .set("codes", itemTypesRequired.stream().map(RulItemType::getCode).collect(Collectors.toList()));
+        }
+    }
+
+    /**
+     * Vyhledá a zvaliduje typy atributů. Validují se položky, že patří pod stejná pravidla. Kontrolují se typy, že jsou
+     * datového typu {@link DataType#INT}.
+     *
+     * @param fundVersion verze AS
+     * @param itemTypeIds identifikátory typů, které se mají autoincrementovat
+     * @return nalezené a zvalidované entity
+     */
+    private List<RulItemType> findAndValidateIntItemTypes(final ArrFundVersion fundVersion, final List<Integer> itemTypeIds) {
+        if (CollectionUtils.isEmpty(itemTypeIds)) {
+            throw new BusinessException("Autoincrementující typ musí být alespoň jeden", BaseCode.INVALID_STATE);
+        }
+
+        List<RulItemType> itemTypes = itemTypeRepository.findAll(itemTypeIds);
+        if (itemTypes.size() != itemTypeIds.size()) {
+            throw new BusinessException("Některý z typů atributů neexistuje", BaseCode.INVALID_STATE);
+        }
+        for (RulItemType itemType : itemTypes) {
+            if (!itemType.getRuleSet().equals(fundVersion.getRuleSet())) {
+                throw new BusinessException("Typ atributu " + itemType.getCode() + " nepatří k pravidlům " + fundVersion.getRuleSet().getCode(), BaseCode.INVALID_STATE);
+            }
+            if (DataType.fromId(itemType.getDataTypeId()) != DataType.INT) {
+                throw new BusinessException("Typ atributu " + itemType.getCode() + " není číselného typu", BaseCode.INVALID_STATE);
+            }
+        }
+        return itemTypes;
+    }
+
 }

@@ -79,6 +79,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ArrStructureData;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.service.ArrMoveLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
@@ -156,7 +157,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String CREATE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}";
     protected static final String CONFIRM_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}/confirm";
     protected static final String DELETE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}";
-    protected static final String FIND_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureTypeCode}";
+    protected static final String FIND_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureTypeCode}/search";
+    protected static final String GET_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}";
     protected static final String FIND_STRUCTURE_TYPES = STRUCTURE_CONTROLLER_URL + "/type/{fundVersionId}";
     protected static final String FIND_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{fundVersionId}";
     protected static final String ADD_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{structureExtensionCode}/{fundVersionId}/add";
@@ -166,6 +168,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String DELETE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/delete";
     protected static final String DELETE_STRUCTURE_ITEMS_BY_TYPE = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/{structureDataId}/{itemTypeId}";
     protected static final String GET_FORM_STRUCTURE_ITEMS = STRUCTURE_CONTROLLER_URL + "/item/form/{fundVersionId}/{structureDataId}";
+    protected static final String DUPLICATE_STRUCTURE_DATA_BATCH = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}/batch";
 
     // ARRANGEMENT
     protected static final String CREATE_FUND = ARRANGEMENT_CONTROLLER_URL + "/funds";
@@ -3324,7 +3327,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                                           final Integer fundVersionId,
                                                                           final Integer itemTypeId,
                                                                           final Integer structureDataId) {
-        return put(spec -> spec.pathParameter("fundVersionId", fundVersionId)
+        return post(spec -> spec.pathParameter("fundVersionId", fundVersionId)
                 .pathParameter("itemTypeId", itemTypeId)
                 .pathParameter("structureDataId", structureDataId)
                 .body(itemVO), CREATE_STRUCTURE_ITEM).as(StructureController.StructureItemResult.class);
@@ -3386,5 +3389,37 @@ public abstract class AbstractControllerTest extends AbstractTest {
         return get(spec -> spec.pathParameter("fundVersionId", fundVersionId)
                 .pathParameter("structureDataId", structureDataId), GET_FORM_STRUCTURE_ITEMS)
                 .as(StructureController.StructureDataFormDataVO.class);
+    }
+
+    /**
+     * Založení duplikátů strukturovaného datového typu a autoinkrementační.
+     * Předloha musí být ve stavu {@link ArrStructureData.State#TEMP}.
+     *
+     * @param structureDataId identifikátor předlohy hodnoty strukturovaného datového typu
+     * @param fundVersionId   identifikátor verze AS
+     * @param count           počet položek, které se budou budou vytvářet
+     * @param itemTypeIds     identifikátory číselných typů atributu, které se budou incrementovat
+     */
+    protected void duplicateStructureDataBatch(final Integer fundVersionId,
+                                               final Integer structureDataId,
+                                               final Integer count,
+                                               final List<Integer> itemTypeIds) {
+        post(spec -> spec.pathParameter("fundVersionId", fundVersionId)
+                .pathParameter("structureDataId", structureDataId)
+                .body(new StructureController.StructureDataBatch(count, itemTypeIds)), DUPLICATE_STRUCTURE_DATA_BATCH);
+    }
+
+    /**
+     * Získání hodnoty strukturovaného datového typu.
+     *
+     * @param fundVersionId   identifikátor verze AS
+     * @param structureDataId identifikátor hodnoty strukturovaného datového typu
+     * @return nalezená entita
+     */
+    public ArrStructureDataVO getStructureData(final Integer fundVersionId,
+                                               final Integer structureDataId) {
+        return get(spec -> spec.pathParameter("fundVersionId", fundVersionId)
+                .pathParameter("structureDataId", structureDataId), GET_STRUCTURE_DATA)
+                .as(ArrStructureDataVO.class);
     }
 }

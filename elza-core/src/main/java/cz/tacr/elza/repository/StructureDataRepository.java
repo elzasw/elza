@@ -23,4 +23,7 @@ public interface StructureDataRepository extends JpaRepository<ArrStructureData,
     @Query("SELECT sd FROM arr_structure_data sd WHERE sd.structureType = :structureType AND sd.fund = :fund AND sd.deleteChange IS NULL AND value IS NOT NULL AND sd.state = 'OK'")
     List<ArrStructureData> findValidByStructureTypeAndFund(@Param("structureType") RulStructureType structureType,
                                                            @Param("fund") ArrFund fund);
+
+    @Query("SELECT sd FROM arr_structure_data sd JOIN FETCH sd.structureType WHERE sd.structureDataId = :structureDataId")
+    ArrStructureData findOneFetch(@Param("structureDataId") Integer structureDataId);
 }

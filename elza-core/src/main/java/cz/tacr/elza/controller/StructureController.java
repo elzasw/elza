@@ -24,6 +24,7 @@ import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.StructureService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -85,6 +86,26 @@ public class StructureController {
     }
 
     /**
+     * Založení duplikátů strukturovaného datového typu a autoinkrementační.
+     * Předloha musí být ve stavu {@link ArrStructureData.State#TEMP}.
+     *
+     * @param structureDataId    identifikátor předlohy hodnoty strukturovaného datového typu
+     * @param fundVersionId      identifikátor verze AS
+     * @param structureDataBatch data pro hromadné vytvoření hodnot
+     */
+    @Transactional
+    @RequestMapping(value = "/data/{fundVersionId}/{structureDataId}/batch", method = RequestMethod.POST)
+    public void duplicateStructureDataBatch(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                            @PathVariable(value = "structureDataId") final Integer structureDataId,
+                                            @RequestBody StructureDataBatch structureDataBatch) {
+        Assert.notNull(structureDataBatch.getCount(), "Počet položek musí být vyplněn");
+        Assert.notEmpty(structureDataBatch.getItemTypeIds(), "Autoincrementující typ musí být alespoň jeden");
+        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
+        ArrStructureData structureData = structureService.getStructureDataById(structureDataId);
+        structureService.duplicateStructureDataBatch(fundVersion, structureData, structureDataBatch.getCount(), structureDataBatch.getItemTypeIds());
+    }
+
+    /**
      * Potvrzení hodnoty strukturovaného datového typu. Provede nastavení hodnoty.
      *
      * @param fundVersionId   identifikátor verze AS
@@ -121,6 +142,21 @@ public class StructureController {
     }
 
     /**
+     * Získání hodnoty strukturovaného datového typu.
+     *
+     * @param fundVersionId   identifikátor verze AS
+     * @param structureDataId identifikátor hodnoty strukturovaného datového typu
+     * @return nalezená entita
+     */
+    @Transactional
+    @RequestMapping(value = "/data/{fundVersionId}/{structureDataId}", method = RequestMethod.GET)
+    public ArrStructureDataVO getStructureData(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                               @PathVariable(value = "structureDataId") final Integer structureDataId) {
+        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
+        return factoryVO.createStructureData(structureService.getStructureDataById(structureDataId, fundVersion));
+    }
+
+    /**
      * Vyhledání hodnot strukturovaného datového typu.
      *
      * @param structureTypeCode kód typu strukturovaného datového
@@ -132,7 +168,7 @@ public class StructureController {
      * @return nalezené položky
      */
     @Transactional
-    @RequestMapping(value = "/data/{fundVersionId}/{structureTypeCode}", method = RequestMethod.GET)
+    @RequestMapping(value = "/data/{fundVersionId}/{structureTypeCode}/search", method = RequestMethod.GET)
     public FilteredResultVO<ArrStructureDataVO> findStructureData(@PathVariable("fundVersionId") final Integer fundVersionId,
                                                                   @PathVariable("structureTypeCode") final String structureTypeCode,
                                                                   @RequestParam(value = "search", required = false) final String search,
@@ -364,4 +400,40 @@ public class StructureController {
         }
     }
 
+    public static class StructureDataBatch {
+
+        /**
+         * Počet položek, které se budou budou vytvářet (včetně zdrojové hodnoty strukt. typu).
+         */
+        private Integer count;
+
+        /**
+         * Identifikátory číselných typů atributu, které se budou incrementovat.
+         */
+        private List<Integer> itemTypeIds;
+
+        public StructureDataBatch() {
+        }
+
+        public StructureDataBatch(final Integer count, final List<Integer> itemTypeIds) {
+            this.count = count;
+            this.itemTypeIds = itemTypeIds;
+        }
+
+        public Integer getCount() {
+            return count;
+        }
+
+        public void setCount(final Integer count) {
+            this.count = count;
+        }
+
+        public List<Integer> getItemTypeIds() {
+            return itemTypeIds;
+        }
+
+        public void setItemTypeIds(final List<Integer> itemTypeIds) {
+            this.itemTypeIds = itemTypeIds;
+        }
+    }
 }
