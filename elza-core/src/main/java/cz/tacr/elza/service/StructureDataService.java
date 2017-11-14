@@ -2,6 +2,11 @@ package cz.tacr.elza.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.eventbus.Subscribe;
+import cz.tacr.elza.EventBusListener;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrStructureData;
@@ -26,6 +31,7 @@ import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
 import cz.tacr.elza.repository.StructureExtensionRepository;
 import cz.tacr.elza.repository.StructureItemRepository;
 import cz.tacr.elza.repository.StructureTypeRepository;
+import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -53,6 +59,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -61,6 +69,7 @@ import java.util.stream.Collectors;
  * @since 13.11.2017
  */
 @Service
+@EventBusListener
 public class StructureDataService {
 
     private static final Logger logger = LoggerFactory.getLogger(StructureDataService.class);
@@ -82,6 +91,27 @@ public class StructureDataService {
 
     private Queue<Integer> queueStructureDataIds = new ConcurrentLinkedQueue<>();
     private final Object lock = new Object();
+
+    private final LoadingCache<File, GroovyScriptService.GroovyScriptFile> groovyScriptCache = CacheBuilder.newBuilder()
+            .maximumSize(50)
+            .expireAfterWrite(5, TimeUnit.MINUTES)
+            .build(
+                    new CacheLoader<File, GroovyScriptService.GroovyScriptFile>() {
+                        public GroovyScriptService.GroovyScriptFile load(final File groovyFile) {
+                            try {
+                                return GroovyScriptService.GroovyScriptFile.createFromFile(groovyFile);
+                            } catch (IOException e) {
+                                throw new SystemException("Problém při zpracování groovy scriptu", e);
+                            }
+                        }
+                    });
+
+    @Subscribe
+    public synchronized void invalidateCache(final CacheInvalidateEvent cacheInvalidateEvent) {
+        if (cacheInvalidateEvent.contains(CacheInvalidateEvent.Type.GROOVY)) {
+            groovyScriptCache.invalidateAll();
+        }
+    }
 
     @Autowired
     public StructureDataService(final StructureItemRepository structureItemRepository,
@@ -135,7 +165,7 @@ public class StructureDataService {
             @Override
             public void afterCommit() {
                 List<Integer> structureDataIds = structureDataList.stream()
-                        .map(ArrStructureData::getStructureTypeId).collect(Collectors.toList());
+                        .map(ArrStructureData::getStructureDataId).collect(Collectors.toList());
                 runValidator(structureDataIds);
             }
         });
@@ -281,19 +311,19 @@ public class StructureDataService {
      */
     private String generateValue(final ArrStructureData structureData, final List<ArrStructureItem> structureItems) {
 
-        // TODO slapa: do cache?
         RulStructureType structureType = structureData.getStructureType();
         File groovyFile = findGroovyFile(structureType, structureData.getFund());
+
         GroovyScriptService.GroovyScriptFile groovyScriptFile;
         try {
-            groovyScriptFile = GroovyScriptService.GroovyScriptFile.createFromFile(groovyFile);
-        } catch (IOException e) {
-            throw new SystemException("Problém při zpracování groovy scriptu", e);
+            groovyScriptFile = groovyScriptCache.get(groovyFile);
+        } catch (ExecutionException e) {
+            throw new SystemException("Selhání načítání groovy souboru: " + groovyFile, e);
         }
 
         Map<String, Object> input = new HashMap<>();
         input.put("ITEMS", structureItems);
-        input.put("PACKET_NUMBER_LENGTH", 4);
+        input.put("PACKET_LEADING_ZEROS", 4);
 
         return (String) groovyScriptFile.evaluate(input);
     }

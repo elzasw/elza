@@ -2,14 +2,14 @@ import cz.tacr.elza.domain.ArrStructureItem
 import org.apache.commons.lang3.StringUtils
 
 List<ArrStructureItem> items = ITEMS
-int packetNumberLength = PACKET_NUMBER_LENGTH
-return toString(items, packetNumberLength)
+int packetLeadingZeros = PACKET_LEADING_ZEROS
+return toString(items, packetLeadingZeros)
 
-static String toString(List<ArrStructureItem> items, int packetNumberLength) {
+static String toString(List<ArrStructureItem> items, int packetLeadingZeros) {
     List<String> result = new ArrayList<>()
     addNotEmpty(result, toStringValue(items, "ZP2015_PACKET_TYPE"), " ")
     addNotEmpty(result, toStringValue(items, "ZP2015_PACKET_PREFIX"))
-    addNotEmpty(result, addZerosBefore(toStringValue(items, "ZP2015_PACKET_NUMBER"), packetNumberLength))
+    addNotEmpty(result, addZerosBefore(toStringValue(items, "ZP2015_PACKET_NUMBER"), packetLeadingZeros))
     addNotEmpty(result, toStringValue(items, "ZP2015_PACKET_POSTFIX"))
     return String.join("", result).trim()
 }

@@ -217,6 +217,11 @@ public class ArrChange {
         ADD_STRUCTURE_DATA,
 
         /**
+         * Hromadné založení strukturovaného typu.
+         */
+        ADD_STRUCTURE_DATA_BATCH,
+
+        /**
          * Smazání strukturovaného typu.
          */
         DELETE_STRUCTURE_DATA,

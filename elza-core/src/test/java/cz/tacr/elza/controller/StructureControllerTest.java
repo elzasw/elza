@@ -25,15 +25,16 @@ import static org.junit.Assert.*;
  */
 public class StructureControllerTest extends AbstractControllerTest {
 
-    private final String NAME_AS = "Test AS1";
-    private final String CODE_AS = "TST1";
-    private final String STRUCTURE_TYPE_CODE = "ZP2015_OBAL";
+    private static final int BATCH_COUNT = 100;
+    private static final String NAME_AS = "Test AS1";
+    private static final String CODE_AS = "TST1";
+    private static final String STRUCTURE_TYPE_CODE = "ZP2015_OBAL";
 
-    private final Integer NUMBER_VALUE_1 = 1;
-    private final Integer NUMBER_VALUE_2 = 2;
+    private static final Integer NUMBER_VALUE_1 = 1;
+    private static final Integer NUMBER_VALUE_2 = 2;
 
-    private final String PREFIX_VALUE = "AA_";
-    private final String POSTFIX_VALUE = "r";
+    private static final String PREFIX_VALUE = "AA_";
+    private static final String POSTFIX_VALUE = "r";
 
     @Test
     public void structureTest() {
@@ -61,9 +62,11 @@ public class StructureControllerTest extends AbstractControllerTest {
         RulDescItemTypeExtVO typeNumber = findDescItemTypeByCode("ZP2015_PACKET_NUMBER");
         List<Integer> itemTypeIds = Collections.singletonList(typeNumber.getId());
 
-        duplicateStructureDataBatch(fundVersion.getId(), structureData.id, 50, itemTypeIds);
+        duplicateStructureDataBatch(fundVersion.getId(), structureData.id, BATCH_COUNT, itemTypeIds);
 
-        // TODO slapa: ověření správného zkopírování hodnot
+        FilteredResultVO<ArrStructureDataVO> structureDataResult = findStructureData(STRUCTURE_TYPE_CODE, fundVersion.getId(), null, null, null, null);
+        assertEquals(BATCH_COUNT, structureDataResult.getCount());
+        assertEquals(BATCH_COUNT, structureDataResult.getRows().size());
     }
 
     private void structureItemTest(final ArrFundVersionVO fundVersion) {

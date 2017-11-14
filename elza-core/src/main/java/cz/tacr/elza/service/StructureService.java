@@ -3,6 +3,7 @@ package cz.tacr.elza.service;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundStructureExtension;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -39,7 +40,9 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -120,6 +123,34 @@ public class StructureService {
         structureData.setStructureType(structureType);
         structureData.setState(state);
         return structureDataRepository.save(structureData);
+    }
+
+    /**
+     * Hromadné vytvoření strukturovaných dat.
+     *
+     * @param fund          archivní soubor
+     * @param structureType strukturovaný typ
+     * @param state         stav
+     * @param change        změna
+     * @param count         počet vytvářených položek
+     * @return vytvořené entity
+     */
+    private List<ArrStructureData> createStructureDataList(final ArrFund fund,
+                                                          final RulStructureType structureType,
+                                                          final ArrStructureData.State state,
+                                                          final ArrChange change,
+                                                          int count) {
+        List<ArrStructureData> result = new ArrayList<>(count);
+        for (int i = 0; i < count; i++) {
+            ArrStructureData structureData = new ArrStructureData();
+            structureData.setAssignable(true);
+            structureData.setCreateChange(change);
+            structureData.setFund(fund);
+            structureData.setStructureType(structureType);
+            structureData.setState(state);
+            result.add(structureData);
+        }
+        return structureDataRepository.save(result);
     }
 
     /**
@@ -422,11 +453,22 @@ public class StructureService {
      * @param fundVersion   verze AS
      * @param structureType strukturovaný typ
      */
-    public void revalidateStructureData(final ArrFundVersion fundVersion, final RulStructureType structureType) {
+    private void revalidateStructureData(final ArrFundVersion fundVersion, final RulStructureType structureType) {
         Assert.notNull(fundVersion, "Musí být vybrána verze AS");
         Assert.notNull(structureType, "Musí být vybrán strukturovaný typ");
 
         List<ArrStructureData> structureDataList = structureDataRepository.findByStructureTypeAndFundAndDeleteChangeIsNull(structureType, fundVersion.getFund());
+        revalidateStructureData(structureDataList);
+    }
+
+    /**
+     * Provede revalidaci předaných hodnot strukturovaného typu.
+     *
+     * @param structureDataList strukturovaný typ
+     */
+    private void revalidateStructureData(final List<ArrStructureData> structureDataList) {
+        Assert.notNull(structureDataList, "Musí být vyplněn list hodnot strukt. typu");
+
         for (ArrStructureData structureData : structureDataList) {
             structureData.setValue(null);
             structureData.setErrorDescription(null);
@@ -434,7 +476,6 @@ public class StructureService {
         structureDataRepository.save(structureDataList);
         structureDataService.addToValidate(structureDataList);
     }
-
 
     /**
      * Vrátí strukt. typ podle kódu.
@@ -650,6 +691,7 @@ public class StructureService {
     /**
      * Založení duplikátů strukturovaného datového typu a autoinkrementační.
      * Předloha musí být ve stavu {@link ArrStructureData.State#TEMP}.
+     * Předloha je validována hned, nové hodnoty asynchronně.
      *
      * @param fundVersion   verze AS
      * @param structureData hodnota struktovaného datového typu, ze které se vychází
@@ -675,7 +717,64 @@ public class StructureService {
 
         validateStructureItems(itemTypes, structureItems);
 
-        // TODO slapa: dopsat duplikování
+        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_STRUCTURE_DATA_BATCH);
+        List<ArrStructureData> structureDataList = createStructureDataList(fundVersion.getFund(),
+                structureData.getStructureType(), ArrStructureData.State.OK, change, count - 1);
+
+        int countItems = structureDataList.size() * structureItems.size();
+        if (countItems > 0) {
+            List<ArrStructureItem> newStructureItems = new ArrayList<>();
+            List<ArrData> newDataList = new ArrayList<>();
+
+            Map<RulItemType, Integer> autoincrementMap = createAutoincrementMap(structureItems, itemTypes);
+            for (ArrStructureData newStructureData : structureDataList) {
+                for (ArrStructureItem structureItem : structureItems) {
+                    ArrStructureItem copyStructureItem = new ArrStructureItem();
+                    ArrData newData = structureItem.getData().copy();
+                    Integer val = autoincrementMap.get(structureItem.getItemType());
+                    if (val != null) {
+                        val++;
+                        ((ArrDataInteger) newData).setValue(val);
+                        autoincrementMap.put(structureItem.getItemType(), val);
+                    }
+                    newDataList.add(newData);
+                    copyStructureItem.setData(newData);
+                    copyStructureItem.setCreateChange(change);
+                    copyStructureItem.setPosition(structureItem.getPosition());
+                    copyStructureItem.setStructureData(newStructureData);
+                    copyStructureItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
+                    copyStructureItem.setItemType(structureItem.getItemType());
+                    copyStructureItem.setItemSpec(structureItem.getItemSpec());
+                    newStructureItems.add(copyStructureItem);
+                }
+            }
+            dataRepository.save(newDataList);
+            structureItemRepository.save(newStructureItems);
+        }
+
+        confirmStructureData(structureData);
+        revalidateStructureData(structureDataList);
+    }
+
+    /**
+     * Sestavení mapy pro autoincrement hodnot.
+     *
+     * @param structureItems položky hodnoty strukt. typu
+     * @param itemTypes      typy atributů, které vyžadujeme mezi hodnotami
+     * @return výsledná mapa
+     */
+    private Map<RulItemType, Integer> createAutoincrementMap(final List<ArrStructureItem> structureItems,
+                                                             final List<RulItemType> itemTypes) {
+        Map<RulItemType, Integer> result = new HashMap<>(itemTypes.size());
+        for (RulItemType itemType : itemTypes) {
+            for (ArrStructureItem structureItem : structureItems) {
+                if (structureItem.getItemType().equals(itemType)) {
+                    result.put(itemType, structureItem.getData().getValueInt());
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     /**
