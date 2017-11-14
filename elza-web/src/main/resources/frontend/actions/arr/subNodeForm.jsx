@@ -226,7 +226,7 @@ class ItemFormActions {
 
     /** Metoda pro volání API. */
     // @Abstract
-    _callUpdateDescItem(versionId, parentVersionId, descItem) {}
+    _callUpdateDescItem(versionId, parentVersionId, parentId, descItem) {}
 
     /** Metoda pro volání API. */
     // @Abstract
@@ -248,35 +248,23 @@ class ItemFormActions {
         const refType = subNodeForm.refTypesMap[loc.descItemType.id]
         const refTables = state.refTables;
 
-        if (this.descItemNeedStore(loc.descItem, refType)) {
+        const descItem = loc.descItem;
+        const parentVersionId = subNodeForm.data.parent.version;
+        const parentId = subNodeForm.data.parent.id;
+
+        if (this.descItemNeedStore(descItem, refType)) {
             dispatch(statusSaving());
 
             // Umělé navýšení verze o 1 - aby mohla pozitivně projít případná další update operace
-            dispatch(increaseNodeVersion(versionId, subNodeForm.data.parent.id, subNodeForm.data.parent.version));
-            let requestStart = Date.now();
+            dispatch(increaseNodeVersion(versionId, parentId, parentVersionId));
             // Reálné provedení operace
             if (typeof loc.descItem.id !== 'undefined') {
-                NodeRequestController.updateRequest(versionId,subNodeForm.data.parent.version,subNodeForm.data.parent.id,loc.descItem,
-                    json => {
-                        console.log("formValueStore",json, routingKey, valueLocation);
-                        let timeStart = Date.now();
-                        dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'UPDATE'));
+                this._callUpdateDescItem(versionId, parentVersionId, parentId, descItem)
+                    .then(json => {
+                        //dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'UPDATE'));
                         dispatch(this._fundSubNodeUpdate(versionId, refTables, json));
                         dispatch(statusSaved());
-                        let timeEnd = Date.now();
-                        console.log("form value store","response time", timeEnd - timeStart, "request + response time", timeEnd - requestStart);
-
-                    });
-                /*this._callUpdateDescItem(versionId, subNodeForm.data.parent.version, loc.descItem)
-                    .then(json => {
-                        console.log("formValueStore",json, this.testData, routingKey, valueLocation);
-                        let timeStart = Date.now();
-                        dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'UPDATE'));
-                        //dispatch(this._fundSubNodeUpdate(versionId, refTables.rulDataTypes, refTables.descItemTypes, this.testData(json)));
-                        dispatch(statusSaved());
-                        let timeEnd = Date.now();
-                        console.log("form value store","response time", timeEnd - timeStart, "request + response time", timeEnd - requestStart);
-                    })*/
+                    })
             } else {
                 if (!loc.descItem.saving) {
                     dispatch(this._fundSubNodeFormDescItemCreate(versionId, routingKey, valueLocation));
@@ -290,6 +278,7 @@ class ItemFormActions {
             }
         }
     }
+
     _fundSubNodeUpdate(versionId, refTables, data){
         return {
             type: types.FUND_SUBNODE_UPDATE,
@@ -994,8 +983,11 @@ class NodeFormActions extends ItemFormActions {
     }
 
     // @Override
-    _callUpdateDescItem(versionId, parentVersionId, descItem) {
-        return WebApi.updateDescItem(versionId, parentVersionId, descItem);
+    _callUpdateDescItem(versionId, parentVersionId, parentId, descItem) {
+        //return WebApi.updateDescItem(versionId, parentVersionId, descItem);
+        return new Promise((resolve, reject) => {
+            NodeRequestController.updateRequest(versionId, parentVersionId, parentId, descItem, (json) => {resolve(json)})
+        });
     }
 
     // @Override
@@ -1079,7 +1071,7 @@ class OutputFormActions extends ItemFormActions {
     }
 
     // @Override
-    _callUpdateDescItem(versionId, parentVersionId, descItem) {
+    _callUpdateDescItem(versionId, parentVersionId, parentId, descItem) {
         return WebApi.updateOutputItem(versionId, parentVersionId, descItem);
     }
 

@@ -489,6 +489,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             updateFormData(result, action.data, refTypesMap);
             return result;
         case types.FUND_SUBNODE_UPDATE:
+            let nodeId = action.data.node.id || action.data.parent.id;
             
             var result = {
                 ...state,
@@ -496,7 +497,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                 fetched: true,
                 dirty: false,
                 versionId: action.versionId,
-                nodeId: action.data.node.id,
+                nodeId: nodeId,
                 needClean: false,
             };
 
@@ -519,3 +520,4 @@ export default function subNodeForm(state = initialState, action = {}) {
             return state
     }
 }
+
