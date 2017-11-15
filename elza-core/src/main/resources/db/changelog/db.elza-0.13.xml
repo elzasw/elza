@@ -18,8 +18,8 @@
                                  referencedColumnNames="data_id"
                                  onDelete="NO ACTION"/>
 
-        <!-- Provede nastavení opačné vazby pro existující data
-        <sql>UPDATE arr_item i SET data_id = (SELECT data_id FROM arr_data d WHERE item_id = i.item_id)</sql>-->
+        <!-- Provede nastavení opačné vazby pro existující data -->
+        <sql dbms="h2">UPDATE arr_item i SET data_id = (SELECT data_id FROM arr_data d WHERE item_id = i.item_id)</sql>
         <sql dbms="postgresql">UPDATE arr_item i SET data_id = d.data_id FROM arr_data d WHERE i.item_id = d.item_id</sql>
         <sql dbms="mssql">UPDATE i SET data_id = d.data_id FROM arr_item as i, arr_data as d WHERE i.item_id = d.item_id</sql>
 

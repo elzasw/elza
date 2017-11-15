@@ -39,52 +39,26 @@
         </addColumn>
     </changeSet>
 
+    <!-- Migrate current data and set rule_set_id -->
     <changeSet id="20171109074901" author="slapa">
-        <preConditions onFail="CONTINUE">
-            <and>
-                <not>
-                    <changeSetExecuted id="20170918095801" author="slapa" changeLogFile="db/changelog/db.elza-0.14.xml"/>
-                </not>
-                <dbms type="postgresql" />
-            </and>
-        </preConditions>
 
-        <sql>UPDATE rul_item_type SET rule_set_id = rs.rule_set_id FROM rul_rule_set rs WHERE rs.package_id = rul_item_type.package_id</sql>
-        <sql>UPDATE rul_output_type SET rule_set_id = rs.rule_set_id FROM rul_rule_set rs WHERE rs.package_id = rul_output_type.package_id</sql>
-        <sql>UPDATE rul_action SET rule_set_id = rs.rule_set_id FROM rul_rule_set rs WHERE rs.package_id = rul_action.package_id</sql>
-        <sql>UPDATE rul_packet_type SET rule_set_id = rs.rule_set_id FROM rul_rule_set rs WHERE rs.package_id = rul_packet_type.package_id</sql>
-    </changeSet>
+        <!-- Postgresql -->
+        <sql dbms="postgresql">UPDATE rul_item_type SET rule_set_id = rs.rule_set_id FROM rul_rule_set rs WHERE rs.package_id = rul_item_type.package_id</sql>
+        <sql dbms="postgresql">UPDATE rul_output_type SET rule_set_id = rs.rule_set_id FROM rul_rule_set rs WHERE rs.package_id = rul_output_type.package_id</sql>
+        <sql dbms="postgresql">UPDATE rul_action SET rule_set_id = rs.rule_set_id FROM rul_rule_set rs WHERE rs.package_id = rul_action.package_id</sql>
+        <sql dbms="postgresql">UPDATE rul_packet_type SET rule_set_id = rs.rule_set_id FROM rul_rule_set rs WHERE rs.package_id = rul_packet_type.package_id</sql>
 
-    <changeSet id="20171109074902" author="slapa">
-        <preConditions onFail="CONTINUE">
-            <and>
-                <not>
-                    <changeSetExecuted id="20170918095801" author="slapa" changeLogFile="db/changelog/db.elza-0.14.xml"/>
-                </not>
-                <dbms type="mssql" />
-            </and>
-        </preConditions>
+        <!-- Mssql -->
+        <sql dbms="mssql">UPDATE rit SET rule_set_id = rs.rule_set_id FROM rul_item_type rit, rul_rule_set rs WHERE rs.package_id = rul_item_type.package_id</sql>
+        <sql dbms="mssql">UPDATE rot SET rule_set_id = rs.rule_set_id FROM rul_output_type rot, rul_rule_set rs WHERE rs.package_id = rul_output_type.package_id</sql>
+        <sql dbms="mssql">UPDATE ra SET rule_set_id = rs.rule_set_id FROM rul_action ra, rul_rule_set rs WHERE rs.package_id = rul_action.package_id</sql>
+        <sql dbms="mssql">UPDATE rpt SET rule_set_id = rs.rule_set_id FROM rul_packet_type rpt, rul_rule_set rs WHERE rs.package_id = rul_packet_type.package_id</sql>
 
-        <sql>UPDATE rit SET rule_set_id = rs.rule_set_id FROM rul_item_type rit, rul_rule_set rs WHERE rs.package_id = rul_item_type.package_id</sql>
-        <sql>UPDATE rot SET rule_set_id = rs.rule_set_id FROM rul_output_type rot, rul_rule_set rs WHERE rs.package_id = rul_output_type.package_id</sql>
-        <sql>UPDATE ra SET rule_set_id = rs.rule_set_id FROM rul_action ra, rul_rule_set rs WHERE rs.package_id = rul_action.package_id</sql>
-        <sql>UPDATE rpt SET rule_set_id = rs.rule_set_id FROM rul_packet_type rpt, rul_rule_set rs WHERE rs.package_id = rul_packet_type.package_id</sql>
-    </changeSet>
-
-    <changeSet id="20171109074903" author="slapa">
-        <preConditions onFail="CONTINUE">
-            <and>
-                <not>
-                    <changeSetExecuted id="20170918095801" author="slapa" changeLogFile="db/changelog/db.elza-0.14.xml"/>
-                </not>
-                <dbms type="h2" />
-            </and>
-        </preConditions>
-
-        <sql>UPDATE rul_item_type SET rule_set_id = (SELECT rs.rule_set_id FROM rul_rule_set rs WHERE rs.package_id = rul_item_type.package_id)</sql>
-        <sql>UPDATE rul_output_type SET rule_set_id = (SELECT rs.rule_set_id FROM rul_rule_set rs WHERE rs.package_id = rul_output_type.package_id)</sql>
-        <sql>UPDATE rul_action SET rule_set_id = (SELECT rs.rule_set_id FROM rul_rule_set rs WHERE rs.package_id = rul_action.package_id)</sql>
-        <sql>UPDATE rul_packet_type SET rule_set_id = (SELECT rs.rule_set_id FROM rul_rule_set rs WHERE rs.package_id = rul_packet_type.package_id)</sql>
+        <!-- H2 -->
+        <sql dbms="h2">UPDATE rul_item_type SET rule_set_id = (SELECT rs.rule_set_id FROM rul_rule_set rs WHERE rs.package_id = rul_item_type.package_id)</sql>
+        <sql dbms="h2">UPDATE rul_output_type SET rule_set_id = (SELECT rs.rule_set_id FROM rul_rule_set rs WHERE rs.package_id = rul_output_type.package_id)</sql>
+        <sql dbms="h2">UPDATE rul_action SET rule_set_id = (SELECT rs.rule_set_id FROM rul_rule_set rs WHERE rs.package_id = rul_action.package_id)</sql>
+        <sql dbms="h2">UPDATE rul_packet_type SET rule_set_id = (SELECT rs.rule_set_id FROM rul_rule_set rs WHERE rs.package_id = rul_packet_type.package_id)</sql>
     </changeSet>
 
     <changeSet id="201709181003" author="slapa">
@@ -92,6 +66,7 @@
         <sql>DELETE FROM rul_packet_type WHERE rule_set_id IS NULL</sql>
     </changeSet>
 
+    <!-- Establish constraints on newly created columns (after data migration) -->
     <changeSet id="201709181040" author="slapa">
 
         <addNotNullConstraint tableName="rul_item_type"
@@ -184,29 +159,13 @@
         <column name="node_id" />
       </createIndex>
     </changeSet>
-
+    <!-- Add rule_set_id to items in ui_settints with null values -->
     <changeSet id="20171109080301" author="slapa">
-        <preConditions onFail="CONTINUE">
-            <dbms type="postgresql" />
-        </preConditions>
+        <validCheckSum>7:11aa89e019a75c5fb3d7a5c5b2533323</validCheckSum>
 
-        <sql>UPDATE ui_settings SET entity_id = rs.rule_set_id FROM rul_rule_set rs WHERE rs.package_id = ui_settings.package_id AND ui_settings.entity_type = 'RULE' AND ui_settings.entity_id IS NULL</sql>
-    </changeSet>
-
-    <changeSet id="20171109080302" author="slapa">
-        <preConditions onFail="CONTINUE">
-            <dbms type="mssql" />
-        </preConditions>
-
-        <sql>UPDATE us SET entity_id = rs.rule_set_id FROM ui_settings us, rul_rule_set rs WHERE rs.package_id = ui_settings.package_id AND ui_settings.entity_type = 'RULE' AND ui_settings.entity_id IS NULL</sql>
-    </changeSet>
-
-    <changeSet id="20171109080303" author="slapa">
-        <preConditions onFail="CONTINUE">
-            <dbms type="h2" />
-        </preConditions>
-
-        <sql>UPDATE ui_settings SET entity_id = (SELECT rs.rule_set_id FROM rul_rule_set rs WHERE rs.package_id = ui_settings.package_id) WHERE ui_settings.entity_type = 'RULE' AND ui_settings.entity_id IS NULL</sql>
+        <sql dbms="postgresql">UPDATE ui_settings SET entity_id = rs.rule_set_id FROM rul_rule_set rs WHERE rs.package_id = ui_settings.package_id AND ui_settings.entity_type = 'RULE' AND ui_settings.entity_id IS NULL</sql>
+        <sql dbms="mssql">UPDATE us SET entity_id = rs.rule_set_id FROM ui_settings us, rul_rule_set rs WHERE rs.package_id = ui_settings.package_id AND ui_settings.entity_type = 'RULE' AND ui_settings.entity_id IS NULL</sql>
+        <sql dbms="h2">UPDATE ui_settings SET entity_id = (SELECT rs.rule_set_id FROM rul_rule_set rs WHERE rs.package_id = ui_settings.package_id) WHERE ui_settings.entity_type = 'RULE' AND ui_settings.entity_id IS NULL</sql>
     </changeSet>
 
 </databaseChangeLog>
