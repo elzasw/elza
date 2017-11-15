@@ -25,34 +25,34 @@ public class ScopeRepositoryImpl implements ScopeRepositoryCustom {
 
     /*
 	  There are several options how the query should/could be constructed.
-
-	  Base idea: multiple queries
-	    - for parties connected to data connected to nodes
-	    - for registers connected to data connected to nodes
-	    - for registers connected to nodes
-
+	
+	  Base idea: multiple subqueries
+	    - parties connected to data connected to nodes
+	    - registers connected to data connected to nodes
+	    - registers connected to nodes
+	
 	  Integrate all queries above into one larger query. This should be more
 	  efficient because CTE will be evaluated only once. Example of the final query:
-
+	
 	SELECT distinct distinct r.* from (
 	WITH RECURSIVE treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position) AS
 	(
-
+	
 	SELECT t.* FROM arr_level t WHERE t.node_id IN (5538)
 	UNION ALL
 	SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent AND t.delete_change_id IS NULL
 	)
 	SELECT distinct r.scope_id FROM treeData t
 	JOIN arr_desc_item di ON di.node_id = t.node_id
-	JOIN arr_data d ON d.item_id = di.item_id
-	JOIN arr_data_party_ref dp ON d.data_id = dp.data_id
+	JOIN arr_item it ON it.item_id = di.item_id
+	JOIN arr_data_party_ref dp ON it.data_id = dp.data_id
 	JOIN par_party p ON p.party_id = dp.party_id
 	JOIN reg_record r ON r.record_id = p.record_id
 	UNION ALL
 	SELECT distinct r.scope_id FROM treeData t
 	JOIN arr_desc_item di ON di.node_id = t.node_id
-	JOIN arr_data d ON d.item_id = di.item_id
-	JOIN arr_data_record_ref dr ON d.data_id = dr.data_id
+	JOIN arr_item it ON it.item_id = di.item_id
+	JOIN arr_data_record_ref dr ON it.data_id = dr.data_id
 	JOIN reg_record r ON r.record_id = dr.record_id
 	UNION ALL
 	SELECT distinct r.scope_id FROM treeData t
@@ -60,7 +60,7 @@ public class ScopeRepositoryImpl implements ScopeRepositoryCustom {
 	JOIN reg_record r ON r.record_id = nr.record_id
 	) as d
 	JOIN reg_scope r ON d.scope_id = r.scope_id;
-
+	
 	 */
 
 	static String FIND_SCOPE_PART1 = "SELECT distinct r.* from (\n" +
@@ -73,15 +73,15 @@ public class ScopeRepositoryImpl implements ScopeRepositoryCustom {
 	        + ")\n"
 	        + "SELECT distinct r.scope_id FROM treeData t \n"
 	        + "JOIN arr_desc_item di ON di.node_id = t.node_id \n"
-	        + "JOIN arr_data d ON d.item_id = di.item_id \n"
-	        + "JOIN arr_data_party_ref dp ON d.data_id = dp.data_id \n"
+	        + "JOIN arr_item it ON it.item_id = di.item_id \n"
+	        + "JOIN arr_data_party_ref dp ON it.data_id = dp.data_id \n"
 	        + "JOIN par_party p ON p.party_id = dp.party_id \n"
 	        + "JOIN reg_record r ON r.record_id = p.record_id \n";
 	static String FIND_SCOPE_PART3 = "UNION ALL \n"
 	        + "SELECT distinct r.scope_id FROM treeData t \n"
 	        + "JOIN arr_desc_item di ON di.node_id = t.node_id \n"
-	        + "JOIN arr_data d ON d.item_id = di.item_id \n"
-	        + "JOIN arr_data_record_ref dr ON d.data_id = dr.data_id \n"
+	        + "JOIN arr_item it ON it.item_id = di.item_id \n"
+	        + "JOIN arr_data_record_ref dr ON it.data_id = dr.data_id \n"
 	        + "JOIN reg_record r ON r.record_id = dr.record_id \n";
 	static String FIND_SCOPE_PART4 = "UNION ALL \n"
 	        + "SELECT distinct r.scope_id FROM treeData t \n"
