@@ -11,6 +11,7 @@ import './PartyList.less';
 import PartyListItem from "./PartyListItem";
 import Autocomplete from "../shared/autocomplete/Autocomplete";
 import ListPager from "../shared/listPager/ListPager";
+import * as perms from "../../actions/user/Permission";
 
 /**
  * Komponenta list osob
@@ -99,10 +100,16 @@ class PartyList extends AbstractReactComponent {
        }
     };
 
+    filterScopes(scopes) {
+        const { userDetail } = this.props;
+        console.log(scopes);
+        return scopes.filter((scope) => userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR,scopeId: scope.id}));
+    }
+
     getScopesWithAll(scopes) {
         const defaultValue = {name: i18n('registry.all')};
         if (scopes && scopes.length > 0 && scopes[0] && scopes[0].scopes && scopes[0].scopes.length > 0) {
-            return [defaultValue, ...scopes[0].scopes]
+            return this.filterScopes([defaultValue, ...scopes[0].scopes])
         }
         return [defaultValue];
     }
@@ -145,7 +152,7 @@ class PartyList extends AbstractReactComponent {
         return <div className="party-list">
             <div className="filter">
                 <Autocomplete
-                    inputProps={ {placeholder:i18n("party.recordScope")} }
+                    inputProps={ {placeholder: this.getScopeById(partyList.filter.scopeId, scopes) || i18n("party.recordScope")} }
                     items={this.getScopesWithAll(scopes)}
                     onChange={this.handleFilterPartyScope}
                     value={scopes && partyList.filter.scopeId ? this.getScopeById(partyList.filter.scopeId, scopes) : 'registry.all'}
@@ -179,13 +186,14 @@ class PartyList extends AbstractReactComponent {
 }
 
 export default connect((state) => {
-    const {app:{partyList, partyDetail}, focus, refTables:{partyTypes, scopesData}} = state;
+    const {app:{partyList, partyDetail}, userDetail, focus, refTables:{partyTypes, scopesData}} = state;
     return {
         focus,
         partyList,
         partyDetail,
         partyTypes: partyTypes.fetched ? partyTypes.items : false,
         relationTypesForClass: partyTypes.fetched ? partyTypes.relationTypesForClass : false,
-        scopes: scopesData.scopes
+        scopes: scopesData.scopes,
+        userDetail
     }
 })(PartyList);

@@ -17,6 +17,7 @@ import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 import './RegistryList.less';
 import RegistryListItem from "./RegistryListItem";
 import ListPager from "../shared/listPager/ListPager";
+import * as perms from "../../actions/user/Permission";
 
 class RegistryList extends AbstractReactComponent {
 
@@ -73,7 +74,7 @@ class RegistryList extends AbstractReactComponent {
     };
 
     handleFilterText = (filterText) => {
-        this.dispatch(registryListFilter({...this.props.registryList.filter, text: filterText.length === 0 ? null : filterText}));
+        this.dispatch(registryListFilter({...this.props.registryList.filter, text: filterText && filterText.length === 0 ? null : filterText}));
     };
 
     handleFilterRegistryType = (item) => {
@@ -179,10 +180,15 @@ class RegistryList extends AbstractReactComponent {
         return actions;
     }
 
+    filterScopes(scopes) {
+        const { userDetail } = this.props;
+        return scopes.filter((scope) => userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR,scopeId: scope.id}));
+    }
+
     getScopesWithAll(scopes) {
         const defaultValue = {name: i18n('registry.all')};
         if (scopes && scopes.length > 0 && scopes[0] && scopes[0].scopes && scopes[0].scopes.length > 0) {
-            return [defaultValue, ...scopes[0].scopes]
+            return this.filterScopes([defaultValue, ...scopes[0].scopes])
         }
         return [defaultValue];
     }
@@ -270,7 +276,7 @@ class RegistryList extends AbstractReactComponent {
         return <div className="registry-list">
             <div className="filter">
                 <Autocomplete
-                    inputProps={ {placeholder:i18n("party.recordScope")} }
+                    inputProps={ {placeholder: this.getScopeById(filter.scopeId, scopes) || i18n("party.recordScope")} }
                     items={this.getScopesWithAll(scopes)}
                     onChange={this.handleFilterRegistryScope}
                     value={this.getScopeById(filter.scopeId, scopes)}
@@ -313,12 +319,13 @@ class RegistryList extends AbstractReactComponent {
 }
 
 export default connect((state) => {
-    const {app:{registryList, registryDetail}, focus, refTables:{recordTypes, scopesData}} = state;
+    const {app:{registryList, registryDetail}, userDetail,  focus, refTables:{recordTypes, scopesData}} = state;
     return {
         focus,
         registryDetail,
         registryList,
         registryTypes: recordTypes && recordTypes.items ? recordTypes.items : false,
-        scopes: scopesData.scopes
+        scopes: scopesData.scopes,
+        userDetail
     }
 })(RegistryList);

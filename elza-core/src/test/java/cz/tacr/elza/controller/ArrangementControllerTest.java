@@ -1106,15 +1106,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
     }
 
-    /**
-     * TODO:
-     * Tento test neprochází z neznámené důvodu. Protože je použito v SQL dotazu WITH recursive, hibernate z neznámého
-     * důvodu přidá za klauzuli WITH[*], což způsobí výjimku o chybné syntaxi. Vrcholem všeho je, že tento problém
-     * nastává pouze při TESTU, v případě běžného spuštění k chybě nedochází. Zkoušel jsem ostrou verzi na všech
-     * podporovaných DB a na všech v pořádku. Test jsem napojil i na souborovou verzi H2 a bez úspěchu.
-     */
     @Test
-    @Ignore
     public void copyLevelsTest() {
 
         ArrFundVO fundSource = createdFund();
@@ -1149,6 +1141,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         copyNodesParams.setIgnoreRootNodes(true);
         copyNodesParams.setFilesConflictResolve(null);
         copyNodesParams.setPacketsConflictResolve(null);
+        copyNodesParams.setSelectedDirection(ArrMoveLevelService.AddLevelDirection.CHILD);
 
         copyLevels(copyNodesParams);
     }
