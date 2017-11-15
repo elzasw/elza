@@ -196,18 +196,29 @@ public class ImportFromFund implements ImportSource {
             this.nodeId = nodeId;
         }
 
+		/**
+		 * Fetch next nodes from DB
+		 */
+		private void readNext() {
+			levelsSubtree = levelRepository.findLevelsSubtree(nodeId, offset, MAX, ignoreRootNodes);
+			// shift offset 
+			offset += levelsSubtree.size();
+			// read nodes from cache
+			List<Integer> nodeIds = levelsSubtree.stream().map(ArrLevel::getNodeId).collect(Collectors.toList());
+			if (!nodeIds.isEmpty()) {
+				cachedNodes = nodeCacheService.getNodes(nodeIds);
+			}
+			// prepare iterator
+			iterator = levelsSubtree.iterator();
+		}
+
         @Override
         public boolean hasNext() {
             if (iterator == null) { // pokud není nic načtené, načteme první část do bufferu
-                levelsSubtree = levelRepository.findLevelsSubtree(nodeId, offset, MAX, ignoreRootNodes);
-                iterator = levelsSubtree.iterator();
-                cachedNodes = nodeCacheService.getNodes(levelsSubtree.stream().map(ArrLevel::getNodeId).collect(Collectors.toList()));
-            }
+				readNext();
+			} else
             if (!iterator.hasNext()) { // pokud už nemáme v buffer, posuneme offset a načteme další část
-                offset += MAX;
-                levelsSubtree = levelRepository.findLevelsSubtree(nodeId, offset, MAX, ignoreRootNodes);
-                iterator = levelsSubtree.iterator();
-                cachedNodes = nodeCacheService.getNodes(levelsSubtree.stream().map(ArrLevel::getNodeId).collect(Collectors.toList()));
+				readNext();
             }
             return iterator.hasNext();
         }
