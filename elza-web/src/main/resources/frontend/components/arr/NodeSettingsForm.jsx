@@ -26,6 +26,8 @@ const VIEW_POLICY_STATE = {
 class NodeSettingsForm extends AbstractReactComponent {
     state = {activeView: VIEW_KEYS.RULES};
 
+    static VIEW_POLICY_STATE = VIEW_POLICY_STATE;
+
     componentDidMount() {
         this.loadVisiblePolicy();
     }

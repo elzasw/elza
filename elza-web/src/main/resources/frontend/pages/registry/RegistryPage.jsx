@@ -25,6 +25,7 @@ import {PropTypes} from 'prop-types';
 import './RegistryPage.less';
 import PageLayout from "../shared/layout/PageLayout";
 import defaultKeymap from './RegistryPageKeymap.jsx';
+import {FOCUS_KEYS} from "../../constants";
 /**
  * Stránka rejstříků.
  * Zobrazuje stranku s vyberem rejstriku a jeho detailem/editaci
@@ -105,7 +106,7 @@ class RegistryPage extends AbstractReactComponent {
                        focusWasSet()
                     })
                 }
-            } else if (isFocusFor(focus, 'registry', 1) || isFocusFor(focus, 'registry', 1, 'list')) {
+            } else if (isFocusFor(focus, FOCUS_KEYS.REGISTRY, 1) || isFocusFor(focus, FOCUS_KEYS.REGISTRY, 1, 'list')) {
                 this.setState({}, () => {
                    this.refs.registryList.focus();
                    focusWasSet()
@@ -136,10 +137,10 @@ class RegistryPage extends AbstractReactComponent {
                 }
                 break;
             case 'area1':
-                this.dispatch(setFocus('registry', 1));
+                this.props.dispatch(setFocus(FOCUS_KEYS.REGISTRY, 1));
                 break;
             case 'area2':
-                this.dispatch(setFocus('registry', 2));
+                this.props.dispatch(setFocus(FOCUS_KEYS.REGISTRY, 2));
                 break
         }
     };

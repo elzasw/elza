@@ -63,7 +63,6 @@ import {fundTreeFetchIfNeeded} from 'actions/arr/fundTree.jsx'
 import {Shortcuts} from 'react-shortcuts';
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
-import {selectTab} from 'actions/global/tab.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 
 const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {

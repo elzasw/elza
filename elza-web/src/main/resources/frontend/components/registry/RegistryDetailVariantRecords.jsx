@@ -22,6 +22,7 @@ import {PropTypes} from 'prop-types';
 import {setFocus} from 'actions/global/focus.jsx'
 import RegistryLabel from "./RegistryLabel";
 import defaultKeymap from './RegistryDetailVariantRecordsKeymap.jsx';
+import {FOCUS_KEYS} from "../../constants";
 
 class RegistryDetailVariantRecords extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };
@@ -50,7 +51,7 @@ class RegistryDetailVariantRecords extends AbstractReactComponent {
         const {focus} = props;
 
         if (canSetFocus()) {
-            if (isFocusFor(focus, 'registry', 2, 'variantRecords')) {   // focus na konkrétní variantní rejstříkové heslo
+            if (isFocusFor(focus, FOCUS_KEYS.REGISTRY, 2, 'variantRecords')) {   // focus na konkrétní variantní rejstříkové heslo
                 this.setState({}, () => {
                     this.refs['variant-' + focus.item.index].focus();
                     focusWasSet()
@@ -67,7 +68,7 @@ class RegistryDetailVariantRecords extends AbstractReactComponent {
         this.dispatch(registryVariantAddRow());
 
         // Nastavení focus
-        this.dispatch(setFocus('registry', 2, 'variantRecords', {index: newIndex}))
+        this.dispatch(setFocus(FOCUS_KEYS.REGISTRY, 2, 'variantRecords', {index: newIndex}))
     };
 
 
@@ -100,11 +101,11 @@ class RegistryDetailVariantRecords extends AbstractReactComponent {
             const {value} = this.props;
             let setFocusFunc;
             if (index + 1 < value.length) {    // má položku za, nový index bude aktuální
-                setFocusFunc = () => setFocus('registry', 2, 'variantRecords', {index: index})
+                setFocusFunc = () => setFocus(FOCUS_KEYS.REGISTRY, 2, 'variantRecords', {index: index})
             } else if (index > 0) { // má položku před
-                setFocusFunc = () => setFocus('registry', 2, 'variantRecords', {index: index - 1})
+                setFocusFunc = () => setFocus(FOCUS_KEYS.REGISTRY, 2, 'variantRecords', {index: index - 1})
             } else {    // byla smazána poslední položka, focus dostane formulář
-                setFocusFunc = () => setFocus('registry', 2)
+                setFocusFunc = () => setFocus(FOCUS_KEYS.REGISTRY, 2)
             }
 
             // Smazání

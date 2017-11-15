@@ -70,6 +70,7 @@ import defaultKeymap from './ArrOutputPageKeymap.jsx';
 
 import {Shortcuts} from 'react-shortcuts';
 import TemplateSettingsForm from "../../components/arr/TemplateSettingsForm";
+import {FOCUS_KEYS} from "../../constants";
 
 let _selectedTab = 0
 
@@ -147,7 +148,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         var {focus} = props
 
         if (canSetFocus()) {
-            if (isFocusFor(focus, 'fund-output', 1)) {
+            if (isFocusFor(focus, FOCUS_KEYS.FUND_OUTPUT, 1)) {
                 this.refs.fundOutputList && this.setState({}, () => {
                     ReactDOM.findDOMNode(this.refs.fundOutputList).focus()
                 })
@@ -168,14 +169,14 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                 this.handleAddOutput();
                 break;
             case 'area1':
-                this.dispatch(setFocus('fund-output', 1));
+                this.props.dispatch(setFocus(FOCUS_KEYS.FUND_OUTPUT, 1));
                 break;
             case 'area2':
-                this.dispatch(setFocus('fund-output', 2));
+                this.props.dispatch(setFocus(FOCUS_KEYS.FUND_OUTPUT, 2));
                 break;
             case 'area3':
-                this.dispatch(setFocus('fund-output', 3));
-                break
+                this.props.dispatch(setFocus(FOCUS_KEYS.FUND_OUTPUT, 3));
+                break;
             default:
                 super.handleShortcuts(action,e);
         }

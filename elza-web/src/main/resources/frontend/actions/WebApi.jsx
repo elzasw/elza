@@ -50,6 +50,7 @@ export class WebApiCls {
     static groupUrl = WebApiCls.baseUrl + '/group';
     static adminUrl = WebApiCls.baseUrl + '/admin';
     static validateUrl = WebApiCls.baseUrl + '/validate';
+    static structureUrl = WebApiCls.baseUrl + '/structure';
 
     findInFundTree(versionId, nodeId, searchText, type, searchParams = null, luceneQuery = false) {
         const data = {
@@ -1184,6 +1185,70 @@ export class WebApiCls {
     specificationHasParty(itemSpecId) {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/specificationHasParty/' + itemSpecId);
     }
+
+    findFundStructureExtension(fundVersionId) {
+        return AjaxUtils.ajaxGet(WebApiCls.structureUrl + '/extension/' + fundVersionId);
+    }
+
+    updateFundStructureExtension(fundVersionId, data) {
+        return AjaxUtils.ajaxPut(WebApiCls.structureUrl + '/extension/' + fundVersionId, null, data);
+    }
+
+    findRulStructureTypes(fundVersionId) {
+        return AjaxUtils.ajaxGet(WebApiCls.structureUrl + '/type/' + fundVersionId);
+    }
+
+    getStructureData(fundVersionId, structureDataId) {
+        return AjaxUtils.ajaxGet(WebApiCls.structureUrl + '/data/' + fundVersionId + '/' + structureDataId);
+    }
+
+    findStructureData(fundVersionId, structureTypeCode, search = null, assignable = true, from = 0, count = DEFAULT_LIST_SIZE) {
+        return AjaxUtils.ajaxGet(WebApiCls.structureUrl + '/data/' + fundVersionId + '/' + structureTypeCode + '/search', {
+            search,
+            assignable,
+            from,
+            count
+        });
+    }
+
+    createStructureData(fundVersionId, structureTypeCode) {
+        // Kvůli JSON stringify musíme poslat pomocí RAW aby se nevytvořili '"' v body
+        return AjaxUtils.ajaxCallRaw(WebApiCls.structureUrl + '/data/' + fundVersionId, null, "POST", structureTypeCode, 'application/json');
+    }
+
+    duplicateStructureDataBatch(fundVersionId, structureDataId, data) {
+        return AjaxUtils.ajaxPost(WebApiCls.structureUrl + '/data/' + fundVersionId + '/' + structureDataId + '/batch', null, data);
+    }
+
+    confirmStructureData(fundVersionId, structureDataId) {
+        return AjaxUtils.ajaxPost(WebApiCls.structureUrl + '/data/' + fundVersionId + '/' + structureDataId + '/confirm');
+    }
+
+    deleteStructureData(fundVersionId, structureDataId) {
+        return AjaxUtils.ajaxDelete(WebApiCls.structureUrl + '/data/' + fundVersionId + '/' + structureDataId);
+    }
+
+    getFormStructureItems(fundVersionId, structureDataId) {
+        return AjaxUtils.ajaxGet(WebApiCls.structureUrl + '/item/form/'+ fundVersionId + '/' + structureDataId);
+    }
+
+
+    createStructureItem(fundVersionId, structureDataId, itemTypeId, data) {
+        return AjaxUtils.ajaxPost(WebApiCls.structureUrl + '/item/' + fundVersionId + '/' + structureDataId + '/' + itemTypeId + '/create', null, data)
+    }
+
+    updateStructureItem(fundVersionId, data, createNewVersion = true) {
+        return AjaxUtils.ajaxPut(WebApiCls.structureUrl + '/item/' + fundVersionId + '/update/' + createNewVersion, null, data)
+    }
+
+    deleteStructureItem(fundVersionId, data) {
+        return AjaxUtils.ajaxPost(WebApiCls.structureUrl + '/item/'+ fundVersionId + '/delete', null, data)
+    }
+
+    deleteStructureItemsByType(fundVersionId, structureDataId, itemTypeId) {
+        return AjaxUtils.ajaxDelete(WebApiCls.structureUrl + '/item/' + fundVersionId + '/' + structureDataId + '/' + itemTypeId)
+    }
+
 }
 
 

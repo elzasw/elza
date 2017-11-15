@@ -76,6 +76,7 @@ const classNames = require('classnames');
 import {Shortcuts} from 'react-shortcuts';
 
 import "./ArrRequestPage.less";
+import {FOCUS_KEYS} from "../../constants";
 
 class ArrRequestPage extends ArrParentPage {
     constructor(props) {
@@ -115,7 +116,7 @@ class ArrRequestPage extends ArrParentPage {
         var {focus} = props
 
         if (canSetFocus()) {
-            if (isFocusFor(focus, 'fund-request', 1)) {
+            if (isFocusFor(focus, FOCUS_KEYS.FUND_REQUEST, 1)) {
                 this.refs.fundOutputList && this.setState({}, () => {
                     ReactDOM.findDOMNode(this.refs.fundOutputList).focus()
                 })
@@ -131,10 +132,10 @@ class ArrRequestPage extends ArrParentPage {
                 this.handleAddOutput();
                 break;
             case 'area1':
-                this.dispatch(setFocus('fund-request', 1));
+                this.dispatch(setFocus(FOCUS_KEYS.FUND_REQUEST, 1));
                 break;
             case 'area2':
-                this.dispatch(setFocus('fund-request', 2));
+                this.dispatch(setFocus(FOCUS_KEYS.FUND_REQUEST, 2));
                 break;
             default:
                 super.handleShortcuts(action);

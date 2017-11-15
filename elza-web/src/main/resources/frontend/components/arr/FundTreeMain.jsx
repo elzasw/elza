@@ -18,6 +18,7 @@ import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu.jsx'
 import {propsEquals} from 'components/Utils.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {FOCUS_KEYS} from "../../constants";
 
 class FundTreeMain extends AbstractReactComponent {
     constructor(props) {
@@ -53,7 +54,7 @@ class FundTreeMain extends AbstractReactComponent {
                     })
                 }
 
-            } else if (isFocusFor(focus, 'arr', 1, 'tree') || isFocusFor(focus, 'arr', 1)) {
+            } else if (isFocusFor(focus, FOCUS_KEYS.ARR, 1, 'tree') || isFocusFor(focus, FOCUS_KEYS.ARR, 1)) {
                 this.setState({}, () => {
                     this.refs.tree.getWrappedInstance().focus()
                     focusWasSet()

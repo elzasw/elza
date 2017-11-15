@@ -47,11 +47,11 @@ import {fundTreeFetchIfNeeded} from 'actions/arr/fundTree.jsx'
 import {Shortcuts} from 'react-shortcuts';
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
-import {selectTab} from 'actions/global/tab.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 import PageLayout from "../shared/layout/PageLayout";
 import {fundChangeReadMode} from 'actions/arr/fund.jsx'
 import defaultKeymap from './ArrParentPageKeymap.jsx';
+import {FOCUS_KEYS} from "../../constants";
 
 export default class ArrParentPage extends AbstractReactComponent {
 
@@ -86,27 +86,27 @@ export default class ArrParentPage extends AbstractReactComponent {
         e.preventDefault();
         switch (action) {
             case 'back':
-                this.dispatch(routerNavigate("/~arr"));
+                this.props.dispatch(routerNavigate("/~arr"));
                 break;
             case 'arr':
-                this.dispatch(routerNavigate('/arr'));
-                this.dispatch(setFocus('arr', 1))
+                this.props.dispatch(routerNavigate('/arr'));
+                this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 1));
                 break;
             case 'movements':
-                this.dispatch(routerNavigate('/arr/movements'));
-                this.dispatch(setFocus(null, 1))
+                this.props.dispatch(routerNavigate('/arr/movements'));
+                this.props.dispatch(setFocus(FOCUS_KEYS.NONE, 1));
                 break;
             case 'dataGrid':
-                this.dispatch(routerNavigate('/arr/dataGrid'));
-                this.dispatch(setFocus(null, 1))
+                this.props.dispatch(routerNavigate('/arr/dataGrid'));
+                this.props.dispatch(setFocus(FOCUS_KEYS.NONE, 1));
                 break;
             case 'output':
-                this.dispatch(routerNavigate('/arr/output'));
-                this.dispatch(setFocus('fund-output', 1))
+                this.props.dispatch(routerNavigate('/arr/output'));
+                this.props.dispatch(setFocus(FOCUS_KEYS.FUND_OUTPUT, 1));
                 break;
             case 'actions':
-                this.dispatch(routerNavigate('/arr/actions'));
-                this.dispatch(setFocus('fund-action', 1))
+                this.props.dispatch(routerNavigate('/arr/actions'));
+                this.props.dispatch(setFocus(FOCUS_KEYS.FUND_ACTION, 1));
                 break;
             case "TOGGLE_READ_MODE":
                 this.toggleReadMode();

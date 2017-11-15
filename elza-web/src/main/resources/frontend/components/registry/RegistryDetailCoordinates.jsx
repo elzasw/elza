@@ -23,6 +23,7 @@ import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
 import {downloadFile} from "../../actions/global/download";
 import RegistryCoordinate from "./RegistryCoordinate";
+import {FOCUS_KEYS} from "../../constants";
 
 
 
@@ -69,7 +70,7 @@ class RegistryDetailCoordinates extends AbstractReactComponent {
         this.dispatch(registryCoordinatesAddRow());
 
         // Nastavení focus
-        this.dispatch(setFocus('registry', 2, 'coordinates', {index: newIndex}))
+        this.dispatch(setFocus(FOCUS_KEYS.REGISTRY, 2, 'coordinates', {index: newIndex}))
     };
 
     handleChange = (item) => {
@@ -93,11 +94,11 @@ class RegistryDetailCoordinates extends AbstractReactComponent {
             const {value} = this.props;
             let setFocusFunc;
             if (index + 1 < value.length) {    // má položku za, nový index bude aktuální
-                setFocusFunc = () => setFocus('registry', 2, 'coordinates', {index: index})
+                setFocusFunc = () => setFocus(FOCUS_KEYS.REGISTRY, 2, 'coordinates', {index: index})
             } else if (index > 0) { // má položku před
-                setFocusFunc = () => setFocus('registry', 2, 'coordinates', {index: index - 1})
+                setFocusFunc = () => setFocus(FOCUS_KEYS.REGISTRY, 2, 'coordinates', {index: index - 1})
             } else {    // byla smazána poslední položka, focus dostane formulář
-                setFocusFunc = () => setFocus('registry', 2)
+                setFocusFunc = () => setFocus(FOCUS_KEYS.REGISTRY, 2)
             }
 
             // Smazání

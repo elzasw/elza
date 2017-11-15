@@ -15,6 +15,7 @@ import {propsEquals} from 'components/Utils.jsx'
 import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils.jsx'
 import {setFocus, canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import NodePanel from "./NodePanel";
+import {FOCUS_KEYS} from "../../constants";
 
 class NodeTabs extends AbstractReactComponent {
     constructor(props) {
@@ -37,7 +38,7 @@ class NodeTabs extends AbstractReactComponent {
         var {focus} = props
 
         if (canSetFocus()) {
-            if (isFocusFor(focus, 'arr', 2, 'tabs')) {
+            if (isFocusFor(focus, FOCUS_KEYS.ARR, 2, 'tabs')) {
                 this.setState({}, () => {
                    ReactDOM.findDOMNode(this.refs.tabs).focus()
                    focusWasSet()
@@ -61,7 +62,7 @@ return true
 
         this.dispatch(fundSelectNodeTab(versionId, item.id, item.key, item.index))
         // this.dispatch(fundSelectNodeTab(item.index))
-        this.dispatch(setFocus('arr', 2, 'tabs'))
+        this.dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'tabs'))
     }
 
     render() {
