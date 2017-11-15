@@ -1642,13 +1642,15 @@ public class ArrangementController {
             @RequestBody final DescriptionItemParam param) {
 
         ArrFundVersion version = fundVersionRepository.findOne(param.getVersionId());
-        Assert.notNull(version, "Neplatná verze AP");
+		Validate.notNull(version, "Neplatná verze AP");
 
         Integer fundId = version.getFund().getFundId();
         String ruleCode = version.getRuleSet().getCode();
+		ArrNodeVO nodeVo = param.getNode();
+		Validate.notNull(nodeVo);
 
         return factoryVo.createScenarioOfNewLevelList(descriptionItemService
-                .getDescriptionItemTypesForNewLevel(param.getNode().getId(), param.getDirection(),
+		        .getDescriptionItemTypesForNewLevel(nodeVo.getId(), param.getDirection(),
                         param.getVersionId()), withGroups, ruleCode, fundId);
     }
 
