@@ -88,6 +88,9 @@ public abstract class ArrItem implements NodeCacheSerializable {
     @JoinColumn(name = "dataId")
     private ArrData data;
 
+    @Column(name = "dataId", nullable = false, updatable = false, insertable = false)
+    private Integer dataId;
+
     @JsonIgnore
     @Field
     @NumericField

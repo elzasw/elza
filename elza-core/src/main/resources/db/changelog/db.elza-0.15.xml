@@ -380,4 +380,10 @@
         </addColumn>
 
     </changeSet>
+
+    <changeSet id="20171114144400" author="slapa">
+        <addColumn tableName="rul_component">
+            <column name="hash" type="nvarchar(64)" />
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

@@ -7,6 +7,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.eventbus.Subscribe;
 import cz.tacr.elza.EventBusListener;
+import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrStructureData;
@@ -23,14 +24,11 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.FundStructureExtensionRepository;
+import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.StructureDataRepository;
 import cz.tacr.elza.repository.StructureDefinitionRepository;
 import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
-import cz.tacr.elza.repository.StructureExtensionRepository;
 import cz.tacr.elza.repository.StructureItemRepository;
-import cz.tacr.elza.repository.StructureTypeRepository;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -38,18 +36,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -76,69 +70,44 @@ public class StructureDataService {
 
     private final StructureItemRepository structureItemRepository;
     private final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository;
-    private final StructureExtensionRepository structureExtensionRepository;
     private final StructureDefinitionRepository structureDefinitionRepository;
     private final StructureDataRepository structureDataRepository;
-    private final StructureTypeRepository structureTypeRepository;
     private final RulesExecutor rulesExecutor;
     private final ArrangementService arrangementService;
-    private final DataRepository dataRepository;
     private final RuleService ruleService;
-    private final FundStructureExtensionRepository fundStructureExtensionRepository;
     private final ApplicationContext applicationContext;
-
-    private final PlatformTransactionManager txManager;
+    private final ChangeRepository changeRepository;
 
     private Queue<Integer> queueStructureDataIds = new ConcurrentLinkedQueue<>();
     private final Object lock = new Object();
 
-    private final LoadingCache<File, GroovyScriptService.GroovyScriptFile> groovyScriptCache = CacheBuilder.newBuilder()
-            .maximumSize(50)
-            .expireAfterWrite(5, TimeUnit.MINUTES)
-            .build(
-                    new CacheLoader<File, GroovyScriptService.GroovyScriptFile>() {
-                        public GroovyScriptService.GroovyScriptFile load(final File groovyFile) {
-                            try {
-                                return GroovyScriptService.GroovyScriptFile.createFromFile(groovyFile);
-                            } catch (IOException e) {
-                                throw new SystemException("Problém při zpracování groovy scriptu", e);
-                            }
-                        }
-                    });
+    private Map<File, GroovyScriptService.GroovyScriptFile> groovyScriptMap = new HashMap<>();
 
     @Subscribe
     public synchronized void invalidateCache(final CacheInvalidateEvent cacheInvalidateEvent) {
         if (cacheInvalidateEvent.contains(CacheInvalidateEvent.Type.GROOVY)) {
-            groovyScriptCache.invalidateAll();
+            groovyScriptMap = new HashMap<>();
         }
     }
 
     @Autowired
     public StructureDataService(final StructureItemRepository structureItemRepository,
                                 final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository,
-                                final StructureExtensionRepository structureExtensionRepository, final StructureDefinitionRepository structureDefinitionRepository,
+                                final StructureDefinitionRepository structureDefinitionRepository,
                                 final StructureDataRepository structureDataRepository,
-                                final StructureTypeRepository structureTypeRepository,
                                 final RulesExecutor rulesExecutor,
                                 final ArrangementService arrangementService,
-                                final DataRepository dataRepository,
                                 final RuleService ruleService,
-                                final FundStructureExtensionRepository fundStructureExtensionRepository,
-                                final ApplicationContext applicationContext,
-                                @Qualifier("transactionManager") final PlatformTransactionManager txManager) {
+                                final ApplicationContext applicationContext, final ChangeRepository changeRepository) {
         this.structureItemRepository = structureItemRepository;
         this.structureExtensionDefinitionRepository = structureExtensionDefinitionRepository;
-        this.structureExtensionRepository = structureExtensionRepository;
         this.structureDefinitionRepository = structureDefinitionRepository;
         this.structureDataRepository = structureDataRepository;
-        this.structureTypeRepository = structureTypeRepository;
         this.rulesExecutor = rulesExecutor;
         this.arrangementService = arrangementService;
-        this.dataRepository = dataRepository;
         this.ruleService = ruleService;
-        this.fundStructureExtensionRepository = fundStructureExtensionRepository;
         this.applicationContext = applicationContext;
-        this.txManager = txManager;
+        this.changeRepository = changeRepository;
     }
 
     /**
@@ -172,11 +141,28 @@ public class StructureDataService {
     }
 
     /**
+     * Přidání hodnot k validaci.
+     *
+     * @param structureDataIds seznam identifikátorů hodnot
+     */
+    public void addIdsToValidate(final List<Integer> structureDataIds) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                runValidator(structureDataIds);
+            }
+        });
+    }
+
+    /**
      * Přidání položek k validaci, případně založení vlákna pro asynchronní chod.
      *
      * @param structureDataIds identifikátory hodnot
      */
     private void runValidator(final List<Integer> structureDataIds) {
+        if (structureDataIds.isEmpty()) {
+            return;
+        }
         synchronized (lock) {
             boolean createThread = queueStructureDataIds.size() == 0;
             queueStructureDataIds.addAll(structureDataIds);
@@ -196,16 +182,7 @@ public class StructureDataService {
         while (hasNext) {
             final Integer structureDataId = queueStructureDataIds.poll();
             try {
-                (new TransactionTemplate(txManager)).execute(new TransactionCallbackWithoutResult() {
-                    @Override
-                    protected void doInTransactionWithoutResult(final TransactionStatus status) {
-                        ArrStructureData structureData = structureDataRepository.findOne(structureDataId);
-                        if (structureData == null) {
-                            throw new ObjectNotFoundException("Nenalezena hodnota strukturovaného typu", BaseCode.ID_NOT_EXIST).setId(structureDataId);
-                        }
-                        validate(structureData);
-                    }
-                });
+                applicationContext.getBean(StructureDataService.class).validate(structureDataId);
             } catch (Exception e) {
                 logger.error("Nastala chyba při validaci hodnoty strukturovaného typu -> structureDataId=" + structureDataId, e);
             }
@@ -216,11 +193,26 @@ public class StructureDataService {
     }
 
     /**
+     * Valiadce hodnoty strukt. typu podle id.
+     *
+     * @param structureDataId identifikátor hodnoty strukt. datového typu
+     */
+    @Transactional
+    public void validate(final Integer structureDataId) {
+        ArrStructureData structureData = structureDataRepository.findOne(structureDataId);
+        if (structureData == null) {
+            throw new ObjectNotFoundException("Nenalezena hodnota strukturovaného typu", BaseCode.ID_NOT_EXIST).setId(structureDataId);
+        }
+        validate(structureData);
+    }
+
+    /**
      * Validace hodnoty strukturovaného datového typu.
      *
      * @param structureData hodnota struktovaného datového typu
      * @return zvalidovaná hodnota
      */
+    @Transactional
     public ArrStructureData validate(final ArrStructureData structureData) {
         if (structureData.getDeleteChange() != null) {
             throw new BusinessException("Nelze validovat smazanou hodnotu", BaseCode.INVALID_STATE);
@@ -316,9 +308,13 @@ public class StructureDataService {
 
         GroovyScriptService.GroovyScriptFile groovyScriptFile;
         try {
-            groovyScriptFile = groovyScriptCache.get(groovyFile);
-        } catch (ExecutionException e) {
-            throw new SystemException("Selhání načítání groovy souboru: " + groovyFile, e);
+            groovyScriptFile = groovyScriptMap.get(groovyFile);
+            if (groovyScriptFile == null) {
+                groovyScriptFile = GroovyScriptService.GroovyScriptFile.createFromFile(groovyFile);
+                groovyScriptMap.put(groovyFile, groovyScriptFile);
+            }
+        } catch (IOException e) {
+            throw new SystemException("Problém při zpracování groovy scriptu", e);
         }
 
         Map<String, Object> input = new HashMap<>();
@@ -357,6 +353,16 @@ public class StructureDataService {
         }
         return new File(rulesExecutor.getGroovyDir(rulPackage.getCode(), structureType.getRuleSet().getCode())
                 + File.separator + component.getFilename());
+    }
+
+    /**
+     * Provede smazání dočasných hodnot strukt. typu.
+     */
+    public void removeTempStructureData() {
+        List<ArrChange> changes = structureDataRepository.findTempChange();
+        structureItemRepository.deleteByStructureDataStateTemp();
+        structureDataRepository.deleteByStateTemp();
+        changeRepository.delete(changes);
     }
 
     public static class ValidationErrorDescription {

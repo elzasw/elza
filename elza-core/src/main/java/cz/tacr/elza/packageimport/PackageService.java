@@ -155,6 +155,7 @@ import cz.tacr.elza.repository.StructureTypeRepository;
 import cz.tacr.elza.repository.TemplateRepository;
 import cz.tacr.elza.repository.UIPartyGroupRepository;
 import cz.tacr.elza.service.CacheService;
+import cz.tacr.elza.service.StructureService;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.ActionEvent;
@@ -162,9 +163,9 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.OutputGeneratorService;
 import cz.tacr.elza.utils.AppContext;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -462,6 +463,9 @@ public class PackageService {
     @Autowired
     private StructureExtensionDefinitionRepository structureExtensionDefinitionRepository;
 
+    @Autowired
+    private StructureService structureService;
+
     private List<RulTemplate> newRultemplates = new ArrayList<>();
 
     /**
@@ -482,6 +486,9 @@ public class PackageService {
         List<RulTemplate> originalRulTemplates = new ArrayList<>();
         List<RulStructureDefinition> rulStructureDefinitions = new ArrayList<>();
         List<RulStructureExtensionDefinition> rulStructureExtensionDefinitions = new ArrayList<>();
+
+        // odebrání používaných groovy scritpů
+        cacheService.resetCache(CacheInvalidateEvent.Type.GROOVY);
 
         try {
 
@@ -833,19 +840,33 @@ public class PackageService {
         structureExtensionDefinitionRepository.delete(rulStructureDefinitionDelete);
         componentRepository.delete(rulComponentsDelete);
 
+        Set<RulStructureExtension> revalidateStructureExtensions = new HashSet<>();
         try {
             for (RulStructureExtensionDefinition definition : rulStructureDefinitionDelete) {
                 deleteFile(getDir(dirRules, dirGroovies, definition), definition.getComponent().getFilename());
+                if (definition.getDefType() == RulStructureExtensionDefinition.DefType.SERIALIZED_VALUE) {
+                    revalidateStructureExtensions.add(definition.getStructureExtension());
+                }
             }
 
             for (RulStructureExtensionDefinition definition : rulStructureExtensionDefinitionsNew) {
-                saveFile(mapEntry, getDir(dirRules, dirGroovies, definition), ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + getZipDir(definition), definition.getComponent().getFilename());
+                File file = saveFile(mapEntry, getDir(dirRules, dirGroovies, definition), ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + getZipDir(definition), definition.getComponent().getFilename());
+                if (definition.getDefType() == RulStructureExtensionDefinition.DefType.SERIALIZED_VALUE) {
+                    String newHash = PackageUtils.sha256File(file);
+                    String oldHash = definition.getComponent().getHash();
+                    if (!StringUtils.equalsIgnoreCase(newHash, oldHash)) {
+                        definition.getComponent().setHash(newHash);
+                        componentRepository.save(definition.getComponent());
+                        revalidateStructureExtensions.add(definition.getStructureExtension());
+                    }
+                }
             }
             bulkActionConfigManager.load();
         } catch (IOException e) {
             throw new SystemException(e);
         }
 
+        structureService.revalidateStructureExtensions(revalidateStructureExtensions);
         return rulStructureExtensionDefinitionsNew;
     }
 
@@ -966,19 +987,32 @@ public class PackageService {
         structureDefinitionRepository.delete(rulStructureDefinitionDelete);
         componentRepository.delete(rulComponentsDelete);
 
-
+        Set<RulStructureType> revalidateStructureTypes = new HashSet<>();
         try {
             for (RulStructureDefinition definition : rulStructureDefinitionDelete) {
                 deleteFile(getDir(dirRules, dirGroovies, definition), definition.getComponent().getFilename());
+                if (definition.getDefType() == RulStructureDefinition.DefType.SERIALIZED_VALUE) {
+                    revalidateStructureTypes.add(definition.getStructureType());
+                }
             }
 
             for (RulStructureDefinition definition : rulStructureDefinitionsNew) {
-                saveFile(mapEntry, getDir(dirRules, dirGroovies, definition), ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + getZipDir(definition), definition.getComponent().getFilename());
+                File file = saveFile(mapEntry, getDir(dirRules, dirGroovies, definition), ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + getZipDir(definition), definition.getComponent().getFilename());
+                if (definition.getDefType() == RulStructureDefinition.DefType.SERIALIZED_VALUE) {
+                    String newHash = PackageUtils.sha256File(file);
+                    String oldHash = definition.getComponent().getHash();
+                    if (!StringUtils.equalsIgnoreCase(newHash, oldHash)) {
+                        definition.getComponent().setHash(newHash);
+                        componentRepository.save(definition.getComponent());
+                        revalidateStructureTypes.add(definition.getStructureType());
+                    }
+                }
             }
             bulkActionConfigManager.load();
         } catch (IOException e) {
             throw new SystemException(e);
         }
+        structureService.revalidateStructureTypes(revalidateStructureTypes);
 
         return rulStructureDefinitionsNew;
     }
@@ -2428,7 +2462,7 @@ public class PackageService {
      * @param zipDir   adresář v ZIP
      * @param filename název souboru
      */
-    private void saveFile(final Map<String, ByteArrayInputStream> mapEntry,
+    private File saveFile(final Map<String, ByteArrayInputStream> mapEntry,
                           final File dir,
                           final String zipDir,
                           final String filename) throws IOException {
@@ -2470,6 +2504,7 @@ public class PackageService {
 
         mapEntry.keySet();
 
+        return file;
     }
 
 

@@ -20,6 +20,7 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundStructureExtensionRepository;
@@ -39,6 +40,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -66,6 +68,7 @@ public class StructureService {
     private final FundStructureExtensionRepository fundStructureExtensionRepository;
     private final StructureDataService structureDataService;
     private final ItemTypeRepository itemTypeRepository;
+    private final ChangeRepository changeRepository;
 
     @Autowired
     public StructureService(final StructureItemRepository structureItemRepository,
@@ -77,9 +80,11 @@ public class StructureService {
                             final RulesExecutor rulesExecutor,
                             final ArrangementService arrangementService,
                             final DataRepository dataRepository,
-                            final RuleService ruleService, final FundStructureExtensionRepository fundStructureExtensionRepository,
+                            final RuleService ruleService,
+                            final FundStructureExtensionRepository fundStructureExtensionRepository,
                             final StructureDataService structureDataService,
-                            final ItemTypeRepository itemTypeRepository) {
+                            final ItemTypeRepository itemTypeRepository,
+                            final ChangeRepository changeRepository) {
         this.structureItemRepository = structureItemRepository;
         this.structureExtensionDefinitionRepository = structureExtensionDefinitionRepository;
         this.structureExtensionRepository = structureExtensionRepository;
@@ -93,6 +98,7 @@ public class StructureService {
         this.fundStructureExtensionRepository = fundStructureExtensionRepository;
         this.structureDataService = structureDataService;
         this.itemTypeRepository = itemTypeRepository;
+        this.changeRepository = changeRepository;
     }
 
     /**
@@ -163,9 +169,18 @@ public class StructureService {
         if (structureData.getDeleteChange() != null) {
             throw new BusinessException("Nelze odstranit již smazaná strukturovaná data", BaseCode.INVALID_STATE);
         }
-        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_STRUCTURE_DATA);
-        structureData.setDeleteChange(change);
-        return structureDataRepository.save(structureData);
+        if (structureData.getState() == ArrStructureData.State.TEMP) {
+            structureItemRepository.deleteByStructureData(structureData);
+            dataRepository.deleteByStructureData(structureData);
+            ArrChange change = structureDataRepository.findTempChangeByStructureData(structureData);
+            structureDataRepository.delete(structureData);
+            changeRepository.delete(change);
+            return structureData;
+        } else {
+            ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_STRUCTURE_DATA);
+            structureData.setDeleteChange(change);
+            return structureDataRepository.save(structureData);
+        }
     }
 
     /**
@@ -189,7 +204,7 @@ public class StructureService {
                     .set("structure_type_rul_set", structureData.getStructureType().getRuleSet().getCode());
         }
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_STRUCTURE_ITEM, null);
+        ArrChange change = structureData.getState() == ArrStructureData.State.TEMP ? structureData.getCreateChange() : arrangementService.createChange(ArrChange.Type.ADD_STRUCTURE_ITEM);
 
         int nextPosition = findNextPosition(structureData, structureItem.getItemType());
         Integer position;
@@ -309,13 +324,15 @@ public class StructureService {
     public ArrStructureItem updateStructureItem(final ArrStructureItem structureItem,
                                                 final Integer fundVersionId,
                                                 final boolean createNewVersion) {
-        ArrChange change = arrangementService.createChange(ArrChange.Type.UPDATE_STRUCTURE_ITEM);
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
 
         ArrStructureItem structureItemDB = structureItemRepository.findOpenItemFetchData(structureItem.getDescItemObjectId());
         if (structureItemDB == null) {
             throw new ObjectNotFoundException("Neexistuje položka s OID: " + structureItem.getDescItemObjectId(), BaseCode.ID_NOT_EXIST).setId(structureItem.getDescItemObjectId());
         }
+
+        ArrStructureData structureData = structureItemDB.getStructureData();
+        ArrChange change = structureData.getState() == ArrStructureData.State.TEMP ? structureData.getCreateChange() : arrangementService.createChange(ArrChange.Type.UPDATE_STRUCTURE_ITEM);
 
         validateRuleSet(fundVersion, structureItemDB.getItemType());
 
@@ -400,7 +417,6 @@ public class StructureService {
      * @return smazaná položka
      */
     public ArrStructureItem deleteStructureItem(final ArrStructureItem structureItem, final Integer fundVersionId) {
-        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_STRUCTURE_ITEM);
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
 
         ArrStructureItem structureItemDB = structureItemRepository.findOpenItemFetchData(structureItem.getDescItemObjectId());
@@ -408,6 +424,8 @@ public class StructureService {
             throw new ObjectNotFoundException("Neexistuje položka s OID: " + structureItem.getDescItemObjectId(), BaseCode.ID_NOT_EXIST).setId(structureItem.getDescItemObjectId());
         }
 
+        ArrStructureData structureData = structureItemDB.getStructureData();
+        ArrChange change = structureData.getState() == ArrStructureData.State.TEMP ? structureData.getCreateChange() : arrangementService.createChange(ArrChange.Type.DELETE_STRUCTURE_ITEM);
         validateRuleSet(fundVersion, structureItemDB.getItemType());
 
         structureItemDB.setDeleteChange(change);
@@ -478,6 +496,32 @@ public class StructureService {
     }
 
     /**
+     * Provede revalidaci podle strukt. typu.
+     *
+     * @param structureTypes revalidované typy
+     */
+    public void revalidateStructureTypes(final Collection<RulStructureType> structureTypes) {
+        if (structureTypes.isEmpty()) {
+            return;
+        }
+        List<Integer> structureDataIds = structureDataRepository.findStructureDataIdByStructureTypes(structureTypes);
+        structureDataService.addIdsToValidate(structureDataIds);
+    }
+
+    /**
+     * Provede revalidaci podle rozšíření strukt. typu.
+     *
+     * @param structureExtensions revalidované typy
+     */
+    public void revalidateStructureExtensions(final Collection<RulStructureExtension> structureExtensions) {
+        if (structureExtensions.isEmpty()) {
+            return;
+        }
+        List<Integer> structureDataIds = structureDataRepository.findStructureDataIdByActiveStructureExtensions(structureExtensions);
+        structureDataService.addIdsToValidate(structureDataIds);
+    }
+
+    /**
      * Vrátí strukt. typ podle kódu.
      *
      * @param structureTypeCode kód strukt. typu
@@ -536,7 +580,7 @@ public class StructureService {
         validateRuleSet(fundVersion, type);
         List<ArrStructureItem> structureItems = structureItemRepository.findOpenItems(type, structureData);
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_STRUCTURE_ITEM);
+        ArrChange change = structureData.getState() == ArrStructureData.State.TEMP ? structureData.getCreateChange() : arrangementService.createChange(ArrChange.Type.DELETE_STRUCTURE_ITEM);
         for (ArrStructureItem structureItem : structureItems) {
             structureItem.setDeleteChange(change);
         }

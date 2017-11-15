@@ -2,13 +2,21 @@ package cz.tacr.elza.packageimport;
 
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.PackageCode;
+import org.apache.commons.codec.binary.Hex;
+import sun.misc.BASE64Encoder;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -29,6 +37,27 @@ import java.util.zip.ZipFile;
  */
 public class PackageUtils {
 
+    /**
+     * Hash souboru.
+     *
+     * @param file hashovaný soubor
+     * @return hash
+     */
+    public static String sha256File(final File file) {
+        byte[] buffer= new byte[8192];
+        int count;
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
+            while ((count = bis.read(buffer)) > 0) {
+                digest.update(buffer, 0, count);
+            }
+            byte[] hash = digest.digest();
+            return Hex.encodeHexString(hash);
+        } catch (NoSuchAlgorithmException | IOException e) {
+            throw new SystemException("Nastal problém při zjišťování hash sha256 na souboru: " + file.getPath(), e);
+        }
+    }
 
     /**
      * Vytviření mapy streamů souborů v zipu.

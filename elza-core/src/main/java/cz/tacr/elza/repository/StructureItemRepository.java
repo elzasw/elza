@@ -5,6 +5,7 @@ import cz.tacr.elza.domain.ArrStructureItem;
 import cz.tacr.elza.domain.RulItemType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -46,4 +47,12 @@ public interface StructureItemRepository extends JpaRepository<ArrStructureItem,
     @Query("SELECT i FROM arr_structure_item i WHERE i.deleteChange IS NULL AND i.itemType = :itemType AND i.structureData = :structureData")
     List<ArrStructureItem> findOpenItems(@Param("itemType") RulItemType itemType,
                                          @Param("structureData") ArrStructureData structureData);
+
+    @Modifying
+    @Query("DELETE FROM arr_structure_item i WHERE i.structureDataId IN (SELECT sd.structureDataId FROM arr_structure_data sd WHERE sd.state = 'TEMP')")
+    void deleteByStructureDataStateTemp();
+
+    @Modifying
+    @Query("DELETE FROM arr_structure_item i WHERE i.structureData = :structureData")
+    void deleteByStructureData(@Param("structureData") ArrStructureData structureData);
 }
