@@ -1,5 +1,29 @@
 package cz.tacr.elza.controller;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
+
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ArrFileVO;
@@ -13,20 +37,6 @@ import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.service.DmsService;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import javax.annotation.Nullable;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.util.function.Function;
 
 /**
  * @author Petr Compel <petr.compel@marbes.cz>
@@ -246,6 +256,7 @@ public class DmsController {
      * @return list záznamů
      */
     @RequestMapping(value = "/api/dms/fund/{fundId}", method = RequestMethod.GET)
+	@Transactional
     public FilteredResultVO<ArrFileVO> findFundFiles(@PathVariable final Integer fundId,
                                                      @RequestParam(required = false) @Nullable final String search,
                                                     @RequestParam(required = false, defaultValue = "0") final Integer from,
