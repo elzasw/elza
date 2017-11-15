@@ -23,8 +23,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
@@ -328,13 +326,8 @@ public class ImportProcess {
 
         if (nodeIds.size() > 0) {
             nodeCacheService.syncCache();
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-                @Override
-                public void afterCommit() {
-                    ruleService.conformityInfo(targetFundVersion.getFundVersionId(), nodeIds, NodeTypeOperation.CREATE_NODE, null,
-                            null, null);
-                }
-            });
+			ruleService.conformityInfo(targetFundVersion.getFundVersionId(), nodeIds, NodeTypeOperation.CREATE_NODE,
+			        null, null, null);
         }
         logger.info("Dokončení importu do AS: " + nodeIds.size() + " uzlů");
 
